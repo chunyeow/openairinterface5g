@@ -1693,12 +1693,12 @@ void pdcch_alamouti(LTE_DL_FRAME_PARMS *frame_parms,
 int32_t avgP[4];
 
 int32_t rx_pdcch(LTE_UE_COMMON *lte_ue_common_vars,
-	     LTE_UE_PDCCH **lte_ue_pdcch_vars,
-	     LTE_DL_FRAME_PARMS *frame_parms,
-	     uint8_t subframe,
-	     uint8_t eNB_id,
-	     MIMO_mode_t mimo_mode,
-	     uint8_t is_secondary_ue) {
+		 LTE_UE_PDCCH **lte_ue_pdcch_vars,
+		 LTE_DL_FRAME_PARMS *frame_parms,
+		 uint8_t subframe,
+		 uint8_t eNB_id,
+		 MIMO_mode_t mimo_mode,
+		 uint8_t is_secondary_ue) {
 
   uint8_t log2_maxh,aatx,aarx;
 #ifdef MU_RECEIVER

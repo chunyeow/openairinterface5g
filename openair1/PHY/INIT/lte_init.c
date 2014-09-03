@@ -242,7 +242,7 @@ void phy_config_sib2_ue(uint8_t Mod_id,int CC_id,
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_UE_CONFIG_SIB2, VCD_FUNCTION_IN);
 
-  LOG_I(PHY,"[UE%d] Frame %d: Applying radioResourceConfigCommon from eNB%d\n",Mod_id,PHY_vars_UE_g[Mod_id][CC_id]->frame,CH_index);
+  LOG_I(PHY,"[UE%d] Frame %d: Applying radioResourceConfigCommon from eNB%d\n",Mod_id,PHY_vars_UE_g[Mod_id][CC_id]->frame_rx,CH_index);
 
   lte_frame_parms->prach_config_common.rootSequenceIndex                           =radioResourceConfigCommon->prach_Config.rootSequenceIndex;
 
@@ -348,7 +348,7 @@ void phy_config_sib13_ue(uint8_t Mod_id,int CC_id,uint8_t CH_index,int mbsfn_Are
   LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_UE_g[Mod_id][CC_id]->lte_frame_parms;
 
 
-  LOG_I(PHY,"[UE%d] Frame %d: Applying MBSFN_Area_id %d for index %d\n",Mod_id,PHY_vars_UE_g[Mod_id][CC_id]->frame,mbsfn_AreaId_r9,mbsfn_Area_idx);
+  LOG_I(PHY,"[UE%d] Frame %d: Applying MBSFN_Area_id %d for index %d\n",Mod_id,PHY_vars_UE_g[Mod_id][CC_id]->frame_rx,mbsfn_AreaId_r9,mbsfn_Area_idx);
 
   if (mbsfn_Area_idx == 0) {
     lte_frame_parms->Nid_cell_mbsfn = (uint16_t)mbsfn_AreaId_r9;
@@ -489,7 +489,7 @@ void phy_config_afterHO_ue(uint8_t Mod_id,int CC_id,uint8_t eNB_id, MobilityCont
 //     int u;
 
     LOG_I(PHY,"[UE%d] Frame %d: Handover triggered: Applying radioResourceConfigCommon from eNB %d\n",
-	  Mod_id,PHY_vars_UE_g[Mod_id][CC_id]->frame,eNB_id);
+	  Mod_id,PHY_vars_UE_g[Mod_id][CC_id]->frame_rx,eNB_id);
 
     lte_frame_parms->prach_config_common.rootSequenceIndex                           =radioResourceConfigCommon->prach_Config.rootSequenceIndex;
     lte_frame_parms->prach_config_common.prach_Config_enabled=1;
@@ -712,7 +712,7 @@ void phy_config_dedicated_ue(uint8_t Mod_id,int CC_id,uint8_t CH_index,
 
     
     if (physicalConfigDedicated) {
-      LOG_D(PHY,"[UE %d] Frame %d: Received physicalConfigDedicated from eNB %d\n",Mod_id, phy_vars_ue->frame,CH_index);
+      LOG_D(PHY,"[UE %d] Frame %d: Received physicalConfigDedicated from eNB %d\n",Mod_id, phy_vars_ue->frame_rx,CH_index);
       LOG_D(PHY,"------------------------------------------------------------------------\n");
 
       if (physicalConfigDedicated->pdsch_ConfigDedicated) {
@@ -797,7 +797,7 @@ void phy_config_dedicated_ue(uint8_t Mod_id,int CC_id,uint8_t CH_index,
 #endif
     }
     else {
-      LOG_D(PHY,"[PHY][UE %d] Frame %d: Received NULL radioResourceConfigDedicated from eNB %d\n",Mod_id, phy_vars_ue->frame,CH_index);
+      LOG_D(PHY,"[PHY][UE %d] Frame %d: Received NULL radioResourceConfigDedicated from eNB %d\n",Mod_id, phy_vars_ue->frame_rx,CH_index);
       return;
     }
     

@@ -154,7 +154,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
     msg("dlsch_demodulation.c: Null lte_frame_parms\n");
     return(-1);
   }
-  //  printf("rx_dlsch : eNB_id %d, eNB_id_i %d, dual_stream_flag %d\n",eNB_id,eNB_id_i,dual_stream_flag); 
+  //  printf("rx_dlsch subframe %d symbol %d: eNB_id %d, eNB_id_i %d, dual_stream_flag %d\n",subframe,symbol,eNB_id,eNB_id_i,dual_stream_flag); 
   //  symbol_mod = (symbol>=(7-frame_parms->Ncp)) ? symbol-(7-frame_parms->Ncp) : symbol;
 
   /*

@@ -422,7 +422,7 @@ void generate_pucch_emul(PHY_VARS_UE *phy_vars_ue,
     UE_transport_info[phy_vars_ue->Mod_id][phy_vars_ue->CC_id].cntl.pucch_payload = pucch_payload[0] + (pucch_payload[1]<<1);
   }
   else if (format == pucch_format1) {
-    LOG_D(PHY,"[UE %d] Frame %d subframe %d Generating PUCCH for SR %d\n",phy_vars_ue->Mod_id,phy_vars_ue->frame,subframe,sr);
+    LOG_D(PHY,"[UE %d] Frame %d subframe %d Generating PUCCH for SR %d\n",phy_vars_ue->Mod_id,phy_vars_ue->frame_tx,subframe,sr);
   }
   phy_vars_ue->sr[subframe] = sr; 
 

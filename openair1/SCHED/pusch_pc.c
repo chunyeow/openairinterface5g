@@ -73,7 +73,7 @@ void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,u
 
   
   uint8_t harq_pid = subframe2harq_pid(&phy_vars_ue->lte_frame_parms,
-				  ((subframe==0)?1:0) + phy_vars_ue->frame,
+				  phy_vars_ue->frame_tx,
 				  subframe);
   
   uint8_t nb_rb = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->nb_rb;
@@ -96,7 +96,7 @@ void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,u
     phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH += (mac_xface->get_Po_NOMINAL_PUSCH(phy_vars_ue->Mod_id,0) + PL);
 
     LOG_D(PHY,"[UE  %d][RAPROC] frame %d, subframe %d: Msg3 Po_PUSCH %d dBm (%d,%d,%d,%d,%d)\n",
-          phy_vars_ue->Mod_id,((subframe==0)?1:0)+phy_vars_ue->frame,subframe,phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH,
+          phy_vars_ue->Mod_id,phy_vars_ue->frame_tx,subframe,phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH,
           100*mac_xface->get_Po_NOMINAL_PUSCH(phy_vars_ue->Mod_id,0),
           hundred_times_log10_NPRB[nb_rb-1],
           100*PL,
@@ -117,7 +117,7 @@ void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,u
       phy_vars_ue->ulsch_ue[eNB_id]->PHR = 40;
 
     LOG_D(PHY,"[UE  %d][PUSCH %d] frame %d, subframe %d: Po_PUSCH %d dBm : Po_NOMINAL_PUSCH %d,log10(NPRB) %f,PHR %d, PL %d, alpha*PL %f,delta_IF %f,f_pusch %d\n",
-	  phy_vars_ue->Mod_id,harq_pid,((subframe==0)?1:0) + phy_vars_ue->frame,subframe,
+	  phy_vars_ue->Mod_id,harq_pid,phy_vars_ue->frame_tx,subframe,
 	  phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH,
 	  phy_vars_ue->lte_frame_parms.ul_power_control_config_common.p0_NominalPUSCH,
 	  hundred_times_log10_NPRB[nb_rb-1]/100.0,

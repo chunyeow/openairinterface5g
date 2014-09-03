@@ -91,7 +91,7 @@ int16_t get_PL(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index) {
     RSoffset = 3;
   
 
-  LOG_D(PHY,"get_PL : Frame %d : rssi %f dBm, eNB power %d dBm/RE\n", phy_vars_ue->frame,
+  LOG_D(PHY,"get_PL : Frame %d : rssi %f dBm, eNB power %d dBm/RE\n", phy_vars_ue->frame_rx,
 	(1.0*dB_fixed_times10(phy_vars_ue->PHY_measurements.rssi/RSoffset)-(10.0*phy_vars_ue->rx_total_gain_dB))/10.0,
 	phy_vars_ue->lte_frame_parms.pdsch_config_common.referenceSignalPower);
   	
@@ -204,7 +204,7 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
       for (l=0,nu=0;l<=(4-phy_vars_ue->lte_frame_parms.Ncp);l+=(4-phy_vars_ue->lte_frame_parms.Ncp),nu=3) {
 	k = (nu + nushift)%6;
 #ifdef DEBUG_MEAS
-	LOG_D(PHY,"[UE %d] Frame %d slot %d Doing ue_rrc_measurements rsrp/rssi (Nid_cell %d, nushift %d, eNB_offset %d, k %d)\n",phy_vars_ue->Mod_id,phy_vars_ue->frame,slot,Nid_cell,nushift,eNB_offset,k);
+	LOG_D(PHY,"[UE %d] Frame %d slot %d Doing ue_rrc_measurements rsrp/rssi (Nid_cell %d, nushift %d, eNB_offset %d, k %d)\n",phy_vars_ue->Mod_id,phy_vars_ue->frame_rx,slot,Nid_cell,nushift,eNB_offset,k);
 #endif
 	for (aarx=0;aarx<phy_vars_ue->lte_frame_parms.nb_antennas_rx;aarx++) {
 	  rxF = (int16_t *)&phy_vars_ue->lte_ue_common_vars.rxdataF[aarx][(l*phy_vars_ue->lte_frame_parms.ofdm_symbol_size)];
@@ -265,16 +265,16 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
       phy_vars_ue->PHY_measurements.rsrq[eNB_offset] = 3;
 
     }
-    if (((phy_vars_ue->frame %10) == 0) && (slot == 0)) {
+    if (((phy_vars_ue->frame_rx %10) == 0) && (slot == 0)) {
 #ifdef DEBUG_MEAS
     if (eNB_offset == 0)
 	LOG_D(PHY,"[UE %d] Frame %d, slot %d RRC Measurements => rssi %3.1f dBm (digital: %3.1f dB, gain %d)\n",phy_vars_ue->Mod_id,
-	      phy_vars_ue->frame,slot,10*log10(phy_vars_ue->PHY_measurements.rssi)-phy_vars_ue->rx_total_gain_dB,
+	      phy_vars_ue->frame_rx,slot,10*log10(phy_vars_ue->PHY_measurements.rssi)-phy_vars_ue->rx_total_gain_dB,
 	      10*log10(phy_vars_ue->PHY_measurements.rssi),
 	      phy_vars_ue->rx_total_gain_dB);
 	LOG_D(PHY,"[UE %d] Frame %d, slot %d RRC Measurements (idx %d, Cell id %d) => rsrp: %3.1f (%3.1f) dBm, rsrq: %3.1f dB\n",
 	      phy_vars_ue->Mod_id,
-	      phy_vars_ue->frame,slot,eNB_offset,
+	      phy_vars_ue->frame_rx,slot,eNB_offset,
 	      (eNB_offset>0) ? phy_vars_ue->PHY_measurements.adj_cell_id[eNB_offset-1] : phy_vars_ue->lte_frame_parms.Nid_cell,
 	      (dB_fixed_times10(phy_vars_ue->PHY_measurements.rsrp[eNB_offset])/10.0)-phy_vars_ue->rx_total_gain_dB-dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12),
 	      (10*log10(phy_vars_ue->PHY_measurements.rx_power_avg[0])/10.0)-phy_vars_ue->rx_total_gain_dB-dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12),

@@ -181,14 +181,14 @@ int generate_ue_ulsch_params_from_rar(PHY_VARS_UE *phy_vars_ue,
   //  int current_dlsch_cqi = phy_vars_ue->current_dlsch_cqi[eNB_id];  
 
   uint8_t *rar = (uint8_t *)(rar_pdu+1);
-  uint8_t harq_pid = subframe2harq_pid(frame_parms,((subframe==0)?1:0) + phy_vars_ue->frame,subframe);
+  uint8_t harq_pid = subframe2harq_pid(frame_parms,phy_vars_ue->frame_tx,subframe);
   uint16_t rballoc;
   uint8_t cqireq;
   double sinr_eff;
   uint16_t *RIV2nb_rb_LUT, *RIV2first_rb_LUT;
   uint16_t RIV_max = 0;
 
-  LOG_D(PHY,"[eNB][RAPROC] Frame %d: generate_ue_ulsch_params_from_rar: subframe %d (harq_pid %d)\n",phy_vars_ue->frame,subframe,harq_pid);
+  LOG_D(PHY,"[eNB][RAPROC] Frame %d: generate_ue_ulsch_params_from_rar: subframe %d (harq_pid %d)\n",phy_vars_ue->frame_tx,subframe,harq_pid);
 
   switch (frame_parms->N_RB_DL) {
     case 6:
@@ -267,7 +267,7 @@ int generate_ue_ulsch_params_from_rar(PHY_VARS_UE *phy_vars_ue,
     //  }
     // else
     // fill_CQI(ulsch->o,ulsch->uci_format,meas,eNB_id,transmission_mode);
-    if (((phy_vars_ue->frame % 100) == 0) || (phy_vars_ue->frame < 10)) 
+    if (((phy_vars_ue->frame_tx % 100) == 0) || (phy_vars_ue->frame_tx < 10)) 
       print_CQI(ulsch->o,ulsch->uci_format,eNB_id);
   }
   else {

@@ -1571,7 +1571,7 @@ int main(int argc, char **argv) {
     }
 
     for (SNR=snr0;SNR<snr1;SNR+=snr_step) {
-      PHY_vars_UE->frame=0;
+      PHY_vars_UE->frame_rx=0;
       errs[0]=0;
       errs[1]=0;
       errs[2]=0;
@@ -2656,14 +2656,14 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 	//len = chbch_stats_read(stats_buffer,NULL,0,4096);
 	//printf("%s\n\n",stats_buffer);
     
-	if (PHY_vars_UE->frame % 10 == 0) {
+	if (PHY_vars_UE->frame_rx % 10 == 0) {
 	  PHY_vars_UE->bitrate[eNB_id] = (PHY_vars_UE->total_TBS[eNB_id] - PHY_vars_UE->total_TBS_last[eNB_id])*10;
 	  LOG_D(PHY,"[UE %d] Calculating bitrate: total_TBS = %d, total_TBS_last = %d, bitrate = %d kbits/s\n",PHY_vars_UE->Mod_id,PHY_vars_UE->total_TBS[eNB_id],PHY_vars_UE->total_TBS_last[eNB_id],PHY_vars_UE->bitrate[eNB_id]/1000);
 	  PHY_vars_UE->total_TBS_last[eNB_id] = PHY_vars_UE->total_TBS[eNB_id];
 	}
 
     
-	PHY_vars_UE->frame++;
+	PHY_vars_UE->frame_rx++;
       }   //trials
       // round_trials[0]: number of code word : goodput the protocol
 

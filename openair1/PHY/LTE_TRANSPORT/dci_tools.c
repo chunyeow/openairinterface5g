@@ -4032,12 +4032,12 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
       harq_pid = 0;
     else
       harq_pid = subframe2harq_pid(frame_parms,
-				   pdcch_alloc2ul_frame(frame_parms,phy_vars_ue->frame,subframe),
+				   pdcch_alloc2ul_frame(frame_parms,phy_vars_ue->frame_rx,subframe),
 				   pdcch_alloc2ul_subframe(frame_parms,subframe));
     
     if (harq_pid == 255) {
       LOG_E(PHY, "frame %d, subframe %d, rnti %x, format %d: illegal harq_pid!\n",
-	    phy_vars_ue->frame, subframe, rnti, dci_format);
+	    phy_vars_ue->frame_rx, subframe, rnti, dci_format);
       return(-1);
     }
 
@@ -4165,7 +4165,7 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
 
     if (rballoc > RIV_max) {
       LOG_E(PHY,"frame %d, subframe %d, rnti %x, format %d: FATAL ERROR: generate_ue_ulsch_params_from_dci, rb_alloc > RIV_max\n", 	  
-	    phy_vars_ue->frame, subframe, rnti, dci_format);
+	    phy_vars_ue->frame_rx, subframe, rnti, dci_format);
       return(-1);
     }
 
@@ -4238,7 +4238,7 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
       ulsch->harq_processes[harq_pid]->n_DMRS2 = 9;
 
     LOG_D(PHY,"[UE %d][PUSCH %d] Frame %d, subframe %d : Programming PUSCH with n_DMRS2 %d (cshift %d)\n",
-	  phy_vars_ue->Mod_id,harq_pid,phy_vars_ue->frame,subframe,ulsch->harq_processes[harq_pid]->n_DMRS2,cshift);
+	  phy_vars_ue->Mod_id,harq_pid,phy_vars_ue->frame_rx,subframe,ulsch->harq_processes[harq_pid]->n_DMRS2,cshift);
 
     //reserved for cooperative communication
     /*
@@ -4473,7 +4473,7 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
   }
   else {
     LOG_E(PHY,"frame %d, subframe %d: FATAL ERROR, generate_ue_ulsch_params_from_dci, Illegal dci_format %d\n",
-	  phy_vars_ue->frame, subframe,dci_format);
+	  phy_vars_ue->frame_rx, subframe,dci_format);
     return(-1);
   }
 

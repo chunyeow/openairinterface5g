@@ -933,7 +933,7 @@ uint16_t rx_pbch_emul(PHY_VARS_UE *phy_vars_ue,
 	sinr,
 	bler);
 
-  if (pbch_phase == (phy_vars_ue->frame % 4)) {
+  if (pbch_phase == (phy_vars_ue->frame_rx % 4)) {
     if (uniformrandom() >= bler) {
       memcpy(phy_vars_ue->lte_ue_pbch_vars[eNB_id]->decoded_output,PHY_vars_eNB_g[eNB_id][CC_id]->pbch_pdu,PBCH_PDU_SIZE);    
       return(PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.nb_antennas_tx_eNB);

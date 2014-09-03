@@ -356,10 +356,16 @@ typedef struct
   uint8_t local_flag;
   int instance_cnt_tx;
   int instance_cnt_rx;
+  int instance_cnt_synch;
   pthread_cond_t cond_tx;
   pthread_cond_t cond_rx;
+  pthread_cond_t cond_synch;
   pthread_mutex_t mutex_tx;
   pthread_mutex_t mutex_rx;
+  pthread_mutex_t mutex_synch;
+  pthread_t       thread_rx;
+  pthread_t       thread_tx;
+  pthread_t       thread_synch;
   uint32_t tx_total_gain_dB;
   uint32_t rx_total_gain_dB; ///this is a function of rx_gain_mode (and the corresponding gain) and the rx_gain of the card
   uint32_t rx_gain_max[4];
@@ -370,7 +376,7 @@ typedef struct
   int8_t tx_power_dBm;
   int tx_total_RE;
   int8_t tx_power_max_dBm;
-  uint32_t frame;
+  //  uint32_t frame;
   uint32_t frame_rx,frame_tx;
   uint32_t slot_tx,slot_rx;
   uint8_t n_connected_eNB;

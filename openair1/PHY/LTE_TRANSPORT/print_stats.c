@@ -79,7 +79,7 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
   if ((mode == normal_txrx) || (mode == no_L2_connect)) {
   len += sprintf(&buffer[len], "[UE_PROC] UE %d, RNTI %x\n",phy_vars_ue->Mod_id, phy_vars_ue->lte_ue_pdcch_vars[0]->crnti);
   len += sprintf(&buffer[len], "[UE PROC] Frame count: %d\neNB0 RSSI %d dBm (%d dB, %d dB)\neNB1 RSSI %d dBm (%d dB, %d dB)\neNB2 RSSI %d dBm (%d dB, %d dB)\nN0 %d dBm (%d dB, %d dB)\n",
-		 phy_vars_ue->frame,
+		 phy_vars_ue->frame_rx,
 		 phy_vars_ue->PHY_measurements.rx_rssi_dBm[0],
 		 phy_vars_ue->PHY_measurements.rx_power_dB[0][0],
 		 phy_vars_ue->PHY_measurements.rx_power_dB[0][1],
@@ -235,7 +235,7 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
   }
   else {
     len += sprintf(&buffer[len], "[UE PROC] Frame count: %d, RSSI %3.2f dB (%d dB, %d dB), N0 %3.2f dB (%d dB, %d dB)\n",
-		   phy_vars_ue->frame,
+		   phy_vars_ue->frame_rx,
 		   10*log10(phy_vars_ue->PHY_measurements.rssi),
 		   phy_vars_ue->PHY_measurements.rx_power_dB[0][0],
 		   phy_vars_ue->PHY_measurements.rx_power_dB[0][1],

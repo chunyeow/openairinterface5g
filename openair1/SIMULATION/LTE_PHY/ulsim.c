@@ -728,7 +728,7 @@ int main(int argc, char **argv) {
   PHY_vars_eNB->lte_frame_parms.pusch_config_common.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled = 0;
   PHY_vars_UE->lte_frame_parms.pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH = 0;
   PHY_vars_eNB->lte_frame_parms.pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH = 0;
-  PHY_vars_UE->frame=1;
+  PHY_vars_UE->frame_tx=1;
 
   for (sf=0;sf<10;sf++) { 
     PHY_vars_eNB->proc[sf].frame_tx=1; 
@@ -742,12 +742,12 @@ int main(int argc, char **argv) {
   msg("Init UL hopping eNB\n");
   init_ul_hopping(&PHY_vars_eNB->lte_frame_parms);
 
-  PHY_vars_eNB->proc[subframe].frame_rx = PHY_vars_UE->frame;
+  PHY_vars_eNB->proc[subframe].frame_rx = PHY_vars_UE->frame_tx;
   if (ul_subframe2pdcch_alloc_subframe(&PHY_vars_eNB->lte_frame_parms,subframe) > subframe) // allocation was in previous frame
-    PHY_vars_eNB->proc[ul_subframe2pdcch_alloc_subframe(&PHY_vars_eNB->lte_frame_parms,subframe)].frame_tx = (PHY_vars_UE->frame-1)&1023;
+    PHY_vars_eNB->proc[ul_subframe2pdcch_alloc_subframe(&PHY_vars_eNB->lte_frame_parms,subframe)].frame_tx = (PHY_vars_UE->frame_tx-1)&1023;
 
   //  printf("UE frame %d, eNB frame %d (eNB frame_tx %d)\n",PHY_vars_UE->frame,PHY_vars_eNB->proc[subframe].frame_rx,PHY_vars_eNB->proc[ul_subframe2pdcch_alloc_subframe(&PHY_vars_eNB->lte_frame_parms,subframe)].frame_tx);
-  PHY_vars_UE->frame = (PHY_vars_UE->frame-1)&1023;
+  PHY_vars_UE->frame_tx = (PHY_vars_UE->frame_tx-1)&1023;
 
   generate_ue_ulsch_params_from_dci((void *)&UL_alloc_pdu,
 				    14,
@@ -777,7 +777,7 @@ int main(int argc, char **argv) {
 
 
 
-  PHY_vars_UE->frame = (PHY_vars_UE->frame+1)&1023;
+  PHY_vars_UE->frame_tx = (PHY_vars_UE->frame_tx+1)&1023;
   
   
   for (ch_realization=0;ch_realization<n_ch_rlz;ch_realization++){
@@ -816,7 +816,7 @@ int main(int argc, char **argv) {
       //randominit(0);
 
 
-      harq_pid = subframe2harq_pid(&PHY_vars_UE->lte_frame_parms,PHY_vars_UE->frame,subframe);
+      harq_pid = subframe2harq_pid(&PHY_vars_UE->lte_frame_parms,PHY_vars_UE->frame_tx,subframe);
       //      printf("UL frame %d/subframe %d, harq_pid %d\n",PHY_vars_UE->frame,subframe,harq_pid);
       if (input_fdUL == NULL) {
 	input_buffer_length = PHY_vars_UE->ulsch_ue[0]->harq_processes[harq_pid]->TBS/8;
@@ -978,11 +978,11 @@ int main(int argc, char **argv) {
 	    start_meas(&PHY_vars_UE->ulsch_modulation_stats);	      	      	  
 #ifdef OFDMA_ULSCH
 	    ulsch_modulation(PHY_vars_UE->lte_ue_common_vars.txdataF,AMP,
-			     PHY_vars_UE->frame,subframe,&PHY_vars_UE->lte_frame_parms,PHY_vars_UE->ulsch_ue[0]);
+			     PHY_vars_UE->frame_tx,subframe,&PHY_vars_UE->lte_frame_parms,PHY_vars_UE->ulsch_ue[0]);
 #else  
 	    //	  printf("Generating PUSCH in subframe %d with amp %d, nb_rb %d\n",subframe,AMP,nb_rb);
 	    ulsch_modulation(PHY_vars_UE->lte_ue_common_vars.txdataF,AMP,
-			     PHY_vars_UE->frame,subframe,&PHY_vars_UE->lte_frame_parms,
+			     PHY_vars_UE->frame_tx,subframe,&PHY_vars_UE->lte_frame_parms,
 			     PHY_vars_UE->ulsch_ue[0]);
 #endif
 	    stop_meas(&PHY_vars_UE->ulsch_modulation_stats);	      	      	  
