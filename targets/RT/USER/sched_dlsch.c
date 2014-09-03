@@ -157,11 +157,11 @@ static void * dlsch_thread(void *param) {
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_DLSCH_THREAD0+dlsch_thread_index,1);    
     if (oai_exit) break;
     
-    LOG_I(PHY,"[SCHED][DLSCH] Frame %d: Calling dlsch_decoding with dlsch_thread_index = %d\n",phy_vars_ue->frame,dlsch_thread_index);
+    LOG_I(PHY,"[SCHED][DLSCH] Frame %d: Calling dlsch_decoding with dlsch_thread_index = %d\n",phy_vars_ue->frame_rx,dlsch_thread_index);
 
     time_in = rt_get_time_ns();
     
-    if (phy_vars_ue->frame < phy_vars_ue->dlsch_errors[eNB_id]) {
+    if (phy_vars_ue->frame_rx < phy_vars_ue->dlsch_errors[eNB_id]) {
         phy_vars_ue->dlsch_errors[eNB_id]=0;
         phy_vars_ue->dlsch_received[eNB_id] = 0;
     }
@@ -197,7 +197,7 @@ static void * dlsch_thread(void *param) {
       	LOG_D(PHY,"[UE  %d][PDSCH %x/%d] Frame %d subframe %d: PDSCH/DLSCH decoding iter %d (mcs %d, rv %d, TBS %d)\n",
               phy_vars_ue->Mod_id,
               phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,harq_pid,
-              phy_vars_ue->frame,dlsch_subframe[dlsch_thread_index],ret,
+              phy_vars_ue->frame_rx,dlsch_subframe[dlsch_thread_index],ret,
               phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs,
               phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->rvidx,
               phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->TBS); 
@@ -209,7 +209,7 @@ static void * dlsch_thread(void *param) {
 #ifdef DEBUG_PHY
 	LOG_I(PHY,"[UE  %d][PDSCH %x/%d] Frame %d subframe %d DLSCH in error (rv %d,mcs %d)\n",
 	      phy_vars_ue->Mod_id,phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
-	      harq_pid,phy_vars_ue->frame,dlsch_subframe[dlsch_thread_index],
+	      harq_pid,phy_vars_ue->frame_rx,dlsch_subframe[dlsch_thread_index],
 	      phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->rvidx,
 	      phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs);
 #endif
@@ -217,14 +217,14 @@ static void * dlsch_thread(void *param) {
       else {
 	LOG_I(PHY,"[UE  %d][PDSCH %x/%d] Frame %d subframe %d: Received DLSCH (rv %d,mcs %d)\n",
 	      phy_vars_ue->Mod_id,phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
-	      harq_pid,phy_vars_ue->frame,dlsch_subframe[dlsch_thread_index],
+	      harq_pid,phy_vars_ue->frame_rx,dlsch_subframe[dlsch_thread_index],
 	      phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->rvidx,
 	      phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs);
 	
 #ifdef OPENAIR2
 	mac_xface->ue_send_sdu(phy_vars_ue->Mod_id,
 			       0, // CC_id
-			       phy_vars_ue->frame,
+			       phy_vars_ue->frame_rx,
 			       phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->b,
 			       phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->TBS>>3,
 			       eNB_id);
@@ -250,14 +250,14 @@ static void * dlsch_thread(void *param) {
     LOG_I(PHY,"[UE  %d][PDSCH %x/%d] Frame %d subframe %d: PDSCH/DLSCH decoding iter %d (mcs %d, rv %d, TBS %d)\n",
 	  phy_vars_ue->Mod_id,
 	  phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,harq_pid,
-	  phy_vars_ue->frame,dlsch_subframe[dlsch_thread_index],ret,
+	  phy_vars_ue->frame_rx,dlsch_subframe[dlsch_thread_index],ret,
 	  phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs,
 	  phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->rvidx,
 	  phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->TBS);
-    if (phy_vars_ue->frame%100==0) {
+    if (phy_vars_ue->frame_rx%100==0) {
       LOG_D(PHY,"[UE  %d][PDSCH %x] Frame %d subframe %d dlsch_errors %d, dlsch_received %d, dlsch_fer %d, current_dlsch_cqi %d\n",
 	    phy_vars_ue->Mod_id,phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
-	    phy_vars_ue->frame,dlsch_subframe[dlsch_thread_index],
+	    phy_vars_ue->frame_rx,dlsch_subframe[dlsch_thread_index],
 	    phy_vars_ue->dlsch_errors[eNB_id],
 	    phy_vars_ue->dlsch_received[eNB_id],
 	    phy_vars_ue->dlsch_fer[eNB_id],

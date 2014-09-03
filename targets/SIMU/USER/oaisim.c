@@ -771,8 +771,13 @@ void *l2l1_task(void *args_p) {
 
 		  if (PHY_vars_UE_g[UE_inst][0]->UE_mode[0] != NOT_SYNCHED) {
 		    if (frame > 0) {
-		      PHY_vars_UE_g[UE_inst][0]->frame = frame;
-
+		      PHY_vars_UE_g[UE_inst][0]->frame_rx = frame;
+		      PHY_vars_UE_g[UE_inst][0]->slot_rx = last_slot;
+		      PHY_vars_UE_g[UE_inst][0]->slot_tx = next_slot;
+		      if (next_slot > 1)
+			PHY_vars_UE_g[UE_inst][0]->frame_tx = frame;
+		      else
+			PHY_vars_UE_g[UE_inst][0]->frame_tx = frame+1;
 #ifdef OPENAIR2
 		      //Application
 		      update_otg_UE (UE_inst, oai_emulation.info.time_ms);
@@ -781,7 +786,7 @@ void *l2l1_task(void *args_p) {
 		      pdcp_run (frame, 0, UE_inst, 0);
 #endif
 		      for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-			phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_inst][CC_id], 0, abstraction_flag, normal_txrx,
+			phy_procedures_UE_lte (PHY_vars_UE_g[UE_inst][CC_id], 0, abstraction_flag, normal_txrx,
 					       no_relay, NULL);
 		      }
 		      ue_data[UE_inst]->tx_power_dBm = PHY_vars_UE_g[UE_inst][0]->tx_power_dBm;
@@ -852,8 +857,12 @@ void *l2l1_task(void *args_p) {
 		if (PHY_vars_UE_g[UE_inst][0]->UE_mode[0] != NOT_SYNCHED) {
 		  LOG_D(EMU,"[RN %d] PHY procedures UE %d for frame %d, slot %d (subframe TX %d, RX %d)\n",
 			RN_id, UE_inst, frame, slot, next_slot >> 1,last_slot>>1);
-		  PHY_vars_UE_g[UE_inst][0]->frame = frame;
-		  phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_inst][0], 0, abstraction_flag,normal_txrx,
+		  PHY_vars_UE_g[UE_inst][0]->frame_rx = frame;
+		  PHY_vars_UE_g[UE_inst][0]->slot_rx =  last_slot;
+		  PHY_vars_UE_g[UE_inst][0]->slot_tx =  next_slot;
+		  if (next_slot>1) PHY_vars_UE_g[UE_inst][0]->frame_tx = frame;
+		  else PHY_vars_UE_g[UE_inst][0]->frame_tx = frame+1;
+		  phy_procedures_UE_lte (PHY_vars_UE_g[UE_inst][0], 0, abstraction_flag,normal_txrx,
 					 r_type, PHY_vars_RN_g[RN_id]);
 		}
 		else if (last_slot == (LTE_SLOTS_PER_FRAME-2)) {
@@ -873,7 +882,7 @@ void *l2l1_task(void *args_p) {
 	  }
 #endif
 	  emu_transport (frame, last_slot, next_slot, direction, oai_emulation.info.frame_type[0], ethernet_flag);
-	  if ((direction == SF_DL) || (frame_parms[0]->frame_type == 0)) {
+	  if ((direction == SF_DL) || (frame_parms[0]->frame_type == FDD)) {
 	    // consider only sec id 0
 	    /*  for (eNB_id=0;eNB_id<NB_eNB_INST;eNB_id++) {
 		if (abstraction_flag == 0) {
