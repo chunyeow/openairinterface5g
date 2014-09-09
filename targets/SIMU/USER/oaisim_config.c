@@ -784,6 +784,13 @@ int ocg_config_app(void){
 
   g_otg->packet_gen_type=map_str_to_int(packet_gen_names,oai_emulation.application_config.packet_gen_type);
 
+  LOG_I(OTG,"Metrics: Throuput %s(%d), One-way latency %s(%d) for %s, loss rate %s(%d), online curves %s(%d)\n",
+	oai_emulation.emulation_config.performance_metrics.throughput,g_otg->throughput_metric,
+	oai_emulation.emulation_config.performance_metrics.latency,g_otg->latency_metric,
+	(g_otg->owd_radio_access==1)? "Radio Access Network" : "End to End",
+	oai_emulation.emulation_config.performance_metrics.loss_rate,g_otg->loss_metric,
+	oai_emulation.emulation_config.curve,g_otg->curve );
+
   for (i=0; i<g_otg->num_nodes; i++){
 
     for (j=0; j<g_otg->num_nodes; j++){

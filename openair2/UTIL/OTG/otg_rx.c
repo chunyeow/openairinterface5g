@@ -155,18 +155,26 @@ float owd_const_application_v=owd_const_application()/2;
 	//  }
 
       if (otg_hdr_rx->time<=ctime){
-	otg_info->radio_access_delay[src][dst]=ctime- otg_hdr_rx->time;
-	otg_multicast_info->radio_access_delay[src][dst]=ctime- otg_hdr_rx->time;
-      } else
+	otg_info->radio_access_delay[src][dst]=(float) (ctime- otg_hdr_rx->time);
+	otg_multicast_info->radio_access_delay[src][dst]=(float) (ctime- otg_hdr_rx->time);
+      } else {
 	LOG_N(OTG,"received packet has tx time %d greater than the current time %d\n",otg_hdr_rx->time,ctime );
-
-      otg_info->rx_pkt_owd[src][dst]=otg_info->owd_const[src][dst][otg_hdr_rx->flow_id]+ otg_info->radio_access_delay[src][dst];
+	otg_info->radio_access_delay[src][dst] = 0;
+	otg_multicast_info->radio_access_delay[src][dst]=0;
+      }
+      /* actual radio OWD*/
+      otg_info->rx_pkt_owd[src][dst]=otg_info->radio_access_delay[src][dst]; 
+      /* estimated E2E OWD based on the emulated delays for the other part of the network */
+      otg_info->rx_pkt_owd_e2e[src][dst]=otg_info->owd_const[src][dst][otg_hdr_rx->flow_id] + otg_info->radio_access_delay[src][dst];
       otg_multicast_info->rx_pkt_owd[src][dst]=otg_multicast_info->radio_access_delay[src][dst];
       
+      LOG_D(OTG, "[src %d][dst %d] ctime %d tx time %d: OWD %lf E2E OWD %lf \n", src, dst, ctime, otg_hdr_rx->time, otg_info->rx_pkt_owd[src][dst], otg_info->rx_pkt_owd_e2e[src][dst] );
       // compute the jitter by ignoring the packet loss
       if (lost_packet == 0){
+	// radio access 
 	otg_info->rx_pkt_owd_history[src][dst][1] = otg_info->rx_pkt_owd_history[src][dst][0]; // the previous owd
 	otg_info->rx_pkt_owd_history[src][dst][0] = otg_info->rx_pkt_owd[src][dst]; // the current owd
+
 	if (otg_info->rx_pkt_owd_history[src][dst][1] == 0) // first packet
 	  otg_info->rx_pkt_jitter[src][dst]=0;
 	else // for the consecutive packets
@@ -175,6 +183,18 @@ float owd_const_application_v=owd_const_application()/2;
 	LOG_D(OTG,"The packet jitter for the pair (src %d, dst %d)) at %d is %lf (current %lf, previous %lf) \n",
 	      src, dst, ctime, otg_info->rx_pkt_jitter[src][dst],
 	      otg_info->rx_pkt_owd_history[src][dst][0], otg_info->rx_pkt_owd_history[src][dst][1]);
+	// e2e 
+	otg_info->rx_pkt_owd_history_e2e[src][dst][1] = otg_info->rx_pkt_owd_history_e2e[src][dst][0]; // the previous owd
+	otg_info->rx_pkt_owd_history_e2e[src][dst][0] = otg_info->rx_pkt_owd_e2e[src][dst]; // the current owd
+	if (otg_info->rx_pkt_owd_history_e2e[src][dst][1] == 0) // first packet
+	  otg_info->rx_pkt_jitter_e2e[src][dst]=0;
+	else // for the consecutive packets
+	  otg_info->rx_pkt_jitter_e2e[src][dst]= abs(otg_info->rx_pkt_owd_history_e2e[src][dst][0] - otg_info->rx_pkt_owd_history_e2e[src][dst][1]);
+	
+	LOG_D(OTG,"The packet jitter for the pair (src %d, dst %d)) at %d is %lf (current %lf, previous %lf) \n",
+	      src, dst, ctime, otg_info->rx_pkt_jitter_e2e[src][dst],
+	      otg_info->rx_pkt_owd_history_e2e[src][dst][0], otg_info->rx_pkt_owd_history_e2e[src][dst][1]);
+	
       }
       
       if (otg_hdr_info_rx->flag == 0x1000){
@@ -204,28 +224,38 @@ float owd_const_application_v=owd_const_application()/2;
       }
       else {
 
-	LOG_I(OTG,"INFO LATENCY :: [SRC %d][DST %d] radio access %.2f (tx time %d, ctime %d), OWD:%.2f (ms):\n",
-	      src, dst, otg_info->radio_access_delay[src][dst], otg_hdr_rx->time, ctime , otg_info->rx_pkt_owd[src][dst]);
+	LOG_I(OTG,"[SRC %d][DST %d] Stats :: radio access latency %.2f (tx time %d, ctime %d) jitter %.2f, Estimated E2E OWD:%.2f (ms):\n",
+	      src, dst, otg_info->radio_access_delay[src][dst], otg_hdr_rx->time, ctime , otg_info->rx_pkt_jitter[src][dst], otg_info->rx_pkt_owd_e2e[src][dst]);
 
 	if (otg_hdr_info_rx->flag == 0xffff){
 
 	  if (otg_info->rx_owd_max[src][dst][otg_hdr_rx->traffic_type]==0){
 	    otg_info->rx_owd_max[src][dst][otg_hdr_rx->traffic_type]=otg_info->rx_pkt_owd[src][dst];
 	    otg_info->rx_owd_min[src][dst][otg_hdr_rx->traffic_type]=otg_info->rx_pkt_owd[src][dst];
+	    otg_info->rx_owd_max_e2e[src][dst][otg_hdr_rx->traffic_type]=otg_info->rx_pkt_owd_e2e[src][dst];
+	    otg_info->rx_owd_min_e2e[src][dst][otg_hdr_rx->traffic_type]=otg_info->rx_pkt_owd_e2e[src][dst];
 	  }
 	  else {
 	    otg_info->rx_owd_max[src][dst][otg_hdr_rx->traffic_type]=MAX(otg_info->rx_owd_max[src][dst][otg_hdr_rx->traffic_type],otg_info->rx_pkt_owd[src][dst] );
 	    otg_info->rx_owd_min[src][dst][otg_hdr_rx->traffic_type]=MIN(otg_info->rx_owd_min[src][dst][otg_hdr_rx->traffic_type],otg_info->rx_pkt_owd[src][dst] );
+	    otg_info->rx_owd_max_e2e[src][dst][otg_hdr_rx->traffic_type]=MAX(otg_info->rx_owd_max_e2e[src][dst][otg_hdr_rx->traffic_type],otg_info->rx_pkt_owd_e2e[src][dst] );
+	    otg_info->rx_owd_min_e2e[src][dst][otg_hdr_rx->traffic_type]=MIN(otg_info->rx_owd_min_e2e[src][dst][otg_hdr_rx->traffic_type],otg_info->rx_pkt_owd_e2e[src][dst] );
 	  }
+
 	  if (otg_info->rx_jitter_max[src][dst][otg_hdr_rx->traffic_type]==0){
 	    otg_info->rx_jitter_max[src][dst][otg_hdr_rx->traffic_type]=otg_info->rx_pkt_jitter[src][dst];
-	    otg_info->rx_jitter_min[src][dst][otg_hdr_rx->traffic_type]=otg_info->rx_pkt_jitter[src][dst];
+	    otg_info->rx_jitter_min[src][dst][otg_hdr_rx->traffic_type]=otg_info->rx_pkt_jitter[src][dst]; 
+	    otg_info->rx_jitter_max_e2e[src][dst][otg_hdr_rx->traffic_type]=otg_info->rx_pkt_jitter_e2e[src][dst];
+	    otg_info->rx_jitter_min_e2e[src][dst][otg_hdr_rx->traffic_type]=otg_info->rx_pkt_jitter_e2e[src][dst];
 	  }
 	  else if (lost_packet==0){
 	    otg_info->rx_jitter_max[src][dst][otg_hdr_rx->traffic_type]=MAX(otg_info->rx_jitter_max[src][dst][otg_hdr_rx->traffic_type],otg_info->rx_pkt_jitter[src][dst] );
 	    otg_info->rx_jitter_min[src][dst][otg_hdr_rx->traffic_type]=MIN(otg_info->rx_jitter_min[src][dst][otg_hdr_rx->traffic_type],otg_info->rx_pkt_jitter[src][dst] );
+	    otg_info->rx_jitter_max_e2e[src][dst][otg_hdr_rx->traffic_type]=MAX(otg_info->rx_jitter_max_e2e[src][dst][otg_hdr_rx->traffic_type],otg_info->rx_pkt_jitter_e2e[src][dst] );
+	    otg_info->rx_jitter_min_e2e[src][dst][otg_hdr_rx->traffic_type]=MIN(otg_info->rx_jitter_min_e2e[src][dst][otg_hdr_rx->traffic_type],otg_info->rx_pkt_jitter_e2e[src][dst] );
 	    // avg jitter
 	    otg_info->rx_jitter_avg[src][dst][otg_hdr_rx->traffic_type] +=  otg_info->rx_pkt_jitter[src][dst];
+	    otg_info->rx_jitter_avg_e2e[src][dst][otg_hdr_rx->traffic_type] +=  otg_info->rx_pkt_jitter_e2e[src][dst];
 	    otg_info->rx_jitter_sample[src][dst][otg_hdr_rx->traffic_type] +=1;
 	  }
 
@@ -377,12 +407,12 @@ void owd_const_gen(int src, int dst, int flow_id, unsigned int flag){
     LOG_D(OTG,"(RX) [src %d] [dst %d] [ID %d] TRAFFIC_TYPE IS M2M [Add Capillary const]\n", src, dst, flow_id);
   }
   else
-    LOG_D(OTG,"(RX) [src %d] [dst %d] [ID %d] TRAFFIC_TYPE WITHOUT M2M [Capillary const]\n", src, dst, flow_id);
+    LOG_T(OTG,"(RX) [src %d] [dst %d] [ID %d] TRAFFIC_TYPE WITHOUT M2M [Capillary const]\n", src, dst, flow_id);
 }
 
 
 
-float owd_const_capillary(){
+float owd_const_capillary(void){
   /*return (uniform_dist(MIN_APPLICATION_PROCESSING_GATEWAY_DELAY, MAX_APPLICATION_PROCESSING_GATEWAY_DELAY) +
 	   uniform_dist(MIN_FORMATING_TRANSFERRING_DELAY, MAX_FORMATING_TRANSFERRING_DELAY) +
 	   uniform_dist(MIN_ACCESS_DELAY, MAX_ACCESS_DELAY) +
@@ -391,7 +421,7 @@ float owd_const_capillary(){
 }
 
 
-float owd_const_mobile_core(){
+float owd_const_mobile_core(void){
   /*double delay;
   // this is a delay model for a loaded GGSN according to
 	//"M. Laner, P. Svoboda and M. Rupp, Latency Analysis of 3G Network Components, EW'12, Poznan, Poland, 2012", table 2, page 6.
@@ -415,13 +445,13 @@ float owd_const_mobile_core(){
   return ((double)MIN_U_PLANE_CORE_IP_ACCESS_DELAY+ (double)MAX_U_PLANE_CORE_IP_ACCESS_DELAY + (double)MIN_FW_PROXY_DELAY + (double)MAX_FW_PROXY_DELAY)/2;
 }
 
-float owd_const_IP_backbone(){
+float owd_const_IP_backbone(void){
   /*return uniform_dist(MIN_NETWORK_ACCESS_DELAY,MAX_NETWORK_ACCESS_DELAY);*/
 	return ((double)MIN_NETWORK_ACCESS_DELAY+(double)MAX_NETWORK_ACCESS_DELAY)/2;
 
 }
 
-float owd_const_application(){
+float owd_const_application(void){
   /*return uniform_dist(MIN_APPLICATION_ACESS_DELAY, MAX_APPLICATION_ACESS_DELAY);*/
 	return ((double)MIN_APPLICATION_ACESS_DELAY+(double)MAX_APPLICATION_ACESS_DELAY)/2;
 }

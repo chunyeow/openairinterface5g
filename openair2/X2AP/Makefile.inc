@@ -78,7 +78,8 @@ $(OUTDIR)/x2ap_ieregen.stamp: $(ASN1DIR)/$(ASN1RELDIR)/X2AP-PDU-Contents.asn $(A
 
 $(OUTDIR)/x2ap_asn1regen.stamp:  $(ASN1DIR)/$(ASN1RELDIR)/X2AP-CommonDataTypes.asn  $(ASN1DIR)/$(ASN1RELDIR)/X2AP-Constants.asn $(ASN1DIR)/$(ASN1RELDIR)/X2AP-IEs.asn  $(ASN1DIR)/$(ASN1RELDIR)/X2AP-PDU.asn   
 	@echo "Timestamp DIR " $(ASN1DIR) " DIRREL " $(ASN1RELDIR)
-	(cd $(ASN1DIR)/$(ASN1RELDIR) && asn1c -fhave_native64 -gen-PER $^)
+#	(cd $(ASN1DIR)/$(ASN1RELDIR) && asn1c -fhave_native64 -gen-PER -fcompound-names $^)
+	(cd $(ASN1MESSAGESDIR) && asn1c -fhave_native64 -gen-PER -fcompound-names $^)
 	@echo "Timestamp" $(X2AP_CFLAGS)
 	@echo Timestamp > $@	
 

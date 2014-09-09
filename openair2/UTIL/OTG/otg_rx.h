@@ -62,7 +62,7 @@
 * \note 
 * @ingroup  _otg
 */
-int otg_rx_pkt_packet(int src, int dst, int ctime, char *packet, unsigned int size);
+int otg_rx_pkt(int src, int dst, int ctime, char *packet, unsigned int size);
 
 
 /*! \fn void owd_const_gen(int src,int dst);
@@ -81,7 +81,7 @@ void owd_const_gen(int src,int dst, int flow_id, unsigned int flag);
 *\note 
 *@ingroup  _otg
 */
-float owd_const_capillary();
+float owd_const_capillary(void);
 
 /*! \fn float owd_const_mobile_core();
 *\brief compute the one way delay introduced in LTE/LTE-A network REF PAPER: "Latency for Real-Time Machine-to-Machine Communication in LTE-Based System Architecture"
@@ -89,7 +89,7 @@ float owd_const_capillary();
 *\note 
 *@ingroup  _otg
 */
-float owd_const_mobile_core();
+float owd_const_mobile_core(void);
 
 /*! \fn float owd_const_IP_backbone();
 *\brief compute the one way delay introduced in LTE/LTE-A network REF PAPER: "Latency for Real-Time Machine-to-Machine Communication in LTE-Based System Architecture"
@@ -97,7 +97,7 @@ float owd_const_mobile_core();
 *\note 
 *@ingroup  _otg
 */
-float owd_const_IP_backbone();
+float owd_const_IP_backbone(void);
 
 /*! \fn float owd_const_applicatione();
 *\brief compute the one way delay introduced in LTE/LTE-A network REF PAPER: "Latency for Real-Time Machine-to-Machine Communication in LTE-Based System Architecture"
@@ -105,7 +105,7 @@ float owd_const_IP_backbone();
 *\note 
 *@ingroup  _otg
 */
-float owd_const_application();
+float owd_const_application(void);
 
 
 /*! \fn void rx_check_loss(int src, int dst, unsigned int flag, int seq_num, unsigned int *seq_num_rx, unsigned int *nb_loss_pkts);

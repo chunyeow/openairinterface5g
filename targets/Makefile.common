@@ -64,12 +64,16 @@ SHARED_DEPENDENCIES += $(ITTI_MESSAGES_H)
 endif
 
 ifdef USE_MME
-#LIBS				+= $(X2AP_OBJ_DIR)/libx2ap.a
-LIBS				+= $(UE_NAS_OBJ_DIR)/libuenas.a $(SECU_OBJ_DIR)/libsecu.a 
-LIBS				+= $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a -lsctp -lcrypt
-LIBS				+= $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a 
-#SHARED_DEPENDENCIES	+= $(UE_NAS_OBJ_DIR)/libuenas.a $(SECU_OBJ_DIR)/libsecu.a $(X2AP_OBJ_DIR)/libx2ap.a $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a  $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a
+LIBS			+= $(UE_NAS_OBJ_DIR)/libuenas.a $(SECU_OBJ_DIR)/libsecu.a 
+LIBS			+= $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a -lsctp -lcrypt
+LIBS			+= $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a 
+
+ifdef X2AP
+LIBS			+= $(X2AP_OBJ_DIR)/libx2ap.a
+SHARED_DEPENDENCIES	+= $(UE_NAS_OBJ_DIR)/libuenas.a $(SECU_OBJ_DIR)/libsecu.a $(X2AP_OBJ_DIR)/libx2ap.a $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a  $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a
+else 
 SHARED_DEPENDENCIES	+= $(UE_NAS_OBJ_DIR)/libuenas.a $(SECU_OBJ_DIR)/libsecu.a $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a  $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a
+endif 
 
 COMMON_CFLAGS		+= -DLOG_NO_THREAD 
 #-DEMIT_ASN_DEBUG
@@ -97,7 +101,7 @@ export SECU_CFLAGS
 
 COMMON_MME_CFLAGS	 = -I$(SECU_DIR)
 COMMON_MME_CFLAGS       += -I$(SCTP_DIR)
-COMMON_MME_CFLAGS	+= -I$(X2AP_DIR)
+COMMON_MME_CFLAGS	+= -I$(X2AP_DIR) -I$(X2AP_DIR)/MESSAGES
 COMMON_MME_CFLAGS	+= -I$(S1AP_DIR)
 COMMON_MME_CFLAGS	+= -I$(UDP_DIR)
 COMMON_MME_CFLAGS	+= -I$(GTPV1U_DIR)

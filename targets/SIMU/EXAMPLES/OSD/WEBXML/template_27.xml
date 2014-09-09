@@ -43,11 +43,11 @@
 
       <BACKGROUND_TRAFFIC>disable</BACKGROUND_TRAFFIC> <!-- options: enable, disable. If enable, it generates a background traffic corresponding to the traffic direction-->
       <IDT_DIST>fixed</IDT_DIST>  <!-- available distributions: none (default), uniform, poission, gaussian, exponential,pareto, cauchy,fixed, weibull, gammav-->
-      <IDT_MIN_ms>1</IDT_MIN_ms>  <!--Minimum IDT values in milliseconds-->
-      <IDT_MAX_ms>1</IDT_MAX_ms>  <!--Minimum IDT values in milliseconds-->
+      <IDT_MIN_ms>1000</IDT_MIN_ms>  <!--Minimum IDT values in milliseconds-->
+      <IDT_MAX_ms>1000</IDT_MAX_ms>  <!--Minimum IDT values in milliseconds-->
       <SIZE_DIST>fixed</SIZE_DIST>   <!-- available distributions: none (default), uniform, poission, gaussian, exponential,pareto, cauchy,fixed, weibull, gammav-->
-      <SIZE_MIN_byte>1000</SIZE_MIN_byte>  <!--Minimum PAYLOAD size values in bytes-->
-      <SIZE_MAX_byte>2000</SIZE_MAX_byte>  <!--MAximum PAYLOAD size values in bytes-->
+      <SIZE_MIN_byte>32</SIZE_MIN_byte>  <!--Minimum PAYLOAD size values in bytes-->
+      <SIZE_MAX_byte>32</SIZE_MAX_byte>  <!--MAximum PAYLOAD size values in bytes-->
    </CUSTOMIZED_TRAFFIC>
 
    <CUSTOMIZED_TRAFFIC>	 
@@ -58,12 +58,12 @@
       <FLOW_START_ms>1000</FLOW_START_ms> <!-- indicates the start time of the app or the actual duration of the traffic-->
       <FLOW_DURATION_ms>10000</FLOW_DURATION_ms> <!-- indicates the start time of the app or the actual duration of the traffic-->
       <BACKGROUND_TRAFFIC>disable</BACKGROUND_TRAFFIC> <!-- options: enable, disable. If enable, it generates a background traffic corresponding to the traffic direction-->
-      <IDT_DIST>uniform</IDT_DIST>  <!-- available distributions: none (default), uniform, poission, gaussian, exponential,pareto, cauchy,fixed, weibull, gammav-->
-      <IDT_MIN_ms>100</IDT_MIN_ms>  <!--Minimum IDT values in milliseconds-->
-      <IDT_MAX_ms>150</IDT_MAX_ms>  <!--Minimum IDT values in milliseconds-->
+      <IDT_DIST>fixed</IDT_DIST>  <!-- available distributions: none (default), uniform, poission, gaussian, exponential,pareto, cauchy,fixed, weibull, gammav-->
+      <IDT_MIN_ms>1000</IDT_MIN_ms>  <!--Minimum IDT values in milliseconds-->
+      <IDT_MAX_ms>1000</IDT_MAX_ms>  <!--Minimum IDT values in milliseconds-->
       <SIZE_DIST>uniform</SIZE_DIST>   <!-- available distributions: none (default), uniform, poission, gaussian, exponential,pareto, cauchy,fixed, weibull, gammav-->
-      <SIZE_MIN_byte>256</SIZE_MIN_byte>  <!--Minimum PAYLOAD size values in bytes-->
-      <SIZE_MAX_byte>768</SIZE_MAX_byte>  <!--Maximum PAYLOAD size values in bytes-->
+      <SIZE_MIN_byte>32</SIZE_MIN_byte>  <!--Minimum PAYLOAD size values in bytes-->
+      <SIZE_MAX_byte>32</SIZE_MAX_byte>  <!--Maximum PAYLOAD size values in bytes-->
    </CUSTOMIZED_TRAFFIC>
 
  </APPLICATION_CONFIG>
