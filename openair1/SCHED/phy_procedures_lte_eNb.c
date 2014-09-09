@@ -90,6 +90,7 @@ int eNB_sync_buffer0[640*6] __attribute__ ((aligned(16)));
 int eNB_sync_buffer1[640*6] __attribute__ ((aligned(16)));
 int *eNB_sync_buffer[2] = {eNB_sync_buffer0, eNB_sync_buffer1};
 
+extern uint16_t hundred_times_log10_NPRB[100];
 
 unsigned int max_peak_val; 
 int max_sect_id, max_sync_pos;
@@ -2890,7 +2891,13 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 
 
       for (j=0;j<phy_vars_eNB->lte_frame_parms.nb_antennas_rx;j++)
-	phy_vars_eNB->eNB_UE_stats[i].UL_rssi[j] = dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[i]->ulsch_power[j]) - phy_vars_eNB->rx_total_gain_eNB_dB;
+	//this is the RSSI per RB
+	phy_vars_eNB->eNB_UE_stats[i].UL_rssi[j] = 
+	  dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[i]->ulsch_power[j]*
+		   (phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->nb_rb*12)/
+		   phy_vars_eNB->lte_frame_parms.ofdm_symbol_size) -
+	  phy_vars_eNB->rx_total_gain_eNB_dB -
+	  hundred_times_log10_NPRB[phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->nb_rb-1]/100;
 
       start_meas(&phy_vars_eNB->ulsch_decoding_stats);
       if (abstraction_flag == 0) {
@@ -2912,12 +2919,14 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
       stop_meas(&phy_vars_eNB->ulsch_decoding_stats);
 
       //#ifdef DEBUG_PHY_PROC
-      LOG_I(PHY,"[eNB %d][PUSCH %d] frame %d subframe %d RNTI %x RX power (%d,%d) N0 (%d,%d) dB ACK (%d,%d), decoding iter %d\n",
+      LOG_I(PHY,"[eNB %d][PUSCH %d] frame %d subframe %d RNTI %x RX power (%d,%d) RSSI (%d,%d) N0 (%d,%d) dB ACK (%d,%d), decoding iter %d\n",
 	    phy_vars_eNB->Mod_id,harq_pid,
 	    frame,subframe,
 	    phy_vars_eNB->ulsch_eNB[i]->rnti,
 	    dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[i]->ulsch_power[0]),
 	    dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[i]->ulsch_power[1]),
+	    phy_vars_eNB->eNB_UE_stats[i].UL_rssi[0],
+	    phy_vars_eNB->eNB_UE_stats[i].UL_rssi[1],
 	    phy_vars_eNB->PHY_measurements_eNB->n0_power_dB[0],
 	    phy_vars_eNB->PHY_measurements_eNB->n0_power_dB[1],
 	    phy_vars_eNB->ulsch_eNB[i]->o_ACK[0],
@@ -2943,18 +2952,8 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	}
 	else {
       */
-      for (j=0;j<phy_vars_eNB->lte_frame_parms.nb_antennas_rx;j++)
-	phy_vars_eNB->eNB_UE_stats[i].UL_rssi[j] = dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[i]->ulsch_power[j]) 
-	  - phy_vars_eNB->rx_total_gain_eNB_dB;
-#ifdef DEBUG_PHY_PROC
-      LOG_I(PHY,"[eNB %d] Frame %d subframe %d: ULSCH %d RX power (%d,%d) dB\n",
-	    phy_vars_eNB->Mod_id,frame,subframe,i,
-	    dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[i]->ulsch_power[0]),
-	    dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[i]->ulsch_power[1]));
-#endif
 
-      //      }
-      
+      //dump_ulsch(phy_vars_eNB, sched_subframe, i);
     
       phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round]++;
 #ifdef DEBUG_PHY_PROC
@@ -3472,6 +3471,23 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
     
 #endif //PUCCH
   
+    if ((frame % 100 == 0) && (subframe == 4)) {
+      for (round=0;round<phy_vars_eNB->ulsch_eNB[i]->Mdlharq;round++) {
+	if ((phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][round] - 
+	     phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts_last[harq_pid][round]) != 0)
+	  phy_vars_eNB->eNB_UE_stats[i].ulsch_round_fer[harq_pid][round] = 
+	    (100*(phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors[harq_pid][round] - 
+		  phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors_last[harq_pid][round]))/
+	    (phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][round] - 
+	     phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts_last[harq_pid][round]);
+	
+	phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts_last[harq_pid][round] = 
+	  phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][round];
+	phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors_last[harq_pid][round] = 
+	  phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors[harq_pid][round];
+      }
+    }
+    
     if ((frame % 100 == 0) && (subframe==4)) {
       for (round=0;round<phy_vars_eNB->ulsch_eNB[i]->Mdlharq;round++) {
 	if ((phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][round] - 

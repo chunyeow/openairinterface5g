@@ -1318,6 +1318,7 @@ void rx_ulsch(PHY_VARS_eNB *phy_vars_eNB,
 			      l%(frame_parms->symbols_per_tti/2),
 			      l/(frame_parms->symbols_per_tti/2),
 			      cooperation_flag);
+  }
 
     if(cooperation_flag == 2)
       {
@@ -1334,7 +1335,9 @@ void rx_ulsch(PHY_VARS_eNB *phy_vars_eNB,
 	  eNB_pusch_vars->ulsch_power[i] = signal_energy_nodc(eNB_pusch_vars->drs_ch_estimates[eNB_id][i],
 					      ulsch[UE_id]->harq_processes[harq_pid]->nb_rb*12)*rx_power_correction;
       }
-  }
+  
+    //write_output("rxdataF_ext.m","rxF_ext",eNB_pusch_vars->rxdataF_ext[eNB_id][0],300*(frame_parms->symbols_per_tti-ulsch[UE_id]->srs_active),1,1);
+    //write_output("ulsch_chest.m","drs_est",eNB_pusch_vars->drs_ch_estimates[eNB_id][0],300*(frame_parms->symbols_per_tti-ulsch[UE_id]->srs_active),1,1);
 
 
   if(cooperation_flag == 2)

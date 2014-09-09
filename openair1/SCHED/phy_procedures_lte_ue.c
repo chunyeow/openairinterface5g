@@ -209,10 +209,9 @@ void dump_dlsch_SI(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe) {
 #ifdef EXMIMO
 unsigned int prach_gain_table[31] = {100,112,126,141,158,178,200,224,251,282,316,359,398,447,501,562,631,708,794,891,1000,1122,1258,1412,1585,1778,1995,2239,2512,2818,3162};
 
-unsigned int get_tx_amp(int gain_dBm, int gain_max_dBm) {
+unsigned int get_tx_amp(int power_dBm, int power_max_dBm) {
 
-  //int gain_dB = gain_dBm - gain_max_dBm;
-  int gain_dB = gain_max_dBm;
+  int gain_dB = power_dBm - power_max_dBm;
 
   if (gain_dB < -30) {
     return(AMP/32);
@@ -711,6 +710,8 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
       if (phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->subframe_scheduling_flag == 1) {
 	
 	generate_ul_signal = 1;
+	// FK 20140908: the power control cannot be done here, since we do not have the spectral efficiency yet. this is only done in ulsch_encoding
+	/*
 #ifdef OPENAIR2
 	pusch_power_cntl(phy_vars_ue,subframe_tx,eNB_id,1, abstraction_flag);
 	phy_vars_ue->tx_power_dBm = phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH;
@@ -721,6 +722,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 
 	LOG_D(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d harq pid %d, Po_PUSCH : %d dBm\n",
 	      Mod_id,harq_pid,frame_tx,subframe_tx,harq_pid, phy_vars_ue->tx_power_dBm);	
+	*/
 
 	// deactivate service request
 	phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->subframe_scheduling_flag = 0;
@@ -766,18 +768,6 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 #endif
 	
 
-#ifdef EXMIMO
-	if (abstraction_flag==0) {
-	  for (aa=0; aa<1/*frame_parms->nb_antennas_tx*/; aa++)
-	    generate_drs_pusch(phy_vars_ue,eNB_id,get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm),subframe_tx,first_rb,nb_rb,aa);
-	}      
-#else
-	if (abstraction_flag==0) {
-	  for (aa=0; aa<1/*frame_parms->nb_antennas_tx*/; aa++)
-	    generate_drs_pusch(phy_vars_ue,eNB_id,AMP,subframe_tx,first_rb,nb_rb,aa);
-	}      
-#endif
-	
 	//#ifdef DEBUG_PHY_PROC      
 	//	debug_LOG_D(PHY,"[UE  %d] Frame %d, Subframe %d ulsch harq_pid %d : O %d, O_ACK %d, O_RI %d, TBS %d\n",Mod_id,phy_vars_ue->frame,subframe_tx,harq_pid,phy_vars_ue->ulsch_ue[eNB_id]->O,phy_vars_ue->ulsch_ue[eNB_id]->O_ACK,phy_vars_ue->ulsch_ue[eNB_id]->O_RI,phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->TBS);
 	//#endif
@@ -856,14 +846,14 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 	    }
 	    */
 	  }
-	  //#ifdef DEBUG_PHY_PROC
-	  //#ifdef DEBUG_ULSCH
+#ifdef DEBUG_PHY_PROC
+#ifdef DEBUG_ULSCH
 	  LOG_I(PHY,"[UE] Frame %d, subframe %d : ULSCH SDU (TX harq_pid %d)  (%d bytes) : \n",frame_tx,subframe_tx,harq_pid, phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->TBS>>3);
 	  for (i=0;i<phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->TBS>>3;i++) 
 	    LOG_T(PHY,"%x.",ulsch_input_buffer[i]);
 	  LOG_T(PHY,"\n");
-	  //#endif
-	  //#endif
+#endif
+#endif
 #else //OPENAIR2
       // the following lines were necessary for the calibration in CROWN
       /*
@@ -917,6 +907,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 	}
 	if (abstraction_flag == 0) {
 #ifdef OPENAIR2
+	  pusch_power_cntl(phy_vars_ue,subframe_tx,eNB_id,1, abstraction_flag);
 	  phy_vars_ue->tx_power_dBm = phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH;
 #else
 	  phy_vars_ue->tx_power_dBm = UE_TX_POWER;
@@ -930,9 +921,8 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 #else
 		AMP
 #endif
-	);    
+		);    
 	  start_meas(&phy_vars_ue->ulsch_modulation_stats);	      	      	  
-#ifdef OFDMA_ULSCH
 	  ulsch_modulation(phy_vars_ue->lte_ue_common_vars.txdataF,
 #ifdef EXMIMO                       
                        get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm),
@@ -944,21 +934,17 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
                        &phy_vars_ue->lte_frame_parms,
                        phy_vars_ue->ulsch_ue[eNB_id]);
 
-#else //OFDMA_ULSCH
-	  ulsch_modulation(phy_vars_ue->lte_ue_common_vars.txdataF,
-#ifdef EXMIMO                       
-                       get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm),
+#ifdef EXMIMO
+	  for (aa=0; aa<1/*frame_parms->nb_antennas_tx*/; aa++)
+	    generate_drs_pusch(phy_vars_ue,eNB_id,get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm),subframe_tx,first_rb,nb_rb,aa);
 #else
-                       AMP,
+	  for (aa=0; aa<1/*frame_parms->nb_antennas_tx*/; aa++)
+	    generate_drs_pusch(phy_vars_ue,eNB_id,AMP,subframe_tx,first_rb,nb_rb,aa);
 #endif
-                       frame_tx,
-                       subframe_tx,
-                       &phy_vars_ue->lte_frame_parms,
-                       phy_vars_ue->ulsch_ue[eNB_id]);
-      
-#endif //OFDMA_ULSCH
-	  start_meas(&phy_vars_ue->ulsch_modulation_stats);	      	      	  
+
+	  stop_meas(&phy_vars_ue->ulsch_modulation_stats);	      	      	  
 	}
+
 	if (abstraction_flag==1) {
 	  // clear SR
 	  phy_vars_ue->sr[subframe_tx]=0;
@@ -1015,6 +1001,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 		Mod_id, frame_tx,subframe_tx);
 	}
       }
+
 #ifdef PUCCH
       else if (phy_vars_ue->UE_mode[eNB_id] == PUSCH){  // check if we need to use PUCCH 1a/1b
 	//      debug_LOG_D(PHY,"[UE%d] Frame %d, subframe %d: Checking for PUCCH 1a/1b\n",Mod_id,frame_tx,subframe_tx);

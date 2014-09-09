@@ -1053,13 +1053,13 @@ void update_ocm() {
 
   /* check if the openair channel model is activated used for PHY abstraction : path loss*/
   if ((oai_emulation.info.ocm_enabled == 1)&& (ethernet_flag == 0 )) {
-      //LOG_D(OMG," extracting position of eNb...\n");
+    //LOG_D(OMG," extracting position of eNb...\n");
     //display_node_list(enb_node_list);
     //  display_node_list(ue_node_list);
-      extract_position(enb_node_list, enb_data, NB_eNB_INST);
-      //extract_position_fixed_enb(enb_data, NB_eNB_INST,frame);
-      //LOG_D(OMG," extracting position of UE...\n");
-      //      if (oai_emulation.info.omg_model_ue == TRACE)
+    extract_position(enb_node_list, enb_data, NB_eNB_INST);
+    //extract_position_fixed_enb(enb_data, NB_eNB_INST,frame);
+    //LOG_D(OMG," extracting position of UE...\n");
+    //      if (oai_emulation.info.omg_model_ue == TRACE)
     extract_position(ue_node_list, ue_data, NB_UE_INST);
     
     /* if (frame % 50 == 0)
@@ -1094,9 +1094,9 @@ void update_ocm() {
 	    eNB2UE[eNB_id][UE_id][CC_id]->path_loss_dB = -132.24 + sinr_dB - PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.pdsch_config_common.referenceSignalPower;
 	    UE2eNB[UE_id][eNB_id][CC_id]->path_loss_dB = -132.24 + sinr_dB - PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.pdsch_config_common.referenceSignalPower;
 	  }
-	  LOG_I(OCM,"Path loss from eNB %d to UE %d (CCid %d)=> %f dB (eNB TX %d)\n",eNB_id,UE_id,CC_id,
+	  LOG_I(OCM,"Path loss from eNB %d to UE %d (CCid %d)=> %f dB (eNB TX %d, SNR %f)\n",eNB_id,UE_id,CC_id,
 		eNB2UE[eNB_id][UE_id][CC_id]->path_loss_dB,
-		PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.pdsch_config_common.referenceSignalPower);
+		PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.pdsch_config_common.referenceSignalPower,snr_dB);
 	  //      printf("[SIM] Path loss from UE %d to eNB %d => %f dB\n",UE_id,eNB_id,UE2eNB[UE_id][eNB_id]->path_loss_dB);
 	}
       }

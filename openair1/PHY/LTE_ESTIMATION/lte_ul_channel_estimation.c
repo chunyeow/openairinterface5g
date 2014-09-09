@@ -231,7 +231,9 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
       alpha_ind = 0;
       if((cyclic_shift != 0)){
 	// Compensating for the phase shift introduced at the transmitte
-	//	write_output("drs_est_pre.m","drsest_pre",ul_ch_estimates[0],300*12,1,1);
+#ifdef DEBUG_CH	
+	write_output("drs_est_pre.m","drsest_pre",ul_ch_estimates[0],300*12,1,1);
+#endif
 	for(i=symbol_offset;i<symbol_offset+Msc_RS;i++){
 	  ul_ch_estimates_re = ((int16_t*) ul_ch_estimates[aa])[i<<1];
 	  ul_ch_estimates_im = ((int16_t*) ul_ch_estimates[aa])[(i<<1)+1];
@@ -249,7 +251,9 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
 	  if (alpha_ind>11)
 	    alpha_ind-=12;
 	}
-	//	write_output("drs_est_post.m","drsest_post",ul_ch_estimates[0],300*12,1,1);
+#ifdef DEBUG_CH
+	write_output("drs_est_post.m","drsest_post",ul_ch_estimates[0],300*12,1,1);
+#endif
       }
 
       //copy MIMO channel estimates to temporary buffer for EMOS
@@ -286,7 +290,7 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
 #ifdef DEBUG_CH      
       if (aa==0) {
 	if (Ns == 0) {
-	  write_output("rxdataF_ext.m","rxF_ext",&rxdataF_ext[aa][symbol_offset<<1],512*2,2,1);
+	  write_output("rxdataF_ext.m","rxF_ext",&rxdataF_ext[aa][symbol_offset],512*2,2,1);
 	  write_output("tmpin_ifft.m","drs_in",temp_in_ifft_0,512,1,1);
 	  write_output("drs_est0.m","drs0",ul_ch_estimates_time[aa],512*2,2,1);
 	}

@@ -417,7 +417,7 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
       phy_vars_ue->PHY_measurements.wideband_cqi_avg[eNB_id] = dB_fixed2(phy_vars_ue->PHY_measurements.rx_power_avg[eNB_id],phy_vars_ue->PHY_measurements.n0_power_avg);
       phy_vars_ue->PHY_measurements.rx_rssi_dBm[eNB_id] = phy_vars_ue->PHY_measurements.rx_power_avg_dB[eNB_id] - phy_vars_ue->rx_total_gain_dB + gain_offset;
 #ifdef DEBUG_MEAS
-      printf("[PHY][eNB %d] lte_ue_measurements: RSSI %d dBm, RSSI (digital) %d dB\n",
+      LOG_D(PHY,"[eNB %d] lte_ue_measurements: RSSI %d dBm, RSSI (digital) %d dB\n",
 	     eNB_id,phy_vars_ue->PHY_measurements.rx_rssi_dBm[eNB_id],
 	     phy_vars_ue->PHY_measurements.rx_power_avg_dB[eNB_id]);
 #endif

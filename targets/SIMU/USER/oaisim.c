@@ -983,26 +983,31 @@ void *l2l1_task(void *args_p) {
     
     }//end of slot
 
-    if ((frame >= 1) && (frame <= 9) && (abstraction_flag == 0)
+    if ((frame >= 10) && (frame <= 11) && (abstraction_flag == 0)
 #ifdef PROC
 	&&(Channel_Flag==0)
 #endif
 	) {
-      write_output ("UEtxsig0.m", "txs0", PHY_vars_UE_g[0][0]->lte_ue_common_vars.txdata[0], PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti*10,
-		    1, 1);
+      sprintf (fname, "UEtxsig%d.m", frame);
+      sprintf (vname, "txs%d", frame);
+      write_output (fname, vname, PHY_vars_UE_g[0][0]->lte_ue_common_vars.txdata[0], 
+		    PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti*10,1,1);
       sprintf (fname, "eNBtxsig%d.m", frame);
       sprintf (vname, "txs%d", frame);
-      write_output (fname, vname, PHY_vars_eNB_g[0][0]->lte_eNB_common_vars.txdata[0][0], PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti*10, 1,
-		    1);
-      write_output (
-		    "eNBtxsigF0.m", "txsF0", PHY_vars_eNB_g[0][0]->lte_eNB_common_vars.txdataF[0][0],
-		    PHY_vars_eNB_g[0][0]->lte_frame_parms.symbols_per_tti * PHY_vars_eNB_g[0][0]->lte_frame_parms.ofdm_symbol_size, 1,
-		    1);
-      
-      write_output ("UErxsig0.m", "rxs0", PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[0], PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti*10,
-		    1, 1);
-      write_output ("eNBrxsig0.m", "rxs0", PHY_vars_eNB_g[0][0]->lte_eNB_common_vars.rxdata[0][0],
-		    PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti*10, 1, 1);
+      write_output (fname, vname, PHY_vars_eNB_g[0][0]->lte_eNB_common_vars.txdata[0][0], 
+		    PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti*10,1,1);
+      sprintf (fname, "eNBtxsigF%d.m", frame);
+      sprintf (vname, "txsF%d", frame);
+      write_output (fname, vname, PHY_vars_eNB_g[0][0]->lte_eNB_common_vars.txdataF[0][0],
+		    PHY_vars_eNB_g[0][0]->lte_frame_parms.symbols_per_tti * PHY_vars_eNB_g[0][0]->lte_frame_parms.ofdm_symbol_size,1,1);
+      sprintf (fname, "UErxsig%d.m", frame);
+      sprintf (vname, "rxs%d", frame);
+      write_output (fname, vname, PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[0], 
+		    PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti*10,1,1);
+      sprintf (fname, "eNBrxsig%d.m", frame);
+      sprintf (vname, "rxs%d", frame);
+      write_output (fname, vname, PHY_vars_eNB_g[0][0]->lte_eNB_common_vars.rxdata[0][0], 
+		    PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti*10,1,1);
     }
     
 #ifdef XFORMS

@@ -452,7 +452,8 @@ DCI_PDU *get_dci(LTE_DL_FRAME_PARMS *lte_frame_parms,uint8_t log2L, uint8_t log2
       break;
     }	  
   }
-  
+
+  /*  
   // add common dci
   DCI_pdu.dci_alloc[0].dci_length = BCCH_pdu_size_bits;
   DCI_pdu.dci_alloc[0].L          = log2Lcommon;
@@ -470,13 +471,13 @@ DCI_PDU *get_dci(LTE_DL_FRAME_PARMS *lte_frame_parms,uint8_t log2L, uint8_t log2
   DCI_pdu.dci_alloc[1].ra_flag    = 0;
   memcpy((void*)&DCI_pdu.dci_alloc[1].dci_pdu[0], &DLSCH_alloc_pdu[0], dci_length_bytes);
   DCI_pdu.Num_ue_spec_dci++;                
-  
+  */
 
-  DCI_pdu.dci_alloc[2].dci_length = UL_pdu_size_bits;
-  DCI_pdu.dci_alloc[2].L          = log2L;
-  DCI_pdu.dci_alloc[2].rnti       = rnti;
-  DCI_pdu.dci_alloc[2].format     = format0;
-  DCI_pdu.dci_alloc[2].ra_flag    = 0;
+  DCI_pdu.dci_alloc[0].dci_length = UL_pdu_size_bits;
+  DCI_pdu.dci_alloc[0].L          = log2L;
+  DCI_pdu.dci_alloc[0].rnti       = rnti;
+  DCI_pdu.dci_alloc[0].format     = format0;
+  DCI_pdu.dci_alloc[0].ra_flag    = 0;
   memcpy((void*)&DCI_pdu.dci_alloc[0].dci_pdu[0], &UL_alloc_pdu[0], UL_pdu_size_bytes);
   DCI_pdu.Num_ue_spec_dci++;
 
@@ -928,6 +929,13 @@ int main(int argc, char **argv) {
       num_pdcch_symbols = get_num_pdcch_symbols(DCI_pdu.Num_common_dci+DCI_pdu.Num_ue_spec_dci,
                                                 DCI_pdu.dci_alloc, frame_parms, subframe);
       DCI_pdu.nCCE = get_nCCE(num_pdcch_symbols,&PHY_vars_eNB->lte_frame_parms,get_mi(&PHY_vars_eNB->lte_frame_parms,subframe));
+
+      if (n_frames==1) {
+	printf("num_dci %d, num_pddch_symbols %d, nCCE %d\n",
+	       DCI_pdu.Num_common_dci+DCI_pdu.Num_ue_spec_dci,
+	       num_pdcch_symbols,
+	       DCI_pdu.nCCE);
+      }
 
       // apply RNTI-based nCCE allocation
       for (i = 0; i < DCI_pdu.Num_common_dci + DCI_pdu.Num_ue_spec_dci; i++) {

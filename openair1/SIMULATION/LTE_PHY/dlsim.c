@@ -325,7 +325,7 @@ int main(int argc, char **argv) {
   int llr8_flag=0;
 
   double effective_rate=0.0;
-  char channel_model_input[10];
+  char channel_model_input[10]="I";
   opp_enabled=1; // to enable the time meas
 
   cpu_freq_GHz = (double)get_cpu_freq_GHz();
@@ -406,7 +406,7 @@ int main(int argc, char **argv) {
 	num_pdcch_symbols=atoi(optarg);
 	break;
       case 'g':
-	sprintf(channel_model_input,optarg,10);
+	memcpy(channel_model_input,optarg,10);
 	switch((char)*optarg) {
 	case 'A': 
 	  channel_model=SCM_A;
@@ -2508,11 +2508,11 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 	      for (iii=0; iii<NB_RB; iii++){
 		//fprintf(csv_fd, "%d, %d", (PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->pmi_ext[iii]),(PHY_vars_UE->lte_ue_pdsch_vars[eNB_id_i]->pmi_ext[iii]));
 		fprintf(csv_fd,"%x,%x,",(PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->pmi_ext[iii]),(PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->pmi_ext[iii]));
-		msg(" %x",(PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->pmi_ext[iii]));
+		printf("%x ",(PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->pmi_ext[iii]));
 	      }
 	    }
 	  }
-	  
+
 	  PHY_vars_UE->dlsch_ue[0][0]->rnti = (common_flag==0) ? n_rnti: SI_RNTI;
 	  coded_bits_per_codeword = get_G(&PHY_vars_eNB->lte_frame_parms,
 					  PHY_vars_eNB->dlsch_eNB[0][0]->nb_rb,

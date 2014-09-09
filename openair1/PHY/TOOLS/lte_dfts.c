@@ -14890,9 +14890,11 @@ void dft1200(int16_t *x,int16_t *y,unsigned char scale_flag){
 
 
 #ifdef MR_MAIN
-int opp_enabled=1;
+#include <string.h>
+#include <stdio.h>
 
 int opp_enabled=1;
+
 int main(int argc, char**argv) {
 
 
@@ -15277,15 +15279,7 @@ int main(int argc, char**argv) {
     stop_meas(&ts);
   }
   printf("\n\n256-point(%f cycles)\n",(double)ts.diff/(double)ts.trials);
- /* printf("X: ");
-  for (i=0;i<64;i++)
-    printf("%d,%d,%d,%d,%d,%d,%d,%d,",((int16_t*)&x[i])[0],((int16_t *)&x[i])[1],((int16_t*)&x[i])[2],((int16_t *)&x[i])[3],((int16_t*)&x[i])[4],((int16_t*)&x[i])[5],((int16_t*)&x[i])[6],((int16_t*)&x[i])[7]);
-  printf("\nY:");
 
-  for (i=0;i<64;i++)
-    printf("%d,%d,%d,%d,%d,%d,%d,%d,",((int16_t*)&y[i])[0],((int16_t *)&y[i])[1],((int16_t*)&y[i])[2],((int16_t *)&y[i])[3],((int16_t*)&y[i])[4],((int16_t *)&y[i])[5],((int16_t*)&y[i])[6],((int16_t *)&y[i])[7]);
-  printf("\n");
-*/
   reset_meas(&ts);
   for (i=0;i<10000;i++) {
     start_meas(&ts);
@@ -15293,6 +15287,20 @@ int main(int argc, char**argv) {
     stop_meas(&ts);
   }
   printf("\n\n512-point(%f cycles)\n",(double)ts.diff/(double)ts.trials);
+
+  write_output("x.m","x",x,512,1,1);
+  write_output("y.m","y",y,512,1,1);
+
+  /*
+  printf("X: ");
+  for (i=0;i<64;i++)
+    printf("%d,%d,%d,%d,%d,%d,%d,%d,",((int16_t*)&x[i])[0],((int16_t *)&x[i])[1],((int16_t*)&x[i])[2],((int16_t *)&x[i])[3],((int16_t*)&x[i])[4],((int16_t*)&x[i])[5],((int16_t*)&x[i])[6],((int16_t*)&x[i])[7]);
+  printf("\nY:");
+
+  for (i=0;i<64;i++)
+    printf("%d,%d,%d,%d,%d,%d,%d,%d,",((int16_t*)&y[i])[0],((int16_t *)&y[i])[1],((int16_t*)&y[i])[2],((int16_t *)&y[i])[3],((int16_t*)&y[i])[4],((int16_t *)&y[i])[5],((int16_t*)&y[i])[6],((int16_t *)&y[i])[7]);
+  printf("\n");
+  */
 
   reset_meas(&ts);
   for (i=0;i<10000;i++) {

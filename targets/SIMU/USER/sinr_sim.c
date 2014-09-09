@@ -201,7 +201,7 @@ void calc_path_loss(node_desc_t* enb_data, node_desc_t* ue_data, channel_desc_t 
   LOG_D(OCM,"dist %f, Path loss %f\n",dist,ch_desc->path_loss_dB);
 
   /* Calculating the angle in the range -pi to pi from the slope */
-  alpha = atan2((ue_data->x - enb_data->x), (ue_data->y - enb_data->y));
+  alpha = atan2((ue_data->y - enb_data->y),(ue_data->x - enb_data->x));
   if (alpha < 0)
     alpha += 2*PI; 
   //printf("angle in radians is %lf\n", ue_data[UE_id]->alpha_rad[eNB_id]);

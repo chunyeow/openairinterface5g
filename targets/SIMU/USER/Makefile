@@ -19,9 +19,9 @@ linux = $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
 
 ifdef DEBUG
 CFLAGS += -g -ggdb -DDEBUG_PHY -DDEBUG_MEAS
-CFLAGS += -DTRACE_RLC_UM_PDU
+#CFLAGS += -DTRACE_RLC_UM_PDU
 else 
-CFLAGE += -O2	
+CFLAGS += -O2	
 endif
 
 CFLAGS += -Wstrict-prototypes -Wpointer-sign

@@ -26,7 +26,7 @@
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
-#define DEBUG_DAC 1
+//#define DEBUG_DAC 1
 #include <math.h>
 #include <stdio.h>
 #include "PHY/TOOLS/defs.h"

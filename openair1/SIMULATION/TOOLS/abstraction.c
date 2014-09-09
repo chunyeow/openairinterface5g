@@ -85,33 +85,38 @@ void init_freq_channel(channel_desc_t *desc,uint16_t nb_rb,int16_t n_samples) {
 void freq_channel(channel_desc_t *desc,uint16_t nb_rb,int16_t n_samples) {
 
 
-  int16_t f;
+  int16_t f,f2,d;
   uint8_t aarx,aatx,l;
   double *clut,*slut;
   static int freq_channel_init=0;
+  static int n_samples_max=0;
 
  // printf("no of samples:%d,",n_samples);
  // printf("no of taps:%d,",(int)desc->nb_taps);
 
   if (freq_channel_init == 0) {
-    init_freq_channel(desc,nb_rb,n_samples);
+    // we are initializing the lut for the largets possible n_samples=12*nb_rb+1 
+    // if called with n_samples<12*nb_rb+1, we decimate the lut
+    n_samples_max=12*nb_rb+1;
+    init_freq_channel(desc,nb_rb,n_samples_max);
     freq_channel_init=1;
   }
+  d=n_samples_max/n_samples;
    
   start_meas(&desc->interp_freq);
-  for (f=-n_samples/2;f<n_samples/2;f++) {
-	clut = cos_lut[n_samples/2+f];
-        slut = sin_lut[n_samples/2+f];
+  for (f=-n_samples_max/2,f2=-n_samples/2;f<n_samples_max/2;f+=d,f2++) {
+	clut = cos_lut[n_samples_max/2+f];
+        slut = sin_lut[n_samples_max/2+f];
         
       for (aarx=0;aarx<desc->nb_rx;aarx++) {
 	for (aatx=0;aatx<desc->nb_tx;aatx++) {
-	  desc->chF[aarx+(aatx*desc->nb_rx)][n_samples/2+f].x=0.0;
-	  desc->chF[aarx+(aatx*desc->nb_rx)][n_samples/2+f].y=0.0;
+	  desc->chF[aarx+(aatx*desc->nb_rx)][n_samples/2+f2].x=0.0;
+	  desc->chF[aarx+(aatx*desc->nb_rx)][n_samples/2+f2].y=0.0;
 	  for (l=0;l<(int)desc->nb_taps;l++) {
 		
-	    desc->chF[aarx+(aatx*desc->nb_rx)][n_samples/2+f].x+=(desc->a[l][aarx+(aatx*desc->nb_rx)].x*clut[l]+
+	    desc->chF[aarx+(aatx*desc->nb_rx)][n_samples/2+f2].x+=(desc->a[l][aarx+(aatx*desc->nb_rx)].x*clut[l]+
 								  desc->a[l][aarx+(aatx*desc->nb_rx)].y*slut[l]);
-	    desc->chF[aarx+(aatx*desc->nb_rx)][n_samples/2+f].y+=(-desc->a[l][aarx+(aatx*desc->nb_rx)].x*slut[l]+
+	    desc->chF[aarx+(aatx*desc->nb_rx)][n_samples/2+f2].y+=(-desc->a[l][aarx+(aatx*desc->nb_rx)].x*slut[l]+
 								  desc->a[l][aarx+(aatx*desc->nb_rx)].y*clut[l]);
 	  }
 	}

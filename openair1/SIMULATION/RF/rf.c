@@ -46,7 +46,7 @@ extern int write_output(const char *,const char *,void *,int,int,char);
 
 //double pn[1024];
 
-#define DEBUG_RF 1
+//#define DEBUG_RF 1
 
   //free(input_data);
 void rf_rx(double **r_re,
