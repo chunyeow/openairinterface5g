@@ -102,7 +102,7 @@ int openair0_open(void)
     ioctl(openair0_fd, openair_GET_BIGSHMTOPS_KVIRT, &bigshm_top_kvirtptr[0]);
     ioctl(openair0_fd, openair_GET_PCI_INTERFACE_BOTS_KVIRT, &exmimo_pci_kvirt[0]);
     
-    printf("bigshm_top_kvirtptr (MAX_CARDS %d): %p  %p  %p  %p\n", MAX_CARDS,bigshm_top_kvirtptr[0], bigshm_top_kvirtptr[1], bigshm_top_kvirtptr[2], bigshm_top_kvirtptr[3]);
+    //printf("bigshm_top_kvirtptr (MAX_CARDS %d): %p  %p  %p  %p\n", MAX_CARDS,bigshm_top_kvirtptr[0], bigshm_top_kvirtptr[1], bigshm_top_kvirtptr[2], bigshm_top_kvirtptr[3]);
 
 
  
@@ -133,17 +133,20 @@ int openair0_open(void)
         openair0_exmimo_pci[card].exmimo_id_ptr      = (exmimo_id_t*)     (bigshm_top[card] +  (int32_t)exmimo_pci_kvirt[0].exmimo_id_ptr      - (int32_t)bigshm_top_kvirtptr[0]);
 #endif
 
+	/*
         printf("openair0_exmimo_pci.firmware_block_ptr (%p) =  bigshm_top(%p) + exmimo_pci_kvirt.firmware_block_ptr(%p) - bigshm_top_kvirtptr(%p)\n",
             openair0_exmimo_pci[card].firmware_block_ptr, bigshm_top, exmimo_pci_kvirt[card].firmware_block_ptr, bigshm_top_kvirtptr[card]);
         printf("card%d, openair0_exmimo_pci.exmimo_id_ptr      (%p) =  bigshm_top(%p) + exmimo_pci_kvirt.exmimo_id_ptr     (%p) - bigshm_top_kvirtptr(%p)\n",
             card, openair0_exmimo_pci[card].exmimo_id_ptr, bigshm_top[card], exmimo_pci_kvirt[card].exmimo_id_ptr, bigshm_top_kvirtptr[card]);
-        
-  //if (openair0_exmimo_pci[card].exmimo_id_ptr->board_swrev != BOARD_SWREV_CNTL2)
- //    {
-//       error("Software revision %d and firmware revision %d do not match, Please update either Software or Firmware",BOARD_SWREV_CNTL2,openair0_exmimo_pci[card].exmimo_id_ptr->board_swrev);
-//       return -5; 
- //    }
+	*/
 
+	/*
+	if (openair0_exmimo_pci[card].exmimo_id_ptr->board_swrev != BOARD_SWREV_CNTL2)
+	  {
+	    error("Software revision %d and firmware revision %d do not match, Please update either Software or Firmware",BOARD_SWREV_CNTL2,openair0_exmimo_pci[card].exmimo_id_ptr->board_swrev);
+	    return -5; 
+	  }
+	*/
 
         if ( openair0_exmimo_pci[card].exmimo_id_ptr->board_exmimoversion == 1)
             openair0_num_antennas[card] = 2;
@@ -219,12 +222,10 @@ int openair0_close(void)
     return 0;
 }
 
-/*
 int openair0_dump_config(int card)
 {
     return ioctl(openair0_fd, openair_DUMP_CONFIG, card);
 }
-*/
 
 int openair0_get_frame(int card)
 {
@@ -290,7 +291,7 @@ int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cf
   return(0);
 }
 
-int openair0_dump_config(openair0_config_t *openair0_cfg, int UE_flag)
+int openair0_config(openair0_config_t *openair0_cfg, int UE_flag)
 {
   int ret;
   int ant, card;
@@ -441,13 +442,13 @@ int openair0_reconfig(openair0_config_t *openair0_cfg)
 	switch (openair0_cfg[card].rxg_mode[ant]) {
 	default:
 	case max_gain:
-	  p_exmimo_config[card].rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAMax;
+	  p_exmimo_config->rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAMax;
 	  break;
 	case med_gain:
-	  p_exmimo_config[card].rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAMed;
+	  p_exmimo_config->rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAMed;
 	  break;
 	case byp_gain:
-	  p_exmimo_config[card].rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAByp;
+	  p_exmimo_config->rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAByp;
 	  break;
 	}
       }

@@ -1618,7 +1618,7 @@ static void *UE_thread_synch(void *arg) {
 	    for (i=0; i<openair0_cfg[rf_map[CC_id].card].tx_num_channels; i++) 
 	      openair0_cfg[rf_map[CC_id].card].tx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i]+openair_daq_vars.freq_offset;
 	  }
-	  //	    openair0_dump_config(&openair0_cfg[0],UE_flag);
+	  //	    openair0_config(&openair0_cfg[0],UE_flag);
 	  
 	  //	    rt_sleep_ns(FRAME_PERIOD);
 	} // freq_offset
@@ -2025,7 +2025,7 @@ static void *UE_thread(void *arg) {
 	    for (i=0; i<openair0_cfg[rf_map[CC_id].card].tx_num_channels; i++) 
 	      openair0_cfg[rf_map[CC_id].card].tx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i]+openair_daq_vars.freq_offset;
 	  }
-	  openair0_dump_config(&openair0_cfg[0],UE_flag);
+	  openair0_config(&openair0_cfg[0],UE_flag);
 #endif
 	  rt_sleep_ns(FRAME_PERIOD);
 	}
@@ -2808,7 +2808,7 @@ int main(int argc, char **argv) {
 #endif
   }
 #ifndef USRP
-  openair0_dump_config(&openair0_cfg[0],UE_flag);
+  openair0_config(&openair0_cfg[0],UE_flag);
 #endif
 
   /*  
