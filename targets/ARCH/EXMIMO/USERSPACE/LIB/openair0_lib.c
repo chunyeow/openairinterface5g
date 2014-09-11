@@ -247,7 +247,7 @@ int openair0_stop_without_reset(int card)
 }
 
 #define MY_RF_MODE      (RXEN + TXEN + TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM + DMAMODE_RX + DMAMODE_TX)
-#define RF_MODE_BASE    (LNA1ON +LNAMax + RFBBNORM)
+#define RF_MODE_BASE    (LNA1ON + RFBBNORM)
 
 int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cfg) {
 
@@ -368,13 +368,13 @@ int openair0_dump_config(openair0_config_t *openair0_cfg, int UE_flag)
 	switch (openair0_cfg[card].rxg_mode[ant]) {
 	default:
 	case max_gain:
-	  p_exmimo_config[card].rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAMax;
+	  p_exmimo_config->rf.rf_mode[ant] += LNAMax;
 	  break;
 	case med_gain:
-	  p_exmimo_config[card].rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAMed;
+	  p_exmimo_config->rf.rf_mode[ant] += LNAMed;
 	  break;
 	case byp_gain:
-	  p_exmimo_config[card].rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAByp;
+	  p_exmimo_config->rf.rf_mode[ant] += LNAByp;
 	  break;
 	}
       }
