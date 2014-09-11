@@ -897,7 +897,8 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
 
     MeasObj->measObjectId = 1;
     MeasObj->measObject.present = MeasObjectToAddMod__measObject_PR_measObjectEUTRA;
-    MeasObj->measObject.choice.measObjectEUTRA.carrierFreq = 36090;
+    MeasObj->measObject.choice.measObjectEUTRA.carrierFreq = 3350; //band 7, 2.68GHz 
+    //MeasObj->measObject.choice.measObjectEUTRA.carrierFreq = 36090; //band 33, 1.909GHz
     MeasObj->measObject.choice.measObjectEUTRA.allowedMeasBandwidth = AllowedMeasBandwidth_mbw25;
     MeasObj->measObject.choice.measObjectEUTRA.presenceAntennaPort1 = 1;
     MeasObj->measObject.choice.measObjectEUTRA.neighCellConfig.buf = CALLOC(1, sizeof(uint8_t));
@@ -1143,16 +1144,17 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
 
     memset(buffer, 0, RRC_BUF_SIZE);
 
-    size = do_RRCConnectionReconfiguration(enb_mod_idP, buffer, ue_mod_idP, rrc_eNB_get_next_transaction_identifier(enb_mod_idP),   //Transaction_id,
-	NULL, /// NN: do not reconfig srb1: SRB_configList2,
-        *DRB_configList, NULL,  // DRB2_list,
-        NULL,    // *sps_Config,
+    size = do_RRCConnectionReconfiguration(enb_mod_idP, buffer, ue_mod_idP, 
+					   rrc_eNB_get_next_transaction_identifier(enb_mod_idP),   //Transaction_id,
+					   NULL, /// NN: do not reconfig srb1: SRB_configList2,
+					   *DRB_configList, NULL,  // DRB2_list,
+					   NULL,    // *sps_Config,
 #ifdef EXMIMO_IOT
-        NULL, NULL, NULL, NULL,NULL,
+					   NULL, NULL, NULL, NULL,NULL,
 #else
-        physicalConfigDedicated[ue_mod_idP], MeasObj_list, ReportConfig_list, quantityConfig, MeasId_list,
+					   physicalConfigDedicated[ue_mod_idP], MeasObj_list, ReportConfig_list, quantityConfig, MeasId_list,
 #endif
-        mac_MainConfig, NULL, NULL, Sparams, rsrp, cba_RNTI, dedicatedInfoNASList);
+					   mac_MainConfig, NULL, NULL, Sparams, rsrp, cba_RNTI, dedicatedInfoNASList);
 
 #ifdef RRC_MSG_PRINT
     LOG_F(RRC,"[MSG] RRC Connection Reconfiguration\n");
@@ -2483,11 +2485,8 @@ void rrc_eNB_generate_RRCConnectionSetup(
     eNB_rrc_inst[enb_mod_idP].Srb0.Tx_buffer.payload_size =
         do_RRCConnectionSetup(enb_mod_idP,
                               (uint8_t *) eNB_rrc_inst[enb_mod_idP].Srb0.Tx_buffer.Payload,
-                              mac_xface->get_transmission_mode(enb_mod_idP,0,   //CC_id 0!!!!
-                                                               UE_RNTI
-                                                               (enb_mod_idP,
-                                                                   ue_mod_idP)),
-                                                                   ue_mod_idP,
+			      (mac_xface->lte_frame_parms->nb_antennas_tx==2)?2:1,
+			      ue_mod_idP,
                               rrc_eNB_get_next_transaction_identifier(enb_mod_idP),
                               mac_xface->lte_frame_parms,
                               SRB_configList, &eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP]);
@@ -3128,9 +3127,9 @@ int rrc_eNB_decode_dcch(
                                        ul_dcch_msg->message.choice.c1.choice.ueCapabilityInformation.criticalExtensions.
                                        choice.c1.choice.ueCapabilityInformation_r8.ue_CapabilityRAT_ContainerList.list.
                                        array[0]->ueCapabilityRAT_Container.size, 0, 0);
-#ifdef XER_PRINT
+		//#ifdef XER_PRINT
                 xer_fprint(stdout, &asn_DEF_UE_EUTRA_Capability, (void *)UE_EUTRA_Capability);
-#endif
+		//#endif
 
 #if defined(ENABLE_USE_MME)
                 if (EPC_MODE_ENABLED == 1) {

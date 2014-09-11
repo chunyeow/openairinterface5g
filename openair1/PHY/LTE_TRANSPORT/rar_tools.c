@@ -258,15 +258,14 @@ int generate_ue_ulsch_params_from_rar(PHY_VARS_UE *phy_vars_ue,
     }
   
     ulsch->uci_format = HLC_subband_cqi_nopmi;
-    //int flag_LA = 0;
-    //   if(flag_LA==1)
-    //  {
-    sinr_eff = sinr_eff_cqi_calc(phy_vars_ue, eNB_id);
-    
-    fill_CQI(ulsch->o,ulsch->uci_format,meas,eNB_id,0, transmission_mode,sinr_eff);
-    //  }
-    // else
-    // fill_CQI(ulsch->o,ulsch->uci_format,meas,eNB_id,transmission_mode);
+    /*
+    if(flag_LA==1)
+      sinr_eff = sinr_eff_cqi_calc(phy_vars_ue, eNB_id);
+    else
+      sinr_eff = meas->wideband_cqi_avg[eNB_id];
+    */
+    fill_CQI(ulsch->o,ulsch->uci_format,meas,eNB_id,0, transmission_mode,phy_vars_ue->sinr_eff);
+
     if (((phy_vars_ue->frame_tx % 100) == 0) || (phy_vars_ue->frame_tx < 10)) 
       print_CQI(ulsch->o,ulsch->uci_format,eNB_id);
   }

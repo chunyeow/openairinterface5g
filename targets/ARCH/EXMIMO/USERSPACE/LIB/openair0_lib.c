@@ -356,14 +356,14 @@ int openair0_dump_config(openair0_config_t *openair0_cfg, int UE_flag)
 	p_exmimo_config->rf.rf_mode[ant] += (TXEN + DMAMODE_TX + TXLPFNORM + TXLPFEN + tx_filter);
 	p_exmimo_config->rf.rf_freq_tx[ant] = (unsigned int)openair0_cfg[card].tx_freq[ant];
 	p_exmimo_config->rf.tx_gain[ant][0] = (unsigned int)openair0_cfg[card].tx_gain[ant];
-	printf("openair0 : programming TX antenna %d (freq %u, gain %d)\n",ant,p_exmimo_config->rf.rf_freq_tx[ant],p_exmimo_config->rf.tx_gain[ant][0]);
+	printf("openair0 : programming card %d TX antenna %d (freq %u, gain %d)\n",card,ant,p_exmimo_config->rf.rf_freq_tx[ant],p_exmimo_config->rf.tx_gain[ant][0]);
       }
       if (openair0_cfg[card].rx_freq[ant]) {
 	p_exmimo_config->rf.rf_mode[ant] += (RXEN + DMAMODE_RX + RXLPFNORM + RXLPFEN + rx_filter);
 	
 	p_exmimo_config->rf.rf_freq_rx[ant] = (unsigned int)openair0_cfg[card].rx_freq[ant];
 	p_exmimo_config->rf.rx_gain[ant][0] = (unsigned int)openair0_cfg[card].rx_gain[ant];
-	printf("openair0 : programming RX antenna %d (freq %u, gain %d)\n",ant,p_exmimo_config->rf.rf_freq_rx[ant],p_exmimo_config->rf.rx_gain[ant][0]);
+	printf("openair0 : programming card %d RX antenna %d (freq %u, gain %d)\n",card,ant,p_exmimo_config->rf.rf_freq_rx[ant],p_exmimo_config->rf.rx_gain[ant][0]);
 	
 	switch (openair0_cfg[card].rxg_mode[ant]) {
 	default:
@@ -408,6 +408,55 @@ int openair0_dump_config(openair0_config_t *openair0_cfg, int UE_flag)
   
   return(0);
 }
+
+int openair0_reconfig(openair0_config_t *openair0_cfg)
+{
+  int ret;
+  int ant, card;
+
+  exmimo_config_t         *p_exmimo_config;
+  exmimo_id_t             *p_exmimo_id;
+
+  if (!openair0_cfg) {
+    printf("Error, openair0_cfg is null!!\n");
+    return(-1);
+  }
+
+  for (card=0; card<openair0_num_detected_cards; card++) {
+
+    p_exmimo_config = openair0_exmimo_pci[card].exmimo_config_ptr;
+    p_exmimo_id     = openair0_exmimo_pci[card].exmimo_id_ptr;
+    
+    for (ant=0;ant<4;ant++) {
+      if (openair0_cfg[card].tx_freq[ant]) {
+	p_exmimo_config->rf.rf_freq_tx[ant] = (unsigned int)openair0_cfg[card].tx_freq[ant];
+	p_exmimo_config->rf.tx_gain[ant][0] = (unsigned int)openair0_cfg[card].tx_gain[ant];
+	//printf("openair0 : programming TX antenna %d (freq %u, gain %d)\n",ant,p_exmimo_config->rf.rf_freq_tx[ant],p_exmimo_config->rf.tx_gain[ant][0]);
+      }
+      if (openair0_cfg[card].rx_freq[ant]) {
+	p_exmimo_config->rf.rf_freq_rx[ant] = (unsigned int)openair0_cfg[card].rx_freq[ant];
+	p_exmimo_config->rf.rx_gain[ant][0] = (unsigned int)openair0_cfg[card].rx_gain[ant];
+	//printf("openair0 : programming RX antenna %d (freq %u, gain %d)\n",ant,p_exmimo_config->rf.rf_freq_rx[ant],p_exmimo_config->rf.rx_gain[ant][0]);
+	
+	switch (openair0_cfg[card].rxg_mode[ant]) {
+	default:
+	case max_gain:
+	  p_exmimo_config[card].rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAMax;
+	  break;
+	case med_gain:
+	  p_exmimo_config[card].rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAMed;
+	  break;
+	case byp_gain:
+	  p_exmimo_config[card].rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAByp;
+	  break;
+	}
+      }
+    }
+  }
+  
+  return(0);
+}
+
 
 unsigned int *openair0_daq_cnt() {
 

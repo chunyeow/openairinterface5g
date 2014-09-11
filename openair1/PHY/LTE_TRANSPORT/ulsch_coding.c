@@ -892,11 +892,14 @@ int ulsch_encoding_emul(uint8_t *ulsch_buffer,
 	eNB_id,phy_vars_ue->Mod_id, harq_pid, rnti,ulsch->o_ACK[0],ulsch->o_ACK[1]);
 
   if (ulsch->O>0) {
-    // int flag_LA =0;
+    /*
+    if(flag_LA==1)
+      sinr_eff = sinr_eff_cqi_calc(phy_vars_ue, eNB_id);
+    else
+      sinr_eff = meas->wideband_cqi_avg[eNB_id];
+    */
    
-    sinr_eff = sinr_eff_cqi_calc(phy_vars_ue, eNB_id);
-   
-    fill_CQI(ulsch->o,ulsch->uci_format,meas,eNB_id,rnti,tmode,sinr_eff);
+    fill_CQI(ulsch->o,ulsch->uci_format,meas,eNB_id,rnti,tmode,phy_vars_ue->sinr_eff);
        //LOG_D(PHY,"UE CQI\n");
     //    print_CQI(ulsch->o,ulsch->uci_format,eNB_id);
 

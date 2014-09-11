@@ -116,7 +116,7 @@ void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,u
       
     phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH += 	((alpha_lut[phy_vars_ue->lte_frame_parms.ul_power_control_config_common.alpha]*PL)/100);
     phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH += 	phy_vars_ue->lte_frame_parms.ul_power_control_config_common.p0_NominalPUSCH;
-    phy_vars_ue->ulsch_ue[eNB_id]->PHR       =  15-phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH;  // 15 dBm, FIX ME should be P0_max
+    phy_vars_ue->ulsch_ue[eNB_id]->PHR       =  phy_vars_ue->tx_power_max_dBm-phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH;  // 15 dBm, FIX ME should be P0_max
     
     if (phy_vars_ue->ulsch_ue[eNB_id]->PHR < -23)
       phy_vars_ue->ulsch_ue[eNB_id]->PHR = -23;

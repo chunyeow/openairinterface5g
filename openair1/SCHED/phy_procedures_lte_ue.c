@@ -137,7 +137,7 @@ extern struct timing_info_t {
 */
 
 #ifdef EXMIMO
-extern uint32_t carrier_freq[4];
+extern uint32_t downlink_frequency[MAX_NUM_CCs][4];
 #endif
 
 #ifdef USER_MODE
@@ -1390,7 +1390,7 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
   LTE_DL_FRAME_PARMS *frame_parms=&phy_vars_ue->lte_frame_parms;
   //  int aa;
 #if defined(EXMIMO) && defined(DRIVER2013)
-  exmimo_config_t *p_exmimo_config = openair0_exmimo_pci[card].exmimo_config_ptr;
+  exmimo_config_t *p_exmimo_config = openair0_exmimo_pci[0].exmimo_config_ptr;
   int aa;
 #endif
   int Mod_id=phy_vars_ue->Mod_id;
@@ -1423,7 +1423,7 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
   if (l==0) {
     // UE measurements 
     if (abstraction_flag==0) {
-      //LOG_D(PHY,"Calling measurements with rxdata %p\n",phy_vars_ue->lte_ue_common_vars.rxdata);
+      LOG_D(PHY,"Calling measurements subframe %d, rxdata %p\n",subframe_rx,phy_vars_ue->lte_ue_common_vars.rxdata);
 
       lte_ue_measurements(phy_vars_ue,
 			  (subframe_rx*frame_parms->samples_per_tti+phy_vars_ue->rx_offset)%(frame_parms->samples_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME),
@@ -1481,7 +1481,7 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
 			slot_rx,
 			abstraction_flag);
 
-    phy_vars_ue->sinr_eff =  sinr_eff_cqi_calc(phy_vars_ue, 0);
+    //phy_vars_ue->sinr_eff =  sinr_eff_cqi_calc(phy_vars_ue, 0);
 
   }  
 
@@ -1509,14 +1509,14 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
                          0,
                          16384);
     
-    if (openair_daq_vars.auto_freq_correction == 1) {
+    /* if (openair_daq_vars.auto_freq_correction == 1) {
       if (frame_rx % 100 == 0) {
 	if ((phy_vars_ue->lte_ue_common_vars.freq_offset>100) && (openair_daq_vars.freq_offset < 1000)) {
 	  openair_daq_vars.freq_offset+=100;
 #if defined(EXMIMO) && defined(DRIVER2013)
 	  for (aa = 0; aa<4; aa++) { 
-	    p_exmimo_config->rf.rf_freq_rx[aa] = carrier_freq[aa]+=openair_daq_vars.freq_offset;
-	    p_exmimo_config->rf.rf_freq_tx[aa] = carrier_freq[aa]+=openair_daq_vars.freq_offset;
+	    p_exmimo_config->rf.rf_freq_rx[aa] = downlink_frequency[aa]+=openair_daq_vars.freq_offset;
+	    p_exmimo_config->rf.rf_freq_tx[aa] = downlink_frequency[aa]+=openair_daq_vars.freq_offset;
 	  }
 #endif
  	}
@@ -1524,13 +1524,13 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
 	  openair_daq_vars.freq_offset-=100;
 #if defined(EXMIMO) && defined(DRIVER2013)
 	  for (aa = 0; aa<4; aa++) { 
-	    p_exmimo_config->rf.rf_freq_rx[aa] = carrier_freq[aa]+=openair_daq_vars.freq_offset;
-	    p_exmimo_config->rf.rf_freq_tx[aa] = carrier_freq[aa]+=openair_daq_vars.freq_offset;
+	    p_exmimo_config->rf.rf_freq_rx[aa] = downlink_frequency[aa]+=openair_daq_vars.freq_offset;
+	    p_exmimo_config->rf.rf_freq_tx[aa] = downlink_frequency[aa]+=openair_daq_vars.freq_offset;
 	  }
 #endif
 	}
       }
-    }
+  }*/
 
   }
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_MEASUREMENT_PROCEDURES, VCD_FUNCTION_OUT);
@@ -3414,7 +3414,7 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_LTE,1);
 #ifdef EXMIMO
 #ifndef USRP
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[card].rxcnt_ptr[0]));
+  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[0].rxcnt_ptr[0]));
 #endif
 #endif
   start_meas(&phy_vars_ue->phy_proc);	

@@ -520,7 +520,7 @@ typedef struct{
   uint8_t bsr_info[MAX_NUM_LCGID];
 
   /// phr information
-  uint8_t phr_info;
+  int8_t phr_info;
 
   //dl buffer info
   uint32_t dl_buffer_info[MAX_NUM_LCID];

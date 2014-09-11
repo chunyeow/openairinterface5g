@@ -30,6 +30,9 @@
  #include "openair0_lib.h"
 #include "gain_control.h"
 //#define DEBUG_PHY
+#ifdef DEBUG_PHY
+#include "UTIL/LOG/log_extern.h"
+#endif
 
 void gain_control_all (unsigned int rx_power_fil_dB, unsigned int card) {
   unsigned int ant;
@@ -84,7 +87,7 @@ void gain_control (unsigned int rx_power_fil_dB, unsigned int ant, unsigned int 
     }
 
 #ifdef DEBUG_PHY
-    LOG_D(PHY,"AGC for chain %d: rx_power_fil_dB=%d, rx_gain=%d, LNA=%d (1=Byp,2=Med,3=Max)\n",ant,rx_power_fil_dB,p_exmimo_config->rf.rx_gain[ant][0],(p_exmimo_config->rf.rf_mode&LNAGAINMASK)>>14);
+    LOG_D(PHY,"AGC for chain %d: rx_power_fil_dB=%d, rx_gain=%d, LNA=%d (1=Byp,2=Med,3=Max)\n",ant,rx_power_fil_dB,p_exmimo_config->rf.rx_gain[ant][0],(p_exmimo_config->rf.rf_mode[ant]&LNAGAINMASK)>>14);
 #endif //DEBUG_PHY
 }
 

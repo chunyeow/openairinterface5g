@@ -99,7 +99,7 @@ void rx_sdu(module_id_t enb_mod_idP,int CC_id,frame_t frameP,rnti_t rntiP,uint8_
     switch (rx_ces[i]) { // implement and process BSR + CRNTI +
     case POWER_HEADROOM:
       if (UE_id != UE_INDEX_INVALID ){
-	UE_list->UE_template[CC_id][UE_id].phr_info =  (payload_ptr[0] & 0x3f);// - PHR_MAPPING_OFFSET;
+	UE_list->UE_template[CC_id][UE_id].phr_info =  (payload_ptr[0] & 0x3f) - PHR_MAPPING_OFFSET;
 	LOG_D(MAC, "[eNB] MAC CE_LCID %d : Received PHR PH = %d (db)\n", rx_ces[i], UE_list->UE_template[CC_id][UE_id].phr_info);
       }
       payload_ptr+=sizeof(POWER_HEADROOM_CMD);
@@ -490,7 +490,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
   uint8_t                 status         = 0;
   uint8_t                 rb_table_index = -1;
   uint16_t                TBS,i;
-  uint32_t                buffer_occupancy;
+  int32_t                buffer_occupancy;
   uint32_t                tmp_bsr;
   uint32_t                cqi_req,cshift,ndi,mcs,rballoc;
 
@@ -521,25 +521,25 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
       if (eNB_UE_stats==NULL)
         mac_xface->macphy_exit("[MAC][eNB] Cannot find eNB_UE_stats\n");
 
-      LOG_I(MAC,"[eNB %d] Scheduler Frame %d, subframeP %d, nCCE %d: Checking ULSCH next UE_id %d mode id %d (rnti %x,mode %s), format 0\n",
+      LOG_D(MAC,"[eNB %d] Scheduler Frame %d, subframeP %d, nCCE %d: Checking ULSCH next UE_id %d mode id %d (rnti %x,mode %s), format 0\n",
 	    module_idP,frameP,subframeP,*nCCE,UE_id,module_idP, rnti,mode_string[eNB_UE_stats->mode]);
 
       if (eNB_UE_stats->mode == PUSCH) { // ue has a ulsch channel
 	int8_t ret;
 	// Get candidate harq_pid from PHY
 	ret = mac_xface->get_ue_active_harq_pid(module_idP,CC_id,rnti,frameP,subframeP,&harq_pid,&round,1);
-	LOG_I(MAC,"Got harq_pid %d, round %d, UE_id %d (UE_to_be_scheduled %d)\n",harq_pid,round,UE_id,
+	LOG_D(MAC,"Got harq_pid %d, round %d, UE_id %d (UE_to_be_scheduled %d)\n",harq_pid,round,UE_id,
 	      UE_is_to_be_scheduled(module_idP,CC_id,UE_id));
 
 	/* [SR] 01/07/13: Don't schedule UE if we cannot get harq pid */
-	//#ifndef EXMIMO_IOT
-	//	if ((((UE_is_to_be_scheduled(module_idP,CC_id,UE_id)>0)) || (round>0) || ((frameP%10)==0)) && (ret == 0))
+#ifndef EXMIMO_IOT
+	if ((((UE_is_to_be_scheduled(module_idP,CC_id,UE_id)>0)) || (round>0) || ((frameP%10)==0)) && (ret == 0))
 	  // if there is information on bsr of DCCH, DTCH or if there is UL_SR, or if there is a packet to retransmit, or we want to schedule a periodic feedback every 10 frames
-	//#else
+#else
 	  if (round==0)
-	    //#endif
+#endif
 	    {
-	      LOG_D(MAC,"[eNB %d][PUSCH %d] Frame %d subframeP %d Scheduling UE %d round %d (SR %d)\n",
+	      LOG_I(MAC,"[eNB %d][PUSCH %d] Frame %d subframeP %d Scheduling UE %d round %d (SR %d)\n",
                     module_idP,harq_pid,frameP,subframeP,UE_id,round,
                     UE_template->ul_SR);
 
@@ -636,37 +636,38 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		
 		UE_template->nb_rb_ul[harq_pid] = rb_table[rb_table_index]; //store for possible retransmission
 
-		buffer_occupancy -= mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]);
-		i = bytes_to_bsr_index((int32_t)buffer_occupancy);
-
-		// Adjust BSR entries for LCGIDs
-		if (i>0) {
-		  if (UE_template->bsr_info[LCGID0] <= i) {
-		    tmp_bsr = BSR_TABLE[UE_template->bsr_info[LCGID0]];
+		// the max TBS that could be served is : mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]
+		TBS = mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]);
+		buffer_occupancy -= TBS;
+					  
+		// Adjust BSR entries for LCGIDs 
+		if (buffer_occupancy > 0 ) { // could not serve all the uplink traffic 
+		  if (BSR_TABLE[UE_template->bsr_info[LCGID0]] <=  TBS ) {
+		    tmp_bsr = BSR_TABLE[UE_template->bsr_info[LCGID0]]; // serving this amout of  bytes
 		    UE_template->bsr_info[LCGID0] = 0;
-		    if (BSR_TABLE[UE_template->bsr_info[LCGID1]] <= (buffer_occupancy-tmp_bsr)) {
+		    if (BSR_TABLE[UE_template->bsr_info[LCGID1]] <= (TBS-tmp_bsr)) {
 		      tmp_bsr += BSR_TABLE[UE_template->bsr_info[LCGID1]];
 		      UE_template->bsr_info[LCGID1] = 0;
-		      if (BSR_TABLE[UE_template->bsr_info[LCGID2]] <= (buffer_occupancy-tmp_bsr)) {
+		      if (BSR_TABLE[UE_template->bsr_info[LCGID2]] <= (TBS-tmp_bsr)) {
 			tmp_bsr += BSR_TABLE[UE_template->bsr_info[LCGID2]];
 			UE_template->bsr_info[LCGID2] = 0;
-			if (BSR_TABLE[UE_template->bsr_info[LCGID3]] <= (buffer_occupancy-tmp_bsr)) {
+			if (BSR_TABLE[UE_template->bsr_info[LCGID3]] <= (TBS-tmp_bsr)) {
 			  tmp_bsr += BSR_TABLE[UE_template->bsr_info[LCGID3]];
 			  UE_template->bsr_info[LCGID3] = 0;
 			} else {
-			  UE_template->bsr_info[LCGID3] = bytes_to_bsr_index((int32_t)BSR_TABLE[UE_template->bsr_info[LCGID3]] - ((int32_t)buffer_occupancy - (int32_t)tmp_bsr));
+			  UE_template->bsr_info[LCGID3] = bytes_to_bsr_index((int32_t)BSR_TABLE[UE_template->bsr_info[LCGID3]] - ((int32_t) TBS - (int32_t)tmp_bsr));
 			}
 		      }
 		      else {
-			UE_template->bsr_info[LCGID2] = bytes_to_bsr_index((int32_t)BSR_TABLE[UE_template->bsr_info[LCGID2]] - ((int32_t)buffer_occupancy -(int32_t)tmp_bsr));
+			UE_template->bsr_info[LCGID2] = bytes_to_bsr_index((int32_t)BSR_TABLE[UE_template->bsr_info[LCGID2]] - ((int32_t)TBS - (int32_t)tmp_bsr));
 		      }
 		    }
 		    else {
-		      UE_template->bsr_info[LCGID1] = bytes_to_bsr_index((int32_t)BSR_TABLE[UE_template->bsr_info[LCGID1]] - (int32_t)buffer_occupancy);
+		      UE_template->bsr_info[LCGID1] = bytes_to_bsr_index((int32_t)BSR_TABLE[UE_template->bsr_info[LCGID1]] - ((int32_t)TBS - (int32_t)tmp_bsr));
 		    }
 		  }
 		  else {
-		    UE_template->bsr_info[LCGID0] = bytes_to_bsr_index((int32_t)BSR_TABLE[UE_template->bsr_info[LCGID0]] - (int32_t)buffer_occupancy);
+		    UE_template->bsr_info[LCGID0] = bytes_to_bsr_index((int32_t)BSR_TABLE[UE_template->bsr_info[LCGID0]] - (int32_t)TBS);
 		  }
 		}
 		else {  // we have flushed all buffers so clear bsr

@@ -66,6 +66,9 @@ int openair0_close(void);
 int openair0_dump_config(openair0_config_t *openair0_cfg, int UE_flag);
 //int openair0_dump_config(int card);
 
+// reconfigures the card (frequencies and gains only, does not do IOCTL)
+int openair0_reconfig(openair0_config_t *openair0_cfg);
+
 // triggers recording of exactly 1 frame
 // in case of synchronized multiple cards, send this only to the master card
 // return 0 on success

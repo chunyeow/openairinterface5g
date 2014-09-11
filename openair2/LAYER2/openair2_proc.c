@@ -110,7 +110,7 @@ int dump_eNB_l2_stats(char *buffer, int length){
     }
     len += sprintf(&buffer[len],"\n");
 
-    for (UE_id=UE_list->head;UE_id>0;UE_id=UE_list->next[UE_id]) {
+    for (UE_id=UE_list->head;UE_id>=0;UE_id=UE_list->next[UE_id]) {
       for (i=0;i<UE_list->numactiveCCs[UE_id];i++) {
 	CC_id=UE_list->ordered_CCids[i][UE_id];
 	UE_list->eNB_UE_stats[CC_id][UE_id].dlsch_bitrate=((UE_list->eNB_UE_stats[CC_id][UE_id].TBS*8)/((eNB->frame + 1)*10));
@@ -118,7 +118,7 @@ int dump_eNB_l2_stats(char *buffer, int length){
 	UE_list->eNB_UE_stats[CC_id][UE_id].total_overhead_bytes+=	UE_list->eNB_UE_stats[CC_id][UE_id].overhead_bytes;
 	UE_list->eNB_UE_stats[CC_id][UE_id].avg_overhead_bytes=((UE_list->eNB_UE_stats[CC_id][UE_id].total_overhead_bytes*8)/((eNB->frame + 1)*10));
 
-	len += sprintf(&buffer[len],"UE %d %s, RNTI %x : CQI %d, MCS(%d->%d), RB(tx %d, retx %d, total %d), ncce (tx %d, retx %d) \n ",
+	len += sprintf(&buffer[len],"UE %d %s, RNTI %x : CQI %d, MCS1 %d, MCS2 %d, RB (tx %d, retx %d, total %d), ncce (tx %d, retx %d) \n",
 		       UE_id,
 		       map_int_to_str(rrc_status_names, UE_list->eNB_UE_stats[CC_id][UE_id].rrc_status),
 		       UE_list->eNB_UE_stats[CC_id][UE_id].crnti,
@@ -135,7 +135,7 @@ int dump_eNB_l2_stats(char *buffer, int length){
 	len += sprintf(&buffer[len],
                        "[MAC] DLSCH bitrate (TTI %d, avg %d), Transmitted bytes "
                        "(TTI %d, total %"PRIu64"), Total Transmitted PDU %d, Overhead "
-                       "(TTI %"PRIu64", total %"PRIu64", avg %"PRIu64,
+                       "(TTI %"PRIu64", total %"PRIu64", avg %"PRIu64")\n",
 		       UE_list->eNB_UE_stats[CC_id][UE_id].dlsch_bitrate,
 		       UE_list->eNB_UE_stats[CC_id][UE_id].total_dlsch_bitrate,
 		       UE_list->eNB_UE_stats[CC_id][UE_id].TBS,
@@ -145,6 +145,7 @@ int dump_eNB_l2_stats(char *buffer, int length){
 		       UE_list->eNB_UE_stats[CC_id][UE_id].total_overhead_bytes,
 		       UE_list->eNB_UE_stats[CC_id][UE_id].avg_overhead_bytes
 		       );
+	len+= sprintf(&buffer[len],"Received PHR PH = %d (db)\n", UE_list->UE_template[CC_id][UE_id].phr_info);
 	
       }
     }
