@@ -401,7 +401,7 @@ int main(int argc, char **argv) {
   PHY_vars_UE->lte_frame_parms.MBSFN_config[0].fourFrames_flag = 0;
   PHY_vars_UE->lte_frame_parms.MBSFN_config[0].mbsfn_SubframeConfig=0xff; // activate all possible subframes
 
-  fill_eNB_dlsch_MCH(PHY_vars_eNB,mcs,1,0);
+  fill_eNB_dlsch_MCH(PHY_vars_eNB,mcs,1,0,0);
   fill_UE_dlsch_MCH(PHY_vars_UE,mcs,1,0,0);
   if (is_pmch_subframe(0,subframe,&PHY_vars_eNB->lte_frame_parms)==0) {
     printf("eNB is not configured for MBSFN in subframe %d\n",subframe);
@@ -423,8 +423,9 @@ int main(int argc, char **argv) {
 
   snr_step = input_snr_step;
   for (SNR=snr0;SNR<snr1;SNR+=snr_step) {
-    PHY_vars_UE->frame=0;
-    PHY_vars_eNB->frame=0;
+    PHY_vars_UE->frame_tx=0;
+    PHY_vars_eNB->proc[subframe].frame_tx=0;
+   
     errs[0]=0;
     errs[1]=0;
     errs[2]=0;
@@ -446,7 +447,7 @@ int main(int argc, char **argv) {
       eNB2UE->first_run = 1;
       memset(&PHY_vars_eNB->lte_eNB_common_vars.txdataF[0][0][0],0,FRAME_LENGTH_COMPLEX_SAMPLES_NO_PREFIX*sizeof(mod_sym_t));
 
-      generate_mch(PHY_vars_eNB,subframe,input_buffer);
+   generate_mch(PHY_vars_eNB,subframe,input_buffer,0);
 
       PHY_ofdm_mod(PHY_vars_eNB->lte_eNB_common_vars.txdataF[0][0],        // input,
 		   txdata[0],         // output
@@ -527,7 +528,7 @@ int main(int argc, char **argv) {
 								 PHY_vars_UE->dlsch_ue_MCH[0]->harq_processes[0]->rb_alloc,
 								 get_Qm(PHY_vars_UE->dlsch_ue_MCH[0]->harq_processes[0]->mcs),
 								 1,2,
-								 PHY_vars_UE->frame,subframe);
+								 PHY_vars_UE->frame_tx,subframe);
       dlsch_unscrambling(&PHY_vars_UE->lte_frame_parms,1,PHY_vars_UE->dlsch_ue_MCH[0],
 			 PHY_vars_UE->dlsch_ue_MCH[0]->harq_processes[0]->G,
 			 PHY_vars_UE->lte_ue_pdsch_vars_MCH[0]->llr[0],0,subframe<<1);
@@ -543,8 +544,8 @@ int main(int argc, char **argv) {
 	printf("MCH decoding returns %d\n",ret);
       if (ret == (1+PHY_vars_UE->dlsch_ue_MCH[0]->max_turbo_iterations))
 	errs[0]++;
-      PHY_vars_UE->frame++;
-      PHY_vars_eNB->frame++;
+      PHY_vars_UE->frame_tx++;
+      PHY_vars_eNB->proc[subframe].frame_tx++;
     }
     printf("errors %d/%d (Pe %e)\n",errs[round],trials,(double)errs[round]/trials);
 

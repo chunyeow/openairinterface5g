@@ -4,6 +4,7 @@ include $(OPENAIR_TARGETS)/Makerules
 default: oaisim
 
 include $(OPENAIR_TARGETS)/Makefile.common
+include $(OPENAIR_TARGETS)/Makedirectives
 
 TOP_DIR               = $(OPENAIR1_DIR)
 OPENAIR1_TOP          = $(OPENAIR1_DIR)
@@ -16,12 +17,18 @@ CPUFLAGS = -mmmx -msse -msse2 -msse4.1 -march=native
 CPUFLAGS += $(shell if grep --silent ssse3 /proc/cpuinfo ; then echo "-mssse3" ; else if grep --silent User\ Mode\ Linux /proc/cpuinfo ; then echo "-mssse3" ; else echo ""; fi; fi)
 CPUFLAGS += $(shell if grep --silent -w sse4 /proc/cpuinfo ; then echo "-msse4" ; else echo ""; fi)
 linux = $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
-
-ifdef DEBUG
-CFLAGS += -g -ggdb -DDEBUG_PHY -DDEBUG_MEAS
-#CFLAGS += -DTRACE_RLC_UM_PDU
-else 
 CFLAGS += -O2	
+
+ifeq ($(DEBUG),1)	
+CFLAGS += -g -ggdb -DDEBUG_PHY -DDEBUG_MEAS
+CFLAGS += -DRRC_MSG_PRINT
+CFLAGS += -DPDCP_MSG_PRINT
+#CFLAGS += -DTRACE_RLC_UM_PDU
+endif 
+
+ifeq ($(MSG_PRINT),1)
+CFLAGS += -DRRC_MSG_PRINT
+CFLAGS += -DPDCP_MSG_PRINT
 endif
 
 CFLAGS += -Wstrict-prototypes -Wpointer-sign
@@ -40,9 +47,6 @@ CFLAGS += -DMAC_CONTEXT=1 -DPHY_CONTEXT=1 -DPHY_ABSTRACTION #-DPHY_ABSTRACTION_U
 CFLAGS += -DNEW_FFT
 #CFLAGS += -DLLR8
 CFLAGS += -DPACKAGE_NAME='"oaisim"'
-ifndef OPENAIR2
-OPENAIR2=1
-endif
 
 ifndef OPENAIR_EMU
 export OPENAIR_EMU=1
@@ -59,19 +63,15 @@ endif
 # activate OCG and libxml only under linux
 ifeq ($(linux),1)
 CFLAGS += $(LIBXML2_CFLAGS) -L/usr/local/lib -I/usr/include/atlas -L/usr/X11R6/lib
-OCG_FLAG = 1
-cygwin=0
+OCG_FLAG =1
 CFLAGS += -DLINUX
-else
-cygwin=1
-OCG_FLAG = 0
 endif
 
 ifdef SMBV
 CFLAGS += -DSMBV
 endif
 
-ifdef XFORMS
+ifeq ($(XFORMS), 1)
 CFLAGS += -DXFORMS
 endif
 
@@ -101,9 +101,6 @@ else
   endif
 endif
 
-ifdef JF
-CFLAGS += -DJUMBO_FRAME
-endif
 ifdef LS
 CFLAGS += -DLARGE_SCALE
 endif
@@ -134,9 +131,6 @@ ifeq ($(STOP_ON_IP_TRAFFIC_OVERLOAD), 1)
 CFLAGS += -DSTOP_ON_IP_TRAFFIC_OVERLOAD
 endif
 
-ifeq ($(ENABLE_RAL), 1)
-CFLAGS += -DENABLE_RAL
-endif
 
 ifeq ($(MIH_C_MEDIEVAL_EXTENSIONS), 1)
 CFLAGS += -DMIH_C_MEDIEVAL_EXTENSIONS
@@ -235,7 +229,7 @@ OAISIM_OBJS_COMMON += $(OPENAIR_TARGETS)/SIMU/USER/event_handler.o
 
 OAISIM_OBJS = $(OPENAIR_TARGETS)/SIMU/USER/oaisim.o
 
-ifdef XFORMS
+ifeq ($(XFORMS), 1)	
 TOOLS_OBJS += $(OPENAIR1_DIR)/PHY/TOOLS/lte_phy_scope.o
 endif
 
@@ -460,6 +454,7 @@ print:
 	@echo "IS_REL10 is "		$(IS_REL10)
 	@echo "ENABLE_DB is "		$(ENABLE_DB)
 	@echo "Libs are"			$(LIBS)
+	@echo "NAS"			$(NAS)	
 
 showcflags:
 	@echo oaisim cflags: $(CFLAGS)

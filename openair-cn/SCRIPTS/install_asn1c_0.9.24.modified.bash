@@ -29,13 +29,10 @@
 ################################################################################
 # Tested on ubuntu 12.04 with updates 07 november 2013
 
-
-sudo rm -Rf /usr/local/src/asn1c-r1516
-sudo svn co https://github.com/vlm/asn1c/trunk  /usr/local/src/asn1c-r1516 -r 1516
+$1 rm -Rf /usr/local/src/asn1c-r1516
+$1 svn co https://github.com/vlm/asn1c/trunk  /usr/local/src/asn1c-r1516 -r 1516  > /tmp/install_log.txt
 cd /usr/local/src/asn1c-r1516
-sudo patch -p0 < $OPENAIRCN_DIR/S1AP/MESSAGES/ASN1/asn1cpatch.p0
-sudo ./configure
-sudo make
-make install
-cd -
-
+$1 patch -p0 < $OPENAIRCN_DIR/S1AP/MESSAGES/ASN1/asn1cpatch.p0  > /tmp/install_log.txt
+$1 ./configure  > /tmp/install_log.txt
+$1 make  > /tmp/install_log.txt
+$1 make install  > /tmp/install_log.txt

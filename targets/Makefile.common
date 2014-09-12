@@ -1,4 +1,6 @@
+
 # This file gathers compilation directive shared between lte-softmodem and oaisim
+
 COMMON_UTILS_DIR    = $(OPENAIR_HOME)/common/utils
 UE_NAS_DIR          = $(OPENAIR_HOME)/openair-cn/NAS
 S1AP_DIR            = $(OPENAIR_HOME)/openair-cn/S1AP
@@ -40,6 +42,33 @@ ITTI_MESSAGES_FILE	= $(ITTI_DIR)/intertask_interface_types.h
 include $(COMMON_UTILS_DIR)/Makefile.inc
 include $(OPENAIR_TARGETS)/COMMON/Makefile.inc
 include $(OPENAIR2_DIR)/NAS/Makefile.inc
+
+ifeq ($(SECU), 1)	
+ifeq ($(NETTLE_FOUND), 0)
+@echo "Nettle library >= 2.5 is not installed on your system, nettle-dev lib needed, continuing with security disabled"
+SECU=0
+else
+ifeq ($(OPENSSL_FOUND), 0)
+@echo "openssl library is not installed on your system, openssl lib needed, continuing with security disabled"
+SECU=0
+else
+CFLAGS += -DENABLE_SECURITY
+LIBS += $(OPENSSL_LIBS) $(NETTLE_LIBS)
+endif
+endif
+endif
+
+ifdef JF
+CFLAGS += -DJUMBO_FRAME
+endif
+
+ifeq ($(ENABLE_RAL), 1)
+CFLAGS += -DENABLE_RAL
+endif
+
+ifeq ($(LIBCONFIG_LONG),1)	
+CFLAGS += -DLIBCONFIG_LONG
+endif
 
 COMMON_CFLAGS           += -DMAX_NUM_CCs=1
 ifdef USE_MME
@@ -101,7 +130,7 @@ export SECU_CFLAGS
 
 COMMON_MME_CFLAGS	 = -I$(SECU_DIR)
 COMMON_MME_CFLAGS       += -I$(SCTP_DIR)
-COMMON_MME_CFLAGS	+= -I$(X2AP_DIR) -I$(X2AP_DIR)/MESSAGES
+COMMON_MME_CFLAGS	+= -I$(X2AP_DIR) 
 COMMON_MME_CFLAGS	+= -I$(S1AP_DIR)
 COMMON_MME_CFLAGS	+= -I$(UDP_DIR)
 COMMON_MME_CFLAGS	+= -I$(GTPV1U_DIR)
@@ -112,7 +141,7 @@ S1AP_CFLAGS         += -I$(TOP_DIR)
 S1AP_CFLAGS         += $(UTIL_incl)
 export S1AP_CFLAGS
 
-X2AP_CFLAGS          = $(COMMON_CFLAGS)
+X2AP_CFLAGS          = $(COMMON_CFLAGS) $(COMMON_MME_CFLAGS)
 X2AP_CFLAGS         += -DENB_MODE
 X2AP_CFLAGS         += -I$(TOP_DIR)
 X2AP_CFLAGS         += $(UTIL_incl)

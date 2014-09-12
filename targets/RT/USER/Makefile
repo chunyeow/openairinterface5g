@@ -5,6 +5,7 @@ default: lte-softmodem
 all: lte-softmodem lte-enb
 
 include $(OPENAIR_TARGETS)/Makefile.common
+include $(OPENAIR_TARGETS)/Makedirectives
 
 GCCVERSION = $(shell gcc --version | grep ^gcc | sed 's/^.* //g')
 ifeq "$(GCCVERSION)"  "4.4.3"
@@ -30,40 +31,21 @@ ifeq ($(USRP),0)
   CFLAGS += -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
 endif
 
-ifdef DEBUG
-CFLAGS += -g -ggdb
+ifeq ($(DEBUG),1)	
+CFLAGS += -g -ggdb -DDEBUG_PHY -DDEBUG_MEAS
+CFLAGS += -DRRC_MSG_PRINT
+CFLAGS += -DPDCP_MSG_PRINT
 endif
-SRC = synctest.c condtest.c #lte-softmodem.c
 
-ifdef LIBCONFIG_LONG
-CFLAGS += -DLIBCONFIG_LONG
+ifdef ($(MSG_PRINT),1)
+CFLAGS += -DRRC_MSG_PRINT
+CFLAGS += -DPDCP_MSG_PRINT
 endif
+
+SRC = synctest.c condtest.c #lte-softmodem.c
 
 ifndef RTAI
 RTAI=1
-endif
-
-ifeq ($(ENABLE_RAL), 1)
-CFLAGS += -DENABLE_RAL
-endif
-
-ifdef SECU
-ifeq ($(NETTLE_FOUND), 0)
-@echo "Nettle library >= 2.5 is not installed on your system, nettle-dev lib needed, continuing with security disabled"
-SECU=0
-else
-ifeq ($(OPENSSL_FOUND), 0)
-@echo "openssl library is not installed on your system, openssl lib needed, continuing with security disabled"
-SECU=0
-else
-CFLAGS += -DENABLE_SECURITY
-LIBS += $(OPENSSL_LIBS) $(NETTLE_LIBS)
-endif
-endif
-endif
-
-ifdef JF
-CFLAGS += -DJUMBO_FRAME
 endif
 
 ifeq ($(RTAI),1)
@@ -124,9 +106,6 @@ include $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc
 
 OBJ += $(LOG_OBJS) 
 
-ifndef OPENAIR2
-OPENAIR2=1
-endif
 ifeq ($(OPENAIR2),1)
 ASN1_MSG_OBJS1=$(addprefix $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/, $(ASN1_MSG_OBJS))
 OBJ += $(L2_OBJS) $(LIST_OBJ) $(TIMER_OBJ) $(MEM_OBJ) $(OTG_OBJS) $(MATH_OBJS)  $(OSA_OBJS)  
@@ -141,11 +120,6 @@ RTAI_OBJ += $(UTILS_OBJS)
 #ifdef ENABLE_ITTI
 CFLAGS += -DEXMIMO_IOT
 #endif
-
-ifdef MSG_PRINT
-CFLAGS += -DRRC_MSG_PRINT
-CFLAGS += -DPDCP_MSG_PRINT
-endif
 
 CFLAGS += $(L2_incl) $(ENB_APP_incl) $(UTIL_incl) $(UTILS_incl)
 

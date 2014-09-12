@@ -17,7 +17,7 @@ include $(ASN1DIR)/$(ASN1RELDIR)/Makefile.inc
 libx2ap_OBJECTS = \
 	x2ap.o        \
 	x2ap_common.o \
-	$(addprefix MESSAGES/ASN1/$(ASN1RELDIR)/, $(ASN_MODULE_SOURCES))
+	$(addprefix MESSAGES/ASN1/$(ASN1RELDIR)/, $(X2AP_ASN_MODULE_SOURCES))
 
 
 
@@ -31,6 +31,7 @@ CFLAGS =            \
 	-DUSER_MODE     \
 	-I.        \
 	-I$(ASN1MESSAGESDIR)/ASN1/$(ASN1RELDIR) \
+	-I$(ASN1MESSAGESDIR) \
 	-I$(OUTDIR)     \
 	-I../UTILS      \
 	$(ADD_CFLAGS)       \
@@ -79,8 +80,8 @@ $(OUTDIR)/x2ap_ieregen.stamp: $(ASN1DIR)/$(ASN1RELDIR)/X2AP-PDU-Contents.asn $(A
 $(OUTDIR)/x2ap_asn1regen.stamp:  $(ASN1DIR)/$(ASN1RELDIR)/X2AP-CommonDataTypes.asn  $(ASN1DIR)/$(ASN1RELDIR)/X2AP-Constants.asn $(ASN1DIR)/$(ASN1RELDIR)/X2AP-IEs.asn  $(ASN1DIR)/$(ASN1RELDIR)/X2AP-PDU.asn   
 	@echo "Timestamp DIR " $(ASN1DIR) " DIRREL " $(ASN1RELDIR)
 #	(cd $(ASN1DIR)/$(ASN1RELDIR) && asn1c -fhave_native64 -gen-PER -fcompound-names $^)
-	(cd $(ASN1MESSAGESDIR) && asn1c -fhave_native64 -gen-PER -fcompound-names $^)
-	@echo "Timestamp" $(X2AP_CFLAGS)
+	(cd $(ASN1MESSAGESDIR) && asn1c -fhave_native64 -gen-PER -fcompound-names -fskeletons-copy $^)
+	@echo "Timestamp X2AP_CFLAGS: " $(X2AP_CFLAGS)
 	@echo Timestamp > $@	
 
 $(OUTDIR)/libx2ap.a: $(OUTDIR)/x2ap_ieregen.stamp $(OUTDIR)/x2ap_asn1regen.stamp $(X2AP_GENERATED) $(addprefix $(OUTDIR)/,$(libx2ap_OBJECTS))
@@ -91,8 +92,8 @@ $(OUTDIR)/libx2ap.a: $(OUTDIR)/x2ap_ieregen.stamp $(OUTDIR)/x2ap_asn1regen.stamp
 clean:
 	@$(RM_F_V) $(OUTDIR)/*.o
 	@$(RM_F_V) $(OUTDIR)/*.d
-	@$(RM_F_V) $(addprefix $(OUTDIR)/MESSAGES/ASN1/$(ASN1RELDIR), $(ASN_MODULE_SOURCES))
-	@$(RM_F_V) $(addprefix $(OUTDIR)/MESSAGES/ASN1/$(ASN1RELDIR), $(ASN_MODULE_SOURCES:.o=.d))
+	@$(RM_F_V) $(addprefix $(OUTDIR)/MESSAGES/ASN1/$(ASN1RELDIR), $(X2AP_ASN_MODULE_SOURCES))
+	@$(RM_F_V) $(addprefix $(OUTDIR)/MESSAGES/ASN1/$(ASN1RELDIR), $(X2AP_ASN_MODULE_SOURCES:.o=.d))
 	@$(RM_F_V) $(OUTDIR)/libx2ap.a
 	@$(RM_F_V) $(OUTDIR)/x2ap_asn1regen.stamp
 	@$(RM_F_V) $(OUTDIR)/x2ap_ieregen.stamp
@@ -100,8 +101,8 @@ clean:
 	@$(RM_F_V) $(OUTDIR)/x2ap_xer_print.c $(OUTDIR)/x2ap_ies_defs.h
 
 cleanall: clean
-	@$(RM_F_V) $(addprefix $(OUTDIR)/MESSAGES/ASN1/$(ASN1RELDIR), $(ASN_MODULE_SOURCES:.o=.c))
-	@$(RM_F_V) $(addprefix $(OUTDIR)/MESSAGES/ASN1/$(ASN1RELDIR), $(ASN_MODULE_SOURCES:.o=.h))
+	@$(RM_F_V) $(addprefix $(OUTDIR)/MESSAGES/ASN1/$(ASN1RELDIR), $(X2AP_ASN_MODULE_SOURCES:.o=.c))
+	@$(RM_F_V) $(addprefix $(OUTDIR)/MESSAGES/ASN1/$(ASN1RELDIR), $(X2AP_ASN_MODULE_SOURCES:.o=.h))
 
 showcflags:
 	@echo x2ap cflags: $(CFLAGS)

@@ -1,8 +1,10 @@
-#ifdef cygwin
-#  cyg=1
-#else
-#  cyg=0
-#endif
+
+build: 
+	./build_oai.bash 1	
+
+rebuild:
+	./build_oai.bash 0
+
 
 help:
 	@echo make check1 performs a simple sanity check
