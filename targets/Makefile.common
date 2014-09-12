@@ -1,6 +1,4 @@
-
 # This file gathers compilation directive shared between lte-softmodem and oaisim
-
 COMMON_UTILS_DIR    = $(OPENAIR_HOME)/common/utils
 UE_NAS_DIR          = $(OPENAIR_HOME)/openair-cn/NAS
 S1AP_DIR            = $(OPENAIR_HOME)/openair-cn/S1AP
@@ -58,9 +56,8 @@ endif
 endif
 endif
 
-ifdef JF
 CFLAGS += -DJUMBO_FRAME
-endif
+COMMON_CFLAGS           += -DMAX_NUM_CCs=1
 
 ifeq ($(ENABLE_RAL), 1)
 CFLAGS += -DENABLE_RAL
@@ -70,11 +67,11 @@ ifeq ($(LIBCONFIG_LONG),1)
 CFLAGS += -DLIBCONFIG_LONG
 endif
 
-COMMON_CFLAGS           += -DMAX_NUM_CCs=1
-ifdef USE_MME
+# add R9
+ifeq ($(USE_MME), R10)	
 COMMON_CFLAGS		+= -DENABLE_USE_MME
 ENABLE_ITTI = 1
-ifdef LINK_PDCP_TO_GTPV1U
+ifeq ($(LINK_PDCP_TO_GTPV1U), 1)	
     COMMON_CFLAGS       += -DLINK_PDCP_TO_GTPV1U
 # COMMON_CFLAGS       += -I$(UDP_DIR)
 # COMMON_CFLAGS       += -I$(GTPV1U_DIR)
@@ -82,7 +79,7 @@ ifdef LINK_PDCP_TO_GTPV1U
 endif
 endif
 
-ifdef ENABLE_ITTI
+ifeq ($(ENABLE_ITTI),1)
 COMMON_CFLAGS		+= -DENABLE_ITTI
 COMMON_CFLAGS		+= -DUSER_MODE
 COMMON_CFLAGS		+= -I$(OPENAIR1_DIR)
@@ -92,7 +89,7 @@ COMMON_CFLAGS		+= $(UTILS_incl)
 SHARED_DEPENDENCIES += $(ITTI_MESSAGES_H)
 endif
 
-ifdef USE_MME
+ifeq ($(USE_MME), R10)	
 LIBS			+= $(UE_NAS_OBJ_DIR)/libuenas.a $(SECU_OBJ_DIR)/libsecu.a 
 LIBS			+= $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a -lsctp -lcrypt
 LIBS			+= $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a 
@@ -141,7 +138,7 @@ S1AP_CFLAGS         += -I$(TOP_DIR)
 S1AP_CFLAGS         += $(UTIL_incl)
 export S1AP_CFLAGS
 
-X2AP_CFLAGS          = $(COMMON_CFLAGS) $(COMMON_MME_CFLAGS)
+X2AP_CFLAGS          = $(COMMON_CFLAGS) 
 X2AP_CFLAGS         += -DENB_MODE
 X2AP_CFLAGS         += -I$(TOP_DIR)
 X2AP_CFLAGS         += $(UTIL_incl)
@@ -198,13 +195,10 @@ endif
 
 export COMMON_CFLAGS
 
-ifdef ENABLE_ITTI
+ifeq ($(ENABLE_ITTI),1)	
 CFLAGS += $(COMMON_CFLAGS) $(COMMON_MME_CFLAGS) $(TARGETS_COMMON_incl)
-
 OBJ += $(TARGETS_COMMON_OBJS)
-endif
 
-ifdef ENABLE_ITTI
 gccxml_available = $(shell if [ `gccxml --version | grep GCC-XML -c` = "0" ]; then  echo "0" ; else  echo "1" ; fi )
 ifeq 	($(gccxml_available), 0)
 $(error gccxml is missing, please install)

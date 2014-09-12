@@ -41,6 +41,7 @@ E_NOTROOT=67
 NUM_CPU=`cat /proc/cpuinfo | grep processor | wc -l`
 OAI_INSTALLED=1
 PWD=`pwd`
+
 check_for_root_rights() {
     if [[ $EUID -eq 0 ]]; then
         echo "Run as a sudoers" 
@@ -513,7 +514,9 @@ compile_ltesoftmodem() {
     if [ -f Makefile ];  then
         echo "Compiling for EXMIMO target (default)..."
 	echo "Compiling directives: $SOFTMODEM_DIRECTIVES"
-        make cleanall > /dev/null 2>&1
+        if [ $1 = 1 ]; then 
+	    make cleanall > /dev/null 2>&1
+	fi 
 	make  $SOFTMODEM_DIRECTIVES 
 	make -j $NUM_CPU $SOFTMODEM_DIRECTIVES 
         if [ $? -ne 0 ]; then
@@ -533,7 +536,9 @@ compile_oaisim() {
     cd $OPENAIR_TARGETS/SIMU/USER
     if [ -f Makefile ]; then
         echo "Compiling for oaisim  target ($OAISIM_DIRECTIVES)"
-        make cleanall > /dev/null
+        if [ $1 = 1 ]; then 
+	    make cleanall > /dev/null
+	fi
 	make $OAISIM_DIRECTIVES 
 	make -j $NUM_CPU $OAISIM_DIRECTIVES 
         if [ $? -ne 0 ]; then
@@ -553,7 +558,9 @@ compile_unisim() {
     cd $OPENAIR1_DIR/SIMULATION/LTE_PHY
     if [ -f Makefile ]; then
         echo "Compiling for UNISIM target ..."
-        make cleanall
+        if [ $1 = 1 ]; then 
+	    make cleanall
+	fi
 	make  -j $NUM_CPU all 
         if [ $? -ne 0 ]; then
             echo_error "Build unisim failed, returning"
@@ -658,10 +665,11 @@ check_for_mbmssim_executable() {
 # 1. check if the executable functions exist
 ###############################################
 
-install_ltesoftmodem_() {
-    if [ $1 = "RTAI" ] ; then 
+install_ltesoftmodem() {
+    # RT
+    if [ $1 = "RTAI" ]; then 
 	if [ ! -f /tmp/init_rt_done.tmp ]; then
-            echo_warning "Step1: insert RTAI modules"
+            echo_info "  8.1 Insert RTAI modules"
             insmod /usr/realtime/modules/rtai_hal.ko     > /dev/null 2>&1
             insmod /usr/realtime/modules/rtai_sched.ko   > /dev/null 2>&1
             insmod /usr/realtime/modules/rtai_sem.ko     > /dev/null 2>&1
@@ -670,39 +678,48 @@ install_ltesoftmodem_() {
             touch /tmp/init_rt_done.tmp
             chmod 666 /tmp/init_rt_done.tmp
         else
-            echo_warning "RTAI modules already inserted"
+            echo_warning "  8.1 RTAI modules already inserted"
         fi
     else
 	if [ $1 = "RT_PREEMPT" ]; then 
-	    echo_warning "Step1: setup RT_PREMMPT"
+	    echo_info "  8.1 setup RT_PREMMPT"
 	fi    
     fi
-    
-    echo_warning "Step2: creating RTAI fifos"
-    for i in `seq 0 64`; do 
-	have_rtfX=`ls /dev/ |grep -c rtf$$i`;
-	if [ "$$have_rtfX" -eq 0 ] ;then 
-	    mknod -m 666 /dev/rtf$$i c 150 $$i; 
-	fi;
-    done
-    echo_warning "Step3: build lte-softmodemdrivers"
-    cd $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom && make clean && make   || exit 1
-    cd $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT && make clean && make   || exit 1
-    if [ $2 = 0 ]; then 
-	cd $OPENAIR2_DIR && make clean && make nasmesh_netlink.ko  || exit 1
-	cd $OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL && make clean && make   || exit 1
+    #HW
+    if [ $2 = "EXMIMO" ]; then 
+	echo_info "  8.2 [EXMIMO] creating RTAI fifos"
+	for i in `seq 0 64`; do 
+	    have_rtfX=`ls /dev/ |grep -c rtf$i`;
+	    if [ "$have_rtfX" -eq 0 ] ; then 
+		mknod -m 666 /dev/rtf$i c 150 $i; 
+	    fi;
+	done
+	echo_info "  8.3 [EXMIMO] Build lte-softmodemdrivers"
+	cd $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom && make clean && make  # || exit 1
+	cd $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT && make clean && make  # || exit 1
+	
+	echo_info "  8.4 [EXMIMO] Setup RF card"
+	cd $OPENAIR_TARGETS/RT/USER
+	. ./init_exmimo2.sh
+    else 
+	if [ $2 = "USRP" ]; then
+	    echo_info "  8.2 [USRP] "
+	fi
+
     fi
     
-    echo_warning "Step4: setup RF card"
-    cd $OPENAIR_TARGETS/RT/USER
-    bash ./init_exmimo2.sh
+    # ENB_S1
+    if [ $3 = 0 ]; then 
+	cd $OPENAIR2_DIR && make clean && make nasmesh_netlink.ko  #|| exit 1
+	cd $OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL && make clean && make  # || exit 1
+    fi
     
 }
 
 install_oaisim() {
    if [ $1 = 0 ]; then 
-	cd $OPENAIR2_DIR && make clean && make nasmesh_netlink.ko  || exit 1
-	cd $OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL && make clean && make   || exit 1
+	cd $OPENAIR2_DIR && make clean && make nasmesh_netlink.ko  #|| exit 1
+	cd $OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL && make clean && make  # || exit 1
    fi 
    
 }
@@ -781,6 +798,15 @@ echo_success() {
         shift
     done
     cecho "$my_string" $green
+}
+echo_info() {
+    local my_string=""
+    until [ -z "$1" ]
+    do
+        my_string="$my_string$1"
+        shift
+    done
+    cecho "$my_string" $blue
 }
 
 bash_exec() {

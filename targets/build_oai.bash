@@ -43,7 +43,7 @@ THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 #####################
 # create a bin dir
 #####################
-echo_warning "1. Creating the bin dir..." 
+echo_info "1. Creating the bin dir ..." 
 rm -rf bin
 mkdir -m 777 -p bin 
 
@@ -54,28 +54,18 @@ touch bin/${oai_build_date}
 ################################
 # cleanup first 
 ################################
-echo_warning "2. Cleaning ..."
+echo_info "2. Cleaning ..."
 
-output=$($SUDO kill -9 `ps -ef | grep oaisim | awk '{print $2}'` )
+$SUDO kill -9 `ps -ef | grep oaisim | awk '{print $2}'`
 $SUDO kill -9 `ps -ef | grep lte-softmodem | awk '{print $2}'`
 $SUDO kill -9 `ps -ef | grep dlsim | awk '{print $2}'`
 $SUDO kill -9 `ps -ef | grep ulsim | awk '{print $2}'`
 
-#if [ $# -eq 0 ]; then 
-
-if [ -z "$1" ]; then 
-    echo "Build OAI"
-else 
-    if [ $1 = 0 ]; then 
-	echo "Check the installation, and build OAI"
-	rm -rf ./.lock_oaibuild
-    fi 
-fi
 #######################################
-# PARAMETERS
+# process PARAMETERS
 ######################################
 
-echo_warning "3. Setup the parameters"
+echo_info "3. Process the parameters"
 
 HW="EXMIMO" # EXMIMO, USRP, NONE
 TARGET="ALL" # ALL, SOFTMODEM, OAISIM, UNISIM, NONE
@@ -104,21 +94,55 @@ EMULATION_DEV_INTERFACE="eth0"
 EMULATION_MULTICAST_GROUP=1
 EMULATION_DEV_ADDRESS=`ifconfig $EMULATION_DEV_INTERFACE | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}'`
 
-#######################################
-# Check the PARAMETERS
-######################################
+############## script params #####################
 
-echo_success "Parameters :  HW=$HW, TARGET=$TARGET, ENB_S1=$ENB_S1, REL=$REL, RT=$RT, DEBUG=$DEBUG"
-echo_success "ENB_CONFIG_FILE: $ENB_CONFIG_FILE"
+if [ -f ./.lock_oaibuild ]; then 
+    CLEAN=0
+else 
+    CLEAN=1
+fi 
+ 
+while [[ $# > 0 ]]
+do
+    key="$1"
+    shift
+    case $key in
+	
+	c|-c|--clean)
+	    rm -rf ./.lock_oaibuild
+	    CLEAN=1
+	    ;;
+	t)
+	    TEST=$1
+	    shift
+	    ;;
+	
+	--default)
+	    DEFAULT=1
+	    CLEAN=0
+	    shift
+	    ;;
+	*)
+            # unknown option
+	    ;;
+    esac
+done
 
-echo "Parameters :  HW=$HW, TARGET=$TARGET, ENB_S1=$ENB_S1, REL=$REL, RT=$RT, DEBUG=$DEBUG" >> bin/${oai_build_date}
+echo_info "CLEAN=$CLEAN, TEST=$TEST"
+
+########## print the PARAMETERS############
+
+echo_info "User-defined Parameters :  HW=$HW, TARGET=$TARGET, ENB_S1=$ENB_S1, REL=$REL, RT=$RT, DEBUG=$DEBUG"
+echo_info "ENB_CONFIG_FILE: $ENB_CONFIG_FILE"
+
+echo "User-defined Parameters :  HW=$HW, TARGET=$TARGET, ENB_S1=$ENB_S1, REL=$REL, RT=$RT, DEBUG=$DEBUG" >> bin/${oai_build_date}
 echo "ENB_CONFIG_FILE: $ENB_CONFIG_FILE" >>  bin/${oai_build_date}
  
 ############################################
 # compilation directives 
 ############################################
 
-echo_warning "4. building the compilation directives ..."
+echo_info "4. building the compilation directives ..."
 
 SOFTMODEM_DIRECTIVES="ENB_S1=$ENB_S1 DEBUG=$DEBUG XFORMS=$XFORMS "
 OAISIM_DIRECTIVES="ENB_S1=$ENB_S1 DEBUG=$DEBUG XFORMS=$XFORMS "
@@ -137,12 +161,18 @@ else
     OAISIM_DIRECTIVES="$OAISIM_DIRECTIVES Rel10=1 "
 fi
 if [ $RT = "RTAI" ]; then 
-    if [ ! -f /usr/realtime/modules ];   then
+    if [ -f /usr/realtime/modules ];   then
 	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES HARD_RT=1 "
     else 
-	echo_success "RTAI doesn't seem to be installed"
+	echo_warning "RTAI doesn't seem to be installed"
 	RT="RT_PREMPT"
 	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES RTAI=0 "
+    fi
+fi
+
+if [ $TARGET != "ALL" ]; then 
+    if [$TARGET  != "SOFTMODEM" ]; then 
+	$HW="NONE"
     fi
 fi
 
@@ -153,10 +183,10 @@ if [ $MACHINE_ARCH -eq 64 ]; then
     OAISIM_DIRECTIVES="$OASIM_DIRECTIVES LIBCONFIG_LONG=1 "
 fi
 
-echo_success "SOFTMODEM Compilation directive: $SOFTMODEM_DIRECTIVES"
-echo_success "OAISIM Compilation directive:    $OAISIM_DIRECTIVES"
+echo_success "SOFTMODEM Compilation directives: $SOFTMODEM_DIRECTIVES"
+echo_success "OAISIM Compilation directives:    $OAISIM_DIRECTIVES"
 
-echo "SOFTMODEM Compilation directive: $SOFTMODEM_DIRECTIVES" >>  bin/${oai_build_date}
+echo "SOFTMODEM Compilation directives: $SOFTMODEM_DIRECTIVES" >>  bin/${oai_build_date}
 echo "OAISIM Compilation directive:    $OAISIM_DIRECTIVES" >>  bin/${oai_build_date}
 
 ############################################
@@ -164,7 +194,7 @@ echo "OAISIM Compilation directive:    $OAISIM_DIRECTIVES" >>  bin/${oai_build_d
 ############################################
 
 
-echo_warning "5. Checking the OAI PATHS... (TBD)"
+echo_info "5. Checking the OAI PATHS ... (TBD)"
 cecho "OPENAIR_HOME    = $OPENAIR_HOME" $green
 cecho "OPENAIR1_DIR    = $OPENAIR1_DIR" $green
 cecho "OPENAIR2_DIR    = $OPENAIR2_DIR" $green
@@ -184,31 +214,31 @@ echo "OPENAIR_TARGETS = $OPENAIR_TARGETS"  >>  bin/${oai_build_date}
 # check the installation
 ############################################
 
-echo_warning "6. Checking the installation ..."
+echo_info "6. Checking the installation ..."
 
-output=$(check_install_oai_software >>  $OPENAIR_TARGETS/bin/install_log.txt  2>&1 )
+output=$(check_install_oai_software >>  bin/install_log.txt  2>&1 )
 
 
 ############################################
 # compile 
 ############################################
 
-echo_warning "7. compiling and installing the OAI binaries..."
+echo_info "7. compiling and installing the OAI binaries ..."
 
 softmodem_compiled=1
 oaisim_compiled=1
 unisim_compiled=1
 
 if [ $TARGET = "ALL" ]; then
-    output=$(compile_ltesoftmodem >> $OPENAIR_TARGETS/bin/install_log.txt  2>&1 )
+    output=$(compile_ltesoftmodem $CLEAN >> bin/install_log.txt  2>&1 )
     softmodem_compiled=$?
     check_for_ltesoftmodem_executable
     
-    output=$(compile_oaisim  >> $OPENAIR_TARGETS/bin/install_log.txt  2>&1 )
+    output=$(compile_oaisim   $CLEAN     >> bin/install_log.txt  2>&1 )
     oaisim_compiled=$?
     check_for_oaisim_executable
 
-    output=$(compile_unisim  >> $OPENAIR_TARGETS/bin/install_log.txt  2>&1 )
+    output=$(compile_unisim  $CLEAN      >> bin/install_log.txt  2>&1 )
     unisim_compiled=$?
     check_for_dlsim_executable
     check_for_ulsim_executable
@@ -221,17 +251,17 @@ if [ $TARGET = "ALL" ]; then
 else
     
     if [ $TARGET = "SOFTMODEM" ]; then 
-	output=$(compile_ltesoftmodem  >> $OPENAIR_TARGETS/bin/install_log.txt 2>&1 )
+	output=$(compile_ltesoftmodem  >> bin/install_log.txt 2>&1 )
 	softmodem_compiled=$?
 	check_for_ltesoftmodem_executable
     fi
     if [ $TARGET = "OAISIM" ]; then 
-	output=$(compile_oaisim  >> $OPENAIR_TARGETS/bin/install_log.txt 2>&1 )
+	output=$(compile_oaisim  >> bin/install_log.txt 2>&1 )
 	oaisim_compiled=$?	
 	check_for_oaisim_executable
     fi
     if [ $TARGET = "UNISIM" ]; then 
-	output=$(compile_unisim  >> $OPENAIR_TARGETS/bin/install_log.txt 2>&1 )
+	output=$(compile_unisim  >> bin/install_log.txt 2>&1 )
 	unisim_compiled=$?
 	check_for_dlsim_executable
 	check_for_ulsim_executable
@@ -248,20 +278,20 @@ fi
 # install 
 ############################################
 
-echo_warning "8. Installing ..."
+echo_info "8. Installing ..."
 
 if [ $softmodem_compiled = 0 ]; then 
-    echo "target lte-softmodem built "
+    echo_success "target lte-softmodem built "
     echo "target lte-softmodem built "  >>  bin/${oai_build_date}
-    install_ltesoftmodem $RT $ENB_S1
+    output=$(install_ltesoftmodem $RT $HW $ENB_S1 >> bin/install_log.txt 2>&1)
 fi
 if [ $oaisim_compiled = 0 ]; then 
-    echo "target oaisim built "
+    echo_success "target oaisim built "
     echo "target oaisim built "  >>  bin/${oai_build_date}
-    install_oaisim $ENB_S1 
+    output=$(install_oaisim $ENB_S1 >> bin/install_log.txt 2>&1 )
 fi 
 if [ $unisim_compiled =  0 ]; then 
-    echo "target unisim built "
+    echo_success "target unisim built "
     echo "target unisim built "  >>  bin/${oai_build_date}
 fi 
 
@@ -275,10 +305,10 @@ echo "build terminated, see logs is $OPENAIR_TARGETS/bin/install_log.txt"
 ############################################
 
 if [ $OAI_TEST = 1 ]; then 
-    echo_warning "9. Testing ..."
+    echo_info "9. Testing ..."
     python $OPENAIR_TARGETS/TEST/OAI/test01.py
 else 
-    echo_warning "9. Bypassing the Tests ..."
+    echo_info "9. Bypassing the Tests ..."
 fi 
  
 
