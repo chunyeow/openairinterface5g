@@ -911,7 +911,7 @@ rrc_ue_process_radioResourceConfigDedicated(module_id_t ue_mod_idP, frame_t fram
       );
 
       for (cnt=0;cnt<radioResourceConfigDedicated->srb_ToAddModList->list.count;cnt++) {
-
+	//	connection_reestablishment_ind.num_srb+=1;
           SRB_id = radioResourceConfigDedicated->srb_ToAddModList->list.array[cnt]->srb_Identity;
           LOG_D(RRC,"[UE %d]: Frame %d SRB config cnt %d (SRB%ld)\n",ue_mod_idP,frameP,cnt,SRB_id);
           if (SRB_id == 1) {

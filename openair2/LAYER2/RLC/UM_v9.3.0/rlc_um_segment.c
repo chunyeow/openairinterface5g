@@ -429,7 +429,9 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                         pdu_remaining_size - sdu_mngt_p->sdu_remaining_size);
 #endif
 #ifdef USER_MODE
+#ifndef EXMIMO
                 assert(1!=1);
+#endif 
 #endif
                 memcpy(data, data_sdu_p, sdu_mngt_p->sdu_remaining_size);
                 // free SDU

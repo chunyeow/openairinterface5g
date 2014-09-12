@@ -4,8 +4,8 @@ include $(OPENAIR_TARGETS)/Makerules
 default: lte-softmodem
 all: lte-softmodem lte-enb
 
-include $(OPENAIR_TARGETS)/Makefile.common
 include $(OPENAIR_TARGETS)/Makedirectives
+include $(OPENAIR_TARGETS)/Makefile.common
 
 GCCVERSION = $(shell gcc --version | grep ^gcc | sed 's/^.* //g')
 ifeq "$(GCCVERSION)"  "4.4.3"

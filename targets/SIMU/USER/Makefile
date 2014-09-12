@@ -3,8 +3,8 @@ include $(OPENAIR_TARGETS)/Makerules
 
 default: oaisim
 
-include $(OPENAIR_TARGETS)/Makefile.common
 include $(OPENAIR_TARGETS)/Makedirectives
+include $(OPENAIR_TARGETS)/Makefile.common
 
 TOP_DIR               = $(OPENAIR1_DIR)
 OPENAIR1_TOP          = $(OPENAIR1_DIR)

@@ -194,7 +194,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         conf = '-a -c26'
         trace = logdir + '/log_' + host + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
-        oai.send_expect('./oaisim.rel8.' + host + ' ' + conf + tee, ' DL and UL loss rate below 10% ', 500)
+        oai.send_expect('./oaisim.rel8.' + host + ' ' + conf + tee, ' DL and UL loss rate below 10 ', 500)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:

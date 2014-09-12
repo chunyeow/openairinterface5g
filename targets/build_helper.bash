@@ -40,22 +40,28 @@ ROOT_UID=0
 E_NOTROOT=67
 NUM_CPU=`cat /proc/cpuinfo | grep processor | wc -l`
 OAI_INSTALLED=1
-
+PWD=`pwd`
 check_for_root_rights() {
-    if [[ $EUID -ne 0 ]]; then
-        echo_warning "Running as a sudoers" 1>&2
+    if [[ $EUID -eq 0 ]]; then
+        echo "Run as a sudoers" 
 	return 1
     else 
-	echo_success  "Running as a root" 1>&2
+	echo  "Run as a root" 
 	return 0
     fi
 }
 
-output=$(check_for_root_rights 2>&1) 
+output=$(check_for_root_rights) 
 result=$?
 SUDO=''
+PW=''
 if [ $result -ne 1 ]; then
-    SUDO='sudo -E'
+  #  echo "Please provide your  password :" 
+  #  read -s PW
+#   SUDO="echo $PW | sudo -S -E "
+    SUDO="sudo -S -E "
+else 
+    echo "root"
 fi
 
 test_install_package() {
@@ -72,6 +78,17 @@ test_install_package() {
   fi
 }
 
+test_uninstall_package() {
+  
+ if [ $# -eq 1 ]; then
+      dpkg -s "$1" > /dev/null 2>&1 && {
+         $SUDO apt-get remove --assume-yes $1  
+	 echo "$1 is uninstalled." 
+      } || {
+          echo "$1 is not installed." 
+      }
+  fi
+}
 test_command_install_script() {
   # usage: test_command_install_script searched_binary script_to_be_invoked_if_binary_not_found
   command -v $1 >/dev/null 2>&1 || { echo_warning "Program $1 is not installed. Trying installing it." >&2; bash $2; command -v $1 >/dev/null 2>&1 || { echo_fatal "Program $1 is not installed. Aborting." >&2; };}
@@ -101,14 +118,15 @@ check_for_machine_type(){
 ####################################################
 
 make_certs(){
- 
-    echo "creating the certificate"
-    
+
+ # for certtificate generation
     rm -rf demoCA
-    mkdir demoCA
+    mkdir -m 777 -p demoCA
     echo 01 > demoCA/serial
     touch demoCA/index.txt
-
+    
+    echo "creating the certificate"
+    
     user=$(whoami)
     HOSTNAME=$(hostname -f)
 
@@ -137,17 +155,13 @@ make_certs(){
 
 check_install_freediamter(){
  
-    if [ -f install_log.txt ]; then
-	$SUDO rm -f tmp/install_log.txt
-    fi
-    
     if [ ! -d /usr/local/src/ ]; then
 	echo "/usr/local/src/ doesn't exist please create one"
 	exit -1
     fi
 
     if [ ! -w /usr/local/src/ ];  then
-	echo "You don't have permissions to write to /usr/local/src/, inslalling as a sudoer"
+	echo "You don't have permissions to write to /usr/local/src/, installing as a sudoer"
 #	exit -1
     fi
 
@@ -164,10 +178,11 @@ check_install_freediamter(){
     if [ -d nettle-2.5 ];  then
 	$SUDO rm -rf nettle-2.5/
     fi
-    
+     
+
     $SUDO wget ftp://ftp.lysator.liu.se/pub/security/lsh/nettle-2.5.tar.gz 
     $SUDO gunzip nettle-2.5.tar.gz 
-    echo "Uncompressing nettle archive"
+    $SUDO echo "Uncompressing nettle archive"
     $SUDO tar -xf nettle-2.5.tar
     cd nettle-2.5/
     $SUDO ./configure --disable-openssl --enable-shared --prefix=/usr 
@@ -188,10 +203,12 @@ check_install_freediamter(){
     if [ -d gnutls-3.1.0/ ];  then
 	$SUDO rm -rf gnutls-3.1.0/
     fi
-    
+
+    test_uninstall_package libgnutls-dev
+
     $SUDO wget ftp://ftp.gnutls.org/gcrypt/gnutls/v3.1/gnutls-3.1.0.tar.xz 
     $SUDO tar -xf gnutls-3.1.0.tar.xz
-    echo "Uncompressing gnutls archive"
+    echo "Uncompressing gnutls archive ($PWD)"
     cd gnutls-3.1.0/
     $SUDO ./configure --prefix=/usr
     if [ $? -ne 0 ];   then
@@ -334,6 +351,9 @@ check_install_oai_software() {
 	test_install_package valgrind
 	test_install_package vlan
 	test_install_package doxygen
+	# uninstall some automatically installed packges
+	# we need a newer version
+#	test_uninstall_package libnettle4
     fi 
 
     echo "$OPENAIR_TARGETS/bin/install_log.txt"
@@ -491,8 +511,8 @@ compile_epc() {
 compile_ltesoftmodem() {
     cd $OPENAIR_TARGETS/RT/USER
     if [ -f Makefile ];  then
-        echo_success "Compiling for EXMIMO target (default)..."
-	echo_success "Compiling directives: $SOFTMODEM_DIRECTIVES"
+        echo "Compiling for EXMIMO target (default)..."
+	echo "Compiling directives: $SOFTMODEM_DIRECTIVES"
         make cleanall > /dev/null 2>&1
 	make  $SOFTMODEM_DIRECTIVES 
 	make -j $NUM_CPU $SOFTMODEM_DIRECTIVES 
@@ -512,9 +532,8 @@ compile_ltesoftmodem() {
 compile_oaisim() {
     cd $OPENAIR_TARGETS/SIMU/USER
     if [ -f Makefile ]; then
-        echo_success "Compiling for oaisim  target ..."
-        echo_success "Compiling directives: $OAISIM_DIRECTIVES"
-	make cleanall > /dev/null
+        echo "Compiling for oaisim  target ($OAISIM_DIRECTIVES)"
+        make cleanall > /dev/null
 	make $OAISIM_DIRECTIVES 
 	make -j $NUM_CPU $OAISIM_DIRECTIVES 
         if [ $? -ne 0 ]; then
@@ -533,7 +552,7 @@ compile_oaisim() {
 compile_unisim() {
     cd $OPENAIR1_DIR/SIMULATION/LTE_PHY
     if [ -f Makefile ]; then
-        echo_success "Compiling for CHANNELSIM target ..."
+        echo "Compiling for UNISIM target ..."
         make cleanall
 	make  -j $NUM_CPU all 
         if [ $? -ne 0 ]; then
@@ -633,6 +652,59 @@ check_for_mbmssim_executable() {
         echo_error "Cannot find mbmssim executable object in directory $OPENAIR1_DIR/SIMULATION/LTE_PHY"
         echo_error "Please make sure that the OAI mbmssim is compiled"
     fi
+}
+
+################################################
+# 1. check if the executable functions exist
+###############################################
+
+install_ltesoftmodem_() {
+    if [ $1 = "RTAI" ] ; then 
+	if [ ! -f /tmp/init_rt_done.tmp ]; then
+            echo_warning "Step1: insert RTAI modules"
+            insmod /usr/realtime/modules/rtai_hal.ko     > /dev/null 2>&1
+            insmod /usr/realtime/modules/rtai_sched.ko   > /dev/null 2>&1
+            insmod /usr/realtime/modules/rtai_sem.ko     > /dev/null 2>&1
+            insmod /usr/realtime/modules/rtai_fifos.ko   > /dev/null 2>&1
+            insmod /usr/realtime/modules/rtai_mbx.ko     > /dev/null 2>&1
+            touch /tmp/init_rt_done.tmp
+            chmod 666 /tmp/init_rt_done.tmp
+        else
+            echo_warning "RTAI modules already inserted"
+        fi
+    else
+	if [ $1 = "RT_PREEMPT" ]; then 
+	    echo_warning "Step1: setup RT_PREMMPT"
+	fi    
+    fi
+    
+    echo_warning "Step2: creating RTAI fifos"
+    for i in `seq 0 64`; do 
+	have_rtfX=`ls /dev/ |grep -c rtf$$i`;
+	if [ "$$have_rtfX" -eq 0 ] ;then 
+	    mknod -m 666 /dev/rtf$$i c 150 $$i; 
+	fi;
+    done
+    echo_warning "Step3: build lte-softmodemdrivers"
+    cd $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom && make clean && make   || exit 1
+    cd $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT && make clean && make   || exit 1
+    if [ $2 = 0 ]; then 
+	cd $OPENAIR2_DIR && make clean && make nasmesh_netlink.ko  || exit 1
+	cd $OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL && make clean && make   || exit 1
+    fi
+    
+    echo_warning "Step4: setup RF card"
+    cd $OPENAIR_TARGETS/RT/USER
+    bash ./init_exmimo2.sh
+    
+}
+
+install_oaisim() {
+   if [ $1 = 0 ]; then 
+	cd $OPENAIR2_DIR && make clean && make nasmesh_netlink.ko  || exit 1
+	cd $OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL && make clean && make   || exit 1
+   fi 
+   
 }
 ###############################
 ## echo and  family 
