@@ -1523,7 +1523,7 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
     // UplinkPowerControlDedicated__deltaMCS_Enabled_en1);
     physicalConfigDedicated2->uplinkPowerControlDedicated->deltaMCS_Enabled =
         UplinkPowerControlDedicated__deltaMCS_Enabled_en1;
-    physicalConfigDedicated2->uplinkPowerControlDedicated->accumulationEnabled = 0; // FALSE
+    physicalConfigDedicated2->uplinkPowerControlDedicated->accumulationEnabled = 1; // should be TRUE in order to have 0dB power offset
     physicalConfigDedicated2->uplinkPowerControlDedicated->p0_UE_PUCCH = 0; // 0 dB
     physicalConfigDedicated2->uplinkPowerControlDedicated->pSRS_Offset = 0; // 0 dB
     physicalConfigDedicated2->uplinkPowerControlDedicated->filterCoefficient =

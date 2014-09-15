@@ -318,21 +318,22 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
 #ifdef OPENAIR2
     if (phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->rnti>0) {
 #endif
-      len += sprintf(&buffer[len],"[eNB PROC] UE %d (%x) Power: (%d,%d) dB, RSSI: (%d,%d) dBm, Sector %d, DLSCH Mode %d\n", 
+      len += sprintf(&buffer[len],"[eNB PROC] UE %d (%x) Power: (%d,%d) dB, RSSI: (%d,%d) dBm, Sector %d\n", 
 		     UE_id,
 		     phy_vars_eNB->eNB_UE_stats[UE_id].crnti,
 		     dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[UE_id]->ulsch_power[0]),
 		     dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[UE_id]->ulsch_power[1]),
 		     phy_vars_eNB->eNB_UE_stats[UE_id].UL_rssi[0],
 		     phy_vars_eNB->eNB_UE_stats[UE_id].UL_rssi[1],
-		     phy_vars_eNB->eNB_UE_stats[UE_id].sector,
-		     phy_vars_eNB->transmission_mode[UE_id]);
+		     phy_vars_eNB->eNB_UE_stats[UE_id].sector);
+
     for(i=0;i<8;i++)
-      len+= sprintf(&buffer[len],"   harq %d: DL mcs %d, UL mcs %d, UL rb %d\n",
+      len+= sprintf(&buffer[len],"   harq %d: DL mcs %d, UL mcs %d, UL rb %d, delta_TF %d\n",
 		    i,
 		    phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[i]->mcs,
 		    phy_vars_eNB->ulsch_eNB[(uint8_t)UE_id]->harq_processes[i]->mcs,
-		    phy_vars_eNB->ulsch_eNB[(uint8_t)UE_id]->harq_processes[i]->nb_rb);
+		    phy_vars_eNB->ulsch_eNB[(uint8_t)UE_id]->harq_processes[i]->nb_rb,
+		    phy_vars_eNB->ulsch_eNB[(uint8_t)UE_id]->harq_processes[i]->delta_TF);
       
       len += sprintf(&buffer[len],"[eNB PROC] Wideband CQI: (%d,%d) dB\n",
 		     phy_vars_eNB->PHY_measurements_eNB[eNB].wideband_cqi_dB[UE_id][0],
@@ -344,7 +345,8 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
 		       phy_vars_eNB->PHY_measurements_eNB[eNB].subband_cqi_tot_dB[UE_id][i]);
       len += sprintf(&buffer[len],"\n");
       
-      len += sprintf(&buffer[len],"[eNB PROC] DL_cqi %d, DL_pmi_single %x\n",
+      len += sprintf(&buffer[len],"[eNB PROC] DL TM %d, DL_cqi %d, DL_pmi_single %x\n",
+		     phy_vars_eNB->transmission_mode[UE_id],
 		     phy_vars_eNB->eNB_UE_stats[UE_id].DL_cqi[0],
 		     pmi2hex_2Ar1(phy_vars_eNB->eNB_UE_stats[UE_id].DL_pmi_single));
       

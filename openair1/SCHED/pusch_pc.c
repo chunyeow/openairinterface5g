@@ -45,6 +45,41 @@
 // This is the formula from Section 5.1.1.1 in 36.213 100*10*log10((2^(MPR*Ks)-1)), where MPR is in the range [0,6] and Ks=1.25
 int16_t hundred_times_delta_TF[100] = {-32768,-1268,-956,-768,-631,-523,-431,-352,-282,-219,-161,-107,-57,-9,36,79,120,159,197,234,269,304,337,370,402,434,465,495,525,555,583,612,640,668,696,723,750,777,803,829,856,881,907,933,958,983,1008,1033,1058,1083,1108,1132,1157,1181,1205,1229,1254,1278,1302,1325,1349,1373,1397,1421,1444,1468,1491,1515,1538,1562,1585,1609,1632,1655,1679,1702,1725,1748,1772,1795,1818,1841,1864,1887,1910,1933,1956,1980,2003,2026,2049,2072,2095,2118,2141,2164,2186,2209,2232,2255};
 
+int16_t get_hundred_times_delta_IF_eNB(PHY_VARS_eNB *phy_vars_eNB,uint8_t UE_id,uint8_t harq_pid) {
+ 
+  uint32_t Nre,sumKr,MPR_x100,Kr,r;
+  uint16_t beta_offset_pusch;
+
+  Nre = phy_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->Nsymb_initial *
+            phy_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->nb_rb*12;
+
+  sumKr = 0;
+  for (r=0;r<phy_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->C;r++) {
+    if (r<phy_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->Cminus)
+      Kr = phy_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->Kminus;
+    else
+      Kr = phy_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->Kplus;
+    sumKr += Kr;
+  }
+  
+  if (Nre==0)
+    return(0);
+
+  MPR_x100 = 100*sumKr/Nre;  
+  // Note: MPR=is the effective spectral efficiency of the PUSCH
+  // FK 20140908 sumKr is only set after the ulsch_encoding
+
+  beta_offset_pusch = 8;
+    //(phy_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->control_only == 1) ? phy_vars_eNB->ulsch_eNB[UE_id]->beta_offset_cqi_times8:8;
+
+  if (phy_vars_eNB->ul_power_control_dedicated[UE_id].deltaMCS_Enabled == 1) {
+    // This is the formula from Section 5.1.1.1 in 36.213 10*log10(deltaIF_PUSCH = (2^(MPR*Ks)-1)*beta_offset_pusch)
+    return(hundred_times_delta_TF[MPR_x100/6]+10*dB_fixed_times10((beta_offset_pusch)>>3));
+  }
+  else {
+    return(0);
+  }
+}
 
 
 int16_t get_hundred_times_delta_IF(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t harq_pid) {

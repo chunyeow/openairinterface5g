@@ -91,6 +91,8 @@ int eNB_sync_buffer1[640*6] __attribute__ ((aligned(16)));
 int *eNB_sync_buffer[2] = {eNB_sync_buffer0, eNB_sync_buffer1};
 
 extern uint16_t hundred_times_log10_NPRB[100];
+extern int16_t get_hundred_times_delta_IF_eNB(PHY_VARS_eNB *phy_vars_eNB,uint8_t UE_id,uint8_t harq_pid);
+
 
 unsigned int max_peak_val; 
 int max_sect_id, max_sync_pos;
@@ -1678,11 +1680,10 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	phy_vars_eNB->ulsch_eNB[(uint32_t)UE_id]->harq_processes[harq_pid]->subframe_cba_scheduling_flag = 1;
       else 
 	phy_vars_eNB->ulsch_eNB[(uint32_t)UE_id]->harq_processes[harq_pid]->subframe_scheduling_flag = 1;
-	
+
     }
   }
-
-    
+   
 
 
 
@@ -2953,6 +2954,10 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	else {
       */
 
+      //compute the expected ULSCH RX power (for the stats)
+      phy_vars_eNB->ulsch_eNB[(uint32_t)i]->harq_processes[harq_pid]->delta_TF =
+	get_hundred_times_delta_IF_eNB(phy_vars_eNB,i,harq_pid);
+	
       //dump_ulsch(phy_vars_eNB, sched_subframe, i);
     
       phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round]++;

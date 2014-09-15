@@ -399,6 +399,8 @@ typedef struct {
   uint8_t n_DMRS2;
   /// Flag to indicate that this ULSCH is for calibration information sent from UE (i.e. no MAC SDU to pass up)
   //  int calibration_flag;
+  /// delta_TF for power control
+  int32_t delta_TF;
 } LTE_UL_eNB_HARQ_t;
 
 typedef struct {
