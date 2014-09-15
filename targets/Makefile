@@ -1,16 +1,20 @@
 
-build: 
-	./build_oai.bash 1	
 
-rebuild:
-	./build_oai.bash 0
+build: 
+	./build_oai.bash -c  -m
+
+build_rtai:
+	./build_oai.bash -c -b -eRTAI -tSOFTMODEM  -m
+
+build_usrp_rtai:
+	./build_oai.bash -c -b -eRTAI -tSOFTMODEM -hUSRP -m
 
 
 help:
 	@echo make check1 performs a simple sanity check
 	@echo make check2 performs another simple sanity check
 	@echo make check does both the above checks
- 
+
 all: help
 
 check1:

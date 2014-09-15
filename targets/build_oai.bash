@@ -40,50 +40,26 @@
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 . $THIS_SCRIPT_PATH/build_helper.bash
 
-#####################
-# create a bin dir
-#####################
-echo_info "1. Creating the bin dir ..." 
-rm -rf bin
-mkdir -m 777 -p bin 
-
-build_date=`date +%Y_%m_%d`
-oai_build_date="oai_built_${build_date}"
-touch bin/${oai_build_date} 
-
-################################
-# cleanup first 
-################################
-echo_info "2. Cleaning ..."
-
-$SUDO kill -9 `ps -ef | grep oaisim | awk '{print $2}'`
-$SUDO kill -9 `ps -ef | grep lte-softmodem | awk '{print $2}'`
-$SUDO kill -9 `ps -ef | grep dlsim | awk '{print $2}'`
-$SUDO kill -9 `ps -ef | grep ulsim | awk '{print $2}'`
+check_for_root_rights
 
 #######################################
-# process PARAMETERS
+# Default PARAMETERS
 ######################################
-
-echo_info "3. Process the parameters"
 
 HW="EXMIMO" # EXMIMO, USRP, NONE
 TARGET="ALL" # ALL, SOFTMODEM, OAISIM, UNISIM, NONE
-
 ENB_S1=1
 REL="REL8" # REL8, REL10
 RT="RTAI" # RTAI, RT_PREMPT or RT_DISABLED
 DEBUG=0
 
 ENB_CONFIG_FILE=$OPENAIR_TARGETS/"PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.conf"
-
-
 OAI_TEST=0
+XFORMS=0
 
 # script is not currently handling these params
 EPC=0 # flag to build EPC
 
-XFORMS=0
 ITTI_ANALYZER=0
 VCD_TIMING=0
 WIRESHARK=0
@@ -97,46 +73,116 @@ EMULATION_DEV_ADDRESS=`ifconfig $EMULATION_DEV_INTERFACE | grep 'inet addr:'| gr
 ############## script params #####################
 
 if [ -f ./.lock_oaibuild ]; then 
-    CLEAN=0
+    OAI_CLEAN=0
 else 
-    CLEAN=1
+    OAI_CLEAN=1
 fi 
  
-while [[ $# > 0 ]]
-do
-    key="$1"
-    shift
-    case $key in
-	
-	c|-c|--clean)
-	    rm -rf ./.lock_oaibuild
-	    CLEAN=1
-	    ;;
-	t)
-	    TEST=$1
-	    shift
-	    ;;
-	
-	--default)
-	    DEFAULT=1
-	    CLEAN=0
-	    shift
-	    ;;
-	*)
+#for i in "$@"
+#do 
+#    echo "i is : $i"
+#    case $i in
+
+while getopts "bcdmsxze:f:h:r:t:" OPTION; do
+   case "$OPTION" in
+       b)
+	   ENB_S1=1
+	   echo "setting eNB S1 flag to: $ENB_S1"
+	   ;;
+       c)
+	   rm -rf ./.lock_oaibuild
+	   OAI_CLEAN=1
+	   echo "setting clean flag to: $OAI_CLEAN"
+	   ;;
+       d)
+	   DEBUG=1
+	   echo "setting debug flag to: $DEBUG"
+	   ;;
+       e)
+	   RT="$OPTARG"
+	   echo "setting realtime flag to: $RT"
+	   ;;
+       f)
+	   ENB_CONFIG_FILE="$OPTARG" 
+	   echo "setting enb config file path to: $ENB_CONFIG_FILE"
+	   ;;
+       h)
+	   HW="$OPTARG" #"${i#*=}"
+	   echo "setting hardware to: $HW"
+	   ;;
+       m)
+	   BUILD_FROM_MAKEFILE=1
+	   set_build_from_makefile $BUILD_FROM_MAKEFILE
+	   echo "setting build from make to: $BUILD_FROM_MAKEFILE"
+	   ;;
+       r)
+	   REL="$OPTARG" 
+	   echo "setting release to: $REL"
+	   ;;
+       s)
+	   OAI_TEST=1
+	   echo "setting sanity check to: $OAI_TEST"
+	   ;;
+       t)
+	   TARGET="$OPTARG" 
+	   echo "setting target to: $TARGET"
+	   ;;
+       x)
+	   XFORMS=1
+	   echo "setting xforms to: $XFORMS"
+	   ;;
+       z)
+	   echo "setting all parameters to: default"
+	   rm -rf ./.lock_oaibuild
+	   OAI_CLEAN=1
+	   HW="EXMIMO"
+	   TARGET="ALL" 
+	   ENB_S1=1
+	   REL="REL8" 
+	   RT="RTAI"
+	   DEBUG=0
+	   ENB_CONFIG_FILE=$OPENAIR_TARGETS/"PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.conf"
+	   OAI_TEST=0
+  	   ;;
+       *)
             # unknown option
-	    ;;
-    esac
+	   ;;
+   esac
 done
 
-echo_info "CLEAN=$CLEAN, TEST=$TEST"
+#####################
+# create a bin dir
+#####################
+echo_info "3. Creating the bin dir ..." 
+rm -rf bin
+mkdir -m 777 -p bin 
 
-########## print the PARAMETERS############
+build_date=`date +%Y_%m_%d`
+oai_build_date="oai_built_${build_date}"
+touch bin/${oai_build_date} 
 
-echo_info "User-defined Parameters :  HW=$HW, TARGET=$TARGET, ENB_S1=$ENB_S1, REL=$REL, RT=$RT, DEBUG=$DEBUG"
+################################
+# cleanup first 
+################################
+echo_info "3. Cleaning ..."
+
+$SUDO kill -9 `ps -ef | grep oaisim | awk '{print $2}'`
+$SUDO kill -9 `ps -ef | grep lte-softmodem | awk '{print $2}'`
+$SUDO kill -9 `ps -ef | grep dlsim | awk '{print $2}'`
+$SUDO kill -9 `ps -ef | grep ulsim | awk '{print $2}'`
+
+##########################################
+# process parameters
+#########################################
+
+echo_info "3. Process the parameters"
+
+echo_info "User-defined Parameters :  HW=$HW, TARGET=$TARGET, ENB_S1=$ENB_S1, REL=$REL, RT=$RT, DEBUG=$DEBUG XFORMS=$XFORMS"
 echo_info "ENB_CONFIG_FILE: $ENB_CONFIG_FILE"
 
-echo "User-defined Parameters :  HW=$HW, TARGET=$TARGET, ENB_S1=$ENB_S1, REL=$REL, RT=$RT, DEBUG=$DEBUG" >> bin/${oai_build_date}
+echo "User-defined Parameters :  HW=$HW, TARGET=$TARGET, ENB_S1=$ENB_S1, REL=$REL, RT=$RT, DEBUG=$DEBUG XFORMS=$XFORMS" >> bin/${oai_build_date}
 echo "ENB_CONFIG_FILE: $ENB_CONFIG_FILE" >>  bin/${oai_build_date}
+
  
 ############################################
 # compilation directives 
@@ -148,6 +194,10 @@ SOFTMODEM_DIRECTIVES="ENB_S1=$ENB_S1 DEBUG=$DEBUG XFORMS=$XFORMS "
 OAISIM_DIRECTIVES="ENB_S1=$ENB_S1 DEBUG=$DEBUG XFORMS=$XFORMS "
 if [ $HW = "USRP" ]; then 
     SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES USRP=1 "
+else 
+    if [ $HW != "EXMIMO" ]; then 
+	HW="NONE"
+    fi
 fi
 if [ $ENB_S1 -eq 0 ]; then 
     SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES NAS=1 "
@@ -171,8 +221,8 @@ if [ $RT = "RTAI" ]; then
 fi
 
 if [ $TARGET != "ALL" ]; then 
-    if [$TARGET  != "SOFTMODEM" ]; then 
-	$HW="NONE"
+    if [ $TARGET  != "SOFTMODEM" ]; then 
+	HW="NONE"
     fi
 fi
 
@@ -230,15 +280,18 @@ oaisim_compiled=1
 unisim_compiled=1
 
 if [ $TARGET = "ALL" ]; then
-    output=$(compile_ltesoftmodem $CLEAN >> bin/install_log.txt  2>&1 )
+    echo "############# compile_ltesoftmodem #############" >> bin/install_log.txt
+    output=$(compile_ltesoftmodem $OAI_CLEAN >> bin/install_log.txt  2>&1 )
     softmodem_compiled=$?
     check_for_ltesoftmodem_executable
     
-    output=$(compile_oaisim   $CLEAN     >> bin/install_log.txt  2>&1 )
+    echo "################ compile_oaisim #################" >> bin/install_log.txt
+    output=$(compile_oaisim   $OAI_CLEAN     >> bin/install_log.txt  2>&1 )
     oaisim_compiled=$?
     check_for_oaisim_executable
 
-    output=$(compile_unisim  $CLEAN      >> bin/install_log.txt  2>&1 )
+    echo "################## compile_unisim ##################" >> bin/install_log.txt
+    output=$(compile_unisim  $OAI_CLEAN      >> bin/install_log.txt  2>&1 )
     unisim_compiled=$?
     check_for_dlsim_executable
     check_for_ulsim_executable
@@ -251,17 +304,20 @@ if [ $TARGET = "ALL" ]; then
 else
     
     if [ $TARGET = "SOFTMODEM" ]; then 
-	output=$(compile_ltesoftmodem  >> bin/install_log.txt 2>&1 )
+	echo "################ compile_ltesoftmodem #################" >> bin/install_log.txt
+	output=$(compile_ltesoftmodem  $OAI_CLEAN >> bin/install_log.txt 2>&1 )
 	softmodem_compiled=$?
 	check_for_ltesoftmodem_executable
     fi
     if [ $TARGET = "OAISIM" ]; then 
-	output=$(compile_oaisim  >> bin/install_log.txt 2>&1 )
+	echo "################ compile_oaisim ###############" >> bin/install_log.txt
+	output=$(compile_oaisim  $OAI_CLEAN >> bin/install_log.txt 2>&1 )
 	oaisim_compiled=$?	
 	check_for_oaisim_executable
     fi
     if [ $TARGET = "UNISIM" ]; then 
-	output=$(compile_unisim  >> bin/install_log.txt 2>&1 )
+	echo "################ compile_unisim ###############" >> bin/install_log.txt
+	output=$(compile_unisim  $OAI_CLEAN >> bin/install_log.txt 2>&1 )
 	unisim_compiled=$?
 	check_for_dlsim_executable
 	check_for_ulsim_executable
@@ -295,8 +351,7 @@ if [ $unisim_compiled =  0 ]; then
     echo "target unisim built "  >>  bin/${oai_build_date}
 fi 
 
-echo "build terminated, see logs is $OPENAIR_TARGETS/bin/install_log.txt"
-
+echo_info "build terminated, see logs is $OPENAIR_TARGETS/bin/install_log.txt"
 
    
 

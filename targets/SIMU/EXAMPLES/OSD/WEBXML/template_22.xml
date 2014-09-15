@@ -35,9 +35,9 @@
     <MOBILITY> 
       <UE_MOBILITY>
 	<RANDOM_UE_DISTRIBUTION>
-	  <NUMBER_OF_NODES>10</NUMBER_OF_NODES>
+	  <NUMBER_OF_NODES>1</NUMBER_OF_NODES>
 	</RANDOM_UE_DISTRIBUTION>
-	<UE_MOBILITY_TYPE>STATIC</UE_MOBILITY_TYPE>
+	<UE_MOBILITY_TYPE>RWP</UE_MOBILITY_TYPE>
       </UE_MOBILITY>
       <eNB_MOBILITY>
 	<eNB_INITIAL_DISTRIBUTION>random</eNB_INITIAL_DISTRIBUTION>
@@ -60,16 +60,16 @@
     -->
     <!-- UL --> 
     <PREDEFINED_TRAFFIC>
-      <SOURCE_ID>1:9</SOURCE_ID> <!-- valid formats are "n:m" and "n,m" and "n" -->
+      <SOURCE_ID>1</SOURCE_ID> <!-- valid formats are "n:m" and "n,m" and "n" -->
       <FLOW_START_ms>200</FLOW_START_ms> <!-- indicates the start time of the app or the actual duration of the traffic-->
-      <FLOW_DURATION_ms>5000</FLOW_DURATION_ms>
+      <FLOW_DURATION_ms>500</FLOW_DURATION_ms>
       <APPLICATION_TYPE>scbr</APPLICATION_TYPE> 
       <DESTINATION_ID>0</DESTINATION_ID> <!-- valid formats are "n:m" and "n,m" and "n"  -->
     </PREDEFINED_TRAFFIC>
   </APPLICATION_CONFIG>
 
   <EMULATION_CONFIG>
-    <EMULATION_TIME_ms>10000</EMULATION_TIME_ms> <!--set to infinity--> 
+    <EMULATION_TIME_ms>1000</EMULATION_TIME_ms> <!--set to infinity--> 
     <CURVE>disable</CURVE>
     <PERFORMANCE_METRICS>
       <THROUGHPUT>1</THROUGHPUT>

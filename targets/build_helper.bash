@@ -41,29 +41,27 @@ E_NOTROOT=67
 NUM_CPU=`cat /proc/cpuinfo | grep processor | wc -l`
 OAI_INSTALLED=1
 PWD=`pwd`
+USER=`whoami`
+BUILD_FROM_MAKEFILE=0
+SUDO=''
+PW=''
+
+set_build_from_makefile(){
+    BUILD_FROM_MAKEFILE=$1   
+}
 
 check_for_root_rights() {
-    if [[ $EUID -eq 0 ]]; then
-        echo "Run as a sudoers" 
+    
+  #  if [[ $EUID -ne $ROOT_EUID ]]; then
+    if [ $USER != "root" ]; then
+       	SUDO="sudo -S -E "
+	echo "Run as a sudoers" 
 	return 1
     else 
 	echo  "Run as a root" 
 	return 0
     fi
 }
-
-output=$(check_for_root_rights) 
-result=$?
-SUDO=''
-PW=''
-if [ $result -ne 1 ]; then
-  #  echo "Please provide your  password :" 
-  #  read -s PW
-#   SUDO="echo $PW | sudo -S -E "
-    SUDO="sudo -S -E "
-else 
-    echo "root"
-fi
 
 test_install_package() {
   # usage: test_install_package package_name
@@ -512,8 +510,7 @@ compile_epc() {
 compile_ltesoftmodem() {
     cd $OPENAIR_TARGETS/RT/USER
     if [ -f Makefile ];  then
-        echo "Compiling for EXMIMO target (default)..."
-	echo "Compiling directives: $SOFTMODEM_DIRECTIVES"
+       	echo "Compiling directives: $SOFTMODEM_DIRECTIVES"
         if [ $1 = 1 ]; then 
 	    make cleanall > /dev/null 2>&1
 	fi 
@@ -587,7 +584,7 @@ compile_unisim() {
 check_for_ltesoftmodem_executable() {
     if [ ! -f $OPENAIR_TARGETS/RT/USER/lte-softmodem ];   then
         echo_error "Cannot find lte-softmodem executable object in directory $OPENAIR_TARGETS/RT/USER"
-        echo_error "Please make sure you have compiled OAI lte-softmodem"
+        echo_error "Check the compilation logs in bin/install_log.txt"
     fi
 }
 
@@ -608,56 +605,56 @@ check_for_sgw_executable() {
 check_for_oaisim_executable() {
     if [ ! -f $OPENAIR_TARGETS/SIMU/USER/oaisim ]; then
         echo_error "Cannot find oaisim executable object in directory $OPENAIR_TARGETS/SIMU/USER"
-        echo_error "Please make sure that the OAI oaisim is compiled"
+        echo_error "Check the compilation logs in bin/install_log.txt"
     fi
 }
 
 check_for_dlsim_executable() {
     if [ ! -f $OPENAIR1_DIR/SIMULATION/LTE_PHY/dlsim ];  then
         echo_error "Cannot find dlsim executable object in directory $OPENAIR1_DIR/SIMULATION/LTE_PHY"
-        echo_error "Please make sure that the OAI dlsim is compiled"
+        echo_error "Check the compilation logs in bin/install_log.txt"
     fi
 }
 
 check_for_ulsim_executable() {
     if [ ! -f $OPENAIR1_DIR/SIMULATION/LTE_PHY/ulsim ]; then
         echo_error "Cannot find ulsim executable object in directory $OPENAIR1_DIR/SIMULATION/LTE_PHY"
-        echo_error "Please make sure that the OAI ulsim is compiled"
+        echo_error "Check the compilation logs in bin/install_log.txt"
     fi
 }
 
 check_for_pucchsim_executable() {
     if [ ! -f $OPENAIR1_DIR/SIMULATION/LTE_PHY/pucchsim ]; then
         echo_error "Cannot find pucchsim executable object in directory $OPENAIR1_DIR/SIMULATION/LTE_PHY"
-        echo_error "Please make sure that the OAI pucchsim is compiled"
+        echo_error "Check the compilation logs in bin/install_log.txt"
     fi
 }
 
 check_for_prachsim_executable() {
     if [ ! -f $OPENAIR1_DIR/SIMULATION/LTE_PHY/prachsim ]; then
         echo_error "Cannot find prachsim executable object in directory $OPENAIR1_DIR/SIMULATION/LTE_PHY"
-        echo_error "Please make sure that the OAI prachsim is compiled"
+        echo_error "Check the compilation logs in bin/install_log.txt"
     fi
 }
 
 check_for_pdcchsim_executable() {
     if [ ! -f $OPENAIR1_DIR/SIMULATION/LTE_PHY/pdcchsim ]; then
         echo_error "Cannot find pdcchsim executable object in directory $OPENAIR1_DIR/SIMULATION/LTE_PHY"
-        echo_error "Please make sure that the OAI pdcchsim is compiled"
+        echo_error "Check the compilation logs in bin/install_log.txt"
     fi
 }
 
 check_for_pbchsim_executable() {
     if [ ! -f $OPENAIR1_DIR/SIMULATION/LTE_PHY/pbchsim ]; then
         echo_error "Cannot find pbchsim executable object in directory $OPENAIR1_DIR/SIMULATION/LTE_PHY"
-        echo_error "Please make sure that the OAI pbchsim is compiled"
+        echo_error "Check the compilation logs in bin/install_log.txt"
     fi
 }
 
 check_for_mbmssim_executable() {
     if [ ! -f $OPENAIR1_DIR/SIMULATION/LTE_PHY/mbmssim ]; then
         echo_error "Cannot find mbmssim executable object in directory $OPENAIR1_DIR/SIMULATION/LTE_PHY"
-        echo_error "Please make sure that the OAI mbmssim is compiled"
+        echo_error "Check the compilation logs in bin/install_log.txt"
     fi
 }
 
@@ -723,6 +720,7 @@ install_oaisim() {
    fi 
    
 }
+
 ###############################
 ## echo and  family 
 ###############################
@@ -744,18 +742,12 @@ cecho()   # Color-echo
     local default_msg="No Message."
     message=${1:-$default_msg}
     color=${2:-$green}
-    echo -e -n "$color$message$reset_color"
-    echo
-    return
-}
-
-cecho2()   # Color-echo
-# arg1 = message
-# arg2 = color
-{
-    local default_msg="No Message."
-    message=${1:-$default_msg}
-    echo "$message"
+    if [ $BUILD_FROM_MAKEFILE = 0 ]; then 
+	echo -e -n "$color$message$reset_color"
+	echo
+    else 
+	echo "$message"
+    fi
     return
 }
 

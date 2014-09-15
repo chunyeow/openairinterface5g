@@ -539,8 +539,9 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 	  if (round==0)
 #endif
 	    {
-	      LOG_I(MAC,"[eNB %d][PUSCH %d] Frame %d subframeP %d Scheduling UE %d round %d (SR %d)\n",
+	      LOG_I(MAC,"[eNB %d][PUSCH %d] Frame %d subframeP %d Scheduling UE %d round %d, PHR %d (SR %d)\n",
                     module_idP,harq_pid,frameP,subframeP,UE_id,round,
+		    UE_template->phr_info,
                     UE_template->ul_SR);
 
 	      // reset the scheduling request
