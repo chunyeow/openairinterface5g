@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 int write_output(const char *fname,const char *vname,void *data,int length,int dec,char format) {
 
   FILE *fp;
@@ -48,7 +49,6 @@ int write_output(const char *fname,const char *vname,void *data,int length,int d
    else if (format != 10 && format !=11  && format != 12 ) 
    {
 	   fp = fopen(fname,"w+");
-       fprintf(fp,"%s = [",vname);
    }
   
 
@@ -58,6 +58,8 @@ int write_output(const char *fname,const char *vname,void *data,int length,int d
     return(-1);
   }
 
+  if (format != 10 && format !=11  && format != 12 ) 
+    fprintf(fp,"%s = [",vname);
   
    
   switch (format) 
