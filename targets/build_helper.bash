@@ -72,7 +72,7 @@ test_install_package() {
       } || {
           echo "$1 is not installed." 
 	  OAI_INSTALLED=0
-          $SUDO apt-get install --assume-yes $1  
+          $SUDO apt-get install --force-yes $1  
       }
   fi
 }
@@ -668,13 +668,13 @@ install_ltesoftmodem() {
     if [ $1 = "RTAI" ]; then 
 	if [ ! -f /tmp/init_rt_done.tmp ]; then
             echo_info "  8.1 Insert RTAI modules"
-            insmod /usr/realtime/modules/rtai_hal.ko     > /dev/null 2>&1
-            insmod /usr/realtime/modules/rtai_sched.ko   > /dev/null 2>&1
-            insmod /usr/realtime/modules/rtai_sem.ko     > /dev/null 2>&1
-            insmod /usr/realtime/modules/rtai_fifos.ko   > /dev/null 2>&1
-            insmod /usr/realtime/modules/rtai_mbx.ko     > /dev/null 2>&1
-            touch /tmp/init_rt_done.tmp
-            chmod 666 /tmp/init_rt_done.tmp
+            $SUDO$ insmod /usr/realtime/modules/rtai_hal.ko     > /dev/null 2>&1
+            $SUDO$ insmod /usr/realtime/modules/rtai_sched.ko   > /dev/null 2>&1
+            $SUDO$ insmod /usr/realtime/modules/rtai_sem.ko     > /dev/null 2>&1
+            $SUDO$ insmod /usr/realtime/modules/rtai_fifos.ko   > /dev/null 2>&1
+            $SUDO$ insmod /usr/realtime/modules/rtai_mbx.ko     > /dev/null 2>&1
+            $SUDO$ touch /tmp/init_rt_done.tmp
+            $SUDO$ chmod 666 /tmp/init_rt_done.tmp
         else
             echo_warning "  8.1 RTAI modules already inserted"
         fi
@@ -689,7 +689,7 @@ install_ltesoftmodem() {
 	for i in `seq 0 64`; do 
 	    have_rtfX=`ls /dev/ |grep -c rtf$i`;
 	    if [ "$have_rtfX" -eq 0 ] ; then 
-		mknod -m 666 /dev/rtf$i c 150 $i; 
+		$SUDO$ mknod -m 666 /dev/rtf$i c 150 $i; 
 	    fi;
 	done
 	echo_info "  8.3 [EXMIMO] Build lte-softmodemdrivers"
@@ -740,6 +740,26 @@ set_openair_env(){
 	export OPENAIRCN_DIR=$oai_path/openair-cn
     fi
 
+}
+
+########################################
+### print help
+######################################
+
+print_help(){
+    echo_success "Name : build_oai  - install and build OAI"
+    echo_success "Usage: build_oai.bash -b -c -d -eRTAI -m -rREL8 -s -tOAISIM -wEXMIMO -x"
+    echo_success "-b   : enables S1 interface for eNB (default enabled)"
+    echo_success "-c   : enables clean OAI build (default disabled)"
+    echo_success "-d   : enables debug mode (default disabled)"
+    echo_success "-e   : sets realtime mode: RTAI, RT_PREEMPT, RT_DISABLED (default RTAI)"
+    echo_success "-m   : enables build from the makefile (default disabled)"
+    echo_success "-r   : sets the release: REL8, REL10 (default REL8)"
+    echo_success "-s   : enables OAI sanity check (default disabled)"
+    echo_success "-t   : sets the build target: ALL, SOFTMODEM,OAISIM,UNISIM (default ALL)"
+    echo_success "-w   : sets the hardware platform: EXMIMO, USRP, NONE, (default EXMIMO)"
+    echo_success "-x   : enables xforms (default disabled)"
+    echo_success "-z   : sets the default build options"
 }
 ###############################
 ## echo and  family 

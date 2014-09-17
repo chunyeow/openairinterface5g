@@ -53,7 +53,6 @@ REL="REL8" # REL8, REL10
 RT="RTAI" # RTAI, RT_PREMPT or RT_DISABLED
 DEBUG=0
 
-ENB_CONFIG_FILE=$OPENAIR_TARGETS/"PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.conf"
 OAI_TEST=0
 XFORMS=0
 
@@ -83,7 +82,7 @@ fi
 #    echo "i is : $i"
 #    case $i in
 
-while getopts "bcdmsxze:f:h:r:t:" OPTION; do
+while getopts "bcdmsxzhe:w:r:t:" OPTION; do
    case "$OPTION" in
        b)
 	   ENB_S1=1
@@ -102,18 +101,14 @@ while getopts "bcdmsxze:f:h:r:t:" OPTION; do
 	   RT="$OPTARG"
 	   echo "setting realtime flag to: $RT"
 	   ;;
-       f)
-	   ENB_CONFIG_FILE="$OPTARG" 
-	   echo "setting enb config file path to: $ENB_CONFIG_FILE"
-	   ;;
        h)
-	   HW="$OPTARG" #"${i#*=}"
-	   echo "setting hardware to: $HW"
+	   print_help
+	   exit -1
 	   ;;
        m)
 	   BUILD_FROM_MAKEFILE=1
 	   set_build_from_makefile $BUILD_FROM_MAKEFILE
-	   echo "setting build from make to: $BUILD_FROM_MAKEFILE"
+	   echo "setting a flag to build from makefile to: $BUILD_FROM_MAKEFILE"
 	   ;;
        r)
 	   REL="$OPTARG" 
@@ -126,6 +121,10 @@ while getopts "bcdmsxze:f:h:r:t:" OPTION; do
        t)
 	   TARGET="$OPTARG" 
 	   echo "setting target to: $TARGET"
+	   ;;
+       w)
+	   HW="$OPTARG" #"${i#*=}"
+	   echo "setting hardware to: $HW"
 	   ;;
        x)
 	   XFORMS=1
@@ -178,10 +177,8 @@ touch bin/${oai_build_date}
 echo_info "2. Process the parameters"
 
 echo_info "User-defined Parameters :  HW=$HW, TARGET=$TARGET, ENB_S1=$ENB_S1, REL=$REL, RT=$RT, DEBUG=$DEBUG XFORMS=$XFORMS"
-echo_info "ENB_CONFIG_FILE: $ENB_CONFIG_FILE"
 
 echo "User-defined Parameters :  HW=$HW, TARGET=$TARGET, ENB_S1=$ENB_S1, REL=$REL, RT=$RT, DEBUG=$DEBUG XFORMS=$XFORMS" >> bin/${oai_build_date}
-echo "ENB_CONFIG_FILE: $ENB_CONFIG_FILE" >>  bin/${oai_build_date}
 
  
 ############################################
@@ -211,12 +208,12 @@ else
     OAISIM_DIRECTIVES="$OAISIM_DIRECTIVES Rel10=1 "
 fi
 if [ $RT = "RTAI" ]; then 
-    if [ -f /usr/realtime/modules ];   then
-	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES HARD_RT=1 "
-    else 
+    if [ ! -f /usr/realtime/modules/rtai_hal.ko ];   then
 	echo_warning "RTAI doesn't seem to be installed"
 	RT="RT_PREMPT"
 	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES RTAI=0 "
+    else 
+	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES HARD_RT=1 "
     fi
 fi
 

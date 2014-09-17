@@ -7,7 +7,7 @@ build_rtai:
 	./build_oai.bash -c -b -eRTAI -tSOFTMODEM  -m
 
 build_usrp_rtai:
-	./build_oai.bash -c -b -eRTAI -tSOFTMODEM -hUSRP -m
+	./build_oai.bash -c -b -eRTAI -tSOFTMODEM -wUSRP -m
 
 
 help:
