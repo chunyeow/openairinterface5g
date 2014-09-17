@@ -164,18 +164,18 @@ touch bin/${oai_build_date}
 ################################
 # cleanup first 
 ################################
-echo_info "3. Cleaning ..."
+#echo_info "3. Cleaning ..."
 
-$SUDO kill -9 `ps -ef | grep oaisim | awk '{print $2}'`
-$SUDO kill -9 `ps -ef | grep lte-softmodem | awk '{print $2}'`
-$SUDO kill -9 `ps -ef | grep dlsim | awk '{print $2}'`
-$SUDO kill -9 `ps -ef | grep ulsim | awk '{print $2}'`
+#$SUDO kill -9 `ps -ef | grep oaisim | awk '{print $2}'` 2>&1
+#$SUDO kill -9 `ps -ef | grep lte-softmodem | awk '{print $2}'`  2>&1
+#$SUDO kill -9 `ps -ef | grep dlsim | awk '{print $2}'`  2>&1
+#$SUDO kill -9 `ps -ef | grep ulsim | awk '{print $2}'`  2>&1
 
 ##########################################
 # process parameters
 #########################################
 
-echo_info "3. Process the parameters"
+echo_info "2. Process the parameters"
 
 echo_info "User-defined Parameters :  HW=$HW, TARGET=$TARGET, ENB_S1=$ENB_S1, REL=$REL, RT=$RT, DEBUG=$DEBUG XFORMS=$XFORMS"
 echo_info "ENB_CONFIG_FILE: $ENB_CONFIG_FILE"
@@ -188,7 +188,7 @@ echo "ENB_CONFIG_FILE: $ENB_CONFIG_FILE" >>  bin/${oai_build_date}
 # compilation directives 
 ############################################
 
-echo_info "4. building the compilation directives ..."
+echo_info "3. building the compilation directives ..."
 
 SOFTMODEM_DIRECTIVES="ENB_S1=$ENB_S1 DEBUG=$DEBUG XFORMS=$XFORMS "
 OAISIM_DIRECTIVES="ENB_S1=$ENB_S1 DEBUG=$DEBUG XFORMS=$XFORMS "
@@ -240,11 +240,13 @@ echo "SOFTMODEM Compilation directives: $SOFTMODEM_DIRECTIVES" >>  bin/${oai_bui
 echo "OAISIM Compilation directive:    $OAISIM_DIRECTIVES" >>  bin/${oai_build_date}
 
 ############################################
-# Printing OAI envs, we should check here
+# setting and printing OAI envs, we should check here
 ############################################
 
+echo_info "3. Setting the OAI PATHS ..."
 
-echo_info "5. Checking the OAI PATHS ... (TBD)"
+output=$(set_openair_env 2>&1) 
+
 cecho "OPENAIR_HOME    = $OPENAIR_HOME" $green
 cecho "OPENAIR1_DIR    = $OPENAIR1_DIR" $green
 cecho "OPENAIR2_DIR    = $OPENAIR2_DIR" $green
@@ -366,7 +368,3 @@ else
     echo_info "9. Bypassing the Tests ..."
 fi 
  
-
-
-
-

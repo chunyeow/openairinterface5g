@@ -54,7 +54,7 @@ check_for_root_rights() {
     
   #  if [[ $EUID -ne $ROOT_EUID ]]; then
     if [ $USER != "root" ]; then
-       	SUDO="sudo -S -E "
+       	SUDO="sudo -E "
 	echo "Run as a sudoers" 
 	return 1
     else 
@@ -145,6 +145,7 @@ make_certs(){
     
     echo "Copying cakey.pem user.key.pem cacert.pem to /usr/local/etc/freeDiameter/"
     $SUDO cp user.key.pem user.cert.pem cacert.pem /usr/local/etc/freeDiameter/
+    mv user.key.pem user.cert.pem cacert.pem bin/
     
 # openssl genrsa -out ubuntu.key.pem 1024
 # openssl req -new -batch -x509 -out ubuntu.csr.pem -key ubuntu.key.pem -subj /CN=ubuntu.localdomain/C=FR/ST=BdR/L=Aix/O=fD/OU=Tests
@@ -269,7 +270,7 @@ check_s6a_certificate() {
 check_install_oai_software() {
     
     if [ ! -f ./.lock_oaibuild ]; then 
-
+	$SUDO apt-get update
 	test_install_package autoconf 
 	test_install_package automake 
 	test_install_package bison 
@@ -370,7 +371,7 @@ check_install_oai_software() {
         check_s6a_certificate
     fi
 
-    test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $result"
+    test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO"
     
     # One mor check about version of asn1c
     ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE="ASN.1 Compiler, v0.9.24"
@@ -382,7 +383,7 @@ check_install_oai_software() {
         echo_error "$ASN1C_COMPILER_VERSION_MESSAGE"
         while read -r -n 1 -s answer; do
             if [[ $answer = [YyNn] ]]; then
-                [[ $answer = [Yy] ]] && $OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $results
+                [[ $answer = [Yy] ]] && $OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO
                 [[ $answer = [Nn] ]] && echo_error "Version of asn1c is not the required one, exiting." && exit 1
                 break
             fi
@@ -721,6 +722,25 @@ install_oaisim() {
    
 }
 
+################################
+# set_openair
+###############################
+set_openair_env(){
+
+    index=`pwd | grep -b -o targets | cut -d: -f1`
+    if [ $index = "" ] || [ $index= " " ] ; then
+	echo_error "Please run the script from targets directory or any child directories"
+    else 
+	oai_path=`pwd | cut -c1-$index`
+	export OPENAIR_HOME=$oai_path
+	export OPENAIR1_DIR=$oai_path/openair1
+	export OPENAIR2_DIR=$oai_path/openair2
+	export OPENAIR3_DIR=$oai_path/openair3
+	export OPENAIR_TARGETS=$oai_path/targets
+	export OPENAIRCN_DIR=$oai_path/openair-cn
+    fi
+
+}
 ###############################
 ## echo and  family 
 ###############################
