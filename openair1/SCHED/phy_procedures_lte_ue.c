@@ -3311,7 +3311,7 @@ void phy_UE_lte_measurement_thresholds_test_and_report(instance_t instanceP, ral
 
         memcpy(&PHY_MEAS_REPORT_IND (message_p).link_param,
                 &threshold_phy_pP->link_param,
-                sizeof(PHY_MEAS_REPORT_IND (message_p).link_param));\
+                sizeof(PHY_MEAS_REPORT_IND (message_p).link_param));
 
         switch (threshold_phy_pP->link_param.choice) {
             case RAL_LINK_PARAM_CHOICE_LINK_PARAM_VAL:
@@ -3322,6 +3322,7 @@ void phy_UE_lte_measurement_thresholds_test_and_report(instance_t instanceP, ral
                 AssertFatal (1 == 0, "TO DO RAL_LINK_PARAM_CHOICE_QOS_PARAM_VAL\n");
                 break;
         }
+	//LOG_I(PHY,"[XXX] Sending link parameters report msg message to RRC\n");
         itti_send_msg_to_task(TASK_RRC_UE, instanceP, message_p);
     }
 }
@@ -3346,6 +3347,8 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
                     break;
                 case RAL_LINK_PARAM_GEN_THROUGHPUT:
                     break;
+		default:;
+	    }
             break;
 
         case RAL_LINK_PARAM_TYPE_CHOICE_LTE:
@@ -3378,13 +3381,14 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
                     break;
                 case RAL_LINK_PARAM_LTE_NUM_ACTIVE_EMBMS_RECEIVERS_PER_FLOW:
                     break;
-                default:;
+                default:
+		    LOG_W(PHY,"unknown message %d\n", threshold_phy_pP->link_param.link_param_type._union.link_param_gen);
             }
             break;
 
-        default:;
-	    }
-    }
+        default:
+	 LOG_W(PHY,"unknown message %d\n", threshold_phy_pP->link_param.link_param_type.choice);
+   }
 }
 #   endif
 #endif
@@ -3466,8 +3470,8 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
             // check if it is a measurement timer
         {
             hashtable_rc_t       hashtable_rc;
-
             hashtable_rc = hashtable_is_key_exists(PHY_vars_UE_g[Mod_id][CC_id]->ral_thresholds_timed, (uint64_t)(TIMER_HAS_EXPIRED(msg_p).timer_id));
+	    LOG_I(PHY, "[UE %d] Received TIMER HAS EXPIRED: (hash_rc %d, HASH_TABLE_OK %d)\n", Mod_id, hashtable_rc, HASH_TABLE_OK);	
             if (hashtable_rc == HASH_TABLE_OK) {
                 phy_UE_lte_check_measurement_thresholds(instance, (ral_threshold_phy_t*)TIMER_HAS_EXPIRED(msg_p).arg);
             }
@@ -3518,6 +3522,7 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
                                               &PHY_vars_UE_g[Mod_id][CC_id]->ral_thresholds_lte_polled[PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.link_param_type._union.link_param_lte],
                                               threshold_phy_p,
                                               ral_thresholds);
+//LOG_E(PHY, "[UE %d] NORMAL/ONE SHOT - TIMER NULL - type LTE in %s\n", Mod_id, msg_name);
                                           break;
 
                                       default:
@@ -3540,6 +3545,7 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
                                       hashtable_rc = hashtable_insert(PHY_vars_UE_g[Mod_id][CC_id]->ral_thresholds_timed, (uint64_t )timer_id, (void*)threshold_phy_p);
                                       if (hashtable_rc == HASH_TABLE_OK) {
                                           threshold_phy_p->timer_id = timer_id;
+					LOG_I(PHY, "[UE %d] NORMAL/ONE SHOT - TIMER CHOICE - OK - in Hash %s\n", Mod_id, msg_name);
                                       } else {
                                           LOG_E(PHY, "[UE %d]  %s: Error in hashtable. Could not configure threshold index %d \n",
                                                   Mod_id, msg_name, index);

@@ -418,6 +418,7 @@ typedef struct UE_RRC_INST_s {
   uint8_t                         num_active_cba_groups;
   uint16_t                        cba_rnti[NUM_MAX_CBA_GROUP];
 #endif
+  uint8_t                         num_srb;
   struct SRB_ToAddMod             *SRB1_config[NB_CNX_UE];
   struct SRB_ToAddMod             *SRB2_config[NB_CNX_UE];
   struct DRB_ToAddMod             *DRB_config[NB_CNX_UE][8];

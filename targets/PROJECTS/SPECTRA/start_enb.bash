@@ -36,12 +36,14 @@
 #------------------------------------------------
 # ENB CONFIG FILE
 #------------------------------------------------
-declare -x ENB_CONFIG_FILE="CONF/enb.sfr.yang.conf"
+#declare -x ENB_CONFIG_FILE="CONF/enb.sfr.yang.conf"
+declare -x ENB_CONFIG_FILE="enb.conf"
 
 #------------------------------------------------
 # OAI NETWORKING
 #------------------------------------------------
-declare -x EMULATION_DEV_INTERFACE="eth1"
+declare -x EMULATION_DEV_INTERFACE="eth0"
+declare -x EMULATION_DEV_ADDRESS="192.168.13.1"
 declare -x IP_DRIVER_NAME="oai_nw_drv"
 declare -x LTEIF="oai0"
 declare -x ENB_IPv4="10.0.0.1"
@@ -49,7 +51,7 @@ declare -x ENB_IPv6="2001:1::1"
 declare -x ENB_IPv6_CIDR=$ENB_IPv6"/64"
 declare -x ENB_IPv4_CIDR=$ENB_IPv4"/24"
 declare -a NAS_IMEI=( 3 9 1 8 3 6 6 2 0 0 0 0 0 0 )
-declare -x IP_DEFAULT_MARK="3"
+declare -x IP_DEFAULT_MARK="1" # originally 3
 #------------------------------------------------
 # OAI MIH
 #------------------------------------------------
@@ -64,7 +66,7 @@ LOG_FILE="/tmp/oai_sim_enb.log"
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/env_802dot21.bash
 ###########################################################
-
+bash_exec "ifconfig $EMULATION_DEV_INTERFACE up $EMULATION_DEV_ADDRESS netmask 255.255.255.0"
 ###########################################################
 IPTABLES=/sbin/iptables
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
@@ -143,8 +145,7 @@ rotate_log_file $MIH_LOG_FILE
 
 
 # start MIH-F
-#xterm -hold -e 
-$ODTONE_MIH_EXE_DIR/$MIH_F --log 4 --conf.file $ODTONE_MIH_EXE_DIR/$ENB_MIH_F_CONF_FILE > $MIH_LOG_FILE 2>&1 &
+xterm -hold -e $ODTONE_MIH_EXE_DIR/$MIH_F --log 4 --conf.file $ODTONE_MIH_EXE_DIR/$ENB_MIH_F_CONF_FILE > $MIH_LOG_FILE 2>&1 &
 wait_process_started $MIH_F
 
 NOW=$(date +"%Y-%m-%d.%Hh_%Mm_%Ss")
@@ -172,7 +173,8 @@ $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -K $LOG_FILE -l9 -u0 -b1 -M0 -p2  -g1 -D $
              --enb-mihf-remote-port     $ENB_MIHF_REMOTE_PORT \
              --enb-mihf-ip-address      $ENB_MIHF_IP_ADDRESS \
              --enb-mihf-id              $ENB_MIHF_ID \
-             -O $ENB_CONFIG_FILE  | grep  "RAL\|PDCP" &
+             -O $ENB_CONFIG_FILE   > log_enb.txt &
+#             -O $ENB_CONFIG_FILE  | grep  "RAL\|PDCP" &
 
 wait_process_started oaisim
 

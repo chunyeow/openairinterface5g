@@ -36,7 +36,9 @@
 #------------------------------------------------
 # OAI NETWORKING
 #------------------------------------------------
-declare -x EMULATION_DEV_INTERFACE="eth1"
+declare -x EMULATION_DEV_INTERFACE="eth0"
+declare -x EMULATION_DEV_ADDRESS="192.168.13.2"
+
 declare -x IP_DRIVER_NAME="oai_nw_drv"
 declare -x LTEIF="oai0"
 declare -x UE_IPv4="10.0.0.2"
@@ -44,24 +46,26 @@ declare -x UE_IPv6="2001:1::2"
 declare -x UE_IPv6_CIDR=$UE_IPv6"/64"
 declare -x UE_IPv4_CIDR=$UE_IPv4"/24"
 declare -a NAS_IMEI=( 3 9 1 8 3 6 7 3 0 2 0 0 0 0 )
-declare -x IP_DEFAULT_MARK="3"
+declare -x IP_DEFAULT_MARK="1" # originally 3 
 
 #------------------------------------------------
 # OAI MIH
 #------------------------------------------------
 declare -x UE_MIHF_IP_ADDRESS="127.0.0.1"
 declare -x UE_RAL_IP_ADDRESS="127.0.0.1"
-LOG_FILE="/tmp/oai_sim_enb.log"
+LOG_FILE="/tmp/oai_sim_ue.log"
 
 #------------------------------------------------
 MIH_LOG_FILE="mih-f_ue.log"
 
+# EXE options
+EXE_MODE="DEBUG" # "PROD"
 
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/env_802dot21.bash
 ###########################################################
-
+bash_exec "ifconfig $EMULATION_DEV_INTERFACE up $EMULATION_DEV_ADDRESS netmask 255.255.255.0"
 ###########################################################
 IPTABLES=/sbin/iptables
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
@@ -130,9 +134,12 @@ ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
 
 rotate_log_file $MIH_LOG_FILE
 
+echo "printing the MIH file path"
+echo "$ODTONE_MIH_EXE_DIR/$MIH_F $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE"
+echo "$ODTONE_MIH_EXE_DIR/$UE_MIH_USER $ODTONE_MIH_EXE_DIR/$UE_MIH_USER_CONF_FILE"
+
 # start MIH-F
-#xterm -hold -e 
-$ODTONE_MIH_EXE_DIR/$MIH_F --log 4 --conf.file $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE > $MIH_LOG_FILE 2>&1 &
+xterm -hold -e $ODTONE_MIH_EXE_DIR/$MIH_F --log 4 --conf.file $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE > $MIH_LOG_FILE 2>&1 &
 wait_process_started $MIH_F
 sleep 3
 
@@ -153,14 +160,33 @@ UE_MIHF_REMOTE_PORT=`cat $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE | grep local_po
 UE_MIHF_ID=`cat $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE | grep id | grep \= | grep -v \# | tr -d " "  | cut -d'=' -f2`
 
 #xterm -hold -e gdb --args 
-$OPENAIR_TARGETS/SIMU/USER/oaisim -a -K $LOG_FILE -l9 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_INTERFACE  \
+# $EMULATION_DEV_INTERFACE -D192.168.13.2
+#sudo ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
+#$OPENAIR2_DIR/NAS/DRIVER/LITE/RB_TOOL/rb_tool -a -c0 -i0 -z0 -s 10.0.0.2 -t 10.0.0.1 -r 1
+
+if [ $EXE_MODE = "DEBUG" ] ; then 
+	echo "$OPENAIR_TARGETS/SIMU/USER/oaisim -a -K $LOG_FILE -l7 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_ADDRESS --ue-ral-listening-port   $UE_RAL_LISTENING_PORT --ue-ral-link-id          $UE_RAL_LINK_ID_STRIPPED  --ue-ral-ip-address       $UE_RAL_IP_ADDRESS  --ue-mihf-remote-port     $UE_MIHF_REMOTE_PORT --ue-mihf-ip-address      $UE_MIHF_IP_ADDRESS --ue-mihf-id              $UE_MIHF_ID "
+
+	$OPENAIR_TARGETS/SIMU/USER/oaisim -a -K $LOG_FILE -l7 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_ADDRESS  \
              --ue-ral-listening-port   $UE_RAL_LISTENING_PORT \
              --ue-ral-link-id          $UE_RAL_LINK_ID_STRIPPED \
              --ue-ral-ip-address       $UE_RAL_IP_ADDRESS \
              --ue-mihf-remote-port     $UE_MIHF_REMOTE_PORT \
              --ue-mihf-ip-address      $UE_MIHF_IP_ADDRESS \
-             --ue-mihf-id              $UE_MIHF_ID  | grep  "RAL\|PDCP" &
-             
+             --ue-mihf-id              $UE_MIHF_ID  > log_ue.txt &
+else 
+	echo "$OPENAIR_TARGETS/SIMU/USER/oaisim -a -l3 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_ADDRESS --ue-ral-listening-port   $UE_RAL_LISTENING_PORT --ue-ral-link-id          $UE_RAL_LINK_ID_STRIPPED  --ue-ral-ip-address       $UE_RAL_IP_ADDRESS  --ue-mihf-remote-port     $UE_MIHF_REMOTE_PORT --ue-mihf-ip-address      $UE_MIHF_IP_ADDRESS --ue-mihf-id              $UE_MIHF_ID "
+
+      $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_ADDRESS  \
+             --ue-ral-listening-port   $UE_RAL_LISTENING_PORT \
+             --ue-ral-link-id          $UE_RAL_LINK_ID_STRIPPED \
+             --ue-ral-ip-address       $UE_RAL_IP_ADDRESS \
+             --ue-mihf-remote-port     $UE_MIHF_REMOTE_PORT \
+             --ue-mihf-ip-address      $UE_MIHF_IP_ADDRESS \
+             --ue-mihf-id              $UE_MIHF_ID  > /dev/null &
+
+fi       
+ 
 wait_process_started oaisim
 
 

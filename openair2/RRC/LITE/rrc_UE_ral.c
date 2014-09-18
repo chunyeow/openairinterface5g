@@ -223,6 +223,7 @@ int rrc_ue_ral_handle_configure_threshold_request(unsigned int mod_idP, MessageD
                         rrc_ue_ral_delete_threshold(mod_idP, &link_cfg_param_p->link_param_type, threshold_p);
                     }
                 }
+		LOG_E(RRC, "Message RRC_RAL_CONFIGURE_THRESHOLD_REQ with RAL_TH_ACTION_CANCEL_THRESHOLD\n");
                 break;
             default:
                 LOG_E(RRC, "Message RRC_RAL_CONFIGURE_THRESHOLD_REQ malformed, unknown th_action %d\n", link_cfg_param_p->th_action);
