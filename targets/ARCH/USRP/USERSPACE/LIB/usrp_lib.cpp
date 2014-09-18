@@ -174,6 +174,18 @@ static bool is_equal(double a, double b)
 {
   return std::fabs(a-b) < std::numeric_limits<double>::epsilon();
 }
+
+int openair0_set_frequencies(openair0_device* device, openair0_config_t *openair0_cfg) {
+
+  usrp_state_t *s = (usrp_state_t*)device->priv;
+
+  s->usrp->set_tx_freq(openair0_cfg[0].tx_freq[0]);
+  s->usrp->set_rx_freq(openair0_cfg[0].rx_freq[0]);
+
+  return(0);
+  
+}
+
  
 int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cfg)
 {

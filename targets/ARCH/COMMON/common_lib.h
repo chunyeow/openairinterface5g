@@ -116,10 +116,12 @@ extern "C"
 /* return 0 if OK, < 0 if error */
 int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cfg);
 openair0_timestamp get_usrp_time(openair0_device *device);
+  int openair0_set_frequencies(openair0_device* device, openair0_config_t *openair0_cfg);
 }
 #else
 int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cfg);
 openair0_timestamp get_usrp_time(openair0_device *device);
+int openair0_set_frequencies(openair0_device* device, openair0_config_t *openair0_cfg);
 #endif
 
 #endif // COMMON_LIB_H
