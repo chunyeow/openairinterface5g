@@ -102,7 +102,7 @@ int lte_est_freq_offset(int **dl_ch_estimates,
     
     dl_ch = (int16_t *)&dl_ch_estimates[aa][12+ch_offset];
     
-    dl_ch_shift = 4+(log2_approx(dl_channel_level(dl_ch,frame_parms))/2);
+    dl_ch_shift = 6+(log2_approx(dl_channel_level(dl_ch,frame_parms))/2);
     //    printf("dl_ch_shift: %d\n",dl_ch_shift);
     
     if (ch_offset == 0)
@@ -131,12 +131,12 @@ int lte_est_freq_offset(int **dl_ch_estimates,
     omega_cpx->i += ((struct complex16*) &omega)->i;
     //    phase_offset += atan2((double)omega_cpx->i,(double)omega_cpx->r);
     phase_offset += atan2((double)omega_cpx->i,(double)omega_cpx->r);
-    //    printf("omega (%d,%d) -> %f\n",omega_cpx->r,omega_cpx->i,phase_offset);
+    //    LOG_D(PHY,"omega (%d,%d) -> %f\n",omega_cpx->r,omega_cpx->i,phase_offset);
   }
     //  phase_offset /= (frame_parms->nb_antennas_rx*frame_parms->nb_antennas_tx);
 
-  freq_offset_est = (int) (phase_offset/(2*M_PI)/2.5e-4); //2.5e-4 is the time between pilot symbols
-  //  printf("symbol %d : freq_offset_est %d\n",l,freq_offset_est);
+  freq_offset_est = (int) (phase_offset/(2*M_PI)/(frame_parms->Ncp==NORMAL ? (285.8e-6):(2.5e-4))); //2.5e-4 is the time between pilot symbols
+  //  LOG_D(PHY,"symbol %d : freq_offset_est %d\n",l,freq_offset_est);
 
   // update freq_offset with phase_offset using a moving average filter
   if (first_run == 1) {

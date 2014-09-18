@@ -801,7 +801,7 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
   uint8_t new_dft=0;
   uint8_t aa;
   int32_t lev;
-  int8_t levdB;
+  int16_t levdB;
   int fft_size,log2_ifft_size;
   uint8_t nb_ant_rx = 1; //phy_vars_eNB->lte_frame_parms.nb_antennas_rx;
 
@@ -1121,7 +1121,7 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
       for (aa=0; aa<nb_ant_rx; aa++) {            
 	lev += (int32_t)prach_ifft[aa][(preamble_shift2+i)<<2]*prach_ifft[aa][(preamble_shift2+i)<<2] + (int32_t)prach_ifft[aa][1+((preamble_shift2+i)<<2)]*prach_ifft[aa][1+((preamble_shift2+i)<<2)];
       }
-      levdB = dB_fixed(lev);        
+      levdB = dB_fixed_times10(lev);        
 
       if (levdB>preamble_energy_list[preamble_index] ) {
 	preamble_energy_list[preamble_index]  = levdB;

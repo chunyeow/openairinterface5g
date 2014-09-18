@@ -48,7 +48,7 @@
 #include "gain_control.h"
 #endif
 
-#define DEBUG_INITIAL_SYNCH
+//#define DEBUG_INITIAL_SYNCH
 
 int pbch_detection(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
 
@@ -458,7 +458,7 @@ int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
 #ifdef OPENAIR2
       LOG_I(PHY,"[PHY][UE%d] Sending synch status to higher layers\n",phy_vars_ue->Mod_id);
     //mac_resynch();
-	mac_xface->dl_phy_sync_success(phy_vars_ue->Mod_id,phy_vars_ue->frame_rx,0,1);//phy_vars_ue->lte_ue_common_vars.eNb_id);
+      mac_xface->dl_phy_sync_success(phy_vars_ue->Mod_id,phy_vars_ue->frame_rx,0,1);//phy_vars_ue->lte_ue_common_vars.eNb_id);
 #endif //OPENAIR2
  
     generate_pcfich_reg_mapping(frame_parms);

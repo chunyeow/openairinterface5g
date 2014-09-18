@@ -53,7 +53,8 @@
 
 //unsigned short phich_reg[MAX_NUM_PHICH_GROUPS][3];
 
-uint8_t rv_table[4] = {0, 2, 3, 1}; //36.321 5.4.2.2
+
+uint8_t rv_table[4] = {0, 2, 3, 1};
 
 uint8_t get_mi(LTE_DL_FRAME_PARMS *frame_parms,uint8_t subframe) {
 

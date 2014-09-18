@@ -3678,7 +3678,7 @@ uint8_t ul_subframe2pdcch_alloc_subframe(LTE_DL_FRAME_PARMS *frame_parms,uint8_t
 
 }
 
-uint8_t pdcch_alloc2ul_frame(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame, uint8_t n){
+uint32_t pdcch_alloc2ul_frame(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame, uint8_t n){
 
   if ((frame_parms->frame_type == TDD) && 
       (frame_parms->tdd_config == 1) &&

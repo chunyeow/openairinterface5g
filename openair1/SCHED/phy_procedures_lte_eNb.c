@@ -1620,13 +1620,16 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
       }
 #ifdef DEBUG_PHY_PROC
       //if (phy_vars_eNB->proc[sched_subframe].frame_tx%100 == 0)
-	LOG_I(PHY,"[eNB %d][PUSCH %d] Frame %d subframe %d Generated ULSCH (format0) DCI (rnti %x, dci %x) (DCI pos %d/%d), aggregation %d\n",
+	LOG_I(PHY,"[eNB %d][PUSCH %d] Frame %d subframe %d UL Frame %d, UL Subframe %d, Generated ULSCH (format0) DCI (rnti %x, dci %x) (DCI pos %d/%d), aggregation %d\n",
 	      phy_vars_eNB->Mod_id, 
 	      subframe2harq_pid(&phy_vars_eNB->lte_frame_parms,
-				pdcch_alloc2ul_frame(&phy_vars_eNB->lte_frame_parms,(((subframe)==0)?1:0)+phy_vars_eNB->proc[sched_subframe].frame_tx,subframe),
+				pdcch_alloc2ul_frame(&phy_vars_eNB->lte_frame_parms,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe),
 				pdcch_alloc2ul_subframe(&phy_vars_eNB->lte_frame_parms,subframe)),
-	      pdcch_alloc2ul_frame(&phy_vars_eNB->lte_frame_parms,(((subframe)==0)?1:0)+phy_vars_eNB->proc[sched_subframe].frame_tx,subframe),
-	      subframe,DCI_pdu->dci_alloc[i].rnti,
+	      phy_vars_eNB->proc[sched_subframe].frame_tx,
+	      subframe,
+	      pdcch_alloc2ul_frame(&phy_vars_eNB->lte_frame_parms,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe),
+	      pdcch_alloc2ul_subframe(&phy_vars_eNB->lte_frame_parms,subframe),
+	      DCI_pdu->dci_alloc[i].rnti,
 	      *(unsigned int *)&DCI_pdu->dci_alloc[i].dci_pdu[0],
 	      i,DCI_pdu->Num_common_dci + DCI_pdu->Num_ue_spec_dci,
 	      1<<DCI_pdu->dci_alloc[i].L);
@@ -1867,6 +1870,13 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 		     phy_vars_eNB->proc[sched_subframe].frame_tx,
 		     &phy_vars_eNB->ulsch_eNB[(uint32_t)UE_id]->Msg3_frame,
 		     &phy_vars_eNB->ulsch_eNB[(uint32_t)UE_id]->Msg3_subframe);
+      LOG_I(PHY,"[eNB][RAPROC] Frame %d subframe %d, Activated Msg3 demodulation for UE %d in frame %d, subframe %d\n",
+	    phy_vars_eNB->proc[sched_subframe].frame_tx,
+	    subframe,
+	    UE_id,
+	    phy_vars_eNB->ulsch_eNB[(uint32_t)UE_id]->Msg3_frame,
+	    phy_vars_eNB->ulsch_eNB[(uint32_t)UE_id]->Msg3_subframe);
+	    
 #else
       for (i=0;i<input_buffer_length;i++)
 	dlsch_input_buffer[i]= (unsigned char) i; //(taus()&0xff);
@@ -2552,6 +2562,8 @@ void get_n1_pucch_eNB(PHY_VARS_eNB *phy_vars_eNB,
 }
 
 
+extern int16_t prach_ifft[4][1024*4];
+
 void prach_procedures(PHY_VARS_eNB *phy_vars_eNB,uint8_t sched_subframe,uint8_t abstraction_flag) {
 
   uint16_t preamble_energy_list[64],preamble_delay_list[64];
@@ -2589,7 +2601,7 @@ void prach_procedures(PHY_VARS_eNB *phy_vars_eNB,uint8_t sched_subframe,uint8_t 
       if ((PHY_vars_UE_g[UE_id][CC_id]->generate_prach==1) &&
 	  (PHY_vars_UE_g[UE_id][CC_id]->lte_frame_parms.prach_config_common.rootSequenceIndex ==
 	   phy_vars_eNB->lte_frame_parms.prach_config_common.rootSequenceIndex) ) {
-	preamble_energy_list[PHY_vars_UE_g[UE_id][CC_id]->prach_PreambleIndex] = 80;
+	preamble_energy_list[PHY_vars_UE_g[UE_id][CC_id]->prach_PreambleIndex] = 800;
 	preamble_delay_list[PHY_vars_UE_g[UE_id][CC_id]->prach_PreambleIndex] = 5;
 	
       }
@@ -2612,16 +2624,27 @@ void prach_procedures(PHY_VARS_eNB *phy_vars_eNB,uint8_t sched_subframe,uint8_t 
 	preamble_delay_list[preamble_max]);
 #endif
 
-  if (preamble_energy_list[preamble_max] > 60) {
+  if (preamble_energy_list[preamble_max] > 600) {
+    /*
+    write_output("prach_ifft0.m","prach_t0",prach_ifft[0],2048,1,1);
+    write_output("prach_rx0.m","prach_rx0",&phy_vars_eNB->lte_eNB_common_vars.rxdata[0][0][subframe*phy_vars_eNB->lte_frame_parms.samples_per_tti],6144+792,1,1);
+    write_output("prach_rxF0.m","prach_rxF0",phy_vars_eNB->lte_eNB_prach_vars.rxsigF[0],24576,1,1);
+
+    mac_xface->macphy_exit("Exiting for PRACH debug\n");
+    */
+
     UE_id = find_next_ue_index(phy_vars_eNB);
     if (UE_id>=0) {
       phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].UE_timing_offset = preamble_delay_list[preamble_max]&0x1FFF; //limit to 13 (=11+2) bits
       //phy_vars_eNb->eNB_UE_stats[(uint32_t)UE_id].mode = PRACH;
       phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].sector = 0;
-      LOG_I(PHY,"[eNB %d][RAPROC] Initiating RA procedure with preamble %d, energy %d, delay %d\n",
+      LOG_I(PHY,"[eNB %d][RAPROC] Frame %d, subframe %d Initiating RA procedure with preamble %d, energy %d.%d dB, delay %d\n",
 	    phy_vars_eNB->Mod_id,
+	    frame,
+	    subframe,
 	    preamble_max,
-	    preamble_energy_max,
+	    preamble_energy_max/10,
+	    preamble_energy_max%10,
 	    preamble_delay_list[preamble_max]);
 #ifdef OPENAIR2	  
       mac_xface->initiate_ra_proc(phy_vars_eNB->Mod_id,
@@ -2643,6 +2666,7 @@ void ulsch_decoding_procedures(unsigned char subframe, unsigned int i, PHY_VARS_
 {
   LOG_D(PHY,"ulsch_decoding_procedures not yet implemented. should not be called");
 }
+
 
 
 void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag,relaying_type_t r_type) {
@@ -3724,8 +3748,7 @@ void phy_procedures_eNB_lte(unsigned char subframe,PHY_VARS_eNB **phy_vars_eNB,u
     if (phy_vars_eNB->proc[sched_subframe].frame_tx >= 1000)
     mac_xface->macphy_exit("Exiting after 1000 Frames\n");
   */
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_SLOT_NUMBER_ENB, subframe*2);
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER_ENB, phy_vars_eNB[0]->proc[subframe].frame_tx);
+  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER_TX_ENB, phy_vars_eNB[0]->proc[subframe].frame_tx);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_ENB_LTE,1);
   start_meas(&phy_vars_eNB[0]->phy_proc);
 

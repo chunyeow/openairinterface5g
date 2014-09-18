@@ -80,7 +80,7 @@ int generate_eNB_ulsch_params_from_rar(unsigned char *rar_pdu,
   uint16_t *RIV2nb_rb_LUT, *RIV2first_rb_LUT;
   uint16_t RIV_max;
 
-  LOG_D(PHY,"[eNB][RAPROC] generate_eNB_ulsch_params_from_rar: subframe %d (harq_pid %d)\n",subframe,harq_pid);
+  LOG_I(PHY,"[eNB][RAPROC] generate_eNB_ulsch_params_from_rar: subframe %d (harq_pid %d)\n",subframe,harq_pid);
   switch (frame_parms->N_RB_DL) {
     case 6:
       RIV2nb_rb_LUT     = &RIV2nb_rb_LUT6[0];

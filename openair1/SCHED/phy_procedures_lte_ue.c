@@ -1476,19 +1476,23 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
 
   if (l==(4-frame_parms->Ncp)) {
 
-
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_RRC_MEASUREMENTS, VCD_FUNCTION_IN);
     ue_rrc_measurements(phy_vars_ue,
 			slot_rx,
 			abstraction_flag);
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_RRC_MEASUREMENTS, VCD_FUNCTION_OUT);
 
-    //phy_vars_ue->sinr_eff =  sinr_eff_cqi_calc(phy_vars_ue, 0);
+    if (abstraction_flag==1)
+      phy_vars_ue->sinr_eff =  sinr_eff_cqi_calc(phy_vars_ue, 0);
 
   }  
 
   if ((slot_rx==1) && (l==(4-frame_parms->Ncp))) {
     
     // AGC
-#ifdef EXMIMO    
+
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_GAIN_CONTROL, VCD_FUNCTION_IN);
+#if defined EXMIMO  
 
     if ((openair_daq_vars.rx_gain_mode == DAQ_AGC_ON) &&
 	(mode != rx_calib_ue) && (mode != rx_calib_ue_med) && (mode != rx_calib_ue_byp) )
@@ -1499,7 +1503,8 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
     phy_adjust_gain (phy_vars_ue,0);
 
 #endif
-
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_GAIN_CONTROL, VCD_FUNCTION_OUT);
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ADJUST_SYNCH, VCD_FUNCTION_IN);
     eNB_id = 0;
     
     if (abstraction_flag == 0) 
@@ -1508,6 +1513,7 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
                          eNB_id,
                          0,
                          16384);
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ADJUST_SYNCH, VCD_FUNCTION_OUT);
     
     /* if (openair_daq_vars.auto_freq_correction == 1) {
       if (frame_rx % 100 == 0) {
@@ -2349,6 +2355,7 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
       n_symb = 0;   	
   }
   else {
+    /*
     if (is_pmch_subframe(frame_rx,subframe_rx,&phy_vars_ue->lte_frame_parms)) {
       if ((slot_rx%2)==0) {
 	n_symb=2;
@@ -2357,7 +2364,7 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
       else
 	n_symb=0;
     }
-    else
+    else*/
       n_symb = phy_vars_ue->lte_frame_parms.symbols_per_tti/2;
   }
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2369,11 +2376,13 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
   for (l=0;l<n_symb;l++) {
     if (abstraction_flag == 0) {
       start_meas(&phy_vars_ue->ofdm_demod_stats);
+      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SLOT_FEP, VCD_FUNCTION_IN);
       slot_fep(phy_vars_ue,
 	       l,
 	       slot_rx,
 	       phy_vars_ue->rx_offset,
 	       0);
+      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SLOT_FEP, VCD_FUNCTION_OUT);
       stop_meas(&phy_vars_ue->ofdm_demod_stats);
     }
   

@@ -138,8 +138,8 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
       Msc_RS_idx = b;
 #endif
 
-  //  msg("lte_ul_channel_estimation: subframe %d, Ns %d, l %d, Msc_RS = %d, Msc_RS_idx = %d, u %d, v %d, cyclic_shift %d\n",subframe,Ns,l,Msc_RS, Msc_RS_idx,u,v,cyclic_shift);
- #ifdef DEBUG_CH
+  //  LOG_I(PHY,"subframe %d, Ns %d, l %d, Msc_RS = %d, Msc_RS_idx = %d, u %d, v %d, cyclic_shift %d\n",subframe,Ns,l,Msc_RS, Msc_RS_idx,u,v,cyclic_shift);
+#ifdef DEBUG_CH
 
 #ifdef USER_MODE
   if (Ns==0)

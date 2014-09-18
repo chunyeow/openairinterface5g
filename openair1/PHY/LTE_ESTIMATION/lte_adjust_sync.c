@@ -53,7 +53,7 @@ void lte_adjust_synch(LTE_DL_FRAME_PARMS *frame_parms,
   ncoef = 32767 - coef;
 
 #ifdef DEBUG_PHY
-  LOG_D(PHY,"frame %d: rx_offset (before) = %d\n",phy_vars_ue->frame_rx,phy_vars_ue->rx_offset);
+  LOG_D(PHY,"frame %d, slot %d: rx_offset (before) = %d\n",phy_vars_ue->frame_rx,phy_vars_ue->slot_rx,phy_vars_ue->rx_offset);
 #endif //DEBUG_PHY
 
 
@@ -77,7 +77,7 @@ void lte_adjust_synch(LTE_DL_FRAME_PARMS *frame_parms,
   else
     max_pos_fil = ((max_pos_fil * coef) + (max_pos * ncoef)) >> 15;
 
-
+  
   diff = max_pos_fil - 2; //frame_parms->nb_prefix_samples/8;
 
   if ( diff > SYNCH_HYST )
@@ -91,7 +91,7 @@ void lte_adjust_synch(LTE_DL_FRAME_PARMS *frame_parms,
   if ( phy_vars_ue->rx_offset >= FRAME_LENGTH_COMPLEX_SAMPLES )
     phy_vars_ue->rx_offset -= FRAME_LENGTH_COMPLEX_SAMPLES;
 
-
+  
 
 #ifdef DEBUG_PHY
   LOG_D(PHY,"frame %d: rx_offset (after) = %d : max_pos = %d,max_pos_fil = %d (peak %d)\n",
