@@ -275,26 +275,20 @@ check_install_oai_software() {
 	test_install_package automake 
 	test_install_package bison 
 	test_install_package build-essential
-	test_install_package cmake
-	test_install_package cmake-curses-gui 
-	test_install_package dkms
 	test_install_package flex 
 	test_install_package gawk
 	test_install_package gcc
 	test_install_package gdb 
 	test_install_package make
+	test_install_package cmake
 	test_install_package openssh-client
 	test_install_package openssh-server
-	test_install_package swig 
 	test_install_package unzip 
-	test_install_package valgrind 
 	test_install_package autoconf
 	test_install_package automake
 	test_install_package bison
 	test_install_package build-essential
 	test_install_package check
-	test_install_package cmake
-	test_install_package cmake-curses-gui
 	test_install_package ethtool
 	test_install_package flex
 	test_install_package g++
@@ -330,46 +324,34 @@ check_install_oai_software() {
 	test_install_package libtasn1-3-dev
 	test_install_package libxml2
 	test_install_package libxml2-dev
-	test_install_package linux-headers-`uname -r`
-	test_install_package make
-	test_install_package openssh-client
-	test_install_package openssh-server
+#	test_install_package linux-headers-`uname -r`
 	test_install_package openssl
-	test_install_package libssl-dev
-	test_install_package nettle-dev
-	test_install_package nettle-bin
-	test_install_package openvpn
+	test_install_package libssl-dev 
 	test_install_package pkg-config
 	test_install_package python-dev
 	test_install_package python-pexpect
 	test_install_package sshfs
 	test_install_package subversion
-	test_install_package swig
-	test_install_package tshark
-	test_install_package uml-utilities
-	test_install_package unzip
 	test_install_package valgrind
-	test_install_package vlan
-	test_install_package doxygen
 	# uninstall some automatically installed packges
 	# we need a newer version
 #	test_uninstall_package libnettle4
+	
+	check_install_freediamter
+    else 
+	if [ ! -d /usr/local/etc/freeDiameter ]; then
+	    check_install_freediamter
+	fi
+	
     fi 
 
-    echo "$OPENAIR_TARGETS/bin/install_log.txt"
     if [ $OAI_INSTALLED = 1 ]; then 
 	touch ./.lock_oaibuild
     fi 
-
-    if [ ! -d /usr/local/etc/freeDiameter ]; then
-           # This script make certificates also
-#	echo "run the install script for free diameter "
-#	cd $OPENAIRCN_DIR/S6A/freediameter/ && ./install_freediameter.sh
-	check_install_freediamter
-    else
-        echo_success "freediameter is installed"
-        check_s6a_certificate
-    fi
+    
+    echo_success "freediameter is installed"
+    check_s6a_certificate
+    
 
     test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO"
     
@@ -427,6 +409,8 @@ check_install_hss_software() {
     test_install_package sshfs
     test_install_package swig 
     test_install_package unzip 
+    test_install_package nettle-bin
+    test_install_package nettle-dev
     test_install_package valgrind 
 }
 
@@ -727,8 +711,8 @@ install_oaisim() {
 ###############################
 set_openair_env(){
 
-    index=`pwd | grep -b -o targets | cut -d: -f1`
-    if [ $index = "" ] || [ $index= " " ] ; then
+    index=`pwd | grep -b -o /targets | cut -d: -f1`
+    if [ $index = "" ] ; then
 	echo_error "Please run the script from targets directory or any child directories"
     else 
 	oai_path=`pwd | cut -c1-$index`
