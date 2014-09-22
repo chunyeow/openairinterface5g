@@ -317,6 +317,13 @@ int openair0_config(openair0_config_t *openair0_cfg, int UE_flag)
       p_exmimo_config->framing.eNB_flag   = !UE_flag;
     
     p_exmimo_config->framing.tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
+
+    if (openair0_num_detected_cards==1)
+      p_exmimo_config->framing.multicard_syncmode=SYNCMODE_FREE;
+    else if (card==0)
+      p_exmimo_config->framing.multicard_syncmode=SYNCMODE_MASTER;
+    else
+      p_exmimo_config->framing.multicard_syncmode=SYNCMODE_SLAVE;
     
     if (openair0_cfg[card].sample_rate==30.72e6) {
       resampling_factor = 0;
