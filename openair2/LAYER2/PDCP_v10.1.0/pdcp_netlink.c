@@ -268,7 +268,7 @@ void *pdcp_netlink_thread_fct(void *arg) {
                               new_data_p->pdcp_read_header.inst, pdcp_netlink_nb_element_enb);
                       }
 
-                      LOG_D(PDCP, "[NETLINK_THREAD] En-queueing packet for eNB instance  %d\n", new_data_p->pdcp_read_header.inst);
+                      LOG_I(PDCP,"[NETLINK_THREAD] IP->PDCP : En-queueing packet for eNB instance  %d\n", new_data_p->pdcp_read_header.inst);
 
                       /* Enqueue the element in the right queue */
                       lfds611_queue_guaranteed_enqueue(pdcp_netlink_queue_enb[new_data_p->pdcp_read_header.inst], new_data_p);
@@ -281,7 +281,7 @@ void *pdcp_netlink_thread_fct(void *arg) {
                               new_data_p->pdcp_read_header.inst, pdcp_netlink_nb_element_ue);
                       }
 
-                      LOG_D(PDCP, "[NETLINK_THREAD] En-queueing packet for UE instance  %d\n", new_data_p->pdcp_read_header.inst);
+                      LOG_I(PDCP,"[NETLINK_THREAD] IP->PDCP : En-queueing packet for UE instance  %d\n", new_data_p->pdcp_read_header.inst);
 
                       /* Enqueue the element in the right queue */
                       lfds611_queue_guaranteed_enqueue(pdcp_netlink_queue_ue[new_data_p->pdcp_read_header.inst], new_data_p);
