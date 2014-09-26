@@ -127,7 +127,7 @@ make_certs(){
     echo "creating the certificate"
     
     user=$(whoami)
-    HOSTNAME=$(hostname -f)
+    HOSTNAME=$(hostname)
 
     echo "Creating certificate for user '$HOSTNAME'"
     
@@ -673,7 +673,7 @@ install_ltesoftmodem() {
 	for i in `seq 0 64`; do 
 	    have_rtfX=`ls /dev/ |grep -c rtf$i`;
 	    if [ "$have_rtfX" -eq 0 ] ; then 
-		$SUDO$ mknod -m 666 /dev/rtf$i c 150 $i; 
+		$SUDO mknod -m 666 /dev/rtf$i c 150 $i; 
 	    fi;
 	done
 	echo_info "  8.3 [EXMIMO] Build lte-softmodemdrivers"

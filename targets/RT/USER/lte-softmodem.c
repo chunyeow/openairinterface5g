@@ -1659,8 +1659,10 @@ static void *UE_thread_synch(void *arg) {
 	  for (i=0; i<openair0_cfg[card].rx_num_channels; i++) {
 	    openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i]+openair_daq_vars.freq_offset;
 	    openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i]+openair_daq_vars.freq_offset;
+#ifdef USRP
 #ifndef USRP_DEBUG
 	    openair0_set_frequencies(&openair0,&openair0_cfg[0]);
+#endif
 #endif
 	  }
 	}

@@ -215,6 +215,10 @@ if [ $RT = "RTAI" ]; then
     else 
 	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES HARD_RT=1 "
     fi
+else 
+    if [ $RT = "RT_PREEMPT" ]; then 
+	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES RTAI=0 "
+    fi	
 fi
 
 if [ $TARGET != "ALL" ]; then 
