@@ -47,6 +47,11 @@ ROOT_UID=0
 E_NOTROOT=67
 
 HOSTNAME=$(hostname -f)
+if [ $? -eq 1 ]
+then
+    HOSTNAME=$(hostname)
+fi
+
 IPTABLES=`which iptables`
 
 trim ()
