@@ -325,7 +325,7 @@ uint8_t get_ack(LTE_DL_FRAME_PARMS *frame_parms,
   uint8_t status=0;
   uint8_t subframe_dl;
 
-  printf("get_ack: SF %d\n",subframe);
+  //  printf("get_ack: SF %d\n",subframe);
   if (frame_parms->frame_type == FDD) {
     if (subframe < 4)
       subframe_dl = subframe + 6;

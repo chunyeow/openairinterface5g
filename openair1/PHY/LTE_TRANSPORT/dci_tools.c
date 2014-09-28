@@ -4199,14 +4199,17 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
     if (ulsch->harq_processes[harq_pid]->first_tx==1) {
       //      ulsch->harq_processes[harq_pid]->Ndi                                   = 1;
       ulsch->harq_processes[harq_pid]->first_tx=0;
+      ulsch->harq_processes[harq_pid]->round = 0;
     }
     else {
       if (ulsch->harq_processes[harq_pid]->DCINdi!=ndi) { // new SDU opportunity
 	//	ulsch->harq_processes[harq_pid]->Ndi = 1;
 	ulsch->harq_processes[harq_pid]->DCINdi= ndi;
+	ulsch->harq_processes[harq_pid]->round = 0;
       }
       else {
 	//	ulsch->harq_processes[harq_pid]->Ndi = 0;
+	//	ulsch->harq_processes[harq_pid->round++;  // This is done in phich RX
       }
     }
     ulsch->harq_processes[harq_pid]->n_DMRS                                = cshift;     
@@ -4237,8 +4240,6 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
     else if(cshift == 7)
       ulsch->harq_processes[harq_pid]->n_DMRS2 = 9;
 
-    LOG_D(PHY,"[UE %d][PUSCH %d] Frame %d, subframe %d : Programming PUSCH with n_DMRS2 %d (cshift %d)\n",
-	  phy_vars_ue->Mod_id,harq_pid,phy_vars_ue->frame_rx,subframe,ulsch->harq_processes[harq_pid]->n_DMRS2,cshift);
 
     //reserved for cooperative communication
     /*
@@ -4400,15 +4401,24 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
       // msg("ulsch: saving pmi for DL %x\n",pmi2hex_2Ar1(((wideband_cqi_rank1_2A_5MHz *)ulsch->o)->pmi));
       dlsch[0]->pmi_alloc = ((wideband_cqi_rank1_2A_5MHz *)ulsch->o)->pmi;
     */
-    /*
-      if (frame_parms->frame_type == TDD) 
-      // 2bits if together with SR
-      // 1 bit if ACK only?
-      // check dai business
-      ulsch->harq_processes[harq_pid]->O_ACK                                 = 1; //(dai+1)&3;
-      else 
-    */  ulsch->harq_processes[harq_pid]->O_ACK                                 = 1;
-    
+
+        // check this (see comment in generate_ue_ulsch_params_from_dci)
+    if (frame_parms->frame_type == FDD) {
+      int dl_subframe = (subframe<4) ? (subframe+6) : (subframe-4);
+      if (phy_vars_ue->dlsch_ue[eNB_id][0]->harq_ack[dl_subframe].send_harq_status>0) { // we have downlink transmission
+	ulsch->harq_processes[harq_pid]->O_ACK = 1;
+      }
+      else {
+	ulsch->harq_processes[harq_pid]->O_ACK = 0;
+      }
+    } else {
+      if (ulsch->bundling)
+	ulsch->harq_processes[harq_pid]->O_ACK = (dai == 3)? 0 : 1;
+      else
+	ulsch->harq_processes[harq_pid]->O_ACK = (dai+1)&3;
+      
+      //      ulsch->harq_processes[harq_pid]->V_UL_DAI = dai+1;
+    }
 
     ulsch->beta_offset_cqi_times8                = beta_cqi[phy_vars_ue->pusch_config_dedicated[eNB_id].betaOffset_CQI_Index];//18;
     ulsch->beta_offset_ri_times8                 = beta_ri[phy_vars_ue->pusch_config_dedicated[eNB_id].betaOffset_RI_Index];//10;
@@ -4448,6 +4458,9 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
       if (mcs>28) ulsch->harq_processes[harq_pid]->rvidx = mcs - 28;
       //      ulsch->harq_processes[harq_pid]->round++;
     }
+
+    LOG_D(PHY,"[UE %d][PUSCH %d] Frame %d, subframe %d : Programming PUSCH with n_DMRS2 %d (cshift %d), nb_rb %d, first_rb %d, round %d, rv %d\n",
+	  phy_vars_ue->Mod_id,harq_pid,phy_vars_ue->frame_rx,subframe,ulsch->harq_processes[harq_pid]->n_DMRS2,cshift,ulsch->harq_processes[harq_pid]->nb_rb,ulsch->harq_processes[harq_pid]->first_rb,ulsch->harq_processes[harq_pid]->round,ulsch->harq_processes[harq_pid]->rvidx);
 
     // ulsch->n_DMRS2 = ((DCI0_5MHz_TDD_1_6_t *)dci_pdu)->cshift;
 
@@ -4754,9 +4767,22 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
       ulsch->uci_format                            = HLC_subband_cqi_nopmi;
     }
 
-    // check this (see comment in generate_ue_ulsch_params_from_dci)
-    ulsch->harq_processes[harq_pid]->O_ACK                                 = 1; //(dai+1)&3;
-
+    if (frame_parms->frame_type == FDD) {
+      int dl_subframe = (subframe<4) ? (subframe+6) : (subframe-4);
+      if (phy_vars_eNB->dlsch_eNB[UE_id][0]->subframe_tx[dl_subframe]>0) { // we have downlink transmission
+	ulsch->harq_processes[harq_pid]->O_ACK = 1;
+      }
+      else {
+	ulsch->harq_processes[harq_pid]->O_ACK = 0;
+      }
+    } else {
+      if (ulsch->bundling)
+	ulsch->harq_processes[harq_pid]->O_ACK = (dai == 3)? 0 : 1;
+      else
+	ulsch->harq_processes[harq_pid]->O_ACK = (dai+1)&3;
+      
+      ulsch->harq_processes[harq_pid]->V_UL_DAI = dai+1;
+    }
 
     ulsch->beta_offset_cqi_times8                = beta_cqi[phy_vars_eNB->pusch_config_dedicated[UE_id].betaOffset_CQI_Index];//18;
     ulsch->beta_offset_ri_times8                 = beta_ri[phy_vars_eNB->pusch_config_dedicated[UE_id].betaOffset_RI_Index];//10;

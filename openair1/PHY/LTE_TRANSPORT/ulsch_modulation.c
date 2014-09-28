@@ -338,7 +338,7 @@ void ulsch_modulation(mod_sym_t **txdataF,
 
   int re_offset,re_offset0,i,Msymb,j,k,nsymb,Msc_PUSCH,l;
   //  uint8_t harq_pid = (rag_flag == 1) ? 0 : subframe2harq_pid_tdd(frame_parms->tdd_config,subframe);
-  uint8_t harq_pid = subframe2harq_pid(frame_parms,((subframe==0)?1:0)+frame,subframe);
+  uint8_t harq_pid = subframe2harq_pid(frame_parms,frame,subframe);
   uint8_t Q_m;
   mod_sym_t *txptr;
   uint32_t symbol_offset;
@@ -366,12 +366,12 @@ void ulsch_modulation(mod_sym_t **txdataF,
   nb_rb = ulsch->harq_processes[harq_pid]->nb_rb;
 
   if (nb_rb == 0) {
-    msg("ulsch_modulation.c: Illegal nb_rb %d\n",nb_rb);
+    msg("ulsch_modulation.c: Frame %d, Subframe %d Illegal nb_rb %d\n",frame,subframe,nb_rb);
     return;
   }
 
   if (first_rb >25 ) {
-    msg("ulsch_modulation.c: Illegal first_rb %d\n",first_rb);
+    msg("ulsch_modulation.c: Frame %d, Subframe %d Illegal first_rb %d\n",frame,subframe,first_rb);
     return;
   }
 

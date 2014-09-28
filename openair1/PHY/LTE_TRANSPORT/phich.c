@@ -1307,6 +1307,7 @@ void rx_phich(PHY_VARS_UE *phy_vars_ue,
     }
     ulsch->harq_processes[harq_pid]->subframe_scheduling_flag =0;
     ulsch->harq_processes[harq_pid]->status = IDLE;
+    ulsch->harq_processes[harq_pid]->round  = 0;
     // inform MAC?
     phy_vars_ue->ulsch_ue_Msg3_active[eNB_id] = 0;
   }

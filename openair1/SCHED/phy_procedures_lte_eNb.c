@@ -2930,7 +2930,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 			     i,
 			     sched_subframe,
 			     0, // control_only_flag
-			     0, //Nbundled, to be updated!!!!
+			     phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->V_UL_DAI, 
 			     0);  
       }
 #ifdef PHY_ABSTRACTION
@@ -3131,7 +3131,8 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 			    frame,
 			    phy_vars_eNB->ulsch_eNB[i]->rnti,
 			    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->b,
-			    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3);
+			    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3,
+			    harq_pid);
 	  /*
 	    mac_xface->terminate_ra_proc(phy_vars_eNB->Mod_id,
 	    frame,
@@ -3191,7 +3192,8 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 			    frame,
 			    phy_vars_eNB->ulsch_eNB[i]->rnti,
 			    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->b,
-			    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3);
+			    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3,
+			    harq_pid);
 	  //}
 	  /*
 	    else {
@@ -3582,7 +3584,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 			     i,
 			     sched_subframe,
 			     0, // control_only_flag
-			     0,  //Nbundled, to be updated!!!!
+			     phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->V_UL_DAI, 
 			     0);  
       }
 #ifdef PHY_ABSTRACTION
@@ -3660,7 +3662,8 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 			      frame,
 			      phy_vars_eNB->ulsch_eNB[i]->rnti,
 			      phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->b,
-			      phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3);
+			      phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3,
+			      harq_pid);
 	    phy_vars_eNB->cba_last_reception[i%num_active_cba_groups]=1;//(subframe);
 	  } else {
 	    LOG_N(PHY,"[eNB %d] Frame %d subframe %d : CBA collision detected for UE%d for group %d, set the SR for this UE \n ",
