@@ -75,9 +75,6 @@ typedef struct
     /// Fill random access response sdu, passing timing advance
     uint16_t (*fill_rar)(module_id_t Mod_id,int CC_id,frame_t frameP,uint8_t *dlsch_buffer,uint16_t N_RB_UL, uint8_t input_buffer_length);
 
-    /// Terminate the RA procedure upon reception of l3msg on ulsch
-    void (*terminate_ra_proc)(module_id_t Mod_id,int CC_id,frame_t frameP,uint16_t UE_id, uint8_t *l3msg, uint16_t l3msg_len);
-
     /// Initiate the RA procedure upon reception (hypothetical) of a valid preamble
     void (*initiate_ra_proc)(module_id_t Mod_id,int CC_id,frame_t frameP,uint16_t preamble,int16_t timing_offset,uint8_t sect_id,sub_frame_t subframe,uint8_t f_id);
 
@@ -91,7 +88,7 @@ typedef struct
     uint8_t* (*get_dlsch_sdu)(module_id_t Mod_id,int CC_id,frame_t frameP,rnti_t rnti,uint8_t TB_index);
 
     /// Send ULSCH sdu to MAC for given rnti
-    void (*rx_sdu)(module_id_t Mod_id,int CC_id,frame_t frameP,rnti_t rnti, uint8_t *sdu,uint16_t sdu_len);
+    void (*rx_sdu)(module_id_t Mod_id,int CC_id,frame_t frameP,rnti_t rnti, uint8_t *sdu,uint16_t sdu_len, int harq_pid);
 
     /// Indicate failure to synch to external source
     void (*mrbch_phy_sync_failure) (module_id_t Mod_id,frame_t frameP, uint8_t free_eNB_index);

@@ -478,6 +478,8 @@ typedef struct{
   uint8_t oldNDI_UL[8];
   /// Flag to indicate UL has been scheduled at least once
   boolean_t ul_active;
+  /// Flag to indicate UE has been configured (ACK from RRCConnectionSetup received)
+  boolean_t configured;
 
   // PHY interface info
 

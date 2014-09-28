@@ -258,13 +258,6 @@ uint16_t  fill_rar(module_id_t module_idP,
 		   uint16_t N_RB_UL,
 		   uint8_t input_buffer_length);
 
-/* \brief This function indicates the end of RA procedure and provides the l3msg received on ULSCH.
-@param Mod_id Instance ID of eNB
-@param rnti RNTI of UE transmitting l3msg
-@param l3msg Pointer to received l3msg
-*/
-void terminate_ra_proc(module_id_t module_idP,int CC_id,frame_t frameP, rnti_t rnti, uint8_t *l3msg, uint16_t l3msg_len);
-
 /* \brief Function to indicate a failed RA response.  It removes all temporary variables related to the initial connection of a UE
 @param Mod_id Instance ID of eNB
 @param preamble_index index of the received RA request.
@@ -275,8 +268,9 @@ void cancel_ra_proc(module_id_t module_idP,int CC_id,frame_t frameP, uint16_t pr
 @param Mod_id Instance ID of eNB
 @param rnti RNTI of UE transmitting the SR
 @param sdu Pointer to received SDU
+@param harq_pid Index of harq process corresponding to this sdu
 */
-void rx_sdu(module_id_t module_idP, int CC_id,frame_t frameP, rnti_t rnti, uint8_t *sdu, uint16_t sdu_len);
+void rx_sdu(module_id_t module_idP, int CC_id,frame_t frameP, rnti_t rnti, uint8_t *sdu, uint16_t sdu_len, int harq_pid);
 
 /* \brief Function to indicate a scheduled schduling request (SR) was received by eNB.
 @param Mod_id Instance ID of eNB
@@ -476,7 +470,7 @@ uint8_t *parse_ulsch_header(uint8_t *mac_header,
 
 int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active);
 int mac_init(void);
-int add_new_ue(module_id_t Mod_id, int CC_id, rnti_t rnti);
+int add_new_ue(module_id_t Mod_id, int CC_id, rnti_t rnti,int harq_pid);
 int mac_remove_ue(module_id_t Mod_id, int UE_id);
 
 void swap_UEs(UE_list_t *listP,int nodeiP, int nodejP);

@@ -203,7 +203,7 @@ void dump_ue_list(UE_list_t *listP) {
   }
 }
 
-int add_new_ue(module_id_t mod_idP, int cc_idP, rnti_t rntiP) {
+int add_new_ue(module_id_t mod_idP, int cc_idP, rnti_t rntiP,int harq_pidP) {
   int UE_id;
   int j;
 
@@ -218,18 +218,19 @@ int add_new_ue(module_id_t mod_idP, int cc_idP, rnti_t rntiP) {
     UE_list->next[UE_id] = UE_list->head;
     UE_list->head = UE_id;
  
-    UE_list->UE_template[cc_idP][UE_id].rnti = rntiP;
-    UE_list->numactiveCCs[UE_id]             = 1;
-    UE_list->numactiveULCCs[UE_id]           = 1;
-    UE_list->pCC_id[UE_id]                   = cc_idP;
-    UE_list->ordered_CCids[0][UE_id]         = cc_idP;
-    UE_list->ordered_ULCCids[0][UE_id]       = cc_idP;
+    UE_list->UE_template[cc_idP][UE_id].rnti       = rntiP;
+    UE_list->UE_template[cc_idP][UE_id].configured = FALSE;
+    UE_list->numactiveCCs[UE_id]                   = 1;
+    UE_list->numactiveULCCs[UE_id]                 = 1;
+    UE_list->pCC_id[UE_id]                         = cc_idP;
+    UE_list->ordered_CCids[0][UE_id]               = cc_idP;
+    UE_list->ordered_ULCCids[0][UE_id]             = cc_idP;
     UE_list->num_UEs++;
-    UE_list->active[UE_id]                   = TRUE;
+    UE_list->active[UE_id]                         = TRUE;
 
     for (j=0;j<8;j++) {
       UE_list->UE_template[cc_idP][UE_id].oldNDI[j]    = (j==0)?1:0;   // 1 because first transmission is with format1A (Msg4) for harq_pid 0 
-      UE_list->UE_template[cc_idP][UE_id].oldNDI_UL[j] = 0;
+      UE_list->UE_template[cc_idP][UE_id].oldNDI_UL[j] = (j==harq_pidP)?0:1; // 1st transmission is with Msg3;
     }
     eNB_ulsch_info[mod_idP][UE_id].status = S_UL_WAITING;
     eNB_dlsch_info[mod_idP][UE_id].status = S_UL_WAITING;
