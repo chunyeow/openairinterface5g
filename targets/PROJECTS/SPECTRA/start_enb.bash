@@ -42,7 +42,7 @@ declare -x ENB_CONFIG_FILE="enb.conf"
 #------------------------------------------------
 # OAI NETWORKING
 #------------------------------------------------
-declare -x EMULATION_DEV_INTERFACE="eth0"
+declare -x EMULATION_DEV_INTERFACE="eth1"
 declare -x EMULATION_DEV_ADDRESS="192.168.13.1"
 declare -x IP_DRIVER_NAME="oai_nw_drv"
 declare -x LTEIF="oai0"
@@ -115,6 +115,8 @@ assert "  `sysctl -n net.ipv4.conf.all.log_martians` -eq 1" $LINENO
 bash_exec "sysctl -w net.ipv4.conf.all.rp_filter=0"
 assert "  `sysctl -n net.ipv4.conf.all.rp_filter` -eq 0" $LINENO
 bash_exec "ip route flush cache"
+bash_exec "sysctl -w net.ipv4.ip_forward=1"
+assert "  `sysctl -n net.ipv4.ip_forward` -eq 1" $LINENO
 
 # Check table 200 lte in /etc/iproute2/rt_tables
 fgrep lte /etc/iproute2/rt_tables  > /dev/null 
@@ -145,7 +147,7 @@ rotate_log_file $MIH_LOG_FILE
 
 
 # start MIH-F
-xterm -hold -e $ODTONE_MIH_EXE_DIR/$MIH_F --log 4 --conf.file $ODTONE_MIH_EXE_DIR/$ENB_MIH_F_CONF_FILE > $MIH_LOG_FILE 2>&1 &
+xterm -hold -title "[RELAY][eNB1] MIHF" -e $ODTONE_MIH_EXE_DIR/$MIH_F --log 4 --conf.file $ODTONE_MIH_EXE_DIR/$ENB_MIH_F_CONF_FILE > $MIH_LOG_FILE 2>&1 &
 wait_process_started $MIH_F
 
 NOW=$(date +"%Y-%m-%d.%Hh_%Mm_%Ss")
@@ -181,8 +183,10 @@ wait_process_started oaisim
 # start MIH-USER
 #  wait for emulation start
 tshark -c 150 -i $EMULATION_DEV_INTERFACE > /dev/null 2>&1
-xterm -hold -e $ODTONE_MIH_EXE_DIR/$ENB_MIH_USER    --conf.file $ODTONE_MIH_EXE_DIR/$ENB_MIH_USER_CONF_FILE &
+sudo xterm -hold -title "[RELAY][eNB1] MIH_USER" -e $ODTONE_MIH_EXE_DIR/$ENB_MIH_USER    --conf.file $ODTONE_MIH_EXE_DIR/$ENB_MIH_USER_CONF_FILE &
 wait_process_started $ENB_MIH_USER
+
+xterm -hold -title "[RELAY][eNB1] CRM Client" -e tail -f outputGET.txt &
 
 sleep 100000
 

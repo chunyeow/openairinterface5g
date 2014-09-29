@@ -37,8 +37,8 @@
 #####################################################
 # VARIABLES TO BE FILLED WITH RIGHT VALUES:
 #####################################################
-export BOOST_ROOT=/home/alexandrie/DEMO_SPECTRA/boost_1_49_0
-export ODTONE_ROOT=/home/alexandrie/DEMO_SPECTRA/ODTONE
+export BOOST_ROOT=/home/nikaia/DEMO_SPECTRA/boost_1_49_0/
+export ODTONE_ROOT=/home/nikaia/DEMO_SPECTRA/ODTONE/
 
 export MIH_F=odtone-mihf
 export ENB_MIH_F_CONF_FILE=odtone_enb.conf
