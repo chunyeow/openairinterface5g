@@ -71,7 +71,7 @@
 #include "oaisim.h"
 
 #define RF
-#define DEBUG_SIM
+//#define DEBUG_SIM
 
 int number_rb_ul;
 int first_rbUL ;
@@ -284,7 +284,7 @@ void do_DL_sig(double **r_re0,double **r_im0,
 
 #ifdef DEBUG_SIM
         for (i=0;i<eNB2UE[eNB_id][UE_id][CC_id]->channel_length;i++)
-          printf("ch(%d,%d)[%d] : (%f,%f)\n",eNB_id,UE_id,i,eNB2UE[eNB_id][UE_id][CC_id]->ch[0][i].x,eNB2UE[eNB_id][UE_id][CC_id]->ch[0][i].y);
+          LOG_D(OCM,"channel(%d,%d)[%d] : (%f,%f)\n",eNB_id,UE_id,i,eNB2UE[eNB_id][UE_id][CC_id]->ch[0][i].x,eNB2UE[eNB_id][UE_id][CC_id]->ch[0][i].y);
 #endif
 
         LOG_D(OCM,"[SIM][DL] Channel eNB %d => UE %d (CCid %d): tx_power %f dBm/RE, path_loss %f dB\n",

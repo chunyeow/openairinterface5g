@@ -269,8 +269,9 @@ void cancel_ra_proc(module_id_t module_idP,int CC_id,frame_t frameP, uint16_t pr
 @param rnti RNTI of UE transmitting the SR
 @param sdu Pointer to received SDU
 @param harq_pid Index of harq process corresponding to this sdu
+@param msg3_flag flag indicating that this sdu is msg3
 */
-void rx_sdu(module_id_t module_idP, int CC_id,frame_t frameP, rnti_t rnti, uint8_t *sdu, uint16_t sdu_len, int harq_pid);
+  void rx_sdu(module_id_t module_idP, int CC_id,frame_t frameP, rnti_t rnti, uint8_t *sdu, uint16_t sdu_len, int harq_pid,uint8_t *msg3_flag);
 
 /* \brief Function to indicate a scheduled schduling request (SR) was received by eNB.
 @param Mod_id Instance ID of eNB
@@ -473,11 +474,21 @@ int mac_init(void);
 int add_new_ue(module_id_t Mod_id, int CC_id, rnti_t rnti,int harq_pid);
 int mac_remove_ue(module_id_t Mod_id, int UE_id);
 
-void swap_UEs(UE_list_t *listP,int nodeiP, int nodejP);
-int prev(UE_list_t *listP, int nodeP);
+
+int maxround(module_id_t Mod_id,uint16_t rnti,int frame,sub_frame_t subframe,uint8_t ul_flag);
+void swap_UEs(UE_list_t *listP,int nodeiP, int nodejP, int ul_flag);
+int prev(UE_list_t *listP, int nodeP, int ul_flag);
+void dump_ue_list(UE_list_t *listP, int ul_flag);
 int UE_num_active_CC(UE_list_t *listP,int ue_idP);
 int UE_PCCID(module_id_t mod_idP,int ue_idP);
 rnti_t UE_RNTI(module_id_t mod_idP, int ue_idP);
+
+
+void ulsch_scheduler_pre_processor(module_id_t module_idP, int frameP, sub_frame_t subframeP, uint16_t *first_rb, uint8_t  aggregattion, uint32_t *nCCE);
+void store_ulsch_buffer(module_id_t module_idP, int frameP, sub_frame_t subframeP);
+void sort_ue_ul (module_id_t module_idP,int frameP, sub_frame_t subframeP);
+void assign_max_mcs_min_rb(module_id_t module_idP,int frameP, sub_frame_t subframeP,uint16_t *first_rb);
+void adjust_bsr_info(int buffer_occupancy, uint16_t TBS, UE_TEMPLATE *UE_template);
 
 /*! \fn  UE_L2_state_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t subframe, lte_subframe_t direction,uint8_t eNB_index)
    \brief UE scheduler where all the ue background tasks are done.  This function performs the following:  1) Trigger PDCP every 5ms 2) Call RRC for link status return to PHY3) Perform SR/BSR procedures for scheduling feedback 4) Perform PHR procedures.  

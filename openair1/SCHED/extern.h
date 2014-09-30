@@ -77,6 +77,8 @@ extern int synch_wait_cnt;
 
 extern OPENAIR_DAQ_VARS openair_daq_vars;
 
+extern int16_t hundred_times_delta_TF[100];
+extern uint16_t hundred_times_log10_NPRB[100];
 /*
 #ifdef EMOS
 extern fifo_dump_emos_UE emos_dump_UE;

@@ -466,6 +466,8 @@ typedef struct{
   uint64_t total_pdu_bytes_rx;
   // total num pdu
   uint32_t total_num_pdus_rx;
+  // num of error pdus 
+  uint32_t total_num_errors_rx;
 
 }eNB_UE_STATS;
  
@@ -496,11 +498,23 @@ typedef struct{
   uint8_t DLSCH_DCI[8][(MAX_DCI_SIZE_BITS>>3)+1];
 
   /// Number of Allocated RBs for DL after scheduling (prior to frequency allocation)
-  uint16_t nb_rb[8];
+  uint16_t nb_rb[8]; // num_max_harq
 
   /// Number of Allocated RBs for UL after scheduling (prior to frequency allocation)
-  uint16_t nb_rb_ul[8];
+  uint16_t nb_rb_ul[8]; // num_max_harq
+  
+  /// Number of Allocated RBs by the ulsch preprocessor
+  uint8_t pre_allocated_nb_rb_ul;
 
+  /// index of Allocated RBs by the ulsch preprocessor
+  int8_t pre_allocated_rb_table_index_ul;
+  
+  /// total allocated RBs
+  int8_t total_allocated_rbs;
+  
+  /// assigned MCS by the ulsch preprocessor
+  uint8_t pre_assigned_mcs_ul;
+  
   /// DCI buffer for ULSCH
   uint8_t ULSCH_DCI[8][(MAX_DCI_SIZE_BITS>>3)+1];
 
@@ -524,6 +538,9 @@ typedef struct{
   /// phr information
   int8_t phr_info;
 
+  /// phr information
+  int8_t phr_info_configured;
+
   //dl buffer info
   uint32_t dl_buffer_info[MAX_NUM_LCID];
 
@@ -540,6 +557,15 @@ typedef struct{
   uint8_t    dl_buffer_head_sdu_is_segmented[MAX_NUM_LCID];
 
   uint32_t dl_buffer_head_sdu_remaining_size_to_send[MAX_NUM_LCID];
+
+  // uplink info
+  uint32_t ul_total_buffer;
+  
+  uint32_t ul_buffer_creation_time[MAX_NUM_LCGID];
+  
+  uint32_t ul_buffer_creation_time_max;
+
+  uint32_t ul_buffer_info[MAX_NUM_LCGID];
 
 } UE_TEMPLATE;
 
@@ -644,7 +670,9 @@ typedef struct{
   UE_sched_ctrl UE_sched_ctrl[NUMBER_OF_UE_MAX];
 
   int next[NUMBER_OF_UE_MAX];
-  int head;
+  int head; 
+  int next_ul[NUMBER_OF_UE_MAX];
+  int head_ul;
   int avail;
   int num_UEs;
   boolean_t active[NUMBER_OF_UE_MAX];

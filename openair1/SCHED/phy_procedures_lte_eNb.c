@@ -3132,7 +3132,18 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 			    phy_vars_eNB->ulsch_eNB[i]->rnti,
 			    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->b,
 			    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3,
-			    harq_pid);
+			    harq_pid,
+			    &phy_vars_eNB->ulsch_eNB[i]->Msg3_flag);
+	  // false msg3 detection by MAC: empty PDU
+	  if (phy_vars_eNB->ulsch_eNB[i]->Msg3_flag == 0 ) {
+	    phy_vars_eNB->eNB_UE_stats[i].mode = PRACH;
+	    mac_xface->cancel_ra_proc(phy_vars_eNB->Mod_id,
+				      phy_vars_eNB->CC_id,
+				      frame,
+				      phy_vars_eNB->eNB_UE_stats[i].crnti);
+	    remove_ue(phy_vars_eNB->eNB_UE_stats[i].crnti,phy_vars_eNB,abstraction_flag);
+	    phy_vars_eNB->ulsch_eNB[(uint32_t)i]->Msg3_active = 0;
+	  }
 	  /*
 	    mac_xface->terminate_ra_proc(phy_vars_eNB->Mod_id,
 	    frame,
@@ -3193,7 +3204,8 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 			    phy_vars_eNB->ulsch_eNB[i]->rnti,
 			    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->b,
 			    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3,
-			    harq_pid);
+			    harq_pid,
+			    NULL);
 	  //}
 	  /*
 	    else {
@@ -3663,7 +3675,9 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 			      phy_vars_eNB->ulsch_eNB[i]->rnti,
 			      phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->b,
 			      phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3,
-			      harq_pid);
+			      harq_pid,
+			      NULL);
+
 	    phy_vars_eNB->cba_last_reception[i%num_active_cba_groups]=1;//(subframe);
 	  } else {
 	    LOG_N(PHY,"[eNB %d] Frame %d subframe %d : CBA collision detected for UE%d for group %d, set the SR for this UE \n ",

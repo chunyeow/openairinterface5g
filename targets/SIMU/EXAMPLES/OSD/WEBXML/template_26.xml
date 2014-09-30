@@ -17,7 +17,7 @@
     <MOBILITY> 
       <UE_MOBILITY>
 	<RANDOM_UE_DISTRIBUTION>
-    <NUMBER_OF_NODES>4</NUMBER_OF_NODES>
+    <NUMBER_OF_NODES>9</NUMBER_OF_NODES>
 	</RANDOM_UE_DISTRIBUTION>
 	<UE_MOBILITY_TYPE>STATIC</UE_MOBILITY_TYPE>  <!-- STATIC --> 
       </UE_MOBILITY>
@@ -37,7 +37,7 @@
       <SOURCE_ID>0</SOURCE_ID> 		
       <TRANSPORT_PROTOCOL>udp</TRANSPORT_PROTOCOL> <!-- OPTIONS: tcp (default), udp -->
       <IP_VERSION>ipv6</IP_VERSION> <!-- OPTIONS: ipv4 (default), ipv6 -->
-      <DESTINATION_ID>1:3</DESTINATION_ID>
+      <DESTINATION_ID>1:9</DESTINATION_ID>
       <FLOW_START_ms>1000</FLOW_START_ms> <!-- indicates the start time of the app or the actual duration of the traffic-->
       <FLOW_DURATION_ms>10000</FLOW_DURATION_ms> <!-- indicates the start time of the app or the actual duration of the traffic-->
 
@@ -51,7 +51,7 @@
    </CUSTOMIZED_TRAFFIC>
 
    <CUSTOMIZED_TRAFFIC>	 
-      <SOURCE_ID>1:3</SOURCE_ID> 		
+      <SOURCE_ID>1:9</SOURCE_ID> 		
       <TRANSPORT_PROTOCOL>udp</TRANSPORT_PROTOCOL> <!-- OPTIONS: tcp (default), udp -->
       <IP_VERSION>ipv6</IP_VERSION> <!-- OPTIONS: ipv4 (default), ipv6 -->
       <DESTINATION_ID>0</DESTINATION_ID>

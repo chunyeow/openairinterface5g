@@ -210,7 +210,7 @@ uint32_t ue_get_SR(module_id_t module_idP,int CC_id,frame_t frameP,uint8_t eNB_i
   int gapOffset  = -1;
   int T          = 0;
 
-  DevCheck(module_idP < NB_UE_INST, module_idP, NB_UE_INST, 0);
+  DevCheck(module_idP < (int)NB_UE_INST, module_idP, NB_UE_INST, 0);
 
   if (CC_id>0) {
     LOG_E(MAC,"Transmission on secondary CCs is not supported yet\n");
@@ -219,12 +219,6 @@ uint32_t ue_get_SR(module_id_t module_idP,int CC_id,frame_t frameP,uint8_t eNB_i
   }
 
   // determin the measurement gap
-  LOG_D(MAC,"[UE %d][SR %x] Frame %d subframe %d PHY asks for SR (SR_COUNTER/dsr_TransMax %d/%d), SR_pending %d\n",
-      module_idP,rnti,frameP,subframe,
-      UE_mac_inst[module_idP].scheduling_info.SR_COUNTER,
-      (1<<(2+UE_mac_inst[module_idP].physicalConfigDedicated->schedulingRequestConfig->choice.setup.dsr_TransMax)),
-      UE_mac_inst[module_idP].scheduling_info.SR_pending);
-
   if (UE_mac_inst[module_idP].measGapConfig !=NULL){
       if (UE_mac_inst[module_idP].measGapConfig->choice.setup.gapOffset.present == MeasGapConfig__setup__gapOffset_PR_gp0){
           MGRP= 40;
@@ -243,10 +237,18 @@ uint32_t ue_get_SR(module_id_t module_idP,int CC_id,frame_t frameP,uint8_t eNB_i
           return(0);
       }
   }
-  if ((UE_mac_inst[module_idP].scheduling_info.SR_pending==1) &&
+  
+  if ((UE_mac_inst[module_idP].physicalConfigDedicated != NULL) && 
+      (UE_mac_inst[module_idP].scheduling_info.SR_pending==1) &&
       (UE_mac_inst[module_idP].scheduling_info.SR_COUNTER <
           (1<<(2+UE_mac_inst[module_idP].physicalConfigDedicated->schedulingRequestConfig->choice.setup.dsr_TransMax)))
   ){
+    LOG_D(MAC,"[UE %d][SR %x] Frame %d subframe %d PHY asks for SR (SR_COUNTER/dsr_TransMax %d/%d), SR_pending %d\n",
+	  module_idP,rnti,frameP,subframe,
+	  UE_mac_inst[module_idP].scheduling_info.SR_COUNTER,
+	  (1<<(2+UE_mac_inst[module_idP].physicalConfigDedicated->schedulingRequestConfig->choice.setup.dsr_TransMax)),
+	  UE_mac_inst[module_idP].scheduling_info.SR_pending);
+    
       UE_mac_inst[module_idP].scheduling_info.SR_COUNTER++;
       // start the sr-prohibittimer : rel 9 and above
       if (UE_mac_inst[module_idP].scheduling_info.sr_ProhibitTimer > 0) { // timer configured
@@ -1425,6 +1427,7 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
       if (UE_mac_inst[module_idP].RA_contention_resolution_cnt ==
           ((1+rach_ConfigCommon->ra_SupervisionInfo.mac_ContentionResolutionTimer)<<3)) {
           UE_mac_inst[module_idP].RA_active = 0;
+	  UE_mac_inst[module_idP].RA_contention_resolution_timer_active = 0;
           // Signal PHY to quit RA procedure
           LOG_E(MAC,"Module id %u Contention resolution timer expired, RA failed\n", module_idP);
           mac_xface->ra_failed(module_idP,0,eNB_indexP);
@@ -1488,26 +1491,27 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
   // Put this in a function
   // Call PHR procedure as described in Section 5.4.6 in 36.321
   if (UE_mac_inst[module_idP].PHR_state == MAC_MainConfig__phr_Config_PR_setup){ // normal operation
-      if (UE_mac_inst[module_idP].PHR_reconfigured == 1) { // upon (re)configuration of the power headroom reporting functionality by upper layers
-          UE_mac_inst[module_idP].PHR_reporting_active = 1;
-          UE_mac_inst[module_idP].PHR_reconfigured = 0;
-      } else {
-          //LOG_D(MAC,"PHR normal operation %d active %d \n", UE_mac_inst[module_idP].scheduling_info.periodicPHR_SF, UE_mac_inst[module_idP].PHR_reporting_active);
-          if ((UE_mac_inst[module_idP].scheduling_info.prohibitPHR_SF <= 0) &&
-              ((mac_xface->get_PL(module_idP,0,eNB_indexP) <  UE_mac_inst[module_idP].scheduling_info.PathlossChange_db) ||
-                  (UE_mac_inst[module_idP].power_backoff_db[eNB_indexP] > UE_mac_inst[module_idP].scheduling_info.PathlossChange_db)))
-            // trigger PHR and reset the timer later when the PHR report is sent
-            UE_mac_inst[module_idP].PHR_reporting_active = 1;
-          else if (UE_mac_inst[module_idP].PHR_reporting_active ==0 )
-            UE_mac_inst[module_idP].scheduling_info.prohibitPHR_SF--;
-          if (UE_mac_inst[module_idP].scheduling_info.periodicPHR_SF <= 0 )
-            // trigger PHR and reset the timer later when the PHR report is sent
-            UE_mac_inst[module_idP].PHR_reporting_active = 1;
-          else if (UE_mac_inst[module_idP].PHR_reporting_active == 0 )
-            UE_mac_inst[module_idP].scheduling_info.periodicPHR_SF--;
-      }
+      
+    if (UE_mac_inst[module_idP].PHR_reconfigured == 1) { // upon (re)configuration of the power headroom reporting functionality by upper layers
+      UE_mac_inst[module_idP].PHR_reporting_active = 1;
+      UE_mac_inst[module_idP].PHR_reconfigured = 0;
+    } else {
+      //LOG_D(MAC,"PHR normal operation %d active %d \n", UE_mac_inst[module_idP].scheduling_info.periodicPHR_SF, UE_mac_inst[module_idP].PHR_reporting_active);
+      if ((UE_mac_inst[module_idP].scheduling_info.prohibitPHR_SF <= 0) &&
+	  ((mac_xface->get_PL(module_idP,0,eNB_indexP) <  UE_mac_inst[module_idP].scheduling_info.PathlossChange_db) ||
+	   (UE_mac_inst[module_idP].power_backoff_db[eNB_indexP] > UE_mac_inst[module_idP].scheduling_info.PathlossChange_db)))
+	// trigger PHR and reset the timer later when the PHR report is sent
+	UE_mac_inst[module_idP].PHR_reporting_active = 1;
+      else if (UE_mac_inst[module_idP].PHR_reporting_active ==0 )
+	UE_mac_inst[module_idP].scheduling_info.prohibitPHR_SF--;
+      if (UE_mac_inst[module_idP].scheduling_info.periodicPHR_SF <= 0 )
+	// trigger PHR and reset the timer later when the PHR report is sent
+	UE_mac_inst[module_idP].PHR_reporting_active = 1;
+      else if (UE_mac_inst[module_idP].PHR_reporting_active == 0 )
+	UE_mac_inst[module_idP].scheduling_info.periodicPHR_SF--;
+    }
   } else {    // release / nothing
-      UE_mac_inst[module_idP].PHR_reporting_active = 0; // release PHR
+    UE_mac_inst[module_idP].PHR_reporting_active = 0; // release PHR
   }
   //If the UE has UL resources allocated for new transmission for this TTI here:
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SCHEDULER, VCD_FUNCTION_OUT);

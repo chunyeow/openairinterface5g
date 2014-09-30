@@ -407,15 +407,15 @@ int check_data_transmit(int src,int dst, int app, int ctime){
 	// do not generate packet for this pair of src, dst : no app type and/or no idt are defined	
 	if (g_otg->flow_start[src][dst][app] > ctime ){
 	  //g_ otg->flow_start_flag[src][dst][app]=1;
-	  LOG_D(OTG,"Flow start time not reached : do not generate packet for this pair of src=%d, dst =%d, start %d < ctime %d \n", 
+	  LOG_T(OTG,"Flow start time not reached : do not generate packet for this pair of src=%d, dst =%d, start %d < ctime %d \n", 
 		src, dst,g_otg->flow_start[src][dst][app], ctime); 
 	  size+=0;	
 	}else if (g_otg->flow_duration[src][dst][app] + g_otg->flow_start[src][dst][app] < ctime ){
-	  LOG_D(OTG,"Flow duration reached: do not generate packet for this pair of src=%d, dst =%d, duration %d < ctime %d + start %d\n", 
+	  LOG_T(OTG,"Flow duration reached: do not generate packet for this pair of src=%d, dst =%d, duration %d < ctime %d + start %d\n", 
 		src, dst,g_otg->flow_duration[src][dst][app], ctime, g_otg->flow_start[src][dst][app]); 
 	  size+=0;	
 	}else if ((g_otg->application_type[src][dst][app]==0)&&(g_otg->idt_dist[src][dst][app][PE_STATE]==0)){  
-	  LOG_D(OTG,"Do not generate packet for this pair of src=%d, dst =%d, IDT zero and app %d not specificed\n", src, dst, app); 
+	  LOG_T(OTG,"Do not generate packet for this pair of src=%d, dst =%d, IDT zero and app %d not specificed\n", src, dst, app); 
 	  size+=0;	 
 	}
 
@@ -835,11 +835,11 @@ int k;
        g_otg->trans_proto[i][j][k] = UDP;
        g_otg->ip_v[i][j][k] = IPV4;
        g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
-       g_otg->idt_min[i][j][k][PE_STATE] =   (int)round(uniform_dist((i+1)*30,(i+1)*100));// 500+(i+1)*10; //random idt among different UEs 
-       g_otg->idt_max[i][j][k][PE_STATE] =  10;
+       g_otg->idt_min[i][j][k][PE_STATE] =   20;//(int)round(uniform_dist((i+1)*30,(i+1)*100));// 500+(i+1)*10; //random idt among different UEs 
+       g_otg->idt_max[i][j][k][PE_STATE] =  20;
        g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
-       g_otg->size_min[i][j][k][PE_STATE] =  16;
-       g_otg->size_max[i][j][k][PE_STATE] =  50;
+       g_otg->size_min[i][j][k][PE_STATE] =  128;
+       g_otg->size_max[i][j][k][PE_STATE] =  128;
        LOG_I(OTG,"OTG_CONFIG SCBR, src = %d, dst = %d, traffic id %d, idt %d dist type for size = %d\n", i, j, k, 
 	     g_otg->idt_min[i][j][k][PE_STATE], g_otg->size_min[i][j][k][PE_STATE]);
 #ifdef STANDALONE
@@ -851,11 +851,11 @@ int k;
        g_otg->trans_proto[i][j][k] = UDP;
        g_otg->ip_v[i][j][k] = IPV4;
        g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
-       g_otg->idt_min[i][j][k][PE_STATE] =   (int)round(uniform_dist((i+1)*30, (i+1)*100));// 250+(i+1)*10; 
-       g_otg->idt_max[i][j][k][PE_STATE] =  10;
+       g_otg->idt_min[i][j][k][PE_STATE] =   20;//(int)round(uniform_dist((i+1)*30, (i+1)*100));// 250+(i+1)*10; 
+       g_otg->idt_max[i][j][k][PE_STATE] =  20;
        g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
-       g_otg->size_min[i][j][k][PE_STATE] =  32;
-       g_otg->size_max[i][j][k][PE_STATE] =  512;
+       g_otg->size_min[i][j][k][PE_STATE] =  768;
+       g_otg->size_max[i][j][k][PE_STATE] =  768;
        LOG_I(OTG,"OTG_CONFIG MCBR, src = %d, dst = %d,  traffic id %d, dist type for size = %d\n", i, j,k , g_otg->size_dist[i][j][k][PE_STATE]);
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
@@ -866,11 +866,11 @@ int k;
        g_otg->trans_proto[i][j][k] = UDP;
        g_otg->ip_v[i][j][k] = IPV4;
        g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;// main param in this mode
-       g_otg->idt_min[i][j][k][PE_STATE] =  (int)round(uniform_dist((i+1)*30,(i+1)*100)); //125+(i+1)*10; 
-       g_otg->idt_max[i][j][k][PE_STATE] =  10;
+       g_otg->idt_min[i][j][k][PE_STATE] =  20;// (int)round(uniform_dist((i+1)*30,(i+1)*100)); //125+(i+1)*10; 
+       g_otg->idt_max[i][j][k][PE_STATE] =  20;
        g_otg->size_dist[i][j][k][PE_STATE] = FIXED; // main param in this mode
-       g_otg->size_min[i][j][k][PE_STATE] =  128;// main param in this mode
-       g_otg->size_max[i][j][k][PE_STATE] =  1024;
+       g_otg->size_min[i][j][k][PE_STATE] =  1400;// main param in this mode
+       g_otg->size_max[i][j][k][PE_STATE] =  1400;
        LOG_I(OTG,"OTG_CONFIG BCBR, src = %d, dst = %d, dist type for size = %d\n", i, j, g_otg->size_dist[i][j][k][PE_STATE]);
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;

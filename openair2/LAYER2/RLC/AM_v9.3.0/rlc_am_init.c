@@ -52,7 +52,9 @@ void rlc_am_init(rlc_am_entity_t *rlc_pP, frame_t frameP)
         //LOG_D(RLC,"RLC_AM_SDU_CONTROL_BUFFER_SIZE %d sizeof(rlc_am_tx_sdu_management_t) %d \n",  RLC_AM_SDU_CONTROL_BUFFER_SIZE, sizeof(rlc_am_tx_sdu_management_t));
 
         rlc_pP->input_sdus               = calloc(1, RLC_AM_SDU_CONTROL_BUFFER_SIZE*sizeof(rlc_am_tx_sdu_management_t));
-        rlc_pP->pdu_retrans_buffer       = calloc(1, (uint16_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
+#warning "cast the rlc retrans buffer to uint32"
+	//        rlc_pP->pdu_retrans_buffer       = calloc(1, (uint16_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
+        rlc_pP->pdu_retrans_buffer       = calloc(1, (uint32_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
         LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] input_sdus[] = %p  element size=%d\n", frameP, rlc_pP->input_sdus,sizeof(rlc_am_tx_sdu_management_t));
         LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] pdu_retrans_buffer[] = %p element size=%d\n", frameP, rlc_pP->pdu_retrans_buffer,sizeof(rlc_am_tx_data_pdu_management_t));
 

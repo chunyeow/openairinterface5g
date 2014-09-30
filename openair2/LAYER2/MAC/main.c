@@ -157,11 +157,14 @@ int mac_top_init(int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active){
 
     UE_list->num_UEs=0;
     UE_list->head=-1;
+    UE_list->head_ul=-1; 
     UE_list->avail=0;
     for (list_el=0;list_el<NUMBER_OF_UE_MAX-1;list_el++) {
       UE_list->next[list_el]=list_el+1;
+      UE_list->next_ul[list_el]=list_el+1;
     }
     UE_list->next[list_el]=-1;
+    UE_list->next_ul[list_el]=-1;
     
 #ifdef PHY_EMUL
     Mac_rlc_xface->Is_cluster_head[Mod_id]=2;//0: MR, 1: CH, 2: not CH neither MR
@@ -481,6 +484,7 @@ int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, uint8_t cba_group_
 #ifdef CBA
   mac_xface->phy_config_cba_rnti         = phy_config_cba_rnti ;
 #endif 
+  mac_xface->estimate_ue_tx_power        = estimate_ue_tx_power;
   mac_xface->phy_config_meas_ue          = phy_config_meas_ue;
   mac_xface->phy_reset_ue		 = phy_reset_ue;
 

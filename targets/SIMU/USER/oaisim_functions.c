@@ -105,7 +105,7 @@ double        forgetting_factor     = 0.0;
 uint8_t            beta_ACK              = 0;
 uint8_t            beta_RI               = 0;
 uint8_t            beta_CQI              = 2;
-uint8_t            target_ul_mcs         = 4;
+uint8_t            target_ul_mcs         = 16;
 LTE_DL_FRAME_PARMS *frame_parms[MAX_NUM_CCs];
 int           map1,map2;
 double      **ShaF                  = NULL;
@@ -883,7 +883,7 @@ void init_openair2(void) {
   module_id_t enb_id;
   module_id_t UE_id;
   int CC_id;
-
+#warning "eNB index is hard coded to zero"
   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++)
     l2_init (&PHY_vars_eNB_g[0][CC_id]->lte_frame_parms,
 	     oai_emulation.info.eMBMS_active_state,

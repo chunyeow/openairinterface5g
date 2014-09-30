@@ -4,7 +4,7 @@
       <LARGE_SCALE>urban</LARGE_SCALE>
       <FREE_SPACE_MODEL_PARAMETERS>
 	<PATHLOSS_EXPONENT>2</PATHLOSS_EXPONENT>
-	<PATHLOSS_0_dB>-50</PATHLOSS_0_dB><!--pathloss at 1km -->
+	<PATHLOSS_0_dB>-108</PATHLOSS_0_dB><!--pathloss at 1km -->
       </FREE_SPACE_MODEL_PARAMETERS>
       <SMALL_SCALE>AWGN</SMALL_SCALE>
     </FADING>
@@ -62,8 +62,8 @@
     <PREDEFINED_TRAFFIC>
       <SOURCE_ID>1</SOURCE_ID> <!-- valid formats are "n:m" and "n,m" and "n" -->
       <FLOW_START_ms>200</FLOW_START_ms> <!-- indicates the start time of the app or the actual duration of the traffic-->
-      <FLOW_DURATION_ms>500</FLOW_DURATION_ms>
-      <APPLICATION_TYPE>scbr</APPLICATION_TYPE> 
+      <FLOW_DURATION_ms>600</FLOW_DURATION_ms>
+      <APPLICATION_TYPE>bcbr</APPLICATION_TYPE> 
       <DESTINATION_ID>0</DESTINATION_ID> <!-- valid formats are "n:m" and "n,m" and "n"  -->
     </PREDEFINED_TRAFFIC>
   </APPLICATION_CONFIG>

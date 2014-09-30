@@ -51,10 +51,10 @@
 * Memory Initializaion and Cleanup for LTE MODEM.
 * @{
 \section _Memory_init_ Memory Initialization for LTE MODEM
-Blah Blah
+
 */
 
-#define DEBUG_PHY
+//#define DEBUG_PHY
 
 /*
 #ifndef USER_MODE

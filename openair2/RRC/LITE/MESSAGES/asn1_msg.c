@@ -1662,6 +1662,10 @@ uint16_t do_RRCConnectionReconfiguration(uint8_t                             Mod
                                          C_RNTI_t                           *cba_rnti,
                                          struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList
                                                                             *dedicatedInfoNASList
+
+#ifdef Rel10
+					 , SCellToAddMod_r10_t  *SCell_config
+#endif
                                         ) {
 
   asn_enc_rval_t enc_rval;
@@ -2114,7 +2118,7 @@ uint8_t do_ULInformationTransfer(uint8_t **buffer, uint32_t pdu_length, uint8_t 
   return encoded;
 }
 
-OAI_UECapability_t *fill_ue_capability() {
+OAI_UECapability_t *fill_ue_capability(void) {
   static OAI_UECapability_t UECapability; /* TODO declared static to allow returning this has an address should be allocated in a cleaner way. */
   SupportedBandEUTRA_t Bandlist[4];
   // BandInfoEUTRA_t BandInfo_meas[4];

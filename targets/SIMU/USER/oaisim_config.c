@@ -573,7 +573,7 @@ int ocg_config_env(void) {
 	oai_emulation.info.frame_type[CC_id]=TDD;
       }
       else
-	LOG_I(EMU,"Frame type is %s \n",oai_emulation.info.frame_type_name);
+	LOG_I(EMU,"Frame type is %s \n",oai_emulation.info.frame_type_name[CC_id]);
       if (oai_emulation.info.frame_type[CC_id] == TDD ){
 	if ((oai_emulation.info.tdd_config[CC_id] > 6) || (oai_emulation.info.tdd_config[CC_id] < 0)) {
 	  LOG_E(EMU,"TDD config %d out of range, set it to 3\n",oai_emulation.info.tdd_config[CC_id]);

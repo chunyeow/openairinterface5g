@@ -146,7 +146,7 @@ void average_pkt_jitter(int src, int dst, int application){
     otg_info->rx_jitter_avg[src][dst][application]/= otg_info->rx_jitter_sample[src][dst][application];
     otg_info->rx_jitter_avg_e2e[src][dst][application]/= otg_info->rx_jitter_sample[src][dst][application];
   } else {
-    LOG_W(OTG,"[src %d][dst %d][app %d]number of samples for jitter calculation is %d\n",src, dst, application, otg_info->rx_jitter_sample[src][dst][application]);
+    LOG_T(OTG,"[src %d][dst %d][app %d]number of samples for jitter calculation is %d\n",src, dst, application, otg_info->rx_jitter_sample[src][dst][application]);
   } 
     
   if (otg_info->rx_jitter_avg[src][dst][application] > 0) {
@@ -239,7 +239,7 @@ void kpi_gen() {
   int num_active_source=0;
  
   
-  int dl_ok=0,ul_ok;
+  int dl_ok=0,ul_ok=0;
 
 char traffic_type[12];
 char traffic[30];
@@ -849,9 +849,9 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
   }
 
   if ((dl_ok == 1 ) && (ul_ok ==1))
-    LOG_I(OTG,"************ DL and UL loss rate below 10% *************\n");
+    LOG_I(OTG,"************ DL and UL loss rate below 10 *************\n");
   else 
-    LOG_I(OTG,"************ DL and UL loss rate above 10% *************\n");
+    LOG_I(OTG,"************ DL and UL loss rate above 10 *************\n");
 #endif
 }
 

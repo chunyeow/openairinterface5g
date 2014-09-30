@@ -1695,6 +1695,7 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
 	  // Get candidate harq_pid from PHY
 	  mac_xface->get_ue_active_harq_pid(module_idP,CC_id,RA_template->rnti,frameP,subframeP,&harq_pid,&round,0);
 	  if (round>0) {
+	    //RA_template->wait_ack_Msg4++;
 	    // we have to schedule a retransmission
 	    if (PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.frame_type == TDD)
 	      ((DCI1A_5MHz_TDD_1_6_t*)&RA_template->RA_alloc_pdu2[0])->ndi=1;
@@ -1733,6 +1734,11 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
 		  module_idP,frameP,subframeP,RA_template->rnti);
 	  }
 	  else {
+	    /* 	    msg4 not received
+	    if ((round == 0) && (RA_template->wait_ack_Msg4>1){
+	    remove UE instance across all the layers: mac_xface->cancel_RA();
+	      }
+	    */
 	    LOG_I(MAC,"[eNB %d][RAPROC] Frame %d, subframeP %d : Msg4 acknowledged\n",module_idP,frameP,subframeP);
 	    RA_template->wait_ack_Msg4=0;
 	    RA_template->RA_active=FALSE;

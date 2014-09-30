@@ -224,13 +224,13 @@ void assign_rbs_required (module_id_t Mod_id,
 
 // This function scans all CC_ids for a particular UE to find the maximum round index of its HARQ processes
 
-int maxround(module_id_t Mod_id,uint16_t rnti,int frame,sub_frame_t subframe) {
+int maxround(module_id_t Mod_id,uint16_t rnti,int frame,sub_frame_t subframe,uint8_t ul_flag ) {
 
   uint8_t round,round_max=0,harq_pid;
   int CC_id;
 
   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++){
-    mac_xface->get_ue_active_harq_pid(Mod_id,CC_id,rnti,frame,subframe,&harq_pid,&round,0);
+    mac_xface->get_ue_active_harq_pid(Mod_id,CC_id,rnti,frame,subframe,&harq_pid,&round,ul_flag);
     if (round > round_max)
       round_max = round;
   }
@@ -279,7 +279,7 @@ void sort_UEs (module_id_t Mod_idP,
     UE_id1  = i;
     pCC_id1 = UE_PCCID(Mod_idP,UE_id1);
     cqi1    = maxcqi(Mod_idP,rnti1); //
-    round1  = maxround(Mod_idP,rnti1,frameP,subframeP);  
+    round1  = maxround(Mod_idP,rnti1,frameP,subframeP,0);  
 
 
     for(ii=UE_list->next[i];ii>=0;ii=UE_list->next[ii]){
@@ -290,11 +290,11 @@ void sort_UEs (module_id_t Mod_idP,
 	continue;
 
       cqi2    = maxcqi(Mod_idP,rnti2);
-      round2  = maxround(Mod_idP,rnti2,frameP,subframeP);  //mac_xface->get_ue_active_harq_pid(Mod_id,rnti2,subframe,&harq_pid2,&round2,0);
+      round2  = maxround(Mod_idP,rnti2,frameP,subframeP,0);  //mac_xface->get_ue_active_harq_pid(Mod_id,rnti2,subframe,&harq_pid2,&round2,0);
       pCC_id2 = UE_PCCID(Mod_idP,UE_id2);
 
       if(round2 > round1){  // Check first if one of the UEs has an active HARQ process which needs service and swap order
-	swap_UEs(UE_list,UE_id1,UE_id2);
+	swap_UEs(UE_list,UE_id1,UE_id2,0);
       }
       else if (round2 == round1){
 	// RK->NN : I guess this is for fairness in the scheduling. This doesn't make sense unless all UEs have the same configuration of logical channels.  This should be done on the sum of all information that has to be sent.  And still it wouldn't ensure fairness.  It should be based on throughput seen by each UE or maybe using the head_sdu_creation_time, i.e. swap UEs if one is waiting longer for service.
@@ -306,18 +306,18 @@ void sort_UEs (module_id_t Mod_idP,
 	
 	if ( (UE_list->UE_template[pCC_id1][UE_id1].dl_buffer_info[1] + UE_list->UE_template[pCC_id1][UE_id1].dl_buffer_info[2]) < 
 	     (UE_list->UE_template[pCC_id2][UE_id2].dl_buffer_info[1] + UE_list->UE_template[pCC_id2][UE_id2].dl_buffer_info[2])   ){
-	  swap_UEs(UE_list,UE_id1,UE_id2);
+	  swap_UEs(UE_list,UE_id1,UE_id2,0);
 	}
 	else if (UE_list->UE_template[pCC_id1][UE_id1].dl_buffer_head_sdu_creation_time_max < 
 		 UE_list->UE_template[pCC_id2][UE_id2].dl_buffer_head_sdu_creation_time_max   ){
-	  swap_UEs(UE_list,UE_id1,UE_id2);
+	  swap_UEs(UE_list,UE_id1,UE_id2,0);
 	} 
 	else if (UE_list->UE_template[pCC_id1][UE_id1].dl_buffer_total < 
 		 UE_list->UE_template[pCC_id2][UE_id2].dl_buffer_total   ){
-	  swap_UEs(UE_list,UE_id1,UE_id2);
+	  swap_UEs(UE_list,UE_id1,UE_id2,0);
 	}
 	else if (cqi1 < cqi2){
-	  swap_UEs(UE_list,UE_id1,UE_id2);
+	  swap_UEs(UE_list,UE_id1,UE_id2,0);
 	}
       }
     }
@@ -405,14 +405,11 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
   total_ue_count =0;
   // loop over all active UEs
   for (i=UE_list->head;i>=0;i=UE_list->next[i]) {
-
-    UE_id = i;
-
-
-    rnti = UE_RNTI(Mod_id,UE_id);
+    rnti = UE_RNTI(Mod_id,i);
     if(rnti == 0)
       continue;
-
+    
+    UE_id = i;
     for (ii=0;ii<UE_num_active_CC(UE_list,UE_id);ii++) {
       CC_id = UE_list->ordered_CCids[ii][UE_id];
 
@@ -426,7 +423,7 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
       if (nb_rbs_required[CC_id][UE_id] > 0) {
 	total_ue_count = total_ue_count + 1;
       }
-      
+     
           
   // hypotetical assignement
   /*
@@ -441,17 +438,16 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
       if (total_ue_count == 0) 
 	average_rbs_per_user[CC_id] = 0;
       else if( (min_rb_unit[CC_id] * total_ue_count) <= (frame_parms[CC_id]->N_RB_DL) )
-	average_rbs_per_user[CC_id] = (uint16_t) ceil(frame_parms[CC_id]->N_RB_DL/total_ue_count);
+	average_rbs_per_user[CC_id] = (uint16_t) floor(frame_parms[CC_id]->N_RB_DL/total_ue_count);
       else 
 	average_rbs_per_user[CC_id] = min_rb_unit[CC_id];
     }
   }
-
   // note: nb_rbs_required is assigned according to total_buffer_dl
   // extend nb_rbs_required to capture per LCID RB required
   for(i=UE_list->head;i>=0;i=UE_list->next[i]){
-    for (ii=0;ii<UE_num_active_CC(UE_list,UE_id);ii++) {
-      CC_id = UE_list->ordered_CCids[ii][UE_id];
+    for (ii=0;ii<UE_num_active_CC(UE_list,i);ii++) {
+      CC_id = UE_list->ordered_CCids[ii][i];
       // control channel
       if (mac_get_rrc_status(Mod_id,1,i) < RRC_RECONFIGURED)
 	nb_rbs_required_remaining_1[CC_id][i] = nb_rbs_required[CC_id][i];
@@ -466,8 +462,8 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
   for(r1=0;r1<2;r1++){ 
 
     for(i=UE_list->head; i>=0;i=UE_list->next[i]) {
-      for (ii=0;ii<UE_num_active_CC(UE_list,UE_id);ii++) {
-	CC_id = UE_list->ordered_CCids[ii][UE_id];
+      for (ii=0;ii<UE_num_active_CC(UE_list,i);ii++) {
+	CC_id = UE_list->ordered_CCids[ii][i];
  	
 	if(r1 == 0)
 	  nb_rbs_required_remaining[CC_id][i] = nb_rbs_required_remaining_1[CC_id][i];
@@ -630,7 +626,7 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
       CC_id = UE_list->ordered_CCids[ii][UE_id];
       UE_id = i;
       //PHY_vars_eNB_g[Mod_id]->mu_mimo_mode[UE_id].dl_pow_off = dl_pow_off[UE_id];
-      LOG_D(MAC,"******************Scheduling Information for UE%d ************************\n",UE_id);
+      LOG_D(MAC,"******************DL Scheduling Information for UE%d ************************\n",UE_id);
       LOG_D(MAC,"dl power offset UE%d = %d \n",UE_id,dl_pow_off[CC_id][UE_id]);
       LOG_D(MAC,"***********RB Alloc for every subband for UE%d ***********\n",UE_id);
       for(j=0;j<N_RBG[CC_id];j++){
@@ -716,7 +712,318 @@ void dlsch_scheduler_pre_processor_allocate (module_id_t   Mod_id,
 }
 
 
-
-
+/// ULSCH PRE_PROCESSOR
  
+
+void ulsch_scheduler_pre_processor(module_id_t module_idP,
+				   int frameP,
+				   sub_frame_t subframeP,
+				   uint16_t *first_rb,
+				   uint8_t aggregation,
+				   uint32_t *nCCE){
+
+  int16_t            i;
+  uint16_t           UE_id,n,r;
+  uint8_t            CC_id, round, harq_pid;
+  uint16_t           nb_allocated_rbs[MAX_NUM_CCs][NUMBER_OF_UE_MAX],total_allocated_rbs[MAX_NUM_CCs],average_rbs_per_user[MAX_NUM_CCs];
+  int16_t            total_remaining_rbs[MAX_NUM_CCs];
+  uint16_t           max_num_ue_to_be_scheduled=0,total_ue_count=0;
+  rnti_t             rnti= -1;
+  uint32_t            nCCE_to_be_used[CC_id];
+  UE_list_t          *UE_list = &eNB_mac_inst[module_idP].UE_list; 
+  UE_TEMPLATE        *UE_template;
+  LTE_DL_FRAME_PARMS   *frame_parms;
+
+  LOG_I(MAC,"store ulsch buffers\n");
+  // convert BSR to bytes for comparison with tbs
+  store_ulsch_buffer(module_idP,frameP, subframeP);
+  
+  LOG_I(MAC,"assign max mcs min rb\n");
+  // maximize MCS and then allocate required RB according to the buffer occupancy with the limit of max available UL RB
+  assign_max_mcs_min_rb(module_idP,frameP, subframeP, first_rb);
+      
+  LOG_I(MAC,"sort ue \n");
+  // sort ues 
+  sort_ue_ul (module_idP,frameP, subframeP);
+
+  
+  // we need to distribute RBs among UEs
+  // step1:  reset the vars
+  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+    nCCE_to_be_used[CC_id]= nCCE[CC_id];
+    total_allocated_rbs[CC_id]=0;
+    total_remaining_rbs[CC_id]=0;
+    average_rbs_per_user[CC_id]=0;
+    for (i=UE_list->head_ul;i>=0;i=UE_list->next_ul[i]) {
+      nb_allocated_rbs[CC_id][i]=0;
+    }
+  }
+
+  LOG_I(MAC,"step2 \n");
+  // step 2: calculate the average rb per UE
+  total_ue_count =0;
+  max_num_ue_to_be_scheduled=0;
+  for (i=UE_list->head_ul;i>=0;i=UE_list->next_ul[i]) {
+    
+    rnti = UE_RNTI(module_idP,i); 
+    if (rnti==0) 
+      continue;
+
+    UE_id = i;
+    for (n=0;n<UE_list->numactiveULCCs[UE_id];n++) {
+      // This is the actual CC_id in the list
+      CC_id = UE_list->ordered_ULCCids[n][UE_id];
+      UE_template = &UE_list->UE_template[CC_id][UE_id];
+      average_rbs_per_user[CC_id]=0;
+      frame_parms = mac_xface->get_lte_frame_parms(module_idP,CC_id); 
+            
+      if (UE_template->pre_allocated_nb_rb_ul > 0) {
+	total_ue_count+=1;
+      }
+      
+      if((mac_xface->get_nCCE_max(module_idP,CC_id) - nCCE_to_be_used[CC_id])  > (1<<aggregation)){
+	nCCE_to_be_used[CC_id] = nCCE_to_be_used[CC_id] + (1<<aggregation);
+	max_num_ue_to_be_scheduled+=1;
+      }
+
+      if (total_ue_count == 0) 
+	average_rbs_per_user[CC_id] = 0;
+      else if (total_ue_count == 1 ) // increase the available RBs, special case,
+	average_rbs_per_user[CC_id] = frame_parms->N_RB_UL-first_rb[CC_id]+1;
+      else if( (total_ue_count <= (frame_parms->N_RB_DL-first_rb[CC_id])) && 
+	       (total_ue_count <= max_num_ue_to_be_scheduled))
+	average_rbs_per_user[CC_id] = (uint16_t) floor((frame_parms->N_RB_UL-first_rb[CC_id])/total_ue_count);
+      else if (max_num_ue_to_be_scheduled > 0 ) 
+	average_rbs_per_user[CC_id] = (uint16_t) floor((frame_parms->N_RB_UL-first_rb[CC_id])/max_num_ue_to_be_scheduled);
+      else {
+	average_rbs_per_user[CC_id]=1;
+	LOG_W(MAC,"[eNB %d] frame %d subframe %d: UE %d CC %d: can't get average rb per user (should not be here)\n",
+	      module_idP,frameP,subframeP,UE_id,CC_id);
+      }
+    }
+  }
+  
+  LOG_D(MAC,"[eNB %d] Frame %d subframe %d: total ue %d, max num ue to be scheduled %d\n", 
+	module_idP, frameP, subframeP,total_ue_count, max_num_ue_to_be_scheduled);
+
+  LOG_I(MAC,"step3\n");
+  // step 3: assigne RBS 
+  for (i=UE_list->head_ul;i>=0;i=UE_list->next_ul[i]) {
+    rnti = UE_RNTI(module_idP,i); 
+    if (rnti==0) 
+      continue;
+    UE_id = i;
+    for (n=0;n<UE_list->numactiveULCCs[UE_id];n++) {
+      // This is the actual CC_id in the list
+      CC_id = UE_list->ordered_ULCCids[n][UE_id];
+      
+      mac_xface->get_ue_active_harq_pid(module_idP,CC_id,rnti,frameP,subframeP,&harq_pid,&round,1);
+      if(round>0)
+	nb_allocated_rbs[CC_id][UE_id] = UE_list->UE_template[CC_id][UE_id].nb_rb_ul[harq_pid];
+      else 
+	nb_allocated_rbs[CC_id][UE_id] = cmin(UE_template->pre_allocated_nb_rb_ul, average_rbs_per_user[CC_id]);
+      
+      total_allocated_rbs[CC_id]+= nb_allocated_rbs[CC_id][UE_id];
+      
+    }
+  }
+  // step 4: assigne the remaining RBs and set the pre_allocated rbs accordingly
+  for(r=0;r<2;r++){ 
+    
+    for (i=UE_list->head_ul;i>=0;i=UE_list->next_ul[i]) {
+      rnti = UE_RNTI(module_idP,i); 
+      if (rnti==0) 
+	continue;
+      UE_id = i;
+      
+      for (n=0;n<UE_list->numactiveULCCs[UE_id];n++) {
+	// This is the actual CC_id in the list
+	CC_id = UE_list->ordered_ULCCids[n][UE_id];
+	UE_template = &UE_list->UE_template[CC_id][UE_id];
+	frame_parms = mac_xface->get_lte_frame_parms(module_idP,CC_id); 
+	total_remaining_rbs[CC_id]=frame_parms->N_RB_UL - first_rb[CC_id] - total_allocated_rbs[CC_id];
+	if (total_ue_count == 1 )
+	  total_remaining_rbs[CC_id]+=1;
+	
+	if ( r == 0 ) {
+	  while ( (UE_template->pre_allocated_nb_rb_ul > 0 ) &&
+		  (nb_allocated_rbs[CC_id][UE_id] < UE_template->pre_allocated_nb_rb_ul) &&
+		  (total_remaining_rbs[CC_id] > 0)){ 
+	    nb_allocated_rbs[CC_id][UE_id] = cmin(nb_allocated_rbs[CC_id][UE_id]+1,UE_template->pre_allocated_nb_rb_ul);
+	    total_remaining_rbs[CC_id]--;
+	    total_allocated_rbs[CC_id]++;
+	  } 
+	}
+	else {
+	    UE_template->pre_allocated_nb_rb_ul= nb_allocated_rbs[CC_id][UE_id]; 
+	    LOG_D(MAC,"******************UL Scheduling Information for UE%d CC_id %d ************************\n",UE_id, CC_id);
+	    LOG_D(MAC,"[eNB %d] total RB allocated for UE%d CC_id %d  = %d\n", module_idP, UE_id, CC_id, UE_template->pre_allocated_nb_rb_ul);
+	}
+      }
+    }
+  }
+  
+  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+    frame_parms= mac_xface->get_lte_frame_parms(module_idP,CC_id);
+    if (total_allocated_rbs[CC_id]>0)
+      LOG_D(MAC,"[eNB %d] total RB allocated for all UEs = %d/%d\n", module_idP, total_allocated_rbs[CC_id], frame_parms->N_RB_UL - first_rb[CC_id]);
+  }
+
+} 
+  
+ 
+void store_ulsch_buffer(module_id_t module_idP, int frameP, sub_frame_t subframeP){
+
+  int                 UE_id,pCC_id,lcgid;
+  UE_list_t           *UE_list = &eNB_mac_inst[module_idP].UE_list;
+  UE_TEMPLATE         *UE_template;          
+  
+  for (UE_id=UE_list->head_ul;UE_id>=0;UE_id=UE_list->next_ul[UE_id]) {
+    
+    UE_template = &UE_list->UE_template[UE_PCCID(module_idP,UE_id)][UE_id];
+    UE_template->ul_total_buffer=0;
+    for (lcgid=0; lcgid<MAX_NUM_LCGID; lcgid++){
+      UE_template->ul_buffer_info[lcgid]=BSR_TABLE[UE_template->bsr_info[lcgid]];
+      UE_template->ul_total_buffer+= UE_template->ul_buffer_info[lcgid];
+      //   UE_template->ul_buffer_creation_time_max=cmax(UE_template->ul_buffer_creation_time_max, frame_cycle*1024 + frameP-UE_template->ul_buffer_creation_time[lcgid]));
+    }
+    if ( UE_template->ul_total_buffer >0)
+      LOG_D(MAC,"[eNB %d] Frame %d subframe %d UE %d CC id %d: LCGID0 %d, LCGID1 %d, LCGID2 %d LCGID3 %d, BO %d\n", 
+	    module_idP, frameP,subframeP, UE_id, UE_PCCID(module_idP,UE_id),
+	    UE_template->ul_buffer_info[LCGID0],
+	    UE_template->ul_buffer_info[LCGID1],
+	    UE_template->ul_buffer_info[LCGID2],
+	    UE_template->ul_buffer_info[LCGID3],
+	    UE_template->ul_total_buffer);
+    else if (UE_is_to_be_scheduled(module_idP,UE_PCCID(module_idP,UE_id),UE_id) > 0 ){
+      if (UE_template->ul_total_buffer == 0 )
+	UE_template->ul_total_buffer = BSR_TABLE[11];
+      LOG_D(MAC,"[eNB %d] Frame %d subframe %d UE %d CC id %d: SR active, set BO to %d \n",
+	    module_idP, frameP,subframeP, UE_id, UE_PCCID(module_idP,UE_id),
+	    UE_template->ul_total_buffer);
+    }
+  } 
+}
+
+
+
+void assign_max_mcs_min_rb(module_id_t module_idP,int frameP, sub_frame_t subframeP, uint16_t *first_rb){
+  
+  int                i;
+  uint16_t           n,UE_id;
+  uint8_t            CC_id;
+  rnti_t             rnti           = -1;
+  int                mcs=cmin(16,openair_daq_vars.target_ue_ul_mcs); 
+  int                rb_table_index=1,tbs,tx_power;
+  UE_list_t          *UE_list = &eNB_mac_inst[module_idP].UE_list; 
+  UE_TEMPLATE       *UE_template;
+  LTE_DL_FRAME_PARMS   *frame_parms;
+  
+  for (i=UE_list->head_ul;i>=0;i=UE_list->next_ul[i]) {
+   
+    rnti = UE_RNTI(module_idP,i); 
+    if (rnti==0) 
+      continue;
+
+    UE_id = i;
+    for (n=0;n<UE_list->numactiveULCCs[UE_id];n++) {
+      // This is the actual CC_id in the list
+      CC_id = UE_list->ordered_ULCCids[n][UE_id];
+      frame_parms=mac_xface->get_lte_frame_parms(module_idP,CC_id); 
+      UE_template = &UE_list->UE_template[CC_id][UE_id];
+      
+      // if this UE has UL traffic 
+      if (UE_template->ul_total_buffer > 0 ) {
+	
+	tbs = mac_xface->get_TBS_UL(mcs,1);
+	// fixme: set use_srs flag
+	tx_power= mac_xface->estimate_ue_tx_power(tbs,rb_table[rb_table_index],0,frame_parms->Ncp,0);
+	
+	while (((UE_template->phr_info - tx_power) < 0 )  && 
+	       (mcs >=0)){ 
+	  // LOG_I(MAC,"UE_template->phr_info %d tx_power %d mcs %d\n", UE_template->phr_info,tx_power, mcs);
+	  mcs--;
+	  tbs = mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]);
+	  tx_power = mac_xface->estimate_ue_tx_power(tbs,rb_table[rb_table_index],0,frame_parms->Ncp,0); // fixme: set use_srs
+	}	
+	
+	while ((tbs < UE_template->ul_total_buffer) && 
+	       (rb_table[rb_table_index]<(frame_parms->N_RB_UL-first_rb[CC_id])) &&
+	       ((UE_template->phr_info - tx_power) > 0) && 
+	       (rb_table_index < 33 )){
+	  //  LOG_I(MAC,"tbs %d ul buffer %d rb table %d max ul rb %d\n", tbs, UE_template->ul_total_buffer, rb_table[rb_table_index], frame_parms->N_RB_UL-first_rb[CC_id]);
+	  rb_table_index++;
+	  tbs = mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]);
+	  tx_power = mac_xface->estimate_ue_tx_power(tbs,rb_table[rb_table_index],0,frame_parms->Ncp,0);
+	}
+	if (rb_table[rb_table_index]>(frame_parms->N_RB_UL-first_rb[CC_id])) {
+	  rb_table_index--;
+	}
+	
+	UE_template->pre_assigned_mcs_ul=mcs;
+	UE_template->pre_allocated_rb_table_index_ul=rb_table_index;
+	UE_template->pre_allocated_nb_rb_ul= rb_table[rb_table_index];
+	LOG_D(MAC,"[eNB %d] frame %d subframe %d: for UE %d CC %d: pre-assigned mcs %d, pre-allocated rb_table[%d]=%d RBs (phr %d, tx power %d)\n",
+	      module_idP, frameP, subframeP, UE_id, CC_id,
+	      UE_template->pre_assigned_mcs_ul,
+	      UE_template->pre_allocated_rb_table_index_ul,
+	      UE_template->pre_allocated_nb_rb_ul,
+	      UE_template->phr_info,tx_power);
+      } else {
+	UE_template->pre_allocated_rb_table_index_ul=-1;
+	UE_template->pre_allocated_nb_rb_ul=0;
+      }
+    }
+  }
+}
+
+
+void sort_ue_ul (module_id_t module_idP,int frameP, sub_frame_t subframeP){
+
+  int               UE_id1,UE_id2;
+  int               pCCid1,pCCid2;
+  int               round1,round2;
+  int               i=0,ii=0,j=0;
+  rnti_t            rnti1,rnti2;
+
+  UE_list_t *UE_list = &eNB_mac_inst[module_idP].UE_list;
+  
+  for (i=UE_list->head_ul;i>=0;i=UE_list->next_ul[i]) {
+    LOG_I(MAC,"sort ue ul i %d\n",i);
+    rnti1 = UE_RNTI(module_idP,i);
+    if(rnti1 == 0)
+      continue;
+    
+    UE_id1  = i;
+    pCCid1 = UE_PCCID(module_idP,UE_id1);
+    round1  = maxround(module_idP,rnti1,frameP,subframeP,1);  
+
+    for (ii=UE_list->next_ul[i];ii>=0;ii=UE_list->next_ul[ii]) {
+      LOG_I(MAC,"sort ul ue 2 ii %d\n",ii);
+      rnti2 = UE_RNTI(module_idP,ii);
+      if(rnti2 == 0)
+	continue;
+      
+      UE_id2  = ii;
+      pCCid2 = UE_PCCID(module_idP,UE_id2);
+      round2  = maxround(module_idP,rnti2,frameP,subframeP,1);  
+
+      if(round2 > round1){  
+	swap_UEs(UE_list,UE_id1,UE_id2,1);
+      }
+      else if (round2 == round1){
+	if (UE_list->UE_template[pCCid1][UE_id1].ul_buffer_info[LCGID0] < UE_list->UE_template[pCCid2][UE_id2].ul_buffer_info[LCGID0]){
+	  swap_UEs(UE_list,UE_id1,UE_id2,1);
+	}
+	else if (UE_list->UE_template[pCCid1][UE_id1].ul_total_buffer <  UE_list->UE_template[pCCid2][UE_id2].ul_total_buffer){
+	  swap_UEs(UE_list,UE_id1,UE_id2,1);
+	}
+	else if (UE_list->UE_template[pCCid1][UE_id1].pre_assigned_mcs_ul <  UE_list->UE_template[pCCid2][UE_id2].pre_assigned_mcs_ul){
+	  if (UE_list->UE_template[pCCid2][UE_id2].ul_total_buffer > 0 ) 
+	    swap_UEs(UE_list,UE_id1,UE_id2,1);
+	}
+      }
+    }
+  }
+}
 
