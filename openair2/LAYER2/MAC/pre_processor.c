@@ -734,15 +734,15 @@ void ulsch_scheduler_pre_processor(module_id_t module_idP,
   UE_TEMPLATE        *UE_template;
   LTE_DL_FRAME_PARMS   *frame_parms;
 
-  LOG_I(MAC,"store ulsch buffers\n");
+  // LOG_I(MAC,"store ulsch buffers\n");
   // convert BSR to bytes for comparison with tbs
   store_ulsch_buffer(module_idP,frameP, subframeP);
   
-  LOG_I(MAC,"assign max mcs min rb\n");
+  //LOG_I(MAC,"assign max mcs min rb\n");
   // maximize MCS and then allocate required RB according to the buffer occupancy with the limit of max available UL RB
   assign_max_mcs_min_rb(module_idP,frameP, subframeP, first_rb);
       
-  LOG_I(MAC,"sort ue \n");
+  //LOG_I(MAC,"sort ue \n");
   // sort ues 
   sort_ue_ul (module_idP,frameP, subframeP);
 
@@ -759,7 +759,7 @@ void ulsch_scheduler_pre_processor(module_id_t module_idP,
     }
   }
 
-  LOG_I(MAC,"step2 \n");
+  //LOG_I(MAC,"step2 \n");
   // step 2: calculate the average rb per UE
   total_ue_count =0;
   max_num_ue_to_be_scheduled=0;
@@ -940,7 +940,7 @@ void assign_max_mcs_min_rb(module_id_t module_idP,int frameP, sub_frame_t subfra
 	tx_power= mac_xface->estimate_ue_tx_power(tbs,rb_table[rb_table_index],0,frame_parms->Ncp,0);
 	
 	while (((UE_template->phr_info - tx_power) < 0 )  && 
-	       (mcs >=0)){ 
+	       (mcs > 0)){ 
 	  // LOG_I(MAC,"UE_template->phr_info %d tx_power %d mcs %d\n", UE_template->phr_info,tx_power, mcs);
 	  mcs--;
 	  tbs = mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]);
