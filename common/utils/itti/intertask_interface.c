@@ -144,13 +144,13 @@ typedef struct thread_desc_s {
 
     int epoll_nb_events;
 
-#ifdef RTAI
+//#ifdef RTAI
     /* Flag to mark real time thread */
     unsigned real_time;
 
     /* Counter to indicate from RTAI threads that messages are pending for the thread */
     unsigned messages_pending;
-#endif
+//#endif
 } thread_desc_t;
 
 typedef struct task_desc_s {
@@ -735,7 +735,7 @@ int itti_create_task(task_id_t task_id, void *(*start_routine)(void *), void *ar
     return 0;
 }
 
-#ifdef RTAI
+//#ifdef RTAI 
 void itti_set_task_real_time(task_id_t task_id)
 {
     thread_id_t thread_id = TASK_GET_THREAD_ID(task_id);
@@ -744,7 +744,7 @@ void itti_set_task_real_time(task_id_t task_id)
 
     itti_desc.threads[thread_id].real_time = TRUE;
 }
-#endif
+//#endif
 
 void itti_wait_ready(int wait_tasks)
 {
