@@ -4209,7 +4209,7 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
       }
       else {
 	//	ulsch->harq_processes[harq_pid]->Ndi = 0;
-	//	ulsch->harq_processes[harq_pid->round++;  // This is done in phich RX
+	// ulsch->harq_processes[harq_pid]->round++;  // This is done in phich RX
       }
     }
     ulsch->harq_processes[harq_pid]->n_DMRS                                = cshift;     
@@ -4438,6 +4438,8 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
       //      ulsch->harq_processes[harq_pid]->calibration_flag =0;
       if (ulsch->harq_processes[harq_pid]->mcs < 29)
 	ulsch->harq_processes[harq_pid]->TBS         = TBStable[get_I_TBS_UL(ulsch->harq_processes[harq_pid]->mcs)][ulsch->harq_processes[harq_pid]->nb_rb-1];
+      else
+	LOG_E(PHY,"Fatal: mcs > 28!!! and round == 0\n");
       /*
 	else if (ulsch->harq_processes[harq_pid]->mcs == 29) {
 	ulsch->harq_processes[harq_pid]->mcs = 4;
@@ -4459,8 +4461,8 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
       //      ulsch->harq_processes[harq_pid]->round++;
     }
 
-    LOG_D(PHY,"[UE %d][PUSCH %d] Frame %d, subframe %d : Programming PUSCH with n_DMRS2 %d (cshift %d), nb_rb %d, first_rb %d, round %d, rv %d\n",
-	  phy_vars_ue->Mod_id,harq_pid,phy_vars_ue->frame_rx,subframe,ulsch->harq_processes[harq_pid]->n_DMRS2,cshift,ulsch->harq_processes[harq_pid]->nb_rb,ulsch->harq_processes[harq_pid]->first_rb,ulsch->harq_processes[harq_pid]->round,ulsch->harq_processes[harq_pid]->rvidx);
+    LOG_D(PHY,"[UE %d][PUSCH %d] Frame %d, subframe %d : Programming PUSCH with n_DMRS2 %d (cshift %d), nb_rb %d, first_rb %d, mcs %d, round %d, rv %d\n",
+	  phy_vars_ue->Mod_id,harq_pid,phy_vars_ue->frame_rx,subframe,ulsch->harq_processes[harq_pid]->n_DMRS2,cshift,ulsch->harq_processes[harq_pid]->nb_rb,ulsch->harq_processes[harq_pid]->first_rb,ulsch->harq_processes[harq_pid]->mcs,ulsch->harq_processes[harq_pid]->round,ulsch->harq_processes[harq_pid]->rvidx);
 
     // ulsch->n_DMRS2 = ((DCI0_5MHz_TDD_1_6_t *)dci_pdu)->cshift;
 

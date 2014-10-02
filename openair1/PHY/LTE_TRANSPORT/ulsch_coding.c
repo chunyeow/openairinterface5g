@@ -136,6 +136,7 @@ LTE_UE_ULSCH_t *new_ue_ulsch(unsigned char Mdlharq,unsigned char N_RB_UL, uint8_
     memset(ulsch,0,sizeof(LTE_UE_ULSCH_t));
     ulsch->Mdlharq = Mdlharq;
     for (i=0;i<Mdlharq;i++) {
+
       ulsch->harq_processes[i] = (LTE_UL_UE_HARQ_t *)malloc16(sizeof(LTE_UL_UE_HARQ_t));
       //      printf("ulsch->harq_processes[%d] %p\n",i,ulsch->harq_processes[i]);
       if (ulsch->harq_processes[i]) {
@@ -159,6 +160,7 @@ LTE_UE_ULSCH_t *new_ue_ulsch(unsigned char Mdlharq,unsigned char N_RB_UL, uint8_
 	  }
 	}
 	ulsch->harq_processes[i]->subframe_scheduling_flag = 0;
+	ulsch->harq_processes[i]->first_tx = 1;
       }	else {
 	LOG_E(PHY,"Can't get harq_p %d\n",i);
 	exit_flag=3;
