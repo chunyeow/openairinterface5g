@@ -40,6 +40,7 @@
 
 #include "mme_app_ue_context.h"
 #include "mme_app_defs.h"
+#include "mcc_mnc_itu.h"
 
 #include "assertions.h"
 
@@ -341,6 +342,7 @@ mme_app_handle_nas_auth_param_req(
     plmn_t              *visited_plmn  = NULL;
     struct ue_context_s *ue_context    = NULL;
     uint64_t             imsi          = 0;
+    int                  mnc_length    = 0;
     plmn_t               visited_plmn_from_req = {
             .MCCdigit3 = 0,
             .MCCdigit2 = 0,
@@ -355,13 +357,28 @@ mme_app_handle_nas_auth_param_req(
     //visited_plmn = &visited_plmn_dongle;
     visited_plmn = &visited_plmn_from_req;
 
-#warning "assume MNC on 2 digits only"
     visited_plmn_from_req.MCCdigit3 = nas_auth_param_req_pP->imsi[0];
     visited_plmn_from_req.MCCdigit2 = nas_auth_param_req_pP->imsi[1];
     visited_plmn_from_req.MCCdigit1 = nas_auth_param_req_pP->imsi[2];
-    visited_plmn_from_req.MNCdigit1 = 0;
-    visited_plmn_from_req.MNCdigit2 = nas_auth_param_req_pP->imsi[3];
-    visited_plmn_from_req.MNCdigit3 = nas_auth_param_req_pP->imsi[4];
+
+    mnc_length = find_mnc_length(nas_auth_param_req_pP->imsi[0],
+            nas_auth_param_req_pP->imsi[1],
+            nas_auth_param_req_pP->imsi[2],
+            nas_auth_param_req_pP->imsi[3],
+            nas_auth_param_req_pP->imsi[4],
+            nas_auth_param_req_pP->imsi[5]
+            );
+    if (mnc_length == 2) {
+        visited_plmn_from_req.MNCdigit1 = 0;
+        visited_plmn_from_req.MNCdigit2 = nas_auth_param_req_pP->imsi[3];
+        visited_plmn_from_req.MNCdigit3 = nas_auth_param_req_pP->imsi[4];
+    } else if (mnc_length == 3) {
+        visited_plmn_from_req.MNCdigit1 = nas_auth_param_req_pP->imsi[3];
+        visited_plmn_from_req.MNCdigit2 = nas_auth_param_req_pP->imsi[4];
+        visited_plmn_from_req.MNCdigit3 = nas_auth_param_req_pP->imsi[5];
+    } else {
+        AssertFatal(0, "MNC Not found (mcc_mnc_list)");
+    }
 
     MME_APP_STRING_TO_IMSI(nas_auth_param_req_pP->imsi, &imsi);
 
