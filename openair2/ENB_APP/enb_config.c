@@ -237,7 +237,10 @@ static void enb_config_display(void) {
         printf( "\tCell type:          \t%s:\n",enb_properties.properties[i]->cell_type == CELL_MACRO_ENB ? "CELL_MACRO_ENB":"CELL_HOME_ENB");
         printf( "\tTAC:                \t%u:\n",enb_properties.properties[i]->tac);
         printf( "\tMCC:                \t%u:\n",enb_properties.properties[i]->mcc);
-        printf( "\tMNC:                \t%u:\n",enb_properties.properties[i]->mnc);
+        if (enb_properties.properties[i]->mnc_digit_length == 3)
+            printf( "\tMNC:                \t%03u:\n",enb_properties.properties[i]->mnc);
+        else
+            printf( "\tMNC:                \t%02u:\n",enb_properties.properties[i]->mnc);
 
 	for (j=0; j< enb_properties.properties[i]->nb_cc; j++) {
 	  printf( "\teutra band for CC %d:         \t%d:\n",j,enb_properties.properties[i]->eutra_band[j]);
@@ -545,9 +548,13 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                   enb_properties.properties[enb_properties_index]->mcc              = (uint16_t)atoi(mcc);
                   enb_properties.properties[enb_properties_index]->mnc              = (uint16_t)atoi(mnc);
                   enb_properties.properties[enb_properties_index]->mnc_digit_length = strlen(mnc);
+                  AssertFatal((enb_properties.properties[enb_properties_index]->mnc_digit_length == 2) ||
+                          (enb_properties.properties[enb_properties_index]->mnc_digit_length == 3),
+                          "BAD MNC DIGIT LENGTH %d",
+                          enb_properties.properties[i]->mnc_digit_length);
 
 
-                  // Parse optional physical parameters
+        // Parse optional physical parameters
 
 
 		  setting_component_carriers = config_setting_get_member (setting_enb, ENB_CONFIG_STRING_COMPONENT_CARRIERS);
