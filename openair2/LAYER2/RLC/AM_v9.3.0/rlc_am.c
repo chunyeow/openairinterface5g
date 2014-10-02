@@ -52,7 +52,6 @@
 //#define TRACE_RLC_AM_TX
 //#define TRACE_RLC_AM_RX
 //#define TRACE_RLC_AM_BO
-#define TRACE_RLC_AM_PDU 1
 
 extern rlc_am_control_pdu_info_t  g_rlc_am_control_pdu_info;
 
@@ -942,10 +941,12 @@ rlc_am_data_req (void *rlc_pP, frame_t frameP, mem_block_t * sdu_pP)
   uint16_t             data_offset;
   uint16_t             data_size;
   uint8_t              conf;
-#if defined(ENABLE_ITTI)
+#if defined(TRACE_RLC_AM_PDU)
   char                 message_string[7000];
   size_t               message_string_size = 0;
+#if defined(ENABLE_ITTI)
   MessageDef          *msg_p;
+#endif
   int                  octet_index, index;
 #endif
 
@@ -962,7 +963,7 @@ rlc_am_data_req (void *rlc_pP, frame_t frameP, mem_block_t * sdu_pP)
       data_size   = ((struct rlc_am_data_req *) (sdu_pP->data))->data_size;
       conf        = ((struct rlc_am_data_req *) (sdu_pP->data))->conf;
 
-#   if defined(ENABLE_ITTI)
+#if defined(TRACE_RLC_AM_PDU)
       message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
       message_string_size += sprintf(&message_string[message_string_size], "SDU size    : %u\n", data_size);
       message_string_size += sprintf(&message_string[message_string_size], "MUI         : %u\n", mui);
@@ -995,6 +996,7 @@ rlc_am_data_req (void *rlc_pP, frame_t frameP, mem_block_t * sdu_pP)
       }
       message_string_size += sprintf(&message_string[message_string_size], " |\n");
 
+#   if defined(ENABLE_ITTI)
       msg_p = itti_alloc_new_message_sized (l_rlc_p->is_enb > 0 ? TASK_RLC_ENB:TASK_RLC_UE , RLC_AM_SDU_REQ, message_string_size + sizeof (IttiMsgText));
       msg_p->ittiMsg.rlc_am_sdu_req.size = message_string_size;
       memcpy(&msg_p->ittiMsg.rlc_am_sdu_req.text, message_string, message_string_size);
@@ -1004,7 +1006,10 @@ rlc_am_data_req (void *rlc_pP, frame_t frameP, mem_block_t * sdu_pP)
       } else {
           itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->ue_module_id + NB_eNB_INST, msg_p);
       }
+#   else
+      LOG_T(RLC, "%s", message_string);
 #   endif
+#endif
 
      l_rlc_p->stat_tx_pdcp_sdu   += 1;
      l_rlc_p->stat_tx_pdcp_bytes += data_size;

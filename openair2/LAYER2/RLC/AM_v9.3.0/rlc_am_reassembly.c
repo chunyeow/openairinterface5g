@@ -30,6 +30,9 @@
 #define RLC_AM_REASSEMBLY_C
 #include "platform_types.h"
 //-----------------------------------------------------------------------------
+#if defined(ENABLE_ITTI)
+# include "intertask_interface.h"
+#endif
 #include "assertions.h"
 #include "rlc.h"
 #include "rlc_am.h"
@@ -107,6 +110,13 @@ void rlc_am_reassembly (uint8_t * src_pP, int32_t lengthP, rlc_am_entity_t *rlc_
 void rlc_am_send_sdu (rlc_am_entity_t *rlc_pP,frame_t frameP, eNB_flag_t eNB_flagP)
 //-----------------------------------------------------------------------------
 {
+#   if defined(TRACE_RLC_UM_PDU)
+  char                 message_string[7000];
+  size_t               message_string_size = 0;
+  MessageDef          *msg_p;
+  int                  octet_index, index;
+#endif
+
   if ((rlc_pP->output_sdu_in_construction)) {
       LOG_D(RLC, "\n\n\n[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND_SDU] %d bytes sdu %p\n",
           frameP,
@@ -125,6 +135,55 @@ void rlc_am_send_sdu (rlc_am_entity_t *rlc_pP,frame_t frameP, eNB_flag_t eNB_fla
               rlc_pP->output_sdu_size_to_write,
               rlc_pP->output_sdu_in_construction);
 #else
+#   if defined(TRACE_RLC_AM_PDU)
+          message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", rlc_pP->rb_id);
+          message_string_size += sprintf(&message_string[message_string_size], "SDU size    : %u\n", rlc_pP->output_sdu_size_to_write);
+
+          message_string_size += sprintf(&message_string[message_string_size], "\nPayload  : \n");
+          message_string_size += sprintf(&message_string[message_string_size], "------+-------------------------------------------------|\n");
+          message_string_size += sprintf(&message_string[message_string_size], "      |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n");
+          message_string_size += sprintf(&message_string[message_string_size], "------+-------------------------------------------------|\n");
+          for (octet_index = 0; octet_index < rlc_pP->output_sdu_size_to_write; octet_index++) {
+              if ((octet_index % 16) == 0){
+                  if (octet_index != 0) {
+                      message_string_size += sprintf(&message_string[message_string_size], " |\n");
+                  }
+                  message_string_size += sprintf(&message_string[message_string_size], " %04d |", octet_index);
+              }
+              /*
+               * Print every single octet in hexadecimal form
+               */
+              message_string_size += sprintf(&message_string[message_string_size],
+                      " %02x",
+                      rlc_pP->output_sdu_in_construction->data[octet_index]);
+              /*
+               * Align newline and pipes according to the octets in groups of 2
+               */
+          }
+          /*
+           * Append enough spaces and put final pipe
+           */
+          for (index = octet_index; index < 16; ++index) {
+              message_string_size += sprintf(&message_string[message_string_size], "   ");
+          }
+          message_string_size += sprintf(&message_string[message_string_size], " |\n");
+
+#      if defined(ENABLE_ITTI)
+          msg_p = itti_alloc_new_message_sized (rlc_pP->is_enb > 0 ? TASK_RLC_ENB:TASK_RLC_UE ,
+                  RLC_AM_SDU_IND,
+                  message_string_size + sizeof (IttiMsgText));
+          msg_p->ittiMsg.rlc_am_sdu_ind.size = message_string_size;
+          memcpy(&msg_p->ittiMsg.rlc_am_sdu_ind.text, message_string, message_string_size);
+
+          if (rlc_pP->is_enb) {
+              itti_send_msg_to_task(TASK_UNKNOWN, rlc_pP->enb_module_id, msg_p);
+          } else {
+              itti_send_msg_to_task(TASK_UNKNOWN, rlc_pP->ue_module_id + NB_eNB_INST, msg_p);
+          }
+#      else
+          LOG_T(RLC, "%s", message_string);
+#      endif
+#   endif
           rlc_data_ind (
               rlc_pP->enb_module_id,
               rlc_pP->ue_module_id,
