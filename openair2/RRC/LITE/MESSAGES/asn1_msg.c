@@ -444,9 +444,15 @@ uint8_t do_SIB1(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer
       dummy_mnc[1] = (configuration->mnc / 10) % 10;
       dummy_mnc[2] = (configuration->mnc / 1) % 10;
   } else {
-    dummy_mnc[0] = (configuration->mnc / 10) % 10;
-    dummy_mnc[1] = (configuration->mnc / 1) % 10;
-    dummy_mnc[2] = 0xf;
+      if (configuration->mnc_digit_length == 2) {
+        dummy_mnc[0] = (configuration->mnc / 10) % 10;
+        dummy_mnc[1] = (configuration->mnc / 1) % 10;
+        dummy_mnc[2] = 0xf;
+      } else {
+          dummy_mnc[0] = (configuration->mnc / 100) % 100;
+          dummy_mnc[1] = (configuration->mnc / 10) % 10;
+          dummy_mnc[2] = (configuration->mnc / 1) % 10;
+      }
   }
 #else
   dummy_mnc[0] = 0;
