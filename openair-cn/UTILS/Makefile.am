@@ -44,5 +44,6 @@ libutils_la_SOURCES = \
 	enum_string.h	enum_string.c	\
 	log.c log.h	\
 	mme_config.c mme_config.h	\
+    mcc_mnc_itu.c mcc_mnc_itu.h   \
 	mme_default_values.h	\
 	queue.h	tree.h
