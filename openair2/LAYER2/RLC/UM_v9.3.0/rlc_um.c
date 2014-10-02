@@ -48,8 +48,7 @@
 #include "rlc_um_very_simple_test.h"
 
 #define DEBUG_RLC_UM_TX_STATUS 1
-// NN --> LG: this could become a perf bottleneck, I added this to the makefile.
-//#define TRACE_RLC_UM_PDU 1
+
 
 #ifdef TRACE_RLC_UM_PDU
 char  message_string[10000];
