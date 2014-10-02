@@ -576,7 +576,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
   eNB_MAC_INST      *eNB=&eNB_mac_inst[module_idP];
   UE_list_t         *UE_list=&eNB->UE_list;
   UE_TEMPLATE       *UE_template;
-  int                rvidx_tab[4] = {0,3,1,2};
+  int                rvidx_tab[4] = {0,2,3,1};
   LTE_DL_FRAME_PARMS   *frame_parms;
 
   LOG_I(MAC,"entering ulsch preprocesor\n");
@@ -649,8 +649,9 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		mcs = cmin (UE_template->pre_assigned_mcs_ul, openair_daq_vars.target_ue_ul_mcs); // adjust, based on user-defined MCS
 		if (UE_template->pre_allocated_rb_table_index_ul >=0)
 		  rb_table_index=UE_template->pre_allocated_rb_table_index_ul;
-		else // NN-->RK: check this condition
-		  rb_table_index=1; // for PHR
+		else {// NN-->RK: check this condition
+		  mcs=5;rb_table_index=1; // for PHR
+		}
 		buffer_occupancy = UE_template->ul_total_buffer;
 		
 		while ((rb_table[rb_table_index]>(frame_parms->N_RB_UL-1-first_rb[CC_id])) && 
@@ -689,7 +690,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		LOG_I(MAC,"[eNB %d][PUSCH %d/%x] Frame %d subframeP %d Scheduled UE retransmission (mcs %d, first rb %d, nb_rb %d, TBS %d, harq_pid %d, round %d)\n",
 		      module_idP,UE_id,rnti,frameP,subframeP,mcs,
 		      first_rb[CC_id],UE_template->nb_rb_ul[harq_pid],
-		      mac_xface->get_TBS_UL(mcs,UE_template->nb_rb_ul[harq_pid]),
+		      TBS,//mac_xface->get_TBS_UL(mcs,UE_template->nb_rb_ul[harq_pid]),
 		      harq_pid, round);
 		
 		rballoc = mac_xface->computeRIV(frame_parms->N_RB_UL,
