@@ -269,7 +269,7 @@ static unsigned int             nf_byp[4] =    {15,20,29,23};
 static rx_gain_t                rx_gain_mode[MAX_NUM_CCs][4] = {{max_gain,max_gain,max_gain,max_gain}};
 #else
 double tx_gain[MAX_NUM_CCs][4] = {{120,0,0,0}};
-double rx_gain[MAX_NUM_CCs][4] = {{40,0,0,0}};
+double rx_gain[MAX_NUM_CCs][4] = {{50,0,0,0}};
 #endif
 
 double sample_rate=30.72e6;
@@ -905,8 +905,8 @@ static void * eNB_thread_tx(void *param) {
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe),0);
     
     
-    //    LOG_I(PHY,"Locking mutex for eNB proc %d (IC %d,mutex %p)\n",proc->subframe,proc->instance_cnt,&proc->mutex);
-    //printf("Locking mutex for eNB proc %d (subframe_tx %d))\n",proc->subframe,subframe_tx);
+    //LOG_I(PHY,"Locking mutex for eNB proc %d (IC %d,mutex %p)\n",proc->subframe,proc->instance_cnt,&proc->mutex);
+    //    printf("Locking mutex for eNB proc %d (subframe_tx %d))\n",proc->subframe,proc->subframe_tx);
 
     if (pthread_mutex_lock(&proc->mutex_tx) != 0) {
       LOG_E(PHY,"[SCHED][eNB] error locking mutex for eNB TX proc %d\n",proc->subframe);
@@ -956,10 +956,12 @@ static void * eNB_thread_tx(void *param) {
 	printf("[openair][SCHED][eNB] error unlocking mutex for eNB TX proc %d\n",proc->subframe);
       }
     }
+
     
     proc->frame_tx++;
     if (proc->frame_tx==1024)
       proc->frame_tx=0;
+
   }    
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe),0);        
 #ifdef HARD_RT
@@ -1409,7 +1411,7 @@ static void *eNB_thread(void *arg)
 	      LOG_E(PHY,"[eNB] ERROR pthread_mutex_lock for eNB TX thread %d (IC %d)\n",hw_subframe,PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].instance_cnt_tx);   
 	    }
 	    else {
-	      //		      LOG_I(PHY,"[eNB] Waking up eNB process %d (IC %d)\n",hw_subframe,PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].instance_cnt); 
+	      //	      LOG_I(PHY,"[eNB] Waking up eNB process %d (IC %d,rx_cnt %d)\n",hw_subframe,PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].instance_cnt_tx,rx_cnt); 
 	      PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].instance_cnt_tx++;
 	      pthread_mutex_unlock(&PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].mutex_tx);
 	      if (PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].instance_cnt_tx == 0) {
@@ -1418,7 +1420,7 @@ static void *eNB_thread(void *arg)
 		}
 	      }
 	      else {
-		LOG_W(PHY,"[eNB] Frame %d, eNB TX thread %d busy!!\n",PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].frame_tx,hw_subframe);
+		LOG_W(PHY,"[eNB] Frame %d, eNB TX thread %d busy!! (rx_cnt %d)\n",PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].frame_tx,hw_subframe,rx_cnt);
 		oai_exit=1;
 	      }
 	    }
