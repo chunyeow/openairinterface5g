@@ -407,9 +407,9 @@ unsigned int  ulsch_decoding(PHY_VARS_eNB *phy_vars_eNB,
     Qprime = G - ulsch->O_RI;
 
   Q_CQI = Q_m * Qprime;
-#ifdef DEBUG_ULSCH_DECODING
-  printf("ulsch_decoding.c: G %d, Q_RI %d, Q_CQI %d (L %d, Or1 %d) O_ACK %d\n",G,Q_RI,Q_CQI,L,ulsch->Or1,ulsch->harq_processes[harq_pid]->O_ACK); 
-#endif
+  //#ifdef DEBUG_ULSCH_DECODING
+    LOG_D(PHY,"ulsch_decoding: G %d, Q_RI %d, Q_CQI %d (L %d, Or1 %d) O_ACK %d\n",G,Q_RI,Q_CQI,L,ulsch->Or1,ulsch->harq_processes[harq_pid]->O_ACK); 
+  //#endif
   Qprime_CQI = Qprime;
 
   G = G - Q_RI - Q_CQI;
