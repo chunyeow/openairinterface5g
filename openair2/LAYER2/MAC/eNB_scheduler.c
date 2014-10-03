@@ -183,9 +183,9 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
   }
 
   //if (subframeP%5 == 0)
-#ifdef EXMIMO
+  //#ifdef EXMIMO
   pdcp_run(frameP, 1, 0, module_idP);
-#endif
+  //#endif
 
   // check HO
   rrc_rx_tx(module_idP,

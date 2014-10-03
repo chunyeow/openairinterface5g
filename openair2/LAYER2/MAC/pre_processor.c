@@ -913,8 +913,8 @@ void assign_max_mcs_min_rb(module_id_t module_idP,int frameP, sub_frame_t subfra
   uint16_t           n,UE_id;
   uint8_t            CC_id;
   rnti_t             rnti           = -1;
-  int                mcs=cmin(16,openair_daq_vars.target_ue_ul_mcs); 
-  int                rb_table_index=1,tbs,tx_power;
+  int                mcs=10;//cmin(16,openair_daq_vars.target_ue_ul_mcs); 
+  int                rb_table_index=0,tbs,tx_power;
   UE_list_t          *UE_list = &eNB_mac_inst[module_idP].UE_list; 
   UE_TEMPLATE       *UE_template;
   LTE_DL_FRAME_PARMS   *frame_parms;

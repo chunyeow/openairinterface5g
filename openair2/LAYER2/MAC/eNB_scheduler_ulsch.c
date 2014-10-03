@@ -589,7 +589,11 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
   LOG_I(MAC,"exiting ulsch preprocesor\n");
   // loop over all active UEs
   for (UE_id=UE_list->head_ul;UE_id>=0;UE_id=UE_list->next_ul[UE_id]) {
-   
+
+    // don't schedule if Msg4 is not received yet
+    if (UE_list->UE_template[UE_PCCID(module_idP,UE_id)][UE_id].configured==FALSE)
+      continue;
+
     rnti = UE_RNTI(module_idP,UE_id); 
     if (rnti==0) {
       LOG_W(MAC,"[eNB %d] frame %d subfarme %d, UE %d CC %d: no RNTI \n", module_idP,frameP,subframeP,UE_id,CC_id);
@@ -603,11 +607,11 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
       frame_parms = mac_xface->get_lte_frame_parms(module_idP,CC_id); 
       eNB_UE_stats = mac_xface->get_eNB_UE_stats(module_idP,CC_id,rnti);
       if (eNB_UE_stats==NULL){
-	LOG_W(MAC,"[eNB %d] frame %d subfarme %d, UE %d CC %d: no PHY context\n", module_idP,frameP,subframeP,UE_id,CC_id);
+	LOG_W(MAC,"[eNB %d] frame %d subframe %d, UE %d CC %d: no PHY context\n", module_idP,frameP,subframeP,UE_id,CC_id);
 	continue; // mac_xface->macphy_exit("[MAC][eNB] Cannot find eNB_UE_stats\n");
       }
       if (nCCE_available[CC_id] < (1<<aggregation)){
-	LOG_W(MAC,"[eNB %d] frame %d subfarme %d, UE %d CC %d: not enough nCCE\n", module_idP,frameP,subframeP,UE_id,CC_id);
+	LOG_W(MAC,"[eNB %d] frame %d subframe %d, UE %d CC %d: not enough nCCE\n", module_idP,frameP,subframeP,UE_id,CC_id);
 	continue; // break;
       }
 	
@@ -628,6 +632,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		module_idP,frameP,subframeP,UE_id,CC_id, harq_pid, round,nCCE[CC_id],rnti,mode_string[eNB_UE_stats->mode]);
        
 
+
 #ifndef EXMIMO_IOT
 	if (((UE_is_to_be_scheduled(module_idP,CC_id,UE_id)>0)) || (round>0) || ((frameP%10)==0)) 
 	  // if there is information on bsr of DCCH, DTCH or if there is UL_SR, or if there is a packet to retransmit, or we want to schedule a periodic feedback every 10 frames
@@ -639,18 +644,18 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 	      UE_template->ul_SR = 0;
 	      aggregation = process_ue_cqi(module_idP,UE_id); // =2 by default!!
 	      status = mac_get_rrc_status(module_idP,1,UE_id);
-	      cqi_req = (status < RRC_CONNECTED)? 0:1;
+	      cqi_req = 0;//(status < RRC_CONNECTED)? 0:1;
 	      	      
 	      // new transmission 
 	      if (round==0) {
 		
 		ndi = 1-UE_template->oldNDI_UL[harq_pid];
 		UE_template->oldNDI_UL[harq_pid]=ndi;
-		mcs = cmin (UE_template->pre_assigned_mcs_ul, openair_daq_vars.target_ue_ul_mcs); // adjust, based on user-defined MCS
+		mcs = 10;//cmin (UE_template->pre_assigned_mcs_ul, openair_daq_vars.target_ue_ul_mcs); // adjust, based on user-defined MCS
 		if (UE_template->pre_allocated_rb_table_index_ul >=0)
 		  rb_table_index=UE_template->pre_allocated_rb_table_index_ul;
 		else {// NN-->RK: check this condition
-		  mcs=5;rb_table_index=1; // for PHR
+		  mcs=10;rb_table_index=5; // for PHR
 		}
 		buffer_occupancy = UE_template->ul_total_buffer;
 		
