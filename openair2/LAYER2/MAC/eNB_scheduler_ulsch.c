@@ -644,7 +644,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 	      UE_template->ul_SR = 0;
 	      aggregation = process_ue_cqi(module_idP,UE_id); // =2 by default!!
 	      status = mac_get_rrc_status(module_idP,1,UE_id);
-	      cqi_req = 0;//(status < RRC_CONNECTED)? 0:1;
+	      cqi_req = (status < RRC_CONNECTED)? 0:1;
 	      	      
 	      // new transmission 
 	      if (round==0) {
