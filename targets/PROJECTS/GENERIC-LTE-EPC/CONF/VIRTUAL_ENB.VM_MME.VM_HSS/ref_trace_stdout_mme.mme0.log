@@ -1,0 +1,1300 @@
+==== EURECOM oai_epc v0.3.5380:5842M ====
+Configuration:
+- File ...............: /mnt/sshfs/trunk/targets/PROJECTS/GENERIC-LTE-EPC/./CONF/VIRTUAL_ENB.VM_MME.VM_HSS/epc_sfr_mme0.conf
+- Verbosity level ....: 0
+- Realm ..............: eur
+- Max eNBs ...........: 10
+- Max UEs ............: 100
+- Emergency support ..: FALSE
+- Unauth IMSI support : FALSE
+- Relative capa ......: 10
+
+- Statistics timer ...: 10 (seconds)
+
+- S1-U:
+    port number ......: 2152
+- S1-MME:
+    port number ......: 36412
+- IP:
+    s1-MME iface .....: eth2
+    s1-MME ip ........: 192.168.56.100
+    s11 MME iface ....: none
+    s11 S-GW ip ......: 0.0.0.0
+- ITTI:
+    queue size .......: 2000000 (bytes)
+    log file .........: /mnt/sshfs/trunk/targets/PROJECTS/GENERIC-LTE-EPC/OUTPUT/mme0/itti_mme.mme0.log
+- SCTP:
+    in streams .......: 32
+    out streams ......: 32
+- GUMMEI:
+    mme group ids ....:
+        | 3 | 4 | 5 | 30 | 8 | 9 | 258 | 50021 
+    mme codes ........:
+        | 15 | 30 | 31 | 32 | 33 | 34 | 35 | 36 | 56 | 1 
+        | 8 
+    plmns ............: (mcc.mnc:tac)
+            208. 10:1
+            310.028:1
+            209.130:1
+            209.012:1
+            208. 35:1
+- S6A:
+    conf file ........: ./UTILS/CONF/s6a.conf
+[0m../../NAS/EURECOM-NAS/src/nas_network.c[86]                           Entering nas_network_initialize()[0m
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[146]                             	Entering nas_proc_initialize()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/emm_main.c[421]                         		Entering emm_main_initialize()[0m
+[0m../../NAS/EURECOM-NAS/src/api/mme/mme_api.c[264]                      			Entering mme_api_get_emm_config()[0m
+[0m../../NAS/EURECOM-NAS/src/api/mme/mme_api.c[302]                      			Leaving mme_api_get_emm_config(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/emm_main.c[447]                         		Leaving emm_main_initialize()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_main.c[129]                         		Entering esm_main_initialize()[0m
+[0m../../NAS/EURECOM-NAS/src/api/mme/mme_api.c[322]                      			Entering mme_api_get_esm_config()[0m
+[0m../../NAS/EURECOM-NAS/src/api/mme/mme_api.c[334]                      			Leaving mme_api_get_esm_config(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_main.c[145]                         		Leaving esm_main_initialize()[0m
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[154]                             	Leaving nas_proc_initialize()[0m
+[0m../../NAS/EURECOM-NAS/src/nas_network.c[98]                           Leaving nas_network_initialize()[0m
+[TMR][D]Initializing TIMER task interface
+[TMR][D]Initializing TIMER task interface: DONE
+[NAS] [D]Initializing NAS task interface
+[NAS] [D]Initializing NAS task interface: DONE
+[SCTP][D]Initializing SCTP task interface
+[SCTP][D]Initializing SCTP task interface: DONE
+[UDP] [D]Initializing UDP task interface
+[UDP] [D]Initializing UDP task interface: DONE
+[S1AP][D]Initializing S1AP interface
+[S1AP][D]ASN1C version 924
+[S1AP][D]S1AP Release v10.5
+[S1AP][D]Initializing S1AP interface: DONE
+[GTPU][D]Initializing GTPV1U interface
+[SCTP][D]Received SCTP_INIT_MSG
+[SCTP][D]Creating new listen socket on port 36412 with
+[SCTP][D]ipv4 addresses:
+[SCTP][D]	- 192.168.56.100
+[GTPU][D]Tx UDP_INIT IP addr 192.168.58.100
+[GTPU][D]Initializing GTPV1U interface: DONE
+[MMEA][D]Initializing MME applicative layer
+[UDP] [D]Creating new listen socket on address 192.168.58.100 and port 2152
+[UDP] [D]Inserting new descriptor for task 2, sd 29
+[TMR][D]Requesting new periodic timer with id 0x4cee2c0 that expires within 10 sec and 0 usec
+[MMEA][D]Initializing MME applicative layer: DONE
+[S6A] [D]Initializing S6a interface
+[S6A] [D]Freediameter version 1.1.5
+[S6A] [D]Initializing freeDiameter core...
+libfdproto initialized.
+GNUTLS call: gnutls_global_init()
+libgnutls '3.1.0' initialized.
+GNUTLS call: gnutls_certificate_allocate_credentials (&fd_g_config->cnf_sec_data.credentials)
+GNUTLS call: gnutls_dh_params_init (&fd_g_config->cnf_sec_data.dh_cache)
+GNUTLS call: gnutls_x509_trust_list_init(&fd_g_config->cnf_sec_data.trustlist, 0)
+[S6A] [D]Initializing freeDiameter core done
+[S6A] [D]Default ext path: /usr/lib/freeDiameter
+GNUTLS call: gnutls_certificate_set_x509_key_file( conf->cnf_sec_data.credentials, conf->cnf_sec_data.cert_file, conf->cnf_sec_data.key_file, GNUTLS_X509_FMT_PEM)
+GNUTLS call: gnutls_x509_crt_list_import2(&calist, &cacount, &cafile, GNUTLS_X509_FMT_PEM, GNUTLS_X509_CRT_LIST_FAIL_IF_UNSORTED)
+GNUTLS call: gnutls_x509_trust_list_add_cas (fd_g_config->cnf_sec_data.trustlist, calist, cacount, 0)
+GNUTLS call: conf->cnf_sec_data.ca_file_nr += gnutls_certificate_set_x509_trust_file( conf->cnf_sec_data.credentials, conf->cnf_sec_data.ca_file, GNUTLS_X509_FMT_PEM)
+GNUTLS call: gnutls_priority_init( &fd_g_config->cnf_sec_data.prio_cache, GNUTLS_DEFAULT_PRIORITY, &err_pos)
+GNUTLS call: ret = gnutls_x509_crt_list_import(NULL, &cert_max, &certfile, GNUTLS_X509_FMT_PEM, GNUTLS_X509_CRT_LIST_IMPORT_FAIL_IF_EXCEED)
+GNUTLS call: gnutls_x509_crt_list_import(certs, &cert_max, &certfile, GNUTLS_X509_FMT_PEM, GNUTLS_X509_CRT_LIST_FAIL_IF_UNSORTED )
+	Subject: C=FR,ST=PACA,O=Eurecom,OU=CM,CN=mme0.eur
+	Issuer: CN=eur,C=FR,ST=PACA,L=Aix,O=Eurecom,OU=CM
+	Verified against: CN=eur,C=FR,ST=PACA,L=Aix,O=Eurecom,OU=CM
+	Verification output: 0
+
+GNUTLS call: gnutls_x509_crt_deinit (certs[i])
+Generating fresh Diffie-Hellman parameters of size 1024 (this takes some time)... 
+GNUTLS call: gnutls_dh_params_generate2( fd_g_config->cnf_sec_data.dh_cache, fd_g_config->cnf_sec_data.dh_bits ?: GNUTLS_DEFAULT_DHBITS)
+Loading : /usr/lib/freeDiameter/dict_nas_mipv6.fdx
+Dictionary Extension 'MIPv6 NAS-to-HAAA Interaction' initialized
+Loading : /usr/lib/freeDiameter/dict_s6a.fdx
+Dictionary Extension 'S6A from 3GPP standard v.10.5' initialized
+All extensions loaded.
+-- Configuration :
+  Debug trace level ...... : +0
+  Configuration file ..... : ./UTILS/CONF/s6a.conf
+  Diameter Identity ...... : mme0.eur (l:8)
+  Diameter Realm ......... : eur (l:3)
+  Tc Timer ............... : 30
+  Tw Timer ............... : 30
+  Local port ............. : 3868
+  Local secure port ...... : 3869
+  Number of SCTP streams . : 15
+  Number of server threads : 1
+  Local endpoints ........ : Default (use all available)
+  Local applications ..... : (none)
+  Flags : - IP ........... : Enabled
+          - IPv6 ......... : DISABLED
+          - Relay app .... : DISABLED
+          - TCP .......... : DISABLED
+          - SCTP ......... : Enabled
+          - Pref. proto .. : SCTP
+          - TLS method ... : INBAND
+  TLS :   - Certificate .. : /usr/local/etc/freeDiameter/user.cert.pem
+          - Private key .. : /usr/local/etc/freeDiameter/user.key.pem
+          - CA (trust) ... : /usr/local/etc/freeDiameter/cacert.pem (1 certs)
+          - CRL .......... : (none)
+          - Priority ..... : (default: 'NORMAL')
+          - DH bits ...... : 1024
+  Origin-State-Id ........ : 1412773088
+calling fd_servers_start()...
+getifaddrs()...examining lo
+
+lo       AF_PACKET (17)
+
+		tx_packets =         44; rx_packets =         44
+		tx_bytes   =       4928; rx_bytes   =       4928
+
+getifaddrs()...examining eth3
+
+eth3     AF_PACKET (17)
+
+		tx_packets =         58; rx_packets =         71
+		tx_bytes   =       2748; rx_bytes   =      16108
+
+  DEBUG:fd_ep_add_merge  Address family was unknown, not added.
+getifaddrs()...examining eth1
+
+eth1     AF_PACKET (17)
+
+		tx_packets =       1590; rx_packets =       1522
+		tx_bytes   =     160586; rx_bytes   =     156700
+
+  DEBUG:fd_ep_add_merge  Address family was unknown, not added.
+getifaddrs()...examining eth2
+
+eth2     AF_PACKET (17)
+
+		tx_packets =        153; rx_packets =        165
+		tx_bytes   =      17370; rx_bytes   =      20086
+
+  DEBUG:fd_ep_add_merge  Address family was unknown, not added.
+getifaddrs()...examining eth0
+
+eth0     AF_PACKET (17)
+
+		tx_packets =    1806756; rx_packets =    2313115
+		tx_bytes   =  740369636; rx_bytes   = 1654209405
+
+  DEBUG:fd_ep_add_merge  Address family was unknown, not added.
+getifaddrs()...examining lo
+
+lo       AF_INET (2)
+
+		address: <127.0.0.1>
+
+getifaddrs()...examining eth3
+
+eth3     AF_INET (2)
+
+		address: <192.168.58.100>
+
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.58.100]:0 {---L}
+getifaddrs()...examining eth1
+
+eth1     AF_INET (2)
+
+		address: <192.168.57.100>
+
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.57.100]:0 {---L}
+    [192.168.58.100]:0 {---L}
+getifaddrs()...examining eth2
+
+eth2     AF_INET (2)
+
+		address: <192.168.56.100>
+
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.56.100]:0 {---L}
+    [192.168.57.100]:0 {---L}
+    [192.168.58.100]:0 {---L}
+getifaddrs()...examining eth0
+
+eth0     AF_INET (2)
+
+		address: <192.168.14.178>
+
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.14.178]:0 {---L}
+    [192.168.56.100]:0 {---L}
+    [192.168.57.100]:0 {---L}
+    [192.168.58.100]:0 {---L}
+getifaddrs()...examining lo
+
+lo       AF_INET6 (10)
+
+		address: <::1>
+
+getifaddrs()...examining eth3
+
+eth3     AF_INET6 (10)
+
+		address: <fe80::cad3:a3ff:fe02:204%eth3>
+
+getifaddrs()...examining eth1
+
+eth1     AF_INET6 (10)
+
+		address: <fe80::cad3:a3ff:fe02:202%eth1>
+
+getifaddrs()...examining eth2
+
+eth2     AF_INET6 (10)
+
+		address: <fe80::cad3:a3ff:fe02:203%eth2>
+
+getifaddrs()...examining eth0
+
+eth0     AF_INET6 (10)
+
+		address: <fe80::cad3:a3ff:fe02:201%eth0>
+
+calling fd_psm_start()...
+calling pthread_create() core_runner_thread ...
+calling signal_framework_ready()...
+[S6A] [D]Diameter identity of MME: mme0.eur with length: 8
+[S6A] [D]Diameter identity of HSS: hss.eur with length: 7
+[S6A] [D]Initializing S6a interface: DONE
+[SPGW-APP][D]Initializing SPGW-APP  task interface
+[SPGW-APP][I]Parsing configuration file provided /mnt/sshfs/trunk/targets/PROJECTS/GENERIC-LTE-EPC/./CONF/VIRTUAL_ENB.VM_MME.VM_HSS/epc_sfr_mme0.conf
+[SPGW-APP][I]Parsing configuration file found sgw_ipv4_address_for_S1u_S12_S4_up: 192.168.58.100/24 on eth3
+[SPGW-APP][I]Parsing configuration file found sgw_ipv4_address_for_S5_S8_up: 0.0.0.0/24 on none
+[SPGW-APP][I]Parsing configuration file found sgw_ipv4_address_for_S11: 0.0.0.0/24 on none
+[SPGW-APP][I]Parsing configuration file found pgw_ipv4_address_for_S5_S8: 0.0.0.0/24 on none
+[SPGW-APP][I]Parsing configuration file found pgw_ipv4_address_for_SGI: 0.0.0.0/24 on none
+[SGI_IF][W]SGI interface disabled by config file
+[SPGW-APP][D]Initializing SPGW-APP task interface: DONE
+[SGI_IF][D]Initializing FW_IP task interface
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.57.101]:0 {-D--}
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.57.101]:0 {-D--}
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.57.101]:0 {-D--}
+Filtering no IPV6
+  DEBUG:fd_ep_filter_family  Filter this list for family 2:
+    [192.168.57.101]:0 {-D--}
+  DEBUG:fd_ep_filter_family  Resulting list:
+    [192.168.57.101]:0 {-D--}
+  DEBUG:fd_ep_filter_list  Filter this list 
+    [192.168.57.101]:0 {-D--}
+  DEBUG:fd_ep_filter_list  Removing from list
+      [192.168.14.178]:0 {---L}
+      [192.168.56.100]:0 {---L}
+      [192.168.57.100]:0 {---L}
+      [192.168.58.100]:0 {---L}
+  DEBUG:fd_ep_filter_list  Resulting list:
+    [192.168.57.101]:0 {-D--}
+@0 LG
+
+@1 LG NO TLS
+
+Connection established to server '[hss.eur]:3868' (SCTP:35, 15/15 streams).
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.57.101]:3868 {-D-L}
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.14.177]:3868 {---L}
+    [192.168.57.101]:3868 {-D-L}
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.14.177]:3868 {---L}
+    [192.168.57.101]:3868 {-D-L}
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.14.177]:3868 {--AL}
+    [192.168.57.101]:3868 {-D-L}
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.14.177]:3868 {--AL}
+    [192.168.57.101]:3868 {-DAL}
+No TLS protection negotiated with peer 'hss.eur'.
+'STATE_WAITCEA'	-> 'STATE_OPEN'	'hss.eur'
+[S6A] [D]Peer hss.eur is now connected...
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.14.177]:3868 {--AL}
+    [192.168.57.101]:3868 {-DAL}
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.14.177]:3868 {--AL}
+    [192.168.57.101]:3868 {-DAL}
+  DEBUG:fd_ep_add_merge  New list:
+    [192.168.14.177]:3868 {--AL}
+    [192.168.57.101]:3868 {-DAL}
+[SCTP][D]Client association changed: 0
+[SCTP][D]----------------------
+[SCTP][D]SCTP Status:
+[SCTP][D]assoc id .....: 21
+[SCTP][D]state ........: 3
+[SCTP][D]instrms ......: 32
+[SCTP][D]outstrms .....: 32
+[SCTP][D]fragmentation : 1432
+[SCTP][D]pending data .: 0
+[SCTP][D]unack data ...: 0
+[SCTP][D]rwnd .........: 114688
+[SCTP][D]peer info     :
+[SCTP][D]    state ....: 2
+[SCTP][D]    cwnd .....: 4380
+[SCTP][D]    srtt .....: 0
+[SCTP][D]    rto ......: 3000
+[SCTP][D]    mtu ......: 1500
+[SCTP][D]----------------------
+[SCTP][D]New connection
+[SCTP][D]SCTP list contains 1 associations
+[SCTP][D]sd           : 0
+[SCTP][D]input streams: 0
+[SCTP][D]out streams  : 0
+[SCTP][D]assoc_id     : 0
+[SCTP][D]peer address :
+[SCTP][D]----------------------
+[SCTP][D]Local addresses:
+[SCTP][D]    - [::ffff:192.168.56.100]
+[SCTP][D]----------------------
+[SCTP][D]----------------------
+[SCTP][D]Peer addresses:
+[SCTP][D]    - [::ffff:192.168.56.1]
+[SCTP][D]    - [::a00:e809:c0a8:eaf:0:0]
+[SCTP][D]    - [::ffff:c0a8:eaf:2000:0]
+[SCTP][D]    - [a00:e809:c0a8:daf::]
+[SCTP][D]    - [0:ffff:c0a8:daf:2000:0:a00:e809]
+[SCTP][D]----------------------
+[S1AP][D]Create eNB context for assoc_id: 21
+[SCTP][D][21][36] Msg of length 54 received from port 59401, on stream 0, PPID 18
+[S1AP][D]Decoding message S1ap_S1SetupRequestIEs (../S1AP/s1ap_decoder.c:6605)
+[S1AP][D]New s1 setup request incoming from [S1AP][D]eNB_Eurecom_0 [S1AP][D]macro eNB id: 54d50
+[S1AP][D]Comparing config tac 1, received tac = 1
+[S1AP][D]Comparing plmn_mcc 208/310, plmn_mnc 10/28 plmn_mnc_len 2/3
+[S1AP][D]Comparing plmn_mcc 310/310, plmn_mnc 28/28 plmn_mnc_len 3/3
+[S1AP][D]Adding eNB to the list of served eNBs
+[S1AP][D][eNB]
+[S1AP][D][eNB]eNB name:          eNB_Eurecom_0
+[S1AP][D][eNB]eNB ID:            0054d50
+[S1AP][D][eNB]SCTP assoc id:     21
+[S1AP][D][eNB]SCTP instreams:    32
+[S1AP][D][eNB]SCTP outstreams:   32
+[S1AP][D][eNB]UE attache to eNB: 0
+[S1AP][D][eNB]
+[SCTP][D][36][21] Sending buffer 0x7fde10001180 of 63 bytes on stream 0 with ppid 18
+[SCTP][D]Successfully sent 63 bytes on stream 0
+[SCTP][D][21][36] Msg of length 68 received from port 59401, on stream 1, PPID 18
+[S1AP][D]Decoding message S1ap_InitialUEMessageIEs (../S1AP/s1ap_decoder.c:1319)
+[S1AP][D]New Initial UE message received with eNB UE S1AP ID: 0xac4cb9
+[S1AP][D][eNB]
+[S1AP][D][eNB]eNB name:          eNB_Eurecom_0
+[S1AP][D][eNB]eNB ID:            0054d50
+[S1AP][D][eNB]SCTP assoc id:     21
+[S1AP][D][eNB]SCTP instreams:    32
+[S1AP][D][eNB]SCTP outstreams:   32
+[S1AP][D][eNB]UE attache to eNB: 1
+[S1AP][D][UE]     eNB UE s1ap id:   0xac4cb9
+[S1AP][D][UE]     MME UE s1ap id:   0x10001760
+[S1AP][D][UE]     SCTP stream recv: 0x0001
+[S1AP][D][UE]     SCTP stream send: 0x0001
+[S1AP][D][eNB]
+[MMEA][D]Received MME_APP_CONNECTION_ESTABLISHMENT_IND from S1AP
+[MMEA][D]We didn't find this mme_ue_s1ap_id in list of UE: 0x10001760/dec268441440
+[MMEA][D]UE context doesn't exist -> create one
+[MMEA][D] ue_context_compare_identifiers IMSI           0
+[MMEA][D] ue_context_compare_identifiers mme_s11_teid   00000000
+[MMEA][D] ue_context_compare_identifiers mme_ue_s1ap_id 10001760
+[MMEA][D] ue_context_compare_identifiers ue_id          00000000
+[MMEA][D] with mme_ue_s1ap_id          268441440
+[MMEA][D] ue_context_compare_identifiers IMSI           0
+[MMEA][D] ue_context_compare_identifiers mme_s11_teid   00000000
+[MMEA][D] ue_context_compare_identifiers mme_ue_s1ap_id 00000000
+[MMEA][D] ue_context_compare_identifiers ue_id          10001760
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[1337]                            Entering nas_proc_establish_ind()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      	Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[219]                       		Entering emm_as_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[227]             INFO      			EMMAS-SAP - Received primitive EMMAS_ESTABLISH_REQ (205)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[790]                       			Entering _emm_as_establish_req()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[797]             INFO      				EMMAS-SAP - Received AS connection establish request[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[375]              				Entering nas_message_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[604]              					Entering _nas_message_header_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[629]              					Leaving _nas_message_header_decode(rc = 1)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[658]              					Entering _nas_message_plain_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[95]                       						Entering emm_msg_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[123]            INFO      							EMM-MSG   - Message Type 0x41[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/AttachRequest.c[45]                 							Entering decode_attach_request()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/AttachRequest.c[46]       INFO      								EMM  - attach_request len = 19[0m
+[0m../../NAS/EURECOM-NAS/src/ies/UeNetworkCapability.c[52]     INFO      								decode_ue_network_capability len = 2[0m
+[0m../../NAS/EURECOM-NAS/src/ies/UeNetworkCapability.c[84]     INFO      								uenetworkcapability decoded=3
+[0m
+[0m../../NAS/EURECOM-NAS/src/ies/UeNetworkCapability.c[88]     INFO      								uenetworkcapability then decoded=3
+[0m
+[0m../../NAS/EURECOM-NAS/src/ies/EsmMessageContainer.c[46]               								Entering decode_esm_message_container()[0m
+[0m../../NAS/EURECOM-NAS/src/ies/EsmMessageContainer.c[65]               								Leaving decode_esm_message_container(rc = 6)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/AttachRequest.c[276]                							Leaving decode_attach_request(rc = 19)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[244]                      						Leaving emm_msg_decode(rc = 21)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[676]              					Leaving _nas_message_plain_decode(rc = 21)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[448]              				Leaving nas_message_decode(rc = 21)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_recv.c[503]                     				Entering emm_recv_attach_request()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_recv.c[505]           INFO      					EMMAS-SAP - Received Attach Request message[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[1063]                          					Entering emm_proc_attach_request()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[1068]                INFO      						EMM-PROC  - EPS attach type = EPS (0) requested (ueid=0x10001760)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[1070]                INFO      						EMM-PROC  - umts_present = 0 umts_present = 0[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[294]                      						Entering emm_fsm_set_status()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[306]            INFO      							EMM-FSM   - Status changed: INVALID ===> DEREGISTERED[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[312]                      						Leaving emm_fsm_set_status(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/emm_data_ctx.c[86]            INFO      						EMM-CTX - Add in context 0x4dce730 UE id 268441440[0m
+[34m../../NAS/EURECOM-NAS/src/emm/Attach.c[1183]                WARNING   						EMM-PROC  - Could not set tac in context, cause tai is NULL [0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2512]                          						Entering _emm_attach_update()[0m
+[34m../../NAS/EURECOM-NAS/src/emm/Attach.c[2582]                WARNING   							EMM-PROC  - Assign GUTI from IMSI 310.280.0003.0F.04DCE730 to emm_data_context[0m
+[34m../../NAS/EURECOM-NAS/src/emm/Attach.c[2594]                WARNING   							EMM-PROC  - Set ctx->guti_is_new to emm_data_context[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2641]                          						Leaving _emm_attach_update(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[1914]                          						Entering _emm_attach_identify()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[1916]                INFO      							EMM-PROC  - Identify incoming UE (ueid=0x10001760) using IMSI[0m
+<Eps Attach Type>
+    <EPS attach type value>1</EPS attach type value>
+</Eps Attach Type>
+<Nas Key Set Identifier>
+    <TSC>0</TSC>
+    <NAS key set identifier>7</NAS key set identifier>
+</Nas Key Set Identifier>
+<Eps Mobile Identity>
+    <odd even>0</odd even>
+    <Type of identity>IMSI</Type of identity>
+    <digit1>3</digit1>
+    <digit2>1</digit2>
+    <digit3>0</digit3>
+    <digit4>0</digit4>
+    <digit5>2</digit5>
+    <digit6>8</digit6>
+    <digit7>9</digit7>
+    <digit8>0</digit8>
+    <digit9>8</digit9>
+    <digit10>3</digit10>
+    <digit11>2</digit11>
+    <digit12>1</digit12>
+    <digit13>5</digit13>
+    <digit14>0</digit14>
+    <digit15>15</digit15>
+</Eps Mobile Identity>
+<Ue Network Capability>
+    <EEA>80</EEA>
+    <EIA>40</EIA>
+    <UEA>00</UEA>
+    <UCS2>0</UCS2>
+    <UIA>0</UIA>
+    <SPARE>0</SPARE>
+    <CSFB>0</CSFB>
+    <LPP>0</LPP>
+    <LCS>0</LCS>
+    <SR VCC>0</SR VCC>
+    <NF>0<NF/>
+    <UMTS>0<UMTS/>
+    <GPRS>0<GPRS/>
+</Ue Network Capability>
+<Esm Message Container>
+<Length>4</Length>
+	<values>0x2 0x1 0xd0 0x31 </values>
+</Esm Message Container>
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2063]                          						Leaving _emm_attach_identify(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[1203]                          					Leaving emm_proc_attach_request(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_recv.c[643]                     				Leaving emm_recv_attach_request(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[870]                       			Leaving _emm_as_establish_req(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[307]                       		Leaving emm_as_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      	Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[1355]                            Leaving nas_proc_establish_ind(rc = 0)[0m
+[MMEA][D]mme_app_handle_nas_auth_param_req Handling imsi 31002890832150
+[MMEA][D]mme_app_handle_nas_auth_param_req Handling imsi from req  31002890832150 (mnc length 3)
+[MMEA][D] ue_context_compare_identifiers IMSI           31002890832150
+[MMEA][D] ue_context_compare_identifiers mme_s11_teid   00000000
+[MMEA][D] ue_context_compare_identifiers mme_ue_s1ap_id 00000000
+[MMEA][D] ue_context_compare_identifiers ue_id          00000000
+[MMEA][D]UE context search by IMSI failed, try by ue id
+[MMEA][D] ue_context_compare_identifiers IMSI           0
+[MMEA][D] ue_context_compare_identifiers mme_s11_teid   00000000
+[MMEA][D] ue_context_compare_identifiers mme_ue_s1ap_id 00000000
+[MMEA][D] ue_context_compare_identifiers ue_id          10001760
+[MMEA][D]and we have no auth. vector for it, request authentication information
+[MMEA][D]mme_app_request_authentication_info visited_plmn MCC 310 MNC 028
+[MMEA][D]mme_app_request_authentication_info visited_plmn 310802
+[S6A] [D]s6a_generate_authentication_info_req plmn: 138020
+[S6A] [D]s6a_generate_authentication_info_req visited_plmn: 138020
+[S6A] [D]Received S6A Authentication Information Answer (AIA)
+[S6A] [D]Received S6A Result code 2001:DIAMETER_SUCCESS
+[MMEA][D]Handling imsi 31002890832150
+[MMEA][D] ue_context_compare_identifiers IMSI           31002890832150
+[MMEA][D] ue_context_compare_identifiers mme_s11_teid   00000000
+[MMEA][D] ue_context_compare_identifiers mme_ue_s1ap_id 00000000
+[MMEA][D] ue_context_compare_identifiers ue_id          00000000
+[MMEA][D]INFORMING NAS ABOUT AUTH RESP SUCCESS got 1 vector(s)
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[1478]                            Entering nas_proc_auth_param_res()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      	Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[369]                       		Entering emm_cn_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[371]             INFO      			EMMCN-SAP - Received primitive EMM_CN_AUTHENTICATION_PARAM_RES (401)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[102]                       			Entering _emm_cn_authentication_res()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[117]             INFO      				EMM-PROC  - Received RAND ..: c2,49,8b,42,b8,1d,0b,3f,0f,2b,39,2e,15,33,ac,d5
+[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[119]             INFO      				EMM-PROC  - Received AUTN ..: 97,a4,9b,c0,11,f1,80,00,91,8a,8f,f1,d0,f0,46,3d
+[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[121]             INFO      				EMM-PROC  - Received KASME .: 25,b5,a8,85,42,a5,6a,f0,39,4c,8f,9c,17,27,57,be 34,fc,1d,20,56,11,c9,56,76,c4,cf,12,c7,e3,8f,ae
+[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Authentication.c[570]                   				Entering emm_proc_authentication()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Authentication.c[572]         INFO      					EMM-PROC  - Initiate authentication KSI = 0, ctx = 0x4dce730[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[184]                        					Entering emm_proc_common_initialize()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[211]                        					Leaving emm_proc_common_initialize(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Authentication.c[1342]                  					Entering _authentication_request()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[474]                       						Entering emm_as_set_security_data()[0m
+[34m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[527]             WARNING   							EMM_AS_NO_KEY_AVAILABLE[0m
+[0m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[532]                       						Leaving emm_as_set_security_data()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      						Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[219]                       							Entering emm_as_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[227]             INFO      								EMMAS-SAP - Received primitive EMMAS_SECURITY_REQ (201)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1156]                      								Entering _emm_as_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1798]                      									Entering _emm_as_security_req()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1802]            INFO      										EMMAS-SAP - Send AS security request[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[978]                       										Entering _emm_as_set_header()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1017]                      										Leaving _emm_as_set_header(rc = 140592014935136)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_send.c[1145]                    										Entering emm_send_authentication_request()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_send.c[1149]          INFO      											EMMAS-SAP - Send Authentication Request message[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_send.c[1167]                    										Leaving emm_send_authentication_request(rc = 36)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1048]                      										Entering _emm_as_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[474]              											Entering nas_message_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[760]              												Entering _nas_message_header_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[788]              												Leaving _nas_message_header_encode(rc = 1)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[816]              												Entering _nas_message_plain_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[266]                      													Entering emm_msg_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[413]                      													Leaving emm_msg_encode(rc = 36)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[834]              												Leaving _nas_message_plain_encode(rc = 36)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[565]              											Leaving nas_message_encode(rc = 36)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1080]                      										Leaving _emm_as_encode(rc = 36)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1868]                      									Leaving _emm_as_security_req(rc = 263)[0m
+[32m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1242]            DEBUG     									EMMAS-SAP - Sending msg with id 0x107, primitive EMMAS_SECURITY_REQ (201) to S1AP layer for transmission[0m
+<Nas Key Set Identifier>
+    <TSC>0</TSC>
+    <NAS key set identifier>0</NAS key set identifier>
+</Nas Key Set Identifier>
+<Authentication Parameter Rand>
+<Length>16</Length>
+	<values>0xc2 0x49 0x8b 0x42 0xb8 0x1d 0xb 0x3f 0xf 0x2b 0x39 0x2e 0x15 0x33 0xac 0xd5 </values>
+</Authentication Parameter Rand>
+<Authentication Parameter Autn>
+<Length>16</Length>
+	<values>0x97 0xa4 0x9b 0xc0 0x11 0xf1 0x80 0x0 0x91 0x8a 0x8f 0xf1 0xd0 0xf0 0x46 0x3d </values>
+</Authentication Parameter Autn>
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1254]                      								Leaving _emm_as_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[307]                       							Leaving emm_as_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      						Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Authentication.c[1381]        INFO      						EMM-PROC  - Timer T3460 (0) expires in 6 seconds[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Authentication.c[1385]                  					Leaving _authentication_request(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      					Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_reg.c[109]                      						Entering emm_reg_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[389]                      							Entering emm_fsm_process()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[411]            INFO      								EMM-FSM   - Received event COMMON_PROC_REQ (1) in state DEREGISTERED[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/EmmDeregistered.c[98]               								Entering EmmDeregistered()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[294]                      									Entering emm_fsm_set_status()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[306]            INFO      										EMM-FSM   - Status changed: DEREGISTERED ===> COMMON-PROCEDURE-INITIATED[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[312]                      									Leaving emm_fsm_set_status(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/EmmDeregistered.c[221]              								Leaving EmmDeregistered(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[422]                      							Leaving emm_fsm_process(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_reg.c[120]                      						Leaving emm_reg_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      					Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Authentication.c[626]                   				Leaving emm_proc_authentication(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[153]                       			Leaving _emm_cn_authentication_res(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[407]                       		Leaving emm_cn_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      	Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[1485]                            Leaving nas_proc_auth_param_res(rc = 0)[0m
+[TMR][D]Requesting new periodic timer with id 0x4dce6b0 that expires within 6 sec and 0 usec
+[S1AP][D]Send S1ap_ProcedureCode_id_downlinkNASTransport ue_id = 0x10001760 mme_ue_s1ap_id = 0x10001760 eNB_UE_S1AP_ID = 0x00AC4CB9
+[SCTP][D][36][21] Sending buffer 0x7fde10001980 of 65 bytes on stream 1 with ppid 18
+[SCTP][D]Successfully sent 65 bytes on stream 1
+[SCTP][D][21][36] Msg of length 62 received from port 59401, on stream 1, PPID 18
+[S1AP][D]Decoding message S1ap_UplinkNASTransportIEs (../S1AP/s1ap_decoder.c:5740)
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[1453]                            Entering nas_proc_ul_transfer_ind()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      	Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[219]                       		Entering emm_as_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[227]             INFO      			EMMAS-SAP - Received primitive EMMAS_DATA_IND (211)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[519]                       			Entering _emm_as_data_ind()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[523]             INFO      				EMMAS-SAP - Received AS data transfer indication (ueid=268441440, delivered=TRUE, length=11)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[268]              				Entering nas_message_decrypt()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[604]              					Entering _nas_message_header_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[629]              					Leaving _nas_message_header_decode(rc = 1)[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[343]    DEBUG     					Plain NAS message found[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[348]              				Leaving nas_message_decrypt(rc = 11)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[341]                       				Entering _emm_as_recv()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[346]             INFO      					EMMAS-SAP - Received EMM message (length=11)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[375]              					Entering nas_message_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[604]              						Entering _nas_message_header_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[629]              						Leaving _nas_message_header_decode(rc = 1)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[658]              						Entering _nas_message_plain_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[95]                       							Entering emm_msg_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[123]            INFO      								EMM-MSG   - Message Type 0x53[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[244]                      							Leaving emm_msg_decode(rc = 11)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[676]              						Leaving _nas_message_plain_decode(rc = 11)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[448]              					Leaving nas_message_decode(rc = 11)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_recv.c[935]                     					Entering emm_recv_authentication_response()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_recv.c[939]           INFO      						EMMAS-SAP - Received Authentication Response message[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Authentication.c[658]                   						Entering emm_proc_authentication_complete()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Authentication.c[660]         INFO      							EMM-PROC  - Authentication complete (ueid=268441440, cause=-1)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Authentication.c[664]         INFO      							EMM-PROC  - Stop timer T3460 (0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[447]                        							Entering emm_proc_common_get_args()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[458]                        							Leaving emm_proc_common_get_args(rc = 81585488)[0m
+[32m../../NAS/EURECOM-NAS/src/emm/Authentication.c[701]         DEBUG     							EMM-PROC  - Success to authentify the UE  RESP XRES == XRES UE CONTEXT[0m
+[32m../../NAS/EURECOM-NAS/src/emm/Authentication.c[739]         DEBUG     							EMM-PROC  - Notify EMM that the authentication procedure successfully completed[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      							Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_reg.c[109]                      								Entering emm_reg_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[389]                      									Entering emm_fsm_process()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[411]            INFO      										EMM-FSM   - Received event COMMON_PROC_CNF (2) in state COMMON-PROCEDURE-INITIATED[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/EmmCommonProcedureInitia            										Entering EmmCommonProcedureInitiated()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[294]                      											Entering emm_fsm_set_status()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[306]            INFO      												EMM-FSM   - Status changed: COMMON-PROCEDURE-INITIATED ===> DEREGISTERED[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[312]                      											Leaving emm_fsm_set_status(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[241]                        											Entering emm_proc_common_success()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2089]                          												Entering _emm_attach_security()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2094]                INFO      													EMM-PROC  - Setup NAS security (ueid=268441440)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/SecurityModeControl.c[434]              													Entering emm_proc_security_mode_control()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/SecurityModeControl.c[436]    INFO      														EMM-PROC  - Initiate security mode control procedure KSI = 0 EEA = 128 EIA = 64[0m
+[0m../../NAS/EURECOM-NAS/src/emm/SecurityModeControl.c[1153]             														Entering _security_select_algorithms()[0m
+[32m../../NAS/EURECOM-NAS/src/emm/SecurityModeControl.c[1163]   DEBUG     															Selected  NAS_SECURITY_ALGORITHMS_EIA1 (choice num 0)[0m
+[32m../../NAS/EURECOM-NAS/src/emm/SecurityModeControl.c[1174]   DEBUG     															Selected  NAS_SECURITY_ALGORITHMS_EEA0 (choice num 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/SecurityModeControl.c[1182]             														Leaving _security_select_algorithms(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[184]                        														Entering emm_proc_common_initialize()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[211]                        														Leaving emm_proc_common_initialize(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/SecurityModeControl.c[1023]             														Entering _security_request()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[474]                       															Entering emm_as_set_security_data()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[486]             INFO      																EPS security context exists is new 1 KSI 0 SQN 0 count 0[0m
+[0m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[492]             INFO      																knas_int 0xdd 0x91 0xeb 0x6e 0x23 0xb0 0x30 0x16 0x2d 0x4d 0xe4 0x10 0x3a 0x40 0x33 0x39 [0m
+[0m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[494]             INFO      																knas_enc 0x71 0xb3 0x9e 0xb1 0xcd 0xfd 0x61 0x3f 0x77 0x3a 0x21 0x56 0xae 0xda 0x92 0xe2 [0m
+[0m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[496]             INFO      																kasme 0x25 0xb5 0xa8 0x85 0x42 0xa5 0x6a 0xf0 0x39 0x4c 0x8f 0x9c 0x17 0x27 0x57 0xbe 0x34 0xfc 0x1d 0x20 0x56 0x11 0xc9 0x56 0x76 0xc4 0xcf 0x12 0xc7 0xe3 0x8f 0xae [0m
+[0m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[532]                       															Leaving emm_as_set_security_data()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      															Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[219]                       																Entering emm_as_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[227]             INFO      																	EMMAS-SAP - Received primitive EMMAS_SECURITY_REQ (201)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1156]                      																	Entering _emm_as_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1798]                      																		Entering _emm_as_security_req()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1802]            INFO      																			EMMAS-SAP - Send AS security request[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[978]                       																			Entering _emm_as_set_header()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[996]                       																			Leaving _emm_as_set_header(rc = 140592014934272)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_send.c[1222]                    																			Entering emm_send_security_mode_command()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_send.c[1226]          INFO      																				EMMAS-SAP - Send Security Mode Command message[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_send.c[1254]                    																			Leaving emm_send_security_mode_command(rc = 12)[0m
+[32m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1854]            DEBUG     																			Set nas_msg.header.sequence_number -> 0[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1048]                      																			Entering _emm_as_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[474]              																				Entering nas_message_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[760]              																					Entering _nas_message_header_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[788]              																					Leaving _nas_message_header_encode(rc = 6)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[861]              																					Entering _nas_message_protected_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[816]              																						Entering _nas_message_plain_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[266]                      																							Entering emm_msg_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[413]                      																							Leaving emm_msg_encode(rc = 7)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[834]              																						Leaving _nas_message_plain_encode(rc = 7)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1092]             																						Entering _nas_message_encrypt()[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1105]   DEBUG     																							No encryption of message according to security header type 0x03[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1109]             																						Leaving _nas_message_encrypt(rc = 7)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[892]              																					Leaving _nas_message_protected_encode(rc = 7)[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[498]    DEBUG     																					offset 5 = 6 - 1, hdr encode = 6, length = 18 bytes = 7[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1234]             																					Entering _nas_message_get_mac()[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1265]   DEBUG     																						NAS_SECURITY_ALGORITHMS_EIA1 dir DOWNLINK count.seq_num 0 count 0[0m
+
+[NAS]	00 07 5d 01 00 02 80 40 
+
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1301]   DEBUG     																						NAS_SECURITY_ALGORITHMS_EIA1 returned MAC 40.9.77.e5(3849783616) for length 8 direction 1, count 0[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1309]             																					Leaving _nas_message_get_mac(rc = 1074362341)[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[532]    DEBUG     																					Incremented emm_security_context.dl_count.seq_num -> 1[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[563]              																				Leaving nas_message_encode(rc = 13)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1080]                      																			Leaving _emm_as_encode(rc = 13)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1868]                      																		Leaving _emm_as_security_req(rc = 263)[0m
+[32m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1242]            DEBUG     																		EMMAS-SAP - Sending msg with id 0x107, primitive EMMAS_SECURITY_REQ (201) to S1AP layer for transmission[0m
+<Authentication Response Parameter>
+</Authentication Response Parameter>
+[TMR][D]Removing timer 0x4dce6b0
+derive_key_nas FC 21 nas_alg_type distinguisher 2 nas_enc_alg_identity 1
+0x15 0x02 0x00 0x01 0x01 0x00 0x01 
+derive_key_nas FC 21 nas_alg_type distinguisher 1 nas_enc_alg_identity 0
+0x15 0x01 0x00 0x01 0x00 0x00 0x01 
+<Nas Security Algorithms>
+    <Type of ciphering algorithm>0</Type of ciphering algorithm>
+    <Type of integrity algorithm>1</Type of integrity algorithm>
+</Nas Security Algorithms>
+<Nas Key Set Identifier>
+    <TSC>0</TSC>
+    <NAS key set identifier>0</NAS key set identifier>
+</Nas Key Set Identifier>
+<Ue Security Capability>
+    <EEA>128</EEA>
+    <EIA>64</EIA>
+</Ue Security Capability>
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1254]                      																	Leaving _emm_as_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[307]                       																Leaving emm_as_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      															Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/SecurityModeControl.c[1068]   INFO      															EMM-PROC  - Timer T3460 (1) expires in 6 seconds[0m
+[0m../../NAS/EURECOM-NAS/src/emm/SecurityModeControl.c[1072]             														Leaving _security_request(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      														Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_reg.c[109]                      															Entering emm_reg_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[389]                      																Entering emm_fsm_process()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[411]            INFO      																	EMM-FSM   - Received event COMMON_PROC_REQ (1) in state DEREGISTERED[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/EmmDeregistered.c[98]               																	Entering EmmDeregistered()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[294]                      																		Entering emm_fsm_set_status()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[306]            INFO      																			EMM-FSM   - Status changed: DEREGISTERED ===> COMMON-PROCEDURE-INITIATED[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[312]                      																		Leaving emm_fsm_set_status(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/EmmDeregistered.c[221]              																	Leaving EmmDeregistered(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[422]                      																Leaving emm_fsm_process(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_reg.c[120]                      															Leaving emm_reg_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      														Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/SecurityModeControl.c[575]              													Leaving emm_proc_security_mode_control(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2130]                          												Leaving _emm_attach_security(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[267]                        											Leaving emm_proc_common_success(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/EmmCommonProcedureInitia            										Leaving EmmCommonProcedureInitiated(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[422]                      									Leaving emm_fsm_process(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_reg.c[120]                      								Leaving emm_reg_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      							Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Authentication.c[748]                   						Leaving emm_proc_authentication_complete(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_recv.c[958]                     					Leaving emm_recv_authentication_response(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[497]                       				Leaving _emm_as_recv(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[588]                       			Leaving _emm_as_data_ind(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[307]                       		Leaving emm_as_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      	Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[1469]                            Leaving nas_proc_ul_transfer_ind(rc = 0)[0m
+[TMR][D]Requesting new periodic timer with id 0x4dce710 that expires within 6 sec and 0 usec
+[S1AP][D]Send S1ap_ProcedureCode_id_downlinkNASTransport ue_id = 0x10001760 mme_ue_s1ap_id = 0x10001760 eNB_UE_S1AP_ID = 0x00AC4CB9
+[SCTP][D][36][21] Sending buffer 0x7fde10002160 of 42 bytes on stream 1 with ppid 18
+[SCTP][D]Successfully sent 42 bytes on stream 1
+[SCTP][D][21][36] Msg of length 59 received from port 59401, on stream 1, PPID 18
+[S1AP][D]Decoding message S1ap_UplinkNASTransportIEs (../S1AP/s1ap_decoder.c:5740)
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[1453]                            Entering nas_proc_ul_transfer_ind()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      	Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[219]                       		Entering emm_as_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[227]             INFO      			EMMAS-SAP - Received primitive EMMAS_DATA_IND (211)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[519]                       			Entering _emm_as_data_ind()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[523]             INFO      				EMMAS-SAP - Received AS data transfer indication (ueid=268441440, delivered=TRUE, length=8)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[268]              				Entering nas_message_decrypt()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[604]              					Entering _nas_message_header_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[629]              					Leaving _nas_message_header_decode(rc = 6)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1234]             					Entering _nas_message_get_mac()[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1265]   DEBUG     						NAS_SECURITY_ALGORITHMS_EIA1 dir UPLINK count.seq_num 0 count 0[0m
+
+[NAS]	00 07 5e 
+
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1301]   DEBUG     						NAS_SECURITY_ALGORITHMS_EIA1 returned MAC 6d.5e.6.29(688283245) for length 3 direction 0, count 0[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1309]             					Leaving _nas_message_get_mac(rc = 1834878505)[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[329]    DEBUG     					Integrity: MAC Success[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[933]              					Entering _nas_message_decrypt()[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1024]   DEBUG     						NAS_SECURITY_ALGORITHMS_EEA0 dir 0 ul_count.seq_num 0 dl_count.seq_num 1[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1034]             					Leaving _nas_message_decrypt(rc = 7)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[348]              				Leaving nas_message_decrypt(rc = 2)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[341]                       				Entering _emm_as_recv()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[346]             INFO      					EMMAS-SAP - Received EMM message (length=2)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[375]              					Entering nas_message_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[604]              						Entering _nas_message_header_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[629]              						Leaving _nas_message_header_decode(rc = 1)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[658]              						Entering _nas_message_plain_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[95]                       							Entering emm_msg_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[123]            INFO      								EMM-MSG   - Message Type 0x5e[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[244]                      							Leaving emm_msg_decode(rc = 2)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[676]              						Leaving _nas_message_plain_decode(rc = 2)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[448]              					Leaving nas_message_decode(rc = 2)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_recv.c[1031]                    					Entering emm_recv_security_mode_complete()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_recv.c[1035]          INFO      						EMMAS-SAP - Received Security Mode Complete message[0m
+[0m../../NAS/EURECOM-NAS/src/emm/SecurityModeControl.c[607]              						Entering emm_proc_security_mode_complete()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/SecurityModeControl.c[609]    INFO      							EMM-PROC  - Security mode complete (ueid=268441440)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/SecurityModeControl.c[612]    INFO      							EMM-PROC  - Stop timer T3460 (1)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[447]                        							Entering emm_proc_common_get_args()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[458]                        							Leaving emm_proc_common_get_args(rc = 81585488)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      							Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_reg.c[109]                      								Entering emm_reg_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[389]                      									Entering emm_fsm_process()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[411]            INFO      										EMM-FSM   - Received event COMMON_PROC_CNF (2) in state COMMON-PROCEDURE-INITIATED[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/EmmCommonProcedureInitia            										Entering EmmCommonProcedureInitiated()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[294]                      											Entering emm_fsm_set_status()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[306]            INFO      												EMM-FSM   - Status changed: COMMON-PROCEDURE-INITIATED ===> DEREGISTERED[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[312]                      											Leaving emm_fsm_set_status(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[241]                        											Entering emm_proc_common_success()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2161]                          												Entering _emm_attach()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2168]                INFO      													EMM-PROC  - Attach UE (ueid=268441440)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_sap.c[164]                      													Entering esm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_sap.c[173]            INFO      														ESM-SAP   - Received primitive ESM_PDN_CONNECTIVITY_REQ (12)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_sap.c[436]                      														Entering _esm_sap_recv()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/msg/esm_msg.c[107]                      															Entering esm_msg_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/msg/esm_msg.c[206]                      															Leaving esm_msg_decode(rc = 4)[0m
+[32m../../NAS/EURECOM-NAS/src/esm/sap/esm_sap.c[784]            DEBUG     															ESM-SAP   - PDN_CONNECTIVITY_REQUEST pti 1 ebi 0[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_recv.c[714]                     															Entering esm_recv_pdn_connectivity_request()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_recv.c[716]           INFO      																ESM-SAP   - Received PDN Connectivity Request message (ueid=268441440, pti=1, ebi=0)[0m
+[TMR][D]Removing timer 0x4dce710
+<Request Type>
+    <Request type value>3</Request type value>
+</Request Type>
+<Pdn Type>
+    <PDN type value>1</PDN type value>
+</Pdn Type>
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_recv.c[826]                     															Leaving esm_recv_pdn_connectivity_request(rc = -1)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_sap.c[989]                      														Leaving _esm_sap_recv(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_sap.c[385]                      													Leaving esm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[184]                        													Entering emm_proc_common_initialize()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[211]                        													Leaving emm_proc_common_initialize(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2275]                          												Leaving _emm_attach(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[267]                        											Leaving emm_proc_common_success(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/EmmCommonProcedureInitia            										Leaving EmmCommonProcedureInitiated(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[422]                      									Leaving emm_fsm_process(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_reg.c[120]                      								Leaving emm_reg_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      							Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/SecurityModeControl.c[652]              						Leaving emm_proc_security_mode_complete(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_recv.c[1043]                    					Leaving emm_recv_security_mode_complete(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[497]                       				Leaving _emm_as_recv(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[588]                       			Leaving _emm_as_data_ind(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[307]                       		Leaving emm_as_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      	Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[1469]                            Leaving nas_proc_ul_transfer_ind(rc = 0)[0m
+[MMEA][D]Received NAS_PDN_CONNECTIVITY_REQ from NAS
+[MMEA][D]Handling imsi 31002890832150
+[MMEA][D] ue_context_compare_identifiers IMSI           31002890832150
+[MMEA][D] ue_context_compare_identifiers mme_s11_teid   00000000
+[MMEA][D] ue_context_compare_identifiers mme_ue_s1ap_id 00000000
+[MMEA][D] ue_context_compare_identifiers ue_id          00000000
+[MMEA][D]Handling imsi 31002890832150
+[MMEA][D] ue_context_compare_identifiers IMSI           31002890832150
+[MMEA][D] ue_context_compare_identifiers mme_s11_teid   00000000
+[MMEA][D] ue_context_compare_identifiers mme_ue_s1ap_id 00000000
+[MMEA][D] ue_context_compare_identifiers ue_id          00000000
+PLMN: € 
+[S6A] [D]Sending s6a ulr for imsi=31002890832150
+[S6A] [D]Received s6a ula for imsi=31002890832150
+[S6A] [D]Sending S6A_UPDATE_LOCATION_ANS to task MME_APP
+[MMEA][D]mme_app_handle_s6a_update_location_ans Handling imsi 31002890832150
+[MMEA][D] ue_context_compare_identifiers IMSI           31002890832150
+[MMEA][D] ue_context_compare_identifiers mme_s11_teid   00000000
+[MMEA][D] ue_context_compare_identifiers mme_ue_s1ap_id 00000000
+[MMEA][D] ue_context_compare_identifiers ue_id          00000000
+[MMEA][D]Handling imsi 31002890832150
+[SPGW-APP][D]Rx CREATE-SESSION-REQUEST MME S11 teid 402655776 S-GW S11 teid 1 APN internet.v4.eur EPS bearer Id 5
+[SPGW-APP][D]                          IMSI 31002890832150 
+[SPGW-APP][D]sgw_lite_cm_create_bearer_context_information_in_collection 1
+[SPGW-APP][D]Added new s_plus_p_gw_eps_bearer_context_information_t in s11_bearer_context_information_hashtable key teid 1
+[SPGW-APP][D]Inserted new EPS bearer entry for EPS bearer id 5 status HASH_TABLE_OK
+[SPGW-APP][D]|				5	<-> ebi: 5, enb_teid_for_S1u: 0, s_gw_teid_for_S1u_S12_S4_up: 0 (tbc)
+[SPGW-APP][D]+--------------------------------------+
+[SPGW-APP][D]| MME <--- S11 TE ID MAPPINGS ---> SGW |
+[SPGW-APP][D]+--------------------------------------+
+[SPGW-APP][D]| 402655776	<------------->	1
+[SPGW-APP][D]+--------------------------------------+
+[SPGW-APP][D]+-----------------------------------------+
+[SPGW-APP][D]| S11 BEARER CONTEXT INFORMATION MAPPINGS |
+[SPGW-APP][D]+-----------------------------------------+
+[SPGW-APP][D]| KEY 1:      
+[SPGW-APP][D]|	sgw_eps_bearer_context_information:     |
+[SPGW-APP][D]|		imsi_unauthenticated_indicator:	1
+[SPGW-APP][D]|		mme_teid_for_S11:              	402655776
+[SPGW-APP][D]|		s_gw_teid_for_S11_S4:          	1
+[SPGW-APP][D]|		pdn_connection:
+[SPGW-APP][D]|			apn_in_use:        internet.v4.eur
+[SPGW-APP][D]|			default_bearer:    5
+[SPGW-APP][D]|			eps_bearers:
+[SPGW-APP][D]|				5	<-> ebi: 5, enb_teid_for_S1u: 0, s_gw_teid_for_S1u_S12_S4_up: 0 (tbc)
+[SPGW-APP][D]+--------------------------------------+
+[SPGW-APP][D]Tx GTPV1U_CREATE_TUNNEL_REQ -> TASK_GTPV1_U, Context: S-GW S11 teid 1 eps bearer id 5 (from session req)
+[GTPU][D]Rx GTPV1U_CREATE_TUNNEL_REQ Context 1
+[GTPU][D]gtpv1u_create_s1u_tunnel() 2905563967
+[GTPU][D]Entering 'nwGtpv1uProcessUlpReq'
+[GTPU][D]Received NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT from ulp[GTPU][D]Entering 'NwGtpv1uCreateTunnelEndPoint'
+[GTPU][D]Tunnel end-point 0xfc0015d0 creation successful for teid 0xad2f633f 2905563967(dec)[GTPU][D]Leaving 'NwGtpv1uCreateTunnelEndPoint'
+[GTPU][D]Leaving 'nwGtpv1uProcessUlpReq'
+[GTPU][D].
+[GTPU][D]Tx GTPV1U_CREATE_TUNNEL_RESP Context 1 teid 2905563967 eps bearer id 5 status 0
+[SPGW-APP][D]Received teid for S1-U: 2905563967 and status: Success
+[SPGW-APP][D]Rx GTPV1U_CREATE_TUNNEL_RESP, Context S-GW S11 teid 1, S-GW S1U teid 2905563967 EPS bearer id 5 status 0
+[SPGW-APP][D]Updated eps_bearer_entry_p eps_b_id 5 with SGW S1U teid 2905563967
+[SPGW-APP][D]+-----------------------------------------+
+[SPGW-APP][D]| S11 BEARER CONTEXT INFORMATION MAPPINGS |
+[SPGW-APP][D]+-----------------------------------------+
+[SPGW-APP][D]| KEY 1:      
+[SPGW-APP][D]|	sgw_eps_bearer_context_information:     |
+[SPGW-APP][D]|		imsi_unauthenticated_indicator:	1
+[SPGW-APP][D]|		mme_teid_for_S11:              	402655776
+[SPGW-APP][D]|		s_gw_teid_for_S11_S4:          	1
+[SPGW-APP][D]|		pdn_connection:
+[SPGW-APP][D]|			apn_in_use:        internet.v4.eur
+[SPGW-APP][D]|			default_bearer:    5
+[SPGW-APP][D]|			eps_bearers:
+[SPGW-APP][D]|				5	<-> ebi: 5, enb_teid_for_S1u: 0, s_gw_teid_for_S1u_S12_S4_up: 2905563967 (tbc)
+[SPGW-APP][D]+--------------------------------------+
+[SGI_IF][E]SGI_STATUS_OK Context: S11 teid 1
+[SGI_IF][D]Rx IP_FW_CREATE_SGI_ENDPOINT_REQUEST, Context: S-GW S11 teid 1, S-GW S1U teid 2905563967 EPS bearer id 5
+[SPGW-APP][D]Rx SGI_CREATE_ENDPOINT_RESPONSE,Context: S11 teid 1, SGW S1U teid 2905563967 EPS bearer id 5
+[SPGW-APP][D]Tx CREATE-SESSION-RESPONSE MME -> TASK_MME_APP, S11 MME teid 402655776 S11 S-GW teid 1 S1U teid 2905563967 S1U addr 0x643aa8c0 EPS bearer id 5 status 16
+[MMEA][D]Received SGW_CREATE_SESSION_RESPONSE from S+P-GW
+[MMEA][D] ue_context_compare_identifiers IMSI           0
+[MMEA][D] ue_context_compare_identifiers mme_s11_teid   18000a20
+[MMEA][D] ue_context_compare_identifiers mme_ue_s1ap_id 00000000
+[MMEA][D] ue_context_compare_identifiers ue_id          00000000
+[MMEA][D]mme_app_handle_create_sess_resp set qci 9 in bearer 5 (qos not modified by S/P-GW)
+[MMEA][D]-----------------------UE contexts-----------------------
+[MMEA][D]    - IMSI ...........: 31002890832150
+[MMEA][D]                        |  m_tmsi  | mmec | mmegid | mcc | mnc |
+[MMEA][D]    - GUTI............: | 00000000 |  00  |  0000  | 013 | 820 |
+[MMEA][D]    - Authenticated ..: TRUE
+[MMEA][D]    - eNB UE s1ap ID .: 00000000
+[MMEA][D]    - MME UE s1ap ID .: 10001760
+[MMEA][D]    - MME S11 TEID ...: 18000a20
+[MMEA][D]    - SGW S11 TEID ...: 00000001
+[MMEA][D]                        | mcc | mnc | cell id  |
+[MMEA][D]    - E-UTRAN CGI ....: | 000 | 000 | 00000000 |
+[MMEA][D]    - Last acquired ..: Wed Oct  8 14:58:35 2014
+[MMEA][D]    - Status .........: Granted
+[MMEA][D]    (O = allowed, X = !O) |UTRAN|GERAN|GAN|HSDPA EVO|E_UTRAN|HO TO NO 3GPP|
+[MMEA][D]    - Access restriction  |  X  |  X  | X |    X    |   O   |      X      |
+[MMEA][D]    - Access Mode ....: ONLY PACKET
+[MMEA][D]    - MSISDN .........: 33638060059    
+[MMEA][D]    - RAU/TAU timer ..: 120
+[MMEA][D]    - IMEISV .........:                
+[MMEA][D]    - AMBR (bits/s)     ( Downlink |  Uplink  )
+[MMEA][D]        Subscribed ...: (0100000000|0040000000)
+[MMEA][D]        Allocated ....: (0000000000|0000000000)
+[MMEA][D]    - Known vectors ..: 1
+[MMEA][D]        - RAND ..: c2,49,8b,42,b8,1d,0b,3f,0f,2b,39,2e,15,33,ac,d5
+[MMEA][D]        - AUTN ..: 97,a4,9b,c0,11,f1,80,00,91,8a,8f,f1,d0,f0,46,3d
+[MMEA][D]        - KASME .: 25,b5,a8,85,42,a5,6a,f0,39,4c,8f,9c,17,27,57,be
+[MMEA][D]                   34,fc,1d,20,56,11,c9,56,76,c4,cf,12,c7,e3,8f,ae
+[MMEA][D]        - XRES ..: 3c,88,cf,15,e2,63,3c,ba
+[MMEA][D]    - PDN List:
+[MMEA][D]        - Default APN ...: TRUE
+[MMEA][D]        - APN ...........: internet.v4.eur
+[MMEA][D]        - AMBR (bits/s) ( Downlink |  Uplink  )
+[MMEA][D]                        (0100000000|0050000000)
+[MMEA][D]        - PDN type ......: IPv4
+[MMEA][D]        - QOS
+[MMEA][D]            QCI .........: 9
+[MMEA][D]            Prio level ..: 15
+[MMEA][D]            Pre-emp vul .: ENABLED
+[MMEA][D]            Pre-emp cap .: DISABLED
+[MMEA][D]            IP addr .....: Dynamic allocation
+[MMEA][D]
+[MMEA][D]    - Bearer List:
+[MMEA][D]        Bearer id .......: 05
+[MMEA][D]        S-GW TEID (UP)...: ad2f633f
+[MMEA][D]        P-GW TEID (UP)...: 00000000
+[MMEA][D]        QCI .............: 9
+[MMEA][D]        Priority level ..: 1
+[MMEA][D]        Pre-emp vul .....: ENABLED
+[MMEA][D]        Pre-emp cap .....: ENABLED
+[MMEA][D]---------------------------------------------------------
+[MMEA][D]SET APN FROM HSS ULA: internet.v4.eur
+[MMEA][D]APN: internet.v4.eur
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[1523]                            Entering nas_proc_pdn_connectivity_res()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      	Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[369]                       		Entering emm_cn_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[371]             INFO      			EMMCN-SAP - Received primitive EMM_CN_PDN_CONNECTIVITY_RES (404)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[192]                       			Entering _emm_cn_pdn_connectivity_res()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[204]             INFO      				EMM  -  esm_pdn_type = ESM_PDN_TYPE_IPV4[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[223]             INFO      				EMM  -  qci       = 9 [0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[224]             INFO      				EMM  -  qos.qci   = 9 [0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[225]             INFO      				EMM  -  qos.mbrUL = 72 [0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[226]             INFO      				EMM  -  qos.mbrDL = 135 [0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[227]             INFO      				EMM  -  qos.gbrUL = 64 [0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[228]             INFO      				EMM  -  qos.gbrDL = 120 [0m
+[0m../../NAS/EURECOM-NAS/src/esm/PdnConnectivity.c[642]                  				Entering esm_proc_pdn_connectivity_request()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/PdnConnectivity.c[644]        INFO      					ESM-PROC  - PDN connectivity requested by the UE (ueid=268441440, pti=1) PDN type = IPv4, APN = internet.v4.eur pdn addr = À¨W 0[0m
+[0m../../NAS/EURECOM-NAS/src/esm/PdnConnectivity.c[663]        INFO      					ESM-PROC  - _esm_data.conf.features 0000000c[0m
+[0m../../NAS/EURECOM-NAS/src/esm/PdnConnectivity.c[1328]       INFO      					ESM-PROC  - Create new PDN connection (pti=1) APN = internet.v4.eur, IP address = 192.168.87.32 (ueid=268441440)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/PdnConnectivity.c[754]                  				Leaving esm_proc_pdn_connectivity_request(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[257]             INFO      				EMM  -  APN = internet.v4.eur [0m
+[0m../../NAS/EURECOM-NAS/src/esm/DefaultEpsBearerContextActiv            				Entering esm_proc_default_eps_bearer_context()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/DefaultEpsBearerContextActiv  INFO      					ESM-PROC  - Default EPS bearer context activation (ueid=268441440, pid=0, GBR UL 64 GBR DL 120, MBR UL 72 MBR DL 135 QCI 9)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_ebr.c[207]                          					Entering esm_ebr_assign()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_ebr.c[276]                INFO      						ESM-FSM   - EPS bearer context 5 assigned[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_ebr.c[277]                          					Leaving esm_ebr_assign(rc = 5)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_ebr_context.c[125]                  					Entering esm_ebr_context_create()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_ebr_context.c[144]        INFO      						ESM-PROC  - Create new default EPS bearer context (ebi=5) for PDN connection (pid=0)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_ebr_context.c[306]                  					Leaving esm_ebr_context_create(rc = 5)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/DefaultEpsBearerContextActiv            				Leaving esm_proc_default_eps_bearer_context(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[277]             INFO      				EMM  -  APN = internet.v4.eur [0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_send.c[561]                     				Entering esm_send_activate_default_eps_bearer_context_request()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_send.c[571]           INFO      					ESM-SAP   - epsqos  qci:  9[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_send.c[578]           INFO      					ESM-SAP   - epsqos  no bit rates defined[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_send.c[586]           INFO      					ESM-SAP   - epsqos  no bit rates ext defined[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_send.c[594]           INFO      					ESM-SAP   - apn is internet.v4.eur[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_send.c[600]           INFO      					ESM-SAP   - pdn_type is 1[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_send.c[602]           INFO      					ESM-SAP   - pdn_addr is 9173216[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_send.c[613]           INFO      					ESM-SAP   - Send Activate Default EPS Bearer Context Request message (pti=1, ebi=5)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_send.c[617]                     				Leaving esm_send_activate_default_eps_bearer_context_request(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/msg/esm_msg.c[228]                      				Entering esm_msg_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/msg/esm_msg.c[251]            INFO      					ESM-MSG   - Encoded ESM message header (3)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/msg/ActivateDefaultEpsBearer  INFO      					ESM  ENCODED activate_default_eps_bearer_context_request[0m
+[0m../../NAS/EURECOM-NAS/src/esm/msg/esm_msg.c[341]                      				Leaving esm_msg_encode(rc = 49)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[299]             INFO      				ESM encoded MSG size 49 [0m
+[0m../../NAS/EURECOM-NAS/src/esm/DefaultEpsBearerContextActiv            				Entering esm_proc_default_eps_bearer_context_request()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/DefaultEpsBearerContextActiv  INFO      					ESM-PROC  - Initiate non standalone default EPS bearer context activation (ueid=268441440, ebi=5)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_ebr.c[564]                          					Entering esm_ebr_set_status()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_ebr.c[596]                INFO      						ESM-FSM   - Status of EPS bearer context 5 changed: BEARER CONTEXT INACTIVE ===> BEARER CONTEXT ACTIVE PENDING[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_ebr.c[608]                          					Leaving esm_ebr_set_status(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/DefaultEpsBearerContextActiv            				Leaving esm_proc_default_eps_bearer_context_request(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[323]             INFO      				EMM  -  APN = internet.v4.eur [0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[447]                        				Entering emm_proc_common_get_args()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[458]                        				Leaving emm_proc_common_get_args(rc = 81585296)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[330]             INFO      				EMM  - copy ESM MSG 49 bytes[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2298]                          				Entering _emm_attach_accept()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2318]                INFO      					EMM-PROC  - Include the new assigned GUTI in the Attach Accept message[0m
+[0m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[474]                       					Entering emm_as_set_security_data()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[486]             INFO      						EPS security context exists is new 0 KSI 0 SQN 0 count 0[0m
+[0m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[492]             INFO      						knas_int 0xdd 0x91 0xeb 0x6e 0x23 0xb0 0x30 0x16 0x2d 0x4d 0xe4 0x10 0x3a 0x40 0x33 0x39 [0m
+[0m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[494]             INFO      						knas_enc 0x71 0xb3 0x9e 0xb1 0xcd 0xfd 0x61 0x3f 0x77 0x3a 0x21 0x56 0xae 0xda 0x92 0xe2 [0m
+[0m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[496]             INFO      						kasme 0x25 0xb5 0xa8 0x85 0x42 0xa5 0x6a 0xf0 0x39 0x4c 0x8f 0x9c 0x17 0x27 0x57 0xbe 0x34 0xfc 0x1d 0x20 0x56 0x11 0xc9 0x56 0x76 0xc4 0xcf 0x12 0xc7 0xe3 0x8f 0xae [0m
+[34m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[522]             WARNING   						EPS security context exists knas_enc[0m
+[0m../../NAS/EURECOM-NAS/src/emm/LowerLayer.c[532]                       					Leaving emm_as_set_security_data()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2332]                INFO      					EMM-PROC  - encryption = 0x7 [0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2333]                INFO      					EMM-PROC  - integrity  = 0xE [0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2336]                INFO      					EMM-PROC  - encryption = 0x0 (0x0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2339]                INFO      					EMM-PROC  - integrity  = 0x1 (0x1)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2346]                INFO      					EMM-PROC  - NASmsg  src size = 49 NASmsg  dst size = 49 [0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      					Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[219]                       						Entering emm_as_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[227]             INFO      							EMMAS-SAP - Received primitive EMMAS_ESTABLISH_CNF (206)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1156]                      							Entering _emm_as_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1980]                      								Entering _emm_as_establish_cnf()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1982]            INFO      									EMMAS-SAP - Send AS connection establish confirmation[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[978]                       									Entering _emm_as_set_header()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1008]                      									Leaving _emm_as_set_header(rc = 140592014935488)[0m
+[34m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[2002]            WARNING   									EMMAS-SAP - emm_as_establish.nasMSG.length=49[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_send.c[924]                     									Entering emm_send_attach_accept()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_send.c[928]           INFO      										EMMAS-SAP - Send Attach Accept message[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_send.c[929]           INFO      										EMMAS-SAP - size = EMM_HEADER_MAXIMUM_LENGTH(2)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_send.c[942]           INFO      										EMMAS-SAP - size += GPRS_TIMER_MAXIMUM_LENGTH(2)  (5)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_send.c[957]           INFO      										EMMAS-SAP - size += TRACKING_AREA_IDENTITY_LIST_MINIMUM_LENGTH(8)  (13)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_send.c[966]           INFO      										EMMAS-SAP - size += ESM_MESSAGE_CONTAINER_MINIMUM_LENGTH(2)  (64)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_send.c[987]           INFO      										EMMAS-SAP - size += EPS_MOBILE_IDENTITY_MAXIMUM_LENGTH(13)  (77)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_send.c[993]                     									Leaving emm_send_attach_accept(rc = 77)[0m
+[32m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[2030]            DEBUG     									EMMAS-SAP - NAS UL COUNT        0[0m
+[32m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[2034]            DEBUG     									Set nas_msg.header.sequence_number -> 1[0m
+[32m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[2041]            DEBUG     									Set nas_msg.selected_encryption_algorithm -> NBO: 0x0080 (0)[0m
+[32m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[2045]            DEBUG     									Set nas_msg.selected_integrity_algorithm -> NBO: 0x0040 (1)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1048]                      									Entering _emm_as_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[474]              										Entering nas_message_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[760]              											Entering _nas_message_header_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[788]              											Leaving _nas_message_header_encode(rc = 6)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[861]              											Entering _nas_message_protected_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[816]              												Entering _nas_message_plain_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[266]                      													Entering emm_msg_encode()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/AttachAccept.c[188]                 														Entering encode_attach_accept()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/AttachAccept.c[353]                 														Leaving encode_attach_accept(rc = 73)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[413]                      													Leaving emm_msg_encode(rc = 75)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[834]              												Leaving _nas_message_plain_encode(rc = 75)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1092]             												Entering _nas_message_encrypt()[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1175]   DEBUG     													NAS_SECURITY_ALGORITHMS_EEA0 dir 1 ul_count.seq_num 0 dl_count.seq_num 1[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1181]             												Leaving _nas_message_encrypt(rc = 75)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[892]              											Leaving _nas_message_protected_encode(rc = 75)[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[498]    DEBUG     											offset 5 = 6 - 1, hdr encode = 6, length = 83 bytes = 75[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1234]             											Entering _nas_message_get_mac()[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1265]   DEBUG     												NAS_SECURITY_ALGORITHMS_EIA1 dir DOWNLINK count.seq_num 1 count 1[0m
+
+[NAS]	01 07 42 01 4a 06 20 13 00 82 00 01 00 31 52 01 
+[NAS]	c1 01 09 0f 69 6e 74 65 72 6e 65 74 2e 76 34 2e 
+[NAS]	65 75 72 05 01 c0 a8 57 20 27 14 80 80 21 10 03 
+[NAS]	00 00 10 81 06 c0 a8 0c 64 83 06 c0 a8 6a 0c 50 
+[NAS]	0b f6 13 00 82 00 03 0f 04 dc e7 30 
+
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1301]   DEBUG     												NAS_SECURITY_ALGORITHMS_EIA1 returned MAC 7f.57.9b.e1(3785054079) for length 76 direction 1, count 1[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1309]             											Leaving _nas_message_get_mac(rc = 2136447969)[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[532]    DEBUG     											Incremented emm_security_context.dl_count.seq_num -> 2[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[563]              										Leaving nas_message_encode(rc = 81)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1080]                      									Leaving _emm_as_encode(rc = 81)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[2061]                      								Leaving _emm_as_establish_cnf(rc = 2052)[0m
+[32m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1242]            DEBUG     								EMMAS-SAP - Sending msg with id 0x804, primitive EMMAS_ESTABLISH_CNF (206) to S1AP layer for transmission[0m
+[32m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1266]            DEBUG     								EMMAS-SAP - Sending nas_itti_establish_cnf to S1AP UE ID 6511368 selected_encryption_algorithm 0x10001760[0m
+<Eps Quality Of Service>
+    <QCI>9</QCI>
+</Eps Quality Of Service>
+<Access Point Name>
+<Length>15</Length>
+	<values>0x69 0x6e 0x74 0x65 0x72 0x6e 0x65 0x74 0x2e 0x76 0x34 0x2e 0x65 0x75 0x72 </values>
+</Access Point Name>
+<Pdn Address>
+    <PDN type value>1</PDN type value>
+<Length>4</Length>
+	<values>0xc0 0xa8 0x57 0x20 </values>
+</Pdn Address>
+<Protocol Configuration Options>
+    <IEI>0x27</IEI>
+    <Configuration protol>0</Configuration protol>
+    <Protocol ID>32801</Protocol ID>
+    <Length of protocol ID>16</Length of protocol ID>
+<Length>16</Length>
+	<values>0x3 0x0 0x0 0x10 0x81 0x6 0xc0 0xa8 0xc 0x64 0x83 0x6 0xc0 0xa8 0x6a 0xc </values>
+</Protocol Configuration Options>
+<Eps Attach Result>
+    <EPS attach result value>1</EPS attach result value>
+</Eps Attach Result>
+<Gprs Timer>
+    <Unit>2</Unit>
+    <Timer value>10</Timer value>
+</Gprs Timer>
+<Tracking Area Identity List>
+    <Type of list>1</Type of list>
+    <Number of elements>1</Number of elements>
+    <MCC digit 2>1</MCC digit 2>
+    <MCC digit 1>3</MCC digit 1>
+    <MNC digit 3>0</MNC digit 3>
+    <MCC digit 3>0</MCC digit 3>
+    <MNC digit 2>8</MNC digit 2>
+    <MNC digit 1>2</MNC digit 1>
+    <TAC>0x0001</TAC>
+</Tracking Area Identity List>
+<Esm Message Container>
+<Length>49</Length>
+	<values>0x52 0x1 0xc1 0x1 0x9 0xf 0x69 0x6e 0x74 0x65 0x72 0x6e 0x65 0x74 0x2e 0x76 0x34 0x2e 0x65 0x75 0x72 0x5 0x1 0xc0 0xa8 0x57 0x20 0x27 0x14 0x80 0x80 0x21 0x10 0x3 0x0 0x0 0x10 0x81 0x6 0xc0 0xa8 0xc 0x64 0x83 0x6 0xc0 0xa8 0x6a 0xc </values>
+</Esm Message Container>
+<Eps Mobile Identity>
+    <IEI>0x50</IEI>
+    <odd even>0</odd even>
+    <Type of identity>GUTI</Type of identity>
+    <MCC digit 1>3</MCC digit 1>
+    <MCC digit 2>1</MCC digit 2>
+    <MCC digit 3>0</MCC digit 3>
+    <MNC digit 1>2</MNC digit 1>
+    <MNC digit 2>8</MNC digit 2>
+    <MNC digit 3>0</MNC digit 3>
+    <MME group id>3</MME group id>
+    <MME code>15</MME code>
+    <M TMSI>81585968</M TMSI>
+</Eps Mobile Identity>
+[MMEA][D]Received NAS_CONNECTION_ESTABLISHMENT_CNF from NAS
+[MMEA][D] ue_context_compare_identifiers IMSI           0
+[MMEA][D] ue_context_compare_identifiers mme_s11_teid   00000000
+[MMEA][D] ue_context_compare_identifiers mme_ue_s1ap_id 00000000
+[MMEA][D] ue_context_compare_identifiers ue_id          10001760
+[MMEA][D]security_capabilities_encryption_algorithms 0x0080
+[MMEA][D]security_capabilities_integrity_algorithms  0x0040
+[MMEA][D]Derive keNB with UL NAS COUNT 0
+[S1AP][D]security_capabilities_encryption_algorithms 0x0080
+[S1AP][D]security_capabilities_integrity_algorithms 0x0040
+[SCTP][D][36][21] Sending buffer 0x7fde10002cc0 of 189 bytes on stream 1 with ppid 18
+[SCTP][D]Successfully sent 189 bytes on stream 1
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[1281]                      							Leaving _emm_as_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[307]                       						Leaving emm_as_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      					Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2359]                INFO      					EMM-PROC  - Timer T3450 (2) expires in 6 seconds[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[2363]                          				Leaving _emm_attach_accept(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[351]             INFO      				EMM  -  APN = internet.v4.eur [0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[352]                       			Leaving _emm_cn_pdn_connectivity_res(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[407]                       		Leaving emm_cn_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      	Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[1530]                            Leaving nas_proc_pdn_connectivity_res(rc = 0)[0m
+[TMR][D]Requesting new periodic timer with id 0x4dce6f0 that expires within 6 sec and 0 usec
+[SCTP][D][21][36] Msg of length 44 received from port 59401, on stream 1, PPID 18
+[S1AP][D]Decoding message S1ap_UECapabilityInfoIndicationIEs (../S1AP/s1ap_decoder.c:868)
+[SCTP][D][21][36] Msg of length 43 received from port 59401, on stream 1, PPID 18
+[SCTP][D][21][36] Msg of length 64 received from port 59401, on stream 1, PPID 18
+[S1AP][D]Decoding message S1ap_InitialContextSetupResponseIEs (../S1AP/s1ap_decoder.c:5489)
+[S1AP][D]Decoding message S1ap_UplinkNASTransportIEs (../S1AP/s1ap_decoder.c:5740)
+[MMEA][D]Received MME_APP_INITIAL_CONTEXT_SETUP_RSP from S1AP
+[MMEA][D] ue_context_compare_identifiers IMSI           0
+[MMEA][D] ue_context_compare_identifiers mme_s11_teid   00000000
+[MMEA][D] ue_context_compare_identifiers mme_ue_s1ap_id 10001760
+[MMEA][D] ue_context_compare_identifiers ue_id          00000000
+[MMEA][D] with mme_ue_s1ap_id          268441440
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[1453]                            Entering nas_proc_ul_transfer_ind()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      	Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[219]                       		Entering emm_as_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[227]             INFO      			EMMAS-SAP - Received primitive EMMAS_DATA_IND (211)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[519]                       			Entering _emm_as_data_ind()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[523]             INFO      				EMMAS-SAP - Received AS data transfer indication (ueid=268441440, delivered=TRUE, length=13)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[268]              				Entering nas_message_decrypt()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[604]              					Entering _nas_message_header_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[629]              					Leaving _nas_message_header_decode(rc = 6)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1234]             					Entering _nas_message_get_mac()[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1265]   DEBUG     						NAS_SECURITY_ALGORITHMS_EIA1 dir UPLINK count.seq_num 1 count 1[0m
+
+[NAS]	01 07 43 00 03 52 00 c2 
+
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1301]   DEBUG     						NAS_SECURITY_ALGORITHMS_EIA1 returned MAC ed.5e.5.6d(1829068525) for length 8 direction 0, count 1[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1309]             					Leaving _nas_message_get_mac(rc = 3982361965)[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[329]    DEBUG     					Integrity: MAC Success[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[933]              					Entering _nas_message_decrypt()[0m
+[32m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1024]   DEBUG     						NAS_SECURITY_ALGORITHMS_EEA0 dir 0 ul_count.seq_num 1 dl_count.seq_num 2[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[1034]             					Leaving _nas_message_decrypt(rc = 7)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[348]              				Leaving nas_message_decrypt(rc = 7)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[341]                       				Entering _emm_as_recv()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[346]             INFO      					EMMAS-SAP - Received EMM message (length=7)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[375]              					Entering nas_message_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[604]              						Entering _nas_message_header_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[629]              						Leaving _nas_message_header_decode(rc = 1)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[658]              						Entering _nas_message_plain_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[95]                       							Entering emm_msg_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[123]            INFO      								EMM-MSG   - Message Type 0x43[0m
+[0m../../NAS/EURECOM-NAS/src/ies/EsmMessageContainer.c[46]               								Entering decode_esm_message_container()[0m
+[0m../../NAS/EURECOM-NAS/src/ies/EsmMessageContainer.c[65]               								Leaving decode_esm_message_container(rc = 5)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/msg/emm_msg.c[244]                      							Leaving emm_msg_decode(rc = 7)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[676]              						Leaving _nas_message_plain_decode(rc = 7)[0m
+[0m../../NAS/EURECOM-NAS/src/api/network/nas_message.c[448]              					Leaving nas_message_decode(rc = 7)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_recv.c[664]                     					Entering emm_recv_attach_complete()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_recv.c[668]           INFO      						EMMAS-SAP - Received Attach Complete message[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[1284]                          						Entering emm_proc_attach_complete()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[1286]                INFO      							EMM-PROC  - EPS attach complete (ueid=268441440)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[1289]                INFO      							EMM-PROC  - Stop timer T3450 (2)[0m
+<Esm Message Container>
+<Length>3</Length>
+	<values>0x52 0x0 0xc2 </values>
+</Esm Message Container>
+[TMR][D]Removing timer 0x4dce6f0
+[SPGW-APP][D]Rx MODIFY_BEARER_REQUEST, teid 1, EPS bearer id 5
+[SPGW-APP][D]+--------------------------------------+
+[SPGW-APP][D]| MME <--- S11 TE ID MAPPINGS ---> SGW |
+[SPGW-APP][D]+--------------------------------------+
+[SPGW-APP][D]| 402655776	<------------->	1
+[SPGW-APP][D]+--------------------------------------+
+[SPGW-APP][D]+-----------------------------------------+
+[SPGW-APP][D]| S11 BEARER CONTEXT INFORMATION MAPPINGS |
+[SPGW-APP][D]+-----------------------------------------+
+[SPGW-APP][D]| KEY 1:      
+[SPGW-APP][D]|	sgw_eps_bearer_context_information:     |
+[SPGW-APP][D]|		imsi_unauthenticated_indicator:	1
+[SPGW-APP][D]|		mme_teid_for_S11:              	402655776
+[SPGW-APP][D]|		s_gw_teid_for_S11_S4:          	1
+[SPGW-APP][D]|		pdn_connection:
+[SPGW-APP][D]|			apn_in_use:        internet.v4.eur
+[SPGW-APP][D]|			default_bearer:    5
+[SPGW-APP][D]|			eps_bearers:
+[SPGW-APP][D]|				5	<-> ebi: 5, enb_teid_for_S1u: 0, s_gw_teid_for_S1u_S12_S4_up: 2905563967 (tbc)
+[SPGW-APP][D]+--------------------------------------+
+[SPGW-APP][D]Rx MODIFY_BEARER_REQUEST, gtpv1u_update_tunnel_req_p->context_teid           = 1
+[SPGW-APP][D]Rx MODIFY_BEARER_REQUEST, gtpv1u_update_tunnel_req_p->sgw_S1u_teid           = 2905563967
+[SPGW-APP][D]Rx MODIFY_BEARER_REQUEST, gtpv1u_update_tunnel_req_p->enb_S1u_teid           = 2846849167
+[SPGW-APP][D]Rx MODIFY_BEARER_REQUEST, gtpv1u_update_tunnel_req_p->eps_bearer_id          = 5
+[GTPU][D]Rx GTPV1U_UPDATE_TUNNEL_REQ Context 1, S-GW S1U teid 2905563967, eNB S1U teid 2846849167
+[SPGW-APP][D]Rx GTPV1U_UPDATE_TUNNEL_RESP, Context teid 1, SGW S1U teid 2905563967, eNB S1U teid 2846849167, EPS bearer id 5, status 0
+[SGI_IF][D]Rx IP_FW_UPDATE_SGI_ENDPOINT_REQUEST, Context: S-GW S11 teid 1, S-GW S1U teid 2905563967 EPS bearer id 5
+[SPGW-APP][D]Rx SGI_UPDATE_ENDPOINT_RESPONSE, Context teid 1, SGW S1U teid 2905563967, eNB S1U teid 2846849167, EPS bearer id 5, status 0
+[SPGW-APP][D]Rx SGI_UPDATE_ENDPOINT_RESPONSE: REQUEST_ACCEPTED
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[447]                        							Entering emm_proc_common_get_args()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/EmmCommon.c[458]                        							Leaving emm_proc_common_get_args(rc = 81585296)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_sap.c[164]                      							Entering esm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_sap.c[173]            INFO      								ESM-SAP   - Received primitive ESM_DEFAULT_EPS_BEARER_CONTEXT_ACTIVATE_CNF (2)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_sap.c[436]                      								Entering _esm_sap_recv()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/msg/esm_msg.c[107]                      									Entering esm_msg_decode()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/msg/esm_msg.c[206]                      									Leaving esm_msg_decode(rc = 3)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_recv.c[927]                     									Entering esm_recv_activate_default_eps_bearer_context_accept()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_recv.c[931]           INFO      										ESM-SAP   - Received Activate Default EPS Bearer Context Accept message (ueid=268441440, pti=0, ebi=5)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/DefaultEpsBearerContextActiv            										Entering esm_proc_default_eps_bearer_context_accept()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/DefaultEpsBearerContextActiv  INFO      											ESM-PROC  - Default EPS bearer context activation accepted by the UE (ueid=268441440, ebi=5)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_ebr.c[460]                          											Entering esm_ebr_stop_timer()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_ebr.c[489]                          											Leaving esm_ebr_stop_timer(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_ebr.c[564]                          											Entering esm_ebr_set_status()[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_ebr.c[596]                INFO      												ESM-FSM   - Status of EPS bearer context 5 changed: BEARER CONTEXT ACTIVE PENDING ===> BEARER CONTEXT ACTIVE[0m
+[0m../../NAS/EURECOM-NAS/src/esm/esm_ebr.c[608]                          											Leaving esm_ebr_set_status(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/DefaultEpsBearerContextActiv            										Leaving esm_proc_default_eps_bearer_context_accept(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_recv.c[967]                     									Leaving esm_recv_activate_default_eps_bearer_context_accept(rc = -1)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_sap.c[989]                      								Leaving _esm_sap_recv(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/esm/sap/esm_sap.c[385]                      							Leaving esm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      							Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_reg.c[109]                      								Entering emm_reg_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[389]                      									Entering emm_fsm_process()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[411]            INFO      										EMM-FSM   - Received event ATTACH_CNF (5) in state DEREGISTERED[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/EmmDeregistered.c[98]               										Entering EmmDeregistered()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[294]                      											Entering emm_fsm_set_status()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[306]            INFO      												EMM-FSM   - Status changed: DEREGISTERED ===> REGISTERED[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[312]                      											Leaving emm_fsm_set_status(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/EmmDeregistered.c[221]              										Leaving EmmDeregistered(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_fsm.c[422]                      									Leaving emm_fsm_process(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_reg.c[120]                      								Leaving emm_reg_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      							Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/Attach.c[1358]                          						Leaving emm_proc_attach_complete(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_recv.c[674]                     					Leaving emm_recv_attach_complete(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[497]                       				Leaving _emm_as_recv(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[588]                       			Leaving _emm_as_data_ind(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_as.c[307]                       		Leaving emm_as_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      	Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[1469]                            Leaving nas_proc_ul_transfer_ind(rc = 0)[0m
+[MMEA][D] TO DO HANDLE SGW_MODIFY_BEARER_RESPONSE[SCTP][D]SCTP_SHUTDOWN_EVENT received
+[SCTP][D]Sending close connection for assoc_id 21
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[1508]                            Entering nas_proc_deregister_ue()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[115]                      	Entering emm_sap_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[369]                       		Entering emm_cn_send()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[371]             INFO      			EMMCN-SAP - Received primitive EMM_CN_DEREGISTER_UE (403)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[171]                       			Entering _emm_cn_deregister_ue()[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[173]                       			Leaving _emm_cn_deregister_ue(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_cn.c[407]                       		Leaving emm_cn_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/emm/sap/emm_sap.c[146]                      	Leaving emm_sap_send(rc = 0)[0m
+[0m../../NAS/EURECOM-NAS/src/nas_proc.c[1515]                            Leaving nas_proc_deregister_ue(rc = 0)[0m
