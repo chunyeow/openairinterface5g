@@ -238,15 +238,15 @@ do {                                                                \
     (pLMN)->MNCdigit1 = ((tBCDsTRING)->buf[2] & 0x0f);              \
 } while(0)
 
-#define PLMN_T_TO_TBCD(pLMN, tBCDsTRING)                            \
+#define PLMN_T_TO_TBCD(pLMN, tBCDsTRING, mNClENGTH)                 \
 do {                                                                \
-    tBCDsTRING[0] = (pLMN.MCCdigit2 << 4) | pLMN.MCCdigit3;         \
+    tBCDsTRING[0] = (pLMN.MCCdigit2 << 4) | pLMN.MCCdigit1;         \
     /* ambiguous (think about len 2) */                             \
-    if (pLMN.MNCdigit1 == 0) {                                      \
-        tBCDsTRING[1] = (0x0F << 4) | pLMN.MCCdigit1;               \
-        tBCDsTRING[2] = (pLMN.MNCdigit3 << 4) | pLMN.MNCdigit2;     \
+    if (mNClENGTH == 2) {                                      \
+        tBCDsTRING[1] = (0x0F << 4) | pLMN.MCCdigit3;               \
+        tBCDsTRING[2] = (pLMN.MNCdigit2 << 4) | pLMN.MNCdigit1;     \
     } else {                                                        \
-        tBCDsTRING[1] = (pLMN.MNCdigit3 << 4) | pLMN.MCCdigit1;     \
+        tBCDsTRING[1] = (pLMN.MNCdigit3 << 4) | pLMN.MCCdigit3;     \
         tBCDsTRING[2] = (pLMN.MNCdigit2 << 4) | pLMN.MNCdigit1;     \
     }                                                               \
 } while(0)

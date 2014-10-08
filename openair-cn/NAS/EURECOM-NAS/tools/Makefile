@@ -52,8 +52,9 @@ TARGETS = $(USIM_TARGET) $(UE_TARGET)
 
 all: $(TARGETS)
 
+#-DIMSI_USA_MNC_3DIGITS
 %.o: %.c Makefile
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS)   -c $< -o $@
 
 $(USIM_TARGET): $(USIM_OBJ) $(LIBSUTIL)
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS) $(SECUDIR)/*.o -lnettle -lcrypto -lm

@@ -1777,8 +1777,8 @@ int find_mnc_length(const char mcc_digit1P,
             "BAD MCC PARAMETER (%d%d%d)!\n",
             mcc_digit1P, mcc_digit2P, mcc_digit3P);
 
-    AssertFatal((mnc_digit2P >= '0') && (mnc_digit2P <= '9')
-            && (mnc_digit3P >= '0') && (mnc_digit3P <= '9') ,
+    AssertFatal((mnc_digit1P >= '0') && (mnc_digit1P <= '9')
+            && (mnc_digit2P >= '0') && (mnc_digit2P <= '9') ,
             "BAD MNC PARAMETER ((%d)%d%d)!\n",
             mnc_digit1P, mnc_digit2P, mnc_digit3P);
 

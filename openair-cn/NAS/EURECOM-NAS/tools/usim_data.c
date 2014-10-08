@@ -53,6 +53,9 @@ Description	Implements the utility used to generate data stored in the
 #include <stdlib.h>	// exit
 #include <string.h>	// memset, memcpy, strncpy
 
+//#define SELECTED_PLMN SFR1
+#define SELECTED_PLMN FCT1
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -60,7 +63,7 @@ Description	Implements the utility used to generate data stored in the
 #define KSI			USIM_KSI_NOT_AVAILABLE
 #define KSI_ASME		USIM_KSI_NOT_AVAILABLE
 #define INT_ALGO		USIM_INT_EIA1
-#define ENC_ALGO		USIM_ENC_EEA1
+#define ENC_ALGO		USIM_ENC_EEA0
 #define SECURITY_ALGORITHMS	(ENC_ALGO | INT_ALGO)
 
 #define MIN_TAC			0x0000
@@ -135,19 +138,45 @@ int main (int argc, const char* argv[])
 	 * Initialize USIM data
 	 */
 	memset(&usim_data, 0, sizeof(usim_data_t));
+
+//#if (SELECTED_PLMN == FCT1)
+#if 1
+    /*
+     * International Mobile Subscriber Identity
+     * IMSI = MCC + MNC + MSIN = 310 (USA) + 028 (UNKNOWN) + 90832150
+     */
+#warning "IMSI 310.028.90832150"
+    usim_data.imsi.length = 8;
+    usim_data.imsi.u.num.parity = EVEN_PARITY;      // Parity: even
+    usim_data.imsi.u.num.digit1 = 3;                // MCC digit 1
+    usim_data.imsi.u.num.digit2 = 1;                // MCC digit 2
+    usim_data.imsi.u.num.digit3 = 0;                // MCC digit 3
+    usim_data.imsi.u.num.digit4 = 0;                // MNC digit 1
+    usim_data.imsi.u.num.digit5 = 2;                // MNC digit 2
+    usim_data.imsi.u.num.digit6 = 8;                // MNC digit 3
+    usim_data.imsi.u.num.digit7 = 9;
+    usim_data.imsi.u.num.digit8 = 0;
+    usim_data.imsi.u.num.digit9 = 8;
+    usim_data.imsi.u.num.digit10 = 3;
+    usim_data.imsi.u.num.digit11 = 2;
+    usim_data.imsi.u.num.digit12 = 1;
+    usim_data.imsi.u.num.digit13 = 5;
+    usim_data.imsi.u.num.digit14 = 0;
+    usim_data.imsi.u.num.digit15 = 0b1111;
+#else
 	/*
 	 * International Mobile Subscriber Identity
 	 * IMSI = MCC + MNC + MSIN = 208 (France) + 10 (SFR) + 00001234
 	 */
-	usim_data.imsi.length = 8;
-	usim_data.imsi.u.num.parity = EVEN_PARITY;      // Parity: even
+#warning "IMSI 208.10.00001234"
+/*	usim_data.imsi.length = 8;
+    usim_data.imsi.u.num.parity = EVEN_PARITY;      // Parity: even
 	usim_data.imsi.u.num.digit1 = 2;                // MCC digit 1
 	usim_data.imsi.u.num.digit2 = 0;                // MCC digit 2
 	usim_data.imsi.u.num.digit3 = 8;                // MCC digit 3
 	usim_data.imsi.u.num.digit4 = 1;                // MNC digit 1
 	usim_data.imsi.u.num.digit5 = 0;                // MNC digit 2
-	// LG usim_data.imsi.u.num.digit6 = 0b1111;     // MNC digit 3
-    usim_data.imsi.u.num.digit6 = 0;                // MNC digit 3
+	usim_data.imsi.u.num.digit6 = 0b1111;     // MNC digit 3
 	usim_data.imsi.u.num.digit7 = 0;
 	usim_data.imsi.u.num.digit8 = 0;
 	usim_data.imsi.u.num.digit9 = 0;
@@ -156,7 +185,25 @@ int main (int argc, const char* argv[])
 	usim_data.imsi.u.num.digit12 = 2;
 	usim_data.imsi.u.num.digit13 = 3;
 	usim_data.imsi.u.num.digit14 = 4;
-	usim_data.imsi.u.num.digit15 = 0b1111;
+	usim_data.imsi.u.num.digit15 = 0b1111;*/
+    usim_data.imsi.length = 8;
+    usim_data.imsi.u.num.parity = 0x0;  // Type of identity = IMSI, even
+    usim_data.imsi.u.num.digit1 = 2;    // MCC digit 1
+    usim_data.imsi.u.num.digit2 = 0;    // MCC digit 2
+    usim_data.imsi.u.num.digit3 = 8;    // MCC digit 3
+    usim_data.imsi.u.num.digit4 = 1;    // MNC digit 1
+    usim_data.imsi.u.num.digit5 = 0;    // MNC digit 2
+    usim_data.imsi.u.num.digit6 = 0;
+    usim_data.imsi.u.num.digit7 = 0;
+    usim_data.imsi.u.num.digit8 = 0;
+    usim_data.imsi.u.num.digit9 = 0;
+    usim_data.imsi.u.num.digit10 = 0;
+    usim_data.imsi.u.num.digit11 = 1;
+    usim_data.imsi.u.num.digit12 = 2;
+    usim_data.imsi.u.num.digit13 = 3;
+    usim_data.imsi.u.num.digit14 = 4;
+    usim_data.imsi.u.num.digit15 = 0xF;
+#endif
 	/*
 	 * Ciphering and Integrity Keys
 	 */
@@ -178,7 +225,7 @@ int main (int argc, const char* argv[])
 	 * Location Information
 	 */
 	usim_data.loci.tmsi = DEFAULT_TMSI;
-	usim_data.loci.lai.plmn = network_records[SFR1].plmn;
+    usim_data.loci.lai.plmn = network_records[SELECTED_PLMN].plmn;
 	usim_data.loci.lai.lac = DEFAULT_LAC;
 	usim_data.loci.status = USIM_LOCI_NOT_UPDATED;
 	/*
@@ -188,7 +235,7 @@ int main (int argc, const char* argv[])
 	usim_data.psloci.signature[0] = 0x01;
 	usim_data.psloci.signature[1] = 0x02;
 	usim_data.psloci.signature[2] = 0x03;
-	usim_data.psloci.rai.plmn = network_records[SFR1].plmn;
+    usim_data.psloci.rai.plmn = network_records[SELECTED_PLMN].plmn;
 	usim_data.psloci.rai.lac = DEFAULT_LAC;
 	usim_data.psloci.rai.rac = DEFAULT_RAC;
 	usim_data.psloci.status = USIM_PSLOCI_NOT_UPDATED;
@@ -279,7 +326,7 @@ int main (int argc, const char* argv[])
 	/*
 	 * Home PLMN Selector with Access Technology
 	 */
-	usim_data.hplmn.plmn = network_records[SFR1].plmn;
+	usim_data.hplmn.plmn = network_records[SELECTED_PLMN].plmn;
 	usim_data.hplmn.AcT = (USIM_ACT_GSM | USIM_ACT_UTRAN | USIM_ACT_EUTRAN);
 	/*
 	 * List of user controlled PLMN selector with Access Technology
@@ -306,7 +353,7 @@ int main (int argc, const char* argv[])
 	/*
 	 * EPS Location Information
 	 */
-	usim_data.epsloci.guti.gummei.plmn = network_records[SFR1].plmn;
+	usim_data.epsloci.guti.gummei.plmn = network_records[SELECTED_PLMN].plmn;
 	usim_data.epsloci.guti.gummei.MMEgid = DEFAULT_MME_ID;
 	usim_data.epsloci.guti.gummei.MMEcode = DEFAULT_MME_CODE;
 	usim_data.epsloci.guti.m_tmsi = DEFAULT_M_TMSI;

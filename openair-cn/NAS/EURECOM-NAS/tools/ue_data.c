@@ -53,6 +53,9 @@ Description	Implements the utility used to generate data stored in the
 #include <stdlib.h>	// exit, free
 #include <string.h>	// memset, strncpy
 
+//#define SELECTED_PLMN SFR1
+#define SELECTED_PLMN FCT1
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -286,19 +289,70 @@ static void _gen_user_data(user_nvdata_t* data)
  */
 static void _gen_emm_data(emm_nvdata_t* data)
 {
+//#if (SELECTED_PLMN == FCT1)
+#if 1
+    /*
+     * International Mobile Subscriber Identity
+     * IMSI = MCC + MNC + MSIN = 310 (USA) + 028 (UNKNOWN) + 90832150
+     */
+#warning "IMSI 310.028.90832150"
+    data->imsi.length = 8;
+    data->imsi.u.num.parity = 0x0;  // Type of identity = IMSI, even
+    data->imsi.u.num.digit1 = 3;    // MCC digit 1
+    data->imsi.u.num.digit2 = 1;    // MCC digit 2
+    data->imsi.u.num.digit3 = 0;    // MCC digit 3
+    data->imsi.u.num.digit4 = 0;    // MNC digit 1
+    data->imsi.u.num.digit5 = 2;    // MNC digit 2
+    data->imsi.u.num.digit6 = 8;    // MNC digit 3
+    data->imsi.u.num.digit7 = 9;
+    data->imsi.u.num.digit8 = 0;
+    data->imsi.u.num.digit9 = 8;
+    data->imsi.u.num.digit10 = 3;
+    data->imsi.u.num.digit11 = 2;
+    data->imsi.u.num.digit12 = 1;
+    data->imsi.u.num.digit13 = 5;
+    data->imsi.u.num.digit14 = 0;
+    data->imsi.u.num.digit15 = 0xF;
+    /*
+     * Last registered home PLMN
+     */
+    data->rplmn.MCCdigit1 = 3;
+    data->rplmn.MCCdigit2 = 1;
+    data->rplmn.MCCdigit3 = 0;
+    data->rplmn.MNCdigit1 = 0;
+    data->rplmn.MNCdigit2 = 2;
+    data->rplmn.MNCdigit3 = 8;
+#else
     /*
      * International Mobile Subscriber Identity
      * IMSI = MCC + MNC + MSIN = 208 (France) + 10 (SFR) + 00001234
      */
-    data->imsi.length = 8;
+#warning "IMSI 208.10.000001234"
+/*    data->imsi.length = 8;
     data->imsi.u.num.parity = 0x0;	// Type of identity = IMSI, even
     data->imsi.u.num.digit1 = 2;	// MCC digit 1
     data->imsi.u.num.digit2 = 0;	// MCC digit 2
     data->imsi.u.num.digit3 = 8;	// MCC digit 3
     data->imsi.u.num.digit4 = 1;	// MNC digit 1
     data->imsi.u.num.digit5 = 0;	// MNC digit 2
-    data->imsi.u.num.digit6 = 0;  // MNC digit 3
-    //LG data->imsi.u.num.digit6 = 0xF;  // MNC digit 3
+    data->imsi.u.num.digit6 = 0xF;  // MNC digit 3
+    data->imsi.u.num.digit7 = 0;
+    data->imsi.u.num.digit8 = 0;
+    data->imsi.u.num.digit9 = 0;
+    data->imsi.u.num.digit10 = 0;
+    data->imsi.u.num.digit11 = 1;
+    data->imsi.u.num.digit12 = 2;
+    data->imsi.u.num.digit13 = 3;
+    data->imsi.u.num.digit14 = 4;
+    data->imsi.u.num.digit15 = 0xF;*/
+    data->imsi.length = 8;
+    data->imsi.u.num.parity = 0x0;  // Type of identity = IMSI, even
+    data->imsi.u.num.digit1 = 2;    // MCC digit 1
+    data->imsi.u.num.digit2 = 0;    // MCC digit 2
+    data->imsi.u.num.digit3 = 8;    // MCC digit 3
+    data->imsi.u.num.digit4 = 1;    // MNC digit 1
+    data->imsi.u.num.digit5 = 0;    // MNC digit 2
+    data->imsi.u.num.digit6 = 0;
     data->imsi.u.num.digit7 = 0;
     data->imsi.u.num.digit8 = 0;
     data->imsi.u.num.digit9 = 0;
@@ -308,6 +362,7 @@ static void _gen_emm_data(emm_nvdata_t* data)
     data->imsi.u.num.digit13 = 3;
     data->imsi.u.num.digit14 = 4;
     data->imsi.u.num.digit15 = 0xF;
+
     /*
      * Last registered home PLMN
      */
@@ -317,6 +372,7 @@ static void _gen_emm_data(emm_nvdata_t* data)
     data->rplmn.MNCdigit1 = 1;
     data->rplmn.MNCdigit2 = 0;
     data->rplmn.MNCdigit3 = 0xf;
+#endif
     /*
      * List of Equivalent PLMNs
      */
@@ -356,20 +412,79 @@ static void _display_ue_data(const user_nvdata_t* data)
 static void _display_emm_data(const emm_nvdata_t* data)
 {
     printf("IMSI\t\t= ");
-    printf("%u%u%u%u%u%u%u%u%u%u%u%u%u\n",
-	   data->imsi.u.num.digit1,
-	   data->imsi.u.num.digit2,
-	   data->imsi.u.num.digit3,
-	   data->imsi.u.num.digit4,
-	   data->imsi.u.num.digit5,
-	   data->imsi.u.num.digit7,
-	   data->imsi.u.num.digit8,
-	   data->imsi.u.num.digit9,
-	   data->imsi.u.num.digit10,
-	   data->imsi.u.num.digit11,
-	   data->imsi.u.num.digit12,
-	   data->imsi.u.num.digit13,
-	   data->imsi.u.num.digit14);
+    if (data->imsi.u.num.digit6 == 0b1111) {
+        if (data->imsi.u.num.digit15 == 0b1111) {
+            printf("%u%u%u.%u%u.%u%u%u%u%u%u%u%u\n",
+                data->imsi.u.num.digit1,
+                data->imsi.u.num.digit2,
+                data->imsi.u.num.digit3,
+                data->imsi.u.num.digit4,
+                data->imsi.u.num.digit5,
+
+                data->imsi.u.num.digit7,
+                data->imsi.u.num.digit8,
+                data->imsi.u.num.digit9,
+                data->imsi.u.num.digit10,
+                data->imsi.u.num.digit11,
+                data->imsi.u.num.digit12,
+                data->imsi.u.num.digit13,
+                data->imsi.u.num.digit14);
+        } else {
+            printf("%u%u%u.%u%u.%u%u%u%u%u%u%u%u%u\n",
+                data->imsi.u.num.digit1,
+                data->imsi.u.num.digit2,
+                data->imsi.u.num.digit3,
+                data->imsi.u.num.digit4,
+                data->imsi.u.num.digit5,
+
+                data->imsi.u.num.digit7,
+                data->imsi.u.num.digit8,
+                data->imsi.u.num.digit9,
+                data->imsi.u.num.digit10,
+                data->imsi.u.num.digit11,
+                data->imsi.u.num.digit12,
+                data->imsi.u.num.digit13,
+                data->imsi.u.num.digit14,
+                data->imsi.u.num.digit15);
+        }
+    } else {
+        if (data->imsi.u.num.digit15 == 0b1111) {
+            printf("%u%u%u.%u%u%u.%u%u%u%u%u%u%u%u\n",
+                data->imsi.u.num.digit1,
+                data->imsi.u.num.digit2,
+                data->imsi.u.num.digit3,
+                data->imsi.u.num.digit4,
+                data->imsi.u.num.digit5,
+                data->imsi.u.num.digit6,
+
+                data->imsi.u.num.digit7,
+                data->imsi.u.num.digit8,
+                data->imsi.u.num.digit9,
+                data->imsi.u.num.digit10,
+                data->imsi.u.num.digit11,
+                data->imsi.u.num.digit12,
+                data->imsi.u.num.digit13,
+                data->imsi.u.num.digit14);
+        } else {
+            printf("%u%u%u.%u%u%u.%u%u%u%u%u%u%u%u\n",
+                data->imsi.u.num.digit1,
+                data->imsi.u.num.digit2,
+                data->imsi.u.num.digit3,
+                data->imsi.u.num.digit4,
+                data->imsi.u.num.digit5,
+                data->imsi.u.num.digit6,
+
+                data->imsi.u.num.digit7,
+                data->imsi.u.num.digit8,
+                data->imsi.u.num.digit9,
+                data->imsi.u.num.digit10,
+                data->imsi.u.num.digit11,
+                data->imsi.u.num.digit12,
+                data->imsi.u.num.digit13,
+                data->imsi.u.num.digit14,
+                data->imsi.u.num.digit15);
+        }
+    }
 
     printf("RPLMN\t\t= "); PRINT_PLMN(data->rplmn);
     printf("\n");

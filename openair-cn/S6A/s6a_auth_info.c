@@ -348,7 +348,16 @@ int s6a_generate_authentication_info_req(s6a_auth_info_req_t *air_p)
         CHECK_FCT(fd_msg_avp_new(s6a_fd_cnf.dataobj_s6a_visited_plmn_id, 0, &avp));
 
 
-        PLMN_T_TO_TBCD(air_p->visited_plmn, plmn);
+        PLMN_T_TO_TBCD(air_p->visited_plmn,
+                       plmn,
+                       mme_config_find_mnc_length(air_p->visited_plmn.MCCdigit1,
+                               air_p->visited_plmn.MCCdigit2,
+                               air_p->visited_plmn.MCCdigit3,
+                               air_p->visited_plmn.MNCdigit1,
+                               air_p->visited_plmn.MNCdigit2,
+                               air_p->visited_plmn.MNCdigit3
+                                                 )
+                      );
         value.os.data = plmn;
         value.os.len  = 3;
         CHECK_FCT(fd_msg_avp_setvalue(avp, &value));

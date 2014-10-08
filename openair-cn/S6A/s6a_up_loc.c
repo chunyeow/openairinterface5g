@@ -245,7 +245,16 @@ int s6a_generate_update_location(s6a_update_location_req_t *ulr_pP)
 
         CHECK_FCT(fd_msg_avp_new(s6a_fd_cnf.dataobj_s6a_visited_plmn_id, 0, &avp_p));
 
-        PLMN_T_TO_TBCD(ulr_pP->visited_plmn, plmn);
+        PLMN_T_TO_TBCD(ulr_pP->visited_plmn,
+                       plmn,
+                       mme_config_find_mnc_length(ulr_pP->visited_plmn.MCCdigit1,
+                               ulr_pP->visited_plmn.MCCdigit2,
+                               ulr_pP->visited_plmn.MCCdigit3,
+                               ulr_pP->visited_plmn.MNCdigit1,
+                               ulr_pP->visited_plmn.MNCdigit2,
+                               ulr_pP->visited_plmn.MNCdigit3
+                                                 )
+                      );
 
         printf("PLMN: %3s\n", plmn);
 

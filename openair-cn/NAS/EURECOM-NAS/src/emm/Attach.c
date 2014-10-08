@@ -75,6 +75,7 @@ Description Defines the attach related EMM procedure executed by the
 
 #ifdef NAS_MME
 #include "mme_api.h"
+#include "mme_config.h"
 # if defined(EPC_BUILD)
 #   include "nas_itti_messaging.h"
 # endif
@@ -2507,6 +2508,7 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
                               int umts_present, int gprs_present,
                               const OctetString *esm_msg)
 {
+    int mnc_length;
     LOG_FUNC_IN;
     /* UE identifier */
     ctx->ueid = ueid;
@@ -2538,24 +2540,62 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
         }
     } else {
         if (ctx->guti == NULL) {
-            ctx->guti = (GUTI_t *)malloc(sizeof(GUTI_t));
+            ctx->guti = (GUTI_t *)calloc(1, sizeof(GUTI_t));
         }
-        if (ctx->guti != NULL) {
-            /* TODO: FIXME */
-            LOG_TRACE(WARNING, "EMM-PROC  - Assign GUTI hardcoded PLMN 208.92 and tac 15 to emm_data_context");
-            ctx->guti->gummei.plmn.MCCdigit1 = 2;
-            ctx->guti->gummei.plmn.MCCdigit2 = 0;
-            ctx->guti->gummei.plmn.MCCdigit3 = 8;
-            ctx->guti->gummei.plmn.MNCdigit1 = 9;
-            ctx->guti->gummei.plmn.MNCdigit2 = 2;
-            ctx->guti->gummei.plmn.MNCdigit3 = 15;
-            ctx->tac                         = 15;
-            ctx->guti->gummei.MMEcode        = 29;
-            ctx->guti->gummei.MMEgid         = 30;
+#warning "LG: We should assign the GUTI accordingly to the visited plmn id"
+        if ((ctx->guti != NULL) && (imsi)) {
+            ctx->tac                         = mme_config.gummei.plmn_tac[0];
+            ctx->guti->gummei.MMEcode        = mme_config.gummei.mmec[0];
+            ctx->guti->gummei.MMEgid         = mme_config.gummei.mme_gid[0];
             ctx->guti->m_tmsi                = (uint32_t) ctx;
-            LOG_TRACE(WARNING, "EMM-PROC  - Set ctx->guti_is_new to emm_data_context");
-            ctx->guti_is_new                 = TRUE;
 
+            mnc_length =  mme_config_find_mnc_length(
+                    imsi->u.num.digit1,
+                    imsi->u.num.digit2,
+                    imsi->u.num.digit3,
+                    imsi->u.num.digit4,
+                    imsi->u.num.digit5,
+                    imsi->u.num.digit6);
+
+            if ((mnc_length == 2) || (mnc_length == 3)) {
+                ctx->guti->gummei.plmn.MCCdigit1 = imsi->u.num.digit1;
+                ctx->guti->gummei.plmn.MCCdigit2 = imsi->u.num.digit2;
+                ctx->guti->gummei.plmn.MCCdigit3 = imsi->u.num.digit3;
+                if (mnc_length == 2) {
+                    ctx->guti->gummei.plmn.MNCdigit1 = imsi->u.num.digit5;
+                    ctx->guti->gummei.plmn.MNCdigit2 = imsi->u.num.digit6;
+                    ctx->guti->gummei.plmn.MNCdigit3 = 15;
+                    LOG_TRACE(WARNING, "EMM-PROC  - Assign GUTI from IMSI %01X%01X%01X.%01X%01X.%04X.%02X.%08X to emm_data_context",
+                            ctx->guti->gummei.plmn.MCCdigit1,
+                            ctx->guti->gummei.plmn.MCCdigit2,
+                            ctx->guti->gummei.plmn.MCCdigit3,
+                            ctx->guti->gummei.plmn.MNCdigit1,
+                            ctx->guti->gummei.plmn.MNCdigit2,
+                            ctx->guti->gummei.MMEgid,
+                            ctx->guti->gummei.MMEcode,
+                            ctx->guti->m_tmsi
+                            );
+                } else {
+                    ctx->guti->gummei.plmn.MNCdigit1 = imsi->u.num.digit5;
+                    ctx->guti->gummei.plmn.MNCdigit2 = imsi->u.num.digit6;
+                    ctx->guti->gummei.plmn.MNCdigit3 = imsi->u.num.digit4;
+                    LOG_TRACE(WARNING, "EMM-PROC  - Assign GUTI from IMSI %01X%01X%01X.%01X%01X%01X.%04X.%02X.%08X to emm_data_context",
+                            ctx->guti->gummei.plmn.MCCdigit1,
+                            ctx->guti->gummei.plmn.MCCdigit2,
+                            ctx->guti->gummei.plmn.MCCdigit3,
+                            ctx->guti->gummei.plmn.MNCdigit1,
+                            ctx->guti->gummei.plmn.MNCdigit2,
+                            ctx->guti->gummei.plmn.MNCdigit3,
+                            ctx->guti->gummei.MMEgid,
+                            ctx->guti->gummei.MMEcode,
+                            ctx->guti->m_tmsi
+                            );
+                }
+                LOG_TRACE(WARNING, "EMM-PROC  - Set ctx->guti_is_new to emm_data_context");
+                ctx->guti_is_new                 = TRUE;
+            } else {
+                LOG_FUNC_RETURN (RETURNerror);
+            }
         } else {
             LOG_FUNC_RETURN (RETURNerror);
         }

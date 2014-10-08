@@ -52,6 +52,7 @@ int decode_voice_domain_preference_and_ue_usage_setting(VoiceDomainPreferenceAnd
 
     voicedomainpreferenceandueusagesetting->ue_usage_setting        = (*(buffer + decoded) >> 2) & 0x1;
     voicedomainpreferenceandueusagesetting->voice_domain_for_eutran = *(buffer + decoded) & 0x3;
+    decoded++;
 
 #if defined (NAS_DEBUG)
     dump_voice_domain_preference_and_ue_usage_setting_xml(voicedomainpreferenceandueusagesetting, iei);

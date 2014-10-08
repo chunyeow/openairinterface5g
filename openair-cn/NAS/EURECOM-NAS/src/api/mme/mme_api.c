@@ -48,6 +48,7 @@ Description Implements the API used by the NAS layer running in the MME
 
 #include "mme_api.h"
 #include "nas_log.h"
+#include "assertions.h"
 
 #include <string.h> // memcpy
 
@@ -261,15 +262,27 @@ int mme_api_get_emm_config(mme_api_emm_config_t *config)
     int i;
 #endif
     LOG_FUNC_IN;
+    AssertFatal(mme_config_p->gummei.nb_plmns >= 1, "No PLMN configured");
+    AssertFatal(mme_config_p->gummei.nb_mmec >= 1, "No MME Code configured");
+    AssertFatal(mme_config_p->gummei.nb_mme_gid >= 1, "No MME Group ID configured");
 
-    config->gummei.plmn.MCCdigit1 = 2;
-    config->gummei.plmn.MCCdigit2 = 0;
-    config->gummei.plmn.MCCdigit3 = 8;
-    config->gummei.plmn.MNCdigit1 = 1;
-    config->gummei.plmn.MNCdigit2 = 0;
-    config->gummei.plmn.MNCdigit3 = 0xf;
-    config->gummei.MMEgid = MME_API_MME_GID;
-    config->gummei.MMEcode = MME_API_MME_CODE;
+    config->gummei.plmn.MCCdigit1 = (mme_config_p->gummei.plmn_mcc[0]/100)%10;
+    config->gummei.plmn.MCCdigit2 = (mme_config_p->gummei.plmn_mcc[0]/10)%10;
+    config->gummei.plmn.MCCdigit3 = mme_config_p->gummei.plmn_mcc[0]%10;
+    if (mme_config_p->gummei.plmn_mnc_len[0] == 2) {
+        config->gummei.plmn.MNCdigit1 = (mme_config_p->gummei.plmn_mnc[0]/10)%10;
+        config->gummei.plmn.MNCdigit2 = mme_config_p->gummei.plmn_mnc[0]%10;
+        config->gummei.plmn.MNCdigit3 = 0xf;
+    } else if (mme_config_p->gummei.plmn_mnc_len[0] == 3) {
+        config->gummei.plmn.MNCdigit1 = (mme_config_p->gummei.plmn_mnc[0]/100)%10;
+        config->gummei.plmn.MNCdigit2 = (mme_config_p->gummei.plmn_mnc[0]/10)%10;
+        config->gummei.plmn.MNCdigit3 = mme_config_p->gummei.plmn_mnc[0]%10;
+    } else {
+        AssertFatal((mme_config_p->gummei.plmn_mnc_len[0] >= 2) &&
+                (mme_config_p->gummei.plmn_mnc_len[0] <= 3), "BAD MNC length for GUMMEI");
+    }
+    config->gummei.MMEgid = mme_config_p->gummei.mme_gid[0];
+    config->gummei.MMEcode = mme_config_p->gummei.mmec[0];
 #if defined(EPC_BUILD)
     /* SR: this config param comes from MME global config */
     if (mme_config_p->emergency_attach_supported != 0) {
@@ -371,6 +384,7 @@ int mme_api_identify_imsi(const imsi_t *imsi, auth_vector_t *vector)
     int rc = RETURNok;
 
     LOG_FUNC_IN;
+    AssertFatal(0, "Hardcoded values");
 
     memcpy(vector->rand, _mme_api_rand, AUTH_RAND_SIZE);
     memcpy(vector->autn, _mme_api_autn, AUTH_AUTN_SIZE);
@@ -435,6 +449,7 @@ int mme_api_new_guti(const imsi_t *imsi, GUTI_t *guti, tac_t *tac, int *n_tacs)
     static unsigned int tmsi = 1;
 
     LOG_FUNC_IN;
+    AssertFatal(0, "Hardcoded values");
 
     guti->gummei.plmn = mme_api_plmn;
     guti->gummei.MMEgid = MME_API_MME_GID;

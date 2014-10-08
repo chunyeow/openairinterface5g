@@ -64,7 +64,10 @@ int mme_app_request_authentication_info(const mme_app_imsi_t imsi,
     message_p = itti_alloc_new_message(TASK_MME_APP, S6A_AUTH_INFO_REQ);
 
     auth_info_req = &message_p->ittiMsg.s6a_auth_info_req;
-    MME_APP_IMSI_TO_STRING(imsi, auth_info_req->imsi);
+    memset(auth_info_req, 0, sizeof(*auth_info_req));
+
+    auth_info_req->imsi_length = MME_APP_IMSI_TO_STRING(imsi, auth_info_req->imsi);
+
     memcpy(&auth_info_req->visited_plmn, plmn, sizeof(plmn_t));
     MME_APP_DEBUG("%s visited_plmn MCC %X%X%X MNC %X%X%X\n",
     		__FUNCTION__,
@@ -75,11 +78,11 @@ int mme_app_request_authentication_info(const mme_app_imsi_t imsi,
     		auth_info_req->visited_plmn.MNCdigit2,
     		auth_info_req->visited_plmn.MNCdigit3);
     uint8_t *ptr = (uint8_t *)&auth_info_req->visited_plmn;
-    MME_APP_DEBUG("%s visited_plmn %X%X%X%X%X%X\n",
-    		__FUNCTION__,
-    		ptr[0],
-    		ptr[1],
-    		ptr[2]);
+    MME_APP_DEBUG("%s visited_plmn %02X%02X%02X\n",
+            __FUNCTION__,
+            ptr[0],
+            ptr[1],
+            ptr[2]);
 
     auth_info_req->nb_of_vectors = nb_of_vectors;
     if (auts != NULL) {
@@ -273,6 +276,7 @@ request_auth: {
                 /* We have no vector for this UE, send an authentication request
                  * to the HSS.
                  */
+                AssertFatal(0, "Hardcoded MCC/MNC");
                 plmn_t plmn = {
                     .MCCdigit2 = 0,
                     .MCCdigit1 = 8,
@@ -357,9 +361,9 @@ mme_app_handle_nas_auth_param_req(
     //visited_plmn = &visited_plmn_dongle;
     visited_plmn = &visited_plmn_from_req;
 
-    visited_plmn_from_req.MCCdigit3 = nas_auth_param_req_pP->imsi[0];
+    visited_plmn_from_req.MCCdigit1 = nas_auth_param_req_pP->imsi[0];
     visited_plmn_from_req.MCCdigit2 = nas_auth_param_req_pP->imsi[1];
-    visited_plmn_from_req.MCCdigit1 = nas_auth_param_req_pP->imsi[2];
+    visited_plmn_from_req.MCCdigit3 = nas_auth_param_req_pP->imsi[2];
 
     mnc_length = find_mnc_length(nas_auth_param_req_pP->imsi[0],
             nas_auth_param_req_pP->imsi[1],
@@ -369,9 +373,9 @@ mme_app_handle_nas_auth_param_req(
             nas_auth_param_req_pP->imsi[5]
             );
     if (mnc_length == 2) {
-        visited_plmn_from_req.MNCdigit1 = 0;
-        visited_plmn_from_req.MNCdigit2 = nas_auth_param_req_pP->imsi[3];
-        visited_plmn_from_req.MNCdigit3 = nas_auth_param_req_pP->imsi[4];
+        visited_plmn_from_req.MNCdigit1 = nas_auth_param_req_pP->imsi[3];
+        visited_plmn_from_req.MNCdigit2 = nas_auth_param_req_pP->imsi[4];
+        visited_plmn_from_req.MNCdigit3 = "F";
     } else if (mnc_length == 3) {
         visited_plmn_from_req.MNCdigit1 = nas_auth_param_req_pP->imsi[3];
         visited_plmn_from_req.MNCdigit2 = nas_auth_param_req_pP->imsi[4];
@@ -383,7 +387,10 @@ mme_app_handle_nas_auth_param_req(
     MME_APP_STRING_TO_IMSI(nas_auth_param_req_pP->imsi, &imsi);
 
     MME_APP_DEBUG("%s Handling imsi %"IMSI_FORMAT"\n", __FUNCTION__, imsi);
-    MME_APP_DEBUG("%s Handling imsi from req  %s\n", __FUNCTION__, nas_auth_param_req_pP->imsi);
+    MME_APP_DEBUG("%s Handling imsi from req  %s (mnc length %d)\n",
+            __FUNCTION__,
+            nas_auth_param_req_pP->imsi,
+            mnc_length);
 
     /* Fetch the context associated with this IMSI */
     ue_context = mme_ue_context_exists_imsi(&mme_app_desc.mme_ue_contexts, imsi);
