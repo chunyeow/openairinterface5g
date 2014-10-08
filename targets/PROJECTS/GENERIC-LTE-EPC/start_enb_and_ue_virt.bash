@@ -44,7 +44,7 @@
 ###########################################################
 # Parameters
 ###########################################################
-declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim LIBCONFIG_LONG=1 DEBUG=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 NAS=1 SECU=1 Rel10=1"
+declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim LIBCONFIG_LONG=1 DEBUG=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 NAS=1 SECU=1 Rel10=1 TRACE_RLC_AM_PDU=1 TRACE_RLC_UM_PDU=1"
 declare MAKE_IP_DRIVER_TARGET="ue_ip.ko"
 declare IP_DRIVER_NAME="ue_ip"
 declare LTEIF="oip1"
@@ -231,10 +231,11 @@ cd $THIS_SCRIPT_PATH
 export MALLOC_TRACE=/tmp/malloc_trace.txt
 touch /tmp/malloc_trace.txt
 #--malloc-trace-enabled 
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K OUTPUT/$HOSTNAME/$ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
+#-a
+gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -u1 -l9 -K OUTPUT/$HOSTNAME/$ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 # > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 # | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 
 #pkill tshark
-echo_warning "oaisim ended, filtering stdout form oaisim"
+echo_warning "oaisim ended, filtering stdout from oaisim"
 cat OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE | grep 'RRC\|S1AP\|SCTP\|NAS' | grep -v 'RRC_MAC_IN_SYNC_IND' | grep -v 'serving becomes better than threshold' > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE.filtered
