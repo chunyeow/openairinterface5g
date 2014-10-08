@@ -2886,6 +2886,11 @@ void *rrc_ue_task(void *args_p) {
         LOG_I(RRC, "[UE %d] Received %s: state %d, plmnID %d, rat %x\n", ue_mod_id, msg_name, rrc_get_state(ue_mod_id),
             NAS_CELL_SELECTION_REQ (msg_p).plmnID, NAS_CELL_SELECTION_REQ (msg_p).rat);
 
+        if (rrc_get_state(ue_mod_id) == RRC_STATE_INACTIVE) {
+            // have a look at MAC/main.c void dl_phy_sync_success(...)
+            openair_rrc_ue_init(ue_mod_id,0);
+        }
+
         /* Save cell selection criterion */
         {
           UE_rrc_inst[ue_mod_id].plmnID = NAS_CELL_SELECTION_REQ (msg_p).plmnID;

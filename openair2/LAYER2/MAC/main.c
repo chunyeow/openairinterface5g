@@ -75,11 +75,14 @@ void dl_phy_sync_success(module_id_t   module_idP,
     unsigned char eNB_index,
     uint8_t            first_sync){  //init as MR
   LOG_D(MAC,"[UE %d] Frame %d: PHY Sync to eNB_index %d successful \n", module_idP, frameP, eNB_index);
+#if ! defined(ENABLE_USE_MME)
   if (first_sync==1) {
       layer2_init_UE(module_idP);
       openair_rrc_ue_init(module_idP,eNB_index);
   }
-  else {
+  else
+#endif
+  {
       mac_in_sync_ind(module_idP,frameP,eNB_index);
   }
 
