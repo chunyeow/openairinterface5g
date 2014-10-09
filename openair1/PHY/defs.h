@@ -213,6 +213,7 @@ typedef struct PHY_VARS_eNB_s{
   uint32_t max_peak_val; 
   int max_eNB_id, max_sync_pos;
 
+  int              N_TA_offset; ///timing offset used in TDD
 
   /// sinr for all subcarriers of the current link (used only for abstraction)
   double *sinr_dB;
@@ -457,6 +458,7 @@ typedef struct
   //  uint8_t               prach_timer;
   int              rx_offset; /// Timing offset
   int              timing_advance; ///timing advance signalled from eNB
+  int              N_TA_offset; ///timing offset used in TDD
   /// Flag to tell if UE is secondary user (cognitive mode)
   unsigned char    is_secondary_ue; 
   /// Flag to tell if secondary eNB has channel estimates to create NULL-beams from.

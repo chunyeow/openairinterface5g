@@ -392,16 +392,16 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
   //LOG_I(PHY,"[PRACH] prach_start=%d\n",prach_start);
 
 #ifdef BIT8_TX
-  prach_start = (subframe*phy_vars_ue->lte_frame_parms.samples_per_tti)<<1;
+  prach_start = ((subframe*phy_vars_ue->lte_frame_parms.samples_per_tti)<<1)-phy_vars_ue->N_TA_offset;
 #else
 #ifdef EXMIMO
-  prach_start =  (phy_vars_ue->rx_offset+subframe*phy_vars_ue->lte_frame_parms.samples_per_tti-openair_daq_vars.timing_advance);
+  prach_start =  (phy_vars_ue->rx_offset+subframe*phy_vars_ue->lte_frame_parms.samples_per_tti-openair_daq_vars.timing_advance-phy_vars_ue->N_TA_offset);
   if (prach_start<0)
     prach_start+=(phy_vars_ue->lte_frame_parms.samples_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME);
   if (prach_start>=(phy_vars_ue->lte_frame_parms.samples_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME))
     prach_start-=(phy_vars_ue->lte_frame_parms.samples_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME);
 #else //normal case (simulation)
-  prach_start = subframe*phy_vars_ue->lte_frame_parms.samples_per_tti;
+  prach_start = subframe*phy_vars_ue->lte_frame_parms.samples_per_tti-phy_vars_ue->N_TA_offset;
 #endif
 #endif
 
@@ -804,9 +804,9 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
   int16_t levdB;
   int fft_size,log2_ifft_size;
   uint8_t nb_ant_rx = 1; //phy_vars_eNB->lte_frame_parms.nb_antennas_rx;
-
+  
   for (aa=0;aa<nb_ant_rx;aa++) {
-    prach[aa] = (int16_t*)&phy_vars_eNB->lte_eNB_common_vars.rxdata[0][aa][subframe*phy_vars_eNB->lte_frame_parms.samples_per_tti];
+    prach[aa] = (int16_t*)&phy_vars_eNB->lte_eNB_common_vars.rxdata[0][aa][subframe*phy_vars_eNB->lte_frame_parms.samples_per_tti-phy_vars_eNB->N_TA_offset];
     //    remove_625_Hz(phy_vars_eNB,prach[aa]);
   }
   // First compute physical root sequence

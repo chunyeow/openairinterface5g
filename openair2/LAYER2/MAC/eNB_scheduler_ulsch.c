@@ -69,7 +69,6 @@
 #define ENABLE_MAC_PAYLOAD_DEBUG
 #define DEBUG_eNB_SCHEDULER 1
 
-
 // This table holds the allowable PRB sizes for ULSCH transmissions
 uint8_t rb_table[33] = {1,2,3,4,5,6,8,9,10,12,15,16,18,20,24,25,27,30,32,36,40,45,48,50,54,60,72,75,80,81,90,96,100};
 
@@ -566,11 +565,12 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
   void              *ULSCH_dci      = NULL;
   LTE_eNB_UE_stats  *eNB_UE_stats   = NULL;
   DCI_PDU           *DCI_pdu; 
-  uint8_t           status         = 0;
-  uint8_t           rb_table_index = -1;
-  uint16_t          TBS,i;
-  int32_t           buffer_occupancy=0;
-   uint32_t          cqi_req,cshift,ndi,mcs,rballoc;
+  uint8_t                 status         = 0;
+  uint8_t                 rb_table_index = -1;
+  uint16_t                TBS,i;
+  int32_t                buffer_occupancy=0;
+  uint32_t                cqi_req,cshift,ndi,mcs,rballoc,tpc;
+  int32_t                 normalized_rx_power, target_rx_power=-85;
 
   int n,CC_id;
   eNB_MAC_INST      *eNB=&eNB_mac_inst[module_idP];
@@ -579,14 +579,14 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
   int                rvidx_tab[4] = {0,2,3,1};
   LTE_DL_FRAME_PARMS   *frame_parms;
 
-  LOG_I(MAC,"entering ulsch preprocesor\n");
+  LOG_D(MAC,"entering ulsch preprocesor\n");
   ulsch_scheduler_pre_processor(module_idP,
 				frameP,
 				subframeP,
 				first_rb,
 				aggregation,
 				nCCE);
-  LOG_I(MAC,"exiting ulsch preprocesor\n");
+  LOG_D(MAC,"exiting ulsch preprocesor\n");
   // loop over all active UEs
   for (UE_id=UE_list->head_ul;UE_id>=0;UE_id=UE_list->next_ul[UE_id]) {
 
@@ -645,13 +645,36 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 	      aggregation = process_ue_cqi(module_idP,UE_id); // =2 by default!!
 	      status = mac_get_rrc_status(module_idP,1,UE_id);
 	      cqi_req = (status < RRC_CONNECTED)? 0:1;
+
+	      //power control
+	      //compute the expected ULSCH RX power (for the stats)
+
+	      // this is the normalized RX power and this should be constant (regardless of mcs
+	      //todo: put this function into mac_xface
+	      normalized_rx_power = eNB_UE_stats->UL_rssi[0] -  
+		mac_xface->get_hundred_times_delta_TF(module_idP,CC_id,rnti,harq_pid)/100; 
+	      // this assumes accumulated tpc
+	      if (subframeP==0) {
+		if (normalized_rx_power>(target_rx_power+1))
+		  tpc = 0; //-1
+		else if (normalized_rx_power<(target_rx_power-1))
+		  tpc = 2; //+1
+		else 
+		  tpc = 1; //0
+	      }
+	      else 
+		tpc = 1; //0
+
+	      LOG_I(MAC,"[eNB %d] ULSCH scheduler: harq_pid %d, Ndi %d, mcs %d, tpc %d, normalized/target rx power %d/%d\n",module_idP,harq_pid,ndi,mcs,tpc,normalized_rx_power,target_rx_power);
+
 	      	      
 	      // new transmission 
 	      if (round==0) {
 		
 		ndi = 1-UE_template->oldNDI_UL[harq_pid];
 		UE_template->oldNDI_UL[harq_pid]=ndi;
-		mcs = 10;//cmin (UE_template->pre_assigned_mcs_ul, openair_daq_vars.target_ue_ul_mcs); // adjust, based on user-defined MCS
+		//mcs = 10;
+		mcs = cmin (UE_template->pre_assigned_mcs_ul, openair_daq_vars.target_ue_ul_mcs); // adjust, based on user-defined MCS
 		if (UE_template->pre_allocated_rb_table_index_ul >=0)
 		  rb_table_index=UE_template->pre_allocated_rb_table_index_ul;
 		else {// NN-->RK: check this condition
@@ -724,7 +747,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		  ((DCI0_1_5MHz_TDD_1_6_t *)ULSCH_dci)->rballoc  = rballoc;
 		  ((DCI0_1_5MHz_TDD_1_6_t *)ULSCH_dci)->mcs      = mcs;
 		  ((DCI0_1_5MHz_TDD_1_6_t *)ULSCH_dci)->ndi      = ndi;
-		  ((DCI0_1_5MHz_TDD_1_6_t *)ULSCH_dci)->TPC      = 1;
+		  ((DCI0_1_5MHz_TDD_1_6_t *)ULSCH_dci)->TPC      = tpc;
 		  ((DCI0_1_5MHz_TDD_1_6_t *)ULSCH_dci)->cshift   = cshift;
 		  ((DCI0_1_5MHz_TDD_1_6_t *)ULSCH_dci)->padding  = 0;
 		  ((DCI0_1_5MHz_TDD_1_6_t *)ULSCH_dci)->dai      = UE_template->DAI_ul[sched_subframe];
@@ -748,7 +771,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		  ((DCI0_5MHz_TDD_1_6_t *)ULSCH_dci)->rballoc  = rballoc;
 		  ((DCI0_5MHz_TDD_1_6_t *)ULSCH_dci)->mcs      = mcs;
 		  ((DCI0_5MHz_TDD_1_6_t *)ULSCH_dci)->ndi      = ndi;
-		  ((DCI0_5MHz_TDD_1_6_t *)ULSCH_dci)->TPC      = 1;
+		  ((DCI0_5MHz_TDD_1_6_t *)ULSCH_dci)->TPC      = tpc;
 		  ((DCI0_5MHz_TDD_1_6_t *)ULSCH_dci)->cshift   = cshift;
 		  ((DCI0_5MHz_TDD_1_6_t *)ULSCH_dci)->padding  = 0;
 		  ((DCI0_5MHz_TDD_1_6_t *)ULSCH_dci)->dai      = UE_template->DAI_ul[sched_subframe];
@@ -771,7 +794,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		  ((DCI0_10MHz_TDD_1_6_t *)ULSCH_dci)->rballoc  = rballoc;
 		  ((DCI0_10MHz_TDD_1_6_t *)ULSCH_dci)->mcs      = mcs;
 		  ((DCI0_10MHz_TDD_1_6_t *)ULSCH_dci)->ndi      = ndi;
-		  ((DCI0_10MHz_TDD_1_6_t *)ULSCH_dci)->TPC      = 1;
+		  ((DCI0_10MHz_TDD_1_6_t *)ULSCH_dci)->TPC      = tpc;
 		  ((DCI0_10MHz_TDD_1_6_t *)ULSCH_dci)->cshift   = cshift;
 		  ((DCI0_10MHz_TDD_1_6_t *)ULSCH_dci)->padding  = 0;
 		  ((DCI0_10MHz_TDD_1_6_t *)ULSCH_dci)->dai      = UE_template->DAI_ul[sched_subframe];
@@ -794,7 +817,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		  ((DCI0_20MHz_TDD_1_6_t *)ULSCH_dci)->rballoc  = rballoc;
 		  ((DCI0_20MHz_TDD_1_6_t *)ULSCH_dci)->mcs      = mcs;
 		  ((DCI0_20MHz_TDD_1_6_t *)ULSCH_dci)->ndi      = ndi;
-		  ((DCI0_20MHz_TDD_1_6_t *)ULSCH_dci)->TPC      = 1;
+		  ((DCI0_20MHz_TDD_1_6_t *)ULSCH_dci)->TPC      = tpc;
 		  ((DCI0_20MHz_TDD_1_6_t *)ULSCH_dci)->cshift   = cshift;
 		  ((DCI0_10MHz_TDD_1_6_t *)ULSCH_dci)->padding  = 0;
 		  ((DCI0_20MHz_TDD_1_6_t *)ULSCH_dci)->dai      = UE_template->DAI_ul[sched_subframe];
@@ -823,7 +846,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		  ((DCI0_5MHz_FDD_t *)ULSCH_dci)->rballoc  = rballoc;
 		  ((DCI0_5MHz_FDD_t *)ULSCH_dci)->mcs      = mcs;
 		  ((DCI0_5MHz_FDD_t *)ULSCH_dci)->ndi      = ndi;
-		  ((DCI0_5MHz_FDD_t *)ULSCH_dci)->TPC      = 1;
+		  ((DCI0_5MHz_FDD_t *)ULSCH_dci)->TPC      = tpc;
 		  ((DCI0_5MHz_FDD_t *)ULSCH_dci)->cshift   = cshift;
 		  ((DCI0_5MHz_FDD_t *)ULSCH_dci)->padding  = 0;
 		  ((DCI0_5MHz_FDD_t *)ULSCH_dci)->cqi_req  = cqi_req;
@@ -845,7 +868,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		  ((DCI0_1_5MHz_FDD_t *)ULSCH_dci)->rballoc  = rballoc;
 		  ((DCI0_1_5MHz_FDD_t *)ULSCH_dci)->mcs      = mcs;
 		  ((DCI0_1_5MHz_FDD_t *)ULSCH_dci)->ndi      = ndi;
-		  ((DCI0_1_5MHz_FDD_t *)ULSCH_dci)->TPC      = 1;
+		  ((DCI0_1_5MHz_FDD_t *)ULSCH_dci)->TPC      = tpc;
 		  ((DCI0_1_5MHz_FDD_t *)ULSCH_dci)->cshift   = cshift;
 		  ((DCI0_1_5MHz_FDD_t *)ULSCH_dci)->padding  = 0;
 		  ((DCI0_1_5MHz_FDD_t *)ULSCH_dci)->cqi_req  = cqi_req;
@@ -867,7 +890,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		  ((DCI0_10MHz_FDD_t *)ULSCH_dci)->rballoc  = rballoc;
 		  ((DCI0_10MHz_FDD_t *)ULSCH_dci)->mcs      = mcs;
 		  ((DCI0_10MHz_FDD_t *)ULSCH_dci)->ndi      = ndi;
-		  ((DCI0_10MHz_FDD_t *)ULSCH_dci)->TPC      = 1;
+		  ((DCI0_10MHz_FDD_t *)ULSCH_dci)->TPC      = tpc;
 		  ((DCI0_10MHz_FDD_t *)ULSCH_dci)->padding  = 0;
 		  ((DCI0_10MHz_FDD_t *)ULSCH_dci)->cshift   = cshift;
 		  ((DCI0_10MHz_FDD_t *)ULSCH_dci)->cqi_req  = cqi_req;
@@ -889,7 +912,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		  ((DCI0_20MHz_FDD_t *)ULSCH_dci)->rballoc  = rballoc;
 		  ((DCI0_20MHz_FDD_t *)ULSCH_dci)->mcs      = mcs;
 		  ((DCI0_20MHz_FDD_t *)ULSCH_dci)->ndi      = ndi;
-		  ((DCI0_20MHz_FDD_t *)ULSCH_dci)->TPC      = 1;
+		  ((DCI0_20MHz_FDD_t *)ULSCH_dci)->TPC      = tpc;
 		  ((DCI0_20MHz_FDD_t *)ULSCH_dci)->padding  = 0;
 		  ((DCI0_20MHz_FDD_t *)ULSCH_dci)->cshift   = cshift;
 		  ((DCI0_20MHz_FDD_t *)ULSCH_dci)->cqi_req  = cqi_req;
@@ -1033,7 +1056,7 @@ void schedule_ulsch_cba_rnti(module_id_t module_idP, unsigned char cooperation_f
 	    ULSCH_dci_tdd16->rballoc  = rballoc;
 	    ULSCH_dci_tdd16->mcs      = 2;
 	    ULSCH_dci_tdd16->ndi      = 1;
-	    ULSCH_dci_tdd16->TPC      = 1;
+	    ULSCH_dci_tdd16->TPC      = tpc;
 	    ULSCH_dci_tdd16->cshift   = cba_group;
 	    ULSCH_dci_tdd16->dai      = UE_list->UE_template[CC_id][cba_group].DAI_ul[sched_subframe];
 	    ULSCH_dci_tdd16->cqi_req  = 1;
@@ -1056,7 +1079,7 @@ void schedule_ulsch_cba_rnti(module_id_t module_idP, unsigned char cooperation_f
 	    ULSCH_dci_fdd->rballoc  = rballoc;
 	    ULSCH_dci_fdd->mcs      = 2;
 	    ULSCH_dci_fdd->ndi      = 1;
-	    ULSCH_dci_fdd->TPC      = 1;
+	    ULSCH_dci_fdd->TPC      = tpc;
 	    ULSCH_dci_fdd->cshift   = 0;
 	    ULSCH_dci_fdd->cqi_req  = 1;
 

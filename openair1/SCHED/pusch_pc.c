@@ -38,6 +38,7 @@
  * \warning
  */
 
+#include "defs.h"
 #include "PHY/defs.h"
 #include "PHY/LTE_TRANSPORT/proto.h"
 #include "PHY/extern.h"
@@ -81,6 +82,9 @@ int16_t get_hundred_times_delta_IF_eNB(PHY_VARS_eNB *phy_vars_eNB,uint8_t UE_id,
   }
 }
 
+int16_t get_hundred_times_delta_IF_mac(module_id_t module_idP, uint8_t CC_id, rnti_t rnti, uint8_t harq_pid) {
+  return get_hundred_times_delta_IF_eNB(PHY_vars_eNB_g[module_idP][CC_id],find_ue(rnti,PHY_vars_eNB_g[module_idP][CC_id]),harq_pid); 
+}
 
 int16_t get_hundred_times_delta_IF(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t harq_pid) {
  

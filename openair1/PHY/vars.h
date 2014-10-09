@@ -94,7 +94,7 @@ unsigned char NB_RN_INST=0;
 unsigned char NB_INST=0;
 #endif
 
-unsigned int ULSCH_max_consecutive_errors = 5;
+unsigned int ULSCH_max_consecutive_errors = 10;
 
 int flag_LA=0;
 int flagMag;

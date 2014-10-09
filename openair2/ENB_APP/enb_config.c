@@ -220,6 +220,10 @@ static const eutra_band_t eutra_bands[] =
     {38, 2570    * MHz, 2620    * MHz, 2570    * MHz, 2630    * MHz, TDD},
     {39, 1880    * MHz, 1920    * MHz, 1880    * MHz, 1920    * MHz, TDD},
     {40, 2300    * MHz, 2400    * MHz, 2300    * MHz, 2400    * MHz, TDD},
+    {41, 2496    * MHz, 2690    * MHz, 2496    * MHz, 2690    * MHz, TDD},
+    {42, 3400    * MHz, 3600    * MHz, 3400    * MHz, 3600    * MHz, TDD},
+    {43, 3600    * MHz, 3800    * MHz, 3600    * MHz, 3800    * MHz, TDD},
+    {44, 703    * MHz, 803    * MHz, 703    * MHz, 803    * MHz, TDD},
 };
 
 static Enb_properties_array_t enb_properties;

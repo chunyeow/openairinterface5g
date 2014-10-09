@@ -1,54 +1,116 @@
 [*]
-[*] GTKWave Analyzer v3.3.58 (w)1999-2014 BSI
-[*] Wed Sep 17 09:53:22 2014
+[*] GTKWave Analyzer v3.3.34 (w)1999-2012 BSI
+[*] Tue Oct  7 13:02:39 2014
 [*]
 [dumpfile] "/tmp/openair_dump_eNB.vcd"
-[dumpfile_mtime] "Wed Sep 17 09:52:33 2014"
-[dumpfile_size] 53042998
-[savefile] "/homes/knopp/Devel/openair4G/trunk/targets/RT/USER/eNB.gtkw"
-[timestart] 13048857000
-[size] 1005 600
-[pos] -1 -1
-*-20.000000 13050255265 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-[sst_width] 224
+[dumpfile_mtime] "Tue Oct  7 12:58:30 2014"
+[dumpfile_size] 88327623
+[savefile] "/homes/kaltenbe/Devel/openair/openair4G/trunk/targets/RT/USER/eNB.gtkw"
+[timestart] 3343980000
+[size] 1598 914
+[pos] -1 -5
+*-23.869305 3370560000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 284
 [signals_width] 230
 [sst_expanded] 1
-[sst_vpaned_height] 143
-@24
+[sst_vpaned_height] 132
+@c00420
+variables.daq_mbox[63:0]
+@28
+(0)variables.daq_mbox[63:0]
+(1)variables.daq_mbox[63:0]
+(2)variables.daq_mbox[63:0]
+(3)variables.daq_mbox[63:0]
+(4)variables.daq_mbox[63:0]
+(5)variables.daq_mbox[63:0]
+(6)variables.daq_mbox[63:0]
+(7)variables.daq_mbox[63:0]
+(8)variables.daq_mbox[63:0]
+(9)variables.daq_mbox[63:0]
+(10)variables.daq_mbox[63:0]
+(11)variables.daq_mbox[63:0]
+(12)variables.daq_mbox[63:0]
+(13)variables.daq_mbox[63:0]
+(14)variables.daq_mbox[63:0]
+(15)variables.daq_mbox[63:0]
+(16)variables.daq_mbox[63:0]
+(17)variables.daq_mbox[63:0]
+(18)variables.daq_mbox[63:0]
+(19)variables.daq_mbox[63:0]
+(20)variables.daq_mbox[63:0]
+(21)variables.daq_mbox[63:0]
+(22)variables.daq_mbox[63:0]
+(23)variables.daq_mbox[63:0]
+(24)variables.daq_mbox[63:0]
+(25)variables.daq_mbox[63:0]
+(26)variables.daq_mbox[63:0]
+(27)variables.daq_mbox[63:0]
+(28)variables.daq_mbox[63:0]
+(29)variables.daq_mbox[63:0]
+(30)variables.daq_mbox[63:0]
+(31)variables.daq_mbox[63:0]
+(32)variables.daq_mbox[63:0]
+(33)variables.daq_mbox[63:0]
+(34)variables.daq_mbox[63:0]
+(35)variables.daq_mbox[63:0]
+(36)variables.daq_mbox[63:0]
+(37)variables.daq_mbox[63:0]
+(38)variables.daq_mbox[63:0]
+(39)variables.daq_mbox[63:0]
+(40)variables.daq_mbox[63:0]
+(41)variables.daq_mbox[63:0]
+(42)variables.daq_mbox[63:0]
+(43)variables.daq_mbox[63:0]
+(44)variables.daq_mbox[63:0]
+(45)variables.daq_mbox[63:0]
+(46)variables.daq_mbox[63:0]
+(47)variables.daq_mbox[63:0]
+(48)variables.daq_mbox[63:0]
+(49)variables.daq_mbox[63:0]
+(50)variables.daq_mbox[63:0]
+(51)variables.daq_mbox[63:0]
+(52)variables.daq_mbox[63:0]
+(53)variables.daq_mbox[63:0]
+(54)variables.daq_mbox[63:0]
+(55)variables.daq_mbox[63:0]
+(56)variables.daq_mbox[63:0]
+(57)variables.daq_mbox[63:0]
+(58)variables.daq_mbox[63:0]
+(59)variables.daq_mbox[63:0]
+(60)variables.daq_mbox[63:0]
+(61)variables.daq_mbox[63:0]
+(62)variables.daq_mbox[63:0]
+(63)variables.daq_mbox[63:0]
+@1401600
+-group_end
+@420
 variables.hw_frame[63:0]
 variables.hw_subframe[63:0]
-@28
-functions.trx_read
-functions.trx_write
-@24
-variables.txcnt[63:0]
-variables.rxcnt[63:0]
-@25
 variables.frame_number_TX_eNB[63:0]
 variables.frame_number_RX_eNB[63:0]
 @28
-functions.phy_procedures_eNb_tx
 functions.phy_procedures_eNb_rx
-functions.phy_enb_prach_rx
+functions.phy_procedures_eNb_tx
 functions.eNB_thread_rx0
-functions.eNB_thread_tx0
 functions.eNB_thread_rx1
-functions.eNB_thread_tx1
 functions.eNB_thread_rx2
-functions.eNB_thread_tx2
 functions.eNB_thread_rx3
-functions.eNB_thread_tx3
 functions.eNB_thread_rx4
-functions.eNB_thread_tx4
 functions.eNB_thread_rx5
-functions.eNB_thread_tx5
 functions.eNB_thread_rx6
-functions.eNB_thread_tx6
 functions.eNB_thread_rx7
-functions.eNB_thread_tx7
 functions.eNB_thread_rx8
-functions.eNB_thread_tx8
 functions.eNB_thread_rx9
+functions.eNB_thread_tx0
+functions.eNB_thread_tx1
+functions.eNB_thread_tx2
+functions.eNB_thread_tx3
+functions.eNB_thread_tx4
+functions.eNB_thread_tx5
+functions.eNB_thread_tx6
+functions.eNB_thread_tx7
+functions.eNB_thread_tx8
+@29
 functions.eNB_thread_tx9
 [pattern_trace] 1
 [pattern_trace] 0

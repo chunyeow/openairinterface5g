@@ -6,13 +6,15 @@ msg_many:lxrt+sem+mbx+msg+fifos:!sudo ./msg_test;sleep 1;popall:control_c
 eNB:lxrt+sem+mbx+msg+fifos:!sudo ./synctest;sleep 1;popall:control_c
 eNB_test:lxrt+sem+mbx+msg+smi:!sudo ./lte-softmodem -S -F enb2tx;sleep 1;popall:control_c
 UE:lxrt+sem+mbx+msg+fifos:!sudo ./synctest -U -d -T 108;sleep 1;popall:control_c
-UE0:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907600480 -V -K /tmp/itti_UE0.log;sleep 1;popall:control_c
+UE0:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 2680000000 -V -K /tmp/itti_UE0.log;sleep 1;popall:control_c
 #EXMIMO2 card 5
 #UE0_smbv:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907598252 -V;sleep 1;popall:control_c
 #EXMIMO2 card 24
 #UE0_smbv:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907595776 -V;sleep 1;popall:control_c
 #EXMIMO2 card 38
-UE0_smbv:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907592704 -V;sleep 1;popall:control_c
+#UE0_smbv:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907592704 -V;sleep 1;popall:control_c
+#EXMIMO2 card 39
+UE0_smbv:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 2679998592 -V;sleep 1;popall:control_c
 UE850:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 859498000 -F ex2_850;sleep 1;popall:control_c
 eNB850:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -d -C 859500000 -F ex2_850;sleep 1;popall:control_c
 UE0noL2:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907600480 --no-L2-connect;sleep 1;popall:control_c

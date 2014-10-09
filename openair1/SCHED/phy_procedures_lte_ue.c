@@ -1181,9 +1181,9 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 	  nsymb = (frame_parms->Ncp == 0) ? 14 : 12;
 
 #ifdef EXMIMO //this is the EXPRESS MIMO case
-	ulsch_start = (phy_vars_ue->rx_offset+subframe_tx*frame_parms->samples_per_tti-openair_daq_vars.timing_advance-phy_vars_ue->timing_advance+5)%(LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*frame_parms->samples_per_tti);
+	ulsch_start = (phy_vars_ue->rx_offset+subframe_tx*frame_parms->samples_per_tti-openair_daq_vars.timing_advance-phy_vars_ue->timing_advance-phy_vars_ue->N_TA_offset+5)%(LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*frame_parms->samples_per_tti);
 #else //this is the normal case
-	ulsch_start = (frame_parms->samples_per_tti*subframe_tx);
+	ulsch_start = (frame_parms->samples_per_tti*subframe_tx)-phy_vars_ue->N_TA_offset;
 #endif //else EXMIMO
 
 	start_meas(&phy_vars_ue->ofdm_mod_stats);	      	      	  

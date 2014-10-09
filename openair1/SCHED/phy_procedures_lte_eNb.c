@@ -91,8 +91,6 @@ int eNB_sync_buffer1[640*6] __attribute__ ((aligned(16)));
 int *eNB_sync_buffer[2] = {eNB_sync_buffer0, eNB_sync_buffer1};
 
 extern uint16_t hundred_times_log10_NPRB[100];
-extern int16_t get_hundred_times_delta_IF_eNB(PHY_VARS_eNB *phy_vars_eNB,uint8_t UE_id,uint8_t harq_pid);
-
 
 unsigned int max_peak_val; 
 int max_sect_id, max_sync_pos;
@@ -2673,7 +2671,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
   //RX processing
   uint32_t l, ret=0,i,j,k;
   uint32_t sect_id=0;
-  uint32_t harq_pid, round;
+  uint32_t harq_pid, harq_idx, round;
   uint8_t SR_payload,*pucch_payload=NULL,pucch_payload0[2]={0,0},pucch_payload1[2]={0,0};
   int16_t n1_pucch0,n1_pucch1,n1_pucch2,n1_pucch3;
   uint8_t do_SR = 0;
@@ -2981,7 +2979,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
       //compute the expected ULSCH RX power (for the stats)
       phy_vars_eNB->ulsch_eNB[(uint32_t)i]->harq_processes[harq_pid]->delta_TF =
 	get_hundred_times_delta_IF_eNB(phy_vars_eNB,i,harq_pid);
-	
+
       //dump_ulsch(phy_vars_eNB, sched_subframe, i);
     
       phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round]++;
@@ -3088,15 +3086,15 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round=0;
 	    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->phich_active=0;
 	    phy_vars_eNB->eNB_UE_stats[i].ulsch_errors[harq_pid]++;
-	    phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors[harq_pid]++;
+	    phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors++;
 	    //dump_ulsch(phy_vars_eNB, sched_subframe, i);
 	  }
 	
 	  // If we've dropped the UE, go back to PRACH mode for this UE
 	  //#if !defined(EXMIMO_IOT)
-	  if (phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors[harq_pid] == ULSCH_max_consecutive_errors) {
-	    LOG_D(PHY,"[eNB %d] frame %d, subframe %d, UE %d: ULSCH consecutive error count reached %u, removing UE\n",
-		  phy_vars_eNB->Mod_id,frame,subframe, i, phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors[harq_pid]);
+	  if (phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors == ULSCH_max_consecutive_errors) {
+	    LOG_I(PHY,"[eNB %d] frame %d, subframe %d, UE %d: ULSCH consecutive error count reached %u, removing UE\n",
+		  phy_vars_eNB->Mod_id,frame,subframe, i, phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors);
 	    phy_vars_eNB->eNB_UE_stats[i].mode = PRACH;
 #ifdef OPENAIR2
 	    /*	    mac_xface->cancel_ra_proc(phy_vars_eNB->Mod_id,
@@ -3104,7 +3102,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 				      phy_vars_eNB->eNB_UE_stats[i].crnti);*/
 #endif
 	    remove_ue(phy_vars_eNB->eNB_UE_stats[i].crnti,phy_vars_eNB,abstraction_flag);
-	    phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors[harq_pid]=0;
+	    phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors=0;
 	  }
 	  //#endif
 	}
@@ -3117,7 +3115,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->phich_active = 1;
 	phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->phich_ACK = 1;
 	phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round = 0;
-	phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors[harq_pid] = 0;
+	phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors = 0;
 
 	if (phy_vars_eNB->ulsch_eNB[i]->Msg3_flag == 1) {
 #ifdef OPENAIR2
@@ -3168,7 +3166,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	    }
 	    phy_vars_eNB->eNB_UE_stats[i].dlsch_l2_errors[k]=0;
 	    phy_vars_eNB->eNB_UE_stats[i].ulsch_errors[k]=0;
-	    phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors[k]=0;
+	    phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors=0;
 	    for (j=0;j<phy_vars_eNB->ulsch_eNB[i]->Mdlharq;j++) {
 	      phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[k][j]=0;
 	      phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts_last[k][j]=0;
@@ -3515,40 +3513,27 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 #endif //PUCCH
   
     if ((frame % 100 == 0) && (subframe == 4)) {
-      for (round=0;round<phy_vars_eNB->ulsch_eNB[i]->Mdlharq;round++) {
-	if ((phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][round] - 
-	     phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts_last[harq_pid][round]) != 0)
-	  phy_vars_eNB->eNB_UE_stats[i].ulsch_round_fer[harq_pid][round] = 
-	    (100*(phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors[harq_pid][round] - 
-		  phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors_last[harq_pid][round]))/
-	    (phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][round] - 
-	     phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts_last[harq_pid][round]);
-	
-	phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts_last[harq_pid][round] = 
-	  phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][round];
-	phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors_last[harq_pid][round] = 
-	  phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors[harq_pid][round];
+      for (harq_idx=0;harq_idx<8;harq_idx++) {
+	for (round=0;round<phy_vars_eNB->ulsch_eNB[i]->Mdlharq;round++) {
+	  if ((phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_idx][round] - 
+	       phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts_last[harq_idx][round]) != 0) {
+	    phy_vars_eNB->eNB_UE_stats[i].ulsch_round_fer[harq_idx][round] = 
+	      (100*(phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors[harq_idx][round] - 
+		    phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors_last[harq_idx][round]))/
+	      (phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_idx][round] - 
+	       phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts_last[harq_idx][round]);
+	  }
+	  else {
+	    phy_vars_eNB->eNB_UE_stats[i].ulsch_round_fer[harq_idx][round] = 0;
+	  }
+	  phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts_last[harq_idx][round] = 
+	    phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_idx][round];
+	  phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors_last[harq_idx][round] = 
+	    phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors[harq_idx][round];
+	}
       }
     }
     
-    if ((frame % 100 == 0) && (subframe==4)) {
-      for (round=0;round<phy_vars_eNB->ulsch_eNB[i]->Mdlharq;round++) {
-	if ((phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][round] - 
-	     phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts_last[harq_pid][round]) != 0)
-	  phy_vars_eNB->eNB_UE_stats[i].ulsch_round_fer[harq_pid][round] = 
-	    (100*(phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors[harq_pid][round] - 
-		  phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors_last[harq_pid][round]))/
-	    (phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][round] - 
-	     phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts_last[harq_pid][round]);
-	
-	phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts_last[harq_pid][round] = 
-	  phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][round];
-	phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors_last[harq_pid][round] = 
-	  phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors[harq_pid][round];
-      }
-    }
-    
-
     if ((frame % 100 == 0) && (subframe==4)) {
       phy_vars_eNB->eNB_UE_stats[i].dlsch_bitrate = (phy_vars_eNB->eNB_UE_stats[i].total_TBS - 
 						     phy_vars_eNB->eNB_UE_stats[i].total_TBS_last);
@@ -3651,7 +3636,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->phich_active = 1;
 	phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->phich_ACK = 1;
 	phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round = 0;
-	phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors[harq_pid] = 0;
+	phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors = 0;
 #ifdef DEBUG_PHY_PROC
 #ifdef DEBUG_ULSCH
 	LOG_D(PHY,"[eNB] Frame %d, Subframe %d : ULSCH SDU (RX harq_pid %d) %d bytes:",

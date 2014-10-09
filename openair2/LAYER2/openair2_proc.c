@@ -145,6 +145,12 @@ int dump_eNB_l2_stats(char *buffer, int length){
 		       UE_list->eNB_UE_stats[CC_id][UE_id].total_overhead_bytes,
 		       UE_list->eNB_UE_stats[CC_id][UE_id].avg_overhead_bytes
 		       );
+	len += sprintf(&buffer[len],
+                       "[MAC] ULSCH received bytes (total %"PRIu64"),"
+		       "Total received PDU %d, Total errors %d\n",
+		       UE_list->eNB_UE_stats[CC_id][UE_id].total_pdu_bytes_rx,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].total_num_pdus_rx,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].num_errors_rx);
 	len+= sprintf(&buffer[len],"Received PHR PH = %d (db)\n", UE_list->UE_template[CC_id][UE_id].phr_info);
 	
       }

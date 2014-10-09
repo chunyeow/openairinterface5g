@@ -23,6 +23,12 @@ create_form_stats_form( void )
     fdui->stats_text = obj = fl_add_text( FL_NORMAL_TEXT, 60, 50, 1000, 810, "test" );
     fl_set_object_lsize( obj, FL_TINY_SIZE );
 
+    fdui->stats_button = obj = fl_add_button( FL_PUSH_BUTTON, 620, 660, 130, 40, "Reset Stats" );
+    fl_set_object_lalign( obj, FL_ALIGN_CENTER );
+    fl_set_object_color( obj, FL_GREEN, FL_GREEN);
+    fl_set_object_callback( obj, reset_stats, 0 );
+
+
     fl_end_form( );
 
     fdui->stats_form->fdui = fdui;

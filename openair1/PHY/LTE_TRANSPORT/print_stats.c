@@ -386,10 +386,11 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
 	}
 	len += sprintf(&buffer[len],"[eNB PROC] ULSCH errors/attempts per harq (per round): \n");
 	for (i=0;i<8;i++) {
-	  len += sprintf(&buffer[len],"   harq %d: %d/%d (%d/%d, %d/%d, %d/%d, %d/%d)\n",
+	  len += sprintf(&buffer[len],"   harq %d: %d/%d (fer %d) (%d/%d, %d/%d, %d/%d, %d/%d)\n",
 			 i,
 			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_errors[i],
 			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[i][0],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_fer[i][0],
 			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[i][0],
 			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[i][0],
 			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[i][1],
@@ -406,6 +407,7 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
 	}
 	len += sprintf(&buffer[len],"[eNB PROC] ULSCH errors/attempts total %d/%d (%d/%d, %d/%d, %d/%d, %d/%d): \n",
 		       ulsch_errors,ulsch_round_attempts[0],
+		       
 		       ulsch_round_errors[0],ulsch_round_attempts[0],
 		       ulsch_round_errors[1],ulsch_round_attempts[1],
 		       ulsch_round_errors[2],ulsch_round_attempts[2],

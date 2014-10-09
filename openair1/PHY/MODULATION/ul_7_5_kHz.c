@@ -188,7 +188,7 @@ void remove_7_5_kHz(PHY_VARS_eNB *phy_vars_eNB,uint8_t slot) {
   }
 
  
-  slot_offset = (uint32_t)slot * phy_vars_eNB->lte_frame_parms.samples_per_tti/2;
+  slot_offset = (uint32_t)slot * phy_vars_eNB->lte_frame_parms.samples_per_tti/2-phy_vars_eNB->N_TA_offset;
   slot_offset2 = (uint32_t)(slot&1) * phy_vars_eNB->lte_frame_parms.samples_per_tti/2;
 
   len = phy_vars_eNB->lte_frame_parms.samples_per_tti/2;

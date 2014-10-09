@@ -1225,8 +1225,6 @@ uint32_t get_rballoc(uint8_t vrb_type,uint16_t rb_alloc_dci);
 uint8_t get_transmission_mode(uint16_t Mod_id, uint8_t CC_id, uint16_t rnti);
 
 
-int16_t get_hundred_times_delta_IF(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t harq_pid);
-
 /* \brief 
    @param ra_header Header of resource allocation (0,1) (See sections 7.1.6.1/7.1.6.2 of 36.213 Rel8.6)
    @param rb_alloc Bitmap allocation from DCI (format 1,2) 

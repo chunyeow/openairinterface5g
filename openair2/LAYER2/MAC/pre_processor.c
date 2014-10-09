@@ -239,14 +239,18 @@ int maxround(module_id_t Mod_id,uint16_t rnti,int frame,sub_frame_t subframe,uin
 
 // This function scans all CC_ids for a particular UE to find the maximum DL CQI
 
-int maxcqi(module_id_t Mod_id,uint16_t rnti) {
+int maxcqi(module_id_t Mod_id,int32_t UE_id) {
 
   LTE_eNB_UE_stats *eNB_UE_stats = NULL;
-  int CC_id;
+  UE_list_t *UE_list = &eNB_mac_inst[Mod_id].UE_list;
+  int CC_id,n;
   int CQI = 0;
 
-  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++){
-    eNB_UE_stats = mac_xface->get_eNB_UE_stats(Mod_id,CC_id,rnti);
+  for (n=0;n<UE_list->numactiveCCs[UE_id];n++) {
+    CC_id = UE_list->ordered_CCids[n][UE_id];
+    eNB_UE_stats = mac_xface->get_eNB_UE_stats(Mod_id,CC_id,UE_RNTI(Mod_id,UE_id));
+    if (eNB_UE_stats==NULL)
+      mac_xface->macphy_exit("maxcqi: could not get eNB_UE_stats\n");
     if (eNB_UE_stats->DL_cqi[0] > CQI)
       CQI = eNB_UE_stats->DL_cqi[0];
   }
@@ -278,7 +282,7 @@ void sort_UEs (module_id_t Mod_idP,
 
     UE_id1  = i;
     pCC_id1 = UE_PCCID(Mod_idP,UE_id1);
-    cqi1    = maxcqi(Mod_idP,rnti1); //
+    cqi1    = maxcqi(Mod_idP,UE_id1); //
     round1  = maxround(Mod_idP,rnti1,frameP,subframeP,0);  
 
 
@@ -289,7 +293,7 @@ void sort_UEs (module_id_t Mod_idP,
       if(rnti2 == 0)
 	continue;
 
-      cqi2    = maxcqi(Mod_idP,rnti2);
+      cqi2    = maxcqi(Mod_idP,UE_id2);
       round2  = maxround(Mod_idP,rnti2,frameP,subframeP,0);  //mac_xface->get_ue_active_harq_pid(Mod_id,rnti2,subframe,&harq_pid2,&round2,0);
       pCC_id2 = UE_PCCID(Mod_idP,UE_id2);
 
@@ -622,9 +626,9 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
 #endif 
 
   for(i=UE_list->head; i>=0;i=UE_list->next[i]) {
+    UE_id = i;
     for (ii=0;ii<UE_num_active_CC(UE_list,UE_id);ii++) {
       CC_id = UE_list->ordered_CCids[ii][UE_id];
-      UE_id = i;
       //PHY_vars_eNB_g[Mod_id]->mu_mimo_mode[UE_id].dl_pow_off = dl_pow_off[UE_id];
       LOG_D(MAC,"******************DL Scheduling Information for UE%d ************************\n",UE_id);
       LOG_D(MAC,"dl power offset UE%d = %d \n",UE_id,dl_pow_off[CC_id][UE_id]);
@@ -806,7 +810,7 @@ void ulsch_scheduler_pre_processor(module_id_t module_idP,
   LOG_D(MAC,"[eNB %d] Frame %d subframe %d: total ue %d, max num ue to be scheduled %d\n", 
 	module_idP, frameP, subframeP,total_ue_count, max_num_ue_to_be_scheduled);
 
-  LOG_I(MAC,"step3\n");
+  //LOG_D(MAC,"step3\n");
   // step 3: assigne RBS 
   for (i=UE_list->head_ul;i>=0;i=UE_list->next_ul[i]) {
     rnti = UE_RNTI(module_idP,i); 
@@ -913,7 +917,7 @@ void assign_max_mcs_min_rb(module_id_t module_idP,int frameP, sub_frame_t subfra
   uint16_t           n,UE_id;
   uint8_t            CC_id;
   rnti_t             rnti           = -1;
-  int                mcs=10;//cmin(16,openair_daq_vars.target_ue_ul_mcs); 
+  int                mcs=cmin(16,openair_daq_vars.target_ue_ul_mcs); 
   int                rb_table_index=0,tbs,tx_power;
   UE_list_t          *UE_list = &eNB_mac_inst[module_idP].UE_list; 
   UE_TEMPLATE       *UE_template;
@@ -956,9 +960,12 @@ void assign_max_mcs_min_rb(module_id_t module_idP,int frameP, sub_frame_t subfra
 	  tbs = mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]);
 	  tx_power = mac_xface->estimate_ue_tx_power(tbs,rb_table[rb_table_index],0,frame_parms->Ncp,0);
 	}
-	if (rb_table[rb_table_index]>(frame_parms->N_RB_UL-first_rb[CC_id])) {
+	if (rb_table[rb_table_index]>(frame_parms->N_RB_UL-first_rb[CC_id]-1)) {
 	  rb_table_index--;
 	}
+	// 1 or 2 PRB with cqi enabled does not work well!
+	if (rb_table[rb_table_index]<3) 
+	  rb_table_index=2; //3PRB
 	
 	UE_template->pre_assigned_mcs_ul=mcs;
 	UE_template->pre_allocated_rb_table_index_ul=rb_table_index;
@@ -989,7 +996,7 @@ void sort_ue_ul (module_id_t module_idP,int frameP, sub_frame_t subframeP){
   UE_list_t *UE_list = &eNB_mac_inst[module_idP].UE_list;
   
   for (i=UE_list->head_ul;i>=0;i=UE_list->next_ul[i]) {
-    LOG_I(MAC,"sort ue ul i %d\n",i);
+    LOG_D(MAC,"sort ue ul i %d\n",i);
     rnti1 = UE_RNTI(module_idP,i);
     if(rnti1 == 0)
       continue;
@@ -999,7 +1006,7 @@ void sort_ue_ul (module_id_t module_idP,int frameP, sub_frame_t subframeP){
     round1  = maxround(module_idP,rnti1,frameP,subframeP,1);  
 
     for (ii=UE_list->next_ul[i];ii>=0;ii=UE_list->next_ul[ii]) {
-      LOG_I(MAC,"sort ul ue 2 ii %d\n",ii);
+      LOG_D(MAC,"sort ul ue 2 ii %d\n",ii);
       rnti2 = UE_RNTI(module_idP,ii);
       if(rnti2 == 0)
 	continue;

@@ -65,6 +65,8 @@ $(OUTDIR)/libgtpv1u.a: $(addprefix $(OUTDIR)/,$(libgtpv1u_OBJECTS))
 	@$(AR) rcs $@ $(addprefix $(OUTDIR)/,$(libgtpv1u_OBJECTS))
 
 clean:
+	@$(RM_F_V) $(OUTDIR)/nw-gtpv1u/src/*.o
+	@$(RM_F_V) $(OUTDIR)/nw-gtpv1u/src/*.d
 	@$(RM_F_V) $(OUTDIR)/*.o
 	@$(RM_F_V) $(OUTDIR)/*.d
 	@$(RM_F_V) $(OUTDIR)/libgtpv1u.a

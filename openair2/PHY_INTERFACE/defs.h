@@ -308,6 +308,8 @@ typedef struct
 
     MU_MIMO_mode* (*get_mu_mimo_mode) (module_id_t Mod_id, uint8_t CC_id);
 
+    int16_t (*get_hundred_times_delta_TF) (module_id_t module_idP, uint8_t CC_id, rnti_t rnti, uint8_t harq_pid);
+
     unsigned char is_cluster_head;
     unsigned char is_primary_cluster_head;
     unsigned char is_secondary_cluster_head;

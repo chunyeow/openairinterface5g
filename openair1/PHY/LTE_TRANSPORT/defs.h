@@ -569,7 +569,7 @@ typedef struct {
   /// ulsch l2 errors per harq_pid
   uint32_t ulsch_errors[8];
   /// ulsch l2 consecutive errors per harq_pid
-  uint32_t ulsch_consecutive_errors[8];
+  uint32_t ulsch_consecutive_errors; //[8];
   /// ulsch trials/errors/fer per harq and round
   uint32_t ulsch_decoding_attempts[8][8];
   uint32_t ulsch_round_errors[8][8];

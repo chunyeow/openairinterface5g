@@ -618,11 +618,11 @@ int main(int argc, char **argv) {
   // NN: N_RB_UL has to be defined in ulsim
   PHY_vars_eNB->ulsch_eNB[0] = new_eNB_ulsch(8,max_turbo_iterations,N_RB_DL,0);
   PHY_vars_UE->ulsch_ue[0]   = new_ue_ulsch(8,N_RB_DL,0);
-  /*
+  
   // Create transport channel structures for 2 transport blocks (MIMO)
   for (i=0;i<2;i++) {
-    PHY_vars_eNB->dlsch_eNB[0][i] = new_eNB_dlsch(1,8,0);
-    PHY_vars_UE->dlsch_ue[0][i]  = new_ue_dlsch(1,8,MAX_TURBO_ITERATIONS,0);
+    PHY_vars_eNB->dlsch_eNB[0][i] = new_eNB_dlsch(1,8,N_RB_DL,0);
+    PHY_vars_UE->dlsch_ue[0][i]  = new_ue_dlsch(1,8,MAX_TURBO_ITERATIONS,N_RB_DL,0);
   
     if (!PHY_vars_eNB->dlsch_eNB[0][i]) {
       printf("Can't get eNB dlsch structures\n");
@@ -638,7 +638,7 @@ int main(int argc, char **argv) {
     PHY_vars_UE->dlsch_ue[0][i]->rnti   = 14;
 
   }
-  */
+  
 
   switch (PHY_vars_eNB->lte_frame_parms.N_RB_UL) {
   case 6:
@@ -745,6 +745,9 @@ int main(int argc, char **argv) {
   PHY_vars_eNB->proc[subframe].frame_rx = PHY_vars_UE->frame_tx;
   if (ul_subframe2pdcch_alloc_subframe(&PHY_vars_eNB->lte_frame_parms,subframe) > subframe) // allocation was in previous frame
     PHY_vars_eNB->proc[ul_subframe2pdcch_alloc_subframe(&PHY_vars_eNB->lte_frame_parms,subframe)].frame_tx = (PHY_vars_UE->frame_tx-1)&1023;
+
+  PHY_vars_UE->dlsch_ue[0][0]->harq_ack[ul_subframe2pdcch_alloc_subframe(&PHY_vars_eNB->lte_frame_parms,subframe)].send_harq_status = 1;
+
 
   //  printf("UE frame %d, eNB frame %d (eNB frame_tx %d)\n",PHY_vars_UE->frame,PHY_vars_eNB->proc[subframe].frame_rx,PHY_vars_eNB->proc[ul_subframe2pdcch_alloc_subframe(&PHY_vars_eNB->lte_frame_parms,subframe)].frame_tx);
   PHY_vars_UE->frame_tx = (PHY_vars_UE->frame_tx-1)&1023;
