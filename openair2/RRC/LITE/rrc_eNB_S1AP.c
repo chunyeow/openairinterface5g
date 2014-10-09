@@ -60,12 +60,14 @@
 static const uint16_t UE_INITIAL_ID_INVALID = 0;
 
 /* Masks for S1AP Encryption algorithms, EEA0 is always supported (not coded) */
-static const uint16_t S1AP_ENCRYPTION_EEA1_MASK = 0x8000;
-static const uint16_t S1AP_ENCRYPTION_EEA2_MASK = 0x4000;
+static const uint16_t S1AP_ENCRYPTION_EEA0_MASK = 0x8000;
+static const uint16_t S1AP_ENCRYPTION_EEA1_MASK = 0x4000;
+static const uint16_t S1AP_ENCRYPTION_EEA2_MASK = 0x2000;
 
 /* Masks for S1AP Integrity algorithms, EIA0 is always supported (not coded) */
-static const uint16_t S1AP_INTEGRITY_EIA1_MASK = 0x8000;
-static const uint16_t S1AP_INTEGRITY_EIA2_MASK = 0x4000;
+static const uint16_t S1AP_INTEGRITY_EIA0_MASK = 0x8000;
+static const uint16_t S1AP_INTEGRITY_EIA1_MASK = 0x4000;
+static const uint16_t S1AP_INTEGRITY_EIA2_MASK = 0x2000;
 
 #ifdef Rel10
 # define INTEGRITY_ALGORITHM_NONE SecurityAlgorithmConfig__integrityProtAlgorithm_eia0_v920
@@ -184,8 +186,8 @@ static uint8_t get_UE_index_from_s1ap_ids(uint8_t mod_id, uint16_t ue_initial_id
  */
 static e_SecurityAlgorithmConfig__cipheringAlgorithm rrc_eNB_select_ciphering(uint16_t algorithms) {
   
-#warning "Forced   return SecurityAlgorithmConfig__cipheringAlgorithm_eea0, to be deleted in future"
-  return SecurityAlgorithmConfig__cipheringAlgorithm_eea0;
+//#warning "Forced   return SecurityAlgorithmConfig__cipheringAlgorithm_eea0, to be deleted in future"
+//  return SecurityAlgorithmConfig__cipheringAlgorithm_eea0;
 
   if (algorithms & S1AP_ENCRYPTION_EEA2_MASK) {
     return SecurityAlgorithmConfig__cipheringAlgorithm_eea2;
