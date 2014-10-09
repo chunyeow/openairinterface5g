@@ -59,14 +59,14 @@ uint32_t pdcp_get_next_count_tx(pdcp_t *pdcp_entity, srb_flag_t srb_flagP, uint1
   uint32_t count;
   /* For TX COUNT = TX_HFN << length of SN | pdcp SN */
   if (srb_flagP) {
-    /* 5 bits length SN */
-    count = ((pdcp_entity->tx_hfn << 5)  | (pdcp_sn & 0x001F));
+      /* 5 bits length SN */
+      count = ((pdcp_entity->tx_hfn << 5)  | (pdcp_sn & 0x001F));
   } else {
-    if (pdcp_entity->seq_num_size == PDCP_Config__rlc_UM__pdcp_SN_Size_len7bits) {
-      count = ((pdcp_entity->tx_hfn << 7) | (pdcp_sn & 0x07F));
-    } else { /*Default is the 12 bits length SN */
-      count = ((pdcp_entity->tx_hfn << 12) | (pdcp_sn & 0x0FFF));
-    }
+      if (pdcp_entity->seq_num_size == PDCP_Config__rlc_UM__pdcp_SN_Size_len7bits) {
+          count = ((pdcp_entity->tx_hfn << 7) | (pdcp_sn & 0x07F));
+      } else { /*Default is the 12 bits length SN */
+          count = ((pdcp_entity->tx_hfn << 12) | (pdcp_sn & 0x0FFF));
+      }
   }
   LOG_D(PDCP, "[OSA] TX COUNT = 0x%08x\n", count);
   
@@ -79,17 +79,16 @@ uint32_t pdcp_get_next_count_rx(pdcp_t *pdcp_entity, srb_flag_t srb_flagP, uint1
   uint32_t count;
   /* For RX COUNT = RX_HFN << length of SN | pdcp SN of received PDU */
   if (srb_flagP) {
-    /* 5 bits length SN */
-    count = (((pdcp_entity->rx_hfn + pdcp_entity->rx_hfn_offset) << 5)  | (pdcp_sn & 0x001F));
+      /* 5 bits length SN */
+      count = (((pdcp_entity->rx_hfn + pdcp_entity->rx_hfn_offset) << 5)  | (pdcp_sn & 0x001F));
   } else {
-    if (pdcp_entity->seq_num_size == PDCP_Config__rlc_UM__pdcp_SN_Size_len7bits) {
-      /* 7 bits length SN */
-      count = (((pdcp_entity->rx_hfn + pdcp_entity->rx_hfn_offset) << 7) | (pdcp_sn & 0x007F));
-    } else { // default 
-      /* 12 bits length SN */
-      count = (((pdcp_entity->rx_hfn + pdcp_entity->rx_hfn_offset) << 12) | (pdcp_sn & 0x0FFF));
-    }
-  
+      if (pdcp_entity->seq_num_size == PDCP_Config__rlc_UM__pdcp_SN_Size_len7bits) {
+          /* 7 bits length SN */
+          count = (((pdcp_entity->rx_hfn + pdcp_entity->rx_hfn_offset) << 7) | (pdcp_sn & 0x007F));
+      } else { // default
+          /* 12 bits length SN */
+          count = (((pdcp_entity->rx_hfn + pdcp_entity->rx_hfn_offset) << 12) | (pdcp_sn & 0x0FFF));
+      }
   }
   // reset the hfn offset
   pdcp_entity->rx_hfn_offset =0;
@@ -136,8 +135,8 @@ int pdcp_apply_security(pdcp_t        *pdcp_entity,
         /* Both header and data parts are integrity protected for
          * control-plane PDUs */
         stream_compute_integrity(pdcp_entity->integrityProtAlgorithm, 
-				 &encrypt_params,
-                                 mac_i);
+                &encrypt_params,
+                mac_i);
 
         encrypt_params.key = pdcp_entity->kRRCenc;  // + 128  // bit key 
     } else {
@@ -154,8 +153,8 @@ int pdcp_apply_security(pdcp_t        *pdcp_entity,
 
     /* Apply ciphering if any requested */
     stream_encrypt(pdcp_entity->cipheringAlgorithm, 
-		   &encrypt_params,
-                   &buffer_encrypted);
+            &encrypt_params,
+            &buffer_encrypted);
 
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_APPLY_SECURITY, VCD_FUNCTION_OUT);
 
@@ -163,12 +162,12 @@ int pdcp_apply_security(pdcp_t        *pdcp_entity,
 }
 
 int pdcp_validate_security(pdcp_t         *pdcp_entity, 
-			   srb_flag_t     srb_flagP,
-			   rb_id_t        rb_id,
-                           uint8_t        pdcp_header_len, 
-			   uint16_t       current_sn, 
-			   uint8_t       *pdcp_pdu_buffer,
-                           uint16_t       sdu_buffer_size)
+        srb_flag_t     srb_flagP,
+        rb_id_t        rb_id,
+        uint8_t        pdcp_header_len,
+        uint16_t       current_sn,
+        uint8_t       *pdcp_pdu_buffer,
+        uint16_t       sdu_buffer_size)
 {
     uint8_t *buffer_decrypted = NULL;
     stream_cipher_t decrypt_params;
@@ -214,7 +213,8 @@ int pdcp_validate_security(pdcp_t         *pdcp_entity,
 				 &decrypt_params, 
 				 &pdcp_pdu_buffer[sdu_buffer_size]) != 0)
 	{
-	  LOG_E(PDCP, "[OSA] failed to validate MAC-I of incoming PDU\n");
+	  LOG_E(PDCP, "[OSA][RB %d] %s failed to validate MAC-I of incoming PDU\n",
+	          rb_id, (pdcp_entity->is_ue != 0) ? "UE" : "eNB");
 	  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_VALIDATE_SECURITY, VCD_FUNCTION_OUT);
 	  return -1;
 	}
