@@ -1,0 +1,31 @@
+[*]
+[*] GTKWave Analyzer v3.3.58 (w)1999-2014 BSI
+[*] Tue Sep  9 07:03:39 2014
+[*]
+[dumpfile] "/tmp/openair_dump_UE.vcd"
+[dumpfile_mtime] "Tue Sep  9 06:37:26 2014"
+[dumpfile_size] 94912
+[savefile] "/homes/knopp/Devel/openair4G/trunk/targets/RT/USER/ue.gtkw"
+[timestart] 12883150000
+[size] 1221 600
+[pos] 90 3
+*-21.000000 12886782928 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 224
+[signals_width] 262
+[sst_expanded] 1
+[sst_vpaned_height] 143
+@24
+variables.frame_number_UE[63:0]
+variables.hw_subframe[63:0]
+@28
+functions.phy_procedures_ue_rx
+functions.ue_slot_fep
+functions.lte_ue_measurement_procedures
+functions.ue_rrc_measurements
+functions.ue_gain_control
+functions.ue_adjust_synch
+functions.lte_ue_pbch_procedures
+@29
+functions.lte_ue_pdcch_procedures
+[pattern_trace] 1
+[pattern_trace] 0
