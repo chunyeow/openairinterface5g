@@ -186,6 +186,14 @@ int openair0_set_frequencies(openair0_device* device, openair0_config_t *openair
   
 }
 
+int openair0_set_gains(openair0_device* device, openair0_config_t *openair0_cfg) {
+
+  usrp_state_t *s = (usrp_state_t*)device->priv;
+
+  s->usrp->set_tx_gain(openair0_cfg[0].tx_gain[0]);
+  s->usrp->set_rx_gain(openair0_cfg[0].rx_gain[0]);
+  return(0);
+}
  
 int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cfg)
 {
