@@ -326,23 +326,6 @@ void
 mme_app_handle_nas_auth_param_req(
         const nas_auth_param_req_t * const nas_auth_param_req_pP)
 {
-    static const plmn_t visited_plmn_eur = {
-        .MCCdigit3 = 2,
-        .MCCdigit2 = 0,
-        .MCCdigit1 = 8,
-        .MNCdigit1 = 0,
-        .MNCdigit2 = 1,
-        .MNCdigit3 = 0,
-    };
-    static const plmn_t visited_plmn_dongle = {
-        .MCCdigit3 = 2,
-        .MCCdigit2 = 0,
-        .MCCdigit1 = 8,
-        .MNCdigit3 = 2,
-        .MNCdigit2 = 9,
-        .MNCdigit1 = 0xF,
-    };
-
     plmn_t              *visited_plmn  = NULL;
     struct ue_context_s *ue_context    = NULL;
     uint64_t             imsi          = 0;
@@ -357,8 +340,6 @@ mme_app_handle_nas_auth_param_req(
         };
     DevAssert(nas_auth_param_req_pP != NULL);
 
-    //visited_plmn = &visited_plmn_eur;
-    //visited_plmn = &visited_plmn_dongle;
     visited_plmn = &visited_plmn_from_req;
 
     visited_plmn_from_req.MCCdigit1 = nas_auth_param_req_pP->imsi[0];
@@ -372,16 +353,35 @@ mme_app_handle_nas_auth_param_req(
             nas_auth_param_req_pP->imsi[4],
             nas_auth_param_req_pP->imsi[5]
             );
+
     if (mnc_length == 2) {
         visited_plmn_from_req.MNCdigit1 = nas_auth_param_req_pP->imsi[3];
         visited_plmn_from_req.MNCdigit2 = nas_auth_param_req_pP->imsi[4];
-        visited_plmn_from_req.MNCdigit3 = "F";
+        visited_plmn_from_req.MNCdigit3 = 15;
     } else if (mnc_length == 3) {
         visited_plmn_from_req.MNCdigit1 = nas_auth_param_req_pP->imsi[3];
         visited_plmn_from_req.MNCdigit2 = nas_auth_param_req_pP->imsi[4];
         visited_plmn_from_req.MNCdigit3 = nas_auth_param_req_pP->imsi[5];
     } else {
         AssertFatal(0, "MNC Not found (mcc_mnc_list)");
+    }
+    if (mnc_length == 3) {
+        MME_APP_DEBUG("%s visited_plmn_from_req  %1d%1d%1d.%1d%1d%1d\n",
+            __FUNCTION__,
+            visited_plmn_from_req.MCCdigit1,
+            visited_plmn_from_req.MCCdigit2,
+            visited_plmn_from_req.MCCdigit3,
+            visited_plmn_from_req.MNCdigit1,
+            visited_plmn_from_req.MNCdigit2,
+            visited_plmn_from_req.MNCdigit3);
+    } else {
+        MME_APP_DEBUG("%s visited_plmn_from_req  %1d%1d%1d.%1d%1d\n",
+            __FUNCTION__,
+            visited_plmn_from_req.MCCdigit1,
+            visited_plmn_from_req.MCCdigit2,
+            visited_plmn_from_req.MCCdigit3,
+            visited_plmn_from_req.MNCdigit1,
+            visited_plmn_from_req.MNCdigit2);
     }
 
     MME_APP_STRING_TO_IMSI(nas_auth_param_req_pP->imsi, &imsi);
