@@ -92,7 +92,7 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
 
       if (RA_template[i].RA_active == TRUE) {
 
-	LOG_I(MAC,"[eNB %d][RAPROC] RA %d is active (generate RAR %d, generate_Msg4 %d, wait_ack_Msg4 %d, rnti %x)\n",
+	LOG_D(MAC,"[eNB %d][RAPROC] RA %d is active (generate RAR %d, generate_Msg4 %d, wait_ack_Msg4 %d, rnti %x)\n",
               module_idP,i,RA_template[i].generate_rar,RA_template[i].generate_Msg4,RA_template[i].wait_ack_Msg4, RA_template[i].rnti);
 
 	if (RA_template[i].generate_rar == 1) {
@@ -121,7 +121,7 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
 	    }
 	  }
 
-	  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d, subframeP %d: UE_id %d, Is_rrc_registered %d, rrc_sdu_length %d\n",
+	  LOG_D(MAC,"[eNB %d][RAPROC] Frame %d, subframeP %d: UE_id %d, Is_rrc_registered %d, rrc_sdu_length %d\n",
 		module_idP,frameP, subframeP,UE_id, Is_rrc_registered,rrc_sdu_length);
 
 	  if (rrc_sdu_length>0) {

@@ -165,7 +165,7 @@ unsigned char generate_dlsch_header(unsigned char *mac_header,
     //    msg("last_size %d,mac_header_ptr %p\n",last_size,mac_header_ptr);
     ((TIMING_ADVANCE_CMD *)ce_ptr)->R=0;
     ((TIMING_ADVANCE_CMD *)ce_ptr)->TA=(timing_advance_cmd+31)&0x3f;
-    LOG_I(MAC,"timing advance =%d (%d)\n",timing_advance_cmd,((TIMING_ADVANCE_CMD *)ce_ptr)->TA);
+    LOG_D(MAC,"timing advance =%d (%d)\n",timing_advance_cmd,((TIMING_ADVANCE_CMD *)ce_ptr)->TA);
     ce_ptr+=sizeof(TIMING_ADVANCE_CMD);
     //msg("offset %d\n",ce_ptr-mac_header_control_elements);
   }
@@ -815,7 +815,7 @@ void schedule_ue_spec(module_id_t   module_idP,
 	  
 	  if (rlc_status.bytes_in_buffer > 0) {
 	    
-	    LOG_I(MAC,"[eNB %d][USER-PLANE DEFAULT DRB], Frame %d, DTCH->DLSCH, Requesting %d bytes from RLC (hdr len dtch %d)\n",
+	    LOG_D(MAC,"[eNB %d][USER-PLANE DEFAULT DRB], Frame %d, DTCH->DLSCH, Requesting %d bytes from RLC (hdr len dtch %d)\n",
 		  module_idP,frameP,TBS-header_len_dcch-sdu_length_total-header_len_dtch,header_len_dtch);
 	    sdu_lengths[num_sdus] = mac_rlc_data_req(
 						     module_idP,
@@ -826,7 +826,7 @@ void schedule_ue_spec(module_id_t   module_idP,
 						     DTCH,
 						     (char*)&dlsch_buffer[sdu_length_total]);
 	    
-	    LOG_I(MAC,"[eNB %d][USER-PLANE DEFAULT DRB] Got %d bytes for DTCH %d \n",module_idP,sdu_lengths[num_sdus],DTCH);
+	    LOG_D(MAC,"[eNB %d][USER-PLANE DEFAULT DRB] Got %d bytes for DTCH %d \n",module_idP,sdu_lengths[num_sdus],DTCH);
 	    sdu_lcids[num_sdus] = DTCH;
 	    sdu_length_total += sdu_lengths[num_sdus];
 	    UE_list->eNB_UE_stats[CC_id][UE_id].num_pdu_tx[DTCH]+=1;
@@ -954,7 +954,7 @@ void schedule_ue_spec(module_id_t   module_idP,
 					 padding,
 					 post_padding);
 	  //#ifdef DEBUG_eNB_SCHEDULER
-	  LOG_I(MAC,"[eNB %d][DLSCH] Frame %d Generate header for UE_id %d on CC_id %d: sdu_length_total %d, num_sdus %d, sdu_lengths[0] %d, sdu_lcids[0] %d => payload offset %d,timing advance value : %d, padding %d,post_padding %d,(mcs %d, TBS %d, nb_rb %d),header_dcch %d, header_dtch %d\n",
+	  LOG_D(MAC,"[eNB %d][DLSCH] Frame %d Generate header for UE_id %d on CC_id %d: sdu_length_total %d, num_sdus %d, sdu_lengths[0] %d, sdu_lcids[0] %d => payload offset %d,timing advance value : %d, padding %d,post_padding %d,(mcs %d, TBS %d, nb_rb %d),header_dcch %d, header_dtch %d\n",
 		module_idP,frameP, UE_id, CC_id, sdu_length_total,num_sdus,sdu_lengths[0],sdu_lcids[0],offset,
 		ta_len,padding,post_padding,mcs,TBS,nb_rb,header_len_dcch,header_len_dtch);
 	  //#endif

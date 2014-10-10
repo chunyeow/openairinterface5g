@@ -579,14 +579,18 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
   int                rvidx_tab[4] = {0,2,3,1};
   LTE_DL_FRAME_PARMS   *frame_parms;
 
-  LOG_D(MAC,"entering ulsch preprocesor\n");
+
+  //  LOG_I(MAC,"entering ulsch preprocesor\n");
+
   ulsch_scheduler_pre_processor(module_idP,
 				frameP,
 				subframeP,
 				first_rb,
 				aggregation,
 				nCCE);
-  LOG_D(MAC,"exiting ulsch preprocesor\n");
+
+  //  LOG_I(MAC,"exiting ulsch preprocesor\n");
+
   // loop over all active UEs
   for (UE_id=UE_list->head_ul;UE_id>=0;UE_id=UE_list->next_ul[UE_id]) {
 
@@ -665,7 +669,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 	      else 
 		tpc = 1; //0
 
-	      LOG_I(MAC,"[eNB %d] ULSCH scheduler: harq_pid %d, Ndi %d, mcs %d, tpc %d, normalized/target rx power %d/%d\n",module_idP,harq_pid,ndi,mcs,tpc,normalized_rx_power,target_rx_power);
+	      //	      LOG_I(MAC,"[eNB %d] ULSCH scheduler: harq_pid %d, Ndi %d, mcs %d, tpc %d, normalized/target rx power %d/%d\n",module_idP,harq_pid,ndi,mcs,tpc,normalized_rx_power,target_rx_power);
 
 	      	      
 	      // new transmission 
@@ -696,7 +700,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		//store for possible retransmission
 		UE_template->nb_rb_ul[harq_pid] = rb_table[rb_table_index]; 
 		
-		LOG_I(MAC,"[eNB %d][PUSCH %d/%x] Frame %d subframeP %d Scheduled UE (mcs %d, first rb %d, nb_rb %d, rb_table_index %d, TBS %d, harq_pid %d)\n",
+		LOG_D(MAC,"[eNB %d][PUSCH %d/%x] Frame %d subframeP %d Scheduled UE (mcs %d, first rb %d, nb_rb %d, rb_table_index %d, TBS %d, harq_pid %d)\n",
 		      module_idP,harq_pid,rnti,frameP,subframeP,mcs,
 		      first_rb[CC_id],rb_table[rb_table_index],
 		      rb_table_index,TBS,harq_pid);
@@ -715,7 +719,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		  mcs = rvidx_tab[round&3] + 28; //not correct for round==4!
 	     
 		
-		LOG_I(MAC,"[eNB %d][PUSCH %d/%x] Frame %d subframeP %d Scheduled UE retransmission (mcs %d, first rb %d, nb_rb %d, TBS %d, harq_pid %d, round %d)\n",
+		LOG_D(MAC,"[eNB %d][PUSCH %d/%x] Frame %d subframeP %d Scheduled UE retransmission (mcs %d, first rb %d, nb_rb %d, TBS %d, harq_pid %d, round %d)\n",
 		      module_idP,UE_id,rnti,frameP,subframeP,mcs,
 		      first_rb[CC_id],UE_template->nb_rb_ul[harq_pid],
 		      TBS,//mac_xface->get_TBS_UL(mcs,UE_template->nb_rb_ul[harq_pid]),

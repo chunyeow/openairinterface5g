@@ -198,7 +198,7 @@ boolean_t pdcp_data_req(
       }
       pdcp_pdu_size = sdu_buffer_sizeP + pdcp_header_len + pdcp_tailer_len;
 
-      LOG_I(PDCP, "Data request notification for PDCP entity %s enb id %u ue_id %u and radio bearer ID %d pdu size %d (header%d, trailer%d)\n",
+      LOG_D(PDCP, "Data request notification for PDCP entity %s enb id %u ue_id %u and radio bearer ID %d pdu size %d (header%d, trailer%d)\n",
           (enb_flagP) ? "eNB" : "UE",
               enb_mod_idP,
               ue_mod_idP,
@@ -463,12 +463,12 @@ boolean_t pdcp_data_ind(
       if (enb_flagP == ENB_FLAG_NO) {
           if (srb_flagP) {
               pdcp_p = &pdcp_array_srb_ue[ue_mod_idP][rb_id-1];
-              LOG_I(PDCP, "Data indication notification for PDCP entity from eNB %u to UE %u "
+              LOG_D(PDCP, "Data indication notification for PDCP entity from eNB %u to UE %u "
                     "and signalling radio bearer ID %d rlc sdu size %d enb_flagP %d\n",
                     enb_mod_idP, ue_mod_idP, rb_id, sdu_buffer_sizeP, enb_flagP);
           } else {
               pdcp_p = &pdcp_array_drb_ue[ue_mod_idP][rb_id-1];
-              LOG_I(PDCP, "Data indication notification for PDCP entity from eNB %u to UE %u "
+              LOG_D(PDCP, "Data indication notification for PDCP entity from eNB %u to UE %u "
                     "and data radio bearer ID %d rlc sdu size %d enb_flagP %d\n",
                     enb_mod_idP, ue_mod_idP, rb_id, sdu_buffer_sizeP, enb_flagP);
           }
@@ -476,12 +476,12 @@ boolean_t pdcp_data_ind(
       } else {
           if (srb_flagP) {
               pdcp_p = &pdcp_array_srb_eNB[enb_mod_idP][ue_mod_idP][rb_id-1];
-              LOG_I(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
+              LOG_D(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
                   "and signalling radio bearer ID %d rlc sdu size %d enb_flagP %d eNB_id %d\n",
                   ue_mod_idP, enb_mod_idP , rb_id, sdu_buffer_sizeP, enb_flagP, enb_mod_idP);
           } else {
               pdcp_p = &pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][rb_id-1];
-              LOG_I(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
+              LOG_D(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
                   "and data radio bearer ID %d rlc sdu size %d enb_flagP %d eNB_id %d\n",
                   ue_mod_idP, enb_mod_idP , rb_id, sdu_buffer_sizeP, enb_flagP, enb_mod_idP);
           }
@@ -784,7 +784,7 @@ void pdcp_run (
 
           switch (ITTI_MSG_ID(msg_p)) {
           case RRC_DCCH_DATA_REQ:
-            LOG_I(PDCP, "Received %s from %s: instance %d, frame %d, enb_flagP %d, rb_id %d, muiP %d, confirmP %d, mode %d\n",
+            LOG_D(PDCP, "Received %s from %s: instance %d, frame %d, enb_flagP %d, rb_id %d, muiP %d, confirmP %d, mode %d\n",
                 msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
                 RRC_DCCH_DATA_REQ (msg_p).frame, RRC_DCCH_DATA_REQ (msg_p).enb_flag, RRC_DCCH_DATA_REQ (msg_p).rb_id,
                 RRC_DCCH_DATA_REQ (msg_p).muip, RRC_DCCH_DATA_REQ (msg_p).confirmp, RRC_DCCH_DATA_REQ (msg_p).mode);
@@ -1235,7 +1235,7 @@ boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
             ue_mod_idP, enb_mod_idP, frameP, lc_idP, rb_idP, pdcp_pP->seq_num_size,
             (rlc_modeP == RLC_MODE_AM ) ? "AM" : (rlc_modeP == RLC_MODE_TM) ? "TM" : "UM");
     } else {
-        LOG_I(PDCP, "[eNB %d] Config request : Action ADD for UE %d: Frame %d LCID %d (rb id %d) "
+        LOG_D(PDCP, "[eNB %d] Config request : Action ADD for UE %d: Frame %d LCID %d (rb id %d) "
             "configured with SN size %d bits and RLC %s\n",
             enb_mod_idP, ue_mod_idP, frameP, lc_idP, rb_idP, pdcp_pP->seq_num_size,
             (rlc_modeP == RLC_MODE_AM) ? "AM" : (rlc_modeP == RLC_MODE_TM) ? "TM" : "UM");
@@ -1274,7 +1274,7 @@ boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
             ue_mod_idP, enb_mod_idP, frameP, lc_idP, rb_idP, rb_snP,
             (rlc_modeP == RLC_MODE_AM) ? "AM" : (rlc_modeP == RLC_MODE_TM) ? "TM" : "UM");
     } else {
-        LOG_I(PDCP,"[eNB %d] Config request : Action MODIFY for UE %d: Frame %d LCID %d "
+        LOG_D(PDCP,"[eNB %d] Config request : Action MODIFY for UE %d: Frame %d LCID %d "
             "RB id %d configured with SN size %d and RLC %s \n",
             enb_mod_idP, ue_mod_idP, frameP, lc_idP, rb_idP, rb_snP,
             (rlc_modeP == RLC_MODE_AM) ? "AM" : (rlc_modeP == RLC_MODE_TM) ? "TM" : "UM");
@@ -1302,7 +1302,7 @@ boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
         LOG_I(PDCP, "[UE %d] Config request : CONFIG_ACTION_REMOVE for eNB %d: Frame %d LCID %d RBID %d configured\n",
             ue_mod_idP, enb_mod_idP, frameP, lc_idP, rb_idP);
     } else {
-        LOG_I(PDCP, "[eNB %d] Config request : CONFIG_ACTION_REMOVE for UE %d: Frame %d LCID %d RBID %d configured\n",
+        LOG_D(PDCP, "[eNB %d] Config request : CONFIG_ACTION_REMOVE for UE %d: Frame %d LCID %d RBID %d configured\n",
             enb_mod_idP, ue_mod_idP, frameP, lc_idP, rb_idP);
     }
     /* Security keys */
@@ -1323,7 +1323,7 @@ boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
         LOG_I(PDCP,"[UE %d] Config request for eNB %d: %s: Frame %d service_id/mch index %d, session_id/lcid %d, rbid %d configured\n",
             ue_mod_idP, enb_mod_idP, actionP == CONFIG_ACTION_MBMS_ADD ? "CONFIG_ACTION_MBMS_ADD" : "CONFIG_ACTION_MBMS_MODIFY", frameP, mch_idP, lc_idP, rb_idP);
     } else {
-        LOG_I(PDCP,"[eNB %d] Config request for UE %d: %s: Frame %d service_id/mch index %d, session_id/lcid %d, rbid %d configured\n",
+        LOG_D(PDCP,"[eNB %d] Config request for UE %d: %s: Frame %d service_id/mch index %d, session_id/lcid %d, rbid %d configured\n",
             enb_mod_idP, ue_mod_idP, actionP == CONFIG_ACTION_MBMS_ADD ? "CONFIG_ACTION_MBMS_ADD" : "CONFIG_ACTION_MBMS_MODIFY", frameP, mch_idP, lc_idP, rb_idP);
     }
     if (enb_flagP == 1) {

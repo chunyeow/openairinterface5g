@@ -517,7 +517,7 @@ rlc_um_mac_data_request (void *rlc_pP,frame_t frameP)
         while (tb_p != NULL) {
             tb_size_in_bytes   = ((struct mac_tb_req *) (tb_p->data))->tb_size;
 
-            LOG_I(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_REQUEST  TB SIZE %u\n",
+            LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_REQUEST  TB SIZE %u\n",
                     frameP,
                     (l_rlc_p->is_enb) ? "eNB" : "UE",
                     l_rlc_p->enb_module_id,
@@ -624,7 +624,7 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
   uint16_t             data_size;
 #endif
 
-  LOG_I(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] RLC_UM_DATA_REQ size %d Bytes, BO %d , NB SDU %d current_sdu_index=%d next_sdu_index=%d\n",
+  LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] RLC_UM_DATA_REQ size %d Bytes, BO %d , NB SDU %d current_sdu_index=%d next_sdu_index=%d\n",
      frameP,
      (rlc_p->is_enb) ? "eNB" : "UE",
      rlc_p->enb_module_id,

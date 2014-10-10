@@ -811,6 +811,7 @@ void ulsch_scheduler_pre_processor(module_id_t module_idP,
 	module_idP, frameP, subframeP,total_ue_count, max_num_ue_to_be_scheduled);
 
   //LOG_D(MAC,"step3\n");
+
   // step 3: assigne RBS 
   for (i=UE_list->head_ul;i>=0;i=UE_list->next_ul[i]) {
     rnti = UE_RNTI(module_idP,i); 
@@ -996,7 +997,9 @@ void sort_ue_ul (module_id_t module_idP,int frameP, sub_frame_t subframeP){
   UE_list_t *UE_list = &eNB_mac_inst[module_idP].UE_list;
   
   for (i=UE_list->head_ul;i>=0;i=UE_list->next_ul[i]) {
-    LOG_D(MAC,"sort ue ul i %d\n",i);
+
+    //LOG_I(MAC,"sort ue ul i %d\n",i);
+
     rnti1 = UE_RNTI(module_idP,i);
     if(rnti1 == 0)
       continue;
@@ -1006,7 +1009,9 @@ void sort_ue_ul (module_id_t module_idP,int frameP, sub_frame_t subframeP){
     round1  = maxround(module_idP,rnti1,frameP,subframeP,1);  
 
     for (ii=UE_list->next_ul[i];ii>=0;ii=UE_list->next_ul[ii]) {
-      LOG_D(MAC,"sort ul ue 2 ii %d\n",ii);
+
+      //LOG_I(MAC,"sort ul ue 2 ii %d\n",ii);
+
       rnti2 = UE_RNTI(module_idP,ii);
       if(rnti2 == 0)
 	continue;
