@@ -2562,8 +2562,8 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
                 ctx->guti->gummei.plmn.MCCdigit2 = imsi->u.num.digit2;
                 ctx->guti->gummei.plmn.MCCdigit3 = imsi->u.num.digit3;
                 if (mnc_length == 2) {
-                    ctx->guti->gummei.plmn.MNCdigit1 = imsi->u.num.digit5;
-                    ctx->guti->gummei.plmn.MNCdigit2 = imsi->u.num.digit6;
+                    ctx->guti->gummei.plmn.MNCdigit1 = imsi->u.num.digit4;
+                    ctx->guti->gummei.plmn.MNCdigit2 = imsi->u.num.digit5;
                     ctx->guti->gummei.plmn.MNCdigit3 = 15;
                     LOG_TRACE(WARNING, "EMM-PROC  - Assign GUTI from IMSI %01X%01X%01X.%01X%01X.%04X.%02X.%08X to emm_data_context",
                             ctx->guti->gummei.plmn.MCCdigit1,
