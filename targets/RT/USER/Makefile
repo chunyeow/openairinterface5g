@@ -32,7 +32,7 @@ ifeq ($(USRP),0)
 endif
 
 ifeq ($(DEBUG),1)	
-CFLAGS += -g -ggdb -DDEBUG_PHY -DDEBUG_MEAS
+CFLAGS += -g -ggdb
 CFLAGS += -DRRC_MSG_PRINT
 CFLAGS += -DPDCP_MSG_PRINT
 endif
