@@ -60,5 +60,5 @@ void display_backtrace(void)
 void backtrace_handle_signal(siginfo_t *info)
 {
     display_backtrace();
-    exit(EXIT_FAILURE);
+    //exit(EXIT_FAILURE);
 }

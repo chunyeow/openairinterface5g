@@ -169,8 +169,8 @@ unsigned char                   scope_enb_num_ue = 1;
 static SEM                     *mutex;
 //static CND *cond;
 
-static int                      main_eNB_thread;
-static int                      main_ue_thread;
+static long                      main_eNB_thread;
+static long                      main_ue_thread;
 #ifdef USRP
 static SEM *sync_sem; // to sync rx & tx streaming
 #endif
@@ -438,26 +438,27 @@ static void set_latency_target(void)
 void reset_stats(FL_OBJECT *button, long arg) {
   int i,j,k;
   PHY_VARS_eNB *phy_vars_eNB = PHY_vars_eNB_g[0][0];
-  for (k=0;k<8;k++) {//harq_processes
-    for (j=0;j<phy_vars_eNB->dlsch_eNB[i][0]->Mdlharq;j++) {
-      phy_vars_eNB->eNB_UE_stats[i].dlsch_NAK[k][j]=0;
-      phy_vars_eNB->eNB_UE_stats[i].dlsch_ACK[k][j]=0;
-      phy_vars_eNB->eNB_UE_stats[i].dlsch_trials[k][j]=0;
-    }
-    phy_vars_eNB->eNB_UE_stats[i].dlsch_l2_errors[k]=0;
-    phy_vars_eNB->eNB_UE_stats[i].ulsch_errors[k]=0;
-    phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors=0;
-    for (j=0;j<phy_vars_eNB->ulsch_eNB[i]->Mdlharq;j++) {
-      phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[k][j]=0;
+  for (i=0;i<NUMBER_OF_UE_MAX;i++) {
+    for (k=0;k<8;k++) {//harq_processes
+      for (j=0;j<phy_vars_eNB->dlsch_eNB[i][0]->Mdlharq;j++) {
+	phy_vars_eNB->eNB_UE_stats[i].dlsch_NAK[k][j]=0;
+	phy_vars_eNB->eNB_UE_stats[i].dlsch_ACK[k][j]=0;
+	phy_vars_eNB->eNB_UE_stats[i].dlsch_trials[k][j]=0;
+      }
+      phy_vars_eNB->eNB_UE_stats[i].dlsch_l2_errors[k]=0;
+      phy_vars_eNB->eNB_UE_stats[i].ulsch_errors[k]=0;
+      phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors=0;
+      for (j=0;j<phy_vars_eNB->ulsch_eNB[i]->Mdlharq;j++) {
+	phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[k][j]=0;
       phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts_last[k][j]=0;
       phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors[k][j]=0;
       phy_vars_eNB->eNB_UE_stats[i].ulsch_round_fer[k][j]=0;
+      }
     }
+    phy_vars_eNB->eNB_UE_stats[i].dlsch_sliding_cnt=0;
+    phy_vars_eNB->eNB_UE_stats[i].dlsch_NAK_round0=0;
+    phy_vars_eNB->eNB_UE_stats[i].dlsch_mcs_offset=0;
   }
-  phy_vars_eNB->eNB_UE_stats[i].dlsch_sliding_cnt=0;
-  phy_vars_eNB->eNB_UE_stats[i].dlsch_NAK_round0=0;
-  phy_vars_eNB->eNB_UE_stats[i].dlsch_mcs_offset=0;
-  
 }
 
 static void *scope_thread(void *arg) {
@@ -473,12 +474,12 @@ static void *scope_thread(void *arg) {
 
   printf("Scope thread has priority %d\n",sched_param.sched_priority);
     
-  /*
-    if (UE_flag==1) 
+# ifdef ENABLE_XFORMS_WRITE_STATS
+  if (UE_flag==1) 
     UE_stats  = fopen("UE_stats.txt", "w");
-    else 
+  else 
     eNB_stats = fopen("eNB_stats.txt", "w");
-  */
+#endif
     
   while (!oai_exit) {
     if (UE_flag==1) {
@@ -487,10 +488,7 @@ static void *scope_thread(void *arg) {
 # endif
 	dump_ue_stats (PHY_vars_UE_g[0][0], stats_buffer, 0, mode,rx_input_level_dBm);
       fl_set_object_label(form_stats->stats_text, stats_buffer);
-# ifdef ENABLE_XFORMS_WRITE_STATS
-      rewind (UE_stats);
-      fwrite (stats_buffer, 1, len, UE_stats);
-# endif
+
       phy_scope_UE(form_ue[UE_id], 
 		   PHY_vars_UE_g[UE_id][0],
 		   eNB_id,
@@ -500,14 +498,15 @@ static void *scope_thread(void *arg) {
 # ifdef ENABLE_XFORMS_WRITE_STATS
       len =
 # endif
-	dump_eNB_stats (PHY_vars_eNB_g[0][0], stats_buffer, 0);
-      fl_set_object_label(form_stats->stats_text, stats_buffer);
-# ifdef ENABLE_XFORMS_WRITE_STATS
-      rewind (eNB_stats);
-      fwrite (stats_buffer, 1, len, eNB_stats);
-# endif
       dump_eNB_l2_stats (stats_buffer, 0);
       fl_set_object_label(form_stats_l2->stats_text, stats_buffer);
+
+# ifdef ENABLE_XFORMS_WRITE_STATS
+      len =
+# endif
+	dump_eNB_stats (PHY_vars_eNB_g[0][0], stats_buffer, 0);
+      fl_set_object_label(form_stats->stats_text, stats_buffer);
+
       for(UE_id=0;UE_id<scope_enb_num_ue;UE_id++) {
 	phy_scope_eNB(form_enb[UE_id], 
 		      PHY_vars_eNB_g[eNB_id][0],
@@ -519,10 +518,24 @@ static void *scope_thread(void *arg) {
     //usleep(100000); // 100 ms
     sleep(1);
   }
+
+  printf("%s",stats_buffer);
     
 # ifdef ENABLE_XFORMS_WRITE_STATS
-  fclose (UE_stats);
-  fclose (eNB_stats);
+  if (UE_flag==1) {
+    if (UE_stats) {
+      rewind (UE_stats);
+      fwrite (stats_buffer, 1, len, UE_stats);
+      fclose (UE_stats);
+    }
+  }
+  else {
+    if (eNB_stats) {
+      rewind (eNB_stats);
+      fwrite (stats_buffer, 1, len, eNB_stats);
+      fclose (eNB_stats);
+    }
+  }
 # endif
     
   pthread_exit((void*)arg);
@@ -1336,21 +1349,15 @@ static void *eNB_thread(void *arg)
 	first_run=0;
 	if (diff<0)
 	  diff = diff +150;
-	LOG_I(HW,"eNB Frame %d, time %llu: diff %d\n",frame, rt_get_time_ns(), diff);
+	LOG_I(HW,"eNB Frame %d, time %llu: slot %d, hw_slot %d, diff %d\n",frame, rt_get_time_ns(), slot, hw_slot, diff);
       } 
 
       if (((slot%2==0) && (diff < (-14))) || ((slot%2==1) && (diff < (-7)))) {
 	// at the eNB, even slots have double as much time since most of the processing is done here and almost nothing in odd slots
-	LOG_D(HW,"eNB Frame %d, time %llu: missed slot, proceeding with next one (slot %d, hw_slot %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, diff);
+	LOG_D(HW,"eNB Frame %d, time %llu: missed slot, proceeding with next one (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, mbox_current, mbox_target, diff);
 	slot++;
-	if (frame > 0) {
-	  exit_fun("[HW][eNB] missed slot");
-	}
-	if (slot==20){
-	  slot=0;
-	  frame++;
-	}
-	continue;
+	//if (frame > 0)
+	exit_fun("[HW][eNB] missed slot");
       }
       if (diff>8)
 	LOG_D(HW,"eNB Frame %d, time %llu: skipped slot, waiting for hw to catch up (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, mbox_current, mbox_target, diff);
@@ -3079,7 +3086,7 @@ int main(int argc, char **argv) {
 
   for(CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
     rf_map[CC_id].card=0;
-    rf_map[CC_id].chain=CC_id;
+    rf_map[CC_id].chain=CC_id+1;
   }
 
   // connect the TX/RX buffers
@@ -3253,7 +3260,7 @@ int main(int argc, char **argv) {
   // start the main thread
   if (UE_flag == 1) {
     init_UE_threads();
-
+    sleep(1);
 #ifdef RTAI
     main_ue_thread = rt_thread_create(UE_thread, NULL, 100000000);
 #else
@@ -3277,9 +3284,10 @@ int main(int argc, char **argv) {
 
     if (multi_thread>0) {
       init_eNB_proc();
+      sleep(1);
       LOG_D(HW,"[lte-softmodem.c] eNB threads created\n");
     }
-    printf("Creating eNB_thread \n");
+    printf("Creating main eNB_thread \n");
 #ifdef RTAI
     main_eNB_thread = rt_thread_create(eNB_thread, NULL, OPENAIR_THREAD_STACK_SIZE);
 #else
@@ -3295,7 +3303,7 @@ int main(int argc, char **argv) {
   }
 
   // Sleep to allow all threads to setup
-  sleep(5);
+  sleep(1);
 
 
 #ifdef USRP
