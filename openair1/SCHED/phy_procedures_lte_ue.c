@@ -1499,9 +1499,9 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
       gain_control_all(phy_vars_ue->PHY_measurements.rx_power_avg_dB[eNB_id],0);
 
 #else
-
+#ifndef USRP
     phy_adjust_gain (phy_vars_ue,0);
-
+#endif
 #endif
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_GAIN_CONTROL, VCD_FUNCTION_OUT);
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ADJUST_SYNCH, VCD_FUNCTION_IN);

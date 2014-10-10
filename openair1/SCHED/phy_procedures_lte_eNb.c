@@ -148,9 +148,9 @@ uint8_t is_SR_subframe(PHY_VARS_eNB *phy_vars_eNB,uint8_t UE_id,uint8_t sched_su
 int32_t add_ue(int16_t rnti, PHY_VARS_eNB *phy_vars_eNB) {
   uint8_t i;
 
-  //#ifdef DEBUG_PHY_PROC
+#ifdef DEBUG_PHY_PROC
   LOG_I(PHY,"[eNB %d] Adding UE with rnti %x\n",phy_vars_eNB->Mod_id,rnti);
-  //#endif
+#endif
   for (i=0;i<NUMBER_OF_UE_MAX;i++) {
     if ((phy_vars_eNB->dlsch_eNB[i]==NULL) || (phy_vars_eNB->ulsch_eNB[i]==NULL)) {
       LOG_E(PHY,"Can't add UE, not enough memory allocated\n");
@@ -172,9 +172,9 @@ int32_t add_ue(int16_t rnti, PHY_VARS_eNB *phy_vars_eNB) {
 int32_t remove_ue(uint16_t rnti, PHY_VARS_eNB *phy_vars_eNB, uint8_t abstraction_flag) {
   uint8_t i;
 
-  //#ifdef DEBUG_PHY_PROC
+#ifdef DEBUG_PHY_PROC
   LOG_I(PHY,"eNB %d removing UE with rnti %x\n",phy_vars_eNB->Mod_id,rnti);
-  //#endif
+#endif
   for (i=0;i<NUMBER_OF_UE_MAX;i++) {
     if ((phy_vars_eNB->dlsch_eNB[i]==NULL) || (phy_vars_eNB->ulsch_eNB[i]==NULL)) {
       LOG_E(PHY,"Can't remove UE, not enough memory allocated\n");
@@ -347,7 +347,7 @@ int get_nCCE_offset(unsigned char L, int nCCE, int common_dci, unsigned short rn
       break;
     }
 
-    LOG_I(PHY,"rnti %x, Yk = %d, nCCE %d (nCCE/L %d),nb_cand %d\n",rnti,Yk,nCCE,nCCE/L,nb_candidates);
+    //    LOG_I(PHY,"rnti %x, Yk = %d, nCCE %d (nCCE/L %d),nb_cand %d\n",rnti,Yk,nCCE,nCCE/L,nb_candidates);
 
     for (m = 0 ; m < nb_candidates ; m++) {
       search_space_free = 1;
@@ -1508,7 +1508,7 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	LOG_E(PHY,"[eNB %d] Frame %d subframe %d : No available CCE resources for common DCI (RA) !!!\n",phy_vars_eNB->Mod_id,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe);
       }
       else {
-	LOG_I(PHY,"[eNB %d] Frame %d subframe %d : CCE resource for common DCI (RA)  => %d/%d\n",phy_vars_eNB->Mod_id,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe,
+	LOG_D(PHY,"[eNB %d] Frame %d subframe %d : CCE resource for common DCI (RA)  => %d/%d\n",phy_vars_eNB->Mod_id,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe,
 	      phy_vars_eNB->dlsch_eNB_ra->nCCE[subframe],DCI_pdu->nCCE);
 #if defined(SMBV) && !defined(EXMIMO)
 	// configure RA DCI
@@ -1618,7 +1618,7 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
       }
 #ifdef DEBUG_PHY_PROC
       //if (phy_vars_eNB->proc[sched_subframe].frame_tx%100 == 0)
-	LOG_I(PHY,"[eNB %d][PUSCH %d] Frame %d subframe %d UL Frame %d, UL Subframe %d, Generated ULSCH (format0) DCI (rnti %x, dci %x) (DCI pos %d/%d), aggregation %d\n",
+	LOG_D(PHY,"[eNB %d][PUSCH %d] Frame %d subframe %d UL Frame %d, UL Subframe %d, Generated ULSCH (format0) DCI (rnti %x, dci %x) (DCI pos %d/%d), aggregation %d\n",
 	      phy_vars_eNB->Mod_id, 
 	      subframe2harq_pid(&phy_vars_eNB->lte_frame_parms,
 				pdcch_alloc2ul_frame(&phy_vars_eNB->lte_frame_parms,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe),
@@ -2992,7 +2992,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
       if (phy_vars_eNB->ulsch_eNB[i]->cqi_crc_status == 1) {
 #ifdef DEBUG_PHY_PROC
 	//if (((phy_vars_eNB->proc[sched_subframe].frame_tx%10) == 0) || (phy_vars_eNB->proc[sched_subframe].frame_tx < 50)) 
-	print_CQI(phy_vars_eNB->ulsch_eNB[i]->o,phy_vars_eNB->ulsch_eNB[i]->uci_format,0);
+	//print_CQI(phy_vars_eNB->ulsch_eNB[i]->o,phy_vars_eNB->ulsch_eNB[i]->uci_format,0);
 #endif
 	extract_CQI(phy_vars_eNB->ulsch_eNB[i]->o,phy_vars_eNB->ulsch_eNB[i]->uci_format,&phy_vars_eNB->eNB_UE_stats[i], &rnti, &access_mode);
 	phy_vars_eNB->eNB_UE_stats[i].rank = phy_vars_eNB->ulsch_eNB[i]->o_RI[0];
@@ -3221,7 +3221,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	}
 
 #ifdef DEBUG_PHY_PROC	
-	LOG_I(PHY,"[eNB %d] frame %d, subframe %d: user %d in sector %d: timing advance = %d\n",
+	LOG_D(PHY,"[eNB %d] frame %d, subframe %d: user %d in sector %d: timing advance = %d\n",
 	      phy_vars_eNB->Mod_id,
 	      frame, subframe, 
 	      i, sect_id,
@@ -3246,8 +3246,8 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 			    0,
 			    0);
       
-      //#ifdef DEBUG_PHY_PROC
-      LOG_I(PHY,"[eNB %d] Frame %d subframe %d, sect %d: received ULSCH harq_pid %d for UE %d, ret = %d, CQI CRC Status %d, ACK %d,%d, ulsch_errors %d/%d\n", 
+#ifdef DEBUG_PHY_PROC
+      LOG_D(PHY,"[eNB %d] Frame %d subframe %d, sect %d: received ULSCH harq_pid %d for UE %d, ret = %d, CQI CRC Status %d, ACK %d,%d, ulsch_errors %d/%d\n", 
 	    phy_vars_eNB->Mod_id,frame,subframe,
 	    phy_vars_eNB->eNB_UE_stats[i].sector, 
 	    harq_pid, 
@@ -3258,7 +3258,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	    phy_vars_eNB->ulsch_eNB[i]->o_ACK[1], 
 	    phy_vars_eNB->eNB_UE_stats[i].ulsch_errors[harq_pid],
 	    phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][0]);
-      //#endif
+#endif
 
     }
 
@@ -3317,7 +3317,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 #endif
 
 	  if (SR_payload == 1) {
-	    LOG_I(PHY,"[eNB %d][SR %x] Frame %d subframe %d Got SR for PUSCH, transmitting to MAC\n",phy_vars_eNB->Mod_id,
+	    LOG_D(PHY,"[eNB %d][SR %x] Frame %d subframe %d Got SR for PUSCH, transmitting to MAC\n",phy_vars_eNB->Mod_id,
 		  phy_vars_eNB->ulsch_eNB[i]->rnti,frame,subframe);
 	    phy_vars_eNB->eNB_UE_stats[i].sr_received++;
 	    if (phy_vars_eNB->first_sr[i] == 1) { // this is the first request for uplink after Connection Setup, so clear HARQ process 0 use for Msg4
@@ -3361,7 +3361,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 #endif
 	  }	
 #ifdef DEBUG_PHY_PROC	  
-	  LOG_I(PHY,"[eNB %d][PDSCH %x] Frame %d subframe %d pucch1a (FDD) payload %d (metric %d)\n",
+	  LOG_D(PHY,"[eNB %d][PDSCH %x] Frame %d subframe %d pucch1a (FDD) payload %d (metric %d)\n",
 		phy_vars_eNB->Mod_id,
 		phy_vars_eNB->dlsch_eNB[i][0]->rnti,
 		frame,subframe,
@@ -3395,7 +3395,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	  // if SR was detected, use the n1_pucch from SR
 	  if (SR_payload==1) {
 #ifdef DEBUG_PHY_PROC	  
-	    LOG_I(PHY,"[eNB %d][PDSCH %x] Frame %d subframe %d Checking ACK/NAK (%d,%d,%d,%d) format %d with SR\n",phy_vars_eNB->Mod_id,
+	    LOG_D(PHY,"[eNB %d][PDSCH %x] Frame %d subframe %d Checking ACK/NAK (%d,%d,%d,%d) format %d with SR\n",phy_vars_eNB->Mod_id,
 		  phy_vars_eNB->dlsch_eNB[i][0]->rnti,
 		  frame,subframe,
 		  n1_pucch0,n1_pucch1,n1_pucch2,n1_pucch3,format);
@@ -3422,7 +3422,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	  }
 	  else {  //using n1_pucch0/n1_pucch1 resources
 #ifdef DEBUG_PHY_PROC	  
-	    LOG_I(PHY,"[eNB %d][PDSCH %x] Frame %d subframe %d Checking ACK/NAK (%d,%d,%d,%d) format %d\n",phy_vars_eNB->Mod_id,
+	    LOG_D(PHY,"[eNB %d][PDSCH %x] Frame %d subframe %d Checking ACK/NAK (%d,%d,%d,%d) format %d\n",phy_vars_eNB->Mod_id,
 		  phy_vars_eNB->dlsch_eNB[i][0]->rnti,
 		  frame,subframe,
 		  n1_pucch0,n1_pucch1,n1_pucch2,n1_pucch3,format);
@@ -3496,7 +3496,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	    pucch_sel = 2;  // indicate that this is a bundled ACK/NAK  
 	  }
 #ifdef DEBUG_PHY_PROC	  
-	  LOG_I(PHY,"[eNB %d][PDSCH %x] Frame %d subframe %d ACK/NAK metric 0 %d, metric 1 %d, sel %d, (%d,%d)\n",phy_vars_eNB->Mod_id,
+	  LOG_D(PHY,"[eNB %d][PDSCH %x] Frame %d subframe %d ACK/NAK metric 0 %d, metric 1 %d, sel %d, (%d,%d)\n",phy_vars_eNB->Mod_id,
 		phy_vars_eNB->dlsch_eNB[i][0]->rnti,
 		frame,subframe,
 		metric0,metric1,pucch_sel,pucch_payload[0],pucch_payload[1]);
@@ -3648,7 +3648,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 #endif
 #endif
 	if (access_mode > UNKNOWN_ACCESS){
-	  LOG_I(PHY,"[eNB %d] Frame %d, Subframe %d : received ULSCH SDU from CBA transmission, UE (%d,%x), CBA (group %d, rnti %x)\n", 
+	  LOG_D(PHY,"[eNB %d] Frame %d, Subframe %d : received ULSCH SDU from CBA transmission, UE (%d,%x), CBA (group %d, rnti %x)\n", 
 		phy_vars_eNB->Mod_id, frame,subframe,
 		i, phy_vars_eNB->ulsch_eNB[i]->rnti,
 		i % phy_vars_eNB->ulsch_eNB[i]->num_active_cba_groups, phy_vars_eNB->ulsch_eNB[i]->cba_rnti[i%num_active_cba_groups]);
@@ -3781,7 +3781,7 @@ void phy_procedures_eNB_lte(unsigned char subframe,PHY_VARS_eNB **phy_vars_eNB,u
 
       case PHY_MEAS_THRESHOLD_REQ:
 #warning "TO DO LIST OF THRESHOLDS"
-	LOG_I(PHY, "[ENB %d] Received %s\n", Mod_id, msg_name);
+	LOG_D(PHY, "[ENB %d] Received %s\n", Mod_id, msg_name);
 	{
 	  ral_threshold_phy_t* threshold_phy_p  = NULL;
 	  int                  index, res;

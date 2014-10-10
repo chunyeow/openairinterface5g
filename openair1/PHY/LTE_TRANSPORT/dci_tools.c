@@ -3930,7 +3930,7 @@ void fill_CQI(void *o,UCI_format_t uci_format,PHY_MEASUREMENTS *meas,uint8_t eNB
   else
     sinr_tmp = (double) meas->wideband_cqi_avg[eNB_id];
 
-  LOG_I(PHY,"Filling CQI %f for eNB %d\n",sinr_tmp,eNB_id);
+  //LOG_I(PHY,"Filling CQI %f for eNB %d\n",sinr_tmp,eNB_id);
 
   switch (uci_format) {
   case wideband_cqi_rank1_2A:
@@ -3963,7 +3963,7 @@ void fill_CQI(void *o,UCI_format_t uci_format,PHY_MEASUREMENTS *meas,uint8_t eNB
     // this is the cba mcs uci for cba transmission 
     ((HLC_subband_cqi_mcs_CBA_5MHz *)o)->mcs     = 2; //fixme
     ((HLC_subband_cqi_mcs_CBA_5MHz *)o)->crnti  = rnti;
-    LOG_I(PHY,"fill uci for cba rnti %x, mcs %d \n", rnti, 2);
+    LOG_D(PHY,"fill uci for cba rnti %x, mcs %d \n", rnti, 2);
     break;
   case ue_selected:
     LOG_E(PHY,"fill_CQI ue_selected CQI not supported yet!!!\n");
@@ -4521,10 +4521,10 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
   //  uint32_t hopping;
   //  uint32_t type;
 
-  //#ifdef DEBUG_DCI
-  LOG_I(PHY,"filling eNB ulsch params for rnti %x, dci format %d, dci %x, subframe %d\n",
+#ifdef DEBUG_DCI
+  LOG_D(PHY,"filling eNB ulsch params for rnti %x, dci format %d, dci %x, subframe %d\n",
       rnti,dci_format,*(uint32_t*)dci_pdu,subframe);
-  //#endif
+#endif
 
   if (dci_format == format0) {
 
@@ -4660,9 +4660,9 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
       return(-1);
     }
 
-    //#ifdef DEBUG_DCI
-    LOG_I(PHY,"generate_eNB_ulsch_params_from_dci: subframe %d, rnti %x,harq_pid %d,ndi %d,cqi_req %d\n",subframe,rnti,harq_pid,ndi,cqi_req);
-    //#endif
+#ifdef DEBUG_DCI
+    LOG_D(PHY,"generate_eNB_ulsch_params_from_dci: subframe %d, rnti %x,harq_pid %d,ndi %d,cqi_req %d\n",subframe,rnti,harq_pid,ndi,cqi_req);
+#endif
 
     ulsch->harq_processes[harq_pid]->dci_alloc                             = 1;
     ulsch->harq_processes[harq_pid]->rar_alloc                             = 0;

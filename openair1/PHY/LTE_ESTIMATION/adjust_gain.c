@@ -80,7 +80,7 @@ phy_adjust_gain (PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id) {
     phy_vars_ue->rx_total_gain_dB = MIN_RF_GAIN;
   }
 
-  printf("Gain control: rx_total_gain_dB = %d (max %d,rxpf %d)\n",phy_vars_ue->rx_total_gain_dB,MAX_RF_GAIN,rx_power_fil_dB);
+  LOG_D(PHY,"Gain control: rx_total_gain_dB = %d (max %d,rxpf %d)\n",phy_vars_ue->rx_total_gain_dB,MAX_RF_GAIN,rx_power_fil_dB);
 
 #ifdef EXMIMO
 
