@@ -36,7 +36,7 @@
 #include <map>
 #include <stdio.h>
 #include <time.h>
-
+#include <unistd.h>
 ///////////////////////////////////////////////////////////////////////////////
 
 // Definition of the scenario to execute
@@ -1372,6 +1372,14 @@ void mih_user::receive_MIH_Link_Actions_confirm(odtone::mih::message& msg)
 // #endif // SCENARIO_2
 
 	log_(0, "MIH_Link_Actions.confirm - End\n");
+        if( second_link_activated == 1 )
+	{
+		unsigned int pause_time = 30; // in seconds to show the result of the demo then proceed
+		log_(0, "\n\n\n\n\t----- Confirmed Configuration of LTE Link for TVWS -----\n");
+		log_(0, "\n\t----- END OF SPECTRA DEMO ! -----\n");
+		log_(0, "\n\n MIH User regular function will resume in (secs) : ", pause_time );
+		usleep(pause_time * 1000000);
+	}
 }
 
 // void mih_user::cognitive_decision()
@@ -1454,13 +1462,13 @@ void mih_user::receive_MIH_MN_HO_Candidate_Query_request(odtone::mih::message& m
 //                 send_MIH_Link_Actions_request(link, odtone::mih::link_ac_type_power_up);
 
                 //Send ONLY ONCE RRC_Connection_Reconfiguration request to the UE on LTE link 0
-               		 log_(0, "COUNT: ", count );
+//               		 log_(0, "COUNT: ", count );
                 if (second_link_activated==0)
                 {
-               		 log_(0, "COUNT: ", count );
-                    if (count  >= 30)
+//               		 log_(0, "COUNT: ", count );
+                    if (count  >= 750)
                     {
-               		 log_(0, "COUNT: ", count );
+//               		 log_(0, "COUNT: ", count );
                     send_MIH_Link_Action_Power_Up_request(_link_id_list[0]);//Link LTE
                     second_link_activated = 1;
                     }

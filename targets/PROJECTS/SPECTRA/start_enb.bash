@@ -68,8 +68,8 @@ source $THIS_SCRIPT_PATH/env_802dot21.bash
 ###########################################################
 bash_exec "ifconfig $EMULATION_DEV_INTERFACE up $EMULATION_DEV_ADDRESS netmask 255.255.255.0"
 bash_exec "ifconfig eth2 up 192.168.14.3 netmask 255.255.255.0"
-bash_exec "ip r d default dev eth0"
-bash_exec "ip r a default via 192.168.14.4 dev eth2"
+#bash_exec "ip r d default dev eth0"
+#bash_exec "ip r a default via 192.168.14.4 dev eth2"
 ###########################################################
 IPTABLES=/sbin/iptables
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
