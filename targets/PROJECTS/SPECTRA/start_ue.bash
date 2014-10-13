@@ -36,13 +36,13 @@
 #------------------------------------------------
 # OAI NETWORKING
 #------------------------------------------------
-declare -x EMULATION_DEV_INTERFACE="eth0"
-declare -x EMULATION_DEV_ADDRESS="192.168.13.2"
+declare -x EMULATION_DEV_INTERFACE="eth2"
+declare -x EMULATION_DEV_ADDRESS="192.168.14.3"
 
 declare -x IP_DRIVER_NAME="oai_nw_drv"
 declare -x LTEIF="oai0"
-declare -x UE_IPv4="10.0.0.2"
-declare -x UE_IPv6="2001:1::2"
+declare -x UE_IPv4="10.0.2.3"
+declare -x UE_IPv6="2001:2::3"
 declare -x UE_IPv6_CIDR=$UE_IPv6"/64"
 declare -x UE_IPv4_CIDR=$UE_IPv4"/24"
 declare -a NAS_IMEI=( 3 9 1 8 3 6 7 3 0 2 0 0 0 0 )
@@ -51,21 +51,23 @@ declare -x IP_DEFAULT_MARK="1" # originally 3
 #------------------------------------------------
 # OAI MIH
 #------------------------------------------------
-declare -x UE_MIHF_IP_ADDRESS="127.0.0.1"
-declare -x UE_RAL_IP_ADDRESS="127.0.0.1"
+declare -x UE_MIHF_IP_ADDRESS="192.168.14.3"
+declare -x UE_RAL_IP_ADDRESS="192.168.14.3"
 LOG_FILE="/tmp/oai_sim_ue.log"
 
 #------------------------------------------------
 MIH_LOG_FILE="mih-f_ue.log"
 
 # EXE options
-EXE_MODE="DEBUG" # "PROD"
+EXE_MODE="DEBUG" # "PROD" or "DEBUG"
 
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/env_802dot21.bash
 ###########################################################
+bash_exec "service network-manager stop"
 bash_exec "ifconfig $EMULATION_DEV_INTERFACE up $EMULATION_DEV_ADDRESS netmask 255.255.255.0"
+#bash_exec "ifconfig eth1 up 192.168.57.3 netmask 255.255.255.0"
 ###########################################################
 IPTABLES=/sbin/iptables
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
@@ -97,10 +99,10 @@ rmmod -f $IP_DRIVER_NAME > /dev/null 2>&1
 
 bash_exec "insmod  $OPENAIR2_DIR/NAS/DRIVER/LITE/$IP_DRIVER_NAME.ko oai_nw_drv_IMEI=${NAS_IMEI[0]},${NAS_IMEI[1]},${NAS_IMEI[2]},${NAS_IMEI[3]},${NAS_IMEI[4]},${NAS_IMEI[5]},${NAS_IMEI[6]},${NAS_IMEI[7]},${NAS_IMEI[8]},${NAS_IMEI[9]},${NAS_IMEI[10]},${NAS_IMEI[11]},${NAS_IMEI[12]},${NAS_IMEI[13]}"
 bash_exec "ip route flush cache"
-bash_exec "ip link set $LTEIF up"
-sleep 1
-bash_exec "ip addr add dev $LTEIF $UE_IPv4_CIDR"
-bash_exec "ip addr add dev $LTEIF $UE_IPv6_CIDR"
+#bash_exec "ip link set $LTEIF up"
+#sleep 1
+#bash_exec "ip addr add dev $LTEIF $UE_IPv4_CIDR"
+#bash_exec "ip addr add dev $LTEIF $UE_IPv6_CIDR"
 sleep 1
 bash_exec "sysctl -w net.ipv4.conf.all.log_martians=1"
 assert "  `sysctl -n net.ipv4.conf.all.log_martians` -eq 1" $LINENO
@@ -139,7 +141,7 @@ echo "$ODTONE_MIH_EXE_DIR/$MIH_F $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE"
 echo "$ODTONE_MIH_EXE_DIR/$UE_MIH_USER $ODTONE_MIH_EXE_DIR/$UE_MIH_USER_CONF_FILE"
 
 # start MIH-F
-xterm -hold -e $ODTONE_MIH_EXE_DIR/$MIH_F --log 4 --conf.file $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE > $MIH_LOG_FILE 2>&1 &
+xterm -hold -title "[RELAY][UE] MIHF" -e $ODTONE_MIH_EXE_DIR/$MIH_F --log 4 --conf.file $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE > $MIH_LOG_FILE 2>&1 &
 wait_process_started $MIH_F
 sleep 3
 
@@ -165,19 +167,24 @@ UE_MIHF_ID=`cat $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE | grep id | grep \= | gr
 #$OPENAIR2_DIR/NAS/DRIVER/LITE/RB_TOOL/rb_tool -a -c0 -i0 -z0 -s 10.0.0.2 -t 10.0.0.1 -r 1
 
 if [ $EXE_MODE = "DEBUG" ] ; then 
-	echo "$OPENAIR_TARGETS/SIMU/USER/oaisim -a -K $LOG_FILE -l7 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_ADDRESS --ue-ral-listening-port   $UE_RAL_LISTENING_PORT --ue-ral-link-id          $UE_RAL_LINK_ID_STRIPPED  --ue-ral-ip-address       $UE_RAL_IP_ADDRESS  --ue-mihf-remote-port     $UE_MIHF_REMOTE_PORT --ue-mihf-ip-address      $UE_MIHF_IP_ADDRESS --ue-mihf-id              $UE_MIHF_ID "
+	echo "$OPENAIR_TARGETS/SIMU/USER/oaisim -a -K $LOG_FILE -l7 -u1 -b0 -M1 -p2 -g3 -D $EMULATION_DEV_ADDRESS --ue-ral-listening-port   $UE_RAL_LISTENING_PORT --ue-ral-link-id          $UE_RAL_LINK_ID_STRIPPED  --ue-ral-ip-address       $UE_RAL_IP_ADDRESS  --ue-mihf-remote-port     $UE_MIHF_REMOTE_PORT --ue-mihf-ip-address      $UE_MIHF_IP_ADDRESS --ue-mihf-id              $UE_MIHF_ID "
 
-	$OPENAIR_TARGETS/SIMU/USER/oaisim -a -K $LOG_FILE -l7 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_ADDRESS  \
+	$OPENAIR_TARGETS/SIMU/USER/oaisim -a -K $LOG_FILE -l7 -u1 -b0 -M1 -p2 -g3 -D $EMULATION_DEV_INTERFACE  \
              --ue-ral-listening-port   $UE_RAL_LISTENING_PORT \
              --ue-ral-link-id          $UE_RAL_LINK_ID_STRIPPED \
              --ue-ral-ip-address       $UE_RAL_IP_ADDRESS \
              --ue-mihf-remote-port     $UE_MIHF_REMOTE_PORT \
              --ue-mihf-ip-address      $UE_MIHF_IP_ADDRESS \
              --ue-mihf-id              $UE_MIHF_ID  > log_ue.txt &
-else 
-	echo "$OPENAIR_TARGETS/SIMU/USER/oaisim -a -l3 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_ADDRESS --ue-ral-listening-port   $UE_RAL_LISTENING_PORT --ue-ral-link-id          $UE_RAL_LINK_ID_STRIPPED  --ue-ral-ip-address       $UE_RAL_IP_ADDRESS  --ue-mihf-remote-port     $UE_MIHF_REMOTE_PORT --ue-mihf-ip-address      $UE_MIHF_IP_ADDRESS --ue-mihf-id              $UE_MIHF_ID "
 
-      $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_ADDRESS  \
+bash_exec "ip link set $LTEIF up"
+bash_exec "ip addr add dev $LTEIF $UE_IPv4_CIDR"
+bash_exec "ip addr add dev $LTEIF $UE_IPv6_CIDR"
+
+else 
+	echo "$OPENAIR_TARGETS/SIMU/USER/oaisim -a -l3 -u1 -b0 -M1 -p2 -g3 -D $EMULATION_DEV_ADDRESS --ue-ral-listening-port   $UE_RAL_LISTENING_PORT --ue-ral-link-id          $UE_RAL_LINK_ID_STRIPPED  --ue-ral-ip-address       $UE_RAL_IP_ADDRESS  --ue-mihf-remote-port     $UE_MIHF_REMOTE_PORT --ue-mihf-ip-address      $UE_MIHF_IP_ADDRESS --ue-mihf-id              $UE_MIHF_ID "
+
+      $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_INTERFACE  \
              --ue-ral-listening-port   $UE_RAL_LISTENING_PORT \
              --ue-ral-link-id          $UE_RAL_LINK_ID_STRIPPED \
              --ue-ral-ip-address       $UE_RAL_IP_ADDRESS \
@@ -196,7 +203,7 @@ wait_process_started oaisim
 tshark -c 500 -i $EMULATION_DEV_INTERFACE > /dev/null 2>&1
 sleep 5
 
-xterm -hold -e $ODTONE_MIH_EXE_DIR/$UE_MIH_USER --conf.file $ODTONE_MIH_EXE_DIR/$UE_MIH_USER_CONF_FILE &
+xterm -hold -title "[RELAY][UE] MIH_USER" -e $ODTONE_MIH_EXE_DIR/$UE_MIH_USER --conf.file $ODTONE_MIH_EXE_DIR/$UE_MIH_USER_CONF_FILE &
 wait_process_started $UE_MIH_USER
 
 sleep 100000
