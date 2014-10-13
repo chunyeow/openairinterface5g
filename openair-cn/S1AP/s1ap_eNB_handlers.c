@@ -71,6 +71,11 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
                                             uint32_t               stream,
                                             struct s1ap_message_s *message_p);
 
+static
+int s1ap_eNB_handle_ue_context_release(uint32_t               assoc_id,
+                                            uint32_t               stream,
+                                            struct s1ap_message_s *s1ap_message_p);
+
 /* Handlers matrix. Only eNB related procedure present here */
 s1ap_message_decoded_callback messages_callback[][3] = {
     { 0, 0, 0 }, /* HandoverPreparation */
@@ -96,7 +101,7 @@ s1ap_message_decoded_callback messages_callback[][3] = {
     { 0, 0, 0 }, /* UplinkS1cdma2000tunneling */
     { 0, 0, 0 }, /* UEContextModification */
     { 0, 0, 0 }, /* UECapabilityInfoIndication */
-    { 0, 0, 0 }, /* UEContextRelease */
+    { s1ap_eNB_handle_ue_context_release, 0, 0 }, /* UEContextRelease */
     { 0, 0, 0 }, /* eNBStatusTransfer */
     { 0, 0, 0 }, /* MMEStatusTransfer */
     { s1ap_eNB_handle_deactivate_trace, 0, 0 }, /* DeactivateTrace */
@@ -511,3 +516,32 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
 
     return 0;
 }
+
+
+static
+int s1ap_eNB_handle_ue_context_release(uint32_t               assoc_id,
+                                            uint32_t               stream,
+                                            struct s1ap_message_s *s1ap_message_p)
+{
+    int i;
+
+    s1ap_eNB_mme_data_t   *mme_desc_p       = NULL;
+    s1ap_eNB_ue_context_t *ue_desc_p        = NULL;
+    MessageDef            *message_p        = NULL;
+
+    S1ap_UEContextReleaseCommandIEs_t *ueContextReleaseCommand_p;
+    DevAssert(s1ap_message_p != NULL);
+
+    ueContextReleaseCommand_p = &s1ap_message_p->msg.s1ap_UEContextReleaseCommandIEs;
+
+    if ((mme_desc_p = s1ap_eNB_get_MME(NULL, assoc_id, 0)) == NULL) {
+        S1AP_ERROR("[SCTP %d] Received UE context release command for non "
+                   "existing MME context\n", assoc_id);
+        return -1;
+    }
+
+#warning "TODO"
+    S1AP_ERROR("s1ap_eNB_handle_ue_context_release to be continued\n");
+    return 0;
+}
+

@@ -66,9 +66,20 @@ static int s1ap_eNB_decode_initiating_message(s1ap_message *message,
     {
         case S1ap_ProcedureCode_id_downlinkNASTransport:
             ret = s1ap_decode_s1ap_downlinknastransporties(
-                &message->msg.s1ap_DownlinkNASTransportIEs, &initiating_p->value);
-            s1ap_xer_print_s1ap_downlinknastransport(s1ap_xer__print2sp, message_string, message);
-            message_id = S1AP_DOWNLINK_NAS_LOG;
+                &message->msg.s1ap_DownlinkNASTransportIEs,
+                &initiating_p->value);
+            s1ap_xer_print_s1ap_downlinknastransport(s1ap_xer__print2sp,
+                    message_string,
+                    message);
+            message_id          = S1AP_DOWNLINK_NAS_LOG;
+            message_string_size = strlen(message_string);
+            message_p           = itti_alloc_new_message_sized(TASK_S1AP,
+                    message_id,
+                    message_string_size + sizeof (IttiMsgText));
+            message_p->ittiMsg.s1ap_downlink_nas_log.size = message_string_size;
+            memcpy(&message_p->ittiMsg.s1ap_downlink_nas_log.text, message_string, message_string_size);
+            itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+            free(message_string);
             break;
 
         case S1ap_ProcedureCode_id_InitialContextSetup:
@@ -76,6 +87,29 @@ static int s1ap_eNB_decode_initiating_message(s1ap_message *message,
                 &message->msg.s1ap_InitialContextSetupRequestIEs, &initiating_p->value);
             s1ap_xer_print_s1ap_initialcontextsetuprequest(s1ap_xer__print2sp, message_string, message);
             message_id = S1AP_INITIAL_CONTEXT_SETUP_LOG;
+            message_string_size = strlen(message_string);
+            message_p           = itti_alloc_new_message_sized(TASK_S1AP,
+                    message_id,
+                    message_string_size + sizeof (IttiMsgText));
+            message_p->ittiMsg.s1ap_initial_context_setup_log.size = message_string_size;
+            memcpy(&message_p->ittiMsg.s1ap_initial_context_setup_log.text, message_string, message_string_size);
+            itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+            free(message_string);
+            break;
+
+        case S1ap_ProcedureCode_id_UEContextRelease:
+            ret = s1ap_decode_s1ap_uecontextreleasecommandies(
+                &message->msg.s1ap_UEContextReleaseCommandIEs, &initiating_p->value);
+            s1ap_xer_print_s1ap_uecontextreleasecommand(s1ap_xer__print2sp, message_string, message);
+            message_id = S1AP_UE_CONTEXT_RELEASE_COMMAND_LOG;
+            message_string_size = strlen(message_string);
+            message_p           = itti_alloc_new_message_sized(TASK_S1AP,
+                    message_id,
+                    message_string_size + sizeof (IttiMsgText));
+            message_p->ittiMsg.s1ap_ue_context_release_command_log.size = message_string_size;
+            memcpy(&message_p->ittiMsg.s1ap_ue_context_release_command_log.text, message_string, message_string_size);
+            itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+            free(message_string);
             break;
 
         default:
@@ -86,15 +120,7 @@ static int s1ap_eNB_decode_initiating_message(s1ap_message *message,
             return -1;
     }
 
-    message_string_size = strlen(message_string);
 
-    message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
-    message_p->ittiMsg.s1ap_downlink_nas_log.size = message_string_size;
-    memcpy(&message_p->ittiMsg.s1ap_downlink_nas_log.text, message_string, message_string_size);
-
-    itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
-
-    free(message_string);
 
     return ret;
 }
