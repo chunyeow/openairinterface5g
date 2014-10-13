@@ -6,8 +6,8 @@
 #
 #
 #
-SCRIPT_VERSION="v1.11"
-DATE="01 Oct 2014"
+SCRIPT_VERSION="v1.12"
+DATE="13 Oct 2014"
 AUTHOR="Rui Costa"
 EMAIL="ferreira@eurecom.fr"
 ########################################
