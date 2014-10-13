@@ -1,0 +1,10 @@
+<backends>
+ <backend name="back">
+   <class>B1</class>
+   <instances>1</instances>
+    <options>
+     <dynamic>false</dynamic>
+	<public>true</public>
+   </options>
+ </backend>
+</backends>
