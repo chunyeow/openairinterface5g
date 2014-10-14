@@ -1794,7 +1794,41 @@ uint16_t do_RRCConnectionReconfiguration(uint8_t                             Mod
   return((enc_rval.encoded+7)/8);
 }
 
+uint8_t do_RRCConnectionRelease(uint8_t                             Mod_id,
+				uint8_t                            *buffer,
+				uint8_t                             Transaction_id) {
+
+  asn_enc_rval_t enc_rval;
+  
+  DL_DCCH_Message_t dl_dcch_msg;
+  RRCConnectionRelease_t *rrcConnectionRelease;
+
+  
+  memset(&dl_dcch_msg,0,sizeof(DL_DCCH_Message_t));
+
+  dl_dcch_msg.message.present           = DL_DCCH_MessageType_PR_c1;
+  dl_dcch_msg.message.choice.c1.present = DL_DCCH_MessageType__c1_PR_rrcConnectionReconfiguration;
+  rrcConnectionRelease                  = &dl_dcch_msg.message.choice.c1.choice.rrcConnectionRelease;
+
+  // RRCConnectionRelease
+  rrcConnectionRelease->rrc_TransactionIdentifier = Transaction_id;
+  rrcConnectionRelease->criticalExtensions.present = RRCConnectionRelease__criticalExtensions_PR_c1;
+  rrcConnectionRelease->criticalExtensions.choice.c1.present =RRCConnectionRelease__criticalExtensions__c1_PR_rrcConnectionRelease_r8 ;
+
+  rrcConnectionRelease->criticalExtensions.choice.c1.choice.rrcConnectionRelease_r8.releaseCause = ReleaseCause_other;
+  rrcConnectionRelease->criticalExtensions.choice.c1.choice.rrcConnectionRelease_r8.redirectedCarrierInfo = NULL;
+  rrcConnectionRelease->criticalExtensions.choice.c1.choice.rrcConnectionRelease_r8.idleModeMobilityControlInfo = NULL;
+
+  rrcConnectionRelease->criticalExtensions.choice.c1.choice.rrcConnectionRelease_r8.nonCriticalExtension=CALLOC(1,sizeof(*rrcConnectionRelease->criticalExtensions.choice.c1.choice.rrcConnectionRelease_r8.nonCriticalExtension));
+
+  enc_rval = uper_encode_to_buffer(&asn_DEF_DL_DCCH_Message,
+                                   (void*)&dl_dcch_msg,
+                                   buffer,
+                                   RRC_BUF_SIZE); 
+}
+
 uint8_t TMGI[5] = {4,3,2,1,0};//TMGI is a string of octet, ref. TS 24.008 fig. 10.5.4a
+
 
 #ifdef Rel10
 uint8_t do_MBSFNAreaConfig(uint8_t Mod_id,

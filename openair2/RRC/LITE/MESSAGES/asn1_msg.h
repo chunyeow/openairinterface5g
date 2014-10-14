@@ -196,6 +196,16 @@ uint16_t do_RRCConnectionReconfiguration(uint8_t                             Mod
 #endif
 					 );
 
+/** 
+\brief Generate an RRCConnectionRequest UL-CCCH-Message (UE) based on random string or S-TMSI.  This 
+routine only generates an mo-data establishment cause.
+@param Mod_id Module ID of eNB
+@param buffer Pointer to PER-encoded ASN.1 description of UL-DCCH-Message PDU
+@param transaction_id Transaction index
+@returns Size of encoded bit stream in bytes*/
+
+uint8_t do_RRCConnectionRelease(uint8_t Mod_id, uint8_t *buffer,int Transaction_id);
+
 /***
  * \brief Generate an MCCH-Message (eNB). This routine configures MBSFNAreaConfiguration (PMCH-InfoList and Subframe Allocation for MBMS data)
  * @param buffer Pointer to PER-encoded ASN.1 description of MCCH-Message PDU

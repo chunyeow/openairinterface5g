@@ -604,6 +604,12 @@ void rrc_eNB_process_RRCConnectionSetupComplete(module_id_t module_idP, frame_t 
    \param rrcConnectionReconfigurationComplete Pointer to RRCConnectionReconfigurationComplete message*/
 void rrc_eNB_process_RRCConnectionReconfigurationComplete(module_id_t module_idP,frame_t frameP,module_id_t ue_module_idP,RRCConnectionReconfigurationComplete_r8_IEs_t *rrcConnectionReconfigurationComplete);
 
+/**\brief Generate the RRCConnectionRelease 
+   \param module_idP Instance ID for eNB
+   \param frame Frame index
+   \param ue_module_idP Index of UE receiving the message*/
+void rrc_eNB_generate_RRCConnectionRelease(module_id_t module_idP,frame_t frameP, ue_id_t ue_idP);
+
 #if defined(ENABLE_ITTI)
 /**\brief RRC eNB task.
    \param void *args_p Pointer on arguments to start the task. */
