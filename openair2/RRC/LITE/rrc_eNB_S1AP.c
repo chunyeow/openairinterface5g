@@ -768,6 +768,7 @@ int rrc_eNB_process_S1AP_UE_CTXT_MODIFICATION_REQ(MessageDef *msg_p, const char 
 }
 
 /*------------------------------------------------------------------------------*/
+#warning "LG Note this message is only from eNB to MME, proc to be deleted"
 int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_REQ (MessageDef *msg_p, const char *msg_name, instance_t instance) {
   uint32_t eNB_ue_s1ap_id;
   uint8_t ue_index;
@@ -806,6 +807,51 @@ int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_REQ (MessageDef *msg_p, const char *
     return (0);
   }
 }
+
+/*------------------------------------------------------------------------------*/
+int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_COMMAND (MessageDef *msg_p, const char *msg_name, instance_t instance) {
+  uint32_t eNB_ue_s1ap_id;
+  uint8_t ue_index;
+
+  eNB_ue_s1ap_id = S1AP_UE_CONTEXT_RELEASE_COMMAND(msg_p).eNB_ue_s1ap_id;
+  ue_index = get_UE_index_from_eNB_ue_s1ap_id(instance, eNB_ue_s1ap_id);
+
+  if (ue_index == UE_INDEX_INVALID) {
+    /* Can not associate this message to an UE index */
+    MessageDef *msg_complete_p;
+
+    LOG_W(RRC,
+            "[eNB %d] In S1AP_UE_CONTEXT_RELEASE_COMMAND: unknown UE from eNB_ue_s1ap_id (%d) for eNB %d\n",
+            instance,
+            eNB_ue_s1ap_id);
+
+    msg_complete_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_UE_CONTEXT_RELEASE_COMPLETE);
+    S1AP_UE_CONTEXT_RELEASE_COMPLETE(msg_complete_p).eNB_ue_s1ap_id = eNB_ue_s1ap_id;
+    itti_send_msg_to_task(TASK_S1AP, instance, msg_complete_p);
+
+    return (-1);
+  }
+  else {
+#warning "TO DO"
+    // rrc_eNB_connection_release(instance, ue_index))
+      LOG_W(RRC,
+              "[eNB %d] In S1AP_UE_CONTEXT_RELEASE_COMMAND: TODO call rrc_eNB_connection_release for eNB %d\n",
+              instance,
+              ue_index);
+   /* Send tmp response if rrc_eNB_connection_release not coded*/
+    {
+      MessageDef *msg_complete_p;
+
+      msg_complete_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_UE_CONTEXT_RELEASE_COMPLETE);
+      S1AP_UE_CONTEXT_RELEASE_COMPLETE(msg_complete_p).eNB_ue_s1ap_id = eNB_ue_s1ap_id;
+
+      itti_send_msg_to_task(TASK_S1AP, instance, msg_complete_p);
+    }
+
+    return (0);
+  }
+}
+
 
 # endif /* defined(ENABLE_ITTI) */
 #endif /* defined(ENABLE_USE_MME) */

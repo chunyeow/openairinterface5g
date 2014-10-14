@@ -52,6 +52,7 @@
 #define S1AP_INITIAL_CONTEXT_SETUP_REQ(mSGpTR)  (mSGpTR)->ittiMsg.s1ap_initial_context_setup_req
 #define S1AP_UE_CTXT_MODIFICATION_REQ(mSGpTR)   (mSGpTR)->ittiMsg.s1ap_ue_ctxt_modification_req
 #define S1AP_UE_CONTEXT_RELEASE_COMMAND(mSGpTR) (mSGpTR)->ittiMsg.s1ap_ue_release_command
+#define S1AP_UE_CONTEXT_RELEASE_COMPLETE(mSGpTR) (mSGpTR)->ittiMsg.s1ap_ue_release_complete
 #define S1AP_PAGIND_IND(mSGpTR)                 (mSGpTR)->ittiMsg.s1ap_paging_ind
 
 #define S1AP_UE_CONTEXT_RELEASE_REQ(mSGpTR)     (mSGpTR)->ittiMsg.s1ap_ue_release_req
@@ -414,6 +415,12 @@ typedef struct s1ap_ue_ctxt_modification_req_s {
 typedef struct s1ap_ue_ctxt_modification_resp_s {
     unsigned  eNB_ue_s1ap_id:24;
 } s1ap_ue_ctxt_modification_resp_t;
+
+typedef struct s1ap_ue_release_complete_s {
+
+    unsigned eNB_ue_s1ap_id:24;
+
+} s1ap_ue_release_complete_t;
 
 //-------------------------------------------------------------------------------------------//
 // S1AP -> RRC messages

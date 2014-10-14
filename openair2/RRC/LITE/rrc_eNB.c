@@ -3340,6 +3340,10 @@ void                               *rrc_enb_task(
                 rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_REQ(msg_p, msg_name_p, instance);
                 break;
 
+            case S1AP_UE_CONTEXT_RELEASE_COMMAND:
+                rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_COMMAND(msg_p, msg_name_p, instance);
+                break;
+
             case GTPV1U_ENB_CREATE_TUNNEL_RESP:
               rrc_eNB_process_GTPV1U_CREATE_TUNNEL_RESP(msg_p, msg_name_p, instance);
               break;
