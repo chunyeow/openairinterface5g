@@ -171,7 +171,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	}
 	
  	mod_order = get_Qm(dlsch->harq_processes[harq_pid]->mcs);
-	G = get_G(frame_parms,dlsch->nb_rb,dlsch->rb_alloc,mod_order,num_pdcch_symbols,0,subframe);
+	G = get_G(frame_parms,dlsch->nb_rb,dlsch->rb_alloc,mod_order,dlsch->harq_processes[harq_pid]->Nl,num_pdcch_symbols,0,subframe);
 	
 	#ifdef DEBUG_DLSCH_ENCODING
 	mexPrintf("dlsch->current_harq_pid = %d\n", dlsch->current_harq_pid);

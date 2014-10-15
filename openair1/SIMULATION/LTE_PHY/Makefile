@@ -102,7 +102,6 @@ endif
 
 include $(COMMON_UTILS_DIR)/Makefile.inc
 include $(TOP_DIR)/PHY/Makefile.inc
-SCHED_OBJS = $(TOP_DIR)/SCHED/phy_procedures_lte_common.o #$(TOP_DIR)/SCHED/phy_procedures_lte_eNb.o $(TOP_DIR)/SCHED/phy_procedures_lte_ue.o
 include $(TOP_DIR)/SCHED/Makefile.inc
 include $(TOP_DIR)/SIMULATION/Makefile.inc
 include $(OPENAIR2_DIR)/LAYER2/Makefile.inc
@@ -197,6 +196,9 @@ cleanall : clean
 showflags :
 	@echo $(CFLAGS)
 	@echo $(LFLAGS)
+
+showobj:
+	@echo $(SCHED_OBJS)
 
 run: syncsim
 	rtai-load --verbose

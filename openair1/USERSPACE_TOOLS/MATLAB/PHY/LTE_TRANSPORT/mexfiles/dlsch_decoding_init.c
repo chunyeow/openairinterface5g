@@ -12,7 +12,7 @@
 *
 ===============================================================================*/
 
-//#define DEBUG_DLSCH_DECODING_INIT
+#define DEBUG_DLSCH_DECODING_INIT
 
 void mexFunction( int mlhs, mxArray *plhs[],
                   int nrhs, const mxArray *prhs[]
@@ -20,7 +20,7 @@ void mexFunction( int mlhs, mxArray *plhs[],
 {
     extern int *pi2tab16[188],*pi5tab16[188],*pi4tab16[188],*pi6tab16[188];
     int i;        
-    unsigned int *ptr;
+    unsigned long *ptr; //hack for 64bit
     int **tmp[1];
     
     // Init CRC tables
@@ -28,7 +28,7 @@ void mexFunction( int mlhs, mxArray *plhs[],
 	init_td16();
     
     // assign output
-    plhs[0] = mxCreateNumericMatrix(4,1, mxUINT32_CLASS, mxREAL);
+    plhs[0] = mxCreateNumericMatrix(4,1, mxUINT64_CLASS, mxREAL);
     ptr = (unsigned int*) mxGetData(plhs[0]);
         
     tmp[0] = &pi2tab16[0];

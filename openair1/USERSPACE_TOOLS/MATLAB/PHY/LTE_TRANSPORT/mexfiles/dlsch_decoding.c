@@ -12,7 +12,7 @@
 *
 ===============================================================================*/
 
-//#define DEBUG_DLSCH_DECODING
+#define DEBUG_DLSCH_DECODING
 
 void mexFunction( int mlhs, mxArray *plhs[],
                   int nrhs, const mxArray *prhs[]
@@ -34,7 +34,7 @@ void mexFunction( int mlhs, mxArray *plhs[],
 	LTE_DL_FRAME_PARMS *frame_parms;
 	PHY_VARS_UE *phy_vars_ue;   
 	extern int *pi2tab16[188],*pi5tab16[188],*pi4tab16[188],*pi6tab16[188];
-    unsigned int *ptr_td;
+	unsigned long *ptr_td; //hack for 64bit
     int *tmp[1];
     
 	/* Allocate input */
@@ -107,7 +107,7 @@ void mexFunction( int mlhs, mxArray *plhs[],
 	
     
  	mod_order = get_Qm(dlsch->harq_processes[harq_pid]->mcs);
-	dlsch->harq_processes[harq_pid]->G = get_G(frame_parms,dlsch->harq_processes[harq_pid]->nb_rb,dlsch->harq_processes[harq_pid]->rb_alloc,mod_order,num_pdcch_symbols,0,subframe);
+	dlsch->harq_processes[harq_pid]->G = get_G(frame_parms,dlsch->harq_processes[harq_pid]->nb_rb,dlsch->harq_processes[harq_pid]->rb_alloc,mod_order,dlsch->harq_processes[harq_pid]->Nl,num_pdcch_symbols,0,subframe);
 
     #ifdef DEBUG_DLSCH_DECODING
     mexPrintf("TBS %d\n",dlsch->harq_processes[harq_pid]->TBS);
