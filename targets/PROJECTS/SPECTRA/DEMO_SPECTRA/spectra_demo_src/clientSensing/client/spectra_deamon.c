@@ -109,10 +109,10 @@ void *connection_handler(int fd) {
 
 	/* now loop, receiving data and printing what we received */
 	for (;;) {
-		printf("---\n Waiting on port %d\n", PORT);
+		printf("\n[SPECTRA Sensing Module]  Started!\n[SPECTRA Sensing Module] ---\n[SPECTRA Sensing Module]  Waiting on port %d\n", PORT);
 		recvlen = recvfrom(fd, rawPacket, MAX_PACKET_SIZE, 0,
 				(struct sockaddr *) &remaddr, &addrlen);
-		printf("Received %d bytes  > ", recvlen);
+		printf("\n[SPECTRA Sensing Module]  Received Data (%d bytes)  > ", recvlen);
 
 		for (i=0; i<recvlen;i++){
 		   printf("%x ", (rawPacket[i] & 0xff));
@@ -126,7 +126,7 @@ void *connection_handler(int fd) {
 		} else {
 
 			request = assembleMessage(&rawPacket);
-			printf(" > Received spectra packet %i of type %i for function %i with %i parameters\n",
+			printf("\n[SPECTRA Sensing Module]   > Received spectra packet %i of type %i for function %i with %i parameters\n",
 					request.messageID,
 					(uint32_t) request.type, (uint32_t) request.function,
 					(uint32_t) request.numberOfparameters);
@@ -135,7 +135,7 @@ void *connection_handler(int fd) {
 			if (request.type == EndProcessing) {
 
 				returnMessage = createReturnPacket(&request, 0, EndProcessing);
-				printf("End processing!!!\n");
+				printf("\n[SPECTRA Sensing Module]  Received: End of cognitive algorithm processing!\n");
 				fflush(stdout);
 			} else {
 				if (request.function == EnergyDetection) {
@@ -143,11 +143,11 @@ void *connection_handler(int fd) {
 					// circular loop over the score list
 					scoreIndex = (scoreIndex < (sizeof(scoresList)/ sizeof(scoresList[0]))) ?
 									scoreIndex : 0;
-
-					printf("Score value: %16llx (%lld)\n",
+					printf("\n[SPECTRA Sensing Module]  Received: Energy Detection Request!\n");
+					printf("\n[SPECTRA Sensing Module]  Processing Score value: %16llx (%lld)\n",
 							(long long int)scoresList[scoreIndex],
 							(long long int)scoresList[scoreIndex]);
-					printf("Score host to network value: 0x%016llx (%lld)\n",
+					printf("\n[SPECTRA Sensing Module]  Processing Score host to network value: 0x%016llx (%lld)\n",
 							(long long int)htonll(scoresList[scoreIndex]),
 							(long long int)htonll(scoresList[scoreIndex]));
 
@@ -157,6 +157,7 @@ void *connection_handler(int fd) {
 			}
 
 			// Sends the answer
+			printf("\n[SPECTRA Sensing Module]  Sending: Reply Message!\n");
 			int retError = returnSpectraPacket(returnMessage, fd, remaddr);
 			if (retError == -1) {
 				perror("Send failed!!!\n");
@@ -203,7 +204,7 @@ int socketBind() {
 		perror("bind failed");
 		return 0;
 	}
-	puts("bind done");
+	puts("\n[SPECTRA Sensing Module]  Initialization done");
 	return fd;
 }
 

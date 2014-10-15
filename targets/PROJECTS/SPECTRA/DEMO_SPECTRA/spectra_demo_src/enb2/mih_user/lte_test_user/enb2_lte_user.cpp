@@ -1372,13 +1372,15 @@ void mih_user::receive_MIH_Link_Actions_confirm(odtone::mih::message& msg)
 // #endif // SCENARIO_2
 
 	log_(0, "MIH_Link_Actions.confirm - End\n");
+    // ferreira: Added sleep time + exit + output to make visible the end of SPECTRA demo
         if( second_link_activated == 1 )
 	{
 		unsigned int pause_time = 30; // in seconds to show the result of the demo then proceed
 		log_(0, "\n\n\n\n\t----- Confirmed Configuration of LTE Link for TVWS -----\n");
 		log_(0, "\n\t----- END OF SPECTRA DEMO ! -----\n");
-		log_(0, "\n\n MIH User regular function will resume in (secs) : ", pause_time );
-		usleep(pause_time * 1000000);
+//		log_(0, "\n\n MIH User regular function will resume in (secs) : ", pause_time );
+//		usleep(pause_time * 1000000);
+		exit(1);
 	}
 }
 
@@ -1422,19 +1424,33 @@ void mih_user::receive_MIH_MN_HO_Candidate_Query_request(odtone::mih::message& m
            & odtone::mih::tlv_link_identifier(link)
            & odtone::mih::tlv_link_param_rpt_list(lprl);
 
-    log_(0, "MIH_MN_HO_Candidate_Query.request - RECEIVED - Begin");
-    log_(0, "\t- LINK CFG STATUS LIST - Length: ", lprl.size());
-    log_(0, "[MSC_MSG]["+getTimeStamp4Log()+"]["+ msg.source().to_string() +"][--- MIH_Link_Parameters_Report.indication --->]["+msg.destination().to_string()+"]\n");
-    log_(0, "  - LINK_TUPLE_ID - Link identifier:  ", link_id2string(link).c_str());
+//    log_(0, "MIH_MN_HO_Candidate_Query.request - RECEIVED - Begin");
+//    log_(0, "\t- LINK CFG STATUS LIST - Length: ", lprl.size());
+//    log_(0, "[MSC_MSG]["+getTimeStamp4Log()+"]["+ msg.source().to_string() +"][--- MIH_Link_Parameters_Report.indication --->]["+msg.destination().to_string()+"]\n");
+//    log_(0, "  - LINK_TUPLE_ID - Link identifier:  ", link_id2string(link).c_str());
+//    
+//     for (odtone::mih::link_param_rpt_list::iterator i=lprl.begin(); i!=lprl.end(); i++)
+//    {
+//            log_(0, "Meausrement Type: --- 0 => RSRP  ----- 1=>RSRQ  ---- 2=>CQI  ", i->param.type);
+//            if(odtone::mih::link_param_val *value = boost::get<odtone::mih::link_param_val>(&i->param.value))
+//            {
+//                log_(0, "Meausrement Value: ", (short) *value );
+//            }
+//    }
+
+
+    // ferreira: changed output of message for better readability!    
+    log_(0, "\n["+getTimeStamp4Log()+"] [RX] [FROM: "+ msg.source().to_string() +"] [Link ID: "+ link_id2string(link).c_str() +"]");
+    log_(0, "\t[MIH_MN_HO_Candidate_Query [MIH_Link_Parameters_Report]]"); 
     
-     for (odtone::mih::link_param_rpt_list::iterator i=lprl.begin(); i!=lprl.end(); i++)
+    for (odtone::mih::link_param_rpt_list::iterator i=lprl.begin(); i!=lprl.end(); i++)
     {
-            log_(0, "Meausrement Type: --- 0 => RSRP  ----- 1=>RSRQ  ---- 2=>CQI  ", i->param.type);
-            if(odtone::mih::link_param_val *value = boost::get<odtone::mih::link_param_val>(&i->param.value))
-            {
-                log_(0, "Meausrement Value: ", (short) *value );
-            }
+      if(odtone::mih::link_param_val *value = boost::get<odtone::mih::link_param_val>(&i->param.value))
+      {
+         log_(0, "\t[Measurement Types: RSRP 0|RSRQ 1|CQI 2] [type: ", i->param.type, "| value: ",  (short) *value, "]" );
+      }
     }
+    
     
 //eNB2 : Action Power Up the TVWS Link after running the cognitive algorithm
     
@@ -1461,12 +1477,13 @@ void mih_user::receive_MIH_MN_HO_Candidate_Query_request(odtone::mih::message& m
 //                 link1.type = type;
 //                 send_MIH_Link_Actions_request(link, odtone::mih::link_ac_type_power_up);
 
+// ferreira: commented out the count printouts and changed the comparison value (originally count >= 30 )
                 //Send ONLY ONCE RRC_Connection_Reconfiguration request to the UE on LTE link 0
 //               		 log_(0, "COUNT: ", count );
                 if (second_link_activated==0)
                 {
 //               		 log_(0, "COUNT: ", count );
-                    if (count  >= 750)
+                    if (count  >= 1500)
                     {
 //               		 log_(0, "COUNT: ", count );
                     send_MIH_Link_Action_Power_Up_request(_link_id_list[0]);//Link LTE
@@ -1497,21 +1514,34 @@ void mih_user::receive_MIH_Link_Parameters_Report(odtone::mih::message& msg, con
            & odtone::mih::tlv_link_identifier(link)
            & odtone::mih::tlv_link_param_rpt_list(lprl);
 
-    log_(0, "MIH_Link_Parameters_Report.indication - RECEIVED - Begin");
-    log_(0, "\t- LINK CFG STATUS LIST - Length: ", lprl.size());
-    log_(0, "[MSC_MSG]["+getTimeStamp4Log()+"]["+ msg.source().to_string() +"][--- MIH_Link_Parameters_Report.indication --->]["+msg.destination().to_string()+"]\n");
-    log_(0, "  - LINK_TUPLE_ID - Link identifier:  ", link_id2string(link).c_str());
-    std::cout<<"LINK_TUPLE_ID - Link identifier: "<<link<<std::endl;
+//    log_(0, "MIH_Link_Parameters_Report.indication - RECEIVED - Begin");
+//    log_(0, "\t- LINK CFG STATUS LIST - Length: ", lprl.size());
+//    log_(0, "[MSC_MSG]["+getTimeStamp4Log()+"]["+ msg.source().to_string() +"][--- MIH_Link_Parameters_Report.indication --->]["+msg.destination().to_string()+"]\n");
+//    log_(0, "  - LINK_TUPLE_ID - Link identifier:  ", link_id2string(link).c_str());
+//    std::cout<<"LINK_TUPLE_ID - Link identifier: "<<link<<std::endl;
+//    
+//    for (odtone::mih::link_param_rpt_list::iterator i=lprl.begin(); i!=lprl.end(); i++)
+//    {
+//            log_(0, "Meausrement Type: --- 0 => RSRP  ----- 1=>RSRQ  ---- 2=>CQI  ", i->param.type);
+//            if(odtone::mih::link_param_val *value = boost::get<odtone::mih::link_param_val>(&i->param.value))
+//            {
+//                log_(0, "Meausrement Value: ", (short) *value );
+//            }
+//    }
+//    log_(0, "MIH_Link_Parameters_Report.indication - End");
+    
+    // ferreira: changed output of message for better readability!    
+    log_(0, "\n["+getTimeStamp4Log()+"] [RX] [FROM: "+ msg.source().to_string() +"] [Link ID: "+ link_id2string(link).c_str() +"]");
+    log_(0, "\t[MIH_Link_Parameters_Report]"); 
     
     for (odtone::mih::link_param_rpt_list::iterator i=lprl.begin(); i!=lprl.end(); i++)
     {
-            log_(0, "Meausrement Type: --- 0 => RSRP  ----- 1=>RSRQ  ---- 2=>CQI  ", i->param.type);
-            if(odtone::mih::link_param_val *value = boost::get<odtone::mih::link_param_val>(&i->param.value))
-            {
-                log_(0, "Meausrement Value: ", (short) *value );
-            }
+      if(odtone::mih::link_param_val *value = boost::get<odtone::mih::link_param_val>(&i->param.value))
+      {
+         log_(0, "\t[Measurement Types: RSRP 0|RSRQ 1|CQI 2] [type: ", i->param.type, "| value: ",  (short) *value, "]" );
+      }
     }
-    log_(0, "MIH_Link_Parameters_Report.indication - End");
+//    log_(0, "MIH_Link_Parameters_Report.indication - End");
     
     
     //eNB1: Forward the message to UE 2

@@ -7,7 +7,7 @@
 #
 # Rui Costa <ferreira@eurecom.fr>
 #
-# v1.12 (13 Oct 2014)
+# v1.13 (15 Oct 2014)
 #
 ########################################
 
@@ -83,6 +83,14 @@
    2.3. CRM
    This component of the demo MUST be compiled and installed separately.
    Check <spectra_root_folder>/CRM/ for more details.
+   There is a google app that must be running in the google cloud,
+   and it's url configured in the source code. The local client is based
+   on the C++ REST framework codenamed "Casablanca".
+   Furthermore you need to compile the local client components 
+   (CRMClient and CRMMain).
+   In the CRM client you will find a folder <tosend> which includes some
+   basic scripts that populate the google app database, and show how to 
+   interact with it.
 
    2.4. TVWS Sensing Measurements
    There is a server and client for simulating the TVWS measurements and
@@ -180,7 +188,7 @@
 
 
 
-########################################
+################################################################################
 CHANGELOG
 
 v0.99 (03/09/2014)
@@ -248,4 +256,15 @@ v1.12 (13/10/2014)
       - Added final version to openair svn
       - Reworked README file.
 
+v1.13 (15/10/2014)
+      - Polishing of the demo
+      - Added bug fixes on launch scripts for enb1
+      - Added feature to put measurements on CRM from enb1
+      - Changed readable output of received measurement reports on enb2
+      - Added more informative output on the sensingClient (TVWS)
+      - Demonstration now stops at end of MIH_Link_Actions.confirm 
+        message on MIH_User of enb2
+      - Added info on sensing client and CRM
+      - Reworked README file.
 
+################################################################################ EOF

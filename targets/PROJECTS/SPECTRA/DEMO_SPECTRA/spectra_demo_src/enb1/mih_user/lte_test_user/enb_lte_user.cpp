@@ -1395,18 +1395,36 @@ void mih_user::receive_MIH_Link_Parameters_Report(odtone::mih::message& msg, con
     log_(0, "[MSC_MSG]["+getTimeStamp4Log()+"]["+ msg.source().to_string() +"][--- MIH_Link_Parameters_Report.indication --->]["+msg.destination().to_string()+"]\n");
     log_(0, "  - LINK_TUPLE_ID - Link identifier:  ", link_id2string(link).c_str());
     std::cout<<"LINK_TUPLE_ID - Link identifier: "<<link<<std::endl;
-    
+
     for (odtone::mih::link_param_rpt_list::iterator i=lprl.begin(); i!=lprl.end(); i++)
     {
             log_(0, "Meausrement Type: --- 0 => RSRP  ----- 1=>RSRQ  ---- 2=>CQI  ", i->param.type);
             if(odtone::mih::link_param_val *value = boost::get<odtone::mih::link_param_val>(&i->param.value))
             {
                 log_(0, "Meausrement Value: ", (short) *value );
+   // ferreira: Upload of measurements to gae-spectra.com
+   // FIXME This will not work for: more than 3 types of measurements OR out of sequence types of measurements 
+		std::string crmc_cmd_str;
+                std::stringstream crmc_ss;
+	        std::string result;
+                if (count % 10 == 0) // All measures at CRM are outdated! do server cleanup!
+		   result = exec ("./CRMClient DEL 2"); 
+                if (count % 3 == 0) // Add 1st measurement (RSRP)
+                   crmc_ss << "./CRMClient PUT 2 meas_no." << count << " " << msg.source().to_string() << "_" << link_id2string(link).c_str() << " RSRP dB " << (short) *value << " 3" ;
+                if (count % 3 == 1) // Add 2nd measurement (RSRQ)
+                   crmc_ss << "./CRMClient PUT 2 meas_no." << count << " " << msg.source().to_string() << "_" << link_id2string(link).c_str() << " RSRQ dB " << (short) *value << " 3" ;
+                if (count % 3 == 2) // Add 3rd measurement (CQI)
+                   crmc_ss << "./CRMClient PUT 2 meas_no." << count << " " << msg.source().to_string() << "_" << link_id2string(link).c_str() << " CQI - " << (short) *value << " 3" ;
+		crmc_cmd_str = crmc_ss.str();
+                const char* crmc_cmd_cstr = crmc_cmd_str.c_str();
+                char* crmc_cmd_char = new char [strlen(crmc_cmd_cstr)+1];
+                strcpy(crmc_cmd_char, crmc_cmd_cstr);
+                result = exec (crmc_cmd_char);   
+                delete [] crmc_cmd_char;
             }
     }
     log_(0, "MIH_Link_Parameters_Report.indication - End");
-    
-    
+
     //eNB1: Forward the message to UE 2
         forward_Parameters_Report_indication(msg);
 
