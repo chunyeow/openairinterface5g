@@ -55,7 +55,7 @@
 #include "rt_wrapper.h"
 #undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
 
-#ifdef USRP
+#ifndef EXMIMO
 static int hw_subframe;
 #endif
 
@@ -71,7 +71,7 @@ static int hw_subframe;
 #undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
 //#undef FRAME_LENGTH_COMPLEX_SAMPLES //there are two conflicting definitions, so we better make sure we don't use it at all
 
-#ifndef USRP
+#ifdef EXMIMO
 #include "openair0_lib.h"
 #else
 #include "../../ARCH/COMMON/common_lib.h"
@@ -181,7 +181,7 @@ pthread_t                       main_ue_thread;
 pthread_attr_t                  attr_dlsch_threads;
 struct sched_param              sched_param_dlsch;
 
-#ifdef USRP
+#ifndef EXMIMO
 pthread_cond_t sync_cond;
 pthread_mutex_t sync_mutex;
 
@@ -278,7 +278,7 @@ double bw = 14e6;
 
 static int                      tx_max_power[MAX_NUM_CCs] =  {0,0};
 
-#ifdef USRP
+#ifndef EXMIMO
 char ref[128] = "internal";
 char channels[128] = "0";
 
@@ -1175,7 +1175,7 @@ void init_eNB_proc(void) {
       pthread_create(&PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_rx,NULL,eNB_thread_rx,(void*)&PHY_vars_eNB_g[0][CC_id]->proc[i]);
       PHY_vars_eNB_g[0][CC_id]->proc[i].frame_tx = 0;
       PHY_vars_eNB_g[0][CC_id]->proc[i].frame_rx = 0;
-#ifndef USRP
+#ifdef EXMIMO
       PHY_vars_eNB_g[0][CC_id]->proc[i].subframe_rx = (i+9)%10;
       PHY_vars_eNB_g[0][CC_id]->proc[i].subframe_tx = (i+1)%10;
 #else
@@ -1185,7 +1185,7 @@ void init_eNB_proc(void) {
     }
   
   
-#ifndef USRP
+#ifdef EXMIMO
     // TX processes subframe + 1, RX subframe -1
     // Note this inialization is because the first process awoken for frame 0 is number 1 and so processes 9 and 0 have to start with frame 1
     
@@ -1257,10 +1257,10 @@ static void *eNB_thread(void *arg)
 #ifdef RTAI
   RT_TASK *task;
 #endif
-#ifndef USRP
-  unsigned char slot=0;
-#else
+#ifdef EXMIMO
   unsigned char slot=1;
+#else
+  unsigned char slot=0;
 #endif
   int frame=0;
   int CC_id;
@@ -1268,7 +1268,7 @@ static void *eNB_thread(void *arg)
   RTIME time_in, time_diff;
 
   int sf;
-#ifndef USRP
+#ifdef EXMIMO
   volatile unsigned int *DAQ_MBOX = openair0_daq_cnt();
   int mbox_target=0,mbox_current=0;
   int hw_slot,delay_cnt;
@@ -1327,7 +1327,7 @@ static void *eNB_thread(void *arg)
 
     while (!oai_exit) {
 
-#ifndef USRP
+#ifdef EXMIMO
       hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
       //        LOG_D(HW,"eNB frame %d, time %llu: slot %d, hw_slot %d (mbox %d)\n",frame,rt_get_time_ns(),slot,hw_slot,((unsigned int *)DAQ_MBOX)[0]);
       vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_slot>>1);
@@ -1392,7 +1392,7 @@ static void *eNB_thread(void *arg)
 	  diff = mbox_target - mbox_current;
       }
 
-#else  // USRP
+#else  // EXMIMO
       vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_subframe);
       vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame);
       while (rx_cnt < sf_bounds[hw_subframe]) {
@@ -1415,10 +1415,12 @@ static void *eNB_thread(void *arg)
 
 	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_TXCNT,tx_cnt);
 	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_RXCNT,rx_cnt*samples_per_packets);
+
 	rxs = openair0.trx_read_func(&openair0, 
 				     &timestamp, 
 				     &rxdata[rx_cnt*samples_per_packets], 
 				     samples_per_packets);
+
 	if (rxs != samples_per_packets)
 	  oai_exit=1;
 
@@ -1509,7 +1511,7 @@ static void *eNB_thread(void *arg)
       //}
     
       if ((slot&1) == 1) {
-#ifndef USRP
+#ifdef EXMIMO
 	sf = ((slot>>1)+1)%10;
 #else
 	sf = hw_subframe;
@@ -1517,7 +1519,7 @@ static void *eNB_thread(void *arg)
 	//		    LOG_I(PHY,"[eNB] Multithread slot %d (IC %d)\n",slot,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt);
 	
 	for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-#ifndef USRP  
+#ifdef EXMIMO 
 	  if (pthread_mutex_lock(&PHY_vars_eNB_g[0][CC_id]->proc[sf].mutex_tx) != 0) {
 	    LOG_E(PHY,"[eNB] ERROR pthread_mutex_lock for eNB TX thread %d (IC %d)\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_tx);   
 	  }
@@ -1805,7 +1807,7 @@ static void *UE_thread_rx(void *arg) {
   
   mlockall(MCL_CURRENT | MCL_FUTURE);
   
-#ifdef USRP
+#ifndef EXMIMO
   printf("waiting for USRP sync (UE_thread_rx)\n");
 #ifdef RTAI
   rt_sem_wait(sync_sem);
@@ -1877,7 +1879,7 @@ static void *UE_thread_rx(void *arg) {
 
 
 
-#ifdef USRP
+#ifndef EXMIMO
 #define RX_OFF_MAX 10
 #define RX_OFF_MIN 5
 #define RX_OFF_MID ((RX_OFF_MAX+RX_OFF_MIN)/2)
@@ -2087,7 +2089,7 @@ static void *UE_thread(void *arg) {
 
 
 
-#ifndef USRP
+#ifdef EXMIMO
 /* This is the main UE thread. Initially it is doing a periodic get_frame. One synchronized it gets woken up by the kernel driver using the RTAI message mechanism (rt_send and rt_receive). */
 static void *UE_thread(void *arg) {
 #ifdef RTAI
@@ -2361,7 +2363,7 @@ void init_UE_threads(void) {
   pthread_create(&UE->thread_rx,NULL,UE_thread_synch,(void*)UE);
   UE->frame_tx = 0;
 
-#ifdef USRP
+#ifndef EXMIMO
   UE->slot_tx = 2;
   UE->slot_rx = 0;
   UE->frame_rx = 0;
@@ -2595,8 +2597,10 @@ static void get_options (int argc, char **argv) {
       // adjust the log
       for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
 	for (k = 0 ; k < 4; k++) {
-	  downlink_frequency[CC_id][k] =       enb_properties->properties[i]->downlink_frequency[CC_id];
+	  downlink_frequency[CC_id][k]      =       enb_properties->properties[i]->downlink_frequency[CC_id];
 	  uplink_frequency_offset[CC_id][k] =  enb_properties->properties[i]->uplink_frequency_offset[CC_id];
+	  rx_gain[CC_id][k]                 =  (double)enb_properties->properties[i]->rx_gain[CC_id];
+	  tx_gain[CC_id][k]                 =  (double)enb_properties->properties[i]->tx_gain[CC_id];
 	}
 	printf("Downlink frequency/ uplink offset of CC_id %d set to %llu/%d\n", CC_id,
 	       enb_properties->properties[i]->downlink_frequency[CC_id],
@@ -2842,7 +2846,7 @@ int main(int argc, char **argv) {
       PHY_vars_UE_g[0][CC_id]->lte_ue_pdcch_vars[0]->crnti = 0x1235;
 #endif
     
-#ifndef USRP    
+#ifdef EXMIMO
       for (i=0;i<4;i++) {
 	PHY_vars_UE_g[0][CC_id]->rx_gain_max[i] = rxg_max[i];
 	PHY_vars_UE_g[0][CC_id]->rx_gain_med[i] = rxg_med[i];
@@ -2872,7 +2876,7 @@ int main(int argc, char **argv) {
     
 
    
-#ifndef USRP
+#ifdef EXMIMO
       //N_TA_offset
       if (PHY_vars_UE_g[UE_id][CC_id]->lte_frame_parms.frame_type == TDD) {
 	if (PHY_vars_UE_g[UE_id][CC_id]->lte_frame_parms.N_RB_DL == 100)
@@ -2923,9 +2927,9 @@ int main(int argc, char **argv) {
 			  PHY_vars_eNB_g[0][CC_id]->lte_frame_parms.frame_type,
 			  PHY_vars_eNB_g[0][CC_id]->X_u);
 
-#ifdef USRP
+#ifndef EXMIMO
 
-	PHY_vars_eNB_g[0][CC_id]->rx_total_gain_eNB_dB =  135; //(int)rx_gain[CC_id][0];
+	PHY_vars_eNB_g[0][CC_id]->rx_total_gain_eNB_dB = (int)rx_gain[CC_id][0];
 
 #else
 	PHY_vars_eNB_g[0][CC_id]->rx_total_gain_eNB_dB =  rxg_max[0] + (int)rx_gain[CC_id][0] - 30; //was measured at rxgain=30;
@@ -2937,7 +2941,7 @@ int main(int argc, char **argv) {
 	  rx_gain_mode[CC_id][i] = max_gain;
 #endif
 
-#ifndef USRP
+#ifdef EXMIMO
 	//N_TA_offset
 	if (PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.frame_type == TDD) {
 	  if (PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.N_RB_DL == 100)
@@ -2974,7 +2978,7 @@ int main(int argc, char **argv) {
 
   if(frame_parms[0]->N_RB_DL == 100) {
     sample_rate = 30.72e6;
-#ifdef USRP
+#ifndef EXMIMO
     samples_per_packets = 2048;
     samples_per_frame = 307200;
     // from usrp_time_offset
@@ -2987,7 +2991,7 @@ int main(int argc, char **argv) {
   }
   else if(frame_parms[0]->N_RB_DL == 50){
     sample_rate = 15.36e6;
-#ifdef USRP
+#ifndef EXMIMO
     samples_per_packets = 2048;
     samples_per_frame = 153600;
     tx_forward_nsamps = 95;
@@ -2999,7 +3003,7 @@ int main(int argc, char **argv) {
   }
   else if (frame_parms[0]->N_RB_DL == 25) {
     sample_rate = 7.68e6;
-#ifdef USRP
+#ifndef EXMIMO
     samples_per_packets = 1024;
     samples_per_frame = 76800;
     tx_forward_nsamps = 70;
@@ -3018,7 +3022,7 @@ int main(int argc, char **argv) {
     // in the case of the USRP, the following variables need to be initialized before the init
     // since the USRP only supports one CC (for the moment), we initialize all the cards with first CC. 
     // in the case of EXMIMO2, these values are overwirtten in the function setup_eNB/UE_buffer
-#ifdef USRP
+#ifndef EXMIMO
     openair0_cfg[card].tx_num_channels=1;
     openair0_cfg[card].rx_num_channels=1;
     for (i=0;i<4;i++) {
@@ -3031,11 +3035,13 @@ int main(int argc, char **argv) {
 #endif
   }
 
+#ifndef EXMIMO
 #ifndef USRP_DEBUG 
   if (openair0_device_init(&openair0, &openair0_cfg[0]) <0) {
     printf("Exiting, cannot initialize device\n");
     exit(-1);
   }
+#endif
 #endif
 
   mac_xface = malloc(sizeof(MAC_xface));
@@ -3117,7 +3123,7 @@ int main(int argc, char **argv) {
 	  PHY_vars_eNB_g[0][CC_id]->lte_eNB_common_vars.txdata[0][aa][i] = 0x00010001;
     }
   }
-#ifndef USRP
+#ifdef EXMIMO
   openair0_config(&openair0_cfg[0],UE_flag);
 #endif
 
@@ -3162,13 +3168,13 @@ int main(int argc, char **argv) {
     }
   else
     printf("mutex=%p\n",mutex);
-#ifdef USRP
+#ifndef EXMIMO
   sync_sem = rt_typed_sem_init(nam2num("syncsem"), 0, BIN_SEM|FIFO_Q);
   if(sync_sem == 0)
     printf("error init sync semphore\n");
 #endif
 #else
-#ifdef USRP
+#ifndef EXMIMO
   pthread_cond_init(&sync_cond,NULL);
   pthread_mutex_init(&sync_mutex, NULL);
 #endif
@@ -3177,7 +3183,7 @@ int main(int argc, char **argv) {
 
 
   // this starts the DMA transfers
-#ifndef USRP
+#ifdef EXMIMO
   if (UE_flag!=1)
     for (card=0;card<openair0_num_detected_cards;card++)
       openair0_start_rt_acquisition(card);
@@ -3306,7 +3312,7 @@ int main(int argc, char **argv) {
   sleep(1);
 
 
-#ifdef USRP
+#ifndef EXMIMO
 #ifndef USRP_DEBUG
   openair0.trx_start_func(&openair0);
   //  printf("returning from usrp start streaming: %llu\n",get_usrp_time(&openair0));
@@ -3358,7 +3364,7 @@ int main(int argc, char **argv) {
   printf("stopping MODEM threads\n");
   // cleanup
   if (UE_flag == 1) {
-#ifndef USRP
+#ifdef EXMIMO
 #ifdef RTAI
     rt_thread_join(main_ue_thread); 
 #else
@@ -3394,7 +3400,7 @@ int main(int argc, char **argv) {
   //cleanup_pdcp_thread();
 #endif
 
-#ifdef USRP
+#ifndef EXMIMO
 #ifdef RTAI
   rt_sem_delete(sync_sem);
   stop_rt_timer();
@@ -3404,7 +3410,7 @@ int main(int argc, char **argv) {
 #endif
 #endif
 
-#ifndef USRP
+#ifdef EXMIMO
   printf("stopping card\n");
   openair0_stop(0);
   printf("closing openair0_lib\n");
@@ -3439,7 +3445,7 @@ int main(int argc, char **argv) {
 int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg, openair0_rf_map rf_map[MAX_NUM_CCs])
 {
 
-#ifdef USRP
+#ifndef EXMIMO
   uint16_t N_TA_offset = 0;
 #endif
 
@@ -3455,7 +3461,7 @@ int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg,
     }
 
 
-#ifdef USRP
+#ifndef EXMIMO
     if (frame_parms->frame_type == TDD) {
       if (frame_parms->N_RB_DL == 100)
 	N_TA_offset = 624;
@@ -3466,7 +3472,7 @@ int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg,
     }
 #endif
    
-#ifndef USRP
+#ifdef EXMIMO
     openair0_cfg[CC_id].tx_num_channels = 0;
     openair0_cfg[CC_id].rx_num_channels = 0;
 
@@ -3535,7 +3541,7 @@ int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg,
 int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_cfg, openair0_rf_map rf_map[MAX_NUM_CCs]) {
 
   int i, CC_id;
-#ifdef USRP
+#ifndef EXMIMO
   uint16_t N_TA_offset = 0;
 #else
   int j;
@@ -3553,7 +3559,7 @@ int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_c
       return(-1);
     }
 
-#ifdef USRP
+#ifndef EXMIMO
     if (frame_parms->frame_type == TDD) {
       if (frame_parms->N_RB_DL == 100)
 	N_TA_offset = 624;
@@ -3569,7 +3575,7 @@ int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_c
 
   
     // replace RX signal buffers with mmaped HW versions
-#ifndef USRP
+#ifdef EXMIMO
     openair0_cfg[CC_id].tx_num_channels = 0;
     openair0_cfg[CC_id].rx_num_channels = 0;
 
@@ -3612,7 +3618,7 @@ int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_c
 	phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i][j] = 16-j;
       }
     }
-#else // USRP
+#else // not EXMIMO
     for (i=0;i<frame_parms->nb_antennas_rx;i++) {
       free(phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i]);
       rxdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));

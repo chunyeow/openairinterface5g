@@ -27,8 +27,12 @@ CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/COMMON
 
 CFLAGS += -DMAX_NUM_CCs=1
 
-ifeq ($(USRP),0)
+ifeq ($(EXMIMO),1)
   CFLAGS += -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
+endif
+
+ifeq ($(ETHERNET),1)
+  CFLAGS += -I$(OPENAIR_TARGETS)/ARCH/ETHERNET/USERSPACE/LIB/
 endif
 
 ifeq ($(DEBUG),1)	
@@ -59,7 +63,7 @@ endif
 
 OBJ += $(OPENAIR1_DIR)/SIMULATION/TOOLS/taus.o $(OPENAIR_TARGETS)/SIMU/USER/init_lte.o 
 
-ifeq ($(USRP),0)
+ifeq ($(EXMIMO),1)
 OBJ += $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/gain_control.o
 CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS 
 endif
@@ -91,6 +95,11 @@ include $(OPENAIR_TARGETS)/ARCH/USRP/USERSPACE/LIB/Makefile.inc
 CFLAGS += -I/opt/include/uhd -L/opt/lib -luhd -lpthread -lstdc++
 CFLAGS += -DUSRP
 LDFLAGS += -L/opt/lib -luhd -lpthread -lstdc++ 
+endif
+
+ifeq ($(ETHERNET),1)
+include $(OPENAIR_TARGETS)/ARCH/ETHERNET/USERSPACE/LIB/Makefile.inc
+LDFLAGS += -lpthread
 endif
 
 OBJ +=  $(ENB_APP_OBJS)
@@ -154,7 +163,7 @@ CFLAGS += -Wall -fno-strict-aliasing -DPHYSIM -DUSER_MODE -DPC_TARGET -DPC_DSP -
 CFLAGS += -DOPENAIR_LTE -DENABLE_FXP -DOPENAIR1 -DDLSCH_THREAD #-DULSCH_THREAD
 
 
-ifeq ($(USRP),0)
+ifeq ($(EXMIMO),1)
 CFLAGS += -DEXMIMO
 #CFLAGS += -DEXMIMO -DTIMING_ADVANCE_HW=138 #this is for ExpressMIMO 1
 #CFLAGS += -DEXMIMO -DTIMING_ADVANCE_HW=45 #this is for ExpressMIMO 2
@@ -208,6 +217,12 @@ $(USRP_OBJ):$(USRP_FILE_OBJ)
 	@$(CXX) -c  $(USRP_CFLAGS) $(USRP_FILE_OBJ) -o $(USRP_OBJ)
 endif
 
+ifeq ($(ETHERNET),1)
+$(ETHERNET_OBJ):$(ETHERNET_FILE_OBJ)
+	@echo Compiling $<
+	@$(CC) -c $(ETHERNET_CFLAGS) $(ETHERNET_FILE_OBJ) -o $(ETHERNET_OBJ)
+endif
+
 ifeq ($(RTAI),1)
 $(RTAI_OBJ) lte-softmodem.o: %.o : %.c
 else
@@ -255,9 +270,9 @@ synctest: $(OBJ_SYNC) $(SHARED_DEPENDENCIES) synctest.c
 sleeptest: rt_wrapper.o sleeptest.c
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) rt_wrapper.o -o sleeptest sleeptest.c $(LDFLAGS) 
 
-lte-softmodem: $(OBJ) $(USRP_OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) lte-softmodem.o $(SHARED_DEPENDENCIES)
+lte-softmodem: $(OBJ) $(USRP_OBJ) $(ETHERNET_OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) lte-softmodem.o $(SHARED_DEPENDENCIES)
 	@echo Linking $@
-	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(USRP_OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) lte-softmodem.o -o lte-softmodem $(LDFLAGS) $(LIBS)
+	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(USRP_OBJ) $(ETHERNET_OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) lte-softmodem.o -o lte-softmodem $(LDFLAGS) $(LIBS)
 
 emos-raw: $(SHARED_DEPENDENCIES) $(OBJ_EMOS) emos-raw.c
 	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) $(OBJ_EMOS) -o emos-raw emos-raw.c $(LDFLAGS) $(LIBS)
@@ -380,6 +395,8 @@ show:
 	@echo $(EXTRA_CFLAGS)
 	@echo $(OBJ) $(RTAI_OBJ) 
 	@echo $(USRP_OBJ)
+	@echo $(ETHERNET_OBJ)
+	@echo $(ETHERNET_FILE_OBJ)
 	@echo IS_REL8 is $(IS_REL8)
 	@echo IS_REL10 is $(IS_REL10)
 	@echo openssl $(OPENSSL_FOUND) 

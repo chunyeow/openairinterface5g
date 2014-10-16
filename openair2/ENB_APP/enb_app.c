@@ -75,10 +75,14 @@ static void configure_phy(uint32_t enb_id, const Enb_properties_array_t *enb_pro
 
     msg_p = itti_alloc_new_message (TASK_ENB_APP, PHY_CONFIGURATION_REQ);
     for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-      PHY_CONFIGURATION_REQ (msg_p).frame_type[CC_id] =              enb_properties->properties[enb_id]->frame_type[CC_id];
-      PHY_CONFIGURATION_REQ (msg_p).prefix_type[CC_id] =             enb_properties->properties[enb_id]->prefix_type[CC_id];
-      PHY_CONFIGURATION_REQ (msg_p).downlink_frequency[CC_id] =      enb_properties->properties[enb_id]->downlink_frequency[CC_id];
+      PHY_CONFIGURATION_REQ (msg_p).frame_type[CC_id]              = enb_properties->properties[enb_id]->frame_type[CC_id];
+      PHY_CONFIGURATION_REQ (msg_p).prefix_type[CC_id]             = enb_properties->properties[enb_id]->prefix_type[CC_id];
+      PHY_CONFIGURATION_REQ (msg_p).downlink_frequency[CC_id]      = enb_properties->properties[enb_id]->downlink_frequency[CC_id];
       PHY_CONFIGURATION_REQ (msg_p).uplink_frequency_offset[CC_id] = enb_properties->properties[enb_id]->uplink_frequency_offset[CC_id];
+      PHY_CONFIGURATION_REQ (msg_p).nb_antennas_tx[CC_id]          = enb_properties->properties[enb_id]->nb_antennas_tx[CC_id];
+      PHY_CONFIGURATION_REQ (msg_p).nb_antennas_rx[CC_id]          = enb_properties->properties[enb_id]->nb_antennas_rx[CC_id];
+      PHY_CONFIGURATION_REQ (msg_p).tx_gain[CC_id]                 = enb_properties->properties[enb_id]->tx_gain[CC_id];
+      PHY_CONFIGURATION_REQ (msg_p).rx_gain[CC_id]                 = enb_properties->properties[enb_id]->rx_gain[CC_id];
     }
     itti_send_msg_to_task (TASK_PHY_ENB, enb_id, msg_p);
 }
@@ -97,11 +101,87 @@ static void configure_rrc(uint32_t enb_id, const Enb_properties_array_t *enb_pro
     RRC_CONFIGURATION_REQ (msg_p).mnc =             enb_properties->properties[enb_id]->mnc;
     RRC_CONFIGURATION_REQ (msg_p).mnc_digit_length = enb_properties->properties[enb_id]->mnc_digit_length;
     for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-      RRC_CONFIGURATION_REQ (msg_p).pcch_defaultPagingCycle[CC_id] =     enb_properties->properties[enb_id]->pcch_defaultPagingCycle[CC_id];
-      RRC_CONFIGURATION_REQ (msg_p).frame_type[CC_id] =      enb_properties->properties[enb_id]->frame_type[CC_id];
-      RRC_CONFIGURATION_REQ (msg_p).tdd_config[CC_id] =      enb_properties->properties[enb_id]->tdd_config[CC_id];
-      RRC_CONFIGURATION_REQ (msg_p).tdd_config_s[CC_id] =    enb_properties->properties[enb_id]->tdd_config_s[CC_id];
-      RRC_CONFIGURATION_REQ (msg_p).eutra_band[CC_id] =      enb_properties->properties[enb_id]->eutra_band[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).frame_type[CC_id]                               = enb_properties->properties[enb_id]->frame_type[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).tdd_config[CC_id]                               = enb_properties->properties[enb_id]->tdd_config[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).tdd_config_s[CC_id]                             = enb_properties->properties[enb_id]->tdd_config_s[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).eutra_band[CC_id]                               = enb_properties->properties[enb_id]->eutra_band[CC_id];
+
+      // RACH-Config
+      RRC_CONFIGURATION_REQ (msg_p).rach_numberOfRA_Preambles[CC_id]                = enb_properties->properties[enb_id]->rach_numberOfRA_Preambles[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).rach_preamblesGroupAConfig[CC_id]               = enb_properties->properties[enb_id]->rach_preamblesGroupAConfig[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).rach_sizeOfRA_PreamblesGroupA[CC_id]            = enb_properties->properties[enb_id]->rach_sizeOfRA_PreamblesGroupA[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).rach_messageSizeGroupA[CC_id]                   = enb_properties->properties[enb_id]->rach_messageSizeGroupA[CC_id]; 
+      RRC_CONFIGURATION_REQ (msg_p).rach_messagePowerOffsetGroupB[CC_id]            = enb_properties->properties[enb_id]->rach_messagePowerOffsetGroupB[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).rach_powerRampingStep[CC_id]                    = enb_properties->properties[enb_id]->rach_powerRampingStep[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).rach_preambleInitialReceivedTargetPower[CC_id]  = enb_properties->properties[enb_id]->rach_preambleInitialReceivedTargetPower[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).rach_preambleTransMax[CC_id]                    = enb_properties->properties[enb_id]->rach_preambleTransMax[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).rach_raResponseWindowSize[CC_id]                = enb_properties->properties[enb_id]->rach_raResponseWindowSize[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).rach_macContentionResolutionTimer[CC_id]        = enb_properties->properties[enb_id]->rach_macContentionResolutionTimer[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).rach_maxHARQ_Msg3Tx[CC_id]                      = enb_properties->properties[enb_id]->rach_maxHARQ_Msg3Tx[CC_id];
+
+  // BCCH-Config
+      RRC_CONFIGURATION_REQ (msg_p).bcch_modificationPeriodCoeff[CC_id]             = enb_properties->properties[enb_id]->bcch_modificationPeriodCoeff[CC_id];
+
+  // PCCH-Config
+      RRC_CONFIGURATION_REQ (msg_p).pcch_defaultPagingCycle[CC_id]                  = enb_properties->properties[enb_id]->pcch_defaultPagingCycle[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pcch_nB[CC_id]                                  = enb_properties->properties[enb_id]->pcch_nB[CC_id];
+
+  // PRACH-Config
+      RRC_CONFIGURATION_REQ (msg_p).prach_root[CC_id]                               = enb_properties->properties[enb_id]->prach_root[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).prach_config_index[CC_id]                       = enb_properties->properties[enb_id]->prach_config_index[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).prach_high_speed[CC_id]                         = enb_properties->properties[enb_id]->prach_high_speed[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).prach_zero_correlation[CC_id]                   = enb_properties->properties[enb_id]->prach_zero_correlation[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).prach_freq_offset[CC_id]                        = enb_properties->properties[enb_id]->prach_freq_offset[CC_id];
+
+  // PDSCH-Config
+      RRC_CONFIGURATION_REQ (msg_p).pdsch_referenceSignalPower[CC_id]               = enb_properties->properties[enb_id]->pdsch_referenceSignalPower[CC_id];  
+      RRC_CONFIGURATION_REQ (msg_p).pdsch_p_b[CC_id]                                = enb_properties->properties[enb_id]->pdsch_p_b[CC_id];  
+
+  // PUSCH-Config
+      RRC_CONFIGURATION_REQ (msg_p).pusch_n_SB[CC_id]                               = enb_properties->properties[enb_id]->pusch_n_SB[CC_id];  
+      RRC_CONFIGURATION_REQ (msg_p).pusch_hoppingMode[CC_id]                        = enb_properties->properties[enb_id]->pusch_hoppingMode[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pusch_hoppingOffset[CC_id]                      = enb_properties->properties[enb_id]->pusch_hoppingOffset[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pusch_enable64QAM[CC_id]                        = enb_properties->properties[enb_id]->pusch_enable64QAM[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pusch_groupHoppingEnabled[CC_id]                = enb_properties->properties[enb_id]->pusch_groupHoppingEnabled[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pusch_groupAssignment[CC_id]                    = enb_properties->properties[enb_id]->pusch_groupAssignment[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pusch_sequenceHoppingEnabled[CC_id]             = enb_properties->properties[enb_id]->pusch_sequenceHoppingEnabled[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pusch_nDMRS1[CC_id]                             = enb_properties->properties[enb_id]->pusch_nDMRS1[CC_id];
+
+  // PUCCH-Config
+
+      RRC_CONFIGURATION_REQ (msg_p).pucch_delta_shift[CC_id]                        = enb_properties->properties[enb_id]->pucch_delta_shift[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pucch_nRB_CQI[CC_id]                            = enb_properties->properties[enb_id]->pucch_nRB_CQI[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pucch_nCS_AN[CC_id]                             = enb_properties->properties[enb_id]->pucch_nCS_AN[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pucch_n1_AN[CC_id]                              = enb_properties->properties[enb_id]->pucch_n1_AN[CC_id];
+
+  // SRS Config
+      RRC_CONFIGURATION_REQ (msg_p).srs_enable[CC_id]                               = enb_properties->properties[enb_id]->srs_enable[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).srs_BandwidthConfig[CC_id]                      = enb_properties->properties[enb_id]->srs_BandwidthConfig[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).srs_SubframeConfig[CC_id]                       = enb_properties->properties[enb_id]->srs_SubframeConfig[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).srs_ackNackST[CC_id]                            = enb_properties->properties[enb_id]->srs_ackNackST[CC_id]; 
+      RRC_CONFIGURATION_REQ (msg_p).srs_MaxUpPts[CC_id]                             = enb_properties->properties[enb_id]->srs_MaxUpPts[CC_id];
+
+  // uplinkPowerControlCommon
+
+      RRC_CONFIGURATION_REQ (msg_p).pusch_p0_Nominal[CC_id]                         = enb_properties->properties[enb_id]->pusch_p0_Nominal[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pucch_p0_Nominal[CC_id]                         = enb_properties->properties[enb_id]->pucch_p0_Nominal[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pusch_alpha[CC_id]                              = enb_properties->properties[enb_id]->pusch_alpha[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pucch_deltaF_Format1[CC_id]                     = enb_properties->properties[enb_id]->pucch_deltaF_Format1[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pucch_deltaF_Format1b[CC_id]                    = enb_properties->properties[enb_id]->pucch_deltaF_Format1b[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pucch_deltaF_Format2[CC_id]                     = enb_properties->properties[enb_id]->pucch_deltaF_Format2[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).pucch_deltaF_Format2a[CC_id]                    = enb_properties->properties[enb_id]->pucch_deltaF_Format2a[CC_id];    
+      RRC_CONFIGURATION_REQ (msg_p).pucch_deltaF_Format2b[CC_id]                    = enb_properties->properties[enb_id]->pucch_deltaF_Format2b[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).msg3_delta_Preamble[CC_id]                      = enb_properties->properties[enb_id]->msg3_delta_Preamble[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).ul_CyclicPrefixLength[CC_id]                    = enb_properties->properties[enb_id]->ul_CyclicPrefixLength[CC_id];
+
+  // UE Timers and Constants
+
+      RRC_CONFIGURATION_REQ (msg_p).ue_TimersAndConstants_t300[CC_id]               = enb_properties->properties[enb_id]->ue_TimersAndConstants_t300[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).ue_TimersAndConstants_t301[CC_id]               = enb_properties->properties[enb_id]->ue_TimersAndConstants_t301[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).ue_TimersAndConstants_t310[CC_id]               = enb_properties->properties[enb_id]->ue_TimersAndConstants_t310[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).ue_TimersAndConstants_n310[CC_id]               = enb_properties->properties[enb_id]->ue_TimersAndConstants_n310[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).ue_TimersAndConstants_t311[CC_id]               = enb_properties->properties[enb_id]->ue_TimersAndConstants_t311[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).ue_TimersAndConstants_n311[CC_id]               = enb_properties->properties[enb_id]->ue_TimersAndConstants_n311[CC_id];
     }
     itti_send_msg_to_task (TASK_RRC_ENB, enb_id, msg_p);
 }
