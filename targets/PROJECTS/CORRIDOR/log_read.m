@@ -6,13 +6,20 @@ d1 = dir(fullfile(top_dir,'UHF','*.log'));
 d2 = dir(fullfile(top_dir,'2.6GHz','*.log'));
 
 
-load exmimo2_39_comb.mat
-G0_comb = permute(G0_comb,[2 1 3]);
-G0_interp = interp1(ALL_gain,G0_comb,0:30);
-G0_interp = permute(G0_interp,[2 1 3]);
-NF0_comb = permute(NF0_comb,[2 1 3]);
-NF0_interp = interp1(ALL_gain,NF0_comb,0:30);
-NF0_interp = permute(NF0_interp,[2 1 3]);
+load exmimo2_39_0.8G.mat
+G0 = permute(G0,[2 1 3]);
+G0_800_interp = interp1(ALL_gain,G0,0:30);
+G0_800_interp = permute(G0_800_interp,[2 1 3]);
+NF0 = permute(NF0,[2 1 3]);
+NF0_800_interp = interp1(ALL_gain,NF0,0:30);
+NF0_800_interp = permute(NF0_800_interp,[2 1 3]);
+load exmimo2_39_2.6G_v2.mat
+G0 = permute(G0,[2 1 3]);
+G0_2600_interp = interp1(ALL_gain,G0,0:30);
+G0_2600_interp = permute(G0_2600_interp,[2 1 3]);
+NF0 = permute(NF0,[2 1 3]);
+NF0_2600_interp = interp1(ALL_gain,NF0,0:30);
+NF0_2600_interp = permute(NF0_2600_interp,[2 1 3]);
 
 %%
 start_time = [1.400489088000000e+09 1.400493112000000e+09 1.400499696000000e+09 1.400506864000000e+09];
@@ -40,10 +47,10 @@ for idx=1:length(d1)
     data2{idx}(data2{idx}(:,16)==0,16) = 1;
     data2{idx}(data2{idx}(:,22)==0,22) = 1;
     data2{idx}(data2{idx}(:,28)==0,28) = 1;
-    NF1=[NF0_interp(sub2ind(size(NF0_interp),data1{idx}(:,16),data1{idx}(:,15)+1,ones(length(data1{idx}),1)))];
-    NF2=[NF0_interp(sub2ind(size(NF0_interp),data2{idx}(:,16),data2{idx}(:,15)+1,ones(length(data2{idx}),1))) ...
-        NF0_interp(sub2ind(size(NF0_interp),data2{idx}(:,22),data2{idx}(:,21)+1,ones(length(data2{idx}),1))) ...
-        NF0_interp(sub2ind(size(NF0_interp),data2{idx}(:,28),data2{idx}(:,27)+1,ones(length(data2{idx}),1)))];
+    NF1=[NF0_800_interp(sub2ind(size(NF0_800_interp),data1{idx}(:,16),data1{idx}(:,15)+1,ones(length(data1{idx}),1)))];
+    NF2=[NF0_2600_interp(sub2ind(size(NF0_2600_interp),data2{idx}(:,16),data2{idx}(:,15)+1,ones(length(data2{idx}),1))) ...
+        NF0_2600_interp(sub2ind(size(NF0_2600_interp),data2{idx}(:,22),data2{idx}(:,21)+1,ones(length(data2{idx}),1))) ...
+        NF0_2600_interp(sub2ind(size(NF0_2600_interp),data2{idx}(:,28),data2{idx}(:,27)+1,ones(length(data2{idx}),1)))];
     
     %% plot gps coordinates
     h=figure(idx*10+1);
