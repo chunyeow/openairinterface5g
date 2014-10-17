@@ -40,6 +40,7 @@
 #include  <netinet/in.h>
 
 #include "commonDef.h"
+#include "platform_types.h"
 #include "PHY/impl_defs_lte.h"
 #include "s1ap_messages_types.h"
 #include "RRC/LITE/MESSAGES/SystemInformationBlockType2.h"
@@ -175,6 +176,7 @@ typedef struct Enb_properties_s {
 
   char               *enb_interface_name_for_S1U;
   in_addr_t           enb_ipv4_address_for_S1U;
+  tcp_udp_port_t      enb_port_for_S1U;
 
   char               *enb_interface_name_for_S1_MME;
   in_addr_t           enb_ipv4_address_for_S1_MME;

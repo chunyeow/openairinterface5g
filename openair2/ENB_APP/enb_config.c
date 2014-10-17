@@ -154,6 +154,7 @@
 #define ENB_CONFIG_STRING_ENB_IPV4_ADDRESS_FOR_S1_MME   "ENB_IPV4_ADDRESS_FOR_S1_MME"
 #define ENB_CONFIG_STRING_ENB_INTERFACE_NAME_FOR_S1U    "ENB_INTERFACE_NAME_FOR_S1U"
 #define ENB_CONFIG_STRING_ENB_IPV4_ADDR_FOR_S1U         "ENB_IPV4_ADDRESS_FOR_S1U"
+#define ENB_CONFIG_STRING_ENB_PORT_FOR_S1U              "ENB_PORT_FOR_S1U"
 
 
 #define ENB_CONFIG_STRING_ASN1_VERBOSITY                      "Asn1_verbosity"
@@ -510,25 +511,26 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
     const char*       active_enb[MAX_ENB];
     char*             enb_interface_name_for_S1U    = NULL;
     char*             enb_ipv4_address_for_S1U      = NULL;
+    libconfig_int     enb_port_for_S1U              = 0;
     char*             enb_interface_name_for_S1_MME = NULL;
     char*             enb_ipv4_address_for_S1_MME   = NULL;
     char             *address                       = NULL;
     char             *cidr                          = NULL;
     char             *astring                       = NULL;
-    char*          glog_level                   = NULL;
-    char*          glog_verbosity               = NULL;
-    char*          hw_log_level                = NULL;
-    char*          hw_log_verbosity            = NULL;
-    char*          phy_log_level                = NULL;
-    char*          phy_log_verbosity            = NULL;
-    char*          mac_log_level                = NULL;
-    char*          mac_log_verbosity            = NULL;
-    char*          rlc_log_level                = NULL;
-    char*          rlc_log_verbosity            = NULL;
-    char*          pdcp_log_level               = NULL;
-    char*          pdcp_log_verbosity           = NULL;
-    char*          rrc_log_level                = NULL;
-    char*          rrc_log_verbosity            = NULL;
+    char*             glog_level                    = NULL;
+    char*             glog_verbosity                = NULL;
+    char*             hw_log_level                  = NULL;
+    char*             hw_log_verbosity              = NULL;
+    char*             phy_log_level                 = NULL;
+    char*             phy_log_verbosity             = NULL;
+    char*             mac_log_level                 = NULL;
+    char*             mac_log_verbosity             = NULL;
+    char*             rlc_log_level                 = NULL;
+    char*             rlc_log_verbosity             = NULL;
+    char*             pdcp_log_level                = NULL;
+    char*             pdcp_log_verbosity            = NULL;
+    char*             rrc_log_level                 = NULL;
+    char*             rrc_log_verbosity             = NULL;
 
     memset((char*) (enb_properties.properties), 0 , MAX_ENB * sizeof(Enb_properties_t *));
     memset((char*)active_enb,     0 , MAX_ENB * sizeof(char*));
@@ -1598,10 +1600,12 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                                         (const char **)&enb_interface_name_for_S1_MME)
                                         && config_setting_lookup_string( subsetting, ENB_CONFIG_STRING_ENB_IPV4_ADDRESS_FOR_S1_MME,
                                                 (const char **)&enb_ipv4_address_for_S1_MME)
-                                                && config_setting_lookup_string( subsetting, ENB_CONFIG_STRING_ENB_INTERFACE_NAME_FOR_S1U,
-                                                        (const char **)&enb_interface_name_for_S1U)
-                                                        && config_setting_lookup_string( subsetting, ENB_CONFIG_STRING_ENB_IPV4_ADDR_FOR_S1U,
-                                                                (const char **)&enb_ipv4_address_for_S1U)
+                                                        && config_setting_lookup_string( subsetting, ENB_CONFIG_STRING_ENB_INTERFACE_NAME_FOR_S1U,
+                                                                (const char **)&enb_interface_name_for_S1U)
+                                                                && config_setting_lookup_string( subsetting, ENB_CONFIG_STRING_ENB_IPV4_ADDR_FOR_S1U,
+                                                                        (const char **)&enb_ipv4_address_for_S1U)
+                                                                        && config_setting_lookup_int(subsetting, ENB_CONFIG_STRING_ENB_PORT_FOR_S1U,
+                                                                                                                               &enb_port_for_S1U)
                         )
                         ){
                             enb_properties.properties[enb_properties_index]->enb_interface_name_for_S1U = strdup(enb_interface_name_for_S1U);
@@ -1610,6 +1614,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                             if (address) {
                                 IPV4_STR_ADDR_TO_INT_NWBO ( address, enb_properties.properties[enb_properties_index]->enb_ipv4_address_for_S1U, "BAD IP ADDRESS FORMAT FOR eNB S1_U !\n" );
                             }
+                            enb_properties.properties[enb_properties_index]->enb_port_for_S1U = enb_port_for_S1U;
 
                             enb_properties.properties[enb_properties_index]->enb_interface_name_for_S1_MME = strdup(enb_interface_name_for_S1_MME);
                             cidr = enb_ipv4_address_for_S1_MME;
