@@ -484,6 +484,7 @@ check_install_epc_software() {
     test_install_package gccxml
     test_install_package gdb 
     test_install_package guile-2.0-dev
+    test_install_package gtkwave
     test_install_package iperf
     test_install_package iproute
     test_install_package iptables
