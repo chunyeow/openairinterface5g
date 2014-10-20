@@ -21,7 +21,7 @@ if(paramsinitialized)
     if(Niter~=1)
         error('We should only use one get_frame at each run.\n');
     end
-    Nmeas = 10;
+    Nmeas = 5;
     
     %% ------- Prepare the signals for A2B ---------- %%
     signalA2B=zeros(N,4);
@@ -75,19 +75,18 @@ if(paramsinitialized)
     for meas=1:Nmeas
         %% ------- Node A to B transmission ------- %%
         oarf_send_frame(card,signalA2B,n_bit);
-        %keyboard
-        sleep(0.01);
         receivedA2B=oarf_get_frame(card);
         %oarf_stop(card); %not good, since it does a reset
         sleep(0.01);
         
         %%----------Node B to A transmission---------%%
         oarf_send_frame(card,signalB2A,n_bit);
-        %keyboard
-        sleep(0.01);
+
         receivedB2A=oarf_get_frame(card);
         %oarf_stop(card); %not good, since it does a reset
         
+        %keyboard;
+
         %% ------- Do the A to B channel estimation ------- %%
         for i=0:119;
             ifblock=receivedA2B(i*640+[1:640],indB);
@@ -158,7 +157,7 @@ if(paramsinitialized)
       fblock=fft(ifblock);
       fblock(1,:)=[];
       fblock(151:360,:)=[];
-      noise_f(i+1,:,:)=fblock;
+      %noise_f(i+1,:,:)=fblock;
     end
 
 
@@ -177,8 +176,9 @@ if(paramsinitialized)
     end
     
     figure(2)
-    t=[0:512-1]/512*1e-2;
-    plot(t,20*log10(abs(tchanests)))
+    %t=[0:512-1]/512*1e-2;
+    %plot(t,20*log10(abs(tchanests)))
+    plot(20*log10(abs(tchanests)))
     xlabel('time')
     ylabel('|h|')
     if Nantb==3
