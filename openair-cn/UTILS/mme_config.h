@@ -56,6 +56,7 @@
 
 #define MME_CONFIG_STRING_S1AP_CONFIG                    "S1AP"
 #define MME_CONFIG_STRING_S1AP_OUTCOME_TIMER             "S1AP_OUTCOME_TIMER"
+#define MME_CONFIG_STRING_S1AP_PORT                      "S1AP_PORT"
 
 #define MME_CONFIG_STRING_GUMMEI_CONFIG                  "GUMMEI"
 #define MME_CONFIG_STRING_MME_CODE                       "MME_CODE"
