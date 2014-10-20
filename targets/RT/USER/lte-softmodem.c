@@ -3035,14 +3035,10 @@ int main(int argc, char **argv) {
 #endif
   }
 
-#ifndef EXMIMO
-#ifndef USRP_DEBUG 
   if (openair0_device_init(&openair0, &openair0_cfg[0]) <0) {
     printf("Exiting, cannot initialize device\n");
     exit(-1);
   }
-#endif
-#endif
 
   mac_xface = malloc(sizeof(MAC_xface));
 
