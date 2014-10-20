@@ -127,24 +127,30 @@ fi
 
 if [ x$real_time == "xemulation" ]; then
     ITTI_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/itti_enb_ue.$HOSTNAME.log
+    touch $ITTI_LOG_FILE
     #rotate_log_file $ITTI_LOG_FILE
     
     STDOUT_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/stdout_enb_ue.$HOSTNAME.log
     #rotate_log_file $STDOUT_LOG_FILE
     #rotate_log_file $STDOUT_LOG_FILE.filtered
+    touch $STDOUT_LOG_FILE
     
     PCAP_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/tshark_enb_ue.$HOSTNAME.pcap
     #rotate_log_file $PCAP_LOG_FILE
+    touch $PCAP_LOG_FILE
 else 
     ITTI_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/itti_enb_rf.$HOSTNAME.log
     #rotate_log_file $ITTI_LOG_FILE
+    touch $ITTI_LOG_FILE
     
     STDOUT_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/stdout_enb_rf.$HOSTNAME.log
     #rotate_log_file $STDOUT_LOG_FILE
     #rotate_log_file $STDOUT_LOG_FILE.filtered
+    touch $STDOUT_LOG_FILE
     
     PCAP_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/tshark_enb_rf.$HOSTNAME.pcap
     #rotate_log_file $PCAP_LOG_FILE
+    touch $PCAP_LOG_FILE
 fi
 
 
