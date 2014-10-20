@@ -748,7 +748,7 @@ static int gtpv1u_eNB_init(void)
     AssertFatal(gtpv1u_data_g.teid_mapping != NULL, " ERROR Initializing TASK_GTPV1_U task interface: in hashtable_create\n");
     gtpv1u_data_g.enb_ip_address_for_S1u_S12_S4_up         = enb_properties_p->enb_ipv4_address_for_S1U;
     gtpv1u_data_g.ip_addr         = NULL;
-    gtpv1u_data_g.enb_port_for_S1u_S12_S4_up = GTPV1U_UDP_PORT;
+    gtpv1u_data_g.enb_port_for_S1u_S12_S4_up = enb_properties_p->enb_port_for_S1U;
     //gtpv1u_data_g.udp_data;
     gtpv1u_data_g.seq_num         = 0;
     gtpv1u_data_g.restart_counter = 0;
