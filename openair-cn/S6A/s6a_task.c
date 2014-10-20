@@ -107,13 +107,13 @@ int s6a_init(const mme_config_t *mme_config_p)
 
     memset(&s6a_fd_cnf, 0, sizeof(s6a_fd_cnf_t));
 
-    if (strcmp(fd_core_version(), FREE_DIAMETER_MINIMUM_VERSION) != 0) {
-        S6A_ERROR("Freediameter version %s fount, expecting %s\n", fd_core_version(),
+    /*if (strcmp(fd_core_version(), FREE_DIAMETER_MINIMUM_VERSION) != 0) {
+        S6A_ERROR("Freediameter version %s found, expecting %s\n", fd_core_version(),
                   FREE_DIAMETER_MINIMUM_VERSION);
         return -1;
     } else {
         S6A_DEBUG("Freediameter version %s\n", fd_core_version());
-    }
+    }*/
 
 
     /* Initializing freeDiameter core */
