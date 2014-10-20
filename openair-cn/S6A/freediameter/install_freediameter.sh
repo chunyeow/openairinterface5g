@@ -97,7 +97,9 @@ if [ -d gnutls-3.1.0/ ]
     rm -rf gnutls-3.1.0/
 fi
 
-wget ftp://ftp.gnutls.org/gcrypt/gnutls/v3.1/gnutls-3.1.0.tar.xz > install_log.txt
+# L.GAUTHIER: GNUTLS 3.1.23 compiles on 14.04 x64 with nettle comming with ubuntu
+# see http://www.bauer-power.net/2014/06/how-to-install-gnutls-3123-from-source.html#.VD6LI4VxOPI
+wget ftp://ftp.gnutls.org/gcrypt/gnutls/stable/gnutls-3.1.0.tar.xz > install_log.txt
 tar -xf gnutls-3.1.0.tar.xz
 echo "Uncompressing gnutls archive"
 cd gnutls-3.1.0/
