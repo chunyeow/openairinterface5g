@@ -81,8 +81,6 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
     u_int32_t            dest4_addr;
     struct in_addr       in_dest_addr;
 
-    SGI_IF_DEBUG("--------------------------------------------------------------\n%s :\n", __FUNCTION__);
-    sgi_print_hex_octets(data_pP, packet_sizeP);
 
     switch (htons(eh_p->ether_type)) {
 
@@ -93,14 +91,16 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
         dest4_addr = iph_p->daddr;
         if (hashtable_get(sgi_data_pP->addr_v4_mapping, dest4_addr, (void**)&addr_mapping_p) == HASH_TABLE_OK) {
             memcpy(eh_p->ether_dhost, addr_mapping_p->ue_mac_addr, ETH_ALEN);
+            SGI_IF_DEBUG("--------------------------------------------------------------\n%s :\n", __FUNCTION__);
+            sgi_print_hex_octets(data_pP, packet_sizeP);
 
         } else {
             if (sgi_data_pP->ipv4_addr == dest4_addr) {
-                SGI_IF_DEBUG("%s Dropping incoming egress IPV4 packet not UE IP flow\n", __FUNCTION__);
+                //SGI_IF_DEBUG("%s Dropping incoming egress IPV4 packet not UE IP flow\n", __FUNCTION__);
                 return;
             } else {
                 in_dest_addr.s_addr = dest4_addr;
-                SGI_IF_WARNING("%s Dropping incoming egress IPV4 packet, IPV4 dest %s not found \n", __FUNCTION__, inet_ntoa(in_dest_addr));
+                //SGI_IF_WARNING("%s Dropping incoming egress IPV4 packet, IPV4 dest %s not found \n", __FUNCTION__, inet_ntoa(in_dest_addr));
                 return;
             }
         }
@@ -114,8 +114,10 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
         memcpy(dest6_addr.__in6_u.__u6_addr8, ip6h_p->daddr.__in6_u.__u6_addr8, 16);
         if (obj_hashtable_get(sgi_data_pP->addr_v6_mapping, (void*)&dest6_addr, sizeof(struct in6_addr), (void**)&addr_mapping_p) == HASH_TABLE_OK) {
             memcpy(eh_p->ether_dhost, addr_mapping_p->ue_mac_addr, ETH_ALEN);
+            SGI_IF_DEBUG("--------------------------------------------------------------\n%s :\n", __FUNCTION__);
+            sgi_print_hex_octets(data_pP, packet_sizeP);
         } else {
-            SGI_IF_WARNING("%s Dropping incoming egress IPV6 packet, IPV6 dest %X:%X:%X:%X:%X:%X:%X:%X not found \n", __FUNCTION__, NIP6ADDR(&dest6_addr));
+            //SGI_IF_WARNING("%s Dropping incoming egress IPV6 packet, IPV6 dest %X:%X:%X:%X:%X:%X:%X:%X not found \n", __FUNCTION__, NIP6ADDR(&dest6_addr));
             return;
         }
         break;
@@ -144,11 +146,11 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
             memcpy(eh_p->ether_dhost, addr_mapping_p->ue_mac_addr, ETH_ALEN);
         } else {
             if (sgi_data_pP->ipv4_addr == dest4_addr) {
-                SGI_IF_DEBUG("%s Dropping incoming egress IPV4 packet not UE IP flow\n", __FUNCTION__);
+                //SGI_IF_DEBUG("%s Dropping incoming egress IPV4 packet not UE IP flow\n", __FUNCTION__);
                 return;
             } else {
                 in_dest_addr.s_addr = dest4_addr;
-                SGI_IF_WARNING("%s Dropping incoming egress IPV4 packet, IPV4 dest %s not found \n", __FUNCTION__, inet_ntoa(in_dest_addr));
+                //SGI_IF_WARNING("%s Dropping incoming egress IPV4 packet, IPV4 dest %s not found \n", __FUNCTION__, inet_ntoa(in_dest_addr));
                 return;
             }
         }
@@ -220,10 +222,9 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
     u_int32_t            src4_addr;
     struct in_addr       in_dest_addr;
 
-    SGI_IF_DEBUG("--------------------------------------------------------------\n%s :\n", __FUNCTION__);
-    sgi_print_hex_octets(data_pP, packet_sizeP);
 
     switch (htons(eh_p->ether_type)) {
+    sgi_print_hex_octets(data_pP, packet_sizeP);
 
     //*******************
     case ETHERTYPE_IP:
@@ -232,11 +233,11 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
         dest4_addr = iph_p->daddr;
         if (hashtable_get(sgi_data_pP->addr_v4_mapping, dest4_addr, (void**)&addr_mapping_p) != HASH_TABLE_OK) {
             if (sgi_data_pP->ipv4_addr == dest4_addr) {
-                SGI_IF_DEBUG("%s Dropping incoming egress IPV4 packet not UE IP flow\n", __FUNCTION__);
+                //SGI_IF_DEBUG("%s Dropping incoming egress IPV4 packet not UE IP flow\n", __FUNCTION__);
                 return;
             } else {
                 in_dest_addr.s_addr = dest4_addr;
-                SGI_IF_WARNING("%s Dropping incoming egress IPV4 packet, IPV4 dest %s not found \n", __FUNCTION__, inet_ntoa(in_dest_addr));
+                //SGI_IF_WARNING("%s Dropping incoming egress IPV4 packet, IPV4 dest %s not found \n", __FUNCTION__, inet_ntoa(in_dest_addr));
                 return;
             }
         }
@@ -309,7 +310,7 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
         break;
 
     default:
-        SGI_IF_ERROR("%s UNHANDLED ether type %d of incoming egress packet\n", __FUNCTION__, eh_p->ether_type);
+        //SGI_IF_ERROR("%s UNHANDLED ether type %d of incoming egress packet\n", __FUNCTION__, eh_p->ether_type);
         return;
     }
 
