@@ -129,7 +129,7 @@ unsigned short config_frames[4] = {2,9,11,13};
 #define FRAME_PERIOD    100000000ULL
 #define DAQ_PERIOD      66667ULL
 
-#define DEBUG_THREADS 1
+//#define DEBUG_THREADS 1
 
 //#define USRP_DEBUG 1
 
@@ -395,6 +395,7 @@ void exit_fun(const char* s)
   oai_exit = 1;
 
 #if defined(ENABLE_ITTI)
+  sleep(1); //allow lte-softmodem threads to exit first
   itti_terminate_tasks (TASK_UNKNOWN);
 #endif
 
@@ -906,11 +907,10 @@ static void * eNB_thread_tx(void *param) {
 #endif
 
  
-
-#if defined(ENABLE_ITTI)
-  /* Wait for eNB application initialization to be complete (eNB registration to MME) */
+/*#if defined(ENABLE_ITTI)
+  // Wait for eNB application initialization to be complete (eNB registration to MME)
   wait_system_ready ("Waiting for eNB application to be ready %s\r", &start_eNB);
-#endif
+#endif*/
 
 #ifdef RTAI
   sprintf(task_name,"TXC%dS%d",proc->CC_id,proc->subframe);
@@ -1036,10 +1036,10 @@ static void * eNB_thread_rx(void *param) {
   char task_name[8];
 #endif
 
-#if defined(ENABLE_ITTI)
-  /* Wait for eNB application initialization to be complete (eNB registration to MME) */
+/*#if defined(ENABLE_ITTI)
+  // Wait for eNB application initialization to be complete (eNB registration to MME) 
   wait_system_ready ("Waiting for eNB application to be ready %s\r", &start_eNB);
-#endif
+#endif*/
 
 #ifdef RTAI
   sprintf(task_name,"RXC%1dS%1d",proc->CC_id,proc->subframe);
@@ -3176,6 +3176,13 @@ int main(int argc, char **argv) {
 #endif
 #endif
 
+  /*#if defined(ENABLE_ITTI)
+  // Wait for eNB application initialization to be complete (eNB registration to MME)
+  if (UE_flag==0) {
+    printf("Waiting for eNB application to be ready\n");
+    wait_system_ready ("Waiting for eNB application to be ready %s\r", &start_eNB);
+  }
+  #endif*/
 
 
   // this starts the DMA transfers
@@ -3305,7 +3312,7 @@ int main(int argc, char **argv) {
   }
 
   // Sleep to allow all threads to setup
-  sleep(1);
+  //sleep(1);
 
 
 #ifndef EXMIMO

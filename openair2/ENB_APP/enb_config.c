@@ -846,7 +846,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                             enb_properties.properties[enb_properties_index]->rx_gain[j] = rx_gain;
                             if ((rx_gain <0) || (rx_gain > 160))
                                 AssertError (0, parse_errors ++,
-                                        "Failed to parse eNB configuration file %s, enb %d unknown value \"%d\" for nb_antennas_rx choice: 0..160 !\n",
+                                        "Failed to parse eNB configuration file %s, enb %d unknown value \"%d\" for rx_gain choice: 0..160 !\n",
                                         lib_config_file_name_pP, i, rx_gain);
 
                             enb_properties.properties[enb_properties_index]->prach_root[j] =  prach_root;
@@ -964,7 +964,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                                         lib_config_file_name_pP, i, pusch_groupAssignment);
 
                             if (strcmp(pusch_sequenceHoppingEnabled, "ENABLE") == 0)
-                                enb_properties.properties[enb_properties_index]->pusch_groupHoppingEnabled[j] = TRUE;
+                                enb_properties.properties[enb_properties_index]->pusch_sequenceHoppingEnabled[j] = TRUE;
                             else if (strcmp(pusch_sequenceHoppingEnabled, "DISABLE") == 0)
                                 enb_properties.properties[enb_properties_index]->pusch_sequenceHoppingEnabled[j] = FALSE;
                             else

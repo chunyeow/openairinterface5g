@@ -1346,11 +1346,9 @@ void generate_phich_top(PHY_VARS_eNB *phy_vars_eNB,
 
   for (UE_id=0;UE_id<NUMBER_OF_UE_MAX;UE_id++) {
     if ((ulsch_eNB[UE_id])&&(ulsch_eNB[UE_id]->rnti>0)) {
-      LOG_D(PHY,"[eNB][PUSCH %d/%x] Frame %d subframe %d (pusch_subframe %d,pusch_frame %d) phich active %d\n",
-	    harq_pid,ulsch_eNB[UE_id]->rnti,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe,pusch_subframe,pusch_frame,ulsch_eNB[UE_id]->harq_processes[harq_pid]->phich_active);      
       if (ulsch_eNB[UE_id]->harq_processes[harq_pid]->phich_active == 1) {
 
-      LOG_D(PHY,"[eNB][PUSCH %d/%x] Frame %d subframe %d (pusch_subframe %d,pusch_frame %d) phich active %d\n",
+	LOG_D(PHY,"[eNB][PUSCH %d/%x] Frame %d subframe %d (pusch_subframe %d,pusch_frame %d) phich active %d\n",
 	    harq_pid,ulsch_eNB[UE_id]->rnti,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe,pusch_subframe,pusch_frame,ulsch_eNB[UE_id]->harq_processes[harq_pid]->phich_active);
       
 	ngroup_PHICH = (ulsch_eNB[UE_id]->harq_processes[harq_pid]->first_rb + 
@@ -1395,6 +1393,7 @@ void generate_phich_top(PHY_VARS_eNB *phy_vars_eNB,
 			      subframe);
 	  */
 	}
+
 	// if no format0 DCI was transmitted by MAC, prepare the 
 	// MCS parameters for the retransmission
 
