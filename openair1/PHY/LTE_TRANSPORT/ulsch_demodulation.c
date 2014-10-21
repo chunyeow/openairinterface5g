@@ -1293,7 +1293,7 @@ void rx_ulsch(PHY_VARS_eNB *phy_vars_eNB,
 
   rx_power_correction = 1;
 
-  for (l=0;l<(frame_parms->symbols_per_tti-ulsch[UE_id]->srs_active);l++) {
+  for (l=0;l<(frame_parms->symbols_per_tti-ulsch[UE_id]->harq_processes[harq_pid]->srs_active);l++) {
           
 #ifdef DEBUG_ULSCH
     msg("rx_ulsch : symbol %d (first_rb %d,nb_rb %d), rxdataF %p, rxdataF_ext %p\n",l,
@@ -1400,7 +1400,7 @@ void rx_ulsch(PHY_VARS_eNB *phy_vars_eNB,
 #endif
     }
 
-  for (l=0;l<frame_parms->symbols_per_tti-ulsch[UE_id]->srs_active;l++) {
+  for (l=0;l<frame_parms->symbols_per_tti-ulsch[UE_id]->harq_processes[harq_pid]->srs_active;l++) {
 
     if (((frame_parms->Ncp == 0) && ((l==3) || (l==10)))||   // skip pilots
 	((frame_parms->Ncp == 1) && ((l==2) || (l==8)))) {
@@ -1505,7 +1505,7 @@ void rx_ulsch(PHY_VARS_eNB *phy_vars_eNB,
 
 
   llrp = (int16_t*)&eNB_pusch_vars->llr[0];
-  for (l=0;l<frame_parms->symbols_per_tti-ulsch[UE_id]->srs_active;l++) {
+  for (l=0;l<frame_parms->symbols_per_tti-ulsch[UE_id]->harq_processes[harq_pid]->srs_active;l++) {
     
     if (((frame_parms->Ncp == 0) && ((l==3) || (l==10)))||   // skip pilots
 	((frame_parms->Ncp == 1) && ((l==2) || (l==8)))) {
@@ -1567,7 +1567,7 @@ void dump_ulsch(PHY_VARS_eNB *PHY_vars_eNB,uint8_t sched_subframe, uint8_t UE_id
 
   harq_pid = subframe2harq_pid(&PHY_vars_eNB->lte_frame_parms,PHY_vars_eNB->proc[sched_subframe].frame_rx,subframe);
 
-  printf("Dumping ULSCH in subframe %d with harq_pid %d, for NB_rb %d, mcs %d, Qm %d, N_symb %d\n", subframe,harq_pid,PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->nb_rb,PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->mcs,get_Qm_ul(PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->mcs),PHY_vars_eNB->ulsch_eNB[UE_id]->Nsymb_pusch);
+  printf("Dumping ULSCH in subframe %d with harq_pid %d, for NB_rb %d, mcs %d, Qm %d, N_symb %d\n", subframe,harq_pid,PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->nb_rb,PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->mcs,get_Qm_ul(PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->mcs),PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->Nsymb_pusch);
   //#ifndef OAI_EMU 
   write_output("/tmp/ulsch_d.m","ulsch_dseq",&PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->d[0][96], 
 	       PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->Kplus*3,1,0);
@@ -1590,7 +1590,7 @@ void dump_ulsch(PHY_VARS_eNB *PHY_vars_eNB,uint8_t sched_subframe, uint8_t UE_id
     write_output("/tmp/drs_est1.m","drsest1",PHY_vars_eNB->lte_eNB_pusch_vars[UE_id]->drs_ch_estimates[0][1],PHY_vars_eNB->lte_frame_parms.N_RB_UL*12*nsymb,1,1);
   write_output("/tmp/ulsch_rxF_comp0.m","ulsch0_rxF_comp0",&PHY_vars_eNB->lte_eNB_pusch_vars[UE_id]->rxdataF_comp[0][0][0],PHY_vars_eNB->lte_frame_parms.N_RB_UL*12*nsymb,1,1);
   //  write_output("ulsch_rxF_comp1.m","ulsch0_rxF_comp1",&PHY_vars_eNB->lte_eNB_pusch_vars[UE_id]->rxdataF_comp[0][1][0],PHY_vars_eNB->lte_frame_parms.N_RB_UL*12*nsymb,1,1);
-  write_output("/tmp/ulsch_rxF_llr.m","ulsch_llr",PHY_vars_eNB->lte_eNB_pusch_vars[UE_id]->llr,PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->nb_rb*12*get_Qm_ul(PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->mcs)*PHY_vars_eNB->ulsch_eNB[UE_id]->Nsymb_pusch,1,0);	
+  write_output("/tmp/ulsch_rxF_llr.m","ulsch_llr",PHY_vars_eNB->lte_eNB_pusch_vars[UE_id]->llr,PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->nb_rb*12*get_Qm_ul(PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->mcs)*PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->Nsymb_pusch,1,0);	
   write_output("/tmp/ulsch_ch_mag.m","ulsch_ch_mag",&PHY_vars_eNB->lte_eNB_pusch_vars[UE_id]->ul_ch_mag[0][0][0],PHY_vars_eNB->lte_frame_parms.N_RB_UL*12*nsymb,1,1);	  
   //  write_output("ulsch_ch_mag1.m","ulsch_ch_mag1",&PHY_vars_eNB->lte_eNB_pusch_vars[UE_id]->ul_ch_mag[0][1][0],PHY_vars_eNB->lte_frame_parms.N_RB_UL*12*nsymb,1,1);	  
   //#endif	 

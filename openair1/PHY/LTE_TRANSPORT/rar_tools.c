@@ -120,14 +120,14 @@ int generate_eNB_ulsch_params_from_rar(unsigned char *rar_pdu,
 
   cqireq = rar[3]&1;
   if (cqireq==1){
-    ulsch->Or2                                   = sizeof_wideband_cqi_rank2_2A_5MHz;
-    ulsch->Or1                                   = sizeof_wideband_cqi_rank1_2A_5MHz;
-    ulsch->O_RI                                  = 1;
+    ulsch->harq_processes[harq_pid]->Or2                                   = sizeof_wideband_cqi_rank2_2A_5MHz;
+    ulsch->harq_processes[harq_pid]->Or1                                   = sizeof_wideband_cqi_rank1_2A_5MHz;
+    ulsch->harq_processes[harq_pid]->O_RI                                  = 1;
   }
   else{
-    ulsch->O_RI                                  = 0;//1;
-    ulsch->Or2                                   = 0;
-    ulsch->Or1                                   = 0;
+    ulsch->harq_processes[harq_pid]->O_RI                                  = 0;//1;
+    ulsch->harq_processes[harq_pid]->Or2                                   = 0;
+    ulsch->harq_processes[harq_pid]->Or1                                   = 0;
  
   }
   ulsch->harq_processes[harq_pid]->O_ACK                                 = 0;//2;
@@ -136,7 +136,7 @@ int generate_eNB_ulsch_params_from_rar(unsigned char *rar_pdu,
   ulsch->beta_offset_harqack_times8            = 16;
 
   
-  ulsch->Nsymb_pusch                           = 12-(frame_parms->Ncp<<1);
+  ulsch->harq_processes[harq_pid]->Nsymb_pusch                           = 12-(frame_parms->Ncp<<1);
   ulsch->rnti = (((uint16_t)rar[4])<<8)+rar[5];  
   if (ulsch->harq_processes[harq_pid]->round == 0) {
     ulsch->harq_processes[harq_pid]->status = ACTIVE;
@@ -160,8 +160,8 @@ int generate_eNB_ulsch_params_from_rar(unsigned char *rar_pdu,
   msg("ulsch ra (eNB): round    %d\n",ulsch->harq_processes[harq_pid]->round);  
   msg("ulsch ra (eNB): TBS      %d\n",ulsch->harq_processes[harq_pid]->TBS);
   msg("ulsch ra (eNB): mcs      %d\n",ulsch->harq_processes[harq_pid]->mcs);
-  msg("ulsch ra (eNB): Or1      %d\n",ulsch->Or1);
-  msg("ulsch ra (eNB): ORI      %d\n",ulsch->O_RI);
+  msg("ulsch ra (eNB): Or1      %d\n",ulsch->harq_processes[harq_pid]->Or1);
+  msg("ulsch ra (eNB): ORI      %d\n",ulsch->harq_processes[harq_pid]->O_RI);
 #endif
   return(0);
 }

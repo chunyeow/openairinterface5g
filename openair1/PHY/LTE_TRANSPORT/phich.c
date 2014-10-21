@@ -1283,6 +1283,9 @@ void rx_phich(PHY_VARS_UE *phy_vars_ue,
       //      ulsch->harq_processes[harq_pid]->Ndi = 0;
       ulsch->harq_processes[harq_pid]->round++;
       ulsch->harq_processes[harq_pid]->rvidx = rv_table[ulsch->harq_processes[harq_pid]->round&3];
+      ulsch->O_RI = 0;
+      ulsch->O    = 0;
+      ulsch->uci_format = HLC_subband_cqi_nopmi;
     }
 
 
@@ -1406,6 +1409,11 @@ void generate_phich_top(PHY_VARS_eNB *phy_vars_eNB,
 	    //	    ulsch_eNB[UE_id]->harq_processes[harq_pid]->Ndi = 0;
 	    //	    ulsch_eNB[UE_id]->harq_processes[harq_pid]->round++; //this is already done in phy_procedures
 	    ulsch_eNB[UE_id]->harq_processes[harq_pid]->rvidx = rv_table[ulsch_eNB[UE_id]->harq_processes[harq_pid]->round&3];
+	    ulsch_eNB[UE_id]->harq_processes[harq_pid]->O_RI                                  = 0;
+	    ulsch_eNB[UE_id]->harq_processes[harq_pid]->Or2                                   = 0;
+	    ulsch_eNB[UE_id]->harq_processes[harq_pid]->Or1                                   = 0;//sizeof_HLC_subband_cqi_nopmi_5MHz;
+	    ulsch_eNB[UE_id]->harq_processes[harq_pid]->uci_format                            = HLC_subband_cqi_nopmi;
+	    
 	  }
 	  else {
 	    LOG_D(PHY,"[eNB %d][PUSCH %d] frame %d subframe %d PHICH ACK (no format0 DCI) Clearing subframe_scheduling_flag, setting round to 0\n",

@@ -355,16 +355,52 @@ typedef struct {
   uint32_t TBS;
   /// The payload + CRC size in bits  
   uint32_t B; 
+  /// CQI CRC status
+  uint8_t cqi_crc_status;
+  /// Pointer to CQI data
+  uint8_t o[MAX_CQI_BYTES];
+  /// Format of CQI data 
+  UCI_format_t uci_format;
+  /// Length of CQI data under RI=1 assumption(bits)
+  uint8_t Or1;
+  /// Length of CQI data under RI=2 assumption(bits)
+  uint8_t Or2;
+  /// Rank information 
+  uint8_t o_RI[2];
+  /// Length of rank information (bits)
+  uint8_t O_RI;
+  /// Pointer to ACK
+  uint8_t o_ACK[4];
   /// Length of ACK information (bits)
   uint8_t O_ACK;
   /// The value of DAI in DCI format 0 
   uint8_t V_UL_DAI;
+  /// "q" sequences for CQI/PMI (for definition see 36-212 V8.6 2009-03, p.27)
+  int8_t q[MAX_CQI_PAYLOAD];
+  /// number of coded CQI bits after interleaving
+  uint8_t o_RCC;
+  /// coded and interleaved CQI bits
+  int8_t o_w[(MAX_CQI_BITS+8)*3];
+  /// coded CQI bits
+  int8_t o_d[96+((MAX_CQI_BITS+8)*3)];
+  /// coded ACK bits
+  int16_t q_ACK[MAX_ACK_PAYLOAD];
+  /// coded RI bits
+  int16_t q_RI[MAX_RI_PAYLOAD];
+  /// Concatenated "e"-sequences (for definition see 36-212 V8.6 2009-03, p.17-18) 
+  int16_t e[MAX_NUM_CHANNEL_BITS];
+  /// Temporary h sequence to flag PUSCH_x/PUSCH_y symbols which are not scrambled
+  uint8_t h[MAX_NUM_CHANNEL_BITS];
   /// Pointer to the payload
   uint8_t *b;  
   /// Pointers to transport block segments
   uint8_t *c[MAX_NUM_ULSCH_SEGMENTS];
   /// RTC values for each segment (for definition see 36-212 V8.6 2009-03, p.15)  
   uint32_t RTC[MAX_NUM_ULSCH_SEGMENTS]; 
+  /// Current Number of Symbols
+  uint8_t Nsymb_pusch;
+  /// SRS active flag
+  uint8_t srs_active;
   /// Index of current HARQ round for this ULSCH
   uint8_t round; 
   /// MCS format for this ULSCH
@@ -404,50 +440,14 @@ typedef struct {
 } LTE_UL_eNB_HARQ_t;
 
 typedef struct {
-  /// Current Number of Symbols
-  uint8_t Nsymb_pusch;
-  /// SRS active flag
-  uint8_t srs_active;
   /// Pointers to 8 HARQ processes for the ULSCH
   LTE_UL_eNB_HARQ_t *harq_processes[8];     
-  /// Concatenated "e"-sequences (for definition see 36-212 V8.6 2009-03, p.17-18) 
-  int16_t e[MAX_NUM_CHANNEL_BITS];
-  /// Temporary h sequence to flag PUSCH_x/PUSCH_y symbols which are not scrambled
-  uint8_t h[MAX_NUM_CHANNEL_BITS];
   /// Maximum number of HARQ rounds (for definition see 36-212 V8.6 2009-03, p.17)             
   uint8_t Mdlharq; 
   /// Maximum number of iterations used in eNB turbo decoder
   uint8_t max_turbo_iterations;
-  /// CQI CRC status
-  uint8_t cqi_crc_status;
-  /// Pointer to CQI data
-  uint8_t o[MAX_CQI_BYTES];
-  /// Format of CQI data 
-  UCI_format_t uci_format;
-  /// Length of CQI data under RI=1 assumption(bits)
-  uint8_t Or1;
-  /// Length of CQI data under RI=2 assumption(bits)
-  uint8_t Or2;
-  /// Rank information 
-  uint8_t o_RI[2];
-  /// Length of rank information (bits)
-  uint8_t O_RI;
-  /// Pointer to ACK
-  uint8_t o_ACK[4];
   /// ACK/NAK Bundling flag
   uint8_t bundling;
-  /// "q" sequences for CQI/PMI (for definition see 36-212 V8.6 2009-03, p.27)
-  int8_t q[MAX_CQI_PAYLOAD];
-  /// number of coded CQI bits after interleaving
-  uint8_t o_RCC;
-  /// coded and interleaved CQI bits
-  int8_t o_w[(MAX_CQI_BITS+8)*3];
-  /// coded CQI bits
-  int8_t o_d[96+((MAX_CQI_BITS+8)*3)];
-  /// coded ACK bits
-  int16_t q_ACK[MAX_ACK_PAYLOAD];
-  /// coded RI bits
-  int16_t q_RI[MAX_RI_PAYLOAD];
   /// beta_offset_cqi times 8
   uint16_t beta_offset_cqi_times8;
   /// beta_offset_ri times 8

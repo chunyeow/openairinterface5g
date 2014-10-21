@@ -880,8 +880,9 @@ int dlsch_modulation(mod_sym_t **txdataF,
   int16_t amp_rho_a, amp_rho_b;
   int16_t qam16_table_a[4],qam64_table_a[8],qam16_table_b[4],qam64_table_b[8];
   int16_t *qam_table_s;
+#ifdef DEBUG_DLSCH_MODULATION
   uint8_t Nl = dlsch->harq_processes[harq_pid]->Nl;
-
+#endif
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_MODULATION, VCD_FUNCTION_IN);
 
   nsymb = (frame_parms->Ncp==0) ? 14:12;
