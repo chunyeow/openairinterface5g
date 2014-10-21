@@ -1313,7 +1313,7 @@ static void *eNB_thread(void *arg)
     timing_info.time_avg = 0;
     timing_info.n_samples = 0;
 
-#ifdef USRP
+#ifndef EXMIMO
     printf("waiting for USRP sync (eNB_thread)\n");
 #ifdef RTAI
     rt_sem_wait(sync_sem);
@@ -2633,6 +2633,10 @@ int main(int argc, char **argv) {
   unsigned int tcxo = 114;
 #endif
 
+#ifdef ETHERNET
+  char *rrh_ip = "127.0.0.1";
+  int rrh_port = 22222;
+#endif
   //  int amp;
   // uint8_t prach_fmt;
   // int N_ZC;
@@ -3016,6 +3020,14 @@ int main(int argc, char **argv) {
   
 
   for (card=0;card<MAX_CARDS;card++) {
+
+    printf("HW: Configuring card %d\n",card); 
+    openair0_cfg[card].Mod_id = 0;
+#ifdef ETHERNET
+    printf("ETHERNET: Configuring ETH for %s:%d\n",rrh_ip,rrh_port);
+    openair0_cfg[card].rrh_ip   = &rrh_ip[0];
+    openair0_cfg[card].rrh_port = rrh_port;
+#endif
     openair0_cfg[card].sample_rate = sample_rate;
     openair0_cfg[card].tx_bw = bw;
     openair0_cfg[card].rx_bw = bw;

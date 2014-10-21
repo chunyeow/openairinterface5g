@@ -73,7 +73,7 @@ typedef struct {
   /* TX bandwidth in Hz */
   double tx_bw;
   /* RRH IP addr for Ethernet interface */
-  char rrh_ip[20];
+  char *rrh_ip;
   /* RRH port number for Ethernet interface */
   int rrh_port;
 } openair0_config_t;

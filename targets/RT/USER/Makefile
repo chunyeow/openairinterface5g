@@ -2,7 +2,7 @@
 include $(OPENAIR_TARGETS)/Makerules
 
 default: lte-softmodem
-all: lte-softmodem lte-enb
+all: lte-softmodem rrh
 
 include $(OPENAIR_TARGETS)/Makedirectives
 include $(OPENAIR_TARGETS)/Makefile.common
@@ -23,7 +23,7 @@ USRP=0
 endif
 
 CFLAGS += -O2 
-CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/COMMON 
+CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/COMMON  -I.
 
 CFLAGS += -DMAX_NUM_CCs=1
 
@@ -32,7 +32,7 @@ ifeq ($(EXMIMO),1)
 endif
 
 ifeq ($(ETHERNET),1)
-  CFLAGS += -I$(OPENAIR_TARGETS)/ARCH/ETHERNET/USERSPACE/LIB/
+  CFLAGS += -I$(OPENAIR_TARGETS)/ARCH/ETHERNET/USERSPACE/LIB/ -DETHERNET
 endif
 
 ifeq ($(DEBUG),1)	
@@ -46,7 +46,7 @@ CFLAGS += -DRRC_MSG_PRINT
 CFLAGS += -DPDCP_MSG_PRINT
 endif
 
-SRC = synctest.c condtest.c #lte-softmodem.c
+SRC = synctest.c condtest.c 
 
 ifndef RTAI
 RTAI=1
@@ -204,7 +204,7 @@ SHARED_DEPENDENCIES 	+= $(LFDS_LIB)
 -include $(ASN1_MSG_OBJS1:.o=.d)
 -include $(RTAI_OBJ:.o=.d)
 -include lte-softmodem.d
--include lte-enb.d
+-include rrh.d
 
 $(LFDS_LIB):
 	@if [ ! -d $(LFDS_OBJ_DIR)/bin ]; then mkdir -p $(LFDS_OBJ_DIR)/bin; fi;
@@ -220,7 +220,7 @@ endif
 ifeq ($(ETHERNET),1)
 $(ETHERNET_OBJ):$(ETHERNET_FILE_OBJ)
 	@echo Compiling $<
-	@$(CC) -c $(ETHERNET_CFLAGS) $(ETHERNET_FILE_OBJ) -o $(ETHERNET_OBJ)
+	@$(CC) -c -g -ggdb $(ETHERNET_CFLAGS) $(ETHERNET_FILE_OBJ) -o $(ETHERNET_OBJ)
 endif
 
 ifeq ($(RTAI),1)
@@ -246,6 +246,8 @@ $(OBJ) $(ASN1_MSG_OBJS1): %.o : %.c
 else
 $(OBJ) $(ASN1_MSG_OBJS1) lte-softmodem.o: %.o : %.c
 endif
+
+rrh.o: %.o : %.c
 
 	@echo Compiling $< ...
 	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) -o $@ $<
@@ -273,6 +275,9 @@ sleeptest: rt_wrapper.o sleeptest.c
 lte-softmodem: $(OBJ) $(USRP_OBJ) $(ETHERNET_OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) lte-softmodem.o $(SHARED_DEPENDENCIES)
 	@echo Linking $@
 	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(USRP_OBJ) $(ETHERNET_OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) lte-softmodem.o -o lte-softmodem $(LDFLAGS) $(LIBS)
+
+rrh: rrh.o
+	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) rrh.o -o rrh -lpthread
 
 emos-raw: $(SHARED_DEPENDENCIES) $(OBJ_EMOS) emos-raw.c
 	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) $(OBJ_EMOS) -o emos-raw emos-raw.c $(LDFLAGS) $(LIBS)
@@ -362,8 +367,8 @@ cleanmodem:
 	@$(RM_F_V) $(OBJ) $(RTAI_OBJ) $(OBJ_EMOS) $(OBJ_SYNC) $(USRP_OBJ)
 	@$(RM_F_V) $(OBJ:.o=.d) $(RTAI_OBJ:.o=.d) $(OBJ_EMOS:.o=.d) $(OBJ_SYNC:.o=.d)
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1_msg.o $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1_msg.d
-	@$(RM_F_V) lte-enb.o lte-enb.d lte-softmodem.o lte-softmodem.d
-	@$(RM_F_V) lte-enb.o lte-softmodem.o
+	@$(RM_F_V) rrh.o rrh.d lte-softmodem.o lte-softmodem.d
+	@$(RM_F_V) rrh.o lte-softmodem.o
 
 cleanasn1:
 	rm -f $(ASN1_MSG_OBJS1)
@@ -383,11 +388,11 @@ cleancell:
 
 cleanalmostall: cleanmodem 
 	rm -f $(ASN1_MSG_OBJS1)
-	rm -rf condtest synctest lte-softmodem
+	rm -rf condtest synctest lte-softmodem rrh
 	rm -rf synctest_eNB synctest_UE
 
 cleanall: common-cleanall clean cleanasn1
-	rm -rf condtest synctest lte-softmodem lte-softmodem-usrp
+	rm -rf condtest synctest lte-softmodem rrh
 	rm -rf synctest_eNB synctest_UE
 
 show:
