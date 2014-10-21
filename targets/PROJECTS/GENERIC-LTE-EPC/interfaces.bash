@@ -253,6 +253,7 @@ get_ip() {
 }
 
 get_mac_router() {
+    echo_success "Resolving router.eur"
     ping -c 1 router.eur > /dev/null || { echo_fatal "router.eur does not respond to ping" >&2 ; }
     IP_ROUTER=$(get_ip router.eur)
     #IP_ROUTER=`python -c 'import socket; print socket.gethostbyname("router.eur")'`
