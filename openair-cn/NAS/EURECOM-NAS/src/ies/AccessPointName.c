@@ -62,6 +62,11 @@ int encode_access_point_name(AccessPointName *accesspointname, uint8_t iei, uint
     uint8_t *lenPtr;
     uint32_t encoded = 0;
     int encode_result;
+    OctetString  apn_encoded;
+    uint32_t     length_index;
+    uint32_t     index;
+    uint32_t     index_copy;
+
     /* Checking IEI and pointer */
     CHECK_PDU_POINTER_AND_LENGTH_ENCODER(buffer, ACCESS_POINT_NAME_MINIMUM_LENGTH, len);
 #if defined (NAS_DEBUG)
@@ -74,11 +79,34 @@ int encode_access_point_name(AccessPointName *accesspointname, uint8_t iei, uint
     }
     lenPtr  = (buffer + encoded);
     encoded ++;
-    if ((encode_result = encode_octet_string(&accesspointname->accesspointnamevalue, buffer + encoded, len - encoded)) < 0)
+
+    apn_encoded.length = 0;
+    apn_encoded.value  = calloc(1, ACCESS_POINT_NAME_MAXIMUM_LENGTH);
+    index              = 0; // index on original APN string
+    length_index       = 0; // marker where to write partial length
+    index_copy         = 1;
+    while ((accesspointname->accesspointnamevalue.value[index] != 0) && (index < accesspointname->accesspointnamevalue.length)) {
+        if (accesspointname->accesspointnamevalue.value[index] == '.') {
+            apn_encoded.value[length_index] = index_copy - length_index - 1;
+            length_index = index_copy;
+            index_copy   = length_index + 1;
+        } else {
+            apn_encoded.value[index_copy] = accesspointname->accesspointnamevalue.value[index];
+            index_copy++;
+        }
+        index++;
+    }
+    apn_encoded.value[length_index] = index_copy - length_index - 1;
+    apn_encoded.length = index_copy;
+
+    if ((encode_result = encode_octet_string(&apn_encoded, buffer + encoded, len - encoded)) < 0) {
+        free(apn_encoded.value);
         return encode_result;
-    else
+    } else
         encoded += encode_result;
     *lenPtr = encoded - 1 - ((iei > 0) ? 1 : 0);
+
+    free(apn_encoded.value);
     return encoded;
 }
 
