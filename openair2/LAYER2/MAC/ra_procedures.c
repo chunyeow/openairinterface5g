@@ -200,7 +200,7 @@ void get_prach_resources(module_id_t module_idP,
   UE_mac_inst[module_idP].RA_prach_resources.ra_RNTI = 1 + t_id + 10*f_id;
 }
 
-void Msg1_tx(module_id_t module_idP,int CC_id,frame_t frameP, uint8_t eNB_id) {
+void Msg1_tx(module_id_t module_idP,uint8_t CC_id,frame_t frameP, uint8_t eNB_id) {
 
   if (CC_id>0) {
     LOG_E(MAC,"Transmission on secondary CCs is not supported yet\n");
@@ -221,7 +221,7 @@ void Msg1_tx(module_id_t module_idP,int CC_id,frame_t frameP, uint8_t eNB_id) {
 }
 
 
-void Msg3_tx(module_id_t module_idP,int CC_id,frame_t frameP, uint8_t eNB_id) {
+void Msg3_tx(module_id_t module_idP,uint8_t CC_id,frame_t frameP, uint8_t eNB_id) {
 
   if (CC_id>0) {
     LOG_E(MAC,"Transmission on secondary CCs is not supported yet\n");

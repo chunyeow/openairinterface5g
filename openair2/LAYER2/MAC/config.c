@@ -69,7 +69,7 @@ void ue_mac_reset(module_id_t module_idP,uint8_t eNB_index) {
   //timeAlignmentTimer expires
 
   // PHY changes for UE MAC reset
-  mac_xface->phy_reset_ue(module_idP,eNB_index);
+  mac_xface->phy_reset_ue(module_idP,0,eNB_index);
 
   // notify RRC to relase PUCCH/SRS
   // cancel all pending SRs
@@ -346,7 +346,7 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
                   (void*)mobilityControlInfo->rach_ConfigDedicated,
                   sizeof(*mobilityControlInfo->rach_ConfigDedicated));
           }
-          mac_xface->phy_config_afterHO_ue(Mod_id,eNB_index,mobilityControlInfo,0);
+          mac_xface->phy_config_afterHO_ue(Mod_id,0,eNB_index,mobilityControlInfo,0);
       }
   }
 

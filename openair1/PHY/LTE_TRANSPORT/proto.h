@@ -1205,13 +1205,13 @@ unsigned char get_I_TBS_UL(unsigned char I_MCS);
     @param I_MCS
     @param nb_rb
     @return Transport block size */
-uint64_t get_TBS_DL(uint8_t mcs, uint16_t nb_rb);
+uint32_t get_TBS_DL(uint8_t mcs, uint16_t nb_rb);
 
 /** \brief Compute Q (modulation order) based on uplink I_MCS. Implements table 7.1.7.1-1 from 36.213.
     @param I_MCS
     @param nb_rb
     @return Transport block size */
-uint64_t get_TBS_UL(uint8_t mcs, uint16_t nb_rb);
+uint32_t get_TBS_UL(uint8_t mcs, uint16_t nb_rb);
 
 /* \brief Return bit-map of resource allocation for a given DCI rballoc (RIV format) and vrb type
    @param vrb_type VRB type (0=localized,1=distributed)
@@ -1222,7 +1222,7 @@ uint32_t get_rballoc(uint8_t vrb_type,uint16_t rb_alloc_dci);
 /* \brief Return bit-map of resource allocation for a given DCI rballoc (RIV format) and vrb type
    @returns Transmission mode (1-7)
 */
-uint8_t get_transmission_mode(uint16_t Mod_id, uint8_t CC_id, uint16_t rnti);
+uint8_t get_transmission_mode(module_id_t Mod_id, uint8_t CC_id, rnti_t rnti);
 
 
 /* \brief 

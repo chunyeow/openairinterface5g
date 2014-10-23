@@ -472,7 +472,7 @@ void phy_config_dedicated_eNB_step2(PHY_VARS_eNB *phy_vars_eNB) {
 /*
  * Configures UE MAC and PHY with radioResourceCommon received in mobilityControlInfo IE during Handover
  */
-void phy_config_afterHO_ue(uint8_t Mod_id,int CC_id,uint8_t eNB_id, MobilityControlInfo_t *mobilityControlInfo, uint8_t ho_failed) {
+void phy_config_afterHO_ue(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_id, MobilityControlInfo_t *mobilityControlInfo, uint8_t ho_failed) {
 
   if(mobilityControlInfo!=NULL) {
     RadioResourceConfigCommon_t *radioResourceConfigCommon = &mobilityControlInfo->radioResourceConfigCommon;
@@ -582,7 +582,7 @@ void phy_config_afterHO_ue(uint8_t Mod_id,int CC_id,uint8_t eNB_id, MobilityCont
   }
 }
 
-void phy_config_meas_ue(uint8_t Mod_id,int CC_id,uint8_t eNB_index,uint8_t n_adj_cells,unsigned int *adj_cell_id) {
+void phy_config_meas_ue(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index,uint8_t n_adj_cells,unsigned int *adj_cell_id) {
   
   PHY_MEASUREMENTS *phy_meas = &PHY_vars_UE_g[Mod_id][CC_id]->PHY_measurements;
   int i;

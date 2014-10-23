@@ -589,7 +589,7 @@ void compute_ext16(llr_t* alpha,llr_t* beta,llr_t* m_11,llr_t* m_10,llr_t* ext, 
 //int pi2[n],pi3[n+8],pi5[n+8],pi4[n+8],pi6[n+8],
 int *pi2tab16[188],*pi5tab16[188],*pi4tab16[188],*pi6tab16[188];
 
-void free_td16() {
+void free_td16(void) {
     int ind;
     for (ind=0;ind<188;ind++) {
         free(pi2tab16[ind]);

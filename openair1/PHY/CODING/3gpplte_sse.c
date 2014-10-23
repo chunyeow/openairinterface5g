@@ -75,7 +75,7 @@ inline void threegpplte_rsc_termination(unsigned char *x,unsigned char *z,unsign
   *state = (*state)>>1;
 }
 
-void treillis_table_init() {
+void treillis_table_init(void) {
   //struct treillis t[][]=all_treillis;
   //t=memalign(16,sizeof(struct treillis)*8*256);
   int i, j,b;

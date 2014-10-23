@@ -136,7 +136,7 @@ void schedule_ue_spec(module_id_t module_idP,frame_t frameP,sub_frame_t subframe
     @param Mod_id Module id of UE
     @returns Po_NOMINAL_PUSCH (PREAMBLE_RECEIVED_TARGET_POWER+DELTA_PREAMBLE
 */
-int8_t get_Po_NOMINAL_PUSCH(module_id_t module_idP,int CC_id);
+int8_t get_Po_NOMINAL_PUSCH(module_id_t module_idP,uint8_t CC_id);
 
 /** \brief Function to compute DELTA_PREAMBLE from 36.321 (for RA power ramping procedure and Msg3 PUSCH power control policy) 
     @param Mod_id Module id of UE
@@ -148,7 +148,7 @@ int8_t get_DELTA_PREAMBLE(module_id_t module_idP,int CC_id);
     @param Mod_id Module id of UE
     @returns deltaP_rampup
 */
-int8_t get_deltaP_rampup(module_id_t module_idP,int CC_id);
+int8_t get_deltaP_rampup(module_id_t module_idP,uint8_t CC_id);
 
 //main.c
 
@@ -621,7 +621,7 @@ void update_phr (module_id_t module_idP,int CC_id);
 \param[in] Mod_id Instance index of UE
 \param[in] eNB_id Index of eNB
 */
-void Msg3_tx(module_id_t module_idP,int CC_id,frame_t frameP,uint8_t eNB_id);
+void Msg3_tx(module_id_t module_idP,uint8_t CC_id,frame_t frameP,uint8_t eNB_id);
 
 
 /*! \brief Function to indicate the transmission of msg1/rach
@@ -629,7 +629,7 @@ void Msg3_tx(module_id_t module_idP,int CC_id,frame_t frameP,uint8_t eNB_id);
 \param[in] eNB_id Index of eNB
 */
 
-void Msg1_tx(module_id_t module_idP,int CC_id,frame_t frameP, uint8_t eNB_id);
+void Msg1_tx(module_id_t module_idP,uint8_t CC_id,frame_t frameP, uint8_t eNB_id);
 
 void dl_phy_sync_success(module_id_t   module_idP,
                          frame_t       frameP,

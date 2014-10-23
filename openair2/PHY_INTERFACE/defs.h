@@ -139,7 +139,7 @@ typedef struct
     /// UE functions
     
     /// reset the ue phy  
-    void (*phy_reset_ue)(module_id_t Mod_id,uint8_t eNB_index);
+    void (*phy_reset_ue)(module_id_t Mod_id,uint8_t CC_id,uint8_t eNB_index);
     
     /// Indicate loss of synchronization of PBCH for this eNB to MAC layer
     void (*out_of_sync_ind)(module_id_t Mod_id,frame_t frameP,uint16_t eNB_index);
@@ -206,7 +206,7 @@ typedef struct
 				       int CC_id);
 #endif
     /// Configure Common PHY parameters from mobilityControlInfo
-    void (*phy_config_afterHO_ue)(module_id_t Mod_id,uint8_t CH_index,
+    void (*phy_config_afterHO_ue)(module_id_t Mod_id,uint8_t CC_id,uint8_t CH_index,
 				  MobilityControlInfo_t *mobilityControlInfo, 
 				  uint8_t ho_failed);
 
@@ -231,10 +231,10 @@ typedef struct
     uint16_t (*computeRIV)(uint16_t N_RB_DL,uint16_t RBstart,uint16_t Lcrbs);
 
     /// Downlink TBS table lookup from PHY
-    uint16_t (*get_TBS_DL)(uint8_t mcs, uint16_t nb_rb);
+    uint32_t (*get_TBS_DL)(uint8_t mcs, uint16_t nb_rb);
 
     /// Uplink TBS table lookup from PHY
-    uint16_t (*get_TBS_UL)(uint8_t mcs, uint16_t nb_rb);
+    uint32_t (*get_TBS_UL)(uint8_t mcs, uint16_t nb_rb);
 
     /// Function to retrieve the HARQ round index for a particular UL/DLSCH and harq_pid
     int (*get_ue_active_harq_pid)(module_id_t Mod_id, uint8_t CC_id,rnti_t rnti, int frame, uint8_t subframe, uint8_t *harq_pid, uint8_t *round, uint8_t ul_flag);
@@ -300,13 +300,13 @@ typedef struct
     /// Function for UE/PHY to compute PHR
     int8_t (*get_PHR)(module_id_t Mod_id, uint8_t CC_id,uint8_t eNB_index);
 
-    void (*process_timing_advance)(module_id_t Mod_id,int16_t timing_advance);
+    void (*process_timing_advance)(module_id_t Mod_id,uint8_t CC_id, int16_t timing_advance);
 
     LTE_eNB_UE_stats* (*get_eNB_UE_stats)(module_id_t Mod_id, uint8_t CC_id, rnti_t rnti);
 
     LTE_DL_FRAME_PARMS* (*get_lte_frame_parms)(module_id_t Mod_id, uint8_t CC_id);
 
-    MU_MIMO_mode* (*get_mu_mimo_mode) (module_id_t Mod_id, uint8_t CC_id);
+    MU_MIMO_mode* (*get_mu_mimo_mode) (module_id_t Mod_id, uint8_t CC_id, rnti_t rnti);
 
     int16_t (*get_hundred_times_delta_TF) (module_id_t module_idP, uint8_t CC_id, rnti_t rnti, uint8_t harq_pid);
 

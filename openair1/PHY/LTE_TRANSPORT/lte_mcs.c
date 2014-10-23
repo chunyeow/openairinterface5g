@@ -106,9 +106,9 @@ unsigned char I_TBS2I_MCS(unsigned char I_TBS) {
   return I_MCS;
 }
 
-uint64_t get_TBS_DL(uint8_t mcs, uint16_t nb_rb) {
+uint32_t get_TBS_DL(uint8_t mcs, uint16_t nb_rb) {
 
-  uint64_t TBS;
+  uint32_t TBS;
 
   if ((nb_rb > 0) && (mcs < 29)) {
 #ifdef TBS_FIX
@@ -121,13 +121,13 @@ uint64_t get_TBS_DL(uint8_t mcs, uint16_t nb_rb) {
     return(TBS);
   }
   else {
-    return(uint64_t)0;
+    return(uint32_t)0;
   }
 }
 
-uint64_t get_TBS_UL(uint8_t mcs, uint16_t nb_rb) {
+uint32_t get_TBS_UL(uint8_t mcs, uint16_t nb_rb) {
 
-  uint64_t TBS = 0;
+  uint32_t TBS = 0;
 
   if ((nb_rb > 0) && (mcs < 29)) {
 #ifdef TBS_FIX
@@ -140,7 +140,7 @@ uint64_t get_TBS_UL(uint8_t mcs, uint16_t nb_rb) {
     return(TBS);
   }
   else {
-    return(uint64_t)0;
+    return(uint32_t)0;
   }
 }
 

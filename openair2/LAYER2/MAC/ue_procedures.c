@@ -1394,7 +1394,7 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
   case RRC_Handover_failed:
     LOG_N(MAC,"Handover failure for UE %d eNB_index %d\n",module_idP,eNB_indexP);
     //Invalid...need to add another MAC UE state for re-connection procedure
-    mac_xface->phy_config_afterHO_ue(module_idP,eNB_indexP,(MobilityControlInfo_t *)NULL,1);
+    mac_xface->phy_config_afterHO_ue(module_idP,0,eNB_indexP,(MobilityControlInfo_t *)NULL,1);
     //return(3);
     break;
   case RRC_HO_STARTED:

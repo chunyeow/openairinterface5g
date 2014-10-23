@@ -173,7 +173,7 @@ void phy_config_sib2_ue(module_id_t                     Mod_id,
   @param ho_failed flag to indicated whether the ho was successful or not
  */
 void phy_config_afterHO_ue(module_id_t Mod_id,
-                           int CC_id,
+                           uint8_t CC_id,
 			   uint8_t eNB_index,
                            MobilityControlInfo_t *mobilityControlInfo,
                            uint8_t ho_failed);
@@ -262,7 +262,7 @@ void  phy_config_cba_rnti (module_id_t Mod_id,int CC_id,eNB_flag_t eNB_flag, uin
 @param adj_cell_id Array of cell ids of adjacent cells
  */
 void phy_config_meas_ue(module_id_t Mod_id,
-                        int CC_id,
+                        uint8_t CC_id,
 			uint8_t eNB_index,
                         uint8_t n_adj_cells,
                         uint32_t *adj_cell_id);
