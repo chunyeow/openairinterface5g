@@ -269,6 +269,10 @@ int encode_attach_accept(attach_accept_msg *attach_accept, uint8_t *buffer, uint
             encoded += encode_result;
     }
 
+#warning "LG TEST override t3402value"
+    attach_accept->presencemask |= ATTACH_ACCEPT_T3402_VALUE_PRESENT;
+    attach_accept->t3402value.unit = GPRS_TIMER_UNIT_60S;
+    attach_accept->t3402value.timervalue = 12;
     if ((attach_accept->presencemask & ATTACH_ACCEPT_T3402_VALUE_PRESENT)
         == ATTACH_ACCEPT_T3402_VALUE_PRESENT)
     {

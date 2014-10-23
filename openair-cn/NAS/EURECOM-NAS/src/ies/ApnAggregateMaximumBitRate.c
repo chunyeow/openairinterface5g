@@ -51,6 +51,18 @@ int decode_apn_aggregate_maximum_bit_rate(ApnAggregateMaximumBitRate *apnaggrega
     decoded++;
     apnaggregatemaximumbitrate->apnambrforuplink = *(buffer + decoded);
     decoded++;
+    if (ielen >= 4) {
+        apnaggregatemaximumbitrate->apnambrfordownlink_extended = *(buffer + decoded);
+        decoded++;
+        apnaggregatemaximumbitrate->apnambrforuplink_extended = *(buffer + decoded);
+        decoded++;
+        if (ielen >= 6) {
+            apnaggregatemaximumbitrate->apnambrfordownlink_extended2 = *(buffer + decoded);
+            decoded++;
+            apnaggregatemaximumbitrate->apnambrforuplink_extended2 = *(buffer + decoded);
+            decoded++;
+        }
+    }
 #if defined (NAS_DEBUG)
     dump_apn_aggregate_maximum_bit_rate_xml(apnaggregatemaximumbitrate, iei);
 #endif
@@ -76,6 +88,18 @@ int encode_apn_aggregate_maximum_bit_rate(ApnAggregateMaximumBitRate *apnaggrega
     encoded++;
     *(buffer + encoded) = apnaggregatemaximumbitrate->apnambrforuplink;
     encoded++;
+    if (apnaggregatemaximumbitrate->extensions & APN_AGGREGATE_MAXIMUM_BIT_RATE_MAXIMUM_EXTENSION_PRESENT) {
+        *(buffer + encoded) = apnaggregatemaximumbitrate->apnambrfordownlink_extended;
+        encoded++;
+        *(buffer + encoded) = apnaggregatemaximumbitrate->apnambrforuplink_extended;
+        encoded++;
+        if (apnaggregatemaximumbitrate->extensions & APN_AGGREGATE_MAXIMUM_BIT_RATE_MAXIMUM_EXTENSION2_PRESENT) {
+            *(buffer + encoded) = apnaggregatemaximumbitrate->apnambrfordownlink_extended2;
+            encoded++;
+            *(buffer + encoded) = apnaggregatemaximumbitrate->apnambrforuplink_extended2;
+            encoded++;
+        }
+    }
     *lenPtr = encoded - 1 - ((iei > 0) ? 1 : 0);
     return encoded;
 }
@@ -88,6 +112,14 @@ void dump_apn_aggregate_maximum_bit_rate_xml(ApnAggregateMaximumBitRate *apnaggr
         printf("    <IEI>0x%X</IEI>\n", iei);
     printf("    <APN AMBR for downlink>%u</APN AMBR for downlink>\n", apnaggregatemaximumbitrate->apnambrfordownlink);
     printf("    <APN AMBR for uplink>%u</APN AMBR for uplink>\n", apnaggregatemaximumbitrate->apnambrforuplink);
+    if (apnaggregatemaximumbitrate->extensions & APN_AGGREGATE_MAXIMUM_BIT_RATE_MAXIMUM_EXTENSION_PRESENT) {
+        printf("    <APN AMBR extended for downlink>%u</APN AMBR for downlink>\n", apnaggregatemaximumbitrate->apnambrfordownlink_extended);
+        printf("    <APN AMBR extended for uplink>%u</APN AMBR for uplink>\n", apnaggregatemaximumbitrate->apnambrforuplink_extended);
+        if (apnaggregatemaximumbitrate->extensions & APN_AGGREGATE_MAXIMUM_BIT_RATE_MAXIMUM_EXTENSION2_PRESENT) {
+            printf("    <APN AMBR extended2 for downlink>%u</APN AMBR for downlink>\n", apnaggregatemaximumbitrate->apnambrfordownlink_extended);
+            printf("    <APN AMBR extended2 for uplink>%u</APN AMBR for uplink>\n", apnaggregatemaximumbitrate->apnambrforuplink_extended);
+        }
+    }
     printf("</Apn Aggregate Maximum Bit Rate>\n");
 }
 

@@ -2320,7 +2320,9 @@ static int _emm_attach_accept(emm_data_context_t *emm_ctx, attach_data_t *data)
         emm_sap.u.emm_as.u.establish.new_guti  = emm_ctx->guti;
     } else {
         emm_sap.u.emm_as.u.establish.UEid.guti = emm_ctx->guti;
-        emm_sap.u.emm_as.u.establish.new_guti  = NULL;
+#warning "TEST LG FORCE GUTI IE IN ATTACH ACCEPT"
+        emm_sap.u.emm_as.u.establish.new_guti  = emm_ctx->guti;
+        //emm_sap.u.emm_as.u.establish.new_guti  = NULL;
     }
     emm_sap.u.emm_as.u.establish.n_tacs  = emm_ctx->n_tacs;
     emm_sap.u.emm_as.u.establish.tac     = emm_ctx->tac;

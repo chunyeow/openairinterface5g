@@ -610,6 +610,18 @@ int esm_send_activate_default_eps_bearer_context_request(int pti,
         msg->esmcause = esm_cause;
     }
 
+#warning "TEST LG FORCE APN-AMBR"
+    LOG_TRACE(INFO, "ESM-SAP   - FORCE APN-AMBR");
+    msg->presencemask |=
+            ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_APNAMBR_PRESENT;
+    msg->apnambr.apnambrfordownlink             = 0xfe; // (8640kbps)
+    msg->apnambr.apnambrforuplink               = 0xfe; // (8640kbps)
+    msg->apnambr.apnambrfordownlink_extended    = 0xde; // (200Mbps)
+    msg->apnambr.apnambrforuplink_extended      = 0x9e; // (100Mbps)
+    msg->apnambr.apnambrfordownlink_extended2   = 0;
+    msg->apnambr.apnambrforuplink_extended2     = 0;
+    msg->apnambr.extensions                     = 0 | APN_AGGREGATE_MAXIMUM_BIT_RATE_MAXIMUM_EXTENSION_PRESENT;
+
     LOG_TRACE(INFO, "ESM-SAP   - Send Activate Default EPS Bearer Context "
               "Request message (pti=%d, ebi=%d)",
               msg->proceduretransactionidentity, msg->epsbeareridentity);
