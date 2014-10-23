@@ -365,9 +365,9 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                                   }
 
                                   counter64 = 0x00000000FFFFFFFF >> prefix_mask; // address Prefix_mask/0..0 not valid
-                                  counter64 = counter64 - 1;
+                                  counter64 = counter64 - 2;
                                   do {
-                                      addr_start.s_addr = addr_start.s_addr + htonl(1);
+                                      addr_start.s_addr = addr_start.s_addr + htonl(2);
                                       ip4_ref = calloc(1, sizeof(pgw_lite_conf_ipv4_list_elm_t));
                                       ip4_ref->addr       = addr_start;
 
