@@ -2843,7 +2843,7 @@ int rrc_eNB_decode_ccch(
 		rrcConnectionReestablishmentRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionReestablishmentRequest.criticalExtensions.choice.rrcConnectionReestablishmentRequest_r8;
 
                 LOG_I(RRC, "[eNB %d] Frame %d UE %d: RRCConnectionReestablishmentRequest cause %s\n", enb_mod_idP,
-                      frameP, 
+                      frameP, ue_mod_id,
 		      ((rrcConnectionReestablishmentRequest->reestablishmentCause == ReestablishmentCause_otherFailure) ?    "Other Failure" :
 		       (rrcConnectionReestablishmentRequest->reestablishmentCause == ReestablishmentCause_handoverFailure) ? "Handover Failure" : 
 		                                                                                                            "reconfigurationFailure"));
@@ -2862,8 +2862,8 @@ int rrc_eNB_decode_ccch(
 		}else {
 		  rrc_eNB_generate_RRCConnectionReestablishementReject(enb_mod_idP, frameP, ue_mod_id);
 		}
-                break;
 		*/
+                break;
             case UL_CCCH_MessageType__c1_PR_rrcConnectionRequest:
 #ifdef RRC_MSG_PRINT
 	      LOG_F(RRC,"[MSG] RRC Connection Request\n");

@@ -245,7 +245,7 @@ RTIME start;
 
 # define VCD_POLL_DELAY         (500)           // Poll delay in micro-seconds
 # define VCD_MAX_WAIT_DELAY     (200 * 1000)    // Maximum data ready wait delay in micro-seconds
-# define VCD_FIFO_NB_ELEMENTS   (1 << 20)       // Must be a power of 2
+# define VCD_FIFO_NB_ELEMENTS   (1 << 24)       // Must be a power of 2
 # define VCD_FIFO_MASK          (VCD_FIFO_NB_ELEMENTS - 1)
 
 typedef struct vcd_queue_user_data_s {

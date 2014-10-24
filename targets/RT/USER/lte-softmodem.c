@@ -171,9 +171,8 @@ static SEM                     *mutex;
 
 static long                      main_eNB_thread;
 static long                      main_ue_thread;
-#ifdef USRP
 static SEM *sync_sem; // to sync rx & tx streaming
-#endif
+
 //static int sync_thread;
 #else
 pthread_t                       main_eNB_thread;
@@ -181,12 +180,11 @@ pthread_t                       main_ue_thread;
 pthread_attr_t                  attr_dlsch_threads;
 struct sched_param              sched_param_dlsch;
 
-#ifndef EXMIMO
 pthread_cond_t sync_cond;
 pthread_mutex_t sync_mutex;
+int sync_var=-1;
+#endif
 
-#endif
-#endif
 RTIME T0;
 
 pthread_attr_t                  attr_UE_init_synch;
@@ -1258,9 +1256,9 @@ static void *eNB_thread(void *arg)
   RT_TASK *task;
 #endif
 #ifdef EXMIMO
-  unsigned char slot=1;
-#else
   unsigned char slot=0;
+#else
+  unsigned char slot=1;
 #endif
   int frame=0;
   int CC_id;
@@ -1283,10 +1281,12 @@ static void *eNB_thread(void *arg)
   hw_subframe = 0;
 #endif
 
+  /*
 #if defined(ENABLE_ITTI)
-  /* Wait for eNB application initialization to be complete (eNB registration to MME) */
+  // Wait for eNB application initialization to be complete (eNB registration to MME) 
   wait_system_ready ("Waiting for eNB application to be ready %s\r", &start_eNB);
 #endif
+  */
 
 #ifdef RTAI
   task = rt_task_init_schmod(nam2num("TASK0"), 0, 0, 0, SCHED_FIFO, 0xF);
@@ -1313,17 +1313,16 @@ static void *eNB_thread(void *arg)
     timing_info.time_avg = 0;
     timing_info.n_samples = 0;
 
-#ifndef EXMIMO
-    printf("waiting for USRP sync (eNB_thread)\n");
+    printf("waiting for sync (eNB_thread)\n");
 #ifdef RTAI
     rt_sem_wait(sync_sem);
 #else
     pthread_mutex_lock(&sync_mutex);
-    pthread_cond_wait(&sync_cond, &sync_mutex);
+    while (sync_var<0)
+      pthread_cond_wait(&sync_cond, &sync_mutex);
     pthread_mutex_unlock(&sync_mutex);
 #endif
     //    printf("starting eNB thread @ %llu\n",get_usrp_time(&openair0));
-#endif
 
     while (!oai_exit) {
 
@@ -1634,7 +1633,8 @@ static void *UE_thread_synch(void *arg) {
 
   pthread_mutex_lock(&sync_mutex);
   printf("Locked sync_mutex, waiting (UE_sync_thread)\n");
-  pthread_cond_wait(&sync_cond, &sync_mutex);
+  while (sync_var<0)
+    pthread_cond_wait(&sync_cond, &sync_mutex);
   pthread_mutex_unlock(&sync_mutex);
   printf("unlocked sync_mutex (UE_sync_thread)\n");
 #endif
@@ -1814,7 +1814,8 @@ static void *UE_thread_rx(void *arg) {
 #else
   pthread_mutex_lock(&sync_mutex);
   printf("Locked sync_mutex, waiting (UE_thread_rx)\n");
-  pthread_cond_wait(&sync_cond, &sync_mutex);
+  while (sync_var<0)
+    pthread_cond_wait(&sync_cond, &sync_mutex);
   pthread_mutex_unlock(&sync_mutex);
   printf("unlocked sync_mutex, waiting (UE_thread_rx)\n");
 #endif
@@ -1906,7 +1907,8 @@ static void *UE_thread(void *arg) {
 #else
   pthread_mutex_lock(&sync_mutex);
   printf("Locked sync_mutex, waiting (UE_thread)\n");
-  pthread_cond_wait(&sync_cond, &sync_mutex);
+  while (sync_var<0)
+    pthread_cond_wait(&sync_cond, &sync_mutex);
   pthread_mutex_unlock(&sync_mutex);
   printf("unlocked sync_mutex, waiting (UE_thread)\n");
 #endif
@@ -3176,25 +3178,23 @@ int main(int argc, char **argv) {
     }
   else
     printf("mutex=%p\n",mutex);
-#ifndef EXMIMO
+
   sync_sem = rt_typed_sem_init(nam2num("syncsem"), 0, BIN_SEM|FIFO_Q);
   if(sync_sem == 0)
     printf("error init sync semphore\n");
-#endif
+
 #else
-#ifndef EXMIMO
   pthread_cond_init(&sync_cond,NULL);
   pthread_mutex_init(&sync_mutex, NULL);
 #endif
-#endif
 
-  /*#if defined(ENABLE_ITTI)
+#if defined(ENABLE_ITTI)
   // Wait for eNB application initialization to be complete (eNB registration to MME)
   if (UE_flag==0) {
     printf("Waiting for eNB application to be ready\n");
     wait_system_ready ("Waiting for eNB application to be ready %s\r", &start_eNB);
   }
-  #endif*/
+#endif
 
 
   // this starts the DMA transfers
@@ -3207,24 +3207,16 @@ int main(int argc, char **argv) {
 #ifdef XFORMS
   if (do_forms==1) {
     fl_initialize (&argc, argv, NULL, 0, 0);
-    form_stats = create_form_stats_form();
-    if (UE_flag==1) {
-      form_ue[UE_id] = create_lte_phy_scope_ue();
-      sprintf (title, "LTE DL SCOPE UE");
-      fl_show_form (form_ue[UE_id]->lte_phy_scope_ue, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
-    } else {
+
+    if (UE_flag==0) {
       form_stats_l2 = create_form_stats_form();
+      fl_show_form (form_stats_l2->stats_form, FL_PLACE_HOTSPOT, FL_FULLBORDER, "l2 stats");
+      form_stats = create_form_stats_form();
+      fl_show_form (form_stats->stats_form, FL_PLACE_HOTSPOT, FL_FULLBORDER, "stats");
       for(UE_id=0;UE_id<scope_enb_num_ue;UE_id++) {
 	form_enb[UE_id] = create_lte_phy_scope_enb();
 	sprintf (title, "UE%d LTE UL SCOPE eNB",UE_id+1);
 	fl_show_form (form_enb[UE_id]->lte_phy_scope_enb, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
-      }
-    }
-    fl_show_form (form_stats->stats_form, FL_PLACE_HOTSPOT, FL_FULLBORDER, "stats");
-    if (UE_flag==0) {
-      fl_show_form (form_stats_l2->stats_form, FL_PLACE_HOTSPOT, FL_FULLBORDER, "l2 stats");
-
-      for (UE_id=0;UE_id<scope_enb_num_ue;UE_id++) {
 	if (otg_enabled) {
 	  fl_set_button(form_enb[UE_id]->button_0,1);
 	  fl_set_object_label(form_enb[UE_id]->button_0,"DL Traffic ON");
@@ -3236,6 +3228,13 @@ int main(int argc, char **argv) {
       }
     }
     else {
+      form_stats = create_form_stats_form();
+      fl_show_form (form_stats->stats_form, FL_PLACE_HOTSPOT, FL_FULLBORDER, "stats");
+      UE_id = 0;
+      form_ue[UE_id] = create_lte_phy_scope_ue();
+      sprintf (title, "LTE DL SCOPE UE");
+      fl_show_form (form_ue[UE_id]->lte_phy_scope_ue, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
+
       if (openair_daq_vars.use_ia_receiver) {
 	fl_set_button(form_ue[UE_id]->button_0,1);
 	fl_set_object_label(form_ue[UE_id]->button_0, "IA Receiver ON");
@@ -3326,21 +3325,23 @@ int main(int argc, char **argv) {
   // Sleep to allow all threads to setup
   //sleep(1);
 
-
 #ifndef EXMIMO
 #ifndef USRP_DEBUG
   openair0.trx_start_func(&openair0);
   //  printf("returning from usrp start streaming: %llu\n",get_usrp_time(&openair0));
 #endif
+#endif
+
 #ifdef RTAI
   rt_sem_signal(sync_sem);
 #else
   pthread_mutex_lock(&sync_mutex);
   printf("Sending sync ...\n");
+  sync_var=0;
   pthread_cond_broadcast(&sync_cond);
   pthread_mutex_unlock(&sync_mutex);
 #endif
-#endif
+
   // wait for end of program
   printf("TYPE <CTRL-C> TO TERMINATE\n");
   //getchar();
@@ -3415,14 +3416,12 @@ int main(int argc, char **argv) {
   //cleanup_pdcp_thread();
 #endif
 
-#ifndef EXMIMO
 #ifdef RTAI
   rt_sem_delete(sync_sem);
   stop_rt_timer();
 #else
   pthread_cond_destroy(&sync_cond);
   pthread_mutex_destroy(&sync_mutex);
-#endif
 #endif
 
 #ifdef EXMIMO

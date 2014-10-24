@@ -832,7 +832,7 @@ int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_COMMAND (MessageDef *msg_p, const ch
     return (-1);
   }
   else {
-      rrc_eNB_generate_RRCConnectionRelease(instance, 0 /*frame*/, ue_index);
+    //rrc_eNB_generate_RRCConnectionRelease(instance, 0 /*frame*/, ue_index);
       LOG_W(RRC,
               "[eNB %d] In S1AP_UE_CONTEXT_RELEASE_COMMAND: TODO call rrc_eNB_connection_release for eNB %d\n",
               instance,

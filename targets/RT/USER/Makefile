@@ -37,8 +37,8 @@ endif
 
 ifeq ($(DEBUG),1)	
 CFLAGS += -g -ggdb
-CFLAGS += -DRRC_MSG_PRINT
-CFLAGS += -DPDCP_MSG_PRINT
+#CFLAGS += -DRRC_MSG_PRINT
+#CFLAGS += -DPDCP_MSG_PRINT
 endif
 
 ifdef ($(MSG_PRINT),1)

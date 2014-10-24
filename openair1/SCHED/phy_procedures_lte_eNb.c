@@ -367,6 +367,10 @@ int get_nCCE_offset(unsigned char L, int nCCE, int common_dci, unsigned short rn
   }
 }
 
+int16_t get_target_ul_rx_power(module_id_t module_idP, uint8_t CC_id) {
+  return PHY_vars_eNB_g[module_idP][CC_id]->PHY_measurements_eNB[0].n0_power_tot_dBm;
+}
+
 #ifdef EMOS
 void phy_procedures_emos_eNB_TX(unsigned char next_slot, PHY_VARS_eNB *phy_vars_eNB) {
 
@@ -2914,15 +2918,6 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
       stop_meas(&phy_vars_eNB->ulsch_demodulation_stats);	      	      	  
 
 
-      for (j=0;j<phy_vars_eNB->lte_frame_parms.nb_antennas_rx;j++)
-	//this is the RSSI per RB
-	phy_vars_eNB->eNB_UE_stats[i].UL_rssi[j] = 
-	  dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[i]->ulsch_power[j]*
-		   (phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->nb_rb*12)/
-		   phy_vars_eNB->lte_frame_parms.ofdm_symbol_size) -
-	  phy_vars_eNB->rx_total_gain_eNB_dB -
-	  hundred_times_log10_NPRB[phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->nb_rb-1]/100;
-
       start_meas(&phy_vars_eNB->ulsch_decoding_stats);
       if (abstraction_flag == 0) {
 	ret = ulsch_decoding(phy_vars_eNB,
@@ -3000,14 +2995,20 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
       }
     
       if (ret == (1+MAX_TURBO_ITERATIONS)) {
+
+	/*
+	if (phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round>0) {
+	  dump_ulsch(phy_vars_eNB, sched_subframe, i);
+	  mac_xface->macphy_exit("retransmission in error");
+	}
+	*/
+
 	phy_vars_eNB->eNB_UE_stats[i].ulsch_round_errors[harq_pid][phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round]++;
 	phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->phich_active = 1;
 	phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->phich_ACK = 0;
 	phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round++;
 
 	LOG_D(PHY,"[eNB][PUSCH %d] Increasing to round %d\n",harq_pid,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round);
-	//	dump_ulsch(phy_vars_eNB, sched_subframe, i);
-	//	exit(-1);
 
 	if (phy_vars_eNB->ulsch_eNB[i]->Msg3_flag == 1) {
 	  LOG_I(PHY,"[eNB %d][RAPROC] frame %d, subframe %d, UE %d: Error receiving ULSCH (Msg3), round %d/%d\n",
@@ -3096,6 +3097,9 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	  if (phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors == ULSCH_max_consecutive_errors) {
 	    LOG_I(PHY,"[eNB %d] frame %d, subframe %d, UE %d: ULSCH consecutive error count reached %u, removing UE\n",
 		  phy_vars_eNB->Mod_id,frame,subframe, i, phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors);
+
+	    mac_xface->macphy_exit("Consecutive error count reached");
+
 	    phy_vars_eNB->eNB_UE_stats[i].mode = PRACH;
 #ifdef OPENAIR2
 	    /*	    mac_xface->cancel_ra_proc(phy_vars_eNB->Mod_id,
@@ -3112,6 +3116,16 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	LOG_D(PHY,"[eNB %d][PUSCH %d] Frame %d subframe %d ULSCH received, setting round to 0, PHICH ACK\n",
 	      phy_vars_eNB->Mod_id,harq_pid,
 	      frame,subframe);	    
+
+	for (j=0;j<phy_vars_eNB->lte_frame_parms.nb_antennas_rx;j++)
+	  //this is the RSSI per RB
+	  phy_vars_eNB->eNB_UE_stats[i].UL_rssi[j] = 
+	    dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[i]->ulsch_power[j]*
+		     (phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->nb_rb*12)/
+		     phy_vars_eNB->lte_frame_parms.ofdm_symbol_size) -
+	    phy_vars_eNB->rx_total_gain_eNB_dB -
+	    hundred_times_log10_NPRB[phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->nb_rb-1]/100 -
+	    get_hundred_times_delta_IF_eNB(phy_vars_eNB,i,harq_pid)/100;
 
 	phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->phich_active = 1;
 	phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->phich_ACK = 1;

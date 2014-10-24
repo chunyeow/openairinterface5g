@@ -106,6 +106,8 @@ int errno;
 # endif
 #endif
 
+//#define XER_PRINT
+
 typedef struct xer_sprint_string_s
 {
     char *string;
@@ -1448,7 +1450,7 @@ uint8_t do_RRCConnectionSetup(uint8_t Mod_id,
   //assign_enum(&physicalConfigDedicated2->uplinkPowerControlDedicated->deltaMCS_Enabled,
   // UplinkPowerControlDedicated__deltaMCS_Enabled_en1);
   physicalConfigDedicated2->uplinkPowerControlDedicated->deltaMCS_Enabled= UplinkPowerControlDedicated__deltaMCS_Enabled_en1;
-  physicalConfigDedicated2->uplinkPowerControlDedicated->accumulationEnabled = 1;  // FALSE
+  physicalConfigDedicated2->uplinkPowerControlDedicated->accumulationEnabled = 1;  // TRUE
   physicalConfigDedicated2->uplinkPowerControlDedicated->p0_UE_PUCCH = 0; // 0 dB
   physicalConfigDedicated2->uplinkPowerControlDedicated->pSRS_Offset = 0; // 0 dB
   physicalConfigDedicated2->uplinkPowerControlDedicated->filterCoefficient = CALLOC(1,sizeof(*physicalConfigDedicated2->uplinkPowerControlDedicated->filterCoefficient));
@@ -1590,6 +1592,9 @@ uint8_t do_RRCConnectionSetup(uint8_t Mod_id,
 #endif
 
 
+#ifdef XER_PRINT
+  xer_fprint(stdout, &asn_DEF_DL_CCCH_Message, (void*)&dl_ccch_msg);
+#endif
   enc_rval = uper_encode_to_buffer(&asn_DEF_DL_CCCH_Message,
                                    (void*)&dl_ccch_msg,
                                    buffer,
