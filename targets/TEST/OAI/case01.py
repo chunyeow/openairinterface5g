@@ -114,13 +114,13 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
     try:
         test = '03'
         name = 'Compile oai.rel8.rf.make' 
-        conf = 'make RTAI=0 Rel8=1'
+        conf = 'make RTAI=0 EXMIMO=1 Rel8=1'
         trace = logdir + '/log_' + case + test + '.txt;'
         tee = ' 2>&1 | tee ' + trace
         diag = 'check the compilation errors for Rel8'
         oai.send('make cleanall;')
         oai.send('rm -f ./oaisim.rel8.rf.'+host)
-        oai.send_expect_false('make RTAI=0 -j4' + tee, makerr1,  1500)
+        oai.send_expect_false('make RTAI=0 EXMIMO=1 -j4' + tee, makerr1,  1500)
         oai.send('cp ./oaisim ./oaisim.rel8.rf.'+host)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)

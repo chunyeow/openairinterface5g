@@ -176,7 +176,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
                 log_name = logdir + '/log_' + host + case + test + '_' + str(i) + str(j)
                 itti_name = log_name + '.log'
                 trace_name = log_name + '.txt'
-                conf = '-a -l7 -A AWGN --enb-conf ../../PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.conf -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
+                conf = '-a -l7 -A AWGN --enb-conf ../../PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.exmimo2.conf -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
                 tee = ' 2>&1 | tee -a ' + trace_name
                 command = './oaisim.rel8.itti.' + host + ' ' + conf
                 oai.send('echo ' + command + ' > ' + trace_name + ';')

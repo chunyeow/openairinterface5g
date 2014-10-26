@@ -305,7 +305,9 @@ static void enb_config_display(void) {
 	    printf( "\tpucch_delta_shift for CC %d:\t%d:\n",j,enb_properties.properties[i]->pucch_delta_shift[j]);
 	    printf( "\tpucch_nRB_CQI for CC %d:\t%d:\n",j,enb_properties.properties[i]->pucch_nRB_CQI[j]);
 	    printf( "\tpucch_nCS_AN for CC %d:\t%d:\n",j,enb_properties.properties[i]->pucch_nCS_AN[j]);
+#ifndef Rel10
 	    printf( "\tpucch_n1_AN for CC %d:\t%d:\n",j,enb_properties.properties[i]->pucch_n1_AN[j]);
+#endif
 	    
 	    // SRS Config
 	    printf( "\tsrs_enable for CC %d:\t%d:\n",j,enb_properties.properties[i]->srs_enable[j]);
