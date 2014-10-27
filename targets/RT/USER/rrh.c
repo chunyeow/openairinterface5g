@@ -72,12 +72,13 @@ void *rrh_eNB_thread(void *arg) {
   int16_t cmd,nsamps,antenna_index;
   ssize_t bytes_received;
   openair0_timestamp timestamp_tx,timestamp_rx=0;
-  int local_host = 0;
+  ssize_t bytes_sent;
+
 
   while (rrh_exit==0) {
 
     
-    sockid=socket(AF_INET,SOCK_DGRAM,0);
+    sockid=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
     if (sockid==-1) {
       perror("Cannot create socket: ");
       rrh_exit=1;
@@ -87,7 +88,7 @@ void *rrh_eNB_thread(void *arg) {
     bzero((char *)&serveraddr,sizeof(serveraddr));
     serveraddr.sin_family=AF_INET;
     serveraddr.sin_port=htons(rrh_desc->port);
-    inet_pton(AF_INET,"127.0.0.1",&serveraddr.sin_addr.s_addr);
+    inet_pton(AF_INET,"0.0.0.0",&serveraddr.sin_addr.s_addr);
 
     inet_ntop(AF_INET, &(serveraddr.sin_addr), str, INET_ADDRSTRLEN);      
     printf("Binding to socket for %s:%d\n",str,ntohs(serveraddr.sin_port));
@@ -101,6 +102,9 @@ void *rrh_eNB_thread(void *arg) {
     while (rrh_exit==0) {
 
       // get header info
+      bzero((void*)&clientaddr,sizeof(struct sockaddr));
+      clientaddrlen = sizeof(struct sockaddr);
+
       bytes_received = recvfrom(sockid,msg_header,4+sizeof(openair0_timestamp),0,&clientaddr,&clientaddrlen);
       cmd = msg_header[0];
       antenna_index = cmd>>1;
@@ -108,22 +112,21 @@ void *rrh_eNB_thread(void *arg) {
       nsamps = *(int16_t *)(msg_header+2);
       cmd = cmd&1;
       inet_ntop(AF_INET, &(((struct sockaddr_in*)&clientaddr)->sin_addr), str, INET_ADDRSTRLEN);
-      if ((((struct sockaddr_in*)&clientaddr)->sin_addr.s_addr) == 0) local_host = 1;
-      else local_host = 0;
 
       switch (cmd) {
       case 0: // RX
-	printf("Received RX request for antenna %d, nsamps %d (from %s:%d)\n",antenna_index,nsamps,str, 
-	       ntohs(((struct sockaddr_in*)&clientaddr)->sin_port),INET_ADDRSTRLEN);
+	//	printf("Received RX request for antenna %d, nsamps %d (from %s:%d)\n",antenna_index,nsamps,str, 
+	//	       ntohs(((struct sockaddr_in*)&clientaddr)->sin_port));
 	// send return
 	
-	if (sendto(sockid, 
-		   &rx_buffer[antenna_index][timestamp_rx%(76800*4)],
-		   (nsamps<<2)+sizeof(openair0_timestamp), 
-		   MSG_DONTWAIT, 
-		   (local_host == 0) ? &clientaddr : (struct sockaddr*)&serveraddr, 
-		   sizeof(struct sockaddr))<0)
+	if ((bytes_sent = sendto(sockid, 
+				&rx_buffer[antenna_index][timestamp_rx%(76800*4)],
+				(nsamps<<2)+sizeof(openair0_timestamp), 
+				0,
+				(struct sockaddr*)&clientaddr, 
+				sizeof(struct sockaddr)))<0)
 	  perror("RRH: sendto for RX");
+	//	printf("bytes_sent %d(timestamp_rx %d)\n",bytes_sent);
 	timestamp_rx+=nsamps;
 	break;
       case 1: // TX
@@ -132,6 +135,7 @@ void *rrh_eNB_thread(void *arg) {
 	printf("Received TX samples for antenna %d, nsamps %d (%d)\n",antenna_index,nsamps,(bytes_received>>2));
 	break;
       }
+      //      rrh_exit = 1;
     }
   }
 
