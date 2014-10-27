@@ -46,6 +46,8 @@
 #include <sys/socket.h>
 #include <net/if.h>
 #include <netinet/ether.h>
+#include <unistd.h>
+#include <errno.h>
 
 #include "common_lib.h"
 
@@ -73,7 +75,7 @@ int ethernet_socket_init(int Mod_id, char *dest_ip,int dest_port)
 
   /* Open RAW socket to send on */
 
-  if ((sockfd[Mod_id] = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
+  if ((sockfd[Mod_id] = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
     perror("ETHERNET: Error opening socket");
     exit(0);
   }
@@ -85,7 +87,7 @@ int ethernet_socket_init(int Mod_id, char *dest_ip,int dest_port)
   dest_addr_len[Mod_id] = sizeof(struct sockaddr);
 
   inet_ntop(AF_INET, &(dest->sin_addr), str, INET_ADDRSTRLEN);      
-  printf("Connecting to %s\n",str);
+  printf("Connecting to %s:%d\n",str,ntohs(dest->sin_port));
 
 
 }
@@ -128,6 +130,8 @@ int ethernet_read_data(int Mod_id,openair0_timestamp *timestamp,void *buff, int 
 
   void *buff2 = buff-sizeof(openair0_timestamp);
   int samples_received;
+  int block_cnt;
+  int ret;
   openair0_timestamp temp = *(openair0_timestamp*)buff2;
   int16_t mesg[2];
   char str[INET_ADDRSTRLEN];
@@ -137,21 +141,39 @@ int ethernet_read_data(int Mod_id,openair0_timestamp *timestamp,void *buff, int 
 
   inet_ntop(AF_INET, &(dest_addr[Mod_id].sin_addr), str, INET_ADDRSTRLEN);
   // send command RX for nsamps samples
-  printf("requesting %d samples from (%s:%d)\n",nsamps,str,ntohs(dest_addr[Mod_id].sin_port));
+  //  printf("requesting %d samples from (%s:%d)\n",nsamps,str,ntohs(dest_addr[Mod_id].sin_port));
 
   sendto(sockfd[Mod_id],mesg,4,0,(struct sockaddr *)&dest_addr[Mod_id],dest_addr_len[Mod_id]);
 
-  printf("Waiting for %d samples\n",nsamps);
-  samples_received=recvfrom(sockfd[Mod_id],
-			    buff2,
-			    (nsamps<<2)+sizeof(openair0_timestamp),
-			    0,
-			    (struct sockaddr *)&dest_addr[Mod_id],
-			    &dest_addr_len[Mod_id]);
+  samples_received=-sizeof(openair0_timestamp);
+  block_cnt=0;
+  while(samples_received < (int)((nsamps<<2))) {
+    ret=recvfrom(sockfd[Mod_id],
+		 &buff2[samples_received],
+		 (nsamps<<2)+sizeof(openair0_timestamp)-samples_received,
+		 0,//MSG_DONTWAIT,
+		 (struct sockaddr *)&dest_addr[Mod_id],
+		 &dest_addr_len[Mod_id]);
+    printf("samples_received %d (ret %d)\n",samples_received+ret,ret);
+    if (ret==-1) {
+      if (errno == EAGAIN) {
+	perror("ETHERNET: ");
+	return((nsamps<<2)+sizeof(openair0_timestamp));
+      }
+      else if (errno == EWOULDBLOCK) {
+	block_cnt++;
+	usleep(10);
+	if (block_cnt == 100) return(-1);
+      }
+    }
+    else {
+      samples_received+=ret;
+    }
+  }
 
-  printf("Received %d samples\n",samples_received);
 
   *timestamp =  *(openair0_timestamp *)(buff-sizeof(openair0_timestamp));
+  printf("Received %d samples, timestamp = %d\n",samples_received>>2,*timestamp);
   *(openair0_timestamp *)(buff-sizeof(openair0_timestamp)) = temp;
   return samples_received>>2;
   
