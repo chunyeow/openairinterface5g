@@ -338,7 +338,7 @@ check_install_oai_software() {
 #	test_uninstall_package libnettle4
 	
 #	check_install_freediamter
-    else 
+#    else 
 #	if [ ! -d /usr/local/etc/freeDiameter ]; then
 #	    check_install_freediamter
 #	fi
