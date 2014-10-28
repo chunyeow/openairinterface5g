@@ -337,11 +337,11 @@ check_install_oai_software() {
 	# we need a newer version
 #	test_uninstall_package libnettle4
 	
-	check_install_freediamter
+#	check_install_freediamter
     else 
-	if [ ! -d /usr/local/etc/freeDiameter ]; then
-	    check_install_freediamter
-	fi
+#	if [ ! -d /usr/local/etc/freeDiameter ]; then
+#	    check_install_freediamter
+#	fi
 	
     fi 
 
@@ -349,8 +349,8 @@ check_install_oai_software() {
 	touch ./.lock_oaibuild
     fi 
     
-    echo_success "freediameter is installed"
-    check_s6a_certificate
+   # echo_success "freediameter is installed"
+   # check_s6a_certificate
     
 
     test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO"
