@@ -4,7 +4,8 @@
       <LARGE_SCALE>urban</LARGE_SCALE>
       <FREE_SPACE_MODEL_PARAMETERS>
 	<PATHLOSS_EXPONENT>3.67</PATHLOSS_EXPONENT>
-	<PATHLOSS_0_dB>-120</PATHLOSS_0_dB><!--pathloss at 1km -->
+	<!-- <PATHLOSS_0_dB>-100</PATHLOSS_0_dB> --> <!--pathloss at 1km -->
+    <PATHLOSS_0_dB>-120</PATHLOSS_0_dB><!--pathloss at 1km -->
       </FREE_SPACE_MODEL_PARAMETERS>
       <SMALL_SCALE>AWGN</SMALL_SCALE>
     </FADING>
@@ -29,8 +30,8 @@
   
   <TOPOLOGY_CONFIG>	
     <AREA>			
-      <X_m>2400</X_m>
-      <Y_m>2400</Y_m>	
+      <X_m>10000</X_m> //2400
+      <Y_m>10000</Y_m> //2400	
     </AREA>
     <MOBILITY> 
       <UE_MOBILITY>
@@ -54,7 +55,7 @@
   </TOPOLOGY_CONFIG>
  
   <EMULATION_CONFIG>
-    <EMULATION_TIME_ms>3000</EMULATION_TIME_ms> 
+    <EMULATION_TIME_ms>10000</EMULATION_TIME_ms> 
     
     <LOG>  <!-- set the global log level -->
       <LEVEL>debug</LEVEL>

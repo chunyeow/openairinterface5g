@@ -1386,7 +1386,7 @@ void rrc_eNB_generate_HandoverPreparationInformation(
             memcpy((void *)&eNB_rrc_inst[mod_id_target].handover_info[UE_id_target]->as_config,
                    (void *)&eNB_rrc_inst[enb_mod_idP].handover_info[ue_mod_idP]->as_config, sizeof(AS_Config_t));
 
-            eNB_rrc_inst[mod_id_target].handover_info[UE_id_target]->ho_prepare = 0xFF;
+            eNB_rrc_inst[mod_id_target].handover_info[UE_id_target]->ho_prepare = 0x00;// 0xFF;
             eNB_rrc_inst[mod_id_target].handover_info[UE_id_target]->ho_complete = 0;
 
             eNB_rrc_inst[enb_mod_idP].handover_info[ue_mod_idP]->modid_t = mod_id_target;

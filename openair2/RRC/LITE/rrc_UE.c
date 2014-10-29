@@ -2416,11 +2416,11 @@ void ue_meas_filtering(module_id_t ue_mod_idP, frame_t frameP,uint8_t eNB_index)
 
                   //LOG_D(RRC,"RSRP_total_dB: %3.2f \n",(dB_fixed_times10(mac_xface->get_RSRP(ue_mod_idP,0,eNB_offset))/10.0)-mac_xface->get_rx_total_gain_dB(ue_mod_idP,0)-dB_fixed(mac_xface->lte_frame_parms->N_RB_DL*12));
 
-                  //LOG_D(RRC,"RSRP_dB: %3.2f \n",(dB_fixed_times10(mac_xface->get_RSRP(ue_mod_idP,0,eNB_offset))/10.0));
-                  //LOG_D(RRC,"gain_loss_dB: %d \n",mac_xface->get_rx_total_gain_dB(ue_mod_idP,0));
-                  //LOG_D(RRC,"gain_fixed_dB: %d \n",dB_fixed(mac_xface->lte_frame_parms->N_RB_DL*12));
-                  //LOG_D(PHY,"[UE %d] Frame %d, RRC Measurements => rssi %3.1f dBm (digital: %3.1f dB)\n",
-              			//ue_mod_idP, frameP,	10*log10(mac_xface->get_RSSI(ue_mod_idP,0))-mac_xface->get_rx_total_gain_dB(ue_mod_idP,0),10*log10(mac_xface->get_RSSI(ue_mod_idP,0)));
+                  LOG_D(RRC,"RSRP_dBm: %3.2f \n",(dB_fixed_times10(mac_xface->get_RSRP(ue_mod_idP,0,eNB_offset))/10.0));
+                  LOG_D(RRC,"gain_loss_dB: %d \n",mac_xface->get_rx_total_gain_dB(ue_mod_idP,0));
+                  LOG_D(RRC,"gain_fixed_dB: %d \n",dB_fixed(mac_xface->lte_frame_parms->N_RB_DL*12));
+                  LOG_D(PHY,"[UE %d] Frame %d, RRC Measurements => rssi %3.1f dBm (digital: %3.1f dB)\n",
+              			ue_mod_idP, frameP,	10*log10(mac_xface->get_RSSI(ue_mod_idP,0))-mac_xface->get_rx_total_gain_dB(ue_mod_idP,0),10*log10(mac_xface->get_RSSI(ue_mod_idP,0)));
                   LOG_D(RRC,"[UE %d] Frame %d: Meas RSRP: eNB_offset: %d rsrp_coef: %3.1f filter_coef: %d before L3 filtering: rsrp: %3.1f after L3 filtering: rsrp: %3.1f \n ",
                       ue_mod_idP, frameP, eNB_offset,a,
                       *UE_rrc_inst->QuantityConfig[0]->quantityConfigEUTRA->filterCoefficientRSRP,
@@ -2444,9 +2444,8 @@ void ue_meas_filtering(module_id_t ue_mod_idP, frame_t frameP,uint8_t eNB_index)
                   UE_rrc_inst[ue_mod_idP].rsrq_db_filtered[eNB_offset]=(1-a1)*UE_rrc_inst[ue_mod_idP].rsrq_db_filtered[eNB_offset] + a1 *UE_rrc_inst[ue_mod_idP].rsrq_db[eNB_offset];
                   //mac_xface->set_RSRP_filtered(ue_mod_idP,eNB_offset,UE_rrc_inst[ue_mod_idP].rsrp_db_filtered[eNB_offset]);
                   /*
-          LOG_D(RRC,"[UE %d] meas RSRQ: eNB_offset: %d rsrq_coef: %3.2f filter_coef: %d before L3 filtering: rsrq: %3.1f after L3 filtering: rsrq: %3.1f \n ",
-            ue_mod_idP, eNB_offset,
-            a1,
+          LOG_D(RRC,"[UE %d] Frame %d: Meas RSRQ: eNB_offset: %d rsrq_coef: %3.2f filter_coef: %d before L3 filtering: rsrq: %3.1f after L3 filtering: rsrq: %3.1f \n ",
+            ue_mod_idP,frameP,eNB_offset,a1,
                    *UE_rrc_inst->QuantityConfig[0]->quantityConfigEUTRA->filterCoefficientRSRQ,
             mac_xface->get_RSRQ(ue_mod_idP,0,eNB_offset),
             UE_rrc_inst[ue_mod_idP].rsrq_db[eNB_offset],
@@ -2558,8 +2557,8 @@ void ue_measurement_report_triggering(module_id_t ue_mod_idP, frame_t frameP,uin
                           //LOG_N(RRC,"[UE%d] Frame %d Check below lines for segfault :), Fix me \n",ue_mod_idP, frameP);
                           ttt_ms = timeToTrigger_ms[UE_rrc_inst[ue_mod_idP].ReportConfig[i][reportConfigId-1]->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.timeToTrigger];
                           // Freq specific offset of neighbor cell freq
-                          ofn = ((UE_rrc_inst[ue_mod_idP].MeasObj[i][measObjId-1]->measObject.choice.measObjectEUTRA.offsetFreq != NULL) ?
-                              *UE_rrc_inst[ue_mod_idP].MeasObj[i][measObjId-1]->measObject.choice.measObjectEUTRA.offsetFreq : 15); //  /* 15 is the Default */
+                          ofn = 5;//((UE_rrc_inst[ue_mod_idP].MeasObj[i][measObjId-1]->measObject.choice.measObjectEUTRA.offsetFreq != NULL) ?
+                             // *UE_rrc_inst[ue_mod_idP].MeasObj[i][measObjId-1]->measObject.choice.measObjectEUTRA.offsetFreq : 15); //  /* 15 is the Default */
                           // cellIndividualOffset of neighbor cell - not defined yet
                           ocn = 0;
                           a3_offset = UE_rrc_inst[ue_mod_idP].ReportConfig[i][reportConfigId-1]->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.eventId.choice.eventA3.a3_Offset;
@@ -2637,13 +2636,13 @@ uint8_t check_trigger_meas_event(module_id_t ue_mod_idP,frame_t frameP, uint8_t 
 		  }
 		  if(UE_rrc_inst[ue_mod_idP].rsrp_db_filtered[eNB_offset]+ofn+ocn-hys > UE_rrc_inst[ue_mod_idP].rsrp_db_filtered[eNB_index]+ofs+ocs-1/*+a3_offset*/) {
 			  UE_rrc_inst->measTimer[ue_cnx_index][meas_index][tmp_offset] += 2; //Called every subframe = 2ms
-			  LOG_D(RRC,"[UE %d] Frame %d: Entry measTimer[%d][%d]: %d currentCell: %d betterCell: %d \n",
-				  ue_mod_idP, frameP, ue_cnx_index,meas_index,UE_rrc_inst->measTimer[ue_cnx_index][meas_index][tmp_offset],currentCellIndex,eNB_offset);
+			  LOG_D(RRC,"[UE %d] Frame %d: Entry measTimer[%d][%d][%d]: %d currentCell: %d betterCell: %d \n",
+				  ue_mod_idP, frameP, ue_cnx_index,meas_index,tmp_offset,UE_rrc_inst->measTimer[ue_cnx_index][meas_index][tmp_offset],currentCellIndex,eNB_offset);
 		  }
 		  else {
 			  UE_rrc_inst->measTimer[ue_cnx_index][meas_index][tmp_offset] = 0; //Exit condition: Resetting the measurement timer
-			  LOG_D(RRC,"[UE %d] Frame %d: Exit measTimer[%d][%d]: %d currentCell: %d betterCell: %d \n",
-				  ue_mod_idP, frameP, ue_cnx_index,meas_index,UE_rrc_inst->measTimer[ue_cnx_index][meas_index][tmp_offset],currentCellIndex,eNB_offset);
+			  LOG_D(RRC,"[UE %d] Frame %d: Exit measTimer[%d][%d][%d]: %d currentCell: %d betterCell: %d \n",
+				  ue_mod_idP, frameP, ue_cnx_index,meas_index,tmp_offset,UE_rrc_inst->measTimer[ue_cnx_index][meas_index][tmp_offset],currentCellIndex,eNB_offset);
 		  }
 		  if (UE_rrc_inst->measTimer[ue_cnx_index][meas_index][tmp_offset] >= ttt) {
 			  UE_rrc_inst->HandoverInfoUe.targetCellId = get_adjacent_cell_id(ue_mod_idP,tmp_offset); //WARNING!!!...check this!
@@ -2656,6 +2655,9 @@ uint8_t check_trigger_meas_event(module_id_t ue_mod_idP,frame_t frameP, uint8_t 
 	          //LOG_D(RRC,"PHY_ID: %d \n",UE_rrc_inst->HandoverInfoUe.targetCellId);
 			  return 1;
 		  }
+		 // else{
+		  //	LOG_D(RRC,"Condition does not hold\n");
+		 // }
 	  }
   }
   return 0;

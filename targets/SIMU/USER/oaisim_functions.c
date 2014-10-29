@@ -93,6 +93,7 @@ uint16_t           Nid_cell              = 0; //needed by init_lte_vars
 int           nb_antennas_rx        = 2; // //
 uint8_t            target_dl_mcs         = 16; // max mcs used by MAC scheduler
 uint8_t            rate_adaptation_flag  = 0;
+uint8_t 		   set_snr				 = 0;
 uint8_t            set_sinr              = 0;
 double             snr_dB=0, sinr_dB=0;
 uint8_t            set_seed              = 0;

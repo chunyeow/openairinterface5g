@@ -240,7 +240,7 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
 	}
       }
 
-
+      LOG_D(PHY,"eNB: %d, RSRP_tmp: %d \n",eNB_offset,phy_vars_ue->PHY_measurements.rsrp[eNB_offset]);
       // 2 RE per PRB
       phy_vars_ue->PHY_measurements.rsrp[eNB_offset]/=(24*phy_vars_ue->lte_frame_parms.N_RB_DL);
      
