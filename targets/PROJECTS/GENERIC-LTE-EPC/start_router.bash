@@ -37,8 +37,8 @@
 #############################################################
 #Setting the EXTERNAL and INTERNAL interfaces for the network
 #############################################################
-declare EXTIF="eth1"
-declare INTIF="eth0"
+declare EXTIF="eth0"
+declare INTIF="eth2"
 
 IPTABLES=/sbin/iptables
 DEPMOD=/sbin/depmod
@@ -208,14 +208,17 @@ do
     NET=$(( $i + 200 ))
     CIDR='10.0.'$NET'.1/8'
     bash_exec "ip -4 addr add $CIDR dev $INTIF.$i"
-    bash_exec "iptables -A FORWARD -i $EXTIF -o $INTIF.$i  ! --protocol sctp -m state --state ESTABLISHED,RELATED -j ACCEPT"
-    bash_exec "iptables -A FORWARD -i $INTIF.$i -o $EXTIF  ! --protocol sctp -m state --state NEW,ESTABLISHED,RELATED,INVALID -j ACCEPT"
+    bash_exec "iptables -A FORWARD -i $EXTIF -o $INTIF.$i   -m state --state ESTABLISHED,RELATED -j ACCEPT"
+    bash_exec "iptables -A FORWARD -i $INTIF.$i -o $EXTIF   -m state --state NEW,ESTABLISHED,RELATED,INVALID -j ACCEPT"
     bash_exec "echo 1 > /proc/sys/net/ipv4/conf/$INTIF.$i/proxy_arp"
     bash_exec "echo 0 > /proc/sys/net/ipv4/conf/$INTIF.$i/rp_filter"
+    bash_exec "sysctl -w net.ipv4.conf.$INTIF/$i.rp_filter=0"
+    assert "  `sysctl -n net.ipv4.conf.$INTIF/$i.rp_filter` -eq 0" $LINENO
 done
 for i in 5 6 7 8 9 10 11 12 13 14 15
 do
-    bash_exec "iptables  -t mangle -A PREROUTING -i $INTIF.$i -j CONNMARK --restore-mark"
+    bash_exec "iptables  -t mangle -A PREROUTING -i $EXTIF -j CONNMARK --restore-mark"
+#    bash_exec "iptables  -t mangle -A PREROUTING -i $INTIF.$i -j CONNMARK --restore-mark"
     bash_exec "iptables  -t mangle -A PREROUTING -i $INTIF.$i -m mark --mark 0 -j MARK --set-mark $i"
     bash_exec "iptables  -t mangle -A PREROUTING -i $INTIF.$i -j CONNMARK --save-mark"
 
@@ -230,15 +233,21 @@ do
     fi
     ip rule del from all iif $EXTIF  fwmark $i table vlan$i > /dev/null
     bash_exec "ip rule add iif $EXTIF fwmark $i table vlan$i"
-    bash_exec "ip route add default dev $INTIF.$i table vlan$i"
+    bash_exec "ip route add default via 10.0.205.2 dev $INTIF.$i table vlan$i"
 done
 #bash_exec "iptables  -t mangle -A OUTPUT -m mark ! --mark 0 -j CONNMARK --save-mark"
-#iptables -I INPUT      -i $INTIF.5 -j LOG --log-ip-options --log-prefix "INPUT CHAIN:"
-#iptables -I FORWARD  -t mangle  -i $INTIF.5 -j LOG --log-ip-options --log-prefix "FORWARD CHAIN(mangle):"
-#iptables -I FORWARD  -t filter  -i $INTIF.5 -j LOG --log-ip-options --log-prefix "FORWARD CHAIN(filter):"
-#iptables -I PREROUTING -t raw -i $INTIF.5 -j LOG --log-ip-options --log-prefix "PREROUTING (raw):"
-#iptables -I PREROUTING -t mangle -i $INTIF.5 -j LOG --log-ip-options --log-prefix "PREROUTING (mangle):"
-#iptables -I PREROUTING -t nat -i $INTIF.5 -j LOG --log-ip-options --log-prefix "PREROUTING (nat):"
+#iptables -I INPUT        -i $INTIF.5 -j LOG --log-ip-options --log-prefix "INPUT CHAIN:"
+#iptables -I POSTROUTING  -t nat     -o $EXTIF -j LOG --log-ip-options --log-prefix "POSTROUTING CHAIN(nat $EXTIF):"
+#iptables -I POSTROUTING  -t nat     -o $INTIF.5 -j LOG --log-ip-options --log-prefix "POSTROUTING CHAIN(nat $INTIF.5):"
+#iptables -I POSTROUTING  -t nat     -i $INTIF.5 -j LOG --log-ip-options --log-prefix "POSTROUTING CHAIN(nat):"
+#iptables -I POSTROUTING  -t mangle  -i $INTIF.5 -j LOG --log-ip-options --log-prefix "POSTROUTING CHAIN(mangle):"
+#iptables -I FORWARD      -t filter  -i $INTIF.5 -j LOG --log-ip-options --log-prefix "FORWARD CHAIN(filter $INTIF.5):"
+#iptables -I FORWARD      -t filter  -i $EXTIF   -j LOG --log-ip-options --log-prefix "FORWARD CHAIN(filter $EXTIF):"
+#iptables -I FORWARD      -t mangle  -i $INTIF.5 -j LOG --log-ip-options --log-prefix "FORWARD CHAIN(mangle $INTIF.5):"
+#iptables -I PREROUTING   -t nat     -i $EXTIF   -j LOG --log-ip-options --log-prefix "PREROUTING (nat $EXTIF):"
+#iptables -I PREROUTING   -t nat     -i $INTIF.5 -j LOG --log-ip-options --log-prefix "PREROUTING (nat $INTIF.5):"
+#iptables -I PREROUTING   -t mangle  -i $INTIF.5 -j LOG --log-ip-options --log-prefix "PREROUTING (mangle $INTIF.5):"
+#iptables -I PREROUTING   -t raw     -i $INTIF.5 -j LOG --log-ip-options --log-prefix "PREROUTING (raw $INTIF.5):"
 
 
 echo "   Enabling SNAT (MASQUERADE) functionality on $EXTIF"
