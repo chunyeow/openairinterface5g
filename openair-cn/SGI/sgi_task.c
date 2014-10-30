@@ -55,6 +55,7 @@
 static void* sgi_task_thread(void *args_p);
 static int sgi_create_endpoint_request(sgi_data_t *sgi_dataP, SGICreateEndpointReq *req_p);
 static int sgi_update_endpoint_request(sgi_data_t *sgi_dataP, SGIUpdateEndpointReq *req_p);
+static int sgi_init_phase2(sgi_data_t *sgi_data_pP);
 //-----------------------------------------------------------------------------
 static pthread_t fw_2_sgi_task_thread;
 //-----------------------------------------------------------------------------
@@ -82,41 +83,54 @@ static void* sgi_task_thread(void *args_p)
 
         DevAssert(received_message_p != NULL);
 
-        switch (ITTI_MSG_ID(received_message_p))
-        {
-            case GTPV1U_TUNNEL_DATA_IND: {
-                /* We received data from GTPV1_U incoming from an UE.
-                 * Forward it host adapter.
-                 */
-                Gtpv1uTunnelDataInd *data_ind_p;
-                data_ind_p = &received_message_p->ittiMsg.gtpv1uTunnelDataInd;
-                sgi_send_data(data_ind_p->buffer, data_ind_p->length, sgi_data_p, data_ind_p->local_S1u_teid);
-                /* Buffer is no longer needed, free it */
-                free(data_ind_p->buffer);
-            }
-            break;
-            case SGI_CREATE_ENDPOINT_REQUEST: {
-                SGICreateEndpointReq *req_p;
-                req_p = &received_message_p->ittiMsg.sgiCreateEndpointReq;
-                sgi_create_endpoint_request(sgi_data_p, req_p);
+        if (sgi_data_p->hss_associated) {
+            switch (ITTI_MSG_ID(received_message_p))
+            {
+                case GTPV1U_TUNNEL_DATA_IND: {
+                    /* We received data from GTPV1_U incoming from an UE.
+                     * Forward it host adapter.
+                     */
+                    Gtpv1uTunnelDataInd *data_ind_p;
+                    data_ind_p = &received_message_p->ittiMsg.gtpv1uTunnelDataInd;
+                    sgi_send_data(data_ind_p->buffer, data_ind_p->length, sgi_data_p, data_ind_p->local_S1u_teid);
+                    /* Buffer is no longer needed, free it */
+                    free(data_ind_p->buffer);
+                }
+                break;
+                case SGI_CREATE_ENDPOINT_REQUEST: {
+                    SGICreateEndpointReq *req_p;
+                    req_p = &received_message_p->ittiMsg.sgiCreateEndpointReq;
+                    sgi_create_endpoint_request(sgi_data_p, req_p);
+                }
+                break;
 
-
-            }
-            break;
-
-            case SGI_UPDATE_ENDPOINT_REQUEST: {
-                SGIUpdateEndpointReq *req_p;
-                req_p = &received_message_p->ittiMsg.sgiUpdateEndpointReq;
-                sgi_update_endpoint_request(sgi_data_p, req_p);
-
-
-            }
-            break;
-            default: {
-                SGI_IF_ERROR("Unkwnon message ID %d:%s\n",
+                case SGI_UPDATE_ENDPOINT_REQUEST: {
+                    SGIUpdateEndpointReq *req_p;
+                    req_p = &received_message_p->ittiMsg.sgiUpdateEndpointReq;
+                    sgi_update_endpoint_request(sgi_data_p, req_p);
+                }
+                break;
+                default: {
+                    SGI_IF_ERROR("Unkwnon message ID %d:%s\n",
                              ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));
+                }
+                break;
             }
-            break;
+        }else {
+            switch (ITTI_MSG_ID(received_message_p))
+            {
+                case ACTIVATE_MESSAGE: {
+                    sgi_data_p->hss_associated = 1;
+                    SGI_IF_DEBUG("HSS ASSOCIATED, CAN START VLANS (bug in freediameter)");
+                    sgi_init_phase2(sgi_data_p);
+                } break;
+
+                default: {
+                    SGI_IF_ERROR("Unkwnon or ignored message ID %d:%s\n",
+                             ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));
+                }
+                break;
+            }
         }
         itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);
         received_message_p = NULL;
@@ -251,32 +265,40 @@ int sgi_init(const pgw_config_t *pgw_config_p)
     sgi_data_p->interface_name[len] = '\0';
     sgi_data_p->ipv4_addr = pgw_config_p->ipv4.pgw_ipv4_address_for_SGI;
 
-    if (strcmp(sgi_data_p->interface_name, PGW_CONFIG_STRING_INTERFACE_DISABLED) != 0) {
-        sgi_data_p->interface_index = if_nametoindex(sgi_data_p->interface_name);
-
-        if (sgi_create_sockets(sgi_data_p) < 0) {
-            SGI_IF_ERROR("Could not create socket, leaving thread %s\n", __FUNCTION__);
-            free(sgi_data_p);
-            return -1;
-        }
-    } else {
-        SGI_IF_WARNING("SGI interface disabled by config file\n");
-    }
 
     if (pthread_create(&fw_2_sgi_task_thread, NULL, &sgi_task_thread, (void *)sgi_data_p) < 0) {
         SGI_IF_ERROR("sgi_task_thread pthread_create: %s", strerror(errno));
         return -1;
     }
 
-    if (strcmp(sgi_data_p->interface_name, PGW_CONFIG_STRING_INTERFACE_DISABLED) != 0) {
+    return 0;
+}
+
+int sgi_init_phase2(sgi_data_t *sgi_data_pP) {
+    int i;
+
+    if (strcmp(sgi_data_pP->interface_name, PGW_CONFIG_STRING_INTERFACE_DISABLED) != 0) {
+        sgi_data_pP->interface_index = if_nametoindex(sgi_data_pP->interface_name);
+
+        if (sgi_create_sockets(sgi_data_pP) < 0) {
+            SGI_IF_ERROR("Could not create socket, leaving thread %s\n", __FUNCTION__);
+            free(sgi_data_pP);
+            return -1;
+        }
+    } else {
+        SGI_IF_WARNING("SGI interface disabled by config file\n");
+    }
+
+
+    if (strcmp(sgi_data_pP->interface_name, PGW_CONFIG_STRING_INTERFACE_DISABLED) != 0) {
 #ifdef ENABLE_USE_PCAP_FOR_SGI
-        if (pthread_create(&sgi_data_p->capture_on_sgi_if_thread, NULL, &sgi_pcap_fw_2_gtpv1u_thread, (void *)sgi_data_p) < 0) {
+        if (pthread_create(&sgi_data_pP->capture_on_sgi_if_thread, NULL, &sgi_pcap_fw_2_gtpv1u_thread, (void *)sgi_data_pP) < 0) {
             SGI_IF_ERROR("sgi_pcap_fw_2_gtpv1u_thread pthread_create: %s", strerror(errno));
             return -1;
         }
 #endif
 #ifdef ENABLE_USE_NETFILTER_FOR_SGI
-        if (pthread_create(&sgi_data_p->capture_on_sgi_if_thread, NULL, &sgi_nf_fw_2_gtpv1u_thread, (void *)sgi_data_p) < 0) {
+        if (pthread_create(&sgi_data_pP->capture_on_sgi_if_thread, NULL, &sgi_nf_fw_2_gtpv1u_thread, (void *)sgi_data_pP) < 0) {
             SGI_IF_ERROR("sgi_nf_fw_2_gtpv1u_thread pthread_create: %s", strerror(errno));
             return -1;
         }
@@ -285,9 +307,9 @@ int sgi_init(const pgw_config_t *pgw_config_p)
 #ifdef ENABLE_USE_RAW_SOCKET_FOR_SGI
         for (i=0; i < SGI_MAX_EPS_BEARERS_PER_USER; i++) {
             sgi_read_thread_args_t *args_p = malloc(sizeof(sgi_read_thread_args_t));
-            args_p->sgi_data      = sgi_data_p;
+            args_p->sgi_data      = sgi_data_pP;
             args_p->socket_index  = i;
-            if (pthread_create(&sgi_data_p->capture_on_sgi_if_thread, NULL, &sgi_sock_raw_fw_2_gtpv1u_thread, (void *)args_p) < 0) {
+            if (pthread_create(&sgi_data_pP->capture_on_sgi_if_thread, NULL, &sgi_sock_raw_fw_2_gtpv1u_thread, (void *)args_p) < 0) {
                 SGI_IF_ERROR("sgi_sock_raw_fw_2_gtpv1u_thread pthread_create: %s", strerror(errno));
                 return -1;
             }
@@ -296,7 +318,7 @@ int sgi_init(const pgw_config_t *pgw_config_p)
 //#endif
     }
 
-    while (sgi_data_p->thread_started != SGI_MAX_EPS_BEARERS_PER_USER ) {
+    while (sgi_data_pP->thread_started != SGI_MAX_EPS_BEARERS_PER_USER ) {
         usleep(1000);
     }
     /*SGI_IF_DEBUG("ARP RESOLVING ROUTER...\n");

@@ -428,7 +428,7 @@ static int config_parse_file(mme_config_t *mme_config_p)
                             (const char **)&sgw_ip_address_for_S1u_S12_S4_up)
                     && config_setting_lookup_string( subsetting, SGW_CONFIG_STRING_SGW_IPV4_ADDRESS_FOR_S11,
                             (const char **)&sgw_ip_address_for_S11)
-                    && config_setting_lookup_int( setting, SGW_CONFIG_STRING_SGW_PORT_FOR_S1U_S12_S4_UP, &alongint)
+                    && config_setting_lookup_int( subsetting, SGW_CONFIG_STRING_SGW_PORT_FOR_S1U_S12_S4_UP, &alongint)
                   )
               ) {
                 cidr = strdup(sgw_ip_address_for_S1u_S12_S4_up);
@@ -483,9 +483,8 @@ static void config_display(mme_config_t *mme_config_p)
     fprintf(stdout, "    port number ......: %d\n", mme_config_p->s1ap_config.port_number);
     fprintf(stdout, "- IP:\n");
     //fprintf(stdout, "    s1-u iface .......: %s\n", mme_config_p->ipv4.sgw_interface_name_for_S1u_S12_S4_up);
-    //fprintf(stdout, "    s1-u ip ..........: %s/%d\n",
-    //        inet_ntoa(*((struct in_addr *)&mme_config_p->ipv4.sgw_ip_address_for_S1u_S12_S4_up)),
-    //        mme_config_p->ipv4.sgw_ip_netmask_for_S1u_S12_S4_up);
+    fprintf(stdout, "    s1-u ip ..........: %s\n",
+            inet_ntoa(*((struct in_addr *)&mme_config_p->ipv4.sgw_ip_address_for_S1u_S12_S4_up)));
     //fprintf(stdout, "    sgi iface ........: %s\n", mme_config_p->ipv4.pgw_interface_name_for_SGI);
     //fprintf(stdout, "    sgi ip ...........: %s/%d\n",
     //        inet_ntoa(*((struct in_addr *)&mme_config_p->ipv4.pgw_ip_addr_for_SGI)),

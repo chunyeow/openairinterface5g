@@ -120,7 +120,7 @@ int s6a_init(const mme_config_t *mme_config_p)
     S6A_DEBUG("Initializing freeDiameter core...\n");
     ret = fd_core_initialize();
     if (ret != 0) {
-        S6A_ERROR("An error occurred during freeDiameter core library initialization\n");
+        S6A_ERROR("An error occurred during freeDiameter core library initialization: %d\n",ret);
         return ret;
     } else {
         S6A_DEBUG("Initializing freeDiameter core done\n");

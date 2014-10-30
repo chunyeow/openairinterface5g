@@ -151,9 +151,9 @@ NwGtpv1uRcT gtpv1u_process_stack_req(
              */
             if (NW_GTPV1U_OK != nwGtpv1uMsgGetTpdu(pUlpApi->apiInfo.recvMsgInfo.hMsg,
                 buffer, (NwU32T *)&buffer_len)) {
-                GTPU_ERROR("Error while retrieving T-PDU");
+                GTPU_ERROR("Error while retrieving T-PDU\n");
             }
-            GTPU_DEBUG("Received TPDU from gtpv1u stack %u with size %d", pUlpApi->apiInfo.recvMsgInfo.teid, buffer_len);
+            GTPU_DEBUG("Received TPDU from gtpv1u stack %u with size %d\n", pUlpApi->apiInfo.recvMsgInfo.teid, buffer_len);
 
             message_p = itti_alloc_new_message(TASK_GTPV1_U, GTPV1U_TUNNEL_DATA_IND);
             if (message_p == NULL) {
@@ -419,7 +419,8 @@ static void *gtpv1u_thread(void *args)
                     GTPU_ERROR("nwGtpv1uProcessUlpReq failed: while getting teid %u in hashtable S1U_mapping\n", data_req_p->local_S1u_teid);
                 } else {
                     stack_req.apiType                   = NW_GTPV1U_ULP_API_SEND_TPDU;
-                    stack_req.apiInfo.sendtoInfo.teid   = data_req_p->local_S1u_teid;
+                    //stack_req.apiInfo.sendtoInfo.teid   = data_req_p->local_S1u_teid;
+                    stack_req.apiInfo.sendtoInfo.teid   = gtpv1u_teid2enb_info->teid_enb;
                     BUFFER_TO_NwU32T(gtpv1u_teid2enb_info->enb_ip_addr.address.ipv4_address, stack_req.apiInfo.sendtoInfo.ipAddr);
 
        /*nwGtpv1uGpduMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,

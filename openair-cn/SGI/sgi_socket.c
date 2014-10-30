@@ -66,12 +66,14 @@
 #include "intertask_interface.h"
 
 #ifdef ENABLE_USE_NETFILTER_FOR_SGI
+#warning "ENABLE_USE_NETFILTER_FOR_SGI"
 #define SGI_SOCKET_RAW        1
 #define SGI_SOCKET_BIND_TO_IF 1
 #undef  SGI_MARKING
 #undef  SGI_PACKET_RX_RING
 #undef  SGI_SOCKET_UDP
 #else
+#warning "DISABLE_USE_NETFILTER_FOR_SGI"
 #define SGI_SOCKET_RAW        1
 #define SGI_SOCKET_BIND_TO_IF 1
 #undef  SGI_PACKET_RX_RING
@@ -120,6 +122,37 @@ struct ipv6hdr {
 #define PKT_OFFSET      (TPACKET_ALIGN(sizeof(struct tpacket_hdr)) + \
                          TPACKET_ALIGN(sizeof(struct sockaddr_ll)))
 
+int sgi_create_vlan_interface(char *interface_nameP, int vlan_idP) {
+    char vlan_interface_name[IFNAMSIZ];
+    char command_line[256];
+    int  ret = 0;
+
+    ret = sprintf(vlan_interface_name, "%s.%d", interface_nameP, vlan_idP);
+    if (ret > 0) {
+        ret = sprintf(command_line, "ifconfig %s down > /dev/null 2>&1", vlan_interface_name);
+        if (ret > 0) ret = system(command_line); else return -1;
+
+        ret = sprintf(command_line, "vconfig rem  %s > /dev/null 2>&1", vlan_interface_name);
+        if (ret > 0) ret = system(command_line); else return -1;
+
+        ret = sprintf(command_line, "vconfig add  %s %d", interface_nameP, vlan_idP);
+        if (ret > 0) ret = system(command_line); else return -1;
+
+        ret = sprintf(command_line, "ifconfig %s up", vlan_interface_name);
+        if (ret > 0) ret = system(command_line); else return -1;
+
+        ret = sprintf(command_line, "sync");
+        if (ret > 0) ret = system(command_line); else return -1;
+
+        ret = sprintf(command_line, "ip -4 addr add  10.0.%d.2/24 dev %s", vlan_idP+200, vlan_interface_name);
+        if (ret > 0) ret = system(command_line); else return -1;
+        return 0;
+    } else {
+        return -1;
+    }
+}
+
+
 int sgi_create_sockets(sgi_data_t *sgi_data_p)
 {
 #ifdef SGI_SOCKET_BIND_TO_IF
@@ -154,6 +187,10 @@ int sgi_create_sockets(sgi_data_t *sgi_data_p)
         // work
 //#define SGI_SOCKET_RAW
     for (i = 0; i < SGI_MAX_EPS_BEARERS_PER_USER; i++) {
+
+
+        sgi_create_vlan_interface(sgi_data_p->interface_name,i+SGI_MIN_EPS_BEARER_ID);
+
         //sgi_data_p->sd[i] = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
         // works also
         sgi_data_p->sd[i] = socket(PF_PACKET, SOCK_RAW, htons(IPPROTO_RAW));
@@ -218,7 +255,7 @@ int sgi_create_sockets(sgi_data_t *sgi_data_p)
         sprintf(if_name, "%s.%d",sgi_data_p->interface_name,i+SGI_MIN_EPS_BEARER_ID);
 
         memset(&socket_address, 0, sizeof(struct sockaddr_ll));
-        socket_address.sll_family        = PF_PACKET;
+        socket_address.sll_family        = PF_PACKET; //always PF_PACKET
 
         //socket_address.sll_addr = ;// Filled when we want to tx
         //socket_address.sll_halen = ;// Filled when we want to tx
@@ -227,13 +264,16 @@ int sgi_create_sockets(sgi_data_t *sgi_data_p)
         //socket_address.sll_hatype = ;// Filled when packet received
         //socket_address.sll_pkttype = ;// Filled when packet received
         socket_address.sll_ifindex       = if_nametoindex(if_name);
-        socket_address.sll_protocol      = htons(ETH_P_IP);
+        socket_address.sll_protocol      = htons(ETH_P_IP);/* Protocol phy level */
         //socket_address.sll_protocol      = htons(ETH_P_ALL);
 
         // Now we can bind the socket to send the IP traffic
         if (bind(sgi_data_p->sd[i], (struct sockaddr *)&socket_address, sizeof(struct sockaddr_ll)) < 0) {
             SGI_IF_ERROR("Bind socket to %s (%s:%d)\n", if_name, strerror(errno), errno);
             goto error;
+        } else {
+            SGI_IF_DEBUG("Bind EPS bearer ID %d socket %d to %s\n",
+                    i+SGI_MIN_EPS_BEARER_ID, sgi_data_p->sd[i], if_name);
         }
 #endif
 
@@ -571,8 +611,8 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
 #endif
     //sgi_print_hex_octets(iov[0].iov_base, iov[0].iov_len);
     //sgi_print_hex_octets(iov[1].iov_base, iov[1].iov_len);
-    if (writev(sgi_data_pP->sd[mapping_p->eps_bearer_id - SGI_MIN_EPS_BEARER_ID], (const struct iovec *)&iov, 2) < 0) {
-        SGI_IF_ERROR("Error during send to socket %d bearer id %d : (%s:%d)\n",
+    if (writev(sgi_data_pP->sd[mapping_p->eps_bearer_id - SGI_MIN_EPS_BEARER_ID], (const struct iovec *)iov, 2) < 0) {
+        SGI_IF_ERROR("Error during writev to socket %d bearer id %d : (%s:%d)\n",
         		sgi_data_pP->sd[mapping_p->eps_bearer_id - SGI_MIN_EPS_BEARER_ID],
         		mapping_p->eps_bearer_id,
         		strerror(errno),

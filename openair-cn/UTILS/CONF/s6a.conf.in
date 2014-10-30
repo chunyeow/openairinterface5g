@@ -1,8 +1,8 @@
 # -------- Local ---------
 
 # Uncomment if the framework cannot resolv it.
-Identity = "@HOSTNAME@.eur";
-Realm = "eur";
+Identity = "@HOSTNAME@.pft";
+Realm = "pft";
 
 # TLS configuration (see previous section)
 TLS_Cred = "/usr/local/etc/freeDiameter/user.cert.pem",
@@ -24,6 +24,8 @@ AppServThreads = 1;
 
 #ListenOn = "192.168.57.100";
 
+#Port = 3870;
+#SecPort = 3871;
 # -------- Extensions ---------
 
 # Uncomment (and create rtd.conf) to specify routing table for this peer.
@@ -61,4 +63,4 @@ LoadExtension = "dict_s6a.fdx";
 # For only accepting incoming connections, see the acl_wl.fx extension.
 
 # ConnectPeer = "hss.test.fr" { ConnectTo = "192.168.56.101"; No_IPv6; No_TCP; Port = 3868; Realm = "test.fr"; };
-# ConnectPeer = "hss.eur" { ConnectTo = "192.168.12.190"; No_IPv6; Port = 3868; };
+#ConnectPeer = "hss.pft" { ConnectTo = "192.168.14.17"; No_IPv6; Port = 3868; };

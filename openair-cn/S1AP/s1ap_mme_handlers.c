@@ -536,7 +536,7 @@ int s1ap_mme_handle_initial_context_setup_response(
     MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).bearer_s1u_enb_fteid.ipv4           = 1; // TO DO
     MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).bearer_s1u_enb_fteid.ipv6           = 0; // TO DO
     MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).bearer_s1u_enb_fteid.interface_type = S1_U_ENODEB_GTP_U;
-    MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).bearer_s1u_enb_fteid.teid           = *((uint32_t *)eRABSetupItemCtxtSURes_p->gTP_TEID.buf);
+    MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).bearer_s1u_enb_fteid.teid           = htonl(*((uint32_t *)eRABSetupItemCtxtSURes_p->gTP_TEID.buf));
     memcpy(&MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).bearer_s1u_enb_fteid.ipv4_address,
             eRABSetupItemCtxtSURes_p->transportLayerAddress.buf,
             4);

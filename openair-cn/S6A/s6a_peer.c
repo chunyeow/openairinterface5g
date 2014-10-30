@@ -58,6 +58,13 @@ void s6a_peer_connected_cb(struct peer_info *info, void *arg)
         message_p = itti_alloc_new_message(TASK_S6A, ACTIVATE_MESSAGE);
 
         itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
+
+
+        /* Inform SGI that connection to HSS is established */
+        message_p = itti_alloc_new_message(TASK_S6A, ACTIVATE_MESSAGE);
+
+        itti_send_msg_to_task(TASK_FW_IP, INSTANCE_DEFAULT, message_p);
+
     }
 
     /* For test */

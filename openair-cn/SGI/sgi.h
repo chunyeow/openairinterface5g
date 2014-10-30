@@ -193,6 +193,7 @@ typedef struct sgi_data_s {
     int                 hw_address_of_router_captured;
     uint32_t            local_addr_v4_4_hw_address_router_capture;
     uint32_t            ipv4_addr_of_router;
+    char                hss_associated;
 
 
 #ifdef ENABLE_USE_PCAP_FOR_SGI

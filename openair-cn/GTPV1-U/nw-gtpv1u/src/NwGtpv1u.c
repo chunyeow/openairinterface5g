@@ -506,12 +506,12 @@ nwGtpv1uProcessGpdu( NwGtpv1uStackT *thiz,
 
         if(NW_GTPV1U_OK == rc) {
             NwGtpv1uMsgT *pMsg = (NwGtpv1uMsgT *) hMsg;
-            GTPU_DEBUG("Received T-PDU over tunnel end-point '%x' of size %u from "NW_IPV4_ADDR,
+            GTPU_DEBUG("Received T-PDU over tunnel end-point '%x' of size %u from "NW_IPV4_ADDR"\n",
                    ntohl(msgHdr->teid), pMsg->msgLen, NW_IPV4_ADDR_FORMAT((peerIp)));
             rc = nwGtpSessionSendMsgApiToUlpEntity(pTunnelEndPoint, pMsg);
         }
     } else {
-        GTPU_ERROR("Received T-PDU over non-existent tunnel end-point '%x' from "NW_IPV4_ADDR,
+        GTPU_ERROR("Received T-PDU over non-existent tunnel end-point '%x' from "NW_IPV4_ADDR"\n",
                ntohl(msgHdr->teid), NW_IPV4_ADDR_FORMAT((peerIp)));
     }
     NW_LEAVE(thiz);
@@ -561,7 +561,7 @@ nwGtpv1uHandleEchoReq(NW_IN NwGtpv1uStackT *thiz,
      */
     rc = nwGtpv1uMsgAddIeTV1(hMsg, NW_GTPV1U_IE_RECOVERY, 0x00);
 
-    GTPU_INFO("Sending NW_GTP_ECHO_RSP message to %x:%x with seq %u",
+    GTPU_INFO("Sending NW_GTP_ECHO_RSP message to %x:%x with seq %u\n",
         peerIp,
         peerPort,
         seqNum);
@@ -758,12 +758,12 @@ nwGtpv1uProcessUdpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
 
     switch(msgType) {
         case NW_GTP_ECHO_REQ:
-            GTPU_DEBUG("NW_GTP_ECHO_REQ");
+            GTPU_DEBUG("NW_GTP_ECHO_REQ\n");
             ret = nwGtpv1uHandleEchoReq( thiz, udpData, udpDataLen, peerPort, peerIp);
             break;
 
         case NW_GTP_ERROR_INDICATION:
-            GTPU_DEBUG("NW_GTP_ERROR_INDICATION");
+            GTPU_DEBUG("NW_GTP_ERROR_INDICATION\n");
             ret = nwGtpv1uSendUlpMessageIndication( thiz,
                                                     0,
                                                     NW_GTPV1U_ULP_API_RECV_MSG,
@@ -777,7 +777,7 @@ nwGtpv1uProcessUdpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
             break;
 
         case NW_GTP_ECHO_RSP:
-            GTPU_DEBUG("NW_GTP_ECHO_RSP");
+            GTPU_DEBUG("NW_GTP_ECHO_RSP\n");
             ret = NW_GTPV1U_OK;
             break;
 
@@ -815,7 +815,7 @@ nwGtpv1uProcessUlpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
 
     switch(pUlpReq->apiType) {
         case NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT: {
-            GTPU_DEBUG("Received NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT from ulp");
+            GTPU_DEBUG("Received NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT from ulp\n");
             rc = NwGtpv1uCreateTunnelEndPoint(thiz,
                                               pUlpReq->apiInfo.createTunnelEndPointInfo.teid,
                                               pUlpReq->apiInfo.createTunnelEndPointInfo.hUlpSession,
@@ -824,25 +824,25 @@ nwGtpv1uProcessUlpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
         break;
 
         case NW_GTPV1U_ULP_API_DESTROY_TUNNEL_ENDPOINT: {
-            GTPU_DEBUG("Received destroy session req from ulp");
+            GTPU_DEBUG("Received destroy session req from ulp\n");
             rc = nwGtpv1uDestroyTunnelEndPoint(thiz,  pUlpReq);
         }
         break;
 
         case NW_GTPV1U_ULP_API_INITIAL_REQ: {
-            GTPU_DEBUG("Received initial req from ulp");
+            GTPU_DEBUG("Received initial req from ulp\n");
             rc = nwGtpv1uInitialReq(thiz, pUlpReq);
         }
         break;
 
         case NW_GTPV1U_ULP_API_SEND_TPDU: {
-            GTPU_DEBUG("Received send tpdu req from ulp");
+            GTPU_DEBUG("Received send tpdu req from ulp\n");
             rc = nwGtpv1uSendto(thiz,  pUlpReq);
         }
         break;
 
         default:
-            GTPU_DEBUG("Unsupported API received from ulp");
+            GTPU_DEBUG("Unsupported API received from ulp\n");
             rc = NW_GTPV1U_FAILURE;
             break;
     }
@@ -869,7 +869,7 @@ nwGtpv1uProcessTimeout(void *timeoutInfo)
     NW_ASSERT(thiz != NULL);
 
     NW_ENTER(thiz);
-    GTPU_DEBUG("Received timeout event from ULP with timeoutInfo %x!",
+    GTPU_DEBUG("Received timeout event from ULP with timeoutInfo %x!\n",
            (unsigned int)timeoutInfo);
 
     rc = (((NwGtpv1uTimeoutInfoT *) timeoutInfo)->timeoutCallbackFunc) (timeoutInfo);

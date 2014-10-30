@@ -40,11 +40,16 @@ echo "Creating certificate for HSS"
 # openssl req -new -batch -out hss.csr.pem -key hss.key.pem -subj /CN=hss.test.fr/C=FR/ST=Biot/L=Aix/O=test.fr/OU=mobiles
 # openssl ca -cert cacert.pem -keyfile cakey.pem -in hss.csr.pem -out hss.cert.pem -outdir . -batch
 
-# CA self certificate
+# Create a Root Certification Authority Certificate
 openssl req  -new -batch -x509 -days 3650 -nodes -newkey rsa:1024 -out cacert.pem -keyout cakey.pem -subj /CN=eur/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
 
+# Generate a Private Key
 openssl genrsa -out hss.key.pem 1024
-openssl req -new -batch -out hss.csr.pem -key hss.key.pem -subj /CN=hss.eur/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
+
+# Generate a CSR (Certificate Signing Request) that will be self-signed
+openssl req -new -batch -out hss.csr.pem -key hss.key.pem -subj /CN=hss.pft/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
+
+# Certification authority
 openssl ca -cert cacert.pem -keyfile cakey.pem -in hss.csr.pem -out hss.cert.pem -outdir . -batch
 
 # openssl genrsa -out $hss.key.pem 1024
