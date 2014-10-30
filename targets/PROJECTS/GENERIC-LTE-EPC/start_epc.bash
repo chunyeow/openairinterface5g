@@ -229,6 +229,8 @@ VARIABLES="
            MME_IPV4_ADDRESS_FOR_S1_MME\|\
            MME_INTERFACE_NAME_FOR_S11_MME\|\
            MME_IPV4_ADDRESS_FOR_S11_MME\|\
+           HSS_INTERFACE_NAME_FOR_S6A\|\
+           HSS_IPV4_ADDRESS_FOR_S6A\|\
            SGW_INTERFACE_NAME_FOR_S11\|\
            SGW_IPV4_ADDRESS_FOR_S11\|\
            SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP\|\
@@ -250,6 +252,7 @@ declare ENB_IPV4_NETMASK_FOR_S1_MME=$(       echo $ENB_IPV4_ADDRESS_FOR_S1_MME  
 declare ENB_IPV4_NETMASK_FOR_S1U=$(          echo $ENB_IPV4_ADDRESS_FOR_S1U           | cut -f2 -d '/')
 declare MME_IPV4_NETMASK_FOR_S1_MME=$(       echo $MME_IPV4_ADDRESS_FOR_S1_MME        | cut -f2 -d '/')
 declare MME_IPV4_NETMASK_FOR_S11_MME=$(      echo $MME_IPV4_ADDRESS_FOR_S11_MME       | cut -f2 -d '/')
+declare MME_IPV4_NETMASK_FOR_S6A=$(          echo $MME_IPV4_ADDRESS_FOR_S6A           | cut -f2 -d '/')
 declare SGW_IPV4_NETMASK_FOR_S11=$(          echo $SGW_IPV4_ADDRESS_FOR_S11           | cut -f2 -d '/')
 declare SGW_IPV4_NETMASK_FOR_S1U_S12_S4_UP=$(echo $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP | cut -f2 -d '/')
 declare SGW_IPV4_NETMASK_FOR_S5_S8_UP=$(     echo $SGW_IPV4_ADDRESS_FOR_S5_S8_UP      | cut -f2 -d '/')
@@ -261,6 +264,7 @@ ENB_IPV4_ADDRESS_FOR_S1U=$(                  echo $ENB_IPV4_ADDRESS_FOR_S1U     
 MME_IPV4_ADDRESS_FOR_S1_MME=$(               echo $MME_IPV4_ADDRESS_FOR_S1_MME        | cut -f1 -d '/')
 MME_IPV4_ADDRESS_FOR_S11_MME=$(              echo $MME_IPV4_ADDRESS_FOR_S11_MME       | cut -f1 -d '/')
 SGW_IPV4_ADDRESS_FOR_S11=$(                  echo $SGW_IPV4_ADDRESS_FOR_S11           | cut -f1 -d '/')
+SGW_IPV4_ADDRESS_FOR_S6A=$(                  echo $SGW_IPV4_ADDRESS_FOR_S6A           | cut -f1 -d '/')
 SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP=$(        echo $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP | cut -f1 -d '/')
 SGW_IPV4_ADDRESS_FOR_S5_S8_UP=$(             echo $SGW_IPV4_ADDRESS_FOR_S5_S8_UP      | cut -f1 -d '/')
 PGW_IPV4_ADDRESS_FOR_S5_S8=$(                echo $PGW_IPV4_ADDRESS_FOR_S5_S8         | cut -f1 -d '/')
@@ -276,7 +280,8 @@ PGW_IPV4_ADDR_FOR_SGI=$(                     echo $PGW_IPV4_ADDR_FOR_SGI        
 #        build_mme_spgw_vlan_network
 #else
 #   clean_epc_vlan_network
-#   create_sgi_vlans
+#create_sgi_vlans
+delete_sgi_vlans
 #fi
 
 get_mac_router
@@ -319,7 +324,14 @@ trap control_c SIGINT
 echo_success "Resolving hss.eur"
 HSS_IP=$(get_ip hss.eur)
 echo_success "HSS_IP: $HSS_IP"
-MME_INTERFACE_NAME_FOR_S6A=`ip route get $HSS_IP | grep $HSS_IP | cut -d ' ' -f 3`
+
+HSS_ROUTE=$(ip route get $HSS_IP | grep $HSS_IP )
+HSS_ROUTE_IS_LOCAL=`echo $HSS_ROUTE | cut -d ' ' -f 1`
+if [ "x$HSS_ROUTE_IS_LOCAL" == "xlocal" ]; then 
+    MME_INTERFACE_NAME_FOR_S6A=`ip route get $HSS_IP | grep $HSS_IP | cut -d ' ' -f 4`
+else
+    MME_INTERFACE_NAME_FOR_S6A=`ip route get $HSS_IP | grep $HSS_IP | cut -d ' ' -f 3`
+fi
 
 echo_success "MME_INTERFACE_NAME_FOR_S1_MME : $MME_INTERFACE_NAME_FOR_S1_MME"
 echo_success "MME_INTERFACE_NAME_FOR_S6A    : $MME_INTERFACE_NAME_FOR_S6A"

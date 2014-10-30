@@ -271,6 +271,16 @@ clean_network() {
 }
 
 
+delete_sgi_vlans() {
+    
+    for i in 5 6 7 8 9 10 11 12 13 14 15
+    do
+        delete_vlan_interface  $PGW_INTERFACE_NAME_FOR_SGI.$i 
+    done
+}
+
+
+
 create_sgi_vlans() {
 
     get_mac_router
@@ -292,8 +302,6 @@ create_sgi_vlans() {
         set_interface_up $PGW_INTERFACE_NAME_FOR_SGI.$i "10.0."$NET".2" 24
         
     done
-
-
 }
 
 
