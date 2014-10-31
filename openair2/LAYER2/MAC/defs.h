@@ -646,7 +646,7 @@ typedef struct {
 ///subband bitmap coniguration (for ALU icic algo purpose), in test phase
 
 typedef struct{
-	uint8_t sbmap[NUMBER_OF_SUBBANDS]; //13 = number of SB MAX for 100 PRB
+	uint8_t sbmap[NUMBER_OF_SUBBANDS_MAX]; //13 = number of SB MAX for 100 PRB
 	uint8_t periodicity;
 	uint8_t first_subframe;
 	uint8_t sb_size;

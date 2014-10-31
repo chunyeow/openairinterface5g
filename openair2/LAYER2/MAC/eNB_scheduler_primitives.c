@@ -714,12 +714,13 @@ uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc) {
   LOG_T(MAC,"*****Check1RBALLOC****: %d%d%d%d (nb_rb %d,N_RBG %d)\n",
       rballoc[3],rballoc[2],rballoc[1],rballoc[0],nb_rb,mac_xface->lte_frame_parms->N_RBG);
   while((nb_rb >0) && (check < mac_xface->lte_frame_parms->N_RBG)){
-      //printf("rballoc[%d] %d\n",check,rballoc[check]);
+    //printf("rballoc[%d] %d\n",check,rballoc[check]);
       if(rballoc[check] == 1){
           rballoc_dci |= (1<<((mac_xface->lte_frame_parms->N_RBG-1)-check));
           switch (mac_xface->lte_frame_parms->N_RB_DL) {
           case 6:
             nb_rb--;
+	    break;
           case 25:
             if ((check == mac_xface->lte_frame_parms->N_RBG-1))
               nb_rb--;
@@ -737,7 +738,7 @@ uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc) {
             break;
           }
       }
-      //printf("rb_alloc %x\n",rballoc_dci);
+      //      printf("rb_alloc %x\n",rballoc_dci);
       check = check+1;
       //    check1 = check1+2;
   }
