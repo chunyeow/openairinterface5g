@@ -119,7 +119,7 @@ static void trx_usrp_end(openair0_device *device)
 	s->tx_stream->send("", 0, s->tx_md);
 	s->tx_md.end_of_burst = false;
 }
-static void trx_usrp_write(openair0_device *device, openair0_timestamp timestamp, const void **buff, int nsamps, int flags)
+static void trx_usrp_write(openair0_device *device, openair0_timestamp timestamp, const void **buff, int nsamps, int cc, int flags)
 {
   usrp_state_t *s = (usrp_state_t*)device->priv;
 
@@ -137,7 +137,7 @@ static int trx_usrp_read(openair0_device *device, openair0_timestamp *ptimestamp
 
   usrp_state_t *s = (usrp_state_t*)device->priv;
 
-  int samples_received[cc],i;
+  int samples_received,i;
   
   samples_received = s->rx_stream->recv(buff, nsamps, s->rx_md);
 
@@ -221,13 +221,13 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   s->usrp->set_rx_rate(openair0_cfg[0].sample_rate);
   s->usrp->set_tx_rate(openair0_cfg[0].sample_rate);
 
-  for(i=0;i<usrp->get_rx_num_channels();i++) {
+  for(i=0;i<s->usrp->get_rx_num_channels();i++) {
     if (i<openair0_cfg[0].rx_num_channels) {
       s->usrp->set_rx_freq(openair0_cfg[0].rx_freq[i]);
       s->usrp->set_rx_gain(openair0_cfg[0].rx_gain[i]);
     }
   }
-  for(i=0;i<usrp->get_tx_num_channels();i++) {
+  for(i=0;i<s->usrp->get_tx_num_channels();i++) {
     if (i<openair0_cfg[0].tx_num_channels) {
       s->usrp->set_tx_freq(openair0_cfg[0].tx_freq[i]);
       s->usrp->set_tx_gain(openair0_cfg[0].tx_gain[i]);
@@ -239,9 +239,9 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   // create tx & rx streamer
   uhd::stream_args_t stream_args_rx("sc16", "sc16");
   uhd::stream_args_t stream_args_tx("sc16", "sc16");
-  for (i = 0; i<  openair0_cfg[0].rx_num_channels(); i++)
+  for (i = 0; i<openair0_cfg[0].rx_num_channels; i++)
       stream_args_rx.channels.push_back(i);
-  for (i = 0; i<  openair0_cfg[0].tx_num_channels(); i++)
+  for (i = 0; i<openair0_cfg[0].tx_num_channels; i++)
       stream_args_tx.channels.push_back(i);
 
   s->tx_stream = s->usrp->get_tx_stream(stream_args_tx);

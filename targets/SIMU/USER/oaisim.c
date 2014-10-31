@@ -713,7 +713,7 @@ void *l2l1_task(void *args_p) {
 	      update_otg_eNB (eNB_inst, oai_emulation.info.time_ms);
 
 	      //IP/OTG to PDCP and PDCP to IP operation
-	      pdcp_run (frame, 1, 0, eNB_inst); //PHY_vars_eNB_g[eNB_id]->Mod_id
+	      //	      pdcp_run (frame, 1, 0, eNB_inst); //PHY_vars_eNB_g[eNB_id]->Mod_id
 #endif
 
 	      // PHY_vars_eNB_g[eNB_id]->frame = frame;
