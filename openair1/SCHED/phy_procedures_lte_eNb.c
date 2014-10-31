@@ -2988,7 +2988,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
       if (phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->cqi_crc_status == 1) {
 #ifdef DEBUG_PHY_PROC
 	//if (((phy_vars_eNB->proc[sched_subframe].frame_tx%10) == 0) || (phy_vars_eNB->proc[sched_subframe].frame_tx < 50)) 
-	//print_CQI(phy_vars_eNB->ulsch_eNB[i]->o,phy_vars_eNB->ulsch_eNB[i]->uci_format,0);
+	print_CQI(phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->uci_format,0,phy_vars_eNB->lte_frame_parms.N_RB_DL);
 #endif
 	extract_CQI(phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->uci_format,&phy_vars_eNB->eNB_UE_stats[i], &rnti, &access_mode);
 	phy_vars_eNB->eNB_UE_stats[i].rank = phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o_RI[0];
@@ -3610,7 +3610,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
       if (phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->cqi_crc_status == 1) {
 #ifdef DEBUG_PHY_PROC
 	//if (((phy_vars_eNB->proc[sched_subframe].frame_tx%10) == 0) || (phy_vars_eNB->proc[sched_subframe].frame_tx < 50)) 
-	//	print_CQI(phy_vars_eNB->ulsch_eNB[i]->o,phy_vars_eNB->ulsch_eNB[i]->uci_format,0);
+	print_CQI(phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->uci_format,0,phy_vars_eNB->lte_frame_parms.N_RB_DL);
 #endif
 	extract_CQI(phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->uci_format,&phy_vars_eNB->eNB_UE_stats[i], &rnti, &access_mode);
 	phy_vars_eNB->eNB_UE_stats[i].rank = phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o_RI[0];

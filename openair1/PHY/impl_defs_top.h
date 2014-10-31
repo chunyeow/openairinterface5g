@@ -319,7 +319,7 @@ typedef struct {
 
 /// Measurement Variables
 
-#define NUMBER_OF_SUBBANDS 7
+#define NUMBER_OF_SUBBANDS_MAX 13
 #define NUMBER_OF_HARQ_PID_MAX 8
 
 #if defined(CBMIMO1) || defined(EXMIMO)
@@ -410,23 +410,23 @@ typedef struct
   /// Wideband CQI (sum of all RX antennas, in dB, for precoded transmission modes (4,5,6), up to 4 spatial streams)
   int            precoded_cqi_dB[NUMBER_OF_CONNECTED_eNB_MAX+1][4];                               
   /// Subband CQI per RX antenna (= SINR)
-  int            subband_cqi[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX][NUMBER_OF_SUBBANDS];  
+  int            subband_cqi[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX][NUMBER_OF_SUBBANDS_MAX];  
   /// Total Subband CQI  (= SINR)
-  int            subband_cqi_tot[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS];              
+  int            subband_cqi_tot[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS_MAX];              
   /// Subband CQI in dB (= SINR dB)
-  int            subband_cqi_dB[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX][NUMBER_OF_SUBBANDS];
+  int            subband_cqi_dB[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX][NUMBER_OF_SUBBANDS_MAX];
   /// Total Subband CQI   
-  int            subband_cqi_tot_dB[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS];           
+  int            subband_cqi_tot_dB[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS_MAX];           
   /// Wideband PMI for each RX antenna
   int            wideband_pmi_re[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];                  
   /// Wideband PMI for each RX antenna
   int            wideband_pmi_im[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];                  
   ///Subband PMI for each RX antenna
-  int            subband_pmi_re[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS][NB_ANTENNAS_RX]; 
+  int            subband_pmi_re[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS_MAX][NB_ANTENNAS_RX]; 
   ///Subband PMI for each RX antenna
-  int            subband_pmi_im[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS][NB_ANTENNAS_RX];
+  int            subband_pmi_im[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS_MAX][NB_ANTENNAS_RX];
   /// chosen RX antennas (1=Rx antenna 1, 2=Rx antenna 2, 3=both Rx antennas) 
-  unsigned char           selected_rx_antennas[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS];         
+  unsigned char           selected_rx_antennas[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS_MAX];         
   /// Wideband Rank indication
   unsigned char  rank[NUMBER_OF_CONNECTED_eNB_MAX];   
   /// Number of RX Antennas                                            

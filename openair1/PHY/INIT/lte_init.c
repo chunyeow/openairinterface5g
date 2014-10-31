@@ -934,7 +934,7 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
 #ifndef USER_MODE
       ue_common_vars->rxdata[i] = (int*) RX_DMA_BUFFER[0][i];
 #else //USER_MODE
-      ue_common_vars->rxdata[i] = (int*) malloc16(FRAME_LENGTH_COMPLEX_SAMPLES*sizeof(int));
+      ue_common_vars->rxdata[i] = (int*) malloc16((FRAME_LENGTH_COMPLEX_SAMPLES+2048)*sizeof(int));
 #endif //USER_MODE
       if (ue_common_vars->rxdata[i]) {
 #ifdef DEBUG_PHY
@@ -1016,7 +1016,7 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
     
     
     for (i=0; i<frame_parms->nb_antennas_rx; i++)
-      for (j=0; j<4; j++) { //frame_parms->nb_antennas_tx; j++) {
+      for (j=0; j<4; j++) {
 	ue_common_vars->dl_ch_estimates[eNB_id][(j<<1) + i] = (int *)malloc16(frame_parms->symbols_per_tti*sizeof(int)*(frame_parms->ofdm_symbol_size)+LTE_CE_FILTER_LENGTH);
 	if (ue_common_vars->dl_ch_estimates[eNB_id][(j<<1)+i]) {
 #ifdef DEBUG_PHY
@@ -1048,7 +1048,7 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
   
   
     for (i=0; i<frame_parms->nb_antennas_rx; i++)
-      for (j=0; j<4; j++) {//frame_parms->nb_antennas_tx; j++) {
+      for (j=0; j<4; j++) {
 	ue_common_vars->dl_ch_estimates_time[eNB_id][(j<<1)+i] = (int *)malloc16(sizeof(int)*(frame_parms->ofdm_symbol_size)*2);
 	if (ue_common_vars->dl_ch_estimates_time[eNB_id][(j<<1)+i]) {
 #ifdef DEBUG_PHY

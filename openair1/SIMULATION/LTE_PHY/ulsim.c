@@ -959,7 +959,7 @@ int main(int argc, char **argv) {
 	    if ((cqi_flag == 1) && (n_frames == 1) ) {
 	      printf("CQI information (O %d) %d %d\n",PHY_vars_UE->ulsch_ue[0]->O,
 		     PHY_vars_UE->ulsch_ue[0]->o[0],PHY_vars_UE->ulsch_ue[0]->o[1]);
-	      print_CQI(PHY_vars_UE->ulsch_ue[0]->o,PHY_vars_UE->ulsch_ue[0]->uci_format,0);
+	      print_CQI(PHY_vars_UE->ulsch_ue[0]->o,PHY_vars_UE->ulsch_ue[0]->uci_format,PHY_vars_UE->lte_frame_parms.N_RB_DL,0);
 	    }
 
 	    PHY_vars_UE->ulsch_ue[0]->o_ACK[0] = taus()&1;
@@ -1224,7 +1224,7 @@ int main(int argc, char **argv) {
 	      printf("No ULSCH errors found, o_ACK[0]= %d, cqi_crc_status=%d\n",PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->o_ACK[0],PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->cqi_crc_status);
 	      if (PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->cqi_crc_status==1)
 		print_CQI(PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->o,
-			  PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->uci_format,0);
+			  PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->uci_format,0,PHY_vars_eNB->lte_frame_parms.N_RB_DL);
 	      dump_ulsch(PHY_vars_eNB,subframe,0);
 	      exit(-1);
 	    }

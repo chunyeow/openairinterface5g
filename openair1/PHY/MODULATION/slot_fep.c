@@ -53,6 +53,7 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
   unsigned int rx_offset;
 
   void (*dft)(int16_t *,int16_t *, int);
+  int tmp_dft_in[256];  // This is for misalignment issues for 6 and 15 PRBs
 
   switch (frame_parms->log2_symbol_size) {
   case 7:
@@ -95,47 +96,63 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
     return(-1);
   }
 
-#ifdef DEBUG_FEP
-  //  if (phy_vars_ue->frame <100)
-    msg("slot_fep: frame %d: slot %d, symbol %d, nb_prefix_samples %d, nb_prefix_samples0 %d, slot_offset %d, subframe_offset %d, sample_offset %d\n", phy_vars_ue->frame,Ns, symbol, nb_prefix_samples,nb_prefix_samples0,slot_offset,subframe_offset,sample_offset);
-#endif
   
 
   for (aa=0;aa<frame_parms->nb_antennas_rx;aa++) {
     memset(&ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*symbol],0,frame_parms->ofdm_symbol_size*sizeof(int));
 
+    rx_offset = sample_offset + slot_offset + nb_prefix_samples0 + subframe_offset - SOFFSET;
+    // Align with 128 bit
+    rx_offset = rx_offset - rx_offset % 4;
+
+#ifdef DEBUG_FEP
+  //  if (phy_vars_ue->frame <100)
+      msg("slot_fep: frame %d: slot %d, symbol %d, nb_prefix_samples %d, nb_prefix_samples0 %d, slot_offset %d, subframe_offset %d, sample_offset %d,rx_offset %d\n", phy_vars_ue->frame_rx,Ns, symbol, nb_prefix_samples,nb_prefix_samples0,slot_offset,subframe_offset,sample_offset,rx_offset);
+#endif
     if (l==0) {
-      rx_offset = sample_offset + slot_offset + nb_prefix_samples0 + subframe_offset - SOFFSET;
-      // Align with 128 bit
-      rx_offset = rx_offset - rx_offset % 4;
-      if (rx_offset > (frame_length_samples - frame_parms->ofdm_symbol_size))
-	memcpy((short *)&ue_common_vars->rxdata[aa][frame_length_samples],
-	       (short *)&ue_common_vars->rxdata[aa][0],
-	       frame_parms->ofdm_symbol_size*sizeof(int));
-	start_meas(&phy_vars_ue->rx_dft_stats);
-	dft((int16_t *)&ue_common_vars->rxdata[aa][(rx_offset) % frame_length_samples],
-	    (int16_t *)&ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*symbol],1);
-	stop_meas(&phy_vars_ue->rx_dft_stats);
-      
-    }
-    else {
-      rx_offset = sample_offset + slot_offset + 
-        (frame_parms->ofdm_symbol_size+nb_prefix_samples0+nb_prefix_samples) +
-        (frame_parms->ofdm_symbol_size+nb_prefix_samples)*(l-1) + subframe_offset - SOFFSET;
-      
-      rx_offset = rx_offset - (rx_offset % 4);
 
       if (rx_offset > (frame_length_samples - frame_parms->ofdm_symbol_size))
 	memcpy((short *)&ue_common_vars->rxdata[aa][frame_length_samples],
 	       (short *)&ue_common_vars->rxdata[aa][0],
 	       frame_parms->ofdm_symbol_size*sizeof(int));
- 
-	start_meas(&phy_vars_ue->rx_dft_stats);
+      start_meas(&phy_vars_ue->rx_dft_stats);
+      dft((int16_t *)&ue_common_vars->rxdata[aa][(rx_offset) % frame_length_samples],
+	  (int16_t *)&ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*symbol],1);
+      stop_meas(&phy_vars_ue->rx_dft_stats);
+      
+    }
+    else {
+      rx_offset += (frame_parms->ofdm_symbol_size+nb_prefix_samples) +
+	           (frame_parms->ofdm_symbol_size+nb_prefix_samples)*(l-1);
+
+#ifdef DEBUG_FEP
+  //  if (phy_vars_ue->frame <100)
+      msg("slot_fep: frame %d: slot %d, symbol %d, nb_prefix_samples %d, nb_prefix_samples0 %d, slot_offset %d, subframe_offset %d, sample_offset %d,rx_offset %d\n", phy_vars_ue->frame_rx,Ns, symbol, nb_prefix_samples,nb_prefix_samples0,slot_offset,subframe_offset,sample_offset,rx_offset);
+#endif
+      
+      if (rx_offset > (frame_length_samples - frame_parms->ofdm_symbol_size))
+	memcpy((void *)&ue_common_vars->rxdata[aa][frame_length_samples],
+	       (void *)&ue_common_vars->rxdata[aa][0],
+	       frame_parms->ofdm_symbol_size*sizeof(int));
+      
+      start_meas(&phy_vars_ue->rx_dft_stats);
+      if ((rx_offset&3)!=0) {  // if input to dft is not 128-bit aligned, issue for size 6 and 15 PRBs
+	memcpy((void *)tmp_dft_in,
+	       (void *)&ue_common_vars->rxdata[aa][(rx_offset) % frame_length_samples],
+	       frame_parms->ofdm_symbol_size*sizeof(int));
+	dft((int16_t *)tmp_dft_in,
+	    (int16_t *)&ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*symbol],1);
+      }
+      else // use dft input from RX buffer directly
 	dft((int16_t *)&ue_common_vars->rxdata[aa][(rx_offset) % frame_length_samples],
 	    (int16_t *)&ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*symbol],1);
-	stop_meas(&phy_vars_ue->rx_dft_stats);
+      stop_meas(&phy_vars_ue->rx_dft_stats);
+
+
     }
+
   }
+
 #ifndef PERFECT_CE    
   if ((l==0) || (l==(4-frame_parms->Ncp))) {
     for (aa=0;aa<frame_parms->nb_antennas_tx_eNB;aa++) {

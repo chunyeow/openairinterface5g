@@ -1536,21 +1536,21 @@ uint8_t phich_subframe2_pusch_subframe(LTE_DL_FRAME_PARMS *frame_parms,uint8_t s
 */
 uint8_t phich_frame2_pusch_frame(LTE_DL_FRAME_PARMS *frame_parms,frame_t frame,uint8_t subframe);;
 
-void print_CQI(void *o,UCI_format_t uci_format,uint8_t eNB_id);
+void print_CQI(void *o,UCI_format_t uci_format,uint8_t eNB_id,int N_RB_DL);
 
 void extract_CQI(void *o,UCI_format_t uci_format,LTE_eNB_UE_stats *stats,uint16_t * crnti, uint8_t * access_mode);
 
-void fill_CQI(void *o,UCI_format_t uci_format,PHY_MEASUREMENTS *meas,uint8_t eNB_id, rnti_t rnti, uint8_t trans_mode,double sinr_eff);
+void fill_CQI(LTE_UE_ULSCH_t *ulsch,PHY_MEASUREMENTS *meas,uint8_t eNB_id, int N_RB_DL, rnti_t rnti, uint8_t trans_mode,double sinr_eff);
 void reset_cba_uci(void *o);
 
-uint16_t quantize_subband_pmi(PHY_MEASUREMENTS *meas,uint8_t eNB_id);
-uint16_t quantize_subband_pmi2(PHY_MEASUREMENTS *meas,uint8_t eNB_id,uint8_t a_id);
+uint16_t quantize_subband_pmi(PHY_MEASUREMENTS *meas,uint8_t eNB_id,int nb_subbands);
+uint16_t quantize_subband_pmi2(PHY_MEASUREMENTS *meas,uint8_t eNB_id,uint8_t a_id,int nb_subbands);
 
-uint32_t pmi2hex_2Ar1(uint16_t pmi);
+uint64_t pmi2hex_2Ar1(uint32_t pmi);
 
-uint32_t pmi2hex_2Ar2(uint8_t pmi);
+uint64_t pmi2hex_2Ar2(uint32_t pmi);
 
-uint32_t cqi2hex(uint16_t cqi);
+uint64_t cqi2hex(uint32_t cqi);
 
 uint16_t computeRIV(uint16_t N_RB_DL,uint16_t RBstart,uint16_t Lcrbs);
 

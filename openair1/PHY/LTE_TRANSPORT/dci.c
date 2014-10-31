@@ -834,43 +834,31 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
 
     rxF_ext   = &rxdataF_ext[aarx][symbol*(frame_parms->N_RB_DL*12)];
 
-#ifndef NEW_FFT    
-    rxF       = &rxdataF[aarx][(frame_parms->first_carrier_offset + (symbol*(frame_parms->ofdm_symbol_size)))*2];
-#else
     rxF       = &rxdataF[aarx][(frame_parms->first_carrier_offset + (symbol*(frame_parms->ofdm_symbol_size)))];
-#endif    
+
     if ((frame_parms->N_RB_DL&1) == 0)  { // even number of RBs
       for (rb=0;rb<frame_parms->N_RB_DL;rb++) {
 	
 	// For second half of RBs skip DC carrier
 	if (rb==(frame_parms->N_RB_DL>>1)) {
-#ifndef NEW_FFT
-	  rxF       = &rxdataF[aarx][(1 + (symbol*(frame_parms->ofdm_symbol_size)))*2];
-#else
 	  rxF       = &rxdataF[aarx][(1 + (symbol*(frame_parms->ofdm_symbol_size)))];
-#endif
+
 	  //dl_ch0++; 
 	}
 	
 	if (symbol_mod>0) {
 	  memcpy(dl_ch0_ext,dl_ch0,12*sizeof(int32_t));
 	  for (i=0;i<12;i++) {
-#ifndef NEW_FFT
-	    rxF_ext[i]=rxF[i<<1];
-#else
+
 	    rxF_ext[i]=rxF[i];
-#endif
+
 	  }
 	  nb_rb++;
 	  dl_ch0_ext+=12;
 	  rxF_ext+=12;
 	  
 	  dl_ch0+=12;
-#ifndef NEW_FFT
-	  rxF+=24;
-#else
 	  rxF+=12;
-#endif
 	}
 	else {
 	  j=0;
@@ -879,11 +867,7 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
 		(i!=(nushiftmod3+3)) &&
 		(i!=(nushiftmod3+6)) &&
 		(i!=(nushiftmod3+9))) {
-#ifndef NEW_FFT
-	      rxF_ext[j]=rxF[i<<1];
-#else
 	      rxF_ext[j]=rxF[i];
-#endif
 	      //	      	      	      printf("extract rb %d, re %d => (%d,%d)\n",rb,i,*(short *)&rxF_ext[j],*(1+(short*)&rxF_ext[j]));
 	      dl_ch0_ext[j++]=dl_ch0[i];
 	      //	      	      printf("ch %d => (%d,%d)\n",i,*(short *)&dl_ch0[i],*(1+(short*)&dl_ch0[i]));
@@ -894,11 +878,7 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
 	  rxF_ext+=8;
 	  
 	  dl_ch0+=12;
-#ifndef NEW_FFT
-	  rxF+=24;
-#else
 	  rxF+=12;
-#endif
 	}
       }
     }
@@ -908,21 +888,13 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
 	if (symbol_mod>0) {
 	  memcpy(dl_ch0_ext,dl_ch0,12*sizeof(int32_t));
 	  for (i=0;i<12;i++)
-#ifndef NEW_FFT
-	    rxF_ext[i]=rxF[i<<1];
-#else
 	    rxF_ext[i]=rxF[i];
-#endif
 	  nb_rb++;
 	  dl_ch0_ext+=12;
 	  rxF_ext+=12;
 	  
 	  dl_ch0+=12;
-#ifndef NEW_FFT
-	  rxF+=24;
-#else
 	  rxF+=12;
-#endif
 	}
 	else {
 	  j=0;
@@ -931,11 +903,7 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
 		(i!=(nushiftmod3+3)) &&
 		(i!=(nushiftmod3+6)) &&
 		(i!=(nushiftmod3+9))) {
-#ifndef NEW_FFT
-	      rxF_ext[j]=rxF[i<<1];
-#else
 	      rxF_ext[j]=rxF[i];
-#endif
 	      //	      	      	      printf("extract rb %d, re %d => (%d,%d)\n",rb,i,*(short *)&rxF_ext[j],*(1+(short*)&rxF_ext[j]));
 	      dl_ch0_ext[j++]=dl_ch0[i];
 	      //	      	      printf("ch %d => (%d,%d)\n",i,*(short *)&dl_ch0[i],*(1+(short*)&dl_ch0[i]));
@@ -946,11 +914,7 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
 	  rxF_ext+=8;
 	  
 	  dl_ch0+=12;
-#ifndef NEW_FFT
-	  rxF+=24;
-#else
 	  rxF+=12;
-#endif
 	}
       }
       // Do middle RB (around DC)
@@ -962,28 +926,16 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
 	  if ((i!=nushiftmod3) &&
 	      (i!=(nushiftmod3+3))){
 	    dl_ch0_ext[j]=dl_ch0[i];
-#ifndef NEW_FFT
-	    rxF_ext[j++]=rxF[i<<1];
-#else
 	    rxF_ext[j++]=rxF[i];
-#endif
 	    //	    	      printf("**extract rb %d, re %d => (%d,%d)\n",rb,i,*(short *)&rxF_ext[j-1],*(1+(short*)&rxF_ext[j-1]));
 	  }
 	}
-#ifndef NEW_FFT
-	rxF       = &rxdataF[aarx][((symbol*(frame_parms->ofdm_symbol_size)))*2];
-#else
 	rxF       = &rxdataF[aarx][((symbol*(frame_parms->ofdm_symbol_size)))];
-#endif
 	for (;i<12;i++) {
 	  if ((i!=(nushiftmod3+6)) &&
 	      (i!=(nushiftmod3+9))){
 	    dl_ch0_ext[j]=dl_ch0[i];
-#ifndef NEW_FFT
-	    rxF_ext[j++]=rxF[(1+i-6)<<1];
-#else
 	    rxF_ext[j++]=rxF[(1+i-6)];
-#endif
 	    //	    	      printf("**extract rb %d, re %d => (%d,%d)\n",rb,i,*(short *)&rxF_ext[j-1],*(1+(short*)&rxF_ext[j-1]));
 	  }
 	}
@@ -993,34 +945,18 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
 	dl_ch0_ext+=8;
 	rxF_ext+=8;
 	dl_ch0+=12;
-#ifndef NEW_FFT
-	rxF+=14;
-#else
 	rxF+=7;
-#endif
 	rb++;
       }
       else {
 	for (i=0;i<6;i++) {
 	  dl_ch0_ext[i]=dl_ch0[i];
-#ifndef NEW_FFT
-	  rxF_ext[i]=rxF[i<<1];
-#else
 	  rxF_ext[i]=rxF[i];
-#endif
 	}
-#ifndef NEW_FFT
-	rxF       = &rxdataF[aarx][((symbol*(frame_parms->ofdm_symbol_size)))*2];
-#else
 	rxF       = &rxdataF[aarx][((symbol*(frame_parms->ofdm_symbol_size)))];
-#endif
 	for (;i<12;i++) {
 	  dl_ch0_ext[i]=dl_ch0[i];
-#ifndef NEW_FFT
-	  rxF_ext[i]=rxF[(1+i-6)<<1];
-#else
 	  rxF_ext[i]=rxF[(1+i-6)];
-#endif
 	}
       
 	
@@ -1028,11 +964,7 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
 	dl_ch0_ext+=12;
 	rxF_ext+=12;
 	dl_ch0+=12;
-#ifndef NEW_FFT
-	rxF+=14;
-#else
 	rxF+=7;
-#endif
 	rb++;
       }
 
@@ -1040,21 +972,13 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
 	if (symbol_mod > 0) {
 	  memcpy(dl_ch0_ext,dl_ch0,12*sizeof(int32_t));
 	  for (i=0;i<12;i++)
-#ifndef NEW_FFT
-	    rxF_ext[i]=rxF[i<<1];
-#else
 	    rxF_ext[i]=rxF[i];
-#endif
 	  nb_rb++;
 	  dl_ch0_ext+=12;
 	  rxF_ext+=12;
 	  
 	  dl_ch0+=12;
-#ifndef NEW_FFT
-	  rxF+=24;
-#else
 	  rxF+=12;
-#endif
 	}
 	else {
 	  j=0;
@@ -1063,11 +987,7 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
 		(i!=(nushiftmod3+3)) &&
 		(i!=(nushiftmod3+6)) &&
 		(i!=(nushiftmod3+9))) {
-#ifndef NEW_FFT
-	      rxF_ext[j]=rxF[i<<1];
-#else
 	      rxF_ext[j]=rxF[i];
-#endif
 	      //	      	      printf("extract rb %d, re %d => (%d,%d)\n",rb,i,*(short *)&rxF_ext[j],*(1+(short*)&rxF_ext[j]));
 	      dl_ch0_ext[j++]=dl_ch0[i];
 	    }
@@ -1077,11 +997,7 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
 	  rxF_ext+=8;
 	  
 	  dl_ch0+=12;
-#ifndef NEW_FFT
-	  rxF+=24;
-#else
 	  rxF+=12;
-#endif
 	}
       }
     }
@@ -1118,42 +1034,31 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
     //    msg("pdcch extract_rbs: rxF_ext pos %d\n",symbol*(frame_parms->N_RB_DL*12));
     rxF_ext   = &rxdataF_ext[aarx][symbol*(frame_parms->N_RB_DL*12)];
 
-#ifndef NEW_FFT    
-    rxF       = &rxdataF[aarx][(frame_parms->first_carrier_offset + (symbol*(frame_parms->ofdm_symbol_size)))*2];
-#else
     rxF       = &rxdataF[aarx][(frame_parms->first_carrier_offset + (symbol*(frame_parms->ofdm_symbol_size)))];
-#endif    
+
     if ((frame_parms->N_RB_DL&1) == 0)  // even number of RBs
       for (rb=0;rb<frame_parms->N_RB_DL;rb++) {
 	
 	// For second half of RBs skip DC carrier
 	if (rb==(frame_parms->N_RB_DL>>1)) {
-#ifndef NEW_FFT
-	  rxF       = &rxdataF[aarx][(1 + (symbol*(frame_parms->ofdm_symbol_size)))*2];
-#else
 	  rxF       = &rxdataF[aarx][(1 + (symbol*(frame_parms->ofdm_symbol_size)))];
-#endif
-	  //dl_ch0++;
+	  //	  dl_ch0++;
 	  //dl_ch1++;
 	}
 	
 	if (symbol_mod>0) {
 	  memcpy(dl_ch0_ext,dl_ch0,12*sizeof(int32_t));
 	  memcpy(dl_ch1_ext,dl_ch1,12*sizeof(int32_t));
-	  /*
+	  /*	  
 	    msg("rb %d\n",rb);
 	    for (i=0;i<12;i++)
-	    msg("(%d %d)",((int16_t *)dl_ch)[i<<1],((int16_t*)dl_ch)[1+(i<<1)]);
-	    msg("\n");*/
-	  
+	    msg("(%d %d)",((int16_t *)dl_ch0)[i<<1],((int16_t*)dl_ch0)[1+(i<<1)]);
+	    msg("\n");
+	  */
 	  for (i=0;i<12;i++) {
-#ifndef NEW_FFT
-	    rxF_ext[i]=rxF[i<<1];
-#else
 	    rxF_ext[i]=rxF[i];
-#endif
-	    //	  	      msg("%d : (%d,%d)\n",(rxF+(2*i)-&rxdataF[aarx][( (symbol*(frame_parms->ofdm_symbol_size)))*2])/2,
-	    //   ((int16_t*)&rxF[i<<1])[0],((int16_t*)&rxF[i<<1])[0]);
+	    //	    msg("%d : (%d,%d)\n",(rxF+(2*i)-&rxdataF[aarx][( (symbol*(frame_parms->ofdm_symbol_size)))*2])/2,
+	    //	((int16_t*)&rxF[i<<1])[0],((int16_t*)&rxF[i<<1])[0]);
 	  }
 	  nb_rb++;
 	  dl_ch0_ext+=12;
@@ -1167,35 +1072,20 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
 		(i!=nushiftmod3+3) &&
 		(i!=nushiftmod3+6) &&
 		(i!=nushiftmod3+9)) {
-#ifndef NEW_FFT
-	      rxF_ext[j]=rxF[i<<1];
-#else
 	      rxF_ext[j]=rxF[i];
-#endif
-	      //	      	      	      printf("extract rb %d, re %d => (%d,%d)\n",rb,i,*(short *)&rxF_ext[j],*(1+(short*)&rxF_ext[j]));
-	      dl_ch0_ext[j++]=dl_ch0[i];
+	      //     	      	      	      printf("extract rb %d, re %d => (%d,%d)\n",rb,i,*(short *)&rxF_ext[j],*(1+(short*)&rxF_ext[j]));
+	      dl_ch0_ext[j]  =dl_ch0[i];
 	      dl_ch1_ext[j++]=dl_ch1[i];
 	    }
 	  }
 	  nb_rb++;
 	  dl_ch0_ext+=8;
+	  dl_ch1_ext+=8;
 	  rxF_ext+=8;
-	  
-	  dl_ch0+=12;
-#ifndef NEW_FFT
-	  rxF+=24;
-#else
-	  rxF+=12;
-#endif
-
 	}
 	dl_ch0+=12;
 	dl_ch1+=12;
-#ifndef NEW_FFT
-	rxF+=24;
-#else
 	rxF+=12;
-#endif
       }
   
     else {  // Odd number of RBs
@@ -1207,11 +1097,8 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
 	  memcpy(dl_ch0_ext,dl_ch0,12*sizeof(int32_t));
 	  memcpy(dl_ch1_ext,dl_ch1,12*sizeof(int32_t));
 	  for (i=0;i<12;i++)
-#ifndef NEW_FFT
-	    rxF_ext[i]=rxF[i<<1];
-#else
 	    rxF_ext[i]=rxF[i];
-#endif
+
 	  nb_rb++;
 	  dl_ch0_ext+=12;
 	  dl_ch1_ext+=12;
@@ -1219,11 +1106,7 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
 	  
 	  dl_ch0+=12;
 	  dl_ch1+=12;
-#ifndef NEW_FFT
-	  rxF+=24;
-#else
 	  rxF+=12;
-#endif
 	  
 	}
 	else {
@@ -1233,11 +1116,7 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
 		(i!=nushiftmod3+3) &&
 		(i!=nushiftmod3+6) &&
 		(i!=nushiftmod3+9)) {
-#ifndef NEW_FFT
-	      rxF_ext[j]=rxF[i<<1];
-#else
 	      rxF_ext[j]=rxF[i];
-#endif
 	      //	      	      	      printf("extract rb %d, re %d => (%d,%d)\n",rb,i,*(short *)&rxF_ext[j],*(1+(short*)&rxF_ext[j]));
 	      dl_ch0_ext[j]=dl_ch0[i];
 	      dl_ch1_ext[j++]=dl_ch1[i];
@@ -1252,11 +1131,7 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
 
 	  dl_ch0+=12;
 	  dl_ch1+=12;
-#ifndef NEW_FFT
-	  rxF+=24;
-#else
 	  rxF+=12;
-#endif
 	}
       }      
 	// Do middle RB (around DC)
@@ -1265,25 +1140,13 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
 	for (i=0;i<6;i++) {
 	  dl_ch0_ext[i]=dl_ch0[i];
 	  dl_ch1_ext[i]=dl_ch1[i];
-#ifndef NEW_FFT
-	  rxF_ext[i]=rxF[i<<1];
-#else
 	  rxF_ext[i]=rxF[i];
-#endif
 	}
-#ifndef NEW_FFT	
-	rxF       = &rxdataF[aarx][((symbol*(frame_parms->ofdm_symbol_size)))*2];
-#else
 	rxF       = &rxdataF[aarx][((symbol*(frame_parms->ofdm_symbol_size)))];
-#endif
 	for (;i<12;i++) {
 	  dl_ch0_ext[i]=dl_ch0[i];
 	  dl_ch1_ext[i]=dl_ch1[i];
-#ifndef NEW_FFT
-	  rxF_ext[i]=rxF[(1+i)<<1];
-#else
 	  rxF_ext[i]=rxF[(1+i)];
-#endif
 	}
 
 	nb_rb++;
@@ -1293,11 +1156,7 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
 	
 	dl_ch0+=12;
 	dl_ch1+=12;
-#ifndef NEW_FFT
-	rxF+=14;
-#else
 	rxF+=7;
-#endif
 	rb++;
       }
       else {
@@ -1307,29 +1166,17 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
 	      (i!=nushiftmod3+3)){
 	    dl_ch0_ext[j]=dl_ch0[i];
 	    dl_ch1_ext[j]=dl_ch1[i];
-#ifndef NEW_FFT
-	    rxF_ext[j++]=rxF[i<<1];
-#else
 	    rxF_ext[j++]=rxF[i];
-#endif
 	    //	    	      printf("**extract rb %d, re %d => (%d,%d)\n",rb,i,*(short *)&rxF_ext[j-1],*(1+(short*)&rxF_ext[j-1]));
 	  }
 	}
-#ifndef NEW_FFT
-	rxF       = &rxdataF[aarx][((symbol*(frame_parms->ofdm_symbol_size)))*2];
-#else
 	rxF       = &rxdataF[aarx][((symbol*(frame_parms->ofdm_symbol_size)))];
-#endif
 	for (;i<12;i++) {
 	  if ((i!=nushiftmod3+6) &&
 	      (i!=nushiftmod3+9)){
 	    dl_ch0_ext[j]=dl_ch0[i];
 	    dl_ch1_ext[j]=dl_ch1[i];
-#ifndef NEW_FFT
-	    rxF_ext[j++]=rxF[(1+i-6)<<1];
-#else
 	    rxF_ext[j++]=rxF[(1+i-6)];
-#endif
 	    //	    	      printf("**extract rb %d, re %d => (%d,%d)\n",rb,i,*(short *)&rxF_ext[j-1],*(1+(short*)&rxF_ext[j-1]));
 	  }
 	}
@@ -1341,11 +1188,7 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
 	rxF_ext+=8;
 	dl_ch0+=12;
 	dl_ch1+=12;
-#ifndef NEW_FFT
-	rxF+=14;
-#else
 	rxF+=7;
-#endif
 	rb++;
       }
 
@@ -1356,11 +1199,7 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
 	  memcpy(dl_ch0_ext,dl_ch0,12*sizeof(int32_t));
 	  memcpy(dl_ch1_ext,dl_ch1,12*sizeof(int32_t));
 	  for (i=0;i<12;i++)
-#ifndef NEW_FFT
-	    rxF_ext[i]=rxF[i<<1];
-#else
 	    rxF_ext[i]=rxF[i];
-#endif
 	  nb_rb++;
 	  dl_ch0_ext+=12;
 	  dl_ch1_ext+=12;
@@ -1368,12 +1207,7 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
 	  
 	  dl_ch0+=12;
 	  dl_ch1+=12;
-#ifndef NEW_FFT
-	  rxF+=24;
-#else
 	  rxF+=12;
-#endif	  
-	  
 	}
 	else {
 	  j=0;
@@ -1382,11 +1216,7 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
 		(i!=nushiftmod3+3) &&
 		(i!=nushiftmod3+6) &&
 		(i!=nushiftmod3+9)) {
-#ifndef NEW_FFT
-	      rxF_ext[j]=rxF[i<<1];
-#else
 	      rxF_ext[j]=rxF[i];
-#endif
 	      //	      	      printf("extract rb %d, re %d => (%d,%d)\n",rb,i,*(short *)&rxF_ext[j],*(1+(short*)&rxF_ext[j]));
 	      dl_ch0_ext[j]=dl_ch0[i];
 	      dl_ch1_ext[j++]=dl_ch1[i];
@@ -1399,11 +1229,7 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
 	  
 	  dl_ch0+=12;
 	  dl_ch1+=12;
-#ifndef NEW_FFT
-	  rxF+=24;
-#else
 	  rxF+=12;
-#endif
 	}
       }
     }
@@ -1976,13 +1802,17 @@ uint8_t get_num_pdcch_symbols(uint8_t num_dci,
   if (numCCE <= get_nCCE(1, frame_parms, get_mi(frame_parms, subframe)))
     return(cmax(1,nCCEmin));
   //else if ((9*numCCE) <= (frame_parms->N_RB_DL*((frame_parms->nb_antennas_tx_eNB==4) ? 4 : 5)))
-  else if (numCCE < get_nCCE(2, frame_parms, get_mi(frame_parms, subframe)))
+  else if (numCCE <= get_nCCE(2, frame_parms, get_mi(frame_parms, subframe)))
     return(cmax(2,nCCEmin));
   //else if ((9*numCCE) <= (frame_parms->N_RB_DL*((frame_parms->nb_antennas_tx_eNB==4) ? 7 : 8)))
-  else if (numCCE < get_nCCE(3, frame_parms, get_mi(frame_parms, subframe)))
+  else if (numCCE <= get_nCCE(3, frame_parms, get_mi(frame_parms, subframe)))
     return(cmax(3,nCCEmin));
   else if (frame_parms->N_RB_DL<=10) { 
     if (frame_parms->Ncp == 0) { // normal CP
+      printf("numCCE %d, N_RB_DL = %d : should be returning 4 PDCCH symbols (%d,%d,%d)\n",numCCE,frame_parms->N_RB_DL,
+	     get_nCCE(1, frame_parms, get_mi(frame_parms, subframe)),
+	     get_nCCE(2, frame_parms, get_mi(frame_parms, subframe)),
+	     get_nCCE(3, frame_parms, get_mi(frame_parms, subframe)));
       if ((9*numCCE) <= (frame_parms->N_RB_DL*((frame_parms->nb_antennas_tx_eNB==4) ? 10 : 11)))
 	return(4);
     }

@@ -264,10 +264,10 @@ int generate_ue_ulsch_params_from_rar(PHY_VARS_UE *phy_vars_ue,
     else
       sinr_eff = meas->wideband_cqi_avg[eNB_id];
     */
-    fill_CQI(ulsch->o,ulsch->uci_format,meas,eNB_id,0, transmission_mode,phy_vars_ue->sinr_eff);
+    fill_CQI(ulsch,meas,eNB_id,phy_vars_ue->lte_frame_parms.N_RB_DL,0, transmission_mode,phy_vars_ue->sinr_eff);
 
     if (((phy_vars_ue->frame_tx % 100) == 0) || (phy_vars_ue->frame_tx < 10)) 
-      print_CQI(ulsch->o,ulsch->uci_format,eNB_id);
+      print_CQI(ulsch->o,ulsch->uci_format,eNB_id,phy_vars_ue->lte_frame_parms.N_RB_DL);
   }
   else {
     ulsch->O_RI                                = 0;

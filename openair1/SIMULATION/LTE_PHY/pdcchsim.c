@@ -88,7 +88,7 @@ void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmi
   lte_frame_parms->nb_antennas_tx_eNB     = N_tx;
   lte_frame_parms->nb_antennas_tx     = N_tx;
   lte_frame_parms->nb_antennas_rx     = N_rx;
-  lte_frame_parms->phich_config_common.phich_resource = one;//oneSixth; //half
+  lte_frame_parms->phich_config_common.phich_resource = oneSixth; //half
   lte_frame_parms->tdd_config         = tdd_config;
   lte_frame_parms->frame_type         = frame_type;
 
@@ -453,7 +453,7 @@ DCI_PDU *get_dci(LTE_DL_FRAME_PARMS *lte_frame_parms,uint8_t log2L, uint8_t log2
     }	  
   }
 
-  /*  
+    
   // add common dci
   DCI_pdu.dci_alloc[0].dci_length = BCCH_pdu_size_bits;
   DCI_pdu.dci_alloc[0].L          = log2Lcommon;
@@ -462,7 +462,7 @@ DCI_PDU *get_dci(LTE_DL_FRAME_PARMS *lte_frame_parms,uint8_t log2L, uint8_t log2
   DCI_pdu.dci_alloc[0].ra_flag    = 0;
   memcpy((void*)&DCI_pdu.dci_alloc[0].dci_pdu[0], &BCCH_alloc_pdu[0], BCCH_pdu_size_bytes);
   DCI_pdu.Num_common_dci++;
-
+  /*
   // add ue specific dci
   DCI_pdu.dci_alloc[1].dci_length = dci_length;
   DCI_pdu.dci_alloc[1].L          = log2L;
@@ -471,7 +471,7 @@ DCI_PDU *get_dci(LTE_DL_FRAME_PARMS *lte_frame_parms,uint8_t log2L, uint8_t log2
   DCI_pdu.dci_alloc[1].ra_flag    = 0;
   memcpy((void*)&DCI_pdu.dci_alloc[1].dci_pdu[0], &DLSCH_alloc_pdu[0], dci_length_bytes);
   DCI_pdu.Num_ue_spec_dci++;                
-  */
+  
 
   DCI_pdu.dci_alloc[0].dci_length = UL_pdu_size_bits;
   DCI_pdu.dci_alloc[0].L          = log2L;
@@ -480,7 +480,7 @@ DCI_PDU *get_dci(LTE_DL_FRAME_PARMS *lte_frame_parms,uint8_t log2L, uint8_t log2
   DCI_pdu.dci_alloc[0].ra_flag    = 0;
   memcpy((void*)&DCI_pdu.dci_alloc[0].dci_pdu[0], &UL_alloc_pdu[0], UL_pdu_size_bytes);
   DCI_pdu.Num_ue_spec_dci++;
-
+  */
   DCI_pdu.nCCE = 0;
   for (i=0; i<DCI_pdu.Num_common_dci+DCI_pdu.Num_ue_spec_dci;i++) {
     DCI_pdu.nCCE += (1<<(DCI_pdu.dci_alloc[i].L));
@@ -866,7 +866,6 @@ int main(int argc, char **argv) {
   }
 
 
-
   PHY_vars_UE->UE_mode[0] = PUSCH;
   
   nCCE_max = get_nCCE(3,&PHY_vars_eNB->lte_frame_parms,get_mi(&PHY_vars_eNB->lte_frame_parms,0));
@@ -891,29 +890,30 @@ int main(int argc, char **argv) {
     for (aa=0; aa<PHY_vars_eNB->lte_frame_parms.nb_antennas_tx_eNB;aa++) {
       memset(&PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNb_id][aa][0],0,FRAME_LENGTH_COMPLEX_SAMPLES_NO_PREFIX*sizeof(mod_sym_t));
       
-      
+      /*      
       re_offset = PHY_vars_eNB->lte_frame_parms.first_carrier_offset;
       txptr = (uint32_t*)&PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNb_id][aa][subframe*PHY_vars_eNB->lte_frame_parms.samples_per_tti];
       for (i=0;i<PHY_vars_eNB->lte_frame_parms.N_RB_DL*6;i++) {
-	txptr[re_offset++] = QPSK[taus()&3];
+	txptr[re_offset++] = PHY_vars_eNB->lte_frame_parms.mode1_flag==1 ? QPSK[taus()&3] : QPSK2[taus()&3];
 	//printf("%i => %d,%d\n",re_offset-1,*(int16_t*)&txptr[re_offset-1],*(1+(int16_t*)&txptr[re_offset-1]));
       }
       re_offset=1; //skip DC
       for (i=0;i<PHY_vars_eNB->lte_frame_parms.N_RB_DL*6;i++)
-	txptr[re_offset++] = QPSK[taus()&3];
+	txptr[re_offset++] = PHY_vars_eNB->lte_frame_parms.mode1_flag==1 ? QPSK[taus()&3] : QPSK2[taus()&3];
+      */
     }
 
 
     generate_pilots_slot(PHY_vars_eNB,
-        PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNb_id],
-        1024,
-        (subframe*2),
-        0);
+			 PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNb_id],
+			 AMP,		 //1024,
+			 (subframe*2),
+			 0);
     generate_pilots_slot(PHY_vars_eNB,
-        PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNb_id],
-        1024,
-        (subframe*2)+1,
-        0);
+			 PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNb_id],
+			 AMP,		 //1024,
+			 (subframe*2)+1,
+			 0);
 
 
     if (input_fd == NULL) {
@@ -969,15 +969,15 @@ int main(int argc, char **argv) {
 	if (DCI_pdu.dci_alloc[i].nCCE==-1)
 	  exit(-1);
       }
-            
+      
       num_pdcch_symbols = generate_dci_top(DCI_pdu.Num_ue_spec_dci,
-          				  DCI_pdu.Num_common_dci,
-          				  DCI_pdu.dci_alloc,
-                                          0,
-          				  1024,
-          				  &PHY_vars_eNB->lte_frame_parms,
-          				  PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNb_id],
-          				  subframe);
+					   DCI_pdu.Num_common_dci,
+					   DCI_pdu.dci_alloc,
+					   0,
+					   AMP,
+					   &PHY_vars_eNB->lte_frame_parms,
+					   PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNb_id],
+					   subframe);
       
         if (n_frames==1) 
 	  printf("num_pdcch_symbols at TX %d\n",num_pdcch_symbols);
@@ -999,7 +999,7 @@ int main(int argc, char **argv) {
         PHY_vars_UE->ulsch_ue[0]->harq_processes[harq_pid]->n_DMRS         = 0;
         
         generate_phich_top(PHY_vars_eNB,
-                           subframe,1024,0,0);
+                           subframe,AMP,0,0);
             /*	  
             // generate 3 interfering PHICH
             if (num_phich_interf>0) {
@@ -1032,11 +1032,11 @@ int main(int argc, char **argv) {
           
           //  write_output("pilotsF.m","rsF",txdataF[0],lte_PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size,1,1);
 
-      if (n_frames==1)
+      if (n_frames==1) {
         write_output("txsigF0.m","txsF0", PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNb_id][0],4*nsymb*OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES_NO_PREFIX,1,1);
       if (PHY_vars_eNB->lte_frame_parms.nb_antennas_tx_eNB > 1)
         write_output("txsigF1.m","txsF1", PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNb_id][1],4*nsymb*OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES_NO_PREFIX,1,1);
-        
+      }  
       tx_lev = 0;
         
         
@@ -1127,10 +1127,10 @@ int main(int argc, char **argv) {
       //	    printf("subframe_offset = %d\n",subframe_offset);
         
       slot_fep(PHY_vars_UE,
-      	 l%(PHY_vars_eNB->lte_frame_parms.symbols_per_tti/2),
-      	 (2*subframe)+(l/(PHY_vars_eNB->lte_frame_parms.symbols_per_tti/2)),
-      	 0,
-      	 0);
+	       l%(PHY_vars_eNB->lte_frame_parms.symbols_per_tti/2),
+	       (2*subframe)+(l/(PHY_vars_eNB->lte_frame_parms.symbols_per_tti/2)),
+	       0,
+	       0);
         
 #ifdef PERFECT_CE
 	      if (awgn_flag==0) {
@@ -1153,7 +1153,7 @@ int main(int argc, char **argv) {
 		}
 	      }
 	      else {
-		for(aa=0;aa<frame_parms->nb_antennas_tx;aa++) 
+		for(aa=0;aa<frame_parms->nb_antennas_tx_eNB;aa++) 
 		  { 
 		    for (aarx=0;aarx<frame_parms->nb_antennas_rx;aarx++)
 		      {

@@ -105,76 +105,342 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
     len += sprintf(&buffer[len], "[UE PROC] effective SINR %.2f dB\n",phy_vars_ue->sinr_eff);
     len += sprintf(&buffer[len], "[UE PROC] Wideband CQI eNB %d: %d dB, avg: %d dB\n",eNB,phy_vars_ue->PHY_measurements.wideband_cqi_tot[eNB],phy_vars_ue->PHY_measurements.wideband_cqi_avg[eNB]);
 
-    len += sprintf(&buffer[len], "[UE PROC] Subband CQI eNB%d (Ant 0): [%d %d %d %d %d %d %d] dB\n",
-		   eNB,
-		   phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][0],
-		   phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][1],
-		   phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][2],
-		   phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][3],
-		   phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][4],
-		   phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][5],
-		   phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][6]);
-    
-    len += sprintf(&buffer[len], "[UE PROC] Subband CQI eNB%d (Ant 1): [%d %d %d %d %d %d %d] dB\n",
-		   eNB,
-		   phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][0],
-		   phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][1],
-		   phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][2],
-		   phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][3],
-		   phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][4],
-		   phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][5],
-		   phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][6]);
-    
-    
-    len += sprintf(&buffer[len], "[UE PROC] Subband PMI eNB%d (Ant 0): [(%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d)]\n",
-		   eNB,
-		   phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][0][0],
-		   phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][0][0],
-		   phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][1][0],
-		   phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][1][0],
-		   phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][2][0],
-		   phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][2][0],
-		   phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][3][0],
-		   phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][3][0],
-		   phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][4][0],
-		   phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][4][0],
-		   phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][5][0],
-		   phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][5][0],
-		   phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][6][0],
-		   phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][6][0]);
-    
-    len += sprintf(&buffer[len], "[UE PROC] Subband PMI eNB%d (Ant 1): [(%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d)]\n",
-		   eNB,
-		   phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][0][1],
-		   phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][0][1],
-		   phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][1][1],
-		   phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][1][1],
-		   phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][2][1],
-		   phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][2][1],
-		   phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][3][1],
-		   phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][3][1],
-		   phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][4][1],
-		   phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][4][1],
-		   phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][5][1],
-		   phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][5][1],
-		   phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][6][1],
-		   phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][6][1]);
-    
-    len += sprintf(&buffer[len], "[UE PROC] PMI Antenna selection eNB%d : [%d %d %d %d %d %d %d]\n",
-		   eNB,
-		   phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][0],
-		   phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][1],
-		   phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][2],
-		   phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][3],
-		   phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][4],
-		   phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][5],
-		   phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][6]);
-    
-    len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (max): %x\n",eNB,pmi2hex_2Ar1(quantize_subband_pmi(&phy_vars_ue->PHY_measurements,eNB)));
-    len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (both): %x,%x\n",eNB,
-		   pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,0)),
-		   pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,1)));
+    switch (phy_vars_ue->lte_frame_parms.N_RB_DL) {
+    case 6:
+      len += sprintf(&buffer[len], "[UE PROC] Subband CQI eNB%d (Ant 0): [%d %d %d %d %d %d] dB\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][0],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][1],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][2],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][3],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][4],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][5]);
 
+      
+      len += sprintf(&buffer[len], "[UE PROC] Subband CQI eNB%d (Ant 1): [%d %d %d %d %d %d] dB\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][0],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][1],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][2],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][3],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][4],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][5]);
+      
+      
+      len += sprintf(&buffer[len], "[UE PROC] Subband PMI eNB%d (Ant 0): [(%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d)]\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][0][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][0][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][1][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][1][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][2][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][2][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][3][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][3][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][4][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][4][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][5][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][5][0]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] Subband PMI eNB%d (Ant 1): [(%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d)]\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][0][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][0][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][1][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][1][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][2][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][2][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][3][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][3][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][4][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][4][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][5][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][5][1]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] PMI Antenna selection eNB%d : [%d %d %d %d %d %d]\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][0],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][1],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][2],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][3],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][4],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][5]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (max): %llx\n",eNB,pmi2hex_2Ar1(quantize_subband_pmi(&phy_vars_ue->PHY_measurements,eNB,6)));
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (both): %llx,%llx\n",eNB,
+		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,0,6)),
+		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,1,6)));
+      break;
+    case 25:
+      len += sprintf(&buffer[len], "[UE PROC] Subband CQI eNB%d (Ant 0): [%d %d %d %d %d %d %d] dB\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][0],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][1],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][2],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][3],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][4],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][5],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][6]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] Subband CQI eNB%d (Ant 1): [%d %d %d %d %d %d %d] dB\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][0],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][1],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][2],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][3],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][4],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][5],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][6]);
+      
+      
+      len += sprintf(&buffer[len], "[UE PROC] Subband PMI eNB%d (Ant 0): [(%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d)]\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][0][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][0][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][1][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][1][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][2][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][2][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][3][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][3][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][4][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][4][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][5][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][5][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][6][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][6][0]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] Subband PMI eNB%d (Ant 1): [(%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d)]\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][0][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][0][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][1][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][1][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][2][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][2][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][3][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][3][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][4][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][4][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][5][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][5][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][6][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][6][1]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] PMI Antenna selection eNB%d : [%d %d %d %d %d %d %d]\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][0],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][1],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][2],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][3],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][4],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][5],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][6]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (max): %llx\n",eNB,pmi2hex_2Ar1(quantize_subband_pmi(&phy_vars_ue->PHY_measurements,eNB,7)));
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (both): %llx,%llx\n",eNB,
+		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,0,7)),
+		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,1,7)));
+      break;
+    case 50:
+      len += sprintf(&buffer[len], "[UE PROC] Subband CQI eNB%d (Ant 0): [%d %d %d %d %d %d %d %d %d] dB\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][0],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][1],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][2],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][3],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][4],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][5],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][6],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][7],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][8]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] Subband CQI eNB%d (Ant 1): [%d %d %d %d %d %d %d %d %d] dB\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][0],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][1],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][2],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][3],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][4],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][5],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][6],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][7],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][8]);
+      
+      
+      len += sprintf(&buffer[len], "[UE PROC] Subband PMI eNB%d (Ant 0): [(%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d)]\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][0][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][0][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][1][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][1][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][2][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][2][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][3][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][3][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][4][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][4][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][5][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][5][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][6][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][6][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][7][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][7][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][8][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][8][0]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] Subband PMI eNB%d (Ant 1): [(%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d)]\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][0][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][0][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][1][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][1][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][2][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][2][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][3][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][3][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][4][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][4][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][5][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][5][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][6][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][6][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][7][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][7][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][8][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][8][1]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] PMI Antenna selection eNB%d : [%d %d %d %d %d %d %d %d %d]\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][0],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][1],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][2],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][3],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][4],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][5],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][6],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][7],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][8]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (max): %llx\n",eNB,pmi2hex_2Ar1(quantize_subband_pmi(&phy_vars_ue->PHY_measurements,eNB,9)));
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (both): %llx,%llx\n",eNB,
+		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,0,9)),
+		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,1,9)));
+      break;
+    case 100:
+      len += sprintf(&buffer[len], "[UE PROC] Subband CQI eNB%d (Ant 0): [%d %d %d %d %d %d %d %d %d %d %d %d %d] dB\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][0],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][1],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][2],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][3],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][4],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][5],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][6],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][7],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][8],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][9],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][10],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][11],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][0][12]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] Subband CQI eNB%d (Ant 1): [%d %d %d %d %d %d %d %d %d %d %d %d %d] dB\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][0],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][1],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][2],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][3],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][4],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][5],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][6],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][7],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][8],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][9],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][10],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][11],
+		     phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB][1][12]);
+      
+      
+      len += sprintf(&buffer[len], "[UE PROC] Subband PMI eNB%d (Ant 0): [(%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d)]\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][0][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][0][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][1][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][1][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][2][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][2][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][3][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][3][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][4][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][4][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][5][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][5][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][6][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][6][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][7][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][7][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][8][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][8][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][9][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][9][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][10][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][10][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][11][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][11][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][12][0],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][12][0]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] Subband PMI eNB%d (Ant 1): [(%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d) (%d %d)]\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][0][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][0][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][1][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][1][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][2][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][2][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][3][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][3][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][4][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][4][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][5][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][5][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][6][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][6][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][7][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][7][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][8][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][8][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][9][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][9][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][10][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][10][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][11][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][11][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_re[eNB][12][1],
+		     phy_vars_ue->PHY_measurements.subband_pmi_im[eNB][12][1]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] PMI Antenna selection eNB%d : [%d %d %d %d %d %d %d %d %d %d %d %d %d]\n",
+		     eNB,
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][0],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][1],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][2],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][3],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][4],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][5],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][6],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][7],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][8],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][9],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][10],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][11],
+		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][12]);
+      
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (max): %llx\n",eNB,pmi2hex_2Ar1(quantize_subband_pmi(&phy_vars_ue->PHY_measurements,eNB,13)));
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (both): %llx,%llx\n",eNB,
+		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,0,13)),
+		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,1,13)));
+      break;
+    }
 #ifdef OPENAIR2    
       RRC_status = mac_get_rrc_status(phy_vars_ue->Mod_id,0,0);
       len += sprintf(&buffer[len],"[UE PROC] RRC status = %d\n",RRC_status);
@@ -190,7 +456,7 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
     if (phy_vars_ue->transmission_mode[eNB] == 6)
       len += sprintf(&buffer[len], "[UE PROC] Mode 6 Wideband CQI eNB %d : %d dB\n",eNB,phy_vars_ue->PHY_measurements.precoded_cqi_dB[eNB][0]);
     if (phy_vars_ue->dlsch_ue[0] && phy_vars_ue->dlsch_ue[0][0] && phy_vars_ue->dlsch_ue[0][1]) {
-      len += sprintf(&buffer[len], "[UE PROC] Saved PMI for DLSCH eNB %d : %x (%p)\n",eNB,pmi2hex_2Ar1(phy_vars_ue->dlsch_ue[0][0]->pmi_alloc),phy_vars_ue->dlsch_ue[0][0]);
+      len += sprintf(&buffer[len], "[UE PROC] Saved PMI for DLSCH eNB %d : %llx (%p)\n",eNB,pmi2hex_2Ar1(phy_vars_ue->dlsch_ue[0][0]->pmi_alloc),phy_vars_ue->dlsch_ue[0][0]);
 
       len += sprintf(&buffer[len], "[UE PROC] eNB %d: dl_power_off = %d\n",eNB,phy_vars_ue->dlsch_ue[0][0]->harq_processes[0]->dl_power_off);
 
@@ -345,7 +611,7 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
 		       phy_vars_eNB->PHY_measurements_eNB[eNB].subband_cqi_tot_dB[UE_id][i]);
       len += sprintf(&buffer[len],"\n");
       
-      len += sprintf(&buffer[len],"[eNB PROC] DL TM %d, DL_cqi %d, DL_pmi_single %x\n",
+      len += sprintf(&buffer[len],"[eNB PROC] DL TM %d, DL_cqi %d, DL_pmi_single %llx\n",
 		     phy_vars_eNB->transmission_mode[UE_id],
 		     phy_vars_eNB->eNB_UE_stats[UE_id].DL_cqi[0],
 		     pmi2hex_2Ar1(phy_vars_eNB->eNB_UE_stats[UE_id].DL_pmi_single));

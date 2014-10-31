@@ -302,36 +302,32 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
     __m128i *dl_ch0_128,*dl_ch1_128;
     int *dl_ch0,*dl_ch1;
     LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_ue->lte_frame_parms;
+    int nb_subbands,subband_size,last_subband_size;
+    int N_RB_DL = frame_parms->N_RB_DL;
 
-    phy_vars_ue->PHY_measurements.nb_antennas_rx = frame_parms->nb_antennas_rx;
-
-    gain_offset = 0;
-
-#ifndef __SSE3__
-    zeroPMI = _mm_xor_si128(zeroPMI,zeroPMI);
-#endif
-  
-    if (phy_vars_ue->init_averaging == 1) {
-      for (eNB_id=0;eNB_id<phy_vars_ue->n_connected_eNB;eNB_id++) {
-	phy_vars_ue->PHY_measurements.rx_power_avg[eNB_id] = 0;
-      }
-
-      for (aarx=0; aarx<frame_parms->nb_antennas_rx; aarx++) {
-	phy_vars_ue->PHY_measurements.n0_power[aarx] = 0;
-	phy_vars_ue->PHY_measurements.n0_power_dB[aarx] = 0;
-      }
-    
-      phy_vars_ue->PHY_measurements.n0_power_tot = 0;
-      phy_vars_ue->PHY_measurements.n0_power_tot_dB = 0;
-      phy_vars_ue->PHY_measurements.n0_power_avg = 0;
-      phy_vars_ue->PHY_measurements.n0_power_avg_dB = 0;
+    switch (N_RB_DL) {
+    case 6:
+      nb_subbands = 6;
+      subband_size = 12;
+      last_subband_size = 0;
+      break;
+    default:
+    case 25:
+      nb_subbands = 7;
+      subband_size = 4*12;
+      last_subband_size = 12;
+      break;
+    case 50:
+      nb_subbands = 9;
+      subband_size = 6*12;
+      last_subband_size = 2*12;
+      break;
+    case 100:
+      nb_subbands = 13;
+      subband_size = 8*12;
+      last_subband_size = 4*12;
+      break;
     }
-
-    // noise measurements
-    // for abstraction we do noise measurements based on the precalculated phy_vars_ue->N0
-    // otherwise if there is a symbol where we can take noise measurements on, we measure there
-    // otherwise do not update the noise measurements 
-  
     if (abstraction_flag!=0) {
       phy_vars_ue->PHY_measurements.n0_power_tot = 0;
       for (aarx=0; aarx<frame_parms->nb_antennas_rx; aarx++) {
@@ -368,7 +364,7 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
 	for (aatx=0; aatx<frame_parms->nb_antennas_tx_eNB; aatx++) {
 	  phy_vars_ue->PHY_measurements.rx_spatial_power[eNB_id][aatx][aarx] = 
 	    (signal_energy_nodc(&phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_id][(aatx<<1) + aarx][0],
-				(frame_parms->N_RB_DL*12)));
+				(N_RB_DL*12)));
 	    //- phy_vars_ue->PHY_measurements.n0_power[aarx];
 	
 	  if (phy_vars_ue->PHY_measurements.rx_spatial_power[eNB_id][aatx][aarx]<0)
@@ -432,19 +428,18 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
 	  dl_ch0    = &phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_id][aarx][4];
 	  dl_ch1    = &phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_id][2+aarx][4];
 	
-	  for (subband=0;subband<7;subband++) {
+	  for (subband=0;subband<nb_subbands;subband++) {
 	  
 	    // cqi
 	    if (aarx==0)
 	      phy_vars_ue->PHY_measurements.subband_cqi_tot[eNB_id][subband]=0;
 	  
-	    if (subband<6) {
-	      /*
-		for (i=0;i<48;i++)
+	    if ((subband<(nb_subbands-1))||(N_RB_DL==6)) {
+	      /*for (i=0;i<48;i++)
 		msg("subband %d (%d) : %d,%d\n",subband,i,((short *)dl_ch0)[2*i],((short *)dl_ch0)[1+(2*i)]);
 	      */
 	      phy_vars_ue->PHY_measurements.subband_cqi[eNB_id][aarx][subband] = 
-		(signal_energy_nodc(dl_ch0,48) + signal_energy_nodc(dl_ch1,48));
+		(signal_energy_nodc(dl_ch0,subband_size) + signal_energy_nodc(dl_ch1,subband_size));
 	      if ( phy_vars_ue->PHY_measurements.subband_cqi[eNB_id][aarx][subband] < 0)
 		phy_vars_ue->PHY_measurements.subband_cqi[eNB_id][aarx][subband]=0;
 	      /*
@@ -456,21 +451,22 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
 	      phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB_id][aarx][subband] = dB_fixed2(phy_vars_ue->PHY_measurements.subband_cqi[eNB_id][aarx][subband],
 											      phy_vars_ue->PHY_measurements.n0_power[aarx]);
 	    }
-	    else {
+	    else {  // this is for the last subband which is smaller in size
 	      //	    for (i=0;i<12;i++)
 	      //	      printf("subband %d (%d) : %d,%d\n",subband,i,((short *)dl_ch0)[2*i],((short *)dl_ch0)[1+(2*i)]); 
-	      phy_vars_ue->PHY_measurements.subband_cqi[eNB_id][aarx][subband] = (signal_energy_nodc(dl_ch0,12) + signal_energy_nodc(dl_ch1,12)); // - phy_vars_ue->PHY_measurements.n0_power[aarx];
+	      phy_vars_ue->PHY_measurements.subband_cqi[eNB_id][aarx][subband] = (signal_energy_nodc(dl_ch0,last_subband_size) + 
+										  signal_energy_nodc(dl_ch1,last_subband_size)); // - phy_vars_ue->PHY_measurements.n0_power[aarx];
 	      phy_vars_ue->PHY_measurements.subband_cqi_tot[eNB_id][subband] += phy_vars_ue->PHY_measurements.subband_cqi[eNB_id][aarx][subband];
 	      phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB_id][aarx][subband] = dB_fixed2(phy_vars_ue->PHY_measurements.subband_cqi[eNB_id][aarx][subband],
 											      phy_vars_ue->PHY_measurements.n0_power[aarx]);			
 	    }
-	    dl_ch1+=48;
-	    dl_ch0+=48;
+	    dl_ch1+=subband_size;
+	    dl_ch0+=subband_size;
 	    //	  msg("subband_cqi[%d][%d][%d] => %d (%d dB)\n",eNB_id,aarx,subband,phy_vars_ue->PHY_measurements.subband_cqi[eNB_id][aarx][subband],phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB_id][aarx][subband]);
 	  }
 	
 	}
-	for (subband=0;subband<7;subband++) {
+	for (subband=0;subband<nb_subbands;subband++) {
 	  phy_vars_ue->PHY_measurements.subband_cqi_tot_dB[eNB_id][subband] = dB_fixed2(phy_vars_ue->PHY_measurements.subband_cqi_tot[eNB_id][subband],phy_vars_ue->PHY_measurements.n0_power_tot);
 	  //	  msg("subband_cqi_tot[%d][%d] => %d dB (n0 %d)\n",eNB_id,subband,phy_vars_ue->PHY_measurements.subband_cqi_tot_dB[eNB_id][subband],phy_vars_ue->PHY_measurements.n0_power_tot);
 	}	
@@ -488,7 +484,7 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
 	    }
 	    #endif
 	  */
-	  for (subband=0;subband<7;subband++) {
+	  for (subband=0;subband<nb_subbands;subband++) {
 	  
 	  
 	    // pmi
@@ -497,7 +493,11 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
 	    pmi128_im = _mm_xor_si128(pmi128_im,pmi128_im);
 	    // limit is the number of groups of 4 REs in a subband (12 = 4 RBs, 3 = 1 RB)
 	    // for 5 MHz channelization, there are 7 subbands, 6 of size 4 RBs and 1 of size 1 RB
-	    limit = (subband < 6) ? 12 : 3;
+	    if ((N_RB_DL==6) || (subband<(nb_subbands-1)))
+	      limit = subband_size>>2;
+	    else
+	      limit = last_subband_size>>2;
+
 	    for (i=0;i<limit;i++) {
 	    
 	      // For each RE in subband perform ch0 * conj(ch1)
@@ -582,13 +582,13 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
 	    //	  msg("subband_cqi[%d][%d][%d] => %d (%d dB)\n",eNB_id,aarx,subband,phy_vars_ue->PHY_measurements.subband_cqi[eNB_id][aarx][subband],phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB_id][aarx][subband]);
 	  }
 	}
-	for (subband=0;subband<7;subband++) {
+	for (subband=0;subband<nb_subbands;subband++) {
 	  phy_vars_ue->PHY_measurements.subband_cqi_tot_dB[eNB_id][subband] = dB_fixed2(phy_vars_ue->PHY_measurements.subband_cqi_tot[eNB_id][subband],phy_vars_ue->PHY_measurements.n0_power_tot);
 	}
       }
 
       phy_vars_ue->PHY_measurements.rank[eNB_id] = 0;
-      for (i=0;i<NUMBER_OF_SUBBANDS;i++) {
+      for (i=0;i<nb_subbands;i++) {
 	phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB_id][i] = 0;
 	if (frame_parms->nb_antennas_rx>1) {
 	  if (phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB_id][0][i] >= phy_vars_ue->PHY_measurements.subband_cqi_dB[eNB_id][1][i])
