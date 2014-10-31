@@ -119,7 +119,7 @@ static void trx_usrp_end(openair0_device *device)
 	s->tx_stream->send("", 0, s->tx_md);
 	s->tx_md.end_of_burst = false;
 }
-static void trx_usrp_write(openair0_device *device, openair0_timestamp timestamp, const void *buff, int nsamps, int flags)
+static void trx_usrp_write(openair0_device *device, openair0_timestamp timestamp, const void **buff, int nsamps, int flags)
 {
   usrp_state_t *s = (usrp_state_t*)device->priv;
 
@@ -132,30 +132,30 @@ static void trx_usrp_write(openair0_device *device, openair0_timestamp timestamp
   s->tx_md.start_of_burst = false;
 }
 
-static int trx_usrp_read(openair0_device *device, openair0_timestamp *ptimestamp, void *buff, int nsamps)
+static int trx_usrp_read(openair0_device *device, openair0_timestamp *ptimestamp, void **buff, int nsamps, int cc)
 {
 
   usrp_state_t *s = (usrp_state_t*)device->priv;
 
-  int samples_received;
-  //TODO: only one channel is supported now
+  int samples_received[cc],i;
+  
   samples_received = s->rx_stream->recv(buff, nsamps, s->rx_md);
 
-	//handle the error code
-	switch(s->rx_md.error_code){
-		case uhd::rx_metadata_t::ERROR_CODE_NONE:
-			break;
-		case uhd::rx_metadata_t::ERROR_CODE_OVERFLOW:
-			printf("[recv] USRP RX OVERFLOW!\n");
-			s->num_overflows++;
-			break;
-		case uhd::rx_metadata_t::ERROR_CODE_TIMEOUT:
-			printf("[recv] USRP RX TIMEOUT!\n");
-			break;
-		default:
-			printf("[recv] Unexpected error on RX, Error code: 0x%x\n",s->rx_md.error_code);
-			break;
-	}
+  //handle the error code
+  switch(s->rx_md.error_code){
+  case uhd::rx_metadata_t::ERROR_CODE_NONE:
+    break;
+  case uhd::rx_metadata_t::ERROR_CODE_OVERFLOW:
+    printf("[recv] USRP RX OVERFLOW!\n");
+    s->num_overflows++;
+    break;
+  case uhd::rx_metadata_t::ERROR_CODE_TIMEOUT:
+    printf("[recv] USRP RX TIMEOUT!\n");
+    break;
+  default:
+    printf("[recv] Unexpected error on RX, Error code: 0x%x\n",s->rx_md.error_code);
+    break;
+  }
   s->rx_count += nsamps;
   s->rx_timestamp = s->rx_md.time_spec.to_ticks(s->sample_rate);
   *ptimestamp = s->rx_timestamp;
@@ -204,6 +204,8 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   // Initialize USRP device
   std::string args = "type=b200";
   uhd::device_addrs_t device_adds = uhd::device::find(args);
+  size_t i;
+
   if(device_adds.size() == 0)
   {
     std::cerr<<"No USRP Device Found. " << std::endl;
@@ -219,37 +221,51 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   s->usrp->set_rx_rate(openair0_cfg[0].sample_rate);
   s->usrp->set_tx_rate(openair0_cfg[0].sample_rate);
 
-  s->usrp->set_tx_freq(openair0_cfg[0].tx_freq[0]);
-  s->usrp->set_rx_freq(openair0_cfg[0].rx_freq[0]);
-  s->usrp->set_tx_gain(openair0_cfg[0].tx_gain[0]);
-  s->usrp->set_rx_gain(openair0_cfg[0].rx_gain[0]);
+  for(i=0;i<usrp->get_rx_num_channels();i++) {
+    if (i<openair0_cfg[0].rx_num_channels) {
+      s->usrp->set_rx_freq(openair0_cfg[0].rx_freq[i]);
+      s->usrp->set_rx_gain(openair0_cfg[0].rx_gain[i]);
+    }
+  }
+  for(i=0;i<usrp->get_tx_num_channels();i++) {
+    if (i<openair0_cfg[0].tx_num_channels) {
+      s->usrp->set_tx_freq(openair0_cfg[0].tx_freq[i]);
+      s->usrp->set_tx_gain(openair0_cfg[0].tx_gain[i]);
+    }
+  }
   s->usrp->set_tx_bandwidth(openair0_cfg[0].tx_bw);
   s->usrp->set_rx_bandwidth(openair0_cfg[0].rx_bw);
 
   // create tx & rx streamer
-  uhd::stream_args_t stream_args("sc16", "sc16");
-  s->tx_stream = s->usrp->get_tx_stream(stream_args);
-  s->rx_stream = s->usrp->get_rx_stream(stream_args);
+  uhd::stream_args_t stream_args_rx("sc16", "sc16");
+  uhd::stream_args_t stream_args_tx("sc16", "sc16");
+  for (i = 0; i<  openair0_cfg[0].rx_num_channels(); i++)
+      stream_args_rx.channels.push_back(i);
+  for (i = 0; i<  openair0_cfg[0].tx_num_channels(); i++)
+      stream_args_tx.channels.push_back(i);
+
+  s->tx_stream = s->usrp->get_tx_stream(stream_args_tx);
+  s->rx_stream = s->usrp->get_rx_stream(stream_args_rx);
 
   s->usrp->set_time_now(uhd::time_spec_t(0.0));
 
   // display USRP settings
-	std::cout << std::endl<<boost::format("Actual TX sample rate: %fMSps...") % (s->usrp->get_tx_rate()/1e6) << std::endl;
-	std::cout << boost::format("Actual RX sample rate: %fMSps...") % (s->usrp->get_rx_rate()/1e6) << std::endl;
-
-	std::cout << boost::format("Actual TX frequency: %fGHz...") % (s->usrp->get_tx_freq()/1e9) << std::endl;
-	std::cout << boost::format("Actual RX frequency: %fGHz...") % (s->usrp->get_rx_freq()/1e9) << std::endl;
-
-	std::cout << boost::format("Actual TX gain: %f...") % (s->usrp->get_tx_gain()) << std::endl;
-	std::cout << boost::format("Actual RX gain: %f...") % (s->usrp->get_rx_gain()) << std::endl;
-
-	std::cout << boost::format("Actual TX bandwidth: %fM...") % (s->usrp->get_tx_bandwidth()/1e6) << std::endl;
-	std::cout << boost::format("Actual RX bandwidth: %fM...") % (s->usrp->get_rx_bandwidth()/1e6) << std::endl;
-
-	std::cout << boost::format("Actual TX antenna: %s...") % (s->usrp->get_tx_antenna()) << std::endl;
-	std::cout << boost::format("Actual RX antenna: %s...") % (s->usrp->get_rx_antenna()) << std::endl;
-
-	std::cout << boost::format("Device timestamp: %f...") % (s->usrp->get_time_now().get_real_secs()) << std::endl;
+  std::cout << std::endl<<boost::format("Actual TX sample rate: %fMSps...") % (s->usrp->get_tx_rate()/1e6) << std::endl;
+  std::cout << boost::format("Actual RX sample rate: %fMSps...") % (s->usrp->get_rx_rate()/1e6) << std::endl;
+  
+  std::cout << boost::format("Actual TX frequency: %fGHz...") % (s->usrp->get_tx_freq()/1e9) << std::endl;
+  std::cout << boost::format("Actual RX frequency: %fGHz...") % (s->usrp->get_rx_freq()/1e9) << std::endl;
+  
+  std::cout << boost::format("Actual TX gain: %f...") % (s->usrp->get_tx_gain()) << std::endl;
+  std::cout << boost::format("Actual RX gain: %f...") % (s->usrp->get_rx_gain()) << std::endl;
+  
+  std::cout << boost::format("Actual TX bandwidth: %fM...") % (s->usrp->get_tx_bandwidth()/1e6) << std::endl;
+  std::cout << boost::format("Actual RX bandwidth: %fM...") % (s->usrp->get_rx_bandwidth()/1e6) << std::endl;
+  
+  std::cout << boost::format("Actual TX antenna: %s...") % (s->usrp->get_tx_antenna()) << std::endl;
+  std::cout << boost::format("Actual RX antenna: %s...") % (s->usrp->get_rx_antenna()) << std::endl;
+  
+  std::cout << boost::format("Device timestamp: %f...") % (s->usrp->get_time_now().get_real_secs()) << std::endl;
 
   device->priv = s;
   device->trx_start_func = trx_usrp_start;

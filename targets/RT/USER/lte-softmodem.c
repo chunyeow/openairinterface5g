@@ -129,7 +129,7 @@ unsigned short config_frames[4] = {2,9,11,13};
 #define FRAME_PERIOD    100000000ULL
 #define DAQ_PERIOD      66667ULL
 
-//#define DEBUG_THREADS 1
+#define DEBUG_THREADS 1
 
 //#define USRP_DEBUG 1
 
@@ -150,8 +150,8 @@ void cleanup_rx_pdsch_thread(void);
 
 openair0_config_t openair0_cfg[MAX_CARDS];
 
-int32_t *rxdata;
-int32_t *txdata;
+int32_t **rxdata;
+int32_t **txdata;
 int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg, openair0_rf_map rf_map[MAX_NUM_CCs]);
 int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_cfg, openair0_rf_map rf_map[MAX_NUM_CCs]);
 
@@ -1277,6 +1277,8 @@ static void *eNB_thread(void *arg)
   unsigned int rx_cnt = 0;
   unsigned int tx_cnt = tx_delay;
   //  int tx_offset;
+  void *rxp[2],*txp[2];
+  int i;
 
   hw_subframe = 0;
 #endif
@@ -1400,50 +1402,42 @@ static void *eNB_thread(void *arg)
 	unsigned int rxs;
 #ifndef USRP_DEBUG
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,1);
-	/*
-	// Grab 1/4 of RX buffer and get timestamp
-
-	rxs = openair0.trx_read_func(&openair0, 
-	&timestamp, 
-	&rxdata[rx_cnt*samples_per_packets], 
-	(samples_per_packets>>2));
-	if (rxs != (samples_per_packets>>2))
-	oai_exit=1;
-
-	*/
 
 	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_TXCNT,tx_cnt);
 	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_RXCNT,rx_cnt*samples_per_packets);
 
+	printf("hw_subframe %d: rx_cnt %d\n",hw_subframe,rx_cnt);
+
+	for (i=0;i<PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_rx;i++)
+	  rxp[i] = (void*)&rxdata[i][rx_cnt*samples_per_packets];
+
 	rxs = openair0.trx_read_func(&openair0, 
 				     &timestamp, 
-				     &rxdata[rx_cnt*samples_per_packets], 
-				     samples_per_packets);
+				     rxp, 
+				     samples_per_packets,
+				     PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_rx);
 
 	if (rxs != samples_per_packets)
 	  oai_exit=1;
+ 
+	printf("hw_subframe %d: tx_cnt %d\n",hw_subframe,tx_cnt);
 
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,0);
 
 	// Transmit TX buffer based on timestamp from RX
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,1);
+	
+	for (i=0;i<PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_tx;i++)
+	  txp[i] = (void*)&txdata[i][tx_cnt*samples_per_packets];
 	openair0.trx_write_func(&openair0, 
 				(timestamp+samples_per_packets*tx_delay-tx_forward_nsamps), 
-				&txdata[tx_cnt*samples_per_packets], 
+				txp,
 				samples_per_packets, 
+				PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_tx,
 				1);
+
+	
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,0);
-	/*
-	// Grab remaining 3/4 of RX buffer
-	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,1);
-	rxs = openair0.trx_read_func(&openair0, 
-	&timestamp, 
-	&rxdata[(rx_cnt*samples_per_packets)+(samples_per_packets>>2)], 
-	3*((samples_per_packets>>2)));
-	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,0);
-	if (rxs != (3*(samples_per_packets>>2)))
-	oai_exit=1;
-	*/
 #else
 	rt_sleep_ns(1000000);
 #endif
@@ -1891,15 +1885,17 @@ static void *UE_thread(void *arg) {
 
   int slot=1,frame=0,hw_slot,last_slot, next_slot,hw_subframe=0,rx_cnt=0,tx_cnt=0;
   // unsigned int aa;
-  int dummy[samples_per_packets];
+  int dummy[2][samples_per_packets];
   int dummy_dump = 0;
   int tx_enabled=0;
   int start_rx_stream=0;
   int rx_off_diff = 0;
   int rx_correction_timer = 0;
+  int i;
 
   openair0_timestamp time0,time1;
   unsigned int rxs;
+  void *rxp[2],*txp[2];
 
   printf("waiting for USRP sync (UE_thread)\n");
 #ifdef RTAI
@@ -1926,10 +1922,14 @@ static void *UE_thread(void *arg) {
       vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,1);
   
 #ifndef USRP_DEBUG
+
+      for (i=0;i<PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_rx;i++)
+	rxp[i] = (dummy_dump==0) ? (void*)&rxdata[i][rx_cnt*samples_per_packets] : (void*)dummy[i];
       rxs = openair0.trx_read_func(&openair0,
 				   &timestamp,
-				   (dummy_dump==0) ? &rxdata[rx_cnt*samples_per_packets] : dummy,
-				   samples_per_packets - ((rx_cnt==0) ? rx_off_diff : 0));
+				   rxp,
+				   samples_per_packets - ((rx_cnt==0) ? rx_off_diff : 0),
+				   PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_rx);
       if (rxs != (samples_per_packets- ((rx_cnt==0) ? rx_off_diff : 0)))
 	oai_exit=1;
 
@@ -1939,11 +1939,15 @@ static void *UE_thread(void *arg) {
       // Transmit TX buffer based on timestamp from RX
       if (tx_enabled) {
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,1);
+	for (i=0;i<PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_tx;i++)
+	  txp[i] = (void*)&txdata[i][tx_cnt*samples_per_packets];
 	openair0.trx_write_func(&openair0,
 				(timestamp+samples_per_packets*tx_delay-tx_forward_nsamps),
-				&txdata[tx_cnt*samples_per_packets],
+				txp,
 				samples_per_packets,
+				PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_tx,
 				1);
+				
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,0);
       }
 #else
@@ -2061,7 +2065,8 @@ static void *UE_thread(void *arg) {
 	    rxs = openair0.trx_read_func(&openair0,
 					 &timestamp,
 					 &rxdata[0],
-					 PHY_vars_UE_g[0][0]->rx_offset);
+					 PHY_vars_UE_g[0][0]->rx_offset,
+					 PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_rx);
 #else
 	    rt_sleep_ns(10000000);
 #endif
@@ -3037,8 +3042,8 @@ int main(int argc, char **argv) {
     // since the USRP only supports one CC (for the moment), we initialize all the cards with first CC. 
     // in the case of EXMIMO2, these values are overwirtten in the function setup_eNB/UE_buffer
 #ifndef EXMIMO
-    openair0_cfg[card].tx_num_channels=1;
-    openair0_cfg[card].rx_num_channels=1;
+    openair0_cfg[card].tx_num_channels=min(2,((UE_flag==0) ? PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_tx : PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_tx));
+    openair0_cfg[card].rx_num_channels=min(2,((UE_flag==0) ? PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_rx : PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_rx));
     for (i=0;i<4;i++) {
       openair0_cfg[card].tx_gain[i] = tx_gain[0][i];
       openair0_cfg[card].rx_gain[i] = ((UE_flag==0) ? PHY_vars_eNB_g[0][0]->rx_total_gain_eNB_dB : 
@@ -3323,7 +3328,7 @@ int main(int argc, char **argv) {
   }
 
   // Sleep to allow all threads to setup
-  //sleep(1);
+  sleep(1);
 
 #ifndef EXMIMO
 #ifndef USRP_DEBUG

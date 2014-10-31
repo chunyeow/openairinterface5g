@@ -186,13 +186,17 @@ int trx_eth_start(openair0_device *openair0) {
 
 }
 
-void trx_eth_write(openair0_device *device, openair0_timestamp timestamp, const void *buff, int nsamps, int flags)
+void trx_eth_write(openair0_device *device, openair0_timestamp timestamp, const void *buff, int nsamps, int cc, int flags)
 {
-  ethernet_write_data(device->Mod_id,timestamp,buff,0,nsamps);
+  int i;
+  for (i=0;i<cc;i++)
+    ethernet_write_data(device->Mod_id,timestamp,buff,i,nsamps);
 }
-int trx_eth_read(openair0_device *device, openair0_timestamp *ptimestamp, void *buff, int nsamps) {
+int trx_eth_read(openair0_device *device, openair0_timestamp *ptimestamp, void *buff, int nsamps,int cc) {
 
-  return(ethernet_read_data(device->Mod_id,ptimestamp,buff,0,nsamps));
+  int i;
+  for (i=0;i<cc;i++)
+    return(ethernet_read_data(device->Mod_id,ptimestamp,buff,0,nsamps));
 
 }
 

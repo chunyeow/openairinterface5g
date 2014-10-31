@@ -719,7 +719,6 @@ void *l2l1_task(void *args_p) {
 	      // PHY_vars_eNB_g[eNB_id]->frame = frame;
 	      if ((slot&1) == 0) 
 		phy_procedures_eNB_lte (slot>>1,PHY_vars_eNB_g[eNB_inst], abstraction_flag, no_relay, NULL);
-
 #ifdef PRINT_STATS
 	      if(last_slot==9 && frame%10==0)
 		if(eNB_avg_thr) 

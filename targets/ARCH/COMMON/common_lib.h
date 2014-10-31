@@ -106,13 +106,13 @@ struct openair0_device_t {
    * the first channel. timestamp if the time (in samples) at which the first sample
    * MUST be sent
    * use flags = 1 to send as timestamp specfied*/
-  void (*trx_write_func)(openair0_device *device, openair0_timestamp timestamp, const void *buff, int nsamps, int flags);
+  void (*trx_write_func)(openair0_device *device, openair0_timestamp timestamp, const void **buff, int nsamps, int cc, int flags);
 
   /* Read 'nsamps' samples from each channel to buffers. buff[0] is the array for
    * the first channel. *ptimestamp is the time at which the first sample
    * was received.
    * Return the number of sample read */
-  int (*trx_read_func)(openair0_device *device, openair0_timestamp *ptimestamp, void *buff, int nsamps);
+  int (*trx_read_func)(openair0_device *device, openair0_timestamp *ptimestamp, void **buff, int nsamps,int cc);
 
   /* Terminate operation of the transceiver -- free all associated resources */
   void (*trx_end_func)(openair0_device *device);
