@@ -196,14 +196,16 @@ NwGtpv1uRcT gtpv1u_eNB_send_udp_msg(
 
     message_p = itti_alloc_new_message(TASK_GTPV1_U, UDP_DATA_REQ);
 
-    udp_data_req_p = &message_p->ittiMsg.udp_data_req;
-
-    udp_data_req_p->peer_address  = peerIpAddr;
-    udp_data_req_p->peer_port     = peerPort;
-    udp_data_req_p->buffer        = buffer;
-    udp_data_req_p->buffer_length = buffer_len;
-
-    return itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
+    if (message_p) {
+        udp_data_req_p = &message_p->ittiMsg.udp_data_req;
+        udp_data_req_p->peer_address  = peerIpAddr;
+        udp_data_req_p->peer_port     = peerPort;
+        udp_data_req_p->buffer        = buffer;
+        udp_data_req_p->buffer_length = buffer_len;
+        return itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
+    } else {
+        return NW_GTPV1U_FAILURE;
+    }
 }
 
 
