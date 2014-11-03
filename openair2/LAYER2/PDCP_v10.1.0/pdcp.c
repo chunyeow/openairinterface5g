@@ -288,12 +288,12 @@ boolean_t pdcp_data_req(
                 start_meas(&UE_pdcp_stats[ue_mod_idP].apply_security);
 
               pdcp_apply_security(pdcp_p,
-				  srb_flagP,
-				  rb_idP % maxDRB,
-				  pdcp_header_len,
-				  current_sn,
-				  pdcp_pdu_p->data,
-				  sdu_buffer_sizeP);
+                      srb_flagP,
+                      rb_idP % maxDRB,
+                      pdcp_header_len,
+                      current_sn,
+                      pdcp_pdu_p->data,
+                      sdu_buffer_sizeP);
 
               if (enb_flagP == ENB_FLAG_NO)
                 stop_meas(&eNB_pdcp_stats[enb_mod_idP].apply_security);
@@ -389,14 +389,14 @@ boolean_t pdcp_data_req(
 
 
 boolean_t pdcp_data_ind(
-        const module_id_t enb_mod_idP,
-        const module_id_t ue_mod_idP,
-        const frame_t frameP,
-        const eNB_flag_t enb_flagP,
-        const srb_flag_t srb_flagP,
-        const MBMS_flag_t MBMS_flagP,
-        const rb_id_t rb_idP,
-        const sdu_size_t sdu_buffer_sizeP,
+        const module_id_t  enb_mod_idP,
+        const module_id_t  ue_mod_idP,
+        const frame_t      frameP,
+        const eNB_flag_t   enb_flagP,
+        const srb_flag_t   srb_flagP,
+        const MBMS_flag_t  MBMS_flagP,
+        const rb_id_t      rb_idP,
+        const sdu_size_t   sdu_buffer_sizeP,
         mem_block_t* const sdu_buffer_pP)
 {
   //-----------------------------------------------------------------------------
@@ -565,39 +565,38 @@ boolean_t pdcp_data_ind(
     if (srb_flagP){
 #if defined(ENABLE_SECURITY)
       if (pdcp_p->security_activated == 1) {
-	if (enb_flagP == ENB_FLAG_NO)
-	  start_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
-	else
-	  start_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
-	
-	pdcp_validate_security(pdcp_p, 
-			       srb_flagP,
-			       rb_idP, 
-			       pdcp_header_len,
-			       sequence_number, 
-			       sdu_buffer_pP->data,
-			       sdu_buffer_sizeP - pdcp_tailer_len);
-	if (enb_flagP == ENB_FLAG_NO)
-	  stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
-	else
-	  stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
-	
+          if (enb_flagP == ENB_FLAG_NO)
+              start_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+          else
+              start_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+
+          pdcp_validate_security(pdcp_p,
+                  srb_flagP,
+                  rb_idP,
+                  pdcp_header_len,
+                  sequence_number,
+                  sdu_buffer_pP->data,
+                  sdu_buffer_sizeP - pdcp_tailer_len);
+          if (enb_flagP == ENB_FLAG_NO)
+              stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+          else
+              stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
       }
 #endif
       //rrc_lite_data_ind(module_id, //Modified MW - L2 Interface
       pdcp_rrc_data_ind(enb_mod_idP,
-			ue_mod_idP,
-			frameP,
-			enb_flagP,
-			rb_id,
-			sdu_buffer_sizeP - pdcp_header_len - pdcp_tailer_len,
-			(uint8_t*)&sdu_buffer_pP->data[pdcp_header_len]);
+              ue_mod_idP,
+              frameP,
+              enb_flagP,
+              rb_id,
+              sdu_buffer_sizeP - pdcp_header_len - pdcp_tailer_len,
+              (uint8_t*)&sdu_buffer_pP->data[pdcp_header_len]);
       free_mem_block(sdu_buffer_pP);
       // free_mem_block(new_sdu);
       if (enb_flagP)
-	stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
+          stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
       else
-	stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+          stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
       vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_OUT);
       return TRUE;
     }
@@ -608,21 +607,21 @@ boolean_t pdcp_data_ind(
 #if defined(ENABLE_SECURITY)
     if (pdcp_p->security_activated == 1) {
       if (enb_flagP == ENB_FLAG_NO)
-	start_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+          start_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
       else
-	start_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+          start_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
       
       pdcp_validate_security(pdcp_p, 
-			     srb_flagP,
-			     rb_idP, 
-			     pdcp_header_len,
-			     sequence_number, 
-			     sdu_buffer_pP->data,
-			     sdu_buffer_sizeP - pdcp_tailer_len);
+              srb_flagP,
+              rb_idP,
+              pdcp_header_len,
+              sequence_number,
+              sdu_buffer_pP->data,
+              sdu_buffer_sizeP - pdcp_tailer_len);
       if (enb_flagP == ENB_FLAG_NO)
-	stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+          stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
       else
-	stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+          stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
       
     }
     
@@ -637,7 +636,7 @@ boolean_t pdcp_data_ind(
       int    ctime;
    
       if (pdcp_p->rlc_mode == RLC_MODE_AM ) {
-	pdcp_p->last_submitted_pdcp_rx_sn = sequence_number; 
+          pdcp_p->last_submitted_pdcp_rx_sn = sequence_number;
       }
    
       rlc_util_print_hex_octets(PDCP,
@@ -652,13 +651,13 @@ boolean_t pdcp_data_ind(
 
       if (otg_rx_pkt(src_id, dst_id,ctime,&sdu_buffer_pP->data[payload_offset],
           sdu_buffer_sizeP - payload_offset ) == 0 ) {
-          free_mem_block(sdu_buffer_pP);
-           if (enb_flagP)
-             stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
-           else
-             stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
-	   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_OUT);
-	   return TRUE;
+            free_mem_block(sdu_buffer_pP);
+            if (enb_flagP)
+                stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
+            else
+                stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+            vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_OUT);
+            return TRUE;
       }
   }
 #else
@@ -666,9 +665,9 @@ boolean_t pdcp_data_ind(
       LOG_D(OTG,"Discarding received packed\n");
       free_mem_block(sdu_buffer_pP);
       if (enb_flagP)
-	stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
+          stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
       else
-	stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+          stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
       vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_OUT);
       return TRUE;
   }
