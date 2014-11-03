@@ -210,7 +210,7 @@ nwGtpv1uCreateAndSendMsg( NwGtpv1uStackT *thiz, NwU32T peerIp, NwU16T peerPort,
 
     *((NwU32T *) msgHdr) = htonl(pMsg->teid);
     msgHdr += 4;
-    GTPU_DEBUG("nwGtpv1uCreateAndSendMsg to teid %u\n", pMsg->teid);
+    GTPU_DEBUG("nwGtpv1uCreateAndSendMsg to teid %u length %d\n", pMsg->teid, pMsg->msgLen);
 
     if(pMsg->seqNumFlag || pMsg->extHdrFlag || pMsg->npduNumFlag) {
         *((NwU16T *) msgHdr) = (pMsg->seqNumFlag ? htons(pMsg->seqNum) : 0x0000);
