@@ -45,6 +45,8 @@
 #include "NwGtpv1uIe.h"
 #include "NwGtpv1uLog.h"
 
+#include "assertions.h"
+
 #include "gtpv1u.h"
 #if defined(ENB_MODE)
 #include "UTIL/LOG/log.h"
@@ -58,6 +60,7 @@ extern "C" {
  *                    P R I V A T E    F U N C T I O N S                    *
  *--------------------------------------------------------------------------*/
 
+#define NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE                             (12)   /**< Size of GTPv1u EPC specific header */
 #define NW_GTPV1U_EPC_MIN_HEADER_SIZE                                  (8)
 
 
@@ -479,20 +482,23 @@ nwGtpv1uSendto( NwGtpv1uStackT *thiz,  NW_IN NwGtpv1uUlpApiT *pUlpReq)
 static NwGtpv1uRcT
 nwGtpv1uProcessGpdu( NwGtpv1uStackT *thiz,
                      NW_IN NwU8T *gpdu,
-                     NW_IN NwU32T gdpuLen,
+                     NW_IN NwU32T gpduLen,
                      NW_IN NwU32T peerIp)
 
 {
-    NwGtpv1uRcT rc = NW_GTPV1U_FAILURE;
-    NwGtpv1uMsgHeaderT *msgHdr;
-    NwGtpv1uTunnelEndPointT *pTunnelEndPoint;
-    NwGtpv1uTunnelEndPointT tunnelEndPointKey;
+    NwGtpv1uRcT              rc                = NW_GTPV1U_FAILURE;
+    NwGtpv1uMsgHeaderT      *msgHdr            = NULL;
+    NwGtpv1uTunnelEndPointT *pTunnelEndPoint   = NULL;
+    NwGtpv1uTunnelEndPointT  tunnelEndPointKey;
+    NwU16T                   payload_len       = 0;
+    NwU16T                   hdr_len           = 0;
 
     NW_ENTER(thiz);
 
     msgHdr = (NwGtpv1uMsgHeaderT *) gpdu;
 
     tunnelEndPointKey.teid = ntohl(msgHdr->teid);
+
     pTunnelEndPoint = RB_FIND(NwGtpv1uTunnelEndPointIdentifierMap,
                               &(thiz->teidMap), &tunnelEndPointKey);
 
@@ -501,8 +507,18 @@ nwGtpv1uProcessGpdu( NwGtpv1uStackT *thiz,
 
         rc = nwGtpv1uMsgFromBufferNew( (NwGtpv1uStackHandleT)thiz,
                                        (NwU8T *)gpdu,
-                                       gdpuLen,
+                                       gpduLen,
                                        &hMsg);
+
+        payload_len = ntohs(msgHdr->msgLength);
+        hdr_len     = NW_GTPV1U_EPC_MIN_HEADER_SIZE;
+        if (msgHdr->S || msgHdr->PN || msgHdr->E ) {
+            hdr_len     = NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE;
+            payload_len = payload_len - (NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE - NW_GTPV1U_EPC_MIN_HEADER_SIZE);
+        }
+        AssertFatal(gpduLen == (payload_len + hdr_len),
+                "Mismatch gpduLen %d / hdr_len %d / payload_len %d",
+                gpduLen, hdr_len, payload_len);
 
         if(NW_GTPV1U_OK == rc) {
             NwGtpv1uMsgT *pMsg = (NwGtpv1uMsgT *) hMsg;
