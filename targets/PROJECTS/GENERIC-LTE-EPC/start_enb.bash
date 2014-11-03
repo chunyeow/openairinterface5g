@@ -156,18 +156,18 @@ fi
 
 cd $THIS_SCRIPT_PATH
 
-ethtool –A $ENB_INTERFACE_NAME_FOR_S1_MME autoneg off rx off tx off
-ethtool –G $ENB_INTERFACE_NAME_FOR_S1_MME rx 4096 tx 4096
-ethtool –C $ENB_INTERFACE_NAME_FOR_S1_MME rx-usecs 3
-ifconfig $ENB_INTERFACE_NAME_FOR_S1_MME txqueuelen 1000
+bash_exec "ethtool -A $ENB_INTERFACE_NAME_FOR_S1_MME autoneg off rx off tx off"
+bash_exec "ethtool -G $ENB_INTERFACE_NAME_FOR_S1_MME rx 4096 tx 4096"
+bash_exec "ethtool -C $ENB_INTERFACE_NAME_FOR_S1_MME rx-usecs 3"
+bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1_MME txqueuelen 1000"
 
 if [ x$ENB_INTERFACE_NAME_FOR_S1_MME != x$ENB_INTERFACE_NAME_FOR_S1U ]; then 
     nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -w $PCAP_LOG_FILE &
 else
-    ethtool –A $ENB_INTERFACE_NAME_FOR_S1U autoneg off rx off tx off
-    ethtool –G $ENB_INTERFACE_NAME_FOR_S1U rx 4096 tx 4096
-    ethtool –C $ENB_INTERFACE_NAME_FOR_S1U rx-usecs 3
-    ifconfig $ENB_INTERFACE_NAME_FOR_S1U txqueuelen 1000
+    bash_exec "ethtool -A $ENB_INTERFACE_NAME_FOR_S1U autoneg off rx off tx off"
+    bash_exec "ethtool -G $ENB_INTERFACE_NAME_FOR_S1U rx 4096 tx 4096"
+    bash_exec "ethtool -C $ENB_INTERFACE_NAME_FOR_S1U rx-usecs 3"
+    bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1U txqueuelen 1000"
 
     nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w $PCAP_LOG_FILE &
 fi
