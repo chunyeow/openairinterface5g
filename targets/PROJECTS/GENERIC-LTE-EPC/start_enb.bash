@@ -156,9 +156,19 @@ fi
 
 cd $THIS_SCRIPT_PATH
 
-if [ x$ENB_INTERFACE_NAME_FOR_S1_MME == x$ENB_INTERFACE_NAME_FOR_S1U ]; then 
+ethtool –A $ENB_INTERFACE_NAME_FOR_S1_MME autoneg off rx off tx off
+ethtool –G $ENB_INTERFACE_NAME_FOR_S1_MME rx 4096 tx 4096
+ethtool –C $ENB_INTERFACE_NAME_FOR_S1_MME rx-usecs 3
+ifconfig $ENB_INTERFACE_NAME_FOR_S1_MME txqueuelen 1000
+
+if [ x$ENB_INTERFACE_NAME_FOR_S1_MME != x$ENB_INTERFACE_NAME_FOR_S1U ]; then 
     nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -w $PCAP_LOG_FILE &
 else
+    ethtool –A $ENB_INTERFACE_NAME_FOR_S1U autoneg off rx off tx off
+    ethtool –G $ENB_INTERFACE_NAME_FOR_S1U rx 4096 tx 4096
+    ethtool –C $ENB_INTERFACE_NAME_FOR_S1U rx-usecs 3
+    ifconfig $ENB_INTERFACE_NAME_FOR_S1U txqueuelen 1000
+
     nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w $PCAP_LOG_FILE &
 fi
 

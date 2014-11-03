@@ -335,6 +335,20 @@ fi
 
 echo_success "MME_INTERFACE_NAME_FOR_S1_MME : $MME_INTERFACE_NAME_FOR_S1_MME"
 echo_success "MME_INTERFACE_NAME_FOR_S6A    : $MME_INTERFACE_NAME_FOR_S6A"
+
+# see http://www.coverfire.com/articles/queueing-in-the-linux-network-stack/
+ethtool –A $MME_INTERFACE_NAME_FOR_S1_MME autoneg off rx off tx off
+ethtool –G $MME_INTERFACE_NAME_FOR_S1_MME rx 4096 tx 4096
+ethtool –C $MME_INTERFACE_NAME_FOR_S1_MME rx-usecs 3
+ifconfig   $MME_INTERFACE_NAME_FOR_S1_MME txqueuelen 1000
+
+if [ x$MME_INTERFACE_NAME_FOR_S1_MME != x$SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP ]; then 
+    ethtool –A $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP autoneg off rx off tx off
+    ethtool –G $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP rx 4096 tx 4096
+    ethtool –C $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP rx-usecs 3
+    ifconfig   $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP txqueuelen 1000
+fi
+
 if [ x$MME_INTERFACE_NAME_FOR_S1_MME == x$MME_INTERFACE_NAME_FOR_S6A ]; then 
     nohup tshark -i $MME_INTERFACE_NAME_FOR_S1_MME -f "not port 22" -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S6A_S1C_LOG_FILE &
 else
