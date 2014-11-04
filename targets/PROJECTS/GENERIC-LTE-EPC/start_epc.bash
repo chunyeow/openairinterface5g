@@ -167,7 +167,7 @@ then
     bash_exec "./autogen.sh"
     cd ./$OBJ_DIR
     echo_success "Invoking configure"
-    ../configure HAVE_CHECK=true --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
+    ../configure HAVE_CHECK=true --enable-debug --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
 else
     cd ./$OBJ_DIR
 fi
@@ -312,6 +312,8 @@ PCAP_S6A_LOG_FILE=tshark_mme_s6a.$HOSTNAME.pcap
 
 PCAP_S6A_S1C_LOG_FILE=tshark_mme_s6a_s1c.$HOSTNAME.pcap
 
+PCAP_SGI_LOG_FILE=tshark_mme_sgi.$HOSTNAME.pcap
+
 
 touch $THIS_SCRIPT_PATH/kill_epc.bash
 echo '#!/bin/bash' > $THIS_SCRIPT_PATH/kill_epc.bash
@@ -355,6 +357,11 @@ else
     nohup tshark -i $MME_INTERFACE_NAME_FOR_S1_MME -f "not port 22" -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S1C_LOG_FILE &
     nohup tshark -i $MME_INTERFACE_NAME_FOR_S6A    -f "not port 22" -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S6A_LOG_FILE &
 fi
+
+if [ x$PGW_INTERFACE_NAME_FOR_SGI != xnone ]; then 
+    nohup tshark -i $PGW_INTERFACE_NAME_FOR_SGI -f "not port 22" -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_SGI_LOG_FILE &
+fi
+
 wait_process_started tshark
 
 
