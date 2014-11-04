@@ -761,7 +761,6 @@ else {
         rb_id);
 }
 #endif
-#endif
 
   free_mem_block(sdu_buffer_pP);
   if (enb_flagP)
