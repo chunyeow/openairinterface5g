@@ -61,6 +61,10 @@
 # include "intertask_interface.h"
 #endif
 
+#if defined(LINK_PDCP_TO_GTPV1U)
+#  include "gtpv1u_eNB_task.h"
+#endif
+
 #ifndef OAI_EMU
 extern int otg_enabled;
 #endif
