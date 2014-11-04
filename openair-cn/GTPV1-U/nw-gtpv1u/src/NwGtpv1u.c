@@ -510,20 +510,22 @@ nwGtpv1uProcessGpdu( NwGtpv1uStackT *thiz,
                                        gpduLen,
                                        &hMsg);
 
-        payload_len = ntohs(msgHdr->msgLength);
-        hdr_len     = NW_GTPV1U_EPC_MIN_HEADER_SIZE;
-        if (msgHdr->S || msgHdr->PN || msgHdr->E ) {
-            hdr_len     = NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE;
-            payload_len = payload_len - (NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE - NW_GTPV1U_EPC_MIN_HEADER_SIZE);
-        }
-        AssertFatal(gpduLen == (payload_len + hdr_len),
-                "Mismatch gpduLen %d / hdr_len %d / payload_len %d",
-                gpduLen, hdr_len, payload_len);
 
         if(NW_GTPV1U_OK == rc) {
             NwGtpv1uMsgT *pMsg = (NwGtpv1uMsgT *) hMsg;
             GTPU_DEBUG("Received T-PDU over tunnel end-point '%x' of size %u from "NW_IPV4_ADDR"\n",
                    ntohl(msgHdr->teid), pMsg->msgLen, NW_IPV4_ADDR_FORMAT((peerIp)));
+
+            payload_len = ntohs(msgHdr->msgLength);
+            hdr_len     = NW_GTPV1U_EPC_MIN_HEADER_SIZE;
+            if (msgHdr->S || msgHdr->PN || msgHdr->E ) {
+                hdr_len     = NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE;
+                payload_len = payload_len - (NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE - NW_GTPV1U_EPC_MIN_HEADER_SIZE);
+            }
+            AssertFatal(gpduLen == (payload_len + hdr_len),
+                    "Mismatch gpduLen %d / hdr_len %d / payload_len %d",
+                    gpduLen, hdr_len, payload_len);
+
             rc = nwGtpSessionSendMsgApiToUlpEntity(pTunnelEndPoint, pMsg);
         }
     } else {
