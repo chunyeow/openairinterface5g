@@ -40,6 +40,7 @@
 
 #include "sgi.h"
 #include "intertask_interface.h"
+#include "assertions.h"
 
 #include <netinet/ip6.h>
 #include <netinet/ip.h>
@@ -187,7 +188,7 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
         SGI_IF_ERROR("%s OUT OF MEMORY DROP EGRESS PACKET\n", __FUNCTION__);
         return;
     }
-    message_payload_p = malloc(packet_sizeP);
+    message_payload_p = itti_malloc(TASK_FW_IP, TASK_GTPV1_U, packet_sizeP);
     if (message_payload_p == NULL) {
         SGI_IF_ERROR("%s OUT OF MEMORY DROP EGRESS PACKET\n", __FUNCTION__);
         return;
@@ -201,7 +202,7 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
     gtpv1u_tunnel_data_req_p->local_S1u_teid = addr_mapping_p->sgw_S1U_teid;
     gtpv1u_tunnel_data_req_p->length       = packet_sizeP;
     gtpv1u_tunnel_data_req_p->buffer       = message_payload_p;
-    SGI_IF_DEBUG("%s send GTPV1U_TUNNEL_DATA_REQ to GTPV1U S1u_enb_teid %u local_S1u_teid %u size %u\n", __FUNCTION__, gtpv1u_tunnel_data_req_p->S1u_enb_teid, gtpv1u_tunnel_data_req_p->local_S1u_teid, packet_sizeP);
+    SGI_IF_DEBUG("%s ETHER send GTPV1U_TUNNEL_DATA_REQ to GTPV1U S1u_enb_teid %u local_S1u_teid %u size %u\n", __FUNCTION__, gtpv1u_tunnel_data_req_p->S1u_enb_teid, gtpv1u_tunnel_data_req_p->local_S1u_teid, packet_sizeP);
 
     itti_send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p);
 
@@ -319,7 +320,8 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
         SGI_IF_ERROR("%s OUT OF MEMORY DROP EGRESS PACKET\n", __FUNCTION__);
         return;
     }
-    message_payload_p = malloc(packet_sizeP - sizeof(sgi_data_pP->eh));
+    AssertFatal((packet_sizeP - sizeof(sgi_data_pP->eh)) > 20, "BAD IP PACKET SIZE");
+    message_payload_p = itti_malloc(TASK_FW_IP, TASK_GTPV1_U, packet_sizeP - sizeof(sgi_data_pP->eh));
     if (message_payload_p == NULL) {
         SGI_IF_ERROR("%s OUT OF MEMORY DROP EGRESS PACKET\n", __FUNCTION__);
         return;
@@ -331,9 +333,13 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
 //#warning forced S1u_enb_teid to 1 for testing, waiting for MODIFY_BEARER REQUEST
 //    gtpv1u_tunnel_data_req_p->S1u_enb_teid   = 1;
     gtpv1u_tunnel_data_req_p->local_S1u_teid = addr_mapping_p->sgw_S1U_teid;
-    gtpv1u_tunnel_data_req_p->length       = packet_sizeP;
+    gtpv1u_tunnel_data_req_p->length       = packet_sizeP - sizeof(sgi_data_pP->eh);
     gtpv1u_tunnel_data_req_p->buffer       = message_payload_p;
-    SGI_IF_DEBUG("%s send GTPV1U_TUNNEL_DATA_REQ to GTPV1U S1u_enb_teid %u local_S1u_teid %u size %u\n", __FUNCTION__, gtpv1u_tunnel_data_req_p->S1u_enb_teid, gtpv1u_tunnel_data_req_p->local_S1u_teid, packet_sizeP);
+    SGI_IF_DEBUG("%s send GTPV1U_TUNNEL_DATA_REQ to GTPV1U S1u_enb_teid %u local_S1u_teid %u size %u\n",
+            __FUNCTION__,
+            gtpv1u_tunnel_data_req_p->S1u_enb_teid,
+            gtpv1u_tunnel_data_req_p->local_S1u_teid,
+            gtpv1u_tunnel_data_req_p->length);
 
     itti_send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p);
 

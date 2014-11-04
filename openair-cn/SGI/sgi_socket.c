@@ -835,6 +835,7 @@ void* sgi_sock_raw_fw_2_gtpv1u_thread(void* args_p)
     while (1) {
         num_bytes = recvfrom(sgi_data_p->sd[socket_index], &sgi_data_p->recv_buffer[0][socket_index], SGI_BUFFER_RECV_LEN, 0, NULL, NULL);
         if (num_bytes > 0) {
+            SGI_IF_DEBUG("recvfrom bearer id %d %d bytes\n", socket_index + SGI_MIN_EPS_BEARER_ID, num_bytes);
             sgi_process_raw_packet(sgi_data_p, &sgi_data_p->recv_buffer[0][socket_index], num_bytes);
         } else {
             SGI_IF_DEBUG("recvfrom bearer id %d %d (%s:%d)\n", socket_index + SGI_MIN_EPS_BEARER_ID, num_bytes, strerror(errno), errno);

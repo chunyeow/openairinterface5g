@@ -247,7 +247,8 @@ void udp_eNB_receiver(struct udp_socket_desc_s *udp_sock_pP)
             LOG_W(UDP_, "Recvfrom returned 0\n");
         	return;
         } else{
-            forwarded_buffer = calloc(n, sizeof(uint8_t));
+            forwarded_buffer = itti_malloc(TASK_UDP, udp_sock_pP->task_id, n*sizeof(uint8_t));
+            DevAssert(forwarded_buffer != NULL);
             memcpy(forwarded_buffer, l_buffer, n);
             message_p = itti_alloc_new_message(TASK_UDP, UDP_DATA_IND);
             DevAssert(message_p != NULL);

@@ -858,7 +858,8 @@ void *gtpv1u_eNB_task(void *args)
                                       udp_data_ind_p->buffer_length,
                                       udp_data_ind_p->peer_port,
                                       udp_data_ind_p->peer_address);
-                free(udp_data_ind_p->buffer);
+                itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), udp_data_ind_p->buffer);
+                udp_data_ind_p->buffer = NULL;
             }
             break;
 
@@ -914,7 +915,8 @@ void *gtpv1u_eNB_task(void *args)
                     }
                 }
                 /* Buffer is no longer needed, free it */
-                free(data_req_p->buffer);
+                itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), data_req_p->buffer);
+                data_req_p->buffer = NULL;
             }
             break;
 
