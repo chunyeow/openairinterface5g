@@ -124,6 +124,7 @@ int pdcp_fifo_flush_sdus(frame_t frameP, eNB_flag_t enb_flagP, module_id_t enb_m
 
 #if defined(LINK_PDCP_TO_GTPV1U)
       if (enb_flagP) {
+          AssertFatal(0, "Now execution should not go here");
           LOG_I(PDCP,"Sending to GTPV1U %d bytes\n", ((pdcp_data_ind_header_t *)(sdu_p->data))->data_size);
           /*message_p = itti_alloc_new_message(TASK_PDCP_ENB, GTPV1U_TUNNEL_DATA_REQ);
           GTPV1U_TUNNEL_DATA_REQ(message_p).buffer       = &(((uint8_t *) sdu_p->data)[sizeof (pdcp_data_ind_header_t)]);

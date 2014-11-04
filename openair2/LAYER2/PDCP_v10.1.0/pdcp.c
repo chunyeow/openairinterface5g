@@ -410,7 +410,7 @@ boolean_t pdcp_data_ind(
   uint8_t      pdcp_header_len = 0;
   uint8_t      pdcp_tailer_len = 0;
   pdcp_sn_t    sequence_number = 0;
-  uint8_t      payload_offset  = 0;
+  volatile sdu_size_t   payload_offset  = 0;
   rb_id_t      rb_id           = rb_idP;
   boolean_t    packet_forwarded = FALSE;
 
@@ -688,13 +688,13 @@ boolean_t pdcp_data_ind(
    * PDCP header)
    */
 #if defined(LINK_PDCP_TO_GTPV1U)
-  if (enb_flagP) {
+  if ((TRUE == enb_flagP) && (FALSE == srb_flagP)) {
       LOG_I(PDCP,"Sending to GTPV1U %d bytes\n", sdu_buffer_sizeP - payload_offset);
 
       gtpv1u_new_data_req(
               enb_mod_idP, //gtpv1u_data_t *gtpv1u_data_p,
               ue_mod_idP,//rb_id/maxDRB, TO DO UE ID
-              ((pdcp_data_ind_header_t *) new_sdu_p->data)->rb_id,
+              rb_id + 4,
               &sdu_buffer_pP->data[payload_offset],
               sdu_buffer_sizeP - payload_offset);
       packet_forwarded = TRUE;
