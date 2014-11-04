@@ -408,6 +408,7 @@ boolean_t pdcp_data_ind(
   pdcp_sn_t    sequence_number = 0;
   uint8_t      payload_offset  = 0;
   rb_id_t      rb_id           = rb_idP;
+  boolean_t    packet_forwarded = FALSE;
 
  
 
@@ -672,75 +673,94 @@ boolean_t pdcp_data_ind(
       return TRUE;
   }
 #endif
-  new_sdu_p = get_free_mem_block(sdu_buffer_sizeP - payload_offset + sizeof (pdcp_data_ind_header_t));
 
-  if (new_sdu_p) {
-    if (pdcp_p->rlc_mode == RLC_MODE_AM ) {
-      pdcp_p->last_submitted_pdcp_rx_sn = sequence_number; 
-    }
-      /*
-       * Prepend PDCP indication header which is going to be removed at pdcp_fifo_flush_sdus()
-       */
-      memset(new_sdu_p->data, 0, sizeof (pdcp_data_ind_header_t));
-      ((pdcp_data_ind_header_t *) new_sdu_p->data)->data_size = sdu_buffer_sizeP - payload_offset;
 
-      // Here there is no virtualization possible
-      // set ((pdcp_data_ind_header_t *) new_sdu_p->data)->inst for IP layer here
-      if (enb_flagP == ENB_FLAG_NO) {
-          ((pdcp_data_ind_header_t *) new_sdu_p->data)->rb_id = rb_id;
-#if defined(OAI_EMU)
-          ((pdcp_data_ind_header_t *) new_sdu_p->data)->inst  = ue_mod_idP + oai_emulation.info.nb_enb_local - oai_emulation.info.first_ue_local;
+  // XXX Decompression would be done at this point
+
+  /*
+   * After checking incoming sequence number PDCP header
+   * has to be stripped off so here we copy SDU buffer starting
+   * from its second byte (skipping 0th and 1st octets, i.e.
+   * PDCP header)
+   */
+#if defined(LINK_PDCP_TO_GTPV1U)
+  if (enb_flagP) {
+      LOG_I(PDCP,"Sending to GTPV1U %d bytes\n", sdu_buffer_sizeP - payload_offset);
+
+      gtpv1u_new_data_req(
+              enb_mod_idP, //gtpv1u_data_t *gtpv1u_data_p,
+              ue_mod_idP,//rb_id/maxDRB, TO DO UE ID
+              ((pdcp_data_ind_header_t *) new_sdu_p->data)->rb_id,
+              &sdu_buffer_pP->data[payload_offset],
+              sdu_buffer_sizeP - payload_offset);
+      packet_forwarded = TRUE;
+  }
+#else
+  packet_forwarded = FALSE;
 #endif
-      } else {
-          ((pdcp_data_ind_header_t *) new_sdu_p->data)->rb_id = rb_id + (ue_mod_idP * maxDRB);
+  if (FALSE == packet_forwarded) {
+      new_sdu_p = get_free_mem_block(sdu_buffer_sizeP - payload_offset + sizeof (pdcp_data_ind_header_t));
+
+      if (new_sdu_p) {
+          if (pdcp_p->rlc_mode == RLC_MODE_AM ) {
+              pdcp_p->last_submitted_pdcp_rx_sn = sequence_number;
+          }
+          /*
+           * Prepend PDCP indication header which is going to be removed at pdcp_fifo_flush_sdus()
+           */
+          memset(new_sdu_p->data, 0, sizeof (pdcp_data_ind_header_t));
+          ((pdcp_data_ind_header_t *) new_sdu_p->data)->data_size = sdu_buffer_sizeP - payload_offset;
+
+          // Here there is no virtualization possible
+          // set ((pdcp_data_ind_header_t *) new_sdu_p->data)->inst for IP layer here
+          if (enb_flagP == ENB_FLAG_NO) {
+              ((pdcp_data_ind_header_t *) new_sdu_p->data)->rb_id = rb_id;
 #if defined(OAI_EMU)
-          ((pdcp_data_ind_header_t *) new_sdu_p->data)->inst  = enb_mod_idP - oai_emulation.info.first_enb_local;
+              ((pdcp_data_ind_header_t *) new_sdu_p->data)->inst  = ue_mod_idP + oai_emulation.info.nb_enb_local - oai_emulation.info.first_ue_local;
 #endif
+          } else {
+              ((pdcp_data_ind_header_t *) new_sdu_p->data)->rb_id = rb_id + (ue_mod_idP * maxDRB);
+#if defined(OAI_EMU)
+              ((pdcp_data_ind_header_t *) new_sdu_p->data)->inst  = enb_mod_idP - oai_emulation.info.first_enb_local;
+#endif
+          }
+
+          memcpy(&new_sdu_p->data[sizeof (pdcp_data_ind_header_t)], \
+                  &sdu_buffer_pP->data[payload_offset], \
+                  sdu_buffer_sizeP - payload_offset);
+          list_add_tail_eurecom (new_sdu_p, sdu_list_p);
+
+          /* Print octets of incoming data in hexadecimal form */
+          LOG_D(PDCP, "Following content has been received from RLC (%d,%d)(PDCP header has already been removed):\n",
+              sdu_buffer_sizeP  - payload_offset + sizeof(pdcp_data_ind_header_t),
+              sdu_buffer_sizeP  - payload_offset);
+          //util_print_hex_octets(PDCP, &new_sdu_p->data[sizeof (pdcp_data_ind_header_t)], sdu_buffer_sizeP - payload_offset);
+          //util_flush_hex_octets(PDCP, &new_sdu_p->data[sizeof (pdcp_data_ind_header_t)], sdu_buffer_sizeP - payload_offset);
+
+          /*
+           * Update PDCP statistics
+           * XXX Following two actions are identical, is there a merge error?
+           */
+
+          /*if (enb_flagP == 1) {
+              Pdcp_stats_rx[module_id][(rb_idP & RAB_OFFSET2) >> RAB_SHIFT2][(rb_idP & RAB_OFFSET) - DTCH]++;
+              Pdcp_stats_rx_bytes[module_id][(rb_idP & RAB_OFFSET2) >> RAB_SHIFT2][(rb_idP & RAB_OFFSET) - DTCH] += sdu_buffer_sizeP;
+            } else {
+              Pdcp_stats_rx[module_id][(rb_idP & RAB_OFFSET2) >> RAB_SHIFT2][(rb_idP & RAB_OFFSET) - DTCH]++;
+              Pdcp_stats_rx_bytes[module_id][(rb_idP & RAB_OFFSET2) >> RAB_SHIFT2][(rb_idP & RAB_OFFSET) - DTCH] += sdu_buffer_sizeP;
+            }*/
       }
-
-
-      // XXX Decompression would be done at this point
-
-      /*
-       * After checking incoming sequence number PDCP header
-       * has to be stripped off so here we copy SDU buffer starting
-       * from its second byte (skipping 0th and 1st octets, i.e.
-       * PDCP header)
-       */
-      memcpy(&new_sdu_p->data[sizeof (pdcp_data_ind_header_t)], \
-          &sdu_buffer_pP->data[payload_offset], \
-          sdu_buffer_sizeP - payload_offset);
-      list_add_tail_eurecom (new_sdu_p, sdu_list_p);
-
-      /* Print octets of incoming data in hexadecimal form */
-      LOG_D(PDCP, "Following content has been received from RLC (%d,%d)(PDCP header has already been removed):\n",
-          sdu_buffer_sizeP  - payload_offset + sizeof(pdcp_data_ind_header_t),
-          sdu_buffer_sizeP  - payload_offset);
-      //util_print_hex_octets(PDCP, &new_sdu_p->data[sizeof (pdcp_data_ind_header_t)], sdu_buffer_sizeP - payload_offset);
-      //util_flush_hex_octets(PDCP, &new_sdu_p->data[sizeof (pdcp_data_ind_header_t)], sdu_buffer_sizeP - payload_offset);
-
-      /*
-       * Update PDCP statistics
-       * XXX Following two actions are identical, is there a merge error?
-       */
-
-      /*if (enb_flagP == 1) {
-      Pdcp_stats_rx[module_id][(rb_idP & RAB_OFFSET2) >> RAB_SHIFT2][(rb_idP & RAB_OFFSET) - DTCH]++;
-      Pdcp_stats_rx_bytes[module_id][(rb_idP & RAB_OFFSET2) >> RAB_SHIFT2][(rb_idP & RAB_OFFSET) - DTCH] += sdu_buffer_sizeP;
-    } else {
-      Pdcp_stats_rx[module_id][(rb_idP & RAB_OFFSET2) >> RAB_SHIFT2][(rb_idP & RAB_OFFSET) - DTCH]++;
-      Pdcp_stats_rx_bytes[module_id][(rb_idP & RAB_OFFSET2) >> RAB_SHIFT2][(rb_idP & RAB_OFFSET) - DTCH] += sdu_buffer_sizeP;
-    }*/
   }
 #if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
-  else {
-      AssertFatal(0, "[FRAME %5u][%s][PDCP][MOD %u/%u][RB %u] PDCP_DATA_IND SDU DROPPED, OUT OF MEMORY \n",
-            frameP,
-            (enb_flagP) ? "eNB" : "UE",
-            enb_mod_idP,
-            ue_mod_idP,
-            rb_id);
-  }
+else {
+  AssertFatal(0, "[FRAME %5u][%s][PDCP][MOD %u/%u][RB %u] PDCP_DATA_IND SDU DROPPED, OUT OF MEMORY \n",
+        frameP,
+        (enb_flagP) ? "eNB" : "UE",
+        enb_mod_idP,
+        ue_mod_idP,
+        rb_id);
+}
+#endif
 #endif
 
   free_mem_block(sdu_buffer_pP);
