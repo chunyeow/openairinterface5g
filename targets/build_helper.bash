@@ -729,7 +729,7 @@ set_openair_env(){
 print_help(){
     echo_success "Name : build_oai  - install and build OAI"
     echo_success "Usage: build_oai.bash -b -c -d -eRTAI -m -rREL8 -s -tOAISIM -wEXMIMO -x"
-    echo_success "-b   : enables S1 interface for eNB (default enabled)"
+    echo_success "-b   : disables S1 interface for eNB (default enabled)"
     echo_success "-c   : enables clean OAI build (default disabled)"
     echo_success "-d   : enables debug mode (default disabled)"
     echo_success "-e   : sets realtime mode: RTAI, NONE (default NONE)"

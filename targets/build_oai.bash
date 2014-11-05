@@ -85,8 +85,8 @@ fi
 while getopts "bcdmsxzhe:w:r:t:" OPTION; do
    case "$OPTION" in
        b)
-	   ENB_S1=1
-	   echo "setting eNB S1 flag to: $ENB_S1"
+	   ENB_S1=0
+	   echo "disable eNB S1 flag"
 	   ;;
        c)
 	   rm -rf ./.lock_oaibuild
