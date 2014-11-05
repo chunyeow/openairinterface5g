@@ -333,6 +333,10 @@ check_install_oai_software() {
 	test_install_package sshfs
 	test_install_package subversion
 	test_install_package valgrind
+
+# TODO: install the USRP UHD packages 
+	
+
 	# uninstall some automatically installed packges
 	# we need a newer version
 #	test_uninstall_package libnettle4
@@ -343,35 +347,37 @@ check_install_oai_software() {
 #	    check_install_freediamter
 #	fi
 	
-    fi 
-
-    if [ $OAI_INSTALLED = 1 ]; then 
-	touch ./.lock_oaibuild
-    fi 
+	
+	if [ $OAI_INSTALLED = 1 ]; then 
+	    touch ./.lock_oaibuild
+	fi 
     
    # echo_success "freediameter is installed"
    # check_s6a_certificate
     
 
-    test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO"
+	test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO"
     
     # One mor check about version of asn1c
-    ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE="ASN.1 Compiler, v0.9.24"
-    ASN1C_COMPILER_VERSION_MESSAGE=`asn1c -h 2>&1 | grep -i ASN\.1\ Compiler`
+	ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE="ASN.1 Compiler, v0.9.24"
+	ASN1C_COMPILER_VERSION_MESSAGE=`asn1c -h 2>&1 | grep -i ASN\.1\ Compiler`
     ##ASN1C_COMPILER_VERSION_MESSAGE=`trim $ASN1C_COMPILER_VERSION_MESSAGE`
-    if [ "$ASN1C_COMPILER_VERSION_MESSAGE" != "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE" ]; then
+	if [ "$ASN1C_COMPILER_VERSION_MESSAGE" != "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE" ]; then
       #  diff <(echo -n "$ASN1C_COMPILER_VERSION_MESSAGE") <(echo -n "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE")
-        echo_error "Version of asn1c is not the required one, do you want to install the required one (overwrite installation) ? (Y/n)"
-        echo_error "$ASN1C_COMPILER_VERSION_MESSAGE"
-        while read -r -n 1 -s answer; do
-            if [[ $answer = [YyNn] ]]; then
-                [[ $answer = [Yy] ]] && $OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO
-                [[ $answer = [Nn] ]] && echo_error "Version of asn1c is not the required one, exiting." && exit 1
-                break
-            fi
-        done
-    fi
-
+            echo_error "Version of asn1c is not the required one, do you want to install the required one (overwrite installation) ? (Y/n)"
+            echo_error "$ASN1C_COMPILER_VERSION_MESSAGE"
+            while read -r -n 1 -s answer; do
+		if [[ $answer = [YyNn] ]]; then
+                    [[ $answer = [Yy] ]] && $OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO
+                    [[ $answer = [Nn] ]] && echo_error "Version of asn1c is not the required one, exiting." && exit 1
+                    break
+		fi
+            done
+	fi
+    else
+	echo_info "skip the package installations"
+    fi 
+    
 }
 
 check_install_hss_software() {
@@ -496,9 +502,7 @@ compile_ltesoftmodem() {
     cd $OPENAIR_TARGETS/RT/USER
     if [ -f Makefile ];  then
        	echo "Compiling directives: $SOFTMODEM_DIRECTIVES"
-        if [ $1 = 1 ]; then 
-	    make cleanall > /dev/null 2>&1
-	fi 
+     	make cleanall > /dev/null 2>&1
 	make  $SOFTMODEM_DIRECTIVES 
 	make -j $NUM_CPU $SOFTMODEM_DIRECTIVES 
         if [ $? -ne 0 ]; then
@@ -518,9 +522,7 @@ compile_oaisim() {
     cd $OPENAIR_TARGETS/SIMU/USER
     if [ -f Makefile ]; then
         echo "Compiling for oaisim  target ($OAISIM_DIRECTIVES)"
-        if [ $1 = 1 ]; then 
-	    make cleanall > /dev/null
-	fi
+       	make cleanall > /dev/null
 	make $OAISIM_DIRECTIVES 
 	make -j $NUM_CPU $OAISIM_DIRECTIVES 
         if [ $? -ne 0 ]; then
@@ -540,10 +542,8 @@ compile_unisim() {
     cd $OPENAIR1_DIR/SIMULATION/LTE_PHY
     if [ -f Makefile ]; then
         echo "Compiling for UNISIM target ..."
-        if [ $1 = 1 ]; then 
-	    make cleanall
-	fi
-	make  -j $NUM_CPU all 
+      	make cleanall
+    	make  -j $NUM_CPU all 
         if [ $? -ne 0 ]; then
             echo_error "Build unisim failed, returning"
             return 1
@@ -662,10 +662,6 @@ install_ltesoftmodem() {
         else
             echo_warning "  8.1 RTAI modules already inserted"
         fi
-    else
-	if [ $1 = "RT_PREEMPT" ]; then 
-	    echo_info "  8.1 setup RT_PREMMPT"
-	fi    
     fi
     #HW
     if [ $2 = "EXMIMO" ]; then 
@@ -736,12 +732,12 @@ print_help(){
     echo_success "-b   : enables S1 interface for eNB (default enabled)"
     echo_success "-c   : enables clean OAI build (default disabled)"
     echo_success "-d   : enables debug mode (default disabled)"
-    echo_success "-e   : sets realtime mode: RTAI, RT_PREEMPT, RT_DISABLED (default RTAI)"
+    echo_success "-e   : sets realtime mode: RTAI, NONE (default NONE)"
     echo_success "-m   : enables build from the makefile (default disabled)"
     echo_success "-r   : sets the release: REL8, REL10 (default REL8)"
     echo_success "-s   : enables OAI sanity check (default disabled)"
     echo_success "-t   : sets the build target: ALL, SOFTMODEM,OAISIM,UNISIM (default ALL)"
-    echo_success "-w   : sets the hardware platform: EXMIMO, USRP, NONE, (default EXMIMO)"
+    echo_success "-w   : sets the hardware platform: EXMIMO, USRP, ETHERNET NONE, (default EXMIMO)"
     echo_success "-x   : enables xforms (default disabled)"
     echo_success "-z   : sets the default build options"
 }

@@ -27,7 +27,7 @@
 #
 ################################################################################
 # file build_oai.bash
-# brief
+# brief OAI automated build tool that can be used to install, compile, run OAI.
 # author  Navid Nikaein 
 # company Eurecom
 # email:  navid.nikaein@eurecom.fr 
@@ -92,6 +92,7 @@ while getopts "bcdmsxzhe:w:r:t:" OPTION; do
 	   rm -rf ./.lock_oaibuild
 	   OAI_CLEAN=1
 	   echo "setting clean flag to: $OAI_CLEAN"
+	   echo "check package installation, and recompile OAI"
 	   ;;
        d)
 	   DEBUG=1
@@ -138,7 +139,7 @@ while getopts "bcdmsxzhe:w:r:t:" OPTION; do
 	   TARGET="ALL" 
 	   ENB_S1=1
 	   REL="REL8" 
-	   RT="RTAI"
+	   RT="NONE"
 	   DEBUG=0
 	   ENB_CONFIG_FILE=$OPENAIR_TARGETS/"PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.conf"
 	   OAI_TEST=0
@@ -152,7 +153,7 @@ done
 #####################
 # create a bin dir
 #####################
-echo_info "3. Creating the bin dir ..." 
+echo_info "1. Creating the bin dir ..." 
 rm -rf bin
 mkdir -m 777 -p bin 
 
@@ -288,18 +289,20 @@ oaisim_compiled=1
 unisim_compiled=1
 
 if [ $TARGET = "ALL" ]; then
-    echo "############# compile_ltesoftmodem #############" 
-    output=$(compile_ltesoftmodem $OAI_CLEAN  )
+    echo "############# compile_ltesoftmodem #############" >> bin/install_log.txt 
+    output=$(compile_ltesoftmodem  >> bin/install_log.txt  2>&1 )
     softmodem_compiled=$?
     check_for_ltesoftmodem_executable
-    
-    echo "################ compile_oaisim #################" 
-    output=$(compile_oaisim   $OAI_CLEAN      )
+    echo_info "7.1 finished ltesoftmodem target : check the installation log file bin/install_log.txt" 
+
+    echo "################ compile_oaisim #################"  >> bin/install_log.txt 
+    output=$(compile_oaisim      >> bin/install_log.txt   2>&1 )
     oaisim_compiled=$?
     check_for_oaisim_executable
-
-    echo "################## compile_unisim ##################" 
-    output=$(compile_unisim  $OAI_CLEAN      )
+    echo_info "7.2 finished oaisim target : check the installation log file bin/install_log.txt" 
+ 
+    echo "################## compile_unisim ##################"  >> bin/install_log.txt 
+    output=$(compile_unisim      >> bin/install_log.txt  2>&1 )
     unisim_compiled=$?
     check_for_dlsim_executable
     check_for_ulsim_executable
@@ -308,24 +311,30 @@ if [ $TARGET = "ALL" ]; then
     check_for_pdcchsim_executable
     check_for_pbchsim_executable
     check_for_mbmssim_executable
-    
+    echo_info "7.3 finished unisim target : check the installation log file bin/install_log.txt" 
+
+     
 else
     
     if [ $TARGET = "SOFTMODEM" ]; then 
-	echo "################ compile_ltesoftmodem #################" 
-	output=$(compile_ltesoftmodem  $OAI_CLEAN  )
+	echo "############# compile_ltesoftmodem #############" >> bin/install_log.txt 
+	output=$(compile_ltesoftmodem   >> bin/install_log.txt 2>&1 )
 	softmodem_compiled=$?
 	check_for_ltesoftmodem_executable
+	echo_info "7.1 finished ltesoftmodem target: check the installation log file bin/install_log.txt" 
+
     fi
     if [ $TARGET = "OAISIM" ]; then 
-	echo "################ compile_oaisim ###############" 
-	output=$(compile_oaisim  $OAI_CLEAN )
+	echo "################ compile_oaisim #################"  >> bin/install_log.txt 
+	output=$(compile_oaisim   >> bin/install_log.txt 2>&1 )
 	oaisim_compiled=$?	
 	check_for_oaisim_executable
+	echo_info "7.2 finished oaisim target: check the installation log file bin/install_log.txt" 
+		
     fi
     if [ $TARGET = "UNISIM" ]; then 
-	echo "################ compile_unisim ###############"
-	output=$(compile_unisim  $OAI_CLEAN )
+	echo "################## compile_unisim ##################"  >> bin/install_log.txt 
+	output=$(compile_unisim   >> bin/install_log.txt 2>&1 )
 	unisim_compiled=$?
 	check_for_dlsim_executable
 	check_for_ulsim_executable
@@ -334,6 +343,8 @@ else
 	check_for_pdcchsim_executable
 	check_for_pbchsim_executable
 	check_for_mbmssim_executable
+	echo_info "7.3 finished unisim target: check the installation log file bin/install_log.txt" 
+		
     fi
 fi
 
@@ -345,33 +356,39 @@ fi
 echo_info "8. Installing ..."
 
 if [ $softmodem_compiled = 0 ]; then 
-    echo_success "target lte-softmodem built "
-    echo "target lte-softmodem built "  >>  bin/${oai_build_date}
+    echo_success "target lte-softmodem built and installed in the bin directory"
+    echo "target lte-softmodem built and installed in the bin directory"  >>  bin/${oai_build_date}
     output=$(install_ltesoftmodem $RT $HW $ENB_S1 )
 fi
 if [ $oaisim_compiled = 0 ]; then 
-    echo_success "target oaisim built "
-    echo "target oaisim built "  >>  bin/${oai_build_date}
+    echo_success "target oaisim built and installed in the bin directory"
+    echo "target oaisim built and installed in the bin directory"  >>  bin/${oai_build_date}
     output=$(install_oaisim $ENB_S1 )
 fi 
 if [ $unisim_compiled =  0 ]; then 
-    echo_success "target unisim built "
-    echo "target unisim built "  >>  bin/${oai_build_date}
+    echo_success "target unisim built and installed in the bin directory"
+    echo "target unisim built and installed in the bin directory"  >>  bin/${oai_build_date}
 fi 
 
 echo_info "build terminated, binaries are located in bin/"
-echo_info "build terminated, logs are located in bin/${oai_build_date}"
-
-   
+echo_info "build terminated, logs are located in bin/${oai_build_date} and bin/install_log.txt"
 
 ############################################
 # testing
 ############################################
 
 if [ $OAI_TEST = 1 ]; then 
-    echo_info "9. Testing ..."
+    echo_info "10. Testing ..."
     python $OPENAIR_TARGETS/TEST/OAI/test01.py
 else 
     echo_info "9. Bypassing the Tests ..."
 fi 
+
+############################################
+# run 
+############################################
+echo_info "10. Running ... To be done"
+
+
+
  
