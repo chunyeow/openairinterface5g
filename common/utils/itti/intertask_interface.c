@@ -43,6 +43,10 @@
 # include <rtai_shm.h>
 #endif
 
+#if !defined(TRUE)
+#define TRUE 1
+#endif
+
 #include "liblfds611.h"
 
 #include "assertions.h"
