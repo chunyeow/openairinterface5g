@@ -338,20 +338,26 @@ uint32_t target_dl_mcs = 28; //maximum allowed mcs
 uint32_t target_ul_mcs = 10;
 
 
-int16_t           glog_level=LOG_DEBUG;
-int16_t           glog_verbosity=LOG_MED;
-int16_t           hw_log_level=LOG_DEBUG;
-int16_t           hw_log_verbosity=LOG_MED;
-int16_t           phy_log_level=LOG_DEBUG;
-int16_t           phy_log_verbosity=LOG_MED;
-int16_t           mac_log_level=LOG_DEBUG;
-int16_t           mac_log_verbosity=LOG_MED;
-int16_t           rlc_log_level=LOG_DEBUG;
-int16_t           rlc_log_verbosity=LOG_MED;
-int16_t           pdcp_log_level=LOG_DEBUG;
-int16_t           pdcp_log_verbosity=LOG_MED;
-int16_t           rrc_log_level=LOG_DEBUG;
-int16_t           rrc_log_verbosity=LOG_MED;
+int16_t           glog_level         = LOG_DEBUG;
+int16_t           glog_verbosity     = LOG_MED;
+int16_t           hw_log_level       = LOG_DEBUG;
+int16_t           hw_log_verbosity   = LOG_MED;
+int16_t           phy_log_level      = LOG_DEBUG;
+int16_t           phy_log_verbosity  = LOG_MED;
+int16_t           mac_log_level      = LOG_DEBUG;
+int16_t           mac_log_verbosity  = LOG_MED;
+int16_t           rlc_log_level      = LOG_DEBUG;
+int16_t           rlc_log_verbosity  = LOG_MED;
+int16_t           pdcp_log_level     = LOG_DEBUG;
+int16_t           pdcp_log_verbosity = LOG_MED;
+int16_t           rrc_log_level      = LOG_DEBUG;
+int16_t           rrc_log_verbosity  = LOG_MED;
+# if defined(ENABLE_USE_MME)
+int16_t           gtpu_log_level     = LOG_DEBUG;
+int16_t           gtpu_log_verbosity = LOG_MED;
+int16_t           udp_log_level      = LOG_DEBUG;
+int16_t           udp_log_verbosity  = LOG_MED;
+#endif
 
 unsigned int build_rflocal(int txi, int txq, int rxi, int rxq)
 {
@@ -2599,7 +2605,12 @@ static void get_options (int argc, char **argv) {
       pdcp_log_verbosity             = enb_properties->properties[i]->pdcp_log_verbosity;
       rrc_log_level                  = enb_properties->properties[i]->rrc_log_level;
       rrc_log_verbosity              = enb_properties->properties[i]->rrc_log_verbosity;
-    
+# if defined(ENABLE_USE_MME)
+      gtpu_log_level                 = enb_properties->properties[i]->gtpu_log_level;
+      gtpu_log_verbosity             = enb_properties->properties[i]->gtpu_log_verbosity;
+      udp_log_level                  = enb_properties->properties[i]->udp_log_level;
+      udp_log_verbosity              = enb_properties->properties[i]->udp_log_verbosity;
+#endif
     
       // adjust the log
       for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
@@ -2725,8 +2736,8 @@ int main(int argc, char **argv) {
 #if defined(ENABLE_ITTI)
       set_comp_log(EMU,     LOG_INFO,   LOG_MED, 1);
 # if defined(ENABLE_USE_MME)
-      set_comp_log(UDP_,    LOG_DEBUG,   LOG_HIGH, 1);
-      set_comp_log(GTPU,    LOG_DEBUG,   LOG_HIGH, 1);
+      set_comp_log(UDP_,    udp_log_level,   udp_log_verbosity, 1);
+      set_comp_log(GTPU,    gtpu_log_level,   gtpu_log_verbosity, 1);
       set_comp_log(S1AP,    LOG_DEBUG,   LOG_HIGH, 1);
       set_comp_log(SCTP,    LOG_INFO,   LOG_HIGH, 1);
 # endif
