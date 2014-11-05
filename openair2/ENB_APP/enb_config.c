@@ -166,9 +166,9 @@
 // per eNB configuration 
 #define ENB_CONFIG_STRING_LOG_CONFIG                       "log_config"
 #define ENB_CONFIG_STRING_GLOBAL_LOG_LEVEL                 "global_log_level"
-#define ENB_CONFIG_STRING_GLOBAL_LOG_VERBOSITY              "global_log_verbosity"
-#define ENB_CONFIG_STRING_HW_LOG_LEVEL                    "hw_log_level"
-#define ENB_CONFIG_STRING_HW_LOG_VERBOSITY                "hw_log_verbosity"
+#define ENB_CONFIG_STRING_GLOBAL_LOG_VERBOSITY             "global_log_verbosity"
+#define ENB_CONFIG_STRING_HW_LOG_LEVEL                     "hw_log_level"
+#define ENB_CONFIG_STRING_HW_LOG_VERBOSITY                 "hw_log_verbosity"
 #define ENB_CONFIG_STRING_PHY_LOG_LEVEL                    "phy_log_level"
 #define ENB_CONFIG_STRING_PHY_LOG_VERBOSITY                "phy_log_verbosity"
 #define ENB_CONFIG_STRING_MAC_LOG_LEVEL                    "mac_log_level"
@@ -179,6 +179,10 @@
 #define ENB_CONFIG_STRING_PDCP_LOG_VERBOSITY               "pdcp_log_verbosity"
 #define ENB_CONFIG_STRING_RRC_LOG_LEVEL                    "rrc_log_level"
 #define ENB_CONFIG_STRING_RRC_LOG_VERBOSITY                "rrc_log_verbosity"
+#define ENB_CONFIG_STRING_GTPU_LOG_LEVEL                   "gtpu_log_level"
+#define ENB_CONFIG_STRING_GTPU_LOG_VERBOSITY               "gtpu_log_verbosity"
+#define ENB_CONFIG_STRING_UDP_LOG_LEVEL                    "udp_log_level"
+#define ENB_CONFIG_STRING_UDP_LOG_VERBOSITY                "udp_log_verbosity"
 
 
 
@@ -533,6 +537,10 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
     char*             pdcp_log_verbosity            = NULL;
     char*             rrc_log_level                 = NULL;
     char*             rrc_log_verbosity             = NULL;
+    char*             gtpu_log_level                = NULL;
+    char*             gtpu_log_verbosity            = NULL;
+    char*             udp_log_level                 = NULL;
+    char*             udp_log_verbosity             = NULL;
 
     memset((char*) (enb_properties.properties), 0 , MAX_ENB * sizeof(Enb_properties_t *));
     memset((char*)active_enb,     0 , MAX_ENB * sizeof(char*));
@@ -1733,22 +1741,54 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                         } else {
                             enb_properties.properties[enb_properties_index]->rrc_log_verbosity = LOG_MED;
                         }
+                        if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_GTPU_LOG_LEVEL, (const char **)&gtpu_log_level)) {
+                            if ((enb_properties.properties[enb_properties_index]->gtpu_log_level = map_str_to_int(log_level_names,gtpu_log_level)) == -1 )
+                                enb_properties.properties[enb_properties_index]->gtpu_log_level = LOG_INFO;
+                            //printf( "\tGTPU log level :\t%s->%d\n",gtpu_log_level,enb_properties.properties[enb_properties_index]->gtpu_log_level);
+                        } else {
+                            enb_properties.properties[enb_properties_index]->gtpu_log_level = LOG_INFO;
+                        }
+                        if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_GTPU_LOG_VERBOSITY, (const char **)&gtpu_log_verbosity)) {
+                            if ((enb_properties.properties[enb_properties_index]->gtpu_log_verbosity = map_str_to_int(log_verbosity_names,gtpu_log_verbosity)) == -1)
+                                enb_properties.properties[enb_properties_index]->gtpu_log_verbosity = LOG_MED;
+                            //printf( "\tGTPU log verbosity:\t%s->%d\n",gtpu_log_verbosity,enb_properties.properties[enb_properties_index]->gtpu_log_verbosity);
+                        } else {
+                            enb_properties.properties[enb_properties_index]->gtpu_log_verbosity = LOG_MED;
+                        }
+                        if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_UDP_LOG_LEVEL, (const char **)&udp_log_level)) {
+                            if ((enb_properties.properties[enb_properties_index]->udp_log_level = map_str_to_int(log_level_names,udp_log_level)) == -1 )
+                                enb_properties.properties[enb_properties_index]->udp_log_level = LOG_INFO;
+                            //printf( "\tUDP log level :\t%s->%d\n",udp_log_level,enb_properties.properties[enb_properties_index]->udp_log_level);
+                        } else {
+                            enb_properties.properties[enb_properties_index]->udp_log_level = LOG_INFO;
+                        }
+                        if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_UDP_LOG_VERBOSITY, (const char **)&udp_log_verbosity)) {
+                            if ((enb_properties.properties[enb_properties_index]->udp_log_verbosity = map_str_to_int(log_verbosity_names,udp_log_verbosity)) == -1)
+                                enb_properties.properties[enb_properties_index]->udp_log_verbosity = LOG_MED;
+                            //printf( "\tUDP log verbosity:\t%s->%d\n",udp_log_verbosity,enb_properties.properties[enb_properties_index]->gtpu_log_verbosity);
+                        } else {
+                            enb_properties.properties[enb_properties_index]->udp_log_verbosity = LOG_MED;
+                        }
 
                     } else { // not configuration is given
-                        enb_properties.properties[enb_properties_index]->glog_level = LOG_INFO;
-                        enb_properties.properties[enb_properties_index]->glog_verbosity = LOG_MED;
-                        enb_properties.properties[enb_properties_index]->hw_log_level = LOG_INFO;
-                        enb_properties.properties[enb_properties_index]->hw_log_verbosity = LOG_MED;
-                        enb_properties.properties[enb_properties_index]->phy_log_level = LOG_INFO;
-                        enb_properties.properties[enb_properties_index]->phy_log_verbosity = LOG_MED;
-                        enb_properties.properties[enb_properties_index]->mac_log_level = LOG_INFO;
-                        enb_properties.properties[enb_properties_index]->mac_log_verbosity = LOG_MED;
-                        enb_properties.properties[enb_properties_index]->rlc_log_level = LOG_INFO;
-                        enb_properties.properties[enb_properties_index]->rlc_log_verbosity = LOG_MED;
-                        enb_properties.properties[enb_properties_index]->pdcp_log_level = LOG_INFO;
+                        enb_properties.properties[enb_properties_index]->glog_level         = LOG_INFO;
+                        enb_properties.properties[enb_properties_index]->glog_verbosity     = LOG_MED;
+                        enb_properties.properties[enb_properties_index]->hw_log_level       = LOG_INFO;
+                        enb_properties.properties[enb_properties_index]->hw_log_verbosity   = LOG_MED;
+                        enb_properties.properties[enb_properties_index]->phy_log_level      = LOG_INFO;
+                        enb_properties.properties[enb_properties_index]->phy_log_verbosity  = LOG_MED;
+                        enb_properties.properties[enb_properties_index]->mac_log_level      = LOG_INFO;
+                        enb_properties.properties[enb_properties_index]->mac_log_verbosity  = LOG_MED;
+                        enb_properties.properties[enb_properties_index]->rlc_log_level      = LOG_INFO;
+                        enb_properties.properties[enb_properties_index]->rlc_log_verbosity  = LOG_MED;
+                        enb_properties.properties[enb_properties_index]->pdcp_log_level     = LOG_INFO;
                         enb_properties.properties[enb_properties_index]->pdcp_log_verbosity = LOG_MED;
-                        enb_properties.properties[enb_properties_index]->rrc_log_level = LOG_INFO;
-                        enb_properties.properties[enb_properties_index]->rrc_log_verbosity = LOG_MED;
+                        enb_properties.properties[enb_properties_index]->rrc_log_level      = LOG_INFO;
+                        enb_properties.properties[enb_properties_index]->rrc_log_verbosity  = LOG_MED;
+                        enb_properties.properties[enb_properties_index]->gtpu_log_level     = LOG_INFO;
+                        enb_properties.properties[enb_properties_index]->gtpu_log_verbosity = LOG_MED;
+                        enb_properties.properties[enb_properties_index]->udp_log_level      = LOG_INFO;
+                        enb_properties.properties[enb_properties_index]->udp_log_verbosity  = LOG_MED;
                     }
 
                     enb_properties_index += 1;
