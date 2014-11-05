@@ -388,7 +388,6 @@ static void *gtpv1u_thread(void *args)
                                       udp_data_ind_p->peer_port,
                                       udp_data_ind_p->peer_address);
                 itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), udp_data_ind_p->buffer);
-                udp_data_ind_p->buffer = NULL;
             }
             break;
 
@@ -431,6 +430,10 @@ static void *gtpv1u_thread(void *args)
                     NW_IN NwU8T    *tpdu,
                     NW_IN NwU16T    tpduLength,
                     NW_OUT NwGtpv1uMsgHandleT *phMsg)*/
+                    GTPU_DEBUG("GTPV1U_TUNNEL_DATA_REQ buffer %p seq num %d  %d bytes\n",
+                            data_req_p->buffer,
+                            gtpv1u_sgw_data.seq_num,
+                            data_req_p->length);
                     rc = nwGtpv1uGpduMsgNew(gtpv1u_sgw_data.gtpv1u_stack,
                                         00,// TO DO bearer_p->port, but not needed when looking at processing
                                         NW_FALSE,
@@ -455,7 +458,6 @@ static void *gtpv1u_thread(void *args)
                 }
                 /* Buffer is no longer needed, free it */
                 itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), data_req_p->buffer);
-                data_req_p->buffer = NULL;
             }
             break;
             case TERMINATE_MESSAGE: {
