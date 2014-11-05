@@ -335,89 +335,164 @@ check_install_oai_software() {
 	test_install_package valgrind
 
 # TODO: install the USRP UHD packages 
-	
-
-	# uninstall some automatically installed packges
-	# we need a newer version
-#	test_uninstall_package libnettle4
-	
-#	check_install_freediamter
-#    else 
-#	if [ ! -d /usr/local/etc/freeDiameter ]; then
-#	    check_install_freediamter
-#	fi
-	
+#	test_install_package libboost-all-dev
 	
 	if [ $OAI_INSTALLED = 1 ]; then 
 	    touch ./.lock_oaibuild
 	fi 
     
-   # echo_success "freediameter is installed"
-   # check_s6a_certificate
-    
-
-	test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO"
-    
-    # One mor check about version of asn1c
-	ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE="ASN.1 Compiler, v0.9.24"
-	ASN1C_COMPILER_VERSION_MESSAGE=`asn1c -h 2>&1 | grep -i ASN\.1\ Compiler`
-    ##ASN1C_COMPILER_VERSION_MESSAGE=`trim $ASN1C_COMPILER_VERSION_MESSAGE`
-	if [ "$ASN1C_COMPILER_VERSION_MESSAGE" != "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE" ]; then
-      #  diff <(echo -n "$ASN1C_COMPILER_VERSION_MESSAGE") <(echo -n "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE")
-            echo_error "Version of asn1c is not the required one, do you want to install the required one (overwrite installation) ? (Y/n)"
-            echo_error "$ASN1C_COMPILER_VERSION_MESSAGE"
-            while read -r -n 1 -s answer; do
-		if [[ $answer = [YyNn] ]]; then
-                    [[ $answer = [Yy] ]] && $OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO
-                    [[ $answer = [Nn] ]] && echo_error "Version of asn1c is not the required one, exiting." && exit 1
-                    break
-		fi
-            done
-	fi
-    else
+     else
 	echo_info "skip the package installations"
     fi 
     
 }
 
 check_install_hss_software() {
-    test_install_package autoconf 
-    test_install_package automake 
-    test_install_package bison 
-    test_install_package build-essential
-    test_install_package cmake
-    test_install_package cmake-curses-gui 
-    test_install_package dkms
-    test_install_package flex 
-    test_install_package gawk
-    test_install_package gcc
-    test_install_package gdb 
-    test_install_package guile-2.0-dev 
-    test_install_package g++
-    test_install_package libgmp-dev 
-    test_install_package libgcrypt11-dev 
-    test_install_package libidn11-dev 
-    test_install_package libidn2-0-dev 
-    test_install_package libmysqlclient-dev 
-    test_install_package libtasn1-3-dev 
-    test_install_package libsctp1 
-    test_install_package libsctp-dev 
-    test_install_package libxml2-dev 
-    test_install_package linux-headers-`uname -r` 
-    test_install_package make
-    test_install_package mysql-client-core-5.5 
-    test_install_package mysql-server-core-5.5 
-    test_install_package mysql-server-5.5 
-    test_install_package openssh-client
-    test_install_package openssh-server
-    test_install_package phpmyadmin
-    test_install_package python-dev 
-    test_install_package sshfs
-    test_install_package swig 
-    test_install_package unzip 
-    test_install_package nettle-bin
-    test_install_package nettle-dev
-    test_install_package valgrind 
+    if [ ! -f ./.lock_oaibuild ]; then 
+	$SUDO apt-get update
+	test_install_package autoconf 
+	test_install_package automake 
+	test_install_package bison 
+	test_install_package build-essential
+	test_install_package cmake
+	test_install_package cmake-curses-gui 
+	test_install_package dkms
+	test_install_package flex 
+	test_install_package gawk
+	test_install_package gcc
+	test_install_package gdb 
+	test_install_package guile-2.0-dev 
+	test_install_package g++
+	test_install_package libgmp-dev 
+	test_install_package libgcrypt11-dev 
+	test_install_package libidn11-dev 
+	test_install_package libidn2-0-dev 
+	test_install_package libmysqlclient-dev 
+	test_install_package libtasn1-3-dev 
+	test_install_package libsctp1 
+	test_install_package libsctp-dev 
+	test_install_package libxml2-dev 
+	test_install_package linux-headers-`uname -r` 
+	test_install_package make
+	test_install_package mysql-client-core-5.5 
+	test_install_package mysql-server-core-5.5 
+	test_install_package mysql-server-5.5 
+	test_install_package openssh-client
+	test_install_package openssh-server
+	test_install_package phpmyadmin
+	test_install_package python-dev 
+	test_install_package sshfs
+	test_install_package swig 
+	test_install_package unzip 
+	test_install_package nettle-bin
+	test_install_package nettle-dev
+	test_install_package valgrind 
+
+	if [ $OAI_INSTALLED = 1 ]; then 
+	    touch ./.lock_oaibuild
+	fi 
+	
+    else
+	echo_info "skip the package installations"
+    fi 
+
+}
+
+check_install_epc_software() {
+
+    if [ ! -f ./.lock_oaibuild ]; then 
+	$SUDO apt-get update
+	test_install_package autoconf
+	test_install_package automake
+	test_install_package bison
+	test_install_package build-essential
+	test_install_package check
+	test_install_package cmake
+	test_install_package cmake-curses-gui
+	test_install_package ethtool
+	test_install_package flex
+	test_install_package g++
+	test_install_package gawk
+	test_install_package gcc
+	test_install_package gccxml
+	test_install_package gdb 
+	test_install_package guile-2.0-dev
+	test_install_package gtkwave
+	test_install_package iperf
+	test_install_package iproute
+	test_install_package iptables
+	test_install_package libatlas-base-dev
+	test_install_package libatlas-dev
+	test_install_package libblas
+	test_install_package libblas-dev
+	if [ $MACHINE_ARCH = 64 ]; then
+            test_install_package libconfig8-dev
+	else
+            test_install_package libconfig-dev
+	fi
+	test_install_package libforms-bin
+	test_install_package libforms-dev
+	test_install_package libgcrypt11-dev
+	test_install_package libgmp-dev
+	test_install_package libgtk-3-dev
+	test_install_package libidn11-dev
+	test_install_package libidn2-0-dev
+	test_install_package libmysqlclient-dev
+	test_install_package libpgm-dev
+	test_install_package libpthread-stubs0-dev
+	test_install_package libsctp1
+	test_install_package libsctp-dev
+	test_install_package libtasn1-3-dev
+	test_install_package libxml2
+	test_install_package libxml2-dev
+	test_install_package linux-headers-`uname -r`
+	test_install_package make
+	test_install_package openssh-client
+	test_install_package openssh-server
+	test_install_package openssl
+	test_install_package openvpn
+	test_install_package pkg-config
+	test_install_package python-dev
+	test_install_package sshfs
+	test_install_package subversion
+	test_install_package swig
+	test_install_package tshark
+	test_install_package uml-utilities
+	test_install_package unzip
+	test_install_package valgrind
+	test_install_package vlan
+	
+	if [ $OAI_INSTALLED = 1 ]; then 
+	    touch ./.lock_oaibuild
+	fi 
+    
+    else
+	echo_info "skip the package installations"
+    fi 
+
+}
+
+check_install_asn1c(){
+    
+    test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO"
+    
+    # One mor check about version of asn1c
+    ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE="ASN.1 Compiler, v0.9.24"
+    ASN1C_COMPILER_VERSION_MESSAGE=`asn1c -h 2>&1 | grep -i ASN\.1\ Compiler`
+    ##ASN1C_COMPILER_VERSION_MESSAGE=`trim $ASN1C_COMPILER_VERSION_MESSAGE`
+    if [ "$ASN1C_COMPILER_VERSION_MESSAGE" != "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE" ]; then
+      #  diff <(echo -n "$ASN1C_COMPILER_VERSION_MESSAGE") <(echo -n "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE")
+        echo_error "Version of asn1c is not the required one, do you want to install the required one (overwrite installation) ? (Y/n)"
+        echo_error "$ASN1C_COMPILER_VERSION_MESSAGE"
+        while read -r -n 1 -s answer; do
+	    if [[ $answer = [YyNn] ]]; then
+                [[ $answer = [Yy] ]] && $OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO
+                [[ $answer = [Nn] ]] && echo_error "Version of asn1c is not the required one, exiting." && exit 1
+                break
+	    fi
+        done
+    fi
+    
 }
 
 #################################################
@@ -702,6 +777,51 @@ install_oaisim() {
    
 }
 
+##################################
+# create HSS DB
+################################
+
+# arg 1 is mysql user      (root)
+# arg 2 is mysql password  (linux)
+create_hss_database(){
+    EXPECTED_ARGS=2
+    E_BADARGS=65
+    MYSQL=`which mysql`
+    
+    if [ $# -ne $EXPECTED_ARGS ]
+    then
+        echo_fatal "Usage: $0 dbuser dbpass"
+    fi
+
+    set_openair
+    
+    Q1="CREATE DATABASE IF NOT EXISTS ${BTICK}oai_db${BTICK};"
+    SQL="${Q1}"
+    $MYSQL -u $1 --password=$2 -e "$SQL"
+    if [ $? -ne 0 ]; then
+       echo_error "oai_db creation failed"
+    else
+       echo_success "oai_db creation succeeded"
+    fi
+    
+    $MYSQL -u $1 --password=$2 oai_db < $OPENAIRCN_DIR/OPENAIRHSS/db/oai_db.sql
+    if [ $? -ne 0 ]; then
+       echo_error "oai_db tables creation failed"
+    else
+       echo_success "oai_db tables creation succeeded"
+    fi
+    
+    Q1="GRANT ALL PRIVILEGES ON *.* TO 'hssadmin'@'%' IDENTIFIED BY 'admin' WITH GRANT OPTION;"
+    Q2="FLUSH PRIVILEGES;"
+    SQL="${Q1}${Q2}"
+    $MYSQL -u $1 --password=$2 -e "$SQL"
+    if [ $? -ne 0 ]; then
+       echo_error "hssadmin permissions failed"
+    else
+       echo_success "hssadmin permissions succeeded"
+    fi
+}
+
 ################################
 # set_openair
 ###############################
@@ -733,10 +853,11 @@ print_help(){
     echo_success "-c   : enables clean OAI build (default disabled)"
     echo_success "-d   : enables debug mode (default disabled)"
     echo_success "-e   : sets realtime mode: RTAI, NONE (default NONE)"
+    echo_success "-l   : sets the LTE build target: ENB,EPC,HSS (default ENB)"
     echo_success "-m   : enables build from the makefile (default disabled)"
     echo_success "-r   : sets the release: REL8, REL10 (default REL8)"
     echo_success "-s   : enables OAI sanity check (default disabled)"
-    echo_success "-t   : sets the build target: ALL, SOFTMODEM,OAISIM,UNISIM (default ALL)"
+    echo_success "-t   : sets the eNB build target: ALL, SOFTMODEM,OAISIM,UNISIM (default ALL)"
     echo_success "-w   : sets the hardware platform: EXMIMO, USRP, ETHERNET NONE, (default EXMIMO)"
     echo_success "-x   : enables xforms (default disabled)"
     echo_success "-z   : sets the default build options"
