@@ -121,6 +121,7 @@ nwGtpv1uGpduMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
                 NW_IN NwU16T    seqNum,
                 NW_IN NwU8T*    tpdu,
                 NW_IN NwU16T    tpduLength,
+                NW_IN NwU32T    tpduOffset,
                 NW_OUT NwGtpv1uMsgHandleT *phMsg);
 
  /**

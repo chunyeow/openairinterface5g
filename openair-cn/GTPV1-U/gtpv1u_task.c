@@ -36,6 +36,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/time.h>
 
 #include "mme_config.h"
 
@@ -62,6 +63,7 @@ NwGtpv1uRcT gtpv1u_send_udp_msg(
     NwGtpv1uUdpHandleT udpHandle,
     NwU8T *buffer,
     NwU32T buffer_len,
+    NwU32T buffer_offset,
     NwU32T peerIpAddr,
     NwU32T peerPort);
 
@@ -75,6 +77,69 @@ NwGtpv1uRcT gtpv1u_log_request(
 NwGtpv1uRcT gtpv1u_process_stack_req(
     NwGtpv1uUlpHandleT hUlp,
     NwGtpv1uUlpApiT *pUlpApi);
+
+
+//-----------------------------------------------------------------------------
+void gtpu_print_hex_octets(unsigned char* dataP, unsigned long sizeP)
+//-----------------------------------------------------------------------------
+{
+  unsigned long octet_index = 0;
+  unsigned long buffer_marker = 0;
+  unsigned char aindex;
+#define GTPU_2_PRINT_BUFFER_LEN 8000
+  char gtpu_2_print_buffer[GTPU_2_PRINT_BUFFER_LEN];
+  struct timeval tv;
+  struct timezone tz;
+  char timeofday[64];
+  unsigned int h,m,s;
+
+  if (dataP == NULL) {
+    return;
+  }
+
+  gettimeofday(&tv, &tz);
+  h = tv.tv_sec/3600/24;
+  m = (tv.tv_sec / 60) % 60;
+  s = tv.tv_sec % 60;
+  snprintf(timeofday, 64, "%02d:%02d:%02d.%06d", h,m,s,tv.tv_usec);
+
+  GTPU_DEBUG("%s------+-------------------------------------------------|\n",timeofday);
+  GTPU_DEBUG("%s      |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n",timeofday);
+  GTPU_DEBUG("%s------+-------------------------------------------------|\n",timeofday);
+  for (octet_index = 0; octet_index < sizeP; octet_index++) {
+    if (GTPU_2_PRINT_BUFFER_LEN < (buffer_marker + 32))  {
+        buffer_marker+=snprintf(&gtpu_2_print_buffer[buffer_marker], GTPU_2_PRINT_BUFFER_LEN - buffer_marker,
+                "... (print buffer overflow)");
+        GTPU_DEBUG("%s%s",timeofday,gtpu_2_print_buffer);
+        return;
+    }
+    if ((octet_index % 16) == 0){
+      if (octet_index != 0) {
+          buffer_marker+=snprintf(&gtpu_2_print_buffer[buffer_marker], GTPU_2_PRINT_BUFFER_LEN - buffer_marker, " |\n");
+          GTPU_DEBUG("%s%s",timeofday, gtpu_2_print_buffer);
+          buffer_marker = 0;
+      }
+      buffer_marker+=snprintf(&gtpu_2_print_buffer[buffer_marker], GTPU_2_PRINT_BUFFER_LEN - buffer_marker, " %04ld |", octet_index);
+    }
+    /*
+     * Print every single octet in hexadecimal form
+     */
+    buffer_marker+=snprintf(&gtpu_2_print_buffer[buffer_marker], GTPU_2_PRINT_BUFFER_LEN - buffer_marker, " %02x", dataP[octet_index]);
+    /*
+     * Align newline and pipes according to the octets in groups of 2
+     */
+  }
+
+  /*
+   * Append enough spaces and put final pipe
+   */
+  for (aindex = octet_index; aindex < 16; ++aindex)
+    buffer_marker+=snprintf(&gtpu_2_print_buffer[buffer_marker], GTPU_2_PRINT_BUFFER_LEN - buffer_marker, "   ");
+    //GTPU_DEBUG("   ");
+  buffer_marker+=snprintf(&gtpu_2_print_buffer[buffer_marker], GTPU_2_PRINT_BUFFER_LEN - buffer_marker, " |\n");
+  GTPU_DEBUG("%s%s",timeofday,gtpu_2_print_buffer);
+}
+
 
 static int gtpv1u_send_init_udp(uint16_t port_number)
 {
@@ -111,6 +176,7 @@ NwGtpv1uRcT gtpv1u_send_udp_msg(
     NwGtpv1uUdpHandleT udpHandle,
     NwU8T *buffer,
     NwU32T buffer_len,
+    NwU32T buffer_offset,
     NwU32T peerIpAddr,
     NwU32T peerPort)
 {
@@ -126,6 +192,7 @@ NwGtpv1uRcT gtpv1u_send_udp_msg(
     udp_data_req_p->peer_port     = peerPort;
     udp_data_req_p->buffer        = buffer;
     udp_data_req_p->buffer_length = buffer_len;
+    udp_data_req_p->buffer_offset = buffer_offset;
 
     return itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
 }
@@ -141,34 +208,38 @@ NwGtpv1uRcT gtpv1u_process_stack_req(
              * - END-MARKER
              */
         case NW_GTPV1U_ULP_API_RECV_TPDU: {
-            uint8_t              buffer[4096];
-            uint32_t             buffer_len;
-            MessageDef          *message_p;
-            Gtpv1uTunnelDataInd *data_ind_p;
+            //uint8_t              buffer[4096];
+            //uint32_t             buffer_len;
+            MessageDef          *message_p  = NULL;
+            Gtpv1uTunnelDataInd *data_ind_p = NULL;
 
             /* Nw-gptv1u stack has processed a PDU. we can forward it to IPV4
              * task for transmission.
              */
-            if (NW_GTPV1U_OK != nwGtpv1uMsgGetTpdu(pUlpApi->apiInfo.recvMsgInfo.hMsg,
+            /*if (NW_GTPV1U_OK != nwGtpv1uMsgGetTpdu(pUlpApi->apiInfo.recvMsgInfo.hMsg,
                 buffer, (NwU32T *)&buffer_len)) {
                 GTPU_ERROR("Error while retrieving T-PDU\n");
-            }
-            GTPU_DEBUG("Received TPDU from gtpv1u stack %u with size %d\n", pUlpApi->apiInfo.recvMsgInfo.teid, buffer_len);
+            }*/
+            GTPU_DEBUG("Received TPDU from gtpv1u stack %u with size %d\n",
+                    pUlpApi->apiInfo.recvMsgInfo.teid,
+                    ((NwGtpv1uMsgT*)pUlpApi->apiInfo.recvMsgInfo.hMsg)->msgBufLen);
 
             message_p = itti_alloc_new_message(TASK_GTPV1_U, GTPV1U_TUNNEL_DATA_IND);
             if (message_p == NULL) {
                 return -1;
             }
             data_ind_p                       = &message_p->ittiMsg.gtpv1uTunnelDataInd;
-            data_ind_p->buffer               = malloc(sizeof(uint8_t) * buffer_len);
+            data_ind_p->buffer               = ((NwGtpv1uMsgT*)pUlpApi->apiInfo.recvMsgInfo.hMsg)->msgBuf;
+            data_ind_p->length               = ((NwGtpv1uMsgT*)pUlpApi->apiInfo.recvMsgInfo.hMsg)->msgBufLen;
+            data_ind_p->offset               = ((NwGtpv1uMsgT*)pUlpApi->apiInfo.recvMsgInfo.hMsg)->msgBufOffset;
             data_ind_p->local_S1u_teid       = pUlpApi->apiInfo.recvMsgInfo.teid;
             if (data_ind_p->buffer == NULL) {
                 GTPU_ERROR("Failed to allocate new buffer\n");
                 itti_free(ITTI_MSG_ORIGIN_ID(message_p), message_p);
                 message_p = NULL;
             } else {
-                memcpy(data_ind_p->buffer, buffer, buffer_len);
-                data_ind_p->length = buffer_len;
+                //memcpy(data_ind_p->buffer, buffer, buffer_len);
+                //data_ind_p->length = buffer_len;
                 if (itti_send_msg_to_task(TASK_FW_IP, INSTANCE_DEFAULT, message_p) < 0) {
                     GTPU_ERROR("Failed to send message to task\n");
                     itti_free(ITTI_MSG_ORIGIN_ID(message_p), message_p);
@@ -387,7 +458,7 @@ static void *gtpv1u_thread(void *args)
                                       udp_data_ind_p->buffer_length,
                                       udp_data_ind_p->peer_port,
                                       udp_data_ind_p->peer_address);
-                itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), udp_data_ind_p->buffer);
+                //itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), udp_data_ind_p->buffer);
             }
             break;
 
@@ -400,18 +471,13 @@ static void *gtpv1u_thread(void *args)
                 gtpv1u_teid2enb_info_t  *gtpv1u_teid2enb_info = NULL;
 
                 data_req_p = &received_message_p->ittiMsg.gtpv1uTunnelDataReq;
-                //ipv4_send_data(ipv4_data_p->sd, data_ind_p->buffer, data_ind_p->length);
+
+                GTPU_DEBUG("-- GTPV1U_TUNNEL_DATA_REQ -----------------------------------------------------\n%s :\n",
+                        __FUNCTION__);
+                gtpu_print_hex_octets(data_req_p->buffer, data_req_p->length);
+
 
                 memset(&stack_req, 0, sizeof(NwGtpv1uUlpApiT));
-
-                /*
-                 * typedef struct
-                {
-                NW_IN    NwU32T                       teid;
-                NW_IN    NwU32T                       ipAddr;
-                NW_IN    NwU8T                        flags;
-                NW_IN    NwGtpv1uMsgHandleT           hMsg;
-                } NwGtpv1uSendtoInfoT;*/
 
                 hash_rc = hashtable_get(gtpv1u_sgw_data.S1U_mapping, (uint64_t)data_req_p->local_S1u_teid, (void**)&gtpv1u_teid2enb_info);
 
@@ -430,8 +496,7 @@ static void *gtpv1u_thread(void *args)
                     NW_IN NwU8T    *tpdu,
                     NW_IN NwU16T    tpduLength,
                     NW_OUT NwGtpv1uMsgHandleT *phMsg)*/
-                    GTPU_DEBUG("GTPV1U_TUNNEL_DATA_REQ buffer %p seq num %d  %d bytes\n",
-                            data_req_p->buffer,
+                    GTPU_DEBUG("GTPV1U_TUNNEL_DATA_REQ seq num %d  %d bytes\n",
                             gtpv1u_sgw_data.seq_num,
                             data_req_p->length);
                     rc = nwGtpv1uGpduMsgNew(gtpv1u_sgw_data.gtpv1u_stack,
@@ -440,6 +505,7 @@ static void *gtpv1u_thread(void *args)
                                         gtpv1u_sgw_data.seq_num++,
                                         data_req_p->buffer,
                                         data_req_p->length,
+                                        data_req_p->offset,
                                         &(stack_req.apiInfo.sendtoInfo.hMsg));
 
                     if (rc != NW_GTPV1U_OK) {
@@ -456,8 +522,8 @@ static void *gtpv1u_thread(void *args)
                         }
                     }
                 }
-                /* Buffer is no longer needed, free it */
-                itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), data_req_p->buffer);
+                /* Buffer is still needed, do not free it */
+                //itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), data_req_p->buffer);
             }
             break;
             case TERMINATE_MESSAGE: {

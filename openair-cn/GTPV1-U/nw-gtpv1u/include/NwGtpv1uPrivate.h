@@ -166,7 +166,9 @@ typedef struct NwGtpv1uMsg
   NwU16T        seqNum;
   NwU8T         npduNum;    
   NwU8T         nextExtHdrType;
-  NwU8T         msgBuf[NW_GTPV1U_MAX_MSG_LEN];
+  NwU8T*        msgBuf;
+  NwU32T        msgBufLen;
+  NwU32T        msgBufOffset;
   struct NwGtpv1uMsg* next;
 } NwGtpv1uMsgT;
 

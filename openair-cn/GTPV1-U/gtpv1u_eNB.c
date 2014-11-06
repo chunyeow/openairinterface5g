@@ -86,6 +86,7 @@ NwGtpv1uRcT
         NwGtpv1uUdpHandleT      udpHandle,
         NwU8T                  *buffer,
         NwU32T                  buffer_len,
+        NwU32T                  buffer_offset,
         NwU32T                  peerIpAddr,
         NwU16T                  peerPort);
 
@@ -100,6 +101,7 @@ int
         uint32_t  address,
         uint8_t  *buffer,
         uint32_t  length,
+        uint32_t  offset,
         void     *arg_p);
 //int
 //gtpv1u_create_tunnel_endpoint(
@@ -187,6 +189,7 @@ NwGtpv1uRcT gtpv1u_eNB_send_udp_msg(
     NwGtpv1uUdpHandleT udpHandle,
     NwU8T *buffer,
     NwU32T buffer_len,
+    NwU32T buffer_offset,
     NwU32T peerIpAddr,
     NwU16T peerPort)
 {
@@ -202,6 +205,7 @@ NwGtpv1uRcT gtpv1u_eNB_send_udp_msg(
         udp_data_req_p->peer_port     = peerPort;
         udp_data_req_p->buffer        = buffer;
         udp_data_req_p->buffer_length = buffer_len;
+        udp_data_req_p->buffer_offset = buffer_offset;
         return itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
     } else {
         return NW_GTPV1U_FAILURE;
@@ -858,7 +862,7 @@ void *gtpv1u_eNB_task(void *args)
                                       udp_data_ind_p->buffer_length,
                                       udp_data_ind_p->peer_port,
                                       udp_data_ind_p->peer_address);
-                itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), udp_data_ind_p->buffer);
+                //itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), udp_data_ind_p->buffer);
             }
             break;
 
@@ -896,6 +900,7 @@ void *gtpv1u_eNB_task(void *args)
                                  gtpv1u_data_g.seq_num++,
                                  data_req_p->buffer,
                                  data_req_p->length,
+                                 data_req_p->offset,
                                  &(stack_req.apiInfo.sendtoInfo.hMsg));
 
                     if (rc != NW_GTPV1U_OK) {
@@ -913,8 +918,8 @@ void *gtpv1u_eNB_task(void *args)
                         }
                     }
                 }
-                /* Buffer is no longer needed, free it */
-                itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), data_req_p->buffer);
+                /* Buffer still needed, do not free it */
+                //itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), data_req_p->buffer);
             }
             break;
 

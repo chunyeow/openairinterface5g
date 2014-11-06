@@ -117,11 +117,13 @@ nwGtpv1uGpduMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
                     NW_IN NwU16T    seqNum,
                     NW_IN NwU8T    *tpdu,
                     NW_IN NwU16T    tpduLength,
+                    NW_IN NwU32T    tpduOffset,
                     NW_OUT NwGtpv1uMsgHandleT *phMsg)
 {
     NwGtpv1uStackT *pStack = (NwGtpv1uStackT *) hGtpuStackHandle;
     NwGtpv1uMsgT   *pMsg;
-    NwU32T          header_len = 0;
+    NwU32T          header_len  = 0;
+    NwU32T          msgExtraLen = 0;
 
     if(gpGtpv1uMsgPool) {
         pMsg = gpGtpv1uMsgPool;
@@ -130,7 +132,15 @@ nwGtpv1uGpduMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
         NW_GTPV1U_MALLOC(pStack, sizeof(NwGtpv1uMsgT), pMsg, NwGtpv1uMsgT *);
     }
 
+
     if(pMsg) {
+        msgExtraLen        = (((seqNumFlag) || (NW_FALSE) || (NW_FALSE) ) ?
+                                (NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE - NW_GTPV1U_EPC_MIN_HEADER_SIZE)  : 0);
+        AssertFatal((msgExtraLen + NW_GTPV1U_EPC_MIN_HEADER_SIZE) <= tpduOffset);
+        pMsg->msgBuf       = tpdu;
+        pMsg->msgBufLen    = tpduLength + msgExtraLen + NW_GTPV1U_EPC_MIN_HEADER_SIZE;
+        pMsg->msgBufOffset = tpduOffset - (msgExtraLen + NW_GTPV1U_EPC_MIN_HEADER_SIZE);
+
         // Version field: This field is used to determine the version of the GTP-U protocol.
         // The version number shall be set to '1'.
         pMsg->version       = NW_GTPU_VERSION;
@@ -181,7 +191,7 @@ nwGtpv1uGpduMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
         pMsg->teid          = teid;
         pMsg->nextExtHdrType= 0x00;
 
-        memcpy(pMsg->msgBuf + header_len, tpdu, tpduLength);
+        //memcpy(pMsg->msgBuf + header_len, tpdu, tpduLength);
         *phMsg = (NwGtpv1uMsgHandleT) pMsg;
         return NW_GTPV1U_OK;
     }
@@ -231,8 +241,7 @@ nwGtpv1uMsgFromBufferNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
 
 
     if(pMsg) {
-        memcpy(pMsg->msgBuf, pBuf, bufLen);
-        pMsg->msgLen = bufLen;
+        pMsg->msgBuf    =  pBuf;
 
         pMsg->version       = ((*pBuf) & 0xE0) >> 5;
         pMsg->protocolType  = ((*pBuf) & 0x10) >> 4;
@@ -255,6 +264,8 @@ nwGtpv1uMsgFromBufferNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
             pMsg->npduNum             = *(pBuf++);
             pMsg->nextExtHdrType      = *(pBuf++);
         }
+        pMsg->msgOffset = (NwU32T)(pBuf - pMsg->msgBuf);
+        pMsg->msgLen    = bufLen - pMsg->msgOffset;
         *phMsg = (NwGtpv1uMsgHandleT) pMsg;
         return NW_GTPV1U_OK;
     }

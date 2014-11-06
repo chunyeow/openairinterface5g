@@ -198,7 +198,7 @@ nwGtpv1uCreateAndSendMsg( NwGtpv1uStackT *thiz, NwU32T peerIp, NwU16T peerPort,
 
     NW_ENTER(thiz);
 
-    msgHdr = pMsg->msgBuf;
+    msgHdr = &pMsg->msgBuf[pMsg->msgBufOffset];
     NW_ASSERT(msgHdr != NULL);
 
     *(msgHdr++)         = (pMsg->version << 5)            |
@@ -228,7 +228,8 @@ nwGtpv1uCreateAndSendMsg( NwGtpv1uStackT *thiz, NwU32T peerIp, NwU16T peerPort,
 
     rc = thiz->udp.udpDataReqCallback(thiz->udp.hUdp,
                                       pMsg->msgBuf,
-                                      pMsg->msgLen + NW_GTPV1U_EPC_MIN_HEADER_SIZE,
+                                      pMsg->msgLen,
+                                      pMsg->msgOffset,
                                       peerIp,
                                       peerPort);
 
@@ -490,11 +491,11 @@ nwGtpv1uProcessGpdu( NwGtpv1uStackT *thiz,
     NwGtpv1uMsgHeaderT      *msgHdr            = NULL;
     NwGtpv1uTunnelEndPointT *pTunnelEndPoint   = NULL;
     NwGtpv1uTunnelEndPointT  tunnelEndPointKey;
-    NwU16T                   payload_len       = 0;
     NwU16T                   hdr_len           = 0;
 
     NW_ENTER(thiz);
 
+    // no buffer offset
     msgHdr = (NwGtpv1uMsgHeaderT *) gpdu;
 
     tunnelEndPointKey.teid = ntohl(msgHdr->teid);
@@ -509,22 +510,19 @@ nwGtpv1uProcessGpdu( NwGtpv1uStackT *thiz,
                                        (NwU8T *)gpdu,
                                        gpduLen,
                                        &hMsg);
-
-
+/*
+  NwU8T*        msgBuf;
+  NwU32T        msgBufLen;
+  NwU32T        msgBufOffset;
+ */
         if(NW_GTPV1U_OK == rc) {
             NwGtpv1uMsgT *pMsg = (NwGtpv1uMsgT *) hMsg;
-            GTPU_DEBUG("Received T-PDU over tunnel end-point '%x' of size %u from "NW_IPV4_ADDR"\n",
-                   ntohl(msgHdr->teid), pMsg->msgLen, NW_IPV4_ADDR_FORMAT((peerIp)));
+            GTPU_DEBUG("Received T-PDU over tunnel end-point '%x' of size %u (decapsulated %u)from "NW_IPV4_ADDR"\n",
+                   ntohl(msgHdr->teid), gpduLen, pMsg->msgLen, NW_IPV4_ADDR_FORMAT((peerIp)));
 
-            payload_len = ntohs(msgHdr->msgLength);
-            hdr_len     = NW_GTPV1U_EPC_MIN_HEADER_SIZE;
-            if (msgHdr->S || msgHdr->PN || msgHdr->E ) {
-                hdr_len     = NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE;
-                payload_len = payload_len - (NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE - NW_GTPV1U_EPC_MIN_HEADER_SIZE);
-            }
-            AssertFatal(gpduLen == (payload_len + hdr_len),
-                    "Mismatch gpduLen %d / hdr_len %d / payload_len %d",
-                    gpduLen, hdr_len, payload_len);
+            AssertFatal(gpduLen == (pMsg->msgLen + pMsg->msgOffset),
+                    "Mismatch gpduLen %d / buffer offset %d / msg len %d / buffer len",
+                    gpduLen, pMsg->msgBufOffset, pMsg->msgLen, pMsg->msgBufLen);
 
             rc = nwGtpSessionSendMsgApiToUlpEntity(pTunnelEndPoint, pMsg);
         }
