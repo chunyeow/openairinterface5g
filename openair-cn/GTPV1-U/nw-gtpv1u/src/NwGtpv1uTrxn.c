@@ -321,7 +321,8 @@ nwGtpv1uTrxnCreateAndSendMsg( NW_IN  NwGtpv1uStackT *thiz,
     NW_ASSERT(thiz);
     NW_ASSERT(pMsg);
 
-    msgHdr = pMsg->msgBuf;
+    msgHdr = &pMsg->msgBuf[pMsg->msgBufOffset];
+
     NW_ASSERT(msgHdr != NULL);
 
     *(msgHdr++)         = (pMsg->version << 5)            |
