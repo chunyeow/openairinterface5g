@@ -90,12 +90,14 @@ typedef struct gtpv1u_enb_tunnel_data_ind_s {
     uint8_t                ue_index;
     uint8_t               *buffer;
     uint32_t               length;
+    uint32_t               offset;               ///< start of message offset in buffer
     teid_t                 enb_S1u_teid;         ///< Tunnel Endpoint Identifier
 } gtpv1u_enb_tunnel_data_ind_t;
 
 typedef struct gtpv1u_enb_tunnel_data_req_s {
     uint8_t               *buffer;
     uint32_t               length;
+    uint32_t               offset;               ///< start of message offset in buffer
     uint8_t                ue_index;
     rb_id_t                rab_id;
 } gtpv1u_enb_tunnel_data_req_t;
