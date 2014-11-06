@@ -39,6 +39,7 @@
 
 
 #include "sgi.h"
+#include "gtpv1u.h"
 #include "intertask_interface.h"
 #include "assertions.h"
 

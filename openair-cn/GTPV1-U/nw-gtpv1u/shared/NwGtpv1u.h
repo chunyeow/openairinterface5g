@@ -314,6 +314,7 @@ typedef struct
   NwGtpv1uRcT (*udpDataReqCallback) ( NW_IN     NwGtpv1uUdpHandleT udpHandle, 
                                 NW_IN     NwU8T* dataBuf, 
                                 NW_IN     NwU32T dataSize,
+                                NW_IN     NwU32T dataOffset,
                                 NW_IN     NwU32T peerIP,
                                 NW_IN     NwU16T peerPort);
 } NwGtpv1uUdpEntityT;

@@ -229,7 +229,7 @@ nwGtpv1uCreateAndSendMsg( NwGtpv1uStackT *thiz, NwU32T peerIp, NwU16T peerPort,
     rc = thiz->udp.udpDataReqCallback(thiz->udp.hUdp,
                                       pMsg->msgBuf,
                                       pMsg->msgLen,
-                                      pMsg->msgOffset,
+                                      pMsg->msgBufOffset,
                                       peerIp,
                                       peerPort);
 
@@ -292,6 +292,7 @@ nwGtpv1uPeerRspTimeout(void *arg)
     rc = thiz->pStack->udp.udpDataReqCallback(thiz->pStack->udp.hUdp,
             thiz->pMsg->msgBuf,
             thiz->pMsg->msgLen,
+            thiz->pMsg->msgBufOffset,
             thiz->peerIp,
             thiz->peerPort);
 
@@ -520,8 +521,8 @@ nwGtpv1uProcessGpdu( NwGtpv1uStackT *thiz,
             GTPU_DEBUG("Received T-PDU over tunnel end-point '%x' of size %u (decapsulated %u)from "NW_IPV4_ADDR"\n",
                    ntohl(msgHdr->teid), gpduLen, pMsg->msgLen, NW_IPV4_ADDR_FORMAT((peerIp)));
 
-            AssertFatal(gpduLen == (pMsg->msgLen + pMsg->msgOffset),
-                    "Mismatch gpduLen %d / buffer offset %d / msg len %d / buffer len",
+            AssertFatal(gpduLen == (pMsg->msgLen + pMsg->msgBufOffset),
+                    "Mismatch gpduLen %u / buffer offset %u / msg len %u / buffer len %u",
                     gpduLen, pMsg->msgBufOffset, pMsg->msgLen, pMsg->msgBufLen);
 
             rc = nwGtpSessionSendMsgApiToUlpEntity(pTunnelEndPoint, pMsg);

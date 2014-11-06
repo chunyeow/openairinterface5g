@@ -42,6 +42,7 @@
 #include "NwGtpv1u.h"
 #include "NwGtpv1uPrivate.h"
 #include "NwGtpv1uMsg.h"
+#include "assertions.h"
 
 #include "gtpv1u.h"
 #if defined(ENB_MODE)
@@ -132,11 +133,10 @@ nwGtpv1uGpduMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
         NW_GTPV1U_MALLOC(pStack, sizeof(NwGtpv1uMsgT), pMsg, NwGtpv1uMsgT *);
     }
 
-
     if(pMsg) {
         msgExtraLen        = (((seqNumFlag) || (NW_FALSE) || (NW_FALSE) ) ?
                                 (NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE - NW_GTPV1U_EPC_MIN_HEADER_SIZE)  : 0);
-        AssertFatal((msgExtraLen + NW_GTPV1U_EPC_MIN_HEADER_SIZE) <= tpduOffset);
+        AssertFatal((msgExtraLen + NW_GTPV1U_EPC_MIN_HEADER_SIZE) <= tpduOffset, "Mismatch GTPU len");
         pMsg->msgBuf       = tpdu;
         pMsg->msgBufLen    = tpduLength + msgExtraLen + NW_GTPV1U_EPC_MIN_HEADER_SIZE;
         pMsg->msgBufOffset = tpduOffset - (msgExtraLen + NW_GTPV1U_EPC_MIN_HEADER_SIZE);
@@ -264,8 +264,8 @@ nwGtpv1uMsgFromBufferNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
             pMsg->npduNum             = *(pBuf++);
             pMsg->nextExtHdrType      = *(pBuf++);
         }
-        pMsg->msgOffset = (NwU32T)(pBuf - pMsg->msgBuf);
-        pMsg->msgLen    = bufLen - pMsg->msgOffset;
+        pMsg->msgBufOffset = (NwU32T)(pBuf - pMsg->msgBuf);
+        pMsg->msgLen    = bufLen - pMsg->msgBufOffset;
         *phMsg = (NwGtpv1uMsgHandleT) pMsg;
         return NW_GTPV1U_OK;
     }

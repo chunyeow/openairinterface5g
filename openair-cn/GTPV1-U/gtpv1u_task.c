@@ -49,6 +49,7 @@
 #include "NwGtpv1uMsg.h"
 #include "NwLog.h"
 #include "gtpv1u_sgw_defs.h"
+#include "NwGtpv1uPrivate.h"
 
 //static NwGtpv1uStackHandleT gtpv1u_stack = 0;
 static gtpv1u_data_t        gtpv1u_sgw_data;
