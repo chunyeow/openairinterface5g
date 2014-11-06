@@ -125,7 +125,8 @@ gtpv1u_new_data_req(
     uint8_t ue_id,
     uint8_t rab_id,
     uint8_t *buffer,
-    uint32_t buf_len);
+    uint32_t buf_len,
+    uint32_t buf_offset);
 
 int
 gtpv1u_initial_req(
