@@ -521,12 +521,8 @@ nwGtpv1uProcessGpdu( NwGtpv1uStackT *thiz,
  */
         if(NW_GTPV1U_OK == rc) {
             NwGtpv1uMsgT *pMsg = (NwGtpv1uMsgT *) hMsg;
-            GTPU_DEBUG("Received T-PDU over tunnel end-point '%x' of size %u (decapsulated %u)from "NW_IPV4_ADDR"\n",
-                   ntohl(msgHdr->teid), gpduLen, pMsg->msgLen, NW_IPV4_ADDR_FORMAT((peerIp)));
-
-            AssertFatal(gpduLen == (pMsg->msgLen + pMsg->msgBufOffset),
-                    "Mismatch gpduLen %u / buffer offset %u / msg len %u / buffer len %u",
-                    gpduLen, pMsg->msgBufOffset, pMsg->msgLen, pMsg->msgBufLen);
+            GTPU_DEBUG("Received T-PDU over tunnel end-point '%x' of size %u (%u) (decapsulated %u)from "NW_IPV4_ADDR"\n",
+                   ntohl(msgHdr->teid), gpduLen, pMsg->msgLen, pMsg->msgBufLen, NW_IPV4_ADDR_FORMAT((peerIp)));
 
             rc = nwGtpSessionSendMsgApiToUlpEntity(pTunnelEndPoint, pMsg);
         }

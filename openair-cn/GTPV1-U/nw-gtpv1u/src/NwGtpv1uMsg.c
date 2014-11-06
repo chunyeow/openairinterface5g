@@ -271,7 +271,10 @@ nwGtpv1uMsgFromBufferNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
             pMsg->nextExtHdrType      = *(pBuf++);
         }
         pMsg->msgBufOffset = (NwU32T)(pBuf - pMsg->msgBuf);
-        pMsg->msgLen    = bufLen - pMsg->msgBufOffset;
+        pMsg->msgBufLen = bufLen - pMsg->msgBufOffset;
+        pMsg->msgLen    = bufLen;
+        GTPU_DEBUG("nwGtpv1uMsgFromBufferNew() msgLen %u msgBufLen %u msgBufOffset %u ",
+                pMsg->msgLen, pMsg->msgBufLen, pMsg->msgBufOffset);
         *phMsg = (NwGtpv1uMsgHandleT) pMsg;
         return NW_GTPV1U_OK;
     }
