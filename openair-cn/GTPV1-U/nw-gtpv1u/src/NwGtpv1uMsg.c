@@ -143,6 +143,9 @@ nwGtpv1uGpduMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
         pMsg->msgBuf       = tpdu;
         pMsg->msgBufLen    = tpduLength + msgExtraLen + NW_GTPV1U_EPC_MIN_HEADER_SIZE;
         pMsg->msgBufOffset = tpduOffset - (msgExtraLen + NW_GTPV1U_EPC_MIN_HEADER_SIZE);
+        LOG_E(GTPU, "MSG length %u, offset %u -> length %u offset %u\n",
+                tpduLength, tpduOffset,
+                pMsg->msgBufLen, pMsg->msgBufOffset);
 
         // Version field: This field is used to determine the version of the GTP-U protocol.
         // The version number shall be set to '1'.
@@ -178,11 +181,11 @@ nwGtpv1uGpduMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
         // mandatory part of the GTP header (that is the first 8 octets).
         // The Sequence Number, the N-PDU Number or any Extension headers shall be considered to be part of the payload,
         // i.e. included in the length count.
-        header_len          = ((pMsg->seqNumFlag || pMsg->npduNumFlag || pMsg->extHdrFlag ) ?
-                                NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE : NW_GTPV1U_EPC_MIN_HEADER_SIZE);
-        pMsg->msgLen        = ((pMsg->seqNumFlag || pMsg->npduNumFlag
-                                || pMsg->extHdrFlag ) ?
-                                (NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE - NW_GTPV1U_EPC_MIN_HEADER_SIZE) + tpduLength : tpduLength);
+        //header_len          = ((pMsg->seqNumFlag || pMsg->npduNumFlag || pMsg->extHdrFlag ) ?
+        //                        NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE : NW_GTPV1U_EPC_MIN_HEADER_SIZE);
+        //pMsg->msgLen        = ((pMsg->seqNumFlag || pMsg->npduNumFlag
+        //                        || pMsg->extHdrFlag ) ?
+        //                        (NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE - NW_GTPV1U_EPC_MIN_HEADER_SIZE) + tpduLength : tpduLength);
 
         // Tunnel Endpoint Identifier (TEID): This field unambiguously identifies a tunnel endpoint in the receiving
         // GTP-U protocol entity. The receiving end side of a GTP tunnel locally assigns the TEID value the transmitting

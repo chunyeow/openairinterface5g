@@ -200,6 +200,7 @@ NwGtpv1uRcT gtpv1u_eNB_send_udp_msg(
     message_p = itti_alloc_new_message(TASK_GTPV1_U, UDP_DATA_REQ);
 
     if (message_p) {
+        LOG_D(GTPU, "Sending UDP_DATA_REQ length %u offset %u", buffer_len, buffer_offset);
         udp_data_req_p = &message_p->ittiMsg.udp_data_req;
         udp_data_req_p->peer_address  = peerIpAddr;
         udp_data_req_p->peer_port     = peerPort;
