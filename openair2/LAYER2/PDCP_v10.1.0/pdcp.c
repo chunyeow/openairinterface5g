@@ -693,13 +693,15 @@ boolean_t pdcp_data_ind(
 #if defined(LINK_PDCP_TO_GTPV1U)
   if ((TRUE == enb_flagP) && (FALSE == srb_flagP)) {
       LOG_I(PDCP,"Sending to GTPV1U %d bytes\n", sdu_buffer_sizeP - payload_offset);
-      gtpu_buffer_p = itti_malloc(TASK_PDCP_ENB, TASK_GTPV1_U, sdu_buffer_sizeP - payload_offset);
+      gtpu_buffer_p = itti_malloc(TASK_PDCP_ENB, TASK_GTPV1_U,
+               sdu_buffer_sizeP - payload_offset + GTPU_HEADER_OVERHEAD_MAX);
       AssertFatal(gtpu_buffer_p != NULL, "OUT OF MEMORY");
-      memcpy(gtpu_buffer_p, &sdu_buffer_pP->data[payload_offset], sdu_buffer_sizeP - payload_offset);
+      memcpy(&gtpu_buffer_p[GTPU_HEADER_OVERHEAD_MAX + 8], &sdu_buffer_pP->data[payload_offset], sdu_buffer_sizeP - payload_offset);
       message_p = itti_alloc_new_message(TASK_PDCP_ENB, GTPV1U_ENB_TUNNEL_DATA_REQ);
       AssertFatal(message_p != NULL, "OUT OF MEMORY");
       GTPV1U_ENB_TUNNEL_DATA_REQ(message_p).buffer       = gtpu_buffer_p;
       GTPV1U_ENB_TUNNEL_DATA_REQ(message_p).length       = sdu_buffer_sizeP - payload_offset;
+      GTPV1U_ENB_TUNNEL_DATA_REQ(message_p).offset       = GTPU_HEADER_OVERHEAD_MAX;
       GTPV1U_ENB_TUNNEL_DATA_REQ(message_p).ue_index     = ue_mod_idP;
       GTPV1U_ENB_TUNNEL_DATA_REQ(message_p).rab_id       = rb_id + 4;
       itti_send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p);
