@@ -45,6 +45,7 @@
 #include "gtpv1u.h"
 #include "NwGtpv1u.h"
 #include "NwGtpv1uMsg.h"
+#include "NwGtpv1uPrivate.h"
 #include "NwLog.h"
 #include "gtpv1u_eNB_defs.h"
 #include "gtpv1_u_messages_types.h"
