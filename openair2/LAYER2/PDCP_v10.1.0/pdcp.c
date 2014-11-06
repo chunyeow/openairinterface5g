@@ -696,7 +696,7 @@ boolean_t pdcp_data_ind(
       gtpu_buffer_p = itti_malloc(TASK_PDCP_ENB, TASK_GTPV1_U,
                sdu_buffer_sizeP - payload_offset + GTPU_HEADER_OVERHEAD_MAX);
       AssertFatal(gtpu_buffer_p != NULL, "OUT OF MEMORY");
-      memcpy(&gtpu_buffer_p[GTPU_HEADER_OVERHEAD_MAX + 8], &sdu_buffer_pP->data[payload_offset], sdu_buffer_sizeP - payload_offset);
+      memcpy(&gtpu_buffer_p[GTPU_HEADER_OVERHEAD_MAX], &sdu_buffer_pP->data[payload_offset], sdu_buffer_sizeP - payload_offset);
       message_p = itti_alloc_new_message(TASK_PDCP_ENB, GTPV1U_ENB_TUNNEL_DATA_REQ);
       AssertFatal(message_p != NULL, "OUT OF MEMORY");
       GTPV1U_ENB_TUNNEL_DATA_REQ(message_p).buffer       = gtpu_buffer_p;
