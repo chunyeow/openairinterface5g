@@ -45,6 +45,7 @@ USER=`whoami`
 BUILD_FROM_MAKEFILE=0
 SUDO=''
 PW=''
+UBUNTU_REL=`lsb_release -r | cut  -f2`
 
 set_build_from_makefile(){
     BUILD_FROM_MAKEFILE=$1   
@@ -127,25 +128,27 @@ make_certs(){
     echo "creating the certificate"
     
     user=$(whoami)
-    HOSTNAME=$(hostname)
+    HOSTNAME=$(hostname -f)
 
     echo "Creating certificate for user '$HOSTNAME'"
     
 # CA self certificate
     openssl req  -new -batch -x509 -days 3650 -nodes -newkey rsa:1024 -out cacert.pem -keyout cakey.pem -subj /CN=eur/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
     
-    openssl genrsa -out user.key.pem 1024
-    openssl req -new -batch -out user.csr.pem -key user.key.pem -subj /CN=$HOSTNAME.eur/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
-    openssl ca -cert cacert.pem -keyfile cakey.pem -in user.csr.pem -out user.cert.pem -outdir . -batch
+   # openssl genrsa -out user.key.pem 1024
+    openssl genrsa -out hss.key.pem 1024
+    #openssl req -new -batch -out user.csr.pem -key user.key.pem -subj /CN=$HOSTNAME.eur/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
+    openssl req -new -batch -out hss.csr.pem -key hss.key.pem -subj /CN=hss.eur/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
+    openssl ca -cert cacert.pem -keyfile cakey.pem -in hss.csr.pem -out hss.cert.pem -outdir . -batch
     
     if [ ! -d /usr/local/etc/freeDiameter ];  then
 	echo "Creating non existing directory: /usr/local/etc/freeDiameter/"
 	$SUDO mkdir /usr/local/etc/freeDiameter/
     fi
     
-    echo "Copying cakey.pem user.key.pem cacert.pem to /usr/local/etc/freeDiameter/"
-    $SUDO cp user.key.pem user.cert.pem cacert.pem /usr/local/etc/freeDiameter/
-    mv user.key.pem user.cert.pem cacert.pem bin/
+    echo "Copying *.pem to /usr/local/etc/freeDiameter/"
+    $SUDO cp *.pem /usr/local/etc/freeDiameter/
+    mv *.pem bin/
     
 # openssl genrsa -out ubuntu.key.pem 1024
 # openssl req -new -batch -x509 -out ubuntu.csr.pem -key ubuntu.key.pem -subj /CN=ubuntu.localdomain/C=FR/ST=BdR/L=Aix/O=fD/OU=Tests
@@ -154,46 +157,49 @@ make_certs(){
 }
 
 check_install_freediamter(){
- 
-    if [ ! -d /usr/local/src/ ]; then
-	echo "/usr/local/src/ doesn't exist please create one"
-	exit -1
-    fi
+    
+    if [ $UBUNTU_REL = "12.04" ]; then 
 
-    if [ ! -w /usr/local/src/ ];  then
-	echo "You don't have permissions to write to /usr/local/src/, installing as a sudoer"
+	if [ ! -d /usr/local/src/ ]; then
+	    echo "/usr/local/src/ doesn't exist please create one"
+	    exit -1
+	fi
+	
+	if [ ! -w /usr/local/src/ ];  then
+	    echo "You don't have permissions to write to /usr/local/src/, installing as a sudoer"
 #	exit -1
+	fi
+	
+	cd /usr/local/src/
+	
+	echo "Downloading nettle archive"
+	
+	if [ -f nettle-2.5.tar.gz ]; then
+	    $SUDO rm -f nettle-2.5.tar.gz
+	fi
+	if [ -f nettle-2.5.tar ]; then
+	    $SUDO rm -f nettle-2.5.tar
+	fi
+	if [ -d nettle-2.5 ];  then
+	    $SUDO rm -rf nettle-2.5/
+	fi
+	
+	
+	$SUDO wget ftp://ftp.lysator.liu.se/pub/security/lsh/nettle-2.5.tar.gz 
+	$SUDO gunzip nettle-2.5.tar.gz 
+	$SUDO echo "Uncompressing nettle archive"
+	$SUDO tar -xf nettle-2.5.tar
+	cd nettle-2.5/
+	$SUDO ./configure --disable-openssl --enable-shared --prefix=/usr 
+	if [ $? -ne 0 ]; then
+	    exit -1
+	fi
+	echo "Compiling nettle"
+	$SUDO make -j $NUM_CPU  
+	$SUDO make check 
+	$SUDO make install 
+	cd ../
     fi
-
-    cd /usr/local/src/
-    
-    echo "Downloading nettle archive"
-    
-    if [ -f nettle-2.5.tar.gz ]; then
-	$SUDO rm -f nettle-2.5.tar.gz
-    fi
-    if [ -f nettle-2.5.tar ]; then
-	$SUDO rm -f nettle-2.5.tar
-    fi
-    if [ -d nettle-2.5 ];  then
-	$SUDO rm -rf nettle-2.5/
-    fi
-     
-
-    $SUDO wget ftp://ftp.lysator.liu.se/pub/security/lsh/nettle-2.5.tar.gz 
-    $SUDO gunzip nettle-2.5.tar.gz 
-    $SUDO echo "Uncompressing nettle archive"
-    $SUDO tar -xf nettle-2.5.tar
-    cd nettle-2.5/
-    $SUDO ./configure --disable-openssl --enable-shared --prefix=/usr 
-    if [ $? -ne 0 ]; then
-	exit -1
-    fi
-    echo "Compiling nettle"
-    $SUDO make -j $NUM_CPU  
-    $SUDO make check 
-    $SUDO make install 
-    cd ../
     
     echo "Downloading gnutls archive"
     
@@ -203,9 +209,9 @@ check_install_freediamter(){
     if [ -d gnutls-3.1.0/ ];  then
 	$SUDO rm -rf gnutls-3.1.0/
     fi
-
+    
     test_uninstall_package libgnutls-dev
-
+    
     $SUDO wget ftp://ftp.gnutls.org/gcrypt/gnutls/v3.1/gnutls-3.1.0.tar.xz 
     $SUDO tar -xf gnutls-3.1.0.tar.xz
     echo "Uncompressing gnutls archive ($PWD)"
@@ -218,7 +224,7 @@ check_install_freediamter(){
     $SUDO make -j $NUM_CPU 
     $SUDO make install 
     cd ../
-
+    
     echo "Downloading freeDiameter archive"
     
     if [ -f 1.1.5.tar.gz ];  then
@@ -245,17 +251,19 @@ check_install_freediamter(){
     $SUDO make test 
     $SUDO sudo make install 
   
-    make_certs
+#    make_certs
    
 }
 
 check_s6a_certificate() {
+    cnt=0
     if [ -d /usr/local/etc/freeDiameter ]; then
-        if [ -f /usr/local/etc/freeDiameter/user.cert.pem ];  then
-            full_hostname=`cat /usr/local/etc/freeDiameter/user.cert.pem | grep "Subject" | grep "CN" | cut -d '=' -f6`
-	    if [ $full_hostname = `hostname`.eur ];   then
+        if [ -f /usr/local/etc/freeDiameter/hss.cert.pem ];  then
+            full_hostname=`cat /usr/local/etc/freeDiameter/hss.cert.pem | grep "Subject" | grep "CN" | cut -d '=' -f6`
+#	    if [ $full_hostname = `hostname`.eur ];   then
+	    if [ $full_hostname = hss.eur ];   then
                 echo_success "S6A: Found valid certificate in /usr/local/etc/freeDiameter"
-                return 1
+                return 0
             fi
         fi
     fi
@@ -263,7 +271,10 @@ check_s6a_certificate() {
     echo_warning "S6A: generatting new certificate in /usr/local/etc/freeDiameter..."
     cd $OPENAIRCN_DIR/S6A/freediameter
     make_certs
-    check_s6a_certificate
+    if [ $cnt = 0 ] ; then
+	cnt=1
+	check_s6a_certificate
+    fi
     return 1
 }
 
@@ -350,6 +361,10 @@ check_install_oai_software() {
 check_install_hss_software() {
     if [ ! -f ./.lock_oaibuild ]; then 
 	$SUDO apt-get update
+	if [ $UBUNTU_REL = "12.04" ]; then 
+	    test_uninstall_package nettle-dev
+	    test_uninstall_package nettle-bin
+	fi 
 	test_install_package autoconf 
 	test_install_package automake 
 	test_install_package bison 
@@ -372,7 +387,7 @@ check_install_hss_software() {
 	test_install_package libsctp1 
 	test_install_package libsctp-dev 
 	test_install_package libxml2-dev 
-	test_install_package linux-headers-`uname -r` 
+#	test_install_package linux-headers-`uname -r` 
 	test_install_package make
 	test_install_package mysql-client-core-5.5 
 	test_install_package mysql-server-core-5.5 
@@ -384,8 +399,8 @@ check_install_hss_software() {
 	test_install_package sshfs
 	test_install_package swig 
 	test_install_package unzip 
-	test_install_package nettle-bin
-	test_install_package nettle-dev
+#	test_install_package nettle-bin
+#	test_install_package nettle-dev
 	test_install_package valgrind 
 
 	if [ $OAI_INSTALLED = 1 ]; then 
@@ -393,7 +408,7 @@ check_install_hss_software() {
 	fi 
 	
     else
-	echo_info "skip the package installations"
+	echo_info "All the required packages installed: skip"
     fi 
 
 }
@@ -402,6 +417,10 @@ check_install_epc_software() {
 
     if [ ! -f ./.lock_oaibuild ]; then 
 	$SUDO apt-get update
+	if [ $UBUNTU_REL = "12.04" ]; then 
+	    test_uninstall_package nettle-dev
+	    test_uninstall_package nettle-bin
+	fi 
 	test_install_package autoconf
 	test_install_package automake
 	test_install_package bison
@@ -467,7 +486,7 @@ check_install_epc_software() {
 	fi 
     
     else
-	echo_info "skip the package installations"
+	echo_info "All the required packages installed: skip"
     fi 
 
 }
@@ -501,6 +520,10 @@ check_install_asn1c(){
 compile_hss() {
     cd $OPENAIRCN_DIR/OPENAIRHSS
     OBJ_DIR=`find . -maxdepth 1 -type d -iname obj*`
+    if [ $1 = 1 ]; then
+	echo_info "build a clean EPC"
+	bash_exec "rm -rf obj"
+    fi
     if [ ! -n "$OBJ_DIR" ]; then
         OBJ_DIR="objs"
         bash_exec "mkdir -m 777 ./$OBJ_DIR"

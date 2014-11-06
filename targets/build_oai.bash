@@ -415,7 +415,7 @@ build_epc(){
 ######################################
 # CHECK MISC SOFTWARES AND LIBS      #
 ######################################
-    echo_info "4.check the required packages for HSS"
+    echo_info "4. check the required packages for HSS"
 
     check_install_epc_software
    
@@ -472,8 +472,9 @@ build_hss(){
 ######################################
 # CHECK MISC SOFTWARES AND LIBS      #
 ######################################
-    echo_info "4.check the required packages for HSS"
-
+    echo_info "4. check the required packages for HSS"
+    hss_certificate_generated=1;
+    
     check_install_hss_software
     
     if [ $OAI_CLEAN = 1 ]; then
@@ -483,13 +484,16 @@ build_hss(){
 	    check_install_freediamter
 	fi
     fi
-    check_s6a_certificate
+    $(make_certs >> bin/install_log.txt  2>&1)
+    output=$(check_s6a_certificate >> bin/install_log.txt  2>&1)
+    hss_certificate_generated=$?
+  
 ######################################
 # compile HSS                        #
 ######################################
-    echo_info "5.compile HSS"
+    echo_info "5. compile HSS"
     
-     output=$(compile_hss  >> bin/install_log.txt  2>&1 )
+     output=$(compile_hss  $OAI_CLEAN >> bin/install_log.txt  2>&1 )
      hss_compiled=$?
      check_for_hss_executable
      echo_info "finished hss target: check the installation log file bin/install_log.txt" 
@@ -497,31 +501,33 @@ build_hss(){
 ######################################
 # fill the HSS DB
 ######################################
-     echo_info "6.create HSS database (for EURECOM SIM CARDS)"
+     echo_info "6. create HSS database (for EURECOM SIM CARDS)"
      hss_db_created=1
-     output=$(create_hss_database)
+     USER="hssadmin"
+     PW=""
+     output=$(create_hss_database $USER $PW )
      hss_db_created=$?
-
+     if [ $hss_db_created = 0 ]; then
+	 echo_warning "hss DB not created"
+     fi
 ######################################
 # install hss
 ######################################
 
-     echo_info "6. install the binary file"
+     echo_info "7. install the binary file"
      if [ $hss_compiled = 0 ]; then
-	 if [ $hss_db_created = 0 ]; then
-	     echo_success "target hss built, DB created  and installed in the bin directory"
-	     echo "target hss built, DB created, and installed in the bin directory"  >>  bin/${oai_build_date}
-	 else 
-	     echo_warning "hss DB not created"
-	 fi
-	 cp -f $OPENAIRCN_DIR/OPENAIRHSS/conf/hss.conf  $OPENAIR_TARGETS/bin
+	 echo_success "target hss built, DB created  and installed in the bin directory"
+	 echo "target hss built, DB created, and installed in the bin directory"  >>  bin/${oai_build_date}
+         cp -rf $OPENAIRCN_DIR/OPENAIRHSS/conf  $OPENAIR_TARGETS/bin
+	 $SUDO cp $OPENAIR_TARGETS/bin/conf/hss_fd.local.conf /etc/openair-hss
      fi
 
 ######################################
 # LAUNCH HSS                         #
 ######################################
-     echo_info "7. run hss"
-     bin/openair-hss -c bin/hss.conf
+     echo_info "8. run hss in bin/:  ./openair-hss -c conf/hss.local.conf"
+     cd bin
+     ./openair-hss -c conf/hss.local.conf
 }
 
 
@@ -530,7 +536,7 @@ build_hss(){
 # set the build 
 ############################################
 
-echo_info "set the top-level build target"
+echo_info "3. set the top-level build target"
 case "$BUILD_LTE" in
     'ENB')           
 	echo_success "build LTE eNB"
