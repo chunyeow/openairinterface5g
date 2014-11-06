@@ -38,6 +38,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/time.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -74,6 +75,68 @@ struct udp_socket_desc_s {
 
 static STAILQ_HEAD(udp_socket_list_s, udp_socket_desc_s) udp_socket_list;
 static pthread_mutex_t udp_socket_list_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+//-----------------------------------------------------------------------------
+void udp_print_hex_octets(unsigned char* dataP, unsigned long sizeP)
+//-----------------------------------------------------------------------------
+{
+  unsigned long octet_index = 0;
+  unsigned long buffer_marker = 0;
+  unsigned char aindex;
+#define UDP_2_PRINT_BUFFER_LEN 8000
+  char udp_2_print_buffer[UDP_2_PRINT_BUFFER_LEN];
+  struct timeval tv;
+  struct timezone tz;
+  char timeofday[64];
+
+  unsigned int h,m,s;
+  if (dataP == NULL) {
+    return;
+  }
+
+  gettimeofday(&tv, &tz);
+  h = tv.tv_sec/3600/24;
+  m = (tv.tv_sec / 60) % 60;
+  s = tv.tv_sec % 60;
+  snprintf(timeofday, 64, "%02d:%02d:%02d.%06d", h,m,s,tv.tv_usec);
+
+  UDP_DEBUG("%s------+-------------------------------------------------|\n",timeofday);
+  UDP_DEBUG("%s      |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n",timeofday);
+  UDP_DEBUG("%s------+-------------------------------------------------|\n",timeofday);
+  for (octet_index = 0; octet_index < sizeP; octet_index++) {
+    if (UDP_2_PRINT_BUFFER_LEN < (buffer_marker + 32))  {
+        buffer_marker+=snprintf(&udp_2_print_buffer[buffer_marker], UDP_2_PRINT_BUFFER_LEN - buffer_marker,
+                "... (print buffer overflow)");
+        UDP_DEBUG("%s%s",timeofday,udp_2_print_buffer);
+        return;
+    }
+    if ((octet_index % 16) == 0){
+      if (octet_index != 0) {
+          buffer_marker+=snprintf(&udp_2_print_buffer[buffer_marker], UDP_2_PRINT_BUFFER_LEN - buffer_marker, " |\n");
+          UDP_DEBUG("%s%s",timeofday, udp_2_print_buffer);
+          buffer_marker = 0;
+      }
+      buffer_marker+=snprintf(&udp_2_print_buffer[buffer_marker], UDP_2_PRINT_BUFFER_LEN - buffer_marker, " %04ld |", octet_index);
+    }
+    /*
+     * Print every single octet in hexadecimal form
+     */
+    buffer_marker+=snprintf(&udp_2_print_buffer[buffer_marker], UDP_2_PRINT_BUFFER_LEN - buffer_marker, " %02x", dataP[octet_index]);
+    /*
+     * Align newline and pipes according to the octets in groups of 2
+     */
+  }
+
+  /*
+   * Append enough spaces and put final pipe
+   */
+  for (aindex = octet_index; aindex < 16; ++aindex)
+    buffer_marker+=snprintf(&udp_2_print_buffer[buffer_marker], UDP_2_PRINT_BUFFER_LEN - buffer_marker, "   ");
+    //GTPU_DEBUG("   ");
+  buffer_marker+=snprintf(&udp_2_print_buffer[buffer_marker], UDP_2_PRINT_BUFFER_LEN - buffer_marker, " |\n");
+  UDP_DEBUG("%s%s",timeofday,udp_2_print_buffer);
+}
+
 
 static void udp_server_receive_and_process(struct udp_socket_desc_s *udp_sock_pP);
 
@@ -284,6 +347,11 @@ static void *udp_intertask_interface(void *args_p)
 
                     udp_data_req_p = &received_message_p->ittiMsg.udp_data_req;
 
+                    UDP_DEBUG("-- UDP_DATA_REQ -----------------------------------------------------\n%s :\n",
+                            __FUNCTION__);
+                    udp_print_hex_octets(&udp_data_req_p->buffer[udp_data_req_p->buffer_offset],
+                            udp_data_req_p->buffer_length);
+
                     memset(&peer_addr, 0, sizeof(struct sockaddr_in));
 
                     peer_addr.sin_family       = AF_INET;
@@ -298,7 +366,7 @@ static void *udp_intertask_interface(void *args_p)
                                 "associated with task %d\n", ITTI_MSG_ORIGIN_ID(received_message_p));
                         pthread_mutex_unlock(&udp_socket_list_mutex);
                         if (udp_data_req_p->buffer) {
-                            free(udp_data_req_p->buffer);
+                            itti_free(ITTI_MSG_ORIGIN_ID(received_message_p),udp_data_req_p->buffer);
                         }
                         goto on_error;
                     }
@@ -310,10 +378,12 @@ static void *udp_intertask_interface(void *args_p)
                             IPV4_ADDR_FORMAT(udp_data_req_p->peer_address),
                             udp_data_req_p->peer_port);
 
-                    bytes_written = sendto(udp_sd, udp_data_req_p->buffer,
+                    bytes_written = sendto(udp_sd, &udp_data_req_p->buffer[udp_data_req_p->buffer_offset],
                                        udp_data_req_p->buffer_length, 0,
                                        (struct sockaddr *)&peer_addr,
                                        sizeof(struct sockaddr_in));
+
+                    itti_free(ITTI_MSG_ORIGIN_ID(received_message_p),udp_data_req_p->buffer);
 
                     if (bytes_written != udp_data_req_p->buffer_length) {
                         UDP_ERROR("There was an error while writing to socket "
