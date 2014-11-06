@@ -63,6 +63,7 @@
 
 #if defined(LINK_PDCP_TO_GTPV1U)
 #  include "gtpv1u_eNB_task.h"
+#  include "gtpv1u.h"
 #endif
 
 #ifndef OAI_EMU
