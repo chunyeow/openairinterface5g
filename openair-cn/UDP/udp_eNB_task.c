@@ -334,7 +334,7 @@ void *udp_eNB_task(void *args_p)
                                 ITTI_MSG_ORIGIN_ID(received_message_p));
                         pthread_mutex_unlock(&udp_socket_list_mutex);
                         if (udp_data_req_p->buffer) {
-                            free(udp_data_req_p->buffer);
+                            itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), udp_data_req_p->buffer);
                         }
                         goto on_error;
                     }
@@ -349,11 +349,13 @@ void *udp_eNB_task(void *args_p)
 
                     bytes_written = sendto(
                         udp_sd,
-                        udp_data_req_p->buffer,
+                        &udp_data_req_p->buffer[udp_data_req_p->buffer_offset],
                         udp_data_req_p->buffer_length,
                         0,
                         (struct sockaddr *)&peer_addr,
                         sizeof(struct sockaddr_in));
+
+                    itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), udp_data_req_p->buffer);
 
                     if (bytes_written != udp_data_req_p->buffer_length) {
                         LOG_E(UDP_, "There was an error while writing to socket "
