@@ -73,12 +73,14 @@ typedef struct {
 typedef struct {
     uint8_t  *buffer;
     uint32_t  length;
+    uint32_t  offset;                       ///< start of message offset in buffer
     Teid_t    local_S1u_teid;               ///< Tunnel Endpoint Identifier
 } Gtpv1uTunnelDataInd;
 
 typedef struct {
     uint8_t  *buffer;
     uint32_t  length;
+    uint32_t  offset;                       ///< start of message offset in buffer
     Teid_t    local_S1u_teid;               ///< Tunnel Endpoint Identifier
     Teid_t    S1u_enb_teid;                 ///< Tunnel Endpoint Identifier
 } Gtpv1uTunnelDataReq;
