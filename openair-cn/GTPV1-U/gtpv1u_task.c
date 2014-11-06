@@ -473,9 +473,9 @@ static void *gtpv1u_thread(void *args)
 
                 data_req_p = &received_message_p->ittiMsg.gtpv1uTunnelDataReq;
 
-                GTPU_DEBUG("-- GTPV1U_TUNNEL_DATA_REQ -----------------------------------------------------\n%s :\n",
-                        __FUNCTION__);
-                gtpu_print_hex_octets(data_req_p->buffer, data_req_p->length);
+                //GTPU_DEBUG("-- GTPV1U_TUNNEL_DATA_REQ -----------------------------------------------------\n%s :\n",
+                //        __FUNCTION__);
+                //gtpu_print_hex_octets(data_req_p->buffer, data_req_p->length);
 
 
                 memset(&stack_req, 0, sizeof(NwGtpv1uUlpApiT));

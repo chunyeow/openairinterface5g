@@ -347,10 +347,10 @@ static void *udp_intertask_interface(void *args_p)
 
                     udp_data_req_p = &received_message_p->ittiMsg.udp_data_req;
 
-                    UDP_DEBUG("-- UDP_DATA_REQ -----------------------------------------------------\n%s :\n",
-                            __FUNCTION__);
-                    udp_print_hex_octets(&udp_data_req_p->buffer[udp_data_req_p->buffer_offset],
-                            udp_data_req_p->buffer_length);
+                    //UDP_DEBUG("-- UDP_DATA_REQ -----------------------------------------------------\n%s :\n",
+                    //        __FUNCTION__);
+                    //udp_print_hex_octets(&udp_data_req_p->buffer[udp_data_req_p->buffer_offset],
+                    //        udp_data_req_p->buffer_length);
 
                     memset(&peer_addr, 0, sizeof(struct sockaddr_in));
 
