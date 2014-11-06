@@ -240,6 +240,7 @@ NwGtpv1uRcT gtpv1u_eNB_process_stack_req(
                                                    buffer, &buffer_len)) {
                 LOG_E(GTPU, "Error while retrieving T-PDU");
             }
+            itti_free(TASK_UDP, ((NwGtpv1uMsgT*)pUlpApi->apiInfo.recvMsgInfo.hMsg)->msgBuf);
 
             //-----------------------
             // GTPV1U->PDCP mapping
