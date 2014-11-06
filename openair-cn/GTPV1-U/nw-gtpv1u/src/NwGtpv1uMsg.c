@@ -143,7 +143,7 @@ nwGtpv1uGpduMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
         pMsg->msgBuf       = tpdu;
         pMsg->msgBufLen    = tpduLength + msgExtraLen + NW_GTPV1U_EPC_MIN_HEADER_SIZE;
         pMsg->msgBufOffset = tpduOffset - (msgExtraLen + NW_GTPV1U_EPC_MIN_HEADER_SIZE);
-        LOG_E(GTPU, "MSG length %u, offset %u -> length %u offset %u\n",
+        GTPU_DEBUG("MSG length %u, offset %u -> length %u offset %u\n",
                 tpduLength, tpduOffset,
                 pMsg->msgBufLen, pMsg->msgBufOffset);
 
