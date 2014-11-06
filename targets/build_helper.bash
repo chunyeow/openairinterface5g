@@ -342,7 +342,7 @@ check_install_oai_software() {
 	fi 
     
      else
-	echo_info "skip the package installations"
+	echo_info "All the required packages installed: skip"
     fi 
     
 }
@@ -425,11 +425,11 @@ check_install_epc_software() {
 	test_install_package libatlas-dev
 	test_install_package libblas
 	test_install_package libblas-dev
-	if [ $MACHINE_ARCH = 64 ]; then
+#	if [ $MACHINE_ARCH = 64 ]; then
             test_install_package libconfig8-dev
-	else
-            test_install_package libconfig-dev
-	fi
+#	else
+#            test_install_package libconfig-dev
+#	fi
 	test_install_package libforms-bin
 	test_install_package libforms-dev
 	test_install_package libgcrypt11-dev
@@ -445,7 +445,7 @@ check_install_epc_software() {
 	test_install_package libtasn1-3-dev
 	test_install_package libxml2
 	test_install_package libxml2-dev
-	test_install_package linux-headers-`uname -r`
+#	test_install_package linux-headers-`uname -r`
 	test_install_package make
 	test_install_package openssh-client
 	test_install_package openssh-server
@@ -525,17 +525,24 @@ compile_hss() {
         make -j $NUM_CPU
         if [ $? -ne 0 ]; then
             echo_error "Build failed, exiting"
-            exit 1
+            return 1
+	else 
+	    cp -f ./openair-hss $OPENAIR_TARGETS/bin
+	    return 0
         fi
     else
         echo_error "Configure failed, exiting"
-        exit 1
+        return 1
     fi
 }
 
 
 compile_epc() {
     cd $OPENAIRCN_DIR
+    if [ $1 = 1 ]; then
+	echo_info "build a clean EPC"
+	bash_exec "rm -rf obj"
+    fi
     OBJ_DIR=`find . -maxdepth 1 -type d -iname obj*`
     if [ ! -n "$OBJ_DIR" ]; then
         OBJ_DIR="objs"
@@ -557,19 +564,22 @@ compile_epc() {
         cd ./$OBJ_DIR
     fi
 
-    pkill oai_epc
-    pkill tshark
+#    pkill oai_epc
+#    pkill tshark
 
     if [ -f Makefile ]; then
         echo_success "Compiling..."
         make -j $NUM_CPU
         if [ $? -ne 0 ]; then
             echo_error "Build failed, exiting"
-            exit 1
-        fi
+            return 1
+        else 
+	    cp -f ./OAI_EPC/oai_epc  $OPENAIR_TARGETS/bin
+	    return 0
+	fi
     else
         echo_error "Configure failed, exiting"
-        exit 1
+        return 1
     fi
 }
 
@@ -650,8 +660,15 @@ check_for_ltesoftmodem_executable() {
 
 check_for_epc_executable() {
     if [ ! -f $OPENAIRCN_DIR/objs/OAI_EPC/oai_epc ]; then
-        echo_error "Cannot find oai_epc executable object in directory $OPENAIR3_DIR/OPENAIRMME/objs/OAI_EPC/"
+        echo_error "Cannot find oai_epc executable object in directory $OPENAIRCN_DIR/objs/OAI_EPC/"
         echo_error "Please make sure you have compiled OAI EPC with --enable-standalone-epc option"
+    fi
+}
+
+check_for_hss_executable() {
+    if [ ! -f $OPENAIRCN_DIR/OPENAIRHSS/objs/openair-hss ]; then
+        echo_error "Cannot find openair-hss executable object in directory $OPENAIRCN_DIR/OPENAIRHSS/objs/"
+        echo_error "Please make sure you have compiled OAI HSS"
     fi
 }
 
@@ -787,10 +804,11 @@ create_hss_database(){
     EXPECTED_ARGS=2
     E_BADARGS=65
     MYSQL=`which mysql`
-    
+    rv=0
     if [ $# -ne $EXPECTED_ARGS ]
     then
         echo_fatal "Usage: $0 dbuser dbpass"
+	rv=1
     fi
 
     set_openair
@@ -800,6 +818,7 @@ create_hss_database(){
     $MYSQL -u $1 --password=$2 -e "$SQL"
     if [ $? -ne 0 ]; then
        echo_error "oai_db creation failed"
+       rv=1
     else
        echo_success "oai_db creation succeeded"
     fi
@@ -807,6 +826,7 @@ create_hss_database(){
     $MYSQL -u $1 --password=$2 oai_db < $OPENAIRCN_DIR/OPENAIRHSS/db/oai_db.sql
     if [ $? -ne 0 ]; then
        echo_error "oai_db tables creation failed"
+       rv=1
     else
        echo_success "oai_db tables creation succeeded"
     fi
@@ -817,9 +837,11 @@ create_hss_database(){
     $MYSQL -u $1 --password=$2 -e "$SQL"
     if [ $? -ne 0 ]; then
        echo_error "hssadmin permissions failed"
+       rv=1
     else
        echo_success "hssadmin permissions succeeded"
     fi
+    return rv
 }
 
 ################################

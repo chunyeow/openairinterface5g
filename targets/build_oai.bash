@@ -406,6 +406,9 @@ build_enb(){
 
 }
 build_epc(){
+
+    epc_compiled=1
+
     
     echo_info "Note: this scripts works only for Ubuntu 12.04"
 
@@ -418,8 +421,12 @@ build_epc(){
    
     check_install_asn1c
     
-    if [ ! -d /usr/local/etc/freeDiameter ]; then
+    if [ $OAI_CLEAN = 1 ]; then
 	check_install_freediamter
+    else 
+	if [ ! -d /usr/local/etc/freeDiameter ]; then
+	    check_install_freediamter
+	fi
     fi
     check_s6a_certificate
 
@@ -427,14 +434,40 @@ build_epc(){
 # configure and compile
 ##########################################
 
-    compile_epc
+    echo_info "5. configure and compile epc"
+
+    output=$(compile_epc $OAI_CLEAN  >> bin/install_log.txt  2>&1 )
+    epc_compiled=$?
+    check_for_epc_executable
+    echo_info "finished epc target: check the installation log file bin/install_log.txt" 
+	    
     
+###########################################
+# install the binary in bin
+##########################################
+
+    echo_info "6. install the binary file"
+
+    if [ $epc_compiled = 0 ]; then 
+	echo_success "target epc built and installed in the bin directory"
+	echo "target epc built and installed in the bin directory"  >>  bin/${oai_build_date}
+	cp -f $OPENAIR_TARGETS/PROJECTS/GENERIC-LTE-EPC/CONF/epc.generic.conf  $OPENAIR_TARGETS/bin
+    fi
+    
+######################################
+# run
+######################################
+    echo_info "7. run EPC (check the bin/epc.generic.conf params)"
+
+    sudo bin/oai_epc -c bin/epc.generic.conf  -K /tmp/itti.log
 
 }
 
 build_hss(){
 
-echo_info "Note: this scripts works only for Ubuntu 12.04"
+    hss_compiled=1
+    
+    echo_info "Note: this scripts works only for Ubuntu 12.04"
 
 ######################################
 # CHECK MISC SOFTWARES AND LIBS      #
@@ -443,8 +476,12 @@ echo_info "Note: this scripts works only for Ubuntu 12.04"
 
     check_install_hss_software
     
-    if [ ! -d /usr/local/etc/freeDiameter ]; then
+    if [ $OAI_CLEAN = 1 ]; then
 	check_install_freediamter
+    else 
+	if [ ! -d /usr/local/etc/freeDiameter ]; then
+	    check_install_freediamter
+	fi
     fi
     check_s6a_certificate
 ######################################
@@ -452,20 +489,39 @@ echo_info "Note: this scripts works only for Ubuntu 12.04"
 ######################################
     echo_info "5.compile HSS"
     
-    compile_hss
-
-
+     output=$(compile_hss  >> bin/install_log.txt  2>&1 )
+     hss_compiled=$?
+     check_for_hss_executable
+     echo_info "finished hss target: check the installation log file bin/install_log.txt" 
+ 
 ######################################
 # fill the HSS DB
 ######################################
-    echo_info "5.compile HSS"
+     echo_info "6.create HSS database (for EURECOM SIM CARDS)"
+     hss_db_created=1
+     output=$(create_hss_database)
+     hss_db_created=$?
 
-    create_hss_database
+######################################
+# install hss
+######################################
+
+     echo_info "6. install the binary file"
+     if [ $hss_compiled = 0 ]; then
+	 if [ $hss_db_created = 0 ]; then
+	     echo_success "target hss built, DB created  and installed in the bin directory"
+	     echo "target hss built, DB created, and installed in the bin directory"  >>  bin/${oai_build_date}
+	 else 
+	     echo_warning "hss DB not created"
+	 fi
+	 cp -f $OPENAIRCN_DIR/OPENAIRHSS/conf/hss.conf  $OPENAIR_TARGETS/bin
+     fi
 
 ######################################
 # LAUNCH HSS                         #
 ######################################
-    $OPENAIRCN_DIR/OPENAIRHSS/objs/openair-hss -c $OPENAIRCN_DIR/OPENAIRHSS/conf/hss.conf
+     echo_info "7. run hss"
+     bin/openair-hss -c bin/hss.conf
 }
 
 
