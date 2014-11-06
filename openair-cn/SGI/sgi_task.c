@@ -92,9 +92,9 @@ static void* sgi_task_thread(void *args_p)
                      */
                     Gtpv1uTunnelDataInd *data_ind_p;
                     data_ind_p = &received_message_p->ittiMsg.gtpv1uTunnelDataInd;
-                    sgi_send_data(data_ind_p->buffer, data_ind_p->length, sgi_data_p, data_ind_p->local_S1u_teid);
+                    sgi_send_data(&data_ind_p->buffer[data_ind_p->offset], data_ind_p->length, sgi_data_p, data_ind_p->local_S1u_teid);
                     /* Buffer is no longer needed, free it */
-                    free(data_ind_p->buffer);
+                    itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), data_ind_p->buffer);
                 }
                 break;
                 case SGI_CREATE_ENDPOINT_REQUEST: {

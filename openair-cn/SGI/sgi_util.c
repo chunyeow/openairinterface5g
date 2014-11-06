@@ -42,6 +42,7 @@
 #include <netinet/in.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
+#include <sys/time.h>
 #include "sgi.h"
 
 #define FW_2_PRINT_BUFFER_LEN 10000
@@ -50,24 +51,32 @@ static char fw_2_print_buffer[FW_2_PRINT_BUFFER_LEN];
 void sgi_print_hex_octets(unsigned char* dataP, unsigned long sizeP)
 //-----------------------------------------------------------------------------
 {
-  return;
   unsigned long octet_index = 0;
   unsigned long buffer_marker = 0;
   unsigned char aindex;
+  struct timeval tv;
+  struct timezone tz;
+  char timeofday[64];
+  unsigned int h,m,s;
 
   if (dataP == NULL) {
     return;
   }
 
+  gettimeofday(&tv, &tz);
+  h = tv.tv_sec/3600/24;
+  m = (tv.tv_sec / 60) % 60;
+  s = tv.tv_sec % 60;
+  snprintf(timeofday, 64, "%02d:%02d:%02d.%06d", h,m,s,tv.tv_usec);
 
-  SGI_IF_DEBUG("------+-------------------------------------------------|\n");
-  SGI_IF_DEBUG("      |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n");
-  SGI_IF_DEBUG("------+-------------------------------------------------|\n");
+  SGI_IF_DEBUG("%s------+-------------------------------------------------|\n",timeofday);
+  SGI_IF_DEBUG("%s      |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n",timeofday);
+  SGI_IF_DEBUG("%s------+-------------------------------------------------|\n",timeofday);
   for (octet_index = 0; octet_index < sizeP; octet_index++) {
     if ((octet_index % 16) == 0){
       if (octet_index != 0) {
           buffer_marker+=snprintf(&fw_2_print_buffer[buffer_marker], FW_2_PRINT_BUFFER_LEN - buffer_marker, " |\n");
-          SGI_IF_DEBUG("%s", fw_2_print_buffer);
+          SGI_IF_DEBUG("%s%s",timeofday, fw_2_print_buffer);
           buffer_marker = 0;
       }
       buffer_marker+=snprintf(&fw_2_print_buffer[buffer_marker], FW_2_PRINT_BUFFER_LEN - buffer_marker, " %04ld |", octet_index);
@@ -88,7 +97,7 @@ void sgi_print_hex_octets(unsigned char* dataP, unsigned long sizeP)
     buffer_marker+=snprintf(&fw_2_print_buffer[buffer_marker], FW_2_PRINT_BUFFER_LEN - buffer_marker, "   ");
     //SGI_IF_DEBUG("   ");
   buffer_marker+=snprintf(&fw_2_print_buffer[buffer_marker], FW_2_PRINT_BUFFER_LEN - buffer_marker, " |\n");
-  SGI_IF_DEBUG("%s",fw_2_print_buffer);
+  SGI_IF_DEBUG("%s%s",timeofday,fw_2_print_buffer);
 }
 
 //-----------------------------------------------------------------------------

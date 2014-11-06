@@ -314,6 +314,8 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
         //SGI_IF_ERROR("%s UNHANDLED ether type %d of incoming egress packet\n", __FUNCTION__, eh_p->ether_type);
         return;
     }
+    SGI_IF_DEBUG("--------------------------------------------------------------\n%s :\n", __FUNCTION__);
+    sgi_print_hex_octets(data_pP+sizeof(sgi_data_pP->eh), packet_sizeP - sizeof(sgi_data_pP->eh));
 
     message_p               = itti_alloc_new_message(TASK_FW_IP, GTPV1U_TUNNEL_DATA_REQ);
     if (message_p == NULL) {
@@ -321,12 +323,12 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
         return;
     }
     AssertFatal((packet_sizeP - sizeof(sgi_data_pP->eh)) > 20, "BAD IP PACKET SIZE");
-    message_payload_p = itti_malloc(TASK_FW_IP, TASK_GTPV1_U, packet_sizeP - sizeof(sgi_data_pP->eh));
+    message_payload_p = itti_malloc(TASK_FW_IP, TASK_GTPV1_U, packet_sizeP - sizeof(sgi_data_pP->eh) + GTPU_HEADER_OVERHEAD_MAX);
     if (message_payload_p == NULL) {
         SGI_IF_ERROR("%s OUT OF MEMORY DROP EGRESS PACKET\n", __FUNCTION__);
         return;
     }
-    memcpy(message_payload_p, data_pP+sizeof(sgi_data_pP->eh), packet_sizeP - sizeof(sgi_data_pP->eh));
+    memcpy(message_payload_p + GTPU_HEADER_OVERHEAD_MAX, data_pP+sizeof(sgi_data_pP->eh), packet_sizeP - sizeof(sgi_data_pP->eh));
 
     gtpv1u_tunnel_data_req_p = &message_p->ittiMsg.gtpv1uTunnelDataReq;
     gtpv1u_tunnel_data_req_p->S1u_enb_teid   = addr_mapping_p->enb_S1U_teid;
@@ -334,6 +336,7 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
 //    gtpv1u_tunnel_data_req_p->S1u_enb_teid   = 1;
     gtpv1u_tunnel_data_req_p->local_S1u_teid = addr_mapping_p->sgw_S1U_teid;
     gtpv1u_tunnel_data_req_p->length       = packet_sizeP - sizeof(sgi_data_pP->eh);
+    gtpv1u_tunnel_data_req_p->offset       = GTPU_HEADER_OVERHEAD_MAX;
     gtpv1u_tunnel_data_req_p->buffer       = message_payload_p;
     SGI_IF_DEBUG("%s send GTPV1U_TUNNEL_DATA_REQ to GTPV1U S1u_enb_teid %u local_S1u_teid %u size %u\n",
             __FUNCTION__,
