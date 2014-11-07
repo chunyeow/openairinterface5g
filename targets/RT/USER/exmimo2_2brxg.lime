@@ -3,8 +3,8 @@
 # the three lines in this file gives the total rx gain in dB for the three gain stages if the rx gain is set to 30dB
 # this is for Express MIMO2 without any additional RF frontend
 # high gain
-124 124 124 124
+128 128 128 126
 # med gain
-118 118 118 118 
+122 123 123 120
 # low gain (byp)
-109 109 109 109
+116 117 116 116

@@ -2400,20 +2400,20 @@ static void get_options (int argc, char **argv) {
   int clock_src;
 #endif
   int CC_id;
+  char rxg_fname[256], line[1000];
+  FILE *rxg_fd;
+  int l;
 
   const Enb_properties_array_t *enb_properties;
   
   enum long_option_e {
     LONG_OPTION_START = 0x100, /* Start after regular single char options */
-    
     LONG_OPTION_ULSCH_MAX_CONSECUTIVE_ERRORS,
     LONG_OPTION_CALIB_UE_RX,
     LONG_OPTION_CALIB_UE_RX_MED,
     LONG_OPTION_CALIB_UE_RX_BYP,
-    
     LONG_OPTION_DEBUG_UE_PRACH,
-    
-    LONG_OPTION_NO_L2_CONNECT,
+    LONG_OPTION_NO_L2_CONNECT
   };
   
   static const struct option long_options[] = {
@@ -2425,7 +2425,7 @@ static void get_options (int argc, char **argv) {
     {"no-L2-connect",   no_argument,        NULL, LONG_OPTION_NO_L2_CONNECT},
     {NULL, 0, NULL, 0}};
   
-  while ((c = getopt_long (argc, argv, "C:dK:g:G:qO:m:SUVRMr:s:t:",long_options,NULL)) != -1) {
+  while ((c = getopt_long (argc, argv, "C:dK:g:F:G:qO:m:SUVRMr:s:t:",long_options,NULL)) != -1) {
     switch (c) {
     case LONG_OPTION_ULSCH_MAX_CONSECUTIVE_ERRORS:
       ULSCH_max_consecutive_errors = atoi(optarg);
@@ -2553,6 +2553,27 @@ static void get_options (int argc, char **argv) {
     case 'g':
       glog_level=atoi(optarg); // value between 1 - 9
       break;
+
+    case 'F':
+      sprintf(rxg_fname,"%srxg.lime",optarg);
+      rxg_fd = fopen(rxg_fname,"r");
+      if (rxg_fd) {
+	printf("Loading RX Gain parameters from %s\n",rxg_fname);
+	l=0;
+	while (fgets(line, sizeof(line), rxg_fd)) {
+	  if ((strlen(line)==0) || (*line == '#')) continue; //ignore empty or comment lines
+	  else {
+	    if (l==0) sscanf(line,"%d %d %d %d",&rxg_max[0],&rxg_max[1],&rxg_max[2],&rxg_max[3]);
+	    if (l==1) sscanf(line,"%d %d %d %d",&rxg_med[0],&rxg_med[1],&rxg_med[2],&rxg_med[3]);
+	    if (l==2) sscanf(line,"%d %d %d %d",&rxg_byp[0],&rxg_byp[1],&rxg_byp[2],&rxg_byp[3]);
+	    l++;
+	  }
+	}
+      }
+      else 
+	printf("%s not found, running with defaults\n",rxg_fname);
+      break;
+      
     case 'G':
       glog_verbosity=atoi(optarg);// value from 0, 0x5, 0x15, 0x35, 0x75
       break;
