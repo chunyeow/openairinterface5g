@@ -51,6 +51,14 @@ for idx=1:length(d1)
     NF2=[NF0_2600_interp(sub2ind(size(NF0_2600_interp),data2{idx}(:,16),data2{idx}(:,15)+1,ones(length(data2{idx}),1))) ...
         NF0_2600_interp(sub2ind(size(NF0_2600_interp),data2{idx}(:,22),data2{idx}(:,21)+1,ones(length(data2{idx}),1))) ...
         NF0_2600_interp(sub2ind(size(NF0_2600_interp),data2{idx}(:,28),data2{idx}(:,27)+1,ones(length(data2{idx}),1)))];
+    G1=[G0_800_interp(sub2ind(size(G0_800_interp),data1{idx}(:,16),data1{idx}(:,15)+1,ones(length(data1{idx}),1)))];
+    G2=[G0_2600_interp(sub2ind(size(G0_2600_interp),data2{idx}(:,16),data2{idx}(:,15)+1,ones(length(data2{idx}),1))) ...
+        G0_2600_interp(sub2ind(size(G0_2600_interp),data2{idx}(:,22),data2{idx}(:,21)+1,ones(length(data2{idx}),1))) ...
+        G0_2600_interp(sub2ind(size(G0_2600_interp),data2{idx}(:,28),data2{idx}(:,27)+1,ones(length(data2{idx}),1)))];
+    % digital noise power in dB
+    N1 = -174 + 10*log10(7.68e6) + NF1 + G1; 
+    N2 = repmat(-174+10*log10([30.72e6 30.72e6 15.36e6]),length(NF2),1) + NF2 + G2; 
+    
     
     %% plot gps coordinates
     h=figure(idx*10+1);
@@ -84,11 +92,11 @@ for idx=1:length(d1)
     % TODO: convert time (in unix epoch) into something more meaninful
     h=figure(idx*10+5);
     hold off
-    plot(rtime1,smooth(NF1,100),'r')
+    plot(rtime1,smooth(N1,100),'r')
     hold on
-    plot(rtime2,smooth(NF2(:,1),100),'b')
-    plot(rtime2,smooth(NF2(:,2),100),'c')
-    plot(rtime2,smooth(NF2(:,3),100),'m')
+    plot(rtime2,smooth(N2(:,1),100),'b')
+    plot(rtime2,smooth(N2(:,2),100),'c')
+    plot(rtime2,smooth(N2(:,3),100),'m')
     legend('UHF','2.6GHz card 1','2.6GHz card 2','2.6GHz card 3');
     xlabel('time [seconds]')
     ylabel('NF [dB]')
