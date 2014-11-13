@@ -127,12 +127,12 @@ oai.rm_driver(oai,user,pw)
 # start te test cases 
 rv=case01.execute(oai, user, pw, host,logfile,logdir,debug)
 if rv != 0 :
-case02.execute(oai, user, pw, host, logfile,logdir,debug)
-case03.execute(oai, user, pw, host, logfile,logdir,debug)
-case04.execute(oai, user, pw, host, logfile,logdir,debug)
-#case05.execute(oai, user, pw, host, logfile,logdir,debug)
-#else :
-#    print 'Compilation error: skip test case 02,03,04,05'
+    case02.execute(oai, user, pw, host, logfile,logdir,debug)
+    case03.execute(oai, user, pw, host, logfile,logdir,debug)
+    case04.execute(oai, user, pw, host, logfile,logdir,debug)
+    #case05.execute(oai, user, pw, host, logfile,logdir,debug)
+else :
+    print 'Compilation error: skip test case 02,03,04,05'
 
 oai.kill(user, pw) 
 oai.rm_driver(oai,user,pw)
