@@ -337,6 +337,7 @@ int multi_thread=1;
 uint32_t target_dl_mcs = 28; //maximum allowed mcs
 uint32_t target_ul_mcs = 10;
 
+int transmission_mode=1;
 
 int16_t           glog_level         = LOG_DEBUG;
 int16_t           glog_verbosity     = LOG_MED;
@@ -1412,7 +1413,7 @@ static void *eNB_thread(void *arg)
 	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_TXCNT,tx_cnt);
 	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_RXCNT,rx_cnt*samples_per_packets);
 
-	printf("hw_subframe %d: rx_cnt %d\n",hw_subframe,rx_cnt);
+	//	printf("hw_subframe %d: rx_cnt %d\n",hw_subframe,rx_cnt);
 
 	for (i=0;i<PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_rx;i++)
 	  rxp[i] = (void*)&rxdata[i][rx_cnt*samples_per_packets];
@@ -1426,7 +1427,7 @@ static void *eNB_thread(void *arg)
 	if (rxs != samples_per_packets)
 	  oai_exit=1;
  
-	printf("hw_subframe %d: tx_cnt %d\n",hw_subframe,tx_cnt);
+	//	printf("hw_subframe %d: tx_cnt %d\n",hw_subframe,tx_cnt);
 
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,0);
 
@@ -2425,7 +2426,7 @@ static void get_options (int argc, char **argv) {
     {"no-L2-connect",   no_argument,        NULL, LONG_OPTION_NO_L2_CONNECT},
     {NULL, 0, NULL, 0}};
   
-  while ((c = getopt_long (argc, argv, "C:dK:g:F:G:qO:m:SUVRMr:s:t:",long_options,NULL)) != -1) {
+  while ((c = getopt_long (argc, argv, "C:dK:g:F:G:qO:m:SUVRMr:s:t:x:",long_options,NULL)) != -1) {
     switch (c) {
     case LONG_OPTION_ULSCH_MAX_CONSECUTIVE_ERRORS:
       ULSCH_max_consecutive_errors = atoi(optarg);
@@ -2555,6 +2556,7 @@ static void get_options (int argc, char **argv) {
       break;
 
     case 'F':
+#ifdef EXMIMO
       sprintf(rxg_fname,"%srxg.lime",optarg);
       rxg_fd = fopen(rxg_fname,"r");
       if (rxg_fd) {
@@ -2572,10 +2574,18 @@ static void get_options (int argc, char **argv) {
       }
       else 
 	printf("%s not found, running with defaults\n",rxg_fname);
+#endif
       break;
       
     case 'G':
       glog_verbosity=atoi(optarg);// value from 0, 0x5, 0x15, 0x35, 0x75
+      break;
+    case 'x':
+      transmission_mode = atoi(optarg);
+      if (transmission_mode > 2) {
+	printf("Transmission mode > 2 (%d) not supported for the moment\n",transmission_mode);
+	exit(-1);
+      }
       break;
     default:
       break;
@@ -2607,8 +2617,11 @@ static void get_options (int argc, char **argv) {
 	frame_parms[CC_id]->Ncp =              enb_properties->properties[i]->prefix_type[CC_id];
 	
 	//for (j=0; j < enb_properties->properties[i]->nb_cc; j++ ){
-	frame_parms[CC_id]->Nid_cell          =  enb_properties->properties[i]->Nid_cell[CC_id];
-	frame_parms[CC_id]->N_RB_DL          =  enb_properties->properties[i]->N_RB_DL[CC_id];
+	frame_parms[CC_id]->Nid_cell            =  enb_properties->properties[i]->Nid_cell[CC_id];
+	frame_parms[CC_id]->N_RB_DL             =  enb_properties->properties[i]->N_RB_DL[CC_id];
+	frame_parms[CC_id]->nb_antennas_tx      =  enb_properties->properties[i]->nb_antennas_tx[CC_id];
+	frame_parms[CC_id]->nb_antennas_tx_eNB  =  enb_properties->properties[i]->nb_antennas_tx[CC_id];
+	frame_parms[CC_id]->nb_antennas_rx      =  enb_properties->properties[i]->nb_antennas_rx[CC_id];
 	//} // j
       }
 
@@ -2663,7 +2676,7 @@ int main(int argc, char **argv) {
   
   int CC_id;
   uint16_t Nid_cell = 0;
-  uint8_t  cooperation_flag=0, transmission_mode=1, abstraction_flag=0;
+  uint8_t  cooperation_flag=0,  abstraction_flag=0;
 #ifndef OPENAIR2
   uint8_t beta_ACK=0,beta_RI=0,beta_CQI=2;
 #endif
@@ -2811,28 +2824,14 @@ int main(int argc, char **argv) {
     frame_parms[CC_id]->nushift            = 0;
     if (UE_flag==0)
       {
-	switch (transmission_mode) {
-	case 1: 
-	  frame_parms[CC_id]->nb_antennas_tx     = 1;
-	  frame_parms[CC_id]->nb_antennas_rx     = 1;
-	  break;
-	case 2:
-	case 5:
-	case 6:
-	  frame_parms[CC_id]->nb_antennas_tx     = 2;
-	  frame_parms[CC_id]->nb_antennas_rx     = 2;
-	  break;
-	default:
-	  printf("Unsupported transmission mode %d\n",transmission_mode);
-	  exit(-1);
-	}
+
       }
     else
       { //UE_flag==1
 	frame_parms[CC_id]->nb_antennas_tx     = 1;
 	frame_parms[CC_id]->nb_antennas_rx     = 1;
+	frame_parms[CC_id]->nb_antennas_tx_eNB = (transmission_mode == 1) ? 1 : 2; //initial value overwritten by initial sync later
       }
-    frame_parms[CC_id]->nb_antennas_tx_eNB = (transmission_mode == 1) ? 1 : 2; //initial value overwritten by initial sync later
     frame_parms[CC_id]->mode1_flag         = (transmission_mode == 1) ? 1 : 0;
     frame_parms[CC_id]->phich_config_common.phich_resource = oneSixth;
     frame_parms[CC_id]->phich_config_common.phich_duration = normal;
@@ -3059,8 +3058,12 @@ int main(int argc, char **argv) {
   
 
   for (card=0;card<MAX_CARDS;card++) {
-
-    printf("HW: Configuring card %d\n",card); 
+#ifndef EXMIMO
+    openair0_cfg[card].samples_per_packet = samples_per_packets;
+#endif
+    printf("HW: Configuring card %d, nb_antennas_tx/rx %d/%d\n",card,
+	   ((UE_flag==0) ? PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_tx : PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_tx),
+	   ((UE_flag==0) ? PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_rx : PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_rx)); 
     openair0_cfg[card].Mod_id = 0;
 #ifdef ETHERNET
     printf("ETHERNET: Configuring ETH for %s:%d\n",rrh_ip,rrh_port);
@@ -3309,13 +3312,13 @@ int main(int argc, char **argv) {
 #ifndef RTAI
   pthread_attr_init (&attr_dlsch_threads);
   pthread_attr_setstacksize(&attr_dlsch_threads,OPENAIR_THREAD_STACK_SIZE);
-  sched_param_dlsch.sched_priority = 90;//sched_get_priority_max(SCHED_FIFO); //OPENAIR_THREAD_PRIORITY;
+  sched_param_dlsch.sched_priority = sched_get_priority_max(SCHED_FIFO); //OPENAIR_THREAD_PRIORITY;
   pthread_attr_setschedparam  (&attr_dlsch_threads, &sched_param_dlsch);
   pthread_attr_setschedpolicy (&attr_dlsch_threads, SCHED_FIFO);
 
   pthread_attr_init (&attr_UE_init_synch);
   pthread_attr_setstacksize(&attr_UE_init_synch,OPENAIR_THREAD_STACK_SIZE);
-  sched_param_UE_init_synch.sched_priority = 90;//sched_get_priority_max(SCHED_FIFO); //OPENAIR_THREAD_PRIORITY;
+  sched_param_UE_init_synch.sched_priority = sched_get_priority_max(SCHED_FIFO); //OPENAIR_THREAD_PRIORITY;
   pthread_attr_setschedparam  (&attr_UE_init_synch, &sched_param_UE_init_synch);
   pthread_attr_setschedpolicy (&attr_UE_init_synch, SCHED_FIFO);
 
@@ -3571,18 +3574,20 @@ int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg,
   
 #else
     // replace RX signal buffers with mmaped HW versions
+    rxdata = (int32_t**)malloc16(frame_parms->nb_antennas_rx*sizeof(int32_t*));
+    txdata = (int32_t**)malloc16(frame_parms->nb_antennas_tx*sizeof(int32_t*));
     for (i=0;i<frame_parms->nb_antennas_rx;i++) {
       printf("Mapping UE CC_id %d, rx_ant %d, freq %u on card %d, chain %d\n",CC_id,i,downlink_frequency[CC_id][i],rf_map[CC_id].card,rf_map[CC_id].chain+i);
       free(phy_vars_ue[CC_id]->lte_ue_common_vars.rxdata[i]);
-      rxdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
-      phy_vars_ue[CC_id]->lte_ue_common_vars.rxdata[i] = rxdata-N_TA_offset; // N_TA offset for TDD
+      rxdata[i] = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
+      phy_vars_ue[CC_id]->lte_ue_common_vars.rxdata[i] = rxdata[i]-N_TA_offset; // N_TA offset for TDD
     }
     for (i=0;i<frame_parms->nb_antennas_tx;i++) {
       printf("Mapping UE CC_id %d, tx_ant %d, freq %u on card %d, chain %d\n",CC_id,i,downlink_frequency[CC_id][i],rf_map[CC_id].card,rf_map[CC_id].chain+i);
       free(phy_vars_ue[CC_id]->lte_ue_common_vars.txdata[i]);
-      txdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
-      phy_vars_ue[CC_id]->lte_ue_common_vars.txdata[i] = txdata;
-      memset(txdata, 0, samples_per_frame*sizeof(int32_t));
+      txdata[i] = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
+      phy_vars_ue[CC_id]->lte_ue_common_vars.txdata[i] = txdata[i];
+      memset(txdata[i], 0, samples_per_frame*sizeof(int32_t));
     }
     
 #endif
@@ -3677,18 +3682,21 @@ int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_c
       }
     }
 #else // not EXMIMO
+    rxdata = (int32_t**)malloc16(frame_parms->nb_antennas_rx*sizeof(int32_t*));
+    txdata = (int32_t**)malloc16(frame_parms->nb_antennas_tx*sizeof(int32_t*));
+
     for (i=0;i<frame_parms->nb_antennas_rx;i++) {
       free(phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i]);
-      rxdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
-      phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i] = rxdata-N_TA_offset; // N_TA offset for TDD
-      memset(rxdata, 0, samples_per_frame*sizeof(int32_t));
-      printf("rxdata[%d] @ %p (%p) (N_TA_OFFSET %d)\n", i, phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i],rxdata,N_TA_offset);
+      rxdata[i] = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
+      phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i] = rxdata[i]-N_TA_offset; // N_TA offset for TDD
+      memset(rxdata[i], 0, samples_per_frame*sizeof(int32_t));
+      printf("rxdata[%d] @ %p (%p) (N_TA_OFFSET %d)\n", i, phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i],rxdata[i],N_TA_offset);
     }
     for (i=0;i<frame_parms->nb_antennas_tx;i++) {
       free(phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i]);
-      txdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
-      phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i] = txdata;
-      memset(txdata, 0, samples_per_frame*sizeof(int32_t));
+      txdata[i] = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
+      phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i] = txdata[i];
+      memset(txdata[i], 0, samples_per_frame*sizeof(int32_t));
       printf("txdata[%d] @ %p\n", i, phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i]);
 
     }
