@@ -208,7 +208,13 @@ else
         bash ./init_exmimo2.sh
         echo_warning "STARTING SOFTMODEM..."
         #cat /dev/rtf62 > $STDOUT_LOG_FILE &
-        gdb --args ./lte-softmodem -K $ITTI_LOG_FILE -V  -O $CONFIG_FILE_ENB  2>&1
+        touch ~/.gdbinit
+        echo "file $OPENAIR_TARGETS/RT/USER/lte-softmodem" > ~/.gdbinit
+        echo "set args -K $ITTI_LOG_FILE -V  -O $CONFIG_FILE_ENB" >> ~/.gdbinit
+        echo "run" >> ~/.gdbinit
+        gdb  2>&1 
+         #> $STDOUT_LOG_FILE
+        #gdb --args ./lte-softmodem -K $ITTI_LOG_FILE -V  -O $CONFIG_FILE_ENB  2>&1
         cd $THIS_SCRIPT_PATH
     else
         if [ x$real_time == "xlinux-kernel" ]; then
