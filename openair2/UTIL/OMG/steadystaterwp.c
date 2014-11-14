@@ -529,8 +529,8 @@ update_steadystaterwp_nodes (double cur_time)
 
       //case1:time to next event equals to current time    
       if (tmp->pair != NULL
-	  && ((double) tmp->pair->next_event_t >= cur_time - eps)
-	  && ((double) tmp->pair->next_event_t <= cur_time + eps))
+	  && ((double) tmp->pair->next_event_t >= cur_time - omg_eps)
+	  && ((double) tmp->pair->next_event_t <= cur_time + omg_eps))
 	{
 	  if (my_node->mobile == 1)
 	    sleep_rwp_node (tmp->pair, cur_time);
@@ -541,7 +541,7 @@ update_steadystaterwp_nodes (double cur_time)
       //case2: current time is greater than the time to next event
 
       else if (tmp->pair != NULL
-	       && (cur_time - eps) > tmp->pair->next_event_t)
+	       && (cur_time - omg_eps) > tmp->pair->next_event_t)
 	{
 
 	  while (cur_time >= tmp->pair->next_event_t)

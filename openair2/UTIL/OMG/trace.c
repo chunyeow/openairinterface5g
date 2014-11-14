@@ -296,7 +296,7 @@ update_trace_nodes (double cur_time)
 
       
       //case1:time to next event equals to current time      
-      if (tmp->pair != NULL && tmp->pair->next_event_t >= cur_time - eps
+      if (tmp->pair != NULL && tmp->pair->next_event_t >= cur_time - omg_eps
 	  && tmp->pair->next_event_t <= cur_time )
 	{
 	  if (node_n->next->next == NULL)

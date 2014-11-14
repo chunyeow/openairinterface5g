@@ -74,7 +74,7 @@ MAX_NUM_NODE_TYPES /*!< All the types. Used to perform the same operations to al
 
 //#define eps 0.00000095367431649629
 /*! A constant used to compare two doubles */
-#define eps 0.10 //10.99
+#define omg_eps 0.10 //10.99
 
 #define SLEEP 1
 #define GET_DATA 0
