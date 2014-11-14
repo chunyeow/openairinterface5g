@@ -365,6 +365,8 @@ void sctp_send_data(
     struct sctp_cnx_list_elm_s *sctp_cnx = NULL;
 
     DevAssert(sctp_data_req_p != NULL);
+    DevAssert(sctp_data_req_p->buffer != NULL);
+    DevAssert(sctp_data_req_p->buffer_length > 0);
 
     sctp_cnx = sctp_get_cnx(sctp_data_req_p->assoc_id, 0);
 
