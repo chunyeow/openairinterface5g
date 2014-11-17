@@ -152,41 +152,19 @@ bash_exec() {
 }
 
 set_openair() {
-    path=`pwd`
-    declare -i length_path
-    declare -i index
-    length_path=${#path}
+     fullpath=`readlink -f $BASH_SOURCE`
+     [ -f "/.$fullpath" ] || fullpath=`readlink -f $PWD/$fullpath`
+     openair_path=${fullpath%/targets/*}
+     openair_path=${openair_path%/openair-cn/*}
+     openair_path=${openair_path%/openair[123]/*}
 
-    index=`echo $path | grep -b -o 'targets' | cut -d: -f1`
-    #echo ${path%$token*}
-    if [[ $index -lt $length_path  && index -gt 0 ]]
-       then
-           declare -x OPENAIR_DIR
-           index=`expr $index - 1`
-           openair_path=`echo $path | cut -c1-$index`
-           #openair_path=`echo ${path:0:$index}`
-           export OPENAIR_DIR=$openair_path
-           export OPENAIR1_DIR=$openair_path/openair1
-           export OPENAIR2_DIR=$openair_path/openair2
-           export OPENAIR3_DIR=$openair_path/openair3
-           export OPENAIR_TARGETS=$openair_path/targets
-           return 0
-    fi
-    index=`echo $path | grep -b -o 'openair3' | cut -d: -f1`
-    if [[ $index -lt $length_path  && index -gt 0 ]]
-       then
-           declare -x OPENAIR_DIR
-           index=`expr $index - 1`
-           openair_path=`echo $path | cut -c1-$index`
-           #openair_path=`echo ${path:0:$index}`
-           export OPENAIR_DIR=$openair_path
-           export OPENAIR1_DIR=$openair_path/openair1
-           export OPENAIR2_DIR=$openair_path/openair2
-           export OPENAIR3_DIR=$openair_path/openair3
-           export OPENAIR_TARGETS=$openair_path/targets
-           return 0
-    fi
-    return -1
+     export OPENAIR_DIR=$openair_path
+     export OPENAIR_HOME=$openair_path
+     export OPENAIR1_DIR=$openair_path/openair1
+     export OPENAIR2_DIR=$openair_path/openair2
+     export OPENAIR3_DIR=$openair_path/openair3
+     export OPENAIRCN_DIR=$openair_path/openair-cn
+     export OPENAIR_TARGETS=$openair_path/targets
 }
 
 wait_process_started () {
