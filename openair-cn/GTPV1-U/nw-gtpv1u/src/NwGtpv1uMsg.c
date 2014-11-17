@@ -183,9 +183,7 @@ nwGtpv1uGpduMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
         // i.e. included in the length count.
         //header_len          = ((pMsg->seqNumFlag || pMsg->npduNumFlag || pMsg->extHdrFlag ) ?
         //                        NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE : NW_GTPV1U_EPC_MIN_HEADER_SIZE);
-        //pMsg->msgLen        = ((pMsg->seqNumFlag || pMsg->npduNumFlag
-        //                        || pMsg->extHdrFlag ) ?
-        //                        (NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE - NW_GTPV1U_EPC_MIN_HEADER_SIZE) + tpduLength : tpduLength);
+        pMsg->msgLen        = msgExtraLen + tpduLength;
 
         // Tunnel Endpoint Identifier (TEID): This field unambiguously identifies a tunnel endpoint in the receiving
         // GTP-U protocol entity. The receiving end side of a GTP tunnel locally assigns the TEID value the transmitting
