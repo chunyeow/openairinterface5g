@@ -39,24 +39,17 @@
 #export LM_LICENSE_FILE
 
 KERNEL_NAME=$(shell uname -r)
-NUM_CORES=$(shell cat /proc/cpuinfo | grep processor | wc -l)
+NUM_CORES=$(shell getconf _NPROCESSORS_CONF)
 
-export IS_KERNEL_OPENAIRINTERFACE=$(shell if [ `uname -r | cut -d. -f5` = "openairinterface" ] ; then echo "1" ; else echo "0" ; fi)
-
-export IS_LINUX=$(shell if [ -d /usr/src/linux ] ; then  echo "1" ; else  echo "0" ; fi)
-
-ifeq ($(IS_LINUX), 1)
-export LINUX_KERNEL = linux
-else
-ifeq ($(IS_KERNEL_OPENAIRINTERFACE), 1)
-export LINUX_KERNEL = linux-`uname -r`
-else
-export LINUX_KERNEL = linux-headers-`uname -r`
-endif
-endif
+LINUX_KERNEL=$(shell for dir in /lib/modules/linux-headers-`uname -r` /usr/src/linux-`uname -r` /usr/src/linux-headers-`uname -r` ; do \
+                         if [ -d $$dir ] ; then \
+                            echo $$dir ; exit 0 ;  \
+                         fi \
+                     done ;\
+                     echo "LINUX_KERNEL DIRECTORY NOT FOUND: check the makefile" ; exit 1\
+              ) 
 
 export SET_UM=$(shell if grep --silent User\ Mode\ Linux /proc/cpuinfo ; then echo "ARCH=um" ; else echo ""; fi)
-
 
 #SUBDIRS_openair_USERRF  =   $(MAIN_RT_DIR) $(CONFIG_DIR)
 
@@ -81,44 +74,44 @@ mac_sim_rg_cellular:
 	( cd SIMULATION/USER_TOOLS/LAYER2_SIM && make mac_sim_rg MASTER=1 CELLULAR=1 NO_RRM=1)
 
 openair_layer2_emul.ko:
-	(cd LAYER2 && $(MAKE) V=1 -C /usr/src/linux-$(shell echo `uname -r`)  M=`pwd` NO_RRM=1 PCTARGET=1 RTAI=1 MASTER=1 OPEN_AIR=1 PHYEMUL=1 && mv openair_l2.ko openair_layer2.ko)
+	(cd LAYER2 && $(MAKE) V=1 -C $(LINUX_KERNEL)  M=`pwd` NO_RRM=1 PCTARGET=1 RTAI=1 MASTER=1 OPEN_AIR=1 PHYEMUL=1 && mv openair_l2.ko openair_layer2.ko)
 
 openair_layer2_emul_rrm.ko:
-	(cd LAYER2 && $(MAKE) V=1 -C /usr/src/linux-$(shell echo `uname -r`)  M=`pwd` PCTARGET=1 RTAI=1 MASTER=1 OPEN_AIR=1 PHYEMUL=1 && mv openair_l2.ko openair_layer2.ko)
+	(cd LAYER2 && $(MAKE) V=1 -C $(LINUX_KERNEL)  M=`pwd` PCTARGET=1 RTAI=1 MASTER=1 OPEN_AIR=1 PHYEMUL=1 && mv openair_l2.ko openair_layer2.ko)
 
 
 openair_layer2.ko:
-	(cd LAYER2 && $(MAKE) V=1 -C /usr/src/linux-$(shell echo `uname -r`)  M=`pwd` NO_RRM=1 PCTARGET=1 RTAI=1 MASTER=1 OPEN_AIR=1 OPENAIR1=1 && mv openair_l2.ko openair_layer2.ko)
+	(cd LAYER2 && $(MAKE) V=1 -C $(LINUX_KERNEL) M=`pwd` NO_RRM=1 PCTARGET=1 RTAI=1 MASTER=1 OPEN_AIR=1 OPENAIR1=1 && mv openair_l2.ko openair_layer2.ko)
 
 openair_layer2_rrm.ko:
-	(cd LAYER2 && $(MAKE) V=1 -C /usr/src/linux-$(shell echo `uname -r`)  M=`pwd` PCTARGET=1 RTAI=1 MASTER=1 OPEN_AIR=1 OPENAIR1=1 && mv openair_l2.ko openair_layer2.ko)
+	(cd LAYER2 && $(MAKE) V=1 -C $(LINUX_KERNEL)  M=`pwd` PCTARGET=1 RTAI=1 MASTER=1 OPEN_AIR=1 OPENAIR1=1 && mv openair_l2.ko openair_layer2.ko)
 
 openair_layer2_2615.ko:
-	(cd LAYER2 && $(MAKE) V=1 -C /usr/src/linux-$(shell echo `uname -r`)  M=`pwd` PCTARGET=1 RTAI=1 MASTER=1 OPEN_AIR=1 OPENAIR1=1 && mv openair_l2.ko openair_layer2_2615.ko)
+	(cd LAYER2 && $(MAKE) V=1 -C $(LINUX_KERNEL)  M=`pwd` PCTARGET=1 RTAI=1 MASTER=1 OPEN_AIR=1 OPENAIR1=1 && mv openair_l2.ko openair_layer2_2615.ko)
 
 
 openair_rrc.ko:
-	(cd RRC/MESH && $(MAKE) V=1 -C /usr/src/linux-$(shell echo `uname -r`)  M=`pwd` PCTARGET=1 RTAI=1 OPEN_AIR=1 MASTER=1 NO_RRM=1 && mv openair_rrc.ko openair_RRC.ko)
+	(cd RRC/MESH && $(MAKE) V=1 -C $(LINUX_KERNEL)  M=`pwd` PCTARGET=1 RTAI=1 OPEN_AIR=1 MASTER=1 NO_RRM=1 && mv openair_rrc.ko openair_RRC.ko)
 
 openair_rrc_rrm.ko:
-	(cd RRC/MESH && $(MAKE) V=1 -C /usr/src/linux-$(shell echo `uname -r`)  M=`pwd` PCTARGET=1 RTAI=1 OPEN_AIR=1 MASTER=1 && mv openair_rrc.ko openair_RRC.ko)
+	(cd RRC/MESH && $(MAKE) V=1 -C $(LINUX_KERNEL)  M=`pwd` PCTARGET=1 RTAI=1 OPEN_AIR=1 MASTER=1 && mv openair_rrc.ko openair_RRC.ko)
 
 
 openair_rrc_2615.ko:
-	(cd RRC/MESH && $(MAKE) V=1 -C /usr/src/linux-$(shell echo `uname -r`) M=`pwd` PCTARGET=1 RTAI=1 OPEN_AIR=1 MASTER=1 && mv openair_rrc.ko openair_RRC_2615.ko)
+	(cd RRC/MESH && $(MAKE) V=1 -C $(LINUX_KERNEL) M=`pwd` PCTARGET=1 RTAI=1 OPEN_AIR=1 MASTER=1 && mv openair_rrc.ko openair_RRC_2615.ko)
 
 openair_rrc_emul.ko:
-	(cd RRC/MESH && $(MAKE) V=1 -C /usr/src/linux-$(shell echo `uname -r`)  M=`pwd` PCTARGET=1 RTAI=1 OPEN_AIR=1 MASTER=1 PHYEMUL=1 NO_RRM=1)
+	(cd RRC/MESH && $(MAKE) V=1 -C $(LINUX_KERNEL)  M=`pwd` PCTARGET=1 RTAI=1 OPEN_AIR=1 MASTER=1 PHYEMUL=1 NO_RRM=1)
 
 openair_rrc_emul_rrm.ko:
-	(cd RRC/MESH && $(MAKE) V=1 -C /usr/src/linux-$(shell echo `uname -r`)  M=`pwd` PCTARGET=1 RTAI=1 OPEN_AIR=1 MASTER=1 PHYEMUL=1)
+	(cd RRC/MESH && $(MAKE) V=1 -C $(LINUX_KERNEL)  M=`pwd` PCTARGET=1 RTAI=1 OPEN_AIR=1 MASTER=1 PHYEMUL=1)
 
 
 openair_emul.ko:
-	(cd SIMULATION/PHY_EMULATION/DEVICE_DRIVER/ && $(MAKE) V=1 -C /usr/src/linux-$(shell echo `uname -r`)  M=`pwd` PCTARGET=1 RTAI=1 OPEN_AIR=1 MASTER=1 NO_RRM=1)
+	(cd SIMULATION/PHY_EMULATION/DEVICE_DRIVER/ && $(MAKE) V=1 -C $(LINUX_KERNEL)  M=`pwd` PCTARGET=1 RTAI=1 OPEN_AIR=1 MASTER=1 NO_RRM=1)
 
 openair_emul_rrm.ko:
-	(cd SIMULATION/PHY_EMULATION/DEVICE_DRIVER/ && $(MAKE) V=1 -C /usr/src/linux-$(shell echo `uname -r`)  M=`pwd` PCTARGET=1 RTAI=1 OPEN_AIR=1 MASTER=1)
+	(cd SIMULATION/PHY_EMULATION/DEVICE_DRIVER/ && $(MAKE) V=1 -C $(LINUX_KERNEL)  M=`pwd` PCTARGET=1 RTAI=1 OPEN_AIR=1 MASTER=1)
 
 
 
@@ -147,50 +140,50 @@ remove_emul:
 
 
 clean_nasmesh:
-	(cd NAS/DRIVER/MESH && $(MAKE) V=1 -C /usr/src/linux M=`pwd` clean)
+	(cd NAS/DRIVER/MESH && $(MAKE) V=1 -C $(LINUX_KERNEL) M=`pwd` clean)
 
 nasmesh_address_fix.ko:
-	(cd NAS/DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) V=1 ADDRESS_FIX=1 -C /usr/src/linux M=`pwd`)
+	(cd NAS/DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) V=1 ADDRESS_FIX=1 -C $(LINUX_KERNEL) M=`pwd`)
 
 nasmesh.ko:
-	(cd NAS/DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) V=1 -C /usr/src/linux M=`pwd`)
+	(cd NAS/DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) V=1 -C $(LINUX_KERNEL) M=`pwd`)
 
 # automatically detect the linux header files for driver compilation
 nasmesh_netlink.ko:
-	(cd NAS/DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_NETLINK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` modules)
+	(cd NAS/DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_NETLINK=1 V=1 -C $(LINUX_KERNEL) M=`pwd` modules)
 
 naslite_netlink_ether.ko:
-	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` modules)
+	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(LINUX_KERNEL) M=`pwd` modules)
 
 oai_nw_ether.ko:
-	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` modules)
+	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(LINUX_KERNEL) M=`pwd` modules)
 
 oai_nw_drv.ko:
-	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` modules)
+	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(LINUX_KERNEL) M=`pwd` modules)
 
 nasmesh_netlink_address_fix.ko:
-	(cd NAS/DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_NETLINK=1 ADDRESS_FIX=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` modules)
+	(cd NAS/DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_NETLINK=1 ADDRESS_FIX=1 V=1 -C $(LINUX_KERNEL) M=`pwd` modules)
 
 
 nasmesh_netlink_loopback.ko:
-	(cd NAS/DRIVER/MESH && $(MAKE) $(SET_UM) NAS_NETLINK=1 LOOPBACK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` modules)
+	(cd NAS/DRIVER/MESH && $(MAKE) $(SET_UM) NAS_NETLINK=1 LOOPBACK=1 V=1 -C $(LINUX_KERNEL) M=`pwd` modules)
 
 # drivers cellular version
 nascellmt_netlink.ko:
-	(cd NAS/DRIVER/CELLULAR/NASMT && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` modules)
+	(cd NAS/DRIVER/CELLULAR/NASMT && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 V=1 -C $(LINUX_KERNEL) M=`pwd` modules)
 
 nascellmt_clean.ko:
-	(cd NAS/DRIVER/CELLULAR/NASMT && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` clean)
+	(cd NAS/DRIVER/CELLULAR/NASMT && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 V=1 -C $(LINUX_KERNEL) M=`pwd` clean)
 
 nascellrg_netlink.ko:
-	(cd NAS/DRIVER/CELLULAR/NASRG && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` modules)
+	(cd NAS/DRIVER/CELLULAR/NASRG && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 V=1 -C $(LINUX_KERNEL) M=`pwd` modules)
 
 nascellrg_clean.ko:
-	(cd NAS/DRIVER/CELLULAR/NASRG && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` clean)
+	(cd NAS/DRIVER/CELLULAR/NASRG && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 V=1 -C $(LINUX_KERNEL) M=`pwd` clean)
 
 # Driver for UE using LTE core network (MME, S+P-GW)
 ue_ip.ko:
-	(cd NETWORK_DRIVER/UE_IP && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` modules)
+	(cd NETWORK_DRIVER/UE_IP && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(LINUX_KERNEL) M=`pwd` modules)
 
 
 rt_emul:
