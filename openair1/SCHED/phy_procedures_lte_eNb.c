@@ -368,7 +368,8 @@ int get_nCCE_offset(unsigned char L, int nCCE, int common_dci, unsigned short rn
 }
 
 int16_t get_target_ul_rx_power(module_id_t module_idP, uint8_t CC_id) {
-  return PHY_vars_eNB_g[module_idP][CC_id]->PHY_measurements_eNB[0].n0_power_tot_dBm;
+  //return PHY_vars_eNB_g[module_idP][CC_id]->PHY_measurements_eNB[0].n0_power_tot_dBm;
+  return PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.ul_power_control_config_common.p0_NominalPUSCH;
 }
 
 #ifdef EMOS
