@@ -33,8 +33,7 @@ CURRENT_PATH=`pwd`
 sudo apt-get install autoconf automake gawk cmake make gcc flex bison libsctp1 libsctp-dev libidn2-0-dev \
 libidn11-dev libmysqlclient-dev libxml2-dev swig python-dev cmake-curses-gui \
 valgrind guile-2.0-dev libgmp-dev libgcrypt11-dev gdb unzip libtasn1-3-dev g++ \
-linux-headers-`uname -r` build-essential -y
-
+linux-headers-`uname -r` build-essential -y 
 source ../../SCRIPTS/utils.bash
 
 if [ -f install_log.txt ]
@@ -55,87 +54,54 @@ if [ ! -w /usr/local/src/ ]
 fi
 
 cd /usr/local/src/
-echo "Downloading nettle archive"
-
-if [ -f nettle-2.5.tar.gz ]
-    then
-    rm -f nettle-2.5.tar.gz
-fi
-if [ -f nettle-2.5.tar ]
-    then
-    rm -f nettle-2.5.tar
-fi
-if [ -d nettle-2.5 ]
-    then
-    rm -rf nettle-2.5/
-fi
-
-wget ftp://ftp.lysator.liu.se/pub/security/lsh/nettle-2.5.tar.gz > install_log.txt
-gunzip nettle-2.5.tar.gz > install_log.txt
-echo "Uncompressing nettle archive"
-tar -xf nettle-2.5.tar
-cd nettle-2.5/
-./configure --disable-openssl --enable-shared --prefix=/usr > install_log.txt
-if [ $? -ne 0 ]
-then
-    exit -1
-fi
-echo "Compiling nettle"
-make -j2 > install_log.txt 2>&1
-make check > install_log.txt
-sudo make install > install_log.txt
-cd ../
-
-echo "Downloading gnutls archive"
-
-if [ -f gnutls-3.1.0.tar.xz ]
-    then
-    rm -f gnutls-3.1.0.tar.xz
-fi
-if [ -d gnutls-3.1.0/ ]
-    then
-    rm -rf gnutls-3.1.0/
-fi
 
 # L.GAUTHIER: GNUTLS 3.1.23 compiles on 14.04 x64 with nettle comming with ubuntu
 # see http://www.bauer-power.net/2014/06/how-to-install-gnutls-3123-from-source.html#.VD6LI4VxOPI
-wget ftp://ftp.gnutls.org/gcrypt/gnutls/stable/gnutls-3.1.0.tar.xz > install_log.txt
-tar -xf gnutls-3.1.0.tar.xz
-echo "Uncompressing gnutls archive"
-cd gnutls-3.1.0/
-./configure --prefix=/usr
-if [ $? -ne 0 ]
-then
-    exit -1
+# if we have ubuntu 14.10 the default packages are ok
+
+[ -f /etc/os-release ] && source /etc/os-release
+if  echo $NAME $VERSION_ID | awk '{version=$2+0; if (version>14 && $1=="Ubuntu") exit 0} {exit 1}'
+ then 
+   apt-get install  gnutls-bin nettle-bin nettle-dev libssl-dev 
+else 
+  echo "Downloading nettle archive"
+
+  rm -rf nettle-2.5.tar.gz nettle-2.5.tar nettle-2.5 2> /dev/null
+  wget ftp://ftp.lysator.liu.se/pub/security/lsh/nettle-2.5.tar.gz > install_log.txt
+  echo "Uncompressing nettle archive"
+  tar xf nettle-2.5.tar.gz
+  cd nettle-2.5/
+  ./configure --disable-openssl --enable-shared --prefix=/usr > install_log.txt || exit -1
+  echo "Compiling nettle"
+  make -j4 > install_log.txt 2>&1
+  make check > install_log.txt
+  sudo make install > install_log.txt
+  cd ../
+
+  echo "Downloading gnutls archive"
+  rm -rf gnutls-3.1.0.tar.xz gnutls-3.1.0 2> /dev/null
+  wget ftp://ftp.gnutls.org/gcrypt/gnutls/stable/gnutls-3.1.0.tar.xz > install_log.txt
+  echo "Uncompressing gnutls archive"
+  tar xf gnutls-3.1.0.tar.xz
+  cd gnutls-3.1.0/
+  ./configure --prefix=/usr || exit -1
+  echo "Compiling gnutls"
+  make -j2 > install_log.txt 2>&1
+  sudo make install > install_log.txt
+  cd ../
 fi
-echo "Compiling gnutls"
-make -j2 > install_log.txt 2>&1
-sudo make install > install_log.txt
-cd ../
 
 echo "Downloading freeDiameter archive"
-
-if [ -f 1.1.5.tar.gz ]
-    then
-    rm -f 1.1.5.tar.gz
-fi
-if [ -d freeDiameter-1.1.5/ ]
-    then
-    rm -rf freeDiameter-1.1.5/
-fi
-
-wget http://www.freediameter.net/hg/freeDiameter/archive/1.1.5.tar.gz > install_log.txt
-tar -xzf 1.1.5.tar.gz > install_log.txt
+apt-get install mercurial
+wget http://www.freediameter.net/latest.tar.gz
 echo "Uncompressing freeDiameter archive"
-cd freeDiameter-1.1.5
+tar -xzf latest.tar.gz
+cd freeDiameter
+hg update 1.1.5
 patch -p1 < $CURRENT_PATH/freediameter-1.1.5.patch > install_log.txt
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ../ > install_log.txt
-if [ $? -ne 0 ]
-then
-    exit -1
-fi
+cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ../ > install_log.txt || exit -1
 echo "Compiling freeDiameter"
 make -j2 > install_log.txt 2>&1
 #make help
