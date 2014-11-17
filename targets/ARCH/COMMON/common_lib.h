@@ -54,6 +54,8 @@ typedef struct {
   int Mod_id;
   /* the sample rate for both transmit and receive. */
   double sample_rate;
+  /* number of samples per RX/TX packet (USRP + Ethernet) */
+  int samples_per_packet;
   /* number of RX channels (=RX antennas) */
   int rx_num_channels;
   /* number of TX channels (=TX antennas) */
@@ -106,7 +108,7 @@ struct openair0_device_t {
    * the first channel. timestamp if the time (in samples) at which the first sample
    * MUST be sent
    * use flags = 1 to send as timestamp specfied*/
-  void (*trx_write_func)(openair0_device *device, openair0_timestamp timestamp, const void **buff, int nsamps, int cc, int flags);
+  void (*trx_write_func)(openair0_device *device, openair0_timestamp timestamp, void **buff, int nsamps, int cc, int flags);
 
   /* Read 'nsamps' samples from each channel to buffers. buff[0] is the array for
    * the first channel. *ptimestamp is the time at which the first sample
