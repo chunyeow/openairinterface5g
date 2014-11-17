@@ -508,12 +508,8 @@ int main(int argc, char **argv) {
 	n_rnti=atoi(optarg);
 	break;	
       case 'u':
-	dual_stream_UE=atoi(optarg);
-	if (dual_stream_UE) {
-	  openair_daq_vars.use_ia_receiver = 1;
-	} else {
-	  openair_daq_vars.use_ia_receiver = 0;
-	}
+	dual_stream_UE=1;
+	openair_daq_vars.use_ia_receiver = 1;
 	if ((n_tx!=2) || (transmission_mode!=5)) {
 	  msg("IA receiver only supported for TM5!");
 	  exit(-1);
@@ -564,7 +560,7 @@ int main(int argc, char **argv) {
 	printf("-N Determines the number of Channel Realizations in Abstraction mode. Default value is 1. \n");
 	printf("-O Set the percenatge of effective rate to testbench the modem performance (typically 30 and 70, range 1-100) \n");
 	printf("-I Input filename for TrCH data (binary)\n");
-	printf("-u Determines if the 2 streams at the UE are decoded or not. 0-->U2 is interference only and 1-->U2 is detected\n");
+	printf("-u Enables the Interference Aware Receiver for TM5 (default is normal receiver)\n");
 	exit(1);
 	break;
       }
