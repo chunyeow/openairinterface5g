@@ -62,7 +62,7 @@ cd /usr/local/src/
 [ -f /etc/os-release ] && source /etc/os-release
 if  echo $NAME $VERSION_ID | awk '{version=$2+0; if (version>14 && $1=="Ubuntu") exit 0} {exit 1}'
  then 
-   apt-get install  gnutls-bin nettle-bin nettle-dev libssl-dev 
+   apt-get install -y gnutls-bin nettle-bin nettle-dev libssl-dev 
 else 
   echo "Downloading nettle archive"
 
@@ -92,13 +92,14 @@ else
 fi
 
 echo "Downloading freeDiameter archive"
-apt-get install mercurial
+apt-get install -y mercurial
+rm -rf latest.tar.gz freeDiameter
 wget http://www.freediameter.net/latest.tar.gz
 echo "Uncompressing freeDiameter archive"
 tar -xzf latest.tar.gz
 cd freeDiameter
 hg update 1.1.5
-patch -p1 < $CURRENT_PATH/freediameter-1.1.5.patch > install_log.txt
+patch -p1 < $OPENAIRCN_DIR/S6A/freediameter/freediameter-1.1.5.patch > install_log.txt
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ../ > install_log.txt || exit -1
