@@ -73,7 +73,7 @@ test_install_package() {
       } || {
           echo "$1 is not installed." 
 	  OAI_INSTALLED=0
-          $SUDO apt-get install --force-yes $1  
+          $SUDO apt-get install -y $@
       }
   fi
 }
