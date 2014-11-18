@@ -12,8 +12,19 @@ SLOT_NUMBER=`echo $config_reg | awk -F\" '{print $1}'`
 sudo setpci -s $SLOT_NUMBER 60.b=10
 done
 
-sudo rmmod openair_rf
-sudo insmod $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom/openair_rf.ko
+load_module() {
+  mod_name=${1##*/}
+  mod_name=${mod_name%.*}
+  if awk "/$mod_name/ {found=1 ;exit} END {if (found!=1) exit 1}" /proc/modules
+    then
+      echo "module $mod_name already loaded: I remove it first"
+      sudo rmmod $mod_name
+  fi
+  echo loading $mod_name
+  sudo insmod $1
+}
+
+load_module $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom/openair_rf.ko
 sleep 1
 
 if [ ! -e /dev/openair0 ]; then 
@@ -43,8 +54,7 @@ else
  fi
 fi
 
-sudo rmmod nasmesh
-sudo insmod $OPENAIR2_DIR/NAS/DRIVER/MESH/nasmesh.ko
+load_module $OPENAIR2_DIR/NAS/DRIVER/MESH/nasmesh.ko
 
 #if [ "$1" = "eNB" ]; then 
 #     echo "bring up oai0 interface for enb"
