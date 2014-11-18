@@ -452,14 +452,15 @@ build_epc(){
 	echo_success "target epc built and installed in the bin directory"
 	echo "target epc built and installed in the bin directory"  >>  bin/${oai_build_date}
 	cp -f $OPENAIR_TARGETS/PROJECTS/GENERIC-LTE-EPC/CONF/epc.generic.conf  $OPENAIR_TARGETS/bin
+	cp -f $OPENAIRCN_DIR/objs/UTILS/CONF/s6a.conf  $OPENAIR_TARGETS/bin
     fi
     
 ######################################
-# run
+# run 
 ######################################
     echo_info "7. run EPC (check the bin/epc.generic.conf params)"
-
-    sudo bin/oai_epc -c bin/epc.generic.conf  -K /tmp/itti.log
+    cd bin/
+    $SUDO ./oai_epc -c ./epc.generic.conf  -K /tmp/itti.log
 
 }
 
