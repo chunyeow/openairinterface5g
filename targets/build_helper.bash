@@ -834,7 +834,7 @@ create_hss_database(){
 	rv=1
     fi
 
-    set_openair
+    set_openair_env
     
     Q1="CREATE DATABASE IF NOT EXISTS ${BTICK}oai_db${BTICK};"
     SQL="${Q1}"
@@ -868,7 +868,7 @@ create_hss_database(){
 }
 
 ################################
-# set_openair
+# set_openair_env
 ###############################
 set_openair_env(){
 
