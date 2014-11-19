@@ -294,6 +294,7 @@ check_install_oai_software() {
 	test_install_package cmake
 	test_install_package openssh-client
 	test_install_package openssh-server
+        sudo service ssh start
 	test_install_package unzip 
 	test_install_package autoconf
 	test_install_package automake
@@ -361,7 +362,7 @@ check_install_oai_software() {
 check_install_hss_software() {
     if [ ! -f ./.lock_oaibuild ]; then 
 	$SUDO apt-get update
-	if [ $UBUNTU_REL = "12.04" ]; then 
+	if [ $UBUNTU_REL != "12.04" ]; then 
 	    test_uninstall_package nettle-dev
 	    test_uninstall_package nettle-bin
 	fi 
@@ -394,6 +395,7 @@ check_install_hss_software() {
 	test_install_package mysql-server-5.5 
 	test_install_package openssh-client
 	test_install_package openssh-server
+        sudo service ssh start
 	test_install_package phpmyadmin
 	test_install_package python-dev 
 	test_install_package sshfs
@@ -417,7 +419,7 @@ check_install_epc_software() {
 
     if [ ! -f ./.lock_oaibuild ]; then 
 	$SUDO apt-get update
-	if [ $UBUNTU_REL = "12.04" ]; then 
+	if [ $UBUNTU_REL != "12.04" ]; then 
 	    test_uninstall_package nettle-dev
 	    test_uninstall_package nettle-bin
 	fi 
@@ -468,6 +470,7 @@ check_install_epc_software() {
 	test_install_package make
 	test_install_package openssh-client
 	test_install_package openssh-server
+        sudo service ssh start
 	test_install_package openssl
 	test_install_package openvpn
 	test_install_package pkg-config
