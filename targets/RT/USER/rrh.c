@@ -104,7 +104,7 @@ void *rrh_eNB_thread(void *arg) {
       // get header info
       bzero((void*)&clientaddr,sizeof(struct sockaddr));
       clientaddrlen = sizeof(struct sockaddr);
-
+      printf("Waiting ...\n");
       bytes_received = recvfrom(sockid,msg_header,4+sizeof(openair0_timestamp),0,&clientaddr,&clientaddrlen);
       cmd = msg_header[0];
       antenna_index = cmd>>1;
@@ -115,8 +115,8 @@ void *rrh_eNB_thread(void *arg) {
 
       switch (cmd) {
       case 0: // RX
-	//	printf("Received RX request for antenna %d, nsamps %d (from %s:%d)\n",antenna_index,nsamps,str, 
-	//	       ntohs(((struct sockaddr_in*)&clientaddr)->sin_port));
+	printf("Received RX request for antenna %d, nsamps %d (from %s:%d)\n",antenna_index,nsamps,str, 
+		       ntohs(((struct sockaddr_in*)&clientaddr)->sin_port));
 	// send return
 	
 	if ((bytes_sent = sendto(sockid, 
@@ -126,7 +126,7 @@ void *rrh_eNB_thread(void *arg) {
 				(struct sockaddr*)&clientaddr, 
 				sizeof(struct sockaddr)))<0)
 	  perror("RRH: sendto for RX");
-	//	printf("bytes_sent %d(timestamp_rx %d)\n",bytes_sent);
+	printf("bytes_sent %d(timestamp_rx %d)\n",bytes_sent);
 	timestamp_rx+=nsamps;
 	break;
       case 1: // TX
