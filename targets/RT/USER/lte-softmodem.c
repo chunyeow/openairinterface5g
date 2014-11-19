@@ -1211,7 +1211,7 @@ void init_eNB_proc(void) {
 void kill_eNB_proc(void) {
 
   int i;
-  int *status_tx,*status_rx;
+  void *status_tx,*status_rx;
   int CC_id;
 
   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) 
@@ -1225,9 +1225,9 @@ void kill_eNB_proc(void) {
 #ifdef DEBUG_THREADS
       printf("Joining eNB TX CC_id %d thread %d...\n",CC_id,i);
 #endif
-      pthread_join(PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_tx,(void**)status_tx);
+      pthread_join(PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_tx,&status_tx);
 #ifdef DEBUG_THREADS
-      if (status_tx) printf("status %d...\n",*status_tx);
+      if (status_tx) printf("status %p...\n",status_tx);
 #endif
 #ifdef DEBUG_THREADS
       printf("Killing RX CC_id %d thread %d\n",CC_id,i);
@@ -1237,9 +1237,9 @@ void kill_eNB_proc(void) {
 #ifdef DEBUG_THREADS
       printf("Joining eNB RX CC_id %d thread %d...\n",CC_id,i);
 #endif
-      pthread_join(PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_rx,(void**)status_rx);
+      pthread_join(PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_rx,&status_rx);
 #ifdef DEBUG_THREADS 
-      if (status_rx) printf("status %d...\n",*status_rx);
+      if (status_rx) printf("status %p...\n",status_rx);
 #endif
       pthread_mutex_destroy(&PHY_vars_eNB_g[0][CC_id]->proc[i].mutex_tx);
       pthread_mutex_destroy(&PHY_vars_eNB_g[0][CC_id]->proc[i].mutex_rx);
@@ -2654,7 +2654,7 @@ static void get_options (int argc, char **argv) {
 	  rx_gain[CC_id][k]                 =  (double)enb_properties->properties[i]->rx_gain[CC_id];
 	  tx_gain[CC_id][k]                 =  (double)enb_properties->properties[i]->tx_gain[CC_id];
 	}
-	printf("Downlink frequency/ uplink offset of CC_id %d set to %llu/%d\n", CC_id,
+	printf("Downlink frequency/ uplink offset of CC_id %d set to %ju/%d\n", CC_id,
 	       enb_properties->properties[i]->downlink_frequency[CC_id],
 	       enb_properties->properties[i]->uplink_frequency_offset[CC_id]);
       } // CC_id
