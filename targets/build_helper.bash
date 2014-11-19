@@ -282,6 +282,13 @@ check_install_oai_software() {
     
     if [ ! -f ./.lock_oaibuild ]; then 
 	$SUDO apt-get update
+	if [ $UBUNTU_REL = "12.04" ]; then 
+	    test_uninstall_package nettle-dev
+	    test_uninstall_package nettle-bin
+        else 
+            test_install_package nettle-dev
+            test_install_package nettle-bin
+	fi 
 	test_install_package autoconf 
 	test_install_package automake 
 	test_install_package bison 
@@ -362,9 +369,12 @@ check_install_oai_software() {
 check_install_hss_software() {
     if [ ! -f ./.lock_oaibuild ]; then 
 	$SUDO apt-get update
-	if [ $UBUNTU_REL != "12.04" ]; then 
+	if [ $UBUNTU_REL = "12.04" ]; then 
 	    test_uninstall_package nettle-dev
 	    test_uninstall_package nettle-bin
+        else 
+            test_install_package nettle-dev
+            test_install_package nettle-bin
 	fi 
 	test_install_package autoconf 
 	test_install_package automake 
@@ -419,9 +429,12 @@ check_install_epc_software() {
 
     if [ ! -f ./.lock_oaibuild ]; then 
 	$SUDO apt-get update
-	if [ $UBUNTU_REL != "12.04" ]; then 
+	if [ $UBUNTU_REL = "12.04" ]; then 
 	    test_uninstall_package nettle-dev
 	    test_uninstall_package nettle-bin
+        else 
+            test_install_package nettle-dev
+            test_install_package nettle-bin
 	fi 
 	test_install_package autoconf
 	test_install_package automake
