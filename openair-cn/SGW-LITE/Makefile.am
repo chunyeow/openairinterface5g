@@ -35,6 +35,7 @@ AM_CFLAGS = @ADD_CFLAGS@ \
 	-I$(top_srcdir)/NAS/EURECOM-NAS/src/esm/msg			\
 	-I$(top_srcdir)/NAS/EURECOM-NAS/src/util			\
     -I$(top_srcdir)/INTERTASK_INTERFACE \
+    -I$(top_srcdir)/GTPV1-U \
     -I$(top_srcdir)/MME_APP \
     -I$(top_srcdir)/UTILS \
     -I$(top_srcdir)/UTILS/HASHTABLE
