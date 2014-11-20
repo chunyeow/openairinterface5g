@@ -433,6 +433,7 @@ static void *gtpv1u_thread(void *args)
         itti_receive_msg(TASK_GTPV1_U, &received_message_p);
         DevAssert(received_message_p != NULL);
 
+#if !defined(ENABLE_USE_GTPU_IN_KERNEL)
         switch (ITTI_MSG_ID(received_message_p))
         {
             case GTPV1U_CREATE_TUNNEL_REQ: {
@@ -540,6 +541,7 @@ static void *gtpv1u_thread(void *args)
             }
             break;
         }
+#endif
         itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);
         received_message_p = NULL;
     }
@@ -548,8 +550,8 @@ static void *gtpv1u_thread(void *args)
 
 int gtpv1u_init(const mme_config_t *mme_config_p)
 {
-    int                     ret;
-    NwGtpv1uRcT             rc;
+    int                     ret = 0;
+    NwGtpv1uRcT             rc  = 0;
     NwGtpv1uUlpEntityT      ulp;
     NwGtpv1uUdpEntityT      udp;
     NwGtpv1uLogMgrEntityT   log;
@@ -559,14 +561,15 @@ int gtpv1u_init(const mme_config_t *mme_config_p)
 
     memset(&gtpv1u_sgw_data, 0, sizeof(gtpv1u_sgw_data));
 
+    gtpv1u_sgw_data.sgw_ip_address_for_S1u_S12_S4_up = mme_config_p->ipv4.sgw_ip_address_for_S1u_S12_S4_up;
+
+#if !defined(ENABLE_USE_GTPU_IN_KERNEL)
     gtpv1u_sgw_data.S1U_mapping = hashtable_create (8192, NULL, NULL);
     if (gtpv1u_sgw_data.S1U_mapping == NULL) {
         perror("hashtable_create");
         GTPU_ERROR("Initializing TASK_GTPV1_U task interface: ERROR\n");
         return -1;
     }
-
-    gtpv1u_sgw_data.sgw_ip_address_for_S1u_S12_S4_up = mme_config_p->ipv4.sgw_ip_address_for_S1u_S12_S4_up;
 
     /* Initializing GTPv1-U stack */
     if ((rc = nwGtpv1uInitialize(&gtpv1u_sgw_data.gtpv1u_stack)) != NW_GTPV1U_OK) {
@@ -618,17 +621,18 @@ int gtpv1u_init(const mme_config_t *mme_config_p)
         GTPU_ERROR("nwGtpv1uSetTimerMgrEntity: %x", rc);
         return -1;
     }
-
+#endif
     if (itti_create_task(TASK_GTPV1_U, &gtpv1u_thread, NULL) < 0) {
         GTPU_ERROR("gtpv1u phtread_create: %s", strerror(errno));
         return -1;
     }
+#if !defined(ENABLE_USE_GTPU_IN_KERNEL)
 
     ret = gtpv1u_send_init_udp(mme_config_p->gtpv1u_config.port_number);
     if (ret < 0) {
         return ret;
     }
-
+#endif
     GTPU_DEBUG("Initializing GTPV1U interface: DONE\n");
 
     return ret;
