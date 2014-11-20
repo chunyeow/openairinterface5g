@@ -49,6 +49,7 @@
 
 //#include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/version.h>
 #include <linux/init.h>
 #include <linux/spinlock.h>
 #include <linux/moduleparam.h>
@@ -470,7 +471,11 @@ int init_module (void) {
 
 
     sprintf(devicename,"oai%d",inst);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
     nasdev[inst]  = alloc_netdev(sizeof(struct nas_priv),devicename, nas_init);
+#else
+    nasdev[inst]  = alloc_netdev(sizeof(struct nas_priv),devicename, NET_NAME_PREDICTABLE, nas_init);
+#endif
     priv = netdev_priv(nasdev[inst]);
 
     if (nasdev[inst]){
