@@ -80,16 +80,12 @@ int main(int argc, char *argv[])
     CHECK_INIT_RETURN(nas_init(&mme_config));
     CHECK_INIT_RETURN(sctp_init(&mme_config));
     CHECK_INIT_RETURN(udp_init(&mme_config));
-    CHECK_INIT_RETURN(s1ap_mme_init(&mme_config));
-    // moved CHECK_INIT_RETURN(sgi_init(&spgw_config.pgw_config));
     CHECK_INIT_RETURN(gtpv1u_init(&mme_config));
+    CHECK_INIT_RETURN(s1ap_mme_init(&mme_config));
     CHECK_INIT_RETURN(mme_app_init(&mme_config));
-
     CHECK_INIT_RETURN(s6a_init(&mme_config));
-
     CHECK_INIT_RETURN(sgw_lite_init(mme_config.config_file));
     CHECK_INIT_RETURN(sgi_init(&spgw_config.pgw_config));
-
     /* Handle signals here */
     itti_wait_tasks_end();
 
