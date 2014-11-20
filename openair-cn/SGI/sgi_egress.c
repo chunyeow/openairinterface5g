@@ -350,3 +350,50 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
 }
 #endif
 #endif
+void sgi_process_dgram_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int packet_sizeP)
+{
+    Gtpv1uTunnelDataReq        *gtpv1u_tunnel_data_req_p = NULL;
+    MessageDef                 *message_p                = NULL;
+    unsigned char              *message_payload_p        = NULL ;
+    struct arphdr              *arph_p                   = NULL;
+    struct iphdr               *iph_p                    = NULL;
+    struct ipv6hdr             *ip6h_p                   = NULL;
+    sgi_addr_mapping_t          *addr_mapping_p          = NULL;
+    struct in6_addr      dest6_addr;
+    u_int32_t            dest4_addr;
+    u_int32_t            src4_addr;
+    struct in_addr       in_dest_addr;
+
+    sgi_print_hex_octets(data_pP, packet_sizeP);
+
+    return;
+    message_p               = itti_alloc_new_message(TASK_FW_IP, GTPV1U_TUNNEL_DATA_REQ);
+    if (message_p == NULL) {
+        SGI_IF_ERROR("%s OUT OF MEMORY DROP EGRESS PACKET\n", __FUNCTION__);
+        return;
+    }
+    AssertFatal(packet_sizeP  > 20, "BAD IP PACKET SIZE");
+    message_payload_p = itti_malloc(TASK_FW_IP, TASK_GTPV1_U, packet_sizeP  + GTPU_HEADER_OVERHEAD_MAX);
+    if (message_payload_p == NULL) {
+        SGI_IF_ERROR("%s OUT OF MEMORY DROP EGRESS PACKET\n", __FUNCTION__);
+        return;
+    }
+    memcpy(message_payload_p + GTPU_HEADER_OVERHEAD_MAX, data_pP, packet_sizeP);
+
+    gtpv1u_tunnel_data_req_p = &message_p->ittiMsg.gtpv1uTunnelDataReq;
+    gtpv1u_tunnel_data_req_p->S1u_enb_teid   = addr_mapping_p->enb_S1U_teid;
+//#warning forced S1u_enb_teid to 1 for testing, waiting for MODIFY_BEARER REQUEST
+//    gtpv1u_tunnel_data_req_p->S1u_enb_teid   = 1;
+    gtpv1u_tunnel_data_req_p->local_S1u_teid = addr_mapping_p->sgw_S1U_teid;
+    gtpv1u_tunnel_data_req_p->length       = packet_sizeP ;
+    gtpv1u_tunnel_data_req_p->offset       = GTPU_HEADER_OVERHEAD_MAX;
+    gtpv1u_tunnel_data_req_p->buffer       = message_payload_p;
+    SGI_IF_DEBUG("%s send GTPV1U_TUNNEL_DATA_REQ to GTPV1U S1u_enb_teid %u local_S1u_teid %u size %u\n",
+            __FUNCTION__,
+            gtpv1u_tunnel_data_req_p->S1u_enb_teid,
+            gtpv1u_tunnel_data_req_p->local_S1u_teid,
+            gtpv1u_tunnel_data_req_p->length);
+
+    itti_send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p);
+
+}

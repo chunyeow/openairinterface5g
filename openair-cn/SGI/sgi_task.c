@@ -92,7 +92,13 @@ static void* sgi_task_thread(void *args_p)
                      */
                     Gtpv1uTunnelDataInd *data_ind_p;
                     data_ind_p = &received_message_p->ittiMsg.gtpv1uTunnelDataInd;
+#ifdef SGI_SOCKET_RAW
                     sgi_send_data(&data_ind_p->buffer[data_ind_p->offset], data_ind_p->length, sgi_data_p, data_ind_p->local_S1u_teid);
+#else
+#ifdef SGI_SOCKET_DGRAM
+                    sgi_dgram_send_data(&data_ind_p->buffer[data_ind_p->offset], data_ind_p->length, sgi_data_p, data_ind_p->local_S1u_teid);
+#endif
+#endif
                     /* Buffer is no longer needed, free it */
                     itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), data_ind_p->buffer);
                 }
@@ -121,8 +127,10 @@ static void* sgi_task_thread(void *args_p)
             {
                 case ACTIVATE_MESSAGE: {
                     sgi_data_p->hss_associated = 1;
+#if !defined(ENABLE_USE_GTPU_IN_KERNEL)
                     SGI_IF_DEBUG("HSS ASSOCIATED, CAN START VLANS (bug in freediameter)");
                     sgi_init_phase2(sgi_data_p);
+#endif
                 } break;
 
                 default: {

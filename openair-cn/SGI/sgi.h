@@ -40,6 +40,24 @@
 #include <pthread.h>
  #include <stdio.h>
 
+#ifdef ENABLE_USE_NETFILTER_FOR_SGI
+#warning "ENABLE_USE_NETFILTER_FOR_SGI"
+#define SGI_SOCKET_RAW        1
+#define SGI_SOCKET_BIND_TO_IF 1
+#undef  SGI_MARKING
+#undef  SGI_PACKET_RX_RING
+#undef  SGI_SOCKET_UDP
+#else
+#warning "DISABLE_USE_NETFILTER_FOR_SGI"
+//#define  SGI_SOCKET_RAW        1
+#undef  SGI_SOCKET_RAW
+#define SGI_SOCKET_DGRAM      1
+#define SGI_SOCKET_BIND_TO_IF 1
+#undef  SGI_PACKET_RX_RING
+#undef  SGI_MARKING
+#undef  SGI_SOCKET_UDP
+#endif
+
 #ifdef ENABLE_USE_PCAP_FOR_SGI
 #include <pcap.h>
 #endif
@@ -167,6 +185,7 @@ typedef struct sgi_addr_mapping_s {
 
 typedef struct sgi_data_s {
     int                 sd[SGI_MAX_EPS_BEARERS_PER_USER];
+    unsigned int        if_index[SGI_MAX_EPS_BEARERS_PER_USER];
     int                 sd6;
     char               *interface_name;
     int                 interface_name_len;
@@ -261,6 +280,8 @@ void  sgi_send_arp_request(sgi_data_t *sgi_dataP, char* dst_ip_addrP);
 //-----------------------------------------------------------------------------
 int sgi_create_sockets(sgi_data_t *sgi_data_p);
 int sgi_send_data(uint8_t *buffer, uint32_t length, sgi_data_t *sgi_dataP, Teid_t originating_sgw_S1u_teidP);
+int sgi_dgram_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, Teid_t originating_sgw_S1u_teidP);
+
 #ifdef SGI_TEST
 unsigned short in_cksum(unsigned short *addr, int len);
 void sgi_test_send_ping(sgi_data_t *sgi_dataP, uint32_t markP, uint64_t src_mac_addrP, uint64_t dst_mac_addrP, char* src_ip_addrP, char* dst_ip_addrP);
@@ -277,4 +298,5 @@ void sgi_forward_ip_packet(sgi_data_t *sgi_dataP, struct ether_header *ehP, int 
 #ifdef ENABLE_USE_RAW_SOCKET_FOR_SGI
 void sgi_process_raw_packet(sgi_data_t *sgi_dataP, unsigned char* dataP, int packet_sizeP);
 #endif
+void sgi_process_dgram_packet(sgi_data_t *sgi_dataP, unsigned char* dataP, int packet_sizeP);
 #endif /* SGI_H_ */

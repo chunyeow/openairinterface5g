@@ -65,22 +65,6 @@
 #include "sgi.h"
 #include "intertask_interface.h"
 
-#ifdef ENABLE_USE_NETFILTER_FOR_SGI
-#warning "ENABLE_USE_NETFILTER_FOR_SGI"
-#define SGI_SOCKET_RAW        1
-#define SGI_SOCKET_BIND_TO_IF 1
-#undef  SGI_MARKING
-#undef  SGI_PACKET_RX_RING
-#undef  SGI_SOCKET_UDP
-#else
-#warning "DISABLE_USE_NETFILTER_FOR_SGI"
-#define SGI_SOCKET_RAW        1
-#define SGI_SOCKET_BIND_TO_IF 1
-#undef  SGI_PACKET_RX_RING
-#undef  SGI_MARKING
-#undef  SGI_SOCKET_UDP
-#endif
-
 
 //static char sgi_command_buffer[256];
 
@@ -144,8 +128,8 @@ int sgi_create_vlan_interface(char *interface_nameP, int vlan_idP) {
         ret = sprintf(command_line, "sync");
         if (ret > 0) ret = system(command_line); else return -1;
 
-        ret = sprintf(command_line, "ip -4 addr add  10.0.%d.2/24 dev %s", vlan_idP+200, vlan_interface_name);
-        if (ret > 0) ret = system(command_line); else return -1;
+        //ret = sprintf(command_line, "ip -4 addr add  10.0.%d.2/24 dev %s", vlan_idP+200, vlan_interface_name);
+        //if (ret > 0) ret = system(command_line); else return -1;
         return 0;
     } else {
         return -1;
@@ -185,15 +169,19 @@ int sgi_create_sockets(sgi_data_t *sgi_data_p)
     // qci = 0 is for the default bearers QOS, Non-GBR
         /* Create a RAW IP socket and request for all internet IP traffic */
         // work
-//#define SGI_SOCKET_RAW
     for (i = 0; i < SGI_MAX_EPS_BEARERS_PER_USER; i++) {
-
 
         sgi_create_vlan_interface(sgi_data_p->interface_name,i+SGI_MIN_EPS_BEARER_ID);
 
-        //sgi_data_p->sd[i] = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
         // works also
+#if defined SGI_SOCKET_RAW
         sgi_data_p->sd[i] = socket(PF_PACKET, SOCK_RAW, htons(IPPROTO_RAW));
+#else
+#if defined SGI_SOCKET_DGRAM
+        SGI_IF_DEBUG("Created socket PF_PACKET/SOCK_DGRAM/ETH_P_ALL\n",strerror(errno), errno);
+        sgi_data_p->sd[i] = socket(PF_PACKET, SOCK_DGRAM, htons(ETH_P_ALL));
+#endif
+#endif
         //sgi_data_p->sd[i] = socket(AF_INET, SOCK_RAW, ETH_P_IP);
         //sgi_data_p->sd[i] = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_IP));
 
@@ -255,7 +243,7 @@ int sgi_create_sockets(sgi_data_t *sgi_data_p)
         sprintf(if_name, "%s.%d",sgi_data_p->interface_name,i+SGI_MIN_EPS_BEARER_ID);
 
         memset(&socket_address, 0, sizeof(struct sockaddr_ll));
-        socket_address.sll_family        = PF_PACKET; //always PF_PACKET
+        socket_address.sll_family        = AF_PACKET; //always PF_PACKET
 
         //socket_address.sll_addr = ;// Filled when we want to tx
         //socket_address.sll_halen = ;// Filled when we want to tx
@@ -263,9 +251,10 @@ int sgi_create_sockets(sgi_data_t *sgi_data_p)
 
         //socket_address.sll_hatype = ;// Filled when packet received
         //socket_address.sll_pkttype = ;// Filled when packet received
-        socket_address.sll_ifindex       = if_nametoindex(if_name);
-        socket_address.sll_protocol      = htons(ETH_P_IP);/* Protocol phy level */
-        //socket_address.sll_protocol      = htons(ETH_P_ALL);
+        sgi_data_p->if_index[i] = if_nametoindex(if_name);
+        socket_address.sll_ifindex       = sgi_data_p->if_index[i];
+        //LG 2014-11-07socket_address.sll_protocol      = htons(ETH_P_IP);/* Protocol phy level */
+        socket_address.sll_protocol      = htons(ETH_P_ALL);
 
         // Now we can bind the socket to send the IP traffic
         if (bind(sgi_data_p->sd[i], (struct sockaddr *)&socket_address, sizeof(struct sockaddr_ll)) < 0) {
@@ -279,7 +268,7 @@ int sgi_create_sockets(sgi_data_t *sgi_data_p)
 
     }
 
-#ifndef SGI_UE_ETHER_TRAFFIC
+#ifndef SGI_SOCKET_DGRAM
     if (sprintf(filename, "/sys/class/net/%s/address", sgi_data_p->interface_name) <= 0 ) {
         SGI_IF_ERROR("Build of file name /sys/class/net/sgi_if_name/address Failed (%s:%d)\n", strerror(errno), errno);
         goto error;
@@ -633,6 +622,130 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
 }
 
 #endif
+int sgi_dgram_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, Teid_t originating_sgw_S1u_teidP)
+{
+    struct iphdr               *iph_p                    = (struct iphdr *)   buffer_pP;
+    struct ipv6hdr             *ip6h_p                   = (struct ipv6hdr *) buffer_pP;
+    sgi_teid_mapping_t         *mapping_p                = NULL;
+    sgi_addr_mapping_t         *addr_mapping_p           = NULL;
+    hashtable_rc_t                hash_rc;
+    struct in6_addr             src6_addr;        /* source address */
+    struct in6_addr            *src6_addr_p;      /* source address */
+    u_int32_t                   src4_addr;
+
+    struct sockaddr_ll device;
+
+    if (buffer_pP == NULL) {
+        SGI_IF_ERROR("sgi_send_data: received bad parameter\n");
+        return -1;
+    }
+
+    // get IP version of this packet
+    switch (iph_p->version) {
+
+    //*******************
+    case 4:
+    //*******************
+        // The entry should be here but all signalling tied with RRC procedures not finished so
+        // a data packet can arrive before the MODIFY_BEARER REQUEST
+        sgi_data_pP->eh.ether_type = htons(ETHERTYPE_IP);
+        src4_addr = iph_p->saddr;
+        if (hashtable_get(sgi_data_pP->addr_v4_mapping, src4_addr, (void**)&addr_mapping_p) != HASH_TABLE_OK) {
+            hash_rc = hashtable_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
+            if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
+                SGI_IF_ERROR("%s Error unknown context SGW teid %d\n", __FUNCTION__, originating_sgw_S1u_teidP);
+                return -1;
+            } else {
+                if (mapping_p->is_outgoing_ipv4_packet_seen == 0) {
+                    mapping_p->hw_addrlen = 0;    // TO DO
+                    mapping_p->is_outgoing_ipv4_packet_seen = 1;
+                    mapping_p->in_add_captured.s_addr = src4_addr;
+
+                    addr_mapping_p = calloc(1, sizeof(sgi_addr_mapping_t));
+                    addr_mapping_p->is_outgoing_packet_seen = 1;
+                    addr_mapping_p->enb_S1U_teid            = mapping_p->enb_S1U_teid;
+                    addr_mapping_p->sgw_S1U_teid            = originating_sgw_S1u_teidP;
+                    hashtable_insert(sgi_data_pP->addr_v4_mapping, src4_addr, (void*)addr_mapping_p);
+                    SGI_IF_DEBUG("%s ASSOCIATED %d.%d.%d.%d to teid %d\n",
+                            __FUNCTION__, NIPADDR(src4_addr), originating_sgw_S1u_teidP);
+                } else {
+                    SGI_IF_ERROR("Error IPv4 address already registered for teid %d\n", originating_sgw_S1u_teidP);
+                    return -1;
+                }
+            }
+        } else {
+            hash_rc = hashtable_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
+        }
+        break;
+
+
+
+    //*******************
+    case 6:
+        sgi_data_pP->eh.ether_type = htons(ETHERTYPE_IPV6);
+        if (obj_hashtable_get(sgi_data_pP->addr_v6_mapping, &src6_addr, sizeof(struct in6_addr), (void**)&addr_mapping_p) != HASH_TABLE_OK) {
+            hash_rc = hashtable_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
+            if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
+                SGI_IF_ERROR("%s Error unknown context SGW teid %d\n", __FUNCTION__, originating_sgw_S1u_teidP);
+                return -1;
+            } else {
+
+                    if (mapping_p->is_outgoing_ipv6_packet_seen < MAX_DEFINED_IPV6_ADDRESSES_PER_UE) {
+                        mapping_p->hw_addrlen = 0;
+
+                        memcpy(&mapping_p->in6_addr_captured[mapping_p->is_outgoing_ipv6_packet_seen].s6_addr, src6_addr.s6_addr, 16);
+                        mapping_p->is_outgoing_ipv6_packet_seen +=1;
+
+                        addr_mapping_p = calloc(1, sizeof(sgi_addr_mapping_t));
+                        addr_mapping_p->is_outgoing_packet_seen = 1;
+                        addr_mapping_p->enb_S1U_teid            = mapping_p->enb_S1U_teid;
+                        addr_mapping_p->sgw_S1U_teid            = originating_sgw_S1u_teidP;
+
+                        src6_addr_p = malloc(sizeof(struct in6_addr));
+                        if (src6_addr_p == NULL) {
+                            return -1;
+                        }
+                        memcpy(src6_addr_p->s6_addr, ip6h_p->saddr.s6_addr, 16);
+                        obj_hashtable_insert(sgi_data_pP->addr_v6_mapping, src6_addr_p,sizeof(struct in6_addr), (void*)addr_mapping_p);
+                    } else {
+                        SGI_IF_ERROR("Error TOO MANY IPv6 address already registered for teid %d\n", originating_sgw_S1u_teidP);
+                        return -1;
+                    }
+            }
+
+        } else {
+            hash_rc = hashtable_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
+        }
+        break;
+
+    default:
+        SGI_IF_WARNING("%s UNHANDLED IP VERSION: %X\n", __FUNCTION__, iph_p->version);
+        break;
+    }
+    memset(&device, 0, sizeof(device));
+    device.sll_family   = AF_PACKET;
+    device.sll_protocol = htons(ETH_P_ALL);
+    device.sll_ifindex = sgi_data_pP->if_index[mapping_p->eps_bearer_id - SGI_MIN_EPS_BEARER_ID];
+
+
+    if (sendto(sgi_data_pP->sd[mapping_p->eps_bearer_id - SGI_MIN_EPS_BEARER_ID],
+            buffer_pP,
+            length,
+            0,
+            (struct sockaddr *) &device,
+            sizeof (device)) < 0) {
+        SGI_IF_ERROR("%d Error during send to socket %d bearer id %d : (%s:%d)\n",
+                __LINE__,
+                sgi_data_pP->sd[mapping_p->eps_bearer_id - SGI_MIN_EPS_BEARER_ID],
+                mapping_p->eps_bearer_id,
+                strerror(errno),
+                errno);
+        return -1;
+    }
+
+
+    return 0;
+}
 
 #ifdef SGI_TEST
 #include <stdio.h>
@@ -836,7 +949,13 @@ void* sgi_sock_raw_fw_2_gtpv1u_thread(void* args_p)
         num_bytes = recvfrom(sgi_data_p->sd[socket_index], &sgi_data_p->recv_buffer[0][socket_index], SGI_BUFFER_RECV_LEN, 0, NULL, NULL);
         if (num_bytes > 0) {
             SGI_IF_DEBUG("recvfrom bearer id %d %d bytes\n", socket_index + SGI_MIN_EPS_BEARER_ID, num_bytes);
+#ifdef SGI_SOCKET_RAW
             sgi_process_raw_packet(sgi_data_p, &sgi_data_p->recv_buffer[0][socket_index], num_bytes);
+#else
+#ifdef SGI_SOCKET_DGRAM
+            sgi_process_dgram_packet(sgi_data_p, &sgi_data_p->recv_buffer[0][socket_index], num_bytes);
+#endif
+#endif
         } else {
             SGI_IF_DEBUG("recvfrom bearer id %d %d (%s:%d)\n", socket_index + SGI_MIN_EPS_BEARER_ID, num_bytes, strerror(errno), errno);
         }

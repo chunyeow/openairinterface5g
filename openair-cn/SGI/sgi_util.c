@@ -64,14 +64,14 @@ void sgi_print_hex_octets(unsigned char* dataP, unsigned long sizeP)
   }
 
   gettimeofday(&tv, &tz);
-  h = tv.tv_sec/3600/24;
+  h = (tv.tv_sec/3600) % 24;
   m = (tv.tv_sec / 60) % 60;
   s = tv.tv_sec % 60;
   snprintf(timeofday, 64, "%02d:%02d:%02d.%06d", h,m,s,tv.tv_usec);
 
-  SGI_IF_DEBUG("%s------+-------------------------------------------------|\n",timeofday);
+  SGI_IF_DEBUG("%s------+-------------------------------------------------+\n",timeofday);
   SGI_IF_DEBUG("%s      |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n",timeofday);
-  SGI_IF_DEBUG("%s------+-------------------------------------------------|\n",timeofday);
+  SGI_IF_DEBUG("%s------+-------------------------------------------------+\n",timeofday);
   for (octet_index = 0; octet_index < sizeP; octet_index++) {
     if ((octet_index % 16) == 0){
       if (octet_index != 0) {
