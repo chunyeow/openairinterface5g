@@ -240,6 +240,7 @@ rlc_um_init (rlc_um_entity_t * const rlc_pP)
       memset (rlc_pP, 0, sizeof (rlc_um_entity_t));
       // TX SIDE
       list_init (&rlc_pP->pdus_to_mac_layer, NULL);
+      list_init (&rlc_pP->input_sdus, NULL);
 
       rlc_pP->protocol_state = RLC_NULL_STATE;
       //rlc_pP->nb_sdu           = 0;
@@ -262,15 +263,15 @@ rlc_um_init (rlc_um_entity_t * const rlc_pP)
       rlc_pP->tx_header_min_length_in_bytes = 2;
 
       // SPARE : not 3GPP
-#ifdef JUMBO_FRAME
+/*#ifdef JUMBO_FRAME
       rlc_pP->size_input_sdus_buffer =1024;
 #else
       rlc_pP->size_input_sdus_buffer =128;
-#endif
+#endif*/
     
-      if ((rlc_pP->input_sdus == NULL) && (rlc_pP->size_input_sdus_buffer > 0)) {
+      /*if ((rlc_pP->input_sdus == NULL) && (rlc_pP->size_input_sdus_buffer > 0)) {
           rlc_pP->input_sdus = calloc(1 , rlc_pP->size_input_sdus_buffer * sizeof (void *));
-      }
+      }*/
       if (rlc_pP->dar_buffer == NULL) {
           rlc_pP->dar_buffer = calloc (1, 1024 * sizeof (void *));
       }
@@ -285,9 +286,9 @@ rlc_um_reset_state_variables (rlc_um_entity_t * const rlc_pP)
 {
   //-----------------------------------------------------------------------------
   rlc_pP->buffer_occupancy = 0;
-  rlc_pP->nb_sdu = 0;
-  rlc_pP->next_sdu_index = 0;
-  rlc_pP->current_sdu_index = 0;
+  //rlc_pP->nb_sdu = 0;
+  //rlc_pP->next_sdu_index = 0;
+  //rlc_pP->current_sdu_index = 0;
 
   // TX SIDE
   rlc_pP->vt_us = 0;
@@ -304,8 +305,9 @@ rlc_um_cleanup (rlc_um_entity_t * const rlc_pP)
   int             index;
   // TX SIDE
   list_free (&rlc_pP->pdus_to_mac_layer);
+  list_free (&rlc_pP->input_sdus);
 
-  if (rlc_pP->input_sdus) {
+  /*if (rlc_pP->input_sdus) {
       for (index = 0; index < rlc_pP->size_input_sdus_buffer; index++) {
           if (rlc_pP->input_sdus[index]) {
               free_mem_block (rlc_pP->input_sdus[index]);
@@ -313,7 +315,7 @@ rlc_um_cleanup (rlc_um_entity_t * const rlc_pP)
       }
       free (rlc_pP->input_sdus);
       rlc_pP->input_sdus = NULL;
-  }
+  }*/
   // RX SIDE
   list_free (&rlc_pP->pdus_from_mac_layer);
   if ((rlc_pP->output_sdu_in_construction)) {

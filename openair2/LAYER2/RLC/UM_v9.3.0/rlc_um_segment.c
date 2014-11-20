@@ -68,7 +68,7 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
     unsigned int       num_fill_sdu;
     unsigned int       test_num_li;
     unsigned int       fill_num_li;
-    unsigned int       sdu_buffer_index;
+    mem_block_t        *sdu_in_buffer = NULL;
     unsigned int       data_pdu_size;
 
     unsigned int       fi_first_byte_pdu_is_first_byte_sdu;
@@ -99,7 +99,8 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
     list_init (&pdus, NULL);    // param string identifying the list is NULL
     pdu_mem_p = NULL;
 
-    while ((rlc_pP->input_sdus[rlc_pP->current_sdu_index]) && (nb_bytes_to_transmit > 0)) {
+    while ((list_get_head(&rlc_pP->input_sdus)) && (nb_bytes_to_transmit > 0)) {
+
 #if defined(TRACE_RLC_UM_SEGMENT)
         LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 nb_bytes_to_transmit %d BO %d\n",
                 frameP,
@@ -112,10 +113,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
 #endif
         // pdu_p management
         if (!pdu_mem_p) {
-            if (rlc_pP->nb_sdu <= 1) {
+            if (rlc_pP->input_sdus.nb_elements <= 1) {
                 max_li_overhead = 0;
             } else {
-                max_li_overhead = (((rlc_pP->nb_sdu - 1) * 3) / 2) + ((rlc_pP->nb_sdu - 1) % 2);
+                max_li_overhead = (((rlc_pP->input_sdus.nb_elements - 1) * 3) / 2) + ((rlc_pP->input_sdus.nb_elements - 1) % 2);
             }
             if  (nb_bytes_to_transmit >= (rlc_pP->buffer_occupancy + rlc_pP->tx_header_min_length_in_bytes + max_li_overhead)) {
                 data_pdu_size = rlc_pP->buffer_occupancy + rlc_pP->tx_header_min_length_in_bytes + max_li_overhead;
@@ -173,15 +174,15 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
         continue_fill_pdu_with_sdu = 1;
         num_fill_sdu               = 0;
         test_num_li                = 0;
-        sdu_buffer_index           = rlc_pP->current_sdu_index;
+        sdu_in_buffer              = list_get_head(&rlc_pP->input_sdus);
         test_pdu_remaining_size    = pdu_remaining_size;
         test_li_length_in_bytes    = 1;
         test_remaining_size_to_substract   = 0;
         test_remaining_num_li_to_substract = 0;
 
 
-        while ((rlc_pP->input_sdus[sdu_buffer_index]) && (continue_fill_pdu_with_sdu > 0)) {
-            sdu_mngt_p = ((struct rlc_um_tx_sdu_management *) (rlc_pP->input_sdus[sdu_buffer_index]->data));
+        while ((sdu_in_buffer) && (continue_fill_pdu_with_sdu > 0)) {
+            sdu_mngt_p = ((struct rlc_um_tx_sdu_management *) (sdu_in_buffer->data));
 
             if (sdu_mngt_p->sdu_remaining_size > test_pdu_remaining_size) {
                 // no LI
@@ -232,7 +233,7 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                 test_remaining_num_li_to_substract = 0;
                 pdu_remaining_size = pdu_remaining_size - 1;
             }
-            sdu_buffer_index = (sdu_buffer_index + 1) % rlc_pP->size_input_sdus_buffer;
+            sdu_in_buffer = sdu_in_buffer->next;
         }
         if (test_remaining_num_li_to_substract > 0) {
             // there is a LI that is not necessary
@@ -261,13 +262,14 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
         fi_first_byte_pdu_is_first_byte_sdu = 0;
         fi_last_byte_pdu_is_last_byte_sdu   = 0;
 
+        sdu_in_buffer = list_get_head(&rlc_pP->input_sdus);
         if (
-            ((struct rlc_um_tx_sdu_management *) (rlc_pP->input_sdus[rlc_pP->current_sdu_index]->data))->sdu_remaining_size ==
-            ((struct rlc_um_tx_sdu_management *) (rlc_pP->input_sdus[rlc_pP->current_sdu_index]->data))->sdu_size) {
+            ((struct rlc_um_tx_sdu_management *) (sdu_in_buffer->data))->sdu_remaining_size ==
+            ((struct rlc_um_tx_sdu_management *) (sdu_in_buffer->data))->sdu_size) {
             fi_first_byte_pdu_is_first_byte_sdu = 1;
         }
-        while ((rlc_pP->input_sdus[rlc_pP->current_sdu_index]) && (continue_fill_pdu_with_sdu > 0)) {
-            sdu_mngt_p = ((struct rlc_um_tx_sdu_management *) (rlc_pP->input_sdus[rlc_pP->current_sdu_index]->data));
+        while ((sdu_in_buffer) && (continue_fill_pdu_with_sdu > 0)) {
+            sdu_mngt_p = ((struct rlc_um_tx_sdu_management *) (sdu_in_buffer->data));
             if (sdu_mngt_p->sdu_segmented_size == 0) {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 GET NEW SDU %p AVAILABLE SIZE %d Bytes\n",
@@ -292,7 +294,7 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                         sdu_mngt_p->sdu_size);
 #endif
             }
-            data_sdu_p = &((rlc_pP->input_sdus[rlc_pP->current_sdu_index])->data[sizeof (struct rlc_um_tx_sdu_management) + sdu_mngt_p->sdu_segmented_size]);
+            data_sdu_p = &(sdu_in_buffer->data[sizeof (struct rlc_um_tx_sdu_management) + sdu_mngt_p->sdu_segmented_size]);
 
             if (sdu_mngt_p->sdu_remaining_size > pdu_remaining_size) {
 #if defined(TRACE_RLC_UM_SEGMENT)
@@ -340,10 +342,11 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
 
                 // free SDU
                 rlc_pP->buffer_occupancy -= sdu_mngt_p->sdu_remaining_size;
-                free_mem_block (rlc_pP->input_sdus[rlc_pP->current_sdu_index]);
-                rlc_pP->input_sdus[rlc_pP->current_sdu_index] = NULL;
-                rlc_pP->nb_sdu -= 1;
-                rlc_pP->current_sdu_index = (rlc_pP->current_sdu_index + 1) % rlc_pP->size_input_sdus_buffer;
+                sdu_in_buffer = list_remove_head(&rlc_pP->input_sdus);
+                free_mem_block (sdu_in_buffer);
+                sdu_in_buffer = list_get_head(&rlc_pP->input_sdus);
+                sdu_mngt_p    = NULL;
+
 
                 fi_last_byte_pdu_is_last_byte_sdu = 1;
                 // fi will indicate end of PDU is end of SDU, no need for LI
@@ -409,14 +412,15 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                     e_li_p++;
                 }
 
+                pdu_remaining_size = pdu_remaining_size - (sdu_mngt_p->sdu_remaining_size + li_length_in_bytes);
+
                 // free SDU
                 rlc_pP->buffer_occupancy -= sdu_mngt_p->sdu_remaining_size;
-                free_mem_block (rlc_pP->input_sdus[rlc_pP->current_sdu_index]);
-                rlc_pP->input_sdus[rlc_pP->current_sdu_index] = NULL;
-                rlc_pP->nb_sdu -= 1;
-                rlc_pP->current_sdu_index = (rlc_pP->current_sdu_index + 1) % rlc_pP->size_input_sdus_buffer;
+                sdu_in_buffer = list_remove_head(&rlc_pP->input_sdus);
+                free_mem_block (sdu_in_buffer);
+                sdu_in_buffer = list_get_head(&rlc_pP->input_sdus);
+                sdu_mngt_p    = NULL;
 
-                pdu_remaining_size = pdu_remaining_size - (sdu_mngt_p->sdu_remaining_size + li_length_in_bytes);
             } else {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 Filling  PDU with %d all remaining bytes of SDU and reduce TB size by %d bytes\n",
@@ -434,17 +438,17 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
 #endif 
 #endif
                 memcpy(data, data_sdu_p, sdu_mngt_p->sdu_remaining_size);
-                // free SDU
-                rlc_pP->buffer_occupancy -= sdu_mngt_p->sdu_remaining_size;
-                free_mem_block (rlc_pP->input_sdus[rlc_pP->current_sdu_index]);
-                rlc_pP->input_sdus[rlc_pP->current_sdu_index] = NULL;
-                rlc_pP->nb_sdu -= 1;
-                rlc_pP->current_sdu_index = (rlc_pP->current_sdu_index + 1) % rlc_pP->size_input_sdus_buffer;
-
                 // reduce the size of the PDU
                 continue_fill_pdu_with_sdu = 0;
                 fi_last_byte_pdu_is_last_byte_sdu = 1;
                 pdu_remaining_size = pdu_remaining_size - sdu_mngt_p->sdu_remaining_size;
+                // free SDU
+                rlc_pP->buffer_occupancy -= sdu_mngt_p->sdu_remaining_size;
+                sdu_in_buffer = list_remove_head(&rlc_pP->input_sdus);
+                free_mem_block (sdu_in_buffer);
+                sdu_in_buffer = list_get_head(&rlc_pP->input_sdus);
+                sdu_mngt_p    = NULL;
+
             }
         }
 
@@ -486,32 +490,32 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
 {
 //-----------------------------------------------------------------------------
     list_t              pdus;
-    signed int          pdu_remaining_size;
-    signed int          test_pdu_remaining_size;
+    signed int          pdu_remaining_size      = 0;
+    signed int          test_pdu_remaining_size = 0;
 
     int                 nb_bytes_to_transmit = rlc_pP->nb_bytes_requested_by_mac;
-    rlc_um_pdu_sn_5_t  *pdu_p;
-    struct mac_tb_req  *pdu_tb_req_p;
-    mem_block_t        *pdu_mem_p;
-    char               *data;
-    char               *data_sdu_p;
-    rlc_um_e_li_t      *e_li_p;
-    struct rlc_um_tx_sdu_management *sdu_mngt_p;
-    unsigned int       li_length_in_bytes;
-    unsigned int       test_li_length_in_bytes;
-    unsigned int       test_remaining_size_to_substract;
-    unsigned int       test_remaining_num_li_to_substract;
-    unsigned int       continue_fill_pdu_with_sdu;
-    unsigned int       num_fill_sdu;
-    unsigned int       test_num_li;
-    unsigned int       fill_num_li;
-    unsigned int       sdu_buffer_index;
-    unsigned int       data_pdu_size;
+    rlc_um_pdu_sn_5_t  *pdu_p                = NULL;
+    struct mac_tb_req  *pdu_tb_req_p         = NULL;
+    mem_block_t        *pdu_mem_p            = NULL;
+    char               *data                 = NULL;
+    char               *data_sdu_p           = NULL;
+    rlc_um_e_li_t      *e_li_p               = NULL;
+    struct rlc_um_tx_sdu_management *sdu_mngt_p           = NULL;
+    unsigned int       li_length_in_bytes                 = 0;
+    unsigned int       test_li_length_in_bytes            = 0;
+    unsigned int       test_remaining_size_to_substract   = 0;
+    unsigned int       test_remaining_num_li_to_substract = 0;
+    unsigned int       continue_fill_pdu_with_sdu         = 0;
+    unsigned int       num_fill_sdu                       = 0;
+    unsigned int       test_num_li                        = 0;
+    unsigned int       fill_num_li                        = 0;
+    mem_block_t        *sdu_in_buffer                     = NULL;
+    unsigned int       data_pdu_size                      = 0;
 
-    unsigned int       fi_first_byte_pdu_is_first_byte_sdu;
-    unsigned int       fi_last_byte_pdu_is_last_byte_sdu;
-    unsigned int       fi;
-    unsigned int       max_li_overhead;
+    unsigned int       fi_first_byte_pdu_is_first_byte_sdu = 0;
+    unsigned int       fi_last_byte_pdu_is_last_byte_sdu   = 0;
+    unsigned int       fi                                  = 0;
+    unsigned int       max_li_overhead                     = 0;
 
     if (nb_bytes_to_transmit < 2) {
 #if defined(TRACE_RLC_UM_SEGMENT)
@@ -536,7 +540,7 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
     list_init (&pdus, NULL);    // param string identifying the list is NULL
     pdu_mem_p = NULL;
 
-    while ((rlc_pP->input_sdus[rlc_pP->current_sdu_index]) && (nb_bytes_to_transmit > 0)) {
+    while ((list_get_head(&rlc_pP->input_sdus)) && (nb_bytes_to_transmit > 0)) {
 #if defined(TRACE_RLC_UM_SEGMENT)
         LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 nb_bytes_to_transmit %d BO %d\n",
                 frameP,
@@ -549,10 +553,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
 #endif
         // pdu_p management
         if (!pdu_mem_p) {
-            if (rlc_pP->nb_sdu <= 1) {
+            if (rlc_pP->input_sdus.nb_elements <= 1) {
                 max_li_overhead = 0;
             } else {
-                max_li_overhead = (((rlc_pP->nb_sdu - 1) * 3) / 2) + ((rlc_pP->nb_sdu - 1) % 2);
+                max_li_overhead = (((rlc_pP->input_sdus.nb_elements - 1) * 3) / 2) + ((rlc_pP->input_sdus.nb_elements - 1) % 2);
             }
             if  (nb_bytes_to_transmit >= (rlc_pP->buffer_occupancy + rlc_pP->tx_header_min_length_in_bytes + max_li_overhead)) {
                 data_pdu_size = rlc_pP->buffer_occupancy + rlc_pP->tx_header_min_length_in_bytes + max_li_overhead;
@@ -610,15 +614,15 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
         continue_fill_pdu_with_sdu = 1;
         num_fill_sdu               = 0;
         test_num_li                = 0;
-        sdu_buffer_index           = rlc_pP->current_sdu_index;
+        sdu_in_buffer              = list_get_head(&rlc_pP->input_sdus);
         test_pdu_remaining_size    = pdu_remaining_size;
         test_li_length_in_bytes    = 1;
         test_remaining_size_to_substract   = 0;
         test_remaining_num_li_to_substract = 0;
 
 
-        while ((rlc_pP->input_sdus[sdu_buffer_index]) && (continue_fill_pdu_with_sdu > 0)) {
-            sdu_mngt_p = ((struct rlc_um_tx_sdu_management *) (rlc_pP->input_sdus[sdu_buffer_index]->data));
+        while ((sdu_in_buffer) && (continue_fill_pdu_with_sdu > 0)) {
+            sdu_mngt_p = ((struct rlc_um_tx_sdu_management *) (sdu_in_buffer->data));
 
             if (sdu_mngt_p->sdu_remaining_size > test_pdu_remaining_size) {
                 // no LI
@@ -671,7 +675,7 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                 pdu_remaining_size = pdu_remaining_size - 1;
                 data_pdu_size -= 1;//modifier pour duy
             }
-            sdu_buffer_index = (sdu_buffer_index + 1) % rlc_pP->size_input_sdus_buffer;
+            sdu_in_buffer = sdu_in_buffer->next;
         }
         if (test_remaining_num_li_to_substract > 0) {
             // there is a LI that is not necessary
@@ -700,13 +704,14 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
         fi_first_byte_pdu_is_first_byte_sdu = 0;
         fi_last_byte_pdu_is_last_byte_sdu   = 0;
 
+        sdu_in_buffer = list_get_head(&rlc_pP->input_sdus);
         if (
-            ((struct rlc_um_tx_sdu_management *) (rlc_pP->input_sdus[rlc_pP->current_sdu_index]->data))->sdu_remaining_size ==
-            ((struct rlc_um_tx_sdu_management *) (rlc_pP->input_sdus[rlc_pP->current_sdu_index]->data))->sdu_size) {
+            ((struct rlc_um_tx_sdu_management *) (sdu_in_buffer->data))->sdu_remaining_size ==
+            ((struct rlc_um_tx_sdu_management *) (sdu_in_buffer->data))->sdu_size) {
             fi_first_byte_pdu_is_first_byte_sdu = 1;
         }
-        while ((rlc_pP->input_sdus[rlc_pP->current_sdu_index]) && (continue_fill_pdu_with_sdu > 0)) {
-            sdu_mngt_p = ((struct rlc_um_tx_sdu_management *) (rlc_pP->input_sdus[rlc_pP->current_sdu_index]->data));
+        while ((sdu_in_buffer) && (continue_fill_pdu_with_sdu > 0)) {
+            sdu_mngt_p = ((struct rlc_um_tx_sdu_management *) (sdu_in_buffer->data));
             if (sdu_mngt_p->sdu_segmented_size == 0) {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 GET NEW SDU %p AVAILABLE SIZE %d Bytes\n",
@@ -731,7 +736,7 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                         sdu_mngt_p->sdu_size);
 #endif
             }
-            data_sdu_p = &((rlc_pP->input_sdus[rlc_pP->current_sdu_index])->data[sizeof (struct rlc_um_tx_sdu_management) + sdu_mngt_p->sdu_segmented_size]);
+            data_sdu_p = &(sdu_in_buffer->data[sizeof (struct rlc_um_tx_sdu_management) + sdu_mngt_p->sdu_segmented_size]);
 
             if (sdu_mngt_p->sdu_remaining_size > pdu_remaining_size) {
 #if defined(TRACE_RLC_UM_SEGMENT)
@@ -777,10 +782,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                 memcpy(data, data_sdu_p, pdu_remaining_size);
                 // free SDU
                 rlc_pP->buffer_occupancy -= sdu_mngt_p->sdu_remaining_size;
-                free_mem_block (rlc_pP->input_sdus[rlc_pP->current_sdu_index]);
-                rlc_pP->input_sdus[rlc_pP->current_sdu_index] = NULL;
-                rlc_pP->nb_sdu -= 1;
-                rlc_pP->current_sdu_index = (rlc_pP->current_sdu_index + 1) % rlc_pP->size_input_sdus_buffer;
+                sdu_in_buffer = list_remove_head(&rlc_pP->input_sdus);
+                free_mem_block (sdu_in_buffer);
+                sdu_in_buffer = list_get_head(&rlc_pP->input_sdus);
+                sdu_mngt_p    = NULL;
 
                 fi_last_byte_pdu_is_last_byte_sdu = 1;
                 // fi will indicate end of PDU is end of SDU, no need for LI
@@ -846,14 +851,15 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                     e_li_p++;
                 }
 
+                pdu_remaining_size = pdu_remaining_size - (sdu_mngt_p->sdu_remaining_size + li_length_in_bytes);
+
                 // free SDU
                 rlc_pP->buffer_occupancy -= sdu_mngt_p->sdu_remaining_size;
-                free_mem_block (rlc_pP->input_sdus[rlc_pP->current_sdu_index]);
-                rlc_pP->input_sdus[rlc_pP->current_sdu_index] = NULL;
-                rlc_pP->nb_sdu -= 1;
-                rlc_pP->current_sdu_index = (rlc_pP->current_sdu_index + 1) % rlc_pP->size_input_sdus_buffer;
+                sdu_in_buffer = list_remove_head(&rlc_pP->input_sdus);
+                free_mem_block (sdu_in_buffer);
+                sdu_in_buffer = list_get_head(&rlc_pP->input_sdus);
+                sdu_mngt_p    = NULL;
 
-                pdu_remaining_size = pdu_remaining_size - (sdu_mngt_p->sdu_remaining_size + li_length_in_bytes);
             } else {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 Filling  PDU with %d all remaining bytes of SDU and reduce TB size by %d bytes\n",
@@ -869,17 +875,16 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                 assert(1!=1);
 #endif
                 memcpy(data, data_sdu_p, sdu_mngt_p->sdu_remaining_size);
-                // free SDU
-                rlc_pP->buffer_occupancy -= sdu_mngt_p->sdu_remaining_size;
-                free_mem_block (rlc_pP->input_sdus[rlc_pP->current_sdu_index]);
-                rlc_pP->input_sdus[rlc_pP->current_sdu_index] = NULL;
-                rlc_pP->nb_sdu -= 1;
-                rlc_pP->current_sdu_index = (rlc_pP->current_sdu_index + 1) % rlc_pP->size_input_sdus_buffer;
-
                 // reduce the size of the PDU
                 continue_fill_pdu_with_sdu = 0;
                 fi_last_byte_pdu_is_last_byte_sdu = 1;
                 pdu_remaining_size = pdu_remaining_size - sdu_mngt_p->sdu_remaining_size;
+                // free SDU
+                rlc_pP->buffer_occupancy -= sdu_mngt_p->sdu_remaining_size;
+                sdu_in_buffer = list_remove_head(&rlc_pP->input_sdus);
+                free_mem_block (sdu_in_buffer);
+                sdu_in_buffer = list_get_head(&rlc_pP->input_sdus);
+                sdu_mngt_p    = NULL;
             }
         }
 

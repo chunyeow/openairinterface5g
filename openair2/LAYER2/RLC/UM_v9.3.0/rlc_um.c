@@ -406,6 +406,7 @@ rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP
   uint16_t  sdu_remaining_size = 0;
   int32_t diff_time=0;
   rlc_um_entity_t   *rlc_p = NULL;
+  mem_block_t       *mb_p = NULL;
 
   status_resp.buffer_occupancy_in_pdus         = 0;
   status_resp.buffer_occupancy_in_bytes        = 0;
@@ -421,25 +422,25 @@ rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP
       rlc_p->nb_bytes_requested_by_mac = tbs_sizeP;
 
       status_resp.buffer_occupancy_in_bytes = rlc_um_get_buffer_occupancy (rlc_p);
-      if (status_resp.buffer_occupancy_in_bytes > 0) {
+      if ((status_resp.buffer_occupancy_in_bytes > 0) && ((mb_p = list_get_head(&rlc_p->input_sdus)) != NULL)) {
 
-	  status_resp.buffer_occupancy_in_bytes += rlc_p->tx_header_min_length_in_bytes;
-	  status_resp.buffer_occupancy_in_pdus = rlc_p->nb_sdu;
+          status_resp.buffer_occupancy_in_bytes += rlc_p->tx_header_min_length_in_bytes;
+          status_resp.buffer_occupancy_in_pdus = rlc_p->input_sdus.nb_elements;
 
-	  diff_time =   frameP - ((struct rlc_um_tx_sdu_management *) (rlc_p->input_sdus[rlc_p->current_sdu_index])->data)->sdu_creation_time;
-	  status_resp.head_sdu_creation_time = (diff_time > 0 ) ? (uint32_t) diff_time :  (uint32_t)(0xffffffff - diff_time + frameP) ;
-	  //msg("rlc_p status for frameP %d diff time %d resp %d\n", frameP, diff_time,status_resp.head_sdu_creation_time) ;
+          diff_time =   frameP - ((struct rlc_um_tx_sdu_management *)mb_p->data)->sdu_creation_time;
+          status_resp.head_sdu_creation_time = (diff_time > 0 ) ? (uint32_t) diff_time :  (uint32_t)(0xffffffff - diff_time + frameP) ;
+          //msg("rlc_p status for frameP %d diff time %d resp %d\n", frameP, diff_time,status_resp.head_sdu_creation_time) ;
 
-	  sdu_size            = ((struct rlc_um_tx_sdu_management *) (rlc_p->input_sdus[rlc_p->current_sdu_index])->data)->sdu_size;
-	  sdu_remaining_size  = ((struct rlc_um_tx_sdu_management *) (rlc_p->input_sdus[rlc_p->current_sdu_index])->data)->sdu_remaining_size;
+          sdu_size            = ((struct rlc_um_tx_sdu_management *) mb_p->data)->sdu_size;
+          sdu_remaining_size  = ((struct rlc_um_tx_sdu_management *) mb_p->data)->sdu_remaining_size;
 
-	  status_resp.head_sdu_remaining_size_to_send = sdu_remaining_size;
-	  if (sdu_size == sdu_remaining_size)  {
+          status_resp.head_sdu_remaining_size_to_send = sdu_remaining_size;
+          if (sdu_size == sdu_remaining_size)  {
            status_resp.head_sdu_is_segmented = 0;
-	  }
-	  else {
-	   status_resp.head_sdu_is_segmented = 1;
-	  }
+          }
+          else {
+              status_resp.head_sdu_is_segmented = 1;
+          }
 
       } else {
       }
@@ -624,7 +625,7 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
   uint16_t             data_size;
 #endif
 
-  LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] RLC_UM_DATA_REQ size %d Bytes, BO %d , NB SDU %d current_sdu_index=%d next_sdu_index=%d\n",
+  LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] RLC_UM_DATA_REQ size %d Bytes, BO %d , NB SDU %d\n",
      frameP,
      (rlc_p->is_enb) ? "eNB" : "UE",
      rlc_p->enb_module_id,
@@ -632,13 +633,12 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
      rlc_p->rb_id,
      ((struct rlc_um_data_req *) (sdu_pP->data))->data_size,
      rlc_p->buffer_occupancy,
-     rlc_p->nb_sdu,
-     rlc_p->current_sdu_index,
-     rlc_p->next_sdu_index);
-  rlc_util_print_hex_octets(
+     rlc_p->input_sdus.nb_elements);
+
+  /*rlc_util_print_hex_octets(
       RLC,
       (uint8_t*)&sdu_pP->data[sizeof (struct rlc_um_data_req_alloc)],
-      ((struct rlc_um_data_req *) (sdu_pP->data))->data_size);
+      ((struct rlc_um_data_req *) (sdu_pP->data))->data_size);*/
 
   /*#ifndef USER_MODE
   rlc_um_time_us = (unsigned long int)(rt_get_time_ns ()/(RTIME)1000);
@@ -648,18 +648,17 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
   usec =  rlc_um_time_us % 1000000;
   msg ("[RLC_UM_LITE][RB  %d] at time %2d:%2d.%6d\n", rlc_p->rb_id, min, sec , usec);
 #endif*/
-  if (rlc_p->input_sdus[rlc_p->next_sdu_index] == NULL) {
-    rlc_p->input_sdus[rlc_p->next_sdu_index] = sdu_pP;
+
     // IMPORTANT : do not change order of affectations
     ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size = ((struct rlc_um_data_req *) (sdu_pP->data))->data_size;
     rlc_p->buffer_occupancy += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
-    rlc_p->nb_sdu += 1;
+    //rlc_p->nb_sdu += 1;
     ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->first_byte = (uint8_t*)&sdu_pP->data[sizeof (struct rlc_um_data_req_alloc)];
     ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_remaining_size = ((struct rlc_um_tx_sdu_management *)
                                                                               (sdu_pP->data))->sdu_size;
     ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_segmented_size = 0;
     ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_creation_time = frameP;
-    rlc_p->next_sdu_index = (rlc_p->next_sdu_index + 1) % rlc_p->size_input_sdus_buffer;
+    //rlc_p->next_sdu_index = (rlc_p->next_sdu_index + 1) % rlc_p->size_input_sdus_buffer;
 
     rlc_p->stat_tx_pdcp_sdu   += 1;
     rlc_p->stat_tx_pdcp_bytes += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
@@ -710,8 +709,9 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
       LOG_T(RLC, "%s", message_string);
 #endif 
 #   endif
+      list_add_tail_eurecom(sdu_pP, &rlc_p->input_sdus);
 
-  } else {
+  /*} else {
     LOG_W(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] RLC-UM_DATA_REQ input buffer full SDU garbaged\n",
           frameP,
           (rlc_p->is_enb) ? "eNB" : "UE",
@@ -731,5 +731,5 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
           rlc_p->ue_module_id,
           rlc_p->rb_id);
 #endif
-  }
+  }*/
 }
