@@ -48,6 +48,7 @@
 #include "proto_extern.h"
 
 #include <linux/kernel.h>
+#include <linux/version.h>
 #include <linux/init.h>
 #include <linux/spinlock.h>
 #include <linux/moduleparam.h>
@@ -348,7 +349,11 @@ int init_module (void) {
   for (inst=0;inst<UE_IP_NB_INSTANCES_MAX;inst++) {
     printk("[UE_IP_DRV][%s] begin init instance %d\n", __FUNCTION__,inst);
     sprintf(devicename,"oip%d",inst);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
     ue_ip_dev[inst]  = alloc_netdev(sizeof(ue_ip_priv_t),devicename, ue_ip_init);
+#else
+    ue_ip_dev[inst]  = alloc_netdev(sizeof(ue_ip_priv_t),devicename, NET_NAME_PREDICTABLE,ue_ip_init);
+#endif
     //netif_stop_queue(ue_ip_dev[inst]);
     if (ue_ip_dev[inst] == NULL) {
          printk("[UE_IP_DRV][%s][INST %02d] alloc_netdev FAILED\n", __FUNCTION__,inst);
