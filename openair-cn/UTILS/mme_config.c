@@ -600,7 +600,7 @@ int config_parse_opt_line(int argc, char *argv[], mme_config_t *mme_config_p)
     if (config_parse_file(mme_config_p) != 0) {
         return -1;
     }
-    /* Display yhe configuration */
+    /* Display the configuration */
     config_display(mme_config_p);
     return 0;
 }
