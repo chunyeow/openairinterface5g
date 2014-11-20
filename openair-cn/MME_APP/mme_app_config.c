@@ -278,7 +278,8 @@ int mme_app_config_init(char* lib_config_file_name_pP, mme_app_config_t* config_
                       }
                   }
               }
-          }      }
+          }
+      }
   }
   return 0;
 }
