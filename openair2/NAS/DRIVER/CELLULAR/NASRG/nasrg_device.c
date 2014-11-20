@@ -47,6 +47,7 @@
 //:::::::::::::::::::::::::::::::::::::::;;
 //#include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/version.h>
 #include <linux/init.h>
 #include <linux/spinlock.h>
 #ifdef NAS_DRIVER_TYPE_ETHERNET
@@ -438,7 +439,11 @@ int init_module (void) {
 
   // Allocate device structure 
   sprintf(devicename,"oai%d",inst);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
   gdev = alloc_netdev(sizeof(struct nas_priv), devicename, nasrg_init);
+#else
+  gdev = alloc_netdev(sizeof(struct nas_priv), devicename, NET_NAME_PREDICTABLE, nasrg_init);
+#endif
   printk("nasrg_init_module: after alloc_netdev \n");
   priv = netdev_priv(gdev);
 ////
