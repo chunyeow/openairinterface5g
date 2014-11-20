@@ -63,6 +63,8 @@
 #define PGW_CONFIG_STRING_IPV6_ADDRESS_LIST                     "IPV6_LIST"
 #define PGW_CONFIG_STRING_IPV4_PREFIX_DELIMITER                 " /"
 #define PGW_CONFIG_STRING_IPV6_PREFIX_DELIMITER                 " /"
+#define PGW_CONFIG_STRING_DEFAULT_DNS_IPV4_ADDRESS              "DEFAULT_DNS_IPV4_ADDRESS"
+#define PGW_CONFIG_STRING_DEFAULT_DNS_SEC_IPV4_ADDRESS          "DEFAULT_DNS_SEC_IPV4_ADDRESS"
 
 #define PGW_CONFIG_STRING_INTERFACE_DISABLED                    "none"
 
@@ -117,6 +119,9 @@ typedef struct pgw_config_s {
         char     *pgw_interface_name_for_SGI;
         uint32_t  pgw_ipv4_address_for_SGI;
         int       pgw_ip_netmask_for_SGI;
+
+        uint32_t  default_dns_v4;    // NBO
+        uint32_t  default_dns_sec_v4;// NBO
     } ipv4;
 
     STAILQ_HEAD(pgw_lite_ipv4_pool_head_s,      pgw_lite_conf_ipv4_list_elm_s) pgw_lite_ipv4_pool_list;
