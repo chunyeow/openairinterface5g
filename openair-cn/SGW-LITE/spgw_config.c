@@ -180,6 +180,8 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
   char             *pgw_ipv4_address_for_S5_S8   = NULL;
   char             *pgw_interface_name_for_SGI   = NULL;
   char             *pgw_ipv4_address_for_SGI     = NULL;
+  char             *pgw_default_dns_ipv4_address = NULL;
+  char             *pgw_default_dns_sec_ipv4_address = NULL;
 
   char             *delimiters=NULL;
   char             *saveptr1 = NULL;
@@ -202,7 +204,9 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
   struct in_addr    addr_mask;
   pgw_lite_conf_ipv4_list_elm_t *ip4_ref = NULL;
   pgw_lite_conf_ipv6_list_elm_t *ip6_ref = NULL;
-
+#if defined (ENABLE_USE_GTPU_IN_KERNEL)
+  char              system_cmd[256];
+#endif
 
   memset((char*)config_pP, 0 , sizeof(spgw_config_t));
   STAILQ_INIT(&config_pP->pgw_config.pgw_lite_ipv4_pool_list);
@@ -249,6 +253,17 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
               config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S1u_S12_S4_up = atoi(mask);
               free(cidr);
 
+#if defined (ENABLE_USE_GTPU_IN_KERNEL)
+              if (snprintf(system_cmd, 128,
+                      "echo 0 > /proc/sys/net/ipv4/conf/%s/send_redirects",
+                      config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
+                  SPGW_APP_INFO("Disable send ICMP redirect: %s\n",system_cmd);
+                  system(system_cmd);
+              } else {
+                  SPGW_APP_ERROR("Disable send ICMP redirect for %s\n",
+                          config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
+              }
+#endif
               in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
               SPGW_APP_INFO("Parsing configuration file found sgw_ipv4_address_for_S1u_S12_S4_up: %s/%d on %s\n",
             		  inet_ntoa(in_addr_var),
@@ -330,6 +345,33 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
             		  inet_ntoa(in_addr_var),
             		  config_pP->pgw_config.ipv4.pgw_ip_netmask_for_SGI,
             		  config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI);
+
+#if defined (ENABLE_USE_GTPU_IN_KERNEL)
+              if (snprintf(system_cmd, 128,
+                      "iptables -I POSTROUTING -t mangle -o %s -m state --state NEW  -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
+                      config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
+                  SPGW_APP_INFO("Save mark: %s\n",system_cmd);
+                  system(system_cmd);
+              } else {
+                  SPGW_APP_ERROR("Save mark\n");
+              }
+              if (snprintf(system_cmd, 128,
+                      "iptables -I PREROUTING -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
+                      config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
+                  SPGW_APP_INFO("Restore mark: %s\n",system_cmd);
+                  system(system_cmd);
+              } else {
+                  SPGW_APP_ERROR("Restore mark\n");
+              }
+              if (snprintf(system_cmd, 128,
+                      "iptables -t nat -A POSTROUTING  -o %s  ! --protocol sctp -j MASQUERADE",
+                      config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
+                  SPGW_APP_INFO("Masquerade SGI: %s\n",system_cmd);
+                  system(system_cmd);
+              } else {
+                  SPGW_APP_ERROR("Masquerade SGI\n");
+              }
+#endif
           } else {
               SPGW_APP_WARN("CONFIG P-GW / NETWORK INTERFACES parsing failed\n");
           }
@@ -352,6 +394,17 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                               memcpy (&addr_start, buf_in_addr, sizeof(struct in_addr));
                               // valid address
                               atoken2 = strtok(NULL, PGW_CONFIG_STRING_IPV4_PREFIX_DELIMITER);
+#if defined (ENABLE_USE_GTPU_IN_KERNEL)
+                              if (snprintf(system_cmd, 128, "ip route add %s/%s dev %s",
+                                      astring,
+                                      atoken2,
+                                      config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
+                                  SPGW_APP_INFO("Add route: %s\n",system_cmd);
+                                  system(system_cmd);
+                              } else {
+                                  SPGW_APP_ERROR("Add route: for %s\n", astring);
+                              }
+#endif
                               prefix_mask = atoi(atoken2);
                               if ((prefix_mask >= 2)&&(prefix_mask < 32)) {
                                   memcpy (&addr_start, buf_in_addr, sizeof(struct in_addr));
@@ -385,6 +438,16 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                           ip4_ref = calloc(1, sizeof(pgw_lite_conf_ipv4_list_elm_t));
                           ip4_ref->addr = addr_start;
                           STAILQ_INSERT_TAIL(&config_pP->pgw_config.pgw_lite_ipv4_pool_list, ip4_ref, ipv4_entries);
+#if defined (ENABLE_USE_GTPU_IN_KERNEL)
+                          if (snprintf(system_cmd, 128, "ip route add %s dev %s",
+                                  buf_in_addr,
+                                  config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
+                              SPGW_APP_INFO("Add route: %s\n",system_cmd);
+                              system(system_cmd);
+                          } else {
+                              SPGW_APP_ERROR("Add route: for %s\n", buf_in_addr);
+                          }
+#endif
                       }
                   }
               }
@@ -428,7 +491,19 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                   }
               }
           }
+          if(
+                  config_setting_lookup_string(subsetting,
+                          PGW_CONFIG_STRING_DEFAULT_DNS_IPV4_ADDRESS,
+                          (const char **)&pgw_default_dns_ipv4_address)
+                  && config_setting_lookup_string(subsetting,
+                          PGW_CONFIG_STRING_DEFAULT_DNS_SEC_IPV4_ADDRESS,
+                          (const char **)&pgw_default_dns_sec_ipv4_address)) {
+              config_pP->pgw_config.ipv4.pgw_interface_name_for_S5_S8 = strdup(pgw_interface_name_for_S5_S8);
+              IPV4_STR_ADDR_TO_INT_NWBO ( pgw_default_dns_ipv4_address,     config_pP->pgw_config.ipv4.default_dns_v4, "BAD IPv4 ADDRESS FORMAT FOR DEFAULT DNS !\n" )
+              IPV4_STR_ADDR_TO_INT_NWBO ( pgw_default_dns_sec_ipv4_address, config_pP->pgw_config.ipv4.default_dns_sec_v4, "BAD IPv4 ADDRESS FORMAT FOR DEFAULT DNS SEC!\n" )
+          }
       }
+
   } else {
       SPGW_APP_WARN("CONFIG P-GW not found\n");
   }
