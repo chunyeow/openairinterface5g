@@ -226,6 +226,16 @@ AC_ARG_ENABLE([s11],
 AM_CONDITIONAL([DISABLE_S11], [test x$enable_s11 == xno])
 
 
+dnl *** Enable GTPU IN KERNEL ***
+AC_ARG_ENABLE([gtp1u_in_kernel],
+              AS_HELP_STRING([--enable-gtp1u-in-kernel], [Enable GTPU IN KERNEL]),
+              [case "${enableval}" in
+                 yes) gtp1u_in_kernel=true; CFLAGS="$CFLAGS -DENABLE_USE_GTPU_IN_KERNEL" ;;
+                 no ) gtp1u_in_kernel=false;;
+                 *) AC_MSG_ERROR(bad value ${enableval} for --enable-gtp1u-in-kernel) ;;
+               esac],
+              [gtp1u_in_kernel=false])
+              
 dnl *** Enable PCAP for SGI ***
 AC_ARG_ENABLE([pcap_for_sgi],
               AS_HELP_STRING([--enable-pcap-for-sgi], [Enable PCAP for SGI layer]),
@@ -254,7 +264,7 @@ AC_ARG_ENABLE([raw_socket_for_sgi],
                  no ) raw_socket_for_sgi=false;;
                  *) AC_MSG_ERROR(bad value ${enableval} for --enable-raw-socket-for-sgi) ;;
                esac],
-              [if test x$pcap_for_sgi != xtrue && test x$netfilter_for_sgi != xtrue; then 
+              [if test x$pcap_for_sgi != xtrue && test x$netfilter_for_sgi != xtrue && test x$gtp1u_in_kernel != xtrue; then 
                   raw_socket_for_sgi=true; CFLAGS="$CFLAGS -DENABLE_USE_RAW_SOCKET_FOR_SGI"
                else
                   raw_socket_for_sgi=false
@@ -264,6 +274,8 @@ AM_CONDITIONAL([ENABLE_USE_PCAP_FOR_SGI],       [test x$pcap_for_sgi == xtrue])
 AM_CONDITIONAL([ENABLE_USE_NETFILTER_FOR_SGI],  [test x$netfilter_for_sgi == xtrue])
 AM_CONDITIONAL([ENABLE_USE_RAW_SOCKET_FOR_SGI], [test x$raw_socket_for_sgi == xtrue])
 AM_CONDITIONAL([ENABLE_USE_RAW_SOCKET_FOR_SGI], [ test x$pcap_for_sgi != xtrue && test x$netfilter_for_sgi != xtrue ])
+AM_CONDITIONAL([ENABLE_USE_GTPU_IN_KERNEL],     [ test x$gtp1u_in_kernel == xtrue ])
+AM_CONDITIONAL([ENABLE_USE_GTPU_IN_KERNEL],     [ test x$raw_socket_for_sgi == xtrue && x$pcap_for_sgi != xtrue && test x$netfilter_for_sgi != xtrue ])
 
 AS_IF([test "x$enable_pcap_for_sgi" == "xyes"], [
     dnl *** libpcap support ***
@@ -406,6 +418,10 @@ fi
 
 if test x$raw_socket_for_sgi == xtrue; then
     echo "SGI raw socket.: yes"
+fi
+
+if test x$gtp1u_in_kernel == xtrue; then
+    echo "GTPU in kernel.: yes"
 fi
 
 
