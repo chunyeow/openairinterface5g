@@ -167,7 +167,8 @@ then
     bash_exec "./autogen.sh"
     cd ./$OBJ_DIR
     echo_success "Invoking configure"
-    ../configure HAVE_CHECK=true --enable-debug --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
+    #../configure HAVE_CHECK=true --enable-debug --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
+    ../configure HAVE_CHECK=true --enable-debug --enable-standalone-epc --enable-gtp1u-in-kernel LDFLAGS=-L/usr/local/lib
 else
     cd ./$OBJ_DIR
 fi
@@ -219,6 +220,7 @@ fi
 rm -f /tmp/source.txt
 VARIABLES="
            GNU_DEBUGGER\|\
+           REALM\|\
            ENB_INTERFACE_NAME_FOR_S1_MME\|\
            ENB_IPV4_ADDRESS_FOR_S1_MME\|\
            ENB_INTERFACE_NAME_FOR_S1U\|\
@@ -274,18 +276,86 @@ PGW_IPV4_ADDR_FOR_SGI=$(                     echo $PGW_IPV4_ADDR_FOR_SGI        
 #                  $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP
                   
 
-#if [ $? -eq 1 ]; then
-#        echo_success "Found open VLAN network configuration"
-#        clean_epc_vlan_network
-#        build_mme_spgw_vlan_network
-#else
-#   clean_epc_vlan_network
-#create_sgi_vlans
-delete_sgi_vlans
-#fi
 
-get_mac_router
+#delete_sgi_vlans
+#get_mac_router
 
+echo "   Clearing any existing rules and setting default policy.."
+rmmod iptable_raw > /dev/null 2>&1
+rmmod iptable_mangle > /dev/null 2>&1
+rmmod iptable_nat > /dev/null 2>&1
+rmmod iptable_filter > /dev/null 2>&1
+rmmod ip_tables > /dev/null 2>&1
+rmmod xt_state xt_mark xt_GTPUAH xt_GTPURH xt_tcpudp xt_connmark ipt_LOG ipt_MASQUERADE > /dev/null 2>&1
+rmmod x_tables > /dev/null 2>&1
+rmmod nf_conntrack_netlink nfnetlink nf_nat nf_conntrack_ipv4 nf_conntrack  > /dev/null 2>&1
+
+modprobe ip_tables
+modprobe x_tables
+
+iptables -P INPUT ACCEPT
+iptables -F INPUT
+iptables -P OUTPUT ACCEPT
+iptables -F OUTPUT
+iptables -P FORWARD ACCEPT
+iptables -F FORWARD
+iptables -t nat -F
+iptables -t mangle -F
+iptables -t filter -F
+iptables -t raw -F
+
+ip route flush cache
+
+(cd $OPENAIRCN_DIR/GTPV1-U/GTPUAH;make;cp -f ./Bin/libxt_*.so /lib/xtables;insmod $OPENAIRCN_DIR/GTPV1-U/GTPUAH/Bin/xt_GTPUAH.ko)
+(cd $OPENAIRCN_DIR/GTPV1-U/GTPURH;make;cp -f ./Bin/libxt_*.so /lib/xtables;insmod $OPENAIRCN_DIR/GTPV1-U/GTPURH/Bin/xt_GTPURH.ko)
+
+
+echo "   Enabling forwarding"
+bash_exec "sysctl -w net.ipv4.ip_forward=1"
+assert "  `sysctl -n net.ipv4.ip_forward` -eq 1" $LINENO
+
+# Dynamic IP users:
+#
+#   If you get your IP address dynamically from SLIP, PPP, or DHCP,
+#   enable this following option.  This enables dynamic-address hacking
+#   which makes the life with Diald and similar programs much easier.
+#
+echo "   Disabling DynamicAddr.."
+bash_exec "sysctl -w net.ipv4.ip_dynaddr=0"
+assert "  `sysctl -n net.ipv4.ip_dynaddr` -eq 0" $LINENO
+
+bash_exec "sysctl -w net.ipv4.conf.all.log_martians=0"
+assert "  `sysctl -n net.ipv4.conf.all.log_martians` -eq 0" $LINENO
+
+
+echo "   Disabling reverse path filtering"
+bash_exec "sysctl -w net.ipv4.conf.all.rp_filter=1"
+assert "  `sysctl -n net.ipv4.conf.all.rp_filter` -eq 1" $LINENO
+bash_exec "sysctl -w net.ipv4.conf.$PGW_INTERFACE_NAME_FOR_SGI.rp_filter=1"
+assert "  `sysctl -n net.ipv4.conf.$PGW_INTERFACE_NAME_FOR_SGI.rp_filter` -eq 1" $LINENO
+bash_exec "sysctl -w net.ipv4.conf.$SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.rp_filter=1"
+assert "  `sysctl -n net.ipv4.conf.$SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.rp_filter` -eq 1" $LINENO
+
+echo "0" > /proc/sys/net/ipv4/conf/all/proxy_arp
+echo "0" > /proc/sys/net/ipv4/conf/$PGW_INTERFACE_NAME_FOR_SGI/proxy_arp
+echo "0" > /proc/sys/net/ipv4/conf/$SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP/proxy_arp
+
+# REMINDER for tuning
+bash_exec "sysctl -w net.ipv4.netfilter.ip_conntrack_max=10000"
+
+iptables -A FORWARD -m state --state INVALID -j LOG
+
+
+#iptables -A OUTPUT       -t filter  -j LOG --log-level crit --log-ip-options --log-prefix "OUTPUT filter:"
+#iptables -A OUTPUT       -t mangle  -j LOG --log-level crit --log-ip-options --log-prefix "OUTPUT mangle:"
+#iptables -A OUTPUT       -t nat     -j LOG --log-level crit --log-ip-options --log-prefix "OUTPUT nat:"
+#iptables -A OUTPUT       -t raw     -j LOG --log-level crit --log-ip-options --log-prefix "OUTPUT raw:"
+#iptables -A FORWARD      -t filter  -j LOG --log-level crit --log-ip-options --log-prefix "FORWARD filter:"
+#iptables -A FORWARD      -t mangle  -j LOG --log-level crit --log-ip-options --log-prefix "FORWARD mangle:"
+#iptables -I POSTROUTING  -t mangle  -j LOG --log-level crit --log-ip-options --log-prefix " ---> POSTROUTING mangle:"
+#iptables -I POSTROUTING  -t nat     -j LOG --log-level crit --log-ip-options --log-prefix " ---> POSTROUTING nat:"
+#iptables -A PREROUTING   -t nat     -j LOG --log-level crit --log-ip-options --log-prefix " <--- PREROUTING nat:"
+#iptables -I PREROUTING   -t mangle  -j LOG --log-level crit --log-ip-options --log-prefix " <--- PREROUTING mangle:"
 ##################################################
 # LAUNCH MME + S+P-GW executable
 ##################################################
@@ -316,15 +386,35 @@ PCAP_SGI_LOG_FILE=tshark_mme_sgi.$HOSTNAME.pcap
 
 
 touch $THIS_SCRIPT_PATH/kill_epc.bash
-echo '#!/bin/bash' > $THIS_SCRIPT_PATH/kill_epc.bash
-echo "pkill -P $$" >> $THIS_SCRIPT_PATH/kill_epc.bash
+echo '#!/bin/bash' >                 $THIS_SCRIPT_PATH/kill_epc.bash
+echo "pkill -P $$" >>                $THIS_SCRIPT_PATH/kill_epc.bash
+echo "iptables -P INPUT ACCEPT" >>   $THIS_SCRIPT_PATH/kill_epc.bash
+echo "iptables -F INPUT" >>          $THIS_SCRIPT_PATH/kill_epc.bash
+echo "iptables -P OUTPUT ACCEPT" >>  $THIS_SCRIPT_PATH/kill_epc.bash
+echo "iptables -F OUTPUT" >>         $THIS_SCRIPT_PATH/kill_epc.bash
+echo "iptables -P FORWARD ACCEPT" >> $THIS_SCRIPT_PATH/kill_epc.bash
+echo "iptables -F FORWARD" >>        $THIS_SCRIPT_PATH/kill_epc.bash
+echo "iptables -t nat -F" >>         $THIS_SCRIPT_PATH/kill_epc.bash
+echo "iptables -t mangle -F" >>      $THIS_SCRIPT_PATH/kill_epc.bash
+echo "iptables -t filter -F" >>      $THIS_SCRIPT_PATH/kill_epc.bash
+echo "iptables -t raw -F" >>         $THIS_SCRIPT_PATH/kill_epc.bash
+echo "ip route flush cache" >>       $THIS_SCRIPT_PATH/kill_epc.bash
+echo "rmmod iptable_raw" >>          $THIS_SCRIPT_PATH/kill_epc.bash
+echo "rmmod iptable_mangle" >>       $THIS_SCRIPT_PATH/kill_epc.bash
+echo "rmmod iptable_nat" >>          $THIS_SCRIPT_PATH/kill_epc.bash
+echo "rmmod iptable_filter" >>       $THIS_SCRIPT_PATH/kill_epc.bash
+echo "rmmod ip_tables" >>            $THIS_SCRIPT_PATH/kill_epc.bash
+echo "rmmod xt_state xt_mark xt_GTPUAH xt_GTPURH  xt_tcpudp xt_connmark ipt_LOG ipt_MASQUERADE" >>            $THIS_SCRIPT_PATH/kill_epc.bash
+echo "rmmod x_tables" >>             $THIS_SCRIPT_PATH/kill_epc.bash
+echo "rmmod nf_conntrack_netlink nfnetlink nf_nat nf_conntrack_ipv4 nf_conntrack" >>             $THIS_SCRIPT_PATH/kill_epc.bash
+ 
 chmod 777 $THIS_SCRIPT_PATH/kill_epc.bash
 
 
 trap control_c SIGINT
 
-echo_success "Resolving hss.eur"
-HSS_IP=$(get_ip hss.eur)
+echo_success "Resolving hss.$REALM"
+HSS_IP=$(get_ip hss.$REALM)
 echo_success "HSS_IP: $HSS_IP"
 
 HSS_ROUTE=$(ip route get $HSS_IP | grep $HSS_IP )
@@ -378,6 +468,6 @@ if [ "x$GNU_DEBUGGER" == "xyes" ]; then
     gdb 2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE
 else 
     echo_success "Running without GDB"
-    $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE
+    valgrind --tool=memcheck $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE
 fi     
 
