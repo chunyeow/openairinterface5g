@@ -302,25 +302,18 @@ void nas_tx_timeout(struct net_device *dev){
   printk("TX_TIMEOUT: transmit timed out %s\n",dev->name);
 }
 
-#ifdef  KERNEL_VERSION_GREATER_THAN_2629
 static const struct net_device_ops nasmesh_netdev_ops = {
 
 	.ndo_open		= nas_open,
 	.ndo_stop		= nas_stop,
 	.ndo_start_xmit		= nas_hard_start_xmit,
 	.ndo_validate_addr	= NULL,
-#ifdef  KERNEL_VERSION_GREATER_THAN_32
-#ifndef KERNEL_VERSION_GREATER_THAN_301
-	.ndo_set_multicast_list	= NULL,
-#endif
-#endif
 	.ndo_set_mac_address	= NULL,
 	.ndo_set_config     = nas_set_config,
 	.ndo_do_ioctl       = nas_CTL_ioctl,
 	.ndo_change_mtu		= nas_change_mtu,
 	.ndo_tx_timeout		= nas_tx_timeout,
 };
-#endif
 
 //---------------------------------------------------------------------------
 // Initialisation of the network device
@@ -337,23 +330,7 @@ void nas_init(struct net_device *dev){
     //	priv=(struct nas_priv *)(dev->priv);
     priv=netdev_priv(dev);
     //
-#ifdef KERNEL_VERSION_GREATER_THAN_2629    
     dev->netdev_ops = &nasmesh_netdev_ops;
-#else
-    dev->open = nas_open;
-    dev->stop = nas_stop;
-    dev->set_config = nas_set_config;
-    dev->hard_start_xmit = nas_hard_start_xmit;
-    dev->do_ioctl = nas_CTL_ioctl;
-    dev->get_stats = nas_get_stats;
-    //  dev->rebuild_header = NULL;
-    //  dev->hard_header = NULL;
-    dev->change_mtu = nas_change_mtu;
-    //  dev->hard_header_cache = NULL;
-    //  dev->header_cache_update = NULL;
-    dev->tx_timeout = nas_tx_timeout;
-    //
-#endif 
     // dev->type = ARPHRD_EUROPENAIRMESH;
     //dev->type = ARPHRD_ETHER;
     //  dev->features = NETIF_F_NO_CSUM;
@@ -557,7 +534,7 @@ void cleanup_module(void){
 
 
 
-#ifdef  KERNEL_VERSION_GREATER_THAN_32
+#if  LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0)
 
 #define DRV_NAME		"NASMESH"
 #define DRV_VERSION		"3.0.2"DRV_NAME
@@ -571,7 +548,7 @@ MODULE_PARM_DESC(nas_IMEI,"The IMEI Hardware address (64-bit, decimal nibbles)")
 module_param(nas_is_clusterhead,uint,0444);
 MODULE_PARM_DESC(nas_is_clusterhead,"The Clusterhead Indicator");
 
-#ifndef KERNEL_VERSION_GREATER_THAN_301
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,1)
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION(DRV_DESCRIPTION);
 MODULE_AUTHOR(DRV_AUTHOR);

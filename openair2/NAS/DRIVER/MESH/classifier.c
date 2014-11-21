@@ -41,8 +41,6 @@
 #include <net/route.h>
 
 
-//#define KERNEL_VERSION_GREATER_THAN_2622 1
-//#define KERNEL_VERSION_GREATER_THAN_2630 1
 //#define MPLS
 
 #ifdef MPLS
@@ -613,18 +611,10 @@ void nas_CLASS_send(struct sk_buff *skb,int inst){
 	version = 6;
 
 	protocolh=nas_TOOL_get_protocol6(
-#ifdef KERNEL_VERSION_GREATER_THAN_2622				      
 					 (struct ipv6hdr *)(skb_network_header(skb)),
-#else
-					 skb->nh.ipv6h,
-#endif 
 					 &protocol);
 	dscp=nas_TOOL_get_dscp6(
-#ifdef KERNEL_VERSION_GREATER_THAN_2622				      
 				(struct ipv6hdr *)(skb_network_header(skb))
-#else
-				skb->nh.ipv6h
-#endif
 				); 
 #ifdef NAS_DEBUG_CLASS
 	printk("NAS_CLASS_SEND: %p %d %p %d %p \n",skb, dscp, gpriv, inst, &cx_searcher);
@@ -639,18 +629,10 @@ void nas_CLASS_send(struct sk_buff *skb,int inst){
       case ETH_P_IP:
       
       
-#ifdef KERNEL_VERSION_GREATER_THAN_2622				      
 	dscp=nas_TOOL_get_dscp4((struct iphdr *)(skb_network_header(skb)));
-#else
-	dscp=nas_TOOL_get_dscp4(skb->nh.iph);
-#endif
 	cx=nas_CLASS_cx4(skb,dscp,gpriv,inst,&cx_searcher);
 	protocolh=nas_TOOL_get_protocol4(
-#ifdef KERNEL_VERSION_GREATER_THAN_2622				      
 					 (struct iphdr *)(skb_network_header(skb)),
-#else
-					 skb->nh.iph,
-#endif
 					 &protocol);
 #ifdef NAS_DEBUG_CLASS
 	printk("NAS_CLASS_SEND: Got IPv4 packet (%x), dscp = %d, cx = %x\n",ntohs(skb->protocol),dscp,cx);

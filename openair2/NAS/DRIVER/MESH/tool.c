@@ -37,9 +37,6 @@
 //#include <linux/udp.h>
 //#include <linux/tcp.h>
 
-//#define  KERNEL_VERSION_GREATER_THAN_2622 1 
-//#define  KERNEL_VERSION_GREATER_THAN_2630 1 
-
 //#define NAS_DEBUG_TOOL 1 
 
 //---------------------------------------------------------------------------
@@ -565,27 +562,15 @@ void print_TOOL_pk_ipv4(struct iphdr *iph){
 void print_TOOL_pk_all(struct sk_buff *skb){
 //---------------------------------------------------------------------------
 	printk("Skb:\t %p, len = %u\n", skb, skb->len);
-#ifdef KERNEL_VERSION_GREATER_THAN_2629
 	//navid: need to calculate the current used space: fixme?
 	printk("Skb:\t available buf space = %u \n", skb->truesize);
-#else
-	printk("Skb:\t available buf space = %u, cur used space = %u \n", skb->end-skb->head, skb->tail-skb->data);
-#endif
 	switch (ntohs(skb->protocol))
 	{
 	case ETH_P_IPV6:
-#ifdef KERNEL_VERSION_GREATER_THAN_2622
 	  print_TOOL_pk_ipv6((struct ipv6hdr *)skb->network_header);
-#else
-	  print_TOOL_pk_ipv6(skb->nh.ipv6h);
-#endif
 	  break;
 	case ETH_P_IP:
-#ifdef KERNEL_VERSION_GREATER_THAN_2622
 	  print_TOOL_pk_ipv4((struct iphdr *)skb->network_header);
-#else
-	  print_TOOL_pk_ipv4(skb->nh.iph);
-#endif
 	  break;
 	}
 }

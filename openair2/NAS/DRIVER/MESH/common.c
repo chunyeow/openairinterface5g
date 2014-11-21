@@ -93,11 +93,7 @@ void nas_COMMON_receive(uint16_t dlen,
 
   skb->dev = nasdev[inst];
   
-#ifdef KERNEL_VERSION_GREATER_THAN_2622
   skb_reset_mac_header(skb);
-#else
-  skb->mac.raw = skb->data;
-#endif
 //printk("[NAC_COMMIN_RECEIVE]: Packet Type %d (%d,%d)",skb->pkt_type,PACKET_HOST,PACKET_BROADCAST);
   skb->pkt_type = PACKET_HOST;
 
@@ -115,11 +111,7 @@ void nas_COMMON_receive(uint16_t dlen,
 #endif
 
 
-#ifdef KERNEL_VERSION_GREATER_THAN_2622
     skb_reset_network_header(skb);
-#else
-	skb->nh.ipv6h = (struct ipv6hdr *)skb->data;
-#endif
 
 	skb->protocol = htons(ETH_P_IPV6);
 //	printk("Writing packet with protocol %x\n",ntohs(skb->protocol));
@@ -171,14 +163,9 @@ void nas_COMMON_receive(uint16_t dlen,
 		  
 #endif
 		  
-#ifdef KERNEL_VERSION_GREATER_THAN_2622
     skb_reset_network_header(skb);
     network_header = (struct iphdr *)skb_network_header(skb);
     protocol = network_header->protocol;
-#else
-	skb->nh.iph = (struct iphdr *)skb->data;
-	protocol=skb->nh.iph->protocol;
-#endif 
 
 #ifdef NAS_DEBUG_RECEIVE
 	switch (protocol) {
@@ -213,7 +200,6 @@ void nas_COMMON_receive(uint16_t dlen,
 #endif //NAS_DEBUG_RECEIVE
 
 
-#ifdef KERNEL_VERSION_GREATER_THAN_2622
 	network_header->check = 0;
 	network_header->check = ip_fast_csum((unsigned char *) network_header,
 				 network_header->ihl);
@@ -221,16 +207,6 @@ void nas_COMMON_receive(uint16_t dlen,
 	printk("[NAS][COMMON][RECEIVE] IP Fast Checksum %x \n", network_header->check);
 #endif
 
-#else
-	skb->nh.iph->check = 0;
-	skb->nh.iph->check = ip_fast_csum((unsigned char *)skb->data,
-					  skb->nh.iph->ihl);
-
-#ifdef NAS_DEBUG_RECEIVE
-	printk("[NAS][COMMON][RECEIVE] IP Fast Checksum %x \n", skb->nh.iph->check);
-#endif 
-
-#endif 
 	//	  if (!(skb->nh.iph->frag_off & htons(IP_OFFSET))) {
 		    
 
@@ -241,13 +217,8 @@ void nas_COMMON_receive(uint16_t dlen,
 		
 	  case IPPROTO_TCP:
 
-#ifdef KERNEL_VERSION_GREATER_THAN_2622
 	    cksum  = (uint16_t*)&(((struct tcphdr*)((network_header + (network_header->ihl<<2))))->check);
 	    //check  = csum_tcpudp_magic(((struct iphdr *)network_header)->saddr, ((struct iphdr *)network_header)->daddr, tcp_hdrlen(skb), IPPROTO_TCP, ~(*cksum));	    
-#else
-	    cksum  = (uint16_t*)&(((struct tcphdr*)((skb->data + (skb->nh.iph->ihl<<2))))->check);
-	    //check  = csum_tcpudp_magic(((struct iphdr *)skb->data)->saddr, ((struct iphdr *)skb->data)->daddr,tcp_hdrlen(skb), IPPROTO_TCP, ~(*cksum));
-#endif
 
 #ifdef NAS_DEBUG_RECEIVE
 	    printk("[NAS][COMMON] Inst %d TCP packet calculated CS %x, CS = %x (before), SA (%x)%x, DA (%x)%x\n", 
@@ -271,13 +242,8 @@ void nas_COMMON_receive(uint16_t dlen,
 	
 	  case IPPROTO_UDP:
 
-#ifdef KERNEL_VERSION_GREATER_THAN_2622
 	    cksum  = (uint16_t*)&(((struct udphdr*)((network_header + (network_header->ihl<<2))))->check);
 	    // check = csum_tcpudp_magic(((struct iphdr *)network_header)->saddr, ((struct iphdr *)network_header)->daddr, udp_hdr(skb)->len, IPPROTO_UDP, ~(*cksum));
-#else		
-	    cksum  = (uint16_t*)&(((struct udphdr*)((skb->data + (skb->nh.iph->ihl<<2))))->check);
-	    //check = csum_tcpudp_magic(((struct iphdr *)skb->data)->saddr, ((struct iphdr *)skb->data)->daddr, udp_hdr(skb)->len, IPPROTO_UDP, ~(*cksum));
-#endif 
 #ifdef NAS_DEBUG_RECEIVE
 	    printk("[NAS][COMMON] Inst %d UDP packet CS = %x (before), SA (%x)%x, DA (%x)%x\n", 
 		   inst, 
@@ -309,7 +275,6 @@ void nas_COMMON_receive(uint16_t dlen,
 	  }
 	//	  }
 
-	//#endif  // KERNEL VERSION > 22
 #endif //NAS_ADDRESS_FIX
 
 	skb->protocol = htons(ETH_P_IP);
