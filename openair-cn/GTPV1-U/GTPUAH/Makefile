@@ -10,6 +10,7 @@
 #
 ####################################################################################
 
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 export BIN_DIR ?= $(shell pwd)/Bin
 KVERSION = $(shell uname -r)
 KVERSION_LAST_DIGIT = $(shell echo ${KVERSION} | cut -d "." -f 3 | cut -d "-" -f 1)
@@ -19,11 +20,11 @@ EXTRA_CFLAGS += -DKVERSION=$(KVERSION_LAST_DIGIT)
 
 all: xtlib
 	echo "Building for Kernel Version: $(KVERSION_LAST_DIGIT)"
-	make -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
+	make -C $(KERNEL_DIR)/build M=$(PWD) modules
 	mv xt_GTPUAH.ko $(BIN_DIR)/
 
 clean: libclean
-	make -C /lib/modules/$(KVERSION)/build M=$(PWD) clean
+	make -C $(KERNEL_DIR)/build M=$(PWD) clean
 
 ################################################################################
 # The next section is used by libxt_GTPUAH

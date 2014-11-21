@@ -1,5 +1,6 @@
 # NASMESH Driver makefile
 #
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 NAS_UPDIR	:= $(shell /bin/pwd)
 
 ####################################################
@@ -49,11 +50,11 @@ endif
 ####################################################
 
 #netlink.ko:
-#	make NAS_NETLINK=1 V=1 -C /usr/src/linux-$(shell echo `uname -r`) M=`pwd` modules
+#	make NAS_NETLINK=1 V=1 -C $(KERNEL_DIR) M=`pwd` modules
 
 #nasmesh.ko:
-#	make  V=1 -C /usr/src/linux-$(shell echo `uname -r`) M=`pwd` modules
+#	make  V=1 -C $(KERNEL_DIR) M=`pwd` modules
 
 clean:
 	rm -f $(nasmesh-objs) $(obj-m)
-#	make -C /usr/src/linux-$(shell echo `uname -r`) M=`pwd` modules
+#	make -C $(KERNEL_DIR) modules

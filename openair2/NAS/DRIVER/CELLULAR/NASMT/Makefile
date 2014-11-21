@@ -1,5 +1,6 @@
 # NAS CELLULAR Driver makefile
 #
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 NAS_UPDIR	:= $(shell /bin/pwd)
 
 ####################################################
@@ -60,10 +61,10 @@ endif
 ####################################################
 
 #netlink.ko:
-	#make $(x)$(y) NAS_NETLINK=1 V=1 -C /usr/src/linux-$(shell echo `uname -r`) M=`pwd` modules
+	#make $(x)$(y) NAS_NETLINK=1 V=1 -C $(KERNEL_DIR) M=`pwd` modules
 
 #nasmesh.ko:
-#	make  V=1 -C /usr/src/linux-$(shell echo `uname -r`) M=`pwd` modules
+#	make  V=1 -C  $(KERNEL_DIR) M=`pwd` modules
 print:
 	@echo subversion : $(SUBVERSION)
 	@echo RRC_DIR $(RRC_DIR)

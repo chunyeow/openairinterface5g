@@ -7,7 +7,7 @@
 # You can modify the below as well, but probably
 # won't need to.
 
-CC = gcc
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 #UPDIR	:= /homes/mwett/rh_mw/RHODOS
 COMMON_DIR = $(OPENAIR2_DIR)/COMMON
 RRC_CELL_DIR = $(OPENAIR2_DIR)/RRC/CELLULAR
@@ -20,7 +20,7 @@ ASN1_DIR = $(OPENAIR2_DIR)
 #RRC_DIR =$(UPDIR)/access_stratum/l3/rrc
 
 #CFLAGS = -Wall -g -DDEBUG_RRC_STATE -DUSER_MODE -DNODE_RG -DNODE_MT
-CFLAGS = -Wall -mmmx -msse -msse2 -g -ggdb -std=gnu99 -I/usr/src/linux/include/  -DUSER_MODE -DNB_ANTENNAS_RX=1
+CFLAGS = -Wall -mmmx -msse -msse2 -g -ggdb -std=gnu99 -I$(KERNEL_DIR)  -DUSER_MODE -DNB_ANTENNAS_RX=1
 
 ifdef CELL_RRM
 CFLAGS += -DNODE_RG
