@@ -254,21 +254,13 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
               free(cidr);
 
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
-              if (snprintf(system_cmd, 128,
-                      "echo 0 > /proc/sys/net/ipv4/conf/%s/send_redirects",
-                      config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
-                  SPGW_APP_INFO("Disable send ICMP redirect: %s\n",system_cmd);
-                  system(system_cmd);
-              } else {
-                  SPGW_APP_ERROR("Disable send ICMP redirect for %s\n",
-                          config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
-              }
+              system("echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects");
 #endif
               in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
               SPGW_APP_INFO("Parsing configuration file found sgw_ipv4_address_for_S1u_S12_S4_up: %s/%d on %s\n",
-            		  inet_ntoa(in_addr_var),
-            		  config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S1u_S12_S4_up,
-            		  config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
+                      inet_ntoa(in_addr_var),
+                      config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S1u_S12_S4_up,
+                      config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
 
 
               config_pP->sgw_config.ipv4.sgw_interface_name_for_S5_S8_up = strdup(sgw_interface_name_for_S5_S8_up);
@@ -280,9 +272,9 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
               free(cidr);
               in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S5_S8_up;
               SPGW_APP_INFO("Parsing configuration file found sgw_ipv4_address_for_S5_S8_up: %s/%d on %s\n",
-            		  inet_ntoa(in_addr_var),
-            		  config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S5_S8_up,
-            		  config_pP->sgw_config.ipv4.sgw_interface_name_for_S5_S8_up);
+                      inet_ntoa(in_addr_var),
+                      config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S5_S8_up,
+                      config_pP->sgw_config.ipv4.sgw_interface_name_for_S5_S8_up);
 
               config_pP->sgw_config.ipv4.sgw_interface_name_for_S11 = strdup(sgw_interface_name_for_S11);
               cidr = strdup(sgw_ipv4_address_for_S11);
@@ -293,9 +285,9 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
               free(cidr);
               in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S11;
               SPGW_APP_INFO("Parsing configuration file found sgw_ipv4_address_for_S11: %s/%d on %s\n",
-            		  inet_ntoa(in_addr_var),
-            		  config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S11,
-            		  config_pP->sgw_config.ipv4.sgw_interface_name_for_S11);
+                      inet_ntoa(in_addr_var),
+                      config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S11,
+                      config_pP->sgw_config.ipv4.sgw_interface_name_for_S11);
           }
       }
   }
@@ -348,7 +340,8 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
 
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
               if (snprintf(system_cmd, 128,
-                      "iptables -I POSTROUTING -t mangle -o %s -m state --state NEW  -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
+                      //"iptables -I POSTROUTING -t mangle -o %s -m state --state NEW  -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
+                      "iptables -I POSTROUTING -t mangle -o %s -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
                       config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
                   SPGW_APP_INFO("Save mark: %s\n",system_cmd);
                   system(system_cmd);
