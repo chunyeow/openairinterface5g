@@ -76,7 +76,6 @@ static inline void nasmesh_unlock(void)
 	mutex_unlock(&nasmesh_mutex);
 }
 
-#ifdef KERNEL_VERSION_GREATER_THAN_2629
 // This can also be implemented using thread to get the data from PDCP without blocking.
 static void nas_nl_data_ready (struct sk_buff *skb)
 {
@@ -95,57 +94,6 @@ static void nas_nl_data_ready (struct sk_buff *skb)
     //kfree_skb(skb); // not required,
   }
 }
-#else
-
-static struct task_struct *netlink_rx_thread;
-
-// this thread is used to avoid blocking other system calls from entering the kernel
-static int nas_netlink_rx_thread(void *data) { 
-
-  int err;
-  struct sk_buff *skb = NULL;
-  struct nlmsghdr *nlh = NULL;
-  
-  printk("[OAI_IP_DRV][NETLINK] Starting RX Thread \n");
-
-  while (!kthread_should_stop()) {
-    
-    if (nas_nl_sk) {
-      skb = skb_recv_datagram(nas_nl_sk, 0, 0, &err);   
-
-      if (skb) {
-	
-#ifdef NETLINK_DEBUG
-	printk("[OAI_IP_DRV][NETLINK] Received socket from PDCP\n");
-#endif //NETLINK_DEBUG
-	nlh = (struct nlmsghdr *)skb->data;
-	
-	nas_COMMON_QOS_receive(nlh);
-	
-	skb_free_datagram(nas_nl_sk,skb);
-      }
-      
-    }
-    else {
-      if (exit_netlink_thread == 1) {
-	printk("[OAI_IP_DRV][NETLINK] exit_netlink_thread\n");
-	break;
-      }
-    }
-  } // while
-  
-  printk("[OAI_IP_DRV][NETLINK] Exiting RX thread\n");
-  
-  return(0);
-  
-}
-
-static void nas_nl_data_ready (struct sock *sk, int len)
-
-{ 
-  wake_up_interruptible(sk->sk_sleep);
-}
-#endif
 
 
 int oai_nw_drv_netlink_init(void)
@@ -168,15 +116,11 @@ int oai_nw_drv_netlink_init(void)
       &oai_netlink_cfg);
 #else /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0) */
   nas_nl_sk = netlink_kernel_create(
-# ifdef KERNEL_VERSION_GREATER_THAN_2622
 				    &init_net,       
-# endif
 				    NAS_NETLINK_ID, 
 				    0, 
 				    nas_nl_data_ready, 
-# ifdef KERNEL_VERSION_GREATER_THAN_2622
 				    &nasmesh_mutex, // NULL
-# endif
 				    THIS_MODULE);
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0) */
 
@@ -186,12 +130,7 @@ int oai_nw_drv_netlink_init(void)
     return(-1);
   }
 
-#ifdef KERNEL_VERSION_GREATER_THAN_2629
   
-#else
-    // Create receive thread
-  netlink_rx_thread = kthread_run(nas_netlink_rx_thread, NULL, "NAS_NETLINK_RX_THREAD");
-#endif
 
   return(0);
   
@@ -204,11 +143,7 @@ void oai_nw_drv_netlink_release(void) {
   printk("[OAI_IP_DRV][NETLINK] Releasing netlink socket\n");
  
   if(nas_nl_sk){
-#ifdef KERNEL_VERSION_GREATER_THAN_2629 
     netlink_kernel_release(nas_nl_sk); //or skb->sk
-#else
-    sock_release(nas_nl_sk->sk_socket);
-#endif
     
   }
   
