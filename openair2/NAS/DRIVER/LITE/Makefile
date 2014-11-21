@@ -8,7 +8,7 @@ SET_X64=$(shell if [ $(KERNEL_ARCH) = 'x86_64' ]; then echo true ; fi)
 ####################################################
 #      EXTRA COMPILER FLAGS
 ####################################################
-EXTRA_CFLAGS = -I$(OPENAIR2_DIR)/COMMON -fno-common $(if $(IS_KERNEL_GREATER_THAN_2620),-mregparm=3  -fno-stack-protector -mpreferred-stack-boundary=4)  $(if $(SET_X64),-DARCH_64,) $(if $(SET_X64),-mcmodel=kernel,) 
+EXTRA_CFLAGS = -I$(OPENAIR2_DIR)/COMMON -fno-common -mregparm=3  -fno-stack-protector -mpreferred-stack-boundary=4 $(if $(SET_X64),-DARCH_64,) $(if $(SET_X64),-mcmodel=kernel,) 
 
 ifdef ADDRCONF
 EXTRA_CFLAGS += -DADDRCONF
