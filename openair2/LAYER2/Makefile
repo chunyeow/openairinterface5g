@@ -10,16 +10,9 @@
 
 
 CCC = gcc
-KERNEL_MAIN_TYPE=$(shell echo `uname -r | cut -d. -f-2  | tr "." "_"`)
-export KERNEL_MAIN_TYPE
-
-SUBVERSION=$(shell echo `grep '^SUBLEVEL =' /usr/src/linux/Makefile | sed -e 's, ,,g' | sed -e 's/SUBLEVEL=//'`)
-IS_KERNEL_SUBVERSION_GREATER_THAN_20=$(shell if [ $(SUBVERSION) -ge 20 ] ; then echo true ; fi)
-IS_KERNEL_SUBVERSION_GREATER_THAN_29=$(shell if [ $(SUBVERSION) -ge 29 ] ; then echo true ; fi)
-GT2629= $(if $(IS_KERNEL_SUBVERSION_GREATER_THAN_29),-DKERNEL_VERSION_GREATER_THAN_2629=1)
 KERNEL_ARCH=$(shell echo `uname -m`)
-SET_REGPARM=$(shell if [ $(KERNEL_ARCH) = 'i686' -a $(SUBVERSION) -ge 20 ]; then echo true ; fi)
-SET_X64=$(shell if [ $(KERNEL_ARCH) = 'x86_64' -a $(SUBVERSION) -ge 20 ]; then echo true ; fi)
+SET_REGPARM=$(shell if [ $(KERNEL_ARCH) = 'i686' ]; then echo true ; fi)
+SET_X64=$(shell if [ $(KERNEL_ARCH) = 'x86_64' ]; then echo true ; fi)
 ifdef RTAI
 # Get the RTAI variables
 CCC = $(shell rtai-config --cc)
@@ -163,14 +156,4 @@ EXTRA_CFLAGS += -Wall -Wstrict-prototypes  $(if $(SET_X64),-DARCH_64,) $(if $(SE
 
 
 EXTRA_CFLAGS += -I$(OPENAIR2_DIR)/COMMON -I$(OPENAIR2_DIR)/PHY_INTERFACE -I$(OPENAIR2_DIR)/UTIL/TIMER -I$(OPENAIR2_DIR)/UTIL/MATH -I$(OPENAIR2_DIR)/UTIL/LISTS -I$(OPENAIR2_DIR)/UTIL/MEM -I$(OPENAIR2_DIR)/LAYER2/RLC -I$(OPENAIR2_DIR)/LAYER2/RLC/UM_v6.1.0_LITE -I$(OPENAIR2_DIR)/LAYER2/RLC/TM -I$(OPENAIR2_DIR)/LAYER2/RLC/AM -I$(OPENAIR2_DIR)/LAYER2/PDCP -I$(OPENAIR2_DIR) -I$(OPENAIR3_DIR)/MESH -I$(OPENAIR3_DIR)/MESH/RRM 
-
-
-
-
-
-
-
-
-
-
 
