@@ -128,9 +128,6 @@ int nasmt_open(struct net_device *dev){
 
 // next lines prevent compilation of the driver with kernel version under 2.6.29
 // ATTENTION !!!!!! NASMT is not usable with these versions
-#ifndef  KERNEL_VERSION_GREATER_THAN_2629
-  kernel_version_under_2629_not supported_by_nasmt = 0;
-#endif
 
   if(!netif_queue_stopped(dev))
     netif_start_queue(dev);
