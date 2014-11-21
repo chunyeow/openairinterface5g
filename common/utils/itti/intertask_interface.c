@@ -98,10 +98,6 @@ const int itti_debug = ITTI_DEBUG_ISSUES | ITTI_DEBUG_MP_STATISTICS;
 /* Global message size */
 #define MESSAGE_SIZE(mESSAGEiD) (sizeof(MessageHeader) + itti_desc.messages_info[mESSAGEiD].size)
 
-#ifndef EFD_SEMAPHORE
-# define KERNEL_VERSION_PRE_2_6_30 1
-#endif
-
 #ifdef RTAI
 # define ITTI_MEM_PAGE_SIZE (1024)
 # define ITTI_MEM_SIZE      (16 * 1024 * 1024)
@@ -135,9 +131,6 @@ typedef struct thread_desc_s {
     /* Number of events to monitor */
     uint16_t nb_events;
 
-#if defined(KERNEL_VERSION_PRE_2_6_30)
-    eventfd_t sem_counter;
-#endif
 
     /* Array of events monitored by the task.
      * By default only one fd is monitored (the one used to received messages
@@ -634,10 +627,6 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
             read_ret = read (itti_desc.threads[thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
             AssertFatal (read_ret == sizeof(sem_counter), "Read from task message FD (%d) failed (%d/%d)!\n", thread_id, (int) read_ret, (int) sizeof(sem_counter));
 
-#if defined(KERNEL_VERSION_PRE_2_6_30)
-            /* Store the value of the semaphore counter */
-            itti_desc.threads[task_id].sem_counter = sem_counter - 1;
-#endif
 
             if (lfds611_queue_dequeue (itti_desc.tasks[task_id].message_queue, (void **) &message) == 0) {
                 /* No element in list -> this should not happen */
@@ -662,22 +651,6 @@ void itti_receive_msg(task_id_t task_id, MessageDef **received_msg)
                                             __sync_and_and_fetch (&itti_desc.vcd_receive_msg, ~(1L << task_id)));
 #endif
 
-#if defined(KERNEL_VERSION_PRE_2_6_30)
-    /* Store the value of the semaphore counter */
-    if (itti_desc.threads[task_id].sem_counter > 0) {
-        struct message_list_s *message = NULL;
-
-        if (lfds611_queue_dequeue (itti_desc.tasks[task_id].message_queue, (void **) &message) == 0) {
-            /* No element in list -> this should not happen */
-            DevParam(task_id, itti_desc.threads[task_id].sem_counter, 0);
-        }
-        DevAssert(message != NULL);
-        *received_msg = message->msg;
-        itti_free (ITTI_MSG_ORIGIN_ID(*received_msg), message);
-
-        itti_desc.threads[task_id].sem_counter--;
-    } else
-#endif
     itti_receive_msg_internal_event_fd(task_id, 0, received_msg);
 
 #if defined(OAI_EMU) || defined(RTAI)
@@ -923,14 +896,7 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
             AssertFatal (0, "Failed to create new epoll fd: %s!\n", strerror(errno));
         }
 
-# if defined(KERNEL_VERSION_PRE_2_6_30)
-        /* SR: for kernel versions < 2.6.30 EFD_SEMAPHORE is not defined.
-         * A read operation on the event fd will return the 8 byte value.
-         */
-        itti_desc.threads[thread_id].task_event_fd = eventfd(0, 0);
-# else
         itti_desc.threads[thread_id].task_event_fd = eventfd(0, EFD_SEMAPHORE);
-# endif
         if (itti_desc.threads[thread_id].task_event_fd == -1)
         {
             /* Always assert on this condition */

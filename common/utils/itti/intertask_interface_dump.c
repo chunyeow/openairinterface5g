@@ -75,9 +75,6 @@ static const int itti_dump_debug = 0; // 0x8 | 0x4 | 0x2;
 #define ITTI_DUMP_ERROR(x, args...) do { fprintf(stdout, "[ITTI_DUMP][E]"x, ##args); } \
     while(0)
 
-#ifndef EFD_SEMAPHORE
-# define KERNEL_VERSION_PRE_2_6_30 1
-#endif
 
 typedef struct itti_dump_queue_item_s {
     MessageDef *data;
@@ -620,11 +617,7 @@ static void *itti_dump_socket(void *arg_p)
                         pthread_exit(NULL);
                     }
                     AssertFatal (read_ret == sizeof(sem_counter), "Failed to read from dump event FD (%d/%d)!\n", (int) read_ret, (int) sizeof(sem_counter));
-#if defined(KERNEL_VERSION_PRE_2_6_30)
-                    if (itti_dump_flush_ring_buffer(1) == 0)
-#else
                     if (itti_dump_flush_ring_buffer(0) == 0)
-#endif
                     {
                         if (itti_dump_running)
                         {
@@ -818,11 +811,7 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
 #ifdef RTAI
     itti_dump_queue.messages_in_queue = 0;
 #else
-# if defined(KERNEL_VERSION_PRE_2_6_30)
-    itti_dump_queue.event_fd = eventfd(0, 0);
-# else
     itti_dump_queue.event_fd = eventfd(0, EFD_SEMAPHORE);
-# endif
     if (itti_dump_queue.event_fd == -1) {
         /* Always assert on this condition */
         AssertFatal (0, "eventfd failed: %s!\n", strerror(errno));
