@@ -57,6 +57,60 @@ struct gtpuhdr
 
 #define GTPURH_PORT 2152
 
+#define GTPURH_2_PRINT_BUFFER_LEN 8192
+static char _gtpurh_print_buffer[GTPURH_2_PRINT_BUFFER_LEN];
+//-----------------------------------------------------------------------------
+void _gtpurh_print_hex_octets(unsigned char* dataP, unsigned short sizeP)
+//-----------------------------------------------------------------------------
+{
+  unsigned long octet_index = 0;
+  unsigned long buffer_marker = 0;
+  unsigned char aindex;
+  struct timeval tv;
+  char timeofday[64];
+  unsigned int h,m,s;
+
+  if (dataP == NULL) {
+    return;
+  }
+
+  do_gettimeofday(&tv);
+  h = (tv.tv_sec/3600) % 24;
+  m = (tv.tv_sec / 60) % 60;
+  s = tv.tv_sec % 60;
+  snprintf(timeofday, 64, "%02d:%02d:%02d.%06d", h,m,s,tv.tv_usec);
+
+  buffer_marker+=snprintf(&_gtpurh_print_buffer[buffer_marker], GTPURH_2_PRINT_BUFFER_LEN - buffer_marker,"%s------+-------------------------------------------------+\n",timeofday);
+  buffer_marker+=snprintf(&_gtpurh_print_buffer[buffer_marker], GTPURH_2_PRINT_BUFFER_LEN - buffer_marker,"%s      |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n",timeofday);
+  buffer_marker+=snprintf(&_gtpurh_print_buffer[buffer_marker], GTPURH_2_PRINT_BUFFER_LEN - buffer_marker,"%s------+-------------------------------------------------+\n",timeofday);
+  for (octet_index = 0; octet_index < sizeP; octet_index++) {
+    if ((octet_index % 16) == 0){
+      if (octet_index != 0) {
+          buffer_marker+=snprintf(&_gtpurh_print_buffer[buffer_marker], GTPURH_2_PRINT_BUFFER_LEN - buffer_marker, " |\n");
+      }
+      buffer_marker+=snprintf(&_gtpurh_print_buffer[buffer_marker], GTPURH_2_PRINT_BUFFER_LEN - buffer_marker, "%s %04ld |",timeofday, octet_index);
+    }
+    /*
+     * Print every single octet in hexadecimal form
+     */
+    buffer_marker+=snprintf(&_gtpurh_print_buffer[buffer_marker], GTPURH_2_PRINT_BUFFER_LEN - buffer_marker, " %02x", dataP[octet_index]);
+    /*
+     * Align newline and pipes according to the octets in groups of 2
+     */
+  }
+
+  /*
+   * Append enough spaces and put final pipe
+   */
+  for (aindex = octet_index; aindex < 16; ++aindex)
+    buffer_marker+=snprintf(&_gtpurh_print_buffer[buffer_marker], GTPURH_2_PRINT_BUFFER_LEN - buffer_marker, "   ");
+    //SGI_IF_DEBUG("   ");
+  buffer_marker+=snprintf(&_gtpurh_print_buffer[buffer_marker], GTPURH_2_PRINT_BUFFER_LEN - buffer_marker, " |\n");
+  pr_info("%s",_gtpurh_print_buffer);
+}
+
+
+#if defined(ROUTE_PACKET)
 static bool _gtpurh_route_packet(struct sk_buff *skb, const struct xt_gtpurh_target_info *info)
 {
     int err = 0; 
@@ -128,12 +182,14 @@ static bool _gtpurh_route_packet(struct sk_buff *skb, const struct xt_gtpurh_tar
         return GTPURH_FAILURE;
     }
 }
+#endif
 
 static unsigned int
 _gtpurh_target_rem(struct sk_buff *orig_skb, const struct xt_gtpurh_target_info *tgi)
 {
     struct iphdr   *iph   = ip_hdr(orig_skb);
     struct iphdr   *iph2  = NULL;
+    struct udphdr  *udph  = NULL;
     struct gtpuhdr *gtpuh = NULL;
     struct sk_buff *skb   = NULL;
     uint16_t        gtp_payload_size = 0;
@@ -152,7 +208,26 @@ _gtpurh_target_rem(struct sk_buff *orig_skb, const struct xt_gtpurh_target_info 
 #endif
 
     /* Remove IP header */
-    skb_pull(skb, (iph->ihl << 2));
+    udph = (struct udphdr*)skb_pull(skb, (iph->ihl << 2));
+
+    if (iph->protocol != IPPROTO_UDP) {
+        pr_info("GTPURH(%d): ERROR in decapsulating packet: %d.%d.%d.%d --> %d.%d.%d.%d Bad Proto: %d, Total Len (IP): %u mark %u Frag offset %u Flags 0x%0x\n",
+                tgi->action,
+                iph->saddr  & 0xFF,
+                (iph->saddr & 0x0000FF00) >> 8,
+                (iph->saddr & 0x00FF0000) >> 16,
+                iph->saddr >> 24,
+                iph->daddr  & 0xFF,
+                (iph->daddr & 0x0000FF00) >> 8,
+                (iph->daddr & 0x00FF0000) >> 16,
+                iph->daddr >> 24,
+                iph->protocol,
+                ntohs(iph2->tot_len),
+                skb->mark,
+                ntohs(iph->frag_off) & 0x1FFFFFFF,
+                ntohs(iph->frag_off) >> 13);
+        return NF_DROP;
+    }
 
     /* Remove UDP header */
     gtpuh = (struct gtpuhdr*)skb_pull(skb, sizeof(struct udphdr));
@@ -176,7 +251,7 @@ _gtpurh_target_rem(struct sk_buff *orig_skb, const struct xt_gtpurh_target_info 
 
 //#if 0
     if ((skb->mark == 0) || (gtp_payload_size != ntohs(iph2->tot_len))) {
-        pr_info("GTPURH(%d): Decapsulating packet: %d.%d.%d.%d --> %d.%d.%d.%d Proto: %d, Total Len (IP): %u mark %u Frag offset %u Flags 0x%0x\n",
+        pr_info("\nGTPURH(%d): Decapsulated packet: %d.%d.%d.%d --> %d.%d.%d.%d Proto: %d, Total Len (IP): %u mark %u Frag offset %u Flags 0x%0x\n",
                 tgi->action,
                 iph2->saddr  & 0xFF,
                 (iph2->saddr & 0x0000FF00) >> 8,
@@ -193,8 +268,13 @@ _gtpurh_target_rem(struct sk_buff *orig_skb, const struct xt_gtpurh_target_info 
                 ntohs(iph->frag_off) >> 13);
 
         if (gtp_payload_size != ntohs(iph2->tot_len)) {
-            pr_info("\nGTPURH(%d): Mismatch in lengths GTPU length: %u -> %u, IP length %u\n\n",
-                    ntohs(gtpuh->length), gtp_payload_size, ntohs(iph->tot_len));
+            pr_info("GTPURH(%d): Mismatch in lengths GTPU length: %u -> %u, IP length %u\n",
+                    tgi->action,
+                    ntohs(gtpuh->length),
+                    gtp_payload_size,
+                    ntohs(iph->tot_len));
+
+            _gtpurh_print_hex_octets((unsigned char*)iph, ntohs(iph->tot_len));
         }
     }
 //#endif

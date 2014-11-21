@@ -17,6 +17,7 @@
 #include <linux/skbuff.h>
 #include <linux/ip.h>
 #include <linux/route.h> 
+#include <linux/time.h>
 #include <net/checksum.h>
 #include <net/udp.h>
 #include <net/inet_sock.h>
@@ -47,6 +48,7 @@ struct gtpuhdr
     u_int32_t tunid;
 };
 
+#define MTU            1500
 #define GTPU_HDR_PNBIT 1
 #define GTPU_HDR_SBIT 1 << 1
 #define GTPU_HDR_EBIT 1 << 2
@@ -56,6 +58,9 @@ struct gtpuhdr
 #define GTPU_SUCCESS !GTPU_FAILURE
 
 #define GTPU_PORT 2152
+
+#define IP_MORE_FRAGMENTS 0x2000
+
 
 static bool _gtpuah_route_packet(struct sk_buff *skb, const struct xt_gtpuah_target_info *info)
 {
@@ -133,73 +138,158 @@ static unsigned int
 _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
 {
     struct iphdr   *iph           = ip_hdr(skb);
+    struct iphdr   *iph2          = NULL;
     struct udphdr  *udph          = NULL;
     struct gtpuhdr *gtpuh         = NULL;
     struct sk_buff *new_skb       = NULL;
-    int             headroom_reqd =  sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(struct gtpuhdr);
-    int             orig_iplen = 0, udp_len = 0, ip_len = 0;
+    struct sk_buff *new_skb2      = NULL;
+    uint16_t        headroom_reqd =  sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(struct gtpuhdr);
+    uint16_t        orig_iplen = 0, udp_len = 0, ip_len = 0;
 
     if (skb->mark == 0) {
-        pr_info("GTPUAH: _gtpuah_target_add skb mark %u tgi mark %u", skb->mark, tgi->rtun);
+        pr_info("GTPUAH: _gtpuah_target_add force skb mark %u to tgi mark %u", skb->mark, tgi->rtun);
+        skb->mark = tgi->rtun;
     }
     /* Keep the length of the source IP packet */
     orig_iplen = ntohs(iph->tot_len);
 
+
     /* Create a new copy of the original skb...can't avoid :-( */
+    // LG: have a look at pskb_expand_head
     new_skb = skb_copy_expand(skb, headroom_reqd + skb_headroom(skb), skb_tailroom(skb), GFP_ATOMIC);
     if (new_skb == NULL)
     {
         return NF_ACCEPT;
     }
 
-    /* Add GTPu header */
-    gtpuh          = (struct gtpuhdr*)skb_push(new_skb, sizeof(struct gtpuhdr));
-    gtpuh->flags   = 0x30; /* v1 and Protocol-type=GTP */
-    gtpuh->msgtype = 0xff; /* T-PDU */
-    gtpuh->length  = htons(orig_iplen);
-    gtpuh->tunid   = htonl(skb->mark);
+    // must segment if added headers (IP, UDP, GTP) + original data + original headers > MTU
+    if ((orig_iplen + headroom_reqd) > MTU) {
+        pr_info("GTPUAH: Fragmentation Id %04X size %u, %u",
+                (uint16_t)new_skb,
+                MTU,
+                sizeof(struct iphdr) + orig_iplen - MTU + headroom_reqd);
 
-    /* Add UDP header */
-    udp_len      = sizeof(struct udphdr) + sizeof(struct gtpuhdr) + orig_iplen;
-    udph         = (struct udphdr*)skb_push(new_skb, sizeof(struct udphdr));
-    udph->source = htons(GTPU_PORT);
-    udph->dest   = htons(GTPU_PORT);
-    udph->len    = htons(udp_len);
-    udph->check  = 0;
-    udph->check  = csum_tcpudp_magic(tgi->laddr,
-            tgi->raddr,
-            udp_len,
-            IPPROTO_UDP,
-            csum_partial((char*)udph, udp_len, 0));
-    skb_set_transport_header(new_skb, 0);
+        skb_trim(new_skb, MTU - headroom_reqd);
 
-    /* Add IP header */
-    ip_len = udp_len + sizeof(struct iphdr);
-    iph = (struct iphdr*)skb_push(new_skb, sizeof(struct iphdr));
-    iph->ihl      = 5;
-    iph->version  = 4;
-    iph->tos      = 0;
-    iph->tot_len  = htons(ip_len);
-    iph->id       = 0;
-    iph->frag_off = 0;
-    iph->ttl      = 64;
-    iph->protocol = IPPROTO_UDP;
-    iph->check    = 0;
-    iph->saddr    = (tgi->laddr);
-    iph->daddr    = (tgi->raddr);
-    iph->check    = ip_fast_csum((unsigned char *)iph, iph->ihl);
-    skb_set_network_header(new_skb, 0);
+        gtpuh          = (struct gtpuhdr*)skb_push(new_skb, sizeof(struct gtpuhdr));
+        gtpuh->flags   = 0x30; /* v1 and Protocol-type=GTP */
+        gtpuh->msgtype = 0xff; /* T-PDU */
+        gtpuh->length  = htons(MTU - headroom_reqd);
+        gtpuh->tunid   = htonl(skb->mark);
 
-    /* Route the packet */
-    if (_gtpuah_route_packet(new_skb, tgi) == GTPU_SUCCESS)
-    {
-        /* Succeeded. Drop the original packet */
-        return NF_DROP;
-    }
-    else
-    {
-        kfree_skb(new_skb);
-        return NF_ACCEPT; /* What should we do here ??? ACCEPT seems to be the best option */
+        /* Add UDP header */
+        udp_len      = sizeof(struct udphdr) + sizeof(struct gtpuhdr) + orig_iplen;
+        udph         = (struct udphdr*)skb_push(new_skb, sizeof(struct udphdr));
+        udph->source = htons(GTPU_PORT);
+        udph->dest   = htons(GTPU_PORT);
+        udph->len    = htons(udp_len);
+        udph->check  = 0;
+        udph->check  = csum_tcpudp_magic(tgi->laddr,
+                tgi->raddr,
+                udp_len,
+                IPPROTO_UDP,
+                csum_partial((char*)udph, udp_len, 0));
+        skb_set_transport_header(new_skb, 0);
+
+        /* Add IP header */
+        ip_len = MTU;
+        iph = (struct iphdr*)skb_push(new_skb, sizeof(struct iphdr));
+        iph->ihl      = 5;
+        iph->version  = 4;
+        iph->tos      = 0;
+        iph->tot_len  = htons(ip_len);
+        iph->id       = htons((uint16_t)new_skb);
+        iph->frag_off = htons(IP_MORE_FRAGMENTS);
+        iph->ttl      = 64;
+        iph->protocol = IPPROTO_UDP;
+        iph->saddr    = (tgi->laddr);
+        iph->daddr    = (tgi->raddr);
+        iph->check    = 0;
+        iph->check    = ip_fast_csum((unsigned char *)iph, iph->ihl);
+        skb_set_network_header(new_skb, 0);
+
+        new_skb2 = skb_copy(skb, GFP_ATOMIC);
+        skb_pull(new_skb2, MTU - headroom_reqd);
+        /* Add IP header */
+        iph2 = (struct iphdr*)skb_push(new_skb2, sizeof(struct iphdr));
+        iph2->ihl      = 5;
+        iph2->version  = 4;
+        iph2->tos      = 0;
+        iph2->tot_len  = htons(sizeof(struct iphdr) + orig_iplen - MTU + headroom_reqd);
+        iph2->id       = htons((uint16_t)new_skb);
+        iph2->frag_off = htons((MTU - sizeof(struct iphdr)) / 8);
+        iph2->ttl      = 64;
+        iph2->protocol = IPPROTO_UDP;
+        iph2->saddr    = (tgi->laddr);
+        iph2->daddr    = (tgi->raddr);
+        iph2->check    = 0;
+        iph2->check    = ip_fast_csum((unsigned char *)iph2, iph2->ihl);
+        skb_set_network_header(new_skb2, 0);
+
+        /* Route the packet */
+        if (_gtpuah_route_packet(new_skb, tgi) == GTPU_SUCCESS)
+        {
+            if (_gtpuah_route_packet(new_skb2, tgi) != GTPU_SUCCESS) {
+                kfree_skb(new_skb2);
+            }
+            /* Succeeded. Drop the original packet */
+            return NF_DROP;
+        }
+        else
+        {
+            kfree_skb(new_skb);
+            return NF_ACCEPT; /* What should we do here ??? ACCEPT seems to be the best option */
+        }
+    } else {
+        /* Add GTPu header */
+        gtpuh          = (struct gtpuhdr*)skb_push(new_skb, sizeof(struct gtpuhdr));
+        gtpuh->flags   = 0x30; /* v1 and Protocol-type=GTP */
+        gtpuh->msgtype = 0xff; /* T-PDU */
+        gtpuh->length  = htons(orig_iplen);
+        gtpuh->tunid   = htonl(skb->mark);
+
+        /* Add UDP header */
+        udp_len      = sizeof(struct udphdr) + sizeof(struct gtpuhdr) + orig_iplen;
+        udph         = (struct udphdr*)skb_push(new_skb, sizeof(struct udphdr));
+        udph->source = htons(GTPU_PORT);
+        udph->dest   = htons(GTPU_PORT);
+        udph->len    = htons(udp_len);
+        udph->check  = 0;
+        udph->check  = csum_tcpudp_magic(tgi->laddr,
+                tgi->raddr,
+                udp_len,
+                IPPROTO_UDP,
+                csum_partial((char*)udph, udp_len, 0));
+        skb_set_transport_header(new_skb, 0);
+
+        /* Add IP header */
+        ip_len = sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(struct gtpuhdr) + orig_iplen;
+        iph = (struct iphdr*)skb_push(new_skb, sizeof(struct iphdr));
+        iph->ihl      = 5;
+        iph->version  = 4;
+        iph->tos      = 0;
+        iph->tot_len  = htons(ip_len);
+        iph->id       = 0;
+        iph->frag_off = 0;
+        iph->ttl      = 64;
+        iph->protocol = IPPROTO_UDP;
+        iph->saddr    = (tgi->laddr);
+        iph->daddr    = (tgi->raddr);
+        iph->check    = 0;
+        iph->check    = ip_fast_csum((unsigned char *)iph, iph->ihl);
+        skb_set_network_header(new_skb, 0);
+
+        /* Route the packet */
+        if (_gtpuah_route_packet(new_skb, tgi) == GTPU_SUCCESS)
+        {
+            /* Succeeded. Drop the original packet */
+            return NF_DROP;
+        }
+        else
+        {
+            kfree_skb(new_skb);
+            return NF_ACCEPT; /* What should we do here ??? ACCEPT seems to be the best option */
+        }
     }
 }
 
