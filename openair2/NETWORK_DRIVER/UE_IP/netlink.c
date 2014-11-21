@@ -41,6 +41,7 @@
 #include <net/sock.h>
 #include <linux/kthread.h>
 #include <linux/mutex.h>
+#include <linux/version.h>
 
 #include "local.h"
 #include "proto_extern.h"
@@ -54,18 +55,13 @@ Prototypes
 *******************************************************************************/
 static inline void nasmesh_lock(void);
 static inline void nasmesh_unlock(void);
-#ifdef KERNEL_VERSION_GREATER_THAN_2629
 static void nas_nl_data_ready (struct sk_buff *skb);
-#else
-static int nas_netlink_rx_thread(void *data);
-static void nas_nl_data_ready (struct sock *sk,int len);
-#endif
 int ue_ip_netlink_init(void);
 
 static struct sock *nas_nl_sk = NULL;
 static int exit_netlink_thread=0;
 
-#ifdef KERNEL_VERSION_GREATER_THAN_3800
+#ifdef LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 struct netlink_kernel_cfg cfg = {
     .input = nas_nl_data_ready,
 };
@@ -84,7 +80,6 @@ static inline void nasmesh_unlock(void)
 	mutex_unlock(&nasmesh_mutex);
 }
 
-#ifdef KERNEL_VERSION_GREATER_THAN_2629
 // This can also be implemented using thread to get the data from PDCP without blocking.
 static void nas_nl_data_ready (struct sk_buff *skb)
 {
@@ -103,60 +98,6 @@ static void nas_nl_data_ready (struct sk_buff *skb)
     //kfree_skb(skb); // not required,
   }
 }
-#else
-
-static struct task_struct *netlink_rx_thread;
-
-// this thread is used to avoid blocking other system calls from entering the kernel
-static int nas_netlink_rx_thread(void *data) {
-
-  int err;
-  struct sk_buff *skb = NULL;
-  struct nlmsghdr *nlh = NULL;
-
-  printk("[UE_IP_DRV][NETLINK] Starting RX Thread \n");
-
-  while (!kthread_should_stop()) {
-
-    if (nas_nl_sk) {
-      skb = skb_recv_datagram(nas_nl_sk, 0, 0, &err);
-
-      if (skb) {
-
-#ifdef NETLINK_DEBUG
-	printk("[UE_IP_DRV][NETLINK] Received socket from PDCP\n");
-#endif //NETLINK_DEBUG
-	nlh = (struct nlmsghdr *)skb->data;
-
-	nas_COMMON_QOS_receive(nlh);
-
-	skb_free_datagram(nas_nl_sk,skb);
-      }
-
-    }
-    else {
-      if (exit_netlink_thread == 1) {
-	printk("[UE_IP_DRV][NETLINK] exit_netlink_thread\n");
-	break;
-      }
-    }
-  } // while
-
-  printk("[UE_IP_DRV][NETLINK] Exiting RX thread\n");
-
-  return(0);
-
-}
-
-static
-void nas_nl_data_ready (
-    struct sock *sk,
-    int len)
-
-{
-  wake_up_interruptible(sk->sk_sleep);
-}
-#endif
 
 
 int ue_ip_netlink_init(void)
@@ -165,19 +106,15 @@ int ue_ip_netlink_init(void)
   printk("[UE_IP_DRV][NETLINK] Running init ...\n");
 
   nas_nl_sk = netlink_kernel_create(
-#ifdef KERNEL_VERSION_GREATER_THAN_2622
           &init_net,
-#endif
-#ifdef KERNEL_VERSION_GREATER_THAN_3800
+#ifdef LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
           NAS_NETLINK_ID,
           &cfg
 #else
           NAS_NETLINK_ID,
           0,
           nas_nl_data_ready,
-#ifdef KERNEL_VERSION_GREATER_THAN_2622
           &nasmesh_mutex, // NULL
-#endif
           THIS_MODULE
 #endif
   );
@@ -189,12 +126,7 @@ int ue_ip_netlink_init(void)
     return(-1);
   }
 
-#ifdef KERNEL_VERSION_GREATER_THAN_2629
 
-#else
-    // Create receive thread
-  netlink_rx_thread = kthread_run(nas_netlink_rx_thread, NULL, "NAS_NETLINK_RX_THREAD");
-#endif
 
   return(0);
 
@@ -207,11 +139,7 @@ void ue_ip_netlink_release(void) {
   printk("[UE_IP_DRV][NETLINK] Releasing netlink socket\n");
 
   if(nas_nl_sk){
-#ifdef KERNEL_VERSION_GREATER_THAN_2629
     netlink_kernel_release(nas_nl_sk); //or skb->sk
-#else
-    sock_release(nas_nl_sk->sk_socket);
-#endif
 
   }
 
@@ -240,7 +168,7 @@ int ue_ip_netlink_send(unsigned char *data,unsigned int len) {
 
   nlh->nlmsg_pid = 0;      /* from kernel */
 
-#if !defined(KERNEL_VERSION_GREATER_THAN_3800)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
   NETLINK_CB(nl_skb).pid = 0;
 #endif
 
