@@ -42,19 +42,19 @@ endif
 all: openair_rf_cbmimo1_softmodem.ko asn1_msg_kern.ko nasmesh.ko rb_tool openair_rf scope
 
 openair_rf_cbmimo1_softmodem.ko:  
-	(cd $(OPENAIR1_DIR)/ARCH/CBMIMO1/DEVICE_DRIVER && $(MAKE) -C $(KERNEL_DIR) V=1 M=`pwd` RTAI=1 CBMIMO1=1 && mv openair_rf.ko $(CURDIR)/openair_rf_softmodem.ko)
+	(cd $(OPENAIR1_DIR)/ARCH/CBMIMO1/DEVICE_DRIVER && $(MAKE) -C $(KERNEL_DIR)/build V=1 M=`pwd` RTAI=1 CBMIMO1=1 && mv openair_rf.ko $(CURDIR)/openair_rf_softmodem.ko)
 
 oai_user_cbmimo1.ko:
-	(cd $(OPENAIR1_DIR)/ARCH/CBMIMO1/DEVICE_DRIVER && $(MAKE) -C $(KERNEL_DIR) V=1 M=`pwd` RTAI=1 CBMIMO1=1 BIT8_TX=1 OPENAIR1=0 OPENAIR2=0 && mv openair_rf.ko $(CURDIR)/openair_rf_softmodem.ko)
+	(cd $(OPENAIR1_DIR)/ARCH/CBMIMO1/DEVICE_DRIVER && $(MAKE) -C $(KERNEL_DIR)/build V=1 M=`pwd` RTAI=1 CBMIMO1=1 BIT8_TX=1 OPENAIR1=0 OPENAIR2=0 && mv openair_rf.ko $(CURDIR)/openair_rf_softmodem.ko)
 
 oai_user_exmimo.ko:
-	(cd $(OPENAIR1_DIR)/ARCH/CBMIMO1/DEVICE_DRIVER && $(MAKE) -C $(KERNEL_DIR) V=1 M=`pwd` RTAI=1 CBMIMO1=1 OPENAIR1=0 OPENAIR2=0 && mv openair_rf.ko $(CURDIR)/openair_rf_softmodem.ko)
+	(cd $(OPENAIR1_DIR)/ARCH/CBMIMO1/DEVICE_DRIVER && $(MAKE) -C $(KERNEL_DIR)/build V=1 M=`pwd` RTAI=1 CBMIMO1=1 OPENAIR1=0 OPENAIR2=0 && mv openair_rf.ko $(CURDIR)/openair_rf_softmodem.ko)
 
 asn1_msg_kern.ko:
-	(cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES && $(MAKE) -C $(KERNEL_DIR) V=0 M=`pwd` RTAI=1 -j2 && mv asn1_msg_kern.ko $(CURDIR)/asn1_msg_kern.ko)
+	(cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES && $(MAKE) -C $(KERNEL_DIR)/build V=0 M=`pwd` RTAI=1 -j2 && mv asn1_msg_kern.ko $(CURDIR)/asn1_msg_kern.ko)
 
 nasmesh.ko:
-	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH && $(MAKE) V=1 -C $(KERNEL_DIR) M=`pwd` && mv nasmesh.ko $(CURDIR)/nasmesh.ko)
+	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH && $(MAKE) V=1 -C $(KERNEL_DIR)/build M=`pwd` && mv nasmesh.ko $(CURDIR)/nasmesh.ko)
 
 rb_tool:
 	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && $(MAKE))
