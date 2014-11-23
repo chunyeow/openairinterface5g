@@ -365,9 +365,6 @@ void oai_nw_drv_init(struct net_device *dev){
     set_bit(__LINK_STATE_PRESENT, &dev->state);
 
     //
-    #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0)
-    printk("[OAI_IP_DRV][%s] KERNEL_VERSION_GREATER_THAN_32\n", __FUNCTION__);
-    #endif
     dev->netdev_ops = &nasmesh_netdev_ops;
     #ifdef OAI_NW_DRIVER_TYPE_ETHERNET
     printk("[OAI_IP_DRV][%s] Driver type ETHERNET\n", __FUNCTION__);
@@ -514,7 +511,7 @@ int init_module (void) {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
     oai_nw_drv_dev[inst]  = alloc_netdev(sizeof(struct oai_nw_drv_priv),devicename, oai_nw_drv_init);
 #else 
-    oai_nw_drv_dev[inst]  = alloc_netdev(sizeof(struct oai_nw_drv_priv),devicename, NET_NAME_PREDICTABLE, nas_init);
+    oai_nw_drv_dev[inst]  = alloc_netdev(sizeof(struct oai_nw_drv_priv),devicename, NET_NAME_PREDICTABLE, oai_nw_drv_init);
 #endif
     //netif_stop_queue(oai_nw_drv_dev[inst]);
 
@@ -612,5 +609,4 @@ MODULE_PARM_DESC(oai_nw_drv_is_clusterhead,"The Clusterhead Indicator");
 //MODULE_DESCRIPTION(DRV_DESCRIPTION);
 //MODULE_LICENSE("GPL");
 //MODULE_VERSION(DRV_VERSION);
-/*#endif*/
 
