@@ -21,7 +21,7 @@ CCC = $(shell rtai-config --cc)
 RTAI_SUBVERSION=$(shell rtai-config --version | sed -e 's/^..\(.\).*$$/\1/')
 IS_RTAI_SUBVERSION_LESS_THAN_FIVE=$(shell if [ $(RTAI_SUBVERSION) -lt 5 ] ; then echo true ; fi)
 
-EXTRA_CFLAGS = $(shell rtai-config --module-cflags) -g -DRTAI_ENABLED -DPC_TARGET -Wall -D__KERNEL__ -DMODULE -D_LOOSE_KERNEL_NAMES -I$(KERNEL_DIR)/build/include -I$(KERNEL_DIR)/build/include/asm/mach-default -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TX=2 -DNB_ANTENNAS_TXRX -DMAC_CONTEXT -I/usr/include -mregparm=3 -fno-stack-protector -mpreferred-stack-boundary=4 $(if $(IS_RTAI_SUBVERSION_LESS_THAN_FIVE),-DRTAI_ISNT_POSIX,)
+EXTRA_CFLAGS = $(shell rtai-config --module-cflags) -g -DRTAI_ENABLED -DPC_TARGET -Wall -D__KERNEL__ -DMODULE -D_LOOSE_KERNEL_NAMES -I$(KERNEL_DIR)/build/include -I$(KERNEL_DIR)/build/include/asm/mach-default -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TX=2 -DNB_ANTENNAS_TXRX -DMAC_CONTEXT -I/usr/include -fno-stack-protector -mpreferred-stack-boundary=4 $(if $(IS_RTAI_SUBVERSION_LESS_THAN_FIVE),-DRTAI_ISNT_POSIX,)
 endif
 
 

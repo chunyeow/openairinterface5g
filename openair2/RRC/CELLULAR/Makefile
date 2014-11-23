@@ -10,7 +10,7 @@ ifdef RTAI
 CCC = $(shell rtai-config --cc)
 RTAI_SUBVERSION=$(shell rtai-config --version | sed -e 's/^..\(.\).*$$/\1/')
 IS_RTAI_SUBVERSION_LESS_THAN_FIVE=$(shell if [ $(RTAI_SUBVERSION) -lt 5 ] ; then echo true ; fi)
-CFLAGS = $(shell rtai-config --module-cflags) -march=pentium4 -DRTAI_ENABLED -DPC_TARGET -Wall -D__KERNEL__ -DMODULE -D_LOOSE_KERNEL_NAMES -I$(KERNEL_DIR)/build/include -I$(KERNEL_DIR)/build/include/asm/mach-default  -mregparm=3 $(if $(IS_RTAI_SUBVERSION_LESS_THAN_FIVE),-DRTAI_ISNT_POSIX,)
+CFLAGS = $(shell rtai-config --module-cflags) -march=pentium4 -DRTAI_ENABLED -DPC_TARGET -Wall -D__KERNEL__ -DMODULE -D_LOOSE_KERNEL_NAMES -I$(KERNEL_DIR)/build/include -I$(KERNEL_DIR)/build/include/asm/mach-default  $(if $(IS_RTAI_SUBVERSION_LESS_THAN_FIVE),-DRTAI_ISNT_POSIX,)
 endif
 CCC=gcc
 #--------------------------------------------------------

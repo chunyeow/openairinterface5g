@@ -10,7 +10,7 @@ NAS_UPDIR	:= $(shell /bin/pwd)
 ####################################################
 #      EXTRA COMPILER FLAGS
 ####################################################
-EXTRA_CFLAGS = -fno-common -mregparm=3  -fno-stack-protector -mpreferred-stack-boundary=4 $(if $(SET_X64),-DARCH_64,) $(if $(SET_X64),-mcmodel=kernel,) $(if $(SET_X64),-m64,)
+EXTRA_CFLAGS = -fno-common -fno-stack-protector -mpreferred-stack-boundary=4 $(if $(SET_X64),-DARCH_64,) $(if $(SET_X64),-mcmodel=kernel,) $(if $(SET_X64),-m64,)
 
 ifdef ADDRCONF
 EXTRA_CFLAGS += -DADDRCONF
