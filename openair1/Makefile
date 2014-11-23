@@ -27,13 +27,13 @@ endif
 all: openair_rf_cbmimo1_softmodem.ko asn1_msg_kern.ko
 
 openair_rf_cbmimo1_softmodem.ko:  
-	(cd ARCH/CBMIMO1/DEVICE_DRIVER && $(MAKE) -C $(KERNEL_DIR) V=1 M=`pwd` RTAI=1 CBMIMO1=1 && mv openair_rf.ko openair_rf_softmodem.ko)
+	(cd ARCH/CBMIMO1/DEVICE_DRIVER && $(MAKE) -C $(KERNEL_DIR)/build V=1 M=`pwd` RTAI=1 CBMIMO1=1 && mv openair_rf.ko openair_rf_softmodem.ko)
 
 oai_user_cbmimo1.ko:
-	(cd ARCH/CBMIMO1/DEVICE_DRIVER && $(MAKE) -C $(KERNEL_DIR) V=1 M=`pwd` RTAI=1 CBMIMO1=1 BIT8_TX=1 OPENAIR1=0 OPENAIR2=0 && mv openair_rf.ko openair_rf_softmodem.ko)
+	(cd ARCH/CBMIMO1/DEVICE_DRIVER && $(MAKE) -C $(KERNEL_DIR)/build V=1 M=`pwd` RTAI=1 CBMIMO1=1 BIT8_TX=1 OPENAIR1=0 OPENAIR2=0 && mv openair_rf.ko openair_rf_softmodem.ko)
 
 oai_user_exmimo.ko:
-	(cd ARCH/CBMIMO1/DEVICE_DRIVER && $(MAKE) -C $(KERNEL_DIR) V=1 M=`pwd` RTAI=1 CBMIMO1=1 OPENAIR1=0 OPENAIR2=0 && mv openair_rf.ko openair_rf_softmodem.ko)
+	(cd ARCH/CBMIMO1/DEVICE_DRIVER && $(MAKE) -C $(KERNEL_DIR)/build V=1 M=`pwd` RTAI=1 CBMIMO1=1 OPENAIR1=0 OPENAIR2=0 && mv openair_rf.ko openair_rf_softmodem.ko)
 
 asn1_msg_kern.ko:
 	(cd ../openair2/RRC/LITE/MESSAGES && $(MAKE) -C $(KERNEL_DIR) V=0 M=`pwd` RTAI=1 -j2)
