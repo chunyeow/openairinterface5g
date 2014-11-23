@@ -174,7 +174,6 @@ ip_traffic_type_t oai_nw_drv_find_traffic_type(struct sk_buff  *skb) {
       
     case ETH_P_IP:
       traffic_type = TRAFFIC_IPV4_TYPE_UNKNOWN;
-#ifdef KERNEL_VERSION_GREATER_THAN_2622
       //print_TOOL_pk_ipv4((struct iphdr *)skb->network_header);
       if (IN_MULTICAST(htonl(ip_hdr(skb)->daddr))) {
           traffic_type = TRAFFIC_IPV4_TYPE_MULTICAST;
@@ -183,15 +182,6 @@ ip_traffic_type_t oai_nw_drv_find_traffic_type(struct sk_buff  *skb) {
       }
       // TO DO BROADCAST
       
-#else
-      //print_TOOL_pk_ipv4(skb->nh.iph);
-      if (IN_MULTICAST(htonl(ip_hdr(skb)->daddr))) {
-          traffic_type = TRAFFIC_IPV4_TYPE_MULTICAST;
-      } else {
-          traffic_type = TRAFFIC_IPV4_TYPE_UNICAST;
-      }
-      // TO DO BROADCAST
-#endif
       break;
       
       case ETH_P_ARP:
