@@ -321,11 +321,7 @@ void ue_ip_init(struct net_device *dev_pP){
         priv_p = netdev_priv(dev_pP);
         memset(priv_p, 0, sizeof(ue_ip_priv_t));
         spin_lock_init(&priv_p->lock);
-        #ifdef KERNEL_VERSION_GREATER_THAN_2629
         dev_pP->netdev_ops = &ue_ip_netdev_ops;
-        #else
-        #error "KERNEL VERSION MUST BE NEWER THAN 2.6.29"
-        #endif
         dev_pP->hard_header_len = 0;
         dev_pP->addr_len = UE_IP_ADDR_LEN;
         dev_pP->flags = IFF_BROADCAST|IFF_MULTICAST|IFF_NOARP;
