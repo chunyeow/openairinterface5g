@@ -113,13 +113,13 @@ endif
 ifdef CBA
 CFLAGS += -DRel10
 CFLAGS += -DCBA
-@echo "Rel10=1 CBA=1"
+$(info "Rel10=1 CBA=1")
 
 else ifdef Rel10
 CFLAGS += -DRel10
-@echo "Rel10=1"
+$(info "Rel10=1")
 else # default is rel 8
-@echo "Rel8=1"
+$(info "Rel8=1")
 CFLAGS += -DRel8
 endif
 
@@ -176,11 +176,11 @@ endif
 
 ifdef SECU
 ifeq ($(NETTLE_FOUND), 0)
-@echo "Nettle library >= 2.5 is not installed on your system, nettle-dev lib needed, continuing with security disabled"
+$(warning "Nettle library >= 2.5 is not installed on your system, nettle-dev lib needed, continuing with security disabled")
 SECU=0
 else
 ifeq ($(OPENSSL_FOUND), 0)
-@echo "openssl library is not installed on your system, openssl lib needed, continuing with security disabled"
+$(warning "openssl library is not installed on your system, openssl lib needed, continuing with security disabled")
 SECU=0
 else
 CFLAGS += -DENABLE_SECURITY
