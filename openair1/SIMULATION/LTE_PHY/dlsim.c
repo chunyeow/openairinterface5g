@@ -662,9 +662,11 @@ int main(int argc, char **argv) {
     hostname[1023] = '\0';
     gethostname(hostname, 1023);
     printf("Hostname: %s\n", hostname);
-    sprintf(time_meas_fname,"%s/SIMU/USER/pre-ci-logs-%s/time_meas_prb%d_mcs%d_anttx%d_antrx%d_pdcch%d_channel%s_tx%d.csv",
-	    getenv("OPENAIR_TARGETS"),hostname,
-	    N_RB_DL,mcs,n_tx,n_rx,num_pdcch_symbols,channel_model_input,transmission_mode);
+    char dirname[FILENAME_MAX];
+    sprintf(dirname, "%s/SIMU/USER/pre-ci-logs-%s", getenv("OPENAIR_TARGETS"),hostname ); 
+    sprintf(time_meas_fname,"%s/time_meas_prb%d_mcs%d_anttx%d_antrx%d_pdcch%d_channel%s_tx%d.csv",
+	    dirname,N_RB_DL,mcs,n_tx,n_rx,num_pdcch_symbols,channel_model_input,transmission_mode);
+    mkdir(dirname,0777); 
     time_meas_fd = fopen(time_meas_fname,"w");
   }
   
