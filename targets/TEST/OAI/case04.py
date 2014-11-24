@@ -92,7 +92,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         trace = logdir + '/log_' + host + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
         cmd = 'taskset -c 0 ./dlsim.rel8.' + host + ' ' + conf + tee
-        oai.send_expect(cmd, ' effective rate passed', 150)
+        oai.send_expect(cmd, 'passed', 150)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
