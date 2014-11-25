@@ -39,7 +39,7 @@
 #include "MAC_INTERFACE/extern.h"
 #include "UTIL/LOG/log.h"
 
-#define TRACE_RLC_UM_DAR 1
+//#define TRACE_RLC_UM_DAR 1
 //#define TRACE_RLC_UM_RX  1
 //-----------------------------------------------------------------------------
 signed int rlc_um_get_pdu_infos(
@@ -182,13 +182,14 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
     if (start_snP < 0) start_snP = start_snP + rlc_pP->rx_sn_modulo;
 
 #if defined (TRACE_RLC_UM_DAR)
-    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TRY REASSEMBLY FROM PDU SN=%03d+1  TO  PDU SN=%03d   SN Length = %d bits\n",
+    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY FROM PDU SN=%03d+1  TO  PDU SN=%03d   SN Length = %d bits\n",
             frameP,
             (rlc_pP->is_enb) ? "eNB" : "UE",
             rlc_pP->enb_module_id,
             rlc_pP->ue_module_id,
             (rlc_pP->is_data_plane) ? "DRB" : "SRB",
             rlc_pP->rb_id,
+            __LINE__,
             rlc_pP->last_reassemblied_sn,
             end_snP,
             rlc_pP->rx_sn_length);
@@ -207,30 +208,32 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
         if ((pdu_mem_p = rlc_pP->dar_buffer[sn])) {
 
             if ((rlc_pP->last_reassemblied_sn+1)%rlc_pP->rx_sn_modulo != sn) {
-#if defined (TRACE_RLC_UM_DAR)
-                LOG_W(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] FINDING a HOLE in RLC UM SN: CLEARING OUTPUT SDU BECAUSE NEW SN (%03d) TO REASSEMBLY NOT CONTIGUOUS WITH LAST REASSEMBLIED SN (%03d)\n",
+//#if defined (TRACE_RLC_UM_DAR)
+                LOG_W(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u FINDING a HOLE in RLC UM SN: CLEARING OUTPUT SDU BECAUSE NEW SN (%03d) TO REASSEMBLY NOT CONTIGUOUS WITH LAST REASSEMBLIED SN (%03d)\n",
                         frameP,
                         (rlc_pP->is_enb) ? "eNB" : "UE",
                         rlc_pP->enb_module_id,
                         rlc_pP->ue_module_id,
                         (rlc_pP->is_data_plane) ? "DRB" : "SRB",
                         rlc_pP->rb_id,
+                        __LINE__,
                         sn,
                         rlc_pP->last_reassemblied_sn);
-#endif
+//#endif
                 rlc_um_clear_rx_sdu(rlc_pP);
             }
             rlc_pP->last_reassemblied_sn = sn;
             tb_ind_p = (struct mac_tb_ind *)(pdu_mem_p->data);
             if (rlc_pP->rx_sn_length == 10) {
 #if defined (TRACE_RLC_UM_DAR)
-                LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TRY REASSEMBLY 10 PDU SN=%03d\n",
+                LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY 10 PDU SN=%03d\n",
                         frameP,
                         (rlc_pP->is_enb) ? "eNB" : "UE",
                         rlc_pP->enb_module_id,
                         rlc_pP->ue_module_id,
                         (rlc_pP->is_data_plane) ? "DRB" : "SRB",
                         rlc_pP->rb_id,
+                        __LINE__,
                         sn);
 #endif
                 e  = (((rlc_um_pdu_sn_10_t*)(tb_ind_p->data_ptr))->b1 & 0x04) >> 2;
@@ -240,13 +243,14 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                 data_p = &tb_ind_p->data_ptr[2];
             } else {
 #if defined (TRACE_RLC_UM_DAR)
-                LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TRY REASSEMBLY 5 PDU SN=%03d Byte 0=%02X\n",
+                LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line TRY REASSEMBLY 5 PDU SN=%03d Byte 0=%02X\n",
                         frameP,
                         (rlc_pP->is_enb) ? "eNB" : "UE",
                         rlc_pP->enb_module_id,
                         rlc_pP->ue_module_id,
                         (rlc_pP->is_data_plane) ? "DRB" : "SRB",
                         rlc_pP->rb_id,
+                        __LINE__,
                         sn,
                         ((rlc_um_pdu_sn_5_t*)(tb_ind_p->data_ptr))->b1);
 #endif
@@ -256,13 +260,14 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                 size   = tb_ind_p->size - 1;
                 data_p = &tb_ind_p->data_ptr[1];
 #if defined (TRACE_RLC_UM_DAR)
-                LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] e=%01X fi=%01X\n",
+                LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u e=%01X fi=%01X\n",
                         frameP,
                         (rlc_pP->is_enb) ? "eNB" : "UE",
                         rlc_pP->enb_module_id,
                         rlc_pP->ue_module_id,
                         (rlc_pP->is_data_plane) ? "DRB" : "SRB",
                         rlc_pP->rb_id,
+                        __LINE__,
                         e,
                         fi);
 #endif
@@ -271,13 +276,14 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                 switch (fi) {
                     case RLC_FI_1ST_BYTE_DATA_IS_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-                        LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TRY REASSEMBLY PDU NO E_LI FI=11 (00)\n",
+                        LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU NO E_LI FI=11 (00)\n",
                                 frameP,
                                 (rlc_pP->is_enb) ? "eNB" : "UE",
                                 rlc_pP->enb_module_id,
                                 rlc_pP->ue_module_id,
                                 (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                                rlc_pP->rb_id);
+                                rlc_pP->rb_id,
+                                __LINE__);
 #endif
                         // one complete SDU
                         //LGrlc_um_send_sdu(rlc_pP,frameP,eNB_flagP); // may be not necessary
@@ -289,13 +295,14 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                         break;
                     case RLC_FI_1ST_BYTE_DATA_IS_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_NOT_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-                        LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TRY REASSEMBLY PDU NO E_LI FI=10 (01)\n",
+                        LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU NO E_LI FI=10 (01)\n",
                                 frameP,
                                 (rlc_pP->is_enb) ? "eNB" : "UE",
                                 rlc_pP->enb_module_id,
                                 rlc_pP->ue_module_id,
                                 (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                                rlc_pP->rb_id);
+                                rlc_pP->rb_id,
+                                __LINE__);
 #endif
                         // one beginning segment of SDU in PDU
                         //LG rlc_um_send_sdu(rlc_pP,frameP,eNB_flagP); // may be not necessary
@@ -305,13 +312,14 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                         break;
                     case RLC_FI_1ST_BYTE_DATA_IS_NOT_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-                        LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TRY REASSEMBLY PDU NO E_LI FI=01 (10)\n",
+                        LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU NO E_LI FI=01 (10)\n",
                                 frameP,
                                 (rlc_pP->is_enb) ? "eNB" : "UE",
                                 rlc_pP->enb_module_id,
                                 rlc_pP->ue_module_id,
                                 (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                                rlc_pP->rb_id);
+                                rlc_pP->rb_id,
+                                __LINE__);
 #endif
                         // one last segment of SDU
                         if (rlc_pP->reassembly_missing_sn_detected == 0) {
@@ -326,27 +334,29 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                         break;
                     case RLC_FI_1ST_BYTE_DATA_IS_NOT_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_NOT_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-                        LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TRY REASSEMBLY PDU NO E_LI FI=00 (11)\n",
+                        LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU NO E_LI FI=00 (11)\n",
                                 frameP,
                                 (rlc_pP->is_enb) ? "eNB" : "UE",
                                 rlc_pP->enb_module_id,
                                 rlc_pP->ue_module_id,
                                 (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                                rlc_pP->rb_id);
+                                rlc_pP->rb_id,
+                                __LINE__);
 #endif
                         if (rlc_pP->reassembly_missing_sn_detected == 0) {
                             // one whole segment of SDU in PDU
                             rlc_um_reassembly (data_p, size, rlc_pP,frameP);
                         } else {
-#if defined (TRACE_RLC_UM_DAR)
-                            LOG_W(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TRY REASSEMBLY PDU NO E_LI FI=00 (11) MISSING SN DETECTED\n",
+//#if defined (TRACE_RLC_UM_DAR)
+                            LOG_W(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU NO E_LI FI=00 (11) MISSING SN DETECTED\n",
                                     frameP,
                                     (rlc_pP->is_enb) ? "eNB" : "UE",
                                     rlc_pP->enb_module_id,
                                     rlc_pP->ue_module_id,
                                     (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                                    rlc_pP->rb_id);
-#endif
+                                    rlc_pP->rb_id,
+                                    __LINE__);
+//#endif
                             //LOG_D(RLC, "[MSC_NBOX][FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u][Missing SN detected][RLC_UM][MOD %u/%u][RB %u]\n",
                             //      frameP, rlc_pP->module_id,rlc_pP->rb_id, rlc_pP->module_id,rlc_pP->rb_id);
                             rlc_pP->reassembly_missing_sn_detected = 1; // not necessary but for readability of the code
@@ -379,13 +389,14 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                     switch (fi) {
                         case RLC_FI_1ST_BYTE_DATA_IS_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-                            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TRY REASSEMBLY PDU FI=11 (00) Li=",
+                            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU FI=11 (00) Li=",
                                     frameP,
                                     (rlc_pP->is_enb) ? "eNB" : "UE",
                                     rlc_pP->enb_module_id,
                                     rlc_pP->ue_module_id,
                                     (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                                    rlc_pP->rb_id);
+                                    rlc_pP->rb_id,
+                                    __LINE__);
 
                             for (i=0; i < num_li; i++) {
                                 LOG_D(RLC, "%d ",li_array[i]);
@@ -410,13 +421,14 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                             break;
                         case RLC_FI_1ST_BYTE_DATA_IS_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_NOT_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-                            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TRY REASSEMBLY PDU FI=10 (01) Li=",
+                            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU FI=10 (01) Li=",
                                     frameP,
                                     (rlc_pP->is_enb) ? "eNB" : "UE",
                                     rlc_pP->enb_module_id,
                                     rlc_pP->ue_module_id,
                                     (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                                    rlc_pP->rb_id);
+                                    rlc_pP->rb_id,
+                                    __LINE__);
                             for (i=0; i < num_li; i++) {
                                 LOG_D(RLC, "%d ",li_array[i]);
                             }
@@ -438,13 +450,14 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                             break;
                         case RLC_FI_1ST_BYTE_DATA_IS_NOT_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-                            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TRY REASSEMBLY PDU FI=01 (10) Li=",
+                            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU FI=01 (10) Li=",
                                     frameP,
                                     (rlc_pP->is_enb) ? "eNB" : "UE",
                                     rlc_pP->enb_module_id,
                                     rlc_pP->ue_module_id,
                                     (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                                    rlc_pP->rb_id);
+                                    rlc_pP->rb_id,
+                                    __LINE__);
                             for (i=0; i < num_li; i++) {
                                 LOG_D(RLC, "%d ",li_array[i]);
                             }
@@ -474,29 +487,31 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                             break;
                         case RLC_FI_1ST_BYTE_DATA_IS_NOT_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_NOT_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-                            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TRY REASSEMBLY PDU FI=00 (11) Li=",
+                            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU FI=00 (11) Li=",
                                     frameP,
                                     (rlc_pP->is_enb) ? "eNB" : "UE",
                                     rlc_pP->enb_module_id,
                                     rlc_pP->ue_module_id,
                                     (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                                    rlc_pP->rb_id);
+                                    rlc_pP->rb_id,
+                                    __LINE__);
                             for (i=0; i < num_li; i++) {
                                 LOG_D(RLC, "%d ",li_array[i]);
                             }
                             LOG_D(RLC, " remaining size %d\n",size);
 #endif
                             if (rlc_pP->reassembly_missing_sn_detected) {
-#if defined (TRACE_RLC_UM_DAR)
-                                LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] DISCARD FIRST LI %d",
+//#if defined (TRACE_RLC_UM_DAR)
+                                LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u DISCARD FIRST LI %d",
                                         frameP,
                                         (rlc_pP->is_enb) ? "eNB" : "UE",
                                         rlc_pP->enb_module_id,
                                         rlc_pP->ue_module_id,
                                         (rlc_pP->is_data_plane) ? "DRB" : "SRB",
                                         rlc_pP->rb_id,
+                                        __LINE__,
                                         li_array[0]);
-#endif
+//#endif
                                 reassembly_start_index = 1;
                                 data_p = &data_p[li_array[0]];
                             	//rlc_pP->stat_rx_data_pdu_dropped += 1;
@@ -527,15 +542,16 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                             rlc_pP->reassembly_missing_sn_detected = 0;
                             break;
                         default:
-#if defined (TRACE_RLC_UM_DAR)
-                            LOG_W(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Missing SN detected\n",
+//#if defined (TRACE_RLC_UM_DAR)
+                            LOG_W(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u Missing SN detected\n",
                                     frameP,
                                     (rlc_pP->is_enb) ? "eNB" : "UE",
                                     rlc_pP->enb_module_id,
                                     rlc_pP->ue_module_id,
                                     (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                                    rlc_pP->rb_id);
-#endif
+                                    rlc_pP->rb_id,
+                                    __LINE__);
+//#endif
                             rlc_pP->stat_rx_data_pdu_dropped += 1;
                             rlc_pP->stat_rx_data_bytes_dropped += tb_ind_p->size;
 
@@ -554,29 +570,31 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                 }
             }
 #if defined (TRACE_RLC_UM_DAR)
-            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] REMOVE PDU FROM DAR BUFFER  SN=%03d\n",
+            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u REMOVE PDU FROM DAR BUFFER  SN=%03d\n",
                     frameP,
                     (rlc_pP->is_enb) ? "eNB" : "UE",
                     rlc_pP->enb_module_id,
                     rlc_pP->ue_module_id,
                     (rlc_pP->is_data_plane) ? "DRB" : "SRB",
                     rlc_pP->rb_id,
+                    __LINE__,
                     sn);
 #endif
             free_mem_block(rlc_pP->dar_buffer[sn]);
             rlc_pP->dar_buffer[sn] = NULL;
         } else {
             rlc_pP->last_reassemblied_missing_sn = sn;
-#if defined (TRACE_RLC_UM_DAR)
-            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Missing SN %04d detected, clearing RX SDU\n",
+//#if defined (TRACE_RLC_UM_DAR)
+            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u Missing SN %04d detected, clearing RX SDU\n",
                     frameP,
                     (rlc_pP->is_enb) ? "eNB" : "UE",
                     rlc_pP->enb_module_id,
                     rlc_pP->ue_module_id,
                     (rlc_pP->is_data_plane) ? "DRB" : "SRB",
                     rlc_pP->rb_id,
+                    __LINE__,
                     sn);
-#endif
+//#endif
             rlc_pP->reassembly_missing_sn_detected = 1;
             rlc_um_clear_rx_sdu(rlc_pP);
 #if defined(RLC_STOP_ON_LOST_PDU)
@@ -596,13 +614,14 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
         }
     }
 #if defined (TRACE_RLC_UM_DAR)
-    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TRIED REASSEMBLY VR(UR)=%03d VR(UX)=%03d VR(UH)=%03d\n",
+    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRIED REASSEMBLY VR(UR)=%03d VR(UX)=%03d VR(UH)=%03d\n",
             frameP,
             (rlc_pP->is_enb) ? "eNB" : "UE",
             rlc_pP->enb_module_id,
             rlc_pP->ue_module_id,
             (rlc_pP->is_data_plane) ? "DRB" : "SRB",
             rlc_pP->rb_id,
+            __LINE__,
             rlc_pP->vr_ur,
             rlc_pP->vr_ux,
             rlc_pP->vr_uh);
