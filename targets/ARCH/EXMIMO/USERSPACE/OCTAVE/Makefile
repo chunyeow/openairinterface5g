@@ -28,7 +28,7 @@ CFLAGS += -I$(OPENAIRTARGETS_DIR)/ARCH/EXMIMO/USERSPACE/LIB -I$(OPENAIRTARGETS_D
 
 #OPENAIROBJS = $(OPENAIR1_DIR)/PHY/CONFIG/openair_readconfigfile.o $(OPENAIR1_DIR)/PHY/CONFIG/openair_configure.o 
 
-OCTAVEOBJS =  oarf_config_exmimo.oct oarf_get_frame.oct oarf_stop.oct oarf_send_frame.oct oarf_get_num_detected_cards.oct
+OCTAVEOBJS =  oarf_config_exmimo.oct oarf_get_frame.oct oarf_stop.oct oarf_send_frame.oct oarf_get_num_detected_cards.oct oarf_stop_without_reset.oct
 
 all: $(OCTAVEOBJS) gpib_send.oct 
 

@@ -66,7 +66,7 @@ static bool any_bad_argument(const octave_value_list &args)
     return false;
 }
 
-DEFUN_DLD (oarf_stop, args, nargout,"Stop RT acquisition and write registers.")
+DEFUN_DLD (oarf_stop_without_reset, args, nargout,"Stop RT acquisition and write registers.")
 {
     int a,b;
     if (any_bad_argument(args))
