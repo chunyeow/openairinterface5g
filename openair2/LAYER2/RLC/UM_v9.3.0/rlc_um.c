@@ -47,7 +47,7 @@
 
 #include "rlc_um_very_simple_test.h"
 
-#define DEBUG_RLC_UM_TX_STATUS 1
+//#define DEBUG_RLC_UM_TX_STATUS 1
 
 
 #ifdef TRACE_RLC_UM_PDU
