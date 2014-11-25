@@ -38,6 +38,7 @@
 #    ifndef __RLC_UM_ENTITY_H__
 #        define __RLC_UM_ENTITY_H__
 
+#        include <pthread.h>
 #        include "platform_types.h"
 #        include "platform_constants.h"
 #        include "list.h"
@@ -93,6 +94,8 @@ typedef struct rlc_um_entity_s {
   // tranmission
   //-----------------------------
   // sdu communication;
+  //pthread_spinlock_t lock_input_sdus;
+  pthread_mutex_t      lock_input_sdus;
   list_t               input_sdus;                /*!< \brief Input SDU buffer (for SDUs coming from upper layers). Should be accessed as an array. */
   rlc_buffer_occupancy_t buffer_occupancy;          /*!< \brief Number of bytes contained in input_sdus buffer.*/
   uint32_t             nb_bytes_requested_by_mac; /*!< \brief Number of bytes requested by lower layer for next transmission. */

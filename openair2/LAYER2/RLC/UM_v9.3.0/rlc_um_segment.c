@@ -99,6 +99,8 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
     list_init (&pdus, NULL);    // param string identifying the list is NULL
     pdu_mem_p = NULL;
 
+    // not fine locking
+    pthread_mutex_lock(&rlc_pP->lock_input_sdus);
     while ((list_get_head(&rlc_pP->input_sdus)) && (nb_bytes_to_transmit > 0)) {
 
 #if defined(TRACE_RLC_UM_SEGMENT)
@@ -150,6 +152,7 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                         rlc_pP->ue_module_id,
                         rlc_pP->rb_id);
 #endif
+                pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
                 return;
             }
 #if defined(TRACE_RLC_UM_SEGMENT)
@@ -483,6 +486,7 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
         //nb_bytes_to_transmit = nb_bytes_to_transmit - data_pdu_size;
         nb_bytes_to_transmit = 0; // 1 PDU only
     }
+    pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
 }
 //-----------------------------------------------------------------------------
 void
@@ -540,6 +544,7 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
     list_init (&pdus, NULL);    // param string identifying the list is NULL
     pdu_mem_p = NULL;
 
+    pthread_mutex_lock(&rlc_pP->lock_input_sdus);
     while ((list_get_head(&rlc_pP->input_sdus)) && (nb_bytes_to_transmit > 0)) {
 #if defined(TRACE_RLC_UM_SEGMENT)
         LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 nb_bytes_to_transmit %d BO %d\n",
@@ -590,6 +595,7 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                         rlc_pP->ue_module_id,
                         rlc_pP->rb_id);
 #endif
+                pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
                 return;
             }
 #if defined(TRACE_RLC_UM_SEGMENT)
@@ -919,5 +925,6 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
         //nb_bytes_to_transmit = nb_bytes_to_transmit - data_pdu_size;
         nb_bytes_to_transmit = 0; // 1 PDU only
     }
+    pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
 }
 

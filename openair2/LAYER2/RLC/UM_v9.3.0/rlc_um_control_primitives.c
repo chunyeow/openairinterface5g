@@ -240,6 +240,7 @@ rlc_um_init (rlc_um_entity_t * const rlc_pP)
       memset (rlc_pP, 0, sizeof (rlc_um_entity_t));
       // TX SIDE
       list_init (&rlc_pP->pdus_to_mac_layer, NULL);
+      pthread_mutex_init(&rlc_pP->lock_input_sdus, NULL);
       list_init (&rlc_pP->input_sdus, NULL);
 
       rlc_pP->protocol_state = RLC_NULL_STATE;
@@ -291,6 +292,7 @@ rlc_um_cleanup (rlc_um_entity_t * const rlc_pP)
   int             index;
   // TX SIDE
   list_free (&rlc_pP->pdus_to_mac_layer);
+  pthread_mutex_destroy(&rlc_pP->lock_input_sdus);
   list_free (&rlc_pP->input_sdus);
 
   // RX SIDE

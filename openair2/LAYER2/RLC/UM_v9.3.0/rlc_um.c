@@ -449,7 +449,7 @@ rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP
       status_resp.rlc_info.rlc_protocol_state = ((rlc_um_entity_t *) rlc_pP)->protocol_state;
       #ifdef DEBUG_RLC_UM_TX_STATUS
       if ((((rlc_um_entity_t *) rlc_pP)->rb_id > 0) && (status_resp.buffer_occupancy_in_bytes > 0)) {
-          LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_STATUS_INDICATION (DATA) %d bytes -> %d bytes\n",
+          LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_STATUS_INDICATION (DATA) %d bytes requested -> %d bytes available\n",
                   frameP,
                   (rlc_p->is_enb) ? "eNB" : "UE",
                   rlc_p->enb_module_id,
@@ -479,7 +479,7 @@ rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP
       }
       #endif
   } else {
-     LOG_E(RLC, "[RLC] RLCp not defined!!!\n");
+     LOG_E(RLC, "[RLC] rlc_um_mac_status_indication RLC NULL!!!\n");
   }
   return status_resp;
 }
@@ -709,7 +709,9 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
       LOG_T(RLC, "%s", message_string);
 #endif 
 #   endif
+      pthread_mutex_lock(&rlc_p->lock_input_sdus);
       list_add_tail_eurecom(sdu_pP, &rlc_p->input_sdus);
+      pthread_mutex_unlock(&rlc_p->lock_input_sdus);
 
   /*} else {
     LOG_W(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] RLC-UM_DATA_REQ input buffer full SDU garbaged\n",
