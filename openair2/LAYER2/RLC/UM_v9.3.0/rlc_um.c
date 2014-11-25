@@ -169,11 +169,12 @@ rlc_um_get_pdus (void *argP, frame_t frameP)
         break;
 
       default:
-        LOG_E(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_REQ UNKNOWN PROTOCOL STATE %02X hex\n",
+        LOG_E(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_DATA_REQ UNKNOWN PROTOCOL STATE %02X hex\n",
                 frameP,
                 (rlc_p->is_enb) ? "eNB" : "UE",
                 rlc_p->enb_module_id,
                 rlc_p->ue_module_id,
+                (rlc_p->is_data_plane) ? "DRB" : "SRB",
                 rlc_p->rb_id,
                 rlc_p->protocol_state);
   }
@@ -256,11 +257,12 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
 
 #ifdef TRACE_RLC_UM_PDU
         if (data_indP.data.nb_elements > 0) {
-            LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_IND %d TBs\n",
+            LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_DATA_IND %d TBs\n",
                     frameP,
                     (l_rlc_p->is_enb) ? "eNB" : "UE",
                     l_rlc_p->enb_module_id,
                     l_rlc_p->ue_module_id,
+                    (l_rlc_p->is_data_plane) ? "DRB" : "SRB",
                     l_rlc_p->rb_id,
                     data_indP.data.nb_elements);
 
@@ -351,11 +353,12 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
         // - stays in the LOCAL_SUSPEND state;
         // - modifies only the protocol parameters and timers as indicated by
         //   upper layers.
-        LOG_N(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] RLC_LOCAL_SUSPEND_STATE\n",
+        LOG_N(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] RLC_LOCAL_SUSPEND_STATE\n",
                 frameP,
                 (l_rlc_p->is_enb) ? "eNB" : "UE",
                 l_rlc_p->enb_module_id,
                 l_rlc_p->ue_module_id,
+                (l_rlc_p->is_data_plane) ? "DRB" : "SRB",
                 l_rlc_p->rb_id);
         /*if (data_indP.data.nb_elements > 0) {
             LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, frameP, data_indP.data.nb_elements);
@@ -386,11 +389,12 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
         break;
 
       default:
-        LOG_E(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] TX UNKNOWN PROTOCOL STATE %02X hex\n",
+        LOG_E(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] TX UNKNOWN PROTOCOL STATE %02X hex\n",
                 frameP,
                 (l_rlc_p->is_enb) ? "eNB" : "UE",
                 l_rlc_p->enb_module_id,
                 l_rlc_p->ue_module_id,
+                (l_rlc_p->is_data_plane) ? "DRB" : "SRB",
                 l_rlc_p->rb_id,
                 l_rlc_p->protocol_state);
   }
@@ -449,30 +453,33 @@ rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP
       status_resp.rlc_info.rlc_protocol_state = ((rlc_um_entity_t *) rlc_pP)->protocol_state;
       #ifdef DEBUG_RLC_UM_TX_STATUS
       if ((((rlc_um_entity_t *) rlc_pP)->rb_id > 0) && (status_resp.buffer_occupancy_in_bytes > 0)) {
-          LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_STATUS_INDICATION (DATA) %d bytes requested -> %d bytes available\n",
+          LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_STATUS_INDICATION (DATA) %d bytes requested -> %d bytes available\n",
                   frameP,
                   (rlc_p->is_enb) ? "eNB" : "UE",
                   rlc_p->enb_module_id,
                   rlc_p->ue_module_id,
+                  (rlc_p->is_data_plane) ? "DRB" : "SRB",
                   rlc_p->rb_id,
                   tbs_sizeP,
                   status_resp.buffer_occupancy_in_bytes);
 
           if ((tx_statusP.tx_status == MAC_TX_STATUS_SUCCESSFUL) && (tx_statusP.no_pdu)) {
-              LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_STATUS_INDICATION  TX STATUS   SUCCESSFUL %d PDUs\n",
+              LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_STATUS_INDICATION  TX STATUS   SUCCESSFUL %d PDUs\n",
                       frameP,
                       (rlc_p->is_enb) ? "eNB" : "UE",
                       rlc_p->enb_module_id,
                       rlc_p->ue_module_id,
+                      (rlc_p->is_data_plane) ? "DRB" : "SRB",
                       rlc_p->rb_id,
                       tx_statusP.no_pdu);
           }
           if ((tx_statusP.tx_status == MAC_TX_STATUS_UNSUCCESSFUL) && (tx_statusP.no_pdu)) {
-              LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_STATUS_INDICATION  TX STATUS UNSUCCESSFUL %d PDUs\n",
+              LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_STATUS_INDICATION  TX STATUS UNSUCCESSFUL %d PDUs\n",
                       frameP,
                       (rlc_p->is_enb) ? "eNB" : "UE",
                       rlc_p->enb_module_id,
                       rlc_p->ue_module_id,
+                      (rlc_p->is_data_plane) ? "DRB" : "SRB",
                       rlc_p->rb_id,
                       tx_statusP.no_pdu);
           }
@@ -518,11 +525,12 @@ rlc_um_mac_data_request (void *rlc_pP,frame_t frameP)
         while (tb_p != NULL) {
             tb_size_in_bytes   = ((struct mac_tb_req *) (tb_p->data))->tb_size;
 
-            LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_REQUEST  TB SIZE %u\n",
+            LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_DATA_REQUEST  TB SIZE %u\n",
                     frameP,
                     (l_rlc_p->is_enb) ? "eNB" : "UE",
                     l_rlc_p->enb_module_id,
                     l_rlc_p->ue_module_id,
+                    (l_rlc_p->is_data_plane) ? "DRB" : "SRB",
                     l_rlc_p->rb_id,
                     ((struct mac_tb_req *) (tb_p->data))->tb_size);
             l_rlc_p->stat_tx_data_pdu   += 1;
@@ -625,11 +633,12 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
   uint16_t             data_size;
 #endif
 
-  LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] RLC_UM_DATA_REQ size %d Bytes, BO %d , NB SDU %d\n",
+  LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] RLC_UM_DATA_REQ size %d Bytes, BO %d , NB SDU %d\n",
      frameP,
      (rlc_p->is_enb) ? "eNB" : "UE",
      rlc_p->enb_module_id,
      rlc_p->ue_module_id,
+     (rlc_p->is_data_plane) ? "DRB" : "SRB",
      rlc_p->rb_id,
      ((struct rlc_um_data_req *) (sdu_pP->data))->data_size,
      rlc_p->buffer_occupancy,

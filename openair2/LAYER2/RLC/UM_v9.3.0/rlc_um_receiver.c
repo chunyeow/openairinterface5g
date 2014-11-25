@@ -39,38 +39,12 @@
 #include "MAC_INTERFACE/extern.h"
 #include "UTIL/LOG/log.h"
 
-#define DEBUG_RLC_UM_DISPLAY_TB_DATA
-#define DEBUG_RLC_UM_RX
+//#define DEBUG_RLC_UM_RX               1
 
 //-----------------------------------------------------------------------------
 void rlc_um_display_rx_window(rlc_um_entity_t *rlc_pP)
 //-----------------------------------------------------------------------------
 {
-/*
- *
- * #define RLC_FG_COLOR_BLACK            "\e[0;30m30:"
-#define RLC_FG_COLOR_RED              "\e[0;31m31:"
-#define RLC_FG_COLOR_GREEN            "\e[0;32m32:"
-#define RLC_FG_COLOR_ORANGE           "\e[0;33m33:"
-#define RLC_FG_COLOR_BLUE             "\e[0;34m34:"
-#define RLC_FG_COLOR_MAGENTA          "\e[0;35m35:"
-#define RLC_FG_COLOR_CYAN             "\e[0;36m36:"
-#define RLC_FG_COLOR_GRAY_BLACK       "\e[0;37m37:"
-#define RLC_FG_COLOR_DEFAULT          "\e[0;39m39:"
-#define RLC_FG_BRIGHT_COLOR_DARK_GRAY "\e[1;30m30:"
-#define RLC_FG_BRIGHT_COLOR_RED       "\e[1;31m31:"
-#define RLC_FG_BRIGHT_COLOR_GREEN     "\e[1;32m32:"
-#define RLC_FG_BRIGHT_COLOR_YELLOW    "\e[1;33m33:"
-#define RLC_FG_BRIGHT_COLOR_BLUE      "\e[1;34m34:"
-#define RLC_FG_BRIGHT_COLOR_MAGENTA   "\e[1;35m35:"
-#define RLC_FG_BRIGHT_COLOR_CYAN      "\e[1;36m36:"
-#define RLC_FG_BRIGHT_COLOR_WHITE     "\e[1;37m37:"
-#define RLC_FG_BRIGHT_COLOR_DEFAULT   "\e[0;39m39:"
-#define RLC_REVERSE_VIDEO             "\e[7m"
-#define RLC_NORMAL_VIDEO              "\e[27m]"
-
- *
- */
     unsigned long sn = 0;
     unsigned long end_sn = 0;
     char          str[4];
@@ -163,16 +137,19 @@ rlc_um_receive (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, s
 
         if (tb_size_in_bytes > 0) {
             rlc_um_receive_process_dar (rlc_pP, frameP, eNB_flagP, tb_p, (rlc_um_pdu_sn_10_t *)first_byte_p, tb_size_in_bytes);
-            LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %u/%u][RB %u] VR(UR)=%03d VR(UX)=%03d VR(UH)=%03d\n",
+#if defined(DEBUG_RLC_UM_RX)
+            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] VR(UR)=%03d VR(UX)=%03d VR(UH)=%03d\n",
                     frameP,
                     (rlc_pP->is_enb) ? "eNB" : "UE",
                     rlc_pP->enb_module_id,
                     rlc_pP->ue_module_id,
+                    (rlc_pP->is_data_plane) ? "DRB" : "SRB",
                     rlc_pP->rb_id,
                     rlc_pP->vr_ur,
                     rlc_pP->vr_ux,
                     rlc_pP->vr_uh);
-            rlc_um_display_rx_window(rlc_pP);
+            //rlc_um_display_rx_window(rlc_pP); comented because bad display
+#endif
         }
     }
 }
