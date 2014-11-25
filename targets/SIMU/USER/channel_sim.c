@@ -52,8 +52,6 @@
 #include "UTIL/OPT/opt.h" // to test OPT
 #endif
 
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/extern.h"
-
 #include "UTIL/FIFO/types.h"
 
 #ifdef IFFT_FPGA

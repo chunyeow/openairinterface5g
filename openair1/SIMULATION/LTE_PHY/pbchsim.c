@@ -45,8 +45,6 @@
 #endif
 #include "SCHED/defs.h"
 #include "SCHED/vars.h"
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/vars.h"
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/cbmimo1_device.h"
 #include "LAYER2/MAC/vars.h"
 
 #ifdef XFORMS
@@ -199,8 +197,6 @@ int main(int argc, char **argv) {
   int pbch_tx_ant;
   uint8_t N_RB_DL=25,osf=1;
 
-  int openair_fd,rx_sig_fifo_fd,get_frame=0;
-  int frequency=0,fc=0;
   unsigned char frame_type = 0;
   unsigned char pbch_phase = 0;
 
@@ -236,17 +232,6 @@ int main(int argc, char **argv) {
 	  break;
 	case 'd':
 	  frame_type = 1;
-	  break;
-	case 'G':
-	  if ((openair_fd = open("/dev/openair0", O_RDWR,0)) <0) {
-	    fprintf(stderr,"Error %d opening /dev/openair0\n",openair_fd);
-	    exit(-1);
-	  }
-	  if ((rx_sig_fifo_fd = open("/dev/rtf59",O_RDONLY,0)) <0) {
-	    printf("[openair][INFO] Cannot open rx_sig_fifo\n");
-	    exit(-1);
-	  }
-	  get_frame = 1;
 	  break;
 	case 'g':
 	  switch((char)*optarg) {
@@ -535,24 +520,6 @@ int main(int argc, char **argv) {
   */
   if (pbch_file_fd!=NULL) {
     load_pbch_desc(pbch_file_fd);
-  }
-
-  if (get_frame==1) {
-    result=ioctl(openair_fd, openair_DUMP_CONFIG,(char *)frame_parms);
-    if (result == 0) {
-      printf ("[openair][CONFIG][INFO] loading openair configuration in kernel space\n");
-    } else {
-      printf ("[openair][START][INFO] loading openair configuration in kernel space failed \n");
-      exit(-1);
-    }
-    fc = 113;
-    result=ioctl(openair_fd, openair_SET_TCXO_DAC,&fc);
-    if (result == 0) {
-      printf ("[openair][CONFIG][INFO] set TCXO to %d\n",fc);
-    } else {
-      printf ("[openair][START][INFO] error setting tcxo \n");
-      exit(-1);
-    }
   }
 
   if (input_fd==NULL) {
@@ -944,24 +911,6 @@ int main(int argc, char **argv) {
 	}
 	
 
-	if (get_frame==1) {
-	  fc = (atoi(argv[3])&1) | ((frequency&7)<<1) | ((frequency&7)<<4);
-	  result = ioctl(openair_fd,openair_GET_BUFFER,(void *)&fc);
-	  if (result == 0) {
-	    printf ("Sent openair_GET_BUFFER! \n");
-	    
-	    sleep(2);
-	    
-	    result = read(rx_sig_fifo_fd,(void *)PHY_vars_UE->lte_ue_common_vars.rxdata[0],FRAME_LENGTH_BYTES);
-	    printf("Read %d bytes\n",result);
-	    result = read(rx_sig_fifo_fd,(void *)PHY_vars_UE->lte_ue_common_vars.rxdata[1],FRAME_LENGTH_BYTES);
-	    printf("Read %d bytes\n",result);
-	  } else {
-	    printf ("Problem sending openair_get_BUFFER! \n");
-	  }
-
-	}
-
 	/*
 	// optional: read rx_frame from file
 	if ((rx_frame_file = fopen("rx_frame.dat","r")) == NULL)
@@ -1129,11 +1078,6 @@ int main(int argc, char **argv) {
 
   if (write_output_file)
     fclose(output_fd);
-
-  if (get_frame) {
-    close(openair_fd);
-    close(rx_sig_fifo_fd);
-  }
 
   return(n_errors);
 

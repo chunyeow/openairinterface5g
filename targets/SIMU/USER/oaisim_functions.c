@@ -51,7 +51,6 @@
 #include "RRC/LITE/extern.h"
 #include "RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
 #include "PHY_INTERFACE/extern.h"
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/extern.h"
 #include "SCHED/extern.h"
 #include "SIMULATION/ETH_TRANSPORT/proto.h"
 #include "UTIL/OCG/OCG_extern.h"

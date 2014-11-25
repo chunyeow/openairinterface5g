@@ -59,8 +59,6 @@
 //#endif
 #include "RRC/NAS/nas_config.h"
 
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/vars.h"
-
 #ifdef IFFT_FPGA
 //#include "PHY/LTE_REFSIG/mod_table.h"
 #endif //IFFT_FPGA

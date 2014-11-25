@@ -55,8 +55,6 @@
 #include "UTIL/OPT/opt.h" // to test OPT
 #endif
 
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/extern.h"
-
 #include "SCHED/defs.h"
 #include "SCHED/extern.h"
 

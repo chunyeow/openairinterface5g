@@ -96,6 +96,8 @@ unsigned char NB_INST=0;
 
 unsigned int ULSCH_max_consecutive_errors = 10;
 
+int number_of_cards;
+
 int flag_LA=0;
 int flagMag;
 //extern  channel_desc_t *eNB2UE[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX];

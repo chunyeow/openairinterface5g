@@ -3143,7 +3143,7 @@ int main(int argc, char **argv) {
   //  }
 #endif
 
-  //  number_of_cards = openair0_num_detected_cards;
+  number_of_cards = openair0_num_detected_cards;
 
   openair_daq_vars.timing_advance = 0;
 

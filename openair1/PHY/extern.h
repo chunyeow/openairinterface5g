@@ -48,6 +48,7 @@ extern unsigned short rev[2048],rev_times4[8192],rev_half[1024],rev1024[1024],re
 #include "SIMULATION/ETH_TRANSPORT/extern.h"
 
 extern unsigned int DAQ_MBOX;
+extern int number_of_cards;
 
 //extern PHY_CONFIG *PHY_config;
 //extern PHY_VARS *PHY_vars;
