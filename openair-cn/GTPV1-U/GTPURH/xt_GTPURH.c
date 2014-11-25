@@ -277,7 +277,7 @@ static char _gtpurh_print_buffer[GTPURH_2_PRINT_BUFFER_LEN];
 
 typedef struct ip_fragment_entry_s {
     struct sk_buff    *skb;
-    //struct timeval     first_ts;
+    //struct timeval     first_ts; // TO DO WITH IP_FRAG_TIME
     int                flags;  //ip header field
     int                offset; //ip header field
     int                end;
@@ -437,7 +437,6 @@ _gtpurh_target_reassembly(struct sk_buff *orig_skb, const struct xt_gtpurh_targe
     offset &= IP_OFFSET; /* offset is in 8-byte chunks */
     offset <<= 3;
     ihl     = ip_hdrlen(skb);
-    ihl = ip_hdrlen(skb);
     end = offset + skb->len - ihl;
 
     key = iph->id;
