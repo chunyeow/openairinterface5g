@@ -105,6 +105,8 @@ boolean_t pdcp_data_req(
   rlc_op_status_t    rlc_status;
   boolean_t          ret             = TRUE;
 
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_REQ,VCD_FUNCTION_IN);
+
   AssertError (enb_mod_idP < NUMBER_OF_eNB_MAX, return FALSE, "eNB id is too high (%u/%d) %u %u!\n", enb_mod_idP, NUMBER_OF_eNB_MAX, ue_mod_idP, rb_idP);
   AssertError (ue_mod_idP < NUMBER_OF_UE_MAX, return FALSE, "UE id is too high (%u/%d) %u %u!\n", ue_mod_idP, NUMBER_OF_UE_MAX, enb_mod_idP, rb_idP);
   if (modeP == PDCP_TRANSMISSION_MODE_TRANSPARENT) {
@@ -161,7 +163,6 @@ boolean_t pdcp_data_req(
   else
     start_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
  
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_REQ,VCD_FUNCTION_IN);
    
   // PDCP transparent mode for MBMS traffic
 
@@ -170,10 +171,11 @@ boolean_t pdcp_data_req(
       pdcp_pdu_p = get_free_mem_block(sdu_buffer_sizeP);
       if (pdcp_pdu_p != NULL) {
           memcpy(&pdcp_pdu_p->data[0], sdu_buffer_pP, sdu_buffer_sizeP);
+#if defined(DEBUG_PDCP_PAYLOAD)
           rlc_util_print_hex_octets(PDCP,
                                     (unsigned char*)&pdcp_pdu_p->data[0],
                                     sdu_buffer_sizeP);
-
+#endif
           rlc_status = rlc_data_req(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, srb_flagP, MBMS_FLAG_YES, rb_idP, muiP, confirmP, sdu_buffer_sizeP, pdcp_pdu_p);
       } else {
         rlc_status = RLC_OP_STATUS_OUT_OF_RESSOURCES;
