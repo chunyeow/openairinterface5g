@@ -660,7 +660,6 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
 
     // IMPORTANT : do not change order of affectations
     ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size = ((struct rlc_um_data_req *) (sdu_pP->data))->data_size;
-    rlc_p->buffer_occupancy += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
     //rlc_p->nb_sdu += 1;
     ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->first_byte = (uint8_t*)&sdu_pP->data[sizeof (struct rlc_um_data_req_alloc)];
     ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_remaining_size = ((struct rlc_um_tx_sdu_management *)
@@ -719,6 +718,7 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
 #endif 
 #   endif
       pthread_mutex_lock(&rlc_p->lock_input_sdus);
+      rlc_p->buffer_occupancy += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
       list_add_tail_eurecom(sdu_pP, &rlc_p->input_sdus);
       pthread_mutex_unlock(&rlc_p->lock_input_sdus);
 
