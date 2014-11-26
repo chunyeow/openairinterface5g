@@ -189,6 +189,7 @@ void rlc_am_segment_10 (
     pdu_mem_p = NULL;
 
 
+    pthread_mutex_lock(&rlc_pP->lock_input_sdus);
     while ((rlc_pP->input_sdus[rlc_pP->current_sdu_index].mem_block) && (nb_bytes_to_transmit > 0) ) {
         LOG_T(RLC, "[FRAME %05d][%s][RLC_AM][MOD %u/%u][RB %u][SEGMENT] nb_bytes_to_transmit %d BO %d\n",
               frameP,
@@ -238,6 +239,7 @@ void rlc_am_segment_10 (
                 rlc_pP->enb_module_id,
                 rlc_pP->ue_module_id,
                 rlc_pP->rb_id);
+                pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
                 return;
             }
             LOG_T(RLC, "[FRAME %05d][%s][RLC_AM][MOD %u/%u][RB %u][SEGMENT] get new PDU %d bytes\n",
@@ -611,4 +613,5 @@ void rlc_am_segment_10 (
         list_add_tail_eurecom (copy, &rlc_pP->segmentation_pdu_list);
 
     }
+    pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
 }

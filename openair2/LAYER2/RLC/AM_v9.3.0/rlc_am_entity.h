@@ -43,6 +43,7 @@
 #    ifndef __RLC_AM_ENTITY_H__
 #        define __RLC_AM_ENTITY_H__
 //-----------------------------------------------------------------------------
+#        include <pthread.h>
 #        include "platform_types.h"
 #        include "platform_constants.h"
 #        include "list.h"
@@ -70,6 +71,8 @@ typedef struct rlc_am_entity_s {
   //---------------------------------------------------------------------
   // TX BUFFERS
   //---------------------------------------------------------------------
+  //pthread_spinlock_t lock_input_sdus;
+  pthread_mutex_t      lock_input_sdus;
   rlc_am_tx_sdu_management_t   *input_sdus;           /*!< \brief Input SDU buffer (for SDUs coming from upper layers). */
   signed int      nb_sdu;                             /*!< \brief Total number of valid rlc_am_tx_sdu_management_t in input_sdus[]. */
   signed int      nb_sdu_no_segmented;                /*!< \brief Total number of SDUs not segmented and partially segmented. */

@@ -51,6 +51,7 @@ void rlc_am_init(rlc_am_entity_t *rlc_pP, frame_t frameP)
         list_init(&rlc_pP->segmentation_pdu_list, "SEGMENTATION PDU LIST");
         //LOG_D(RLC,"RLC_AM_SDU_CONTROL_BUFFER_SIZE %d sizeof(rlc_am_tx_sdu_management_t) %d \n",  RLC_AM_SDU_CONTROL_BUFFER_SIZE, sizeof(rlc_am_tx_sdu_management_t));
 
+        pthread_mutex_init(&rlc_pP->lock_input_sdus, NULL);
         rlc_pP->input_sdus               = calloc(1, RLC_AM_SDU_CONTROL_BUFFER_SIZE*sizeof(rlc_am_tx_sdu_management_t));
 #warning "cast the rlc retrans buffer to uint32"
 	//        rlc_pP->pdu_retrans_buffer       = calloc(1, (uint16_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
@@ -162,6 +163,7 @@ void rlc_am_cleanup(rlc_am_entity_t *rlc_pP)
         free(rlc_pP->input_sdus);
         rlc_pP->input_sdus       = NULL;
     }
+    pthread_mutex_destroy(&rlc_pP->lock_input_sdus);
     if (rlc_pP->pdu_retrans_buffer != NULL) {
         for (i=0; i < RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE; i++) {
             if (rlc_pP->pdu_retrans_buffer[i].mem_block != NULL) {

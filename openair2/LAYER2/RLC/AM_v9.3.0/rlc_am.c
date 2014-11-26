@@ -950,6 +950,7 @@ rlc_am_data_req (void *rlc_pP, frame_t frameP, mem_block_t * sdu_pP)
   int                  octet_index, index;
 #endif
 
+  pthread_mutex_lock(&l_rlc_p->lock_input_sdus);
   if ((l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].mem_block == NULL) &&
       (l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].flags.segmented == 0) &&
       (((l_rlc_p->next_sdu_index + 1) % RLC_AM_SDU_CONTROL_BUFFER_SIZE) != l_rlc_p->current_sdu_index)) {
@@ -1076,4 +1077,5 @@ rlc_am_data_req (void *rlc_pP, frame_t frameP, mem_block_t * sdu_pP)
           l_rlc_p->next_sdu_index);
 #endif
   }
+  pthread_mutex_unlock(&l_rlc_p->lock_input_sdus);
 }
