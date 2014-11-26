@@ -54,10 +54,11 @@ extern boolean_t pdcp_data_ind(
     const sdu_size_t sdu_buffer_sizeP,
     mem_block_t* const sdu_buffer_pP);
 
-#define DEBUG_RLC_PDCP_INTERFACE
-
+#define DEBUG_RLC_PDCP_INTERFACE 1
+//#define DEBUG_RLC_PAYLOAD 1
 #define DEBUG_RLC_DATA_REQ 1
 
+#if defined(DEBUG_RLC_PAYLOAD)
 //-----------------------------------------------------------------------------
 void rlc_util_print_hex_octets(comp_name_t componentP, unsigned char* dataP, const signed long sizeP)
 //-----------------------------------------------------------------------------
@@ -98,7 +99,7 @@ void rlc_util_print_hex_octets(comp_name_t componentP, unsigned char* dataP, con
     LOG_T(componentP, "   ");
   LOG_T(componentP, " |\n");
 }
-
+#endif
 //-----------------------------------------------------------------------------
 rlc_op_status_t rlc_stat_req     (
                   const module_id_t   enb_module_idP,
@@ -441,7 +442,9 @@ rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
           enb_module_idP,
           ue_module_idP,
           rb_idP);
+#if defined(DEBUG_RLC_PAYLOAD)
       rlc_util_print_hex_octets(RLC, (unsigned char*)sdu_pP->data, sdu_sizeP);
+#endif
 
 #ifdef DEBUG_RLC_DATA_REQ
       LOG_D(RLC,"RLC_TYPE : %d ",rlc_mode);
@@ -649,6 +652,7 @@ void rlc_data_ind     (
 //-----------------------------------------------------------------------------
 
 
+#if defined(DEBUG_RLC_PAYLOAD)
   LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][%s %u] Display of rlc_data_ind: size %u\n",
         frameP,
         (enb_flagP) ? "eNB" : "UE",
@@ -659,7 +663,7 @@ void rlc_data_ind     (
         sdu_sizeP);
 
   rlc_util_print_hex_octets(RLC, (unsigned char*)sdu_pP->data, sdu_sizeP);
-
+#endif
   LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][%s %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][%s %u]\n",
       frameP,
       (enb_flagP) ? "eNB" : "UE",
