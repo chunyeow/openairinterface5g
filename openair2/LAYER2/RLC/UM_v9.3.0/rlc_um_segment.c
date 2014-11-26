@@ -478,7 +478,9 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
         pdu_tb_req_p->data_ptr        = (unsigned char*)pdu_p;
         pdu_tb_req_p->tb_size = data_pdu_size - pdu_remaining_size;
         list_add_tail_eurecom (pdu_mem_p, &rlc_pP->pdus_to_mac_layer);
-        //rlc_util_print_hex_octets(RLC, pdu_mem_p->data, data_pdu_size);
+#if defined(DEBUG_RLC_PAYLOAD)
+        rlc_util_print_hex_octets(RLC, pdu_mem_p->data, data_pdu_size);
+#endif
         AssertFatal( pdu_tb_req_p->tb_size > 0 , "SEGMENT10: FINAL RLC UM PDU LENGTH %d", pdu_tb_req_p->tb_size);
         pdu_p = NULL;
         pdu_mem_p = NULL;
@@ -915,8 +917,9 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
         pdu_tb_req_p->data_ptr        = (unsigned char*)pdu_p;
         pdu_tb_req_p->tb_size         = data_pdu_size - pdu_remaining_size;
         list_add_tail_eurecom (pdu_mem_p, &rlc_pP->pdus_to_mac_layer);
+#if defined(DEBUG_RLC_PAYLOAD)
         rlc_util_print_hex_octets(RLC, (unsigned char*)pdu_mem_p->data, data_pdu_size);
-
+#endif
         AssertFatal( pdu_tb_req_p->tb_size > 0 , "SEGMENT5: FINAL RLC UM PDU LENGTH %d", pdu_tb_req_p->tb_size);
 
         pdu_p = NULL;

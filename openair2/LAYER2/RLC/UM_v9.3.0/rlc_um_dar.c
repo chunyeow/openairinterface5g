@@ -1047,7 +1047,9 @@ rlc_um_receive_process_dar (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t 
     }
     in_window = rlc_um_in_window(rlc_pP, frameP, rlc_pP->vr_uh - rlc_pP->rx_um_window_size, sn, rlc_pP->vr_ur);
 
+#if defined(DEBUG_RLC_PAYLOAD)
     rlc_util_print_hex_octets(RLC, &pdu_pP->b1, tb_sizeP);
+#endif
 
     // rlc_um_in_window() returns -2 if lower_bound  > sn
     // rlc_um_in_window() returns -1 if higher_bound < sn
