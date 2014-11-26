@@ -796,7 +796,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     DRB_rlc_config->present = RLC_Config_PR_um_Bi_Directional;
     DRB_rlc_config->choice.um_Bi_Directional.ul_UM_RLC.sn_FieldLength = SN_FieldLength_size10;
     DRB_rlc_config->choice.um_Bi_Directional.dl_UM_RLC.sn_FieldLength = SN_FieldLength_size10;
-    DRB_rlc_config->choice.um_Bi_Directional.dl_UM_RLC.t_Reordering = T_Reordering_ms5;
+    DRB_rlc_config->choice.um_Bi_Directional.dl_UM_RLC.t_Reordering = T_Reordering_ms25;
 #endif
 
     DRB_pdcp_config = CALLOC(1, sizeof(*DRB_pdcp_config));
