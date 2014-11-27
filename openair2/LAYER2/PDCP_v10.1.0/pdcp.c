@@ -650,9 +650,11 @@ boolean_t pdcp_data_ind(
           pdcp_p->last_submitted_pdcp_rx_sn = sequence_number;
       }
    
+#if defined(DEBUG_PDCP_PAYLOAD)
       rlc_util_print_hex_octets(PDCP,
                                 (unsigned char*)&sdu_buffer_pP->data[payload_offset],
                                 sdu_buffer_sizeP - payload_offset);
+#endif
 
       src_id = (enb_flagP == ENB_FLAG_NO) ?  enb_mod_idP : ue_mod_idP +   NB_eNB_INST;
       dst_id = (enb_flagP == ENB_FLAG_NO) ? ue_mod_idP +  NB_eNB_INST: enb_mod_idP;

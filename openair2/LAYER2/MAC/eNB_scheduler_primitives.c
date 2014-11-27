@@ -69,27 +69,29 @@
 
 
 void init_ue_sched_info(void){
-  module_id_t i,j;
+  module_id_t i,j,k;
   for (i=0;i<NUMBER_OF_eNB_MAX;i++){
+    for (k=0;i<MAX_NUM_CCs;i++){
       for (j=0;j<NUMBER_OF_UE_MAX;j++){
           // init DL
-          eNB_dlsch_info[i][j].weight           = 0;
-          eNB_dlsch_info[i][j].subframe         = 0;
-          eNB_dlsch_info[i][j].serving_num      = 0;
-          eNB_dlsch_info[i][j].status           = S_DL_NONE;
+          eNB_dlsch_info[i][k][j].weight           = 0;
+          eNB_dlsch_info[i][k][j].subframe         = 0;
+          eNB_dlsch_info[i][k][j].serving_num      = 0;
+          eNB_dlsch_info[i][k][j].status           = S_DL_NONE;
           // init UL
-          eNB_ulsch_info[i][j].subframe         = 0;
-          eNB_ulsch_info[i][j].serving_num      = 0;
-          eNB_ulsch_info[i][j].status           = S_UL_NONE;
+          eNB_ulsch_info[i][k][j].subframe         = 0;
+          eNB_ulsch_info[i][k][j].serving_num      = 0;
+          eNB_ulsch_info[i][k][j].status           = S_UL_NONE;
       }
+    }
   }
 }
 
 
 
-unsigned char get_ue_weight(module_id_t module_idP, int ue_idP){
+unsigned char get_ue_weight(module_id_t module_idP, int CC_id, int ue_idP){
 
-  return(eNB_dlsch_info[module_idP][ue_idP].weight);
+  return(eNB_dlsch_info[module_idP][CC_id][ue_idP].weight);
 
 }
 
@@ -235,8 +237,8 @@ int add_new_ue(module_id_t mod_idP, int cc_idP, rnti_t rntiP,int harq_pidP) {
       UE_list->UE_template[cc_idP][UE_id].oldNDI[j]    = (j==0)?1:0;   // 1 because first transmission is with format1A (Msg4) for harq_pid 0 
       UE_list->UE_template[cc_idP][UE_id].oldNDI_UL[j] = (j==harq_pidP)?0:1; // 1st transmission is with Msg3;
     }
-    eNB_ulsch_info[mod_idP][UE_id].status = S_UL_WAITING;
-    eNB_dlsch_info[mod_idP][UE_id].status = S_UL_WAITING;
+    eNB_ulsch_info[mod_idP][cc_idP][UE_id].status = S_UL_WAITING;
+    eNB_dlsch_info[mod_idP][cc_idP][UE_id].status = S_UL_WAITING;
     LOG_D(MAC,"[eNB %d] Add UE_id %d on Primary CC_id %d: rnti %x\n",mod_idP,UE_id,cc_idP,rntiP);
     dump_ue_list(UE_list,0);
     return(UE_id);
@@ -266,10 +268,10 @@ int mac_remove_ue(module_id_t mod_idP, int ue_idP) {
   UE_list->UE_template[pCC_id][ue_idP].ul_SR             = 0;
   UE_list->UE_template[pCC_id][ue_idP].rnti              = 0;
   UE_list->UE_template[pCC_id][ue_idP].ul_active         = FALSE;
-  eNB_ulsch_info[mod_idP][ue_idP].rnti                        = 0;
-  eNB_ulsch_info[mod_idP][ue_idP].status                      = S_UL_NONE;
-  eNB_dlsch_info[mod_idP][ue_idP].rnti                        = 0;
-  eNB_dlsch_info[mod_idP][ue_idP].status                      = S_DL_NONE;
+  eNB_ulsch_info[mod_idP][pCC_id][ue_idP].rnti                        = 0;
+  eNB_ulsch_info[mod_idP][pCC_id][ue_idP].status                      = S_UL_NONE;
+  eNB_dlsch_info[mod_idP][pCC_id][ue_idP].rnti                        = 0;
+  eNB_dlsch_info[mod_idP][pCC_id][ue_idP].status                      = S_DL_NONE;
 
   rrc_eNB_free_UE_index(mod_idP,ue_idP);
 

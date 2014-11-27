@@ -71,27 +71,27 @@ extern inline unsigned int taus(void);
 
 void add_ue_dlsch_info(module_id_t module_idP, int CC_id, int UE_id, sub_frame_t subframeP, UE_DLSCH_STATUS status){
 
-  eNB_dlsch_info[module_idP][UE_id].rnti             = UE_RNTI(module_idP,UE_id);
-  //  eNB_dlsch_info[module_idP][ue_mod_idP].weight           = weight;
-  eNB_dlsch_info[module_idP][UE_id].subframe         = subframeP;
-  eNB_dlsch_info[module_idP][UE_id].status           = status;
+  eNB_dlsch_info[module_idP][CC_id][UE_id].rnti             = UE_RNTI(module_idP,UE_id);
+  //  eNB_dlsch_info[module_idP][CC_id][ue_mod_idP].weight           = weight;
+  eNB_dlsch_info[module_idP][CC_id][UE_id].subframe         = subframeP;
+  eNB_dlsch_info[module_idP][CC_id][UE_id].status           = status;
 
-  eNB_dlsch_info[module_idP][UE_id].serving_num++;
+  eNB_dlsch_info[module_idP][CC_id][UE_id].serving_num++;
 
 }
 
-int schedule_next_dlue(module_id_t module_idP, sub_frame_t subframeP){
+int schedule_next_dlue(module_id_t module_idP, int CC_id, sub_frame_t subframeP){
 
   int next_ue;
   UE_list_t *UE_list=&eNB_mac_inst[module_idP].UE_list;
 
   for (next_ue=UE_list->head; next_ue>=0; next_ue=UE_list->next[next_ue] ){
-    if  (eNB_dlsch_info[module_idP][next_ue].status == S_DL_WAITING)
+    if  (eNB_dlsch_info[module_idP][CC_id][next_ue].status == S_DL_WAITING)
       return next_ue;
   }
   for (next_ue=UE_list->head; next_ue>=0; next_ue=UE_list->next[next_ue] ){
-    if  (eNB_dlsch_info[module_idP][next_ue].status == S_DL_BUFFERED) {
-      eNB_dlsch_info[module_idP][next_ue].status = S_DL_WAITING;
+    if  (eNB_dlsch_info[module_idP][CC_id][next_ue].status == S_DL_BUFFERED) {
+      eNB_dlsch_info[module_idP][CC_id][next_ue].status = S_DL_WAITING;
     }
   }
 
@@ -442,6 +442,7 @@ void schedule_ue_spec(module_id_t   module_idP,
  
 
   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+    LOG_D(MAC, "doing schedule_ue_spec for CC_id %d\n",CC_id);
     if (mbsfn_flag[CC_id]>0)
       continue;
     for (UE_id=UE_list->head;UE_id>=0;UE_id=UE_list->next[UE_id]) {
@@ -1182,6 +1183,7 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
   start_meas(&eNB->fill_DLSCH_dci);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_FILL_DLSCH_DCI,VCD_FUNCTION_IN);
   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+    LOG_D(MAC,"Doing fill DCI for CC_id %d\n",CC_id);
 
     if (mbsfn_flagP[CC_id]>0)
       continue;
@@ -1750,11 +1752,11 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
 
     // UE specific DCIs
     for (UE_id=UE_list->head;UE_id>=0;UE_id=UE_list->next[UE_id]) {
-      //      printf("UE_id: %d => status %d\n",UE_id,eNB_dlsch_info[module_idP][UE_id].status);
-      if (eNB_dlsch_info[module_idP][UE_id].status == S_DL_SCHEDULED) {
+      LOG_D(MAC,"CC_id %d, UE_id: %d => status %d\n",CC_id,UE_id,eNB_dlsch_info[module_idP][CC_id][UE_id].status);
+      if (eNB_dlsch_info[module_idP][CC_id][UE_id].status == S_DL_SCHEDULED) {
 
 	// clear scheduling flag
-	eNB_dlsch_info[module_idP][UE_id].status = S_DL_WAITING;
+	eNB_dlsch_info[module_idP][CC_id][UE_id].status = S_DL_WAITING;
 	rnti = UE_RNTI(module_idP,UE_id);
 	mac_xface->get_ue_active_harq_pid(module_idP,CC_id,rnti,frameP,subframeP,&harq_pid,&round,0);
 	nb_rb = UE_list->UE_template[CC_id][UE_id].nb_rb[harq_pid];

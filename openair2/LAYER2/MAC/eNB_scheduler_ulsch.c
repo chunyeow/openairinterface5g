@@ -355,11 +355,11 @@ void adjust_bsr_info(int buffer_occupancy,
 
 void add_ue_ulsch_info(module_id_t module_idP, int CC_id, int UE_id, sub_frame_t subframeP, UE_ULSCH_STATUS status){
 
-  eNB_ulsch_info[module_idP][UE_id].rnti             = UE_RNTI(module_idP,UE_id);
-  eNB_ulsch_info[module_idP][UE_id].subframe         = subframeP;
-  eNB_ulsch_info[module_idP][UE_id].status           = status;
+  eNB_ulsch_info[module_idP][CC_id][UE_id].rnti             = UE_RNTI(module_idP,UE_id);
+  eNB_ulsch_info[module_idP][CC_id][UE_id].subframe         = subframeP;
+  eNB_ulsch_info[module_idP][CC_id][UE_id].status           = status;
 
-  eNB_ulsch_info[module_idP][UE_id].serving_num++;
+  eNB_ulsch_info[module_idP][CC_id][UE_id].serving_num++;
 
 }
 

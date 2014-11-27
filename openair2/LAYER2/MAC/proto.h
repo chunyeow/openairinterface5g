@@ -332,7 +332,7 @@ module_id_t schedule_next_ulue(module_id_t module_idP, int UE_id,sub_frame_t sub
 @param subframe Subframe number on which to act
 @returns UE index that is to be scheduled if needed/room
 */
-int schedule_next_dlue(module_id_t module_idP, sub_frame_t subframe);
+int schedule_next_dlue(module_id_t module_idP, int CC_id, sub_frame_t subframe);
 
 /* \brief Allocates a set of PRBS for a particular UE.  This is a simple function for the moment, later it should process frequency-domain CQI information and/or PMI information.  Currently it just returns the first PRBS that are available in the subframe based on the number requested.
 @param UE_id Index of UE on which to act
@@ -359,7 +359,7 @@ uint32_t req_new_ulsch(module_id_t module_idP);
 */
 uint32_t ue_get_SR(module_id_t module_idP, int CC_id,frame_t frameP, uint8_t eNB_id,rnti_t rnti,sub_frame_t subframe);
 
-uint8_t get_ue_weight(module_id_t module_idP, int UE_id);
+uint8_t get_ue_weight(module_id_t module_idP, int CC_id, int UE_id);
 
 // UE functions
 void mac_out_of_sync_ind(module_id_t module_idP, frame_t frameP, uint16_t CH_index);
