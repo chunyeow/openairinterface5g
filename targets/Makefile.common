@@ -57,7 +57,14 @@ endif
 endif
 
 CFLAGS += -DJUMBO_FRAME
-COMMON_CFLAGS           += -DMAX_NUM_CCs=1
+
+ifdef MAX_NUM_CCs
+CFLAGS           += -DMAX_NUM_CCs=$(MAX_NUM_CCs)
+COMMON_CFLAGS    += -DMAX_NUM_CCs=$(MAX_NUM_CCs)
+else
+CFLAGS           += -DMAX_NUM_CCs=1
+COMMON_CFLAGS    += -DMAX_NUM_CCs=1
+endif
 
 ifeq ($(ENABLE_RAL), 1)
 CFLAGS += -DENABLE_RAL

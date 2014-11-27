@@ -123,7 +123,7 @@ $(info "Rel8=1")
 CFLAGS += -DRel8
 endif
 
-CFLAGS += -DMAX_NUM_CCs=1
+#CFLAGS += -DMAX_NUM_CCs=1
 
 ifeq ($(RLC_STOP_ON_LOST_PDU), 1)
 CFLAGS += -DRLC_STOP_ON_LOST_PDU
@@ -444,6 +444,7 @@ print:
 	@echo "OCG_FLAG are "		$(OCG_FLAG)
 	@echo "CFLAGS are "			$(CFLAGS)
 	@echo "EXTRA_CFLAGS are"	$(EXTRA_CFLAGS)
+	@echo "COMMON_CFLAGS are"	$(COMMON_CFLAGS)
 	@echo "L2 includes are"		$(L2_incl)
 	@echo "INCLUDES are"		$(INCLUDES)
 	@echo "S1AP Includes are"	$(S1AP_Incl)
