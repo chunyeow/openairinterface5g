@@ -50,6 +50,7 @@
 #include "udp_eNB_task.h"
 
 #include "UTIL/LOG/log.h"
+#include "UTIL/LOG/vcd_signal_dumper.h"
 
 #define IPV4_ADDR    "%u.%u.%u.%u"
 #define IPV4_ADDR_FORMAT(aDDRESS)               \
@@ -289,6 +290,7 @@ void *udp_eNB_task(void *args_p)
     itti_mark_task_ready(TASK_UDP);
     while(1) {
         itti_receive_msg(TASK_UDP, &received_message_p);
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UDP_ENB_TASK, VCD_FUNCTION_IN);
         LOG_D(UDP_, "Got message %p\n", &received_message_p);
         if (received_message_p != NULL) {
 
@@ -386,6 +388,7 @@ on_error:
         	LOG_D(UDP_, "UDP task Process %d events\n",nb_events);
             udp_eNB_process_file_descriptors(events, nb_events);
         }
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UDP_ENB_TASK, VCD_FUNCTION_OUT);
     }
     LOG_N(UDP_, "Task UDP eNB exiting\n");
     return NULL;
