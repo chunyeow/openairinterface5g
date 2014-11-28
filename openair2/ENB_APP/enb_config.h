@@ -41,8 +41,8 @@
 
 #include "commonDef.h"
 #include "platform_types.h"
+#include "platform_constants.h"
 #include "PHY/impl_defs_lte.h"
-#include "PHY/impl_defs_top.h"
 #include "s1ap_messages_types.h"
 #include "RRC/LITE/MESSAGES/SystemInformationBlockType2.h"
 
@@ -186,9 +186,9 @@ typedef struct Enb_properties_s {
   /* Nb of OTG elements */
   uint8_t            num_otg_elements;
   /* element config*/
-  uint16_t            otg_ue_id[NUMBER_OF_UE_MAX+1];
-  uint8_t          otg_app_type[NUMBER_OF_UE_MAX+1];
-  uint8_t            otg_bg_traffic[NUMBER_OF_UE_MAX+1];
+  uint16_t          otg_ue_id[NB_MODULES_MAX+1];
+  uint8_t          otg_app_type[NB_MODULES_MAX+1];
+  uint8_t            otg_bg_traffic[NB_MODULES_MAX+1];
    // log config
   int16_t           glog_level;
   int16_t           glog_verbosity;

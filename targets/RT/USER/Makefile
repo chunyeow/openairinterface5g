@@ -22,11 +22,11 @@ KERNEL_VERSION=$(shell echo `uname -r | cut -d. -f-2`)
 KERNEL_TYPE=$(shell echo `uname -r | cut -d. -f-3 | cut -d- -f3`)
 LOWLATENCY_KERNEL=$(shell if [ $(KERNEL_TYPE) = "lowlatency" ]; then echo "1" ; else echo "0" ; fi)
 
-ifdef LOWLATENCY # this ifdef is to be removed after the debugging
+#ifdef LOWLATENCY # this ifdef is to be removed after the debugging
 ifeq ($(LOWLATENCY_KERNEL),1)
 CFLAGS+=-DLOWLATENCY
 endif 
-endif 
+#endif 
 
 ifndef USRP
 USRP=0

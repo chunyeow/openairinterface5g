@@ -108,12 +108,13 @@ static int hw_subframe;
 unsigned short config_frames[4] = {2,9,11,13};
 #endif
 #include "UTIL/LOG/log_extern.h"
-#include "UTIL/OTG/otg.h"
+#include "UTIL/OTG/otg_tx.h"
 #include "UTIL/OTG/otg_externs.h"
 #include "UTIL/MATH/oml.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
 #include "UTIL/OPT/opt.h"
 #include "enb_config.h"
+//#include "PHY/TOOLS/time_meas.h"
 
 #if defined(ENABLE_ITTI)
 # include "intertask_interface_init.h"
@@ -349,6 +350,8 @@ time_stats_t softmodem_stats_mt; // main thread
 time_stats_t softmodem_stats_hw; //  hw acquisation
 time_stats_t softmodem_stats_tx_sf[10]; // total tx time 
 time_stats_t softmodem_stats_rx_sf[10]; // total rx time 
+void reset_opp_meas(void);
+void print_opp_meas(void);
 int transmission_mode=1;
 
 int16_t           glog_level         = LOG_DEBUG;
@@ -967,7 +970,7 @@ static void * eNB_thread_tx(void *param) {
   attr.sched_nice = 0;
   attr.sched_priority = 0;
   
-  /* This creates a 10ms/30ms reservation */
+  /* This creates a 1ms reservation every 10ms period*/
   attr.sched_policy = SCHED_DEADLINE;
   attr.sched_runtime = 1 * 1000000;  // each tx thread requires 1ms to finish its job
   attr.sched_deadline =1 * 1000000; // each tx thread will finish within 1ms
@@ -1122,11 +1125,11 @@ static void * eNB_thread_rx(void *param) {
   attr.sched_nice = 0;
   attr.sched_priority = 0;
   
-  /* This creates a 10ms/30ms reservation */
+  /* This creates a 2ms reservation every 10ms period*/
   attr.sched_policy = SCHED_DEADLINE;
-  attr.sched_runtime = 1 * 2000000;  // each rx thread must finish its job in the worst case in 2ms
-  attr.sched_deadline =1 * 2000000; // each rx thread will finish within 2ms
-  attr.sched_period = 1 * 10000000; // each rx thread has a period of 10ms from the starting point
+  attr.sched_runtime  = 1 * 2000000;  // each rx thread must finish its job in the worst case in 2ms
+  attr.sched_deadline = 1 * 2000000; // each rx thread will finish within 2ms
+  attr.sched_period   = 1 * 10000000; // each rx thread has a period of 10ms from the starting point
   
   if (sched_setattr(0, &attr, flags) < 0 ){
     perror("[SCHED] eNB RX sched_setattr failed\n");
@@ -1397,11 +1400,11 @@ static void *eNB_thread(void *arg)
    attr.sched_nice = 0;
    attr.sched_priority = 0;
    
-   /* This creates a 10ms/30ms reservation */
+   /* This creates a .5 ms  reservation */
    attr.sched_policy = SCHED_DEADLINE;
-   attr.sched_runtime = 1 * 500000;
-   attr.sched_deadline =1 * 500000;
-   attr.sched_period = 1 * 1000000;
+   attr.sched_runtime  = 1 * 1000000;
+   attr.sched_deadline = 1 * 1000000;
+   attr.sched_period   = 1 * 1000000;
    
    /* pin the eNB main thread to CPU0*/
    /* if (pthread_setaffinity_np(pthread_self(), sizeof(mask),&mask) <0) {

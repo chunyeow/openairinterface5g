@@ -339,7 +339,6 @@ typedef struct {
 #endif
 
 #define NUMBER_OF_RN_MAX 3
-
 typedef enum {no_relay=1,unicast_relay_type1,unicast_relay_type2, multicast_relay} relaying_type_t;
 
 typedef struct
