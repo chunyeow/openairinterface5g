@@ -18,6 +18,16 @@ ifeq "$(GCCVERSION)" "4.6.1"
     CFLAGS += -Wno-packed-bitfield-compat
 endif
 
+KERNEL_VERSION=$(shell echo `uname -r | cut -d. -f-2`)
+KERNEL_TYPE=$(shell echo `uname -r | cut -d. -f-3 | cut -d- -f3`)
+LOWLATENCY_KERNEL=$(shell if [ $(KERNEL_TYPE) = "lowlatency" ]; then echo "1" ; else echo "0" ; fi)
+
+ifdef LOWLATENCY # this ifdef is to be removed after the debugging
+ifeq ($(LOWLATENCY_KERNEL),1)
+CFLAGS+=-DLOWLATENCY
+endif 
+endif 
+
 ifndef USRP
 USRP=0
 endif
@@ -115,7 +125,7 @@ OBJ += $(LOG_OBJS)
 
 ifeq ($(OPENAIR2),1)
 ASN1_MSG_OBJS1=$(addprefix $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/, $(ASN1_MSG_OBJS))
-OBJ += $(L2_OBJS) $(LIST_OBJ) $(TIMER_OBJ) $(MEM_OBJ) $(OTG_OBJS) $(MATH_OBJS)  $(OSA_OBJS)  
+OBJ += $(L2_OBJS) $(LIST_OBJ) $(TIMER_OBJ) $(MEM_OBJ) $(OTG_OBJS) $(MATH_OBJS)  $(OSA_OBJS) $(OPT_OBJS) 
 OBJ += $(OPENAIR1_DIR)/SIMULATION/ETH_TRANSPORT/netlink_init.o
 #OBJ += $(PDCP_DIR)/pdcp_thread.o
 CFLAGS += -DOPENAIR2 -DNO_RRM -DPUCCH -DMAC_CONTEXT=1
@@ -404,6 +414,7 @@ show:
 	@echo IS_REL10 is $(IS_REL10)
 	@echo openssl $(OPENSSL_FOUND) 
 	@echo nettle $(NETTLE_FOUND)
+	@echo lowlatency kernel: $(LOWLATENCY_KERNEL)
 
 beautiful:
 	astyle --style=gnu -s2 $(SRC)

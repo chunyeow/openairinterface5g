@@ -5,7 +5,7 @@
 [dumpfile] "/tmp/openair_dump_eNB.vcd"
 [dumpfile_mtime] "Wed Sep 17 09:52:33 2014"
 [dumpfile_size] 53042998
-[savefile] "/homes/knopp/Devel/openair4G/trunk/targets/RT/USER/eNB.gtkw"
+[savefile] "$OPENAIR_TARGETS/RT/USER/eNB.gtkw"
 [timestart] 13048857000
 [size] 1005 600
 [pos] -1 -1

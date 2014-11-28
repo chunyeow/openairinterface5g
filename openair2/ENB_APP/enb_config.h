@@ -30,9 +30,9 @@
 /*
                                 enb_config.h
                              -------------------
-  AUTHOR  : Lionel GAUTHIER, Laurent Winckel
+  AUTHOR  : Lionel GAUTHIER, Navid Nikaein, Laurent Winckel
   COMPANY : EURECOM
-  EMAIL   : Lionel.Gauthier@eurecom.fr
+  EMAIL   : Lionel.Gauthier@eurecom.fr, navid.nikaein@eurecom.fr
 */
 
 #ifndef ENB_CONFIG_H_
@@ -42,6 +42,7 @@
 #include "commonDef.h"
 #include "platform_types.h"
 #include "PHY/impl_defs_lte.h"
+#include "PHY/impl_defs_top.h"
 #include "s1ap_messages_types.h"
 #include "RRC/LITE/MESSAGES/SystemInformationBlockType2.h"
 
@@ -181,7 +182,14 @@ typedef struct Enb_properties_s {
   char               *enb_interface_name_for_S1_MME;
   in_addr_t           enb_ipv4_address_for_S1_MME;
 
-  // log config
+  // otg config
+  /* Nb of OTG elements */
+  uint8_t            num_otg_elements;
+  /* element config*/
+  uint16_t            otg_ue_id[NUMBER_OF_UE_MAX+1];
+  uint8_t          otg_app_type[NUMBER_OF_UE_MAX+1];
+  uint8_t            otg_bg_traffic[NUMBER_OF_UE_MAX+1];
+   // log config
   int16_t           glog_level;
   int16_t           glog_verbosity;
   int16_t           hw_log_level;

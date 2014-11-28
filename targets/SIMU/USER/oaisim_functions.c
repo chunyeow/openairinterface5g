@@ -811,7 +811,18 @@ void init_openair1(void) {
 #endif
   // change the nb_connected_eNB
   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-    init_lte_vars (&frame_parms[CC_id], oai_emulation.info.frame_type[CC_id], oai_emulation.info.tdd_config[CC_id], oai_emulation.info.tdd_config_S[CC_id],oai_emulation.info.extended_prefix_flag[CC_id],oai_emulation.info.N_RB_DL[CC_id], Nid_cell, cooperation_flag, oai_emulation.info.transmission_mode[CC_id], abstraction_flag,nb_antennas_rx, oai_emulation.info.eMBMS_active_state);
+    init_lte_vars (&frame_parms[CC_id], 
+		   oai_emulation.info.frame_type[CC_id], 
+		   oai_emulation.info.tdd_config[CC_id], 
+		   oai_emulation.info.tdd_config_S[CC_id],
+		   oai_emulation.info.extended_prefix_flag[CC_id],
+		   oai_emulation.info.N_RB_DL[CC_id], 
+		   Nid_cell, 
+		   cooperation_flag, 
+		   oai_emulation.info.transmission_mode[CC_id], 
+		   abstraction_flag,
+		   nb_antennas_rx, 
+		   oai_emulation.info.eMBMS_active_state);
   }
 
   for (eNB_id=0; eNB_id<NB_eNB_INST;eNB_id++){
@@ -830,10 +841,11 @@ void init_openair1(void) {
       }
   }
 
-  printf ("AFTER init: Nid_cell %d\n", PHY_vars_eNB_g[0][0]->lte_frame_parms.Nid_cell);
-  printf ("AFTER init: frame_type %d,tdd_config %d\n",
-      PHY_vars_eNB_g[0][0]->lte_frame_parms.frame_type,
-      PHY_vars_eNB_g[0][0]->lte_frame_parms.tdd_config);
+   printf ("AFTER init: MAX_NUM_CCs %d, Nid_cell %d frame_type %d,tdd_config %d\n",
+	  MAX_NUM_CCs,
+	  PHY_vars_eNB_g[0][0]->lte_frame_parms.Nid_cell,
+	  PHY_vars_eNB_g[0][0]->lte_frame_parms.frame_type,
+	  PHY_vars_eNB_g[0][0]->lte_frame_parms.tdd_config);
 
   number_of_cards = 1;
 

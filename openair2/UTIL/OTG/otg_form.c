@@ -40,7 +40,7 @@
 */
 
 #include "otg_form.h"
-#include "otg_vars.h"
+#include "otg_externs.h"
 #include "otg_kpi.h"
 
 extern unsigned char NB_eNB_INST;

@@ -43,6 +43,8 @@
 #include "log_extern.h"
 #include "assertions.h"
 #include "enb_config.h"
+#include "UTIL/OTG/otg.h"
+#include "UTIL/OTG/otg_externs.h"
 #if defined(OAI_EMU)
 # include "OCG.h"
 # include "OCG_extern.h"
@@ -162,6 +164,11 @@
 #define ENB_CONFIG_STRING_ASN1_VERBOSITY_ANNOYING             "annoying"
 #define ENB_CONFIG_STRING_ASN1_VERBOSITY_INFO                 "info"
 
+// OTG config per ENB-UE DL 
+#define ENB_CONF_STRING_OTG_CONFIG                          "otg_config"
+#define ENB_CONF_STRING_OTG_UE_ID                           "ue_id"
+#define ENB_CONF_STRING_OTG_APP_TYPE                        "app_type"
+#define ENB_CONF_STRING_OTG_BG_TRAFFIC                      "bg_traffic"
 
 // per eNB configuration 
 #define ENB_CONFIG_STRING_LOG_CONFIG                       "log_config"
@@ -183,8 +190,6 @@
 #define ENB_CONFIG_STRING_GTPU_LOG_VERBOSITY               "gtpu_log_verbosity"
 #define ENB_CONFIG_STRING_UDP_LOG_LEVEL                    "udp_log_level"
 #define ENB_CONFIG_STRING_UDP_LOG_VERBOSITY                "udp_log_verbosity"
-
-
 
 
 #define KHz (1000UL)
@@ -345,7 +350,12 @@ static void enb_config_display(void) {
 	    printf( "\tue_TimersAndConstants_n311 for CC %d:\t%d:\n",j,enb_properties.properties[i]->ue_TimersAndConstants_n311[j]);
  
         }
-
+	for (j=0; j < enb_properties.properties[i]->num_otg_elements; j++){
+	  printf( "\n\tOTG Destination UE ID:  \t%d", enb_properties.properties[i]->otg_ue_id[j]);
+	  printf( "\n\tOTG App Type:  \t%d", enb_properties.properties[i]->otg_app_type[j]);
+	  printf( "\n\tOTG Background Traffic:  \t%s\n", (enb_properties.properties[i]->otg_bg_traffic[j]==1) ? "Enabled" : "Disabled");
+	}
+	
         printf( "\n\tGlobal log level:  \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->glog_level));
         printf( "\tHW log level:      \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->hw_log_level));
         printf( "\tPHY log level:     \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->phy_log_level));
@@ -420,10 +430,13 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
     config_setting_t *setting_mme_addresses         = NULL;
     config_setting_t *setting_mme_address           = NULL;
     config_setting_t *setting_enb                   = NULL;
+    config_setting_t *setting_otg                   = NULL;
+    config_setting_t *subsetting_otg                   = NULL;
     int               num_enb_properties            = 0;
     int               enb_properties_index          = 0;
     int               num_enbs;
     int               num_mme_address;
+    int               num_otg_elements              =0;
     int               num_component_carriers        =0;
     int               i;
     int               j;
@@ -523,6 +536,9 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
     char             *address                       = NULL;
     char             *cidr                          = NULL;
     char             *astring                       = NULL;
+    libconfig_int     otg_ue_id                     = 0;
+    char*             otg_app_type                  = NULL;
+    char*             otg_bg_traffic                = NULL;
     char*             glog_level                    = NULL;
     char*             glog_verbosity                = NULL;
     char*             hw_log_level                  = NULL;
@@ -1634,6 +1650,41 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                             }
                         }
                     }
+
+		    // OTG _CONFIG
+		    setting_otg = config_setting_get_member (setting_enb, ENB_CONF_STRING_OTG_CONFIG);
+                    if(setting_otg != NULL) {	  
+		      num_otg_elements  = config_setting_length(setting_otg);
+		      printf("num otg elements %d \n", num_otg_elements);
+		      enb_properties.properties[enb_properties_index]->num_otg_elements = 0;
+		      for (j = 0; j < num_otg_elements; j++) {
+			subsetting_otg=config_setting_get_elem(setting_otg, j);
+			
+			if(config_setting_lookup_int(subsetting_otg, ENB_CONF_STRING_OTG_UE_ID, &otg_ue_id))
+			  enb_properties.properties[enb_properties_index]->otg_ue_id[j] = otg_ue_id;
+			else 
+			  enb_properties.properties[enb_properties_index]->otg_ue_id[j] = 1;
+			
+			if(config_setting_lookup_string(subsetting_otg, ENB_CONF_STRING_OTG_APP_TYPE, (const char **)&otg_app_type)){
+			  if ((enb_properties.properties[enb_properties_index]->otg_app_type[j] = map_str_to_int(otg_app_type_names,otg_app_type))== -1) 
+			    enb_properties.properties[enb_properties_index]->otg_app_type[j] = BCBR;
+			}else 
+			  enb_properties.properties[enb_properties_index]->otg_app_type[j] = NO_PREDEFINED_TRAFFIC; // 0
+			
+			if(config_setting_lookup_string(subsetting_otg, ENB_CONF_STRING_OTG_BG_TRAFFIC, (const char **)&otg_bg_traffic)){
+			 
+			  if ((enb_properties.properties[enb_properties_index]->otg_bg_traffic[j] = map_str_to_int(switch_names,otg_bg_traffic)) == -1){
+			    enb_properties.properties[enb_properties_index]->otg_bg_traffic[j]=0;
+	
+			  }
+			}else{ 
+			  enb_properties.properties[enb_properties_index]->otg_bg_traffic[j] = 0;
+			  printf("otg bg %s\n", otg_bg_traffic);
+			}
+			enb_properties.properties[enb_properties_index]->num_otg_elements+=1;
+			
+		      }
+		    }
                     // log_config
                     subsetting = config_setting_get_member (setting_enb, ENB_CONFIG_STRING_LOG_CONFIG);
                     if(subsetting != NULL) {

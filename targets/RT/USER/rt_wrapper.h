@@ -28,14 +28,14 @@
  *******************************************************************************/
 
 /*! \file rt_wrapper.h
-* \brief provides a wrapper for the timing function for real-time opeartions depending on weather RTAI is used or not
-* \author F. Kaltenberger
+* \brief provides a wrapper for the timing function for real-time opeartions depending on weather RTAI is used or not. It also implements an API for the SCHED_DEADLINE kernel scheduler.
+* \author F. Kaltenberger and Navid Nikaein
 * \date 2013
 * \version 0.1
 * \company Eurecom
-* \email: florian.kaltenberger@eurecom.fr
+* \email: florian.kaltenberger@eurecom.fr, navid.nikaein@eurecom.fr
 * \note
-* \warning
+* \warning This code will be removed when a legacy libc API becomes available.
 */
 
 #ifndef RTAI
@@ -43,6 +43,8 @@
 #include <errno.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <linux/kernel.h>
+#include <linux/types.h>
 
 #define RTIME long long int
 
@@ -53,6 +55,51 @@ RTIME rt_get_time_ns (void);
 int rt_sleep_ns (RTIME x);
 
 void check_clock(void);
+
+/**
+ * see https://www.kernel.org/doc/Documentation/scheduler/sched-deadline.txt  or
+ * http://www.blaess.fr/christophe/2014/04/05/utiliser-un-appel-systeme-inconnu-de-la-libc/
+ */
+#ifdef LOWLATENCY
+
+#define gettid() syscall(__NR_gettid)
+
+#define SCHED_DEADLINE	6
+
+ /* XXX use the proper syscall numbers */
+#ifdef __x86_64__
+ #define __NR_sched_setattr		314 
+ #define __NR_sched_getattr		315
+#endif
+
+#ifdef __i386__
+ #define __NR_sched_setattr		351
+ #define __NR_sched_getattr		352
+#endif
+
+struct sched_attr {
+  __u32 size;
+  
+  __u32 sched_policy;
+  __u64 sched_flags;
+  
+  /* SCHED_NORMAL, SCHED_BATCH */
+  __s32 sched_nice;
+  
+  /* SCHED_FIFO, SCHED_RR */
+  __u32 sched_priority;
+  
+  /* SCHED_DEADLINE (nsec) */
+  __u64 sched_runtime;
+  __u64 sched_deadline;
+  __u64 sched_period;
+};
+
+int sched_setattr(pid_t pid, const struct sched_attr *attr, unsigned int flags);
+
+int sched_getattr(pid_t pid,struct sched_attr *attr,unsigned int size, unsigned int flags);
+
+#endif 
 
 #else
 #include <rtai_hal.h>

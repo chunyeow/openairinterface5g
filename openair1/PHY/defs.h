@@ -302,6 +302,11 @@ typedef struct PHY_VARS_eNB_s{
   time_stats_t phy_proc;
   time_stats_t phy_proc_tx;
   time_stats_t phy_proc_rx;
+  /*
+  time_stats_t phy_proc_sf[10]; // for each subframe
+  time_stats_t phy_proc_tx_sf[10]; 
+  time_stats_t phy_proc_rx_sf[10];
+  */
   time_stats_t rx_prach;
   
   time_stats_t ofdm_mod_stats;

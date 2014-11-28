@@ -39,7 +39,7 @@
 */
 
 #include "otg_rx.h"
-#include "otg_vars.h"
+#include "otg_externs.h"
 #include "../UTIL/MATH/oml.h"
 #include <math.h>
 #include "otg_form.h"
