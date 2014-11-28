@@ -39,73 +39,6 @@
 # THE DIRECTORY WHERE ARE LOCATED THE CONFIGURATION FILES
 #########################################
 # This script start MME+S/P-GW (all in one executable, on one host) 
-# Depending on configuration files, it can be instanciated a virtual switch 
-# setting or a VLAN setting.
-#
-###########################################################################################################################
-#                                    VIRTUAL BOX SETTING
-###########################################################################################################################
-#   NETWORK SETTING AT EURECOM IN EXPERIMENTAL NETWORK (192.168.12.X)
-#
-#
-#             INTERNET GW 192.168.12.100      
-#                                  |
-#                                  |
-#                 192.168.12.X/24  | 
-# +-----------+----------------+---+--+---------------------------------------+
-# | COMPUTER 1|                | eth0 |                                       |
-# +-----------+                +---+--+                                       |
-# |                                |                                          |
-# |                                |                                          |
-# |    ROUTER                +-----+------+                                   |
-# |                          |MASQUERADING|                                   |
-# |                          |FORWARDING  |                                   |
-# |                          +-----+------+                                   |
-# |                                |                                          |
-# |                                |                                          |
-# |                                |                                          |
-# |                                |                                          |
-# |                                |                                          |
-# |                            +---+--+                                       |
-# |                            | eth1 |                                       |
-# +----------------------------+---+--+---------------------------------------+
-#                                  |router.eur
-#                   11 VLANS       |                 INTERNET GW 192.168.12.100
-#                  ids=[5..15]     |                            |
-#                  192.168.13.X/24 |                            |
-# +-----------+----------------+---+--+---------------------+---+--+----------+
-# | COMPUTER 2|          SGI   | eth1 | Physical            | eth0 |          |
-# +-----------+                +-+--+-+ Interface           +------+          |
-# |                              |  |  'HOST_BRIDGED_IF_NAME'                 |
-# |                              |  |                                         |
-# |                              |  |                 +-----------+           |   
-# |                              |  |          +------+    HSS    |           |   
-# |                              |  +----------+ eth0 |   (VM)    |           |   
-# |                              |             +------+           |           |
-# |                              |                    |           |           |
-# |                              |                    +-+------+--+           |
-# |                              |                      |eth1  | hss.eur      |
-# |                virtual box   |                      +--+---+              |
-# |           +------------------+                         | virtual box      |
-# |           |    bridged network                         | host-only        |
-# |           |                                            | network          |
-# |           |                                            | 192.168.57/24    |
-# |           |                                            |                  |
-# |        +--+---+                                     +--+-----+            |
-# |        |eth0  |                                     |vboxnet1|            |
-# |      +-+------+--+192.168.56.101      192.168.56.1+-+--------++           |
-# |      |  eNB 0    +------+   virtual box  +--------+  MME      |           |
-# |      |  (VM)     |eth1  +----------------+vboxnet0|  S+P/GW   |           |
-# |      |           +------+   host-only    +--------+(execu. on |           |
-# |      |           |          network               |COMPUTER2) |           |
-# |      |           |       192.168.56/24            |           |           |
-# |      | LTE eNB 1 |                                |           |           |
-# |      | LTE UEs   |                                |           |           |
-# |      +-----------+                                +-----------+           |
-# |                                                                           |
-# |                                                                           |
-# +---------------------------------------------------------------------------+
-#
 
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
@@ -123,8 +56,6 @@ control_c()
   echo -en "\n*** Exit ***\n"
   exit $?
 }
-
-
 
 if [ $# -eq 1 ]; then
     declare -x CONFIG_FILE_DIR=$1
@@ -309,7 +240,6 @@ ip route flush cache
 (cd $OPENAIRCN_DIR/GTPV1-U/GTPUAH;make;cp -f ./Bin/libxt_*.so /lib/xtables;insmod $OPENAIRCN_DIR/GTPV1-U/GTPUAH/Bin/xt_GTPUAH.ko)
 (cd $OPENAIRCN_DIR/GTPV1-U/GTPURH;make;cp -f ./Bin/libxt_*.so /lib/xtables;insmod $OPENAIRCN_DIR/GTPV1-U/GTPURH/Bin/xt_GTPURH.ko)
 
-
 echo "   Enabling forwarding"
 bash_exec "sysctl -w net.ipv4.ip_forward=1"
 assert "  `sysctl -n net.ipv4.ip_forward` -eq 1" $LINENO
@@ -345,6 +275,7 @@ bash_exec "sysctl -w net.ipv4.netfilter.ip_conntrack_max=10000"
 
 iptables -A FORWARD -m state --state INVALID -j LOG
 
+#iptables -I PREROUTING  -t raw  -i $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP  -j LOG --log-level crit --log-ip-options --log-prefix "PREROUTING raw:"
 
 #iptables -A OUTPUT       -t filter  -j LOG --log-level crit --log-ip-options --log-prefix "OUTPUT filter:"
 #iptables -A OUTPUT       -t mangle  -j LOG --log-level crit --log-ip-options --log-prefix "OUTPUT mangle:"
