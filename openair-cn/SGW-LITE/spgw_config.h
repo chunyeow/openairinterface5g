@@ -47,9 +47,12 @@
 #define SGW_CONFIG_STRING_SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP    "SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP"
 #define SGW_CONFIG_STRING_SGW_PORT_FOR_S1U_S12_S4_UP            "SGW_IPV4_PORT_FOR_S1U_S12_S4_UP"
 #define SGW_CONFIG_STRING_SGW_INTERFACE_NAME_FOR_S5_S8_UP       "SGW_INTERFACE_NAME_FOR_S5_S8_UP"
+#define SGW_CONFIG_STRING_SGW_INTERFACE_MTU_FOR_S1U_S12_S4_UP   "SGW_INTERFACE_MTU_FOR_S1U_S12_S4_UP"
 #define SGW_CONFIG_STRING_SGW_IPV4_ADDRESS_FOR_S5_S8_UP         "SGW_IPV4_ADDRESS_FOR_S5_S8_UP"
 #define SGW_CONFIG_STRING_SGW_INTERFACE_NAME_FOR_S11            "SGW_INTERFACE_NAME_FOR_S11"
 #define SGW_CONFIG_STRING_SGW_IPV4_ADDRESS_FOR_S11              "SGW_IPV4_ADDRESS_FOR_S11"
+#define SGW_CONFIG_STRING_SGW_DROP_UPLINK_S1U_TRAFFIC           "SGW_DROP_UPLINK_S1U_TRAFFIC"
+#define SGW_CONFIG_STRING_SGW_DROP_DOWNLINK_S1U_TRAFFIC         "SGW_DROP_DOWNLINK_S1U_TRAFFIC"
 
 #define PGW_CONFIG_STRING_PGW_CONFIG                            "P-GW"
 #define PGW_CONFIG_STRING_NETWORK_INTERFACES_CONFIG             "NETWORK_INTERFACES"
@@ -57,6 +60,7 @@
 #define PGW_CONFIG_STRING_PGW_IPV4_ADDRESS_FOR_S5_S8            "PGW_IPV4_ADDRESS_FOR_S5_S8"
 #define PGW_CONFIG_STRING_PGW_INTERFACE_NAME_FOR_SGI            "PGW_INTERFACE_NAME_FOR_SGI"
 #define PGW_CONFIG_STRING_PGW_IPV4_ADDR_FOR_SGI                 "PGW_IPV4_ADDRESS_FOR_SGI"
+#define PGW_CONFIG_STRING_PGW_MASQUERADE_SGI                    "PGW_MASQUERADE_SGI"
 
 #define PGW_CONFIG_STRING_IP_ADDRESS_POOL                       "IP_ADDRESS_POOL"
 #define PGW_CONFIG_STRING_IPV4_ADDRESS_LIST                     "IPV4_LIST"
@@ -91,6 +95,10 @@ typedef struct sgw_config_s {
         uint32_t  sgw_ipv4_address_for_S11;
         int       sgw_ip_netmask_for_S11;
     } ipv4;
+    int sgw_interface_mtu_for_S1u_S12_S4_up;
+
+    uint8_t       sgw_drop_uplink_traffic;
+    uint8_t       sgw_drop_downlink_traffic;
 } sgw_config_t;
 
 // may be more
@@ -123,6 +131,7 @@ typedef struct pgw_config_s {
         uint32_t  default_dns_v4;    // NBO
         uint32_t  default_dns_sec_v4;// NBO
     } ipv4;
+    uint8_t   pgw_masquerade_SGI;
 
     STAILQ_HEAD(pgw_lite_ipv4_pool_head_s,      pgw_lite_conf_ipv4_list_elm_s) pgw_lite_ipv4_pool_list;
     STAILQ_HEAD(pgw_lite_ipv6_pool_head_s,      pgw_lite_conf_ipv6_list_elm_s) pgw_lite_ipv6_pool_list;

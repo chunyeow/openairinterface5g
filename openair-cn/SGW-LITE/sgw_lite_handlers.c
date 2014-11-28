@@ -698,6 +698,7 @@ sgw_lite_handle_sgi_endpoint_updated(
             if (iptable_uplink_remove_gtpu == FALSE) {
                 ret = snprintf(cmd,
                         256,
+                        // no "-p udp --dport 2152" because of fragmented packets
                         "iptables -t raw -I PREROUTING -i %s -s %u.%u.%u.%u -d %u.%u.%u.%u -p udp --dport 2152 -j GTPURH --action remove",
                         sgw_app.sgw_interface_name_for_S1u_S12_S4_up,
                         eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
