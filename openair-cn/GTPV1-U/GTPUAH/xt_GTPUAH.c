@@ -48,7 +48,7 @@ struct gtpuhdr
     u_int32_t tunid;
 };
 
-#define MTU            1500
+#define MTU            1564
 #define GTPU_HDR_PNBIT 1
 #define GTPU_HDR_SBIT 1 << 1
 #define GTPU_HDR_EBIT 1 << 2
