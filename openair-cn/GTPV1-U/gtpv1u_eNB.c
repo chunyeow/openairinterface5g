@@ -53,7 +53,10 @@
 #include "UTIL/LOG/log.h"
 #include "COMMON/platform_types.h"
 #include "COMMON/platform_constants.h"
+#include "UTIL/LOG/vcd_signal_dumper.h"
 
+
+#define GTP_DUMP_SOCKET 0
 
 extern boolean_t
     pdcp_data_req(
@@ -155,6 +158,56 @@ void *
 
 static gtpv1u_data_t gtpv1u_data_g;
 
+#if defined(GTP_DUMP_SOCKET)
+#include <linux/if.h>
+static int           gtpv1u_dump_socket_g;
+
+//-----------------------------------------------------------------------------
+int gtpv1u_eNB_create_dump_socket(void) {
+  struct ifreq ifr;
+  int          hdrincl=1;
+
+  if ((gtpv1u_dump_socket_g = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0 ) {
+      LOG_E(GTPU, "Could not create dump socket %d:%s\n", errno, strerror(errno));
+      return -1;
+  }
+
+  if (setsockopt(gtpv1u_dump_socket_g,
+                  IPPROTO_IP,
+                  IP_HDRINCL,
+                  &hdrincl,
+                  sizeof(hdrincl))==-1) {
+      LOG_E(GTPU, "%s:%d set IP_HDRINCL %d:%s\n",
+          __FILE__, __LINE__, errno, strerror(errno));
+  }
+
+  memset(&ifr, 0, sizeof(ifr));
+  snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "lo");
+  if (setsockopt(gtpv1u_dump_socket_g, SOL_SOCKET, SO_BINDTODEVICE, (void *)&ifr, sizeof(ifr)) < 0)
+  {
+      LOG_E(GTPU, "%s:%d  setsockopt SO_BINDTODEVICE %d:%s\n",
+          __FILE__, __LINE__, errno, strerror(errno));
+      close(gtpv1u_dump_socket_g);
+      return -1;
+  }
+}
+
+//-----------------------------------------------------------------------------
+static void gtpv1u_eNB_write_dump_socket(uint8_t *buffer_pP, uint32_t buffer_lengthP) {
+  struct sockaddr_in sin;
+  memset(&sin, 0, sizeof(sin));
+  sin.sin_family = AF_INET;
+  sin.sin_addr.s_addr = INADDR_LOOPBACK;
+
+  if (sendto(gtpv1u_dump_socket_g, buffer_pP, (size_t)buffer_lengthP, 0, (struct sockaddr *)&sin, sizeof(struct sockaddr)) < 0)  {
+      LOG_E(GTPU, "%s:%s:%d  setsockopt SO_BINDTODEVICE %d:%s\n",
+          __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
+  }
+}
+
+#endif
+
+//-----------------------------------------------------------------------------
 static int gtpv1u_eNB_send_init_udp(uint16_t port_number)
 {
     // Create and alloc new message
@@ -176,6 +229,7 @@ static int gtpv1u_eNB_send_init_udp(uint16_t port_number)
     return itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
 }
 
+//-----------------------------------------------------------------------------
 NwGtpv1uRcT gtpv1u_eNB_log_request(NwGtpv1uLogMgrHandleT hLogMgr,
                                NwU32T logLevel,
                                NwCharT *file,
@@ -186,6 +240,7 @@ NwGtpv1uRcT gtpv1u_eNB_log_request(NwGtpv1uLogMgrHandleT hLogMgr,
     return NW_GTPV1U_OK;
 }
 
+//-----------------------------------------------------------------------------
 NwGtpv1uRcT gtpv1u_eNB_send_udp_msg(
     NwGtpv1uUdpHandleT udpHandle,
     NwU8T *buffer,
@@ -215,6 +270,7 @@ NwGtpv1uRcT gtpv1u_eNB_send_udp_msg(
 }
 
 
+//-----------------------------------------------------------------------------
 /* Callback called when a gtpv1u message arrived on UDP interface */
 NwGtpv1uRcT gtpv1u_eNB_process_stack_req(
     NwGtpv1uUlpHandleT hUlp,
@@ -242,6 +298,9 @@ NwGtpv1uRcT gtpv1u_eNB_process_stack_req(
                 LOG_E(GTPU, "Error while retrieving T-PDU");
             }
             itti_free(TASK_UDP, ((NwGtpv1uMsgT*)pUlpApi->apiInfo.recvMsgInfo.hMsg)->msgBuf);
+#if defined(GTP_DUMP_SOCKET)
+            gtpv1u_eNB_write_dump_socket(buffer,buffer_len);
+#endif
 
             //-----------------------
             // GTPV1U->PDCP mapping
@@ -284,6 +343,7 @@ NwGtpv1uRcT gtpv1u_eNB_process_stack_req(
 }
 
 
+//-----------------------------------------------------------------------------
 int data_recv_callback(uint16_t  portP,
                        uint32_t  address,
                        uint8_t  *buffer,
@@ -401,6 +461,7 @@ int data_recv_callback(uint16_t  portP,
 //}
 
 
+//-----------------------------------------------------------------------------
 static NwGtpv1uRcT gtpv1u_start_timer_wrapper(
     NwGtpv1uTimerMgrHandleT tmrMgrHandle,
     NwU32T                  timeoutSec,
@@ -435,7 +496,9 @@ static NwGtpv1uRcT gtpv1u_start_timer_wrapper(
 }
 
 
-static NwGtpv1uRcT gtpv1u_stop_timer_wrapper(
+//-----------------------------------------------------------------------------
+static NwGtpv1uRcT
+gtpv1u_stop_timer_wrapper(
     NwGtpv1uTimerMgrHandleT tmrMgrHandle,
     NwGtpv1uTimerHandleT hTmr)
 {
@@ -446,6 +509,7 @@ static NwGtpv1uRcT gtpv1u_stop_timer_wrapper(
 }
 
 
+//-----------------------------------------------------------------------------
 int
 gtpv1u_initial_req(
     gtpv1u_data_t *gtpv1u_data_pP,
@@ -472,6 +536,7 @@ gtpv1u_initial_req(
     return (rc == NW_GTPV1U_OK) ? 0 : -1;
 }
 
+//-----------------------------------------------------------------------------
 int
 gtpv1u_new_data_req(
     uint8_t  enb_idP,
@@ -557,7 +622,10 @@ gtpv1u_new_data_req(
     return 0;
 }
 
-static int gtpv1u_create_s1u_tunnel(gtpv1u_enb_create_tunnel_req_t *create_tunnel_req_pP)
+//-----------------------------------------------------------------------------
+static int
+gtpv1u_create_s1u_tunnel(
+    gtpv1u_enb_create_tunnel_req_t *create_tunnel_req_pP)
 {
     /* Create a new nw-gtpv1-u stack req using API */
     NwGtpv1uUlpApiT          stack_req;
@@ -673,6 +741,7 @@ static int gtpv1u_create_s1u_tunnel(gtpv1u_enb_create_tunnel_req_t *create_tunne
 
 
 
+//-----------------------------------------------------------------------------
 static int gtpv1u_delete_s1u_tunnel(gtpv1u_enb_delete_tunnel_req_t *req_pP)
 {
     NwGtpv1uUlpApiT          stack_req;
@@ -736,6 +805,7 @@ static int gtpv1u_delete_s1u_tunnel(gtpv1u_enb_delete_tunnel_req_t *req_pP)
     return itti_send_msg_to_task(TASK_RRC_ENB, INSTANCE_DEFAULT, message_p);
 }
 
+//-----------------------------------------------------------------------------
 static int gtpv1u_eNB_init(void)
 {
   int                     ret;
@@ -817,11 +887,11 @@ static int gtpv1u_eNB_init(void)
         return -1;
     }
 
-/*    if (itti_create_task(TASK_GTPV1_U, &gtpv1u_eNB_thread, NULL) < 0) {
-        LOG_E(GTPU, "gtpv1u phtread_create: %s", strerror(errno));
+#if defined(GTP_DUMP_SOCKET)
+    if ((ret = gtpv1u_eNB_create_dump_socket()) < 0) {
         return -1;
     }
-*/
+#endif
     ret = gtpv1u_eNB_send_init_udp(gtpv1u_data_g.enb_port_for_S1u_S12_S4_up);
     if (ret < 0) {
         return ret;
@@ -832,6 +902,7 @@ static int gtpv1u_eNB_init(void)
 }
 
 
+//-----------------------------------------------------------------------------
 void *gtpv1u_eNB_task(void *args)
 {
     int rc = 0;
@@ -845,6 +916,7 @@ void *gtpv1u_eNB_task(void *args)
          */
         MessageDef *received_message_p = NULL;
         itti_receive_msg(TASK_GTPV1_U, &received_message_p);
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_ENB_TASK, VCD_FUNCTION_IN);
         DevAssert(received_message_p != NULL);
 
         switch (ITTI_MSG_ID(received_message_p))
@@ -885,6 +957,9 @@ void *gtpv1u_eNB_task(void *args)
                 data_req_p = &GTPV1U_ENB_TUNNEL_DATA_REQ(received_message_p);
                 //ipv4_send_data(ipv4_data_p->sd, data_ind_p->buffer, data_ind_p->length);
 
+#if defined(GTP_DUMP_SOCKET)
+                gtpv1u_eNB_write_dump_socket(&data_req_p->buffer[data_req_p->offset],data_req_p->length);
+#endif
                 memset(&stack_req, 0, sizeof(NwGtpv1uUlpApiT));
 
                 hash_rc = hashtable_get(gtpv1u_data_g.ue_mapping, (uint64_t)data_req_p->ue_index, (void**)&gtpv1u_ue_data_p);
@@ -909,18 +984,18 @@ void *gtpv1u_eNB_task(void *args)
                                  data_req_p->offset,
                                  &(stack_req.apiInfo.sendtoInfo.hMsg));
 
-                    if (rc != NW_GTPV1U_OK) {
-                        LOG_E(GTPU, "nwGtpv1uGpduMsgNew failed: 0x%x\n", rc);
-                    } else {
-                        rc = nwGtpv1uProcessUlpReq(gtpv1u_data_g.gtpv1u_stack, &stack_req);
                         if (rc != NW_GTPV1U_OK) {
-                            LOG_E(GTPU, "nwGtpv1uProcessUlpReq failed: 0x%x\n", rc);
-                        }
-                        rc = nwGtpv1uMsgDelete(gtpv1u_data_g.gtpv1u_stack,
+                            LOG_E(GTPU, "nwGtpv1uGpduMsgNew failed: 0x%x\n", rc);
+                        } else {
+                            rc = nwGtpv1uProcessUlpReq(gtpv1u_data_g.gtpv1u_stack, &stack_req);
+                            if (rc != NW_GTPV1U_OK) {
+                                LOG_E(GTPU, "nwGtpv1uProcessUlpReq failed: 0x%x\n", rc);
+                            }
+                            rc = nwGtpv1uMsgDelete(gtpv1u_data_g.gtpv1u_stack,
                                     stack_req.apiInfo.sendtoInfo.hMsg);
-                        if (rc != NW_GTPV1U_OK) {
-                            LOG_E(GTPU, "nwGtpv1uMsgDelete failed: 0x%x\n", rc);
-                        	}
+                            if (rc != NW_GTPV1U_OK) {
+                                LOG_E(GTPU, "nwGtpv1uMsgDelete failed: 0x%x\n", rc);
+                            }
                         }
                     }
                 }
@@ -942,6 +1017,7 @@ void *gtpv1u_eNB_task(void *args)
             case TIMER_HAS_EXPIRED:
                 nwGtpv1uProcessTimeout(&received_message_p->ittiMsg.timer_has_expired.arg);
                 break;
+
             default: {
                 LOG_E(GTPU, "Unkwnon message ID %d:%s\n",
                            ITTI_MSG_ID(received_message_p),
@@ -952,6 +1028,7 @@ void *gtpv1u_eNB_task(void *args)
         rc = itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);
         AssertFatal(rc == EXIT_SUCCESS, "Failed to free memory (%d)!\n", rc);
         received_message_p = NULL;
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_ENB_TASK, VCD_FUNCTION_OUT);
     }
     return NULL;
 }
