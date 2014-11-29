@@ -67,6 +67,7 @@ ITTI_ANALYZER=0
 VCD_TIMING=0
 WIRESHARK=0
 TIME_MEAS=0
+DOXYGEN=0
 DEV=0
 
 EMULATION_DEV_INTERFACE="eth0"
@@ -86,8 +87,12 @@ fi
 #    echo "i is : $i"
 #    case $i in
 
-while getopts "bcdmsxzhe:l:w:r:t:" OPTION; do
+while getopts "abcdmsxzhe:l:w:r:t:" OPTION; do
    case "$OPTION" in
+       a)
+	 DOXYGEN=1
+	 echo "setting doxygen flag to: $DOXYGEN"
+	 ;;
        b)
 	   ENB_S1=0
 	   echo "disable eNB S1 flag"
@@ -387,21 +392,6 @@ build_enb(){
     echo_info "build terminated, binaries are located in bin/"
     echo_info "build terminated, logs are located in bin/${oai_build_date} and bin/install_log.txt"
     
-############################################
-# testing
-############################################
-    
-    if [ $OAI_TEST = 1 ]; then 
-	echo_info "9. Testing ..."
-	python $OPENAIR_TARGETS/TEST/OAI/test01.py
-    else 
-	echo_info "9. Bypassing the Tests ..."
-    fi 
-    
-############################################
-# run 
-############################################
-    echo_info "10. Running ... To be done"
 
 
 }
@@ -551,7 +541,40 @@ case "$BUILD_LTE" in
 	echo_warning "build HSS: Experimental"
 	build_hss 
 	;;
+    'NONE')
+	;;
     *)
 	echo_error "Unknown option $BUILD_LTE: do not build"
 	;;
 esac
+
+# Additional operation 
+
+############################################
+# Generate doxygen documentation
+############################################
+    
+    if [ $DOXYGEN = 1 ]; then 
+	echo_info "9. Generate doxygen documentation ..."
+	doxygen $OPENAIR_TARGETS/DOCS/Doxyfile
+	echo_info "9.1 use your navigator to open $OPENAIR_TARGETS/DOCS/html/index.html "
+    else 
+	echo_info "9. Bypassing doxygen documentation ..."
+    fi 
+
+
+############################################
+# testing
+############################################
+    
+    if [ $OAI_TEST = 1 ]; then 
+	echo_info "10. Testing ..."
+	python $OPENAIR_TARGETS/TEST/OAI/test01.py
+    else 
+	echo_info "10. Bypassing the Tests ..."
+    fi 
+    
+############################################
+# run 
+############################################
+    echo_info "11. Running ... To be done"

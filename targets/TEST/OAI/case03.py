@@ -129,50 +129,50 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
     else:
         log.ok(case, test, name, conf, '', logfile)  
 
-    try:
-        test = '05'
-        name = 'Run oai.rel10.phy.eMBMS.MCCH'
-        diag = 'eMBMS procedure is not finished completely, make sure that the SIB13/MCCH have been correclty received by UEs'
-        for i in range(NUM_UE) :
-            for j in range(NUM_eNB) :
-                conf = '-A AWGN -l7 -x 1 -Q3 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
-                tee = ' 2>&1 | tee ' + trace
-                oai.send_expect('./oaisim.rel10.' + host + ' ' + conf + tee, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 200)
-    except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
-    else:
-        log.ok(case, test, name, conf, '', logfile)  
+ #   try:
+ #       test = '05'
+#        name = 'Run oai.rel10.phy.eMBMS.MCCH'
+#        diag = 'eMBMS procedure is not finished completely, make sure that the SIB13/MCCH have been correclty received by UEs'
+#        for i in range(NUM_UE) :
+#            for j in range(NUM_eNB) :
+#                conf = '-A AWGN -l7 -x 1 -Q3 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
+#                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
+#                tee = ' 2>&1 | tee ' + trace
+#                oai.send_expect('./oaisim.rel10.' + host + ' ' + conf + tee, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 200)
+#    except log.err, e:
+#        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+#    else:
+#        log.ok(case, test, name, conf, '', logfile)  
         
-    try:
-        test = '06'
-        name = 'Run oai.rel10.phy.eMBMS.OTG'
-        diag = 'eMBMS multicast/broadcast data is not received, make sure that the SIB13/MCCH/MTCH have been correclty received by UEs'
-        for i in range(NUM_UE) :
-            for j in range(NUM_eNB) :
-                conf = '-A AWGN -l7 -x 1 -T mscbr -Q3 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
-                tee = ' 2>&1 | tee ' + trace
-                oai.send_expect('./oaisim.rel10.' + host + ' ' + conf + tee, ' Received a multicast packet',  (i+1) * 200)
-    except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
-    else:
-        log.ok(case, test, name, conf, 'Note: check the packet loss from the OTG stats', logfile)   
+#    try:
+#        test = '06'
+#        name = 'Run oai.rel10.phy.eMBMS.OTG'
+#        diag = 'eMBMS multicast/broadcast data is not received, make sure that the SIB13/MCCH/MTCH have been correclty received by UEs'
+#        for i in range(NUM_UE) :
+#            for j in range(NUM_eNB) :
+#                conf = '-A AWGN -l7 -x 1 -T mscbr -Q3 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+#                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
+#                tee = ' 2>&1 | tee ' + trace
+#                oai.send_expect('./oaisim.rel10.' + host + ' ' + conf + tee, ' Received a multicast packet',  (i+1) * 200)
+#    except log.err, e:
+#        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+#    else:
+#        log.ok(case, test, name, conf, 'Note: check the packet loss from the OTG stats', logfile)   
 
-    try:
-        test = '07'
-        name = 'Run oai.rel10.phy.eMBMS.OTG.fdd'
-        diag = 'eMBMS multicast/broadcast data is not received in fdd mode, make sure that the SIB13/MCCH/MTCH have been correclty received by UEs'
-        for i in range(NUM_UE) :
-            for j in range(NUM_eNB) :
-                conf = '-A AWGN -l7 -F -x 1 -T mscbr -Q3 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
-                tee = ' 2>&1 | tee ' + trace
-                oai.send_expect('./oaisim.rel10.' + host + ' ' + conf + tee, ' Received a multicast packet',  (i+1) * 200)
-    except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
-    else:
-        log.ok(case, test, name, conf, 'Note: check the packet loss from the OTG stats', logfile)   
+#    try:
+#        test = '07'
+#        name = 'Run oai.rel10.phy.eMBMS.OTG.fdd'
+#        diag = 'eMBMS multicast/broadcast data is not received in fdd mode, make sure that the SIB13/MCCH/MTCH have been correclty received by UEs'
+#        for i in range(NUM_UE) :
+#            for j in range(NUM_eNB) :
+#                conf = '-A AWGN -l7 -F -x 1 -T mscbr -Q3 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+#               trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
+#               tee = ' 2>&1 | tee ' + trace
+#                oai.send_expect('./oaisim.rel10.' + host + ' ' + conf + tee, ' Received a multicast packet',  (i+1) * 200)
+#    except log.err, e:
+#        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+#    else:
+#        log.ok(case, test, name, conf, 'Note: check the packet loss from the OTG stats', logfile)   
 
    # try:
    #     test = '08'
@@ -186,24 +186,24 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
    # else:
    #     log.ok(case, test, name, conf, 'Note: check the packet loss from the OTG stats', logfile)   
 
-    try:
-        test = '09'
-        name = 'Run oai.rel10.itti.phy.eMBMS.MCCH'
-        diag = 'eMBMS procedure is not finished completely, check the eNB config file (enb.sfr.sud.conf), and make sure that the SIB13/MCCH have been correclty received by UEs'
-        for i in range(NUM_UE) :
-            for j in range(NUM_eNB) :
-                log_name = logdir + '/log_' + host + case + test + '_' + str(i) + str(j)
-                itti_name = log_name + '.log'
-                trace_name = log_name + '.txt'
-                conf = '-A AWGN -l7 -x 1 -Q3 --enb-conf ../../PROJECTS/GENERIC-LTE-EPC/CONF/enb.sfr.sud.conf -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
-                tee = ' 2>&1 | tee -a ' + trace_name
-                command = './oaisim.rel10.itti.' + host + ' ' + conf
-                oai.send('echo ' + command + ' > ' + trace_name + ';')
-                oai.send_expect(command + tee, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 200)
-    except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile, trace_name)
-    else:
-        log.ok(case, test, name, conf, '', logfile)  
+#    try:
+#        test = '09'
+#        name = 'Run oai.rel10.itti.phy.eMBMS.MCCH'
+#        diag = 'eMBMS procedure is not finished completely, check the eNB config file (enb.sfr.sud.conf), and make sure that the SIB13/MCCH have been correclty received by UEs'
+#        for i in range(NUM_UE) :
+#            for j in range(NUM_eNB) :
+#                log_name = logdir + '/log_' + host + case + test + '_' + str(i) + str(j)
+#                itti_name = log_name + '.log'
+#                trace_name = log_name + '.txt'
+#                conf = '-A AWGN -l7 -x 1 -Q3 --enb-conf ../../PROJECTS/GENERIC-LTE-EPC/CONF/enb.sfr.sud.conf -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
+#                tee = ' 2>&1 | tee -a ' + trace_name
+#                command = './oaisim.rel10.itti.' + host + ' ' + conf
+#                oai.send('echo ' + command + ' > ' + trace_name + ';')
+ #               oai.send_expect(command + tee, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 200)
+#    except log.err, e:
+#        log.fail(case, test, name, conf, e.value, diag, logfile, trace_name)
+#    else:
+#        log.ok(case, test, name, conf, '', logfile)  
         
 
 

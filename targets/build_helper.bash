@@ -352,7 +352,9 @@ check_install_oai_software() {
 	test_install_package sshfs
 	test_install_package subversion
 	test_install_package valgrind
-
+	test_install_package doxygen
+	test_install_package graphviz
+	
 # TODO: install the USRP UHD packages 
 #	test_install_package libboost-all-dev
 	
@@ -895,7 +897,7 @@ set_openair_env(){
     openair_path=${openair_path%/openair[123]/*}
 
     export OPENAIR_DIR=$openair_path
-    export OPENAIR_HOME=$openair_path
+    export OPENAIRge_HOME=$openair_path
     export OPENAIR1_DIR=$openair_path/openair1
     export OPENAIR2_DIR=$openair_path/openair2
     export OPENAIR3_DIR=$openair_path/openair3
@@ -910,15 +912,16 @@ set_openair_env(){
 
 print_help(){
     echo_success "Name : build_oai  - install and build OAI"
-    echo_success "Usage: build_oai.bash -b -c -d -eRTAI -m -rREL8 -s -tOAISIM -wEXMIMO -x"
+    echo_success "Usage: build_oai.bash -a -b -c -d -eRTAI -m -rREL8 -s -tOAISIM -wEXMIMO -x"
+    echo_success "-a   : enable doxygen for documentation (default disabled)"
     echo_success "-b   : disables S1 interface for eNB (default enabled)"
     echo_success "-c   : enables clean OAI build (default disabled)"
     echo_success "-d   : enables debug mode (default disabled)"
     echo_success "-e   : sets realtime mode: RTAI, NONE (default NONE)"
-    echo_success "-l   : sets the LTE build target: ENB,EPC,HSS (default ENB)"
+    echo_success "-l   : sets the LTE build target: ENB,EPC,HSS,NONE (default ENB)"
     echo_success "-m   : enables build from the makefile (default disabled)"
     echo_success "-r   : sets the release: REL8, REL10 (default REL8)"
-    echo_success "-s   : enables OAI sanity check (default disabled)"
+    echo_success "-s   : enables OAI testing and sanity check (default disabled)"
     echo_success "-t   : sets the eNB build target: ALL, SOFTMODEM,OAISIM,UNISIM (default ALL)"
     echo_success "-w   : sets the hardware platform: EXMIMO, USRP, ETHERNET NONE, (default EXMIMO)"
     echo_success "-x   : enables xforms (default disabled)"
