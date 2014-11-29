@@ -4,7 +4,7 @@ clear all
 global symbols_per_slot slots_per_frame;
 
 enable_plots=0; %enables figures
-record=1; %put 1 to enable the video record of the delay doppler profile
+record=0; %put 1 to enable the video record of the delay doppler profile
 %% preload and init data
 addpath('../../../openair1/PHY/LTE_REFSIG');
 primary_synch; %loads the primary sync signal
@@ -12,8 +12,8 @@ primary_synch; %loads the primary sync signal
 %load('E:\EMOS\corridor\ofdm_pilots_sync_2048_v7.mat');
 load('ofdm_pilots_sync_30MHz.mat');
 
-n_carriers = 1; % use 1 for UHF and 2 for 2.6GHz
-n_trials=1;%use 1 for trial1 and 2 for trial2
+n_carriers = 2; % use 1 for UHF and 2 for 2.6GHz
+n_trials=2;%use 1 for trial1 and 2 for trial2
 n_run=1;
 symbols_per_slot = 6;
 slots_per_frame = 20;
@@ -23,11 +23,11 @@ switch n_carriers
         p = init_params(25,3,4); %this can be 25, 50, or 100
         pss_t = upsample(primary_synch0_time,4);
         
-        %filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
-        filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_UHF_run1.EMOS';
-        %filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_UHF_run2.EMOS';
-        %filename = 'E:/byiringi/emosFiles/trials2/eNB_data_UHF_20140519_run4.EMOS';
-        %filename = 'E:/byiringi/emosFiles/trials2/eNB_data_UHF_20140519_run4.EMOS';
+        if n_trials==1
+            filename = sprintf('F:\\trials1 train extracted\\eNB_data_20140331_UHF_run%d.EMOS',n_run);
+        else
+            filename = sprintf('F:\\trials2 train extracted\\eNB_data_UHF_20140519_run%d.EMOS',n_run);
+        end
         
         nframes = 100; % frames in one block
         threshold = 3e+4 ; % maybe should change that !!!!
@@ -36,16 +36,17 @@ switch n_carriers
         p(2) = init_params(50,2,4);
         pss_t = upsample(primary_synch0_time,4*4); % this assumes we are doing the sync on the second carrier, which is 10MHz
         
-        %filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
-        filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_2.6GHz_run1.EMOS';
-        %filename = 'E:\EMOS\corridor\trials2\eNB_data_20140519_2.6GHz_run2.EMOS';
-        %filename = 'E:/byiringi/emosFiles/trials2/eNB_data_20140519_2.6GHz_run4.EMOS';
+        if (n_trials==1)
+            filename = sprintf('F:\\trials1 train extracted\\eNB_data_20140331_2.6GHz_run%d.EMOS',n_run);
+        else
+            filename = sprintf('F:\\trials2 train extracted\\eNB_data_20140519_2.6GHz_run%d.EMOS',n_run);
+        end
         
         nframes = 50; % frames in one block
         threshold = 3e+4 ; % maybe should change that !!!!
 end
 
-destdir = '/home/byiringi/';
+destdir = 'E:\EMOS\corridor\tmp';
 
 % derived parameters
 samples_slot_agg = sum([p.nant_rx].*[p.samples_slot]);
@@ -187,7 +188,7 @@ flag1 = 1;
 start = 1; % Maybe 2; if it works with 1, then the variable is useless
 
 
-%fseek(fid,samples_slot_agg*slots_per_frame*nframes*120*2,'bof'); %advance 30 sec
+%fseek(fid,samples_slot_agg*slots_per_frame*nframes*60*2,'bof'); %advance 30 sec
 NFRAMES = 100;
 if(n_carriers==2)
     NFRAMES=50;
@@ -197,6 +198,15 @@ nframes = NFRAMES;
 open(delay_doppler_profile_videoa);
 if n_carriers==2
     open(delay_doppler_profile_videob);
+end
+
+noise1 = zeros(nblocks*NFRAMES,p(1).nant_rx);
+if n_carriers==2
+    noise2 = zeros(nblocks*NFRAMES,p(2).nant_rx);
+end
+H_power1 = zeros(nblocks*NFRAMES,p(1).nant_tx,p(1).nant_rx);
+if n_carriers==2
+    H_power2 = zeros(nblocks*NFRAMES,p(2).nant_tx,p(2).nant_rx);
 end
 
 while ~feof(fid)
@@ -276,9 +286,9 @@ while ~feof(fid)
     
     if flag1==1
         [corr,lag] = xcorr(v1(:,1),pss_t);
-        if(n_carriers==2)
-            [corrb,lag] = xcorr(v2(:,1),pss_t);
-        end
+%         if(n_carriers==2)
+%             [corrb,lagb] = xcorr(v2(:,1),pss_t);
+%         end
         
         %[m,idx]=max(abs(corr));
         %[m,idx]=peaksfinder(corr,frame_length);
@@ -286,11 +296,12 @@ while ~feof(fid)
         tmp   = corr(nframes*slots_per_frame*p(1).samples_slot:end);
         tmp2  = reshape(tmp,slots_per_frame*p(1).samples_slot,nframes);
         [m,idx] = max(abs(tmp2),[],1);
-        if(n_carriers==2)
-            tmp   = corrb(nframes*slots_per_frame*p(2).samples_slot:end);
-            tmp2  = reshape(tmp,slots_per_frame*p(2).samples_slot,nframes);
-            [m,idx] = max(abs(tmp2),[],1);
-        end
+        
+%         if(n_carriers==2)
+%             tmp   = corrb(nframes*slots_per_frame*p(2).samples_slot:end);
+%             tmp2  = reshape(tmp,slots_per_frame*p(2).samples_slot,nframes);
+%             [m,idx] = max(abs(tmp2),[],1);
+%         end
         
         idx(m < threshold) = [];
         if size(idx,2) <= 3
@@ -310,9 +321,9 @@ while ~feof(fid)
         end
         
         frame_offset = round(median(idx)) - p(1).prefix_length;
-        if(n_carriers==2)
-            frame_offset = round(median(idx)) - p(2).prefix_length;
-        end
+%         if(n_carriers==2)
+%             frame_offset = round(median(idx)) - p(2).prefix_length;
+%         end
         
         
         if enable_plots>=2
@@ -350,17 +361,13 @@ while ~feof(fid)
             max1=0;%variable containing a maximum
         end
         
-        disp(nframes);
-        disp(start);
         for i=start:nframes;
             
             fprintf(1,'.');
             frame_start1 = (slots_per_frame*p(1).samples_slot)*(i-1)+frame_offset+1;
             
             if n_carriers==2
-                %                 frame_start2 = (slots_per_frame*p(2).samples_slot)*(i-1)+round(frame_offset/2)+1;
-                frame_start1 = (slots_per_frame*p(1).samples_slot)*(i-1)+2*frame_offset+1;
-                frame_start2 = (slots_per_frame*p(2).samples_slot)*(i-1)+frame_offset+1;
+                frame_start2 = (slots_per_frame*p(2).samples_slot)*(i-1)+round(frame_offset/2)+1;
             end
             
             if i<nframes
@@ -378,6 +385,15 @@ while ~feof(fid)
                 %break
             end
             %disp(i);
+            
+            %% noise estimation
+            noise1((block-1)*NFRAMES+i,:) = squeeze(10*log10(mean(abs(received_f1(1,61:end-60,:)).^2)));
+            if (n_carriers==2)
+                noise2((block-1)*NFRAMES+i,:) = squeeze(10*log10(mean(abs(received_f2(1,61:end-60,:)).^2)));
+            end
+            
+        
+            
             %% MIMO channel estimation
             if (n_carriers==1)
                 transmit_f1 = f3;
@@ -406,10 +422,17 @@ while ~feof(fid)
                         H(:,:,itx,irx)=conj(squeeze(transmit_f(itx,t_start:2:end,f_start:4:end))).*received_f(t_start:2:end,f_start:4:end,irx);
                     end
                 end
-                Ht = ifft(H,[],2); %impulse response
+                
+                if (carrier==1)
+                    H_power1((block-1)*NFRAMES+i,:,:) = 10*log10(mean(mean(abs(H).^2,1),2));
+                else
+                    H_power2((block-1)*NFRAMES+i,:,:) = 10*log10(mean(mean(abs(H).^2,1),2));
+                end
+                
+                Ht = ifft(H,[],2)*sqrt(size(H,2)); %impulse response
                 PDP = mean(abs(Ht).^2,1);
                 PDP_all = squeeze(mean(mean(PDP,3),4));
-                PDD=sum(abs(fftshift(fft(Ht,[],1))).^2,2);
+                PDD=sum(abs(fftshift(fft(Ht,[],1)/sqrt(size(Ht,1)))).^2,2);
                 
                 if(carrier==1)
                     PDP_totala((block-1)*NFRAMES+i,:,:,:) = PDP;
@@ -985,10 +1008,10 @@ fclose(fid);
 %% save processed data
 [path,name,ext]=fileparts(filename);
 if(n_carriers==1)
-    save([name '.mat'],'PDP_totala','PDD_totala','mean_delay_a','mean_doppler_shift_a','doppler_freq_of_max_a','delay_doppler_profile_beforea','delay_doppler_profile_duringa','delay_doppler_profile_aftera');
+    save([name '.mat'],'PDP_totala','PDD_totala','mean_delay_a','mean_doppler_shift_a','doppler_freq_of_max_a','delay_doppler_profile_beforea','delay_doppler_profile_duringa','delay_doppler_profile_aftera','noise1','H_power1');
     
 end
 if(n_carriers==2)
-    save([name '.mat'],'PDP_totala','PDD_totala','mean_delay_a','mean_doppler_shift_a','doppler_freq_of_max_a','delay_doppler_profile_beforea','delay_doppler_profile_duringa','delay_doppler_profile_aftera','PDP_totalb','PDD_totalb','mean_delay_b','mean_doppler_shift_b','doppler_freq_of_max_b','delay_doppler_profile_beforeb','delay_doppler_profile_duringb','delay_doppler_profile_afterb');
+    save([name '.mat'],'PDP_totala','PDD_totala','mean_delay_a','mean_doppler_shift_a','doppler_freq_of_max_a','delay_doppler_profile_beforea','delay_doppler_profile_duringa','delay_doppler_profile_aftera','PDP_totalb','PDD_totalb','mean_delay_b','mean_doppler_shift_b','doppler_freq_of_max_b','delay_doppler_profile_beforeb','delay_doppler_profile_duringb','delay_doppler_profile_afterb','noise1','H_power1','noise2','H_power2');
     
 end
