@@ -274,11 +274,13 @@ build_enb(){
 	fi
     fi
     
-    output=$(check_for_machine_type 2>&1) 
-    MACHINE_ARCH=$?
-    if [ $MACHINE_ARCH -eq 64 ]; then
-	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES LIBCONFIG_LONG=1 "
-	OAISIM_DIRECTIVES="$OASIM_DIRECTIVES LIBCONFIG_LONG=1 "
+    if [ $UBUNTU_REL = "12.04" ]; then 
+	output=$(check_for_machine_type 2>&1) 
+	MACHINE_ARCH=$?
+   	if [ $MACHINE_ARCH -eq 64 ]; then
+	    SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES LIBCONFIG_LONG=1 "
+	    OAISIM_DIRECTIVES="$OASIM_DIRECTIVES LIBCONFIG_LONG=1 "
+	fi
     fi
     
     echo_success "SOFTMODEM Compilation directives: $SOFTMODEM_DIRECTIVES"
