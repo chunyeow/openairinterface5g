@@ -142,7 +142,7 @@ int logInit (void)
     g_log->log_component[PHY].filelog_name = "/tmp/phy.log";
 
     g_log->log_component[MAC].name = "MAC";
-    g_log->log_component[MAC].level = LOG_EMERG;
+    g_log->log_component[MAC].level = LOG_DEBUG;
     g_log->log_component[MAC].flag =  LOG_MED;
     g_log->log_component[MAC].interval =  1;
     g_log->log_component[MAC].fd = 0;
@@ -158,7 +158,7 @@ int logInit (void)
     g_log->log_component[OPT].filelog_name = "";
 
     g_log->log_component[RLC].name = "RLC";
-    g_log->log_component[RLC].level = LOG_INFO;
+    g_log->log_component[RLC].level = LOG_DEBUG;
     g_log->log_component[RLC].flag = LOG_MED;
     g_log->log_component[RLC].interval =  1;
     g_log->log_component[RLC].fd = 0;
@@ -166,7 +166,7 @@ int logInit (void)
     g_log->log_component[RLC].filelog_name = "/tmp/rlc.log";
 
     g_log->log_component[PDCP].name = "PDCP";
-    g_log->log_component[PDCP].level = LOG_INFO;
+    g_log->log_component[PDCP].level = LOG_DEBUG;
     g_log->log_component[PDCP].flag = LOG_MED;
     g_log->log_component[PDCP].interval =  1;
     g_log->log_component[PDCP].fd = 0;
