@@ -78,7 +78,7 @@ static bool _gtpuah_route_packet(struct sk_buff *skb, const struct xt_gtpuah_tar
         } 
     }; 
 
-#if 1
+#if 0
     int                         flags, offset;
 
     offset = ntohs(iph->frag_off);
@@ -173,10 +173,11 @@ _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
     /* Create a new copy of the original skb...can't avoid :-( */
     if (((orig_iplen + headroom_reqd) <= MTU) || (flags & IP_DF)) {
 
+#if 0
         if (flags & IP_DF) {
             pr_info("GTPUAH: DONT FRAGMENT id %04X", ntohs(iph->id));
         }
-
+#endif
         new_skb = skb_copy_expand(skb, headroom_reqd + skb_headroom(skb), skb_tailroom(skb), GFP_ATOMIC);
         if (new_skb == NULL)
         {
@@ -379,6 +380,7 @@ static int __init xt_gtpuah_init(void)
 {
     pr_info("GTPUAH: Initializing module (KVersion: %d)\n", KVERSION);
     pr_info("GTPUAH: Copyright Polaris Networks 2010-2011\n");
+    pr_info("GTPUAH: Modified by EURECOM Lionel GAUTHIER 2014\n");
     return xt_register_target(&xt_gtpuah_reg);
 }
 
