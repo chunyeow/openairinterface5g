@@ -38,6 +38,7 @@
 #include "list.h"
 #include "MAC_INTERFACE/extern.h"
 #include "UTIL/LOG/log.h"
+#include "UTIL/LOG/vcd_signal_dumper.h"
 
 //#define TRACE_RLC_UM_DAR 1
 //#define TRACE_RLC_UM_RX  1
@@ -178,6 +179,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
     int                 i                      = 0;
     int                 reassembly_start_index = 0;
 
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_TRY_REASSEMBLY,VCD_FUNCTION_IN);
     if (end_snP < 0)   end_snP   = end_snP   + rlc_pP->rx_sn_modulo;
     if (start_snP < 0) start_snP = start_snP + rlc_pP->rx_sn_modulo;
 
@@ -196,6 +198,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
 #endif
     // nothing to be reassemblied
     if (start_snP == end_snP) {
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_TRY_REASSEMBLY,VCD_FUNCTION_OUT);
         return;
     }
     continue_reassembly = 1;
@@ -208,7 +211,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
         if ((pdu_mem_p = rlc_pP->dar_buffer[sn])) {
 
             if ((rlc_pP->last_reassemblied_sn+1)%rlc_pP->rx_sn_modulo != sn) {
-//#if defined (TRACE_RLC_UM_DAR)
+#if defined (TRACE_RLC_UM_DAR)
                 LOG_W(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u FINDING a HOLE in RLC UM SN: CLEARING OUTPUT SDU BECAUSE NEW SN (%03d) TO REASSEMBLY NOT CONTIGUOUS WITH LAST REASSEMBLIED SN (%03d)\n",
                         frameP,
                         (rlc_pP->is_enb) ? "eNB" : "UE",
@@ -219,7 +222,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                         __LINE__,
                         sn,
                         rlc_pP->last_reassemblied_sn);
-//#endif
+#endif
                 rlc_um_clear_rx_sdu(rlc_pP);
             }
             rlc_pP->last_reassemblied_sn = sn;
@@ -347,7 +350,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                             // one whole segment of SDU in PDU
                             rlc_um_reassembly (data_p, size, rlc_pP,frameP);
                         } else {
-//#if defined (TRACE_RLC_UM_DAR)
+#if defined (TRACE_RLC_UM_DAR)
                             LOG_W(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU NO E_LI FI=00 (11) MISSING SN DETECTED\n",
                                     frameP,
                                     (rlc_pP->is_enb) ? "eNB" : "UE",
@@ -356,7 +359,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                                     (rlc_pP->is_data_plane) ? "DRB" : "SRB",
                                     rlc_pP->rb_id,
                                     __LINE__);
-//#endif
+#endif
                             //LOG_D(RLC, "[MSC_NBOX][FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u][Missing SN detected][RLC_UM][MOD %u/%u][RB %u]\n",
                             //      frameP, rlc_pP->module_id,rlc_pP->rb_id, rlc_pP->module_id,rlc_pP->rb_id);
                             rlc_pP->reassembly_missing_sn_detected = 1; // not necessary but for readability of the code
@@ -501,7 +504,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                             LOG_D(RLC, " remaining size %d\n",size);
 #endif
                             if (rlc_pP->reassembly_missing_sn_detected) {
-//#if defined (TRACE_RLC_UM_DAR)
+#if defined (TRACE_RLC_UM_DAR)
                                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u DISCARD FIRST LI %d",
                                         frameP,
                                         (rlc_pP->is_enb) ? "eNB" : "UE",
@@ -511,7 +514,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                                         rlc_pP->rb_id,
                                         __LINE__,
                                         li_array[0]);
-//#endif
+#endif
                                 reassembly_start_index = 1;
                                 data_p = &data_p[li_array[0]];
                             	//rlc_pP->stat_rx_data_pdu_dropped += 1;
@@ -542,7 +545,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                             rlc_pP->reassembly_missing_sn_detected = 0;
                             break;
                         default:
-//#if defined (TRACE_RLC_UM_DAR)
+#if defined (TRACE_RLC_UM_DAR)
                             LOG_W(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u Missing SN detected\n",
                                     frameP,
                                     (rlc_pP->is_enb) ? "eNB" : "UE",
@@ -551,7 +554,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                                     (rlc_pP->is_data_plane) ? "DRB" : "SRB",
                                     rlc_pP->rb_id,
                                     __LINE__);
-//#endif
+#endif
                             rlc_pP->stat_rx_data_pdu_dropped += 1;
                             rlc_pP->stat_rx_data_bytes_dropped += tb_ind_p->size;
 
@@ -584,7 +587,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
             rlc_pP->dar_buffer[sn] = NULL;
         } else {
             rlc_pP->last_reassemblied_missing_sn = sn;
-//#if defined (TRACE_RLC_UM_DAR)
+#if defined (TRACE_RLC_UM_DAR)
             LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u Missing SN %04d detected, clearing RX SDU\n",
                     frameP,
                     (rlc_pP->is_enb) ? "eNB" : "UE",
@@ -594,7 +597,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
                     rlc_pP->rb_id,
                     __LINE__,
                     sn);
-//#endif
+#endif
             rlc_pP->reassembly_missing_sn_detected = 1;
             rlc_um_clear_rx_sdu(rlc_pP);
 #if defined(RLC_STOP_ON_LOST_PDU)
@@ -627,6 +630,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t e
             rlc_pP->vr_uh);
 #endif
 
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_TRY_REASSEMBLY,VCD_FUNCTION_OUT);
 }
 //-----------------------------------------------------------------------------
 void rlc_um_stop_and_reset_timer_reordering(rlc_um_entity_t *rlc_pP,frame_t frameP)
@@ -680,6 +684,9 @@ void rlc_um_check_timer_dar_time_out(rlc_um_entity_t *rlc_pP, frame_t frameP, eN
 //-----------------------------------------------------------------------------
     signed int     in_window;
     rlc_usn_t      old_vr_ur;
+
+
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_CHECK_TIMER_DAR_TIME_OUT,VCD_FUNCTION_IN);
     if ((rlc_pP->t_reordering.running)) {
         if (
         // CASE 1:          start              time out
@@ -763,9 +770,10 @@ void rlc_um_check_timer_dar_time_out(rlc_um_entity_t *rlc_pP, frame_t frameP, eN
             while (rlc_um_get_pdu_from_dar_buffer(rlc_pP, rlc_pP->vr_ur)) {
                 rlc_pP->vr_ur = (rlc_pP->vr_ur+1)%rlc_pP->rx_sn_modulo;
             }
+#if defined (TRACE_RLC_UM_DAR)
             LOG_D(RLC, " %d", rlc_pP->vr_ur);
             LOG_D(RLC, "\n");
-
+#endif
             rlc_um_try_reassembly(rlc_pP,frameP,eNB_flagP,old_vr_ur, rlc_pP->vr_ur);
 
             in_window = rlc_um_in_window(rlc_pP, frameP, rlc_pP->vr_ur,  rlc_pP->vr_uh,  rlc_pP->vr_uh);
@@ -797,6 +805,7 @@ void rlc_um_check_timer_dar_time_out(rlc_um_entity_t *rlc_pP, frame_t frameP, eN
             }
         }
     }
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_CHECK_TIMER_DAR_TIME_OUT,VCD_FUNCTION_OUT);
 }
 //-----------------------------------------------------------------------------
 inline mem_block_t *
@@ -1038,6 +1047,7 @@ rlc_um_receive_process_dar (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t 
     rlc_sn_t sn = -1;
     signed int in_window;
 
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_IN);
     if (rlc_pP->rx_sn_length == 10) {
         sn = ((pdu_pP->b1 & 0x00000003) << 8) + pdu_pP->b2;
     } else if (rlc_pP->rx_sn_length == 5) {
@@ -1072,6 +1082,7 @@ rlc_um_receive_process_dar (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t 
         rlc_pP->stat_rx_data_bytes_out_of_window += tb_sizeP;
         free_mem_block(pdu_mem_pP);
         pdu_mem_pP = NULL;
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
         return;
     }
     if ((rlc_um_get_pdu_from_dar_buffer(rlc_pP, sn))) {
@@ -1092,6 +1103,7 @@ rlc_um_receive_process_dar (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t 
             rlc_pP->stat_rx_data_bytes_duplicate += tb_sizeP;
             free_mem_block(pdu_mem_pP);
             pdu_mem_pP = NULL;
+            vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
             return;
         }
         // 2 lines to avoid memory leaks
@@ -1240,4 +1252,5 @@ rlc_um_receive_process_dar (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t 
 #endif
         }
     }
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
 }
