@@ -50,6 +50,7 @@
 #include "gtpv1u.h"
 #if defined(ENB_MODE)
 #include "UTIL/LOG/log.h"
+#include "UTIL/LOG/vcd_signal_dumper.h"
 #endif
 
 #ifdef __cplusplus
@@ -240,7 +241,9 @@ nwGtpv1uCreateAndSendMsg( NwGtpv1uStackT *thiz, NwU32T peerIp, NwU16T peerPort,
                                       peerIp,
                                       peerPort);
 
+#if defined(LOG_GTPU) && LOG_GTPU > 0
     NW_LEAVE(thiz);
+#endif
     return rc;
 }
 
@@ -788,6 +791,7 @@ nwGtpv1uProcessUdpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
     NwGtpv1uStackT       *thiz;
     NwU16T                msgType;
 
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_PROCESS_UDP_REQ, VCD_FUNCTION_IN);
     thiz = (NwGtpv1uStackT *) hGtpuStackHandle;
 
     NW_ASSERT(thiz);
@@ -835,6 +839,7 @@ nwGtpv1uProcessUdpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
 #if defined(LOG_GTPU) && LOG_GTPU > 0
     NW_LEAVE(thiz);
 #endif
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_PROCESS_UDP_REQ, VCD_FUNCTION_OUT);
     return ret;
 }
 

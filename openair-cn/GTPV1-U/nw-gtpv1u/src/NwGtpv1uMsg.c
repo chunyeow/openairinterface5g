@@ -304,7 +304,9 @@ nwGtpv1uMsgSetTeid(NW_IN NwGtpv1uMsgHandleT hMsg, NwU32T teid)
 {
     NwGtpv1uMsgT *thiz = (NwGtpv1uMsgT *) hMsg;
     thiz->teid = teid;
+#if defined(LOG_GTPU) && LOG_GTPU > 0
     GTPU_DEBUG("nwGtpv1uMsgSetTeid() teid %u", teid);
+#endif
     return NW_GTPV1U_OK;
 }
 
