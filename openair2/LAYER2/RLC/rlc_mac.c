@@ -136,6 +136,8 @@ tbs_size_t mac_rlc_data_req(
     hashtable_rc_t         h_rc;
     srb_flag_t             srb_flag        = (channel_idP <= 2) ? SRB_FLAG_YES : SRB_FLAG_NO;
     tbs_size_t             ret_tb_size         = 0;
+
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_DATA_REQ,VCD_FUNCTION_IN);
 #ifdef DEBUG_MAC_INTERFACE
     LOG_D(RLC, "\n[RLC] Inst %s enb id %d ue id %d: MAC_RLC_DATA_REQ channel %d (%d) MAX RB %d, Num_tb %d\n",
                (enb_flagP) ? "eNB" : "UE", enb_module_idP, ue_module_idP, channel_idP, RLC_MAX_LC, NB_RB_MAX);
@@ -172,7 +174,6 @@ tbs_size_t mac_rlc_data_req(
             oai_emulation.info.first_ue_local);
     }
 #endif 
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_DATA_REQ,VCD_FUNCTION_IN);
 
     if (MBMS_flagP) {
         if (enb_flagP) {
@@ -243,6 +244,7 @@ void mac_rlc_data_ind     (
     hashtable_rc_t         h_rc;
     srb_flag_t             srb_flag        = (channel_idP <= 2) ? SRB_FLAG_YES : SRB_FLAG_NO;
 
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_DATA_IND,VCD_FUNCTION_IN);
 #ifdef DEBUG_MAC_INTERFACE
     if (num_tbP) {
       LOG_D(RLC, "[Frame %5u][%s][RLC][MOD %u/%u] MAC_RLC_DATA_IND on channel %d (%d), rb max %d, Num_tb %d\n",
@@ -290,7 +292,6 @@ void mac_rlc_data_ind     (
     }
 #endif
     
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_DATA_IND,VCD_FUNCTION_IN);
     
     if (MBMS_flagP) {
         if (BOOL_NOT(enb_flagP)) {
@@ -367,6 +368,7 @@ mac_rlc_status_resp_t mac_rlc_status_ind(
   hashtable_rc_t         h_rc;
   srb_flag_t             srb_flag    = (channel_idP <= 2) ? SRB_FLAG_YES : SRB_FLAG_NO;
 
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_STATUS_IND,VCD_FUNCTION_IN);
   memset (&mac_rlc_status_resp, 0, sizeof(mac_rlc_status_resp_t));
   memset (&tx_status          , 0, sizeof(struct mac_status_ind));
 
@@ -413,7 +415,6 @@ mac_rlc_status_resp_t mac_rlc_status_ind(
     }
 #endif
     
- vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_STATUS_IND,VCD_FUNCTION_IN);
  
 
     if (MBMS_flagP) {
