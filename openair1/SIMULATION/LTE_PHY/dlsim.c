@@ -492,13 +492,11 @@ int main(int argc, char **argv) {
 	break;
       case 'e':
 	num_rounds=1;
-	fix_rounds=1;
 	common_flag = 1;
 	TPC = atoi(optarg);
 	break;
       case 'R':
 	num_rounds=atoi(optarg);
-	fix_rounds=1;
 	break;
       case 'S':
 	subframe=atoi(optarg);
@@ -1617,7 +1615,8 @@ int main(int argc, char **argv) {
 	//if (trials%100==0)
 	eNB2UE[0]->first_run = 1;
 
-	while (round < num_rounds) {
+	ret = PHY_vars_UE->dlsch_ue[0][0]->max_turbo_iterations+1;
+	while ((round < num_rounds) && (ret > PHY_vars_UE->dlsch_ue[0][0]->max_turbo_iterations)) {
 	  //	  printf("Trial %d, round %d\n",trials,round);
 	  round_trials[round]++;
 
@@ -2260,8 +2259,10 @@ int main(int argc, char **argv) {
 		      dci_errors++;
 		      round=5;
 		      errs[0]++;
-		      round_trials[0]++;
-		      //		  printf("DCI error trial %d errs[0] %d\n",trials,errs[0]);
+		      //round_trials[0]++;
+
+		      if (n_frames==1)
+			printf("DCI error trial %d errs[0] %d\n",trials,errs[0]);
 		    }
 		    //		for (i=1;i<=round;i++)
 		    //		  round_trials[i]--;
@@ -2303,12 +2304,12 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 		      if (round==0) {
 			dci_errors++;
 			errs[0]++;
-			round_trials[0]++;
+			//round_trials[0]++;
+			round=5;
 
-			if (n_frames==1) {
+			if (n_frames==1) 
 			  printf("DCI misdetection trial %d\n",trials);
-			  round=5;
-			}
+			
 		      }
 		      //		  for (i=1;i<=round;i++)
 		      //		    round_trials[i]--;
@@ -2567,13 +2568,9 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 	    iter_trials++;
 	    if (n_frames==1) 
 	      printf("No DLSCH errors found,uncoded ber %f\n",uncoded_ber);
-	    //	    exit(-1);
-	    if (fix_rounds==0)
-	      round=5;
-	    else
-	      round++;
 
 	    PHY_vars_UE->total_TBS[eNB_id] =  PHY_vars_UE->total_TBS[eNB_id] + PHY_vars_UE->dlsch_ue[eNB_id][0]->harq_processes[PHY_vars_UE->dlsch_ue[eNB_id][0]->current_harq_pid]->TBS;
+
 	  }	
 	  else {
 	    errs[round]++;
@@ -2632,10 +2629,7 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 	    //	    printf("round %d errors %d/%d\n",round,errs[round],trials);
 
 	    round++;
-		
-	    if (n_frames==1)
-	      printf("DLSCH in error in round %d\n",round);
-		
+	
 	  }
 #ifdef XFORMS
 	  phy_scope_UE(form_ue, 
@@ -2644,6 +2638,7 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 		       0,// UE_id
 		       subframe); 
 #endif
+
 	}  //round
 	//      printf("\n");
 
