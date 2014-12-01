@@ -131,7 +131,9 @@ boolean_t pdcp_advance_rx_window(pdcp_t* pdcp_entity)
    * Update sequence numbering state and Hyper Frame Number if SN has already reached
    * its max value (see 5.1 PDCP Data Transfer Procedures)
    */
-  LOG_I(PDCP, "Advancing RX window...\n");
+#if 0
+  LOG_D(PDCP, "Advancing RX window...\n");
+#endif
   if (pdcp_entity->next_pdcp_rx_sn == pdcp_calculate_max_seq_num_for_given_size(pdcp_entity->seq_num_size)) {
     pdcp_entity->next_pdcp_rx_sn = 0;
     pdcp_entity->rx_hfn++;
