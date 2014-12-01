@@ -472,31 +472,38 @@ boolean_t pdcp_data_ind(
       rb_id = rb_idP % maxDRB;
       AssertError (rb_id < maxDRB, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_id, maxDRB, ue_mod_idP, enb_mod_idP);
       AssertError (rb_id > 0, return FALSE, "RB id is too low (%u/%d) %u %u!\n", rb_id, maxDRB, ue_mod_idP, enb_mod_idP);
-
       if (enb_flagP == ENB_FLAG_NO) {
           if (srb_flagP) {
               pdcp_p = &pdcp_array_srb_ue[ue_mod_idP][rb_id-1];
+#if 0
               LOG_D(PDCP, "Data indication notification for PDCP entity from eNB %u to UE %u "
                     "and signalling radio bearer ID %d rlc sdu size %d enb_flagP %d\n",
                     enb_mod_idP, ue_mod_idP, rb_id, sdu_buffer_sizeP, enb_flagP);
+#endif
           } else {
               pdcp_p = &pdcp_array_drb_ue[ue_mod_idP][rb_id-1];
+#if 0
               LOG_D(PDCP, "Data indication notification for PDCP entity from eNB %u to UE %u "
                     "and data radio bearer ID %d rlc sdu size %d enb_flagP %d\n",
                     enb_mod_idP, ue_mod_idP, rb_id, sdu_buffer_sizeP, enb_flagP);
+#endif
           }
 
       } else {
           if (srb_flagP) {
               pdcp_p = &pdcp_array_srb_eNB[enb_mod_idP][ue_mod_idP][rb_id-1];
+#if 0
               LOG_D(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
                   "and signalling radio bearer ID %d rlc sdu size %d enb_flagP %d eNB_id %d\n",
                   ue_mod_idP, enb_mod_idP , rb_id, sdu_buffer_sizeP, enb_flagP, enb_mod_idP);
+#endif
           } else {
               pdcp_p = &pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][rb_id-1];
+#if 0
               LOG_D(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
                   "and data radio bearer ID %d rlc sdu size %d enb_flagP %d eNB_id %d\n",
                   ue_mod_idP, enb_mod_idP , rb_id, sdu_buffer_sizeP, enb_flagP, enb_mod_idP);
+#endif
           }
 
       }
@@ -554,7 +561,9 @@ boolean_t pdcp_data_ind(
       }
   
     if (pdcp_is_rx_seq_number_valid(sequence_number, pdcp_p, srb_flagP) == TRUE) {
+#if 0
       LOG_T(PDCP, "Incoming PDU has a sequence number (%d) in accordance with RX window\n", sequence_number);
+#endif
       /* if (dc == PDCP_DATA_PDU )
 	 LOG_D(PDCP, "Passing piggybacked SDU to NAS driver...\n");
 	 else
@@ -570,7 +579,7 @@ boolean_t pdcp_data_ind(
       free_mem_block(sdu_buffer);
       return FALSE;
 #else
-      LOG_W(PDCP, "Delivering out-of-order SDU to upper layer...\n");
+      //LOG_W(PDCP, "Delivering out-of-order SDU to upper layer...\n");
 #endif
     }
       // SRB1/2: control-plane data
@@ -711,13 +720,6 @@ boolean_t pdcp_data_ind(
       GTPV1U_ENB_TUNNEL_DATA_REQ(message_p).ue_index     = ue_mod_idP;
       GTPV1U_ENB_TUNNEL_DATA_REQ(message_p).rab_id       = rb_id + 4;
       itti_send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p);
-      /*gtpv1u_new_data_req(
-              enb_mod_idP, //gtpv1u_data_t *gtpv1u_data_p,
-              ue_mod_idP,//rb_id/maxDRB, TO DO UE ID
-              rb_id + 4,
-              &sdu_buffer_pP->data[payload_offset],
-              sdu_buffer_sizeP - payload_offset);
-              */
       packet_forwarded = TRUE;
   }
 #else

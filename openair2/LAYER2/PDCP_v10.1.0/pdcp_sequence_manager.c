@@ -151,8 +151,9 @@ boolean_t pdcp_is_rx_seq_number_valid(uint16_t seq_num, pdcp_t* pdcp_entity,srb_
   
   uint16_t  reordering_window = 0;
   
+#if 0
   LOG_D(PDCP, "Incoming RX Sequence number is %04d\n", seq_num);
-
+#endif
   if (pdcp_is_seq_num_size_valid(pdcp_entity) == FALSE || pdcp_is_seq_num_valid(seq_num, pdcp_entity->seq_num_size) == FALSE)
     return FALSE;
 
@@ -161,7 +162,9 @@ boolean_t pdcp_is_rx_seq_number_valid(uint16_t seq_num, pdcp_t* pdcp_entity,srb_
    * (and to build PDCP Control PDU for PDCP status report)
    */
   if (pdcp_mark_current_pdu_as_received(seq_num, pdcp_entity) == TRUE) {
+#if 0
     LOG_I(PDCP, "Received sequence number successfuly marked\n");
+#endif
   } else {
     LOG_W(PDCP, "Cannot mark received sequence number on the bitmap!\n");
   }
@@ -186,8 +189,10 @@ boolean_t pdcp_is_rx_seq_number_valid(uint16_t seq_num, pdcp_t* pdcp_entity,srb_
     
     // same the old next_pdcp_rx_sn to revert otherwise
     pdcp_entity->next_pdcp_rx_sn_before_integrity = pdcp_entity->next_pdcp_rx_sn;
+#if 0
     if (seq_num != pdcp_entity->next_pdcp_rx_sn)
       LOG_D(PDCP,"Re-adjusting the sequence number to %d\n", seq_num); 
+#endif
     //set Next_PDCP_RX_SN to the received PDCP SN +1 ;
     pdcp_entity->next_pdcp_rx_sn = seq_num;
     pdcp_advance_rx_window(pdcp_entity);  // + 1, and check if it is larger than Maximum_PDCP_SN:
@@ -238,7 +243,9 @@ boolean_t pdcp_is_rx_seq_number_valid(uint16_t seq_num, pdcp_t* pdcp_entity,srb_
 	//set Next_PDCP_RX_SN to the received PDCP SN +1 ;
 	pdcp_entity->next_pdcp_rx_sn = seq_num;
 	pdcp_advance_rx_window(pdcp_entity);  // + 1, anc check if it is larger than Maximum_PDCP_SN:
+#if 0
 	LOG_D(PDCP,"Re-adjusting the sequence number to %d\n", seq_num);
+#endif
       } else if (seq_num < pdcp_entity->next_pdcp_rx_sn){
 	// use COUNT based on RX_HFN and the received PDCP SN for deciphering the PDCP PDU;
 	pdcp_entity->rx_hfn_offset = 0;
@@ -295,9 +302,12 @@ boolean_t pdcp_mark_current_pdu_as_received(uint16_t seq_num, pdcp_t* pdcp_entit
   /*
    * Set relevant bit
    */
+#if 0
   LOG_D(PDCP, "Marking %d. bit of %d. octet of status bitmap\n", (seq_num % 8) + 1, octet_index);
+#endif
   util_mark_nth_bit_of_octet(&pdcp_entity->missing_pdu_bitmap[octet_index], seq_num % 8); 
+#if 0
   util_print_binary_representation((uint8_t*)"Current state of relevant octet: ", pdcp_entity->missing_pdu_bitmap[octet_index]);
-
+#endif
   return TRUE;
 }
