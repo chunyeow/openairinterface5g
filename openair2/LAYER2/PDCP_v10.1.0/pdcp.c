@@ -422,7 +422,9 @@ boolean_t pdcp_data_ind(
 #endif
  
 
-#ifdef OAI_EMU
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_IN);
+
+  #ifdef OAI_EMU
   if (enb_flagP) {
       AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
           "eNB module id is too low (%u/%d)!\n",
@@ -511,7 +513,6 @@ boolean_t pdcp_data_ind(
     start_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
   else
     start_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);  
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_IN);
 
   /*
    * Parse the PDU placed at the beginning of SDU to check
@@ -553,7 +554,7 @@ boolean_t pdcp_data_ind(
       }
   
     if (pdcp_is_rx_seq_number_valid(sequence_number, pdcp_p, srb_flagP) == TRUE) {
-      LOG_D(PDCP, "Incoming PDU has a sequence number (%d) in accordance with RX window\n", sequence_number);
+      LOG_T(PDCP, "Incoming PDU has a sequence number (%d) in accordance with RX window\n", sequence_number);
       /* if (dc == PDCP_DATA_PDU )
 	 LOG_D(PDCP, "Passing piggybacked SDU to NAS driver...\n");
 	 else
@@ -697,7 +698,7 @@ boolean_t pdcp_data_ind(
    */
 #if defined(LINK_PDCP_TO_GTPV1U)
   if ((TRUE == enb_flagP) && (FALSE == srb_flagP)) {
-      LOG_I(PDCP,"Sending to GTPV1U %d bytes\n", sdu_buffer_sizeP - payload_offset);
+      //LOG_T(PDCP,"Sending to GTPV1U %d bytes\n", sdu_buffer_sizeP - payload_offset);
       gtpu_buffer_p = itti_malloc(TASK_PDCP_ENB, TASK_GTPV1_U,
                sdu_buffer_sizeP - payload_offset + GTPU_HEADER_OVERHEAD_MAX);
       AssertFatal(gtpu_buffer_p != NULL, "OUT OF MEMORY");
