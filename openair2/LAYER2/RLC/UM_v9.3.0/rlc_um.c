@@ -649,15 +649,6 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
       (uint8_t*)&sdu_pP->data[sizeof (struct rlc_um_data_req_alloc)],
       ((struct rlc_um_data_req *) (sdu_pP->data))->data_size);*/
 
-  /*#ifndef USER_MODE
-  rlc_um_time_us = (unsigned long int)(rt_get_time_ns ()/(RTIME)1000);
-  sec = (rlc_um_time_us/ 1000000);
-  min = (sec / 60) % 60;
-  sec = sec % 60;
-  usec =  rlc_um_time_us % 1000000;
-  msg ("[RLC_UM_LITE][RB  %d] at time %2d:%2d.%6d\n", rlc_p->rb_id, min, sec , usec);
-#endif*/
-
     // IMPORTANT : do not change order of affectations
     ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size = ((struct rlc_um_data_req *) (sdu_pP->data))->data_size;
     //rlc_p->nb_sdu += 1;
