@@ -220,6 +220,8 @@ const char* eurecomFunctionsNames[] = {
     "rrc_ue_decode_si",
     /* GTPV1U signals */
     "gtpv1u_enb_task",
+    "gtpv1u_process_udp_req",
+    "gtpv1u_process_tunnel_data_req",
     /* UDP signals */
     "udp_enb_task",
     /* MISC signals  */
