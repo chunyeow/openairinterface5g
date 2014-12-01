@@ -374,6 +374,10 @@ int16_t           gtpu_log_verbosity = LOG_MED;
 int16_t           udp_log_level      = LOG_DEBUG;
 int16_t           udp_log_verbosity  = LOG_MED;
 #endif
+#if defined (ENABLE_SECURITY)
+int16_t           osa_log_level      = LOG_INFO;
+int16_t           osa_log_verbosity  = LOG_MED;
+#endif 
 
 unsigned int build_rflocal(int txi, int txq, int rxi, int rxq)
 {
@@ -2817,6 +2821,10 @@ static void get_options (int argc, char **argv) {
       udp_log_level                  = enb_properties->properties[i]->udp_log_level;
       udp_log_verbosity              = enb_properties->properties[i]->udp_log_verbosity;
 #endif
+#if defined (ENABLE_SECURITY)
+      osa_log_level                  = enb_properties->properties[i]->osa_log_level;
+      osa_log_verbosity              = enb_properties->properties[i]->osa_log_verbosity;
+#endif 
     
       // adjust the log
       for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
@@ -2949,7 +2957,7 @@ int main(int argc, char **argv) {
       set_comp_log(SCTP,    LOG_INFO,   LOG_HIGH, 1);
 # endif
 #if defined(ENABLE_SECURITY)
-      set_comp_log(OSA,    LOG_DEBUG,   LOG_HIGH, 1);
+      set_comp_log(OSA,    osa_log_level,   osa_log_verbosity, 1);
 #endif
 #endif
       set_comp_log(ENB_APP, LOG_INFO, LOG_HIGH, 1);

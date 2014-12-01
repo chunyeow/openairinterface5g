@@ -297,6 +297,9 @@ build_enb(){
     echo_info "6. Checking the installation ..."
 
     check_install_oai_software  
+    if [ $HW = "USRP" ]; then 
+	check_install_usrp_uhd_driver 
+    fi
     check_install_asn1c
 
 ############################################

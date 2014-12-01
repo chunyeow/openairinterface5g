@@ -46,6 +46,7 @@ BUILD_FROM_MAKEFILE=0
 SUDO=''
 PW=''
 UBUNTU_REL=`lsb_release -r | cut  -f2`
+UBUNTU_REL_NAME=`lsb_release -cs`
 
 set_build_from_makefile(){
     BUILD_FROM_MAKEFILE=$1   
@@ -278,11 +279,20 @@ check_s6a_certificate() {
     return 1
 }
 
+check_install_usrp_uhd_driver(){
+    if [ ! -f /etc/apt/sources.list.d/ettus.list ] ; then 
+	$SUDO bash -c 'echo "deb http://files.ettus.com/binaries/uhd/repo/uhd/ubuntu/`lsb_release -cs` `lsb_release -cs` main" >> /etc/apt/sources.list.d/ettus.list'
+	$SUDO apt-get update
+    fi 
+    $SUDO apt-get install -t $UBUNTU_REL_NAME uhd
+    #test_install_package uhd
+}
+
 check_install_oai_software() {
     
     if [ ! -f ./.lock_oaibuild ]; then 
 	$SUDO apt-get update
-	if [ $UBUNTU_REL = "12.04" ]; then 
+      	if [ $UBUNTU_REL = "12.04" ]; then 
 	    test_uninstall_package nettle-dev
 	    test_uninstall_package nettle-bin
         else 
@@ -356,6 +366,8 @@ check_install_oai_software() {
 	test_install_package graphviz
 	
 # TODO: install the USRP UHD packages 
+#	if [ $1 = "USRP" ] ; then 
+	
 #	test_install_package libboost-all-dev
 	
 	if [ $OAI_INSTALLED = 1 ]; then 
@@ -923,7 +935,7 @@ print_help(){
     echo_success "-r   : sets the release: REL8, REL10 (default REL8)"
     echo_success "-s   : enables OAI testing and sanity check (default disabled)"
     echo_success "-t   : sets the eNB build target: ALL, SOFTMODEM,OAISIM,UNISIM (default ALL)"
-    echo_success "-w   : sets the hardware platform: EXMIMO, USRP, ETHERNET NONE, (default EXMIMO)"
+    echo_success "-w   : sets the hardware platform: EXMIMO, USRP (also installs UHD driver), ETHERNET, NONE, (default EXMIMO)"
     echo_success "-x   : enables xforms (default disabled)"
     echo_success "-z   : sets the default build options"
 }

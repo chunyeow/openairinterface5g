@@ -208,6 +208,8 @@ typedef struct Enb_properties_s {
   int16_t           gtpu_log_verbosity;
   int16_t           udp_log_level;
   int16_t           udp_log_verbosity;
+  int16_t           osa_log_level;
+  int16_t           osa_log_verbosity;
 
 } Enb_properties_t;
 

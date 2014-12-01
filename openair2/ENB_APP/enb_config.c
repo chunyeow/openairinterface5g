@@ -190,6 +190,8 @@
 #define ENB_CONFIG_STRING_GTPU_LOG_VERBOSITY               "gtpu_log_verbosity"
 #define ENB_CONFIG_STRING_UDP_LOG_LEVEL                    "udp_log_level"
 #define ENB_CONFIG_STRING_UDP_LOG_VERBOSITY                "udp_log_verbosity"
+#define ENB_CONFIG_STRING_OSA_LOG_LEVEL                    "osa_log_level"
+#define ENB_CONFIG_STRING_OSA_LOG_VERBOSITY                "osa_log_verbosity"
 
 
 #define KHz (1000UL)
@@ -363,6 +365,9 @@ static void enb_config_display(void) {
         printf( "\tRLC log level:     \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->rlc_log_level));
         printf( "\tPDCP log level:    \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->pdcp_log_level));
         printf( "\tRRC log level:     \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->rrc_log_level));
+	printf( "\tUDP log level:     \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->udp_log_level));
+	printf( "\tGTP log level:     \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->gtpu_log_level));
+	printf( "\tOSA log level:     \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->osa_log_level));
 
         printf( "\n--------------------------------------------------------\n");
     }
@@ -557,6 +562,8 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
     char*             gtpu_log_verbosity            = NULL;
     char*             udp_log_level                 = NULL;
     char*             udp_log_verbosity             = NULL;
+    char*             osa_log_level                 = NULL;
+    char*             osa_log_verbosity             = NULL;
 
     memset((char*) (enb_properties.properties), 0 , MAX_ENB * sizeof(Enb_properties_t *));
     memset((char*)active_enb,     0 , MAX_ENB * sizeof(char*));
@@ -1821,6 +1828,21 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                             enb_properties.properties[enb_properties_index]->udp_log_verbosity = LOG_MED;
                         }
 
+			if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_OSA_LOG_LEVEL, (const char **)&osa_log_level)) {
+                            if ((enb_properties.properties[enb_properties_index]->osa_log_level = map_str_to_int(log_level_names,osa_log_level)) == -1 )
+                                enb_properties.properties[enb_properties_index]->osa_log_level = LOG_INFO;
+                            //printf( "\tOSA log level :\t%s->%d\n",osa_log_level,enb_properties.properties[enb_properties_index]->osa_log_level);
+                        } else {
+                            enb_properties.properties[enb_properties_index]->osa_log_level = LOG_INFO;
+                        }
+                        if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_OSA_LOG_VERBOSITY, (const char **)&osa_log_verbosity)) {
+                            if ((enb_properties.properties[enb_properties_index]->osa_log_verbosity = map_str_to_int(log_verbosity_names,osa_log_verbosity)) == -1)
+                                enb_properties.properties[enb_properties_index]->osa_log_verbosity = LOG_MED;
+                            //printf( "\tOSA log verbosity:\t%s->%d\n",osa_log_verbosity,enb_properties.properties[enb_properties_index]->gosa_log_verbosity);
+                        } else {
+                            enb_properties.properties[enb_properties_index]->osa_log_verbosity = LOG_MED;
+                        }
+
                     } else { // not configuration is given
                         enb_properties.properties[enb_properties_index]->glog_level         = LOG_INFO;
                         enb_properties.properties[enb_properties_index]->glog_verbosity     = LOG_MED;
@@ -1840,6 +1862,8 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                         enb_properties.properties[enb_properties_index]->gtpu_log_verbosity = LOG_MED;
                         enb_properties.properties[enb_properties_index]->udp_log_level      = LOG_INFO;
                         enb_properties.properties[enb_properties_index]->udp_log_verbosity  = LOG_MED;
+			enb_properties.properties[enb_properties_index]->osa_log_level      = LOG_INFO;
+                        enb_properties.properties[enb_properties_index]->osa_log_verbosity  = LOG_MED;
                     }
 
                     enb_properties_index += 1;
