@@ -56,7 +56,7 @@
 #include "UTIL/LOG/vcd_signal_dumper.h"
 
 
-#define GTP_DUMP_SOCKET 0
+#undef GTP_DUMP_SOCKET
 
 extern boolean_t
     pdcp_data_req(
@@ -158,7 +158,7 @@ void *
 
 static gtpv1u_data_t gtpv1u_data_g;
 
-#if defined(GTP_DUMP_SOCKET)
+#if defined(GTP_DUMP_SOCKET) && GTP_DUMP_SOCKET > 0
 #include <linux/if.h>
 static int           gtpv1u_dump_socket_g;
 
@@ -200,7 +200,7 @@ static void gtpv1u_eNB_write_dump_socket(uint8_t *buffer_pP, uint32_t buffer_len
   sin.sin_addr.s_addr = INADDR_LOOPBACK;
 
   if (sendto(gtpv1u_dump_socket_g, buffer_pP, (size_t)buffer_lengthP, 0, (struct sockaddr *)&sin, sizeof(struct sockaddr)) < 0)  {
-      LOG_E(GTPU, "%s:%s:%d  setsockopt SO_BINDTODEVICE %d:%s\n",
+      LOG_E(GTPU, "%s:%s:%d  sendto %d:%s\n",
           __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
   }
 }
@@ -256,7 +256,9 @@ NwGtpv1uRcT gtpv1u_eNB_send_udp_msg(
     message_p = itti_alloc_new_message(TASK_GTPV1_U, UDP_DATA_REQ);
 
     if (message_p) {
+#if defined(LOG_GTPU) && LOG_GTPU > 0
         LOG_D(GTPU, "Sending UDP_DATA_REQ length %u offset %u", buffer_len, buffer_offset);
+#endif
         udp_data_req_p = &message_p->ittiMsg.udp_data_req;
         udp_data_req_p->peer_address  = peerIpAddr;
         udp_data_req_p->peer_port     = peerPort;
@@ -298,7 +300,7 @@ NwGtpv1uRcT gtpv1u_eNB_process_stack_req(
                 LOG_E(GTPU, "Error while retrieving T-PDU");
             }
             itti_free(TASK_UDP, ((NwGtpv1uMsgT*)pUlpApi->apiInfo.recvMsgInfo.hMsg)->msgBuf);
-#if defined(GTP_DUMP_SOCKET)
+#if defined(GTP_DUMP_SOCKET) && GTP_DUMP_SOCKET > 0
             gtpv1u_eNB_write_dump_socket(buffer,buffer_len);
 #endif
 
@@ -307,12 +309,14 @@ NwGtpv1uRcT gtpv1u_eNB_process_stack_req(
             //-----------------------
             hash_rc = hashtable_get(gtpv1u_data_g.teid_mapping, teid, (void**)&gtpv1u_teid_data_p);
             if (hash_rc == HASH_TABLE_OK) {
+#if defined(LOG_GTPU) && LOG_GTPU > 0
                 LOG_D(GTPU, "Received T-PDU from gtpv1u stack teid  %u size %d -> enb module id %u ue module id %u rab id %u\n",
                     teid,
                     buffer_len,
                     gtpv1u_teid_data_p->enb_id,
                     gtpv1u_teid_data_p->ue_id,
                     gtpv1u_teid_data_p->eps_bearer_id);
+#endif
 
 #warning "LG eps bearer mapping to DRB id to do (offset -4)"
 
@@ -887,7 +891,7 @@ static int gtpv1u_eNB_init(void)
         return -1;
     }
 
-#if defined(GTP_DUMP_SOCKET)
+#if defined(GTP_DUMP_SOCKET) && GTP_DUMP_SOCKET > 0
     if ((ret = gtpv1u_eNB_create_dump_socket()) < 0) {
         return -1;
     }
@@ -957,7 +961,7 @@ void *gtpv1u_eNB_task(void *args)
                 data_req_p = &GTPV1U_ENB_TUNNEL_DATA_REQ(received_message_p);
                 //ipv4_send_data(ipv4_data_p->sd, data_ind_p->buffer, data_ind_p->length);
 
-#if defined(GTP_DUMP_SOCKET)
+#if defined(GTP_DUMP_SOCKET) && GTP_DUMP_SOCKET > 0
                 gtpv1u_eNB_write_dump_socket(&data_req_p->buffer[data_req_p->offset],data_req_p->length);
 #endif
                 memset(&stack_req, 0, sizeof(NwGtpv1uUlpApiT));
