@@ -106,6 +106,9 @@ typedef struct rlc_um_entity_s {
   mem_block_t      *output_sdu_in_construction;     /*!< \brief Memory area where a complete SDU is reassemblied before being send to upper layers. */
   sdu_size_t        output_sdu_size_to_write;       /*!< \brief Size of the reassemblied SDU. */
 
+
+  //pthread_spinlock_t lock_dar_buffer;
+  pthread_mutex_t      lock_dar_buffer;
   mem_block_t     **dar_buffer;                     /*!< \brief Array of rx PDUs. */
   list_t            pdus_from_mac_layer;            /*!< \brief Not Used. */
 

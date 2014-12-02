@@ -260,7 +260,7 @@ rlc_um_init (rlc_um_entity_t * const rlc_pP)
       rlc_pP->tx_sn_length          = 10;
       rlc_pP->tx_header_min_length_in_bytes = 2;
 
-
+      pthread_mutex_init(&rlc_pP->lock_dar_buffer, NULL);
       if (rlc_pP->dar_buffer == NULL) {
           rlc_pP->dar_buffer = calloc (1, 1024 * sizeof (void *));
       }
@@ -309,6 +309,7 @@ rlc_um_cleanup (rlc_um_entity_t * const rlc_pP)
       free (rlc_pP->dar_buffer);
       rlc_pP->dar_buffer = NULL;
   }
+  pthread_mutex_destroy(&rlc_pP->lock_dar_buffer);
   memset(rlc_pP, 0, sizeof(rlc_um_entity_t));
 }
 
@@ -382,7 +383,7 @@ void rlc_um_configure(
 }
 //-----------------------------------------------------------------------------
 void rlc_um_set_debug_infos(
-    rlc_um_entity_t *rlc_pP,
+    rlc_um_entity_t * const rlc_pP,
     const module_id_t      enb_module_idP,
     const module_id_t      ue_module_idP,
     const frame_t          frameP,

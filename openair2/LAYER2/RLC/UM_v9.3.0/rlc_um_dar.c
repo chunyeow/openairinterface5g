@@ -763,7 +763,7 @@ void rlc_um_check_timer_dar_time_out(rlc_um_entity_t *rlc_pP, frame_t frameP, eN
                     rlc_pP->rb_id,
                     rlc_pP->vr_ur);
 #endif
-
+            pthread_mutex_lock(&rlc_pP->lock_dar_buffer);
             old_vr_ur   = rlc_pP->vr_ur;
 
             rlc_pP->vr_ur = rlc_pP->vr_ux;
@@ -803,6 +803,7 @@ void rlc_um_check_timer_dar_time_out(rlc_um_entity_t *rlc_pP, frame_t frameP, eN
 #endif
                 rlc_um_stop_and_reset_timer_reordering(rlc_pP, frameP);
             }
+            pthread_mutex_unlock(&rlc_pP->lock_dar_buffer);
         }
     }
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_CHECK_TIMER_DAR_TIME_OUT,VCD_FUNCTION_OUT);
@@ -1055,6 +1056,8 @@ rlc_um_receive_process_dar (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t 
     } else {
     	free_mem_block(pdu_mem_pP);
     }
+    pthread_mutex_lock(&rlc_pP->lock_dar_buffer);
+
     in_window = rlc_um_in_window(rlc_pP, frameP, rlc_pP->vr_uh - rlc_pP->rx_um_window_size, sn, rlc_pP->vr_ur);
 
 #if defined(DEBUG_RLC_PAYLOAD)
@@ -1082,6 +1085,7 @@ rlc_um_receive_process_dar (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t 
         rlc_pP->stat_rx_data_bytes_out_of_window += tb_sizeP;
         free_mem_block(pdu_mem_pP);
         pdu_mem_pP = NULL;
+        pthread_mutex_unlock(&rlc_pP->lock_dar_buffer);
         vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
         return;
     }
@@ -1103,6 +1107,7 @@ rlc_um_receive_process_dar (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t 
             rlc_pP->stat_rx_data_bytes_duplicate += tb_sizeP;
             free_mem_block(pdu_mem_pP);
             pdu_mem_pP = NULL;
+            pthread_mutex_unlock(&rlc_pP->lock_dar_buffer);
             vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
             return;
         }
@@ -1252,5 +1257,6 @@ rlc_um_receive_process_dar (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t 
 #endif
         }
     }
+    pthread_mutex_unlock(&rlc_pP->lock_dar_buffer);
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
 }

@@ -197,7 +197,7 @@ protected_rlc_um_control_primitives(void rlc_um_configure(
 * \param[in]  srb_flagP                 Flag to indicate signalling radio bearer (1) or data radio bearer (0).
 */
 protected_rlc_um_control_primitives(void rlc_um_set_debug_infos(
-    rlc_um_entity_t *rlcP,
+    rlc_um_entity_t * const rlcP,
     const module_id_t enb_module_idP,
     const module_id_t ue_module_idP,
     const frame_t frameP,
