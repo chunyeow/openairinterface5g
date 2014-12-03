@@ -125,8 +125,9 @@ cd $THIS_SCRIPT_PATH
 #######################################################
 # FIND CONFIG FILE
 #######################################################
-SEARCHED_CONFIG_FILE_EPC="epc*.conf"
+SEARCHED_CONFIG_FILE_EPC="epc.`hostname -s`.conf"
 CONFIG_FILE_EPC=`find $CONFIG_FILE_DIR -iname $SEARCHED_CONFIG_FILE_EPC`
+echo "CONFIG_FILE_EPC=$CONFIG_FILE_EPC"
 if [ -f $CONFIG_FILE_EPC ]; then
     echo_warning "EPC config file found is now $CONFIG_FILE_EPC"
 else
