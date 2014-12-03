@@ -791,7 +791,9 @@ nwGtpv1uProcessUdpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
     NwGtpv1uStackT       *thiz;
     NwU16T                msgType;
 
+#if defined(ENB_MODE)
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_PROCESS_UDP_REQ, VCD_FUNCTION_IN);
+#endif
     thiz = (NwGtpv1uStackT *) hGtpuStackHandle;
 
     NW_ASSERT(thiz);
@@ -839,7 +841,9 @@ nwGtpv1uProcessUdpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
 #if defined(LOG_GTPU) && LOG_GTPU > 0
     NW_LEAVE(thiz);
 #endif
+#if defined(ENB_MODE)
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_PROCESS_UDP_REQ, VCD_FUNCTION_OUT);
+#endif
     return ret;
 }
 
