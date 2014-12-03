@@ -155,8 +155,6 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
   char             *pgw_default_dns_ipv4_address = NULL;
   char             *pgw_default_dns_sec_ipv4_address = NULL;
 
-  char             *delimiters=NULL;
-  char             *saveptr1 = NULL;
   char             *astring  = NULL;
   char             *atoken   = NULL;
   char             *atoken2  = NULL;
@@ -165,7 +163,6 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
   char             *mask     = NULL;
   int               num      = 0;
   int               i        = 0;
-  int               jh, jn;
   unsigned char     buf_in6_addr[sizeof(struct in6_addr)];
   struct in6_addr   addr6_start;
   struct in6_addr   addr6_mask;
@@ -178,6 +175,7 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
   pgw_lite_conf_ipv6_list_elm_t *ip6_ref = NULL;
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
   char              system_cmd[256];
+  int               ret;
 #endif
 
   memset((char*)config_pP, 0 , sizeof(spgw_config_t));
@@ -226,7 +224,11 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
               free(cidr);
 
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
-              system("echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects");
+              ret = system("echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects");
+              if (ret < 0) {
+                  SPGW_APP_ERROR("ERROR in setting echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects: %d\n",
+                          ret);
+              }
 #endif
               in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
               SPGW_APP_INFO("Parsing configuration file found sgw_ipv4_address_for_S1u_S12_S4_up: %s/%d on %s\n",
@@ -273,7 +275,10 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                         config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up,
                         config_pP->sgw_config.sgw_interface_mtu_for_S1u_S12_S4_up) > 0) {
                     SPGW_APP_INFO("Set S1U interface MTU: %s\n",system_cmd);
-                  system(system_cmd);
+                    ret = system(system_cmd);
+                    if (ret < 0) {
+                        SPGW_APP_ERROR("ERROR in setting %s: %d\n",system_cmd, ret);
+                    }
                 } else {
                     SPGW_APP_ERROR("Set S1U interface MTU\n");
                 }
@@ -293,7 +298,10 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                       "iptables -t raw -I PREROUTING  -i %s --protocol udp --destination-port 2152  -j DROP",
                       config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
                   SPGW_APP_INFO("Drop uplink traffic: %s\n",system_cmd);
-                system(system_cmd);
+                  ret = system(system_cmd);
+                  if (ret < 0) {
+                      SPGW_APP_ERROR("ERROR in setting %s: %d\n",system_cmd, ret);
+                  }
               } else {
                   SPGW_APP_ERROR("Drop uplink traffic\n");
               }
@@ -363,7 +371,10 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                           "iptables -t nat -A POSTROUTING  -o %s  ! --protocol sctp -j MASQUERADE",
                           config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
                       SPGW_APP_INFO("Masquerade SGI: %s\n",system_cmd);
-                    system(system_cmd);
+                      ret = system(system_cmd);
+                      if (ret < 0) {
+                          SPGW_APP_ERROR("ERROR in setting %s: %d\n",system_cmd, ret);
+                      }
                   } else {
                       SPGW_APP_ERROR("Masquerade SGI\n");
                   }
@@ -378,7 +389,10 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                       "iptables -I POSTROUTING -t mangle -o %s -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
                       config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
                   SPGW_APP_INFO("Save mark: %s\n",system_cmd);
-                  system(system_cmd);
+                  ret = system(system_cmd);
+                  if (ret < 0) {
+                      SPGW_APP_ERROR("ERROR in setting %s: %d\n",system_cmd, ret);
+                  }
               } else {
                   SPGW_APP_ERROR("Save mark\n");
               }
@@ -386,7 +400,10 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                       "iptables -I PREROUTING -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
                       config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
                   SPGW_APP_INFO("Restore mark: %s\n",system_cmd);
-                  system(system_cmd);
+                  ret = system(system_cmd);
+                  if (ret < 0) {
+                      SPGW_APP_ERROR("ERROR in setting %s: %d\n",system_cmd, ret);
+                  }
               } else {
                   SPGW_APP_ERROR("Restore mark\n");
               }
@@ -419,7 +436,10 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                                       atoken2,
                                       config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
                                   SPGW_APP_INFO("Add route: %s\n",system_cmd);
-                                  system(system_cmd);
+                                  ret = system(system_cmd);
+                                  if (ret < 0) {
+                                      SPGW_APP_ERROR("ERROR in setting %s: %d\n",system_cmd, ret);
+                                  }
                               } else {
                                   SPGW_APP_ERROR("Add route: for %s\n", astring);
                               }
@@ -429,7 +449,10 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                                           "iptables -t filter -I FORWARD  -d %s/%s  -j DROP",
                                           astring, atoken2) > 0) {
                                       SPGW_APP_INFO("Drop downlink traffic: %s\n",system_cmd);
-                                      system(system_cmd);
+                                      ret = system(system_cmd);
+                                      if (ret < 0) {
+                                          SPGW_APP_ERROR("ERROR in setting %s: %d\n",system_cmd, ret);
+                                      }
                                   } else {
                                       SPGW_APP_ERROR("Drop downlink traffic\n");
                                   }
@@ -437,7 +460,10 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                                           "iptables -t filter -I OUTPUT  -d %s/%s  -j DROP",
                                           astring, atoken2) > 0) {
                                       SPGW_APP_INFO("Drop downlink traffic: %s\n",system_cmd);
-                                      system(system_cmd);
+                                      ret = system(system_cmd);
+                                      if (ret < 0) {
+                                          SPGW_APP_ERROR("ERROR in setting %s: %d\n",system_cmd, ret);
+                                      }
                                   } else {
                                       SPGW_APP_ERROR("Drop downlink traffic\n");
                                   }
@@ -481,7 +507,10 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                                   buf_in_addr,
                                   config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
                               SPGW_APP_INFO("Add route: %s\n",system_cmd);
-                              system(system_cmd);
+                              ret = system(system_cmd);
+                              if (ret < 0) {
+                                  SPGW_APP_ERROR("ERROR in setting %s: %d\n",system_cmd, ret);
+                              }
                           } else {
                               SPGW_APP_ERROR("Add route: for %s\n", buf_in_addr);
                           }
