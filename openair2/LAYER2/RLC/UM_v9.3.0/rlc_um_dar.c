@@ -763,25 +763,25 @@ void rlc_um_check_timer_dar_time_out(rlc_um_entity_t *rlc_pP, frame_t frameP, eN
                     rlc_pP->rb_id,
                     rlc_pP->vr_ur);
 #endif
-            pthread_mutex_lock(&rlc_pP->lock_dar_buffer);
-            old_vr_ur   = rlc_pP->vr_ur;
+            if (pthread_mutex_trylock(&rlc_pP->lock_dar_buffer) == 0) {
+                old_vr_ur   = rlc_pP->vr_ur;
 
-            rlc_pP->vr_ur = rlc_pP->vr_ux;
-            while (rlc_um_get_pdu_from_dar_buffer(rlc_pP, rlc_pP->vr_ur)) {
-                rlc_pP->vr_ur = (rlc_pP->vr_ur+1)%rlc_pP->rx_sn_modulo;
-            }
+                rlc_pP->vr_ur = rlc_pP->vr_ux;
+                while (rlc_um_get_pdu_from_dar_buffer(rlc_pP, rlc_pP->vr_ur)) {
+                    rlc_pP->vr_ur = (rlc_pP->vr_ur+1)%rlc_pP->rx_sn_modulo;
+                }
 #if defined (TRACE_RLC_UM_DAR)
-            LOG_D(RLC, " %d", rlc_pP->vr_ur);
-            LOG_D(RLC, "\n");
+                LOG_D(RLC, " %d", rlc_pP->vr_ur);
+                LOG_D(RLC, "\n");
 #endif
-            rlc_um_try_reassembly(rlc_pP,frameP,eNB_flagP,old_vr_ur, rlc_pP->vr_ur);
+                rlc_um_try_reassembly(rlc_pP,frameP,eNB_flagP,old_vr_ur, rlc_pP->vr_ur);
 
-            in_window = rlc_um_in_window(rlc_pP, frameP, rlc_pP->vr_ur,  rlc_pP->vr_uh,  rlc_pP->vr_uh);
-            if (in_window == 2) {
-            	rlc_um_start_timer_reordering(rlc_pP, frameP);
-                rlc_pP->vr_ux = rlc_pP->vr_uh;
+                in_window = rlc_um_in_window(rlc_pP, frameP, rlc_pP->vr_ur,  rlc_pP->vr_uh,  rlc_pP->vr_uh);
+                if (in_window == 2) {
+                    rlc_um_start_timer_reordering(rlc_pP, frameP);
+                    rlc_pP->vr_ux = rlc_pP->vr_uh;
 #if defined (TRACE_RLC_UM_DAR)
-                LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] restarting t-Reordering set VR(UX) to %d (VR(UH)>VR(UR))\n",
+                    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] restarting t-Reordering set VR(UX) to %d (VR(UH)>VR(UR))\n",
                         frameP,
                         (rlc_pP->is_enb) ? "eNB" : "UE",
                         rlc_pP->enb_module_id,
@@ -790,9 +790,9 @@ void rlc_um_check_timer_dar_time_out(rlc_um_entity_t *rlc_pP, frame_t frameP, eN
                         rlc_pP->rb_id,
                         rlc_pP->vr_ux);
 #endif
-            } else {
+                } else {
 #if defined (TRACE_RLC_UM_DAR)
-                LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] STOP t-Reordering VR(UX) = %03d\n",
+                    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] STOP t-Reordering VR(UX) = %03d\n",
                         frameP,
                         (rlc_pP->is_enb) ? "eNB" : "UE",
                         rlc_pP->enb_module_id,
@@ -801,9 +801,10 @@ void rlc_um_check_timer_dar_time_out(rlc_um_entity_t *rlc_pP, frame_t frameP, eN
                         rlc_pP->rb_id,
                         rlc_pP->vr_ux);
 #endif
-                rlc_um_stop_and_reset_timer_reordering(rlc_pP, frameP);
+                    rlc_um_stop_and_reset_timer_reordering(rlc_pP, frameP);
+                }
+                pthread_mutex_unlock(&rlc_pP->lock_dar_buffer);
             }
-            pthread_mutex_unlock(&rlc_pP->lock_dar_buffer);
         }
     }
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_CHECK_TIMER_DAR_TIME_OUT,VCD_FUNCTION_OUT);
