@@ -93,7 +93,7 @@ then
 fi
 if [ ! -f $OBJ_DIR/Makefile ]
 then
-    autoreconf -i
+    autoreconf -i -f
     echo_success "Invoking autogen"
     bash_exec "./autogen.sh"
     cd ./$OBJ_DIR
