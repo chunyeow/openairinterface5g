@@ -285,6 +285,9 @@ check_install_usrp_uhd_driver(){
 	$SUDO apt-get update
     fi 
     $SUDO apt-get install -t $UBUNTU_REL_NAME uhd
+    test_install_package python 
+    test_install_package libboost-all-dev 
+    test_install_package libusb-1.0-0-dev
     #test_install_package uhd
 }
 
@@ -909,7 +912,7 @@ set_openair_env(){
     openair_path=${openair_path%/openair[123]/*}
 
     export OPENAIR_DIR=$openair_path
-    export OPENAIRge_HOME=$openair_path
+    export OPENAIR_HOME=$openair_path
     export OPENAIR1_DIR=$openair_path/openair1
     export OPENAIR2_DIR=$openair_path/openair2
     export OPENAIR3_DIR=$openair_path/openair3

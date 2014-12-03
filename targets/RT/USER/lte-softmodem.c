@@ -3336,8 +3336,11 @@ int main(int argc, char **argv) {
   init_predef_traffic(UE_flag ? 1 : 0, UE_flag ? 0 : 1);
   //  }
   #endif */
-
+#ifdef EXMIMO
   number_of_cards = openair0_num_detected_cards;
+#else
+  number_of_cards = 1;
+#endif 
 
   openair_daq_vars.timing_advance = 0;
 
