@@ -342,16 +342,35 @@ check_epc_s6a_certificate() {
             full_hostname=`cat /usr/local/etc/freeDiameter/user.cert.pem | grep "Subject" | grep "CN" | cut -d '=' -f6`
             if [ a$full_hostname == a`hostname`.${1:-'eur'} ]
             then
-                echo_success "S6A: Found valid certificate in /usr/local/etc/freeDiameter"
+                echo_success "MME S6A: Found valid certificate in /usr/local/etc/freeDiameter"
                 return 1
             fi
         fi
     fi
-    echo_error "S6A: Did not find valid certificate in /usr/local/etc/freeDiameter"
-    echo_warning "S6A: generatting new certificate in /usr/local/etc/freeDiameter..."
+    echo_error "MME S6A: Did not find valid certificate in /usr/local/etc/freeDiameter"
+    echo_warning "MME S6A: generatting new certificate in /usr/local/etc/freeDiameter..."
     cd $OPENAIRCN_DIR/S6A/freediameter
     ./make_certs.sh ${1:-'eur'}
     check_epc_s6a_certificate ${1:-'eur'}
+    return 1
+}
+
+check_hss_s6a_certificate() {
+        if [ -f $OPENAIRCN_DIR/OPENAIRHSS/conf/hss.cert.pem ]
+        then
+            full_hostname=`cat $OPENAIRCN_DIR/OPENAIRHSS/conf/hss.cert.pem | grep "Subject" | grep "CN" | cut -d '=' -f6`
+            # we should replace 'hss' with hostname 
+            if [ a$full_hostname == ahss.${1:-'eur'} ]
+            then
+                echo_success "HSS S6A: Found valid certificate in $OPENAIRCN_DIR/OPENAIRHSS/conf/"
+                return 1
+            fi
+        fi
+    echo_error "HSS S6A: Did not find valid certificate in $OPENAIRCN_DIR/OPENAIRHSS/conf"
+    echo_warning "HSS S6A: generatting new certificate in $OPENAIRCN_DIR/OPENAIRHSS/conf..."
+    cd $OPENAIRCN_DIR/OPENAIRHSS/conf
+    ./make_certs.sh ${1:-'eur'}
+    check_hss_s6a_certificate ${1:-'eur'}
     return 1
 }
 
