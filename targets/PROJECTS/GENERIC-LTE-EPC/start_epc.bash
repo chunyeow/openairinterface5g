@@ -134,6 +134,7 @@ source /tmp/source.txt
 
 check_epc_s6a_certificate $REALM
 
+iptables -F FORWARD
 iptables -A FORWARD -m state --state INVALID -j LOG --log-prefix "FW: INVALID STATE:"
 #iptables -I PREROUTING  -t raw  -i $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP  -j LOG --log-level crit --log-ip-options --log-prefix "PREROUTING raw:"
 
