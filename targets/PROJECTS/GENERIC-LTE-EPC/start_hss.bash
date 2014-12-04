@@ -36,18 +36,20 @@
 # INPUT OF THIS SCRIPT: NONE
 #########################################
 # This script start HSS component
-#
 
+#
 
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 . $THIS_SCRIPT_PATH/utils.bash
 ###########################################################
 
+HSS_CONFIG_FILE="$OPENAIRCN_DIR/OPENAIRHSS/conf/hss.conf"
+
 ######################################
 # CHECK MISC SOFTWARES AND LIBS      #
 ######################################
-check_install_hss_software
+#check_install_hss_software
 
 ######################################
 # compile HSS                        #
@@ -55,8 +57,26 @@ check_install_hss_software
 compile_hss
 
 ######################################
+# Check realm in certificate         #
+######################################
+TMP_FILE="/tmp/$(basename $0).$RANDOM.txt"
+sed -r 's/\s+//g' $HSS_CONFIG_FILE > $TMP_FILE
+source $TMP_FILE
+rm -f  $TMP_FILE
+
+TMP_FILE="/tmp/$(basename $0).$RANDOM.txt"
+sed -r 's/\s+//g' $OPENAIRCN_DIR/OPENAIRHSS/conf/$FD_conf | grep Identity | tr -d ";\"" | cut -d '=' -f2 > $TMP_FILE
+HSS_IDENTITY=$(cat $TMP_FILE)
+# we should replace 'hss' with hostname
+REALM=${HSS_IDENTITY##hss}
+REALM=${REALM##.}
+echo "REALM FOUND=$REALM"
+# arg is realm
+check_hss_s6a_certificate $REALM
+
+######################################
 # LAUNCH HSS                         #
 ######################################
-$OPENAIRCN_DIR/OPENAIRHSS/objs/openair-hss -c $OPENAIRCN_DIR/OPENAIRHSS/conf/hss.conf
+$OPENAIRCN_DIR/OPENAIRHSS/objs/openair-hss -c $HSS_CONFIG_FILE
 
 
