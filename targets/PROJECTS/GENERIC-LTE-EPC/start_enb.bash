@@ -68,6 +68,7 @@ cd $THIS_SCRIPT_PATH
 #######################################################
 DEFAULT_CONFIG_FILE="enb.`hostname -s`.conf"
 CONFIG_FILE_ENB=${1:-DEFAULT_CONFIG_FILE}
+CONFIG_FILE_ENB=`readlink -m $CONFIG_FILE_ENB`
 
 echo "CONFIG_FILE_ENB=$CONFIG_FILE_ENB"
 if [ -f $CONFIG_FILE_ENB ]; then
