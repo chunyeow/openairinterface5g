@@ -312,7 +312,8 @@ build_enb(){
 	check_install_usrp_uhd_driver 
     fi
     check_install_asn1c
-
+    check_install_nettle
+    
 ############################################
 # compile 
 ############################################
