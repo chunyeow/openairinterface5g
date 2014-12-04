@@ -26,6 +26,14 @@
 #  Address      : Eurecom, Compus SophiaTech 450, route des chappes, 06451 Biot, France.
 #
 ################################################################################
+
+# ARG is REALM
+# BY DEFAULT REALM IS "eur"
+
+DEFAULTREALMVALUE="eur"
+echo "ARG is $1"
+REALM=${1:-$DEFAULTREALMVALUE}
+
 rm -rf demoCA
 mkdir demoCA
 echo 01 > demoCA/serial
@@ -41,13 +49,13 @@ echo "Creating certificate for HSS"
 # openssl ca -cert cacert.pem -keyfile cakey.pem -in hss.csr.pem -out hss.cert.pem -outdir . -batch
 
 # Create a Root Certification Authority Certificate
-openssl req  -new -batch -x509 -days 3650 -nodes -newkey rsa:1024 -out cacert.pem -keyout cakey.pem -subj /CN=eur/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
+openssl req  -new -batch -x509 -days 3650 -nodes -newkey rsa:1024 -out cacert.pem -keyout cakey.pem -subj /CN=$REALM/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
 
 # Generate a Private Key
 openssl genrsa -out hss.key.pem 1024
 
 # Generate a CSR (Certificate Signing Request) that will be self-signed
-openssl req -new -batch -out hss.csr.pem -key hss.key.pem -subj /CN=hss.pft/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
+openssl req -new -batch -out hss.csr.pem -key hss.key.pem -subj /CN=hss.$REALM/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
 
 # Certification authority
 openssl ca -cert cacert.pem -keyfile cakey.pem -in hss.csr.pem -out hss.cert.pem -outdir . -batch
