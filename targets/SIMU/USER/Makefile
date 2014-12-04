@@ -3,7 +3,6 @@ include $(OPENAIR_TARGETS)/Makerules
 
 default: oaisim
 
-include $(OPENAIR_TARGETS)/Makedirectives
 include $(OPENAIR_TARGETS)/Makefile.common
 
 TOP_DIR               = $(OPENAIR1_DIR)
@@ -48,6 +47,15 @@ CFLAGS += -DMAC_CONTEXT=1 -DPHY_CONTEXT=1 -DPHY_ABSTRACTION #-DPHY_ABSTRACTION_U
 CFLAGS += -DNEW_FFT
 #CFLAGS += -DLLR8
 CFLAGS += -DPACKAGE_NAME='"oaisim"'
+
+ifndef OPENAIR2
+OPENAIR2=1
+endif
+
+ifdef DEBUG
+DISABLE_XER_PRINT=0
+MSG_PRINT=1
+endif
 
 ifndef OPENAIR_EMU
 export OPENAIR_EMU=1

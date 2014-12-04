@@ -4,7 +4,6 @@ include $(OPENAIR_TARGETS)/Makerules
 default: lte-softmodem
 all: lte-softmodem rrh
 
-include $(OPENAIR_TARGETS)/Makedirectives
 include $(OPENAIR_TARGETS)/Makefile.common
 
 GCCVERSION = $(shell gcc --version | grep ^gcc | sed 's/^.* //g')
@@ -34,6 +33,15 @@ endif
 
 CFLAGS += -O2 
 CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/COMMON  -I.
+
+ifndef OPENAIR2
+OPENAIR2=1
+endif
+
+ifdef DEBUG
+DISABLE_XER_PRINT=0
+MSG_PRINT=1
+endif
 
 ifeq ($(EXMIMO),1)
   CFLAGS += -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO

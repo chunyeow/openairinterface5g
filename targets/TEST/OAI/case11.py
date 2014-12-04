@@ -52,7 +52,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
     try:
         test = '01'
         name = 'Compile oai.rel8.phy.dlsim.make' 
-        conf = 'make dlsim'
+        conf = 'make dlsim'  # PERFECT_CE=1 # for perfect channel estimation
         trace = logdir + '/log_' + case + test + '.txt;'
         tee = ' 2>&1 | tee ' + trace
         diag = 'check the compilation errors for dlsim in $OPENAIR1_DIR/SIMULATION/LTE_PHY'
