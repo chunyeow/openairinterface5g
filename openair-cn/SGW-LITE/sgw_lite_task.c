@@ -122,8 +122,34 @@ static void *sgw_lite_intertask_interface(void *args_p)
 int sgw_lite_init(char* config_file_name_pP)
 {
     SPGW_APP_DEBUG("Initializing SPGW-APP  task interface\n");
+#if defined (ENABLE_USE_GTPU_IN_KERNEL)
+    spgw_system("rmmod iptable_raw > /dev/null 2>&1", 0);
+    spgw_system("rmmod iptable_mangle > /dev/null 2>&1", 0);
+    spgw_system("rmmod iptable_nat > /dev/null 2>&1", 0);
+    spgw_system("rmmod iptable_filter > /dev/null 2>&1", 0);
+    spgw_system("rmmod ip_tables > /dev/null 2>&1", 0);
+    spgw_system("rmmod xt_state xt_mark xt_GTPUAH xt_GTPURH xt_tcpudp xt_connmark ipt_LOG ipt_MASQUERADE > /dev/null 2>&1", 0);
+    spgw_system("rmmod x_tables > /dev/null 2>&1", 0);
+    spgw_system("rmmod nf_conntrack_netlink nfnetlink nf_nat nf_conntrack_ipv4 nf_conntrack  > /dev/null 2>&1", 0);
+    spgw_system("modprobe ip_tables", 1);
+    spgw_system("modprobe x_tables", 1);
+    spgw_system("iptables -P INPUT ACCEPT", 0);
+    spgw_system("iptables -F INPUT", 0);
+    spgw_system("iptables -P OUTPUT ACCEPT", 0);
+    spgw_system("iptables -F OUTPUT", 0);
+    spgw_system("iptables -P FORWARD ACCEPT", 0);
+    spgw_system("iptables -F FORWARD", 0);
+    spgw_system("iptables -t nat -F", 0);
+    spgw_system("iptables -t mangle -F", 0);
+    spgw_system("iptables -t filter -F", 0);
+    spgw_system("iptables -t raw -F", 0);
+    spgw_system("ip route flush cache", 0);
+    spgw_system("sysctl -w net.ipv4.netfilter.ip_conntrack_max=10000", 0);
+    spgw_system("sysctl -w net.ipv4.ip_forward=1", 0);
+    spgw_system("insmod $OPENAIRCN_DIR/GTPV1-U/GTPUAH/Bin/xt_GTPUAH.ko", 1);
+    spgw_system("insmod $OPENAIRCN_DIR/GTPV1-U/GTPURH/Bin/xt_GTPURH.ko", 1);
+#endif
     spgw_config_init(config_file_name_pP, &spgw_config);
-
     pgw_lite_load_pool_ip_addresses();
 
     sgw_app.s11teid2mme_hashtable = hashtable_create (8192, NULL, NULL);
