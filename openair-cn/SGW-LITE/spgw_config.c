@@ -133,7 +133,7 @@ sgw_ipv6_mask_in6_addr(
 
 int spgw_system(char *command_pP, int abort_on_errorP) {
   int ret = 0;
-  ret = system("command_pP");
+  ret = system(command_pP);
   if (ret < 0) {
       SPGW_APP_ERROR("ERROR in system command %s: %d\n",
                      command_pP,ret);
