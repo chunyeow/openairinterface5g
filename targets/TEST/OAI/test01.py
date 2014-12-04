@@ -77,6 +77,24 @@ for arg in sys.argv:
         sys.exit()
     i= i + 1     
 
+try:  
+   os.environ["OPENAIR1_DIR"]
+except KeyError: 
+   print "Please set the environment variable OPENAIR1_DIR in the .bashrc"
+   sys.exit(1)
+
+try:  
+   os.environ["OPENAIR2_DIR"]
+except KeyError: 
+   print "Please set the environment variable OPENAIR2_DIR in the .bashrc"
+   sys.exit(1)
+
+try:  
+   os.environ["OPENAIR_TARGETS"]
+except KeyError: 
+   print "Please set the environment variable OPENAIR_TARGETS in the .bashrc"
+   sys.exit(1)
+
 # get the oai object
 host = os.uname()[1]
 oai = openair('localdomain','localhost')
