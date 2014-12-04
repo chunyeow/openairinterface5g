@@ -10,6 +10,7 @@
 #
 ####################################################################################
 
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 export BIN_DIR ?= $(shell pwd)/Bin
 KVERSION = $(shell uname -r)
 KVERSION_LAST_DIGIT = $(shell echo ${KVERSION} | cut -d "." -f 3 | cut -d "-" -f 1)
