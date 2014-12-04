@@ -549,7 +549,7 @@ check_install_epc_software() {
 	test_install_package make
 	test_install_package openssh-client
 	test_install_package openssh-server
-        sudo service ssh start
+        $SUDO service ssh start
 	test_install_package openssl
 	test_install_package openvpn
 	test_install_package pkg-config
@@ -562,6 +562,7 @@ check_install_epc_software() {
 	test_install_package unzip
 	test_install_package valgrind
 	test_install_package vlan
+	test_install_package libtool 
 	
 	if [ $OAI_INSTALLED = 1 ]; then 
 	    touch ./.lock_oaibuild
@@ -661,7 +662,8 @@ compile_epc() {
             mkdir -m 777 m4
         fi
         echo_success "Invoking autogen"
-        bash_exec "./autogen.sh"
+        bash_exec "libtoolize"        
+	bash_exec "./autogen.sh"
         cd ./$OBJ_DIR
         echo_success "Invoking configure"
         ../configure --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
