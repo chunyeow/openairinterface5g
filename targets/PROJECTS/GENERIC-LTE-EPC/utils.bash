@@ -334,13 +334,13 @@ stop_openswitch_daemon() {
 }
 
 
-check_s6a_certificate() {
+check_epc_s6a_certificate() {
     if [ -d /usr/local/etc/freeDiameter ]
     then
         if [ -f /usr/local/etc/freeDiameter/user.cert.pem ]
         then
             full_hostname=`cat /usr/local/etc/freeDiameter/user.cert.pem | grep "Subject" | grep "CN" | cut -d '=' -f6`
-            if [ a$full_hostname == a`hostname`.eur ]
+            if [ a$full_hostname == a`hostname`.${1:-'eur'} ]
             then
                 echo_success "S6A: Found valid certificate in /usr/local/etc/freeDiameter"
                 return 1
@@ -350,8 +350,8 @@ check_s6a_certificate() {
     echo_error "S6A: Did not find valid certificate in /usr/local/etc/freeDiameter"
     echo_warning "S6A: generatting new certificate in /usr/local/etc/freeDiameter..."
     cd $OPENAIRCN_DIR/S6A/freediameter
-    ./make_certs.sh
-    check_s6a_certificate
+    ./make_certs.sh ${1:-'eur'}
+    check_epc_s6a_certificate ${1:-'eur'}
     return 1
 }
 
@@ -475,6 +475,7 @@ check_install_epc_software() {
     test_install_package iperf
     test_install_package iproute
     test_install_package iptables
+    test_install_package iptables-dev
     test_install_package libatlas-base-dev
     test_install_package libatlas-dev
     test_install_package libblas
@@ -522,7 +523,7 @@ check_install_epc_software() {
             cd $OPENAIRCN_DIR/S6A/freediameter && ./install_freediameter.sh
         else
             echo_success "freediameter is installed"
-            check_s6a_certificate
+            check_epc_s6a_certificate
     fi
 
     test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash"
