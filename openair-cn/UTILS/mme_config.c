@@ -149,6 +149,23 @@ void mme_config_init(mme_config_t *mme_config_p)
     mme_config_p->s1ap_config.outcome_drop_timer_sec = S1AP_OUTCOME_TIMER_DEFAULT;
 }
 
+int mme_system(char *command_pP, int abort_on_errorP) {
+  int ret = -1;
+  if (command_pP) {
+      fprintf(stdout, "system command: %s\n",command_pP);
+      ret = system(command_pP);
+      if (ret < 0) {
+          fprintf(stderr, "ERROR in system command %s: %d\n",
+                     command_pP,ret);
+          if (abort_on_errorP) {
+              exit(-1); // may be not exit
+          }
+      }
+  }
+  return ret;
+}
+
+
 static int config_parse_file(mme_config_t *mme_config_p)
 {
     config_t          cfg;
@@ -173,6 +190,9 @@ static int config_parse_file(mme_config_t *mme_config_p)
     char             *mme_interface_name_for_S11       = NULL;
     char             *mme_ip_address_for_S11           = NULL;
     char             *sgw_ip_address_for_S11           = NULL;
+#if defined (ENABLE_USE_GTPU_IN_KERNEL)
+  char                system_cmd[256];
+#endif
 
     config_init(&cfg);
 
@@ -369,6 +389,35 @@ static int config_parse_file(mme_config_t *mme_config_p)
                 address = strtok(cidr, "/");
                 IPV4_STR_ADDR_TO_INT_NWBO ( address, mme_config_p->ipv4.mme_ip_address_for_S11, "BAD IP ADDRESS FORMAT FOR MME S11 !\n" )
                 free(cidr);
+
+                if (strncasecmp("tun",mme_config_p->ipv4.mme_interface_name_for_S1_MME, strlen("tun")) == 0) {
+                    if (snprintf(system_cmd, 256,
+                            "ip link set %s down ;openvpn --rmtun --dev %s",
+                            mme_config_p->ipv4.mme_interface_name_for_S1_MME,
+                            mme_config_p->ipv4.mme_interface_name_for_S1_MME
+                            ) > 0) {
+                        mme_system(system_cmd, 1);
+                    } else {
+                	fprintf(stderr, "Del %s\n", mme_config_p->ipv4.mme_interface_name_for_S1_MME);
+                    }
+                    if (snprintf(system_cmd, 256,
+                            "openvpn --mktun --dev %s;sync;ifconfig  %s up;sync",
+                            mme_config_p->ipv4.mme_interface_name_for_S1_MME,
+                            mme_config_p->ipv4.mme_interface_name_for_S1_MME) > 0) {
+                        mme_system(system_cmd, 1);
+                    } else {
+                	fprintf(stderr, "Create %s\n", mme_config_p->ipv4.mme_interface_name_for_S1_MME);
+                    }
+                    if (snprintf(system_cmd, 256,
+                            "ip -4 addr add %s  dev %s",
+                            mme_ip_address_for_S1_MME,
+                            mme_config_p->ipv4.mme_interface_name_for_S1_MME) > 0) {
+                	mme_system(system_cmd, 1);
+                    } else {
+                	fprintf(stderr, "Set IPv4 address on %s\n", mme_config_p->ipv4.mme_interface_name_for_S1_MME);
+                    }
+                }
+
             }
         }
 
