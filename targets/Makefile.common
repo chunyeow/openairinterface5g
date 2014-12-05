@@ -215,7 +215,7 @@ endif
 
 $(ITTI_MESSAGES_XML): $(ITTI_MESSAGES_FILE)
 	@echo "Generating messages.xml ..."
-	@gccxml $(COMMON_CFLAGS) $< -fxml=$@
+	@gccxml $(COMMON_CFLAGS) $< -fxml=$@ -I$(ITTI_DIR)
 	@$(CC) -MM $(COMMON_CFLAGS) $< > $(basename $@).d
 	@mv -f $(basename $@).d $(basename $@).d.tmp
 	@sed -e 's|.*:|$@:|' < $(basename $@).d.tmp > $(basename $@).d
