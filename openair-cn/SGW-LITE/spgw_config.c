@@ -174,8 +174,9 @@ int spgw_config_process(spgw_config_t* config_pP) {
         }
         inaddr.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
         if (snprintf(system_cmd, 256,
-                "ip -4 addr add %s  dev %s",
+                "ip -4 addr add %s/%d  dev %s",
                 inet_ntoa(inaddr),
+                config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S1u_S12_S4_up,
                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
         	ret += spgw_system(system_cmd, 1);
         } else {
@@ -479,6 +480,11 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
       } else {
           SPGW_APP_WARN("CONFIG P-GW / NETWORK INTERFACES not found\n");
       }
+
+      //!!!------------------------------------!!!
+      spgw_config_process(config_pP);
+      //!!!------------------------------------!!!
+
       subsetting = config_setting_get_member (setting_pgw, PGW_CONFIG_STRING_IP_ADDRESS_POOL);
       if(subsetting != NULL) {
           sub2setting = config_setting_get_member (subsetting, PGW_CONFIG_STRING_IPV4_ADDRESS_LIST);

@@ -611,6 +611,7 @@ sgw_lite_handle_sgi_endpoint_updated(
     task_id_t                                          to_task;
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
     static uint8_t                                     iptable_uplink_remove_gtpu = FALSE;
+    char                                              *interface_name_p        = NULL;
 #endif
 
 #if defined(ENABLE_STANDALONE_EPC)
@@ -696,11 +697,16 @@ sgw_lite_handle_sgi_endpoint_updated(
             }
 
             if (iptable_uplink_remove_gtpu == FALSE) {
+                if (strncasecmp("tun",sgw_app.sgw_interface_name_for_S1u_S12_S4_up, strlen("tun")) == 0) {
+                    interface_name_p = "lo";
+                } else {
+                    interface_name_p = sgw_app.sgw_interface_name_for_S1u_S12_S4_up;
+                }
                 ret = snprintf(cmd,
                         256,
                         // no "-p udp --dport 2152" because of fragmented packets
                         "iptables -t raw -I PREROUTING -i %s -s %u.%u.%u.%u -d %u.%u.%u.%u -p udp --dport 2152 -j GTPURH --action remove",
-                        sgw_app.sgw_interface_name_for_S1u_S12_S4_up,
+                        interface_name_p,
                         eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
                         eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[1],
                         eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[2],
