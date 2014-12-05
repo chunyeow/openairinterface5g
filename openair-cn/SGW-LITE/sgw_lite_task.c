@@ -150,6 +150,7 @@ int sgw_lite_init(char* config_file_name_pP)
     spgw_system("insmod $OPENAIRCN_DIR/GTPV1-U/GTPURH/Bin/xt_GTPURH.ko", 1);
 #endif
     spgw_config_init(config_file_name_pP, &spgw_config);
+    spgw_config_process(&spgw_config);
     pgw_lite_load_pool_ip_addresses();
 
     sgw_app.s11teid2mme_hashtable = hashtable_create (8192, NULL, NULL);

@@ -147,6 +147,7 @@ extern spgw_config_t spgw_config;
 #endif
 
 int spgw_system(char *command_pP, int abort_on_errorP);
+int spgw_config_process(spgw_config_t* config_pP);
 int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP);
 
 #endif /* ENB_CONFIG_H_ */

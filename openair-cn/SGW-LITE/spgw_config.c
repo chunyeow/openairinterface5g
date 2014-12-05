@@ -147,6 +147,123 @@ int spgw_system(char *command_pP, int abort_on_errorP) {
   return ret;
 }
 
+int spgw_config_process(spgw_config_t* config_pP) {
+  char              system_cmd[256];
+  struct in_addr    inaddr;
+  int               ret = 0;
+
+  if (strncasecmp("tun",config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up, strlen("tun")) == 0) {
+        if (snprintf(system_cmd, 256,
+                "ip link set %s down ;openvpn --rmtun --dev %s",
+                config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up,
+                config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up
+                ) > 0) {
+            ret += spgw_system(system_cmd, 1);
+        } else {
+            SPGW_APP_ERROR("Del %s\n", config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
+            ret = -1;
+        }
+        if (snprintf(system_cmd, 256,
+                "openvpn --mktun --dev %s;sync;ifconfig  %s up;sync",
+                config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up,
+                config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
+            ret += spgw_system(system_cmd, 1);
+        } else {
+            SPGW_APP_ERROR("Create %s\n", config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
+            ret = -1;
+        }
+        inaddr.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
+        if (snprintf(system_cmd, 256,
+                "ip -4 addr add %s  dev %s",
+                inet_ntoa(inaddr),
+                config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
+        	ret += spgw_system(system_cmd, 1);
+        } else {
+            SPGW_APP_ERROR("Set IPv4 address on %s\n", config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
+            ret = -1;
+        }
+
+        if (snprintf(system_cmd, 128,
+            "iptables -t filter -I INPUT -i lo -d %s --protocol sctp -j DROP",
+            inet_ntoa(inaddr)) > 0) {
+            ret += spgw_system(system_cmd, 1);
+        } else {
+            SPGW_APP_ERROR("Drop SCTP traffic on S1U\n");
+            ret = -1;
+        }
+        if (snprintf(system_cmd, 128,
+            "iptables -t filter -I INPUT -i lo -s %s --protocol sctp -j DROP",
+            inet_ntoa(inaddr)) > 0) {
+            ret += spgw_system(system_cmd, 1);
+        } else {
+            SPGW_APP_ERROR("Drop SCTP traffic on S1U\n");
+            ret = -1;
+        }
+    }
+
+#if defined (ENABLE_USE_GTPU_IN_KERNEL)
+  ret += spgw_system("echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects", 1);
+#endif
+
+    if (snprintf(system_cmd, 256,
+            "ip link set dev %s mtu %u",
+            config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up,
+            config_pP->sgw_config.sgw_interface_mtu_for_S1u_S12_S4_up) > 0) {
+        SPGW_APP_INFO("Set S1U interface MTU: %s\n",system_cmd);
+        ret += spgw_system(system_cmd, 1);
+    } else {
+        SPGW_APP_ERROR("Set S1U interface MTU\n");
+        ret = -1;
+    }
+
+    if (config_pP->sgw_config.sgw_drop_uplink_traffic) {
+    	if (snprintf(system_cmd, 128,
+    			"iptables -t raw -I PREROUTING  -i %s --protocol udp --destination-port 2152  -j DROP",
+    			config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
+    		SPGW_APP_INFO("Drop uplink traffic: %s\n",system_cmd);
+    		ret += spgw_system(system_cmd, 1);
+    	} else {
+    	   SPGW_APP_ERROR("Drop uplink traffic\n");
+           ret = -1;
+    	}
+    }
+
+    if (config_pP->pgw_config.pgw_masquerade_SGI) {
+    	if (snprintf(system_cmd, 128,
+    			"iptables -t nat -A POSTROUTING  -o %s  ! --protocol sctp -j MASQUERADE",
+    			config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
+    		SPGW_APP_INFO("Masquerade SGI: %s\n",system_cmd);
+    		ret += spgw_system(system_cmd,1);
+    	} else {
+    		SPGW_APP_ERROR("Masquerade SGI\n");
+            ret = -1;
+    	}
+    }
+#if defined (ENABLE_USE_GTPU_IN_KERNEL)
+    if (snprintf(system_cmd, 128,
+    		//"iptables -I POSTROUTING -t mangle -o %s -m state --state NEW  -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
+    		"iptables -I POSTROUTING -t mangle -o %s -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
+    		config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
+    	SPGW_APP_INFO("Save mark: %s\n",system_cmd);
+    	ret += spgw_system(system_cmd, 1);
+    } else {
+    	SPGW_APP_ERROR("Save mark\n");
+        ret = -1;
+    }
+    if (snprintf(system_cmd, 128,
+    		"iptables -I PREROUTING -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
+    		config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
+    	SPGW_APP_INFO("Restore mark: %s\n",system_cmd);
+    	ret += spgw_system(system_cmd, 1);
+    } else {
+        SPGW_APP_ERROR("Restore mark\n");
+        ret = -1;
+    }
+#endif
+   return ret;
+}
+
+
 int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
 
   config_t          cfg;
@@ -239,9 +356,6 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
               config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S1u_S12_S4_up = atoi(mask);
               free(cidr);
 
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
-              spgw_system("echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects", 1);
-#endif
               in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
               SPGW_APP_INFO("Parsing configuration file found sgw_ipv4_address_for_S1u_S12_S4_up: %s/%d on %s\n",
                       inet_ntoa(in_addr_var),
@@ -282,15 +396,6 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                   &sgw_interface_mtu_for_S1u_S12_S4_up)
             ) {
                 config_pP->sgw_config.sgw_interface_mtu_for_S1u_S12_S4_up = sgw_interface_mtu_for_S1u_S12_S4_up;
-                if (snprintf(system_cmd, 128,
-                        "ip link set dev %s mtu %u",
-                        config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up,
-                        config_pP->sgw_config.sgw_interface_mtu_for_S1u_S12_S4_up) > 0) {
-                    SPGW_APP_INFO("Set S1U interface MTU: %s\n",system_cmd);
-                    spgw_system(system_cmd, 1);
-                } else {
-                    SPGW_APP_ERROR("Set S1U interface MTU\n");
-                }
           }
       }
       if(  (
@@ -302,15 +407,6 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
         ) {
           if (strcasecmp(sgw_drop_uplink_s1u_traffic, "yes") == 0) {
               config_pP->sgw_config.sgw_drop_uplink_traffic=1;
-
-              if (snprintf(system_cmd, 128,
-                      "iptables -t raw -I PREROUTING  -i %s --protocol udp --destination-port 2152  -j DROP",
-                      config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
-                  SPGW_APP_INFO("Drop uplink traffic: %s\n",system_cmd);
-                  spgw_system(system_cmd, 1);
-              } else {
-                  SPGW_APP_ERROR("Drop uplink traffic\n");
-              }
           } else {
               config_pP->sgw_config.sgw_drop_uplink_traffic=0;
           }
@@ -373,38 +469,10 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
 
               if (strcasecmp(pgw_masquerade_SGI, "yes") == 0) {
                   config_pP->pgw_config.pgw_masquerade_SGI=1;
-                  if (snprintf(system_cmd, 128,
-                          "iptables -t nat -A POSTROUTING  -o %s  ! --protocol sctp -j MASQUERADE",
-                          config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
-                      SPGW_APP_INFO("Masquerade SGI: %s\n",system_cmd);
-                      spgw_system(system_cmd,1);
-                  } else {
-                      SPGW_APP_ERROR("Masquerade SGI\n");
-                  }
               } else {
                   config_pP->pgw_config.pgw_masquerade_SGI=0;
                   SPGW_APP_INFO("No masquerading for SGI\n");
               }
-
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
-              if (snprintf(system_cmd, 128,
-                      //"iptables -I POSTROUTING -t mangle -o %s -m state --state NEW  -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
-                      "iptables -I POSTROUTING -t mangle -o %s -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
-                      config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
-                  SPGW_APP_INFO("Save mark: %s\n",system_cmd);
-                  spgw_system(system_cmd, 1);
-              } else {
-                  SPGW_APP_ERROR("Save mark\n");
-              }
-              if (snprintf(system_cmd, 128,
-                      "iptables -I PREROUTING -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
-                      config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
-                  SPGW_APP_INFO("Restore mark: %s\n",system_cmd);
-                  spgw_system(system_cmd, 1);
-              } else {
-                  SPGW_APP_ERROR("Restore mark\n");
-              }
-#endif
           } else {
               SPGW_APP_WARN("CONFIG P-GW / NETWORK INTERFACES parsing failed\n");
           }
