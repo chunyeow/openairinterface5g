@@ -82,7 +82,8 @@ fi
 # SOURCE CONFIG FILE
 #######################################################
 rm -f /tmp/source.txt
-VARIABLES="real_time"
+VARIABLES="GNU_DEBUGGER\|\
+           real_time"
 
 VARIABLES=$(echo $VARIABLES | sed -e 's/\\r//g')
 VARIABLES=$(echo $VARIABLES | tr -d ' ')
@@ -92,15 +93,20 @@ source /tmp/source.txt
 ##################################################
 # LAUNCH eNB executable
 ##################################################
+echo "GNU_DEBUGGER:"$GNU_DEBUGGER
 
 if [ x$real_time == "xemulation" ]; then
-    echo_warning "USER MODE"
+    echo_warning "emulation mode"
     make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET -j`grep -c ^processor /proc/cpuinfo ` || exit 1
     bash_exec "ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE"
-    gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u0 -b1 -M0 -p2  -g$EMULATION_MULTICAST_GROUP -D $EMULATION_DEV_ADDRESS -K /tmp/itti_enb_emul.log --enb-conf $CONFIG_FILE_ENB 2>&1 | tee /tmp/stdout_enb_emul.log 
+    if [ "x$GNU_DEBUGGER" == "xyes" ]; then
+        gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u0 -b1 -M0 -p2  -g$EMULATION_MULTICAST_GROUP -D $EMULATION_DEV_ADDRESS -K /tmp/itti_enb_emul.log --enb-conf $CONFIG_FILE_ENB 2>&1 | tee /tmp/stdout_enb_emul.log
+    else
+        $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u0 -b1 -M0 -p2  -g$EMULATION_MULTICAST_GROUP -D $EMULATION_DEV_ADDRESS -K /tmp/itti_enb_emul.log --enb-conf $CONFIG_FILE_ENB 2>&1 | tee /tmp/stdout_enb_emul.log
+    fi 
 else
     if [ x$real_time == "xrtai" ]; then
-        echo_warning "HARD REAL TIME MODE"
+        echo_warning "rtai mode"
         PATH=$PATH:/usr/realtime/bin
 
         #make --directory=$OPENAIR_TARGETS/RT/USER drivers  || exit 1
@@ -128,14 +134,18 @@ else
         bash ./init_exmimo2.sh
         echo_warning "STARTING SOFTMODEM..."
         #cat /dev/rtf62 > $STDOUT_LOG_FILE &
-        touch ~/.gdbinit
-        echo "file $OPENAIR_TARGETS/RT/USER/lte-softmodem" > ~/.gdbinit
-        echo "set args -K $ITTI_LOG_FILE -V  -O $CONFIG_FILE_ENB" >> ~/.gdbinit
-        echo "run" >> ~/.gdbinit
-        gdb  2>&1 
-         #> $STDOUT_LOG_FILE
-        #gdb --args ./lte-softmodem -K /tmp/itti_enb_rtai.log -V  -O $CONFIG_FILE_ENB  2>&1
-        cd $THIS_SCRIPT_PATH
+        if [ "x$GNU_DEBUGGER" == "xyes" ]; then
+            touch ~/.gdbinit
+            echo "file $OPENAIR_TARGETS/RT/USER/lte-softmodem" > ~/.gdbinit
+            echo "set args -K /tmp/itti_enb_rtai.log -V  -O $CONFIG_FILE_ENB" >> ~/.gdbinit
+            echo "run" >> ~/.gdbinit
+            gdb  2>&1 
+             #> $STDOUT_LOG_FILE
+            #gdb --args ./lte-softmodem -K /tmp/itti_enb_rtai.log -V  -O $CONFIG_FILE_ENB  2>&1
+            cd $THIS_SCRIPT_PATH
+        else
+            $OPENAIR_TARGETS/RT/USER/lte-softmodem -K $/tmp/itti_enb_rtai.log -V  -O $CONFIG_FILE_ENB
+        fi
     else
         if [ x$real_time == "xlinux-kernel" ]; then
             echo_warning "LINUX_KERNEL MODE"
@@ -151,13 +161,16 @@ else
             cd $OPENAIR_TARGETS/RT/USER
             bash ./init_exmimo2.sh
             echo_warning "STARTING SOFTMODEM..."
-            touch .gdbinit_enb
-            echo "file $OPENAIR_TARGETS/RT/USER/lte-softmodem" > ~/.gdbinit_enb
-            echo "set args -K /tmp/itti_enb_low_latency.log -V  -O $CONFIG_FILE_ENB" >> ~/.gdbinit_enb
-            echo "run" >> ~/.gdbinit_enb
-            gdb -nh -x ~/.gdbinit_enb 2>&1 
-            #> /tmp/stdout_enb_low_latency.log
-            
+            if [ "x$GNU_DEBUGGER" == "xyes" ]; then
+                touch .gdbinit_enb
+                echo "file $OPENAIR_TARGETS/RT/USER/lte-softmodem" > ~/.gdbinit_enb
+                echo "set args -K /tmp/itti_enb_low_latency.log -V  -O $CONFIG_FILE_ENB" >> ~/.gdbinit_enb
+                echo "run" >> ~/.gdbinit_enb
+                gdb -nh -x ~/.gdbinit_enb 2>&1 
+                #> /tmp/stdout_enb_low_latency.log 
+            else
+                $OPENAIR_TARGETS/RT/USER/lte-softmodem  -K /tmp/itti_enb_low_latency.log -V  -O $CONFIG_FILE_ENB
+            fi
             cd $THIS_SCRIPT_PATH
         else
             echo_error "UNKNOWN REAL-TIME MODE real_time"
