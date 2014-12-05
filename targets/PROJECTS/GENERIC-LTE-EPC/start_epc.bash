@@ -186,6 +186,6 @@ if [ "x$GNU_DEBUGGER" == "xyes" ]; then
     gdb 2>&1 | tee /tmp/stdout_epc.log
 else 
     echo_success "Running without GDB"
-    valgrind --tool=memcheck $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K /tmp/itti_epc.log -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee /tmp/stdout_epc.log
+    valgrind --tool=memcheck --track-origins=yes $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K /tmp/itti_epc.log -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee /tmp/stdout_epc.log
 fi     
 
