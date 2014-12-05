@@ -35,6 +35,7 @@
 # @ingroup _test
 
 import pexpect
+import pxssh
 import time
 import os
 import array
@@ -51,21 +52,7 @@ class openair(core):
         self.hostname = hostname
         self.address = address
         self.localhost = None
-        self.shell_prompt = '$'
         core.__init__(self)
-
-    def get_shell(self):
-        print 'get the bash \n'
-        self.prompt1 = self.shell_prompt
-        self.prompt2 = prompt
-        try:
-            self.sh = pexpect.spawn(SHELL)
-            index = self.sh.expect([self.prompt1, pexpect.TIMEOUT], timeout=10)
-            if index != 0:
-                print 'unable to spawn shell'   
-            
-        except Exception, val:
-            print "Error:", val
               
     @property        
     def localhost(self):
@@ -91,40 +78,28 @@ class openair(core):
         stdout, stderr = proc.communicate()
         return (stdout, stderr)
 
-    def connect(self, username, password, prompt):
-        self.prompt2 = self.shell_prompt
-        if not prompt :
-            self.prompt1 = self.prompt2
-        else :
-            self.prompt1 = prompt
-        
-        while 1:
-            try:
-                if  not username:
-                    username = root 
-                if  not password:
-                    password = username 
-                    
-                self.oai = pexpect.spawn('ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o "ConnectionAttempts=1" ' \
-                                             + username + '@' + self.address)
-                
-                index = self.oai.expect([re.escape(self.prompt1), re.escape(self.prompt2), pexpect.TIMEOUT], timeout=40)
-                if index == 0 :
-                    return 'Ok'
-                else :
-                    index = self.oai.expect(['password:', pexpect.TIMEOUT], timeout=40)
-                    if index == 0 : 
-                        self.oai.sendline(password)
-                        index = self.oai.expect([re.escape(self.prompt1), re.escape(self.prompt2), pexpect.TIMEOUT], timeout=10)
-                        if index != 0:
-                            print 'ERROR! could not login with SSH.'
-                            print 'Expected ' + self.prompt1 + ', received >>>>' + self.oai.before + '<<<<'
-                            sys.exit(1) 
-                    return 'Ok'
-                        
-            except Exception, val:
-                time.sleep(5)
-                print "Error:", val
+    def connect(self, username, password, prompt='PEXPECT_OAI'):
+        self.prompt1 = prompt
+        self.prompt2 = prompt
+
+        try:
+            if  not username:
+                username = root 
+            if  not password:
+                password = username 
+            self.oai = pxssh.pxssh()
+            self.oai.login(self.address,username,password)
+            self.oai.sendline('PS1='+self.prompt1)
+            self.oai.PROMPT='PEXPECT_OAI'
+            # need to look for twice the string of the prompt
+            self.oai.prompt()
+            self.oai.prompt()
+            self.oai.sendline('uptime')
+            self.oai.prompt()
+            print self.oai.before
+                              
+        except Error, val :
+                print "Error: can't connect to"+username+"@"+self.address
                 
                     
     def disconnect(self):
@@ -153,8 +128,8 @@ class openair(core):
                 #oai.send_nowait('rmmod nasmesh;')
                 os.system('rmmod nasmesh;')
             else :
-                #oai.send_nowait('echo '+pw+ ' | sudo -S rmmod nasmesh;')
-                os.system('echo '+pw+ ' | sudo -S rmmod nasmesh;')
+                oai.send_nowait('echo '+pw+ ' | sudo -S rmmod nasmesh;')
+                #os.system('echo '+pw+ ' | sudo -S rmmod nasmesh;')
         except Error, val:
             print "Error removing oai network driver module:", val
    
@@ -166,9 +141,8 @@ class openair(core):
             if user == 'root' : 
                 oai.send_nowait('insmod ./nasmesh.ko;')
             else :
-                oai.send_nowait('echo '+pw+ ' | sudo -S insmod ./nasmesh.ko;')
+                oai.send('echo '+pw+ ' | sudo -S insmod ./nasmesh.ko;')
                 
-            oai.send_nowait('cd '+ pwd)  
         except Error, val:
             print "Error inserting oai network driver module:", val
     

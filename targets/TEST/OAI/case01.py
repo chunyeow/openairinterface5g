@@ -45,7 +45,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
     
     case = '01'
     rv = 1
-    oai.send('cd $OPENAIR_TARGETS;')   
+    oai.send_recv('cd $OPENAIR_TARGETS;')   
  
     try:
         test = '00'

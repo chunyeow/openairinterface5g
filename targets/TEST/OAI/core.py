@@ -143,17 +143,17 @@ class core:
             self.oai.send(command)
 
         if self.expect_echo:
-            cmd = self.oai.expect([re.escape(command), pexpect.TIMEOUT], timeout=timeout);
+            cmd = self.oai.expect_exact([command, pexpect.TIMEOUT], timeout=timeout);
             if cmd != 0:
                 raise log.err(self.failed(command, command,debug))
 
         if self.expect_response:
-            index = self.oai.expect([re.escape(rsp1), re.escape(rsp2),'%', pexpect.TIMEOUT], timeout=timeout)
+            index = self.oai.expect_exact([rsp1, rsp2, pexpect.TIMEOUT], timeout=timeout)
 
             if index == 0 or index == 1:
                 return 'OK'
             elif index == 2:
-                self.oai.expect([re.escape(rsp1), re.escape(rsp2), pexpect.TIMEOUT], timeout=timeout)
+                self.oai.expect_exact([rsp1, rsp2, pexpect.TIMEOUT], timeout=timeout)
                 if self.flag_errors:
                     raise log.err(self.err(command))
                 else:
@@ -177,7 +177,7 @@ class core:
             self.oai.sendline(command)
         else:
             self.oai.send(command)
-        index = self.oai.expect([re.escape(rsp1), re.escape(rsp2), pexpect.TIMEOUT], timeout=timeout);
+        index = self.oai.expect_exact([rsp1, rsp2, pexpect.TIMEOUT], timeout=timeout);
         if index == 0 or index == 1:
             return self.oai.before
         else:
