@@ -1543,11 +1543,13 @@ static void *eNB_thread(void *arg)
 	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_TXCNT,tx_cnt);
 	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_RXCNT,rx_cnt*samples_per_packets);
 
-	//	printf("hw_subframe %d: rx_cnt %d\n",hw_subframe,rx_cnt);
+	printf("hw_subframe %d: rx_cnt %d\n",hw_subframe,rx_cnt);
 
 	for (i=0;i<PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_rx;i++)
 	  rxp[i] = (void*)&rxdata[i][rx_cnt*samples_per_packets];
 	start_meas(&softmodem_stats_hw);
+	//	printf("rxp[0] %p\n",rxp[0]);
+
 	rxs = openair0.trx_read_func(&openair0, 
 				     &timestamp, 
 				     rxp, 
