@@ -692,6 +692,7 @@ int generate_eNB_dlsch_params_from_dci(uint8_t subframe,
 	//      printf("FDD 1A: mcs %d, rballoc %x,rv %d, NPRB %d\n",mcs,rballoc,rv,NPRB);
       }
 
+      dlsch0_harq = dlsch[0]->harq_processes[harq_pid];
       if (vrb_type == 0) {
 	dlsch0_harq->rb_alloc[0]                       = localRIV2alloc_LUT100_0[rballoc];
 	dlsch0_harq->rb_alloc[1]                       = localRIV2alloc_LUT100_1[rballoc];
@@ -6261,7 +6262,7 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
       ulsch->harq_processes[harq_pid]->first_rb                              = RIV2first_rb_LUT100[rballoc];
       ulsch->harq_processes[harq_pid]->nb_rb                                 = RIV2nb_rb_LUT100[rballoc];
 
-      printf("eNB: rb_alloc (20 MHz dci) %d\n",rballoc);
+      //printf("eNB: rb_alloc (20 MHz dci) %d\n",rballoc);
       break;
 
     default:
