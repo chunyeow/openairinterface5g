@@ -1530,6 +1530,9 @@ uint8_t do_RRCConnectionSetup(uint8_t Mod_id,
   case 2:
     physicalConfigDedicated2->antennaInfo->choice.explicitValue.transmissionMode=     AntennaInfoDedicated__transmissionMode_tm2;
     break;
+  case 3:
+    physicalConfigDedicated2->antennaInfo->choice.explicitValue.transmissionMode=     AntennaInfoDedicated__transmissionMode_tm3;
+    break;
   case 4:
     physicalConfigDedicated2->antennaInfo->choice.explicitValue.transmissionMode=     AntennaInfoDedicated__transmissionMode_tm4;
     break;
@@ -1932,7 +1935,7 @@ uint8_t do_RRCConnectionRelease(uint8_t                             Mod_id,
   memset(&dl_dcch_msg,0,sizeof(DL_DCCH_Message_t));
 
   dl_dcch_msg.message.present           = DL_DCCH_MessageType_PR_c1;
-  dl_dcch_msg.message.choice.c1.present = DL_DCCH_MessageType__c1_PR_rrcConnectionReconfiguration;
+  dl_dcch_msg.message.choice.c1.present = DL_DCCH_MessageType__c1_PR_rrcConnectionRelease;
   rrcConnectionRelease                  = &dl_dcch_msg.message.choice.c1.choice.rrcConnectionRelease;
 
   // RRCConnectionRelease
@@ -1950,6 +1953,8 @@ uint8_t do_RRCConnectionRelease(uint8_t                             Mod_id,
                                    (void*)&dl_dcch_msg,
                                    buffer,
                                    RRC_BUF_SIZE); 
+
+  return((enc_rval.encoded+7)/8);
 }
 
 uint8_t TMGI[5] = {4,3,2,1,0};//TMGI is a string of octet, ref. TS 24.008 fig. 10.5.4a
