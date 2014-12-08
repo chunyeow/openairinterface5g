@@ -230,8 +230,9 @@ int dlsch_encoding(unsigned char *a,
   unsigned int G;
   unsigned int crc=1;
   unsigned short iind;
-  unsigned short nb_rb = dlsch->nb_rb;
+
   unsigned char harq_pid = dlsch->current_harq_pid;
+  unsigned short nb_rb = dlsch->harq_processes[harq_pid]->nb_rb;
   unsigned int A; 
   unsigned char mod_order;
   unsigned int Kr=0,Kr_bytes,r,r_offset=0;
@@ -243,7 +244,7 @@ int dlsch_encoding(unsigned char *a,
   // printf("Encoder: A: %d\n",A);
   mod_order = get_Qm(dlsch->harq_processes[harq_pid]->mcs);
 
-  G = get_G(frame_parms,nb_rb,dlsch->rb_alloc,mod_order,dlsch->harq_processes[harq_pid]->Nl,num_pdcch_symbols,frame,subframe);
+  G = get_G(frame_parms,nb_rb,dlsch->harq_processes[harq_pid]->rb_alloc,mod_order,dlsch->harq_processes[harq_pid]->Nl,num_pdcch_symbols,frame,subframe);
 
    
   //  if (dlsch->harq_processes[harq_pid]->Ndi == 1) {  // this is a new packet
@@ -353,7 +354,7 @@ int dlsch_encoding(unsigned char *a,
     r_offset += lte_rate_matching_turbo(dlsch->harq_processes[harq_pid]->RTC[r],
 					G,  //G
 					dlsch->harq_processes[harq_pid]->w[r],
-					dlsch->e+r_offset,
+					dlsch->harq_processes[harq_pid]->e+r_offset,
 					dlsch->harq_processes[harq_pid]->C, // C
 					NSOFT,                    // Nsoft,
 					dlsch->Mdlharq,
@@ -367,7 +368,7 @@ int dlsch_encoding(unsigned char *a,
     stop_meas(rm_stats);
 #ifdef DEBUG_DLSCH_CODING
     if (r==dlsch->harq_processes[harq_pid]->C-1)
-      write_output("enc_output.m","enc",dlsch->e,r_offset,1,4);
+      write_output("enc_output.m","enc",dlsch->harq_processes[harq_pid]->e,r_offset,1,4);
 #endif
   }
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_ENCODING, VCD_FUNCTION_OUT);

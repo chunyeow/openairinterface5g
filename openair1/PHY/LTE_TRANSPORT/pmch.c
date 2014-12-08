@@ -75,16 +75,16 @@ void dump_mch(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint16_t coded_bits_per_co
   */
   sprintf(fname,"mch_rxF_comp0.m");
   sprintf(vname,"pmch_rxF_comp0");
-  write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars_MCH[eNB_id]->rxdataF_comp[0],12*N_RB_DL*nsymb_pmch,1,1);
+  write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars_MCH[eNB_id]->rxdataF_comp0[0],12*N_RB_DL*nsymb_pmch,1,1);
   sprintf(fname,"mch_rxF_llr.m");
   sprintf(vname,"pmch_llr");
   write_output(fname,vname, phy_vars_ue->lte_ue_pdsch_vars_MCH[eNB_id]->llr[0],coded_bits_per_codeword,1,0);
   sprintf(fname,"mch_mag1.m");
   sprintf(vname,"pmch_mag1");
-  write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars_MCH[eNB_id]->dl_ch_mag[0],12*N_RB_DL*nsymb_pmch,1,1);
+  write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars_MCH[eNB_id]->dl_ch_mag0[0],12*N_RB_DL*nsymb_pmch,1,1);
   sprintf(fname,"mch_mag2.m");
   sprintf(vname,"pmch_mag2");
-  write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars_MCH[eNB_id]->dl_ch_magb[0],12*N_RB_DL*nsymb_pmch,1,1);
+  write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars_MCH[eNB_id]->dl_ch_magb0[0],12*N_RB_DL*nsymb_pmch,1,1);
 
   write_output("mch00_ch0.m","pmch00_ch0",
 	       &(phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_id][0][0]),
@@ -186,24 +186,24 @@ void fill_eNB_dlsch_MCH(PHY_VARS_eNB *phy_vars_eNB,int mcs,int ndi,int rvidx, in
   dlsch->harq_processes[0]->Nl    = 1;
   dlsch->harq_processes[0]->TBS   = TBStable[get_I_TBS(dlsch->harq_processes[0]->mcs)][frame_parms->N_RB_DL-1];
   dlsch->current_harq_pid = 0;
-  dlsch->nb_rb = frame_parms->N_RB_DL;
+  dlsch->harq_processes[0]->nb_rb = frame_parms->N_RB_DL;
 
   switch(frame_parms->N_RB_DL) {
   case 6:
-    dlsch->rb_alloc[0] = 0x3f;
+    dlsch->harq_processes[0]->rb_alloc[0] = 0x3f;
     break;
   case 25:
-    dlsch->rb_alloc[0] = 0x1ffffff;
+    dlsch->harq_processes[0]->rb_alloc[0] = 0x1ffffff;
     break;
   case 50:
-    dlsch->rb_alloc[0] = 0xffffffff;
-    dlsch->rb_alloc[1] = 0x3ffff;
+    dlsch->harq_processes[0]->rb_alloc[0] = 0xffffffff;
+    dlsch->harq_processes[0]->rb_alloc[1] = 0x3ffff;
     break;
   case 100:
-    dlsch->rb_alloc[0] = 0xffffffff;
-    dlsch->rb_alloc[1] = 0xffffffff;
-    dlsch->rb_alloc[2] = 0xffffffff;
-    dlsch->rb_alloc[3] = 0xf;
+    dlsch->harq_processes[0]->rb_alloc[0] = 0xffffffff;
+    dlsch->harq_processes[0]->rb_alloc[1] = 0xffffffff;
+    dlsch->harq_processes[0]->rb_alloc[2] = 0xffffffff;
+    dlsch->harq_processes[0]->rb_alloc[3] = 0xf;
     break;
   }
 
@@ -277,7 +277,7 @@ void fill_UE_dlsch_MCH(PHY_VARS_UE *phy_vars_ue,int mcs,int ndi,int rvidx,int eN
   }else {
     G = get_G(&phy_vars_eNB->lte_frame_parms,
 	      phy_vars_eNB->lte_frame_parms.N_RB_DL,
-	      phy_vars_eNB->dlsch_eNB_MCH->rb_alloc,
+	      phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->rb_alloc,
 	      get_Qm(phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->mcs),1,
 	      2,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe);
     
@@ -820,9 +820,9 @@ int rx_pmch(PHY_VARS_UE *phy_vars_ue,
 
   mch_channel_compensation(lte_ue_pdsch_vars[eNB_id]->rxdataF_ext,
 			   lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext,
-			   lte_ue_pdsch_vars[eNB_id]->dl_ch_mag,
-			   lte_ue_pdsch_vars[eNB_id]->dl_ch_magb,
-			   lte_ue_pdsch_vars[eNB_id]->rxdataF_comp,
+			   lte_ue_pdsch_vars[eNB_id]->dl_ch_mag0,
+			   lte_ue_pdsch_vars[eNB_id]->dl_ch_magb0,
+			   lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0,
 			   frame_parms,
 			   symbol,
 			   get_Qm(dlsch_ue[0]->harq_processes[0]->mcs),
@@ -831,33 +831,33 @@ int rx_pmch(PHY_VARS_UE *phy_vars_ue,
 
   if (frame_parms->nb_antennas_rx > 1)
     mch_detection_mrc(frame_parms,
-		      lte_ue_pdsch_vars[eNB_id]->rxdataF_comp,
-		      lte_ue_pdsch_vars[eNB_id]->dl_ch_mag,
-		      lte_ue_pdsch_vars[eNB_id]->dl_ch_magb,
+		      lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0,
+		      lte_ue_pdsch_vars[eNB_id]->dl_ch_mag0,
+		      lte_ue_pdsch_vars[eNB_id]->dl_ch_magb0,
 		      symbol);
 
     switch (get_Qm(dlsch_ue[0]->harq_processes[0]->mcs)) {
     case 2 : 
       mch_qpsk_llr(frame_parms,
-		   lte_ue_pdsch_vars[eNB_id]->rxdataF_comp,
+		   lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0,
 		   lte_ue_pdsch_vars[eNB_id]->llr[0],
 		   symbol,
 		   lte_ue_pdsch_vars[eNB_id]->llr128);
       break;
     case 4:
       mch_16qam_llr(frame_parms,
-		    lte_ue_pdsch_vars[eNB_id]->rxdataF_comp,
+		    lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0,
 		    lte_ue_pdsch_vars[eNB_id]->llr[0],
-		    lte_ue_pdsch_vars[eNB_id]->dl_ch_mag,
+		    lte_ue_pdsch_vars[eNB_id]->dl_ch_mag0,
 		    symbol,
 		    lte_ue_pdsch_vars[eNB_id]->llr128);
       break;
     case 6:
       mch_64qam_llr(frame_parms,
-		    lte_ue_pdsch_vars[eNB_id]->rxdataF_comp,
+		    lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0,
 		    lte_ue_pdsch_vars[eNB_id]->llr[0],
-		    lte_ue_pdsch_vars[eNB_id]->dl_ch_mag,
-		    lte_ue_pdsch_vars[eNB_id]->dl_ch_magb,
+		    lte_ue_pdsch_vars[eNB_id]->dl_ch_mag0,
+		    lte_ue_pdsch_vars[eNB_id]->dl_ch_magb0,
 		    symbol,
 		    lte_ue_pdsch_vars[eNB_id]->llr128);
       break;

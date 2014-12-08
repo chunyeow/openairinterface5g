@@ -527,7 +527,7 @@ typedef struct {
 typedef enum {
   SISO=0,
   ALAMOUTI=1,
-  ANTCYCLING=2,
+  LARGE_CDD=2,
   UNIFORM_PRECODING11=3,
   UNIFORM_PRECODING1m1=4,
   UNIFORM_PRECODING1j=5,
@@ -630,17 +630,23 @@ typedef struct {
   /// Received frequency-domain signal after extraction
   int32_t **rxdataF_ext;
   /// Received frequency-domain signal after extraction and channel compensation
-  int32_t **rxdataF_comp;
+  int32_t **rxdataF_comp0;
+  /// Received frequency-domain signal after extraction and channel compensation
+  int32_t **rxdataF_comp1;
   /// Downlink channel estimates extracted in PRBS
   int32_t **dl_ch_estimates_ext;
   /// Downlink cross-correlation of MIMO channel estimates (unquantized PMI) extracted in PRBS
   int32_t **dl_ch_rho_ext;
   /// Downlink PMIs extracted in PRBS and grouped in subbands
   uint8_t *pmi_ext;
-  /// Magnitude of Downlink Channel (16QAM level/First 64QAM level)
-  int32_t **dl_ch_mag;
-  /// Magnitude of Downlink Channel (2nd 64QAM level)
-  int32_t **dl_ch_magb;
+  /// Magnitude of Downlink Channel first layer (16QAM level/First 64QAM level)
+  int32_t **dl_ch_mag0;
+  /// Magnitude of Downlink Channel second layer (16QAM level/First 64QAM level)
+  int32_t **dl_ch_mag1;
+  /// Magnitude of Downlink Channel, first layer (2nd 64QAM level)
+  int32_t **dl_ch_magb0;
+  /// Magnitude of Downlink Channel second layer (2nd 64QAM level)
+  int32_t **dl_ch_magb1;
   /// Cross-correlation of two eNB signals
   int32_t **rho;
   /// never used... always send dl_ch_rho_ext instead...

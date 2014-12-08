@@ -70,6 +70,98 @@ extern __m128i zero;
 
 #define PBCH_A 24
 
+int allocate_pbch_REs_in_RB(LTE_DL_FRAME_PARMS *frame_parms,
+			    mod_sym_t **txdataF,
+			    uint32_t *jj,
+			    uint16_t re_offset,
+			    uint32_t symbol_offset,
+			    uint8_t *x0,
+			    uint8_t pilots,
+			    int16_t amp,
+			    uint32_t *re_allocated) {
+
+  MIMO_mode_t mimo_mode   = (frame_parms->mode1_flag==1)?SISO:ALAMOUTI;
+
+
+  uint32_t tti_offset,aa;
+  uint8_t re;
+  int16_t gain_lin_QPSK;
+  int16_t re_off=re_offset;
+
+  uint8_t first_re,last_re;
+  int32_t tmp_sample1,tmp_sample2;
+
+  gain_lin_QPSK = (int16_t)((amp*ONE_OVER_SQRT2_Q15)>>15);
+
+  first_re=0;
+  last_re=12;
+
+  for (re=first_re;re<last_re;re++) {
+    
+    tti_offset = symbol_offset + re_off + re;
+    
+    // check that RE is not from Cell-specific RS
+
+    if (is_not_pilot(pilots,re,frame_parms->nushift,0)==1) { 
+      //      printf("re %d (jj %d)\n",re,*jj);
+      if (mimo_mode == SISO) {  //SISO mapping
+	*re_allocated = *re_allocated + 1;	
+	//	  printf("%d(%d) : %d,%d => ",tti_offset,*jj,((int16_t*)&txdataF[0][tti_offset])[0],((int16_t*)&txdataF[0][tti_offset])[1]);
+	for (aa=0; aa<frame_parms->nb_antennas_tx; aa++) {
+	  ((int16_t*)&txdataF[aa][tti_offset])[0] += (x0[*jj]==1) ? (-gain_lin_QPSK) : gain_lin_QPSK; //I //b_i
+	}
+	*jj = *jj + 1;
+	for (aa=0; aa<frame_parms->nb_antennas_tx; aa++) {
+	  ((int16_t*)&txdataF[aa][tti_offset])[1] += (x0[*jj]==1) ? (-gain_lin_QPSK) : gain_lin_QPSK; //Q //b_{i+1}
+	}
+	*jj = *jj + 1;
+      }
+      else if (mimo_mode == ALAMOUTI){
+	*re_allocated = *re_allocated + 1;	
+
+	((int16_t*)&tmp_sample1)[0] = (x0[*jj]==1) ? (-gain_lin_QPSK) : gain_lin_QPSK;
+	*jj=*jj+1;
+	((int16_t*)&tmp_sample1)[1] = (x0[*jj]==1) ? (-gain_lin_QPSK) : gain_lin_QPSK;
+	*jj=*jj+1;
+
+	// second antenna position n -> -x1*
+	
+	((int16_t*)&tmp_sample2)[0] = (x0[*jj]==1) ? (gain_lin_QPSK) : -gain_lin_QPSK;
+	*jj=*jj+1;
+	((int16_t*)&tmp_sample2)[1] = (x0[*jj]==1) ? (-gain_lin_QPSK) : gain_lin_QPSK;
+	*jj=*jj+1;
+	
+	// normalization for 2 tx antennas
+	((int16_t*)&txdataF[0][tti_offset])[0] += (int16_t)((((int16_t*)&tmp_sample1)[0]*ONE_OVER_SQRT2_Q15)>>15);
+	((int16_t*)&txdataF[0][tti_offset])[1] += (int16_t)((((int16_t*)&tmp_sample1)[1]*ONE_OVER_SQRT2_Q15)>>15);
+	((int16_t*)&txdataF[1][tti_offset])[0] += (int16_t)((((int16_t*)&tmp_sample2)[0]*ONE_OVER_SQRT2_Q15)>>15);
+	((int16_t*)&txdataF[1][tti_offset])[1] += (int16_t)((((int16_t*)&tmp_sample2)[1]*ONE_OVER_SQRT2_Q15)>>15);
+	
+	// fill in the rest of the ALAMOUTI precoding
+	if (is_not_pilot(pilots,re + 1,frame_parms->nushift,0)==1) {
+	  ((int16_t *)&txdataF[0][tti_offset+1])[0] += -((int16_t *)&txdataF[1][tti_offset])[0]; //x1
+	  ((int16_t *)&txdataF[0][tti_offset+1])[1] += ((int16_t *)&txdataF[1][tti_offset])[1];
+	  ((int16_t *)&txdataF[1][tti_offset+1])[0] += ((int16_t *)&txdataF[0][tti_offset])[0];  //x0*
+	  ((int16_t *)&txdataF[1][tti_offset+1])[1] += -((int16_t *)&txdataF[0][tti_offset])[1];
+	}
+	else {
+	  ((int16_t *)&txdataF[0][tti_offset+2])[0] += -((int16_t *)&txdataF[1][tti_offset])[0]; //x1
+	  ((int16_t *)&txdataF[0][tti_offset+2])[1] += ((int16_t *)&txdataF[1][tti_offset])[1];
+	  ((int16_t *)&txdataF[1][tti_offset+2])[0] += ((int16_t *)&txdataF[0][tti_offset])[0];  //x0*
+	  ((int16_t *)&txdataF[1][tti_offset+2])[1] += -((int16_t *)&txdataF[0][tti_offset])[1];
+	}
+	re++;  // adjacent carriers are taken care of by precoding
+	*re_allocated = *re_allocated + 1;
+	if (is_not_pilot(pilots,re,frame_parms->nushift,0)==0) { // skip pilots
+	  re++;  
+	  *re_allocated = *re_allocated + 1;
+	}
+      }
+    }
+  }
+  return(0);
+}
+ 
 //uint8_t pbch_d[96+(3*(16+PBCH_A))], pbch_w[3*3*(16+PBCH_A)],pbch_e[1920];  //one bit per byte
 int generate_pbch(LTE_eNB_PBCH *eNB_pbch,
 		  mod_sym_t **txdataF,
@@ -260,62 +352,51 @@ int generate_pbch(LTE_eNB_PBCH *eNB_pbch,
 #endif
 
     
-#ifdef IFFT_FPGA
-    re_offset = frame_parms->N_RB_DL*12-3*12;
-    symbol_offset = frame_parms->N_RB_DL*12*l;
-#else
     re_offset = frame_parms->ofdm_symbol_size-3*12;
     symbol_offset = frame_parms->ofdm_symbol_size*l;
-#endif
     
     for (rb=0;rb<6;rb++) {
 
 #ifdef DEBUG_PBCH
       msg("RB %d, jj %d, re_offset %d, symbol_offset %d, pilots %d, nushift %d\n",rb,jj,re_offset, symbol_offset, pilots,frame_parms->nushift);
 #endif
-      allocate_REs_in_RB(txdataF,
-			 &jj,
-			 re_offset,
-			 symbol_offset,
-			 &eNB_pbch->pbch_e[frame_mod4*(pbch_E>>2)],
-			 (frame_parms->mode1_flag == 1) ? SISO : ALAMOUTI,
-			 0,
-			 pilots,
-			 2,
-			 0,
+      allocate_pbch_REs_in_RB(frame_parms,
+			      txdataF,
+			      &jj,
+			      re_offset,
+			      symbol_offset,
+			      &eNB_pbch->pbch_e[frame_mod4*(pbch_E>>2)],
+			      pilots,
 #ifdef INTERFERENCE_MITIGATION
-			 (pilots_2==1)?(amp/3):amp,
+			      (pilots_2==1)?(amp/3):amp,
 #else
-			 amp,
+			      amp,
 #endif
-			 NULL,
-			 &re_allocated,
-			 0,
-			 0,
-			 0,
-			 1,
-			 0,
-			 frame_parms);
+			      &re_allocated);
       
       re_offset+=12; // go to next RB
       
       // check if we crossed the symbol boundary and skip DC
-#ifdef IFFT_FPGA
-      if (re_offset >= frame_parms->N_RB_DL*12) 
-	re_offset = 0;
-#else
+
       if (re_offset >= frame_parms->ofdm_symbol_size)
 	re_offset=1;
-#endif
     }
     
     //    }
   }
 #ifdef DEBUG_PBCH
-  msg("[PBCH] txdataF=\n");
-  for (i=0;i<frame_parms->ofdm_symbol_size;i++) 
-    msg("%d=>(%d,%d)\n",i,((short*)&txdataF[0][frame_parms->ofdm_symbol_size*(nsymb>>1)+i])[0],
-	((short*)&txdataF[0][frame_parms->ofdm_symbol_size*(nsymb>>1)+i])[1]);
+  printf("[PBCH] txdataF=\n");
+  for (i=0;i<frame_parms->ofdm_symbol_size;i++) { 
+    printf("%d=>(%d,%d)",i,((short*)&txdataF[0][frame_parms->ofdm_symbol_size*(nsymb>>1)+i])[0],
+	   ((short*)&txdataF[0][frame_parms->ofdm_symbol_size*(nsymb>>1)+i])[1]);
+    if (frame_parms->mode1_flag==0) {
+      printf("(%d,%d)\n",((short*)&txdataF[1][frame_parms->ofdm_symbol_size*(nsymb>>1)+i])[0],
+	     ((short*)&txdataF[1][frame_parms->ofdm_symbol_size*(nsymb>>1)+i])[1]);
+    }
+    else {
+      printf("\n");
+    }
+  }
 #endif
   
   
@@ -332,11 +413,12 @@ int32_t generate_pbch_emul(PHY_VARS_eNB *phy_vars_eNB,uint8_t *pbch_pdu) {
 }
 
 uint16_t pbch_extract(int **rxdataF,
-		 int **dl_ch_estimates,
-		 int **rxdataF_ext,
-		 int **dl_ch_estimates_ext,
-		 uint32_t symbol,
-		 LTE_DL_FRAME_PARMS *frame_parms) {
+		      int **dl_ch_estimates,
+		      int **rxdataF_ext,
+		      int **dl_ch_estimates_ext,
+		      uint32_t symbol,
+		      uint32_t high_speed_flag,
+		      LTE_DL_FRAME_PARMS *frame_parms) {
   
 
   uint16_t rb,nb_rb=6;
@@ -356,21 +438,14 @@ uint16_t pbch_extract(int **rxdataF,
 	   (rx_offset + (symbol*(frame_parms->ofdm_symbol_size)))*2,
 	   LTE_CE_OFFSET+ch_offset+(symbol_mod*(frame_parms->ofdm_symbol_size)));
     */
-#ifndef NEW_FFT
-    rxF        = &rxdataF[aarx][(rx_offset + (symbol*(frame_parms->ofdm_symbol_size)))*2];
-#else
+
     rxF        = &rxdataF[aarx][(rx_offset + (symbol*(frame_parms->ofdm_symbol_size)))];
-#endif
     rxF_ext    = &rxdataF_ext[aarx][symbol_mod*(6*12)];
 
     for (rb=0; rb<nb_rb; rb++) {
       // skip DC carrier
       if (rb==3) {
-#ifndef NEW_FFT
-	rxF       = &rxdataF[aarx][(1 + (symbol*(frame_parms->ofdm_symbol_size)))*2];
-#else
 	rxF       = &rxdataF[aarx][(1 + (symbol*(frame_parms->ofdm_symbol_size)))];
-#endif
       }
       if ((symbol_mod==0) || (symbol_mod==1)) {
 	j=0;
@@ -379,39 +454,26 @@ uint16_t pbch_extract(int **rxdataF,
 	      (i!=(nushiftmod3+3)) && 
 	      (i!=(nushiftmod3+6)) && 
 	      (i!=(nushiftmod3+9))) {
-#ifndef NEW_FFT
-	    rxF_ext[j++]=rxF[i<<1];
-#else
 	    rxF_ext[j++]=rxF[i];
-#endif
 	  }
 	}
-#ifndef NEW_FFT
-	rxF+=24;
-#else
 	rxF+=12;
-#endif
 	rxF_ext+=8;
       }
       else {
 	for (i=0;i<12;i++) {
-#ifndef NEW_FFT
-	  rxF_ext[i]=rxF[i<<1];
-#else
 	  rxF_ext[i]=rxF[i];
-#endif
 	}
-#ifndef NEW_FFT
-	rxF+=24;
-#else
 	rxF+=12;
-#endif
 	rxF_ext+=12;
       }
     }
 
     for (aatx=0;aatx<4;aatx++) {//frame_parms->nb_antennas_tx_eNB;aatx++) {
-      dl_ch0     = &dl_ch_estimates[(aatx<<1)+aarx][LTE_CE_OFFSET+ch_offset+(symbol*(frame_parms->ofdm_symbol_size))];
+      if (high_speed_flag == 1)
+	dl_ch0     = &dl_ch_estimates[(aatx<<1)+aarx][LTE_CE_OFFSET+ch_offset+(symbol*(frame_parms->ofdm_symbol_size))];
+      else
+	dl_ch0     = &dl_ch_estimates[(aatx<<1)+aarx][LTE_CE_OFFSET+ch_offset];
       dl_ch0_ext = &dl_ch_estimates_ext[(aatx<<1)+aarx][symbol_mod*(6*12)];
 
       for (rb=0; rb<nb_rb; rb++) {
@@ -737,11 +799,12 @@ static int8_t pbch_w_rx[3*3*(16+PBCH_A)],pbch_d_rx[96+(3*(16+PBCH_A))];
 
 
 uint16_t rx_pbch(LTE_UE_COMMON *lte_ue_common_vars,
-	    LTE_UE_PBCH *lte_ue_pbch_vars,
-	    LTE_DL_FRAME_PARMS *frame_parms,
-	    uint8_t eNB_id,
-	    MIMO_mode_t mimo_mode,
-	    uint8_t frame_mod4) {
+		 LTE_UE_PBCH *lte_ue_pbch_vars,
+		 LTE_DL_FRAME_PARMS *frame_parms,
+		 uint8_t eNB_id,
+		 MIMO_mode_t mimo_mode,
+		 uint32_t high_speed_flag,
+		 uint8_t frame_mod4) {
 
   uint8_t log2_maxh;//,aatx,aarx;
   int max_h=0;
@@ -778,6 +841,7 @@ uint16_t rx_pbch(LTE_UE_COMMON *lte_ue_common_vars,
 		 lte_ue_pbch_vars->rxdataF_ext,
 		 lte_ue_pbch_vars->dl_ch_estimates_ext,
 		 symbol,
+		 high_speed_flag,
 		 frame_parms);
 #ifdef DEBUG_PBCH    
     msg("[PHY] PBCH Symbol %d\n",symbol);
@@ -811,7 +875,7 @@ uint16_t rx_pbch(LTE_UE_COMMON *lte_ue_common_vars,
       //	msg("[PBCH][RX] Alamouti receiver not yet implemented!\n");
       //	return(-1);
     }
-    else if ((mimo_mode != ANTCYCLING) && (mimo_mode != SISO)) {
+    else if (mimo_mode != SISO) {
       msg("[PBCH][RX] Unsupported MIMO mode\n");
       return(-1);
     }
@@ -911,7 +975,7 @@ uint16_t rx_pbch_emul(PHY_VARS_UE *phy_vars_ue,
 		 uint8_t eNB_id,
 		 uint8_t pbch_phase) {
 
-  double bler=0.0, x=0.0;
+  double bler=0.0;//, x=0.0;
   double sinr=0.0;
   uint16_t nb_rb = phy_vars_ue->lte_frame_parms.N_RB_DL;
   int16_t f;

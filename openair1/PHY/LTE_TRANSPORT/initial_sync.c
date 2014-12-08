@@ -48,7 +48,7 @@
 #include "gain_control.h"
 #endif
 
-//#define DEBUG_INITIAL_SYNCH
+#define DEBUG_INITIAL_SYNCH
 
 int pbch_detection(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
 
@@ -111,6 +111,7 @@ int pbch_detection(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
 			  frame_parms,
 			  0,
 			  SISO,
+			  phy_vars_ue->high_speed_flag,
 			  frame_mod4);
     if ((pbch_tx_ant>0) && (pbch_tx_ant<=2)) {
       pbch_decoded = 1;
@@ -122,6 +123,7 @@ int pbch_detection(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
 			  frame_parms,
 			  0,
 			  ALAMOUTI,
+			  phy_vars_ue->high_speed_flag,
 			  frame_mod4);
     if ((pbch_tx_ant>0) && (pbch_tx_ant<=2)) {
       pbch_decoded = 1;

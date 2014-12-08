@@ -1789,8 +1789,8 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 		       0,
 		       phy_vars_eNB->dlsch_eNB_SI,
 		       get_G(&phy_vars_eNB->lte_frame_parms,
-			     phy_vars_eNB->dlsch_eNB_SI->nb_rb,
-			     phy_vars_eNB->dlsch_eNB_SI->rb_alloc,
+			     phy_vars_eNB->dlsch_eNB_SI->harq_processes[0]->nb_rb,
+			     phy_vars_eNB->dlsch_eNB_SI->harq_processes[0]->rb_alloc,
 			     get_Qm(phy_vars_eNB->dlsch_eNB_SI->harq_processes[0]->mcs),
 			     1,
 			     num_pdcch_symbols,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe),
@@ -1805,7 +1805,8 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 				      subframe,
 				      &phy_vars_eNB->lte_frame_parms,
 				      num_pdcch_symbols,
-				      phy_vars_eNB->dlsch_eNB_SI);
+				      phy_vars_eNB->dlsch_eNB_SI,
+				      (LTE_eNB_DLSCH_t *)NULL);
       stop_meas(&phy_vars_eNB->dlsch_modulation_stats);	      
     } 
 #ifdef PHY_ABSTRACTION
@@ -1917,8 +1918,8 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 			 0,
 			 phy_vars_eNB->dlsch_eNB_ra,
 			 get_G(&phy_vars_eNB->lte_frame_parms,
-			       phy_vars_eNB->dlsch_eNB_ra->nb_rb,
-			       phy_vars_eNB->dlsch_eNB_ra->rb_alloc,
+			       phy_vars_eNB->dlsch_eNB_ra->harq_processes[0]->nb_rb,
+			       phy_vars_eNB->dlsch_eNB_ra->harq_processes[0]->rb_alloc,
 			       get_Qm(phy_vars_eNB->dlsch_eNB_ra->harq_processes[0]->mcs),
 			       1,
 			       num_pdcch_symbols,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe),
@@ -1930,7 +1931,8 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 					subframe,
 					&phy_vars_eNB->lte_frame_parms,
 					num_pdcch_symbols,
-					phy_vars_eNB->dlsch_eNB_ra);
+					phy_vars_eNB->dlsch_eNB_ra,
+					(LTE_eNB_DLSCH_t *)NULL);
       }
 #ifdef PHY_ABSTRACTION
       else {
@@ -1967,14 +1969,14 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	    phy_vars_eNB->Mod_id, phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->rnti,harq_pid,
 	    phy_vars_eNB->proc[sched_subframe].frame_tx, subframe, input_buffer_length,
 	    get_G(&phy_vars_eNB->lte_frame_parms,
-		  phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->nb_rb,
-		  phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->rb_alloc,
+		  phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->nb_rb,
+		  phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->rb_alloc,
 		  get_Qm(phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->mcs),
 		  phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->Nl,
 		  num_pdcch_symbols,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe),
-	    phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->nb_rb,
+	    phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->nb_rb,
 	    phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->mcs,
-	    pmi2hex_2Ar1(phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->pmi_alloc),
+	    pmi2hex_2Ar1(phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->pmi_alloc),
 	    phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->rvidx,
 	    phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->round);
 #endif
@@ -2042,8 +2044,8 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 			 0,
 			 phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0],
 			 get_G(&phy_vars_eNB->lte_frame_parms,
-			       phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->nb_rb,
-			       phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->rb_alloc,
+			       phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->nb_rb,
+			       phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->rb_alloc,
 			       get_Qm(phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->mcs),
 			       phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->Nl,
 			       num_pdcch_symbols,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe),
@@ -2066,7 +2068,8 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 					subframe,
 					&phy_vars_eNB->lte_frame_parms,
 					num_pdcch_symbols,
-					phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]);
+					phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0],
+					phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][1]);
       
 	stop_meas(&phy_vars_eNB->dlsch_modulation_stats);	      
       }

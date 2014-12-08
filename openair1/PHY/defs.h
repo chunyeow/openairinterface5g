@@ -425,6 +425,9 @@ typedef struct
   
   uint32_t X_u[64][839];
 
+  uint32_t high_speed_flag;
+  int16_t ch_est_alpha;
+
   char ulsch_no_allocation_counter[NUMBER_OF_CONNECTED_eNB_MAX];
 
   unsigned char ulsch_ue_Msg3_active[NUMBER_OF_CONNECTED_eNB_MAX];

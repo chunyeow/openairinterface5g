@@ -58,7 +58,7 @@ void dlsch_scrambling(LTE_DL_FRAME_PARMS *frame_parms,
   int i,j,k=0;
   //  uint8_t reset;
   uint32_t x1, x2, s=0;
-  uint8_t *e=dlsch->e;
+  uint8_t *e=dlsch->harq_processes[dlsch->current_harq_pid]->e;
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_SCRAMBLING, VCD_FUNCTION_IN);
 

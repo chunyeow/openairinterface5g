@@ -109,10 +109,22 @@ typedef struct {
   uint8_t rvidx;
   /// MIMO mode for this DLSCH
   MIMO_mode_t mimo_mode;
-  /// Number of layers for this PDSCH transmission
-  uint8_t Nlayers;
-  /// First layer for this PSCH transmission
-  uint8_t first_layer;
+  /// Current RB allocation
+  uint32_t rb_alloc[4];
+  /// Current subband PMI allocation
+  uint16_t pmi_alloc;
+  /// Current subband RI allocation
+  uint32_t ri_alloc;
+  /// Current subband CQI1 allocation
+  uint32_t cqi_alloc1;
+  /// Current subband CQI2 allocation
+  uint32_t cqi_alloc2;
+  /// Current Number of RBs
+  uint16_t nb_rb;
+  /// downlink power offset field
+  uint8_t dl_power_off;
+  /// Concatenated "e"-sequences (for definition see 36-212 V8.6 2009-03, p.17-18) 
+  uint8_t e[MAX_NUM_CHANNEL_BITS];
   /// Turbo-code outputs (36-212 V8.6 2009-03, p.12 
   uint8_t d[MAX_NUM_DLSCH_SEGMENTS][(96+3+(3*6144))];  
   /// Sub-block interleaver outputs (36-212 V8.6 2009-03, p.16-17)
@@ -129,8 +141,12 @@ typedef struct {
   uint32_t Kplus;                     
   /// Number of "Filler" bits (for definition see 36-212 V8.6 2009-03, p.10)
   uint32_t F;                         
-  /// Number of MIMO layers (streams) (for definition see 36-212 V8.6 2009-03, p.17)
+  /// Number of MIMO layers (streams) (for definition see 36-212 V8.6 2009-03, p.17, TM3-4)
   uint8_t Nl;                       
+  /// Number of layers for this PDSCH transmission (TM8-10)
+  uint8_t Nlayers;
+  /// First layer for this PSCH transmission
+  uint8_t first_layer;
 } LTE_DL_eNB_HARQ_t;
 
 typedef struct {
@@ -221,34 +237,16 @@ typedef struct {
   uint8_t ra_window_size;
   /// First-round error threshold for fine-grain rate adaptation
   uint8_t error_threshold;
-  /// Current RB allocation
-  uint32_t rb_alloc[4];
-  /// Current subband PMI allocation
-  uint16_t pmi_alloc;
-  /// Current subband RI allocation
-  uint32_t ri_alloc;
-  /// Current subband CQI1 allocation
-  uint32_t cqi_alloc1;
-  /// Current subband CQI2 allocation
-  uint32_t cqi_alloc2;
-  /// Current Number of RBs
-  uint16_t nb_rb;
   /// Pointers to 8 HARQ processes for the DLSCH
   LTE_DL_eNB_HARQ_t *harq_processes[8];     
   /// Number of soft channel bits
   uint32_t G;
-  /// Layer index for this dlsch (0,1)
-  uint8_t layer_index;          
   /// Codebook index for this dlsch (0,1,2,3)
   uint8_t codebook_index;          
-  /// Concatenated "e"-sequences (for definition see 36-212 V8.6 2009-03, p.17-18) 
-  uint8_t e[MAX_NUM_CHANNEL_BITS];
   /// Maximum number of HARQ rounds (for definition see 36-212 V8.6 2009-03, p.17)             
   uint8_t Mdlharq;  
   /// MIMO transmission mode indicator for this sub-frame (for definition see 36-212 V8.6 2009-03, p.17)
   uint8_t Kmimo;
-  /// downlink power offset field
-  uint8_t dl_power_off;
   /// amplitude of PDSCH (compared to RS) in symbols without pilots 
   int16_t sqrt_rho_a;
   /// amplitude of PDSCH (compared to RS) in symbols containing pilots
@@ -637,8 +635,6 @@ typedef struct {
   harq_status_t harq_ack[10];
   /// Pointers to up to 8 HARQ processes
   LTE_DL_UE_HARQ_t *harq_processes[8];   
-  /// Layer index for this DLSCH
-  uint8_t layer_index;              
   /// Maximum number of HARQ rounds (for definition see 36-212 V8.6 2009-03, p.17
   uint8_t Mdlharq;              
   /// MIMO transmission mode indicator for this sub-frame (for definition see 36-212 V8.6 2009-03, p.17)
@@ -650,7 +646,6 @@ typedef struct {
 typedef enum {format0,
 	      format1,
 	      format1A,
-	      format1A_RA,
 	      format1B,
 	      format1C,
 	      format1D,

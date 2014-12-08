@@ -254,6 +254,11 @@ uint8_t *generate_dci0(uint8_t *dci,
     dci_flip[5] = dci[2];
     dci_flip[6] = dci[1];
     dci_flip[7] = dci[0];
+#ifdef DEBUG_DCI_ENCODING
+	    msg("DCI => %x,%x,%x,%x,%x,%x,%x,%x\n",
+		dci_flip[0],dci_flip[1],dci_flip[2],dci_flip[3],
+		dci_flip[4],dci_flip[5],dci_flip[6],dci_flip[7]);
+#endif
   }
 	
   dci_encoding(dci_flip,DCI_LENGTH,coded_bits,e,rnti);
@@ -812,6 +817,7 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
 			      int32_t **rxdataF_ext,
 			      int32_t **dl_ch_estimates_ext,
 			      uint8_t symbol,
+			      uint32_t high_speed_flag,
 			      LTE_DL_FRAME_PARMS *frame_parms) {
 
 
@@ -828,8 +834,11 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
   msg("[PHY] extract_rbs_single: symbol_mod %d\n",symbol_mod);
 #endif
   for (aarx=0;aarx<frame_parms->nb_antennas_rx;aarx++) {
-    
-    dl_ch0     = &dl_ch_estimates[aarx][5+(symbol*(frame_parms->ofdm_symbol_size))];
+
+    if (high_speed_flag == 1)
+      dl_ch0     = &dl_ch_estimates[aarx][5+(symbol*(frame_parms->ofdm_symbol_size))];
+    else
+      dl_ch0     = &dl_ch_estimates[aarx][5];
     dl_ch0_ext = &dl_ch_estimates_ext[aarx][symbol*(frame_parms->N_RB_DL*12)];
 
     rxF_ext   = &rxdataF_ext[aarx][symbol*(frame_parms->N_RB_DL*12)];
@@ -1013,6 +1022,7 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
 			    int32_t **rxdataF_ext,
 			    int32_t **dl_ch_estimates_ext,
 			    uint8_t symbol,
+			    uint32_t high_speed_flag,
 			    LTE_DL_FRAME_PARMS *frame_parms) {
   
 
@@ -1025,10 +1035,16 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
   symbol_mod = (symbol>=(7-frame_parms->Ncp)) ? symbol-(7-frame_parms->Ncp) : symbol;
 
   for (aarx=0;aarx<frame_parms->nb_antennas_rx;aarx++) {
-    
-    dl_ch0     = &dl_ch_estimates[aarx][5+(symbol*(frame_parms->ofdm_symbol_size))];
+
+    if (high_speed_flag==1) {
+      dl_ch0     = &dl_ch_estimates[aarx][5+(symbol*(frame_parms->ofdm_symbol_size))];
+      dl_ch1     = &dl_ch_estimates[2+aarx][5+(symbol*(frame_parms->ofdm_symbol_size))];
+    }
+    else {
+      dl_ch0     = &dl_ch_estimates[aarx][5];
+      dl_ch1     = &dl_ch_estimates[2+aarx][5];
+    }
     dl_ch0_ext = &dl_ch_estimates_ext[aarx][symbol*(frame_parms->N_RB_DL*12)];
-    dl_ch1     = &dl_ch_estimates[2+aarx][5+(symbol*(frame_parms->ofdm_symbol_size))];
     dl_ch1_ext = &dl_ch_estimates_ext[2+aarx][symbol*(frame_parms->N_RB_DL*12)];
 
     //    msg("pdcch extract_rbs: rxF_ext pos %d\n",symbol*(frame_parms->N_RB_DL*12));
@@ -1524,6 +1540,7 @@ int32_t rx_pdcch(LTE_UE_COMMON *lte_ue_common_vars,
 		 uint8_t subframe,
 		 uint8_t eNB_id,
 		 MIMO_mode_t mimo_mode,
+		 uint32_t high_speed_flag,
 		 uint8_t is_secondary_ue) {
 
   uint8_t log2_maxh,aatx,aarx;
@@ -1543,6 +1560,7 @@ int32_t rx_pdcch(LTE_UE_COMMON *lte_ue_common_vars,
 				 lte_ue_pdcch_vars[eNB_id]->rxdataF_ext,
 				 lte_ue_pdcch_vars[eNB_id]->dl_ch_estimates_ext,
 				 s,
+				 high_speed_flag,
 				 frame_parms);
 #ifdef MU_RECEIVER
 	pdcch_extract_rbs_single(lte_ue_common_vars->rxdataF,
@@ -1550,6 +1568,7 @@ int32_t rx_pdcch(LTE_UE_COMMON *lte_ue_common_vars,
 				 lte_ue_pdcch_vars[eNB_id_i]->rxdataF_ext,//shift by two to simulate transmission from a second antenna
 				 lte_ue_pdcch_vars[eNB_id_i]->dl_ch_estimates_ext,//shift by two to simulate transmission from a second antenna
 				 s,
+				 high_speed_flag,
 				 frame_parms);
 #endif //MU_RECEIVER
       } else if (frame_parms->nb_antennas_tx_eNB>1) {
@@ -1558,6 +1577,7 @@ int32_t rx_pdcch(LTE_UE_COMMON *lte_ue_common_vars,
 			       lte_ue_pdcch_vars[eNB_id]->rxdataF_ext,
 			       lte_ue_pdcch_vars[eNB_id]->dl_ch_estimates_ext,
 			       s,
+			       high_speed_flag,
 			       frame_parms);
       } else {
 	pdcch_extract_rbs_single(lte_ue_common_vars->rxdataF,
@@ -1565,6 +1585,7 @@ int32_t rx_pdcch(LTE_UE_COMMON *lte_ue_common_vars,
 				 lte_ue_pdcch_vars[eNB_id]->rxdataF_ext,
 				 lte_ue_pdcch_vars[eNB_id]->dl_ch_estimates_ext,
 				 s,
+				 high_speed_flag,
 				 frame_parms);
       }
   }
@@ -1832,13 +1853,13 @@ uint8_t get_num_pdcch_symbols(uint8_t num_dci,
 }
 
 uint8_t generate_dci_top(uint8_t num_ue_spec_dci,
-		    uint8_t num_common_dci,
-		    DCI_ALLOC_t *dci_alloc, 
-		    uint32_t n_rnti,
-		    int16_t amp,
-		    LTE_DL_FRAME_PARMS *frame_parms,
-		    mod_sym_t **txdataF,
-		    uint32_t subframe) {
+			 uint8_t num_common_dci,
+			 DCI_ALLOC_t *dci_alloc, 
+			 uint32_t n_rnti,
+			 int16_t amp,
+			 LTE_DL_FRAME_PARMS *frame_parms,
+			 mod_sym_t **txdataF,
+			 uint32_t subframe) {
 
   uint8_t *e_ptr,num_pdcch_symbols;
   int8_t L;
@@ -2451,6 +2472,11 @@ void dci_decoding_procedure0(LTE_UE_PDCCH **lte_ue_pdcch_vars,int do_common,uint
 	    dci_alloc[*dci_cnt].dci_pdu[2] = dci_decoded_output[5];
 	    dci_alloc[*dci_cnt].dci_pdu[1] = dci_decoded_output[6];
 	    dci_alloc[*dci_cnt].dci_pdu[0] = dci_decoded_output[7];
+#ifdef DEBUG_DCI_DECODING
+	    msg("DCI => %x,%x,%x,%x,%x,%x,%x,%x\n",
+		dci_decoded_output[0],dci_decoded_output[1],dci_decoded_output[2],dci_decoded_output[3],
+		dci_decoded_output[4],dci_decoded_output[5],dci_decoded_output[6],dci_decoded_output[7]);
+#endif
 	  }
 	  
 	  if (crc==si_rnti) {
@@ -2540,6 +2566,7 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
   uint8_t format0_size_bits,format0_size_bytes;
   uint8_t format1_size_bits,format1_size_bytes;
   uint8_t format2_size_bits,format2_size_bytes;
+  uint8_t format2A_size_bits,format2A_size_bytes;
 
   switch (frame_parms->N_RB_DL) {
   case 6:
@@ -2550,13 +2577,17 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_1_5MHz_TDD_1_6_t);
       format1_size_bits  = sizeof_DCI1_1_5MHz_TDD_t;
       format1_size_bytes = sizeof(DCI1_1_5MHz_TDD_t);
-      if (frame_parms->nb_antennas_tx == 2) {
+      if (frame_parms->nb_antennas_tx_eNB == 2) {
 	format2_size_bits  = sizeof_DCI2_1_5MHz_2A_TDD_t;
 	format2_size_bytes = sizeof(DCI2_1_5MHz_2A_TDD_t);
+	format2A_size_bits  = sizeof_DCI2A_1_5MHz_2A_TDD_t;
+	format2A_size_bytes = sizeof(DCI2A_1_5MHz_2A_TDD_t);
       }
-      else if (frame_parms->nb_antennas_tx == 4) {
+      else if (frame_parms->nb_antennas_tx_eNB == 4) {
 	format2_size_bits  = sizeof_DCI2_1_5MHz_4A_TDD_t;
 	format2_size_bytes = sizeof(DCI2_1_5MHz_4A_TDD_t);
+	format2A_size_bits  = sizeof_DCI2A_1_5MHz_4A_TDD_t;
+	format2A_size_bytes = sizeof(DCI2A_1_5MHz_4A_TDD_t);
       }
     }
     else {
@@ -2566,13 +2597,17 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_1_5MHz_FDD_t);
       format1_size_bits  = sizeof_DCI1_1_5MHz_FDD_t;
       format1_size_bytes = sizeof(DCI1_1_5MHz_FDD_t);
-      if (frame_parms->nb_antennas_tx == 2) {
+      if (frame_parms->nb_antennas_tx_eNB == 2) {
 	format2_size_bits  = sizeof_DCI2_1_5MHz_2A_FDD_t;
 	format2_size_bytes = sizeof(DCI2_1_5MHz_2A_FDD_t);
+	format2A_size_bits  = sizeof_DCI2A_1_5MHz_2A_FDD_t;
+	format2A_size_bytes = sizeof(DCI2A_1_5MHz_2A_FDD_t);
       }
-      else if (frame_parms->nb_antennas_tx == 4) {
+      else if (frame_parms->nb_antennas_tx_eNB == 4) {
 	format2_size_bits  = sizeof_DCI2_1_5MHz_4A_FDD_t;
 	format2_size_bytes = sizeof(DCI2_1_5MHz_4A_FDD_t);
+	format2A_size_bits  = sizeof_DCI2A_1_5MHz_4A_FDD_t;
+	format2A_size_bytes = sizeof(DCI2A_1_5MHz_4A_FDD_t);
       }
     }
     break;
@@ -2585,13 +2620,17 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_5MHz_TDD_1_6_t);
       format1_size_bits  = sizeof_DCI1_5MHz_TDD_t;
       format1_size_bytes = sizeof(DCI1_5MHz_TDD_t);
-      if (frame_parms->nb_antennas_tx == 2) {
+      if (frame_parms->nb_antennas_tx_eNB == 2) {
 	format2_size_bits  = sizeof_DCI2_5MHz_2A_TDD_t;
 	format2_size_bytes = sizeof(DCI2_5MHz_2A_TDD_t);
+	format2A_size_bits  = sizeof_DCI2A_5MHz_2A_TDD_t;
+	format2A_size_bytes = sizeof(DCI2A_5MHz_2A_TDD_t);
       }
-      else if (frame_parms->nb_antennas_tx == 4) {
+      else if (frame_parms->nb_antennas_tx_eNB == 4) {
 	format2_size_bits  = sizeof_DCI2_5MHz_4A_TDD_t;
 	format2_size_bytes = sizeof(DCI2_5MHz_4A_TDD_t);
+	format2A_size_bits  = sizeof_DCI2A_5MHz_4A_TDD_t;
+	format2A_size_bytes = sizeof(DCI2A_5MHz_4A_TDD_t);
       }
     }
     else {
@@ -2601,13 +2640,17 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_5MHz_FDD_t);
       format1_size_bits  = sizeof_DCI1_5MHz_FDD_t;
       format1_size_bytes = sizeof(DCI1_5MHz_FDD_t);
-      if (frame_parms->nb_antennas_tx == 2) {
+      if (frame_parms->nb_antennas_tx_eNB == 2) {
 	format2_size_bits  = sizeof_DCI2_5MHz_2A_FDD_t;
 	format2_size_bytes = sizeof(DCI2_5MHz_2A_FDD_t);
+	format2A_size_bits  = sizeof_DCI2A_5MHz_2A_FDD_t;
+	format2A_size_bytes = sizeof(DCI2A_5MHz_2A_FDD_t);
       }
-      else if (frame_parms->nb_antennas_tx == 4) {
+      else if (frame_parms->nb_antennas_tx_eNB == 4) {
 	format2_size_bits  = sizeof_DCI2_5MHz_4A_FDD_t;
 	format2_size_bytes = sizeof(DCI2_5MHz_4A_FDD_t);
+	format2A_size_bits  = sizeof_DCI2A_5MHz_4A_FDD_t;
+	format2A_size_bytes = sizeof(DCI2A_5MHz_4A_FDD_t);
       }
     }
     break;
@@ -2619,13 +2662,17 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_10MHz_TDD_1_6_t);
       format1_size_bits  = sizeof_DCI1_10MHz_TDD_t;
       format1_size_bytes = sizeof(DCI1_10MHz_TDD_t);
-      if (frame_parms->nb_antennas_tx == 2) {
+      if (frame_parms->nb_antennas_tx_eNB == 2) {
 	format2_size_bits  = sizeof_DCI2_10MHz_2A_TDD_t;
 	format2_size_bytes = sizeof(DCI2_10MHz_2A_TDD_t);
+	format2A_size_bits  = sizeof_DCI2A_10MHz_2A_TDD_t;
+	format2A_size_bytes = sizeof(DCI2A_10MHz_2A_TDD_t);
       }
-      else if (frame_parms->nb_antennas_tx == 4) {
+      else if (frame_parms->nb_antennas_tx_eNB == 4) {
 	format2_size_bits  = sizeof_DCI2_10MHz_4A_TDD_t;
 	format2_size_bytes = sizeof(DCI2_10MHz_4A_TDD_t);
+	format2A_size_bits  = sizeof_DCI2A_10MHz_4A_TDD_t;
+	format2A_size_bytes = sizeof(DCI2A_10MHz_4A_TDD_t);
       }
     }
     else {
@@ -2635,13 +2682,17 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_10MHz_FDD_t);
       format1_size_bits  = sizeof_DCI1_10MHz_FDD_t;
       format1_size_bytes = sizeof(DCI1_10MHz_FDD_t);
-      if (frame_parms->nb_antennas_tx == 2) {
+      if (frame_parms->nb_antennas_tx_eNB == 2) {
 	format2_size_bits  = sizeof_DCI2_10MHz_2A_FDD_t;
 	format2_size_bytes = sizeof(DCI2_10MHz_2A_FDD_t);
+	format2A_size_bits  = sizeof_DCI2A_10MHz_2A_FDD_t;
+	format2A_size_bytes = sizeof(DCI2A_10MHz_2A_FDD_t);
       }
-      else if (frame_parms->nb_antennas_tx == 4) {
+      else if (frame_parms->nb_antennas_tx_eNB == 4) {
 	format2_size_bits  = sizeof_DCI2_10MHz_4A_FDD_t;
 	format2_size_bytes = sizeof(DCI2_10MHz_4A_FDD_t);
+	format2A_size_bits  = sizeof_DCI2A_10MHz_4A_FDD_t;
+	format2A_size_bytes = sizeof(DCI2A_10MHz_4A_FDD_t);
       }
     }
     break;
@@ -2654,13 +2705,17 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_20MHz_TDD_1_6_t);
       format1_size_bits  = sizeof_DCI1_20MHz_TDD_t;
       format1_size_bytes = sizeof(DCI1_20MHz_TDD_t);
-      if (frame_parms->nb_antennas_tx == 2) {
+      if (frame_parms->nb_antennas_tx_eNB == 2) {
 	format2_size_bits  = sizeof_DCI2_20MHz_2A_TDD_t;
 	format2_size_bytes = sizeof(DCI2_20MHz_2A_TDD_t);
+	format2A_size_bits  = sizeof_DCI2A_20MHz_2A_TDD_t;
+	format2A_size_bytes = sizeof(DCI2A_20MHz_2A_TDD_t);
       }
-      else if (frame_parms->nb_antennas_tx == 4) {
+      else if (frame_parms->nb_antennas_tx_eNB == 4) {
 	format2_size_bits  = sizeof_DCI2_20MHz_4A_TDD_t;
 	format2_size_bytes = sizeof(DCI2_20MHz_4A_TDD_t);
+	format2A_size_bits  = sizeof_DCI2A_20MHz_4A_TDD_t;
+	format2A_size_bytes = sizeof(DCI2A_20MHz_4A_TDD_t);
       }
     }
     else {
@@ -2670,13 +2725,17 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_20MHz_FDD_t);
       format1_size_bits  = sizeof_DCI1_20MHz_FDD_t;
       format1_size_bytes = sizeof(DCI1_20MHz_FDD_t);
-      if (frame_parms->nb_antennas_tx == 2) {
+      if (frame_parms->nb_antennas_tx_eNB == 2) {
 	format2_size_bits  = sizeof_DCI2_20MHz_2A_FDD_t;
 	format2_size_bytes = sizeof(DCI2_20MHz_2A_FDD_t);
+	format2A_size_bits  = sizeof_DCI2A_20MHz_2A_FDD_t;
+	format2A_size_bytes = sizeof(DCI2A_20MHz_2A_FDD_t);
       }
-      else if (frame_parms->nb_antennas_tx == 4) {
+      else if (frame_parms->nb_antennas_tx_eNB == 4) {
 	format2_size_bits  = sizeof_DCI2_20MHz_4A_FDD_t;
 	format2_size_bytes = sizeof(DCI2_20MHz_4A_FDD_t);
+	format2A_size_bits  = sizeof_DCI2A_20MHz_4A_FDD_t;
+	format2A_size_bytes = sizeof(DCI2A_20MHz_4A_FDD_t);
       }
     }
     break;
@@ -2981,9 +3040,117 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
     
     //#endif //ALL_AGGREGATION    
   }
+  else if (tmode == 3) {
+
+
+    // Now check UE_SPEC format 2A_2A search spaces at aggregation 1 
+    dci_decoding_procedure0(lte_ue_pdcch_vars,0,
+			    subframe,
+			    dci_alloc,
+			    eNB_id,
+			    frame_parms,
+			    mi,
+			    SI_RNTI,
+			    ra_rnti,
+			    0,
+			    format1A,
+			    format1A,
+			    format2A,
+			    format2A_size_bits,
+			    format2A_size_bytes,
+			    &dci_cnt,
+			    &format0_found,
+			    &format_c_found,
+			    &CCEmap0,
+			    &CCEmap1,
+			    &CCEmap2);
+    if ((CCEmap0==0xffff)|| 
+	((format0_found==1)&&(format_c_found==1)))
+      return(dci_cnt);
+    if (dci_cnt>old_dci_cnt)
+      return(dci_cnt);
+
+    // Now check UE_SPEC format 2 search spaces at aggregation 2 
+    dci_decoding_procedure0(lte_ue_pdcch_vars,0,
+			    subframe,
+			    dci_alloc,
+			    eNB_id,
+			    frame_parms,
+			    mi,
+			    SI_RNTI,
+			    ra_rnti,
+			    1,
+			    format1A,
+			    format1A,
+			    format2A,
+			    format2A_size_bits,
+			    format2A_size_bytes,
+			    &dci_cnt,
+			    &format0_found,
+			    &format_c_found,
+			    &CCEmap0,
+			    &CCEmap1,
+			    &CCEmap2);
+    if ((CCEmap0==0xffff)|| 
+	((format0_found==1)&&(format_c_found==1)))
+      return(dci_cnt);
+    if (dci_cnt>old_dci_cnt)
+      return(dci_cnt);
+
+    // Now check UE_SPEC format 2_2A search spaces at aggregation 4 
+    dci_decoding_procedure0(lte_ue_pdcch_vars,0,
+			    subframe,
+			    dci_alloc,
+			    eNB_id,
+			    frame_parms,
+			    mi,
+			    SI_RNTI,
+			    ra_rnti,
+			    2,
+			    format1A,
+			    format1A,
+			    format2A,
+			    format2A_size_bits,
+			    format2A_size_bytes,
+			    &dci_cnt,
+			    &format0_found,
+			    &format_c_found,
+			    &CCEmap0,
+			    &CCEmap1,
+			    &CCEmap2);
+    if ((CCEmap0==0xffff)|| 
+	((format0_found==1)&&(format_c_found==1)))
+      return(dci_cnt);
+    if (dci_cnt>old_dci_cnt)
+      return(dci_cnt);
+
+    //#ifdef ALL_AGGREGATION
+    // Now check UE_SPEC format 2_2A search spaces at aggregation 8 
+    dci_decoding_procedure0(lte_ue_pdcch_vars,0,
+			    subframe,
+			    dci_alloc,
+			    eNB_id,
+			    frame_parms,
+			    mi,
+			    SI_RNTI,
+			    ra_rnti,
+			    3,
+			    format1A,
+			    format1A,
+			    format2A,
+			    format2A_size_bits,
+			    format2A_size_bytes,
+			    &dci_cnt,
+			    &format0_found,
+			    &format_c_found,
+			    &CCEmap0,
+			    &CCEmap1,
+			    &CCEmap2);    
+    //#endif
+  }
   else if (tmode == 4) {
 
-    // Now check UE_SPEC format 2_2A_M10PRB search spaces at aggregation 1 
+    // Now check UE_SPEC format 2_2A search spaces at aggregation 1 
     dci_decoding_procedure0(lte_ue_pdcch_vars,0,
 			    subframe,
 			    dci_alloc,
@@ -3037,7 +3204,7 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
     if (dci_cnt>old_dci_cnt)
       return(dci_cnt);
 
-    // Now check UE_SPEC format 2_2A_M10PRB search spaces at aggregation 4 
+    // Now check UE_SPEC format 2_2A search spaces at aggregation 4 
     dci_decoding_procedure0(lte_ue_pdcch_vars,0,
 			    subframe,
 			    dci_alloc,
@@ -3065,7 +3232,7 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       return(dci_cnt);
 
     //#ifdef ALL_AGGREGATION
-    // Now check UE_SPEC format 2_2A_M10PRB search spaces at aggregation 8 
+    // Now check UE_SPEC format 2_2A search spaces at aggregation 8 
     dci_decoding_procedure0(lte_ue_pdcch_vars,0,
 			    subframe,
 			    dci_alloc,

@@ -291,12 +291,13 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
 							       (r==0) ? harq_process->F : 0);
 
 #ifdef DEBUG_DLSCH_DECODING    
-    msg("HARQ_PID %d Rate Matching Segment %d (coded bits %d,unpunctured/repeated bits %d, mod_order %d, nb_rb %d, Nl %d)...\n",
+    msg("HARQ_PID %d Rate Matching Segment %d (coded bits %d,unpunctured/repeated bits %d, TBS %d, mod_order %d, nb_rb %d, Nl %d)...\n",
 	harq_pid,r, G,
-	   Kr*3,
-	   get_Qm(harq_process->mcs),
-	   harq_process->nb_rb,
-	   harq_process->Nl);
+	Kr*3,
+	harq_process->TBS,
+	get_Qm(harq_process->mcs),
+	harq_process->nb_rb,
+	harq_process->Nl);
 #endif    
 
 
@@ -675,7 +676,7 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
 
     if (dlsch_abstraction_MIESM(phy_vars_ue->sinr_dB, 
 				phy_vars_ue->transmission_mode[eNB_id], 
-				dlsch_eNB->rb_alloc, 
+				dlsch_eNB->harq_processes[harq_pid]->rb_alloc, 
 				dlsch_eNB->harq_processes[harq_pid]->mcs,
 				PHY_vars_eNB_g[eNB_id][CC_id]->mu_mimo_mode[ue_id].dl_pow_off) == 1) {
       // reset HARQ 

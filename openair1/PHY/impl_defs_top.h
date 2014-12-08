@@ -406,7 +406,7 @@ typedef struct
   //! estimated correlation (wideband dB) between spatial channels (computed in dlsch_demodulation)
   int            rx_correlation_dB[NUMBER_OF_CONNECTED_eNB_MAX][2];         
 
-  /// Wideband CQI (sum of all RX antennas, in dB, for precoded transmission modes (4,5,6), up to 4 spatial streams)
+  /// Wideband CQI (sum of all RX antennas, in dB, for precoded transmission modes (3,4,5,6), up to 4 spatial streams)
   int            precoded_cqi_dB[NUMBER_OF_CONNECTED_eNB_MAX+1][4];                               
   /// Subband CQI per RX antenna (= SINR)
   int            subband_cqi[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX][NUMBER_OF_SUBBANDS_MAX];  

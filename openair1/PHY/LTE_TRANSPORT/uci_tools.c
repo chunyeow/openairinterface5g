@@ -44,7 +44,7 @@
 #ifdef DEBUG_UCI_TOOLS
 #include "PHY/vars.h"
 #endif
-//#define DEBUG_UCI
+#define DEBUG_UCI
 
 uint64_t pmi2hex_2Ar1(uint32_t pmi) {
 

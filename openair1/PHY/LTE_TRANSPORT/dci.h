@@ -1532,122 +1532,501 @@ typedef struct DCI2_20MHz_4A_FDD DCI2_20MHz_4A_FDD_t;
 // ********************FORMAT 2A DCIs*********************************
 // *******************************************************************
 
-/// DCI Format Type 2A (5 MHz, TDD, 2 Antenna Ports, 39 bits)
-struct __attribute__ ((__packed__)){
-  /// Resource Allocation Header
-  uint32_t rah:1;
-  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
-  uint32_t rballoc:13;
-  /// Power Control
-  uint32_t TPC:2;
-  /// Downlink Assignment Index
-  uint32_t dai:2;
-  /// HARQ Process
-  uint32_t harq_pid:4;
-  /// TB swap
-  uint32_t tb_swap:1;
-  /// Modulation and Coding Scheme and Redundancy Version 1
-  uint32_t mcs1:5;
-  /// New Data Indicator 1
-  uint32_t ndi1:1;
-  /// Redundancy version 1
-  uint32_t rv1:2;
-  /// Modulation and Coding Scheme and Redundancy Version 2
-  uint32_t mcs2:5;
-  /// New Data Indicator 2
-  uint32_t ndi2:1;
+/// DCI Format Type 2A (1.5 MHz, TDD, 2 Antenna Ports, 32 bits)
+struct DCI2A_1_5MHz_2A_TDD {
   /// Redundancy version 2
   uint32_t rv2:2;
-} DCI2A_5MHz_2A_TDD;
-#define sizeof_DCI2A_5MHz_2A_TDD_t 39
+  /// New Data Indicator 2
+  uint32_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint32_t mcs2:5;
+  /// Redundancy version 1
+  uint32_t rv1:2;
+  /// New Data Indicator 1
+  uint32_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint32_t mcs1:5;
+  /// TB swap
+  uint32_t tb_swap:1;
+  /// HARQ Process
+  uint32_t harq_pid:4;
+  /// Downlink Assignment Index
+  uint32_t dai:2;
+  /// Power Control
+  uint32_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint32_t rballoc:6;
+  /// Resource Allocation Header
+  uint32_t rah:1;
+} __attribute__ ((__packed__));
 
-/// DCI Format Type 2A (5 MHz, TDD, 4 Antenna Ports, 45 bits)
-typedef struct __attribute__ ((__packed__)){
-  /// Resource Allocation Header
-  uint32_t rah:1;
-  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
-  uint32_t rballoc:13;
-  /// Power Control
-  uint32_t TPC:2;
-  /// Downlink Assignment Index
-  uint32_t dai:2;
-  /// HARQ Process
-  uint32_t harq_pid:4;
-  /// TB swap
-  uint32_t tb_swap:1;
-  /// Modulation and Coding Scheme and Redundancy Version 1
-  uint32_t mcs1:5;
-  /// New Data Indicator 1
-  uint32_t ndi1:1;
-  /// Redundancy version 1
-  uint32_t rv1:2;
-  /// Modulation and Coding Scheme and Redundancy Version 2
-  uint32_t mcs2:5;
+#define sizeof_DCI2A_1_5MHz_2A_TDD_t 32
+typedef struct DCI2A_1_5MHz_2A_TDD DCI2A_1_5MHz_2A_TDD_t;
+
+/// DCI Format Type 2A (1.5 MHz, TDD, 4 Antenna Ports, 34 bits)
+struct DCI2A_1_5MHz_4A_TDD {
+  uint64_t padding:30;
+  /// TPMI information for precoding
+  uint64_t tpmi:2;
+  /// Redundancy version 2
+  uint64_t rv2:2;
   /// New Data Indicator 2
-  uint32_t ndi2:1;
+  uint64_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint64_t mcs2:5;
+  /// Redundancy version 1
+  uint64_t rv1:2;
+  /// New Data Indicator 1
+  uint64_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint64_t mcs1:5;
+  /// TB swap
+  uint64_t tb_swap:1;
+  /// HARQ Process
+  uint64_t harq_pid:4;
+  /// Downlink Assignment Index
+  uint64_t dai:2;
+  /// Power Control
+  uint64_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint64_t rballoc:6;
+  /// Resource Allocation Header
+  uint64_t rah:1;
+} __attribute__ ((__packed__));
+#define sizeof_DCI2A_1_5MHz_4A_TDD_t 34
+typedef struct DCI2A_1_5MHz_4A_TDD DCI2A_1_5MHz_4A_TDD_t;
+
+/// DCI Format Type 2A (1.5 MHz, FDD, 2 Antenna Ports, 29 bits)
+struct DCI2A_1_5MHz_2A_FDD {
+  uint32_t padding:18;
   /// Redundancy version 2
   uint32_t rv2:2;
+  /// New Data Indicator 2
+  uint32_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint32_t mcs2:5;
+  /// Redundancy version 1
+  uint32_t rv1:2;
+  /// New Data Indicator 1
+  uint32_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint32_t mcs1:5;
+  /// TB swap
+  uint32_t tb_swap:1;
+  /// HARQ Process
+  uint32_t harq_pid:3;
+  /// Power Control
+  uint32_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint32_t rballoc:6;
+  /// Resource Allocation Header
+  uint32_t rah:1;
+} __attribute__ ((__packed__));
+#define sizeof_DCI2A_1_5MHz_2A_FDD_t 29
+typedef struct DCI2A_1_5MHz_2A_FDD DCI2A_1_5MHz_2A_FDD_t;
+
+/// DCI Format Type 2A (1.5 MHz, FDD, 4 Antenna Ports, 31 bits)
+struct DCI2A_1_5MHz_4A_FDD{
+  uint32_t padding:1;
   /// TPMI information for precoding
   uint32_t tpmi:2;
-} DCI2A_5MHz_4A_TDD_t;
-#define sizeof_DCI2A_5MHz_4A_TDD_t 45
+  /// Redundancy version 2
+  uint32_t rv2:2;
+  /// New Data Indicator 2
+  uint32_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint32_t mcs2:5;
+  /// Redundancy version 1
+  uint32_t rv1:2;
+  /// New Data Indicator 1
+  uint32_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint32_t mcs1:5;
+  /// TB swap
+  uint32_t tb_swap:1;
+  /// HARQ Process
+  uint32_t harq_pid:3;
+  /// Power Control
+  uint32_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint32_t rballoc:6;
+  /// Resource Allocation Header
+  uint32_t rah:1;
+} __attribute__ ((__packed__));
+#define sizeof_DCI2A_1_5MHz_4A_FDD_t 38
+typedef struct DCI2A_1_5MHz_4A_FDD DCI2A_1_5MHz_4A_FDD_t;
+
+/// DCI Format Type 2A (5 MHz, TDD, 2 Antenna Ports, 39 bits)
+struct DCI2A_5MHz_2A_TDD {
+  uint64_t padding:25;
+  /// Redundancy version 2
+  uint64_t rv2:2;
+  /// New Data Indicator 2
+  uint64_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint64_t mcs2:5;
+  /// Redundancy version 1
+  uint64_t rv1:2;
+  /// New Data Indicator 1
+  uint64_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint64_t mcs1:5;
+  /// TB swap
+  uint64_t tb_swap:1;
+  /// HARQ Process
+  uint64_t harq_pid:4;
+  /// Downlink Assignment Index
+  uint64_t dai:2;
+  /// Power Control
+  uint64_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint64_t rballoc:13;
+  /// Resource Allocation Header
+  uint64_t rah:1;
+} __attribute__ ((__packed__));
+#define sizeof_DCI2A_5MHz_2A_TDD_t 39
+typedef struct DCI2A_5MHz_2A_TDD DCI2A_5MHz_2A_TDD_t;
+
+/// DCI Format Type 2A (5 MHz, TDD, 4 Antenna Ports, 41 bits)
+struct DCI2A_5MHz_4A_TDD {
+  uint64_t padding:23;
+  /// TPMI information for precoding
+  uint64_t tpmi:2;
+  /// Redundancy version 2
+  uint64_t rv2:2;
+  /// New Data Indicator 2
+  uint64_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint64_t mcs2:5;
+  /// Redundancy version 1
+  uint64_t rv1:2;
+  /// New Data Indicator 1
+  uint64_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint64_t mcs1:5;
+  /// TB swap
+  uint64_t tb_swap:1;
+  /// HARQ Process
+  uint64_t harq_pid:4;
+  /// Downlink Assignment Index
+  uint64_t dai:2;
+  /// Power Control
+  uint64_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint64_t rballoc:13;
+  /// Resource Allocation Header
+  uint64_t rah:1;
+} __attribute__ ((__packed__));
+#define sizeof_DCI2A_5MHz_4A_TDD_t 41
+typedef struct DCI2A_5MHz_4A_TDD DCI2A_5MHz_4A_TDD_t;
 
 /// DCI Format Type 2A (5 MHz, FDD, 2 Antenna Ports, 36 bits)
-struct __attribute__ ((__packed__)){
-  /// Resource Allocation Header
-  uint32_t rah:1;
-  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
-  uint32_t rballoc:13;
-  /// Power Control
-  uint32_t TPC:2;
-  /// HARQ Process
-  uint32_t harq_pid:3;
-  /// TB swap
-  uint32_t tb_swap:1;
-  /// Modulation and Coding Scheme and Redundancy Version 1
-  uint32_t mcs1:5;
-  /// New Data Indicator 1
-  uint32_t ndi1:1;
-  /// Redundancy version 1
-  uint32_t rv1:2;
-  /// Modulation and Coding Scheme and Redundancy Version 2
-  uint32_t mcs2:5;
-  /// New Data Indicator 2
-  uint32_t ndi2:1;
+struct DCI2A_5MHz_2A_FDD {
+  uint64_t padding:28;
   /// Redundancy version 2
-  uint32_t rv2:2;
-} DCI2A_5MHz_2A_M10PRB_FDD;
+  uint64_t rv2:2;
+  /// New Data Indicator 2
+  uint64_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint64_t mcs2:5;
+  /// Redundancy version 1
+  uint64_t rv1:2;
+  /// New Data Indicator 1
+  uint64_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint64_t mcs1:5;
+  /// TB swap
+  uint64_t tb_swap:1;
+  /// HARQ Process
+  uint64_t harq_pid:3;
+  /// Power Control
+  uint64_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint64_t rballoc:13;
+  /// Resource Allocation Header
+  uint64_t rah:1;
+} __attribute__ ((__packed__));
 #define sizeof_DCI2A_5MHz_2A_FDD_t 36
+typedef struct DCI2A_5MHz_2A_FDD DCI2A_5MHz_2A_FDD_t;
 
-/// DCI Format Type 2A (5 MHz, TDD, 4 Antenna Ports, 38 bits)
-struct __attribute__ ((__packed__)){
-  /// Resource Allocation Header
-  uint32_t rah:1;
-  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
-  uint32_t rballoc:13;
-  /// Power Control
-  uint32_t TPC:2;
-  /// HARQ Process
-  uint32_t harq_pid:3;
-  /// TB swap
-  uint32_t tb_swap:1;
-  /// Modulation and Coding Scheme and Redundancy Version 1
-  uint32_t mcs1:5;
-  /// New Data Indicator 1
-  uint32_t ndi1:1;
-  /// Redundancy version 1
-  uint32_t rv1:2;
-  /// Modulation and Coding Scheme and Redundancy Version 2
-  uint32_t mcs2:5;
-  /// New Data Indicator 2
-  uint32_t ndi2:1;
-  /// Redundancy version 2
-  uint32_t rv2:2;
+/// DCI Format Type 2A (5 MHz, FDD, 4 Antenna Ports, 38 bits)
+struct DCI2A_5MHz_4A_FDD {
+  uint64_t padding:26;
   /// TPMI information for precoding
-  uint32_t tpmi:2;
-} DCI2A_5MHz_4A_FDD;
+  uint64_t tpmi:2;
+  /// Redundancy version 2
+  uint64_t rv2:2;
+  /// New Data Indicator 2
+  uint64_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint64_t mcs2:5;
+  /// Redundancy version 1
+  uint64_t rv1:2;
+  /// New Data Indicator 1
+  uint64_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint64_t mcs1:5;
+  /// TB swap
+  uint64_t tb_swap:1;
+  /// HARQ Process
+  uint64_t harq_pid:3;
+  /// Power Control
+  uint64_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint64_t rballoc:13;
+  /// Resource Allocation Header
+  uint64_t rah:1;
+} __attribute__ ((__packed__));
 #define sizeof_DCI2A_5MHz_4A_FDD_t 38
+typedef struct DCI2A_5MHz_4A_FDD DCI2A_5MHz_4A_FDD_t;
 
+/// DCI Format Type 2A (10 MHz, TDD, 2 Antenna Ports, 39 bits)
+struct DCI2A_10MHz_2A_TDD {
+  uint64_t padding:25;
+  /// Redundancy version 2
+  uint64_t rv2:2;
+  /// New Data Indicator 2
+  uint64_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint64_t mcs2:5;
+  /// Redundancy version 1
+  uint64_t rv1:2;
+  /// New Data Indicator 1
+  uint64_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint64_t mcs1:5;
+  /// TB swap
+  uint64_t tb_swap:1;
+  /// HARQ Process
+  uint64_t harq_pid:4;
+  /// Downlink Assignment Index
+  uint64_t dai:2;
+  /// Power Control
+  uint64_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint64_t rballoc:17;
+  /// Resource Allocation Header
+  uint64_t rah:1;
+} __attribute__ ((__packed__));
+#define sizeof_DCI2A_10MHz_2A_TDD_t 39
+typedef struct DCI2A_10MHz_2A_TDD DCI2A_10MHz_2A_TDD_t;
+
+/// DCI Format Type 2A (10 MHz, TDD, 4 Antenna Ports, 41 bits)
+struct DCI2A_10MHz_4A_TDD{
+  uint64_t padding:23;
+  /// TPMI information for precoding
+  uint64_t tpmi:2;
+  /// Redundancy version 2
+  uint64_t rv2:2;
+  /// New Data Indicator 2
+  uint64_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint64_t mcs2:5;
+  /// Redundancy version 1
+  uint64_t rv1:2;
+  /// New Data Indicator 1
+  uint64_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint64_t mcs1:5;
+  /// TB swap
+  uint64_t tb_swap:1;
+  /// HARQ Process
+  uint64_t harq_pid:4;
+  /// Downlink Assignment Index
+  uint64_t dai:2;
+  /// Power Control
+  uint64_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint64_t rballoc:17;
+  /// Resource Allocation Header
+  uint64_t rah:1;
+} __attribute__ ((__packed__));
+#define sizeof_DCI2A_10MHz_4A_TDD_t 41
+typedef struct DCI2A_10MHz_4A_TDD DCI2A_10MHz_4A_TDD_t;
+
+/// DCI Format Type 2A (10 MHz, FDD, 2 Antenna Ports, 36 bits)
+struct DCI2A_10MHz_2A_FDD {
+  uint64_t padding:28;
+  /// Redundancy version 2
+  uint64_t rv2:2;
+  /// New Data Indicator 2
+  uint64_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint64_t mcs2:5;
+  /// Redundancy version 1
+  uint64_t rv1:2;
+  /// New Data Indicator 1
+  uint64_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint64_t mcs1:5;
+  /// TB swap
+  uint64_t tb_swap:1;
+  /// HARQ Process
+  uint64_t harq_pid:3;
+  /// Power Control
+  uint64_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint64_t rballoc:17;
+  /// Resource Allocation Header
+  uint64_t rah:1;
+} __attribute__ ((__packed__));
+#define sizeof_DCI2A_10MHz_2A_FDD_t 36
+typedef struct DCI2A_10MHz_2A_FDD DCI2A_10MHz_2A_FDD_t;
+
+/// DCI Format Type 2A (10 MHz, FDD, 4 Antenna Ports, 38 bits)
+struct DCI2A_10MHz_4A_FDD{
+  uint64_t padding:26;
+  /// TPMI information for precoding
+  uint64_t tpmi:2;
+  /// Redundancy version 2
+  uint64_t rv2:2;
+  /// New Data Indicator 2
+  uint64_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint64_t mcs2:5;
+  /// Redundancy version 1
+  uint64_t rv1:2;
+  /// New Data Indicator 1
+  uint64_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint64_t mcs1:5;
+  /// TB swap
+  uint64_t tb_swap:1;
+  /// HARQ Process
+  uint64_t harq_pid:3;
+  /// Power Control
+  uint64_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint64_t rballoc:17;
+  /// Resource Allocation Header
+  uint64_t rah:1;
+} __attribute__ ((__packed__));
+#define sizeof_DCI2A_10MHz_4A_FDD_t 38
+typedef struct DCI2A_10MHz_4A_FDD DCI2A_10MHz_4A_FDD_t;
+
+/// DCI Format Type 2A (20 MHz, TDD, 2 Antenna Ports, 51 bits)
+struct DCI2A_20MHz_2A_TDD{
+  uint64_t padding:13;
+  /// Redundancy version 2
+  uint64_t rv2:2;
+  /// New Data Indicator 2
+  uint64_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint64_t mcs2:5;
+  /// Redundancy version 1
+  uint64_t rv1:2;
+  /// New Data Indicator 1
+  uint64_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint64_t mcs1:5;
+  /// TB swap
+  uint64_t tb_swap:1;
+  /// HARQ Process
+  uint64_t harq_pid:4;
+  /// Downlink Assignment Index
+  uint64_t dai:2;
+  /// Power Control
+  uint64_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint64_t rballoc:25;
+  /// Resource Allocation Header
+  uint64_t rah:1;
+} __attribute__ ((__packed__));
+#define sizeof_DCI2A_20MHz_2A_TDD_t 51
+typedef struct DCI2A_20MHz_2A_TDD DCI2A_20MHz_2A_TDD_t;
+
+/// DCI Format Type 2A (20 MHz, TDD, 4 Antenna Ports, 53 bits)
+struct DCI2A_20MHz_4A_TDD{
+  uint64_t padding:11;
+  /// TPMI information for precoding
+  uint64_t tpmi:2;
+  /// Redundancy version 2
+  uint64_t rv2:2;
+  /// New Data Indicator 2
+  uint64_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint64_t mcs2:5;
+  /// Redundancy version 1
+  uint64_t rv1:2;
+  /// New Data Indicator 1
+  uint64_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint64_t mcs1:5;
+  /// TB swap
+  uint64_t tb_swap:1;
+  /// HARQ Process
+  uint64_t harq_pid:4;
+  /// Downlink Assignment Index
+  uint64_t dai:2;
+  /// Power Control
+  uint64_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint64_t rballoc:25;
+  /// Resource Allocation Header
+  uint64_t rah:1;
+} __attribute__ ((__packed__));
+#define sizeof_DCI2A_20MHz_4A_TDD_t 53
+typedef struct DCI2A_20MHz_4A_TDD DCI2A_20MHz_4A_TDD_t;
+
+/// DCI Format Type 2A (20 MHz, FDD, 2 Antenna Ports, 48 bits)
+struct DCI2A_20MHz_2A_FDD {
+  uint64_t padding:16;
+  /// Redundancy version 2
+  uint64_t rv2:2;
+  /// New Data Indicator 2
+  uint64_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint64_t mcs2:5;
+  /// Redundancy version 1
+  uint64_t rv1:2;
+  /// New Data Indicator 1
+  uint64_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint64_t mcs1:5;
+  /// TB swap
+  uint64_t tb_swap:1;
+  /// HARQ Process
+  uint64_t harq_pid:3;
+  /// Power Control
+  uint64_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint64_t rballoc:25;
+  /// Resource Allocation Header
+  uint64_t rah:1;
+} __attribute__ ((__packed__));
+#define sizeof_DCI2A_20MHz_2A_FDD_t 48
+typedef struct DCI2A_20MHz_2A_FDD DCI2A_20MHz_2A_FDD_t;
+
+/// DCI Format Type 2A (20 MHz, FDD, 4 Antenna Ports, 50 bits)
+struct DCI2A_20MHz_4A_FDD {
+  uint64_t padding:14;
+  /// TPMI information for precoding
+  uint64_t tpmi:2;
+  /// Redundancy version 2
+  uint64_t rv2:2;
+  /// New Data Indicator 2
+  uint64_t ndi2:1;
+  /// Modulation and Coding Scheme and Redundancy Version 2
+  uint64_t mcs2:5;
+  /// Redundancy version 1
+  uint64_t rv1:2;
+  /// New Data Indicator 1
+  uint64_t ndi1:1;
+  /// Modulation and Coding Scheme and Redundancy Version 1
+  uint64_t mcs1:5;
+  /// TB swap
+  uint64_t tb_swap:1;
+  /// HARQ Process
+  uint64_t harq_pid:3;
+  /// Power Control
+  uint64_t TPC:2;
+  /// RB Assignment (ceil(log2(N_RB_DL/P)) bits)
+  uint64_t rballoc:25;
+  /// Resource Allocation Header
+  uint64_t rah:1;
+} __attribute__ ((__packed__));
+#define sizeof_DCI2A_20MHz_4A_FDD_t 50
+typedef struct DCI2A_20MHz_4A_FDD DCI2A_20MHz_4A_FDD_t;
 
 // *******************************************************************
 // ********************FORMAT 2B DCIs*********************************

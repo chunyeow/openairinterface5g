@@ -991,6 +991,7 @@ int main(int argc, char **argv) {
 				    &PHY_vars_UE->lte_frame_parms,
 				    0,
 				    SISO,
+				    PHY_vars_UE->high_speed_flag,
 				    frame_mod4);
 	      if ((pbch_tx_ant>0) && (pbch_tx_ant<4)) {
 		PHY_vars_UE->lte_frame_parms.mode1_flag = 1;
@@ -1004,6 +1005,7 @@ int main(int argc, char **argv) {
 				    &PHY_vars_eNb->lte_frame_parms,
 				    0,
 				    ALAMOUTI,
+				    PHY_vars_UE->high_speed_flag,
 				    frame_mod4);
 	      if ((pbch_tx_ant>0) && (pbch_tx_ant<4)) {
 		PHY_vars_UE->lte_frame_parms.mode1_flag = 0;

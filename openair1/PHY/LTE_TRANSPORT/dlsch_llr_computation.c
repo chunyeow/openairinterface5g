@@ -1063,7 +1063,7 @@ length = number of resource elements
     
         xmm0 = _mm_xor_si128(xmm0,xmm0); // ZERO
     
-        // 1 term for nominator of LLR
+        // 1 term for numerator of LLR
         xmm3 = _mm_subs_epi16(y1r_over2,rho_rpi);
         A = _mm_abs_epi16(xmm3); // A = |y1r/2 - rho/sqrt(8)|
         xmm2 = _mm_adds_epi16(A,y0i_over2); // = |y1r/2 - rho/sqrt(8)| + y0i/2
@@ -1071,7 +1071,7 @@ length = number of resource elements
         B = _mm_abs_epi16(xmm3); // B = |y1i/2 - rho*/sqrt(8)|
         logmax_num_re0 = _mm_adds_epi16(B,xmm2); // = |y1r/2 - rho/sqrt(8)|+|y1i/2 - rho*/sqrt(8)| + y0i/2
 
-        // 2 term for nominator of LLR        
+        // 2 term for numerator of LLR        
         xmm3 = _mm_subs_epi16(y1r_over2,rho_rmi); 
         C = _mm_abs_epi16(xmm3); // C = |y1r/2 - rho*/4|
         xmm2 = _mm_subs_epi16(C,y0i_over2); // = |y1r/2 - rho*/4| - y0i/2

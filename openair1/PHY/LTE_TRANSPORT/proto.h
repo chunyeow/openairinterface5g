@@ -128,65 +128,56 @@ void dlsch_encoding_emul(PHY_VARS_eNB *phy_vars_eNB,
 
 /** \fn allocate_REs_in_RB(mod_sym_t **txdataF,
     uint32_t *jj,
+    uint32_t *jj2,
     uint16_t re_offset,
     uint32_t symbol_offset,
-    uint8_t *output,
-    MIMO_mode_t mimo_mode,
-    uint8_t nu,
+    LTE_DL_eNB_HARQ_t *dlsch0_harq,
+    LTE_DL_eNB_HARQ_t *dlsch1_harq,
     uint8_t pilots,
-    uint8_t mod_order,
-    uint8_t precoder_index,
     int16_t amp,
     int16_t *qam_table_s,
     uint32_t *re_allocated,
     uint8_t skip_dc,
     uint8_t skip_half,
     uint8_t use2ndpilots,
-    uint8_t Nlayers,
-    uint8_t firstlayer,
     LTE_DL_FRAME_PARMS *frame_parms);
 
     \brief Fills RB with data
     \param txdataF pointer to output data (frequency domain signal)
-    \param jj index to output
+    \param jj index to output (from CW 1)
+    \param jj index to output (from CW 2)
     \param re_offset index of the first RE of the RB
     \param symbol_offset index to the OFDM symbol
-    \param output output of the channel coder, one bit per byte
-    \param mimo_mode MIMO mode
-    \param nu Layer index
+    \param dlsch0_harq Pointer to Transport block 0 HARQ structure
+    \param dlsch0_harq Pointer to Transport block 1 HARQ structure
     \param pilots =1 if symbol_offset is an OFDM symbol that contains pilots, 0 otherwise
-    \param mod_order 2=QPSK, 4=16QAM, 6=64QAM
-    \param precoder_index 36-211 W precoder column (1 layer) or matrix (2 layer) selection index
     \param amp Amplitude for symbols
-    \param qam_table_s pointer to scaled QAM table (by rho_a or rho_b)
+    \param qam_table_s0 pointer to scaled QAM table for Transport Block 0 (by rho_a or rho_b)
+    \param qam_table_s1 pointer to scaled QAM table for Transport Block 1 (by rho_a or rho_b)
     \param re_allocated pointer to allocation counter
     \param skip_dc offset for positive RBs
     \param skip_half indicate that first or second half of RB must be skipped for PBCH/PSS/SSS
     \param use2ndpilots Set to use the pilots from antenna port 1 for PDSCH
-    \param Nlayers Number of layers for this codeword
-    \param firstlayer Index of first layer (minus 7, i.e. 0..7 <-> p=7,...,14
     \param frame_parms Frame parameter descriptor
 */
 
-int32_t allocate_REs_in_RB(mod_sym_t **txdataF,
+int32_t allocate_REs_in_RB(LTE_DL_FRAME_PARMS *frame_parms,
+			   mod_sym_t **txdataF,
 			   uint32_t *jj,
+			   uint32_t *jj2,
 			   uint16_t re_offset,
 			   uint32_t symbol_offset,
-			   uint8_t *output,
-			   MIMO_mode_t mimo_mode,
-			   uint8_t nu,
+			   LTE_DL_eNB_HARQ_t *dlsch0_harq,
+			   LTE_DL_eNB_HARQ_t *dlsch1_harq,
 			   uint8_t pilots,
-			   uint8_t mod_order,
-			   uint8_t precoder_index,
 			   int16_t amp,
-			   int16_t *qam_table_s,
+			   uint8_t precoder_index,
+			   int16_t *qam_table_s0,
+			   int16_t *qam_table_s1,
 			   uint32_t *re_allocated,
 			   uint8_t skip_dc,
-			   uint8_t skip_half,
-			   uint8_t use2ndpilots,
-			   uint8_t Nlayers,
-			   uint8_t firstlayer,
-			   LTE_DL_FRAME_PARMS *frame_parms);
+			   uint8_t skip_half);
+
 
 /** \fn int32_t dlsch_modulation(mod_sym_t **txdataF,
     int16_t amp,
@@ -201,15 +192,17 @@ int32_t allocate_REs_in_RB(mod_sym_t **txdataF,
     @param sub_frame_offset Offset of this subframe in units of subframes (usually 0)
     @param frame_parms Pointer to frame descriptor
     @param num_pdcch_symbols Number of PDCCH symbols in this subframe
-    @param dlsch Pointer to DLSCH descriptor for this allocation
+    @param dlsch0 Pointer to Transport Block 0 DLSCH descriptor for this allocation
+    @param dlsch1 Pointer to Transport Block 0 DLSCH descriptor for this allocation
 
 */ 
 int32_t dlsch_modulation(mod_sym_t **txdataF,
-		     int16_t amp,
-		     uint32_t sub_frame_offset,
-		     LTE_DL_FRAME_PARMS *frame_parms,
-		     uint8_t num_pdcch_symbols,
-		     LTE_eNB_DLSCH_t *dlsch);
+			 int16_t amp,
+			 uint32_t sub_frame_offset,
+			 LTE_DL_FRAME_PARMS *frame_parms,
+			 uint8_t num_pdcch_symbols,
+			 LTE_eNB_DLSCH_t *dlsch0,
+			 LTE_eNB_DLSCH_t *dlsch1);
 /*
   \brief This function is the top-level routine for generation of the sub-frame signal (frequency-domain) for MCH.  
   @param txdataF Table of pointers for frequency-domain TX signals
@@ -861,6 +854,7 @@ void dlsch_detection_mrc(LTE_DL_FRAME_PARMS *frame_parms,
     @param rb_alloc RB allocation vector
     @param symbol Symbol to extract
     @param subframe Subframe number
+    @param high_speed_flag
     @param frame_parms Pointer to frame descriptor
 */
 uint16_t dlsch_extract_rbs_single(int32_t **rxdataF,
@@ -872,6 +866,7 @@ uint16_t dlsch_extract_rbs_single(int32_t **rxdataF,
 				  uint32_t *rb_alloc,
 				  uint8_t symbol,
 				  uint8_t subframe,
+				  uint32_t high_speed_flag,
 				  LTE_DL_FRAME_PARMS *frame_parms);
 
 /** \fn dlsch_extract_rbs_dual(int32_t **rxdataF,
@@ -894,6 +889,7 @@ uint16_t dlsch_extract_rbs_single(int32_t **rxdataF,
     @param rb_alloc RB allocation vector
     @param symbol Symbol to extract
     @param subframe Subframe index
+    @param high_speed_flag
     @param frame_parms Pointer to frame descriptor
 */
 uint16_t dlsch_extract_rbs_dual(int32_t **rxdataF,
@@ -905,6 +901,7 @@ uint16_t dlsch_extract_rbs_dual(int32_t **rxdataF,
 				uint32_t *rb_alloc,
 				uint8_t symbol,
 				uint8_t subframe,
+				uint32_t high_speed_flag,
 				LTE_DL_FRAME_PARMS *frame_parms);
 
 /** \brief This function performs channel compensation (matched filtering) on the received RBs for this allocation.  In addition, it computes the squared-magnitude of the channel with weightings for 16QAM/64QAM detection as well as dual-stream detection (cross-correlation)
@@ -944,7 +941,7 @@ void dlsch_dual_stream_correlation(LTE_DL_FRAME_PARMS *frame_parms,
                                    int **dl_ch_rho_ext,
                                    unsigned char output_shift);
 
-void dlsch_channel_compensation_prec(int **rxdataF_ext,
+void dlsch_channel_compensation_TM56(int **rxdataF_ext,
 				     int **dl_ch_estimates_ext,
 				     int **dl_ch_mag,
 				     int **dl_ch_magb,
@@ -959,6 +956,17 @@ void dlsch_channel_compensation_prec(int **rxdataF_ext,
 				     unsigned char output_shift,
 				     unsigned char dl_power_off);
 
+void dlsch_channel_compensation_TM3(LTE_DL_FRAME_PARMS *frame_parms,
+				    LTE_UE_PDSCH *lte_ue_pdsch_vars,
+				    PHY_MEASUREMENTS *phy_measurements,
+				    int eNB_id,
+				    unsigned char symbol,
+				    unsigned char mod_order0,
+				    unsigned char mod_order1,
+				    unsigned short nb_rb,
+				    unsigned char output_shift);
+
+
 /** \brief This function computes the average channel level over all allocated RBs and antennas (TX/RX) in order to compute output shift for compensated signal
     @param dl_ch_estimates_ext Channel estimates in allocated RBs
     @param frame_parms Pointer to frame descriptor
@@ -972,7 +980,13 @@ void dlsch_channel_level(int32_t **dl_ch_estimates_ext,
 			 uint8_t pilots_flag,
 			 uint16_t nb_rb);
 
-void dlsch_channel_level_prec(int32_t **dl_ch_estimates_ext,
+void dlsch_channel_level_TM3(int **dl_ch_estimates_ext,
+			     LTE_DL_FRAME_PARMS *frame_parms,
+			     int *avg,
+			     uint8_t symbol,
+			     unsigned short nb_rb);
+
+void dlsch_channel_level_TM56(int32_t **dl_ch_estimates_ext,
                               LTE_DL_FRAME_PARMS *frame_parms,
                               unsigned char *pmi_ext,
                               int32_t *avg,
@@ -1045,12 +1059,13 @@ int32_t rx_pdsch(PHY_VARS_UE *phy_vars_ue,
 	     uint8_t harq_pid);
 
 int32_t rx_pdcch(LTE_UE_COMMON *lte_ue_common_vars,
-	     LTE_UE_PDCCH **lte_ue_pdcch_vars,
-	     LTE_DL_FRAME_PARMS *frame_parms,
-	     uint8_t subframe,
-	     uint8_t eNB_id,
-	     MIMO_mode_t mimo_mode,
-	     uint8_t is_secondary_ue);
+		 LTE_UE_PDCCH **lte_ue_pdcch_vars,
+		 LTE_DL_FRAME_PARMS *frame_parms,
+		 uint8_t subframe,
+		 uint8_t eNB_id,
+		 MIMO_mode_t mimo_mode,
+		 uint32_t high_speed_flag,
+		 uint8_t is_secondary_ue);
 /*! \brief Performs detection of SSS to find cell ID and other framing parameters (FDD/TDD, normal/extended prefix)
   @param phy_vars_ue Pointer to UE variables
   @param tot_metric Pointer to variable containing maximum metric under framing hypothesis (to be compared to other hypotheses
@@ -1069,6 +1084,7 @@ uint16_t rx_pbch(LTE_UE_COMMON *lte_ue_common_vars,
 		 LTE_DL_FRAME_PARMS *frame_parms,
 		 uint8_t eNB_id,
 		 MIMO_mode_t mimo_mode,
+		 uint32_t high_speed_flag,
 		 uint8_t frame_mod4);
 
 uint16_t rx_pbch_emul(PHY_VARS_UE *phy_vars_ue,
@@ -1144,12 +1160,12 @@ uint16_t extract_crc(uint8_t *dci,uint8_t DCI_LENGTH);
   \param stream0_out pointer to output stream
   \param rho01 pointer to correlation matrix
   \param length*/ 
-void qpsk_qpsk_prec(short *stream0_in,
-		    short *stream1_in,
-		    short *stream0_out,
-		    short *rho01,
-		    int length
-		    );
+void qpsk_qpsk_TM3456(short *stream0_in,
+		      short *stream1_in,
+		      short *stream0_out,
+		      short *rho01,
+		      int length
+		      );
 
 /** \brief Attempt decoding of a particular DCI with given length and format.
     @param DCI_LENGTH length of DCI in bits
@@ -1710,10 +1726,7 @@ void init_prach_tables(int N_ZC);
 */
 int is_pmch_subframe(frame_t frame, int subframe, LTE_DL_FRAME_PARMS *frame_parms);
  
-//ICIC algos
-uint8_t Get_SB_size(uint8_t n_rb_dl);
-//end ALU's algo
-
+uint8_t is_not_pilot(uint8_t pilots, uint8_t re, uint8_t nushift, uint8_t use2ndpilots);
 
 uint32_t dlsch_decoding_abstraction(double *dlsch_MIPB,
 				    LTE_DL_FRAME_PARMS *lte_frame_parms,
@@ -1725,12 +1738,13 @@ uint32_t dlsch_decoding_abstraction(double *dlsch_MIPB,
 double get_pa_dB(PDSCH_CONFIG_DEDICATED *pdsch_config_dedicated);
 
 double computeRhoA_eNB(PDSCH_CONFIG_DEDICATED *pdsch_config_dedicated,  
-                       LTE_eNB_DLSCH_t *dlsch_eNB );
+                       LTE_eNB_DLSCH_t *dlsch_eNB,
+		       int dl_power_off);
 
 double computeRhoB_eNB(PDSCH_CONFIG_DEDICATED  *pdsch_config_dedicated,
                        PDSCH_CONFIG_COMMON *pdsch_config_common,
                        uint8_t n_antenna_port,
-                       LTE_eNB_DLSCH_t *dlsch_eNB);
+                       LTE_eNB_DLSCH_t *dlsch_eNB,int dl_power_off);
 
 double computeRhoA_UE(PDSCH_CONFIG_DEDICATED *pdsch_config_dedicated,  
                       LTE_UE_DLSCH_t *dlsch_ue,

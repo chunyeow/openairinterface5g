@@ -498,7 +498,7 @@ void phy_scope_UE(FD_lte_phy_scope_ue *form,
     pdcch_comp = (int16_t*) phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->rxdataF_comp[0];
     pdsch_llr = (int16_t*) phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->llr[0]; // stream 0
     //    pdsch_llr = (int16_t*) phy_vars_ue->lte_ue_pdsch_vars_SI[eNB_id]->llr[0]; // stream 0
-    pdsch_comp = (int16_t*) phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->rxdataF_comp[0];
+    pdsch_comp = (int16_t*) phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0[0];
     
     // Received signal in time domain of receive antenna 0
     if (rxsig_t != NULL) { 
@@ -633,22 +633,22 @@ void phy_scope_UE(FD_lte_phy_scope_ue *form,
 
     // PDSCH LLRs
     if (pdsch_llr != NULL) {
-        for (i=0; i<coded_bits_per_codeword; i++) {
-            llr[i] = (float) pdsch_llr[i];
+        for (i=0; i<coded_bits_per_codeword/4; i++) {
+            llr[i] = (float) pdsch_llr[4*i];
             bit[i] = (float) i;
         }
 
-        fl_set_xyplot_xbounds(form->pdsch_llr,0,coded_bits_per_codeword);        
-        fl_set_xyplot_data(form->pdsch_llr,bit,llr,coded_bits_per_codeword,"","","");
+        fl_set_xyplot_xbounds(form->pdsch_llr,0,coded_bits_per_codeword/4);        
+        fl_set_xyplot_data(form->pdsch_llr,bit,llr,coded_bits_per_codeword/4,"","","");
     }
     
     // PDSCH I/Q of MF Output
     if (pdsch_comp!=NULL) {
         ind=0;
         for (k=0; k<frame_parms->symbols_per_tti; k++) {
-            for (i=0; i<12*frame_parms->N_RB_DL; i++) {
-                I[ind] = pdsch_comp[(2*frame_parms->N_RB_DL*12*k)+2*i];
-                Q[ind] = pdsch_comp[(2*frame_parms->N_RB_DL*12*k)+2*i+1];
+            for (i=0; i<12*frame_parms->N_RB_DL/2; i++) {
+                I[ind] = pdsch_comp[(2*frame_parms->N_RB_DL*12*k)+4*i];
+                Q[ind] = pdsch_comp[(2*frame_parms->N_RB_DL*12*k)+4*i+1];
                 ind++;
             }
         }
