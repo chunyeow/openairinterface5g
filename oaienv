@@ -3,6 +3,7 @@ export OPENAIR_HOME=$(pwd)
 export OPENAIR1_DIR=$OPENAIR_HOME/openair1
 export OPENAIR2_DIR=$OPENAIR_HOME/openair2
 export OPENAIR3_DIR=$OPENAIR_HOME/openair3
+export OPENAIRCN_DIR=$OPENAIR_HOME/openair-cn
 export OPENAIR_TARGETS=$OPENAIR_HOME/targets
 export OPENAIRCN_DIR=$OPENAIR_HOME/openair-cn
 

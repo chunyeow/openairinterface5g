@@ -72,9 +72,9 @@
 #include "sgw_lite_ie_defs.h"
 #include "ip_forward_messages_types.h"
 
-//# define SGI_IF_DEBUG(x, args...)
-//# define SGI_IF_ERROR(x, args...)
-//# define SGI_IF_WARNING(x, args...)
+# define SGI_IF_DEBUG(x, args...)
+# define SGI_IF_ERROR(x, args...)
+# define SGI_IF_WARNING(x, args...)
 //-----------------------------------------------------------------------------
 #ifndef SGI_IF_DEBUG
 # define SGI_IF_DEBUG(x, args...) do { fprintf(stdout, "[SGI_IF][D]"x, ##args); } \

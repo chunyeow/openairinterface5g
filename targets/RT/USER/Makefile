@@ -108,9 +108,11 @@ include $(OPENAIR3_DIR)/RAL-LTE/Makefile.inc
 ifeq ($(USRP),1)
 
 include $(OPENAIR_TARGETS)/ARCH/USRP/USERSPACE/LIB/Makefile.inc
-CFLAGS += -I/opt/include/uhd -L/opt/lib -luhd -lpthread -lstdc++
+#CFLAGS += -I/opt/include/uhd -L/opt/lib -luhd -lpthread -lstdc++
+CFLAGS += -I/usr/include/uhd -L/usr/lib -luhd -lpthread -lstdc++
 CFLAGS += -DUSRP
-LDFLAGS += -L/opt/lib -luhd -lpthread -lstdc++ 
+#LDFLAGS += -L/opt/lib -luhd -lpthread -lstdc++ 
+LDFLAGS += -L/usr/lib/ -luhd -lpthread -lstdc++
 endif
 
 ifeq ($(ETHERNET),1)
@@ -230,7 +232,7 @@ $(LFDS_LIB):
 ifeq ($(USRP),1)
 $(USRP_OBJ):$(USRP_FILE_OBJ)
 	@echo Compiling $<
-	@$(CXX) -c  $(USRP_CFLAGS) $(USRP_FILE_OBJ) -o $(USRP_OBJ)
+	@$(CXX) -c  -g -ggdb $(USRP_CFLAGS) $(USRP_FILE_OBJ) -o $(USRP_OBJ)
 endif
 
 ifeq ($(ETHERNET),1)

@@ -596,7 +596,7 @@ gtpv1u_new_data_req(
     stack_req.apiInfo.sendtoInfo.teid   = bearer_p->teid_sgw;
     stack_req.apiInfo.sendtoInfo.ipAddr = bearer_p->sgw_ip_addr;
 
-    LOG_I(GTPU, "TX TO TEID %u addr 0x%x\n",bearer_p->teid_sgw, bearer_p->sgw_ip_addr);
+    LOG_D(GTPU, "TX TO TEID %u addr 0x%x\n",bearer_p->teid_sgw, bearer_p->sgw_ip_addr);
     rc = nwGtpv1uGpduMsgNew(gtpv1u_data_p->gtpv1u_stack,
             bearer_p->teid_sgw,
             NW_FALSE,
@@ -622,7 +622,7 @@ gtpv1u_new_data_req(
         LOG_E(GTPU, "nwGtpv1uMsgDelete failed: 0x%x\n", rc);
         return -1;
     }
-    LOG_I(GTPU, "%s() return code OK\n", __FUNCTION__);
+    LOG_D(GTPU, "%s() return code OK\n", __FUNCTION__);
     return 0;
 }
 

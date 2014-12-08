@@ -50,7 +50,7 @@ fi
 if [ ! -w /usr/local/src/ ]
     then
     echo "You don't have permissions to write to /usr/local/src/"
-    exit -1
+#    exit -1
 fi
 
 cd /usr/local/src/
@@ -104,9 +104,9 @@ mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ../ > install_log.txt || exit -1
 echo "Compiling freeDiameter"
-make -j2 > install_log.txt 2>&1
+sudo make -j2 > install_log.txt 2>&1
 #make help
-make test > install_log.txt
+sudo make test > install_log.txt
 sudo make install > install_log.txt
 
 cd $CURRENT_PATH

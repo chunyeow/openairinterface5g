@@ -237,7 +237,7 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   // lock mboard clocks
   s->usrp->set_clock_source("internal");
   // set master clock rate and sample rate for tx & rx for streaming
-  s->usrp->set_master_clock_rate(15.36e6);
+  s->usrp->set_master_clock_rate(30.72e6);
 
 
 

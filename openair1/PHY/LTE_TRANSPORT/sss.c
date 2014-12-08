@@ -45,16 +45,16 @@
 
 
 int generate_sss(mod_sym_t **txdataF,
-		 short amp,
+		 int16_t amp,
 		 LTE_DL_FRAME_PARMS *frame_parms,
-		 unsigned short symbol,
-		 unsigned short slot_offset) {
+		 uint16_t symbol,
+		 uint16_t slot_offset) {
 
   uint8_t i,aa,Nsymb;
-  short *d,k;
+  int16_t *d,k;
   uint8_t Nid2;
   uint16_t Nid1;
-
+  int16_t a;
 
   Nid2 = frame_parms->Nid_cell % 3;
   Nid1 = frame_parms->Nid_cell/3;
@@ -66,14 +66,16 @@ int generate_sss(mod_sym_t **txdataF,
 
   Nsymb = (frame_parms->Ncp==NORMAL)?14:12;
   k = frame_parms->ofdm_symbol_size-3*12+5;
+  a = (frame_parms->mode1_flag == 0) ? amp : (amp*ONE_OVER_SQRT2_Q15)>>15;
+   
   for (i=0;i<62;i++) {
-    //for (aa=0;aa<frame_parms->nb_antennas_tx;aa++) {
-    aa=0;
-
-      ((short*)txdataF[aa])[2*(slot_offset*Nsymb/2*frame_parms->ofdm_symbol_size +
+    for (aa=0;aa<frame_parms->nb_antennas_tx;aa++) {
+      //aa=0;
+      
+      ((int16_t*)txdataF[aa])[2*(slot_offset*Nsymb/2*frame_parms->ofdm_symbol_size +
 			       symbol*frame_parms->ofdm_symbol_size + k)] = 
 	(amp * d[i]); 
-      ((short*)txdataF[aa])[2*(slot_offset*Nsymb/2*frame_parms->ofdm_symbol_size +
+      ((int16_t*)txdataF[aa])[2*(slot_offset*Nsymb/2*frame_parms->ofdm_symbol_size +
 			       symbol*frame_parms->ofdm_symbol_size + k)+1] = 0;
       /*
       if (aa==0)
@@ -82,7 +84,7 @@ int generate_sss(mod_sym_t **txdataF,
 	       symbol*frame_parms->ofdm_symbol_size + k,
 	       (amp * d[i]),0);
       */
-      //}
+    }
     k+=1;
     if (k >= frame_parms->ofdm_symbol_size) {
       k++;
@@ -96,8 +98,8 @@ int pss_ch_est(PHY_VARS_UE *phy_vars_ue,
 	       int32_t pss_ext[4][72],
 	       int32_t sss_ext[4][72])  {
 
-  short *pss;
-  short *pss_ext2,*sss_ext2,*sss_ext3,tmp_re,tmp_im,tmp_re2,tmp_im2;
+  int16_t *pss;
+  int16_t *pss_ext2,*sss_ext2,*sss_ext3,tmp_re,tmp_im,tmp_re2,tmp_im2;
   uint8_t aarx,i;
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_ue->lte_frame_parms;
 
@@ -117,11 +119,11 @@ int pss_ch_est(PHY_VARS_UE *phy_vars_ue,
     break;
   }
 
-  sss_ext3 = (short*)&sss_ext[0][5];
+  sss_ext3 = (int16_t*)&sss_ext[0][5];
   for (aarx=0;aarx<frame_parms->nb_antennas_rx;aarx++) {
 
-    sss_ext2 = (short*)&sss_ext[aarx][5];
-    pss_ext2 = (short*)&pss_ext[aarx][5];
+    sss_ext2 = (int16_t*)&sss_ext[aarx][5];
+    pss_ext2 = (int16_t*)&pss_ext[aarx][5];
     for (i=0;i<62;i++) {
 
       // This is H*(PSS) = R* \cdot PSS
@@ -230,8 +232,8 @@ int pss_sss_extract(PHY_VARS_UE *phy_vars_ue,
 }
 
 
-short phase_re[7] = {16383, 25101, 30791, 32767, 30791, 25101, 16383};
-short phase_im[7] = {-28378, -21063, -11208, 0, 11207, 21062, 28377};
+int16_t phase_re[7] = {16383, 25101, 30791, 32767, 30791, 25101, 16383};
+int16_t phase_im[7] = {-28378, -21063, -11208, 0, 11207, 21062, 28377};
 
 
 int rx_sss(PHY_VARS_UE *phy_vars_ue,int32_t *tot_metric,uint8_t *flip_max,uint8_t *phase_max) {
@@ -357,8 +359,8 @@ int rx_sss(PHY_VARS_UE *phy_vars_ue,int32_t *tot_metric,uint8_t *flip_max,uint8_
   *tot_metric = -99999999;
   
   
-  sss0 = (short*)&sss0_ext[0][5];
-  sss5 = (short*)&sss5_ext[0][5];
+  sss0 = (int16_t*)&sss0_ext[0][5];
+  sss5 = (int16_t*)&sss5_ext[0][5];
   for (flip=0;flip<2;flip++) {        //  d0/d5 flip in RX frame
     for (phase=0;phase<=7;phase++) {  // phase offset between PSS and SSS
       for (Nid1 = 0 ; Nid1 <= 167; Nid1++) {  // 168 possible Nid1 values

@@ -291,6 +291,9 @@ unsigned int samples_per_frame = 307200;
 unsigned int samples_per_packets = 2048; // samples got every recv or send
 unsigned int tx_forward_nsamps;
 
+int sf_bounds_1_5[10]    = {8, 15, 23, 30, 38, 45, 53, 60, 68, 75};
+int sf_bounds_1_5_tx[10] = {4, 11, 19, 26, 34, 41, 49, 56, 64, 71};
+
 int sf_bounds_5[10]    = {8, 15, 23, 30, 38, 45, 53, 60, 68, 75};
 int sf_bounds_5_tx[10] = {4, 11, 19, 26, 34, 41, 49, 56, 64, 71};
 
@@ -1241,11 +1244,11 @@ void init_eNB_proc(void) {
     for (i=0;i<10;i++) {
       /*set the stack sizw */ 
       pthread_attr_init (&attr_eNB_proc_tx[CC_id][i]);
-      if (pthread_attr_setstacksize(&attr_eNB_proc_tx[CC_id][i],OPENAIR_THREAD_STACK_SIZE) != 0)
+      if (pthread_attr_setstacksize(&attr_eNB_proc_tx[CC_id][i],PTHREAD_STACK_MIN) != 0)
 	perror("[ENB_PROC_TX] setting thread stack size failed\n");
 
       pthread_attr_init (&attr_eNB_proc_rx[CC_id][i]);
-      if (pthread_attr_setstacksize(&attr_eNB_proc_rx[CC_id][i],OPENAIR_THREAD_STACK_SIZE) != 0)
+      if (pthread_attr_setstacksize(&attr_eNB_proc_rx[CC_id][i],PTHREAD_STACK_MIN) != 0)
 	perror("[ENB_PROC_RX] setting thread stack size failed\n");
       /* set the kernel scheduling policy and priority */
 #ifndef LOWLATENCY
@@ -1543,7 +1546,6 @@ static void *eNB_thread(void *arg)
 	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_TXCNT,tx_cnt);
 	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_RXCNT,rx_cnt*samples_per_packets);
 
-	printf("hw_subframe %d: rx_cnt %d\n",hw_subframe,rx_cnt);
 
 	for (i=0;i<PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_rx;i++)
 	  rxp[i] = (void*)&rxdata[i][rx_cnt*samples_per_packets];
@@ -1559,7 +1561,6 @@ static void *eNB_thread(void *arg)
 	if (rxs != samples_per_packets)
 	  oai_exit=1;
  
-	//	printf("hw_subframe %d: tx_cnt %d\n",hw_subframe,tx_cnt);
 
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,0);
 
@@ -1699,7 +1700,7 @@ static void *eNB_thread(void *arg)
 
 
 
-#ifndef USRP
+#ifdef EXMIMO
       slot++;
       if (slot == 20) {
 	frame++;
@@ -2490,13 +2491,13 @@ void init_UE_threads(void) {
   PHY_VARS_UE *UE=PHY_vars_UE_g[0][0];
 
   pthread_attr_init(&attr_UE_thread_tx);
-  pthread_attr_setstacksize(&attr_UE_thread_tx,OPENAIR_THREAD_STACK_SIZE);
+  pthread_attr_setstacksize(&attr_UE_thread_tx,PTHREAD_STACK_MIN);
   sched_param_UE_thread_tx.sched_priority = sched_get_priority_max(SCHED_FIFO)-1;
   pthread_attr_setschedparam  (&attr_UE_thread_tx, &sched_param_UE_thread_tx);
   pthread_attr_setschedpolicy (&attr_UE_thread_tx, SCHED_FIFO);
 
   pthread_attr_init(&attr_UE_thread_rx);
-  pthread_attr_setstacksize(&attr_UE_thread_rx,OPENAIR_THREAD_STACK_SIZE);
+  pthread_attr_setstacksize(&attr_UE_thread_rx,PTHREAD_STACK_MIN);
   sched_param_UE_thread_rx.sched_priority = sched_get_priority_max(SCHED_FIFO)-1;
   pthread_attr_setschedparam  (&attr_UE_thread_rx, &sched_param_UE_thread_rx);
   pthread_attr_setschedpolicy (&attr_UE_thread_rx, SCHED_FIFO);
@@ -2777,6 +2778,7 @@ static void get_options (int argc, char **argv) {
 	//for (j=0; j < enb_properties->properties[i]->nb_cc; j++ ){
 	frame_parms[CC_id]->Nid_cell            =  enb_properties->properties[i]->Nid_cell[CC_id];
 	frame_parms[CC_id]->N_RB_DL             =  enb_properties->properties[i]->N_RB_DL[CC_id];
+	frame_parms[CC_id]->N_RB_UL             =  enb_properties->properties[i]->N_RB_DL[CC_id];
 	frame_parms[CC_id]->nb_antennas_tx      =  enb_properties->properties[i]->nb_antennas_tx[CC_id];
 	frame_parms[CC_id]->nb_antennas_tx_eNB  =  enb_properties->properties[i]->nb_antennas_tx[CC_id];
 	frame_parms[CC_id]->nb_antennas_rx      =  enb_properties->properties[i]->nb_antennas_rx[CC_id];
@@ -3251,11 +3253,23 @@ int main(int argc, char **argv) {
     tx_delay = 5;
 #endif
   }
+  else if (frame_parms[0]->N_RB_DL == 6) {
+    sample_rate = 1.92e6;
+#ifndef EXMIMO
+    samples_per_packets = 256;
+    samples_per_frame = 19200;
+    tx_forward_nsamps = 40;
+    sf_bounds = sf_bounds_1_5;
+    sf_bounds_tx = sf_bounds_1_5_tx;
+    max_cnt = 75;
+    tx_delay = 5;
+#endif
+  }
   
 
   for (card=0;card<MAX_CARDS;card++) {
 #ifndef EXMIMO
-    openair0_cfg[card].samples_per_packet = samples_per_packets;
+    openair0_cfg[card].samples_per_packet = 1024;//samples_per_packets;
 #endif
     printf("HW: Configuring card %d, nb_antennas_tx/rx %d/%d\n",card,
 	   ((UE_flag==0) ? PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_tx : PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_tx),
@@ -3338,6 +3352,7 @@ int main(int argc, char **argv) {
   init_predef_traffic(UE_flag ? 1 : 0, UE_flag ? 0 : 1);
   //  }
   #endif */
+
 #ifdef EXMIMO
   number_of_cards = openair0_num_detected_cards;
 #else
@@ -3348,7 +3363,7 @@ int main(int argc, char **argv) {
 
   for(CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
     rf_map[CC_id].card=0;
-    rf_map[CC_id].chain=CC_id;
+    rf_map[CC_id].chain=CC_id+3;
   }
 
   // connect the TX/RX buffers
@@ -3510,7 +3525,7 @@ int main(int argc, char **argv) {
 
 #ifndef RTAI
   pthread_attr_init (&attr_dlsch_threads);
-  pthread_attr_setstacksize(&attr_dlsch_threads,OPENAIR_THREAD_STACK_SIZE);
+  pthread_attr_setstacksize(&attr_dlsch_threads,PTHREAD_STACK_MIN);
 
 #ifndef LOWLATENCY
   sched_param_dlsch.sched_priority = sched_get_priority_max(SCHED_FIFO); //OPENAIR_THREAD_PRIORITY;
@@ -3518,7 +3533,7 @@ int main(int argc, char **argv) {
   pthread_attr_setschedpolicy (&attr_dlsch_threads, SCHED_FIFO);
 #endif 
   pthread_attr_init (&attr_UE_init_synch);
-  pthread_attr_setstacksize(&attr_UE_init_synch,OPENAIR_THREAD_STACK_SIZE);
+  pthread_attr_setstacksize(&attr_UE_init_synch,PTHREAD_STACK_MIN);
   sched_param_UE_init_synch.sched_priority = sched_get_priority_max(SCHED_FIFO); //OPENAIR_THREAD_PRIORITY;
   pthread_attr_setschedparam  (&attr_UE_init_synch, &sched_param_UE_init_synch);
   pthread_attr_setschedpolicy (&attr_UE_init_synch, SCHED_FIFO);
@@ -3557,7 +3572,7 @@ int main(int argc, char **argv) {
     }
     printf("Creating main eNB_thread \n");
 #ifdef RTAI
-    main_eNB_thread = rt_thread_create(eNB_thread, NULL, OPENAIR_THREAD_STACK_SIZE);
+    main_eNB_thread = rt_thread_create(eNB_thread, NULL, PTHREAD_STACK_MIN);
 #else
     error_code = pthread_create(&main_eNB_thread, &attr_dlsch_threads, eNB_thread, NULL);
     if (error_code!= 0) {
@@ -3891,14 +3906,14 @@ int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_c
 
     for (i=0;i<frame_parms->nb_antennas_rx;i++) {
       free(phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i]);
-      rxdata[i] = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
+      rxdata[i] = (int32_t*)(16 + malloc16(16+samples_per_frame*sizeof(int32_t)));
       phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i] = rxdata[i]-N_TA_offset; // N_TA offset for TDD
       memset(rxdata[i], 0, samples_per_frame*sizeof(int32_t));
       printf("rxdata[%d] @ %p (%p) (N_TA_OFFSET %d)\n", i, phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i],rxdata[i],N_TA_offset);
     }
     for (i=0;i<frame_parms->nb_antennas_tx;i++) {
       free(phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i]);
-      txdata[i] = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
+      txdata[i] = (int32_t*)(16 + malloc16(16+samples_per_frame*sizeof(int32_t)));
       phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i] = txdata[i];
       memset(txdata[i], 0, samples_per_frame*sizeof(int32_t));
       printf("txdata[%d] @ %p\n", i, phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i]);

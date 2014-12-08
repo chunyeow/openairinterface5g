@@ -69,6 +69,8 @@ PHY_VARS_eNB* init_lte_eNB(LTE_DL_FRAME_PARMS *frame_parms,
   LOG_I(PHY,"init eNB: frame_type %d,tdd_config %d\n", frame_parms->frame_type,frame_parms->tdd_config);
   LOG_I(PHY,"init eNB: number of ue max %d number of enb max %d number of harq pid max %d\n", 
 	NUMBER_OF_UE_MAX, NUMBER_OF_eNB_MAX, NUMBER_OF_HARQ_PID_MAX);
+  LOG_I(PHY,"init eNB: N_RB_DL %d\n", frame_parms->N_RB_DL);
+  LOG_I(PHY,"init eNB: Transmission mode %d\n", transmission_mode);
 
   for (i=0;i<NUMBER_OF_UE_MAX;i++) {
     for (j=0;j<2;j++) {

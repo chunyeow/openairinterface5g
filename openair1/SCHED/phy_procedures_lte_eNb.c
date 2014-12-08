@@ -2627,7 +2627,7 @@ void prach_procedures(PHY_VARS_eNB *phy_vars_eNB,uint8_t sched_subframe,uint8_t 
 	preamble_delay_list[preamble_max]);
 #endif
 
-  if (preamble_energy_list[preamble_max] > 600) {
+  if (preamble_energy_list[preamble_max] > 580) {
     /*
     write_output("prach_ifft0.m","prach_t0",prach_ifft[0],2048,1,1);
     write_output("prach_rx0.m","prach_rx0",&phy_vars_eNB->lte_eNB_common_vars.rxdata[0][0][subframe*phy_vars_eNB->lte_frame_parms.samples_per_tti],6144+792,1,1);
@@ -3098,7 +3098,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	    LOG_I(PHY,"[eNB %d] frame %d, subframe %d, UE %d: ULSCH consecutive error count reached %u, removing UE\n",
 		  phy_vars_eNB->Mod_id,frame,subframe, i, phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors);
 
-	    mac_xface->macphy_exit("Consecutive error count reached");
+	    //	    mac_xface->macphy_exit("Consecutive error count reached");
 
 	    phy_vars_eNB->eNB_UE_stats[i].mode = PRACH;
 #ifdef OPENAIR2
