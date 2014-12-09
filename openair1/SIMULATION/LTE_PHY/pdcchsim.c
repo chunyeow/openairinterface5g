@@ -1181,6 +1181,7 @@ int main(int argc, char **argv) {
       	        subframe,
       	        0,
       	        (PHY_vars_UE->lte_frame_parms.mode1_flag == 1) ? SISO : ALAMOUTI,
+                PHY_vars_UE->high_speed_flag,
       	        PHY_vars_UE->is_secondary_ue); 
         
         if (is_phich_subframe(&PHY_vars_UE->lte_frame_parms,subframe)) {
