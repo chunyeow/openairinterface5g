@@ -47,28 +47,31 @@ check_for_root_rights
 ######################################
 
 #only one could be set at the time
-BUILD_LTE="ENB" # ENB, EPC, HSS, NONE
+declare BUILD_LTE="ENB" # ENB, EPC, HSS, NONE
 
-HW="EXMIMO" # EXMIMO, USRP, ETHERNET, NONE
-TARGET="ALL" # ALL, SOFTMODEM, OAISIM, UNISIM, NONE
-ENB_S1=1
-REL="REL8" # REL8, REL10
-RT="NONE" # RTAI, RT_PREMPT or RT_DISABLED, NONE
-DEBUG=0
+declare HW="EXMIMO" # EXMIMO, USRP, ETHERNET, NONE
+declare TARGET="ALL" # ALL, SOFTMODEM, OAISIM, UNISIM, NONE
+declare ENB_S1=1
+declare REL="REL8" # REL8, REL10
+declare RT="NONE" # RTAI, RT_PREMPT or RT_DISABLED, NONE
+declare DEBUG=0
+declare CONFIG_FILE=""
+declare EXE_ARGUMENTS=""
+declare RUN_GDB=0
+declare DISABLE_CHECK_INSTALLED_SOFTWARE=0
 
-
-OAI_TEST=0
-XFORMS=0
+declare OAI_TEST=0
+declare XFORMS=0
 
 # script is not currently handling these params
-EPC=0 # flag to build EPC
+declare EPC=0 # flag to build EPC
 
-ITTI_ANALYZER=0
-VCD_TIMING=0
-WIRESHARK=0
-TIME_MEAS=0
-DOXYGEN=0
-DEV=0
+declare ITTI_ANALYZER=0
+declare VCD_TIMING=0
+declare WIRESHARK=0
+declare TIME_MEAS=0
+declare DOXYGEN=0
+declare DEV=0
 
 EMULATION_DEV_INTERFACE="eth0"
 EMULATION_MULTICAST_GROUP=1
@@ -87,79 +90,128 @@ fi
 #    echo "i is : $i"
 #    case $i in
 
-while getopts "abcdmsxzhe:l:w:r:t:" OPTION; do
-   case "$OPTION" in
-       a)
-	 DOXYGEN=1
-	 echo "setting doxygen flag to: $DOXYGEN"
-	 ;;
-       b)
-	   ENB_S1=0
-	   echo "disable eNB S1 flag"
-	   ;;
-       c)
-	   rm -rf ./.lock_oaibuild
-	   OAI_CLEAN=1
-	   echo "setting clean flag to: $OAI_CLEAN"
-	   echo "check package installation, and recompile OAI"
-	   ;;
-       d)
-	   DEBUG=1
-	   echo "setting debug flag to: $DEBUG"
-	   ;;
-       e)
-	   RT="$OPTARG"
-	   echo "setting realtime flag to: $RT"
-	   ;;
-       l) 
-	   BUILD_LTE="$OPTARG"
-	   echo "setting top-level build target to: $OPTARG"
-	   ;;
-       h)
-	   print_help
-	   exit -1
-	   ;;
-       m)
-	   BUILD_FROM_MAKEFILE=1
-	   set_build_from_makefile $BUILD_FROM_MAKEFILE
-	   echo "setting a flag to build from makefile to: $BUILD_FROM_MAKEFILE"
-	   ;;
-       r)
-	   REL="$OPTARG" 
-	   echo "setting release to: $REL"
-	   ;;
-       s)
-	   OAI_TEST=1
-	   echo "setting sanity check to: $OAI_TEST"
-	   ;;
-       t)
-	   TARGET="$OPTARG" 
-	   echo "setting target to: $TARGET"
-	   ;;
-       w)
-	   HW="$OPTARG" #"${i#*=}"
-	   echo "setting hardware to: $HW"
-	   ;;
-       x)
-	   XFORMS=1
-	   echo "setting xforms to: $XFORMS"
-	   ;;
-       z)
-	   echo "setting all parameters to: default"
-	   rm -rf ./.lock_oaibuild
-	   OAI_CLEAN=1
-	   HW="EXMIMO"
-	   TARGET="ALL" 
-	   ENB_S1=1
-	   REL="REL8" 
-	   RT="NONE"
-	   DEBUG=0
-	   ENB_CONFIG_FILE=$OPENAIR_TARGETS/"PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.conf"
-	   OAI_TEST=0
-  	   ;;
-       *)
+
+
+while true; do
+  case "$1" in
+       -a | --doxygen)
+            DOXYGEN=1
+            echo "setting doxygen flag to: $DOXYGEN"
+            shift;
+            ;;
+       -b | --disable-s1)
+            ENB_S1=0
+            echo "disable eNB S1 flag"
+            shift;
+            ;;
+       -c | --clean)
+            rm -rf ./.lock_oaibuild
+            OAI_CLEAN=1
+            echo "setting clean flag to: $OAI_CLEAN"
+            echo "may check package installation, and recompile OAI"
+            shift;
+            ;;
+       -C | --config-file)
+            CONFIG_FILE=$2
+            echo "setting config file to: $CONFIG_FILE"
+            EXE_ARGUMENTS ="$EXE_ARGUMENTS -O $CONFIG_FILE"
+            shift 2;
+            ;;
+       -d | --debug)
+            DEBUG=1
+            echo "setting debug flag to: $DEBUG"
+            shift;
+            ;;
+       -D | --disable-check-installed-software)
+            DISABLE_CHECK_INSTALLED_SOFTWARE=1
+            echo "disable check installed software"
+            shift;
+            ;;
+       -e | --realtime)
+            RT="$2"
+            echo "setting realtime flag to: $RT"
+            shift 2 ;
+            ;;
+       -g | --run-with-gdb)
+            RUN_GDB=1
+            echo "Running with gdb"
+            shift 2 ;
+            ;;
+       -K | --itti-dump-file)
+            ITTI_ANALYZER=1
+            ITTI_DUMP_FILE=$2
+            echo "setting ITTI dump file to: $ITTI_DUMP_FILE"
+            EXE_ARGUMENTS="$EXE_ARGUMENTS -K $ITTI_DUMP_FILE"
+            shift 2;
+            ;;
+       -l | --build-target) 
+            BUILD_LTE="$2"
+            echo "setting top-level build target to: $2"
+            shift 2;
+            ;;
+       -h | --help)
+            print_help
+            exit -1
+            ;;
+       -m | --build-from-makefile)
+            BUILD_FROM_MAKEFILE=1
+            set_build_from_makefile $BUILD_FROM_MAKEFILE
+            echo "setting a flag to build from makefile to: $BUILD_FROM_MAKEFILE"
+            shift;
+            ;;
+       -r | --3gpp-release)
+            REL="$2" 
+            echo "setting release to: $REL"
+            shift 2 ;
+            ;;
+       -s | --check)
+            OAI_TEST=1
+            echo "setting sanity check to: $OAI_TEST"
+            shift;
+            ;;
+       -t | --enb-build-target)
+            TARGET="$2" 
+            echo "setting target to: $TARGET"
+            shift 2;
+            ;;
+       -V | --vcd)
+            echo "setting gtk-wave output"
+            VCD_TIMING=1
+            EXE_ARGUMENTS="$EXE_ARGUMENTS -V"
+            shift ;
+            ;;
+       -w | --hardware)
+            HW="$2" #"${i#*=}"
+            echo "setting hardware to: $HW"
+            shift 2 ;
+            ;;
+       -x | --xforms)
+            XFORMS=1
+            echo "setting xforms to: $XFORMS"
+            shift;
+            ;;
+       -z | --defaults)
+            echo "setting all parameters to: default"
+            rm -rf ./.lock_oaibuild
+            OAI_CLEAN=1
+            HW="EXMIMO"
+            TARGET="ALL" 
+            ENB_S1=1
+            REL="REL8" 
+            RT="NONE"
+            DEBUG=0
+            ENB_CONFIG_FILE=$OPENAIR_TARGETS/"PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.conf"
+            OAI_TEST=0
+            shift ;
+            ;;
+       ' ')   
+            shift ;
+            ;;
+       *)   
+            echo "Unknown option $1"
+            break ;
             # unknown option
-	   ;;
+            ;;
    esac
 done
 
@@ -304,15 +356,18 @@ build_enb(){
 ############################################
 # check the installation
 ############################################
+    if [ $DISABLE_CHECK_INSTALLED_SOFTWARE -eq 0 ]; then 
+        echo_info "6. Checking the the required softwares/packages ..."
 
-    echo_info "6. Checking the installation ..."
-
-    check_install_oai_software  
-    if [ $HW = "USRP" ]; then 
-	check_install_usrp_uhd_driver 
+        check_install_oai_software  
+        if [ $HW = "USRP" ]; then 
+            check_install_usrp_uhd_driver 
+        fi
+        check_install_asn1c
+        check_install_nettle
+    else
+        echo_info "6. Not checking the required softwares/packages ..."
     fi
-    check_install_asn1c
-    check_install_nettle
     
 ############################################
 # compile 
@@ -416,7 +471,6 @@ build_epc(){
 
     epc_compiled=1
 
-    
     echo_info "Note: this scripts works only for Ubuntu 12.04"
 
 ######################################
@@ -572,11 +626,11 @@ esac
 ############################################
     
     if [ $DOXYGEN = 1 ]; then 
-	echo_info "9. Generate doxygen documentation ..."
-	doxygen $OPENAIR_TARGETS/DOCS/Doxyfile
-	echo_info "9.1 use your navigator to open $OPENAIR_TARGETS/DOCS/html/index.html "
+        echo_info "9. Generate doxygen documentation ..."
+        doxygen $OPENAIR_TARGETS/DOCS/Doxyfile
+        echo_info "9.1 use your navigator to open $OPENAIR_TARGETS/DOCS/html/index.html "
     else 
-	echo_info "9. Bypassing doxygen documentation ..."
+        echo_info "9. Bypassing doxygen documentation ..."
     fi 
 
 
@@ -585,13 +639,28 @@ esac
 ############################################
     
     if [ $OAI_TEST = 1 ]; then 
-	echo_info "10. Testing ..."
-	python $OPENAIR_TARGETS/TEST/OAI/test01.py
+        echo_info "10. Testing ..."
+        python $OPENAIR_TARGETS/TEST/OAI/test01.py
     else 
-	echo_info "10. Bypassing the Tests ..."
+        echo_info "10. Bypassing the Tests ..."
     fi 
     
 ############################################
 # run 
 ############################################
     echo_info "11. Running ... To be done"
+    if [ $TARGET = "SOFTMODEM" ]; then 
+        echo_info "############# running ltesoftmodem #############"
+        $OPENAIR_TARGETS/RT/USER/lte-softmodem
+        cd $OPENAIR_TARGETS/RT/USER;bash ./init_exmimo2.sh;
+        if [ $RUN_GDB -eq 0 ]; then 
+            $OPENAIR_TARGETS/RT/USER/lte-softmodem "$EXE_ARGUMENTS"
+        else
+            touch ~/.gdb_lte_softmodem
+            echo "file $OPENAIR_TARGETS/RT/USER/lte-softmodem" > ~/.gdb_lte_softmodem
+            echo "set args $EXE_ARGUMENTS" >> ~/.gdb_lte_softmodem
+            echo "run" >> ~/.gdb_lte_softmodem
+            gdb -nh -x ~/.gdb_lte_softmodem 2>&1 
+        fi
+    fi
+    
