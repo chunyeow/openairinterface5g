@@ -605,9 +605,11 @@ int config_parse_opt_line(int argc, char *argv[], mme_config_t *mme_config_p)
     int c;
     mme_config_init(mme_config_p);
     /* Parsing command line */
-    while ((c = getopt (argc, argv, "c:hi:K:v:V")) != -1) {
+    while ((c = getopt (argc, argv, "O:c:hi:K:v:V")) != -1) {
         switch (c) {
-            case 'c': {
+            case 'O':
+            case 'c':
+            {
                 /* Store the given configuration file. If no file is given,
                  * then the default values will be used.
                  */
