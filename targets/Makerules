@@ -12,7 +12,7 @@ OBJS_DIR := $(PWD)/objs
 SVN_REV := $(shell svnversion -n .)
 DATE_REV := $(shell date '+%F %T')
 
-NUM_CORES=$(shell cat /proc/cpuinfo | grep processor | wc -l)
+NUM_CORES:=$(shell cat /proc/cpuinfo | grep processor | wc -l)
 
 # Check for libraries and export cflags/linker variables
 NETTLE_FOUND    = $(shell if pkg-config --exists nettle; then echo "1" ; else echo "0"; fi)
