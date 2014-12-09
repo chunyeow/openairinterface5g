@@ -661,7 +661,8 @@ esac
 ############################################
 # run 
 ############################################
-    echo_info "11. Running ... To be done"
+echo_info "11. Running ... To be done"
+if [ $BUILD_LTE == "ENB" ]; then 
     if [ $TARGET == "SOFTMODEM" ]; then 
         if [ $HW == "EXMIMO" ]; then 
             chmod 777 $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
@@ -669,8 +670,7 @@ esac
         fi
         echo "############# running ltesoftmodem #############"
         if [ $RUN_GDB -eq 0 ]; then 
-            echo  "EXE_ARGUMENTS $EXE_ARGUMENTS"
-            exec $OPENAIR_TARGETS/bin/lte-softmodem  "$EXE_ARGUMENTS"
+            exec $OPENAIR_TARGETS/bin/lte-softmodem  `echo $EXE_ARGUMENTS`
         else
             touch ~/.gdb_lte_softmodem
             echo "file $OPENAIR_TARGETS/bin/lte-softmodem" > ~/.gdb_lte_softmodem
@@ -679,4 +679,5 @@ esac
             gdb -nh -x ~/.gdb_lte_softmodem 2>&1 
         fi
     fi
-    
+fi
+
