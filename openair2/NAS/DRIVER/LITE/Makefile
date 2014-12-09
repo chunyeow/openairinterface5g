@@ -3,8 +3,8 @@
 include $(OPENAIR_HOME)/common/utils/Makefile.inc
 NAS_UPDIR	:= $(shell /bin/pwd)
 
-KERNEL_ARCH=$(shell echo `uname -m`)
-SET_X64=$(shell if [ $(KERNEL_ARCH) = 'x86_64' ]; then echo true ; fi)
+KERNEL_ARCH:=$(shell echo `uname -m`)
+SET_X64:=$(shell if [ $(KERNEL_ARCH) = 'x86_64' ]; then echo true ; fi)
 
 ####################################################
 #      EXTRA COMPILER FLAGS
