@@ -753,59 +753,70 @@ static int gtpv1u_delete_s1u_tunnel(gtpv1u_enb_delete_tunnel_req_t *req_pP)
     MessageDef              *message_p = NULL;
     gtpv1u_ue_data_t        *gtpv1u_ue_data_p     = NULL;
     hashtable_rc_t           hash_rc              = HASH_TABLE_KEY_NOT_EXISTS;
+    teid_t                   teid_eNB             = 0;
+    int                      erab_index           = 0;
 
-    LOG_D(GTPU, "Rx GTPV1U_ENB_DELETE_TUNNEL user index %u eNB S1U teid %u eps bearer id %u\n", req_pP->ue_index, req_pP->enb_S1u_teid, req_pP->eps_bearer_id);
     message_p = itti_alloc_new_message(TASK_GTPV1_U, GTPV1U_ENB_DELETE_TUNNEL_RESP);
 
-    GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).enb_S1u_teid = req_pP->enb_S1u_teid;
     GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).ue_index     = req_pP->ue_index;
-    GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).status       = 0;
+    GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).status       = 0;
 
-    {
-        memset(&stack_req, 0, sizeof(NwGtpv1uUlpApiT));
-        stack_req.apiType = NW_GTPV1U_ULP_API_DESTROY_TUNNEL_ENDPOINT;
-        LOG_D(GTPU, "gtpv1u_delte_s1u_tunnel() %u\n", req_pP->enb_S1u_teid);
-        stack_req.apiInfo.createTunnelEndPointInfo.teid          = req_pP->enb_S1u_teid;
-        stack_req.apiInfo.createTunnelEndPointInfo.hUlpSession   = 0;
-        stack_req.apiInfo.createTunnelEndPointInfo.hStackSession = 0;
 
-        rc = nwGtpv1uProcessUlpReq(gtpv1u_data_g.gtpv1u_stack, &stack_req);
-        LOG_D(GTPU, ".\n");
-    }
-    if (rc != NW_GTPV1U_OK) {
-        GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).status       = 0xFF;
-        LOG_E(GTPU, "NW_GTPV1U_ULP_API_DESTROY_TUNNEL_ENDPOINT failed");
-    }
-
-    //-----------------------
-    // PDCP->GTPV1U mapping
-    //-----------------------
     hash_rc = hashtable_get(gtpv1u_data_g.ue_mapping, req_pP->ue_index, (void**)&gtpv1u_ue_data_p);
     if (hash_rc == HASH_TABLE_OK) {
-        gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id - GTPV1U_BEARER_OFFSET].state       = BEARER_DOWN;
-        gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_eNB    = 0;
-        gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_sgw    = 0;
-        gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id - GTPV1U_BEARER_OFFSET].sgw_ip_addr = 0;
-        gtpv1u_ue_data_p->num_bearers -= 1;
 
-        if (gtpv1u_ue_data_p->num_bearers == 0) {
-            hash_rc = hashtable_remove(gtpv1u_data_g.ue_mapping, req_pP->ue_index);
-            LOG_D(GTPU, "Removed user index %u,no more bearers configured\n", req_pP->ue_index);
+        for (erab_index = 0; erab_index < req_pP->num_erab; erab_index++) {
+            teid_eNB = gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id[erab_index] - GTPV1U_BEARER_OFFSET].teid_eNB;
+            LOG_D(GTPU, "Rx GTPV1U_ENB_DELETE_TUNNEL user index %u eNB S1U teid %u eps bearer id %u\n",
+                  req_pP->ue_index, teid_eNB, req_pP->eps_bearer_id[erab_index]);
+
+            {
+                memset(&stack_req, 0, sizeof(NwGtpv1uUlpApiT));
+                stack_req.apiType = NW_GTPV1U_ULP_API_DESTROY_TUNNEL_ENDPOINT;
+                LOG_D(GTPU, "gtpv1u_delete_s1u_tunnel erab %u  %u\n",
+                      req_pP->eps_bearer_id[erab_index],
+                      teid_eNB);
+                stack_req.apiInfo.createTunnelEndPointInfo.teid          = teid_eNB;
+                stack_req.apiInfo.createTunnelEndPointInfo.hUlpSession   = 0;
+                stack_req.apiInfo.createTunnelEndPointInfo.hStackSession = 0;
+
+                rc = nwGtpv1uProcessUlpReq(gtpv1u_data_g.gtpv1u_stack, &stack_req);
+                LOG_D(GTPU, ".\n");
+            }
+            if (rc != NW_GTPV1U_OK) {
+                GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).status       |= 0xFF;
+                LOG_E(GTPU, "NW_GTPV1U_ULP_API_DESTROY_TUNNEL_ENDPOINT failed");
+            }
+
+            //-----------------------
+            // PDCP->GTPV1U mapping
+            //-----------------------
+            gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id[erab_index] - GTPV1U_BEARER_OFFSET].state       = BEARER_DOWN;
+            gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id[erab_index] - GTPV1U_BEARER_OFFSET].teid_eNB    = 0;
+            gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id[erab_index] - GTPV1U_BEARER_OFFSET].teid_sgw    = 0;
+            gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id[erab_index] - GTPV1U_BEARER_OFFSET].sgw_ip_addr = 0;
+            gtpv1u_ue_data_p->num_bearers -= 1;
+
+            if (gtpv1u_ue_data_p->num_bearers == 0) {
+                hash_rc = hashtable_remove(gtpv1u_data_g.ue_mapping, req_pP->ue_index);
+                LOG_D(GTPU, "Removed user index %u,no more bearers configured\n", req_pP->ue_index);
+            }
+
+            //-----------------------
+            // GTPV1U->PDCP mapping
+            //-----------------------
+            hash_rc = hashtable_remove(gtpv1u_data_g.teid_mapping, teid_eNB);
+            if (hash_rc != HASH_TABLE_OK) {
+                LOG_D(GTPU, "Removed user index %u , enb S1U teid %u not found\n", req_pP->ue_index, teid_eNB);
+            }
         }
     }// else silently do nothing
 
-    //-----------------------
-    // GTPV1U->PDCP mapping
-    //-----------------------
-    hash_rc = hashtable_remove(gtpv1u_data_g.teid_mapping, req_pP->enb_S1u_teid);
-    if (hash_rc != HASH_TABLE_OK) {
-        LOG_D(GTPU, "Removed user index %u , enb S1U teid %u not found\n", req_pP->ue_index, req_pP->enb_S1u_teid);
-    }
 
     LOG_D(GTPU, "Tx GTPV1U_ENB_DELETE_TUNNEL_RESP user index %u eNB S1U teid %u status %u\n",
         GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).ue_index,
         GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).enb_S1u_teid,
-        GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).status);
+        GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).status);
     return itti_send_msg_to_task(TASK_RRC_ENB, INSTANCE_DEFAULT, message_p);
 }
 
