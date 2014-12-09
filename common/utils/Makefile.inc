@@ -1,12 +1,15 @@
 export KERNEL_DIR=/lib/modules/$(shell uname -r)/
-CC=gcc-4.8
-CCC=gcc-4.8
+CC=gcc
+CCC=gcc
 linux := $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
 
 #CFLAGS += -std=gnu99 
-CFLAGS += -Wall -g -ggdb -Wstrict-prototypes -fno-strict-aliasing
+CFLAGS += -Wall -g -ggdb -Wstrict-prototypes -fno-strict-aliasing  -rdynamic
 
-#For performance
+# Need to force this option because default kernel module builder is wrong
+CFLAGS += $(call cc-option,-mpreferred-stack-boundary=4)
+
+#For performance, if some option doesn't exist in all gcc versions, use $(call cc-option,MY_OPTION)
 CFLAGS += -O3 -funroll-loops 
 CFLAGS += -Wno-packed-bitfield-compat 
 
@@ -24,7 +27,7 @@ endif
 
 ifeq ($(linux),1)
 CFLAGS += 
-LDFLAGS += -rdynamic
+LDFLAGS += 
 endif
 
 ITTI_DIR = $(COMMON_UTILS_DIR)/itti

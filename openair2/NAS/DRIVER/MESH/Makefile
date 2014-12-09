@@ -15,7 +15,7 @@ NAS_UPDIR	:= $(shell /bin/pwd)
 ####################################################
 #      EXTRA COMPILER FLAGS
 ####################################################
-EXTRA_CFLAGS = -fno-common -fno-stack-protector -mpreferred-stack-boundary=4 $(if $(SET_X64),-DARCH_64,) $(if $(SET_X64),-mcmodel=kernel,) $(if $(SET_X64),-m64,) 
+#EXTRA_CFLAGS = -fno-common -fno-stack-protector -mpreferred-stack-boundary=4 $(if $(SET_X64),-DARCH_64,) $(if $(SET_X64),-mcmodel=kernel,) $(if $(SET_X64),-m64,) 
 EXTRA_CFLAGS += -I$(OPENAIR2_DIR)
 ifdef NAS_NETLINK
 EXTRA_CFLAGS += -DNAS_NETLINK
@@ -30,6 +30,9 @@ endif
 ifdef ADDRESS_FIX
 EXTRA_CFLAGS += -DNAS_ADDRESS_FIX
 endif
+
+ccflags-y := $(CFLAGS) $(EXTRA_CFLAGS)
+CFLAGS=
 
 ####################################################
 #      LOADABLE MODULE GOALS
