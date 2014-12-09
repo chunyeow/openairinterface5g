@@ -1409,9 +1409,9 @@ static void *eNB_thread(void *arg)
    
    /* This creates a .5 ms  reservation */
    attr.sched_policy = SCHED_DEADLINE;
-   attr.sched_runtime  = 1 * 1000000;
-   attr.sched_deadline = 1 * 1000000;
-   attr.sched_period   = 1 * 1000000;
+   attr.sched_runtime  = 0.5 * 1000000;
+   attr.sched_deadline = 0.5 * 1000000;
+   attr.sched_period   = 1   * 1000000;
    
    /* pin the eNB main thread to CPU0*/
    /* if (pthread_setaffinity_np(pthread_self(), sizeof(mask),&mask) <0) {
@@ -3363,7 +3363,7 @@ int main(int argc, char **argv) {
 
   for(CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
     rf_map[CC_id].card=0;
-    rf_map[CC_id].chain=CC_id+3;
+    rf_map[CC_id].chain=CC_id;
   }
 
   // connect the TX/RX buffers
