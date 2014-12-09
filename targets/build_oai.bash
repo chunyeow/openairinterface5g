@@ -55,8 +55,8 @@ declare ENB_S1=1
 declare REL="REL8" # REL8, REL10
 declare RT="NONE" # RTAI, RT_PREMPT or RT_DISABLED, NONE
 declare DEBUG=0
-declare CONFIG_FILE=""
-declare EXE_ARGUMENTS=""
+declare CONFIG_FILE=" "
+declare EXE_ARGUMENTS=" "
 declare RUN_GDB=0
 declare DISABLE_CHECK_INSTALLED_SOFTWARE=0
 declare OAI_CLEAN=0
@@ -114,8 +114,20 @@ fi
             ;;
        -C | --config-file)
             CONFIG_FILE=$2
-            echo "setting config file to: $CONFIG_FILE"
-            EXE_ARGUMENTS ="$EXE_ARGUMENTS -O $CONFIG_FILE"
+            # may be relative path 
+            if [ -f $(dirname $(readlink -f $0))/$CONFIG_FILE ]; then
+                CONFIG_FILE=$(dirname $(readlink -f $0))/$CONFIG_FILE
+                echo "setting config file to: $CONFIG_FILE"
+            else
+                # may be absolute path 
+                if [ -f $CONFIG_FILE ]; then
+                    echo "setting config file to: $CONFIG_FILE"
+                else
+                    echo "config file not found"
+                    exit 1
+                fi
+            fi
+            EXE_ARGUMENTS="$EXE_ARGUMENTS -O $CONFIG_FILE"
             shift 2;
             ;;
        -d | --debug)
@@ -137,7 +149,7 @@ fi
             DEBUG=1
             RUN_GDB=1
             echo "Running with gdb"
-            shift 2 ;
+            shift;
             ;;
        -K | --itti-dump-file)
             ITTI_ANALYZER=1
@@ -301,7 +313,7 @@ build_enb(){
     fi
     
     if [ $HW = "ETHERNET" ]; then 
-    SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES ETHERNET=1 "
+        SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES ETHERNET=1 "
     fi 
     
     if [ $ENB_S1 -eq 0 ]; then 
@@ -414,7 +426,7 @@ build_enb(){
             echo_info "7.1 finished ltesoftmodem target: check the installation log file bin/install_log.txt"
             
             if [ $HW == "EXMIMO" ]; then 
-                compile_exmimo2_driver 
+                output=$(compile_exmimo2_driver   >> bin/install_log.txt  2>&1)
             fi
         fi
         if [ $TARGET = "OAISIM" ]; then 
@@ -652,16 +664,16 @@ esac
     echo_info "11. Running ... To be done"
     if [ $TARGET == "SOFTMODEM" ]; then 
         if [ $HW == "EXMIMO" ]; then 
-            bash $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
+            chmod 777 $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
+            $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
         fi
         echo "############# running ltesoftmodem #############"
-        $OPENAIR_TARGETS/RT/USER/lte-softmodem
-        cd $OPENAIR_TARGETS/RT/USER;bash ./init_exmimo2.sh;
         if [ $RUN_GDB -eq 0 ]; then 
-            $OPENAIR_TARGETS/RT/USER/lte-softmodem "$EXE_ARGUMENTS"
+            echo  "EXE_ARGUMENTS $EXE_ARGUMENTS"
+            exec $OPENAIR_TARGETS/bin/lte-softmodem  "$EXE_ARGUMENTS"
         else
             touch ~/.gdb_lte_softmodem
-            echo "file $OPENAIR_TARGETS/RT/USER/lte-softmodem" > ~/.gdb_lte_softmodem
+            echo "file $OPENAIR_TARGETS/bin/lte-softmodem" > ~/.gdb_lte_softmodem
             echo "set args $EXE_ARGUMENTS" >> ~/.gdb_lte_softmodem
             echo "run" >> ~/.gdb_lte_softmodem
             gdb -nh -x ~/.gdb_lte_softmodem 2>&1 

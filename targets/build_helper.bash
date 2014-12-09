@@ -36,17 +36,17 @@
 #            Helper Func
 ######################################
 
-ROOT_UID=0
-E_NOTROOT=67
-NUM_CPU=`cat /proc/cpuinfo | grep processor | wc -l`
-OAI_INSTALLED=1
-PWD=`pwd`
-USER=`whoami`
-BUILD_FROM_MAKEFILE=0
-SUDO=''
-PW=''
-UBUNTU_REL=`lsb_release -r | cut  -f2`
-UBUNTU_REL_NAME=`lsb_release -cs`
+declare ROOT_UID=0
+declare E_NOTROOT=67
+declare NUM_CPU=`cat /proc/cpuinfo | grep processor | wc -l`
+declare OAI_INSTALLED=1
+declare PWD=`pwd`
+declare USER=`whoami`
+declare BUILD_FROM_MAKEFILE=0
+declare SUDO=''
+declare PW=''
+declare UBUNTU_REL=`lsb_release -r | cut  -f2`
+declare UBUNTU_REL_NAME=`lsb_release -cs`
 
 set_build_from_makefile(){
     BUILD_FROM_MAKEFILE=$1   
@@ -494,82 +494,82 @@ check_install_hss_software() {
 check_install_epc_software() {
 
     if [ ! -f ./.lock_oaibuild ]; then 
-	$SUDO apt-get update
-	if [ $UBUNTU_REL = "12.04" ]; then 
-	    test_uninstall_package nettle-dev
-	    test_uninstall_package nettle-bin
+        $SUDO apt-get update
+        if [ $UBUNTU_REL = "12.04" ]; then 
+            test_uninstall_package nettle-dev
+            test_uninstall_package nettle-bin
         else 
             test_install_package nettle-dev
             test_install_package nettle-bin
-	fi 
-	test_install_package autoconf
-	test_install_package automake
-	test_install_package bison
-	test_install_package build-essential
-	test_install_package check
-	test_install_package cmake
-	test_install_package cmake-curses-gui
-	test_install_package ethtool
-	test_install_package flex
-	test_install_package g++
-	test_install_package gawk
-	test_install_package gcc
-	test_install_package gccxml
-	test_install_package gdb 
-	test_install_package guile-2.0-dev
-	test_install_package gtkwave
-	test_install_package iperf
-	test_install_package iproute
-	test_install_package iptables
-	test_install_package libatlas-base-dev
-	test_install_package libatlas-dev
-	test_install_package libblas
-	test_install_package libblas-dev
-#	if [ $MACHINE_ARCH = 64 ]; then
+        fi 
+        test_install_package autoconf
+        test_install_package automake
+        test_install_package bison
+        test_install_package build-essential
+        test_install_package check
+        test_install_package cmake
+        test_install_package cmake-curses-gui
+        test_install_package ethtool
+        test_install_package flex
+        test_install_package g++
+        test_install_package gawk
+        test_install_package gcc
+        test_install_package gccxml
+        test_install_package gdb 
+        test_install_package guile-2.0-dev
+        test_install_package gtkwave
+        test_install_package iperf
+        test_install_package iproute
+        test_install_package iptables
+        test_install_package libatlas-base-dev
+        test_install_package libatlas-dev
+        test_install_package libblas
+        test_install_package libblas-dev
+#       if [ $MACHINE_ARCH = 64 ]; then
             test_install_package libconfig8-dev
-#	else
+#        else
 #            test_install_package libconfig-dev
-#	fi
-	test_install_package libforms-bin
-	test_install_package libforms-dev
-	test_install_package libgcrypt11-dev
-	test_install_package libgmp-dev
-	test_install_package libgtk-3-dev
-	test_install_package libidn11-dev
-	test_install_package libidn2-0-dev
-	test_install_package libmysqlclient-dev
-	test_install_package libpgm-dev
-	test_install_package libpthread-stubs0-dev
-	test_install_package libsctp1
-	test_install_package libsctp-dev
-	test_install_package libtasn1-3-dev
-	test_install_package libxml2
-	test_install_package libxml2-dev
-#	test_install_package linux-headers-`uname -r`
-	test_install_package make
-	test_install_package openssh-client
-	test_install_package openssh-server
+#       fi
+        test_install_package libforms-bin
+        test_install_package libforms-dev
+        test_install_package libgcrypt11-dev
+        test_install_package libgmp-dev
+        test_install_package libgtk-3-dev
+        test_install_package libidn11-dev
+        test_install_package libidn2-0-dev
+        test_install_package libmysqlclient-dev
+        test_install_package libpgm-dev
+        test_install_package libpthread-stubs0-dev
+        test_install_package libsctp1
+        test_install_package libsctp-dev
+        test_install_package libtasn1-3-dev
+        test_install_package libxml2
+        test_install_package libxml2-dev
+#        test_install_package linux-headers-`uname -r`
+        test_install_package make
+        test_install_package openssh-client
+        test_install_package openssh-server
         $SUDO service ssh start
-	test_install_package openssl
-	test_install_package openvpn
-	test_install_package pkg-config
-	test_install_package python-dev
-	test_install_package sshfs
-	test_install_package subversion
-	test_install_package swig
-	test_install_package tshark
-	test_install_package uml-utilities
-	test_install_package unzip
-	test_install_package valgrind
-	test_install_package vlan
-	test_install_package libtool 
+        test_install_package openssl
+        test_install_package openvpn
+        test_install_package pkg-config
+        test_install_package python-dev
+        test_install_package sshfs
+        test_install_package subversion
+        test_install_package swig
+        test_install_package tshark
+        test_install_package uml-utilities
+        test_install_package unzip
+        test_install_package valgrind
+        test_install_package vlan
+        test_install_package libtool 
 	
-	if [ $OAI_INSTALLED = 1 ]; then 
-	    touch ./.lock_oaibuild
-	fi 
+        if [ $OAI_INSTALLED = 1 ]; then 
+            touch ./.lock_oaibuild
+        fi 
     
     else
-	echo_info "All the required packages installed: skip"
+        echo_info "All the required packages installed: skip"
     fi 
 
 }
@@ -587,11 +587,11 @@ check_install_asn1c(){
         echo_error "Version of asn1c is not the required one, do you want to install the required one (overwrite installation) ? (Y/n)"
         echo_error "$ASN1C_COMPILER_VERSION_MESSAGE"
         while read -r -n 1 -s answer; do
-	    if [[ $answer = [YyNn] ]]; then
+            if [[ $answer = [YyNn] ]]; then
                 [[ $answer = [Yy] ]] && $OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO
                 [[ $answer = [Nn] ]] && echo_error "Version of asn1c is not the required one, exiting." && exit 1
                 break
-	    fi
+            fi
         done
     fi
     
@@ -604,8 +604,8 @@ compile_hss() {
     cd $OPENAIRCN_DIR/OPENAIRHSS
     OBJ_DIR=`find . -maxdepth 1 -type d -iname obj*`
     if [ $1 = 1 ]; then
-	echo_info "build a clean EPC"
-	bash_exec "rm -rf obj"
+        echo_info "build a clean EPC"
+        bash_exec "rm -rf obj"
     fi
     if [ ! -n "$OBJ_DIR" ]; then
         OBJ_DIR="objs"
@@ -646,8 +646,8 @@ compile_hss() {
 compile_epc() {
     cd $OPENAIRCN_DIR
     if [ $1 = 1 ]; then
-	echo_info "build a clean EPC"
-	bash_exec "rm -rf obj"
+        echo_info "build a clean EPC"
+        bash_exec "rm -rf obj"
     fi
     OBJ_DIR=`find . -maxdepth 1 -type d -iname obj*`
     if [ ! -n "$OBJ_DIR" ]; then
@@ -681,9 +681,9 @@ compile_epc() {
             echo_error "Build failed, exiting"
             return 1
         else 
-	    cp -f ./OAI_EPC/oai_epc  $OPENAIR_TARGETS/bin
-	    return 0
-	fi
+            cp -f ./OAI_EPC/oai_epc  $OPENAIR_TARGETS/bin
+            return 0
+        fi
     else
         echo_error "Configure failed, exiting"
         return 1
@@ -701,7 +701,6 @@ compile_ltesoftmodem() {
     cd $OPENAIR_TARGETS/RT/USER
     if [ -f Makefile ];  then
         echo "LTE softmodem compiling directives: $SOFTMODEM_DIRECTIVES"
-        echo "OAI_CLEAN: $OAI_CLEAN"
         if [ $OAI_CLEAN -ne 0 ]; then
             echo "Cleaning LTE softmodem"
             make cleanall > /dev/null 2>&1
@@ -713,15 +712,15 @@ compile_ltesoftmodem() {
         fi 
         if [ $? -ne 0 ]; then
             if [ ! -f ./lte-softmodem ]; then 
-            echo_error "Build lte-softmodem failed, returning"
-            return 1
-        else 
+                echo_error "Build lte-softmodem failed, returning"
+                return 1
+            else 
+                cp -f ./lte-softmodem  $OPENAIR_TARGETS/bin
+                return 0
+            fi 
+        else
             cp -f ./lte-softmodem  $OPENAIR_TARGETS/bin
-            return 0	
-        fi 
-	else
-	    cp -f ./lte-softmodem  $OPENAIR_TARGETS/bin
-	    return 0
+            return 0
         fi
     else
         echo_error "make file for oai softmodem not found, returning"
@@ -733,15 +732,15 @@ compile_oaisim() {
     cd $OPENAIR_TARGETS/SIMU/USER
     if [ -f Makefile ]; then
         echo "Compiling for oaisim  target ($OAISIM_DIRECTIVES)"
-       	make cleanall > /dev/null
-	make $OAISIM_DIRECTIVES 
-	make -j $NUM_CPU $OAISIM_DIRECTIVES 
+        make cleanall > /dev/null
+        make $OAISIM_DIRECTIVES 
+        make -j $NUM_CPU $OAISIM_DIRECTIVES 
         if [ $? -ne 0 ]; then
             echo_error "Build oaisim failed, returning"
             return 1
-	else 
-	    cp -f ./oaisim $OPENAIR_TARGETS/bin
-	    return 0
+        else 
+            cp -f ./oaisim $OPENAIR_TARGETS/bin
+            return 0
         fi
     else
         echo_error "Makefile not found for oaisim target, returning"
@@ -753,20 +752,20 @@ compile_unisim() {
     cd $OPENAIR1_DIR/SIMULATION/LTE_PHY
     if [ -f Makefile ]; then
         echo "Compiling for UNISIM target ..."
-      	make cleanall
-    	make  -j $NUM_CPU all 
+        make cleanall
+        make  -j $NUM_CPU all 
         if [ $? -ne 0 ]; then
             echo_error "Build unisim failed, returning"
             return 1
-	else 
-	    cp -f ./dlsim     $OPENAIR_TARGETS/bin
-	    cp -f ./ulsim     $OPENAIR_TARGETS/bin
-	    cp -f ./pucchsim  $OPENAIR_TARGETS/bin
-	    cp -f ./prachsim  $OPENAIR_TARGETS/bin
-	    cp -f ./pdcchsim  $OPENAIR_TARGETS/bin
-	    cp -f ./pbchsim   $OPENAIR_TARGETS/bin
-	    cp -f ./mbmssim   $OPENAIR_TARGETS/bin
-	    return 0
+        else 
+            cp -f ./dlsim     $OPENAIR_TARGETS/bin
+            cp -f ./ulsim     $OPENAIR_TARGETS/bin
+            cp -f ./pucchsim  $OPENAIR_TARGETS/bin
+            cp -f ./prachsim  $OPENAIR_TARGETS/bin
+            cp -f ./pdcchsim  $OPENAIR_TARGETS/bin
+            cp -f ./pbchsim   $OPENAIR_TARGETS/bin
+            cp -f ./mbmssim   $OPENAIR_TARGETS/bin
+            return 0
         fi
     else
         echo_error "Configure failed, exiting"
