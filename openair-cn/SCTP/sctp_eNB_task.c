@@ -399,6 +399,31 @@ void sctp_send_data(
                sctp_cnx->assoc_id);
 }
 
+static int sctp_close_association(
+		const instance_t instance,
+	    const task_id_t  requestor,
+	    sctp_close_association_t     *close_association_p)
+{
+
+    struct sctp_cnx_list_elm_s *sctp_cnx = NULL;
+
+    DevAssert(close_association_p != NULL);
+    sctp_cnx = sctp_get_cnx(close_association_p->assoc_id, 0);
+
+    if (sctp_cnx == NULL) {
+        SCTP_ERROR("Failed to find SCTP description for assoc_id %d\n",
+            close_association_p->assoc_id);
+        /* TODO: notify upper layer */
+        return -1;
+    } else {
+        close(sctp_cnx->sd);
+        STAILQ_REMOVE(&sctp_cnx_list, sctp_cnx, sctp_cnx_list_elm_s, entries);
+        SCTP_DEBUG("Removed assoc_id %u (closed socket %u)\n",
+                   sctp_cnx->assoc_id, sctp_cnx->sd);
+    }
+    return 0;
+}
+
 static int sctp_create_new_listener(
 		const instance_t instance,
 	    const task_id_t  requestor,
@@ -754,7 +779,10 @@ void *sctp_eNB_task(void *arg)
                     }
                 } break;
                 case SCTP_CLOSE_ASSOCIATION:
-                	break;
+                    sctp_close_association(ITTI_MESSAGE_GET_INSTANCE(received_msg),
+                                                    ITTI_MSG_ORIGIN_ID(received_msg),
+                                                    &received_msg->ittiMsg.sctp_close_association);
+                    break;
 
                 case TERMINATE_MESSAGE:
                     itti_exit_task();
