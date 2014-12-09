@@ -130,6 +130,8 @@ $(LFDS_DIR)/bin/liblfds611.a:
 test: $(SIMULATION_OBJS) $(TOOLS_OBJS) $(TOP_DIR)/PHY/INIT/lte_init.o test.c
 	$(CC)  test.c -I$(TOP_DIR) -o test $(CFLAGS) $(SIMULATION_OBJS) $(TOOLS_OBJS) -lm 
 
+OBJ += $(LIST_OBJ) 
+OBJ += $(MEM_OBJ)
 $(OBJ) : %.o : %.c
 	@echo 
 	@echo Compiling $< ...

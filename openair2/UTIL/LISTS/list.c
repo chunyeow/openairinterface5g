@@ -1,20 +1,39 @@
+/*******************************************************************************
+    OpenAirInterface 
+    Copyright(c) 1999 - 2014 Eurecom
 
-/*! \file pad_list.c
-* \brief list management primimtives
-* \author Mohamed Said MOSLI BOUKSIAA, Lionel GAUTHIER, Navid Nikaein
+    OpenAirInterface is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+
+    OpenAirInterface is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenAirInterface.The full GNU General Public License is 
+   included in this distribution in the file called "COPYING". If not, 
+   see <http://www.gnu.org/licenses/>.
+
+  Contact Information
+  OpenAirInterface Admin: openair_admin@eurecom.fr
+  OpenAirInterface Tech : openair_tech@eurecom.fr
+  OpenAirInterface Dev  : openair4g-devel@eurecom.fr
+  
+  Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
+
+ *******************************************************************************/
+/*! \file list.c
+* \brief list management primimtives. It includes three implementations: (1) with mem_blocks, (2) standard list implementation (mem usage 314MB) (3) Linux Queue-based implementation (mem usage 394 MB)
+* \author  Navid Nikaein, Mohamed Said MOSLI BOUKSIAA, Lionel GAUTHIER
 * \date 2012 - 2014
 * \version 0.5
 * @ingroup util
 */
 
-/***************************************************************************
-                             list_t.c  -  description
-                             -------------------
-                             -------------------
-  AUTHOR  : Lionel GAUTHIER
-  COMPANY : EURECOM
-  EMAIL   : Lionel.Gauthier@eurecom.fr
- ***************************************************************************/
 #define LIST_C
 #define NULL 0
 
@@ -239,4 +258,166 @@ list_display (list_t * listP)
   } else {
     //msg ("[SDU_MNGT][WARNING] display_cnt_list() : list is NULL\n");
   }
+}
+#ifndef LINUX_LIST
+/*! \fn void push_front(struct list* z, double val)
+* \brief this function pushes front new values in a predefined list.
+* \param z is the predefined list
+*       val is the new value to be pushed inside the list
+* \return
+*/
+void 
+push_front(struct list* z, double val) {
+
+	struct node* p = (struct node*) malloc(sizeof(struct node));
+
+	p->next = z->head;
+	p->val = val;
+	z->head = p;
+
+	z->size++;
+
+	return;
+		
+}
+
+/*! \fn void initialize(struct list* z)
+* \brief initialize a list structure.
+* \param z is the list
+* \return
+*/
+void 
+initialize(struct list* z) {
+	z->head = NULL;
+	z->size = 0;
+
+	return;
+}
+
+/*! \fn void del(struct list* z)
+* \brief delete a list structure.
+* \param z is the list
+* \return
+*/
+void 
+del(struct list* z) {
+	struct node* cur;
+	struct node* x = z->head;
+	
+	while(x) {
+		cur = x;
+		x = x->next;
+		free(cur);
+	}
+
+	z->head = NULL;
+	z->size = 0;
+
+	return; 
+}
+/*! \fn void totable(double* table, struct list* v)
+* \brief convert a list structure to a table.
+* \param table is a pointer to double table
+*        v is the list to be converted
+* \return
+*/
+void 
+totable(double* table, struct list* v) {
+	int i = 0;
+
+	struct node* x = v->head;
+
+	while(x) {
+		table[i] = x->val;
+		i++;
+		x = x->next;
+	}
+
+	return; 
+}
+/*! \fn int compare (const void * a, const void * b)
+* \brief compare the value of two parameters
+* \param a is a double, b is another double
+* \return 1 if a>b, -0 if a<b
+*/
+int compare (const void * a, const void * b)
+{
+  	double x = *(double*)a;
+	double y = *(double*)b;
+
+	return ( x > y );
+}
+#else
+// push an element to the head of the list
+void push_front(struct list* z, double val) {
+	struct entry* p = (struct entry*) malloc(sizeof(struct entry));
+	p->val = val;	
+
+	LIST_INSERT_HEAD(&z->head, p, entries);
+	z->size++;
+
+	return;
+		
+}
+
+
+// initialization 
+void initialize(struct list* z) {
+	LIST_INIT(&z->head);
+	z->size = 0;
+
+	return;
+}
+
+// delete
+void del(struct list* z) {
+	while (z->head.lh_first != NULL) {
+		free(z->head.lh_first);
+		LIST_REMOVE(z->head.lh_first, entries);
+	}
+	z->size = 0;
+
+	return; 
+}
+
+// convert the list to a table
+void totable(double* table, struct list* v) {
+	int i = 0;
+
+	struct entry* x;
+
+	for (x = v->head.lh_first; x != NULL; x = x->entries.le_next) {
+		table[i] = x->val;
+		i++;
+	}
+
+	return; 
+}
+
+int compare (const void * a, const void * b)
+{
+  	double x = *(double*)a;
+	double y = *(double*)b;
+
+	return ( x > y );
+}
+#endif
+
+/*! \fn int32_t calculate_median(struct list *loc_list)
+* \brief calculate the median of a list
+* \param loc_list is the list
+* \return the median value
+*/
+int32_t calculate_median(struct list *loc_list) {
+    int32_t median = 0;    
+    double* table = (double*) malloc(loc_list->size * sizeof(double));
+    totable(table, loc_list);
+    /// sort the table in ascending way
+    qsort (table, loc_list->size, sizeof(double), &compare);
+    /// median is the value at middle the sorted table
+    /// Q1 is the value at 1/4 the sorted table
+    /// Q3 is the value at 3/4 the sorted table
+    median = table[loc_list->size/2];
+    free(table);
+    return median;
 }

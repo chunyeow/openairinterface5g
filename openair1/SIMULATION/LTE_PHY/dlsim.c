@@ -30,7 +30,7 @@
 /*! \file dlsim.c
  \brief Top-level DL simulator
  \author R. Knopp
- \date 2011
+ \date 2011 - 2014
  \version 0.1
  \company Eurecom
  \email: knopp@eurecom.fr
@@ -56,6 +56,7 @@
 
 #include "OCG_vars.h"
 #include "UTIL/LOG/log.h"
+#include "UTIL/LISTS/list.h"
 
 extern unsigned int dlsch_tbs25[27][25],TBStable[27][110];
 extern unsigned char offset_mumimo_llr_drange_fix;
@@ -85,6 +86,13 @@ PHY_VARS_eNB *PHY_vars_eNB;
 PHY_VARS_UE *PHY_vars_UE;
 
 int otg_enabled=0;
+/*the following parameters are used to control the processing times calculations*/
+double t_tx_max = -1000000000; /*!< \brief initial max process time for tx */
+double t_rx_max = -1000000000; /*!< \brief initial max process time for rx */
+double t_tx_min = 1000000000; /*!< \brief initial min process time for tx */
+double t_rx_min = 1000000000; /*!< \brief initial min process time for rx */
+int n_tx_dropped = 0; /*!< \brief initial max process time for tx */
+int n_rx_dropped = 0; /*!< \brief initial max process time for rx */
 
 void handler(int sig) {
   void *array[10];
@@ -1931,6 +1939,12 @@ int main(int argc, char **argv) {
       reset_meas(&PHY_vars_UE->dlsch_tc_ext_stats);
       reset_meas(&PHY_vars_UE->dlsch_tc_intl1_stats);
       reset_meas(&PHY_vars_UE->dlsch_tc_intl2_stats);
+      // initialization
+      struct list time_vector_tx;
+      initialize(&time_vector_tx);
+      struct list time_vector_rx;
+      initialize(&time_vector_rx);
+      
       for (trials = 0;trials<n_frames;trials++) {
 	//  printf("Trial %d\n",trials);
 	fflush(stdout);
@@ -3195,9 +3209,57 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 
     
 	PHY_vars_UE->frame_rx++;
+ 
+	/* calculate the total processing time for each packet, 
+	 * get the max, min, and number of packets that exceed t>2000us
+	 */
+	double t_tx = (double)PHY_vars_eNB->phy_proc_tx.p_time/cpu_freq_GHz/1000.0;        
+	double t_rx = (double)PHY_vars_UE->phy_proc_rx.p_time/cpu_freq_GHz/1000.0;
+        if (t_tx > t_tx_max)
+	  t_tx_max = t_tx;
+        if (t_tx < t_tx_min)
+            t_tx_min = t_tx;
+        if (t_rx > t_rx_max)
+            t_rx_max = t_rx;
+        if (t_rx < t_rx_min)
+            t_rx_min = t_rx;
+        if (t_tx > 2000)
+            n_tx_dropped++;
+        if (t_rx > 2000)
+            n_rx_dropped++;
+        
+        push_front(&time_vector_tx, t_tx);
+        push_front(&time_vector_rx, t_rx);
       }   //trials
       // round_trials[0]: number of code word : goodput the protocol
-
+      double table_tx[time_vector_tx.size];
+      totable(table_tx, &time_vector_tx);
+ 
+      double table_rx[time_vector_rx.size];
+      totable(table_rx, &time_vector_rx);
+      
+      // sort table
+      qsort (table_tx, time_vector_tx.size, sizeof(double), &compare);
+      qsort (table_rx, time_vector_rx.size, sizeof(double), &compare);
+#ifdef DEBUG      
+      int n;
+      printf("The transmitter raw data: \n");
+      for (n=0; n< time_vector_tx.size; n++)
+          printf("%f ", table_tx[n]);
+      printf("\n");
+      printf("The receiver raw data: \n");
+      for (n=0; n< time_vector_rx.size; n++)
+          printf("%f ", table_rx[n]);
+      printf("\n");
+#endif       
+      double tx_median = table_tx[time_vector_tx.size/2];
+      double tx_q1 = table_tx[time_vector_tx.size/4];
+      double tx_q3 = table_tx[3*time_vector_tx.size/4];
+      
+      double rx_median = table_rx[time_vector_rx.size/2];
+      double rx_q1 = table_rx[time_vector_rx.size/4];
+      double rx_q3 = table_rx[3*time_vector_rx.size/4]; 
+      
       effective_rate = ((double)(round_trials[0]-dci_errors)/((double)round_trials[0] + round_trials[1] + round_trials[2] + round_trials[3]));
 
       printf("\n**********************SNR = %f dB (tx_lev %f, sigma2_dB %f)**************************\n",
@@ -3230,7 +3292,9 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
       
       if (print_perf==1) {
 	printf("eNB TX function statistics (per 1ms subframe)\n\n");
+	double std_phy_proc_tx = sqrt((double)PHY_vars_eNB->phy_proc_tx.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_eNB->phy_proc_tx.trials - pow((double)PHY_vars_eNB->phy_proc_tx.diff/PHY_vars_eNB->phy_proc_tx.trials/cpu_freq_GHz/1000,2));
 	printf("Total PHY proc tx                 :%f us (%d trials)\n",(double)PHY_vars_eNB->phy_proc_tx.diff/PHY_vars_eNB->phy_proc_tx.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->phy_proc_tx.trials);
+	printf("|__ Statistcs                          %f std: %fus max: %fus min: %fus median %fus q1 %fus q3 %fus n_dropped: %d packet \n",std_phy_proc_tx, t_tx_max, t_tx_min, tx_median, tx_q1, tx_q3, n_tx_dropped);
 	printf("OFDM_mod time                     :%f us (%d trials)\n",(double)PHY_vars_eNB->ofdm_mod_stats.diff/PHY_vars_eNB->ofdm_mod_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->ofdm_mod_stats.trials);
 	printf("DLSCH modulation time             :%f us (%d trials)\n",(double)PHY_vars_eNB->dlsch_modulation_stats.diff/PHY_vars_eNB->dlsch_modulation_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->dlsch_modulation_stats.trials);
 	printf("DLSCH scrambling time             :%f us (%d trials)\n",(double)PHY_vars_eNB->dlsch_scrambling_stats.diff/PHY_vars_eNB->dlsch_scrambling_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->dlsch_scrambling_stats.trials);
@@ -3240,7 +3304,9 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 	printf("|__ DLSCH sub-block interleaving time :%f us (%d trials)\n",((double)PHY_vars_eNB->dlsch_interleaving_stats.trials/PHY_vars_eNB->dlsch_encoding_stats.trials)*(double)PHY_vars_eNB->dlsch_interleaving_stats.diff/PHY_vars_eNB->dlsch_interleaving_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->dlsch_interleaving_stats.trials);
 
 	printf("\n\nUE RX function statistics (per 1ms subframe)\n\n");
-	printf("Total PHY proc rx                                   :%f us (%d trials)\n",(double)PHY_vars_UE->phy_proc_rx.diff/PHY_vars_UE->phy_proc_rx.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->phy_proc_rx.trials*2/3);
+	double std_phy_proc_rx = sqrt((double)PHY_vars_UE->phy_proc_rx.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_UE->phy_proc_rx.trials - pow((double)PHY_vars_UE->phy_proc_rx.diff/PHY_vars_UE->phy_proc_rx.trials/cpu_freq_GHz/1000,2));
+        printf("Total PHY proc rx                                   :%f us (%d trials)\n",(double)PHY_vars_UE->phy_proc_rx.diff/PHY_vars_UE->phy_proc_rx.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->phy_proc_rx.trials*2/3);
+	printf("|__Statistcs                                            std: %fus max: %fus min: %fus median %fus q1 %fus q3 %fus n_dropped: %d packet \n", std_phy_proc_rx, t_rx_max, t_rx_min, rx_median, rx_q1, rx_q3, n_rx_dropped);
 	printf("DLSCH OFDM demodulation and channel_estimation time :%f us (%d trials)\n",(nsymb)*(double)PHY_vars_UE->ofdm_demod_stats.diff/PHY_vars_UE->ofdm_demod_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ofdm_demod_stats.trials*2/3);
 	printf("|__ DLSCH rx dft                                        :%f us (%d trials)\n",(nsymb*PHY_vars_UE->lte_frame_parms.nb_antennas_rx)*(double)PHY_vars_UE->rx_dft_stats.diff/PHY_vars_UE->rx_dft_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->rx_dft_stats.trials*2/3);
 	printf("|__ DLSCH channel estimation time                       :%f us (%d trials)\n",(4.0)*(double)PHY_vars_UE->dlsch_channel_estimation_stats.diff/PHY_vars_UE->dlsch_channel_estimation_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->dlsch_channel_estimation_stats.trials*2/3);

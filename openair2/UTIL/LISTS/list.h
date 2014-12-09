@@ -36,6 +36,9 @@
 #    endif
 //-----------------------------------------------------------------------------
 #include "platform_constants.h"
+#include<linux/types.h>
+#include<stdlib.h>
+#include<sys/queue.h>
 
 #define LIST_NAME_MAX_CHAR 32
 
@@ -75,5 +78,38 @@ public_list2( void         list2_add_head       (mem_block_t* , list2_t* );)
 public_list2( void         list2_add_tail       (mem_block_t* , list2_t* );)
 public_list2( void         list2_add_list       (list2_t* , list2_t* );)
 public_list2( void         list2_display        (list2_t* );)
+//-----------------------------------------------------------------------------      
+/* The following lists are used for sorting numbers */
+#ifndef LINUX_LIST       
+/*! \brief the node structure */           
+struct node {
+	struct node* next; /*!< \brief is a node pointer */ 
+	double val; /*!< \brief is a the value of a node pointer*/
+};
+//-----------------------------------------------------------------------------
+/*! \brief the list structure */           
+struct list {
+	struct node* head; /*!< \brief is a node pointer */
+	ssize_t size; /*!< \brief is the list size*/
+}; 
+#else
+//-----------------------------------------------------------------------------
+struct entry {
+        double val;
+        LIST_ENTRY(entry) entries;
+};
+//-----------------------------------------------------------------------------
+struct list {
+	LIST_HEAD(listhead, entry) head;
+	ssize_t size;
+};
+#endif
+//-----------------------------------------------------------------------------        
+public_list2( void   push_front  (struct list*, double); )
+public_list2( void   initialize  (struct list*);         )
+public_list2( void   del         (struct list*);         )
+public_list2( void   totable     (double*, struct list*);)
+public_list2( int compare (const void * a, const void * b);)
+public_list2( int32_t calculate_median(struct list *loc_list);)
 
 #endif

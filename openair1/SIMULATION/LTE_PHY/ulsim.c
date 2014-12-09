@@ -30,7 +30,7 @@
 /*! \file ulsim.c
  \brief Top-level DL simulator
  \author R. Knopp
- \date 2011
+ \date 2011 - 2014
  \version 0.1
  \company Eurecom
  \email: knopp@eurecom.fr
@@ -87,10 +87,19 @@ extern uint16_t beta_ack[16],beta_ri[16],beta_cqi[16];
 //extern  char* namepointer_chMag ;
 
 
+
 #ifdef XFORMS
 FD_lte_phy_scope_enb *form_enb;
 char title[255];
 #endif
+
+/*the following parameters are used to control the processing times*/
+double t_tx_max = -1000000000; /*!< \brief initial max process time for tx */
+double t_rx_max = -1000000000; /*!< \brief initial max process time for rx */
+double t_tx_min = 1000000000; /*!< \brief initial min process time for tx */
+double t_rx_min = 1000000000; /*!< \brief initial min process time for tx */
+int n_tx_dropped = 0; /*!< \brief initial max process time for tx */
+int n_rx_dropped = 0; /*!< \brief initial max process time for rx */
 
 void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,uint8_t extended_prefix_flag,uint8_t N_RB_DL,uint8_t frame_type,uint8_t tdd_config,uint8_t osf) {
 
@@ -895,6 +904,12 @@ int main(int argc, char **argv) {
       reset_meas(&PHY_vars_eNB->ulsch_tc_intl1_stats);
       reset_meas(&PHY_vars_eNB->ulsch_tc_intl2_stats);
 
+      // initialization
+      struct list time_vector_tx;
+      initialize(&time_vector_tx);
+      struct list time_vector_rx;
+      initialize(&time_vector_rx);
+      
       for (trials = 0;trials<n_frames;trials++) {
 	//      printf("*");
 	//        PHY_vars_UE->frame++;
@@ -1270,8 +1285,53 @@ int main(int argc, char **argv) {
 #ifdef XFORMS
 	phy_scope_eNB(form_enb,PHY_vars_eNB,0);
 #endif       
+        /*calculate the total processing time for each packet, get the max, min, and number of packets that exceed t>3000us*/
+        double t_tx = (double)PHY_vars_UE->phy_proc_tx.p_time/cpu_freq_GHz/1000.0;        
+        double t_rx = (double)PHY_vars_eNB->phy_proc_rx.p_time/cpu_freq_GHz/1000.0;
+        if (t_tx > t_tx_max)
+            t_tx_max = t_tx;
+        if (t_tx < t_tx_min)
+            t_tx_min = t_tx;
+        if (t_rx > t_rx_max)
+            t_rx_max = t_rx;
+        if (t_rx < t_rx_min)
+            t_rx_min = t_rx;
+        if (t_tx > 2000)
+            n_tx_dropped++;
+        if (t_rx > 2000)
+            n_rx_dropped++;
+        
+        push_front(&time_vector_tx, t_tx);
+        push_front(&time_vector_rx, t_rx);
       }   //trials
+      double table_tx[time_vector_tx.size];
+      totable(table_tx, &time_vector_tx);
 
+      double table_rx[time_vector_rx.size];
+      totable(table_rx, &time_vector_rx);
+      
+      // sort table
+      qsort (table_tx, time_vector_tx.size, sizeof(double), &compare);
+      qsort (table_rx, time_vector_rx.size, sizeof(double), &compare);
+#ifdef DEBUG      
+      int n;
+      printf("The transmitter raw data: \n");
+      for (n=0; n< time_vector_tx.size; n++)
+          printf("%f ", table_tx[n]);
+      printf("\n");
+      printf("The receiver raw data: \n");
+      for (n=0; n< time_vector_rx.size; n++)
+          printf("%f ", table_rx[n]);
+      printf("\n");
+#endif       
+      double tx_median = table_tx[time_vector_tx.size/2];
+      double tx_q1 = table_tx[time_vector_tx.size/4];
+      double tx_q3 = table_tx[3*time_vector_tx.size/4];
+      
+      double rx_median = table_rx[time_vector_rx.size/2];
+      double rx_q1 = table_rx[time_vector_rx.size/4];
+      double rx_q3 = table_rx[3*time_vector_rx.size/4];
+      
       printf("\n**********rb: %d ***mcs : %d  *********SNR = %f dB (%f): TX %d dB (gain %f dB), N0W %f dB, I0 %d dB, delta_IF %d [ (%d,%d) dB / (%d,%d) dB ]**************************\n",
 	     nb_rb,mcs,SNR,SNR2,
 	     tx_lev_dB,
@@ -1334,7 +1394,9 @@ int main(int argc, char **argv) {
 
       if (dump_perf==1) {
 	printf("UE TX function statistics (per 1ms subframe)\n\n");
+        double std_phy_proc_tx = sqrt((double)PHY_vars_UE->phy_proc_tx.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_UE->phy_proc_tx.trials - pow((double)PHY_vars_UE->phy_proc_tx.diff/PHY_vars_UE->phy_proc_tx.trials/cpu_freq_GHz/1000,2));
 	printf("Total PHY proc tx                 :%f us (%d trials)\n",(double)PHY_vars_UE->phy_proc_tx.diff/PHY_vars_UE->phy_proc_tx.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->phy_proc_tx.trials);
+	printf("|__ Statistics                         std: %f us max: %fus min: %fus median %fus q1 %fus q3 %fus n_dropped: %d packet \n",std_phy_proc_tx, t_tx_max, t_tx_min, tx_median, tx_q1, tx_q3, n_tx_dropped);
 	printf("OFDM_mod time                     :%f us (%d trials)\n",(double)PHY_vars_UE->ofdm_mod_stats.diff/PHY_vars_UE->ofdm_mod_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ofdm_mod_stats.trials);
 	printf("ULSCH modulation time             :%f us (%d trials)\n",(double)PHY_vars_UE->ulsch_modulation_stats.diff/PHY_vars_UE->ulsch_modulation_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ulsch_modulation_stats.trials);
 	printf("ULSCH encoding time               :%f us (%d trials)\n",(double)PHY_vars_UE->ulsch_encoding_stats.diff/PHY_vars_UE->ulsch_encoding_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ulsch_encoding_stats.trials);
@@ -1345,8 +1407,12 @@ int main(int argc, char **argv) {
 	printf("|__ ULSCH multiplexing time           :%f us (%d trials)\n",((double)PHY_vars_UE->ulsch_multiplexing_stats.trials/PHY_vars_UE->ulsch_encoding_stats.trials)*(double)PHY_vars_UE->ulsch_multiplexing_stats.diff/PHY_vars_UE->ulsch_multiplexing_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ulsch_multiplexing_stats.trials);
 
 	printf("\n\neNB RX function statistics (per 1ms subframe)\n\n");
-	printf("Total PHY proc rx                                   :%f us (%d trials)\n",(double)PHY_vars_eNB->phy_proc_rx.diff/PHY_vars_eNB->phy_proc_rx.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->phy_proc_rx.trials);
+        double std_phy_proc_rx = sqrt((double)PHY_vars_eNB->phy_proc_rx.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_eNB->phy_proc_rx.trials - pow((double)PHY_vars_eNB->phy_proc_rx.diff/PHY_vars_eNB->phy_proc_rx.trials/cpu_freq_GHz/1000,2));
+        printf("Total PHY proc rx                  :%f us (%d trials)\n",(double)PHY_vars_eNB->phy_proc_rx.diff/PHY_vars_eNB->phy_proc_rx.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->phy_proc_rx.trials);
+	printf("|__ Statistcs                           std: %fus max: %fus min: %fus median %fus q1 %fus q3 %fus n_dropped: %d packet \n", std_phy_proc_rx, t_rx_max, t_rx_min, rx_median, rx_q1, rx_q3, n_rx_dropped);
+	
 	printf("OFDM_demod time                   :%f us (%d trials)\n",(double)PHY_vars_eNB->ofdm_demod_stats.diff/PHY_vars_eNB->ofdm_demod_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->ofdm_demod_stats.trials);
+
 	printf("ULSCH demodulation time           :%f us (%d trials)\n",(double)PHY_vars_eNB->ulsch_demodulation_stats.diff/PHY_vars_eNB->ulsch_demodulation_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->ulsch_demodulation_stats.trials);
 	printf("ULSCH Decoding time (%.2f Mbit/s, avg iter %f)      :%f us (%d trials, max %f)\n",
 	       PHY_vars_UE->ulsch_ue[0]->harq_processes[harq_pid]->TBS/1000.0,(double)avg_iter/iter_trials,
