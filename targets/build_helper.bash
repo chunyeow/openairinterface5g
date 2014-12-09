@@ -690,6 +690,13 @@ compile_epc() {
     fi
 }
 
+compile_exmimo2_driver() {
+    cd $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom && make clean && make   || exit 1
+    cd $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT && make clean && make   || exit 1
+    # TO DO CHECKS...
+}
+
+
 compile_ltesoftmodem() {
     cd $OPENAIR_TARGETS/RT/USER
     if [ -f Makefile ];  then

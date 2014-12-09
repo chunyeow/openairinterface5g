@@ -381,63 +381,65 @@ build_enb(){
     unisim_compiled=1
     
     if [ $TARGET = "ALL" ]; then
-	echo "############# compile_ltesoftmodem #############" >> bin/install_log.txt 
-	output=$(compile_ltesoftmodem  >> bin/install_log.txt  2>&1 )
-	softmodem_compiled=$?
-	check_for_ltesoftmodem_executable
-	echo_info "7.1 finished ltesoftmodem target : check the installation log file bin/install_log.txt" 
-	
-	echo "################ compile_oaisim #################"  >> bin/install_log.txt 
-	output=$(compile_oaisim      >> bin/install_log.txt   2>&1 )
-	oaisim_compiled=$?
-	check_for_oaisim_executable
-	echo_info "7.2 finished oaisim target : check the installation log file bin/install_log.txt" 
-	
-	echo "################## compile_unisim ##################"  >> bin/install_log.txt 
-	output=$(compile_unisim      >> bin/install_log.txt  2>&1 )
-	unisim_compiled=$?
-	check_for_dlsim_executable
-	check_for_ulsim_executable
-	check_for_pucchsim_executable
-	check_for_prachsim_executable
-	check_for_pdcchsim_executable
-	check_for_pbchsim_executable
-	check_for_mbmssim_executable
-	echo_info "7.3 finished unisim target : check the installation log file bin/install_log.txt" 
-	
-	
+        echo "############# compile_ltesoftmodem #############" >> bin/install_log.txt 
+        output=$(compile_ltesoftmodem  >> bin/install_log.txt  2>&1 )
+        softmodem_compiled=$?
+        check_for_ltesoftmodem_executable
+        echo_info "7.1 finished ltesoftmodem target : check the installation log file bin/install_log.txt" 
+
+        echo "################ compile_oaisim #################"  >> bin/install_log.txt 
+        output=$(compile_oaisim      >> bin/install_log.txt   2>&1 )
+        oaisim_compiled=$?
+        check_for_oaisim_executable
+        echo_info "7.2 finished oaisim target : check the installation log file bin/install_log.txt" 
+
+        echo "################## compile_unisim ##################"  >> bin/install_log.txt 
+        output=$(compile_unisim      >> bin/install_log.txt  2>&1 )
+        unisim_compiled=$?
+        check_for_dlsim_executable
+        check_for_ulsim_executable
+        check_for_pucchsim_executable
+        check_for_prachsim_executable
+        check_for_pdcchsim_executable
+        check_for_pbchsim_executable
+        check_for_mbmssim_executable
+        echo_info "7.3 finished unisim target : check the installation log file bin/install_log.txt" 
+
+
     else
-	
-	if [ $TARGET = "SOFTMODEM" ]; then 
-	    echo "############# compile_ltesoftmodem #############" >> bin/install_log.txt 
-	    output=$(compile_ltesoftmodem   >> bin/install_log.txt 2>&1 )
-	    softmodem_compiled=$?
-	    check_for_ltesoftmodem_executable
-	    echo_info "7.1 finished ltesoftmodem target: check the installation log file bin/install_log.txt" 
-	    
-	fi
-	if [ $TARGET = "OAISIM" ]; then 
-	    echo "################ compile_oaisim #################"  >> bin/install_log.txt 
-	    output=$(compile_oaisim   >> bin/install_log.txt 2>&1 )
-	    oaisim_compiled=$?	
-	    check_for_oaisim_executable
-	    echo_info "7.2 finished oaisim target: check the installation log file bin/install_log.txt" 
-	    
-	fi
-	if [ $TARGET = "UNISIM" ]; then 
-	    echo "################## compile_unisim ##################"  >> bin/install_log.txt 
-	    output=$(compile_unisim   >> bin/install_log.txt 2>&1 )
-	    unisim_compiled=$?
-	    check_for_dlsim_executable
-	    check_for_ulsim_executable
-	    check_for_pucchsim_executable
-	    check_for_prachsim_executable
-	    check_for_pdcchsim_executable
-	    check_for_pbchsim_executable
-	    check_for_mbmssim_executable
-	    echo_info "7.3 finished unisim target: check the installation log file bin/install_log.txt" 
-	    
-	fi
+
+        if [ $TARGET = "SOFTMODEM" ]; then 
+            echo "############# compile_ltesoftmodem #############" >> bin/install_log.txt 
+            output=$(compile_ltesoftmodem   >> bin/install_log.txt 2>&1 )
+            softmodem_compiled=$?
+            check_for_ltesoftmodem_executable
+            echo_info "7.1 finished ltesoftmodem target: check the installation log file bin/install_log.txt"
+            
+            if [ $HW = "EXMIMO" ]; then 
+                compile_exmimo2_driver 
+            fi
+        fi
+        if [ $TARGET = "OAISIM" ]; then 
+            echo "################ compile_oaisim #################"  >> bin/install_log.txt 
+            output=$(compile_oaisim   >> bin/install_log.txt 2>&1 )
+            oaisim_compiled=$?	
+            check_for_oaisim_executable
+            echo_info "7.2 finished oaisim target: check the installation log file bin/install_log.txt" 
+        
+        fi
+        if [ $TARGET = "UNISIM" ]; then 
+           echo "################## compile_unisim ##################"  >> bin/install_log.txt 
+            output=$(compile_unisim   >> bin/install_log.txt 2>&1 )
+            unisim_compiled=$?
+            check_for_dlsim_executable
+            check_for_ulsim_executable
+            check_for_pucchsim_executable
+            check_for_prachsim_executable
+            check_for_pdcchsim_executable
+            check_for_pbchsim_executable
+            check_for_mbmssim_executable
+            echo_info "7.3 finished unisim target: check the installation log file bin/install_log.txt" 
+        fi
     fi
 
 
@@ -448,18 +450,18 @@ build_enb(){
     echo_info "8. Installing ..."
     
     if [ $softmodem_compiled = 0 ]; then 
-	echo_success "target lte-softmodem built and installed in the bin directory"
-	echo "target lte-softmodem built and installed in the bin directory"  >>  bin/${oai_build_date}
-	output=$(install_ltesoftmodem $RT $HW $ENB_S1 )
+        echo_success "target lte-softmodem built and installed in the bin directory"
+        echo "target lte-softmodem built and installed in the bin directory"  >>  bin/${oai_build_date}
+        output=$(install_ltesoftmodem $RT $HW $ENB_S1 )
     fi
     if [ $oaisim_compiled = 0 ]; then 
-	echo_success "target oaisim built and installed in the bin directory"
-	echo "target oaisim built and installed in the bin directory"  >>  bin/${oai_build_date}
-	output=$(install_oaisim $ENB_S1 )
+        echo_success "target oaisim built and installed in the bin directory"
+        echo "target oaisim built and installed in the bin directory"  >>  bin/${oai_build_date}
+        output=$(install_oaisim $ENB_S1 )
     fi 
     if [ $unisim_compiled =  0 ]; then 
-	echo_success "target unisim built and installed in the bin directory"
-	echo "target unisim built and installed in the bin directory"  >>  bin/${oai_build_date}
+        echo_success "target unisim built and installed in the bin directory"
+        echo "target unisim built and installed in the bin directory"  >>  bin/${oai_build_date}
     fi 
     
     echo_info "build terminated, binaries are located in bin/"
@@ -651,7 +653,10 @@ esac
 ############################################
     echo_info "11. Running ... To be done"
     if [ $TARGET = "SOFTMODEM" ]; then 
-        echo_info "############# running ltesoftmodem #############"
+        if [ $HW = "EXMIMO" ]; then 
+            bash $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
+        fi
+        echo "############# running ltesoftmodem #############"
         $OPENAIR_TARGETS/RT/USER/lte-softmodem
         cd $OPENAIR_TARGETS/RT/USER;bash ./init_exmimo2.sh;
         if [ $RUN_GDB -eq 0 ]; then 
