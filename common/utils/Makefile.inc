@@ -1,7 +1,7 @@
 export KERNEL_DIR=/lib/modules/$(shell uname -r)/
-CC=gcc
-CCC=gcc
-linux = $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
+CC=gcc-4.8
+CCC=gcc-4.8
+linux := $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
 
 #CFLAGS += -std=gnu99 
 CFLAGS += -Wall -g -ggdb -Wstrict-prototypes -fno-strict-aliasing
