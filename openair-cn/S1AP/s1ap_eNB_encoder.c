@@ -89,6 +89,13 @@ int s1ap_eNB_encode_nas_non_delivery(
     uint8_t                            **buffer,
     uint32_t                            *length);
 
+static inline
+int s1ap_eNB_encode_ue_context_release_complete(
+    S1ap_UEContextReleaseCompleteIEs_t *s1ap_UEContextReleaseCompleteIEs,
+    uint8_t                           **buffer,
+    uint32_t                           *length);
+
+
 int s1ap_eNB_encode_pdu(s1ap_message *message, uint8_t **buffer, uint32_t *len)
 {
     DevAssert(message != NULL);
@@ -198,14 +205,34 @@ int s1ap_eNB_encode_successfull_outcome(s1ap_message *s1ap_message_p,
     message_string = calloc(10000, sizeof(char));
 
     s1ap_string_total_size = 0;
+    message_string_size = strlen(message_string);
+
 
     switch(s1ap_message_p->procedureCode) {
-        case S1ap_ProcedureCode_id_InitialContextSetup:
-            ret = s1ap_eNB_encode_initial_context_setup_response(
-                &s1ap_message_p->msg.s1ap_InitialContextSetupResponseIEs, buffer, len);
-            s1ap_xer_print_s1ap_initialcontextsetupresponse(s1ap_xer__print2sp, message_string, s1ap_message_p);
-            message_id = S1AP_INITIAL_CONTEXT_SETUP_LOG;
-            break;
+    case S1ap_ProcedureCode_id_InitialContextSetup:
+        ret = s1ap_eNB_encode_initial_context_setup_response(
+            &s1ap_message_p->msg.s1ap_InitialContextSetupResponseIEs, buffer, len);
+
+        s1ap_xer_print_s1ap_initialcontextsetupresponse(s1ap_xer__print2sp, message_string, s1ap_message_p);
+        message_id = S1AP_INITIAL_CONTEXT_SETUP_LOG;
+        message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
+        message_p->ittiMsg.s1ap_initial_context_setup_log.size = message_string_size;
+        memcpy(&message_p->ittiMsg.s1ap_initial_context_setup_log.text, message_string, message_string_size);
+        itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+        free(message_string);
+        break;
+
+    case S1ap_ProcedureCode_id_UEContextRelease:
+        ret = s1ap_eNB_encode_ue_context_release_complete(
+            &s1ap_message_p->msg.s1ap_UEContextReleaseCompleteIEs, buffer, len);
+        s1ap_xer_print_s1ap_uecontextreleasecomplete(s1ap_xer__print2sp, message_string, s1ap_message_p);
+        message_id = S1AP_UE_CONTEXT_RELEASE_COMPLETE_LOG;
+        message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
+        message_p->ittiMsg.s1ap_ue_context_release_complete_log.size = message_string_size;
+        memcpy(&message_p->ittiMsg.s1ap_ue_context_release_complete_log.text, message_string, message_string_size);
+        itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+        free(message_string);
+        break;
 
         default:
             S1AP_DEBUG("Unknown procedure ID (%d) for successfull outcome message\n",
@@ -214,15 +241,6 @@ int s1ap_eNB_encode_successfull_outcome(s1ap_message *s1ap_message_p,
             break;
     }
 
-    message_string_size = strlen(message_string);
-
-    message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
-    message_p->ittiMsg.s1ap_initial_context_setup_log.size = message_string_size;
-    memcpy(&message_p->ittiMsg.s1ap_initial_context_setup_log.text, message_string, message_string_size);
-
-    itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
-
-    free(message_string);
 
     return ret;
 }
@@ -445,3 +463,31 @@ int s1ap_eNB_encode_initial_context_setup_response(
             &asn_DEF_S1ap_InitialContextSetupResponse,
             initial_context_setup_response_p);
 }
+
+static inline
+int s1ap_eNB_encode_ue_context_release_complete(
+		S1ap_UEContextReleaseCompleteIEs_t *s1ap_UEContextReleaseCompleteIEs,
+    uint8_t                              **buffer,
+    uint32_t                              *length)
+{
+	S1ap_UEContextReleaseComplete_t  ue_context_release_complete;
+	S1ap_UEContextReleaseComplete_t *ue_context_release_complete_p =
+        &ue_context_release_complete;
+
+    memset((void *)ue_context_release_complete_p, 0,
+           sizeof(ue_context_release_complete));
+
+    if (s1ap_encode_s1ap_uecontextreleasecompleteies(
+    		ue_context_release_complete_p, s1ap_UEContextReleaseCompleteIEs) < 0)
+    {
+        return -1;
+    }
+
+    return s1ap_generate_successfull_outcome(buffer,
+            length,
+            S1ap_ProcedureCode_id_UEContextRelease,
+            S1ap_Criticality_reject,
+            &asn_DEF_S1ap_UEContextReleaseComplete,
+            ue_context_release_complete_p);
+}
+

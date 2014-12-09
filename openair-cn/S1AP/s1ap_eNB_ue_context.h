@@ -91,4 +91,7 @@ struct s1ap_eNB_ue_context_s *s1ap_eNB_get_ue_context(
     s1ap_eNB_instance_t *instance_p,
     uint32_t eNB_ue_s1ap_id);
 
+void s1ap_eNB_free_ue_context(struct s1ap_eNB_ue_context_s *ue_context_p);
+
+
 #endif /* S1AP_ENB_UE_CONTEXT_H_ */

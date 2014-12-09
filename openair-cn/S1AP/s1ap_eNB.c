@@ -296,6 +296,10 @@ void *s1ap_eNB_task(void *arg)
                 s1ap_eNB_nas_non_delivery_ind(ITTI_MESSAGE_GET_INSTANCE(received_msg),
                                               &S1AP_NAS_NON_DELIVERY_IND(received_msg));
             } break;
+            case S1AP_UE_CONTEXT_RELEASE_COMPLETE: {
+                s1ap_ue_context_release_complete(ITTI_MESSAGE_GET_INSTANCE(received_msg),
+                                              &S1AP_UE_CONTEXT_RELEASE_COMPLETE(received_msg));
+            } break;
             default:
                 S1AP_ERROR("Received unhandled message: %d:%s\n",
                            ITTI_MSG_ID(received_msg), ITTI_MSG_NAME(received_msg));

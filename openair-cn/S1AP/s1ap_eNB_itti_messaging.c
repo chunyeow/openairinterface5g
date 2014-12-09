@@ -40,3 +40,16 @@ void s1ap_eNB_itti_send_nas_downlink_ind(instance_t instance,
 
     itti_send_msg_to_task(TASK_RRC_ENB, instance, message_p);
 }
+
+void s1ap_eNB_itti_send_sctp_close_association(instance_t instance, int32_t assoc_id)
+{
+    MessageDef               *message_p = NULL;
+    sctp_close_association_t *sctp_close_association_p = NULL;
+
+    message_p = itti_alloc_new_message(TASK_S1AP, SCTP_CLOSE_ASSOCIATION);
+    sctp_close_association_p = &message_p->ittiMsg.sctp_close_association;
+    sctp_close_association_p->assoc_id      = assoc_id;
+
+    itti_send_msg_to_task(TASK_SCTP, instance, message_p);
+}
+

@@ -49,4 +49,8 @@ int s1ap_eNB_initial_ctxt_resp(
 int s1ap_eNB_ue_capabilities(instance_t instance,
                              s1ap_ue_cap_info_ind_t *ue_cap_info_ind_p);
 
+int s1ap_ue_context_release_complete(instance_t instance,
+                             s1ap_ue_release_complete_t *ue_release_complete_p);
+
+
 #endif /* S1AP_ENB_NAS_PROCEDURES_H_ */

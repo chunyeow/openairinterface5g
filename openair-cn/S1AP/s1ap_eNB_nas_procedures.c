@@ -572,3 +572,75 @@ int s1ap_eNB_ue_capabilities(instance_t instance,
 
     return ret;
 }
+
+int s1ap_ue_context_release_complete(instance_t instance,
+		s1ap_ue_release_complete_t *ue_release_complete_p)
+{
+    s1ap_eNB_instance_t          *s1ap_eNB_instance_p = NULL;
+    struct s1ap_eNB_ue_context_s *ue_context_p        = NULL;
+
+    S1ap_UEContextReleaseCompleteIEs_t *ue_ctxt_release_complete_ies_p = NULL;
+
+    s1ap_message  message;
+
+    uint8_t  *buffer;
+    uint32_t length;
+    int      ret = -1;
+
+    /* Retrieve the S1AP eNB instance associated with Mod_id */
+    s1ap_eNB_instance_p = s1ap_eNB_get_instance(instance);
+
+    DevAssert(ue_release_complete_p != NULL);
+    DevAssert(s1ap_eNB_instance_p != NULL);
+
+    if ((ue_context_p = s1ap_eNB_get_ue_context(s1ap_eNB_instance_p,
+    		ue_release_complete_p->eNB_ue_s1ap_id)) == NULL)
+    {
+        /* The context for this eNB ue s1ap id doesn't exist in the map of eNB UEs */
+        S1AP_WARN("Failed to find ue context associated with eNB ue s1ap id: %u\n",
+        		ue_release_complete_p->eNB_ue_s1ap_id);
+        return -1;
+    }
+
+    /* Prepare the S1AP message to encode */
+    memset(&message, 0, sizeof(s1ap_message));
+
+    message.direction     = S1AP_PDU_PR_successfulOutcome;
+    message.procedureCode = S1ap_ProcedureCode_id_UEContextRelease;
+    //message.criticality   = S1ap_Criticality_reject;
+    message.direction     = S1AP_PDU_PR_successfulOutcome;
+
+    ue_ctxt_release_complete_ies_p = &message.msg.s1ap_UEContextReleaseCompleteIEs;
+
+    ue_ctxt_release_complete_ies_p->eNB_UE_S1AP_ID = ue_release_complete_p->eNB_ue_s1ap_id;
+    ue_ctxt_release_complete_ies_p->mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
+    //ue_ctxt_release_complete_ies_p->criticalityDiagnostics
+    //ue_ctxt_release_complete_ies_p->presenceMask
+
+    if (s1ap_eNB_encode_pdu(&message, &buffer, &length) < 0) {
+        /* Encode procedure has failed... */
+        S1AP_ERROR("Failed to encode UE context release complete\n");
+        return -1;
+    }
+
+    /* UE associated signalling -> use the allocated stream */
+    s1ap_eNB_itti_send_sctp_data_req(s1ap_eNB_instance_p->instance,
+                                     ue_context_p->mme_ref->assoc_id, buffer,
+                                     length, ue_context_p->stream);
+
+
+    s1ap_eNB_itti_send_sctp_close_association(s1ap_eNB_instance_p->instance,
+                                     ue_context_p->mme_ref->assoc_id);
+
+
+
+    // release UE context
+    struct s1ap_eNB_ue_context_s *ue_context2_p = NULL;
+    if ((ue_context2_p = RB_REMOVE(s1ap_ue_map, &s1ap_eNB_instance_p->s1ap_ue_head, ue_context_p))
+            == NULL)
+    {
+        s1ap_eNB_free_ue_context(ue_context2_p);
+    }
+    return ret;
+}
+
