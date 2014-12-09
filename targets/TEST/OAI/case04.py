@@ -85,7 +85,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
         
     try:
-        test = '06'
+        test = '05'
         name = 'Perf oai.dlsim.test5'
         diag = 'Test 5, 1.4 MHz, R4.FDD (MCS 4), EVA5, 0dB (70%)'
         conf = '-m4 -gF -s0 -w1.0 -f.2 -n500 -B6 -c4 -z2 -O70'
