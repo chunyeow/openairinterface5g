@@ -11,8 +11,8 @@
 
 include $(OPENAIR_HOME)/common/utils/Makefile.inc
 
-KERNEL_ARCH=$(shell echo `uname -m`)
-SET_X64=$(shell if [ $(KERNEL_ARCH) = 'x86_64' ]; then echo true ; fi)
+KERNEL_ARCH:=$(shell echo `uname -m`)
+SET_X64:=$(shell if [ $(KERNEL_ARCH) = 'x86_64' ]; then echo true ; fi)
 ifdef RTAI
 # Get the RTAI variables
 CCC = $(shell rtai-config --cc)
