@@ -1,10 +1,4 @@
-CC = gcc
-
-CPUFLAGS = -mmmx -msse -msse2 -m32  #-msse4
-# FORCE ssse3 for compilation of openair on User Mode Linux
-CPUFLAGS += $(shell if grep --silent ssse3 /proc/cpuinfo ; then echo "-mssse3" ; else if grep --silent User\ Mode\ Linux /proc/cpuinfo ; then echo "-mssse3" ; else echo ""; fi; fi)
-CPUFLAGS += $(shell if grep --silent sse4 /proc/cpuinfo ; then echo "-msse4" ; else echo ""; fi)
-linux = $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 
 NUM_CORES=$(shell cat /proc/cpuinfo | grep processor | wc -l)
 
@@ -14,13 +8,7 @@ OPENAIR2_TOP = $(OPENAIR2_DIR)
 OPENAIR3_TOP = $(OPENAIR3_DIR)
 OPENAIR3     = $(OPENAIR3_DIR)
 
-CFLAGS = -Wall -fno-strict-aliasing -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -g -ggdb $(CPUFLAGS) -I/usr/include/X11 #-Wno-packed-bitfield-compat
-
-# Check if GCC version is greater or equal to 4.4
-GCCVERSIONGTEQ44 := $(shell expr `gcc -dumpversion | cut -f1,2 -d. --output-delimiter=""` \>= 44)
-ifeq "$(GCCVERSIONGTEQ44)" "1"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
+CFLAGS += -m32 -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -I/usr/include/X11
 
 ASN1_MSG_INC = $(OPENAIR2_DIR)/RRC/LITE/MESSAGES
 
@@ -49,13 +37,10 @@ endif
 ifeq ($(linux),1)
 CFLAGS += -I/usr/include/libxml2 -L/usr/local/lib -I/usr/include/atlas -L/usr/X11R6/lib
 OCG_FLAG = 1
-cygwin=0
 CFLAGS += -DLINUX
 else
-cygwin=1
 OCG_FLAG = 0
 endif
-
 
 ifdef XFORMS
 CFLAGS += -DXFORMS
@@ -123,8 +108,6 @@ endif
 ifdef OAI_NW_DRIVER_TYPE_ETHERNET
 CFLAGS+=-DOAI_NW_DRIVER_TYPE_ETHERNET
 endif
-
-CFLAGS += $(shell if [ `uname -o` = "Cygwin" ] ; then echo "-DCYGWIN" ;fi)
 
 CFLAGS += -DENABLE_FXP -DOAI_EMU -DENABLE_USE_CPU_EXECUTION_TIME
 
@@ -202,7 +185,6 @@ $(L2_OBJS) : %.o : %.c
 	$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) -DMAC_CONTEXT=1 -DTEST_RLC_UM=1 -DPHY_CONTEXT=1 -I$(TOP_DIR) $(L2_incl) -I$(ASN1_MSG_INC) -o $@ $<
 
 testum : $(OBJ) $(L2_OBJS) oaisim.c
-	echo CYGWIN variable is $(cygwin)
 	$(CC)  oaisim.c -I$(TOP_DIR) $(L2_incl) -I$(ASN1_MSG_INC) -o testum $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(L2_OBJS) -lm -lrt
 
 

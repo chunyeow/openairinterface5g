@@ -1,8 +1,4 @@
-SSE3PROC = $(shell echo `grep ssse3 /proc/cpuinfo`) 
-SSE4PROC = $(shell echo `grep sse4 /proc/cpuinfo`) 
-CPUFLAGS = -mmmx -msse -msse2 -mssse3 -msse4.1
-#CPUFLAGS += $(shell if [ -z $(SSE3PROC) ]; then echo "" ; else echo "-mssse3"; fi)
-#CPUFLAGS += $(shell if [ -z $(SSE4PROC) ]; then echo "" ; else echo "-msse4"; fi)
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 
 COMMON_UTILS_DIR = $(OPENAIR_HOME)/common/utils
 TOP_DIR = $(OPENAIR1_DIR)
@@ -10,7 +6,7 @@ OPENAIR1_TOP = $(OPENAIR1_DIR)
 OPENAIR2_TOP = $(OPENAIR2_DIR)
 OPENAIR3 = $(OPENAIR3_DIR)
 
-CFLAGS = -O2 -g -ggdb -Wno-strict-aliasing -rdynamic -DMAX_NUM_CCs=1 -Wall -DPHYSIM -DNODE_RG -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DPHY_CONTEXT=1 $(CPUFLAGS) -DMALLOC_CHECK_=1 -DENABLE_VCD_FIFO # -Wno-packed-bitfield-compat
+CFLAGS += -DMAX_NUM_CCs=1 -Wall -DPHYSIM -DNODE_RG -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DPHY_CONTEXT=1 -DMALLOC_CHECK_=1 -DENABLE_VCD_FIFO # -Wno-packed-bitfield-compat
 
 
 # DCI Debug
@@ -32,12 +28,6 @@ LFLAGS = -lm -lblas -lxml2 -lrt -lpthread $(LFDS_DIR)/bin/liblfds611.a
 
 ifdef GPIB
 LFLAGS += -lgpib
-endif
-
-# Check if GCC version is greater or equal to 4.4
-GCCVERSIONGTEQ44 := $(shell expr `gcc -dumpversion | cut -f1,2 -d. --output-delimiter=""` \>= 44)
-ifeq "$(GCCVERSIONGTEQ44)" "1"
-    CFLAGS += -Wno-packed-bitfield-compat
 endif
 
 CFLAGS += -DOPENAIR_LTE #-DOFDMA_ULSCH #-DIFFT_FPGA -DIFFT_FPGA_UE

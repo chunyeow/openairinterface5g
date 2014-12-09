@@ -1,9 +1,4 @@
-CC = gcc
-
-CPUFLAGS = -mmmx -msse -msse2 -m32  #-msse4
-CPUFLAGS += $(shell if grep --silent ssse3 /proc/cpuinfo ; then echo "-mssse3" ; else echo ""; fi)
-CPUFLAGS += $(shell if grep --silent sse4 /proc/cpuinfo ; then echo "-msse4" ; else echo ""; fi)
-linux = $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 
 TOP_DIR      = $(OPENAIR1_DIR)
 OPENAIR1_TOP = $(OPENAIR1_DIR)
@@ -11,22 +6,7 @@ OPENAIR2_TOP = $(OPENAIR2_DIR)
 OPENAIR3_TOP = $(OPENAIR3_DIR)
 OPENAIR3     = $(OPENAIR3_DIR)
 
-CFLAGS = -O2 -Wall -fno-strict-aliasing -DPHYSIM -DUSER_MODE -DPC_TARGET -DPC_DSP -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -g -ggdb $(CPUFLAGS) -I/usr/include/X11 #-Wno-packed-bitfield-compat 
-
-GCCVERSION = $(shell gcc --version | grep ^gcc | sed 's/^.* //g')
-ifeq "$(GCCVERSION)"  "4.4.3"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
-ifeq "$(GCCVERSION)" "4.5.2"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
-ifeq "$(GCCVERSION)" "4.6.1"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
-ifeq "$(GCCVERSION)" "4.6.3"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
-
+CFLAGS += -m32 -DPHYSIM -DUSER_MODE -DPC_TARGET -DPC_DSP -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -I/usr/include/X11
 
 ASN1_MSG_INC = $(OPENAIR2_DIR)/RRC/LITE/MESSAGES
 
@@ -45,10 +25,8 @@ endif
 ifeq ($(linux),1) 
 CFLAGS += -I/usr/include/libxml2 -L/usr/local/lib -I/usr/include/atlas -L/usr/X11R6/lib 
 OCG_FLAG = 1
-cygwin=0
 CFLAGS += -DLINUX
 else
-cygwin=1
 OCG_FLAG = 0
 endif
 
@@ -78,7 +56,6 @@ ifdef ADDCONF
 CFLAGS+=-DADDRCONF
 endif
 
-CFLAGS += $(shell if [ `uname -o` = "Cygwin" ] ; then echo "-DCYGWIN" ;fi)
 
 ifdef TRAFFIC_TM5
 CFLAGS += -DRLC_UM_TEST_TRAFFIC=1 -DFULL_BUFFER=1
@@ -127,7 +104,6 @@ all: pt
 
 printvars:
 	@echo LINUX variable is $(linux)
-	@echo CYGWIN variable is $(cygwin)
 	@echo rrc_cellular variable is $(rrc_cellular)
 	@echo EXTRA_CFLAGS = $(EXTRA_CFLAGS)
 	@echo OAI Config generator is $(OCG_FLAG)	
@@ -183,7 +159,6 @@ cleanasn1:
 	rm -f $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc.generated
 
 print:
-	@echo $(cygwin)
 	@echo $(OCG_FLAG)
 	@echo $(CFLAGS)
 	@echo $(EXTRA_CFLAGS)

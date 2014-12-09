@@ -11,13 +11,6 @@ OPENAIR2_TOP          = $(OPENAIR2_DIR)
 OPENAIR3_TOP          = $(OPENAIR3_DIR)
 OPENAIR3              = $(OPENAIR3_DIR)
 
-CPUFLAGS = -mmmx -msse -msse2 -msse4.1 -march=native
-# FORCE ssse3 for compilation of openair on User Mode Linux
-CPUFLAGS += $(shell if grep --silent ssse3 /proc/cpuinfo ; then echo "-mssse3" ; else if grep --silent User\ Mode\ Linux /proc/cpuinfo ; then echo "-mssse3" ; else echo ""; fi; fi)
-CPUFLAGS += $(shell if grep --silent -w sse4 /proc/cpuinfo ; then echo "-msse4" ; else echo ""; fi)
-linux = $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
-CFLAGS += -O2	
-
 ifeq ($(DEBUG),1)	
 CFLAGS += -g -ggdb -DDEBUG_PHY -DDEBUG_MEAS
 CFLAGS += -DRRC_MSG_PRINT
@@ -31,7 +24,7 @@ CFLAGS += -DRRC_MSG_PRINT
 CFLAGS += -DPDCP_MSG_PRINT
 endif
 
-CFLAGS += -Wstrict-prototypes -Wpointer-sign
+CFLAGS += -Wpointer-sign
 CFLAGS += -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 $(CPUFLAGS) -I/usr/include/X11 #-Wno-packed-bitfield-compat
 
 # Check if GCC version is greater or equal to 4.4
@@ -174,8 +167,6 @@ endif
 ifdef OAI_NW_DRIVER_TYPE_ETHERNET
 CFLAGS+=-DOAI_NW_DRIVER_TYPE_ETHERNET
 endif
-
-CFLAGS += $(shell if [ `uname -o` = "Cygwin" ] ; then echo "-DCYGWIN" ;fi)
 
 CFLAGS += -DENABLE_FXP -DOAI_EMU -DENABLE_USE_CPU_EXECUTION_TIME
 ifndef DISABLE_XER_PRINT

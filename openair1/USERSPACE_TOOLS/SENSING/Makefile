@@ -1,9 +1,8 @@
-
-CC = gcc
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 
 TOP_DIR = ../..
 
-CFLAGS = -DNODE_RG -DUSER_MODE -DPC_TARGET -DPC_DSP -DNB_ANTENNAS=2 -DNB_ANTENNAS_TX=2 -DDEBUG_PHY -DCBMIMO1 -mmmx -msse -msse2 -g -ggdb
+CFLAGS += -DNODE_RG -DUSER_MODE -DPC_TARGET -DPC_DSP -DNB_ANTENNAS=2 -DNB_ANTENNAS_TX=2 -DDEBUG_PHY -DCBMIMO1 
 
 # PHY Initialization routines
 OBJS	=$(TOP_DIR)/PHY/INIT/init.o 

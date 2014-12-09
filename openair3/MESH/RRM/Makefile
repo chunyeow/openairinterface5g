@@ -1,3 +1,4 @@
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 OSTYPE		= $(shell uname -o )
 
 #AAA: if rrc emulated remove comment from next line
@@ -20,7 +21,7 @@ EMUL        = $(CHEMIN)/EMUL
 VPATH		= $(CHEMIN):$(EMUL):$(CHEMIN)/deps:$(CHEMIN)/obj
 
 INCLUDE     = -I.  -I$(OPENAIR2_RRC) -I$(OPENAIR3_RRM) -I$(INTERFACE) -I$(OPENAIR2_DIR) -I$(OPENAIR1_SENSING)
-CFLAGS		+= -Wall -g  $(INCLUDE) -DDEBUG -mmmx -msse -msse2 -std=gnu99 -DNOTRACE -DOPENAIR2_IN
+CFLAGS		+= -std=gnu99 $(INCLUDE) -DDEBUG -DNOTRACE -DOPENAIR2_IN
 LDFLAGS		= -lm -lforms -lX11 -L/usr/X11R6/lib -lXpm -lpthread 
 
 ifeq ($(OSTYPE),Cygwin)

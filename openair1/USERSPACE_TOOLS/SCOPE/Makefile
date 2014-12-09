@@ -1,10 +1,10 @@
-CC = gcc
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 
 TOP_DIR = ../..
 OPENAIR2_DIR = ../../../openair2
 OPENAIR2_TOP = $(OPENAIR2_DIR)
 
-CFLAGS = -Wall -g -ggdb -DNODE_RG -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TX=2 -DNB_ANTENNAS_TXRX=2 -DWIDENS_DLC -DPHY_CONTEXT -DPC_DSP -DPC_TARGET -DMAX_MODULES=1 -DCBMIMO1 -mtune=pentium4 -mmmx -msse2 -O -funroll-loops -fno-stack-check -I$(TOP_DIR) -I/usr/include/X11 -I/usr/X11R6/include -I/usr/realtime/include -I$(OPENAIR2_DIR)/RRC/LITE/MESSAGES
+CFLAGS += -DNODE_RG -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TX=2 -DNB_ANTENNAS_TXRX=2 -DWIDENS_DLC -DPHY_CONTEXT -DPC_DSP -DPC_TARGET -DMAX_MODULES=1 -DCBMIMO1 -I$(TOP_DIR) -I/usr/include/X11 -I/usr/X11R6/include -I/usr/realtime/include -I$(OPENAIR2_DIR)/RRC/LITE/MESSAGES
 
 include $(OPENAIR2_DIR)/LAYER2/Makefile.inc
 CFLAGS += $(L2_incl)

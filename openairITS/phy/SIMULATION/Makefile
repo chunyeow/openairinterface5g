@@ -1,23 +1,10 @@
-#CC = $(shell if [ $(OSTYPE) = "cygwin" ]; then echo "gcc-4";  else echo "gcc"; fi)
-CC = gcc
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 
-SSE3PROC = $(shell echo `grep ssse3 /proc/cpuinfo`) 
-SSE4PROC = $(shell echo `grep sse4 /proc/cpuinfo`) 
-CPUFLAGS = -mmmx -msse -msse2 -m32 -mssse3 -msse4.1
-#CPUFLAGS += $(shell if [ -z $(SSE3PROC) ]; then echo "" ; else echo "-mssse3"; fi)
-#CPUFLAGS += $(shell if [ -z $(SSE4PROC) ]; then echo "" ; else echo "-msse4"; fi)
-
-CFLAGS = -O2 -DEXECTIME -Wall -fno-common -mpreferred-stack-boundary=4 -fno-strict-aliasing -g -ggdb -rdynamic $(CPUFLAGS) -DMALLOC_CHECK_=1 # -Wno-packed-bitfield-compat
+CFLAGS += -DEXECTIME -DMALLOC_CHECK_=1 
 
 CFLAGS += -I$(OPENAIR1_DIR) -DNO_OPENAIR1 -DUSER_MODE -I$(OPENAIRITS_DIR) -I$(OPENAIR2_DIR) -DNB_ANTENNAS_TX=1 -DNB_ANTENNAS_RX=2
 
 LFLAGS = -lm -lblas -lxml2 -lrt 
-
-# Check if GCC version is greater or equal to 4.4
-GCCVERSIONGTEQ44 := $(shell expr `gcc -dumpversion | cut -f1,2 -d. --output-delimiter=""` \>= 44)
-ifeq "$(GCCVERSIONGTEQ44)" "1"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
 
 ifdef DEBUG_PHY
 CFLAGS += -DDEBUG_PHY

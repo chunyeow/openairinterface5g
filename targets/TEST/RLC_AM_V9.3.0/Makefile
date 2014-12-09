@@ -1,10 +1,4 @@
-CC = gcc
-
-CPUFLAGS = -mmmx -msse -msse2 -m32  #-msse4
-# FORCE ssse3 for compilation of openair on User Mode Linux
-CPUFLAGS += $(shell if grep --silent ssse3 /proc/cpuinfo ; then echo "-mssse3" ; else if grep --silent User\ Mode\ Linux /proc/cpuinfo ; then echo "-mssse3" ; else echo ""; fi; fi)
-CPUFLAGS += $(shell if grep --silent sse4 /proc/cpuinfo ; then echo "-msse4" ; else echo ""; fi)
-linux = $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 
 NUM_CORES=$(shell cat /proc/cpuinfo | grep processor | wc -l)
 
@@ -14,13 +8,7 @@ OPENAIR2_TOP = $(OPENAIR2_DIR)
 OPENAIR3_TOP = $(OPENAIR3_DIR)
 OPENAIR3     = $(OPENAIR3_DIR)
 
-CFLAGS = -Wall -fno-strict-aliasing -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -g -ggdb $(CPUFLAGS) -I/usr/include/X11 #-Wno-packed-bitfield-compat
-
-# Check if GCC version is greater or equal to 4.4
-GCCVERSIONGTEQ44 := $(shell expr `gcc -dumpversion | cut -f1,2 -d. --output-delimiter=""` \>= 44)
-ifeq "$(GCCVERSIONGTEQ44)" "1"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
+CFLAGS += -m32 -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -I/usr/include/X11 
 
 ASN1_MSG_INC = $(OPENAIR2_DIR)/RRC/LITE/MESSAGES
 

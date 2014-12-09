@@ -1,11 +1,11 @@
-CPUFLAGS = -mmmx -msse -msse2 -m32 -mssse3 -msse4.1
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 
 TOP_DIR = $(OPENAIR1_DIR)
 OPENAIR1_TOP = $(OPENAIR1_DIR)
 OPENAIR2_TOP = $(OPENAIR2_DIR)
 OPENAIR3 = $(OPENAIR3_DIR)
 
-CFLAGS =  -Wall -fno-common -mpreferred-stack-boundary=4 -fno-strict-aliasing -DPHYSIM -DNODE_RG -DUSER_MODE -DPC_TARGET -DPC_DSP -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DPHY_CONTEXT=1 -g -ggdb -rdynamic $(CPUFLAGS) -DMALLOC_CHECK_=1 # -Wno-packed-bitfield-compat -O2
+CFLAGS += -m32  -DPHYSIM -DNODE_RG -DUSER_MODE -DPC_TARGET -DPC_DSP -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DPHY_CONTEXT=1 -DMALLOC_CHECK_=1 # -Wno-packed-bitfield-compat -O2
 
 CFLAGS += -DNEW_FFT
 
@@ -13,17 +13,6 @@ LFLAGS = -lm -lblas -lxml2 -lrt
 
 ifdef GPIB
 LFLAGS += -lgpib
-endif
-
-GCCVERSION = $(shell gcc --version | grep ^gcc | sed 's/^.* //g')
-ifeq "$(GCCVERSION)"  "4.4.3"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
-ifeq "$(GCCVERSION)" "4.5.2"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
-ifeq "$(GCCVERSION)" "4.6.1"
-    CFLAGS += -Wno-packed-bitfield-compat
 endif
 
 CFLAGS += -DOPENAIR_LTE #-DOFDMA_ULSCH #-DIFFT_FPGA -DIFFT_FPGA_UE
@@ -113,8 +102,6 @@ CFLAGS += $(L2_incl) -I$(ASN1_MSG_INC) -I$(TOP_DIR) -I$(OPENAIR3) $(UTIL_incl)
 
 #STATS_OBJS += $(TOP_DIR)/ARCH/CBMIMO1/DEVICE_DRIVER/cbmimo1_proc.o
 
-#LAYER2_OBJ += $(OPENAIR2_DIR)/LAYER2/MAC/rar_tools.o
-#LAYER2_OBJ = $(OPENAIR2_DIR)/LAYER2/MAC/lte_transport_init.o
 
 OBJ = $(PHY_OBJS) $(SIMULATION_OBJS) $(TOOLS_OBJS) $(SCHED_OBJS) $(LAYER2_OBJ) $(LOG_OBJS) 
 ifdef GPIB

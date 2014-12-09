@@ -1,4 +1,4 @@
-CC = gcc
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 
 TOP_DIR 		   =../..
 PHY_DIR                    =../../PHY
@@ -14,7 +14,7 @@ PHY_MAC_INTERFACE_DIR      =../MAC_INTERFACE
 SCHED_DIR                  =../SCHED
 
 
-CFLAGS = -DEMOS -DNODE_RG -DUSER_MODE -DPC_TARGET -DPC_DSP -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TX=2 -DNB_ANTENNAS_TXRX=2 -DMAX_MODULES=1 -DPHY_CONTEXT=1 -g -mtune=pentium4 -msse2 -mmmx -msse2 -O -funroll-loops -I/usr/realtime/include/
+CFLAGS += -DEMOS -DNODE_RG -DUSER_MODE -DPC_TARGET -DPC_DSP -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TX=2 -DNB_ANTENNAS_TXRX=2 -DMAX_MODULES=1 -DPHY_CONTEXT=1 -I/usr/realtime/include/
 #-DICC 
 
 ifdef DEBUGPHY

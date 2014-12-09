@@ -6,17 +6,6 @@ all: lte-softmodem rrh
 
 include $(OPENAIR_TARGETS)/Makefile.common
 
-GCCVERSION = $(shell gcc --version | grep ^gcc | sed 's/^.* //g')
-ifeq "$(GCCVERSION)"  "4.4.3"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
-ifeq "$(GCCVERSION)" "4.5.2"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
-ifeq "$(GCCVERSION)" "4.6.1"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
-
 KERNEL_VERSION=$(shell echo `uname -r | cut -d. -f-2`)
 KERNEL_TYPE=$(shell echo `uname -r | cut -d. -f-3 | cut -d- -f3`)
 LOWLATENCY_KERNEL=$(shell if [ $(KERNEL_TYPE) = "lowlatency" ]; then echo "1" ; else echo "0" ; fi)
@@ -31,7 +20,6 @@ ifndef USRP
 USRP=0
 endif
 
-CFLAGS += -O2 
 CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/COMMON  -I.
 
 ifndef OPENAIR2
@@ -108,11 +96,9 @@ include $(OPENAIR3_DIR)/RAL-LTE/Makefile.inc
 ifeq ($(USRP),1)
 
 include $(OPENAIR_TARGETS)/ARCH/USRP/USERSPACE/LIB/Makefile.inc
-#CFLAGS += -I/opt/include/uhd -L/opt/lib -luhd -lpthread -lstdc++
-CFLAGS += -I/usr/include/uhd -L/usr/lib -luhd -lpthread -lstdc++
+CFLAGS += -I/opt/include/uhd -L/opt/lib -luhd -lpthread -lstdc++
 CFLAGS += -DUSRP
-#LDFLAGS += -L/opt/lib -luhd -lpthread -lstdc++ 
-LDFLAGS += -L/usr/lib/ -luhd -lpthread -lstdc++
+LDFLAGS += -L/opt/lib -luhd -lpthread -lstdc++ 
 endif
 
 ifeq ($(ETHERNET),1)
@@ -174,10 +160,7 @@ ifdef SMBV
 CFLAGS += -DSMBV
 endif
 
-#CPUFLAGS = -mmmx -msse -msse2 -m32 -mssse3 -msse4.1
-CPUFLAGS = -mmmx -msse -msse2 -mssse3 -msse4.1
-#CFLAGS += -fno-common -mpreferred-stack-boundary=4  
-CFLAGS += -Wall -fno-strict-aliasing -DPHYSIM -DUSER_MODE -DPC_TARGET -DPC_DSP -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DPHY_CONTEXT=1 -rdynamic $(CPUFLAGS) # -Wno-packed-bitfield-compat
+CFLAGS += -DPHYSIM -DUSER_MODE -DPC_TARGET -DPC_DSP -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DPHY_CONTEXT=1 
 CFLAGS += -DOPENAIR_LTE -DENABLE_FXP -DOPENAIR1 -DDLSCH_THREAD #-DULSCH_THREAD
 
 

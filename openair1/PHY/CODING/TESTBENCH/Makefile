@@ -1,10 +1,4 @@
-CC =  gcc
-
-SSE3PROC = $(shell echo `grep ssse3 /proc/cpuinfo`) 
-SSE4PROC = $(shell echo `grep sse4 /proc/cpuinfo`) 
-CPUFLAGS = -mmmx -msse -msse2 -mssse3 -msse4 
-#CPUFLAGS += $(shell if [ -z $(SSE3PROC)]; then echo "" ; else echo "-mssse3"; fi)
-#CPUFLAGS += $(shell if [ -z $(SSE4PROC)]; then echo "" ; else echo "-msse4"; fi)
+include $(OPENAIR_HOME)/common/utils/Makefile.inc
 
 COMMON_UTILS_DIR = $(OPENAIR_HOME)/common/utils
 TOP_DIR = $(OPENAIR1_DIR)
@@ -13,7 +7,7 @@ OPENAIR2_TOP = $(OPENAIR2_DIR)
 OPENAIR3 = $(OPENAIR3_DIR)
 
 
-CFLAGS += -Wall -O2 -DNODE_RG -DUSER_MODE -DPC_TARGET -DNO_UL_REF -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DOPENAIR_LTE -g $(CPUFLAGS)
+CFLAGS += -DNODE_RG -DUSER_MODE -DPC_TARGET -DNO_UL_REF -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DOPENAIR_LTE
 
 ASN1_MSG_INC = $(OPENAIR2_DIR)/RRC/LITE/MESSAGES
 
@@ -25,22 +19,6 @@ ifeq ($(turbo_flag),1)
   CFLAGS += -DTURBO_S
 endif
 
-GCCVERSION = $(shell gcc --version | grep ^gcc | sed 's/^.* //g')
-
-ifeq "$(GCCVERSION)"  "4.4.0-4)"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
-ifeq "$(GCCVERSION)"  "4.4.3"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
-ifeq "$(GCCVERSION)" "4.5.2"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
-ifeq "$(GCCVERSION)" "4.6.1"
-    CFLAGS += -Wno-packed-bitfield-compat
-endif
-
-include $(COMMON_UTILS_DIR)/Makefile.inc
 include $(TOP_DIR)/PHY/Makefile.inc
 #include $(TOP_DIR)/SCHED/Makefile.inc
 SCHED_OBJS = $(TOP_DIR)/SCHED/phy_procedures_lte_common.o
