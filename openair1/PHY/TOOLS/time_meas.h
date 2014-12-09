@@ -30,6 +30,7 @@
 #include <omp.h>
 #endif
 #include <unistd.h>
+#include <math.h>
 // global var to enable openair performance profiler 
 extern int opp_enabled;
 
