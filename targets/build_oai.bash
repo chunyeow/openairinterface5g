@@ -133,6 +133,7 @@ while true; do
             shift 2 ;
             ;;
        -g | --run-with-gdb)
+            DEBUG=1
             RUN_GDB=1
             echo "Running with gdb"
             shift 2 ;
