@@ -689,7 +689,6 @@ sgw_lite_handle_sgi_endpoint_updated(
                 SPGW_APP_ERROR("ERROR in preparing downlink tunnel, tune string length\n");
                 exit (-1);
             }
-            SPGW_APP_DEBUG("%s\n", cmd);
             //use API when prototype validated
             ret = system(cmd);
             if (ret < 0) {
