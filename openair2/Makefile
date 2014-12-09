@@ -39,7 +39,7 @@
 #export LM_LICENSE_FILE
 include $(OPENAIR_HOME)/common/utils/Makefile.inc
 
-KERNEL_NAME=$(shell uname -r)
+KERNEL_NAME:=$(shell uname -r)
 NUM_CORES=$(shell getconf _NPROCESSORS_CONF)
 
 export SET_UM=$(shell if grep --silent User\ Mode\ Linux /proc/cpuinfo ; then echo "ARCH=um" ; else echo ""; fi)
