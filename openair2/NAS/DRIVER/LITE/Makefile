@@ -25,6 +25,8 @@ else
 EXTRA_CFLAGS += $(shell rtai-config --module-cflags) -DRTAI -D__IN_RTAI__ -Wall
 endif
 
+ccflags-y= $(CFLAGS) $(EXTRA_CFLAGS)
+CFLAGS=
 
 ifdef LOOPBACK
 EXTRA_CFLAGS += -DLOOPBACK_TEST
