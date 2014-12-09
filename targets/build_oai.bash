@@ -59,6 +59,7 @@ declare CONFIG_FILE=""
 declare EXE_ARGUMENTS=""
 declare RUN_GDB=0
 declare DISABLE_CHECK_INSTALLED_SOFTWARE=0
+declare OAI_CLEAN=0
 
 declare OAI_TEST=0
 declare XFORMS=0
@@ -91,8 +92,8 @@ fi
 #    case $i in
 
 
-
-while true; do
+  until [ -z "$1" ]
+  do
   case "$1" in
        -a | --doxygen)
             DOXYGEN=1
@@ -128,7 +129,7 @@ while true; do
             shift;
             ;;
        -e | --realtime)
-            RT="$2"
+            RT=$2
             echo "setting realtime flag to: $RT"
             shift 2 ;
             ;;
@@ -146,7 +147,7 @@ while true; do
             shift 2;
             ;;
        -l | --build-target) 
-            BUILD_LTE="$2"
+            BUILD_LTE=$2
             echo "setting top-level build target to: $2"
             shift 2;
             ;;
@@ -161,7 +162,7 @@ while true; do
             shift;
             ;;
        -r | --3gpp-release)
-            REL="$2" 
+            REL=$2 
             echo "setting release to: $REL"
             shift 2 ;
             ;;
@@ -171,8 +172,8 @@ while true; do
             shift;
             ;;
        -t | --enb-build-target)
-            TARGET="$2" 
-            echo "setting target to: $TARGET"
+            TARGET=$2 
+            echo "setting enb build target to: $TARGET"
             shift 2;
             ;;
        -V | --vcd)
@@ -203,9 +204,6 @@ while true; do
             DEBUG=0
             ENB_CONFIG_FILE=$OPENAIR_TARGETS/"PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.conf"
             OAI_TEST=0
-            shift ;
-            ;;
-       ' ')   
             shift ;
             ;;
        *)   
@@ -284,67 +282,67 @@ build_enb(){
     SOFTMODEM_DIRECTIVES="DEBUG=$DEBUG XFORMS=$XFORMS "
     OAISIM_DIRECTIVES="DEBUG=$DEBUG XFORMS=$XFORMS "
     
-    if [ $ENB_S1 = 1 ]; then 
-	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES USE_MME=R10 ENABLE_ITTI=1 LINK_PDCP_TO_GTPV1U=1  SECU=1 "
-	OAISIM_DIRECTIVES="$OAISIM_DIRECTIVES USE_MME=R10 ENABLE_ITTI=1 LINK_PDCP_TO_GTPV1U=1  SECU=1 "
+    if [ $ENB_S1 -eq 1 ]; then 
+        SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES USE_MME=R10 ENABLE_ITTI=1 LINK_PDCP_TO_GTPV1U=1  SECU=1 "
+        OAISIM_DIRECTIVES="$OAISIM_DIRECTIVES USE_MME=R10 ENABLE_ITTI=1 LINK_PDCP_TO_GTPV1U=1  SECU=1 "
     fi 
     
-    if [ $DEBUG = 0 ]; then 
-	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES DISABLE_XER_PRINT=1 "
-	OAISIM_DIRECTIVES="$OAISIM_DIRECTIVES DISABLE_XER_PRINT=1 "
+    if [ $DEBUG -eq 0 ]; then 
+        SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES DISABLE_XER_PRINT=1 "
+        OAISIM_DIRECTIVES="$OAISIM_DIRECTIVES DISABLE_XER_PRINT=1 "
     fi 
 
     if [ $HW = "USRP" ]; then 
-	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES USRP=1 "
+        SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES USRP=1 "
     fi
     
     if [ $HW = "EXMIMO" ]; then 
-	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES EXMIMO=1 "
+        SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES EXMIMO=1 "
     fi
     
     if [ $HW = "ETHERNET" ]; then 
-	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES ETHERNET=1 "
+    SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES ETHERNET=1 "
     fi 
     
     if [ $ENB_S1 -eq 0 ]; then 
-	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES NAS=1 "
-	OAISIM_DIRECTIVES="$OAISIM_DIRECTIVES NAS=1 "
+        SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES NAS=1 "
+        OAISIM_DIRECTIVES="$OAISIM_DIRECTIVES NAS=1 "
     fi 
     
     if [ $REL = "REL8" ]; then
-	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES Rel8=1 "
-	OAISIM_DIRECTIVES="$OAISIM_DIRECTIVES Rel8=1 "
+        SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES Rel8=1 "
+        OAISIM_DIRECTIVES="$OAISIM_DIRECTIVES Rel8=1 "
     else 
-	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES Rel10=1 "
-	OAISIM_DIRECTIVES="$OAISIM_DIRECTIVES Rel10=1 "
+        SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES Rel10=1 "
+        OAISIM_DIRECTIVES="$OAISIM_DIRECTIVES Rel10=1 "
     fi
     
     if [ $RT = "RTAI" ]; then 
-	if [ ! -f /usr/realtime/modules/rtai_hal.ko ];   then
-	    echo_warning "RTAI doesn't seem to be installed"
-	    RT="NONE"
-	    SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES RTAI=0 "
-	else 
-	    SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES HARD_RT=1 "
-	fi
+        if [ ! -f /usr/realtime/modules/rtai_hal.ko ];   then
+            echo_warning "RTAI doesn't seem to be installed"
+            RT="NONE"
+            SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES RTAI=0 "
+        else 
+            SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES HARD_RT=1 "
+        fi
     else 
-	SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES RTAI=0 "
-	RT="NONE"
+        SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES RTAI=0 "
+        RT="NONE"
     fi
     
     if [ $TARGET != "ALL" ]; then 
-	if [ $TARGET  != "SOFTMODEM" ]; then 
-	    HW="NONE"
-	fi
+        if [ $TARGET  != "SOFTMODEM" ]; then 
+            HW="NONE"
+        fi
     fi
     
     if [ $UBUNTU_REL = "12.04" ]; then 
-	output=$(check_for_machine_type 2>&1) 
-	MACHINE_ARCH=$?
-   	if [ $MACHINE_ARCH -eq 64 ]; then
-	    SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES LIBCONFIG_LONG=1 "
-	    OAISIM_DIRECTIVES="$OASIM_DIRECTIVES LIBCONFIG_LONG=1 "
-	fi
+        output=$(check_for_machine_type 2>&1) 
+        MACHINE_ARCH=$?
+        if [ $MACHINE_ARCH -eq 64 ]; then
+            SOFTMODEM_DIRECTIVES="$SOFTMODEM_DIRECTIVES LIBCONFIG_LONG=1 "
+            OAISIM_DIRECTIVES="$OASIM_DIRECTIVES LIBCONFIG_LONG=1 "
+        fi
     fi
     
     echo_success "SOFTMODEM Compilation directives: $SOFTMODEM_DIRECTIVES"
@@ -368,6 +366,7 @@ build_enb(){
         check_install_nettle
     else
         echo_info "6. Not checking the required softwares/packages ..."
+        touch ./.lock_oaibuild
     fi
     
 ############################################
@@ -407,15 +406,14 @@ build_enb(){
 
 
     else
-
-        if [ $TARGET = "SOFTMODEM" ]; then 
+        if [ $TARGET == "SOFTMODEM" ]; then 
             echo "############# compile_ltesoftmodem #############" >> bin/install_log.txt 
             output=$(compile_ltesoftmodem   >> bin/install_log.txt 2>&1 )
             softmodem_compiled=$?
             check_for_ltesoftmodem_executable
             echo_info "7.1 finished ltesoftmodem target: check the installation log file bin/install_log.txt"
             
-            if [ $HW = "EXMIMO" ]; then 
+            if [ $HW == "EXMIMO" ]; then 
                 compile_exmimo2_driver 
             fi
         fi
@@ -449,17 +447,17 @@ build_enb(){
 
     echo_info "8. Installing ..."
     
-    if [ $softmodem_compiled = 0 ]; then 
+    if [ $softmodem_compiled -eq 0 ]; then 
         echo_success "target lte-softmodem built and installed in the bin directory"
         echo "target lte-softmodem built and installed in the bin directory"  >>  bin/${oai_build_date}
         output=$(install_ltesoftmodem $RT $HW $ENB_S1 )
     fi
-    if [ $oaisim_compiled = 0 ]; then 
+    if [ $oaisim_compiled -eq 0 ]; then 
         echo_success "target oaisim built and installed in the bin directory"
         echo "target oaisim built and installed in the bin directory"  >>  bin/${oai_build_date}
         output=$(install_oaisim $ENB_S1 )
     fi 
-    if [ $unisim_compiled =  0 ]; then 
+    if [ $unisim_compiled -eq  0 ]; then 
         echo_success "target unisim built and installed in the bin directory"
         echo "target unisim built and installed in the bin directory"  >>  bin/${oai_build_date}
     fi 
@@ -485,11 +483,11 @@ build_epc(){
    
     check_install_asn1c
     
-    if [ $OAI_CLEAN = 1 ]; then
-	check_install_freediamter
+    if [ $OAI_CLEAN -eq 1 ]; then
+        check_install_freediamter
     else 
 	if [ ! -d /usr/local/etc/freeDiameter ]; then
-	    check_install_freediamter
+        check_install_freediamter
 	fi
     fi
     check_s6a_certificate
@@ -512,7 +510,7 @@ build_epc(){
 
     echo_info "6. install the binary file"
 
-    if [ $epc_compiled = 0 ]; then 
+    if [ $epc_compiled -eq 0 ]; then 
 	echo_success "target epc built and installed in the bin directory"
 	echo "target epc built and installed in the bin directory"  >>  bin/${oai_build_date}
 	cp -f $OPENAIR_TARGETS/PROJECTS/GENERIC-LTE-EPC/CONF/epc.generic.conf  $OPENAIR_TARGETS/bin
@@ -542,12 +540,12 @@ build_hss(){
     
     check_install_hss_software
     
-    if [ $OAI_CLEAN = 1 ]; then
-	check_install_freediamter
+    if [ $OAI_CLEAN -eq 1 ]; then
+        check_install_freediamter
     else 
-	if [ ! -d /usr/local/etc/freeDiameter ]; then
-	    check_install_freediamter
-	fi
+    if [ ! -d /usr/local/etc/freeDiameter ]; then
+        check_install_freediamter
+    fi
     fi
     $(make_certs >> bin/install_log.txt  2>&1)
     output=$(check_s6a_certificate >> bin/install_log.txt  2>&1)
@@ -580,11 +578,11 @@ build_hss(){
 ######################################
 
      echo_info "7. install the binary file"
-     if [ $hss_compiled = 0 ]; then
-	 echo_success "target hss built, DB created  and installed in the bin directory"
-	 echo "target hss built, DB created, and installed in the bin directory"  >>  bin/${oai_build_date}
+     if [ $hss_compiled -eq 0 ]; then
+         echo_success "target hss built, DB created  and installed in the bin directory"
+         echo "target hss built, DB created, and installed in the bin directory"  >>  bin/${oai_build_date}
          cp -rf $OPENAIRCN_DIR/OPENAIRHSS/conf  $OPENAIR_TARGETS/bin
-	 $SUDO cp $OPENAIR_TARGETS/bin/conf/hss_fd.local.conf /etc/openair-hss
+	     $SUDO cp $OPENAIR_TARGETS/bin/conf/hss_fd.local.conf /etc/openair-hss
      fi
 
 ######################################
@@ -641,7 +639,7 @@ esac
 # testing
 ############################################
     
-    if [ $OAI_TEST = 1 ]; then 
+    if [ $OAI_TEST -eq 1 ]; then 
         echo_info "10. Testing ..."
         python $OPENAIR_TARGETS/TEST/OAI/test01.py
     else 
@@ -652,8 +650,8 @@ esac
 # run 
 ############################################
     echo_info "11. Running ... To be done"
-    if [ $TARGET = "SOFTMODEM" ]; then 
-        if [ $HW = "EXMIMO" ]; then 
+    if [ $TARGET == "SOFTMODEM" ]; then 
+        if [ $HW == "EXMIMO" ]; then 
             bash $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
         fi
         echo "############# running ltesoftmodem #############"

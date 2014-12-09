@@ -57,11 +57,11 @@ check_for_root_rights() {
   #  if [[ $EUID -ne $ROOT_EUID ]]; then
     if [ $USER != "root" ]; then
        	SUDO="sudo -E "
-	echo "Run as a sudoers" 
-	return 1
+        echo "Run as a sudoers" 
+        return 1
     else 
-	echo  "Run as a root" 
-	return 0
+        echo  "Run as a root" 
+        return 0
     fi
 }
 
@@ -73,7 +73,7 @@ test_install_package() {
           echo "$1 is installed." 
       } || {
           echo "$1 is not installed." 
-	  OAI_INSTALLED=0
+          OAI_INSTALLED=0
           $SUDO apt-get install -y $@
       }
   fi
@@ -83,8 +83,8 @@ test_uninstall_package() {
   
  if [ $# -eq 1 ]; then
       dpkg -s "$1" > /dev/null 2>&1 && {
-         $SUDO apt-get remove --assume-yes $1  
-	 echo "$1 is uninstalled." 
+          $SUDO apt-get remove --assume-yes $1  
+          echo "$1 is uninstalled." 
       } || {
           echo "$1 is not installed." 
       }
@@ -100,13 +100,13 @@ test_command_install_script() {
 check_for_machine_type(){
     MACHINE_TYPE=`uname -m`
     if [ ${MACHINE_TYPE} = "x86_64" ]; then
-	return 64  # 64-bit stuff here
+        return 64  # 64-bit stuff here
     else
-	if [ ${MACHINE_TYPE} = "i686" ]; then
+        if [ ${MACHINE_TYPE} = "i686" ]; then
             return 32 # 32-bit stuff here
-	else 
-	    return -1 
-	fi
+        else 
+            return -1 
+        fi
     fi
 }
 
@@ -143,8 +143,8 @@ make_certs(){
     openssl ca -cert cacert.pem -keyfile cakey.pem -in hss.csr.pem -out hss.cert.pem -outdir . -batch
     
     if [ ! -d /usr/local/etc/freeDiameter ];  then
-	echo "Creating non existing directory: /usr/local/etc/freeDiameter/"
-	$SUDO mkdir /usr/local/etc/freeDiameter/
+        echo "Creating non existing directory: /usr/local/etc/freeDiameter/"
+        $SUDO mkdir /usr/local/etc/freeDiameter/
     fi
     
     echo "Copying *.pem to /usr/local/etc/freeDiameter/"
@@ -322,16 +322,16 @@ check_s6a_certificate() {
     cd $OPENAIRCN_DIR/S6A/freediameter
     make_certs
     if [ $cnt = 0 ] ; then
-	cnt=1
-	check_s6a_certificate
+        cnt=1
+        check_s6a_certificate
     fi
     return 1
 }
 
 check_install_usrp_uhd_driver(){
     if [ ! -f /etc/apt/sources.list.d/ettus.list ] ; then 
-	$SUDO bash -c 'echo "deb http://files.ettus.com/binaries/uhd/repo/uhd/ubuntu/`lsb_release -cs` `lsb_release -cs` main" >> /etc/apt/sources.list.d/ettus.list'
-	$SUDO apt-get update
+        $SUDO bash -c 'echo "deb http://files.ettus.com/binaries/uhd/repo/uhd/ubuntu/`lsb_release -cs` `lsb_release -cs` main" >> /etc/apt/sources.list.d/ettus.list'
+        $SUDO apt-get update
     fi 
     $SUDO apt-get install -t $UBUNTU_REL_NAME uhd
     test_install_package python 
@@ -343,91 +343,91 @@ check_install_usrp_uhd_driver(){
 check_install_oai_software() {
     
     if [ ! -f ./.lock_oaibuild ]; then 
-	$SUDO apt-get update
-      	if [ $UBUNTU_REL = "12.04" ]; then 
-	    test_uninstall_package nettle-dev
-	    test_uninstall_package nettle-bin
+        $SUDO apt-get update
+        if [ $UBUNTU_REL = "12.04" ]; then 
+            test_uninstall_package nettle-dev
+            test_uninstall_package nettle-bin
         else 
             test_install_package nettle-dev
             test_install_package nettle-bin
-	fi 
-	test_install_package autoconf 
-	test_install_package automake 
-	test_install_package bison 
-	test_install_package build-essential
-	test_install_package flex 
-	test_install_package gawk
-	test_install_package gcc
-	test_install_package gdb 
-	test_install_package make
-	test_install_package cmake
-	test_install_package openssh-client
-	test_install_package openssh-server
+        fi 
+        test_install_package autoconf 
+        test_install_package automake 
+        test_install_package bison 
+        test_install_package build-essential
+        test_install_package flex 
+        test_install_package gawk
+        test_install_package gcc
+        test_install_package gdb 
+        test_install_package make
+        test_install_package cmake
+        test_install_package openssh-client
+        test_install_package openssh-server
         sudo service ssh start
-	test_install_package unzip 
-	test_install_package autoconf
-	test_install_package automake
-	test_install_package bison
-	test_install_package build-essential
-	test_install_package check
-	test_install_package ethtool
-	test_install_package flex
-	test_install_package g++
-	test_install_package gawk
-	test_install_package gcc
-	test_install_package gccxml
-	test_install_package gdb 
-	test_install_package guile-2.0-dev
-	test_install_package iperf
-	test_install_package iproute
-	test_install_package iptables
-	test_install_package libatlas-base-dev
-	test_install_package libatlas-dev
-	test_install_package libblas3gf
-	test_install_package libblas-dev
+        test_install_package unzip 
+        test_install_package autoconf
+        test_install_package automake
+        test_install_package bison
+        test_install_package build-essential
+        test_install_package check
+        test_install_package ethtool
+        test_install_package flex
+        test_install_package g++
+        test_install_package gawk
+        test_install_package gcc
+        test_install_package gccxml
+        test_install_package gdb 
+        test_install_package guile-2.0-dev
+        test_install_package iperf
+        test_install_package iproute
+        test_install_package iptables
+        test_install_package libatlas-base-dev
+        test_install_package libatlas-dev
+        test_install_package libblas3gf
+        test_install_package libblas-dev
 #	if [ $MACHINE_ARCH = 64 ]; then
             test_install_package libconfig8-dev
 #	else
 #            test_install_package libconfig-dev
 #	fi
-	test_install_package libforms-bin
-	test_install_package libforms-dev
-	test_install_package libgcrypt11-dev
-	test_install_package libgmp-dev
-	test_install_package libgtk-3-dev
-	test_install_package libidn11-dev
-	test_install_package libidn2-0-dev
-	test_install_package libpgm-dev
-	test_install_package libpgm-5.1-0
-	test_install_package libpthread-stubs0-dev
-	test_install_package libsctp1
-	test_install_package libsctp-dev
-	test_install_package libtasn1-3-dev
-	test_install_package libxml2
-	test_install_package libxml2-dev
-#	test_install_package linux-headers-`uname -r`
-	test_install_package openssl
-	test_install_package libssl-dev 
-	test_install_package pkg-config
-	test_install_package python-dev
-	test_install_package python-pexpect
-	test_install_package sshfs
-	test_install_package subversion
-	test_install_package valgrind
-	test_install_package doxygen
-	test_install_package graphviz
+        test_install_package libforms-bin
+        test_install_package libforms-dev
+        test_install_package libgcrypt11-dev
+        test_install_package libgmp-dev
+        test_install_package libgtk-3-dev
+        test_install_package libidn11-dev
+        test_install_package libidn2-0-dev
+        test_install_package libpgm-dev
+        test_install_package libpgm-5.1-0
+        test_install_package libpthread-stubs0-dev
+        test_install_package libsctp1
+        test_install_package libsctp-dev
+        test_install_package libtasn1-3-dev
+        test_install_package libxml2
+        test_install_package libxml2-dev
+#       test_install_package linux-headers-`uname -r`
+        test_install_package openssl
+        test_install_package libssl-dev 
+        test_install_package pkg-config
+        test_install_package python-dev
+        test_install_package python-pexpect
+        test_install_package sshfs
+        test_install_package subversion
+        test_install_package valgrind
+        test_install_package doxygen
+        test_install_package graphviz
 	
 # TODO: install the USRP UHD packages 
-#	if [ $1 = "USRP" ] ; then 
+#        if [ $1 = "USRP" ] ; then 
 	
-#	test_install_package libboost-all-dev
+#        test_install_package libboost-all-dev
 	
-	if [ $OAI_INSTALLED = 1 ]; then 
-	    touch ./.lock_oaibuild
-	fi 
+        if [ $OAI_INSTALLED = 1 ]; then 
+            touch ./.lock_oaibuild
+        fi 
     
      else
-	echo_info "All the required packages installed: skip"
+        echo_info "All the required packages installed: skip"
     fi 
     
 }
@@ -700,18 +700,25 @@ compile_exmimo2_driver() {
 compile_ltesoftmodem() {
     cd $OPENAIR_TARGETS/RT/USER
     if [ -f Makefile ];  then
-       	echo "Compiling directives: $SOFTMODEM_DIRECTIVES"
-     	make cleanall > /dev/null 2>&1
-	make  $SOFTMODEM_DIRECTIVES 
-	make -j $NUM_CPU $SOFTMODEM_DIRECTIVES 
+        echo "LTE softmodem compiling directives: $SOFTMODEM_DIRECTIVES"
+        echo "OAI_CLEAN: $OAI_CLEAN"
+        if [ $OAI_CLEAN -ne 0 ]; then
+            echo "Cleaning LTE softmodem"
+            make cleanall > /dev/null 2>&1
+        fi
+        make -j $NUM_CPU $SOFTMODEM_DIRECTIVES
+        if [ $? -ne 0 ]; then
+            # to locate easily compilation error in log file
+            make  $SOFTMODEM_DIRECTIVES
+        fi 
         if [ $? -ne 0 ]; then
             if [ ! -f ./lte-softmodem ]; then 
-		echo_error "Build lte-softmodem failed, returning"
-		return 1
-	    else 
-		cp -f ./lte-softmodem  $OPENAIR_TARGETS/bin
-		return 0	
-	    fi 
+            echo_error "Build lte-softmodem failed, returning"
+            return 1
+        else 
+            cp -f ./lte-softmodem  $OPENAIR_TARGETS/bin
+            return 0	
+        fi 
 	else
 	    cp -f ./lte-softmodem  $OPENAIR_TARGETS/bin
 	    return 0
