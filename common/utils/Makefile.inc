@@ -3,6 +3,7 @@ CC=gcc
 CCC=gcc
 linux := $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
 
+
 #CFLAGS += -std=gnu99 
 CFLAGS += -Wall -g -ggdb -Wstrict-prototypes -fno-strict-aliasing  -rdynamic
 

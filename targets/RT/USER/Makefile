@@ -10,6 +10,8 @@ KERNEL_VERSION:=$(shell echo `uname -r | cut -d. -f-2`)
 KERNEL_TYPE:=$(shell echo `uname -r | cut -d. -f-3 | cut -d- -f3`)
 LOWLATENCY_KERNEL:=$(shell if [ $(KERNEL_TYPE) = "lowlatency" ]; then echo "1" ; else echo "0" ; fi)
 
+include $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc
+
 #ifdef LOWLATENCY # this ifdef is to be removed after the debugging
 ifeq ($(LOWLATENCY_KERNEL),1)
 CFLAGS+=-DLOWLATENCY
@@ -115,7 +117,6 @@ RTAI_OBJ+=$(LOG_DIR)/vcd_signal_dumper.o
 RTAI_OBJ+=$(LOG_DIR)/log.o
 endif
 
-include $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc
 
 OBJ += $(LOG_OBJS) 
 
@@ -376,8 +377,7 @@ cleanasn1:
 	$(shell cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES ; rm -f $(ASN_MODULE_SOURCES) $(ASN_MODULE_HEADERS) *.o *.d )
 	rm -f $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.am.sample
 	rm -f $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc.generated
-	rm -f $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel8
-	rm -f $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel10
+	rm -f $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel*
 
 cleancell:
 	rm -f $(OPENAIR2_DIR)/RRC/CELLULAR/*.o

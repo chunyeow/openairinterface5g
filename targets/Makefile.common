@@ -1,12 +1,12 @@
 # This file gathers compilation directive shared between lte-softmodem and oaisim
-COMMON_UTILS_DIR    = $(OPENAIR_HOME)/common/utils
-UE_NAS_DIR          = $(OPENAIR_HOME)/openair-cn/NAS
-S1AP_DIR            = $(OPENAIR_HOME)/openair-cn/S1AP
-X2AP_DIR            = $(OPENAIR_HOME)/openair2/X2AP
-SCTP_DIR            = $(OPENAIR_HOME)/openair-cn/SCTP
-UDP_DIR             = $(OPENAIR_HOME)/openair-cn/UDP
-GTPV1U_DIR          = $(OPENAIR_HOME)/openair-cn/GTPV1-U
-SECU_DIR            = $(OPENAIR_HOME)/openair-cn/SECU
+export COMMON_UTILS_DIR    = $(OPENAIR_HOME)/common/utils
+export UE_NAS_DIR          = $(OPENAIR_HOME)/openair-cn/NAS
+export S1AP_DIR            = $(OPENAIR_HOME)/openair-cn/S1AP
+export X2AP_DIR            = $(OPENAIR_HOME)/openair2/X2AP
+export SCTP_DIR            = $(OPENAIR_HOME)/openair-cn/SCTP
+export UDP_DIR             = $(OPENAIR_HOME)/openair-cn/UDP
+export GTPV1U_DIR          = $(OPENAIR_HOME)/openair-cn/GTPV1-U
+export SECU_DIR            = $(OPENAIR_HOME)/openair-cn/SECU
 
 UE_NAS_OBJ_DIR      = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(UE_NAS_DIR))
 SECU_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(SECU_DIR))
@@ -15,15 +15,6 @@ X2AP_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(X2AP_DIR))
 SCTP_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(SCTP_DIR))
 UDP_OBJ_DIR         = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(UDP_DIR))
 GTPV1U_OBJ_DIR      = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(GTPV1U_DIR))
-
-export COMMON_UTILS_DIR
-export UE_NAS_DIR
-export S1AP_DIR
-export X2AP_DIR
-export SCTP_DIR
-export UDP_DIR
-export GTPV1U_DIR
-export SECU_DIR
 
 #Export common cflags (between softmodem and oaisim)
 COMMON_CFLAGS		= \
@@ -43,11 +34,11 @@ include $(OPENAIR2_DIR)/NAS/Makefile.inc
 
 ifeq ($(SECU), 1)	
 ifeq ($(NETTLE_FOUND), 0)
-@echo "Nettle library >= 2.5 is not installed on your system, nettle-dev lib needed, continuing with security disabled"
+@(warning "Nettle library >= 2.5 is not installed on your system, nettle-dev lib needed, continuing with security disabled")
 SECU=0
 else
 ifeq ($(OPENSSL_FOUND), 0)
-@echo "openssl library is not installed on your system, openssl lib needed, continuing with security disabled"
+@(warning "openssl library is not installed on your system, openssl lib needed, continuing with security disabled")
 SECU=0
 else
 CFLAGS += -DENABLE_SECURITY
@@ -111,7 +102,7 @@ endif
 COMMON_CFLAGS		+= -DLOG_NO_THREAD 
 #-DEMIT_ASN_DEBUG
 
-openair_cn_available = $(shell if [ -d "$(UE_NAS_DIR)" ]; then echo "0" ; else  echo "1" ; fi )
+openair_cn_available := $(shell if [ -d "$(UE_NAS_DIR)" ]; then echo "0" ; else  echo "1" ; fi )
 ifeq 	($(openair_cn_available), 0)
 COMMON_CFLAGS		+= -DENABLE_NAS_UE_LOGGING
 COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/api/network
