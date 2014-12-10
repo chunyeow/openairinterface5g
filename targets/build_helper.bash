@@ -56,7 +56,7 @@ check_for_root_rights() {
     
   #  if [[ $EUID -ne $ROOT_EUID ]]; then
     if [ $USER != "root" ]; then
-       	SUDO="sudo -E "
+        SUDO="sudo -E "
         echo "Run as a sudoers" 
         return 1
     else 
@@ -304,6 +304,32 @@ check_install_freediamter(){
 #    make_certs
    
 }
+
+check_epc_s6a_certificate() {
+    cnt=0
+    if [ -d /usr/local/etc/freeDiameter ]
+    then
+        if [ -f /usr/local/etc/freeDiameter/user.cert.pem ]
+        then
+            full_hostname=`cat /usr/local/etc/freeDiameter/user.cert.pem | grep "Subject" | grep "CN" | cut -d '=' -f6`
+            if [ a$full_hostname == a`hostname`.${1:-'eur'} ]
+            then
+                echo_success "EPC S6A: Found valid certificate in /usr/local/etc/freeDiameter"
+                return 1
+            fi
+        fi
+    fi
+    echo_error "EPC S6A: Did not find valid certificate in /usr/local/etc/freeDiameter"
+    echo_warning "EPC S6A: generatting new certificate in /usr/local/etc/freeDiameter..."
+    cd $OPENAIRCN_DIR/S6A/freediameter
+    ./make_certs.sh ${1:-'eur'}
+    if [ $cnt = 0 ] ; then
+        cnt=1
+        check_epc_s6a_certificate ${1:-'eur'}
+    fi
+    return 1
+}
+
 
 check_s6a_certificate() {
     cnt=0
@@ -661,12 +687,17 @@ compile_epc() {
         if [ ! -n "m4" ]; then
             mkdir -m 777 m4
         fi
+        bash_exec "autoreconf -i -f"
         echo_success "Invoking autogen"
         bash_exec "libtoolize"        
-	bash_exec "./autogen.sh"
+        bash_exec "./autogen.sh"
         cd ./$OBJ_DIR
         echo_success "Invoking configure"
-        ../configure --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
+        if [ $DEBUG -ne 0 ]; then 
+            ../configure --enable-debug --enable-standalone-epc --enable-gtp1u-in-kernel LDFLAGS=-L/usr/local/lib
+        else
+            ../configure                --enable-standalone-epc --enable-gtp1u-in-kernel LDFLAGS=-L/usr/local/lib
+        fi
     else
         cd ./$OBJ_DIR
     fi
@@ -682,12 +713,32 @@ compile_epc() {
             return 1
         else 
             cp -f ./OAI_EPC/oai_epc  $OPENAIR_TARGETS/bin
-            return 0
         fi
     else
         echo_error "Configure failed, exiting"
         return 1
     fi
+    
+    cd $OPENAIRCN_DIR/GTPV1-U/GTPUAH;
+    make
+    if [ $? -ne 0 ]; then
+        echo_error "Build GTPUAH module failed, exiting"
+        return 1
+    else 
+        cp -f ./Bin/libxt_*.so /lib/xtables
+        cp -f ./Bin/*.ko $OPENAIR_TARGETS/bin
+    fi
+    
+    cd $OPENAIRCN_DIR/GTPV1-U/GTPURH;
+    make
+    if [ $? -ne 0 ]; then
+        echo_error "Build GTPURH module failed, exiting"
+        return 1
+    else 
+        cp -f ./Bin/libxt_*.so /lib/xtables
+        cp -f ./Bin/*.ko $OPENAIR_TARGETS/bin
+    fi
+    return 0
 }
 
 compile_exmimo2_driver() {

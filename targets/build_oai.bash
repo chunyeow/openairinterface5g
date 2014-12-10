@@ -56,6 +56,7 @@ declare REL="REL8" # REL8, REL10
 declare RT="NONE" # RTAI, RT_PREMPT or RT_DISABLED, NONE
 declare DEBUG=0
 declare CONFIG_FILE=" "
+declare CONFIG_FILE_ACCESS_OK=0
 declare EXE_ARGUMENTS=" "
 declare RUN_GDB=0
 declare DISABLE_CHECK_INSTALLED_SOFTWARE=0
@@ -118,10 +119,12 @@ fi
             if [ -f $(dirname $(readlink -f $0))/$CONFIG_FILE ]; then
                 CONFIG_FILE=$(dirname $(readlink -f $0))/$CONFIG_FILE
                 echo "setting config file to: $CONFIG_FILE"
+                CONFIG_FILE_ACCESS_OK=1
             else
                 # may be absolute path 
                 if [ -f $CONFIG_FILE ]; then
                     echo "setting config file to: $CONFIG_FILE"
+                    CONFIG_FILE_ACCESS_OK=1
                 else
                     echo "config file not found"
                     exit 1
@@ -484,25 +487,26 @@ build_epc(){
 
     epc_compiled=1
 
-    echo_info "Note: this scripts works only for Ubuntu 12.04"
+    echo_info "Note: this scripts tested only on Ubuntu 12.04 x64, 14.04 x64"
 
 ######################################
 # CHECK MISC SOFTWARES AND LIBS      #
 ######################################
-    echo_info "4. check the required packages for HSS"
+    if [ $DISABLE_CHECK_INSTALLED_SOFTWARE -eq 0 ]; then 
+        echo_info "4. Checking the the required softwares/packages for EPC..."
 
-    check_install_epc_software
-   
-    check_install_asn1c
-    
-    if [ $OAI_CLEAN -eq 1 ]; then
-        check_install_freediamter
-    else 
-	if [ ! -d /usr/local/etc/freeDiameter ]; then
-        check_install_freediamter
-	fi
+        check_install_epc_software  
+        check_install_asn1c
+        if [ $OAI_CLEAN -eq 1 ]; then
+            check_install_freediamter
+        else 
+            if [ ! -d /usr/local/etc/freeDiameter ]; then
+                check_install_freediamter
+            fi
+        fi
+    else
+        echo_info "4. Not checking the required softwares/packages for EPC"
     fi
-    check_s6a_certificate
 
 ###########################################
 # configure and compile
@@ -512,10 +516,39 @@ build_epc(){
 
     output=$(compile_epc $OAI_CLEAN  >> bin/install_log.txt  2>&1 )
     epc_compiled=$?
+    if [ $epc_compiled -ne 0 ]; then
+        echo_error "EPC compilation failed : check the installation log file bin/install_log.txt" 
+        exit 1
+    fi
     check_for_epc_executable
     echo_info "finished epc target: check the installation log file bin/install_log.txt" 
-	    
+
+    if [ $CONFIG_FILE_ACCESS_OK -eq 0 ]; then
+        echo_error "You have to provide a EPC config file"
+        exit 1
+    fi
     
+    rm -f /tmp/source.txt
+    VARIABLES=" S6A_CONF\|\
+           REALM"
+
+    VARIABLES=$(echo $VARIABLES | sed -e 's/\\r//g')
+    VARIABLES=$(echo $VARIABLES | tr -d ' ')
+    cat $CONFIG_FILE | grep -w "$VARIABLES"| tr -d " " | tr -d ";" > /tmp/source.txt
+    source /tmp/source.txt
+
+    if [ x"$REALM" == "x" ]; then
+        echo_error "Your config file do not contain a REALM for S6A configuration"
+        exit 1
+    fi
+    if [ x"$S6A_CONF" != "x./epc_s6a.conf" ]; then
+        echo_error "Your config file do not contain the good path for the S6A config file,"
+        echo_error "accordingly to what is done in this script, it should be set to epc_s6a.conf"
+        exit 1
+    fi
+
+    check_epc_s6a_certificate $REALM
+
 ###########################################
 # install the binary in bin
 ##########################################
@@ -523,19 +556,11 @@ build_epc(){
     echo_info "6. install the binary file"
 
     if [ $epc_compiled -eq 0 ]; then 
-	echo_success "target epc built and installed in the bin directory"
-	echo "target epc built and installed in the bin directory"  >>  bin/${oai_build_date}
-	cp -f $OPENAIR_TARGETS/PROJECTS/GENERIC-LTE-EPC/CONF/epc.generic.conf  $OPENAIR_TARGETS/bin
-	cp -f $OPENAIRCN_DIR/objs/UTILS/CONF/s6a.conf  $OPENAIR_TARGETS/bin
+        echo_success "target epc built and installed in the bin directory"
+        echo "target epc built and installed in the bin directory"  >>  bin/${oai_build_date}
+        cp -f CONFIG_FILE  $OPENAIR_TARGETS/bin
+        cp -f $OPENAIRCN_DIR/objs/UTILS/CONF/s6a.conf  $OPENAIR_TARGETS/bin/epc_s6a.conf
     fi
-    
-######################################
-# run 
-######################################
-    echo_info "7. run EPC (check the bin/epc.generic.conf params)"
-    cd bin/
-    $SUDO ./oai_epc -c ./epc.generic.conf  -K /tmp/itti.log
-
 }
 
 build_hss(){
@@ -613,23 +638,23 @@ build_hss(){
 
 echo_info "3. set the top-level build target"
 case "$BUILD_LTE" in
-    'ENB')           
-	echo_success "build LTE eNB"
-	build_enb
-	;;
-    'EPC')           
-	echo_warning "build EPC(MME and xGW): Experimental"
-	build_epc
-	;;
-    'HSS')           
-	echo_warning "build HSS: Experimental"
-	build_hss 
-	;;
+    'ENB')
+         echo_success "build LTE eNB"
+         build_enb
+         ;;
+    'EPC')
+         echo_warning "build EPC(MME and xGW): Experimental"
+         build_epc
+         ;;
+    'HSS')
+         echo_warning "build HSS: Experimental"
+         build_hss 
+         ;;
     'NONE')
-	;;
+         ;;
     *)
-	echo_error "Unknown option $BUILD_LTE: do not build"
-	;;
+         echo_error "Unknown option $BUILD_LTE: do not build"
+         ;;
 esac
 
 # Additional operation 
@@ -637,7 +662,7 @@ esac
 ############################################
 # Generate doxygen documentation
 ############################################
-    
+
     if [ $DOXYGEN = 1 ]; then 
         echo_info "9. Generate doxygen documentation ..."
         doxygen $OPENAIR_TARGETS/DOCS/Doxyfile
@@ -661,23 +686,42 @@ esac
 ############################################
 # run 
 ############################################
-echo_info "11. Running ... To be done"
+echo_info "11. Running ... To be completed"
+cd $OPENAIR_TARGETS/bin
 if [ $BUILD_LTE == "ENB" ]; then 
     if [ $TARGET == "SOFTMODEM" ]; then 
         if [ $HW == "EXMIMO" ]; then 
-            chmod 777 $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
-            $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
+            $SUDO chmod 777 $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
+            $SUDO $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
         fi
         echo "############# running ltesoftmodem #############"
         if [ $RUN_GDB -eq 0 ]; then 
-            exec $OPENAIR_TARGETS/bin/lte-softmodem  `echo $EXE_ARGUMENTS`
+            $SUDO exec $OPENAIR_TARGETS/bin/lte-softmodem  `echo $EXE_ARGUMENTS`
         else
-            touch ~/.gdb_lte_softmodem
-            echo "file $OPENAIR_TARGETS/bin/lte-softmodem" > ~/.gdb_lte_softmodem
-            echo "set args $EXE_ARGUMENTS" >> ~/.gdb_lte_softmodem
-            echo "run" >> ~/.gdb_lte_softmodem
-            gdb -nh -x ~/.gdb_lte_softmodem 2>&1 
+            $SUDO touch ~/.gdb_lte_softmodem
+            $SUDO echo "file $OPENAIR_TARGETS/bin/lte-softmodem" > ~/.gdb_lte_softmodem
+            $SUDO echo "set args $EXE_ARGUMENTS" >> ~/.gdb_lte_softmodem
+            $SUDO echo "run" >> ~/.gdb_lte_softmodem
+            $SUDO gdb -nh -x ~/.gdb_lte_softmodem 2>&1 
         fi
+    fi
+else
+    if [ $BUILD_LTE == "EPC" ]; then
+        echo "############# running epc #############"
+        if [ $RUN_GDB -eq 0 ]; then
+            $SUDO exec $OPENAIR_TARGETS/bin/oai_epc  `echo $EXE_ARGUMENTS`
+        else
+            $SUDO touch ~/.gdb_epc
+            $SUDO echo "file $OPENAIR_TARGETS/bin/oai_epc" > ~/.gdb_epc
+            $SUDO echo "set args $EXE_ARGUMENTS" >> ~/.gdb_epc
+            $SUDO echo "run" >> ~/.gdb_epc
+            $SUDO gdb -nh -x ~/.gdb_epc 2>&1 
+        fi
+    echo_info "7. run EPC (check the bin/epc.generic.conf params)"
+    cd bin/
+    $SUDO ./oai_epc -c ./epc.generic.conf  -K /tmp/itti.log
+
+    
     fi
 fi
 
