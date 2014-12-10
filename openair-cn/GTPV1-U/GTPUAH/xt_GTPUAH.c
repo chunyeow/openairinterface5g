@@ -19,9 +19,9 @@
 #include <linux/route.h> 
 #include <linux/time.h>
 #include <net/checksum.h>
+#include <net/ip.h>
 #include <net/udp.h>
 #include <net/inet_sock.h>
-#include <net/ip.h>
 #include <net/route.h> 
 #include <linux/netfilter/x_tables.h>
 #include <linux/netfilter_ipv4/ip_tables.h>
@@ -38,7 +38,6 @@
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Pradip Biswas <pradip_biswas@polarisnetworks.net>");
 MODULE_DESCRIPTION("GTPu Data Path extension on netfilter");
-
 
 struct gtpuhdr
 {
@@ -62,11 +61,11 @@ struct gtpuhdr
 #define IP_MORE_FRAGMENTS 0x2000
 
 
-static bool _gtpuah_route_packet(struct sk_buff *skb, const struct xt_gtpuah_target_info *info)
+static bool _gtpuah_route_packet(struct sk_buff *skb_pP, const struct xt_gtpuah_target_info *info_pP, char *in_dev_pP)
 {
     int err = 0; 
     struct rtable *rt = NULL;
-    struct iphdr *iph = ip_hdr(skb); 
+    struct iphdr *iph = ip_hdr(skb_pP);
     int daddr = iph->daddr;
     struct flowi fl = { 
         .u = {
@@ -78,7 +77,7 @@ static bool _gtpuah_route_packet(struct sk_buff *skb, const struct xt_gtpuah_tar
         } 
     }; 
 
-#if 0
+#if 1
     int                         flags, offset;
 
     offset = ntohs(iph->frag_off);
@@ -87,7 +86,7 @@ static bool _gtpuah_route_packet(struct sk_buff *skb, const struct xt_gtpuah_tar
     offset <<= 3;
 
     pr_info("GTPUAH(%d): Routing %s packet: %d.%d.%d.%d --> %d.%d.%d.%d Proto: %d, Len: %05u, Id %04X, Offset %u, Flags %04X, Mark: %u\n",
-            info->action,
+            info_pP->action,
             (ip_is_fragment(iph) == 0) ? "":"fragmented",
             iph->saddr  & 0xFF,
             (iph->saddr & 0x0000FF00) >> 8,
@@ -102,38 +101,44 @@ static bool _gtpuah_route_packet(struct sk_buff *skb, const struct xt_gtpuah_tar
             ntohs(iph->id),
             offset,
             flags,
-            skb->mark);
+            skb_pP->mark);
 #endif
 
-    rt = ip_route_output_key(&init_net, &fl.u.ip4);
-    if (err != 0) 
-    { 
-        pr_info("GTPU: Failed to route packet to dst 0x%x. Error: (%d)", fl.u.ip4.daddr, err);
-        return GTPU_FAILURE; 
-    } 
+    if (in_dev_pP) {
+        if (strcasecmp(in_dev_pP, "lo") == 0) {
+            struct inet_sock *inet = inet_sk(skb_pP->sk);
+            ip_queue_xmit(&inet->sk, skb_pP, &fl);
+        } else {
+            rt = ip_route_output_key(&init_net, &fl.u.ip4);
+            if (err != 0)
+            {
+                pr_info("GTPU: Failed to route packet to dst 0x%x. Error: (%d)", fl.u.ip4.daddr, err);
+                return GTPU_FAILURE;
+            }
 
-#if 0
-    if (rt->dst.dev)
-    {
-        pr_info("GTPU: dst dev name %s\n", rt->dst.dev->name);
+        #if 1
+            if (rt->dst.dev)
+            {
+                pr_info("GTPU: dst dev name %s\n", rt->dst.dev->name);
+            }
+            else
+            {
+                pr_info("GTPU: dst dev NULL\n");
+            }
+        #endif
+
+            //if (info_pP->action == PARAM_GTPUAH_ACTION_ADD) //LG was commented
+            {
+                skb_dst_drop(skb_pP);
+                skb_dst_set(skb_pP, &rt->dst);
+                skb_pP->dev      = skb_dst(skb_pP)->dev;
+            }
+            skb_pP->protocol = htons(ETH_P_IP);
+
+            /* Send the GTPu message out...gggH */
+            err = dst_output(skb_pP);        }
     }
-    else
-    {
-        pr_info("GTPU: dst dev NULL\n"); 
-    }
-#endif
 
-    //if (info->action == PARAM_GTPUAH_ACTION_ADD) //LG was commented
-    {
-        skb_dst_drop(skb);
-        skb_dst_set(skb, &rt->dst);
-        skb->dev      = skb_dst(skb)->dev;
-    }
-
-    skb->protocol = htons(ETH_P_IP); 
-
-    /* Send the GTPu message out...gggH */
-    err = dst_output(skb);
 
     if (err == 0)
     {
@@ -146,9 +151,9 @@ static bool _gtpuah_route_packet(struct sk_buff *skb, const struct xt_gtpuah_tar
 }
 
 static unsigned int
-_gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
+_gtpuah_target_add(struct sk_buff *skb_pP, const struct xt_gtpuah_target_info *tgi_pP, char *in_dev_pP)
 {
-    struct iphdr   *iph           = ip_hdr(skb);
+    struct iphdr   *iph           = ip_hdr(skb_pP);
     struct iphdr   *iph2          = NULL;
     struct udphdr  *udph          = NULL;
     struct gtpuhdr *gtpuh         = NULL;
@@ -160,9 +165,9 @@ _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
             payload_to_send = 0, bytes_to_remove = 0, bytes_to_send = 0;
     int             flags = 0, offset = 0, offset2 = 0;
 
-    if (skb->mark == 0) {
-        pr_info("GTPUAH: _gtpuah_target_add force skb mark %u to tgi mark %u", skb->mark, tgi->rtun);
-        skb->mark = tgi->rtun;
+    if (skb_pP->mark == 0) {
+        pr_info("GTPUAH: _gtpuah_target_add force info_pP mark %u to skb_pP mark %u", skb_pP->mark, tgi_pP->rtun);
+        skb_pP->mark = tgi_pP->rtun;
     }
     /* Keep the length of the source IP packet */
     orig_iplen = ntohs(iph->tot_len);
@@ -173,12 +178,12 @@ _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
     /* Create a new copy of the original skb...can't avoid :-( */
     if (((orig_iplen + headroom_reqd) <= MTU) || (flags & IP_DF)) {
 
-#if 0
+#if 1
         if (flags & IP_DF) {
             pr_info("GTPUAH: DONT FRAGMENT id %04X", ntohs(iph->id));
         }
 #endif
-        new_skb = skb_copy_expand(skb, headroom_reqd + skb_headroom(skb), skb_tailroom(skb), GFP_ATOMIC);
+        new_skb = skb_copy_expand(skb_pP, headroom_reqd + skb_headroom(skb_pP), skb_tailroom(skb_pP), GFP_ATOMIC);
         if (new_skb == NULL)
         {
             return NF_ACCEPT;
@@ -188,7 +193,7 @@ _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
         gtpuh->flags   = 0x30; /* v1 and Protocol-type=GTP */
         gtpuh->msgtype = 0xff; /* T-PDU */
         gtpuh->length  = htons(orig_iplen);
-        gtpuh->tunid   = htonl(skb->mark);
+        gtpuh->tunid   = htonl(skb_pP->mark);
 
         /* Add UDP header */
         udp_len      = sizeof(struct udphdr) + sizeof(struct gtpuhdr) + orig_iplen;
@@ -197,8 +202,8 @@ _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
         udph->dest   = htons(GTPU_PORT);
         udph->len    = htons(udp_len);
         udph->check  = 0;
-        udph->check  = csum_tcpudp_magic(tgi->laddr,
-                tgi->raddr,
+        udph->check  = csum_tcpudp_magic(tgi_pP->laddr,
+                tgi_pP->raddr,
                 udp_len,
                 IPPROTO_UDP,
                 csum_partial((char*)udph, udp_len, 0));
@@ -215,14 +220,14 @@ _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
         iph->frag_off = 0;
         iph->ttl      = 64;
         iph->protocol = IPPROTO_UDP;
-        iph->saddr    = (tgi->laddr);
-        iph->daddr    = (tgi->raddr);
+        iph->saddr    = (tgi_pP->laddr);
+        iph->daddr    = (tgi_pP->raddr);
         iph->check    = 0;
         iph->check    = ip_fast_csum((unsigned char *)iph, iph->ihl);
         skb_set_network_header(new_skb, 0);
 
         /* Route the packet */
-        if (_gtpuah_route_packet(new_skb, tgi) == GTPU_SUCCESS)
+        if (_gtpuah_route_packet(new_skb, tgi_pP, in_dev_pP) == GTPU_SUCCESS)
         {
             /* Succeeded. Drop the original packet */
             return NF_DROP;
@@ -233,7 +238,7 @@ _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
             return NF_ACCEPT; /* What should we do here ??? ACCEPT seems to be the best option */
         }
     } else {
-        new_skb = skb_copy_expand(skb, headroom_reqd + skb_headroom(skb), 0, GFP_ATOMIC);
+        new_skb = skb_copy_expand(skb_pP, headroom_reqd + skb_headroom(skb_pP), 0, GFP_ATOMIC);
         if (new_skb == NULL)
         {
             return NF_ACCEPT;
@@ -250,7 +255,7 @@ _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
         gtpuh->flags   = 0x30; /* v1 and Protocol-type=GTP */
         gtpuh->msgtype = 0xff; /* T-PDU */
         gtpuh->length  = htons(orig_iplen);
-        gtpuh->tunid   = htonl(skb->mark);
+        gtpuh->tunid   = htonl(skb_pP->mark);
 
         /* Add UDP header */
         udp_len      = sizeof(struct udphdr) + sizeof(struct gtpuhdr) + orig_iplen;
@@ -259,8 +264,8 @@ _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
         udph->dest   = htons(GTPU_PORT);
         udph->len    = htons(udp_len);
         udph->check  = 0;
-        udph->check  = csum_tcpudp_magic(tgi->laddr,
-                tgi->raddr,
+        udph->check  = csum_tcpudp_magic(tgi_pP->laddr,
+                tgi_pP->raddr,
                 udp_len,
                 IPPROTO_UDP,
                 csum_partial((char*)udph, udp_len, 0));
@@ -277,8 +282,8 @@ _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
         iph->frag_off = htons(IP_MORE_FRAGMENTS);
         iph->ttl      = 64;
         iph->protocol = IPPROTO_UDP;
-        iph->saddr    = (tgi->laddr);
-        iph->daddr    = (tgi->raddr);
+        iph->saddr    = (tgi_pP->laddr);
+        iph->daddr    = (tgi_pP->raddr);
         iph->check    = 0;
         iph->check    = ip_fast_csum((unsigned char *)iph, iph->ihl);
         skb_set_network_header(new_skb, 0);
@@ -286,7 +291,7 @@ _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
         skb_trim(new_skb, MTU - headroom_reqd);
 
         /* Route the packet */
-        if (_gtpuah_route_packet(new_skb, tgi) == GTPU_SUCCESS)
+        if (_gtpuah_route_packet(new_skb, tgi_pP, in_dev_pP) == GTPU_SUCCESS)
         {
             remaining_payload_to_send = orig_iplen - MTU + headroom_reqd;
             remaining_bytes_to_send   = remaining_payload_to_send + sizeof(struct iphdr);
@@ -308,7 +313,7 @@ _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
                         payload_to_send,
                         bytes_to_send);
                 // Not optimal, TO OPTIMIZE copies
-                new_skb2 = skb_copy(skb, GFP_ATOMIC);
+                new_skb2 = skb_copy(skb_pP, GFP_ATOMIC);
                 skb_pull(new_skb2, bytes_to_remove);
                 /* Add IP header */
                 iph2 = (struct iphdr*)skb_push(new_skb2, sizeof(struct iphdr));
@@ -320,14 +325,14 @@ _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
                 iph2->frag_off = htons(offset2 / 8);
                 iph2->ttl      = 64;
                 iph2->protocol = IPPROTO_UDP;
-                iph2->saddr    = (tgi->laddr);
-                iph2->daddr    = (tgi->raddr);
+                iph2->saddr    = (tgi_pP->laddr);
+                iph2->daddr    = (tgi_pP->raddr);
                 iph2->check    = 0;
                 iph2->check    = ip_fast_csum((unsigned char *)iph2, iph2->ihl);
                 skb_set_network_header(new_skb2, 0);
                 skb_trim(new_skb2, MTU);
 
-                _gtpuah_route_packet(new_skb2, tgi);
+                _gtpuah_route_packet(new_skb2, tgi_pP, in_dev_pP);
 
                 remaining_payload_to_send = remaining_payload_to_send - payload_to_send;
                 bytes_to_remove = bytes_to_remove + payload_to_send;
@@ -346,19 +351,19 @@ _gtpuah_target_add(struct sk_buff *skb, const struct xt_gtpuah_target_info *tgi)
 
 
 static unsigned int
-xt_gtpuah_target(struct sk_buff *skb, const struct xt_action_param *par)
+xt_gtpuah_target(struct sk_buff *skb_pP, const struct xt_action_param *par_pP)
 {
-    const struct xt_gtpuah_target_info *tgi = par->targinfo;
+    const struct xt_gtpuah_target_info *tgi_p = par_pP->targinfo;
     int result = NF_ACCEPT;
 
-    if (tgi == NULL)
+    if (tgi_p == NULL)
     {
         return result;
     }
 
-    if (tgi->action == PARAM_GTPUAH_ACTION_ADD)
+    if (tgi_p->action == PARAM_GTPUAH_ACTION_ADD)
     {
-        result = _gtpuah_target_add(skb, tgi);
+        result = _gtpuah_target_add(skb_pP, tgi_p, par_pP->in->name);
     }
     return result;
 }
@@ -368,8 +373,9 @@ static struct xt_target xt_gtpuah_reg __read_mostly =
     .name           = "GTPUAH",
     .revision       = 0,
     .family         = AF_INET,
-    .hooks          = (1 << NF_INET_FORWARD) |
-                      (1 << NF_INET_POST_ROUTING),
+    .hooks          = (1 << NF_INET_FORWARD)      |
+                      (1 << NF_INET_POST_ROUTING) |
+                      (1 << NF_INET_LOCAL_OUT),
     .table          = "mangle",
     .target         = xt_gtpuah_target,
     .targetsize     = sizeof(struct xt_gtpuah_target_info),
