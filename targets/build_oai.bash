@@ -688,25 +688,28 @@ esac
 ############################################
 echo_info "11. Running ... To be completed"
 cd $OPENAIR_TARGETS/bin
-if [ $BUILD_LTE == "ENB" ]; then 
-    if [ $TARGET == "SOFTMODEM" ]; then 
-        if [ $HW == "EXMIMO" ]; then 
-            $SUDO chmod 777 $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
-            $SUDO $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
+case "$BUILD_LTE" in
+    'ENB')
+        if [ $TARGET == "SOFTMODEM" ]; then 
+            if [ $HW == "EXMIMO" ]; then 
+                $SUDO chmod 777 $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
+                $SUDO $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
+            fi
+            echo "############# running ltesoftmodem #############"
+            if [ $RUN_GDB -eq 0 ]; then 
+                $SUDO exec $OPENAIR_TARGETS/bin/lte-softmodem  `echo $EXE_ARGUMENTS`
+            else
+                $SUDO touch ~/.gdb_lte_softmodem
+                $SUDO echo "file $OPENAIR_TARGETS/bin/lte-softmodem" > ~/.gdb_lte_softmodem
+                $SUDO echo "set args $EXE_ARGUMENTS" >> ~/.gdb_lte_softmodem
+                $SUDO echo "run" >> ~/.gdb_lte_softmodem
+                $SUDO gdb -nh -x ~/.gdb_lte_softmodem 2>&1 
+            fi
         fi
-        echo "############# running ltesoftmodem #############"
-        if [ $RUN_GDB -eq 0 ]; then 
-            $SUDO exec $OPENAIR_TARGETS/bin/lte-softmodem  `echo $EXE_ARGUMENTS`
-        else
-            $SUDO touch ~/.gdb_lte_softmodem
-            $SUDO echo "file $OPENAIR_TARGETS/bin/lte-softmodem" > ~/.gdb_lte_softmodem
-            $SUDO echo "set args $EXE_ARGUMENTS" >> ~/.gdb_lte_softmodem
-            $SUDO echo "run" >> ~/.gdb_lte_softmodem
-            $SUDO gdb -nh -x ~/.gdb_lte_softmodem 2>&1 
-        fi
-    fi
-else
-    if [ $BUILD_LTE == "EPC" ]; then
+        ;;
+        
+        
+    'EPC')
         echo "############# running epc #############"
         if [ $RUN_GDB -eq 0 ]; then
             $SUDO exec $OPENAIR_TARGETS/bin/oai_epc  `echo $EXE_ARGUMENTS`
@@ -717,11 +720,21 @@ else
             $SUDO echo "run" >> ~/.gdb_epc
             $SUDO gdb -nh -x ~/.gdb_epc 2>&1 
         fi
-    echo_info "7. run EPC (check the bin/epc.generic.conf params)"
-    cd bin/
-    $SUDO ./oai_epc -c ./epc.generic.conf  -K /tmp/itti.log
+        ;;
+        
+        
+    'HSS')
+         echo_warning "TODO execute HSS: Experimental"
+         ;;
+         
+         
+    'NONE')
+         ;;
+         
+         
+    *)
+         echo_error "Unknown option $BUILD_LTE: do not execute"
+         ;;
+esac
 
-    
-    fi
-fi
 
