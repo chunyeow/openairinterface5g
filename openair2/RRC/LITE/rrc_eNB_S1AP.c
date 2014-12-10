@@ -811,7 +811,7 @@ int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_REQ (MessageDef *msg_p, const char *
 /*------------------------------------------------------------------------------*/
 int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_COMMAND (MessageDef *msg_p, const char *msg_name, instance_t instance) {
   uint32_t eNB_ue_s1ap_id;
-  uint8_t ue_index;
+  uint8_t  ue_index;
 
   eNB_ue_s1ap_id = S1AP_UE_CONTEXT_RELEASE_COMMAND(msg_p).eNB_ue_s1ap_id;
   ue_index = get_UE_index_from_eNB_ue_s1ap_id(instance, eNB_ue_s1ap_id);
@@ -837,14 +837,32 @@ int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_COMMAND (MessageDef *msg_p, const ch
               "[eNB %d] In S1AP_UE_CONTEXT_RELEASE_COMMAND: TODO call rrc_eNB_connection_release for eNB %d\n",
               instance,
               ue_index);
-    /* Send tmp response if rrc_eNB_connection_release not coded*/
     {
-      MessageDef *msg_complete_p;
+        int      e_rab;
+        int      mod_id = 0;
+        eNB_RRC_UE_INFO *UE_info = &eNB_rrc_inst[mod_id].Info.UE[ue_index];
+        MessageDef *msg_delete_tunnels_p = NULL;
 
-      msg_complete_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_UE_CONTEXT_RELEASE_COMPLETE);
-      S1AP_UE_CONTEXT_RELEASE_COMPLETE(msg_complete_p).eNB_ue_s1ap_id = eNB_ue_s1ap_id;
+        msg_delete_tunnels_p = itti_alloc_new_message(TASK_RRC_ENB, GTPV1U_ENB_DELETE_TUNNEL_REQ);
+        memset(&GTPV1U_ENB_DELETE_TUNNEL_REQ(msg_delete_tunnels_p),
+               0,
+               sizeof(GTPV1U_ENB_DELETE_TUNNEL_REQ(msg_delete_tunnels_p)));
 
-      itti_send_msg_to_task(TASK_S1AP, instance, msg_complete_p);
+        // do not wait response
+        GTPV1U_ENB_DELETE_TUNNEL_REQ(msg_delete_tunnels_p).ue_index = ue_index;
+        for (e_rab = 0; e_rab < UE_info->nb_of_e_rabs; e_rab++) {
+            GTPV1U_ENB_DELETE_TUNNEL_REQ(msg_delete_tunnels_p).eps_bearer_id[GTPV1U_ENB_DELETE_TUNNEL_REQ(msg_p).num_erab++] = UE_info->enb_gtp_ebi[e_rab];
+            // erase data
+            UE_info->enb_gtp_teid[e_rab] = 0;
+            memset(&UE_info->enb_gtp_addrs[e_rab], 0, sizeof(UE_info->enb_gtp_addrs[e_rab]));
+            UE_info->enb_gtp_ebi[e_rab]  = 0;
+        }
+        itti_send_msg_to_task(TASK_GTPV1_U, instance, msg_delete_tunnels_p);
+
+        MessageDef *msg_complete_p = NULL;
+        msg_complete_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_UE_CONTEXT_RELEASE_COMPLETE);
+        S1AP_UE_CONTEXT_RELEASE_COMPLETE(msg_complete_p).eNB_ue_s1ap_id = eNB_ue_s1ap_id;
+        itti_send_msg_to_task(TASK_S1AP, instance, msg_complete_p);
     }
 
     return (0);
