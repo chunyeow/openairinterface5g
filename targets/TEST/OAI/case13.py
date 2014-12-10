@@ -44,7 +44,7 @@ import os
 
 import shutil # copy file 
 
-NUM_UE=2
+NUM_UE=1
 NUM_eNB=1
 NUM_TRIALS=3
 
@@ -52,13 +52,13 @@ PRB=[25,50,100]
 MCS=[0,4,9,10,13,16,17,22,27]
 ANT_TX=1  # 2 
 ANT_RX=2  # 2 
-CHANNEL=["N"] # A,B,C,D,E,F,
+CHANNEL=["N","I"] # A,B,C,D,E,F,
 TX_MODE=2 # 2, 
 MIN_SNR=2
 MAX_SNR=34
 PERF=75
 OPT="-L"
-FRAME=500
+FRAME=1000
 #OPT="-L -d" # 8bit decoder , activate dci decoding at UE
 
 
@@ -94,13 +94,13 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
         name = 'Run oai.ulsim.perf.'+str(PERF)+'%'
         diag = 'no diagnostic is available, check the log file'
         for i in range(len(PRB)):
-            MIN_SNR=0
-            for j in range(len(MCS)):
-                for m in range (1,ANT_RX):
-                    for o in range(len(CHANNEL)):
+            for o in range(len(CHANNEL)):
+                MIN_SNR=0
+                for j in range(len(MCS)):
+                    for m in range (1,ANT_RX):
                         for p in range(1,TX_MODE):
                             for q in range(MIN_SNR,MAX_SNR): 
-                                        #if  if PRB[i] :
+                                #if  if PRB[i] :
                                 
                                 conf = '-B' + str(PRB[i]) + ' -m'+str(MCS[j]) + ' -y'+str(m) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -e.1 -P -n'+str(FRAME)+' -O'+str(PERF)+' '+ OPT  
                                 trace = logdir + '/time_meas' + '_prb'+str(PRB[i])+'_mcs'+ str(MCS[j])+ '_antrx' + str(m)  + '_channel' +str(CHANNEL[o]) + '_tx' +str(p) + '_snr' +str(q)+'.'+case+str(test)+ '.log'

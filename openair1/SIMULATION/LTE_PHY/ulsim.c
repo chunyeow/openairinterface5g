@@ -1331,7 +1331,8 @@ int main(int argc, char **argv) {
       double rx_median = table_rx[time_vector_rx.size/2];
       double rx_q1 = table_rx[time_vector_rx.size/4];
       double rx_q3 = table_rx[3*time_vector_rx.size/4];
-      
+      double std_phy_proc_tx=0;
+      double std_phy_proc_rx=0;
       printf("\n**********rb: %d ***mcs : %d  *********SNR = %f dB (%f): TX %d dB (gain %f dB), N0W %f dB, I0 %d dB, delta_IF %d [ (%d,%d) dB / (%d,%d) dB ]**************************\n",
 	     nb_rb,mcs,SNR,SNR2,
 	     tx_lev_dB,
@@ -1394,7 +1395,7 @@ int main(int argc, char **argv) {
 
       if (dump_perf==1) {
 	printf("UE TX function statistics (per 1ms subframe)\n\n");
-        double std_phy_proc_tx = sqrt((double)PHY_vars_UE->phy_proc_tx.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_UE->phy_proc_tx.trials - pow((double)PHY_vars_UE->phy_proc_tx.diff/PHY_vars_UE->phy_proc_tx.trials/cpu_freq_GHz/1000,2));
+        std_phy_proc_tx = sqrt((double)PHY_vars_UE->phy_proc_tx.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_UE->phy_proc_tx.trials - pow((double)PHY_vars_UE->phy_proc_tx.diff/PHY_vars_UE->phy_proc_tx.trials/cpu_freq_GHz/1000,2));
 	printf("Total PHY proc tx                 :%f us (%d trials)\n",(double)PHY_vars_UE->phy_proc_tx.diff/PHY_vars_UE->phy_proc_tx.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->phy_proc_tx.trials);
 	printf("|__ Statistics                         std: %f us max: %fus min: %fus median %fus q1 %fus q3 %fus n_dropped: %d packet \n",std_phy_proc_tx, t_tx_max, t_tx_min, tx_median, tx_q1, tx_q3, n_tx_dropped);
 	printf("OFDM_mod time                     :%f us (%d trials)\n",(double)PHY_vars_UE->ofdm_mod_stats.diff/PHY_vars_UE->ofdm_mod_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ofdm_mod_stats.trials);
@@ -1407,7 +1408,7 @@ int main(int argc, char **argv) {
 	printf("|__ ULSCH multiplexing time           :%f us (%d trials)\n",((double)PHY_vars_UE->ulsch_multiplexing_stats.trials/PHY_vars_UE->ulsch_encoding_stats.trials)*(double)PHY_vars_UE->ulsch_multiplexing_stats.diff/PHY_vars_UE->ulsch_multiplexing_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ulsch_multiplexing_stats.trials);
 
 	printf("\n\neNB RX function statistics (per 1ms subframe)\n\n");
-        double std_phy_proc_rx = sqrt((double)PHY_vars_eNB->phy_proc_rx.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_eNB->phy_proc_rx.trials - pow((double)PHY_vars_eNB->phy_proc_rx.diff/PHY_vars_eNB->phy_proc_rx.trials/cpu_freq_GHz/1000,2));
+        std_phy_proc_rx = sqrt((double)PHY_vars_eNB->phy_proc_rx.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_eNB->phy_proc_rx.trials - pow((double)PHY_vars_eNB->phy_proc_rx.diff/PHY_vars_eNB->phy_proc_rx.trials/cpu_freq_GHz/1000,2));
         printf("Total PHY proc rx                  :%f us (%d trials)\n",(double)PHY_vars_eNB->phy_proc_rx.diff/PHY_vars_eNB->phy_proc_rx.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->phy_proc_rx.trials);
 	printf("|__ Statistcs                           std: %fus max: %fus min: %fus median %fus q1 %fus q3 %fus n_dropped: %d packet \n", std_phy_proc_rx, t_rx_max, t_rx_min, rx_median, rx_q1, rx_q3, n_rx_dropped);
 	
@@ -1526,7 +1527,7 @@ int main(int argc, char **argv) {
 		PHY_vars_eNB->ulsch_demodulation_stats.trials,
 		PHY_vars_eNB->ulsch_decoding_stats.trials
 		);
-	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%f;%f",
+	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%f;%f;\n",
 		get_time_meas_us(&PHY_vars_UE->phy_proc_tx),
 		get_time_meas_us(&PHY_vars_UE->ofdm_mod_stats),
 		get_time_meas_us(&PHY_vars_UE->ulsch_modulation_stats),
@@ -1536,6 +1537,14 @@ int main(int argc, char **argv) {
 		get_time_meas_us(&PHY_vars_eNB->ulsch_demodulation_stats),
 		get_time_meas_us(&PHY_vars_eNB->ulsch_decoding_stats)
 		);
+
+	fprintf(time_meas_fd,"UE_PROC_TX_STD;UE_PROC_TX_MAX;UE_PROC_TX_MAX;UE_PROC_TX_MED;UE_PROC_TX_Q1;UE_PROC_TX_Q3;UE_PROC_TX_DROPPED;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%d;\n", std_phy_proc_tx, t_tx_max, t_tx_min, tx_median, tx_q1, tx_q3, n_tx_dropped);
+	
+	fprintf(time_meas_fd,"eNB_PROC_RX_STD;eNB_PROC_RX_MAX;eNB_PROC_RX_MAX;eNB_PROC_RX_MED;eNB_PROC_RX_Q1;eNB_PROC_RX_Q3;eNB_PROC_RX_DROPPED;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%d;\n", std_phy_proc_rx, t_rx_max, t_rx_min, rx_median, rx_q1, rx_q3, n_rx_dropped);
+
+
 	
       	printf("[passed] effective rate : %f  (%2.1f%%,%f)): log and break \n",rate*effective_rate, 100*effective_rate, rate );
 	break;
