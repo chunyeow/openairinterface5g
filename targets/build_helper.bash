@@ -725,8 +725,8 @@ compile_epc() {
         echo_error "Build GTPUAH module failed, exiting"
         return 1
     else 
-        cp -f ./Bin/libxt_*.so /lib/xtables
-        cp -f ./Bin/*.ko $OPENAIR_TARGETS/bin
+        cp -fv ./Bin/libxt_*.so /lib/xtables
+        cp -fv ./Bin/*.ko $OPENAIR_TARGETS/bin
     fi
     
     cd $OPENAIRCN_DIR/GTPV1-U/GTPURH;
@@ -735,8 +735,8 @@ compile_epc() {
         echo_error "Build GTPURH module failed, exiting"
         return 1
     else 
-        cp -f ./Bin/libxt_*.so /lib/xtables
-        cp -f ./Bin/*.ko $OPENAIR_TARGETS/bin
+        cp -fv ./Bin/libxt_*.so /lib/xtables
+        cp -fv ./Bin/*.ko $OPENAIR_TARGETS/bin
     fi
     return 0
 }
