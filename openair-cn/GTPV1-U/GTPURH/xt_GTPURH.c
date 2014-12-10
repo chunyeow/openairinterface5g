@@ -28,6 +28,9 @@
 #include <net/netfilter/ipv4/nf_defrag_ipv4.h>
 #endif
 
+
+#define ROUTE_PACKET 1
+
 #include "xt_GTPURH.h"
 
 #if !(defined KVERSION)
@@ -366,9 +369,10 @@ static bool _gtpurh_route_packet(struct sk_buff *skb_pP, const struct xt_gtpurh_
             } 
         } 
     }; 
+    skb_pP->pkt_type = PACKET_OTHERHOST;
 
-#if 0
-    pr_info("GTPURH(%d): Routing packet: %d.%d.%d.%d --> %d.%d.%d.%d Proto: %d, Len: %d Mark: %u\n",
+#if 1
+    pr_info("GTPURH(%d): Routing packet: %d.%d.%d.%d --> %d.%d.%d.%d Proto: %d, Len: %d Mark: %u Packet type: %u\n",
             info_pP->action,
             iph_p->saddr  & 0xFF,
             (iph_p->saddr & 0x0000FF00) >> 8,
@@ -380,9 +384,9 @@ static bool _gtpurh_route_packet(struct sk_buff *skb_pP, const struct xt_gtpurh_
             iph_p->daddr >> 24,
             iph_p->protocol,
             ntohs(iph_p->tot_len),
-            skb_pP->mark);
+            skb_pP->mark,
+            skb_pP->pkt_type);
 #endif
-
     rt = ip_route_output_key(&init_net, &fl.u.ip4);
     if (err != 0) 
     { 
@@ -390,7 +394,7 @@ static bool _gtpurh_route_packet(struct sk_buff *skb_pP, const struct xt_gtpurh_
         return GTPURH_FAILURE;
     } 
 
-#if 0
+#if 1
     if (rt->dst.dev)
     {
         pr_info("GTPURH: dst dev name %s\n", rt->dst.dev->name);
@@ -575,6 +579,7 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
 #else
     skb_p = orig_skb_pP;
 #endif
+    pr_info("GTPURH(%d) IP packet arrived\n",tgi_pP->action);
     //---------------------------
     // check if is GTPU TUNNEL
     if (iph_p->protocol != IPPROTO_UDP) {
@@ -691,6 +696,7 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
         }
     }
 //#endif
+    pr_info("GTPURH(%d) IP packet prcessed\n",tgi_pP->action);
 
     /* Route the packet */
 #if defined(ROUTE_PACKET)
@@ -725,7 +731,8 @@ static struct xt_target xt_gtpurh_reg __read_mostly =
     .name           = "GTPURH",
     .revision       = 0,
     .family         = AF_INET,
-    .hooks          = (1 << NF_INET_PRE_ROUTING),
+    .hooks          = (1 << NF_INET_PRE_ROUTING) |
+                      (1 << NF_INET_LOCAL_OUT),
     .table          = "raw",
     .target         = xt_gtpurh_target,
     .targetsize     = sizeof(struct xt_gtpurh_target_info),
