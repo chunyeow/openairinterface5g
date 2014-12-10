@@ -41,6 +41,8 @@
 #define GTPV1U_ENB_TUNNEL_DATA_IND(mSGpTR)    (mSGpTR)->ittiMsg.Gtpv1uTunnelDataInd
 #define GTPV1U_ENB_TUNNEL_DATA_REQ(mSGpTR)    (mSGpTR)->ittiMsg.Gtpv1uTunnelDataReq
 
+#define GTPV1U_ALL_TUNNELS_TEID (teid_t)0xFFFFFFFF
+
 typedef struct gtpv1u_enb_create_tunnel_req_s {
     module_id_t            ue_index;
     int                    num_tunnels;
@@ -76,8 +78,9 @@ typedef struct gtpv1u_enb_update_tunnel_resp_s {
 
 typedef struct gtpv1u_enb_delete_tunnel_req_s {
     module_id_t            ue_index;
-    ebi_t                  eps_bearer_id;
-    teid_t                 enb_S1u_teid;         ///< local SGW S11 Tunnel Endpoint Identifier
+    uint8_t                num_erab;
+    ebi_t                  eps_bearer_id[GTPV1U_MAX_BEARERS_PER_UE];
+    //teid_t                 enb_S1u_teid;         ///< local SGW S11 Tunnel Endpoint Identifier
 } gtpv1u_enb_delete_tunnel_req_t;
 
 typedef struct gtpv1u_enb_delete_tunnel_resp_s {
