@@ -333,15 +333,9 @@ int main(int argc, char **argv) {
     fprintf(fd,"SNR_%d_%d=[];errs_mch_%d_%d=[];mch_trials_%d_%d=[];\n",
 	    mcs,N_RB_DL,
 	    mcs,N_RB_DL,
-	    mcs,N_RB_DL,
-	    mcs,N_RB_DL,
-	    mcs,N_RB_DL,
 	    mcs,N_RB_DL);
   else
     fprintf(fd,"SNR_awgn_%d_%d=[];errs_mch_awgn_%d_%d=[];mch_trials_awgn_%d_%d=[];\n",
-	    mcs,N_RB_DL,
-	    mcs,N_RB_DL,
-	    mcs,N_RB_DL,
 	    mcs,N_RB_DL,
 	    mcs,N_RB_DL,
 	    mcs,N_RB_DL);
@@ -553,7 +547,7 @@ int main(int argc, char **argv) {
 	      mcs,N_RB_DL,mcs,N_RB_DL,errs[0],
 	      mcs,N_RB_DL,mcs,N_RB_DL,trials);
     else
-      fprintf(fd,"SNR_awgn_%d = [SNR_awgn_%d %f]; errs_mch_awgn_%d =[errs_mch_awgn_%d  %d]; mch_trials_awgn_%d =[mch_trials_awgn_%d %d];\n",
+      fprintf(fd,"SNR_awgn_%d = [SNR_awgn_%d %d]; errs_mch_awgn_%d =[errs_mch_awgn_%f  %d]; mch_trials_awgn_%d =[mch_trials_awgn_%d %d];\n",
 	      mcs,N_RB_DL,mcs,N_RB_DL,SNR,
 	      mcs,N_RB_DL,mcs,N_RB_DL,errs[0],
 	      mcs,N_RB_DL,mcs,N_RB_DL,trials);

@@ -432,7 +432,7 @@ rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
       rlc_mode = rlc_union_p->mode;
   } else {
       rlc_mode = RLC_MODE_NONE;
-      AssertFatal (0 , "RLC not configured key %llu\n", key);
+      AssertFatal (0 , "RLC not configured key %ju\n", key);
   }
 
   if (MBMS_flagP == 0) {

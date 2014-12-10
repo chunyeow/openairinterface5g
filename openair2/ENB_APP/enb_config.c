@@ -262,7 +262,7 @@ static void enb_config_display(void) {
 
         for (j=0; j< enb_properties.properties[i]->nb_cc; j++) {
             printf( "\teutra band for CC %d:         \t%d:\n",j,enb_properties.properties[i]->eutra_band[j]);
-            printf( "\tdownlink freq for CC %d:      \t%llu:\n",j,enb_properties.properties[i]->downlink_frequency[j]);
+            printf( "\tdownlink freq for CC %d:      \t%ju:\n",j,enb_properties.properties[i]->downlink_frequency[j]);
             printf( "\tuplink freq for CC %d:        \t%d:\n",j,enb_properties.properties[i]->uplink_frequency_offset[j]);
 
             printf( "\n\tCell ID for CC %d:\t%d:\n",j,enb_properties.properties[i]->Nid_cell[j]);
@@ -271,87 +271,87 @@ static void enb_config_display(void) {
             printf( "\tnb_antennas_rx for CC %d:\t%d:\n",j,enb_properties.properties[i]->nb_antennas_rx[j]);
 
       // RACH-Config
-	    printf( "\trach_numberOfRA_Preambles for CC %d:\t%d:\n",j,enb_properties.properties[i]->rach_numberOfRA_Preambles[j]);
+	    printf( "\trach_numberOfRA_Preambles for CC %d:\t%jd:\n",j,enb_properties.properties[i]->rach_numberOfRA_Preambles[j]);
 	    printf( "\trach_preamblesGroupAConfig for CC %d:\t%d:\n",j,enb_properties.properties[i]->rach_preamblesGroupAConfig[j]);
 	    if (enb_properties.properties[i]->rach_preamblesGroupAConfig[j]) {
-	      printf( "\trach_sizeOfRA_PreamblesGroupA for CC %d:\t%d:\n",j,enb_properties.properties[i]->rach_sizeOfRA_PreamblesGroupA[j]);
-	      printf( "\trach_messageSizeGroupA for CC %d:\t%d:\n",j,enb_properties.properties[i]->rach_messageSizeGroupA[j]); 
+	      printf( "\trach_sizeOfRA_PreamblesGroupA for CC %d:\t%jd:\n",j,enb_properties.properties[i]->rach_sizeOfRA_PreamblesGroupA[j]);
+	      printf( "\trach_messageSizeGroupA for CC %d:\t%jd:\n",j,enb_properties.properties[i]->rach_messageSizeGroupA[j]); 
 	      printf( "\trach_messagePowerOffsetGroupB for CC %d:\t%d:\n",j,enb_properties.properties[i]->rach_messagePowerOffsetGroupB[j]);
 	    }
-	    printf( "\trach_powerRampingStep for CC %d:\t%d:\n",j,enb_properties.properties[i]->rach_powerRampingStep[j]);
-	    printf( "\trach_preambleInitialReceivedTargetPower for CC %d:\t%d:\n",j,enb_properties.properties[i]->rach_preambleInitialReceivedTargetPower[j]);
-	    printf( "\trach_preambleTransMax for CC %d:\t%d:\n",j,enb_properties.properties[i]->rach_preambleTransMax[j]);
-	    printf( "\trach_raResponseWindowSize for CC %d:\t%d:\n",j,enb_properties.properties[i]->rach_raResponseWindowSize[j]);
-	    printf( "\trach_macContentionResolutionTimer for CC %d:\t%d:\n",j,enb_properties.properties[i]->rach_macContentionResolutionTimer[j]);
-	    printf( "\trach_maxHARQ_Msg3Tx for CC %d:\t%d:\n",j,enb_properties.properties[i]->rach_maxHARQ_Msg3Tx[j]);
+	    printf( "\trach_powerRampingStep for CC %d:\t%jd:\n",j,enb_properties.properties[i]->rach_powerRampingStep[j]);
+	    printf( "\trach_preambleInitialReceivedTargetPower for CC %d:\t%jd:\n",j,enb_properties.properties[i]->rach_preambleInitialReceivedTargetPower[j]);
+	    printf( "\trach_preambleTransMax for CC %d:\t%jd:\n",j,enb_properties.properties[i]->rach_preambleTransMax[j]);
+	    printf( "\trach_raResponseWindowSize for CC %d:\t%jd:\n",j,enb_properties.properties[i]->rach_raResponseWindowSize[j]);
+	    printf( "\trach_macContentionResolutionTimer for CC %d:\t%jd:\n",j,enb_properties.properties[i]->rach_macContentionResolutionTimer[j]);
+	    printf( "\trach_maxHARQ_Msg3Tx for CC %d:\t%jd:\n",j,enb_properties.properties[i]->rach_maxHARQ_Msg3Tx[j]);
 	    
 	    // BCCH-Config
-	    printf( "\tbcch_modificationPeriodCoeff for CC %d:\t%d:\n",j,enb_properties.properties[i]->bcch_modificationPeriodCoeff[j]);
+	    printf( "\tbcch_modificationPeriodCoeff for CC %d:\t%jd:\n",j,enb_properties.properties[i]->bcch_modificationPeriodCoeff[j]);
 	    
 	    // PCCH-Config
-	    printf( "\tpcch_defaultPagingCycle for CC %d:\t%d:\n",j,enb_properties.properties[i]->pcch_defaultPagingCycle[j]);
-	    printf( "\tpcch_nB for CC %d:\t%d:\n",j,enb_properties.properties[i]->pcch_nB[j]);
+	    printf( "\tpcch_defaultPagingCycle for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pcch_defaultPagingCycle[j]);
+	    printf( "\tpcch_nB for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pcch_nB[j]);
 	    
 	    // PRACH-Config
-	    printf( "\tprach_root for CC %d:\t%d:\n",j,enb_properties.properties[i]->prach_root[j]);
-	    printf( "\tprach_config_index for CC %d:\t%d:\n",j,enb_properties.properties[i]->prach_config_index[j]);
+	    printf( "\tprach_root for CC %d:\t%jd:\n",j,enb_properties.properties[i]->prach_root[j]);
+	    printf( "\tprach_config_index for CC %d:\t%jd:\n",j,enb_properties.properties[i]->prach_config_index[j]);
 	    printf( "\tprach_high_speed for CC %d:\t%d:\n",j,enb_properties.properties[i]->prach_high_speed[j]);
-	    printf( "\tprach_zero_correlation for CC %d:\t%d:\n",j,enb_properties.properties[i]->prach_zero_correlation[j]);
-	    printf( "\tprach_freq_offset for CC %d:\t%d:\n",j,enb_properties.properties[i]->prach_freq_offset[j]);
+	    printf( "\tprach_zero_correlation for CC %d:\t%jd:\n",j,enb_properties.properties[i]->prach_zero_correlation[j]);
+	    printf( "\tprach_freq_offset for CC %d:\t%jd:\n",j,enb_properties.properties[i]->prach_freq_offset[j]);
 	    
 	    // PDSCH-Config
-	    printf( "\tpdsch_referenceSignalPower for CC %d:\t%d:\n",j,enb_properties.properties[i]->pdsch_referenceSignalPower[j]);  
-	    printf( "\tpdsch_p_b for CC %d:\t%d:\n",j,enb_properties.properties[i]->pdsch_p_b[j]);  
+	    printf( "\tpdsch_referenceSignalPower for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pdsch_referenceSignalPower[j]);  
+	    printf( "\tpdsch_p_b for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pdsch_p_b[j]);  
 	    
 	    // PUSCH-Config
-	    printf( "\tpusch_n_SB for CC %d:\t%d:\n",j,enb_properties.properties[i]->pusch_n_SB[j]);  
-	    printf( "\tpusch_hoppingMode for CC %d:\t%d:\n",j,enb_properties.properties[i]->pusch_hoppingMode[j]);
-	    printf( "\tpusch_hoppingOffset for CC %d:\t%d:\n",j,enb_properties.properties[i]->pusch_hoppingOffset[j]);
+	    printf( "\tpusch_n_SB for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pusch_n_SB[j]);  
+	    printf( "\tpusch_hoppingMode for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pusch_hoppingMode[j]);
+	    printf( "\tpusch_hoppingOffset for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pusch_hoppingOffset[j]);
 	    printf( "\tpusch_enable64QAM for CC %d:\t%d:\n",j,enb_properties.properties[i]->pusch_enable64QAM[j]);
 	    printf( "\tpusch_groupHoppingEnabled for CC %d:\t%d:\n",j,enb_properties.properties[i]->pusch_groupHoppingEnabled[j]);
-	    printf( "\tpusch_groupAssignment for CC %d:\t%d:\n",j,enb_properties.properties[i]->pusch_groupAssignment[j]);
+	    printf( "\tpusch_groupAssignment for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pusch_groupAssignment[j]);
 	    printf( "\tpusch_sequenceHoppingEnabled for CC %d:\t%d:\n",j,enb_properties.properties[i]->pusch_sequenceHoppingEnabled[j]);
-	    printf( "\tpusch_nDMRS1 for CC %d:\t%d:\n",j,enb_properties.properties[i]->pusch_nDMRS1[j]);
+	    printf( "\tpusch_nDMRS1 for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pusch_nDMRS1[j]);
 	    
 	    // PUCCH-Config
 	    
-	    printf( "\tpucch_delta_shift for CC %d:\t%d:\n",j,enb_properties.properties[i]->pucch_delta_shift[j]);
-	    printf( "\tpucch_nRB_CQI for CC %d:\t%d:\n",j,enb_properties.properties[i]->pucch_nRB_CQI[j]);
-	    printf( "\tpucch_nCS_AN for CC %d:\t%d:\n",j,enb_properties.properties[i]->pucch_nCS_AN[j]);
+	    printf( "\tpucch_delta_shift for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pucch_delta_shift[j]);
+	    printf( "\tpucch_nRB_CQI for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pucch_nRB_CQI[j]);
+	    printf( "\tpucch_nCS_AN for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pucch_nCS_AN[j]);
 #ifndef Rel10
-	    printf( "\tpucch_n1_AN for CC %d:\t%d:\n",j,enb_properties.properties[i]->pucch_n1_AN[j]);
+	    printf( "\tpucch_n1_AN for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pucch_n1_AN[j]);
 #endif
 	    
 	    // SRS Config
 	    printf( "\tsrs_enable for CC %d:\t%d:\n",j,enb_properties.properties[i]->srs_enable[j]);
 	    if (enb_properties.properties[i]->srs_enable[j]) {
-	      printf( "\tsrs_BandwidthConfig for CC %d:\t%d:\n",j,enb_properties.properties[i]->srs_BandwidthConfig[j]);
-	      printf( "\tsrs_BandwidthConfig for CC %d:\t%d:\n",j,enb_properties.properties[i]->srs_SubframeConfig[j]);
+	      printf( "\tsrs_BandwidthConfig for CC %d:\t%jd:\n",j,enb_properties.properties[i]->srs_BandwidthConfig[j]);
+	      printf( "\tsrs_BandwidthConfig for CC %d:\t%jd:\n",j,enb_properties.properties[i]->srs_SubframeConfig[j]);
 	      printf( "\tsrs_ackNackST for CC %d:\t%d:\n",j,enb_properties.properties[i]->srs_ackNackST[j]); 
 	      printf( "\tsrs_MaxUpPts for CC %d:\t%d:\n",j,enb_properties.properties[i]->srs_MaxUpPts[j]);
 	    }
     
 	    // uplinkPowerControlCommon
 	    
-	    printf( "\tpusch_p0_Nominal for CC %d:\t%d:\n",j,enb_properties.properties[i]->pusch_p0_Nominal[j]);
-	    printf( "\tpucch_p0_Nominal for CC %d:\t%d:\n",j,enb_properties.properties[i]->pucch_p0_Nominal[j]);
-	    printf( "\tpusch_alpha for CC %d:\t%d:\n",j,enb_properties.properties[i]->pusch_alpha[j]);
+	    printf( "\tpusch_p0_Nominal for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pusch_p0_Nominal[j]);
+	    printf( "\tpucch_p0_Nominal for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pucch_p0_Nominal[j]);
+	    printf( "\tpusch_alpha for CC %d:\t%jd:\n",j,enb_properties.properties[i]->pusch_alpha[j]);
 	    printf( "\tpucch_deltaF_Format1 for CC %d:\t%d:\n",j,enb_properties.properties[i]->pucch_deltaF_Format1[j]);
 	    printf( "\tpucch_deltaF_Format1b for CC %d:\t%d:\n",j,enb_properties.properties[i]->pucch_deltaF_Format1b[j]);
 	    printf( "\tpucch_deltaF_Format2 for CC %d:\t%d:\n",j,enb_properties.properties[i]->pucch_deltaF_Format2[j]);
 	    printf( "\tpucch_deltaF_Format2a for CC %d:\t%d:\n",j,enb_properties.properties[i]->pucch_deltaF_Format2a[j]);    
 	    printf( "\tpucch_deltaF_Format2b for CC %d:\t%d:\n",j,enb_properties.properties[i]->pucch_deltaF_Format2b[j]);
-	    printf( "\tmsg3_delta_Preamble for CC %d:\t%d:\n",j,enb_properties.properties[i]->msg3_delta_Preamble[j]);
-	    printf( "\tul_CyclicPrefixLength for CC %d:\t%d:\n",j,enb_properties.properties[i]->ul_CyclicPrefixLength[j]);
+	    printf( "\tmsg3_delta_Preamble for CC %d:\t%jd:\n",j,enb_properties.properties[i]->msg3_delta_Preamble[j]);
+	    printf( "\tul_CyclicPrefixLength for CC %d:\t%jd:\n",j,enb_properties.properties[i]->ul_CyclicPrefixLength[j]);
 	    
 	    // UE Timers and Constants
 	    
-	    printf( "\tue_TimersAndConstants_t300 for CC %d:\t%d:\n",j,enb_properties.properties[i]->ue_TimersAndConstants_t300[j]);
-	    printf( "\tue_TimersAndConstants_t301 for CC %d:\t%d:\n",j,enb_properties.properties[i]->ue_TimersAndConstants_t301[j]);
-	    printf( "\tue_TimersAndConstants_t310 for CC %d:\t%d:\n",j,enb_properties.properties[i]->ue_TimersAndConstants_t310[j]);
-	    printf( "\tue_TimersAndConstants_n310 for CC %d:\t%d:\n",j,enb_properties.properties[i]->ue_TimersAndConstants_n310[j]);
-	    printf( "\tue_TimersAndConstants_t311 for CC %d:\t%d:\n",j,enb_properties.properties[i]->ue_TimersAndConstants_t311[j]);
-	    printf( "\tue_TimersAndConstants_n311 for CC %d:\t%d:\n",j,enb_properties.properties[i]->ue_TimersAndConstants_n311[j]);
+	    printf( "\tue_TimersAndConstants_t300 for CC %d:\t%jd:\n",j,enb_properties.properties[i]->ue_TimersAndConstants_t300[j]);
+	    printf( "\tue_TimersAndConstants_t301 for CC %d:\t%jd:\n",j,enb_properties.properties[i]->ue_TimersAndConstants_t301[j]);
+	    printf( "\tue_TimersAndConstants_t310 for CC %d:\t%jd:\n",j,enb_properties.properties[i]->ue_TimersAndConstants_t310[j]);
+	    printf( "\tue_TimersAndConstants_n310 for CC %d:\t%jd:\n",j,enb_properties.properties[i]->ue_TimersAndConstants_n310[j]);
+	    printf( "\tue_TimersAndConstants_t311 for CC %d:\t%jd:\n",j,enb_properties.properties[i]->ue_TimersAndConstants_t311[j]);
+	    printf( "\tue_TimersAndConstants_n311 for CC %d:\t%jd:\n",j,enb_properties.properties[i]->ue_TimersAndConstants_n311[j]);
  
         }
 	for (j=0; j < enb_properties.properties[i]->num_otg_elements; j++){
@@ -773,12 +773,12 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
 
                             enb_properties.properties[enb_properties_index]->tdd_config[j] = tdd_config;
                             AssertError (tdd_config <= TDD_Config__subframeAssignment_sa6, parse_errors ++,
-                                    "Failed to parse eNB configuration file %s, enb %d illegal tdd_config %ld (should be 0-%d)!",
+                                    "Failed to parse eNB configuration file %s, enb %d illegal tdd_config %d (should be 0-%d)!",
                                     lib_config_file_name_pP, i, tdd_config, TDD_Config__subframeAssignment_sa6);
 
                             enb_properties.properties[enb_properties_index]->tdd_config_s[j] = tdd_config_s;
                             AssertError (tdd_config_s <= TDD_Config__specialSubframePatterns_ssp8, parse_errors ++,
-                                    "Failed to parse eNB configuration file %s, enb %d illegal tdd_config_s %ld (should be 0-%d)!",
+                                    "Failed to parse eNB configuration file %s, enb %d illegal tdd_config_s %d (should be 0-%d)!",
                                     lib_config_file_name_pP, i, tdd_config_s, TDD_Config__specialSubframePatterns_ssp8);
 
                             if (strcmp(prefix_type, "NORMAL") == 0) {
@@ -819,13 +819,13 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
 
                             enb_properties.properties[enb_properties_index]->tdd_config[j] = tdd_config;
                             AssertError (tdd_config <= TDD_Config__subframeAssignment_sa6, parse_errors ++,
-                                    "Failed to parse eNB configuration file %s, enb %d illegal tdd_config %ld (should be 0-%d)!",
+                                    "Failed to parse eNB configuration file %s, enb %d illegal tdd_config %d (should be 0-%d)!",
                                     lib_config_file_name_pP, i, tdd_config, TDD_Config__subframeAssignment_sa6);
 
 
                             enb_properties.properties[enb_properties_index]->tdd_config_s[j] = tdd_config_s;
                             AssertError (tdd_config_s <= TDD_Config__specialSubframePatterns_ssp8, parse_errors ++,
-                                    "Failed to parse eNB configuration file %s, enb %d illegal tdd_config_s %ld (should be 0-%d)!",
+                                    "Failed to parse eNB configuration file %s, enb %d illegal tdd_config_s %d (should be 0-%d)!",
                                     lib_config_file_name_pP, i, tdd_config_s, TDD_Config__specialSubframePatterns_ssp8);
 
 
@@ -970,7 +970,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
 
                             if ((pusch_hoppingOffset<0) || (pusch_hoppingOffset>98))
                                 AssertError (0, parse_errors ++,
-                                        "Failed to parse eNB configuration file %s, enb %d unknown value \"%f\" for pusch_hoppingOffset choice: 0..98!\n",
+                                        "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for pusch_hoppingOffset choice: 0..98!\n",
                                         lib_config_file_name_pP, i, pusch_hoppingMode);
 
                             if (strcmp(pusch_enable64QAM, "ENABLE") == 0)
@@ -1374,7 +1374,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                             }
                             else
                                 AssertError (0, parse_errors ++,
-                                        "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for pcch_nB choice: fourT,twoT,oneT,halfT,quarterT,oneighthT,oneSixteenthT,oneThirtySecondT !\n",
+                                        "Failed to parse eNB configuration file %s, enb %d unknown value \"%d\" for pcch_nB choice: fourT,twoT,oneT,halfT,quarterT,oneighthT,oneSixteenthT,oneThirtySecondT !\n",
                                         lib_config_file_name_pP, i, pcch_defaultPagingCycle);
 
 
@@ -1394,7 +1394,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                                     break;
                                 default:
                                     AssertError (0, parse_errors ++,
-                                            "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for bcch_modificationPeriodCoeff choice: 2,4,8,16",
+                                            "Failed to parse eNB configuration file %s, enb %d unknown value \"%d\" for bcch_modificationPeriodCoeff choice: 2,4,8,16",
                                             lib_config_file_name_pP, i, bcch_modificationPeriodCoeff);
 
                                     break;
@@ -1428,7 +1428,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                                     break;
                                 default:
                                     AssertError (0, parse_errors ++,
-                                            "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for ue_TimersAndConstants_t300 choice: 100,200,300,400,600,1000,1500,2000 ",
+                                            "Failed to parse eNB configuration file %s, enb %d unknown value \"%d\" for ue_TimersAndConstants_t300 choice: 100,200,300,400,600,1000,1500,2000 ",
                                             lib_config_file_name_pP, i, ue_TimersAndConstants_t300);
                                     break;
 
@@ -1461,7 +1461,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                                     break;
                                 default:
                                     AssertError (0, parse_errors ++,
-                                            "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for ue_TimersAndConstants_t301 choice: 100,200,300,400,600,1000,1500,2000 ",
+                                            "Failed to parse eNB configuration file %s, enb %d unknown value \"%d\" for ue_TimersAndConstants_t301 choice: 100,200,300,400,600,1000,1500,2000 ",
                                             lib_config_file_name_pP, i, ue_TimersAndConstants_t301);
                                     break;
 
@@ -1490,7 +1490,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                                     break;
                                 default:
                                     AssertError (0, parse_errors ++,
-                                            "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for ue_TimersAndConstants_t310 choice: 0,50,100,200,500,1000,1500,2000 ",
+                                            "Failed to parse eNB configuration file %s, enb %d unknown value \"%d\" for ue_TimersAndConstants_t310 choice: 0,50,100,200,500,1000,1500,2000 ",
                                             lib_config_file_name_pP, i, ue_TimersAndConstants_t310);
                                     break;
 
@@ -1519,7 +1519,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                                     break;
                                 default:
                                     AssertError (0, parse_errors ++,
-                                            "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for ue_TimersAndConstants_t311 choice: 1000,3000,5000,10000,150000,20000,30000",
+                                            "Failed to parse eNB configuration file %s, enb %d unknown value \"%d\" for ue_TimersAndConstants_t311 choice: 1000,3000,5000,10000,150000,20000,30000",
                                             lib_config_file_name_pP, i, ue_TimersAndConstants_t311);
                                     break;
 
@@ -1552,7 +1552,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                                     break;
                                 default:
                                     AssertError (0, parse_errors ++,
-                                            "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for ue_TimersAndConstants_n310 choice: 1,2,3,4,6,6,8,10,20",
+                                            "Failed to parse eNB configuration file %s, enb %d unknown value \"%d\" for ue_TimersAndConstants_n310 choice: 1,2,3,4,6,6,8,10,20",
                                             lib_config_file_name_pP, i, ue_TimersAndConstants_n311);
                                     break;
 
@@ -1584,7 +1584,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                                     break;
                                 default:
                                     AssertError (0, parse_errors ++,
-                                            "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for ue_TimersAndConstants_t311 choice: 1,2,3,4,5,6,8,10",
+                                            "Failed to parse eNB configuration file %s, enb %d unknown value \"%d\" for ue_TimersAndConstants_t311 choice: 1,2,3,4,5,6,8,10",
                                             lib_config_file_name_pP, i, ue_TimersAndConstants_t311);
                                     break;
 

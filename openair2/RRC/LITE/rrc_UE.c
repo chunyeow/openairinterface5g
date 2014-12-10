@@ -1201,7 +1201,7 @@ void rrc_ue_process_securityModeCommand(uint8_t ue_mod_idP, frame_t frameP,Secur
               (void*)&ul_dcch_msg,
               buffer,
               100);
-          AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+          AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %jd)!\n",
               enc_rval.failed_type->name, enc_rval.encoded);
 
 #ifdef XER_PRINT
@@ -1285,7 +1285,7 @@ void rrc_ue_process_ueCapabilityEnquiry(uint8_t ue_mod_idP, frame_t frameP,UECap
                       &ue_CapabilityRAT_Container);
 
                   enc_rval = uper_encode_to_buffer(&asn_DEF_UL_DCCH_Message, (void*) &ul_dcch_msg, buffer, 100);
-                  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+                  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %jd)!\n",
                       enc_rval.failed_type->name, enc_rval.encoded);
 
 #ifdef XER_PRINT

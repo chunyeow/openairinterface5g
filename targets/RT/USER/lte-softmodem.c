@@ -1420,7 +1420,7 @@ static void *eNB_thread(void *arg)
    
    if (sched_setattr(0, &attr, flags) < 0 ){
      perror("[SCHED] main eNB thread: sched_setattr failed\n");
-     exit_fun(-1);
+     exit_fun("Nothing to add");
    } else {
      LOG_I(HW,"[SCHED][eNB] eNB main deadline thread %ld started on CPU %d\n",
 	    gettid(),sched_getcpu());

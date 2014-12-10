@@ -166,8 +166,8 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][4],
 		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][5]);
       
-      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (max): %llx\n",eNB,pmi2hex_2Ar1(quantize_subband_pmi(&phy_vars_ue->PHY_measurements,eNB,6)));
-      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (both): %llx,%llx\n",eNB,
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (max): %jx\n",eNB,pmi2hex_2Ar1(quantize_subband_pmi(&phy_vars_ue->PHY_measurements,eNB,6)));
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (both): %jx,%jx\n",eNB,
 		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,0,6)),
 		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,1,6)));
       break;
@@ -237,8 +237,8 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][5],
 		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][6]);
       
-      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (max): %llx\n",eNB,pmi2hex_2Ar1(quantize_subband_pmi(&phy_vars_ue->PHY_measurements,eNB,7)));
-      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (both): %llx,%llx\n",eNB,
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (max): %jx\n",eNB,pmi2hex_2Ar1(quantize_subband_pmi(&phy_vars_ue->PHY_measurements,eNB,7)));
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (both): %jx,%jx\n",eNB,
 		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,0,7)),
 		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,1,7)));
       break;
@@ -322,8 +322,8 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][7],
 		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][8]);
       
-      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (max): %llx\n",eNB,pmi2hex_2Ar1(quantize_subband_pmi(&phy_vars_ue->PHY_measurements,eNB,9)));
-      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (both): %llx,%llx\n",eNB,
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (max): %jx\n",eNB,pmi2hex_2Ar1(quantize_subband_pmi(&phy_vars_ue->PHY_measurements,eNB,9)));
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (both): %jx,%jx\n",eNB,
 		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,0,9)),
 		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,1,9)));
       break;
@@ -435,8 +435,8 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][11],
 		     phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB][12]);
       
-      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (max): %llx\n",eNB,pmi2hex_2Ar1(quantize_subband_pmi(&phy_vars_ue->PHY_measurements,eNB,13)));
-      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (both): %llx,%llx\n",eNB,
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (max): %jx\n",eNB,pmi2hex_2Ar1(quantize_subband_pmi(&phy_vars_ue->PHY_measurements,eNB,13)));
+      len += sprintf(&buffer[len], "[UE PROC] Quantized PMI eNB %d (both): %jx,%jx\n",eNB,
 		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,0,13)),
 		     pmi2hex_2Ar1(quantize_subband_pmi2(&phy_vars_ue->PHY_measurements,eNB,1,13)));
       break;
@@ -456,7 +456,7 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
     if (phy_vars_ue->transmission_mode[eNB] == 6)
       len += sprintf(&buffer[len], "[UE PROC] Mode 6 Wideband CQI eNB %d : %d dB\n",eNB,phy_vars_ue->PHY_measurements.precoded_cqi_dB[eNB][0]);
     if (phy_vars_ue->dlsch_ue[0] && phy_vars_ue->dlsch_ue[0][0] && phy_vars_ue->dlsch_ue[0][1]) {
-      len += sprintf(&buffer[len], "[UE PROC] Saved PMI for DLSCH eNB %d : %llx (%p)\n",eNB,pmi2hex_2Ar1(phy_vars_ue->dlsch_ue[0][0]->pmi_alloc),phy_vars_ue->dlsch_ue[0][0]);
+      len += sprintf(&buffer[len], "[UE PROC] Saved PMI for DLSCH eNB %d : %jx (%p)\n",eNB,pmi2hex_2Ar1(phy_vars_ue->dlsch_ue[0][0]->pmi_alloc),phy_vars_ue->dlsch_ue[0][0]);
 
       len += sprintf(&buffer[len], "[UE PROC] eNB %d: dl_power_off = %d\n",eNB,phy_vars_ue->dlsch_ue[0][0]->harq_processes[0]->dl_power_off);
 
@@ -611,7 +611,7 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
 		       phy_vars_eNB->PHY_measurements_eNB[eNB].subband_cqi_tot_dB[UE_id][i]);
       len += sprintf(&buffer[len],"\n");
       
-      len += sprintf(&buffer[len],"[eNB PROC] DL TM %d, DL_cqi %d, DL_pmi_single %llx\n",
+      len += sprintf(&buffer[len],"[eNB PROC] DL TM %d, DL_cqi %d, DL_pmi_single %jx\n",
 		     phy_vars_eNB->transmission_mode[UE_id],
 		     phy_vars_eNB->eNB_UE_stats[UE_id].DL_cqi[0],
 		     pmi2hex_2Ar1(phy_vars_eNB->eNB_UE_stats[UE_id].DL_pmi_single));

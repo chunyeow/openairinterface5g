@@ -485,7 +485,7 @@ void rrc_eNB_send_S1AP_NAS_FIRST_REQ(uint8_t mod_id, uint8_t ue_index,
 
     /* Assume that cause is coded in the same way in RRC and S1ap, just check that the value is in S1ap range */
     AssertFatal(eNB_rrc_inst[mod_id].Info.UE[ue_index].establishment_cause < RRC_CAUSE_LAST,
-                "Establishment cause invalid (%d/%d) for eNB %d!",
+                "Establishment cause invalid (%jd/%d) for eNB %d!",
                 eNB_rrc_inst[mod_id].Info.UE[ue_index].establishment_cause, RRC_CAUSE_LAST, mod_id);
     S1AP_NAS_FIRST_REQ (message_p).establishment_cause = eNB_rrc_inst[mod_id].Info.UE[ue_index].establishment_cause;
 
