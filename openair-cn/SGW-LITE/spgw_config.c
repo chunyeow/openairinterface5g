@@ -136,7 +136,7 @@ int spgw_system(char *command_pP, int abort_on_errorP) {
   if (command_pP) {
       SPGW_APP_INFO("system command: %s\n",command_pP);
       ret = system(command_pP);
-      if (ret < 0) {
+      if (ret != 0) {
           SPGW_APP_ERROR("ERROR in system command %s: %d\n",
                      command_pP,ret);
           if (abort_on_errorP) {
