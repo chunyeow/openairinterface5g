@@ -3370,6 +3370,11 @@ void                               *rrc_enb_task(
               rrc_eNB_process_GTPV1U_CREATE_TUNNEL_RESP(msg_p, msg_name_p, instance);
               break;
 
+            case GTPV1U_ENB_DELETE_TUNNEL_RESP:
+                LOG_I(RRC, "[eNB %d] Received message %s, not processed because procedure not synched\n",
+                    instance, msg_name_p);
+              break;
+
 #   endif
 
                 /* Messages from eNB app */
