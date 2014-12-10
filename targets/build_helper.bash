@@ -784,7 +784,6 @@ compile_oaisim() {
     if [ -f Makefile ]; then
         echo "Compiling for oaisim  target ($OAISIM_DIRECTIVES)"
         make cleanall > /dev/null
-        make $OAISIM_DIRECTIVES 
         make -j $NUM_CPU $OAISIM_DIRECTIVES 
         if [ $? -ne 0 ]; then
             echo_error "Build oaisim failed, returning"
