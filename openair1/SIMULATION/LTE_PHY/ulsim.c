@@ -1538,10 +1538,10 @@ int main(int argc, char **argv) {
 		get_time_meas_us(&PHY_vars_eNB->ulsch_decoding_stats)
 		);
 
-	fprintf(time_meas_fd,"UE_PROC_TX_STD;UE_PROC_TX_MAX;UE_PROC_TX_MAX;UE_PROC_TX_MED;UE_PROC_TX_Q1;UE_PROC_TX_Q3;UE_PROC_TX_DROPPED;\n");
+	fprintf(time_meas_fd,"UE_PROC_TX_STD;UE_PROC_TX_MAX;UE_PROC_TX_MIN;UE_PROC_TX_MED;UE_PROC_TX_Q1;UE_PROC_TX_Q3;UE_PROC_TX_DROPPED;\n");
 	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%d;\n", std_phy_proc_tx, t_tx_max, t_tx_min, tx_median, tx_q1, tx_q3, n_tx_dropped);
 	
-	fprintf(time_meas_fd,"eNB_PROC_RX_STD;eNB_PROC_RX_MAX;eNB_PROC_RX_MAX;eNB_PROC_RX_MED;eNB_PROC_RX_Q1;eNB_PROC_RX_Q3;eNB_PROC_RX_DROPPED;\n");
+	fprintf(time_meas_fd,"eNB_PROC_RX_STD;eNB_PROC_RX_MAX;eNB_PROC_RX_MIN;eNB_PROC_RX_MED;eNB_PROC_RX_Q1;eNB_PROC_RX_Q3;eNB_PROC_RX_DROPPED;\n");
 	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%d;\n", std_phy_proc_rx, t_rx_max, t_rx_min, rx_median, rx_q1, rx_q3, n_rx_dropped);
 
 
