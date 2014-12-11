@@ -18,9 +18,9 @@
 #include <linux/ip.h>
 #include <linux/route.h> 
 #include <net/checksum.h>
+#include <net/ip.h>
 #include <net/udp.h>
 #include <net/inet_sock.h>
-#include <net/ip.h>
 #include <net/route.h> 
 #include <linux/netfilter/x_tables.h>
 #include <linux/netfilter_ipv4/ip_tables.h>
@@ -29,7 +29,7 @@
 #endif
 
 
-#define ROUTE_PACKET 1
+//#define ROUTE_PACKET 1
 
 #include "xt_GTPURH.h"
 
@@ -369,8 +369,8 @@ static bool _gtpurh_route_packet(struct sk_buff *skb_pP, const struct xt_gtpurh_
             } 
         } 
     }; 
-    skb_pP->pkt_type = PACKET_OTHERHOST;
-
+    //skb_pP->pkt_type = PACKET_OTHERHOST;
+    skb_pP->pkt_type = PACKET_OUTGOING;
 #if 1
     pr_info("GTPURH(%d): Routing packet: %d.%d.%d.%d --> %d.%d.%d.%d Proto: %d, Len: %d Mark: %u Packet type: %u\n",
             info_pP->action,
@@ -696,13 +696,44 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
         }
     }
 //#endif
-    pr_info("GTPURH(%d) IP packet prcessed\n",tgi_pP->action);
+    pr_info("GTPURH(%d) IP packet processed\n",tgi_pP->action);
 
     /* Route the packet */
 #if defined(ROUTE_PACKET)
     _gtpurh_route_packet(skb_p, tgi_pP);
     return NF_DROP;
 #else
+    {
+        int            err = 0;
+        struct rtable *rt    = NULL;
+        int            daddr = iph2_p->daddr;
+        struct flowi   fl    = {
+                        .u = {
+                            .ip4 = {
+                                .daddr        = daddr,
+                                .flowi4_tos   = RT_TOS(iph2_p->tos),
+                                .flowi4_scope = RT_SCOPE_UNIVERSE,
+                            }
+                        }
+        };
+        rt = ip_route_output_key(&init_net, &fl.u.ip4);
+        if (rt == NULL)
+        {
+            pr_info("GTPURH: Failed to route packet to dst 0x%x. Error: (%d)", fl.u.ip4.daddr, err);
+            return NF_DROP;
+        }
+
+#if 1
+        if (rt->dst.dev) {
+            pr_info("GTPURH: dst dev name %s\n", rt->dst.dev->name);
+        } else {
+            pr_info("GTPURH: dst dev NULL\n");
+        }
+#endif
+        skb_dst_drop(skb_p);
+        skb_dst_set(skb_p, &rt->dst);
+        skb_p->dev      = skb_dst(skb_p)->dev;
+    }
     return NF_ACCEPT;
 #endif
 }
