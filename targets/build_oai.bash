@@ -186,7 +186,7 @@ fi
        -R | --run)
             RUN=1 
             echo "setting run to $RUN"
-            shift 2 ;
+            shift;
             ;;
        -s | --check)
             OAI_TEST=1
