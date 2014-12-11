@@ -16,6 +16,7 @@
 #include <linux/init.h>
 #include <linux/skbuff.h>
 #include <linux/ip.h>
+#include <linux/if_ether.h>
 #include <linux/route.h> 
 #include <net/checksum.h>
 #include <net/ip.h>
@@ -656,11 +657,15 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
         skb_pull(skb_p, sizeof(short) + sizeof(char) + sizeof(char)); /* #Seq, #N-PDU, #ExtHdr Type */
         gtp_payload_size = gtp_payload_size - sizeof(short) - sizeof(char) - sizeof(char);
     }
-    //skb_p->mac_len = 0;
-    //skb_set_mac_header(skb_p, 0);
     skb_set_network_header(skb_p, 0);
     iph2_p   = ip_hdr(skb_p);
     skb_set_transport_header(skb_p, iph2_p->ihl << 2);
+
+    skb_p->mac_len = ETH_HLEN;
+    //struct ethhdr *eth = (struct ethhdr *)skb_push(skb_p, ETH_HLEN);
+    //memset(eth, 0, ETH_HLEN);
+    //eth->h_proto = htons(ETH_P_IP);
+    //skb_set_mac_header(skb_p, 0);
 
     if ((iph2_p->version  != 4 ) && (iph2_p->version  != 6)) {
         pr_info("\nGTPURH: Decapsulated packet dropped because not IPvx protocol see all GTPU packet here:\n");
@@ -722,7 +727,7 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
             pr_info("GTPURH: Failed to route packet to dst 0x%x. Error: (%d)", fl.u.ip4.daddr, err);
             return NF_DROP;
         }
-
+        skb_p->pkt_type = PACKET_OTHERHOST;
 #if 1
         if (rt->dst.dev) {
             pr_info("GTPURH: dst dev name %s\n", rt->dst.dev->name);
