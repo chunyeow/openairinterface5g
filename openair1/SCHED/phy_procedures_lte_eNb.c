@@ -219,7 +219,7 @@ int get_ue_active_harq_pid(uint8_t Mod_id,uint8_t CC_id,uint16_t rnti,int frame,
   //  int subframe = PHY_vars_eNB_g[Mod_id][CC_id]->proc[sched_subframe].subframe_tx;
 
   if (UE_id==-1) {
-    LOG_E(PHY,"Cannot find UE with rnti %x\n",rnti);
+    LOG_D(PHY,"Cannot find UE with rnti %x (Mod_id %d, CC_id %d)\n",rnti, Mod_id, CC_id);
     *round=0;
     return(-1);
   }
@@ -3095,8 +3095,8 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	  // If we've dropped the UE, go back to PRACH mode for this UE
 	  //#if !defined(EXMIMO_IOT)
 	  if (phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors == ULSCH_max_consecutive_errors) {
-	    LOG_I(PHY,"[eNB %d] frame %d, subframe %d, UE %d: ULSCH consecutive error count reached %u, removing UE\n",
-		  phy_vars_eNB->Mod_id,frame,subframe, i, phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors);
+	    LOG_I(PHY,"[eNB %d, CC %d] frame %d, subframe %d, UE %d: ULSCH consecutive error count reached %u, removing UE\n",
+		  phy_vars_eNB->Mod_id,phy_vars_eNB->CC_id,frame,subframe, i, phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors);
 
 	    //	    mac_xface->macphy_exit("Consecutive error count reached");
 

@@ -3176,10 +3176,12 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
 			       0,0);
 	}
 	else { // abstraction
+#ifdef PHY_ABSTRACTION
 	  ret = dlsch_decoding_emul(phy_vars_ue,
 				    subframe_rx,
 				    5, // PMCH
 				    eNB_id);
+#endif
 	}
 	if (mcch_active == 1)
 	  phy_vars_ue->dlsch_mcch_trials[sync_area][0]++;

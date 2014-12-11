@@ -37,6 +37,7 @@
 //#include "pci_commands.h"
 #endif //CBMIMO1
 */
+#include "openair0_lib.h"
 #include "defs.h"
 #include "SCHED/defs.h"
 #include "PHY/extern.h"
@@ -48,6 +49,10 @@
 #include "MBSFN-SubframeConfigList.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
 //#define DEBUG_PHY
+
+#ifdef Rel10
+extern openair0_rf_map rf_map[MAX_NUM_CCs];
+#endif
 
 extern uint16_t prach_root_sequence_map0_3[838];
 extern uint16_t prach_root_sequence_map4[138];
@@ -646,24 +651,23 @@ void phy_config_dedicated_scell_eNB(uint8_t Mod_id,
 
 #ifdef EXMIMO
 #ifdef DRIVER2013
-  exmimo_config_t *p_exmimo_config = openair0_exmimo_pci[card].exmimo_config_ptr;
+  exmimo_config_t *p_exmimo_config = openair0_exmimo_pci[rf_map[CC_id].card].exmimo_config_ptr;
 #endif
 #endif
 
   if ((dl_CarrierFreq_r10>=36000) && (dl_CarrierFreq_r10<=36199)) {
     carrier_freq_local = 1900000000 + (dl_CarrierFreq_r10-36000)*100000; //band 33 from 3GPP 36.101 v 10.9 Table 5.7.3-1
-#warning "fixme: update the phy frame counter "
     LOG_I(PHY,"[eNB %d] Frame %d: Configured SCell %d to frequency %d (ARFCN %d) for UE %d\n",Mod_id,/*phy_vars_eNB->frame*/0,CC_id,carrier_freq_local,dl_CarrierFreq_r10,UE_id);
 #ifdef EXMIMO
 #ifdef DRIVER2013
-    carrier_freq[CC_id] = carrier_freq_local;
-    openair_daq_vars.freq_offset = -6540;
-    p_exmimo_config->rf.rf_freq_rx[CC_id] = carrier_freq[CC_id]+openair_daq_vars.freq_offset2;
-    p_exmimo_config->rf.rf_freq_tx[CC_id] = carrier_freq[CC_id]+openair_daq_vars.freq_offset2;
-    p_exmimo_config->rf.tx_gain[CC_id][0] = 25;
-    p_exmimo_config->rf.rf_vcocal[CC_id] = 910;
-    p_exmimo_config->rf.rf_local[CC_id] = 8255063; //this should be taken form calibration file
-    p_exmimo_config->rf.rffe_band_mode[CC_id] = B19G_TDD;
+    //carrier_freq[CC_id] = carrier_freq_local;
+    //openair_daq_vars.freq_offset = -6540;
+    p_exmimo_config->rf.rf_freq_rx[rf_map[CC_id].chain] = carrier_freq_local;//+openair_daq_vars.freq_offset2;
+    p_exmimo_config->rf.rf_freq_tx[rf_map[CC_id].chain] = carrier_freq_local;//+openair_daq_vars.freq_offset2;
+    p_exmimo_config->rf.tx_gain[rf_map[CC_id].chain][0] = 25;
+    p_exmimo_config->rf.rf_vcocal[rf_map[CC_id].chain] = 910;
+    p_exmimo_config->rf.rf_local[rf_map[CC_id].chain] = 8255063; //this should be taken form calibration file
+    p_exmimo_config->rf.rffe_band_mode[rf_map[CC_id].chain] = B19G_TDD;
 #endif
 #endif
   }
@@ -673,14 +677,14 @@ void phy_config_dedicated_scell_eNB(uint8_t Mod_id,
     LOG_I(PHY,"[eNB %d] Frame %d: Configured SCell %d to frequency %d (ARFCN %d) for UE %d\n",Mod_id,/*phy_vars_eNB->frame*/0,CC_id,carrier_freq_local,dl_CarrierFreq_r10,UE_id);
 #ifdef EXMIMO
 #ifdef DRIVER2013
-    carrier_freq[CC_id] = carrier_freq_local;
-    openair_daq_vars.freq_offset = -2000;
-    p_exmimo_config->rf.rf_freq_rx[CC_id] = carrier_freq[CC_id]+openair_daq_vars.freq_offset2;
-    p_exmimo_config->rf.rf_freq_tx[CC_id] = carrier_freq[CC_id]+openair_daq_vars.freq_offset2;
-    p_exmimo_config->rf.tx_gain[CC_id][0] = 10;
-    p_exmimo_config->rf.rf_vcocal[CC_id] = 2015;
-    p_exmimo_config->rf.rf_local[CC_id] =  8254992; //this should be taken form calibration file
-    p_exmimo_config->rf.rffe_band_mode[CC_id] = DD_TDD;
+    //carrier_freq[CC_id] = carrier_freq_local;
+    //openair_daq_vars.freq_offset = -2000;
+    p_exmimo_config->rf.rf_freq_rx[rf_map[CC_id].chain] = carrier_freq_local;//+openair_daq_vars.freq_offset2;
+    p_exmimo_config->rf.rf_freq_tx[rf_map[CC_id].chain] = carrier_freq_local;//+openair_daq_vars.freq_offset2;
+    p_exmimo_config->rf.tx_gain[rf_map[CC_id].chain][0] = 10;
+    p_exmimo_config->rf.rf_vcocal[rf_map[CC_id].chain] = 2015;
+    p_exmimo_config->rf.rf_local[rf_map[CC_id].chain] =  8254992; //this should be taken form calibration file
+    p_exmimo_config->rf.rffe_band_mode[rf_map[CC_id].chain] = DD_TDD;
 #endif
 #endif
   }
