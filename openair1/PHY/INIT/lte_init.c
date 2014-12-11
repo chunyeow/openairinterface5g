@@ -37,7 +37,9 @@
 //#include "pci_commands.h"
 #endif //CBMIMO1
 */
+#ifdef EXMIMO
 #include "openair0_lib.h"
+#endif
 #include "defs.h"
 #include "SCHED/defs.h"
 #include "PHY/extern.h"
@@ -50,7 +52,7 @@
 #include "UTIL/LOG/vcd_signal_dumper.h"
 //#define DEBUG_PHY
 
-#ifdef Rel10
+#ifdef EXMIMO
 extern openair0_rf_map rf_map[MAX_NUM_CCs];
 #endif
 
