@@ -59,6 +59,7 @@ declare CONFIG_FILE=" "
 declare CONFIG_FILE_ACCESS_OK=0
 declare EXE_ARGUMENTS=" "
 declare RUN_GDB=0
+declare RUN=0
 declare DISABLE_CHECK_INSTALLED_SOFTWARE=0
 declare OAI_CLEAN=0
 
@@ -150,6 +151,7 @@ fi
             ;;
        -g | --run-with-gdb)
             DEBUG=1
+            RUN=1 
             RUN_GDB=1
             echo "Running with gdb"
             shift;
@@ -179,6 +181,11 @@ fi
        -r | --3gpp-release)
             REL=$2 
             echo "setting release to: $REL"
+            shift 2 ;
+            ;;
+       -R | --run)
+            RUN=1 
+            echo "setting run to $RUN"
             shift 2 ;
             ;;
        -s | --check)
@@ -558,7 +565,7 @@ build_epc(){
     if [ $epc_compiled -eq 0 ]; then 
         echo_success "target epc built and installed in the bin directory"
         echo "target epc built and installed in the bin directory"  >>  bin/${oai_build_date}
-        cp -f CONFIG_FILE  $OPENAIR_TARGETS/bin
+        cp -f $CONFIG_FILE  $OPENAIR_TARGETS/bin
         cp -f $OPENAIRCN_DIR/objs/UTILS/CONF/s6a.conf  $OPENAIR_TARGETS/bin/epc_s6a.conf
     fi
 }
@@ -686,55 +693,60 @@ esac
 ############################################
 # run 
 ############################################
-echo_info "11. Running ... To be completed"
-cd $OPENAIR_TARGETS/bin
-case "$BUILD_LTE" in
-    'ENB')
-        if [ $TARGET == "SOFTMODEM" ]; then 
-            if [ $HW == "EXMIMO" ]; then 
-                $SUDO chmod 777 $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
-                $SUDO $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
+if [ $RUN -ne 0 ]; then 
+    echo_info "11. Running ... To be completed"
+    cd $OPENAIR_TARGETS/bin
+    case "$BUILD_LTE" in
+        'ENB')
+            if [ $TARGET == "SOFTMODEM" ]; then 
+                if [ $HW == "EXMIMO" ]; then 
+                    $SUDO chmod 777 $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
+                    $SUDO $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
+                fi
+                echo "############# running ltesoftmodem #############"
+                if [ $RUN_GDB -eq 0 ]; then 
+                    $SUDO exec $OPENAIR_TARGETS/bin/lte-softmodem  `echo $EXE_ARGUMENTS`
+                else
+                    $SUDO touch ~/.gdb_lte_softmodem
+                    $SUDO echo "file $OPENAIR_TARGETS/bin/lte-softmodem" > ~/.gdb_lte_softmodem
+                    $SUDO echo "set args $EXE_ARGUMENTS" >> ~/.gdb_lte_softmodem
+                    $SUDO echo "run" >> ~/.gdb_lte_softmodem
+                    $SUDO gdb -nh -x ~/.gdb_lte_softmodem 2>&1 
+                fi
             fi
-            echo "############# running ltesoftmodem #############"
-            if [ $RUN_GDB -eq 0 ]; then 
-                $SUDO exec $OPENAIR_TARGETS/bin/lte-softmodem  `echo $EXE_ARGUMENTS`
+            ;;
+        
+        
+        'EPC')
+            echo "############# running epc #############"
+            if [ $RUN_GDB -eq 0 ]; then
+                $SUDO exec $OPENAIR_TARGETS/bin/oai_epc  `echo $EXE_ARGUMENTS`
             else
-                $SUDO touch ~/.gdb_lte_softmodem
-                $SUDO echo "file $OPENAIR_TARGETS/bin/lte-softmodem" > ~/.gdb_lte_softmodem
-                $SUDO echo "set args $EXE_ARGUMENTS" >> ~/.gdb_lte_softmodem
-                $SUDO echo "run" >> ~/.gdb_lte_softmodem
-                $SUDO gdb -nh -x ~/.gdb_lte_softmodem 2>&1 
+                $SUDO touch ~/.gdb_epc
+                $SUDO echo "file $OPENAIR_TARGETS/bin/oai_epc" > ~/.gdb_epc
+                $SUDO echo "set args $EXE_ARGUMENTS" >> ~/.gdb_epc
+                $SUDO echo "run" >> ~/.gdb_epc
+                $SUDO gdb -nh -x ~/.gdb_epc 2>&1 
             fi
-        fi
-        ;;
+            ;;
         
         
-    'EPC')
-        echo "############# running epc #############"
-        if [ $RUN_GDB -eq 0 ]; then
-            $SUDO exec $OPENAIR_TARGETS/bin/oai_epc  `echo $EXE_ARGUMENTS`
-        else
-            $SUDO touch ~/.gdb_epc
-            $SUDO echo "file $OPENAIR_TARGETS/bin/oai_epc" > ~/.gdb_epc
-            $SUDO echo "set args $EXE_ARGUMENTS" >> ~/.gdb_epc
-            $SUDO echo "run" >> ~/.gdb_epc
-            $SUDO gdb -nh -x ~/.gdb_epc 2>&1 
-        fi
-        ;;
-        
-        
-    'HSS')
-         echo_warning "TODO execute HSS: Experimental"
-         ;;
+        'HSS')
+             echo_warning "TODO execute HSS: Experimental"
+             ;;
          
          
-    'NONE')
-         ;;
+        'NONE')
+             ;;
          
          
-    *)
-         echo_error "Unknown option $BUILD_LTE: do not execute"
-         ;;
-esac
+        *)
+             echo_error "Unknown option $BUILD_LTE: do not execute"
+             ;;
+    esac
+else
+    echo_info "11. No run requested, end of script"
+    exit 0
+fi
 
 
