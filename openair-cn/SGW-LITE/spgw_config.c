@@ -131,7 +131,7 @@ sgw_ipv6_mask_in6_addr(
 }
 
 
-int spgw_system(char *command_pP, int abort_on_errorP) {
+int spgw_system(char *command_pP, spgw_system_abort_control_e abort_on_errorP) {
   int ret = -1;
   if (command_pP) {
       SPGW_APP_INFO("system command: %s\n",command_pP);
@@ -158,7 +158,7 @@ int spgw_config_process(spgw_config_t* config_pP) {
                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up,
                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up
                 ) > 0) {
-            ret += spgw_system(system_cmd, 1);
+            ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
         } else {
             SPGW_APP_ERROR("Del %s\n", config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
             ret = -1;
@@ -167,7 +167,7 @@ int spgw_config_process(spgw_config_t* config_pP) {
                 "openvpn --mktun --dev %s;sync;ifconfig  %s up;sync",
                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up,
                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
-            ret += spgw_system(system_cmd, 1);
+            ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
         } else {
             SPGW_APP_ERROR("Create %s\n", config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
             ret = -1;
@@ -178,7 +178,7 @@ int spgw_config_process(spgw_config_t* config_pP) {
                 inet_ntoa(inaddr),
                 config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S1u_S12_S4_up,
                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
-        	ret += spgw_system(system_cmd, 1);
+        	ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
         } else {
             SPGW_APP_ERROR("Set IPv4 address on %s\n", config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
             ret = -1;
@@ -187,7 +187,7 @@ int spgw_config_process(spgw_config_t* config_pP) {
         if (snprintf(system_cmd, 128,
             "iptables -t filter -I INPUT -i lo -d %s --protocol sctp -j DROP",
             inet_ntoa(inaddr)) > 0) {
-            ret += spgw_system(system_cmd, 1);
+            ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
         } else {
             SPGW_APP_ERROR("Drop SCTP traffic on S1U\n");
             ret = -1;
@@ -195,7 +195,7 @@ int spgw_config_process(spgw_config_t* config_pP) {
         if (snprintf(system_cmd, 128,
             "iptables -t filter -I INPUT -i lo -s %s --protocol sctp -j DROP",
             inet_ntoa(inaddr)) > 0) {
-            ret += spgw_system(system_cmd, 1);
+            ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
         } else {
             SPGW_APP_ERROR("Drop SCTP traffic on S1U\n");
             ret = -1;
@@ -211,55 +211,77 @@ int spgw_config_process(spgw_config_t* config_pP) {
             config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up,
             config_pP->sgw_config.sgw_interface_mtu_for_S1u_S12_S4_up) > 0) {
         SPGW_APP_INFO("Set S1U interface MTU: %s\n",system_cmd);
-        ret += spgw_system(system_cmd, 1);
+        ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
     } else {
         SPGW_APP_ERROR("Set S1U interface MTU\n");
         ret = -1;
     }
 
     if (config_pP->sgw_config.sgw_drop_uplink_traffic) {
-    	if (snprintf(system_cmd, 128,
-    			"iptables -t raw -I PREROUTING  -i %s --protocol udp --destination-port 2152  -j DROP",
-    			config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
-    		SPGW_APP_INFO("Drop uplink traffic: %s\n",system_cmd);
-    		ret += spgw_system(system_cmd, 1);
-    	} else {
-    	   SPGW_APP_ERROR("Drop uplink traffic\n");
+        if (snprintf(system_cmd, 128,
+                     "iptables -t raw -I PREROUTING  -i %s --protocol udp --destination-port 2152  -j DROP",
+                     config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
+            SPGW_APP_INFO("Drop uplink traffic: %s\n",system_cmd);
+            ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
+        } else {
+            SPGW_APP_ERROR("Drop uplink traffic\n");
            ret = -1;
-    	}
+        }
     }
 
     if (config_pP->pgw_config.pgw_masquerade_SGI) {
-    	if (snprintf(system_cmd, 128,
-    			"iptables -t nat -A POSTROUTING  -o %s  ! --protocol sctp -j MASQUERADE",
-    			config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
-    		SPGW_APP_INFO("Masquerade SGI: %s\n",system_cmd);
-    		ret += spgw_system(system_cmd,1);
-    	} else {
-    		SPGW_APP_ERROR("Masquerade SGI\n");
+        inaddr.s_addr = config_pP->pgw_config.ipv4.pgw_ipv4_address_for_SGI;
+        if (snprintf(system_cmd, 128,
+                     "iptables -t nat -I POSTROUTING  -o %s  ! --protocol sctp -j SNAT --to-source %s",
+                     config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI,
+                     inet_ntoa(inaddr)) > 0) {
+            SPGW_APP_INFO("Masquerade SGI: %s\n",system_cmd);
+            ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
+        } else {
+            SPGW_APP_ERROR("Masquerade SGI\n");
             ret = -1;
-    	}
+        }
     }
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
     if (snprintf(system_cmd, 128,
-    		//"iptables -I POSTROUTING -t mangle -o %s -m state --state NEW  -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
-    		"iptables -I POSTROUTING -t mangle -o %s -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
-    		config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
-    	SPGW_APP_INFO("Save mark: %s\n",system_cmd);
-    	ret += spgw_system(system_cmd, 1);
+                 //"iptables -I POSTROUTING -t mangle -o %s -m state --state NEW  -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
+                 "iptables -I POSTROUTING -t mangle -o %s -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
+                 config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
+        ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
     } else {
-    	SPGW_APP_ERROR("Save mark\n");
+        SPGW_APP_ERROR("Save mark\n");
         ret = -1;
     }
     if (snprintf(system_cmd, 128,
-    		"iptables -I PREROUTING -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
-    		config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
-    	SPGW_APP_INFO("Restore mark: %s\n",system_cmd);
-    	ret += spgw_system(system_cmd, 1);
+                 "iptables -I PREROUTING -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
+                 config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
+        ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
     } else {
         SPGW_APP_ERROR("Restore mark\n");
         ret = -1;
     }
+    ret += spgw_system("iptables -X INGTPU", SPGW_WARN_ON_ERROR);
+    ret += spgw_system("iptables -N INGTPU", SPGW_ABORT_ON_ERROR);
+    if (strncasecmp("tun",config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up, strlen("tun")) == 0) {
+        if (snprintf(system_cmd, 128,
+                     "iptables -A INPUT -i lo --protocol udp --destination-port 2152  -j INGTPU") > 0) {
+            ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
+        } else {
+            SPGW_APP_ERROR("Trace IP traffic mark\n");
+            ret = -1;
+        }
+    } else {
+        if (snprintf(system_cmd, 128,
+                     "iptables -A INPUT -i %s --protocol udp --destination-port 2152  -j INGTPU",
+                     config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
+            ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
+        } else {
+            SPGW_APP_ERROR("Trace IP traffic mark\n");
+            ret = -1;
+        }
+    }
+    ret += spgw_system("iptables -A INGTPU  -j LOG --log-prefix ' INGTPU ' --log-ip-options --log-level 4", SPGW_ABORT_ON_ERROR);
+    ret += spgw_system("iptables -A INGTPU  -j ACCEPT", SPGW_ABORT_ON_ERROR);
 #endif
    return ret;
 }
@@ -310,6 +332,7 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
   pgw_lite_conf_ipv6_list_elm_t *ip6_ref = NULL;
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
   char              system_cmd[256];
+  int               tun_id               = 21;
 #endif
 
   memset((char*)config_pP, 0 , sizeof(spgw_config_t));
@@ -502,30 +525,47 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                               // valid address
                               atoken2 = strtok(NULL, PGW_CONFIG_STRING_IPV4_PREFIX_DELIMITER);
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
-                              if (snprintf(system_cmd, 128, "ip route add %s/%s dev %s",
-                                      astring,
-                                      atoken2,
-                                      config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
-                                  SPGW_APP_INFO("Add route: %s\n",system_cmd);
-                                  spgw_system(system_cmd, 1);
+                              in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
+
+                              if (strncasecmp("tun",config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up, strlen("tun")) == 0) {
+                                  if (snprintf(system_cmd, 256,
+                                               "ip link set tun%d down ;openvpn --rmtun --dev tun%d",
+                                               tun_id,tun_id) > 0) {
+                                      spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
+                                  } else {
+                                      SPGW_APP_ERROR("Del tun%d\n", tun_id);
+                                  }
+                                  if (snprintf(system_cmd, 256,
+                                               "openvpn --mktun --dev tun%d;sync;ifconfig  tun%d up;sync",
+                                               tun_id,tun_id) > 0) {
+                                      spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
+                                  } else {
+                                      SPGW_APP_ERROR("Create tun%d\n", tun_id);
+                                  }
                               } else {
-                                  SPGW_APP_ERROR("Add route: for %s\n", astring);
+                                  if (snprintf(system_cmd, 128, "ip route add %s/%s via %s dev %s",
+                                           astring,
+                                           atoken2,
+                                           inet_ntoa(in_addr_var),
+                                           config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
+                                       spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
+                                   } else {
+                                       SPGW_APP_ERROR("Add route: for %s\n", astring);
+                                   }
                               }
 
                               if (config_pP->sgw_config.sgw_drop_downlink_traffic) {
                                   if (snprintf(system_cmd, 128,
                                           "iptables -t filter -I FORWARD  -d %s/%s  -j DROP",
                                           astring, atoken2) > 0) {
-                                      SPGW_APP_INFO("Drop downlink traffic: %s\n",system_cmd);
-                                      spgw_system(system_cmd, 1);
+                                      spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
                                   } else {
                                       SPGW_APP_ERROR("Drop downlink traffic\n");
                                   }
                                   if (snprintf(system_cmd, 128,
                                           "iptables -t filter -I OUTPUT  -d %s/%s  -j DROP",
                                           astring, atoken2) > 0) {
-                                      SPGW_APP_INFO("Drop downlink traffic: %s\n",system_cmd);
-                                      spgw_system(system_cmd, 1);
+                                      spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
                                   } else {
                                       SPGW_APP_ERROR("Drop downlink traffic\n");
                                   }
@@ -533,6 +573,23 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
 #endif
                               prefix_mask = atoi(atoken2);
                               if ((prefix_mask >= 2)&&(prefix_mask < 32)) {
+#if defined (ENABLE_USE_GTPU_IN_KERNEL)
+                                  // TEST ONLY
+                                  if (strncasecmp("tun",config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up, strlen("tun")) == 0) {
+                                      memcpy (&in_addr_var, buf_in_addr, sizeof(struct in_addr));
+                                      in_addr_var.s_addr = in_addr_var.s_addr + htonl(1);
+                                      if (snprintf(system_cmd, 256,
+                                                   "ip -4 addr add %s/%d  dev tun%d",
+                                                   inet_ntoa(in_addr_var),
+                                                   prefix_mask,
+                                                   tun_id) > 0) {
+                                          spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
+                                      } else {
+                                          SPGW_APP_ERROR("Set IPv4 address on tun%d\n", tun_id);
+                                      }
+                                      tun_id +=1;
+                                  }
+#endif
                                   memcpy (&addr_start, buf_in_addr, sizeof(struct in_addr));
                                   memcpy (&addr_mask,  buf_in_addr, sizeof(struct in_addr));
 
@@ -565,14 +622,14 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                           ip4_ref->addr = addr_start;
                           STAILQ_INSERT_TAIL(&config_pP->pgw_config.pgw_lite_ipv4_pool_list, ip4_ref, ipv4_entries);
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
-                          if (snprintf(system_cmd, 128, "ip route add %s dev %s",
+                          /*if (snprintf(system_cmd, 128, "ip route add %s dev %s",
                                   buf_in_addr,
                                   config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
                               SPGW_APP_INFO("Add route: %s\n",system_cmd);
-                              spgw_system(system_cmd, 1);
+                              spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
                           } else {
                               SPGW_APP_ERROR("Add route: for %s\n", buf_in_addr);
-                          }
+                          }*/
 #endif
                       }
                   }

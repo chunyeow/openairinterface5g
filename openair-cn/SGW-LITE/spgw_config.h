@@ -146,7 +146,9 @@ typedef struct spgw_config_s {
 extern spgw_config_t spgw_config;
 #endif
 
-int spgw_system(char *command_pP, int abort_on_errorP);
+typedef enum { SPGW_WARN_ON_ERROR = 0, SPGW_ABORT_ON_ERROR} spgw_system_abort_control_e;
+
+int spgw_system(char *command_pP, spgw_system_abort_control_e abort_on_errorP);
 int spgw_config_process(spgw_config_t* config_pP);
 int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP);
 

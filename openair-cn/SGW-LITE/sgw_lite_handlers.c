@@ -52,6 +52,7 @@
 #include "sgw_lite_context_manager.h"
 #include "sgw_lite.h"
 #include "pgw_lite_paa.h"
+#include "spgw_config.h"
 
 extern sgw_app_t sgw_app;
 
@@ -611,7 +612,6 @@ sgw_lite_handle_sgi_endpoint_updated(
     task_id_t                                          to_task;
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
     static uint8_t                                     iptable_uplink_remove_gtpu = FALSE;
-    char                                              *interface_name_p        = NULL;
 #endif
 
 #if defined(ENABLE_STANDALONE_EPC)
@@ -690,42 +690,58 @@ sgw_lite_handle_sgi_endpoint_updated(
                 exit (-1);
             }
             //use API when prototype validated
-            ret = system(cmd);
+            ret = spgw_system(cmd, SPGW_ABORT_ON_ERROR);
             if (ret < 0) {
                 SPGW_APP_ERROR("ERROR in setting up downlink TUNNEL\n");
             }
 
             if (iptable_uplink_remove_gtpu == FALSE) {
                 if (strncasecmp("tun",sgw_app.sgw_interface_name_for_S1u_S12_S4_up, strlen("tun")) == 0) {
-                    interface_name_p = "lo";
+                    ret = snprintf(cmd,
+                            256,
+                            "iptables -t raw -I OUTPUT -s %u.%u.%u.%u -d %u.%u.%u.%u -p udp --dport 2152 -j GTPURH --action remove",
+                            eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
+                            eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[1],
+                            eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[2],
+                            eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[3],
+                            sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x000000FF,
+                            (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x0000FF00) >> 8,
+                            (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x00FF0000) >> 16,
+                            (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0xFF000000) >> 24);
+
+                    if ((ret < 0) || (ret > 256)) {
+                        SPGW_APP_ERROR("ERROR in preparing uplink tunnel, tune string length\n");
+                        exit (-1);
+                    }
+                    SPGW_APP_DEBUG("%s\n", cmd);
+                    ret = spgw_system(cmd, SPGW_ABORT_ON_ERROR);
                 } else {
-                    interface_name_p = sgw_app.sgw_interface_name_for_S1u_S12_S4_up;
-                }
-                ret = snprintf(cmd,
-                        256,
-                        // no "-p udp --dport 2152" because of fragmented packets
-                        "iptables -t raw -I PREROUTING -i %s -s %u.%u.%u.%u -d %u.%u.%u.%u -p udp --dport 2152 -j GTPURH --action remove",
-                        interface_name_p,
-                        eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
-                        eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[1],
-                        eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[2],
-                        eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[3],
-                        sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x000000FF,
-                        (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x0000FF00) >> 8,
-                        (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x00FF0000) >> 16,
-                        (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0xFF000000) >> 24
-                );
-                if ((ret < 0) || (ret > 256)) {
-                    SPGW_APP_ERROR("ERROR in preparing uplink tunnel, tune string length\n");
-                    exit (-1);
-                }
-                //use API when prototype validated
-                SPGW_APP_DEBUG("%s\n", cmd);
-                ret = system(cmd);
-                if (ret < 0) {
-                    SPGW_APP_ERROR("ERROR in setting up uplink TUNNEL\n");
-                } else {
-                    iptable_uplink_remove_gtpu = TRUE;
+                    ret = snprintf(cmd,
+                                   256,
+                                   // no "-p udp --dport 2152" because of fragmented packets
+                                   "iptables -t raw -I PREROUTING -i %s -s %u.%u.%u.%u -d %u.%u.%u.%u -p udp --dport 2152 -j GTPURH --action remove",
+                                   sgw_app.sgw_interface_name_for_S1u_S12_S4_up,
+                                   eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
+                                   eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[1],
+                                   eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[2],
+                                   eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[3],
+                                   sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x000000FF,
+                                   (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x0000FF00) >> 8,
+                                   (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x00FF0000) >> 16,
+                                   (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0xFF000000) >> 24
+                    );
+                    if ((ret < 0) || (ret > 256)) {
+                        SPGW_APP_ERROR("ERROR in preparing uplink tunnel, tune string length\n");
+                        exit (-1);
+                    }
+
+                    //use API when prototype validated
+                    ret = spgw_system(cmd, SPGW_ABORT_ON_ERROR);
+                    if (ret < 0) {
+                        SPGW_APP_ERROR("ERROR in setting up uplink TUNNEL\n");
+                    } else {
+                        iptable_uplink_remove_gtpu = TRUE;
+                    }
                 }
             }
 #endif
