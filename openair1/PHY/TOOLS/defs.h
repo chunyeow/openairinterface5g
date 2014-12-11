@@ -486,6 +486,13 @@ void mmxcopy(void *dest,void *src,int size);
 */
 int32_t signal_energy(int32_t *,uint32_t);
 
+#ifdef LOCALIZATION
+/*!\fn int32_t signal_energy(int *,uint32_t);
+\brief Computes the signal energy per subcarrier
+*/
+int32_t subcarrier_energy(int32_t *,uint32_t, int32_t* subcarrier_energy, uint16_t rx_power_correction);
+#endif
+
 /*!\fn int32_t signal_energy_nodc(int32_t *,uint32_t);
 \brief Computes the signal energy per subcarrier, without DC removal
 */

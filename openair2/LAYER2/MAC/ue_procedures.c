@@ -1311,7 +1311,7 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
 // 3. Perform SR/BSR procedures for scheduling feedback
 // 4. Perform PHR procedures
 
-UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP, lte_subframe_t directionP,uint8_t eNB_indexP) {
+UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP, lte_subframe_t directionP,uint8_t eNB_indexP,int CC_id) {
 
   int lcid; // lcid index
   int TTI= 1;
@@ -1377,7 +1377,8 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
   switch (rrc_rx_tx(module_idP,
       frameP,
       0,
-      eNB_indexP)) {
+      eNB_indexP,
+      CC_id)) {
   case RRC_OK:
     break;
   case RRC_ConnSetup_failed:

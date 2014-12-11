@@ -2974,7 +2974,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 
       //compute the expected ULSCH RX power (for the stats)
       phy_vars_eNB->ulsch_eNB[(uint32_t)i]->harq_processes[harq_pid]->delta_TF =
-	get_hundred_times_delta_IF_eNB(phy_vars_eNB,i,harq_pid);
+	get_hundred_times_delta_IF_eNB(phy_vars_eNB,i,harq_pid, 0); // 0 means bw_factor is not considered
 
       //dump_ulsch(phy_vars_eNB, sched_subframe, i);
     
@@ -3125,7 +3125,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 		     phy_vars_eNB->lte_frame_parms.ofdm_symbol_size) -
 	    phy_vars_eNB->rx_total_gain_eNB_dB -
 	    hundred_times_log10_NPRB[phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->nb_rb-1]/100 -
-	    get_hundred_times_delta_IF_eNB(phy_vars_eNB,i,harq_pid)/100;
+	    get_hundred_times_delta_IF_eNB(phy_vars_eNB,i,harq_pid, 0)/100;
 
 	phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->phich_active = 1;
 	phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->phich_ACK = 1;
@@ -3226,6 +3226,16 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	    LOG_D(PHY,"[eNB][Auto-Calibration] Frame %d, Subframe %d : ULSCH PDU (RX) %d bytes\n",phy_vars_eNB->proc[sched_subframe].frame_tx,subframe,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3);	    
 	    }
 	  */
+#ifdef LOCALIZATION
+          start_meas(&phy_vars_eNB->localization_stats);
+          aggregate_eNB_UE_localization_stats(phy_vars_eNB, 
+                                              i, 
+                                              frame, 
+                                              subframe, 
+                                              get_hundred_times_delta_IF_eNB(phy_vars_eNB,i,harq_pid, 1)/100);
+          stop_meas(&phy_vars_eNB->localization_stats);
+#endif 
+          
 #endif
 	}
 

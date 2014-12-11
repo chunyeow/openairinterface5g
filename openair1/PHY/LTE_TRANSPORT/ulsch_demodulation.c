@@ -1326,14 +1326,20 @@ void rx_ulsch(PHY_VARS_eNB *phy_vars_eNB,
 	  eNB_pusch_vars->ulsch_power_0[i] = signal_energy(eNB_pusch_vars->drs_ch_estimates_0[eNB_id][i],
 						ulsch[UE_id]->harq_processes[harq_pid]->nb_rb*12)*rx_power_correction;
 	  eNB_pusch_vars->ulsch_power_1[i] = signal_energy(eNB_pusch_vars->drs_ch_estimates_1[eNB_id][i],
-						ulsch[UE_id]->harq_processes[harq_pid]->nb_rb*12)*rx_power_correction;
+						ulsch[UE_id]->harq_processes[harq_pid]->nb_rb*12)*rx_power_correction;  
 	}
       }
     else
       {
-	for (i=0;i<frame_parms->nb_antennas_rx;i++)
+	for (i=0;i<frame_parms->nb_antennas_rx;i++) {
 	  eNB_pusch_vars->ulsch_power[i] = signal_energy_nodc(eNB_pusch_vars->drs_ch_estimates[eNB_id][i],
 					      ulsch[UE_id]->harq_processes[harq_pid]->nb_rb*12)*rx_power_correction;
+#ifdef LOCALIZATION
+          eNB_pusch_vars->subcarrier_power = (int32_t *)malloc(ulsch[UE_id]->harq_processes[harq_pid]->nb_rb*12*sizeof(int32_t));
+          eNB_pusch_vars->active_subcarrier = subcarrier_energy(eNB_pusch_vars->drs_ch_estimates[eNB_id][i],
+					      ulsch[UE_id]->harq_processes[harq_pid]->nb_rb*12, eNB_pusch_vars->subcarrier_power, rx_power_correction);
+#endif
+        }
       }
   
     //write_output("rxdataF_ext.m","rxF_ext",eNB_pusch_vars->rxdataF_ext[eNB_id][0],300*(frame_parms->symbols_per_tti-ulsch[UE_id]->srs_active),1,1);

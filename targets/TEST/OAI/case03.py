@@ -189,13 +189,13 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
 #    try:
 #        test = '09'
 #        name = 'Run oai.rel10.itti.phy.eMBMS.MCCH'
-#        diag = 'eMBMS procedure is not finished completely, check the eNB config file (enb.sfr.sud.conf), and make sure that the SIB13/MCCH have been correclty received by UEs'
+#        diag = 'eMBMS procedure is not finished completely, check the eNB config file (enb.band7.generic.conf), and make sure that the SIB13/MCCH have been correclty received by UEs'
 #        for i in range(NUM_UE) :
 #            for j in range(NUM_eNB) :
 #                log_name = logdir + '/log_' + host + case + test + '_' + str(i) + str(j)
 #                itti_name = log_name + '.log'
 #                trace_name = log_name + '.txt'
-#                conf = '-A AWGN -l7 -x 1 -Q3 --enb-conf ../../PROJECTS/GENERIC-LTE-EPC/CONF/enb.sfr.sud.conf -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
+#                conf = '-A AWGN -l7 -x 1 -Q3 --enb-conf ../../PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.generic.conf -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
 #                tee = ' 2>&1 | tee -a ' + trace_name
 #                command = './oaisim.rel10.itti.' + host + ' ' + conf
 #                oai.send('echo ' + command + ' > ' + trace_name + ';')

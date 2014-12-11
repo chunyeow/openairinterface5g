@@ -188,7 +188,8 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
   rrc_rx_tx(module_idP,
 	    frameP,
 	    1,
-	    module_idP);
+	    module_idP,
+            CC_id);
 
 #ifdef Rel10
   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {

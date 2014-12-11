@@ -101,7 +101,39 @@ class openair(core):
         except Error, val :
                 print "Error: can't connect to"+username+"@"+self.address
                 
+    def connect2(self, username, password, prompt='$'):
+        self.prompt1 = prompt
+        self.prompt2 = prompt
+                   
+        while 1:
+            try:
+                if  not username:
+                    username = root 
+                if  not password:
+                    password = username 
                     
+                self.oai = pexpect.spawn('ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o "ConnectionAttempts=1" ' \
+                                             + username + '@' + self.address)
+                
+                index = self.oai.expect([re.escape(self.prompt1), re.escape(self.prompt2), pexpect.TIMEOUT], timeout=40)
+                if index == 0 :
+                    return 'Ok'
+                else :
+                    index = self.oai.expect(['password:', pexpect.TIMEOUT], timeout=40)
+                    if index == 0 : 
+                        self.oai.sendline(password)
+                        index = self.oai.expect([re.escape(self.prompt1), re.escape(self.prompt2), pexpect.TIMEOUT], timeout=10)
+                        if index != 0:
+                            print 'ERROR! could not login with SSH.'
+                            print 'Expected ' + self.prompt1 + ', received >>>>' + self.oai.before + '<<<<'
+                            sys.exit(1) 
+                    return 'Ok'
+                        
+            except Exception, val:
+                time.sleep(5)
+                print "Error:", val
+ 
+                
     def disconnect(self):
         print 'disconnecting the ssh connection to ' + self.address + '\n'
         self.oai.send('exit')

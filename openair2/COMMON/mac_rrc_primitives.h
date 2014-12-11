@@ -362,6 +362,7 @@ typedef struct{   //RRC_INTERFACE_FUNCTIONS
   void (*rrc_data_indP)  (module_id_t , rb_id_t , sdu_size_t , char*);
   void (*fn_rrc)  (void);
   uint8_t (*get_rrc_status)(uint8_t Mod_id,uint8_t eNB_flag,uint8_t eNB_index);
+  double (*rrc_get_estimated_ue_distance) (module_id_t Mod_id, uint8_t UE_id, uint8_t CC_id, uint8_t loc_type);
 }RRC_XFACE;
 
 

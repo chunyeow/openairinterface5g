@@ -961,6 +961,9 @@ void assign_max_mcs_min_rb(module_id_t module_idP,int frameP, sub_frame_t subfra
 	  tbs = mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]);
 	  tx_power = mac_xface->estimate_ue_tx_power(tbs,rb_table[rb_table_index],0,frame_parms->Ncp,0);
 	}
+        
+        UE_template->ue_tx_power = tx_power;
+        
 	if (rb_table[rb_table_index]>(frame_parms->N_RB_UL-first_rb[CC_id]-1)) {
 	  rb_table_index--;
 	}

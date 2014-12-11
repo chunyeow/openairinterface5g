@@ -392,7 +392,7 @@ void schedule_ue_spec(module_id_t   module_idP,
   uint8_t               dl_pow_off[MAX_NUM_CCs][NUMBER_OF_UE_MAX];
   unsigned char         rballoc_sub_UE[MAX_NUM_CCs][NUMBER_OF_UE_MAX][N_RBG_MAX];
   uint16_t              pre_nb_available_rbs[MAX_NUM_CCs][NUMBER_OF_UE_MAX];
-  int                   mcs,mcs2;
+  int                   mcs;
   uint16_t              min_rb_unit[MAX_NUM_CCs];
   short                 ta_update        = 0;
   eNB_MAC_INST         *eNB      = &eNB_mac_inst[module_idP];
@@ -708,7 +708,24 @@ void schedule_ue_spec(module_id_t   module_idP,
 	// check first for RLC data on DCCH
 	// add the length for  all the control elements (timing adv, drx, etc) : header + payload
 #ifndef EXMIMO_IOT
-	ta_len = ((eNB_UE_stats->timing_advance_update/4)!=0) ? 2 : 0;
+        // to be checked by RK, NN, FK
+        uint8_t update_TA;
+        switch (frame_parms[CC_id]->N_RB_DL) 
+        {
+        case 6:
+          update_TA = 1;
+          break;
+        case 25:
+          update_TA = 4;
+          break;
+        case 50:
+          update_TA = 8;
+          break;
+        case 100:
+          update_TA = 16;
+          break;
+       }        
+	ta_len = ((eNB_UE_stats->timing_advance_update/update_TA)!=0) ? 2 : 0;
 #else
 	ta_len = 0;
 #endif
@@ -936,7 +953,7 @@ void schedule_ue_spec(module_id_t   module_idP,
 	    post_padding = TBS - sdu_length_total - header_len_dcch - header_len_dtch - ta_len ; // 1 is for the postpadding header
 	  }
 #ifndef EXMIMO_IOT
-	  ta_update = eNB_UE_stats->timing_advance_update/4;
+	  ta_update = eNB_UE_stats->timing_advance_update/update_TA;
 #else
 	  ta_update = 0;
 #endif

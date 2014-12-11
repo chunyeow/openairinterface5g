@@ -93,7 +93,17 @@ PHY_VARS_eNB* init_lte_eNB(LTE_DL_FRAME_PARMS *frame_parms,
         // this is the transmission mode for the signalling channels
     // this will be overwritten with the real transmission mode by the RRC once the UE is connected
     PHY_vars_eNB->transmission_mode[i] = transmission_mode;
-    
+#ifdef LOCALIZATION
+    PHY_vars_eNB->ulsch_eNB[1+i]->aggregation_period_ms = 5000; // 5000 milliseconds // could be given as an argument (TBD))
+    struct timeval ts;
+    gettimeofday(&ts, NULL);
+    PHY_vars_eNB->ulsch_eNB[1+i]->reference_timestamp_ms = ts.tv_sec * 1000 + ts.tv_usec / 1000;
+    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_rss_list);
+    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_rssi_list);
+    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_subcarrier_rss_list);
+    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_timing_advance_list);    
+    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_timing_update_list);    
+#endif    
   }
   
   // ULSCH for RA
@@ -125,7 +135,7 @@ PHY_VARS_eNB* init_lte_eNB(LTE_DL_FRAME_PARMS *frame_parms,
   PHY_vars_eNB->check_for_SUMIMO_transmissions = 0;
 
   PHY_vars_eNB->lte_frame_parms.pucch_config_common.deltaPUCCH_Shift = 1;
-
+     
   return (PHY_vars_eNB);
 }
 

@@ -42,6 +42,7 @@
 #include "PHY/defs.h"
 #include "dci.h"
 #include "uci.h"
+#include "UTIL/LISTS/list.h"
 
 #define MOD_TABLE_QPSK_OFFSET 1
 #define MOD_TABLE_16QAM_OFFSET 5
@@ -470,6 +471,14 @@ typedef struct {
   uint8_t num_active_cba_groups;
   /// allocated CBA RNTI for this ulsch
   uint16_t cba_rnti[4];//NUM_MAX_CBA_GROUP];
+#ifdef LOCALIZATION
+  /// epoch timestamp in millisecond
+  int32_t reference_timestamp_ms;
+  /// aggregate physical states every n millisecond
+  int32_t aggregation_period_ms; 
+  /// a set of lists used for localization
+  struct list loc_rss_list, loc_rssi_list, loc_subcarrier_rss_list, loc_timing_advance_list, loc_timing_update_list;
+#endif 
 } LTE_eNB_ULSCH_t;
 
 typedef struct {
@@ -531,6 +540,12 @@ typedef struct {
   uint8_t dl_power_off;
 } LTE_DL_UE_HARQ_t;
 
+typedef struct {
+    /// time-based localization, relying on TA and TOA
+    double time_based;
+    /// power-based localization, relying on RSS and RSSI
+    double power_based;
+} eNB_UE_estimated_distances;
 
 typedef struct {
   /// UL RSSI per receive antenna
@@ -555,7 +570,7 @@ typedef struct {
   UE_MODE_t mode;
   /// Current sector where UE is attached
   uint8_t sector;
-
+  
   /// dlsch l2 errors
   uint32_t dlsch_l2_errors[8];
   /// dlsch trials per harq and round 
@@ -595,6 +610,10 @@ typedef struct {
   /// Bitrate on the PDSCH [bps]
   unsigned int dlsch_bitrate;
   //  unsigned int total_transmitted_bits;
+#ifdef LOCALIZATION
+  eNB_UE_estimated_distances distance;
+  int32_t *subcarrier_rssi;
+#endif
 } LTE_eNB_UE_stats;
 
 typedef struct {

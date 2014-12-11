@@ -336,6 +336,11 @@ typedef struct PHY_VARS_eNB_s{
   time_stats_t ulsch_tc_intl1_stats;
   time_stats_t ulsch_tc_intl2_stats;
   
+#ifdef LOCALIZATION
+  /// time state for localization
+  time_stats_t localization_stats;
+#endif 
+  
 #if defined(ENABLE_RAL)
   hash_table_t    *ral_thresholds_timed;
   SLIST_HEAD(ral_thresholds_gen_poll_enb_s, ral_threshold_phy_t) ral_thresholds_gen_polled[RAL_LINK_PARAM_GEN_MAX];

@@ -602,6 +602,12 @@ typedef struct{
   int ulsch_power_1[2];
   /// llr values
   int16_t *llr;
+#ifdef LOCALIZATION
+  /// number of active subcarrier for a specific UE
+  int32_t active_subcarrier;
+  /// subcarrier power in dBm
+  int32_t *subcarrier_power;
+#endif
 } LTE_eNB_PUSCH;
 
 typedef struct {

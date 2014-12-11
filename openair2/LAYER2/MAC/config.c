@@ -468,3 +468,36 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
 
   return(0);
 }
+#ifdef LOCALIZATION
+double
+rrc_get_estimated_ue_distance(module_id_t Mod_id, const frame_t frameP,  uint8_t UE_id, int CC_id, uint8_t loc_type){
+    // localization types:
+    // 0: power based
+    // 1: time based
+    LTE_eNB_UE_stats     *eNB_UE_stats     = NULL;
+    UE_list_t            *UE_list = &eNB_mac_inst[Mod_id].UE_list;
+    int                   pCCid;
+    
+    uint16_t rnti;
+    
+  //for (UE_id=UE_list->head;UE_id>=0;UE_id=UE_list->next[UE_id]) {
+    pCCid = UE_PCCID(Mod_id,UE_id);
+    rnti = UE_list->UE_template[pCCid][UE_id].rnti;
+    if(rnti == 0)
+        return -1;
+    eNB_UE_stats = mac_xface->get_eNB_UE_stats(Mod_id,pCCid,rnti);
+    switch (loc_type) {
+      case 0:
+        return eNB_UE_stats->distance.power_based;
+        break;
+      case 1:
+        return eNB_UE_stats->distance.time_based;
+        break;
+     default: 
+       return  eNB_UE_stats->distance.power_based;
+    }
+//    LOG_D(LOCALIZE, "DEBUG ME, dist = %d\n", &eNB_mac_inst[Mod_id].UE_list.UE_template[CC_id][UE_id].distance.power_based);      
+  
+}
+
+#endif 

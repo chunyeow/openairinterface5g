@@ -52,6 +52,14 @@ ifdef EMOS
 CFLAGS+=-DEMOS
 endif
 
+ifeq ($(LOCALIZATION), 1)
+CFLAGS += -DLOCALIZATION
+endif
+
+ifeq ($(LINUX_LIST), 1)
+CFLAGS += -DLINUX_LIST
+endif
+
 ifdef TRAFFIC_TM5
 CFLAGS += -DRLC_UM_TEST_TRAFFIC=1 #-DFULL_BUFFER=1
 endif

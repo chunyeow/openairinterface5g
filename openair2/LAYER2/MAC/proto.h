@@ -498,7 +498,7 @@ void adjust_bsr_info(int buffer_occupancy, uint16_t TBS, UE_TEMPLATE *UE_templat
 \param[in] eNB_index  instance of eNB
 @returns L2 state (CONNETION_OK or CONNECTION_LOST or PHY_RESYNCH)
 */
-UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t subframe, lte_subframe_t direction,uint8_t eNB_index);
+UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t subframe, lte_subframe_t direction,uint8_t eNB_index,int CC_id);
 
 /*! \fn  int use_cba_access(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint8_t eNB_index);
 \brief determine whether to use cba resource to transmit or not
@@ -655,6 +655,102 @@ uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc);
 void update_ul_dci(module_id_t module_idP,uint8_t CC_id,rnti_t rnti,uint8_t dai);
 
 int get_min_rb_unit(module_id_t module_idP, uint8_t CC_id);
+
+/* \brief Generate header for DL-SCH.  This function parses the desired control elements and sdus and generates the header as described
+in 36-321 MAC layer specifications.  It returns the number of bytes used for the header to be used as an offset for the payload 
+in the DLSCH buffer.
+@param mac_header Pointer to the first byte of the MAC header (DL-SCH buffer)
+@param num_sdus Number of SDUs in the payload
+@param sdu_lengths Pointer to array of SDU lengths
+@param sdu_lcids Pointer to array of LCIDs (the order must be the same as the SDU length array)
+@param drx_cmd dicontinous reception command 
+@param timing_advancd_cmd timing advanced command
+@param ue_cont_res_id Pointer to contention resolution identifier (NULL means not present in payload)
+@param short_padding Number of bytes for short padding (0,1,2)
+@param post_padding number of bytes for padding at the end of MAC PDU 
+@returns Number of bytes used for header
+*/
+unsigned char generate_dlsch_header(unsigned char *mac_header,
+				    unsigned char num_sdus,
+				    unsigned short *sdu_lengths,
+				    unsigned char *sdu_lcids,
+				    unsigned char drx_cmd,
+				    short timing_advance_cmd,
+				    unsigned char *ue_cont_res_id,
+				    unsigned char short_padding,
+				    unsigned short post_padding);
+
+/** \brief RRC Configuration primitive for PHY/MAC.  Allows configuration of PHY/MAC resources based on System Information (SI), RRCConnectionSetup and RRCConnectionReconfiguration messages.
+@param Mod_id Instance ID of eNB
+@param eNB_flag Indicates if this is a eNB or UE configuration
+@param UE_id Index of UE if this is an eNB configuration
+@param eNB_id Index of eNB if this is a UE configuration
+@param radioResourceConfigCommon Structure from SIB2 for common radio parameters (if NULL keep existing configuration)
+@param physcialConfigDedicated Structure from RRCConnectionSetup or RRCConnectionReconfiguration for dedicated PHY parameters (if NULL keep existing configuration)
+@param measObj Structure from RRCConnectionReconfiguration for UE measurement procedures
+@param mac_MainConfig Structure from RRCConnectionSetup or RRCConnectionReconfiguration for dedicated MAC parameters (if NULL keep existing configuration)
+@param logicalChannelIdentity Logical channel identity index of corresponding logical channel config 
+@param logicalChannelConfig Pointer to logical channel configuration
+@param measGapConfig Measurement Gap configuration for MAC (if NULL keep existing configuration)
+@param tdd_Config TDD Configuration from SIB1 (if NULL keep existing configuration)
+@param mobilityControlInfo mobility control info received for Handover
+@param SIwindowsize SI Windowsize from SIB1 (if NULL keep existing configuration)
+@param SIperiod SI Period from SIB1 (if NULL keep existing configuration)
+@param MBMS_Flag indicates MBMS transmission
+@param mbsfn_SubframeConfigList pointer to mbsfn subframe configuration list from SIB2
+@param mbsfn_AreaInfoList pointer to MBSFN Area Info list from SIB13
+@param pmch_InfoList pointer to PMCH_InfoList from MBSFNAreaConfiguration Message (MCCH Message)
+*/
+int rrc_mac_config_req(module_id_t     module_idP,
+                       eNB_flag_t eNB_flag,
+                       uint8_t         UE_id,
+                       uint8_t         eNB_index,
+                       RadioResourceConfigCommonSIB_t *radioResourceConfigCommon,
+                       struct PhysicalConfigDedicated *physicalConfigDedicated,
+#ifdef Rel10
+		       SCellToAddMod_r10_t *sCellToAddMod_r10,
+		       //struct PhysicalConfigDedicatedSCell_r10 *physicalConfigDedicatedSCell_r10,
+#endif
+                       MeasObjectToAddMod_t **measObj,
+                       MAC_MainConfig_t *mac_MainConfig,
+                       long logicalChannelIdentity,
+                       LogicalChannelConfig_t *logicalChannelConfig,
+                       MeasGapConfig_t *measGapConfig,
+                       TDD_Config_t *tdd_Config,
+                       MobilityControlInfo_t *mobilityControlInfo,
+                       uint8_t *SIwindowsize,
+                       uint16_t *SIperiod,
+                       ARFCN_ValueEUTRA_t *ul_CarrierFreq,
+                       long *ul_Bandwidth,
+                       AdditionalSpectrumEmission_t *additionalSpectrumEmission,
+                       struct MBSFN_SubframeConfigList *mbsfn_SubframeConfigList
+#ifdef Rel10
+                       ,
+                       uint8_t MBMS_Flag,
+                       MBSFN_AreaInfoList_r9_t *mbsfn_AreaInfoList,
+                       PMCH_InfoList_r9_t *pmch_InfoList
+
+#endif
+#ifdef CBA
+                       ,
+                       uint8_t num_active_cba_groups,
+                       uint16_t cba_rnti
+#endif
+		       );
+
+/** \brief get the estimated UE distance from the PHY->MAC layer.
+@param Mod_id Instance ID of eNB
+@param UE_id Index of UE if this is an eNB configuration
+@param CC_id Component Carrier Index
+@param loc_type localization type: time-based or power-based
+@return the estimated distance in meters
+ */
+double 
+rrc_get_estimated_ue_distance(module_id_t Mod_id, 
+                              const frame_t frameP,  
+                              uint8_t UE_id, 
+                              int CC_id, 
+                              uint8_t loc_type);
 
 
 #endif

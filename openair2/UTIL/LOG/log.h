@@ -265,6 +265,7 @@ typedef enum {
     RAL_UE,
     ENB_APP,
     TMR,
+    LOCALIZE,
     MAX_LOG_COMPONENTS,
 } comp_name_t;
 

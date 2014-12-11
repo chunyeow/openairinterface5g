@@ -111,7 +111,9 @@ try:
         print "username: " + user 
         #print "password: " + pw 
 
-    oai.connect(user,pw)
+       # issues in ubuntu 12.04
+    #  oai.connect(user,pw)
+    oai.connect2(user,pw) 
     #oai.get_shell()
 except :
     print 'Fail to connect to the local host'

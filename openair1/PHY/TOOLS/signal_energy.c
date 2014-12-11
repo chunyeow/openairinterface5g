@@ -41,6 +41,36 @@
 
 
 #ifndef EXPRESSMIMO_TARGET
+#ifdef LOCALIZATION
+int32_t subcarrier_energy(int32_t *input,uint32_t length, int32_t *subcarrier_energy, uint16_t rx_power_correction) {
+
+  int32_t i, subcarrier_pwr;
+  register __m64 mm0,mm1, subcarrier;
+  subcarrier = _m_pxor(subcarrier,subcarrier);
+  __m64 *in = (__m64 *)input;
+
+#ifdef MAIN
+  int16_t *printb;
+#endif
+
+  mm0 = _m_pxor(mm0,mm0);
+
+  for (i=0;i<length>>1;i++) {
+    
+    mm1 = in[i]; 
+    mm1 = _m_pmaddwd(mm1,mm1);
+    mm1 = _m_psradi(mm1,shift);// shift any 32 bits blocs of the word by the value shift
+    subcarrier = mm1;
+    subcarrier = _m_psrlqi(subcarrier,32);
+    subcarrier = _m_paddd(subcarrier,mm1);
+    subcarrier_pwr = _m_to_int(subcarrier);
+    subcarrier_pwr<<=shift;
+    subcarrier_pwr = (unsigned short) dB_fixed(subcarrier_pwr);
+    subcarrier_energy[i] = subcarrier_pwr*rx_power_correction;
+  }
+  return i;
+}
+#endif
 int32_t signal_energy(int32_t *input,uint32_t length) {
 
   int32_t i;

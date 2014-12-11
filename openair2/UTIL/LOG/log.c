@@ -142,7 +142,7 @@ int logInit (void)
     g_log->log_component[PHY].filelog_name = "/tmp/phy.log";
 
     g_log->log_component[MAC].name = "MAC";
-    g_log->log_component[MAC].level = LOG_DEBUG;
+    g_log->log_component[MAC].level = LOG_EMERG;
     g_log->log_component[MAC].flag =  LOG_MED;
     g_log->log_component[MAC].interval =  1;
     g_log->log_component[MAC].fd = 0;
@@ -158,7 +158,7 @@ int logInit (void)
     g_log->log_component[OPT].filelog_name = "";
 
     g_log->log_component[RLC].name = "RLC";
-    g_log->log_component[RLC].level = LOG_DEBUG;
+    g_log->log_component[RLC].level = LOG_INFO;
     g_log->log_component[RLC].flag = LOG_MED;
     g_log->log_component[RLC].interval =  1;
     g_log->log_component[RLC].fd = 0;
@@ -166,7 +166,7 @@ int logInit (void)
     g_log->log_component[RLC].filelog_name = "/tmp/rlc.log";
 
     g_log->log_component[PDCP].name = "PDCP";
-    g_log->log_component[PDCP].level = LOG_DEBUG;
+    g_log->log_component[PDCP].level = LOG_INFO;
     g_log->log_component[PDCP].flag = LOG_MED;
     g_log->log_component[PDCP].interval =  1;
     g_log->log_component[PDCP].fd = 0;
@@ -212,7 +212,7 @@ int logInit (void)
     g_log->log_component[OTG].fd = 0;
     g_log->log_component[OTG].filelog = 0;
     g_log->log_component[OTG].filelog_name = "/tmp/otg.log";
-
+    
     g_log->log_component[OTG_LATENCY].name = "OTG_LATENCY";
     g_log->log_component[OTG_LATENCY].level = LOG_EMERG;
     g_log->log_component[OTG_LATENCY].flag =  LOG_MED;
@@ -380,7 +380,16 @@ int logInit (void)
     g_log->log_component[TMR].fd = 0;
     g_log->log_component[TMR].filelog = 0;
     g_log->log_component[TMR].filelog_name = "";
-
+    
+/* following log component are used for the localization*/    
+    g_log->log_component[LOCALIZE].name = "LOCALIZE";
+    g_log->log_component[LOCALIZE].level = LOG_EMERG;
+    g_log->log_component[LOCALIZE].flag =  LOG_MED;
+    g_log->log_component[LOCALIZE].interval =  1;
+    g_log->log_component[LOCALIZE].fd = 0;
+    g_log->log_component[LOCALIZE].filelog = 1;
+    g_log->log_component[LOCALIZE].filelog_name = "/tmp/localize.log";
+    
     g_log->level2string[LOG_EMERG]         = "G"; //EMERG
     g_log->level2string[LOG_ALERT]         = "A"; // ALERT
     g_log->level2string[LOG_CRIT]          = "C"; // CRITIC

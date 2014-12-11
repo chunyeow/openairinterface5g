@@ -259,6 +259,17 @@ void openair_rrc_top_init(int eMBMS_active, uint8_t cba_group_active,uint8_t HO_
       eNB_rrc_inst[module_id].num_active_cba_groups = cba_group_active;
     }
 #endif
+#ifdef LOCALIZATION
+    /* later set this from xml or enb.config file*/
+    struct timeval ts; // time struct
+    gettimeofday(&ts, NULL); // get the current epoch timestamp
+    for (module_id=0;module_id<NB_eNB_INST;module_id++) {  
+        eNB_rrc_inst[module_id].reference_timestamp_ms = ts.tv_sec * 1000 + ts.tv_usec / 1000;  
+        initialize(&eNB_rrc_inst[module_id].loc_list);
+        eNB_rrc_inst[module_id].loc_type=0;      
+        eNB_rrc_inst[module_id].aggregation_period_ms = 5000;
+    }
+#endif
     LOG_D(RRC,
           "ALLOCATE %d Bytes for eNB_RRC_INST @ %p\n", (unsigned int)(NB_eNB_INST*sizeof(eNB_RRC_INST)), eNB_rrc_inst);
   }
@@ -318,8 +329,12 @@ void rrc_t310_expiration(const frame_t frameP, uint8_t Mod_id, uint8_t eNB_index
   }
 }
 
-RRC_status_t rrc_rx_tx(uint8_t Mod_id, const frame_t frameP, const eNB_flag_t eNB_flagP,uint8_t index){
+RRC_status_t rrc_rx_tx(uint8_t Mod_id, const frame_t frameP, const eNB_flag_t eNB_flagP,uint8_t index,int CC_id){
   
+  uint8_t UE_id;
+  int32_t current_timestamp_ms, ref_timestamp_ms;
+  struct timeval ts;
+          
   if(eNB_flagP == 0) {
     // check timers
 
@@ -393,8 +408,34 @@ RRC_status_t rrc_rx_tx(uint8_t Mod_id, const frame_t frameP, const eNB_flag_t eN
     }
 
   }
-  else {
+  else { // eNB
     check_handovers(Mod_id,frameP);
+    // counetr, and get the value and aggregate
+#ifdef LOCALIZATION
+    /* for the localization, only primary CC_id might be relevant*/
+    gettimeofday(&ts, NULL);
+    current_timestamp_ms = ts.tv_sec * 1000 + ts.tv_usec / 1000;
+    
+    ref_timestamp_ms = eNB_rrc_inst[Mod_id].reference_timestamp_ms;
+    
+    
+    for  (UE_id=0; UE_id < NUMBER_OF_UE_MAX; UE_id++) {
+
+        if ((current_timestamp_ms - ref_timestamp_ms > eNB_rrc_inst[Mod_id].aggregation_period_ms) &&
+                rrc_get_estimated_ue_distance(Mod_id,frameP,UE_id, CC_id,eNB_rrc_inst[Mod_id].loc_type) != -1) {
+            LOG_D(LOCALIZE, " RRC [UE/id %d -> eNB/id %d] timestamp %d frame %d estimated r = %f\n", 
+                    UE_id, 
+                    Mod_id, 
+                    current_timestamp_ms,
+                    frameP,
+                    rrc_get_estimated_ue_distance(Mod_id,frameP,UE_id, CC_id,eNB_rrc_inst[Mod_id].loc_type));
+            LOG_D(LOCALIZE, " RRC status %d\n", eNB_rrc_inst[Mod_id].Info.UE[UE_id].Status);
+            push_front(&eNB_rrc_inst[Mod_id].loc_list,
+                       rrc_get_estimated_ue_distance(Mod_id,frameP,UE_id, CC_id,eNB_rrc_inst[Mod_id].loc_type));
+            eNB_rrc_inst[Mod_id].reference_timestamp_ms = current_timestamp_ms;
+        }
+    }
+#endif
   }
   
   return (RRC_OK);
