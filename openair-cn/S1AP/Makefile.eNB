@@ -115,8 +115,8 @@ $(S1AP_GENERATED): %.o : %.c
 	sed -e 's/^ *//' -e 's/$$/:/' >> $(basename $@).d
 	@rm -f $(basename $@).d.tmp
 
-$(OUTDIR)/%.c : $(OUTDIR)/s1ap_ieregen.stamp $(OUTDIR)/s1ap_asn1regen.stamp
-	@if [ -f $< ] ; then touch $<; else echo "ERROR: " $< "not generated" ; exit 1 ; fi;
+#$(OUTDIR)/%.c : $(OUTDIR)/s1ap_ieregen.stamp $(OUTDIR)/s1ap_asn1regen.stamp
+	#@if [ -f $< ] ; then touch $<; else echo "ERROR: " $< "not generated" ; exit 1 ; fi;
 
 $(OUTDIR)/s1ap_ieregen.stamp: $(ASN1DIR)/$(ASN1RELDIR)/S1AP-PDU-Contents.asn $(ASN1DIR)/asn1tostruct.py
 	@if [ ! -d $(OUTDIR) ]; then mkdir -p $(OUTDIR); fi;
