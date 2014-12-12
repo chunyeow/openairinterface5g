@@ -48,7 +48,7 @@ NUM_UE=1
 NUM_eNB=1
 NUM_TRIALS=3
 
-PRB=[25,50,100]
+PRB=[6,25,50,100]
 MCS=[0,4,9,10,13,16,17,22,27]
 ANT_TX=2  # 2 
 ANT_RX=2  # 2 
@@ -65,12 +65,11 @@ FRAME=1000
 
 
 
-def execute(oai, user, pw, host, logfile,logdir,debug):
+def execute(oai, user, pw, host, logfile,logdir,debug,cpu):
     
     case = '10'
     oai.send('cd $OPENAIR1_DIR;')     
     oai.send('cd SIMULATION/LTE_PHY;')   
-    
     try:
         test = '200'
         name = 'Run oai.dlsim.sanity'
@@ -110,7 +109,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
                                         conf = '-B' + str(PRB[i]) + ' -m'+str(MCS[j]) + ' -y'+str(k) + ' -z'+str(m) +' -c'+str(n) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -f.1 -P -n'+str(FRAME)+' -O'+str(PERF) +' '+ OPT    
                                         trace = logdir + '/time_meas' + '_prb'+str(PRB[i])+'_mcs'+ str(MCS[j])+ '_anttx' + str(k)+ '_antrx' + str(m)  + '_pdcch' + str(n) + '_channel' +str(CHANNEL[o]) + '_tx' +str(p) + '_snr' +str(q)+'.'+case+str(test)+ '.log'
                                         tee = ' 2>&1 | tee ' + trace
-                                        cmd = 'taskset -c 0 ./dlsim.rel8.'+ host + ' ' + conf + tee
+                                        cmd = 'taskset -c '+ str(cpu) + ' ./dlsim.rel8.'+ host + ' ' + conf + tee
                                         if debug : 
                                             print cmd
 

@@ -57,6 +57,8 @@ pw =''
 i = 0
 clean = 0 
 start_case  = 0
+cpu = 0 
+
 for arg in sys.argv:
     if arg == '-d':
         debug = 1
@@ -68,6 +70,8 @@ for arg in sys.argv:
         pw = sys.argv[i+1]
     elif arg == '-c' :
         clean = 1
+    elif arg == '-t' :
+        cpu = sys.argv[i+1]
     elif arg == '-s' :
         start_case = sys.argv[i+1]
     elif arg == '-h' :
@@ -75,7 +79,8 @@ for arg in sys.argv:
         print "-dd: high debug level"
         print "-p:  set the prompt"
         print "-w:  set the password for ssh to localhost"
-        print "-c: clean the log directory "
+        print "-c: clean the log directory " 
+        print "-t: set the cpu "
         sys.exit()
     i= i + 1     
 
@@ -104,7 +109,7 @@ oai = openair('localdomain','localhost')
 try: 
     user = getpass.getuser()
     print '\n******* Note that the user <'+user+'> should be a sudoer *******\n'
-    print '******* Connecting to the localhost <'+host+'> to perform the test *******\n'
+    print '******* Connecting to the localhost <'+host+'> to perform the test on CPU '+str(cpu)+' *******\n'
    
     if not pw :
         print "username: " + user 
@@ -142,9 +147,9 @@ if clean == 1 :
 #compile 
 
 rv=case11.execute(oai, user, pw, host,logfile,logdir,debug)
-if rv != 0 :
-    case12.execute(oai, user, pw, host,logfile,logdir,debug)
-    case13.execute(oai, user, pw, host,logfile,logdir,debug)
+if rv == 1 :
+    case12.execute(oai, user, pw, host,logfile,logdir,debug,cpu)
+    case13.execute(oai, user, pw, host,logfile,logdir,debug,cpu)
 else :
     print 'Compilation error: skip case 12 and 13'
 
