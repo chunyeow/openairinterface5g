@@ -713,7 +713,6 @@ sgw_lite_handle_sgi_endpoint_updated(
                         SPGW_APP_ERROR("ERROR in preparing uplink tunnel, tune string length\n");
                         exit (-1);
                     }
-                    SPGW_APP_DEBUG("%s\n", cmd);
                     ret = spgw_system(cmd, SPGW_ABORT_ON_ERROR);
                 } else {
                     ret = snprintf(cmd,
