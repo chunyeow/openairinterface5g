@@ -442,16 +442,16 @@ check_install_hss_software() {
     test_install_package libgcrypt11-dev 
     test_install_package libidn11-dev 
     test_install_package libidn2-0-dev 
-    test_install_package libmysqlclient-dev 
+    test_install_package libmysqlclient-dev
     test_install_package libtasn1-3-dev 
     test_install_package libsctp1 
     test_install_package libsctp-dev 
     test_install_package libxml2-dev 
     test_install_package linux-headers-`uname -r` 
     test_install_package make
-    test_install_package mysql-client-core-5.5 
-    test_install_package mysql-server-core-5.5 
-    test_install_package mysql-server-5.5 
+    test_install_package mysql-client
+    test_install_package mysql-common 
+    test_install_package mysql-server
     test_install_package openssh-client
     test_install_package openssh-server
     test_install_package phpmyadmin
