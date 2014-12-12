@@ -1,10 +1,10 @@
 
-current_release_asn1_module=$(substr $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-,, $(wildcard $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-*))
+current_release_asn1_module=$(strip $(notdir $(wildcard $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-*)))
 
 ifdef CBA
     CFLAGS += -DRel10
     CFLAGS += -DCBA
-    ifneq ($(current_release_asn1_module), rel10-cba)
+    ifneq ($(current_release_asn1_module), .lock-rel10-cba)
         tmp3:=$(shell cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES ;\
                 rm -f ${ASN_MODULE_SOURCES} $(ASN_MODULE_HEADERS) *.o *.d ;\
                 cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/ ;\
@@ -26,7 +26,7 @@ ifdef CBA
 
 else ifdef Rel10
    CFLAGS += -DRel10
-   ifneq  ($(current_release_asn1_module), rel10)
+   ifneq  ($(current_release_asn1_module), .lock-rel10)
       tmp3:=$(shell cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES ;\
               rm -f ${ASN_MODULE_SOURCES} $(ASN_MODULE_HEADERS) *.o *.d ;\
               cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/ ;\
@@ -48,7 +48,7 @@ else ifdef Rel10
 
 else # default is rel 8
    CFLAGS += -DRel8
-   ifneq  ($(current_release_asn1_module), rel8)
+   ifneq  ($(current_release_asn1_module), .lock-rel8)
        tmp3:=$(shell cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES ;\
                rm -f ${ASN_MODULE_SOURCES} $(ASN_MODULE_HEADERS) *.o *.d ;\
                cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/ ;\
