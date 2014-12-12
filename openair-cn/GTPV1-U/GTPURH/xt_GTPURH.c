@@ -30,7 +30,8 @@
 #endif
 
 
-//#define ROUTE_PACKET 1
+#define ROUTE_PACKET 1
+//#define NEW_SKB 1
 
 #include "xt_GTPURH.h"
 
@@ -389,41 +390,30 @@ static bool _gtpurh_route_packet(struct sk_buff *skb_pP, const struct xt_gtpurh_
             skb_pP->pkt_type);
 #endif
     rt = ip_route_output_key(&init_net, &fl.u.ip4);
-    if (err != 0) 
-    { 
+    if (err != 0) {
         pr_info("GTPURH: Failed to route packet to dst 0x%x. Error: (%d)", fl.u.ip4.daddr, err);
         return GTPURH_FAILURE;
     } 
 
 #if 1
-    if (rt->dst.dev)
-    {
+    if (rt->dst.dev) {
         pr_info("GTPURH: dst dev name %s\n", rt->dst.dev->name);
-    }
-    else
-    {
+    } else {
         pr_info("GTPURH: dst dev NULL\n");
     }
 #endif
 
-    //if (info_pP->action == PARAM_GTPURH_ACTION_ADD) //LG was commented
-    {
-        skb_dst_drop(skb_pP);
-        skb_dst_set(skb_pP, &rt->dst);
-        skb_pP->dev      = skb_dst(skb_pP)->dev;
-    }
+    skb_pP->priority = rt_tos2priority(iph_p->tos);
+    skb_dst_drop(skb_pP);
+    skb_dst_set(skb_pP, &rt->dst);
+    skb_pP->dev      = skb_dst(skb_pP)->dev;
 
-    skb_pP->protocol = htons(ETH_P_IP);
+    /* Send the GTPu message out */
+    ip_local_out(skb_pP);
 
-    /* Send the GTPu message out...gggH */
-    err = dst_output(skb_pP);
-
-    if (err == 0)
-    {
+    if (err == 0) {
         return GTPURH_SUCCESS;
-    }
-    else
-    {
+    } else {
         return GTPURH_FAILURE;
     }
 }
@@ -558,6 +548,7 @@ _gtpurh_target_reassembly(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_ta
 }*/
 
 
+
 static unsigned int
 _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_info *tgi_pP)
 {
@@ -566,25 +557,32 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
     struct udphdr  *udph_p           = NULL;
     struct gtpuhdr *gtpuh_p          = NULL;
     struct sk_buff *skb_p            = NULL;
+#if defined(NEW_SKB)
+    struct sk_buff *new_skb_p        = NULL;
+    struct iphdr   *new_ip_p         = NULL;
+#endif
     uint16_t        gtp_payload_size = 0;
 
     /* Create a new copy of the original skb_p...can't avoid :-( LG: WHY???*/
 #if defined(ROUTE_PACKET)
     skb_p = skb_copy(orig_skb_pP, GFP_ATOMIC);
-    if (skb_p == NULL)
-    {
+    if (skb_p == NULL) {
         return NF_ACCEPT;
     }
     skb_p->skb_iif  = orig_skb_pP->skb_iif;
+    pr_info("GTPURH: skb protocol %04X\n", orig_skb_pP->protocol);
     skb_p->protocol = orig_skb_pP->protocol;
 #else
     skb_p = orig_skb_pP;
+    if (skb_linearize(skb_p) < 0) {
+        pr_info("GTPURH: skb DROPPED (no linearize)\n");
+        return NF_DROP;
+    }
 #endif
-    pr_info("GTPURH(%d) IP packet arrived\n",tgi_pP->action);
     //---------------------------
     // check if is GTPU TUNNEL
     if (iph_p->protocol != IPPROTO_UDP) {
-        pr_info("GTPURH(%d): Not GTPV1U packet (not UDP)\n",tgi_pP->action);
+        pr_info("GTPURH: skb DROPPED Not GTPV1U packet (not UDP)\n");
         return NF_ACCEPT;
     }
 
@@ -593,26 +591,27 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
     // but should not happen since MTU should have been set bigger than 1500 + GTP encap.
     // TO DO later segment, but did not succeed in getting in this target all framents of an ip packet!
     if (_gtpurh_ip_is_fragment(iph_p)) {
-        pr_info("GTPURH(%d): ip_is_fragment YES, FLAGS %04X & %04X = %04X\n",
-                tgi_pP->action,
+        pr_info("GTPURH: ip_is_fragment YES, FLAGS %04X & %04X = %04X\n",
                 iph_p->frag_off,
                 htons(IP_MF | IP_OFFSET),
                 iph_p->frag_off & htons(IP_MF | IP_OFFSET));
-        /*if ((rc = _gtpurh_target_reassembly(skb_p, tgi_pP)) == 0) {
-            return NF_DROP; // orig_skb_pP is copied, original can be destroyed.
-        } else  {*/
             return NF_ACCEPT;
-        //}
-    } /*else {
-        pr_info("GTPURH(%d): ip_is_fragment NO, FLAGS %04X & %04X = %04X\n",
-                tgi_pP->action,
-                iph_p->frag_off,
-                htons(IP_MF | IP_OFFSET),
-                iph_p->frag_off & htons(IP_MF | IP_OFFSET));
-    }*/
+    }
+    /*pr_info("GTPURH(%d): IN : GTPV1U skbuff len %u data_len %u data %p head %p tail %p end %p nwh %p th %p inwh %p ith %p\n",
+            tgi_pP->action,
+            skb_p->len,
+            skb_p->data_len,
+            skb_p->data,
+            skb_p->head,
+            skb_p->tail,
+            skb_p->end,
+            skb_network_header(skb_p),
+            skb_transport_header(skb_p),
+            skb_inner_network_header(skb_p),
+            skb_inner_transport_header(skb_p));*/
 
     if (skb_p->len <= sizeof (struct udphdr) + sizeof (struct gtpuhdr) + sizeof (struct iphdr)) {
-        pr_info("GTPURH(%d): Thought was GTPV1U packet but too short length\n",tgi_pP->action);
+        pr_info("GTPURH: Thought was GTPV1U packet but too short length\n");
         return NF_ACCEPT;
     }
     /* Remove IP header */
@@ -654,6 +653,7 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
     /* If additional fields are present in header, remove them also */
     if (gtpuh_p->flags & GTPURH_ANY_EXT_HDR_BIT)
     {
+        pr_info("GTPURH: GTPURH_ANY_EXT_HDR_BIT found\n");
         skb_pull(skb_p, sizeof(short) + sizeof(char) + sizeof(char)); /* #Seq, #N-PDU, #ExtHdr Type */
         gtp_payload_size = gtp_payload_size - sizeof(short) - sizeof(char) - sizeof(char);
     }
@@ -661,11 +661,6 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
     iph2_p   = ip_hdr(skb_p);
     skb_set_transport_header(skb_p, iph2_p->ihl << 2);
 
-    skb_p->mac_len = ETH_HLEN;
-    //struct ethhdr *eth = (struct ethhdr *)skb_push(skb_p, ETH_HLEN);
-    //memset(eth, 0, ETH_HLEN);
-    //eth->h_proto = htons(ETH_P_IP);
-    //skb_set_mac_header(skb_p, 0);
 
     if ((iph2_p->version  != 4 ) && (iph2_p->version  != 6)) {
         pr_info("\nGTPURH: Decapsulated packet dropped because not IPvx protocol see all GTPU packet here:\n");
@@ -698,48 +693,69 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
                     ntohs(iph2_p->tot_len));
 
             _gtpurh_print_hex_octets((unsigned char*)iph_p, ntohs(iph_p->tot_len));
+            return NF_DROP;
         }
     }
 //#endif
-    pr_info("GTPURH(%d) IP packet processed\n",tgi_pP->action);
 
     /* Route the packet */
 #if defined(ROUTE_PACKET)
     _gtpurh_route_packet(skb_p, tgi_pP);
     return NF_DROP;
 #else
+#if defined(NEW_SKB)
+        new_skb_p = alloc_skb(LL_MAX_HEADER + ntohs(iph2_p->tot_len), GFP_ATOMIC);
+        if (new_skb_p == NULL) {
+            return NF_DROP;
+        }
+        skb_reserve(new_skb_p, LL_MAX_HEADER);
+        skb_reset_network_header(new_skb_p);
+        new_ip_p = (void *)skb_put(new_skb_p, iph2_p->ihl << 2);
+        skb_reset_transport_header(new_skb_p);
+        skb_put(new_skb_p, ntohs(iph2_p->tot_len) - iph2_p->ihl << 2);
+        memcpy(new_ip_p, iph2_p, ntohs(iph2_p->tot_len));
+
+        new_skb_p->mark = ntohl(gtpuh_p->tunid);
+        nf_ct_attach(new_skb_p, skb_p);
+
+        new_skb_p->sk = skb_p->sk;
+
+        ip_local_out(new_skb_p);
+        return NF_DROP;
+#else
     {
         int            err = 0;
         struct rtable *rt    = NULL;
         int            daddr = iph2_p->daddr;
         struct flowi   fl    = {
-                        .u = {
-                            .ip4 = {
-                                .daddr        = daddr,
-                                .flowi4_tos   = RT_TOS(iph2_p->tos),
-                                .flowi4_scope = RT_SCOPE_UNIVERSE,
-                            }
-                        }
-        };
+                           .u = {
+                               .ip4 = {
+                                   .daddr        = daddr,
+                                   .flowi4_tos   = RT_TOS(iph2_p->tos),
+                                   .flowi4_scope = RT_SCOPE_UNIVERSE,
+                               }
+                           }
+                       };
         rt = ip_route_output_key(&init_net, &fl.u.ip4);
-        if (rt == NULL)
-        {
+        if (rt == NULL) {
             pr_info("GTPURH: Failed to route packet to dst 0x%x. Error: (%d)", fl.u.ip4.daddr, err);
             return NF_DROP;
         }
-        skb_p->pkt_type = PACKET_OTHERHOST;
-#if 1
+#if 0
         if (rt->dst.dev) {
             pr_info("GTPURH: dst dev name %s\n", rt->dst.dev->name);
         } else {
             pr_info("GTPURH: dst dev NULL\n");
         }
 #endif
+        skb_p->priority = rt_tos2priority(iph2_p->tos);
+        skb_p->pkt_type = PACKET_OTHERHOST;
         skb_dst_drop(skb_p);
         skb_dst_set(skb_p, &rt->dst);
         skb_p->dev      = skb_dst(skb_p)->dev;
     }
     return NF_ACCEPT;
+#endif
 #endif
 }
 
