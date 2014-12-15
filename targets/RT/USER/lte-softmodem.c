@@ -181,6 +181,8 @@ static SEM *sync_sem; // to sync rx & tx streaming
 pthread_t                       main_eNB_thread;
 pthread_t                       main_ue_thread;
 pthread_attr_t                  attr_dlsch_threads;
+pthread_attr_t                  attr_UE_thread;
+
 #ifndef LOWLATENCY
 struct sched_param              sched_param_dlsch;
 #endif 
@@ -3527,6 +3529,9 @@ int main(int argc, char **argv) {
   pthread_attr_init (&attr_dlsch_threads);
   pthread_attr_setstacksize(&attr_dlsch_threads,PTHREAD_STACK_MIN);
 
+  pthread_attr_init (&attr_UE_thread);
+  pthread_attr_setstacksize(&attr_UE_thread,4*PTHREAD_STACK_MIN);
+
 #ifndef LOWLATENCY
   sched_param_dlsch.sched_priority = sched_get_priority_max(SCHED_FIFO); //OPENAIR_THREAD_PRIORITY;
   pthread_attr_setschedparam  (&attr_dlsch_threads, &sched_param_dlsch);
@@ -3547,7 +3552,7 @@ int main(int argc, char **argv) {
 #ifdef RTAI
     main_ue_thread = rt_thread_create(UE_thread, NULL, 100000000);
 #else
-    error_code = pthread_create(&main_ue_thread, &attr_dlsch_threads, UE_thread, NULL);
+    error_code = pthread_create(&main_ue_thread, &attr_UE_thread, UE_thread, NULL);
     if (error_code!= 0) {
       LOG_D(HW,"[lte-softmodem.c] Could not allocate UE_thread, error %d\n",error_code);
       return(error_code);
