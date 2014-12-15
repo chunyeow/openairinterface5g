@@ -154,7 +154,7 @@ int spgw_config_process(spgw_config_t* config_pP) {
 
   if (strncasecmp("tun",config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up, strlen("tun")) == 0) {
         if (snprintf(system_cmd, 256,
-                "ip link set %s down ;openvpn --rmtun --dev %s",
+                "ip link set %s down ;sync;openvpn --rmtun --dev %s;sync",
                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up,
                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up
                 ) > 0) {
@@ -164,8 +164,7 @@ int spgw_config_process(spgw_config_t* config_pP) {
             ret = -1;
         }
         if (snprintf(system_cmd, 256,
-                "openvpn --mktun --dev %s;sync;ifconfig  %s up;sync",
-                config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up,
+                "openvpn --mktun --dev %s;sync",
                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
             ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
         } else {
@@ -174,13 +173,21 @@ int spgw_config_process(spgw_config_t* config_pP) {
         }
         inaddr.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
         if (snprintf(system_cmd, 256,
-                "ip -4 addr add %s/%d  dev %s",
+                "ip -4 addr add %s/%d  dev %s;sync",
                 inet_ntoa(inaddr),
                 config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S1u_S12_S4_up,
                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
         	ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
         } else {
             SPGW_APP_ERROR("Set IPv4 address on %s\n", config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
+            ret = -1;
+        }
+        if (snprintf(system_cmd, 256,
+                "sync;ifconfig  %s up;sync",
+                config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
+            ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
+        } else {
+            SPGW_APP_ERROR("ifconfig up %s\n", config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
             ret = -1;
         }
 
@@ -527,32 +534,16 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
                               in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
 
-                              if (strncasecmp("tun",config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up, strlen("tun")) == 0) {
-                                  if (snprintf(system_cmd, 256,
-                                               "ip link set tun%d down ;openvpn --rmtun --dev tun%d",
-                                               tun_id,tun_id) > 0) {
-                                      spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
-                                  } else {
-                                      SPGW_APP_ERROR("Del tun%d\n", tun_id);
-                                  }
-                                  if (snprintf(system_cmd, 256,
-                                               "openvpn --mktun --dev tun%d;sync;ifconfig  tun%d up;sync",
-                                               tun_id,tun_id) > 0) {
-                                      spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
-                                  } else {
-                                      SPGW_APP_ERROR("Create tun%d\n", tun_id);
-                                  }
-                              } else {
-                                  if (snprintf(system_cmd, 128, "ip route add %s/%s via %s dev %s",
+                              if (snprintf(system_cmd, 128, "ip route add %s/%s via %s dev %s",
                                            astring,
                                            atoken2,
                                            inet_ntoa(in_addr_var),
                                            config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
                                        spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
-                                   } else {
-                                       SPGW_APP_ERROR("Add route: for %s\n", astring);
-                                   }
+                              } else {
+                                  SPGW_APP_ERROR("Add route: for %s\n", astring);
                               }
+
 
                               if (config_pP->sgw_config.sgw_drop_downlink_traffic) {
                                   if (snprintf(system_cmd, 128,
@@ -573,23 +564,6 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
 #endif
                               prefix_mask = atoi(atoken2);
                               if ((prefix_mask >= 2)&&(prefix_mask < 32)) {
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
-                                  // TEST ONLY
-                                  if (strncasecmp("tun",config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up, strlen("tun")) == 0) {
-                                      memcpy (&in_addr_var, buf_in_addr, sizeof(struct in_addr));
-                                      in_addr_var.s_addr = in_addr_var.s_addr + htonl(1);
-                                      if (snprintf(system_cmd, 256,
-                                                   "ip -4 addr add %s/%d  dev tun%d",
-                                                   inet_ntoa(in_addr_var),
-                                                   prefix_mask,
-                                                   tun_id) > 0) {
-                                          spgw_system(system_cmd, SPGW_ABORT_ON_ERROR);
-                                      } else {
-                                          SPGW_APP_ERROR("Set IPv4 address on tun%d\n", tun_id);
-                                      }
-                                      tun_id +=1;
-                                  }
-#endif
                                   memcpy (&addr_start, buf_in_addr, sizeof(struct in_addr));
                                   memcpy (&addr_mask,  buf_in_addr, sizeof(struct in_addr));
 
