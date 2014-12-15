@@ -17,7 +17,7 @@ CFLAGS += -Wno-packed-bitfield-compat
 # This is the minimum CPU faetures for OAI
 CFLAGS += -mmmx -msse -msse2 -mssse3 -msse4.1
 # Add CPU features from local CPU
-CFLAGS += -march=native
+#CFLAGS += -march=native
 
 ifeq ($(OSTYPE),Cygwin)
 cygwin=1
