@@ -30,8 +30,8 @@
 #endif
 
 
-#define ROUTE_PACKET 1
-//#define NEW_SKB 1
+//#define ROUTE_PACKET 1
+#define NEW_SKB 1
 
 #include "xt_GTPURH.h"
 
@@ -550,7 +550,7 @@ _gtpurh_target_reassembly(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_ta
 
 
 static unsigned int
-_gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_info *tgi_pP)
+_gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_pP)
 {
     struct iphdr   *iph_p            = ip_hdr(orig_skb_pP);
     struct iphdr   *iph2_p           = NULL;
@@ -560,6 +560,7 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
 #if defined(NEW_SKB)
     struct sk_buff *new_skb_p        = NULL;
     struct iphdr   *new_ip_p         = NULL;
+    unsigned int    addr_type        = 0;
 #endif
     uint16_t        gtp_payload_size = 0;
 
@@ -618,7 +619,7 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
     udph_p = (struct udphdr*)skb_pull(skb_p, (iph_p->ihl << 2));
 
     if (udph_p->dest != htons(GTPURH_PORT)) {
-        pr_info("GTPURH(%d): Not GTPV1U packet (bad UDP dest port)\n",tgi_pP->action);
+        pr_info("GTPURH: Not GTPV1U packet (bad UDP dest port)\n");
         skb_push(skb_p, (iph_p->ihl << 2));
         return NF_ACCEPT;
     }
@@ -669,8 +670,7 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
     }
 //#if 0
     if ((skb_p->mark == 0) || (gtp_payload_size != ntohs(iph2_p->tot_len))) {
-        pr_info("\nGTPURH(%d): Decapsulated packet: %d.%d.%d.%d --> %d.%d.%d.%d Proto: %d, Total Len (IP): %u mark %u Frag offset %u Flags 0x%0x\n",
-                tgi_pP->action,
+        pr_info("\nGTPURH: Decapsulated packet: %d.%d.%d.%d --> %d.%d.%d.%d Proto: %d, Total Len (IP): %u mark %u Frag offset %u Flags 0x%0x\n",
                 iph2_p->saddr  & 0xFF,
                 (iph2_p->saddr & 0x0000FF00) >> 8,
                 (iph2_p->saddr & 0x00FF0000) >> 16,
@@ -686,8 +686,7 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
                 ntohs(iph_p->frag_off) >> 13);
 
         if (gtp_payload_size != ntohs(iph2_p->tot_len)) {
-            pr_info("GTPURH(%d): Mismatch in lengths GTPU length: %u -> %u, IP length %u\n",
-                    tgi_pP->action,
+            pr_info("GTPURH: Mismatch in lengths GTPU length: %u -> %u, IP length %u\n",
                     ntohs(gtpuh_p->length),
                     gtp_payload_size,
                     ntohs(iph2_p->tot_len));
@@ -702,26 +701,6 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
 #if defined(ROUTE_PACKET)
     _gtpurh_route_packet(skb_p, tgi_pP);
     return NF_DROP;
-#else
-#if defined(NEW_SKB)
-        new_skb_p = alloc_skb(LL_MAX_HEADER + ntohs(iph2_p->tot_len), GFP_ATOMIC);
-        if (new_skb_p == NULL) {
-            return NF_DROP;
-        }
-        skb_reserve(new_skb_p, LL_MAX_HEADER);
-        skb_reset_network_header(new_skb_p);
-        new_ip_p = (void *)skb_put(new_skb_p, iph2_p->ihl << 2);
-        skb_reset_transport_header(new_skb_p);
-        skb_put(new_skb_p, ntohs(iph2_p->tot_len) - iph2_p->ihl << 2);
-        memcpy(new_ip_p, iph2_p, ntohs(iph2_p->tot_len));
-
-        new_skb_p->mark = ntohl(gtpuh_p->tunid);
-        nf_ct_attach(new_skb_p, skb_p);
-
-        new_skb_p->sk = skb_p->sk;
-
-        ip_local_out(new_skb_p);
-        return NF_DROP;
 #else
     {
         int            err = 0;
@@ -754,6 +733,46 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
         skb_dst_set(skb_p, &rt->dst);
         skb_p->dev      = skb_dst(skb_p)->dev;
     }
+#if defined(NEW_SKB)
+    new_skb_p = alloc_skb(LL_MAX_HEADER + ntohs(iph2_p->tot_len), GFP_ATOMIC);
+    if (new_skb_p == NULL) {
+        return NF_DROP;
+    }
+
+
+    skb_reserve(new_skb_p, LL_MAX_HEADER);
+    new_skb_p->protocol = skb_p->protocol;
+
+    skb_reset_network_header(new_skb_p);
+    new_ip_p = (void *)skb_put(new_skb_p, iph2_p->ihl << 2);
+    skb_reset_transport_header(new_skb_p);
+    skb_put(new_skb_p, ntohs(iph2_p->tot_len) - (iph2_p->ihl << 2));
+    memcpy(new_ip_p, iph2_p, ntohs(iph2_p->tot_len));
+
+    new_skb_p->mark = ntohl(gtpuh_p->tunid);
+          //new_skb_p->mark     = skb_p->mark;
+
+    /* ip_route_me_harder expects skb->dst to be set */
+    skb_dst_set(new_skb_p, dst_clone(skb_dst(skb_p)));
+
+    if (ip_route_me_harder(new_skb_p, RTN_UNSPEC) < 0)
+        goto free_new_skb;
+
+    new_ip_p->ttl        = ip4_dst_hoplimit(skb_dst(new_skb_p));
+    new_skb_p->ip_summed = CHECKSUM_NONE;
+
+    /* "Never happens" (?) */
+    if (new_skb_p->len > dst_mtu(skb_dst(new_skb_p)))
+        goto free_new_skb;
+
+    nf_ct_attach(new_skb_p, skb_p);
+    ip_local_out(new_skb_p);
+    return NF_DROP;
+
+free_new_skb:
+    kfree_skb(new_skb_p);
+    return NF_DROP;
+#else
     return NF_ACCEPT;
 #endif
 #endif
@@ -761,52 +780,79 @@ _gtpurh_target_rem(struct sk_buff *orig_skb_pP, const struct xt_gtpurh_target_in
 
 
 static unsigned int
-xt_gtpurh_target(struct sk_buff *skb_pP, const struct xt_action_param *par)
+gtpurh_tg6(struct sk_buff *skb_pP, const struct xt_action_param *par_pP)
 {
-    const struct xt_gtpurh_target_info *tgi_p = par->targinfo;
-    int result = NF_ACCEPT;
+    const struct xt_gtpurh_target_info *tgi_p = par_pP->targinfo;
+    int result = NF_DROP;
 
-    if (tgi_p == NULL)
-    {
+    if (tgi_p == NULL) {
         return result;
     }
 
-    if (tgi_p->action == PARAM_GTPURH_ACTION_REM)
-    {
-        result = _gtpurh_target_rem(skb_pP, tgi_p);
+    if (tgi_p->action == PARAM_GTPURH_ACTION_REM) {
+        result = NF_DROP; // TO DO
     }
     return result;
 }
 
-static struct xt_target xt_gtpurh_reg __read_mostly =
+static unsigned int
+gtpurh_tg4(struct sk_buff *skb_pP, const struct xt_action_param *par_pP)
 {
-    .name           = "GTPURH",
-    .revision       = 0,
-    .family         = AF_INET,
-    .hooks          = (1 << NF_INET_PRE_ROUTING) |
-                      (1 << NF_INET_LOCAL_OUT),
-    .table          = "raw",
-    .target         = xt_gtpurh_target,
-    .targetsize     = sizeof(struct xt_gtpurh_target_info),
-    .me             = THIS_MODULE,
+    const struct xt_gtpurh_target_info *tgi_p = par_pP->targinfo;
+    int result = NF_ACCEPT;
+
+    if (tgi_p == NULL) {
+        return result;
+    }
+
+    if (tgi_p->action == PARAM_GTPURH_ACTION_REM) {
+        result = _gtpurh_tg4_rem(skb_pP, par_pP);
+    }
+    return result;
+}
+
+static struct xt_target gtpurh_tg_reg[] __read_mostly = {
+                {
+                                .name       = "GTPURH",
+                                .revision   = 0,
+                                .family     = NFPROTO_IPV6,
+                                .proto      = IPPROTO_UDP,
+                                .table      = "raw",
+                                .target     = gtpurh_tg6,
+                                .me         = THIS_MODULE,
+                },
+                {
+                                .name           = "GTPURH",
+                                .revision       = 0,
+                                .family         = NFPROTO_IPV4,
+                                .hooks          = (1 << NF_INET_PRE_ROUTING) |
+                                                  (1 << NF_INET_LOCAL_OUT),
+                                .proto          = IPPROTO_UDP,
+                                .table          = "raw",
+                                .target         = gtpurh_tg4,
+                                .targetsize     = sizeof(struct xt_gtpurh_target_info),
+                                .me             = THIS_MODULE,
+                },
 };
 
-static int __init xt_gtpurh_init(void)
+static int __init gtpurh_tg_init(void)
 {
     pr_info("GTPURH: Initializing module (KVersion: %d)\n", KVERSION);
     pr_info("GTPURH: Copyright Polaris Networks 2010-2011\n");
     pr_info("GTPURH: Modified by EURECOM Lionel GAUTHIER 2014\n");
     //hash_init(ip_fragments);
-    return xt_register_target(&xt_gtpurh_reg);
+    return xt_register_targets(gtpurh_tg_reg, ARRAY_SIZE(gtpurh_tg_reg));
 }
 
-static void __exit xt_gtpurh_exit(void)
+static void __exit gtpurh_tg_exit(void)
 {
-    xt_unregister_target(&xt_gtpurh_reg);
+    xt_unregister_targets(gtpurh_tg_reg, ARRAY_SIZE(gtpurh_tg_reg));
     //_gtpurh_delete_collection_ip_fragments();
     pr_info("GTPURH: Unloading module\n");
 }
 
-module_init(xt_gtpurh_init);
-module_exit(xt_gtpurh_exit);
+module_init(gtpurh_tg_init);
+module_exit(gtpurh_tg_exit);
+MODULE_ALIAS("ipt6_GTPURH");
+MODULE_ALIAS("ipt_GTPURH");
 

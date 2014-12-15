@@ -16,11 +16,11 @@ enum xt_gtpurh_mode_
 
 struct xt_gtpurh_target_info
 {
-    u_int32_t laddr;
-    u_int32_t raddr;
-    u_int32_t ltun;
-    u_int32_t rtun;
-    u_int32_t action;
+    u_int32_t laddr   __attribute__((aligned(8)));
+    u_int32_t raddr   __attribute__((aligned(8)));
+    u_int32_t ltun    __attribute__((aligned(8)));
+    u_int32_t rtun    __attribute__((aligned(8)));
+    u_int32_t action  __attribute__((aligned(8)));
 };
 
 
