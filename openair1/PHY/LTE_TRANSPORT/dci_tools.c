@@ -3611,9 +3611,10 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     if ((ndi!=dlsch0_harq->DCINdi)||  // DCI has been toggled or this is the first transmission
 	(dlsch0_harq->first_tx==1)) {
       dlsch0_harq->round = 0;
-      if (dlsch0_harq->first_tx==1)
+      if (dlsch0_harq->first_tx==1) {
 	LOG_D(PHY,"[PDSCH %x/%d] Format 1A DCI First TX: Clearing flag\n");
-      dlsch0_harq->first_tx = 0;
+	dlsch0_harq->first_tx = 0;
+      }
     }
     dlsch0_harq->DCINdi = ndi;
 
@@ -3740,12 +3741,14 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     
     if ((ndi!=dlsch0_harq->DCINdi)||
 	(dlsch0_harq->first_tx==1)) {
+      //    printf("Rate: setting round to zero (ndi %d, DCINdi %d,first_tx %d)\n",ndi,dlsch0_harq->DCINdi,dlsch0_harq->first_tx);
       dlsch0_harq->round=0;
       dlsch0_harq->status = ACTIVE;
       dlsch0_harq->DCINdi = ndi;
-      if (dlsch0_harq->first_tx==1)
+      if (dlsch0_harq->first_tx==1) {
 	LOG_D(PHY,"[PDSCH %x/%d] Format 1 DCI First TX: Clearing flag\n");
-      dlsch0_harq->first_tx = 0;
+	dlsch0_harq->first_tx = 0;
+      }
     }
     else if (dlsch0_harq->status == SCH_IDLE) {  // we got an Ndi = 0 for a previously decoded process,
       // this happens if either another harq process in the same
@@ -4449,11 +4452,14 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     if (dlsch0->active == 1) {
       if ((ndi1!=dlsch0_harq->DCINdi)||
 	  (dlsch0_harq->first_tx==1)) {
+	//      printf("Rate: setting round to zero (ndi %d, DCINdi %d,first_tx %d)\n",ndi,dlsch0_harq->DCINdi,dlsch0_harq->first_tx);
 	dlsch0_harq->round=0;
 	dlsch0_harq->status = ACTIVE;
 	dlsch0_harq->DCINdi = ndi1;
-	if (dlsch0_harq->first_tx==1)
+	if (dlsch0_harq->first_tx==1) {
 	  LOG_D(PHY,"[PDSCH %x/%d] Format 2A DCI First TX0: Clearing flag\n");
+	  dlsch0_harq->first_tx = 0;
+	}
       }
       else if (dlsch0_harq->status == SCH_IDLE) {  // we got an Ndi = 0 for a previously decoded process,
 	// this happens if either another harq process in the same
@@ -4474,8 +4480,11 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
 	dlsch1_harq->status = ACTIVE;
 	dlsch1_harq->DCINdi = ndi2;
 	
-	if (dlsch1_harq->first_tx==1)
+	if (dlsch1_harq->first_tx==1) {
 	  LOG_D(PHY,"[PDSCH %x/%d] Format 2A DCI First TX1: Clearing flag\n",rnti,harq_pid);
+	  dlsch1_harq->first_tx = 0;
+	}
+
       }
       else if (dlsch1_harq->status == SCH_IDLE) {  // we got an Ndi = 0 for a previously decoded process,
 	// this happens if either another harq process in the same
@@ -5498,7 +5507,7 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
       ulsch->harq_processes[harq_pid]->first_rb                              = RIV2first_rb_LUT100[rballoc];
       ulsch->harq_processes[harq_pid]->nb_rb                                 = RIV2nb_rb_LUT100[rballoc];
 
-      printf("rb_alloc (20 MHz dci) %d\n",rballoc);
+      //      printf("rb_alloc (20 MHz dci) %d\n",rballoc);
       break;
 
     default:

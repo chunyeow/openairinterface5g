@@ -545,8 +545,8 @@ int allocate_REs_in_RB(LTE_DL_FRAME_PARMS *frame_parms,
 	      qam64_table_offset_im0+=1;
 	    *jj=*jj+1;
 
-	    xx0_re = qam_table_s0[qam16_table_offset_re0];
-	    xx0_im = qam_table_s0[qam16_table_offset_im0];
+	    xx0_re = qam_table_s0[qam64_table_offset_re0];
+	    xx0_im = qam_table_s0[qam64_table_offset_im0];
 
 
 	    break;
@@ -594,7 +594,7 @@ int allocate_REs_in_RB(LTE_DL_FRAME_PARMS *frame_parms,
 	    qam64_table_offset_im1 = 0;
 	    
 	    if (x1[*jj2] == 1)
-	      qam64_table_offset_re0+=4;
+	      qam64_table_offset_re1+=4;
 	    *jj2 = *jj2 + 1;
 	    if (x1[*jj2] == 1)
 	      qam64_table_offset_im1+=4;
@@ -612,8 +612,8 @@ int allocate_REs_in_RB(LTE_DL_FRAME_PARMS *frame_parms,
 	      qam64_table_offset_im1+=1;
 	    *jj2 = *jj2 + 1;
 
-	    xx1_re = qam_table_s1[qam16_table_offset_re1];
-	    xx1_im = qam_table_s1[qam16_table_offset_im1];
+	    xx1_re = qam_table_s1[qam64_table_offset_re1];
+	    xx1_im = qam_table_s1[qam64_table_offset_im1];
 
 
 	    break;
@@ -1054,7 +1054,7 @@ int dlsch_modulation(mod_sym_t **txdataF,
       qam16_table_a1[i] = (int16_t)(((int32_t)qam16_table[i]*amp_rho_a)>>15);
       qam16_table_b1[i] = (int16_t)(((int32_t)qam16_table[i]*amp_rho_b)>>15);
     }
-  else if (mod_order0 == 6)
+  else if (mod_order1 == 6)
     for (i=0;i<8;i++) {
       qam64_table_a1[i] = (int16_t)(((int32_t)qam64_table[i]*amp_rho_a)>>15);
       qam64_table_b1[i] = (int16_t)(((int32_t)qam64_table[i]*amp_rho_b)>>15);

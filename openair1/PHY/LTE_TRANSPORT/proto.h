@@ -963,6 +963,7 @@ void dlsch_channel_compensation_TM3(LTE_DL_FRAME_PARMS *frame_parms,
 				    unsigned char symbol,
 				    unsigned char mod_order0,
 				    unsigned char mod_order1,
+				    int round,
 				    unsigned short nb_rb,
 				    unsigned char output_shift);
 
@@ -1406,7 +1407,7 @@ void dump_dlsch(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,uint8_t
 void dump_dlsch_SI(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe);
 void dump_dlsch_ra(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe);
 
-void dump_dlsch2(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint16_t coded_bits_per_codeword);
+void dump_dlsch2(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint16_t coded_bits_per_codeword,int round);
 #endif
 
 int dump_dci(LTE_DL_FRAME_PARMS *frame_parms, DCI_ALLOC_t *dci);

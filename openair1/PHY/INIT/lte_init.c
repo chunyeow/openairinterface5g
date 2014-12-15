@@ -880,7 +880,7 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
   LTE_UE_PDCCH **ue_pdcch_vars        = phy_vars_ue->lte_ue_pdcch_vars;
   LTE_UE_PRACH **ue_prach_vars        = phy_vars_ue->lte_ue_prach_vars;
 
-  int i,j;
+  int i,j,k;
   unsigned char eNB_id;
 
   msg("Initializing UE vars (abstraction %d) for eNB TXant %d, UE RXant %d\n",abstraction_flag,frame_parms->nb_antennas_tx,frame_parms->nb_antennas_rx);
@@ -908,11 +908,7 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
       ue_common_vars->txdata[i] = (int *)malloc16(FRAME_LENGTH_COMPLEX_SAMPLES*sizeof(int));
       bzero(ue_common_vars->txdata[i],FRAME_LENGTH_COMPLEX_SAMPLES*sizeof(int));
 #else //USER_MODE
-#ifdef IFFT_FPGA
-      ue_common_vars->txdata[i] = NULL;
-#else //IFFT_FPGA
       ue_common_vars->txdata[i] = TX_DMA_BUFFER[0][i];
-#endif //IFFT_FPGA
 #endif //USER_MODE
     }
 
@@ -922,12 +918,8 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
       ue_common_vars->txdataF[i] = (mod_sym_t *)malloc16(FRAME_LENGTH_COMPLEX_SAMPLES_NO_PREFIX*sizeof(mod_sym_t));
       bzero(ue_common_vars->txdataF[i],FRAME_LENGTH_COMPLEX_SAMPLES_NO_PREFIX*sizeof(mod_sym_t));
 #else //USER_MODE
-#ifdef IFFT_FPGA
-      ue_common_vars->txdataF[i] = (mod_sym_t*) TX_DMA_BUFFER[0][i];
-#else //IFFT_FPGA
       ue_common_vars->txdataF[i] = (mod_sym_t *)malloc16(FRAME_LENGTH_COMPLEX_SAMPLES_NO_PREFIX*sizeof(mod_sym_t));
       bzero(ue_common_vars->txdataF[i],FRAME_LENGTH_COMPLEX_SAMPLES_NO_PREFIX*sizeof(mod_sym_t));
-#endif //IFFT_FPGA
 #endif //USER_MODE
     }
     
@@ -1112,11 +1104,13 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
 	  ue_pdsch_vars[eNB_id]->rxdataF_ext[(j<<1)+i]     = (int *)malloc16(sizeof(int)*(frame_parms->N_RB_DL*12*14));
       
       ue_pdsch_vars[eNB_id]->rxdataF_comp0     = (int **)malloc16(8*sizeof(int*));
-      ue_pdsch_vars[eNB_id]->rxdataF_comp1     = (int **)malloc16(8*sizeof(int*));
+      for (k=0;k<8;k++)
+	ue_pdsch_vars[eNB_id]->rxdataF_comp1[k]     = (int **)malloc16(8*sizeof(int*));
       for (i=0; i<frame_parms->nb_antennas_rx; i++)
 	for (j=0; j<4;j++){
 	  ue_pdsch_vars[eNB_id]->rxdataF_comp0[(j<<1)+i]     = (int *)malloc16(sizeof(int)*(frame_parms->N_RB_DL*12*14));
-	  ue_pdsch_vars[eNB_id]->rxdataF_comp1[(j<<1)+i]     = (int *)malloc16(sizeof(int)*(frame_parms->N_RB_DL*12*14));
+	  for (k=0;k<8;k++) 
+	    ue_pdsch_vars[eNB_id]->rxdataF_comp1[(j<<1)+i][k]     = (int *)malloc16(sizeof(int)*(frame_parms->N_RB_DL*12*14));
 	}
       // printf("rxdataF_comp[0] %p\n",ue_pdsch_vars[eNB_id]->rxdataF_comp[0]);
       
@@ -1601,11 +1595,7 @@ int phy_init_lte_eNB(PHY_VARS_eNB *phy_vars_eNB,
 	eNB_common_vars->txdata[eNB_id][i] = (int *)malloc16(FRAME_LENGTH_COMPLEX_SAMPLES*sizeof(int));
 	bzero(eNB_common_vars->txdata[eNB_id][i],FRAME_LENGTH_COMPLEX_SAMPLES*sizeof(int));
 #else // USER_MODE
-#ifdef IFFT_FPGA
-	eNB_common_vars->txdata[eNB_id][i] = NULL;
-#else //IFFT_FPGA
 	eNB_common_vars->txdata[eNB_id][i] = TX_DMA_BUFFER[eNB_id][i];
-#endif //IFFT_FPGA
 #endif //USER_MODE
 #ifdef DEBUG_PHY
 	msg("[openair][LTE_PHY][INIT] lte_eNB_common_vars->txdata[%d][%d] = %p\n",eNB_id,i,eNB_common_vars->txdata[eNB_id][i]);
@@ -1629,12 +1619,8 @@ int phy_init_lte_eNB(PHY_VARS_eNB *phy_vars_eNB,
 	eNB_common_vars->txdataF[eNB_id][i] = (mod_sym_t *)malloc16(FRAME_LENGTH_COMPLEX_SAMPLES_NO_PREFIX*sizeof(mod_sym_t));
 	bzero(eNB_common_vars->txdataF[eNB_id][i],FRAME_LENGTH_COMPLEX_SAMPLES_NO_PREFIX*sizeof(mod_sym_t));
 #else //USER_MODE
-#ifdef IFFT_FPGA
-	eNB_common_vars->txdataF[eNB_id][i] = (mod_sym_t *)TX_DMA_BUFFER[eNB_id][i];
-#else
 	eNB_common_vars->txdataF[eNB_id][i] = (mod_sym_t *)malloc16(FRAME_LENGTH_COMPLEX_SAMPLES_NO_PREFIX*sizeof(mod_sym_t));
 	bzero(eNB_common_vars->txdataF[eNB_id][i],FRAME_LENGTH_COMPLEX_SAMPLES_NO_PREFIX*sizeof(mod_sym_t));
-#endif //IFFT_FPGA
 #endif //USER_MODE
 #ifdef DEBUG_PHY
 	msg("[openair][LTE_PHY][INIT] lte_eNB_common_vars->txdataF[%d][%d] = %p (%d bytes)\n",

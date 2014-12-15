@@ -412,6 +412,9 @@ typedef struct
   LTE_UE_DLSCH_t   *ulsch_ue_col[NUMBER_OF_CONNECTED_eNB_MAX];
   LTE_UE_DLSCH_t   *dlsch_ue_SI[NUMBER_OF_CONNECTED_eNB_MAX],*dlsch_ue_ra[NUMBER_OF_CONNECTED_eNB_MAX];
   LTE_UE_DLSCH_t   *dlsch_ue_MCH[NUMBER_OF_CONNECTED_eNB_MAX];
+  // This is for SIC in the UE, to store the reencoded data
+  LTE_eNB_DLSCH_t  *dlsch_eNB[NUMBER_OF_CONNECTED_eNB_MAX];
+
   // For abstraction-purposes only
   uint8_t               sr[10];
   uint8_t               pucch_sel[10];
@@ -555,6 +558,9 @@ typedef struct
   time_stats_t dlsch_deinterleaving_stats;
   time_stats_t dlsch_llr_stats;
   time_stats_t dlsch_unscrambling_stats;
+  time_stats_t dlsch_rate_matching_stats;
+  time_stats_t dlsch_turbo_encoding_stats;
+  time_stats_t dlsch_interleaving_stats;
   time_stats_t dlsch_tc_init_stats;
   time_stats_t dlsch_tc_alpha_stats;
   time_stats_t dlsch_tc_beta_stats;

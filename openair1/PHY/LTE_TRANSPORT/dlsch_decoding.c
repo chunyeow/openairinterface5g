@@ -291,13 +291,15 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
 							       (r==0) ? harq_process->F : 0);
 
 #ifdef DEBUG_DLSCH_DECODING    
-    msg("HARQ_PID %d Rate Matching Segment %d (coded bits %d,unpunctured/repeated bits %d, TBS %d, mod_order %d, nb_rb %d, Nl %d)...\n",
+    msg("HARQ_PID %d Rate Matching Segment %d (coded bits %d,unpunctured/repeated bits %d, TBS %d, mod_order %d, nb_rb %d, Nl %d, rv %d, round %d)...\n",
 	harq_pid,r, G,
 	Kr*3,
 	harq_process->TBS,
 	get_Qm(harq_process->mcs),
 	harq_process->nb_rb,
-	harq_process->Nl);
+	harq_process->Nl,
+	harq_process->rvidx,
+	harq_process->round);
 #endif    
 
 
@@ -410,7 +412,8 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
     dlsch->harq_ack[subframe].harq_id = harq_pid;
     dlsch->harq_ack[subframe].send_harq_status = 1;
     harq_process->round++;
-    LOG_D(PHY,"[UE %d] DLSCH: Setting NACK for subframe %d (pid %d, round %d)\n",phy_vars_ue->Mod_id,subframe,harq_pid,harq_process->round);
+    //    LOG_D(PHY,"[UE %d] DLSCH: Setting NACK for subframe %d (pid %d, round %d)\n",phy_vars_ue->Mod_id,subframe,harq_pid,harq_process->round);
+    //    printf("Rate: [UE %d] DLSCH: Setting NACK for subframe %d (pid %d, round %d)\n",phy_vars_ue->Mod_id,subframe,harq_pid,harq_process->round);
     if (harq_process->round >= dlsch->Mdlharq) {
       harq_process->status = SCH_IDLE;
     }

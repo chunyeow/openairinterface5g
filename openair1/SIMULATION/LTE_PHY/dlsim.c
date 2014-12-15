@@ -270,6 +270,7 @@ int main(int argc, char **argv) {
  
   unsigned int tx_lev=0,tx_lev_dB=0,trials,errs[4]={0,0,0,0},round_trials[4]={0,0,0,0},dci_errors=0,dlsch_active=0,num_layers;
   int re_allocated;
+  char fname[32],vname[32];
   FILE *bler_fd;
   char bler_fname[256];
   FILE *time_meas_fd;
@@ -343,6 +344,11 @@ int main(int argc, char **argv) {
   char channel_model_input[10]="I";
 
   int TB0_active = 1;
+
+  LTE_DL_UE_HARQ_t *dlsch0_ue_harq;
+  LTE_DL_eNB_HARQ_t *dlsch0_eNB_harq;
+
+
 
   opp_enabled=1; // to enable the time meas
 
@@ -890,6 +896,8 @@ int main(int argc, char **argv) {
       PHY_vars_eNB->dlsch_eNB[k][i]->rnti = n_rnti+k;
     }
   }
+  // structure for SIC at UE
+  PHY_vars_UE->dlsch_eNB[0] = new_eNB_dlsch(1,8,N_RB_DL,0);
 
   for (i=0;i<2;i++) {
     PHY_vars_UE->dlsch_ue[0][i]  = new_ue_dlsch(1,8,MAX_TURBO_ITERATIONS,N_RB_DL,0);
@@ -1970,7 +1978,7 @@ int main(int argc, char **argv) {
 	      hold_channel = 1;
 	  }
 	  else
-	    hold_channel = 0;
+	    hold_channel = 0;//(round==0) ? 0 : 1;
 
 	PMI_FEEDBACK:
 	
@@ -2810,7 +2818,7 @@ int main(int argc, char **argv) {
 		
 		  for (i=0;i<dci_cnt;i++) {
 		    //		    printf("Generating dlsch parameters for RNTI %x\n",dci_alloc_rx[i].rnti);
-		    PHY_vars_UE->dlsch_ue[0][0]->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->first_tx=1;
+		    if (round == 0) PHY_vars_UE->dlsch_ue[0][0]->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->first_tx=1;
 		    if ((dci_alloc_rx[i].rnti == n_rnti) && 
 			(generate_ue_dlsch_params_from_dci(0,
 							   dci_alloc_rx[i].dci_pdu,
@@ -2860,7 +2868,7 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 
 		  PHY_vars_UE->lte_ue_pdcch_vars[0]->crnti = n_rnti;
 		  PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols = num_pdcch_symbols;
-		  PHY_vars_UE->dlsch_ue[0][0]->harq_processes[0]->first_tx=1;
+		  if (round == 0) PHY_vars_UE->dlsch_ue[0][0]->harq_processes[0]->first_tx=1;
 		  switch (transmission_mode) {
 		  case 1:
 		  case 2:
@@ -2876,7 +2884,7 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 						      P_RNTI);
 		    break;
 		  case 3:
-		    PHY_vars_UE->dlsch_ue[0][1]->harq_processes[0]->first_tx=1;
+		    //		    printf("Rate: TM3 (before) round %d (%d) first_tx %d\n",round,PHY_vars_UE->dlsch_ue[0][0]->harq_processes[0]->round,PHY_vars_UE->dlsch_ue[0][0]->harq_processes[0]->first_tx);
 		    generate_ue_dlsch_params_from_dci(0,
 						      &DLSCH_alloc_pdu_1[0],
 						      (common_flag==0)? C_RNTI : SI_RNTI,
@@ -2887,6 +2895,7 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 						      SI_RNTI,
 						      0,
 						      P_RNTI);
+		    //		    printf("Rate: TM3 (after) round %d (%d) first_tx %d\n",round,PHY_vars_UE->dlsch_ue[0][0]->harq_processes[0]->round,PHY_vars_UE->dlsch_ue[0][0]->harq_processes[0]->first_tx);
 		    break;
 		  case 4:
 		    generate_ue_dlsch_params_from_dci(0,
@@ -3018,24 +3027,24 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 		      write_output("rxsigF1.m","rxsF1", PHY_vars_UE->lte_ue_common_vars.rxdataF[1],PHY_vars_UE->lte_frame_parms.ofdm_symbol_size*nsymb,1,1);
 		    }
 
-		    write_output("dlsch00_ch0.m","dl00_ch0",
+		    write_output("dlsch00_r0.m","dl00_r0",
 				 &(PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[eNB_id][0][0]),
 				 PHY_vars_UE->lte_frame_parms.ofdm_symbol_size*nsymb,1,1);
 		    if (PHY_vars_UE->lte_frame_parms.nb_antennas_rx>1)
-		      write_output("dlsch01_ch0.m","dl01_ch0",
+		      write_output("dlsch01_r0.m","dl01_r0",
 				   &(PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[eNB_id][1][0]),
 				   PHY_vars_UE->lte_frame_parms.ofdm_symbol_size*nsymb,1,1);
 		    if (PHY_vars_eNB->lte_frame_parms.nb_antennas_tx>1)
-		      write_output("dlsch10_ch0.m","dl10_ch0",
+		      write_output("dlsch10_r0.m","dl10_r0",
 				   &(PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[eNB_id][2][0]),
 				   PHY_vars_UE->lte_frame_parms.ofdm_symbol_size*nsymb,1,1);
 		    if ((PHY_vars_UE->lte_frame_parms.nb_antennas_rx>1) && (PHY_vars_eNB->lte_frame_parms.nb_antennas_tx>1))
-		      write_output("dlsch11_ch0.m","dl11_ch0",
+		      write_output("dlsch11_r0.m","dl11_r0",
 				   &(PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[eNB_id][3][0]),
 				   PHY_vars_UE->lte_frame_parms.ofdm_symbol_size*nsymb/2,1,1);
 		    
 		    //pdsch_vars
-		    dump_dlsch2(PHY_vars_UE,eNB_id,coded_bits_per_codeword);
+		    dump_dlsch2(PHY_vars_UE,eNB_id,coded_bits_per_codeword,round);
 		    //dump_dlsch2(PHY_vars_UE,eNB_id_i,coded_bits_per_codeword);
 		    write_output("dlsch_e.m","e",PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->e,coded_bits_per_codeword,1,4);
 
@@ -3120,10 +3129,40 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 	    avg_iter += ret;
 	    iter_trials++;
 	    if (n_frames==1) 
-	      printf("No DLSCH errors found,uncoded ber %f\n",uncoded_ber);
+	      printf("No DLSCH errors found (round %d),uncoded ber %f\n",round,uncoded_ber);
 
 	    PHY_vars_UE->total_TBS[eNB_id] =  PHY_vars_UE->total_TBS[eNB_id] + PHY_vars_UE->dlsch_ue[eNB_id][0]->harq_processes[PHY_vars_UE->dlsch_ue[eNB_id][0]->current_harq_pid]->TBS;
 	    TB0_active = 0;
+	    if (PHY_vars_UE->dlsch_ue[eNB_id][0]->harq_processes[PHY_vars_UE->dlsch_ue[eNB_id][0]->current_harq_pid]->mimo_mode = LARGE_CDD) {   //try to decode second stream
+	      for (round = 0 ; round < PHY_vars_UE->dlsch_ue[eNB_id][0]->harq_processes[PHY_vars_UE->dlsch_ue[eNB_id][0]->current_harq_pid]->round ; round++) {
+
+		dlsch0_ue_harq = PHY_vars_UE->dlsch_ue[eNB_id][0]->harq_processes[PHY_vars_UE->dlsch_ue[eNB_id][0]->current_harq_pid];
+		dlsch0_eNB_harq = PHY_vars_UE->dlsch_eNB[eNB_id]->harq_processes[PHY_vars_UE->dlsch_ue[eNB_id][0]->current_harq_pid];
+		dlsch0_eNB_harq->mimo_mode    = LARGE_CDD;
+		dlsch0_eNB_harq->rb_alloc[0]  = dlsch0_ue_harq->rb_alloc[0];
+		dlsch0_eNB_harq->nb_rb        = dlsch0_ue_harq->nb_rb;
+		dlsch0_eNB_harq->mcs          = dlsch0_ue_harq->mcs;
+		dlsch0_eNB_harq->rvidx        = dlsch0_ue_harq->rvidx;
+		dlsch0_eNB_harq->Nl           = dlsch0_ue_harq->Nl;
+		
+		dlsch0_eNB_harq->TBS          = dlsch0_ue_harq->TBS;
+		dlsch0_eNB_harq->dl_power_off = dlsch0_ue_harq->dl_power_off;
+		dlsch0_eNB_harq->status       = dlsch0_ue_harq->status;
+
+		PHY_vars_UE->dlsch_eNB[eNB_id]->active       = PHY_vars_UE->dlsch_ue[eNB_id][0]->active;
+		PHY_vars_UE->dlsch_eNB[eNB_id]->rnti         = PHY_vars_UE->dlsch_ue[eNB_id][0]->rnti;
+
+		dlsch_encoding(PHY_vars_UE->dlsch_ue[eNB_id][0]->harq_processes[PHY_vars_UE->dlsch_ue[eNB_id][0]->current_harq_pid]->b,
+			       &PHY_vars_UE->lte_frame_parms,
+			       num_pdcch_symbols,
+			       PHY_vars_UE->dlsch_eNB[0],
+			       0,subframe,
+			       &PHY_vars_UE->dlsch_rate_matching_stats,
+			       &PHY_vars_UE->dlsch_turbo_encoding_stats,
+			       &PHY_vars_UE->dlsch_interleaving_stats
+			       );		
+	      }
+	    }
 	  }	
 	  else {
 	    errs[round]++;
@@ -3133,7 +3172,7 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 		
 	    if (n_frames==1) {
 	      //if ((n_frames==1) || (SNR>=30)) {
-	      printf("DLSCH errors found, uncoded ber %f\n",uncoded_ber);
+	      printf("DLSCH errors found (round %d), uncoded ber %f\n",round,uncoded_ber);
 	      for (s=0;s<PHY_vars_UE->dlsch_ue[0][0]->harq_processes[0]->C;s++) {
 		if (s<PHY_vars_UE->dlsch_ue[0][0]->harq_processes[0]->Cminus)
 		  Kr = PHY_vars_UE->dlsch_ue[0][0]->harq_processes[0]->Kminus;
@@ -3146,43 +3185,61 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
                 for (i=0;i<Kr_bytes;i++)
 		  printf("%d : %x (%x)\n",i,PHY_vars_UE->dlsch_ue[0][0]->harq_processes[0]->c[s][i],PHY_vars_UE->dlsch_ue[0][0]->harq_processes[0]->c[s][i]^PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->c[s][i]);
 	      }
-	      write_output("rxsig0.m","rxs0", &PHY_vars_UE->lte_ue_common_vars.rxdata[0][0],10*PHY_vars_UE->lte_frame_parms.samples_per_tti,1,1);
-	      write_output("rxsigF0.m","rxsF0", &PHY_vars_UE->lte_ue_common_vars.rxdataF[0][0],2*PHY_vars_UE->lte_frame_parms.ofdm_symbol_size*nsymb,2,1);
+	      sprintf(fname,"rxsig0_r%d.m",round);
+	      sprintf(vname,"rxs0_r%d.m",round);
+	      write_output(fname,vname, &PHY_vars_UE->lte_ue_common_vars.rxdata[0][0],10*PHY_vars_UE->lte_frame_parms.samples_per_tti,1,1);
+	      sprintf(fname,"rxsigF0_r%d.m",round);
+	      sprintf(vname,"rxs0F_r%d.m",round);
+	      write_output(fname,vname, &PHY_vars_UE->lte_ue_common_vars.rxdataF[0][0],2*PHY_vars_UE->lte_frame_parms.ofdm_symbol_size*nsymb,2,1);
 	      if (PHY_vars_UE->lte_frame_parms.nb_antennas_rx>1) {
-		write_output("rxsig1.m","rxs1", PHY_vars_UE->lte_ue_common_vars.rxdata[1],PHY_vars_UE->lte_frame_parms.samples_per_tti,1,1);
-		write_output("rxsigF1.m","rxsF1", PHY_vars_UE->lte_ue_common_vars.rxdataF[1],2*PHY_vars_UE->lte_frame_parms.ofdm_symbol_size*nsymb,2,1);
+		sprintf(fname,"rxsig1_r%d.m",round);
+		sprintf(vname,"rxs1_r%d.m",round);
+		write_output(fname,vname, PHY_vars_UE->lte_ue_common_vars.rxdata[1],PHY_vars_UE->lte_frame_parms.samples_per_tti,1,1);
+		sprintf(fname,"rxsig1F_r%d.m",round);
+		sprintf(vname,"rxs1F_r%d.m",round);
+		write_output(fname,vname, PHY_vars_UE->lte_ue_common_vars.rxdataF[1],2*PHY_vars_UE->lte_frame_parms.ofdm_symbol_size*nsymb,2,1);
 	      }
-	      
-	      write_output("dlsch00_ch0.m","dl00_ch0",
+	      sprintf(fname,"dlsch00_r%d.m",round);
+	      sprintf(vname,"dl00_r%d.m",round);
+	      write_output(fname,vname,
 			   &(PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[eNB_id][0][0]),
 			   PHY_vars_UE->lte_frame_parms.ofdm_symbol_size*nsymb,1,1);
-	      if (PHY_vars_UE->lte_frame_parms.nb_antennas_rx>1)
-		write_output("dlsch01_ch0.m","dl01_ch0",
+	      if (PHY_vars_UE->lte_frame_parms.nb_antennas_rx>1) {
+		sprintf(fname,"dlsch01_r%d.m",round);
+		sprintf(vname,"dl01_r%d.m",round);
+		write_output(fname,vname,
 			     &(PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[eNB_id][1][0]),
 			     PHY_vars_UE->lte_frame_parms.ofdm_symbol_size*nsymb/2,1,1);
-	      if (PHY_vars_eNB->lte_frame_parms.nb_antennas_tx>1)
-		write_output("dlsch10_ch0.m","dl10_ch0",
+	      }
+	      if (PHY_vars_eNB->lte_frame_parms.nb_antennas_tx>1) {
+		sprintf(fname,"dlsch10_r%d.m",round);
+		sprintf(vname,"dl10_r%d.m",round);
+		write_output(fname,vname,
 			     &(PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[eNB_id][2][0]),
 			     PHY_vars_UE->lte_frame_parms.ofdm_symbol_size*nsymb/2,1,1);
-	      if ((PHY_vars_UE->lte_frame_parms.nb_antennas_rx>1) && (PHY_vars_eNB->lte_frame_parms.nb_antennas_tx>1))
-		write_output("dlsch11_ch0.m","dl11_ch0",
+	      }
+	      if ((PHY_vars_UE->lte_frame_parms.nb_antennas_rx>1) && (PHY_vars_eNB->lte_frame_parms.nb_antennas_tx>1)) {
+		sprintf(fname,"dlsch11_r%d.m",round);
+		sprintf(vname,"dl11_r%d.m",round);
+		write_output(fname,vname,
 			     &(PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[eNB_id][3][0]),
 			     PHY_vars_UE->lte_frame_parms.ofdm_symbol_size*nsymb/2,1,1);
-	      
+	      }
 	      //pdsch_vars
-	      dump_dlsch2(PHY_vars_UE,eNB_id,coded_bits_per_codeword);
+	      dump_dlsch2(PHY_vars_UE,eNB_id,coded_bits_per_codeword,round);
+	      /*
 	      write_output("dlsch_e.m","e",PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->e,coded_bits_per_codeword,1,4);
 	      write_output("dlsch_ber_bit.m","ber_bit",uncoded_ber_bit,coded_bits_per_codeword,1,0);
 	      write_output("dlsch_eNB_w.m","w",PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->w[0],3*(tbs+64),1,4);
 	      write_output("dlsch_UE_w.m","w",PHY_vars_UE->dlsch_ue[0][0]->harq_processes[0]->w[0],3*(tbs+64),1,0);
-
+	      */
 	      
-	      exit(-1);
+	      if (round == 3) exit(-1);
 	    }
 	    //	    printf("round %d errors %d/%d\n",round,errs[round],trials);
 
 	    round++;
-	
+	    //	    PHY_vars_UE->dlsch_ue[0][0]->harq_processes[0]->round++;
 	  }
 #ifdef XFORMS
 	  phy_scope_UE(form_ue, 

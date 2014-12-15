@@ -394,7 +394,8 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
 				     eNB_id, 
 				     symbol, 
 				     get_Qm(dlsch0_harq->mcs), 
-				     get_Qm(dlsch1_harq->mcs), 
+				     get_Qm(dlsch1_harq->mcs),
+				     dlsch0_harq->round,
 				     nb_rb, 
 				     lte_ue_pdsch_vars[eNB_id]->log2_maxh); 
       // compute correlation between signal and interference channels
@@ -524,7 +525,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
       if (frame_parms->nb_antennas_tx_eNB == 2) {
 	dlsch_detection_mrc(frame_parms,
 			    lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0,
-			    lte_ue_pdsch_vars[eNB_id]->rxdataF_comp1,
+			    lte_ue_pdsch_vars[eNB_id]->rxdataF_comp1[dlsch0_harq->round],
 			    lte_ue_pdsch_vars[eNB_id]->dl_ch_rho_ext,
 			    lte_ue_pdsch_vars[eNB_id]->rho,
 			    lte_ue_pdsch_vars[eNB_id]->dl_ch_mag0,
@@ -640,7 +641,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
 	*/
 	dlsch_qpsk_qpsk_llr(frame_parms,
 			    lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0,
-			    lte_ue_pdsch_vars[eNB_id]->rxdataF_comp1,
+			    lte_ue_pdsch_vars[eNB_id]->rxdataF_comp1[dlsch0_harq->round],
 			    lte_ue_pdsch_vars[eNB_id]->dl_ch_rho_ext,
 			    lte_ue_pdsch_vars[eNB_id]->llr[0],
 			    symbol,first_symbol_flag,nb_rb,
@@ -650,7 +651,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
       else if (get_Qm(dlsch1_harq->mcs) == 4) { 
 	dlsch_qpsk_16qam_llr(frame_parms,
 			     lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0,
-			     lte_ue_pdsch_vars[eNB_id]->rxdataF_comp1,
+			     lte_ue_pdsch_vars[eNB_id]->rxdataF_comp1[dlsch0_harq->round],
 			     lte_ue_pdsch_vars[eNB_id]->dl_ch_mag1,
 			     lte_ue_pdsch_vars[eNB_id]->dl_ch_rho_ext,
 			     lte_ue_pdsch_vars[eNB_id]->llr[0],
@@ -661,7 +662,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
       else {
 	dlsch_qpsk_64qam_llr(frame_parms,
 			     lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0,
-			     lte_ue_pdsch_vars[eNB_id]->rxdataF_comp1,
+			     lte_ue_pdsch_vars[eNB_id]->rxdataF_comp1[dlsch0_harq->round],
 			     lte_ue_pdsch_vars[eNB_id]->dl_ch_mag1,
 			     lte_ue_pdsch_vars[eNB_id]->dl_ch_rho_ext,
 			     lte_ue_pdsch_vars[eNB_id]->llr[0],
@@ -1368,6 +1369,7 @@ void dlsch_channel_compensation_TM3(LTE_DL_FRAME_PARMS *frame_parms,
 				    unsigned char symbol,
 				    unsigned char mod_order0,
 				    unsigned char mod_order1,
+				    int round,
 				    unsigned short nb_rb,
 				    unsigned char output_shift) {
   
@@ -1383,7 +1385,7 @@ void dlsch_channel_compensation_TM3(LTE_DL_FRAME_PARMS *frame_parms,
   int **dl_ch_magb0           = lte_ue_pdsch_vars->dl_ch_magb0;
   int **dl_ch_magb1           = lte_ue_pdsch_vars->dl_ch_magb1;
   int **rxdataF_comp0         = lte_ue_pdsch_vars->rxdataF_comp0;
-  int **rxdataF_comp1         = lte_ue_pdsch_vars->rxdataF_comp1;
+  int **rxdataF_comp1         = lte_ue_pdsch_vars->rxdataF_comp1[0];
   __m128i mmtmpD0,mmtmpD1,mmtmpD2,mmtmpD3,QAM_amp0_128,QAM_amp0_128b,QAM_amp1_128,QAM_amp1_128b;   
     
 
@@ -3350,35 +3352,35 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 
 #ifdef USER_MODE
 
-void dump_dlsch2(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint16_t coded_bits_per_codeword) {
+void dump_dlsch2(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint16_t coded_bits_per_codeword,int round) {
 
   unsigned int nsymb = (phy_vars_ue->lte_frame_parms.Ncp == 0) ? 14 : 12;
   char fname[32],vname[32];
   int N_RB_DL=phy_vars_ue->lte_frame_parms.N_RB_DL;
 
-  sprintf(fname,"dlsch%d_rxF_ext0.m",eNB_id);
-  sprintf(vname,"dl%d_rxF_ext0",eNB_id);
+  sprintf(fname,"dlsch%d_rxF_r%d_ext0.m",eNB_id,round);
+  sprintf(vname,"dl%d_rxF_r%d_ext0",eNB_id,round);
   write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->rxdataF_ext[0],12*N_RB_DL*nsymb,1,1);
   if (phy_vars_ue->lte_frame_parms.nb_antennas_rx >1) {
-    sprintf(fname,"dlsch%d_rxF_ext1.m",eNB_id);
-    sprintf(vname,"dl%d_rxF_ext1",eNB_id);
+    sprintf(fname,"dlsch%d_rxF_r%d_ext1.m",eNB_id,round);
+    sprintf(vname,"dl%d_rxF_r%d_ext1",eNB_id,round);
     write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->rxdataF_ext[1],12*N_RB_DL*nsymb,1,1);
   }
-  sprintf(fname,"dlsch%d_ch_ext00.m",eNB_id);
-  sprintf(vname,"dl%d_ch_ext00",eNB_id);
+  sprintf(fname,"dlsch%d_ch_r%d_ext00.m",eNB_id,round);
+  sprintf(vname,"dl%d_ch_r%d_ext00",eNB_id,round);
   write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext[0],12*N_RB_DL*nsymb,1,1);
   if (phy_vars_ue->lte_frame_parms.nb_antennas_rx == 2) {
-    sprintf(fname,"dlsch%d_ch_ext01.m",eNB_id);
-    sprintf(vname,"dl%d_ch_ext01",eNB_id);
+    sprintf(fname,"dlsch%d_ch_r%d_ext01.m",eNB_id,round);
+    sprintf(vname,"dl%d_ch_r%d_ext01",eNB_id,round);
     write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext[1],12*N_RB_DL*nsymb,1,1);
   }
   if (phy_vars_ue->lte_frame_parms.nb_antennas_tx_eNB == 2) {
-    sprintf(fname,"dlsch%d_ch_ext10.m",eNB_id);
-    sprintf(vname,"dl%d_ch_ext10",eNB_id);
+    sprintf(fname,"dlsch%d_ch_r%d_ext10.m",eNB_id,round);
+    sprintf(vname,"dl%d_ch_r%d_ext10",eNB_id,round);
     write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext[2],12*N_RB_DL*nsymb,1,1);
     if (phy_vars_ue->lte_frame_parms.nb_antennas_rx == 2) {
-      sprintf(fname,"dlsch%d_ch_ext11.m",eNB_id);
-      sprintf(vname,"dl%d_ch_ext11",eNB_id);
+      sprintf(fname,"dlsch%d_ch_r%d_ext11.m",eNB_id,round);
+      sprintf(vname,"dl%d_ch_r%d_ext11",eNB_id,round);
       write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext[3],12*N_RB_DL*nsymb,1,1);
   }
   }
@@ -3387,31 +3389,31 @@ void dump_dlsch2(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint16_t coded_bits_per
     write_output("dlsch%d_ch_ext10.m","dl10_ch0_ext",lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext[2],12*N_RB_DL*nsymb,1,1);
     write_output("dlsch%d_ch_ext11.m","dl11_ch0_ext",lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext[3],12*N_RB_DL*nsymb,1,1);
   */
-  sprintf(fname,"dlsch%d_rho.m",eNB_id);
-  sprintf(vname,"dl_rho%d",eNB_id);
+  sprintf(fname,"dlsch%d_r%d_rho.m",eNB_id,round);
+  sprintf(vname,"dl_rho_r%d_%d",eNB_id,round);
   write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->dl_ch_rho_ext[0],12*N_RB_DL*nsymb,1,1);
 
-  sprintf(fname,"dlsch%d_rxF_comp0.m",eNB_id);
-  sprintf(vname,"dl%d_rxF_comp0",eNB_id);
+  sprintf(fname,"dlsch%d_rxF_r%d_comp0.m",eNB_id,round);
+  sprintf(vname,"dl%d_rxF_r%d_comp0",eNB_id,round);
   write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0[0],12*N_RB_DL*nsymb,1,1);
 
   if (phy_vars_ue->lte_frame_parms.nb_antennas_tx_eNB == 2) {
-    sprintf(fname,"dlsch%d_rxF_comp1.m",eNB_id);
-    sprintf(vname,"dl%d_rxF_comp1",eNB_id);
-    write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->rxdataF_comp1[0],12*N_RB_DL*nsymb,1,1);
+    sprintf(fname,"dlsch%d_rxF_r%d_comp1.m",eNB_id,round);
+    sprintf(vname,"dl%d_rxF_r%d_comp1",eNB_id,round);
+    write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->rxdataF_comp1[0][round],12*N_RB_DL*nsymb,1,1);
   }
 
-  sprintf(fname,"dlsch%d_rxF_llr.m",eNB_id);
-  sprintf(vname,"dl%d_llr",eNB_id);
+  sprintf(fname,"dlsch%d_rxF_r%d_llr.m",eNB_id,round);
+  sprintf(vname,"dl%d_r%d_llr",eNB_id,round);
   write_output(fname,vname, phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->llr[0],coded_bits_per_codeword,1,0);
-  sprintf(fname,"dlsch%d_mag1.m",eNB_id);
-  sprintf(vname,"dl%d_mag1",eNB_id);
+  sprintf(fname,"dlsch%d_r%d_mag1.m",eNB_id,round);
+  sprintf(vname,"dl%d_r%d_mag1",eNB_id,round);
   write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->dl_ch_mag0[0],12*N_RB_DL*nsymb,1,1);
-  sprintf(fname,"dlsch%d_mag2.m",eNB_id);
-  sprintf(vname,"dl%d_mag2",eNB_id);
+  sprintf(fname,"dlsch%d_r%d_mag2.m",eNB_id,round);
+  sprintf(vname,"dl%d_r%d_mag2",eNB_id,round);
   write_output(fname,vname,phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->dl_ch_magb0[0],12*N_RB_DL*nsymb,1,1);
 
-  printf("log2_maxh = %d\n",phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->log2_maxh);
+  //  printf("log2_maxh = %d\n",phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->log2_maxh);
 }
 #endif
 

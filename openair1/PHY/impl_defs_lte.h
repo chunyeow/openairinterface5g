@@ -638,7 +638,7 @@ typedef struct {
   /// Received frequency-domain signal after extraction and channel compensation
   int32_t **rxdataF_comp0;
   /// Received frequency-domain signal after extraction and channel compensation
-  int32_t **rxdataF_comp1;
+  int32_t **rxdataF_comp1[8];
   /// Downlink channel estimates extracted in PRBS
   int32_t **dl_ch_estimates_ext;
   /// Downlink cross-correlation of MIMO channel estimates (unquantized PMI) extracted in PRBS
