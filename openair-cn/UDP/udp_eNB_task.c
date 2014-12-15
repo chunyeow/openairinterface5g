@@ -52,6 +52,7 @@
 #include "UTIL/LOG/log.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
 
+
 #define IPV4_ADDR    "%u.%u.%u.%u"
 #define IPV4_ADDR_FORMAT(aDDRESS)               \
     (uint8_t)((aDDRESS)  & 0x000000ff),         \
@@ -372,12 +373,13 @@ void *udp_eNB_task(void *args_p)
                         (struct sockaddr *)&peer_addr,
                         sizeof(struct sockaddr_in));
 
-                    itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), udp_data_req_p->buffer);
-
                     if (bytes_written != udp_data_req_p->buffer_length) {
-                        LOG_E(UDP_, "There was an error while writing to socket "
-                            "(%d:%s)\n", errno, strerror(errno));
+                        LOG_E(UDP_, "There was an error while writing to socket %u rc %d"
+                            "(%d:%s) May be normal if GTPU kernel module loaded on same host (may NF_DROP IP packet)\n",
+                            udp_sd, bytes_written, errno, strerror(errno));
                     }
+
+                    itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), udp_data_req_p->buffer);
                 } break;
 
                 case TERMINATE_MESSAGE: {
