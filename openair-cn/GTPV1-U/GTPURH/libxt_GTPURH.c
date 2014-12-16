@@ -50,14 +50,22 @@
 #endif
 
 enum {
-    PARAM_ACTION = 1 << 0,
+    PARAM_LADDR  = 1 << 0,
+    PARAM_LTUN   = 1 << 1,
+    PARAM_RADDR  = 1 << 2,
+    PARAM_RTUN   = 1 << 3,
+    PARAM_ACTION = 1 << 4,
 };
 
 static void GTPURH_help(void)
 {
     printf(
-"GTPURH target options\n"
-"  --action         value        Set action <value: remove>\n");
+                    "GTPUAH target options\n"
+                    "  --action         value        Set action <value: remove>\n"
+                    "  --own-ip         value        Set own IP address\n"
+                    "  --own-tun        value        Set own tunnel id <value: 1-2^31>\n"
+                    "  --peer-ip        value        Set peer IP address\n"
+                    "  --peer-tun       value        Set peer tunnel id <value: 1-2^31>\n");
 }
 
 #if (IPTVERSION <= 135)
@@ -97,17 +105,63 @@ void gtpurh_param_act(unsigned int status, const char *p1, ...)
 
 #endif
 
+static void parse_gtpurh_addr(const char *s, struct xt_gtpurh_target_info *info, int flag)
+{
+    in_addr_t addr;
+
+    if ((addr = inet_addr(s)) == -1) {
+        switch (flag) {
+            case PARAM_LADDR:
+                gtpurh_param_act(GTPURH_PARAM_BAD_VALUE, "GTPURH", "--own-ip", s);
+                break;
+            case PARAM_RADDR:
+                gtpurh_param_act(GTPURH_PARAM_BAD_VALUE, "GTPURH", "--peer-ip", s);
+                break;
+        }
+    }
+
+    switch (flag) {
+        case PARAM_LADDR:
+            info->laddr = addr;
+            break;
+        case PARAM_RADDR:
+            info->raddr = addr;
+            break;
+    }
+}
+
+static void parse_gtpurh_tunid(char *s, struct xt_gtpurh_target_info *info, int flag)
+{
+    unsigned int value;
+
+    if (!gtpurh_strtoui(s, &value, 0, UINT32_MAX)) {
+        switch (flag) {
+            case PARAM_LTUN:
+                gtpurh_param_act(GTPURH_PARAM_BAD_VALUE, "GTPURH", "--own-tun", s);
+                break;
+            case PARAM_RTUN:
+                gtpurh_param_act(GTPURH_PARAM_BAD_VALUE, "GTPURH", "--peer-tun", s);
+                break;
+        }
+    }
+
+    switch (flag) {
+        case PARAM_LTUN:
+            info->ltun = value;
+            break;
+        case PARAM_RTUN:
+            info->rtun = value;
+            break;
+    }
+}
 
 
 static void parse_gtpurh_action(char *s, struct xt_gtpurh_target_info *info, unsigned int *flags)
 {
-    if (!strcmp(s, "remove"))
-    {
+    if (!strcmp(s, "remove")) {
         info->action = PARAM_GTPURH_ACTION_REM;
         *flags |= PARAM_GTPURH_ACTION_REM;
-    }
-    else
-    {
+    } else {
         gtpurh_param_act(GTPURH_PARAM_BAD_VALUE, "GTPURH", "--action", s);
     }
 }
@@ -128,10 +182,30 @@ GTPURH_parse(int c, char **argv, int invert, unsigned int *flags,
     switch (c) 
     {
         case '1':
-                gtpurh_param_act(GTPURH_PARAM_ONLY_ONCE, "GTPURH", "--action", *flags & PARAM_ACTION);
-                parse_gtpurh_action(optarg, info, flags);
-                *flags |= PARAM_ACTION;
-                return 1;
+            gtpurh_param_act(GTPURH_PARAM_ONLY_ONCE, "GTPURH", "--own-ip", *flags & PARAM_LADDR);
+            parse_gtpurh_addr(optarg, info, PARAM_LADDR);
+            *flags |= PARAM_LADDR;
+            return 1;
+        case '2':
+            gtpurh_param_act(GTPURH_PARAM_ONLY_ONCE, "GTPURH", "--own-tun", *flags & PARAM_LTUN);
+            parse_gtpurh_tunid(optarg, info, PARAM_LTUN);
+            *flags |= PARAM_LTUN;
+            return 1;
+        case '3':
+            gtpurh_param_act(GTPURH_PARAM_ONLY_ONCE, "GTPURH", "--peer-ip", *flags & PARAM_RADDR);
+            parse_gtpurh_addr(optarg, info, PARAM_RADDR);
+            *flags |= PARAM_RADDR;
+            return 1;
+        case '4':
+            gtpurh_param_act(GTPURH_PARAM_ONLY_ONCE, "GTPURH", "--peer-tun", *flags & PARAM_RTUN);
+            parse_gtpurh_tunid(optarg, info, PARAM_RTUN);
+            *flags |= PARAM_RTUN;
+            return 1;
+        case '5':
+            gtpurh_param_act(GTPURH_PARAM_ONLY_ONCE, "GTPURH", "--action", *flags & PARAM_ACTION);
+            parse_gtpurh_action(optarg, info, flags);
+            *flags |= PARAM_ACTION;
+            return 1;
     }
 
     return 1;
@@ -143,10 +217,21 @@ static void GTPURH_check(unsigned int flags)
     {
         gtpurh_exit_error(PARAMETER_PROBLEM, "GTPURH: You must specify action");
     }
-
-    if (flags & PARAM_GTPURH_ACTION_REM)
+    if (!(flags & PARAM_LADDR))
     {
-        return;
+        gtpurh_exit_error(PARAMETER_PROBLEM, "GTPURH: You must specify local addr");
+    }
+    if (!(flags & PARAM_LTUN))
+    {
+        gtpurh_exit_error(PARAMETER_PROBLEM, "GTPURH: You must specify local tunnel id");
+    }
+    if (!(flags & PARAM_RADDR))
+    {
+        gtpurh_exit_error(PARAMETER_PROBLEM, "GTPURH: You must specify remote addr");
+    }
+    if (!(flags & PARAM_RTUN))
+    {
+        gtpurh_exit_error(PARAMETER_PROBLEM, "GTPURH: You must specify remote tunnel id");
     }
 }
 
@@ -191,8 +276,12 @@ GTPURH_print(const void *ip,
 }
 
 static struct option GTPURH_opts[] = {
-    { "action", 1, NULL, '1' },
-    { .name = NULL }
+                { "own-ip", 1, NULL, '1' },
+                { "own-tun", 1, NULL, '2' },
+                { "peer-ip", 1, NULL, '3' },
+                { "peer-tun", 1, NULL, '4' },
+                { "action", 1, NULL, '5' },
+                { .name = NULL }
 };
 
 #if (IPTVERSION <= 135)
