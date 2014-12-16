@@ -381,13 +381,21 @@ int logInit (void)
     g_log->log_component[TMR].filelog = 0;
     g_log->log_component[TMR].filelog_name = "";
     
+    g_log->log_component[USIM].name = "USIM";
+    g_log->log_component[USIM].level = LOG_DEBUG;
+    g_log->log_component[USIM].flag = LOG_NONE;
+    g_log->log_component[USIM].interval = 1;
+    g_log->log_component[USIM].fd = 0;
+    g_log->log_component[USIM].filelog = 0;
+    g_log->log_component[USIM].filelog_name = "/tmp/usim.txt";
+
 /* following log component are used for the localization*/    
     g_log->log_component[LOCALIZE].name = "LOCALIZE";
     g_log->log_component[LOCALIZE].level = LOG_EMERG;
     g_log->log_component[LOCALIZE].flag =  LOG_MED;
     g_log->log_component[LOCALIZE].interval =  1;
     g_log->log_component[LOCALIZE].fd = 0;
-    g_log->log_component[LOCALIZE].filelog = 1;
+    g_log->log_component[LOCALIZE].filelog = 0;
     g_log->log_component[LOCALIZE].filelog_name = "/tmp/localize.log";
     
     g_log->level2string[LOG_EMERG]         = "G"; //EMERG
@@ -587,7 +595,7 @@ void logRecord_thread_safe(const char *file, const char *func,
     }
     if ((g_log->log_component[comp].filelog) && (level == LOG_FILE)) {
       if (write(g_log->log_component[comp].fd, log_buffer, total_len) < total_len) {
-        // TODO assert ?
+	// TODO assert ?
       }
     }
 #endif
@@ -750,7 +758,7 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
     }
     if ((g_log->log_component[comp].filelog) && (level == LOG_FILE)) {
       if (write(g_log->log_component[comp].fd, c->log_buffer, len) < len) {
-        // TODO assert ?
+       // TODO assert ?
       }
     }
 #else

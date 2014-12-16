@@ -258,6 +258,7 @@ int main(int argc, char **argv) {
   int s,Kr,Kr_bytes;
   int dump_perf=0;
   int test_perf=0;
+  int dump_table=0;
   
   double effective_rate=0.0;
   char channel_model_input[10];
@@ -276,7 +277,7 @@ int main(int argc, char **argv) {
 
   logInit();
 
-  while ((c = getopt (argc, argv, "hapbm:n:Y:X:x:s:w:e:q:d:D:O:c:r:i:f:y:c:oA:C:R:g:N:l:S:T:QB:PI:L")) != -1) {
+  while ((c = getopt (argc, argv, "hapbXm:n:Y:X:x:s:w:e:q:d:D:O:c:r:i:f:y:c:oA:C:R:g:N:l:S:T:QB:PI:L")) != -1) {
     switch (c) {
     case 'a':
       channel_model = AWGN;
@@ -1313,17 +1314,22 @@ int main(int argc, char **argv) {
       // sort table
       qsort (table_tx, time_vector_tx.size, sizeof(double), &compare);
       qsort (table_rx, time_vector_rx.size, sizeof(double), &compare);
-#ifdef DEBUG      
-      int n;
-      printf("The transmitter raw data: \n");
-      for (n=0; n< time_vector_tx.size; n++)
-          printf("%f ", table_tx[n]);
-      printf("\n");
-      printf("The receiver raw data: \n");
-      for (n=0; n< time_vector_rx.size; n++)
-          printf("%f ", table_rx[n]);
-      printf("\n");
-#endif       
+      if (dump_table == 1 ) {
+	int n;
+	set_component_filelog(USIM); // file located in /tmp/usim.txt
+	LOG_F(USIM,"The transmitter raw data: \n");
+	for (n=0; n< time_vector_tx.size; n++){
+	  //   printf("%f ", table_tx[n]);
+	  LOG_F(USIM,"%f ", table_tx[n]);
+	}
+	LOG_F(USIM,"\n");
+	LOG_F(USIM,"The receiver raw data: \n");
+	for (n=0; n< time_vector_rx.size; n++){
+	  // printf("%f ", table_rx[n]);
+	  LOG_F(USIM,"%f ", table_rx[n]);
+	}
+     	LOG_F(USIM,"\n");
+      }       
       double tx_median = table_tx[time_vector_tx.size/2];
       double tx_q1 = table_tx[time_vector_tx.size/4];
       double tx_q3 = table_tx[3*time_vector_tx.size/4];

@@ -337,7 +337,7 @@ int main(int argc, char **argv) {
   int rballocset=0;
   int print_perf=0;
   int test_perf=0;
-
+  int dump_table=0;
   int llr8_flag=0;
 
   double effective_rate=0.0;
@@ -366,7 +366,7 @@ int main(int argc, char **argv) {
   snr0 = 0;
   num_layers = 1;
 
-  while ((c = getopt (argc, argv, "ahdpDe:m:n:o:s:f:t:c:g:r:F:x:y:z:AM:N:I:i:O:R:S:C:T:b:u:v:w:B:PLl:")) != -1) {
+  while ((c = getopt (argc, argv, "ahdpXDe:m:n:o:s:f:t:c:g:r:F:x:y:z:AM:N:I:i:O:R:S:C:T:b:u:v:w:B:PLl:")) != -1) {
     switch (c)
       {
       case 'a':
@@ -560,6 +560,9 @@ int main(int argc, char **argv) {
       case 'O':
 	test_perf=atoi(optarg);
 	//print_perf =1;
+	break;
+      case 'X':
+	dump_table=1;
 	break;
       case 'h':
       default:
@@ -3298,17 +3301,22 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
       // sort table
       qsort (table_tx, time_vector_tx.size, sizeof(double), &compare);
       qsort (table_rx, time_vector_rx.size, sizeof(double), &compare);
-#ifdef DEBUG      
-      int n;
-      printf("The transmitter raw data: \n");
-      for (n=0; n< time_vector_tx.size; n++)
-          printf("%f ", table_tx[n]);
-      printf("\n");
-      printf("The receiver raw data: \n");
-      for (n=0; n< time_vector_rx.size; n++)
-          printf("%f ", table_rx[n]);
-      printf("\n");
-#endif       
+      if (dump_table == 1 ) {
+	set_component_filelog(USIM);  // file located in /tmp/usim.txt
+	int n;
+	LOG_F(USIM,"The transmitter raw data: \n");
+	for (n=0; n< time_vector_tx.size; n++){
+	  printf("%f ", table_tx[n]);
+	  LOG_F(USIM,"%f ", table_tx[n]);
+	}
+	LOG_F(USIM,"\n");
+	LOG_F(USIM,"The receiver raw data: \n");
+	for (n=0; n< time_vector_rx.size; n++){
+	  // printf("%f ", table_rx[n]);
+      	  LOG_F(USIM,"%f ", table_rx[n]);
+	}   
+	LOG_F(USIM,"\n");
+      }
       double tx_median = table_tx[time_vector_tx.size/2];
       double tx_q1 = table_tx[time_vector_tx.size/4];
       double tx_q3 = table_tx[3*time_vector_tx.size/4];
