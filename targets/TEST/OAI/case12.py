@@ -50,6 +50,7 @@ NUM_TRIALS=3
 
 PRB=[25,50,100]
 MCS=[0,4,9,10,13,16,17,22,27]
+SNR=[0,0,0,0,0,0,0,0,0]
 ANT_TX=2  # 2 
 ANT_RX=2  # 2 
 PDCCH=2 #, 2, 3, 4
@@ -59,7 +60,7 @@ MIN_SNR=2
 MAX_SNR=34
 PERF=75
 OPT="-L"
-FRAME=1000
+FRAME=2000
 
 #OPT="-L -d" # 8bit decoder , activate dci decoding at UE
 
@@ -116,6 +117,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug,cpu):
                                         match = oai.send_expect_re(cmd, 'passed', 0, 1000)
                                       
                                         if match :
+                                            #SNR[j]=q
                                             log.ok(case, str(test), name, conf, '', logfile)
                                             MIN_SNR = q -1 # just to speed up the test
                                             test+=1

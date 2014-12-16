@@ -58,7 +58,7 @@ MIN_SNR=2
 MAX_SNR=34
 PERF=75
 OPT="-L"
-FRAME=1000
+FRAME=2000
 #OPT="-L -d" # 8bit decoder , activate dci decoding at UE
 
 
