@@ -908,8 +908,21 @@ int main(int argc, char **argv) {
       // initialization
       struct list time_vector_tx;
       initialize(&time_vector_tx);
+      struct list time_vector_tx_ifft;
+      initialize(&time_vector_tx_ifft);
+      struct list time_vector_tx_mod;
+      initialize(&time_vector_tx_mod);
+      struct list time_vector_tx_enc;
+      initialize(&time_vector_tx_enc);
+
       struct list time_vector_rx;
       initialize(&time_vector_rx);
+      struct list time_vector_rx_fft;
+      initialize(&time_vector_rx_fft);
+      struct list time_vector_rx_demod;
+      initialize(&time_vector_rx_demod);
+      struct list time_vector_rx_dec;
+      initialize(&time_vector_rx_dec);
       
       for (trials = 0;trials<n_frames;trials++) {
 	//      printf("*");
@@ -1287,8 +1300,18 @@ int main(int argc, char **argv) {
 	phy_scope_eNB(form_enb,PHY_vars_eNB,0);
 #endif       
         /*calculate the total processing time for each packet, get the max, min, and number of packets that exceed t>3000us*/
-        double t_tx = (double)PHY_vars_UE->phy_proc_tx.p_time/cpu_freq_GHz/1000.0;        
-        double t_rx = (double)PHY_vars_eNB->phy_proc_rx.p_time/cpu_freq_GHz/1000.0;
+        
+	    double t_tx = (double)PHY_vars_UE->phy_proc_tx.p_time/cpu_freq_GHz/1000.0;        
+        double t_tx_ifft = (double)PHY_vars_UE->ofdm_mod_stats.p_time/cpu_freq_GHz/1000.0;        
+        double t_tx_mod = (double)PHY_vars_UE->ulsch_modulation_stats.p_time/cpu_freq_GHz/1000.0;        
+        double t_tx_enc = (double)PHY_vars_UE->ulsch_encoding_stats.p_time/cpu_freq_GHz/1000.0;        
+
+
+        double t_rx = (double)PHY_vars_eNB->phy_proc_rx.p_time/cpu_freq_GHz/1000.0;        
+        double t_rx_fft = (double)PHY_vars_eNB->ofdm_demod_stats.p_time/cpu_freq_GHz/1000.0;        
+        double t_rx_demod = (double)PHY_vars_eNB->ulsch_demodulation_stats.p_time/cpu_freq_GHz/1000.0;        
+        double t_rx_dec = (double)PHY_vars_eNB->ulsch_decoding_stats.p_time/cpu_freq_GHz/1000.0;    
+            
         if (t_tx > t_tx_max)
             t_tx_max = t_tx;
         if (t_tx < t_tx_min)
@@ -1303,13 +1326,35 @@ int main(int argc, char **argv) {
             n_rx_dropped++;
         
         push_front(&time_vector_tx, t_tx);
+        push_front(&time_vector_tx_ifft, t_tx_ifft);
+        push_front(&time_vector_tx_mod, t_tx_mod);
+        push_front(&time_vector_tx_enc, t_tx_enc);
+
         push_front(&time_vector_rx, t_rx);
+        push_front(&time_vector_rx_fft, t_rx_fft);
+        push_front(&time_vector_rx_demod, t_rx_demod);
+        push_front(&time_vector_rx_dec, t_rx_dec);
+        
+        
       }   //trials
+      
       double table_tx[time_vector_tx.size];
       totable(table_tx, &time_vector_tx);
-
+      double table_tx_ifft[time_vector_tx_ifft.size];
+      totable(table_tx_ifft, &time_vector_tx_ifft);
+      double table_tx_mod[time_vector_tx_mod.size];
+      totable(table_tx_mod, &time_vector_tx_mod);
+      double table_tx_enc[time_vector_tx_enc.size];
+      totable(table_tx_enc, &time_vector_tx_enc);
+      
       double table_rx[time_vector_rx.size];
       totable(table_rx, &time_vector_rx);
+      double table_rx_fft[time_vector_rx_fft.size];
+      totable(table_rx_fft, &time_vector_rx_fft);
+      double table_rx_demod[time_vector_rx_demod.size];
+      totable(table_rx_demod, &time_vector_rx_demod);
+      double table_rx_dec[time_vector_rx_dec.size];
+      totable(table_rx_dec, &time_vector_rx_dec);               
       
       // sort table
       qsort (table_tx, time_vector_tx.size, sizeof(double), &compare);
@@ -1330,15 +1375,49 @@ int main(int argc, char **argv) {
 	}
      	LOG_F(USIM,"\n");
       }       
+      
       double tx_median = table_tx[time_vector_tx.size/2];
       double tx_q1 = table_tx[time_vector_tx.size/4];
       double tx_q3 = table_tx[3*time_vector_tx.size/4];
-      
+     
+      double tx_ifft_median = table_tx_ifft[time_vector_tx_ifft.size/2];
+      double tx_ifft_q1 = table_tx_ifft[time_vector_tx_ifft.size/4];
+      double tx_ifft_q3 = table_tx_ifft[3*time_vector_tx_ifft.size/4];
+
+      double tx_mod_median = table_tx_mod[time_vector_tx_mod.size/2];
+      double tx_mod_q1 = table_tx_mod[time_vector_tx_mod.size/4];
+      double tx_mod_q3 = table_tx_mod[3*time_vector_tx_mod.size/4];
+
+      double tx_enc_median = table_tx_enc[time_vector_tx_enc.size/2];
+      double tx_enc_q1 = table_tx_enc[time_vector_tx_enc.size/4];
+      double tx_enc_q3 = table_tx_enc[3*time_vector_tx_enc.size/4];
+
       double rx_median = table_rx[time_vector_rx.size/2];
       double rx_q1 = table_rx[time_vector_rx.size/4];
       double rx_q3 = table_rx[3*time_vector_rx.size/4];
+
+      double rx_fft_median = table_rx_fft[time_vector_rx_fft.size/2];
+      double rx_fft_q1 = table_rx_fft[time_vector_rx_fft.size/4];
+      double rx_fft_q3 = table_rx_fft[3*time_vector_rx_fft.size/4];
+
+      double rx_demod_median = table_rx_demod[time_vector_rx_demod.size/2];
+      double rx_demod_q1 = table_rx_demod[time_vector_rx_demod.size/4];
+      double rx_demod_q3 = table_rx_demod[3*time_vector_rx_demod.size/4];
+
+      double rx_dec_median = table_rx_dec[time_vector_rx_dec.size/2];
+      double rx_dec_q1 = table_rx_dec[time_vector_rx_dec.size/4];
+      double rx_dec_q3 = table_rx_dec[3*time_vector_rx_dec.size/4];
+
       double std_phy_proc_tx=0;
+      double std_phy_proc_tx_ifft=0;
+      double std_phy_proc_tx_mod=0;
+      double std_phy_proc_tx_enc=0;
+
       double std_phy_proc_rx=0;
+      double std_phy_proc_rx_fft=0;
+      double std_phy_proc_rx_demod=0;
+      double std_phy_proc_rx_dec=0;
+      
       printf("\n**********rb: %d ***mcs : %d  *********SNR = %f dB (%f): TX %d dB (gain %f dB), N0W %f dB, I0 %d dB, delta_IF %d [ (%d,%d) dB / (%d,%d) dB ]**************************\n",
 	     nb_rb,mcs,SNR,SNR2,
 	     tx_lev_dB,
@@ -1404,9 +1483,15 @@ int main(int argc, char **argv) {
         std_phy_proc_tx = sqrt((double)PHY_vars_UE->phy_proc_tx.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_UE->phy_proc_tx.trials - pow((double)PHY_vars_UE->phy_proc_tx.diff/PHY_vars_UE->phy_proc_tx.trials/cpu_freq_GHz/1000,2));
 	printf("Total PHY proc tx                 :%f us (%d trials)\n",(double)PHY_vars_UE->phy_proc_tx.diff/PHY_vars_UE->phy_proc_tx.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->phy_proc_tx.trials);
 	printf("|__ Statistics                         std: %f us max: %fus min: %fus median %fus q1 %fus q3 %fus n_dropped: %d packet \n",std_phy_proc_tx, t_tx_max, t_tx_min, tx_median, tx_q1, tx_q3, n_tx_dropped);
+	std_phy_proc_tx_ifft = sqrt((double)PHY_vars_UE->ofdm_mod_stats.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_UE->ofdm_mod_stats.trials - pow((double)PHY_vars_UE->ofdm_mod_stats.diff/PHY_vars_UE->ofdm_mod_stats.trials/cpu_freq_GHz/1000,2));
 	printf("OFDM_mod time                     :%f us (%d trials)\n",(double)PHY_vars_UE->ofdm_mod_stats.diff/PHY_vars_UE->ofdm_mod_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ofdm_mod_stats.trials);
+    printf("|__ Statistics                         std: %f us median %fus q1 %fus q3 %fus \n",std_phy_proc_tx_ifft, tx_ifft_median, tx_ifft_q1, tx_ifft_q3);
+	std_phy_proc_tx_mod = sqrt((double)PHY_vars_UE->ulsch_modulation_stats.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_UE->ulsch_modulation_stats.trials - pow((double)PHY_vars_UE->ulsch_modulation_stats.diff/PHY_vars_UE->ulsch_modulation_stats.trials/cpu_freq_GHz/1000,2));
 	printf("ULSCH modulation time             :%f us (%d trials)\n",(double)PHY_vars_UE->ulsch_modulation_stats.diff/PHY_vars_UE->ulsch_modulation_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ulsch_modulation_stats.trials);
+		printf("|__ Statistics                         std: %f us median %fus q1 %fus q3 %fus \n",std_phy_proc_tx_mod, tx_mod_median, tx_mod_q1, tx_mod_q3);
+	    std_phy_proc_tx_enc = sqrt((double)PHY_vars_UE->ulsch_encoding_stats.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_UE->ulsch_encoding_stats.trials - pow((double)PHY_vars_UE->ulsch_encoding_stats.diff/PHY_vars_UE->ulsch_encoding_stats.trials/cpu_freq_GHz/1000,2));
 	printf("ULSCH encoding time               :%f us (%d trials)\n",(double)PHY_vars_UE->ulsch_encoding_stats.diff/PHY_vars_UE->ulsch_encoding_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ulsch_encoding_stats.trials);
+	printf("|__ Statistics                         std: %f us median %fus q1 %fus q3 %fus \n",std_phy_proc_tx_enc, tx_enc_median, tx_enc_q1, tx_enc_q3);
 	printf("|__ ULSCH segmentation time           :%f us (%d trials)\n",(double)PHY_vars_UE->ulsch_segmentation_stats.diff/PHY_vars_UE->ulsch_segmentation_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ulsch_segmentation_stats.trials);
 	printf("|__ ULSCH turbo encoding time         :%f us (%d trials)\n",((double)PHY_vars_UE->ulsch_turbo_encoding_stats.trials/PHY_vars_UE->ulsch_encoding_stats.trials)*(double)PHY_vars_UE->ulsch_turbo_encoding_stats.diff/PHY_vars_UE->ulsch_turbo_encoding_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ulsch_turbo_encoding_stats.trials);
 	printf("|__ ULSCH rate-matching time          :%f us (%d trials)\n",((double)PHY_vars_UE->ulsch_rate_matching_stats.trials/PHY_vars_UE->ulsch_encoding_stats.trials)*(double)PHY_vars_UE->ulsch_rate_matching_stats.diff/PHY_vars_UE->ulsch_rate_matching_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ulsch_rate_matching_stats.trials);
@@ -1417,14 +1502,18 @@ int main(int argc, char **argv) {
         std_phy_proc_rx = sqrt((double)PHY_vars_eNB->phy_proc_rx.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_eNB->phy_proc_rx.trials - pow((double)PHY_vars_eNB->phy_proc_rx.diff/PHY_vars_eNB->phy_proc_rx.trials/cpu_freq_GHz/1000,2));
         printf("Total PHY proc rx                  :%f us (%d trials)\n",(double)PHY_vars_eNB->phy_proc_rx.diff/PHY_vars_eNB->phy_proc_rx.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->phy_proc_rx.trials);
 	printf("|__ Statistcs                           std: %fus max: %fus min: %fus median %fus q1 %fus q3 %fus n_dropped: %d packet \n", std_phy_proc_rx, t_rx_max, t_rx_min, rx_median, rx_q1, rx_q3, n_rx_dropped);
-	
+    std_phy_proc_rx_fft = sqrt((double)PHY_vars_eNB->ofdm_demod_stats.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_eNB->ofdm_demod_stats.trials - pow((double)PHY_vars_eNB->ofdm_demod_stats.diff/PHY_vars_eNB->ofdm_demod_stats.trials/cpu_freq_GHz/1000,2));	
 	printf("OFDM_demod time                   :%f us (%d trials)\n",(double)PHY_vars_eNB->ofdm_demod_stats.diff/PHY_vars_eNB->ofdm_demod_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->ofdm_demod_stats.trials);
-
+	printf("|__ Statistcs                           std: %fus median %fus q1 %fus q3 %fus \n", std_phy_proc_rx_fft, rx_fft_median, rx_fft_q1, rx_fft_q3);
+	std_phy_proc_rx_demod = sqrt((double)PHY_vars_eNB->ulsch_demodulation_stats.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_eNB->ulsch_demodulation_stats.trials - pow((double)PHY_vars_eNB->ulsch_demodulation_stats.diff/PHY_vars_eNB->ulsch_demodulation_stats.trials/cpu_freq_GHz/1000,2));
 	printf("ULSCH demodulation time           :%f us (%d trials)\n",(double)PHY_vars_eNB->ulsch_demodulation_stats.diff/PHY_vars_eNB->ulsch_demodulation_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->ulsch_demodulation_stats.trials);
+	printf("|__ Statistcs                           std: %fus median %fus q1 %fus q3 %fus \n", std_phy_proc_rx_demod, rx_demod_median, rx_demod_q1, rx_demod_q3);
+	std_phy_proc_rx_dec = sqrt((double)PHY_vars_eNB->ulsch_decoding_stats.diff_square/pow(cpu_freq_GHz,2)/pow(1000,2)/PHY_vars_eNB->ulsch_decoding_stats.trials - pow((double)PHY_vars_eNB->ulsch_decoding_stats.diff/PHY_vars_eNB->ulsch_decoding_stats.trials/cpu_freq_GHz/1000,2));
 	printf("ULSCH Decoding time (%.2f Mbit/s, avg iter %f)      :%f us (%d trials, max %f)\n",
 	       PHY_vars_UE->ulsch_ue[0]->harq_processes[harq_pid]->TBS/1000.0,(double)avg_iter/iter_trials,
 	       (double)PHY_vars_eNB->ulsch_decoding_stats.diff/PHY_vars_eNB->ulsch_decoding_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->ulsch_decoding_stats.trials, 
 	       (double)PHY_vars_eNB->ulsch_decoding_stats.max/cpu_freq_GHz/1000.0);
+	       	printf("|__ Statistcs                           std: %fus median %fus q1 %fus q3 %fus \n", std_phy_proc_rx_dec, rx_dec_median, rx_dec_q1, rx_dec_q3);
 	printf("|__ sub-block interleaving                          %f us (%d trials)\n",
 	       (double)PHY_vars_eNB->ulsch_deinterleaving_stats.diff/PHY_vars_eNB->ulsch_deinterleaving_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->ulsch_deinterleaving_stats.trials);
 	printf("|__ demultiplexing                                  %f us (%d trials)\n",
@@ -1547,10 +1636,27 @@ int main(int argc, char **argv) {
 	fprintf(time_meas_fd,"UE_PROC_TX_STD;UE_PROC_TX_MAX;UE_PROC_TX_MIN;UE_PROC_TX_MED;UE_PROC_TX_Q1;UE_PROC_TX_Q3;UE_PROC_TX_DROPPED;\n");
 	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%d;\n", std_phy_proc_tx, t_tx_max, t_tx_min, tx_median, tx_q1, tx_q3, n_tx_dropped);
 	
+	fprintf(time_meas_fd,"IFFT;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f\n", std_phy_proc_tx_ifft, tx_ifft_median, tx_ifft_q1, tx_ifft_q3);
+	
+	fprintf(time_meas_fd,"MOD;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f\n", std_phy_proc_tx_mod, tx_mod_median, tx_mod_q1, tx_mod_q3);
+	
+	fprintf(time_meas_fd,"ENC;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f\n", std_phy_proc_tx_enc, tx_enc_median, tx_enc_q1, tx_enc_q3);
+	
 	fprintf(time_meas_fd,"eNB_PROC_RX_STD;eNB_PROC_RX_MAX;eNB_PROC_RX_MIN;eNB_PROC_RX_MED;eNB_PROC_RX_Q1;eNB_PROC_RX_Q3;eNB_PROC_RX_DROPPED;\n");
 	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%d;\n", std_phy_proc_rx, t_rx_max, t_rx_min, rx_median, rx_q1, rx_q3, n_rx_dropped);
 
-
+    fprintf(time_meas_fd,"FFT;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f\n", std_phy_proc_rx_fft, rx_fft_median, rx_fft_q1, rx_fft_q3);
+	
+	fprintf(time_meas_fd,"DEMOD;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f\n", std_phy_proc_rx_demod,rx_demod_median, rx_demod_q1, rx_demod_q3);
+	
+	fprintf(time_meas_fd,"DEC;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f\n", std_phy_proc_rx_dec, rx_dec_median, rx_dec_q1, rx_dec_q3);
+	
 	
       	printf("[passed] effective rate : %f  (%2.1f%%,%f)): log and break \n",rate*effective_rate, 100*effective_rate, rate );
 	break;
