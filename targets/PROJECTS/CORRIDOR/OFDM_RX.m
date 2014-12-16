@@ -5,6 +5,6 @@ received_f = zeros(num_symbols_frame,useful_carriers,nant);
 for j=0:num_symbols_frame-1;
     ifblock=received(j*ofdm_symbol_length+(1:ofdm_symbol_length),:);
     ifblock(1:prefix_length,:)=[];
-    fblock=fft(ifblock,[],1);
+    fblock=fft(ifblock,[],1)/sqrt(num_carriers);
     received_f(j+1,:,:) = [fblock(2:useful_carriers/2+1,:); fblock(end-useful_carriers/2+1:end,:)];
 end

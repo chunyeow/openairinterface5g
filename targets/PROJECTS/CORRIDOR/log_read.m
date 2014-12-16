@@ -99,7 +99,7 @@ for idx=1:length(d1)
     plot(rtime2,smooth(N2(:,3),100),'m')
     legend('UHF','2.6GHz card 1','2.6GHz card 2','2.6GHz card 3');
     xlabel('time [seconds]')
-    ylabel('NF [dB]')
+    ylabel('Noise [dB]')
     title(sprintf('Run %d',idx));
     saveas(h,sprintf('figures/nf_vs_time_run%d.eps',idx),'epsc2');
     

@@ -3,10 +3,13 @@ clear all
 
 global symbols_per_slot slots_per_frame;
 
+addpath('E:\Synchro\kaltenbe\My Documents\Matlab\dpss_chanest')
+addpath('../../../openair1/PHY/LTE_REFSIG');
+
 enable_plots=0; %enables figures
 record=0; %put 1 to enable the video record of the delay doppler profile
+
 %% preload and init data
-addpath('../../../openair1/PHY/LTE_REFSIG');
 primary_synch; %loads the primary sync signal
 
 %load('E:\EMOS\corridor\ofdm_pilots_sync_2048_v7.mat');
@@ -18,15 +21,19 @@ n_run=1;
 symbols_per_slot = 6;
 slots_per_frame = 20;
 
+sourcedir = 'F:\trials2 train extracted\';
+destdir = 'F:\trials2 train processed\';
+
+
 switch n_carriers
     case 1,
         p = init_params(25,3,4); %this can be 25, 50, or 100
         pss_t = upsample(primary_synch0_time,4);
         
         if n_trials==1
-            filename = sprintf('F:\\trials1 train extracted\\eNB_data_20140331_UHF_run%d.EMOS',n_run);
+            filename = sprintf('eNB_data_20140331_UHF_run%d',n_run);
         else
-            filename = sprintf('F:\\trials2 train extracted\\eNB_data_UHF_20140519_run%d.EMOS',n_run);
+            filename = sprintf('eNB_data_UHF_20140519_run%d',n_run);
         end
         
         nframes = 100; % frames in one block
@@ -37,22 +44,20 @@ switch n_carriers
         pss_t = upsample(primary_synch0_time,4*4); % this assumes we are doing the sync on the second carrier, which is 10MHz
         
         if (n_trials==1)
-            filename = sprintf('F:\\trials1 train extracted\\eNB_data_20140331_2.6GHz_run%d.EMOS',n_run);
+            filename = sprintf('eNB_data_20140331_2.6GHz_run%d',n_run);
         else
-            filename = sprintf('F:\\trials2 train extracted\\eNB_data_20140519_2.6GHz_run%d.EMOS',n_run);
+            filename = sprintf('eNB_data_20140519_2.6GHz_run%d',n_run);
         end
         
         nframes = 50; % frames in one block
         threshold = 3e+4 ; % maybe should change that !!!!
 end
 
-destdir = 'E:\EMOS\corridor\tmp';
-
 % derived parameters
 samples_slot_agg = sum([p.nant_rx].*[p.samples_slot]);
 num_symbols_frame = symbols_per_slot*slots_per_frame;
 
-d = dir(filename);
+d = dir(fullfile(sourcedir,[filename '.EMOS']));
 nblocks = floor(d.bytes/(samples_slot_agg*slots_per_frame*nframes*4));
 
 %frequency offset
@@ -172,11 +177,15 @@ end
 syncblock=0;%variable containing the number of the synchronization block
 
 
-
+%% init DPSS parameters
+max_tau = 1e-6;
+for carrier=1:n_carriers
+    p_dpss(carrier) = init_dpss(p(carrier),max_tau);
+end
 
 
 %% main loop
-fid = fopen(filename,'r');
+fid = fopen(fullfile(sourcedir,[filename '.EMOS']),'r');
 
 vStorage1 = [];
 vStorage2 = [];
@@ -361,6 +370,10 @@ while ~feof(fid)
             max1=0;%variable containing a maximum
         end
         
+        H_dpss1 = zeros(nframes*num_symbols_frame/2,p(1).useful_carriers,p(1).nant_tx,p(1).nant_rx);
+        if (n_carriers==2)
+            H_dpss2 = zeros(nframes*num_symbols_frame/2,p(2).useful_carriers,p(2).nant_tx,p(2).nant_rx);
+        end
         for i=start:nframes;
             
             fprintf(1,'.');
@@ -410,8 +423,9 @@ while ~feof(fid)
                     received_f = received_f2;
                 end
                 
-                
+                % standard channel estimation
                 H = zeros(num_symbols_frame/2,p(carrier).useful_carriers/4,p(carrier).nant_tx,p(carrier).nant_rx);
+                H_dpss = zeros(num_symbols_frame/2,p(carrier).useful_carriers/4,p(carrier).nant_tx,p(carrier).nant_rx);
                 for itx=1:p(carrier).nant_tx
                     % f_start and t_start indicate the start of the pilots in time
                     % and frequency according to the specifications (see .doc file).
@@ -429,6 +443,26 @@ while ~feof(fid)
                     H_power2((block-1)*NFRAMES+i,:,:) = 10*log10(mean(mean(abs(H).^2,1),2));
                 end
                 
+                %% dpss channel estimation
+                snr = zeros(size(H_power1));
+                for itx=1:p(carrier).nant_tx
+                    f_start = mod(itx-1,2)*2+1;
+                    for irx=1:p(carrier).nant_rx
+                        snr((block-1)*NFRAMES+i,itx,irx)=squeeze(H_power1((block-1)*NFRAMES+i,itx,irx))-noise1((block-1)*NFRAMES+i,irx);
+                        snr_rounded = min(max(round(snr((block-1)*NFRAMES+i,itx,irx)),0),30);
+                        for it=1:num_symbols_frame/2
+                            if (carrier==1)
+                                H_dpss1((i-1)*num_symbols_frame/2+it,:,itx,irx) = dpss_smooth(H(it,:,itx,irx),p_dpss(carrier).V,p_dpss(carrier).Dopt(snr_rounded+1),f_start);
+                            else
+                                H_dpss2((i-1)*num_symbols_frame/2+it,:,itx,irx) = dpss_smooth(H(it,:,itx,irx),p_dpss(carrier).V,p_dpss(carrier).Dopt(snr_rounded+1),f_start);
+                            end
+                        end
+                    end
+                end
+                
+               
+                
+                %% compute delay Doppler power profiles 
                 Ht = ifft(H,[],2)*sqrt(size(H,2)); %impulse response
                 PDP = mean(abs(Ht).^2,1);
                 PDP_all = squeeze(mean(mean(PDP,3),4));
@@ -443,7 +477,8 @@ while ~feof(fid)
                     PDP_totalb((block-1)*NFRAMES+i,:,:,:) = PDP;
                     Hb=H;
                 end
-                %
+                
+                %                 % frequency offset correction
                 %                 Hprime=H*exp(2*i*pi*167E-6*f_offset);
                 %                 Htprime = ifft(Hprime,[],2); %impulse response
                 %                 PDPprime = mean(abs(Htprime).^2,1);
@@ -554,7 +589,19 @@ while ~feof(fid)
             end
         end
         
-        %
+        %save postprocessed channels
+        for carrier=1:n_carriers
+                varname1 = sprintf('H_dpss%d',carrier);
+                varname2 = sprintf('H_dpss_block%d',block);
+                eval([varname2 '='  varname1 ';']);
+                filename_H = sprintf('_H_dpss_carrier%d.mat',carrier);
+                if exist(fullfile(destdir,[filename filename_H]),'file')
+                    save(fullfile(destdir,[filename filename_H]),varname2,'-append');
+                else
+                    save(fullfile(destdir,[filename filename_H]),varname2);
+                end
+                clear(varname2);
+        end
         
         Ht1a=ifft(H1a,[],2);
         
@@ -1006,12 +1053,11 @@ end
 fclose(fid);
 
 %% save processed data
-[path,name,ext]=fileparts(filename);
 if(n_carriers==1)
-    save([name '.mat'],'PDP_totala','PDD_totala','mean_delay_a','mean_doppler_shift_a','doppler_freq_of_max_a','delay_doppler_profile_beforea','delay_doppler_profile_duringa','delay_doppler_profile_aftera','noise1','H_power1');
+    save(fullfile(destdir,[filename '.mat']),'PDP_totala','PDD_totala','mean_delay_a','mean_doppler_shift_a','doppler_freq_of_max_a','delay_doppler_profile_beforea','delay_doppler_profile_duringa','delay_doppler_profile_aftera','noise1','H_power1');
     
 end
 if(n_carriers==2)
-    save([name '.mat'],'PDP_totala','PDD_totala','mean_delay_a','mean_doppler_shift_a','doppler_freq_of_max_a','delay_doppler_profile_beforea','delay_doppler_profile_duringa','delay_doppler_profile_aftera','PDP_totalb','PDD_totalb','mean_delay_b','mean_doppler_shift_b','doppler_freq_of_max_b','delay_doppler_profile_beforeb','delay_doppler_profile_duringb','delay_doppler_profile_afterb','noise1','H_power1','noise2','H_power2');
+    save(fullfile(destdir,[filename '.mat']),'PDP_totala','PDD_totala','mean_delay_a','mean_doppler_shift_a','doppler_freq_of_max_a','delay_doppler_profile_beforea','delay_doppler_profile_duringa','delay_doppler_profile_aftera','PDP_totalb','PDD_totalb','mean_delay_b','mean_doppler_shift_b','doppler_freq_of_max_b','delay_doppler_profile_beforeb','delay_doppler_profile_duringb','delay_doppler_profile_afterb','noise1','H_power1','noise2','H_power2');
     
 end
