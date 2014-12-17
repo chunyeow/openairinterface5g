@@ -195,7 +195,7 @@ static bool _gtpurh_route_packet(struct sk_buff *skb_pP, const struct xt_gtpurh_
     }; 
     //skb_pP->pkt_type = PACKET_OTHERHOST;
     skb_pP->pkt_type = PACKET_OUTGOING;
-#if 1
+#if 0
     pr_info("GTPURH(%d): Routing packet: %d.%d.%d.%d --> %d.%d.%d.%d Proto: %d, Len: %d Mark: %u Packet type: %u\n",
             info_pP->action,
             iph_p->saddr  & 0xFF,
@@ -213,11 +213,11 @@ static bool _gtpurh_route_packet(struct sk_buff *skb_pP, const struct xt_gtpurh_
 #endif
     rt = ip_route_output_key(&init_net, &fl.u.ip4);
     if (rt == null) {
-        pr_info("GTPURH: Failed to route packet to dst 0x%x. Error: (%d)", fl.u.ip4.daddr, err);
+        pr_info("GTPURH: Failed to route packet to dst 0x%x. Error: (%d)\n", fl.u.ip4.daddr, err);
         return GTPURH_FAILURE;
     } 
 
-#if 1
+#if 0
     if (rt->dst.dev) {
         pr_info("GTPURH: dst dev name %s\n", rt->dst.dev->name);
     } else {
@@ -330,7 +330,7 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
         _gtpurh_print_hex_octets((unsigned char*)iph_p, ntohs(iph_p->tot_len));
         return NF_DROP;
     }
-#if 1
+#if 0
     if ((skb_p->mark == 0) || (gtp_payload_size != ntohs(iph2_p->tot_len))) {
         pr_info("\nGTPURH: Decapsulated packet: %d.%d.%d.%d --> %d.%d.%d.%d Proto: %d, Total Len (IP): %u mark %u Frag offset %u Flags 0x%0x\n",
                 iph2_p->saddr  & 0xFF,
@@ -379,10 +379,10 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
                        };
         rt = ip_route_output_key(&init_net, &fl.u.ip4);
         if (rt == NULL) {
-            pr_info("GTPURH: Failed to route packet to dst 0x%x. Error: (%d)", fl.u.ip4.daddr, err);
+            pr_info("GTPURH: Failed to route packet to dst 0x%x. Error: (%d)\n", fl.u.ip4.daddr, err);
             return NF_DROP;
         }
-#if 1
+#if 0
         if (rt->dst.dev) {
             pr_info("GTPURH: dst dev name %s\n", rt->dst.dev->name);
         } else {
@@ -432,12 +432,12 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
         }
 
         nf_ct_attach(new_skb_p, skb_p);
-        pr_info("GTPURH: ip_local_out %s/%s dev %s src %u.%u.%u.%u dst  %u.%u.%u.%u \n",
+        /*pr_info("GTPURH: ip_local_out %s/%s dev %s src %u.%u.%u.%u dst  %u.%u.%u.%u\n",
                 _gtpurh_nf_inet_hook_2_string(par_pP->hooknum),
                 gtpurh_tg_reg[0].table,
                 (new_skb_p->dev == NULL) ? "NULL" : new_skb_p->dev->name,
                 NIPADDR(new_ip_p->saddr),
-                NIPADDR(new_ip_p->daddr));
+                NIPADDR(new_ip_p->daddr));*/
         ip_local_out(new_skb_p);
         return NF_DROP;
 free_skb:
