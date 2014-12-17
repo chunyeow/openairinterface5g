@@ -1,4 +1,3 @@
-
 /*
  * GTPu klm for Linux/iptables
  *
@@ -23,21 +22,60 @@
 #include <net/udp.h>
 #include <net/inet_sock.h>
 #include <net/route.h> 
+#include <net/addrconf.h>
+#include <net/ip6_checksum.h>
+#include <net/ip6_route.h>
+#include <net/ipv6.h>
 #include <linux/netfilter/x_tables.h>
 #include <linux/netfilter_ipv4/ip_tables.h>
-#if 0
-#include <net/netfilter/ipv4/nf_defrag_ipv4.h>
+#ifdef CONFIG_BRIDGE_NETFILTER
+#    include <linux/netfilter_bridge.h>
 #endif
-
+#if defined(CONFIG_IP6_NF_IPTABLES) || defined(CONFIG_IP6_NF_IPTABLES_MODULE)
+#    define WITH_IPV6 1
+#endif
 #include "xt_GTPUAH.h"
-
 #if !(defined KVERSION)
 #error "Kernel version is not defined!!!! Exiting."
 #endif
-
+//-----------------------------------------------------------------------------
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Pradip Biswas <pradip_biswas@polarisnetworks.net>");
 MODULE_DESCRIPTION("GTPu Data Path extension on netfilter");
+//-----------------------------------------------------------------------------
+static char*        _gtpuah_nf_inet_hook_2_string(int nf_inet_hookP);
+static void         _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP);
+static unsigned int gtpuah_tg4(struct sk_buff *skb_pP, const struct xt_action_param *par_pP);
+static unsigned int gtpuah_tg6(struct sk_buff *skb_pP, const struct xt_action_param *par_pP);
+static int          __init gtpuah_tg_init(void);
+static void         __exit gtpuah_tg_exit(void);
+//-----------------------------------------------------------------------------
+static struct xt_target gtpuah_tg_reg[] __read_mostly = {
+                {
+                                .name           = "GTPUAH",
+                                .revision       = 0,
+                                .family         = NFPROTO_IPV4,
+                                .hooks          = (1 << NF_INET_POST_ROUTING) |
+                                                  (1 << NF_INET_LOCAL_IN)     ,
+                                .table          = "mangle",
+                                .target         = gtpuah_tg4,
+                                .targetsize     = sizeof(struct xt_gtpuah_target_info),
+                                .me             = THIS_MODULE,
+                },
+#ifdef WITH_IPV6
+                {
+                                .name           = "GTPUAH",
+                                .revision       = 0,
+                                .family         = NFPROTO_IPV6,
+                                .hooks          = (1 << NF_INET_POST_ROUTING) |
+                                                  (1 << NF_INET_LOCAL_IN)     ,
+                                .table          = "mangle",
+                                .target         = gtpuah_tg6,
+                                .targetsize     = sizeof(struct xt_gtpuah_target_info),
+                                .me             = THIS_MODULE,
+                },
+#endif
+};
 
 struct gtpuhdr
 {
@@ -46,7 +84,7 @@ struct gtpuhdr
     u_int16_t length;
     u_int32_t tunid;
 };
-
+//-----------------------------------------------------------------------------
 #define MTU            1564
 #define GTPU_HDR_PNBIT 1
 #define GTPU_HDR_SBIT 1 << 1
@@ -55,347 +93,252 @@ struct gtpuhdr
 
 #define GTPU_FAILURE 1
 #define GTPU_SUCCESS !GTPU_FAILURE
-
 #define GTPU_PORT 2152
 
 #define IP_MORE_FRAGMENTS 0x2000
-
-
-static bool _gtpuah_route_packet(struct sk_buff *skb_pP, const struct xt_gtpuah_target_info *info_pP, char *in_dev_pP)
-{
-    int err = 0; 
-    struct rtable *rt = NULL;
-    struct iphdr *iph = ip_hdr(skb_pP);
-    int daddr = iph->daddr;
-    struct flowi fl = { 
-        .u = {
-            .ip4 = {
-                .daddr        = daddr,
-                .flowi4_tos   = RT_TOS(iph->tos),
-                .flowi4_scope = RT_SCOPE_UNIVERSE,
-            } 
-        } 
-    }; 
-
-#if 1
-    int                         flags, offset;
-
-    offset = ntohs(iph->frag_off);
-    flags  = offset & ~IP_OFFSET;
-    offset &= IP_OFFSET; /* offset is in 8-byte chunks */
-    offset <<= 3;
-
-    pr_info("GTPUAH(%d): Routing %s packet: %d.%d.%d.%d --> %d.%d.%d.%d Proto: %d, Len: %05u, Id %04X, Offset %u, Flags %04X, Mark: %u\n",
-            info_pP->action,
-            (ip_is_fragment(iph) == 0) ? "":"fragmented",
-            iph->saddr  & 0xFF,
-            (iph->saddr & 0x0000FF00) >> 8,
-            (iph->saddr & 0x00FF0000) >> 16,
-            iph->saddr >> 24,
-            iph->daddr  & 0xFF,
-            (iph->daddr & 0x0000FF00) >> 8,
-            (iph->daddr & 0x00FF0000) >> 16,
-            iph->daddr >> 24,
-            iph->protocol,
-            ntohs(iph->tot_len),
-            ntohs(iph->id),
-            offset,
-            flags,
-            skb_pP->mark);
-#endif
-
-    if (in_dev_pP) {
-        if (strcasecmp(in_dev_pP, "lo") == 0) {
-            struct inet_sock *inet = inet_sk(skb_pP->sk);
-            ip_queue_xmit(&inet->sk, skb_pP, &fl);
-        } else {
-            rt = ip_route_output_key(&init_net, &fl.u.ip4);
-            if (err != 0)
-            {
-                pr_info("GTPU: Failed to route packet to dst 0x%x. Error: (%d)", fl.u.ip4.daddr, err);
-                return GTPU_FAILURE;
-            }
-
-        #if 1
-            if (rt->dst.dev)
-            {
-                pr_info("GTPU: dst dev name %s\n", rt->dst.dev->name);
-            }
-            else
-            {
-                pr_info("GTPU: dst dev NULL\n");
-            }
-        #endif
-
-            //if (info_pP->action == PARAM_GTPUAH_ACTION_ADD) //LG was commented
-            {
-                skb_dst_drop(skb_pP);
-                skb_dst_set(skb_pP, &rt->dst);
-                skb_pP->dev      = skb_dst(skb_pP)->dev;
-            }
-            skb_pP->protocol = htons(ETH_P_IP);
-
-            /* Send the GTPu message out...gggH */
-            err = dst_output(skb_pP);        }
-    }
-
-
-    if (err == 0)
-    {
-        return GTPU_SUCCESS;
-    }
-    else
-    {
-        return GTPU_FAILURE;
+#define NIPADDR(addr) \
+        (uint8_t)(addr & 0x000000FF), \
+        (uint8_t)((addr & 0x0000FF00) >> 8), \
+        (uint8_t)((addr & 0x00FF0000) >> 16), \
+        (uint8_t)((addr & 0xFF000000) >> 24)
+//-----------------------------------------------------------------------------
+static char*
+_gtpuah_nf_inet_hook_2_string(int nf_inet_hookP) {
+    //-----------------------------------------------------------------------------
+    switch (nf_inet_hookP) {
+        case NF_INET_PRE_ROUTING:   return "NF_INET_PRE_ROUTING";break;
+        case NF_INET_LOCAL_IN:      return "NF_INET_LOCAL_IN";break;
+        case NF_INET_FORWARD:       return "NF_INET_FORWARD";break;
+        case NF_INET_LOCAL_OUT:     return "NF_INET_LOCAL_OUT";break;
+        case NF_INET_POST_ROUTING:  return "NF_INET_POST_ROUTING";break;
+        default: return "NF_INET_UNKNOWN";
     }
 }
-
-static unsigned int
-_gtpuah_target_add(struct sk_buff *skb_pP, const struct xt_gtpuah_target_info *tgi_pP, char *in_dev_pP)
-{
-    struct iphdr   *iph           = ip_hdr(skb_pP);
-    struct iphdr   *iph2          = NULL;
-    struct udphdr  *udph          = NULL;
-    struct gtpuhdr *gtpuh         = NULL;
-    struct sk_buff *new_skb       = NULL;
-    struct sk_buff *new_skb2      = NULL;
-    uint16_t        headroom_reqd =  sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(struct gtpuhdr);
+//-----------------------------------------------------------------------------
+static void
+_gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP) {
+//-----------------------------------------------------------------------------
+    struct rtable  *rt              = NULL;
+    struct iphdr   *old_iph_p       = ip_hdr(old_skb_pP);
+    struct iphdr   *new_iph_p       = NULL;
+    struct udphdr  *udph_p          = NULL;
+    struct gtpuhdr *gtpuh_p         = NULL;
+    struct sk_buff *new_skb_p       = NULL;
+    uint16_t        headroom_reqd   =  LL_MAX_HEADER + sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(struct gtpuhdr);
     uint16_t        orig_iplen = 0, udp_len = 0, ip_len = 0;
-    int16_t         remaining_bytes_to_send = 0, remaining_payload_to_send = 0,
-            payload_to_send = 0, bytes_to_remove = 0, bytes_to_send = 0;
-    int             flags = 0, offset = 0, offset2 = 0;
+    int             flags = 0, offset = 0;
+    unsigned int    addr_type       = RTN_UNSPEC;
 
-    if (skb_pP->mark == 0) {
-        pr_info("GTPUAH: _gtpuah_target_add force info_pP mark %u to skb_pP mark %u", skb_pP->mark, tgi_pP->rtun);
-        skb_pP->mark = tgi_pP->rtun;
+    if (old_skb_pP->mark == 0) {
+        pr_info("GTPUAH: _gtpuah_target_add force info_pP mark %u to skb_pP mark %u",
+                old_skb_pP->mark,
+                ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->rtun);
+        old_skb_pP->mark = ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->rtun;
     }
     /* Keep the length of the source IP packet */
-    orig_iplen = ntohs(iph->tot_len);
-    offset = ntohs(iph->frag_off);
+    orig_iplen = ntohs(old_iph_p->tot_len);
+    offset = ntohs(old_iph_p->frag_off);
     flags  = offset & ~IP_OFFSET;
 
 
     /* Create a new copy of the original skb...can't avoid :-( */
-    if (((orig_iplen + headroom_reqd) <= MTU) || (flags & IP_DF)) {
+    if ((orig_iplen + headroom_reqd) <= MTU) {
 
-#if 1
-        if (flags & IP_DF) {
-            pr_info("GTPUAH: DONT FRAGMENT id %04X", ntohs(iph->id));
+        new_skb_p = skb_copy_expand(old_skb_pP, headroom_reqd + skb_headroom(old_skb_pP), skb_tailroom(old_skb_pP), GFP_ATOMIC);
+        if (new_skb_p == NULL) {
+            pr_info("GTPUAH: skb_copy_expand returned NULL");
+            return;
         }
-#endif
-        new_skb = skb_copy_expand(skb_pP, headroom_reqd + skb_headroom(skb_pP), skb_tailroom(skb_pP), GFP_ATOMIC);
-        if (new_skb == NULL)
-        {
-            return NF_ACCEPT;
-        }
+        nf_reset(new_skb_p);
+        //skb_nfmark(new_skb_p) = 0;
+        skb_init_secmark(new_skb_p);
+        skb_shinfo(new_skb_p)->gso_size = 0;
+        skb_shinfo(new_skb_p)->gso_segs = 0;
+        skb_shinfo(new_skb_p)->gso_type = 0;
+
         /* Add GTPu header */
-        gtpuh          = (struct gtpuhdr*)skb_push(new_skb, sizeof(struct gtpuhdr));
-        gtpuh->flags   = 0x30; /* v1 and Protocol-type=GTP */
-        gtpuh->msgtype = 0xff; /* T-PDU */
-        gtpuh->length  = htons(orig_iplen);
-        gtpuh->tunid   = htonl(skb_pP->mark);
+        gtpuh_p          = (struct gtpuhdr*)skb_push(new_skb_p, sizeof(struct gtpuhdr));
+        gtpuh_p->flags   = 0x30; /* v1 and Protocol-type=GTP */
+        gtpuh_p->msgtype = 0xff; /* T-PDU */
+        gtpuh_p->length  = htons(orig_iplen);
+        gtpuh_p->tunid   = htonl(old_skb_pP->mark);
 
         /* Add UDP header */
-        udp_len      = sizeof(struct udphdr) + sizeof(struct gtpuhdr) + orig_iplen;
-        udph         = (struct udphdr*)skb_push(new_skb, sizeof(struct udphdr));
-        udph->source = htons(GTPU_PORT);
-        udph->dest   = htons(GTPU_PORT);
-        udph->len    = htons(udp_len);
-        udph->check  = 0;
-        udph->check  = csum_tcpudp_magic(tgi_pP->laddr,
-                tgi_pP->raddr,
-                udp_len,
-                IPPROTO_UDP,
-                csum_partial((char*)udph, udp_len, 0));
-        skb_set_transport_header(new_skb, 0);
+        udp_len        = sizeof(struct udphdr) + sizeof(struct gtpuhdr) + orig_iplen;
+        udph_p         = (struct udphdr*)skb_push(new_skb_p, sizeof(struct udphdr));
+        udph_p->source = htons(GTPU_PORT);
+        udph_p->dest   = htons(GTPU_PORT);
+        udph_p->len    = htons(udp_len);
+        udph_p->check  = 0;
+        udph_p->check  = csum_tcpudp_magic(((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->laddr,
+                                         ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->raddr,
+                                         udp_len,
+                                         IPPROTO_UDP,
+                                         csum_partial((char*)udph_p, udp_len, 0));
+        skb_set_transport_header(new_skb_p, 0);
 
         /* Add IP header */
         ip_len = sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(struct gtpuhdr) + orig_iplen;
-        iph = (struct iphdr*)skb_push(new_skb, sizeof(struct iphdr));
-        iph->ihl      = 5;
-        iph->version  = 4;
-        iph->tos      = 0;
-        iph->tot_len  = htons(ip_len);
-        iph->id       = (uint16_t)(((uint64_t)new_skb) >> 8);
-        iph->frag_off = 0;
-        iph->ttl      = 64;
-        iph->protocol = IPPROTO_UDP;
-        iph->saddr    = (tgi_pP->laddr);
-        iph->daddr    = (tgi_pP->raddr);
-        iph->check    = 0;
-        iph->check    = ip_fast_csum((unsigned char *)iph, iph->ihl);
-        skb_set_network_header(new_skb, 0);
-
-        /* Route the packet */
-        if (_gtpuah_route_packet(new_skb, tgi_pP, in_dev_pP) == GTPU_SUCCESS)
-        {
-            /* Succeeded. Drop the original packet */
-            return NF_DROP;
-        }
-        else
-        {
-            kfree_skb(new_skb);
-            return NF_ACCEPT; /* What should we do here ??? ACCEPT seems to be the best option */
-        }
-    } else {
-        new_skb = skb_copy_expand(skb_pP, headroom_reqd + skb_headroom(skb_pP), 0, GFP_ATOMIC);
-        if (new_skb == NULL)
-        {
-            return NF_ACCEPT;
-        }
-
-        // must segment if added headers (IP, UDP, GTP) + original data + original headers > MTU
-        pr_info("GTPUAH: Fragmentation Id %04X payload size %u (IP Head inc), total ip packet size %u",
-                htons((uint16_t)(((uint64_t)new_skb) >> 8)),
-                MTU - headroom_reqd,
-                MTU);
+        new_iph_p = (struct iphdr*)skb_push(new_skb_p, sizeof(struct iphdr));
+        new_iph_p->ihl      = 5;
+        new_iph_p->version  = 4;
+        new_iph_p->tos      = 0;
+        new_iph_p->tot_len  = htons(ip_len);
+        new_iph_p->id       = (uint16_t)(((uint64_t)new_skb_p) >> 8);
+        new_iph_p->frag_off = 0;
+        new_iph_p->ttl      = 64;
+        new_iph_p->protocol = IPPROTO_UDP;
+        new_iph_p->saddr    = ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->laddr;
+        new_iph_p->daddr    = ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->raddr;
+        new_iph_p->check    = 0;
+        new_iph_p->check    = ip_fast_csum((unsigned char *)new_iph_p, new_iph_p->ihl);
+        skb_set_network_header(new_skb_p, 0);
 
 
-        gtpuh          = (struct gtpuhdr*)skb_push(new_skb, sizeof(struct gtpuhdr));
-        gtpuh->flags   = 0x30; /* v1 and Protocol-type=GTP */
-        gtpuh->msgtype = 0xff; /* T-PDU */
-        gtpuh->length  = htons(orig_iplen);
-        gtpuh->tunid   = htonl(skb_pP->mark);
+        new_skb_p->ip_summed = CHECKSUM_COMPLETE;
+        new_skb_p->csum      = new_iph_p->check;
+        new_skb_p->mark      = old_skb_pP->mark;
 
-        /* Add UDP header */
-        udp_len      = sizeof(struct udphdr) + sizeof(struct gtpuhdr) + orig_iplen;
-        udph         = (struct udphdr*)skb_push(new_skb, sizeof(struct udphdr));
-        udph->source = htons(GTPU_PORT);
-        udph->dest   = htons(GTPU_PORT);
-        udph->len    = htons(udp_len);
-        udph->check  = 0;
-        udph->check  = csum_tcpudp_magic(tgi_pP->laddr,
-                tgi_pP->raddr,
-                udp_len,
-                IPPROTO_UDP,
-                csum_partial((char*)udph, udp_len, 0));
-        skb_set_transport_header(new_skb, 0);
-
-        /* Add IP header */
-        ip_len = MTU;
-        iph = (struct iphdr*)skb_push(new_skb, sizeof(struct iphdr));
-        iph->ihl      = 5;
-        iph->version  = 4;
-        iph->tos      = 0;
-        iph->tot_len  = htons(ip_len);
-        iph->id       = (uint16_t)(((uint64_t)new_skb) >> 8);
-        iph->frag_off = htons(IP_MORE_FRAGMENTS);
-        iph->ttl      = 64;
-        iph->protocol = IPPROTO_UDP;
-        iph->saddr    = (tgi_pP->laddr);
-        iph->daddr    = (tgi_pP->raddr);
-        iph->check    = 0;
-        iph->check    = ip_fast_csum((unsigned char *)iph, iph->ihl);
-        skb_set_network_header(new_skb, 0);
-
-        skb_trim(new_skb, MTU - headroom_reqd);
-
-        /* Route the packet */
-        if (_gtpuah_route_packet(new_skb, tgi_pP, in_dev_pP) == GTPU_SUCCESS)
-        {
-            remaining_payload_to_send = orig_iplen - MTU + headroom_reqd;
-            remaining_bytes_to_send   = remaining_payload_to_send + sizeof(struct iphdr);
-            bytes_to_remove = MTU - headroom_reqd;
-            offset2 = MTU - headroom_reqd - sizeof(struct iphdr);
-
-            // the localhost generated traffic can have len > MTU
-            // but can cause problem at UE rx side
-            while (remaining_payload_to_send > 0) {
-                if ((remaining_payload_to_send + sizeof(struct iphdr)) > MTU) {
-                    bytes_to_send = MTU;
-                    payload_to_send = MTU - sizeof(struct iphdr);
-                } else {
-                    bytes_to_send = remaining_payload_to_send + sizeof(struct iphdr);
-                    payload_to_send = remaining_payload_to_send;
+        switch (par_pP->hooknum) {
+            case NF_INET_POST_ROUTING: {
+                struct flowi   fl    = {
+                    .u = {
+                        .ip4 = {
+                            .daddr        = new_iph_p->daddr,
+                            .flowi4_tos   = RT_TOS(new_iph_p->tos),
+                            .flowi4_scope = RT_SCOPE_UNIVERSE,
+                        }
+                    }
+                };
+                pr_info("GTPUAH: PACKET -> NF_HOOK NF_INET_POST_ROUTING/%s encapsulated src: %u.%u.%u.%u dst: %u.%u.%u.%u",
+                        gtpuah_tg_reg[0].table,
+                        NIPADDR(old_iph_p->saddr),
+                        NIPADDR(old_iph_p->daddr));
+                new_skb_p->pkt_type = PACKET_OTHERHOST; // PACKET_OUTGOING
+#ifdef CONFIG_BRIDGE_NETFILTER
+                if (new_skb_p->nf_bridge != NULL && new_skb_p->nf_bridge->mask & BRNF_BRIDGED) {
+                    addr_type = RTN_LOCAL;
+                    new_skb_p->pkt_type =PACKET_HOST;
                 }
-                pr_info("GTPUAH: Fragmentation Id %04X payload size %u, total ip packet size %u",
-                        htons((uint16_t)(((uint64_t)new_skb) >> 8)),
-                        payload_to_send,
-                        bytes_to_send);
-                // Not optimal, TO OPTIMIZE copies
-                new_skb2 = skb_copy(skb_pP, GFP_ATOMIC);
-                skb_pull(new_skb2, bytes_to_remove);
-                /* Add IP header */
-                iph2 = (struct iphdr*)skb_push(new_skb2, sizeof(struct iphdr));
-                iph2->ihl      = 5;
-                iph2->version  = 4;
-                iph2->tos      = 0;
-                iph2->tot_len  = htons(bytes_to_send);
-                iph2->id       = (uint16_t)(((uint64_t)new_skb) >> 8);
-                iph2->frag_off = htons(offset2 / 8);
-                iph2->ttl      = 64;
-                iph2->protocol = IPPROTO_UDP;
-                iph2->saddr    = (tgi_pP->laddr);
-                iph2->daddr    = (tgi_pP->raddr);
-                iph2->check    = 0;
-                iph2->check    = ip_fast_csum((unsigned char *)iph2, iph2->ihl);
-                skb_set_network_header(new_skb2, 0);
-                skb_trim(new_skb2, MTU);
+#endif
+                rt = ip_route_output_key(&init_net, &fl.u.ip4);
+                if (rt == NULL) {
+                    pr_info("GTPURH: Failed to route packet to dst 0x%x.", fl.u.ip4.daddr);
+                    goto free_new_skb;
+                }
+                new_skb_p->priority = rt_tos2priority(new_iph_p->tos);
+                skb_dst_drop(new_skb_p);
+                if (rt->dst.dev) {
+                    pr_info("GTPURH: dst dev name %s\n", rt->dst.dev->name);
+                    skb_dst_set(new_skb_p, dst_clone(&rt->dst));
+                    new_skb_p->dev      = skb_dst(new_skb_p)->dev;
+                    if (new_skb_p->len > dst_mtu(skb_dst(new_skb_p))) {
+                        goto free_new_skb;
+                    }
+                    nf_ct_attach(new_skb_p, old_skb_pP);
 
-                _gtpuah_route_packet(new_skb2, tgi_pP, in_dev_pP);
+                    ip_local_out(new_skb_p);
+                } else {
+                    pr_info("GTPURH: rt->dst.dev == NULL\n");
+                    goto free_new_skb;
+                }
 
-                remaining_payload_to_send = remaining_payload_to_send - payload_to_send;
-                bytes_to_remove = bytes_to_remove + payload_to_send;
-                offset2 = offset2 + payload_to_send;
             }
-            return NF_DROP;
+            break;
+
+            case  NF_INET_LOCAL_IN:
+                addr_type = RTN_LOCAL;
+                pr_info("GTPUAH: PACKET -> NF_HOOK NF_INET_LOCAL_IN/%s src: %u.%u.%u.%u dst: %u.%u.%u.%u NOT PROCESSED",
+                    gtpuah_tg_reg[0].table,
+                    NIPADDR(old_iph_p->saddr),
+                    NIPADDR(old_iph_p->daddr));
+                //NF_HOOK(NFPROTO_IPV4, NF_INET_LOCAL_IN, new_skb_p, NULL,
+                //        skb_dst(new_skb_p)->dev, ip_local_deliver_finish);
+                goto free_new_skb;
+                break;
+
+            default:
+                pr_info("GTPUAH: NF_HOOK %u not processed", par_pP->hooknum);
+                goto free_new_skb;
         }
-        else
-        {
-            kfree_skb(new_skb);
-            return NF_ACCEPT; /* What should we do here ??? ACCEPT seems to be the best option */
-        }
-    }
+        return;
+}
+free_new_skb:
+    pr_info("GTPUAH: PACKET DROPPED");
+    kfree_skb(new_skb_p);
+    return ;
 }
 
-
-
+#ifdef WITH_IPV6
+//-----------------------------------------------------------------------------
 static unsigned int
-xt_gtpuah_target(struct sk_buff *skb_pP, const struct xt_action_param *par_pP)
-{
+gtpuah_tg6(struct sk_buff *skb_pP, const struct xt_action_param *par_pP) {
+//-----------------------------------------------------------------------------
+
     const struct xt_gtpuah_target_info *tgi_p = par_pP->targinfo;
-    int result = NF_ACCEPT;
 
-    if (tgi_p == NULL)
-    {
-        return result;
+    if (tgi_p == NULL) {
+        return NF_ACCEPT;
     }
 
-    if (tgi_p->action == PARAM_GTPUAH_ACTION_ADD)
-    {
-        result = _gtpuah_target_add(skb_pP, tgi_p, par_pP->in->name);
+    if (tgi_p->action == PARAM_GTPUAH_ACTION_ADD) {
+        return NF_DROP; // TODO
     }
-    return result;
+    return NF_ACCEPT;
+}
+#endif
+
+//-----------------------------------------------------------------------------
+static unsigned int
+gtpuah_tg4(struct sk_buff *skb_pP, const struct xt_action_param *par_pP) {
+//-----------------------------------------------------------------------------
+    const struct iphdr                 *iph_p = ip_hdr(skb_pP);
+    const struct xt_gtpuah_target_info *tgi_p = par_pP->targinfo;
+    if (tgi_p == NULL) {
+        return NF_ACCEPT;
+    }
+
+    if (tgi_p->action == PARAM_GTPUAH_ACTION_ADD) {
+        pr_info("GTPUAH: PACKET -> NF_HOOK %s/%s src: %u.%u.%u.%u dst: %u.%u.%u.%u NOT PROCESSED",
+            _gtpuah_nf_inet_hook_2_string(par_pP->hooknum),
+            NIPADDR(iph_p->saddr),
+            NIPADDR(iph_p->daddr));
+        //_gtpuah_tg4_add(skb_pP, par_pP);
+        return NF_DROP;
+    }
+    return NF_ACCEPT;
 }
 
-static struct xt_target xt_gtpuah_reg __read_mostly =
-{
-    .name           = "GTPUAH",
-    .revision       = 0,
-    .family         = AF_INET,
-    .hooks          = (1 << NF_INET_FORWARD)      |
-                      (1 << NF_INET_POST_ROUTING) |
-                      (1 << NF_INET_LOCAL_OUT),
-    .table          = "mangle",
-    .target         = xt_gtpuah_target,
-    .targetsize     = sizeof(struct xt_gtpuah_target_info),
-    .me             = THIS_MODULE,
-};
+//-----------------------------------------------------------------------------
+static int
+__init gtpuah_tg_init(void) {
+//-----------------------------------------------------------------------------
 
-static int __init xt_gtpuah_init(void)
-{
     pr_info("GTPUAH: Initializing module (KVersion: %d)\n", KVERSION);
     pr_info("GTPUAH: Copyright Polaris Networks 2010-2011\n");
     pr_info("GTPUAH: Modified by EURECOM Lionel GAUTHIER 2014\n");
-    return xt_register_target(&xt_gtpuah_reg);
+#if defined(WITH_IPV6)
+    pr_info("GTPURH: IPv4/IPv6 enabled\n");
+#else
+    pr_info("GTPURH: IPv4 only enabled\n");
+#endif
+    return xt_register_targets(gtpuah_tg_reg, ARRAY_SIZE(gtpuah_tg_reg));
 }
 
-static void __exit xt_gtpuah_exit(void)
+static void __exit gtpuah_tg_exit(void)
 {
-    xt_unregister_target(&xt_gtpuah_reg);
+    xt_unregister_targets(gtpuah_tg_reg, ARRAY_SIZE(gtpuah_tg_reg));
+#if defined(WITH_IPV6)
+    pr_info("GTPURH: IPv4/IPv6 enabled\n");
+#else
+    pr_info("GTPURH: IPv4 only enabled\n");
+#endif
     pr_info("GTPUAH: Unloading module\n");
 }
 
-module_init(xt_gtpuah_init);
-module_exit(xt_gtpuah_exit);
+
+module_init(gtpuah_tg_init);
+module_exit(gtpuah_tg_exit);
+MODULE_ALIAS("ipt6_GTPUAH");
+MODULE_ALIAS("ipt_GTPUAH");
 
