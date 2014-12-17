@@ -721,8 +721,8 @@ void *l2l1_task(void *args_p) {
 #ifdef PRINT_STATS
 	      if(last_slot==9 && frame%10==0)
 		if(eNB_avg_thr) 
-		  fprintf(eNB_avg_thr,"%d %d\n",PHY_vars_eNB_g[eNB_inst]->proc[slot>>1].frame_tx,
-			  (PHY_vars_eNB_g[eNB_inst]->total_system_throughput)/((PHY_vars_eNB_g[eNB_inst]->proc[slot>>1].frame_tx+1)*10));
+		  fprintf(eNB_avg_thr,"%d %d\n",PHY_vars_eNB_g[eNB_inst][0]->proc[slot>>1].frame_tx,
+			  (PHY_vars_eNB_g[eNB_inst][0]->total_system_throughput)/((PHY_vars_eNB_g[eNB_inst][0]->proc[slot>>1].frame_tx+1)*10));
 	      if (eNB_stats[eNB_inst]) {
 		len = dump_eNB_stats(PHY_vars_eNB_g[eNB_inst][0], stats_buffer, 0);
 		rewind (eNB_stats[eNB_inst]);
