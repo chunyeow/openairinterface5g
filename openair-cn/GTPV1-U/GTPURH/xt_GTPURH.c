@@ -24,33 +24,18 @@
 #include <net/route.h> 
 #include <linux/netfilter/x_tables.h>
 #include <linux/netfilter_ipv4/ip_tables.h>
-#if 0
-#include <net/netfilter/ipv4/nf_defrag_ipv4.h>
-#endif
 #if defined(CONFIG_IP6_NF_IPTABLES) || defined(CONFIG_IP6_NF_IPTABLES_MODULE)
 #    define WITH_IPV6 1
 #endif
-
-
-//#define ROUTE_PACKET 1
-#define NEW_SKB 1
-
 #include "xt_GTPURH.h"
-
 #if !(defined KVERSION)
 #error "Kernel version is not defined!!!! Exiting."
 #endif
-
-#define NIPADDR(addr) \
-        (uint8_t)(addr & 0x000000FF), \
-        (uint8_t)((addr & 0x0000FF00) >> 8), \
-        (uint8_t)((addr & 0x00FF0000) >> 16), \
-        (uint8_t)((addr & 0xFF000000) >> 24)
-
+//-----------------------------------------------------------------------------
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Pradip Biswas <pradip_biswas@polarisnetworks.net>");
 MODULE_DESCRIPTION("GTPu Data Path extension on netfilter");
-
+//-----------------------------------------------------------------------------
 static char*         _gtpurh_nf_inet_hook_2_string(int nf_inet_hookP);
 static inline bool   _gtpurh_ip_is_fragment(const struct iphdr *iph_p);
 static void          _gtpurh_print_hex_octets(unsigned char* data_pP, unsigned short sizeP);
@@ -59,6 +44,25 @@ static unsigned int  _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct x
 static unsigned int  gtpurh_tg6(struct sk_buff *skb_pP, const struct xt_action_param *par_pP);
 #endif
 static unsigned int  gtpurh_tg4(struct sk_buff *skb_pP, const struct xt_action_param *par_pP);
+//-----------------------------------------------------------------------------
+//#define ROUTE_PACKET 1
+#define NEW_SKB 1
+
+#define GTPURH_HDR_PNBIT 1
+#define GTPURH_HDR_SBIT 1 << 1
+#define GTPURH_HDR_EBIT 1 << 2
+#define GTPURH_ANY_EXT_HDR_BIT (GTPURH_HDR_PNBIT | GTPURH_HDR_SBIT | GTPURH_HDR_EBIT)
+#define GTPURH_FAILURE 1
+#define GTPURH_SUCCESS !GTPURH_FAILURE
+#define GTPURH_PORT 2152
+#define GTPURH_2_PRINT_BUFFER_LEN 8192
+#define NIPADDR(addr) \
+        (uint8_t)(addr & 0x000000FF), \
+        (uint8_t)((addr & 0x0000FF00) >> 8), \
+        (uint8_t)((addr & 0x00FF0000) >> 16), \
+        (uint8_t)((addr & 0xFF000000) >> 24)
+//-----------------------------------------------------------------------------
+static char _gtpurh_print_buffer[GTPURH_2_PRINT_BUFFER_LEN];
 
 static struct xt_target gtpurh_tg_reg[] __read_mostly = {
                  {
@@ -93,20 +97,6 @@ struct gtpuhdr
     u_int16_t length;
     u_int32_t tunid;
 };
-
-#define GTPURH_HDR_PNBIT 1
-#define GTPURH_HDR_SBIT 1 << 1
-#define GTPURH_HDR_EBIT 1 << 2
-#define GTPURH_ANY_EXT_HDR_BIT (GTPURH_HDR_PNBIT | GTPURH_HDR_SBIT | GTPURH_HDR_EBIT)
-
-#define GTPURH_FAILURE 1
-#define GTPURH_SUCCESS !GTPURH_FAILURE
-
-#define GTPURH_PORT 2152
-
-#define GTPURH_2_PRINT_BUFFER_LEN 8192
-static char _gtpurh_print_buffer[GTPURH_2_PRINT_BUFFER_LEN];
-
 
 //-----------------------------------------------------------------------------
 static char*
@@ -222,7 +212,7 @@ static bool _gtpurh_route_packet(struct sk_buff *skb_pP, const struct xt_gtpurh_
             skb_pP->pkt_type);
 #endif
     rt = ip_route_output_key(&init_net, &fl.u.ip4);
-    if (err != 0) {
+    if (rt == null) {
         pr_info("GTPURH: Failed to route packet to dst 0x%x. Error: (%d)", fl.u.ip4.daddr, err);
         return GTPURH_FAILURE;
     } 
@@ -301,18 +291,6 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
                 iph_p->frag_off & htons(IP_MF | IP_OFFSET));
             return NF_ACCEPT;
     }
-    /*pr_info("GTPURH(%d): IN : GTPV1U skbuff len %u data_len %u data %p head %p tail %p end %p nwh %p th %p inwh %p ith %p\n",
-            tgi_pP->action,
-            skb_p->len,
-            skb_p->data_len,
-            skb_p->data,
-            skb_p->head,
-            skb_p->tail,
-            skb_p->end,
-            skb_network_header(skb_p),
-            skb_transport_header(skb_p),
-            skb_inner_network_header(skb_p),
-            skb_inner_transport_header(skb_p));*/
 
     if (skb_p->len <= sizeof (struct udphdr) + sizeof (struct gtpuhdr) + sizeof (struct iphdr)) {
         pr_info("GTPURH: Thought was GTPV1U packet but too short length\n");
@@ -326,25 +304,6 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
         skb_push(skb_p, (iph_p->ihl << 2));
         return NF_ACCEPT;
     }
-
-/*    if (iph_p->protocol != IPPROTO_UDP) {
-        pr_info("GTPURH(%d): ERROR in decapsulating packet: %d.%d.%d.%d --> %d.%d.%d.%d Bad Proto: %d, Total Len (IP): %u mark %u Frag offset %u Flags 0x%0x\n",
-                tgi_pP->action,
-                iph_p->saddr  & 0xFF,
-                (iph_p->saddr & 0x0000FF00) >> 8,
-                (iph_p->saddr & 0x00FF0000) >> 16,
-                iph_p->saddr >> 24,
-                iph_p->daddr  & 0xFF,
-                (iph_p->daddr & 0x0000FF00) >> 8,
-                (iph_p->daddr & 0x00FF0000) >> 16,
-                iph_p->daddr >> 24,
-                iph_p->protocol,
-                ntohs(iph2_p->tot_len),
-                skb_p->mark,
-                ntohs(iph_p->frag_off) & 0x1FFFFFFF,
-                ntohs(iph_p->frag_off) >> 13);
-        return NF_ACCEPT;
-    }*/
 
     /* Remove UDP header */
     gtpuh_p = (struct gtpuhdr*)skb_pull(skb_p, sizeof(struct udphdr));
@@ -371,7 +330,7 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
         _gtpurh_print_hex_octets((unsigned char*)iph_p, ntohs(iph_p->tot_len));
         return NF_DROP;
     }
-//#if 0
+#if 1
     if ((skb_p->mark == 0) || (gtp_payload_size != ntohs(iph2_p->tot_len))) {
         pr_info("\nGTPURH: Decapsulated packet: %d.%d.%d.%d --> %d.%d.%d.%d Proto: %d, Total Len (IP): %u mark %u Frag offset %u Flags 0x%0x\n",
                 iph2_p->saddr  & 0xFF,
@@ -398,7 +357,7 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
             return NF_DROP;
         }
     }
-//#endif
+#endif
 
     /* Route the packet */
 #if defined(ROUTE_PACKET)
@@ -423,11 +382,12 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
             pr_info("GTPURH: Failed to route packet to dst 0x%x. Error: (%d)", fl.u.ip4.daddr, err);
             return NF_DROP;
         }
-#if 0
+#if 1
         if (rt->dst.dev) {
             pr_info("GTPURH: dst dev name %s\n", rt->dst.dev->name);
         } else {
             pr_info("GTPURH: dst dev NULL\n");
+            return NF_DROP;
         }
 #endif
         skb_p->priority = rt_tos2priority(iph2_p->tos);
