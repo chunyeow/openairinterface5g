@@ -365,6 +365,9 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
                 goto free_new_skb;
         }
         return;
+    } else {
+        pr_info("GTPUAH: PACKET DROPPED because of mtu %u < (%u + %u)\n",
+                mtu, orig_iplen, headroom_reqd);
     }
 free_new_skb:
     pr_info("GTPUAH: PACKET DROPPED\n");
