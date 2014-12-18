@@ -403,14 +403,14 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
         }
 
 
-        skb_reserve(new_skb_p, LL_MAX_HEADER);
+        skb_reserve(new_skb_p, LL_MAX_HEADER + ntohs(iph2_p->tot_len));
         new_skb_p->protocol = skb_p->protocol;
 
-        skb_reset_network_header(new_skb_p);
-        new_ip_p = (void *)skb_put(new_skb_p, iph2_p->ihl << 2);
+        new_ip_p = (void *)skb_push(new_skb_p, ntohs(iph2_p->tot_len) - (iph2_p->ihl << 2));
         skb_reset_transport_header(new_skb_p);
-        skb_put(new_skb_p, ntohs(iph2_p->tot_len) - (iph2_p->ihl << 2));
+        new_ip_p = (void *)skb_push(new_skb_p, iph2_p->ihl << 2);
         memcpy(new_ip_p, iph2_p, ntohs(iph2_p->tot_len));
+        skb_reset_network_header(new_skb_p);
 
         new_skb_p->mark = ntohl(gtpuh_p->tunid);
           //new_skb_p->mark     = skb_p->mark;
