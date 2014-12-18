@@ -613,6 +613,9 @@ sgw_lite_handle_sgi_endpoint_updated(
     task_id_t                                          to_task;
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
     static uint8_t                                     iptable_uplink_remove_gtpu = FALSE;
+    char                                              *chain                  = NULL;
+    char                                               cmd[256];
+    int                                                ret;
 #endif
 
 #if defined(ENABLE_STANDALONE_EPC)
@@ -666,8 +669,6 @@ sgw_lite_handle_sgi_endpoint_updated(
             modify_response_p->cause                                                = REQUEST_ACCEPTED;
             modify_response_p->trxn                                                 = new_bearer_ctxt_info_p->sgw_eps_bearer_context_information.trxn;
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
-            char             cmd[256];
-            int              ret;
             ret = snprintf(cmd,
                     256,
                     "iptables -t mangle -A POSTROUTING -d %u.%u.%u.%u -m mark --mark %u -j GTPUAH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action add",
@@ -724,72 +725,44 @@ sgw_lite_handle_sgi_endpoint_updated(
                  }
                  //use API when prototype validated
                  ret = spgw_system(cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-                 if (ret < 0) {
-                     SPGW_APP_ERROR("ERROR in setting up downlink TUNNEL\n");
-                 }
             }
 
             if (iptable_uplink_remove_gtpu == FALSE) {
-                ret = snprintf(cmd,
-                               256,
-                               "iptables -t raw -A OUTPUT -s %u.%u.%u.%u -d %u.%u.%u.%u -p udp --dport 2152 -j GTPURH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action remove",
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[1],
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[2],
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[3],
-                               sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x000000FF,
-                               (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x0000FF00) >> 8,
-                               (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x00FF0000) >> 16,
-                               (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0xFF000000) >> 24,
-                               sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x000000FF,
-                               (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x0000FF00) >> 8,
-                               (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x00FF0000) >> 16,
-                               (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0xFF000000) >> 24,
-                               eps_bearer_entry_p->s_gw_teid_for_S1u_S12_S4_up,
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[1],
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[2],
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[3],
-                               eps_bearer_entry_p->enb_teid_for_S1u);
-
-                if ((ret < 0) || (ret > 256)) {
-                    SPGW_APP_ERROR("ERROR in preparing uplink tunnel, tune string length\n");
-                    exit (-1);
-                }
-                ret = spgw_system(cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-
-                ret = snprintf(cmd,
-                               256,
-                               "iptables -t raw -A PREROUTING -i %s -s %u.%u.%u.%u -d %u.%u.%u.%u -p udp --dport 2152  -j GTPURH --action remove --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u ",
-                               sgw_app.sgw_interface_name_for_S1u_S12_S4_up,
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[1],
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[2],
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[3],
-                               sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x000000FF,
-                               (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x0000FF00) >> 8,
-                               (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x00FF0000) >> 16,
-                               (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0xFF000000) >> 24,
-                               sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x000000FF,
-                               (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x0000FF00) >> 8,
-                               (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x00FF0000) >> 16,
-                               (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0xFF000000) >> 24,
-                               eps_bearer_entry_p->s_gw_teid_for_S1u_S12_S4_up,
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[1],
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[2],
-                               eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[3],
-                               eps_bearer_entry_p->enb_teid_for_S1u);
-                if ((ret < 0) || (ret > 256)) {
-                    SPGW_APP_ERROR("ERROR in preparing uplink tunnel, tune string length\n");
-                    exit (-1);
-                }
-                ret = spgw_system(cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-                if (ret < 0) {
-                    SPGW_APP_ERROR("ERROR in setting up uplink TUNNEL\n");
+                if (strncasecmp("tun",spgw_config.sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up, strlen("tun")) == 0) {
+                    chain = "OUTPUT";
                 } else {
-                    iptable_uplink_remove_gtpu = TRUE;
+                    chain = "PREROUTING";
                 }
+
+                ret = snprintf(cmd,
+                                   256,
+                                   "iptables -t raw -A %s -s %u.%u.%u.%u -d %u.%u.%u.%u -p udp --dport 2152 -j GTPURH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action remove",
+                                   chain,
+                                   eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
+                                   eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[1],
+                                   eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[2],
+                                   eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[3],
+                                   sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x000000FF,
+                                   (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x0000FF00) >> 8,
+                                   (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x00FF0000) >> 16,
+                                   (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0xFF000000) >> 24,
+                                   sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x000000FF,
+                                   (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x0000FF00) >> 8,
+                                   (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x00FF0000) >> 16,
+                                   (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0xFF000000) >> 24,
+                                   eps_bearer_entry_p->s_gw_teid_for_S1u_S12_S4_up,
+                                   eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
+                                   eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[1],
+                                   eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[2],
+                                   eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[3],
+                                   eps_bearer_entry_p->enb_teid_for_S1u);
+
+                if ((ret < 0) || (ret > 256)) {
+                    SPGW_APP_ERROR("ERROR in preparing uplink tunnel, tune string length\n");
+                    exit (-1);
+                }
+                ret = spgw_system(cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+                iptable_uplink_remove_gtpu = TRUE;
             }
 #endif
         }
