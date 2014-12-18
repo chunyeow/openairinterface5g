@@ -249,7 +249,7 @@ int add_new_ue(module_id_t mod_idP, int cc_idP, rnti_t rntiP,int harq_pidP) {
   return(-1);
 }
 
-int mac_remove_ue(module_id_t mod_idP, int ue_idP) {
+int mac_remove_ue(module_id_t mod_idP, int ue_idP, int frameP) {
 
   int prev,i, ret=-1;
 
@@ -273,7 +273,7 @@ int mac_remove_ue(module_id_t mod_idP, int ue_idP) {
   eNB_dlsch_info[mod_idP][pCC_id][ue_idP].rnti                        = 0;
   eNB_dlsch_info[mod_idP][pCC_id][ue_idP].status                      = S_DL_NONE;
 
-  rrc_eNB_free_UE_index(mod_idP,ue_idP);
+  rrc_eNB_free_UE_index(mod_idP,ue_idP,frameP);
 
   prev = UE_list->head;
   for (i=UE_list->head;i>=0;i=UE_list->next[i]) {

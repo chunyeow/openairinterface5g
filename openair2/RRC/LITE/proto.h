@@ -263,7 +263,7 @@ uint8_t check_trigger_meas_event(uint8_t module_idP,frame_t frameP, uint8_t eNB_
 //void rrc_ue_process_ueCapabilityEnquiry(uint8_t module_idP,uint32_t frame,UECapabilityEnquiry_t *UECapabilityEnquiry,uint8_t eNB_index);
 //void rrc_ue_process_securityModeCommand(uint8_t module_idP,uint32_t frame,SecurityModeCommand_t *securityModeCommand,uint8_t eNB_index);
 
-void rrc_eNB_free_UE_index (module_id_t enb_mod_idP, module_id_t ue_mod_idP);
+void rrc_eNB_free_UE_index (module_id_t enb_mod_idP, module_id_t ue_mod_idP,int frameP);
 
 long binary_search_int(int elements[], long numElem, int value);
 

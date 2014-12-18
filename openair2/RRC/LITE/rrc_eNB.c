@@ -527,17 +527,25 @@ static module_id_t rrc_eNB_get_next_free_UE_index(
 }
 
 void rrc_eNB_free_UE_index(
-    module_id_t enb_mod_idP,
-    module_id_t ue_mod_idP) {
-    AssertFatal(enb_mod_idP < NB_eNB_INST, "eNB inst invalid (%d/%d) for UE %d!", enb_mod_idP, NB_eNB_INST, ue_mod_idP);
-    AssertFatal(ue_mod_idP < NUMBER_OF_UE_MAX, "UE inst invalid (%d/%d) for eNB %d!", ue_mod_idP, NUMBER_OF_UE_MAX,
-                enb_mod_idP);
+			   module_id_t enb_mod_idP,
+			   module_id_t ue_mod_idP,
+			   int frameP) {
 
-    LOG_W(RRC, "[eNB %d] Removing UE %d rv 0x%" PRIx64 "\n", enb_mod_idP, ue_mod_idP,
-          eNB_rrc_inst[enb_mod_idP].Info.UE_list[ue_mod_idP]);
-    eNB_rrc_inst[enb_mod_idP].Info.UE[ue_mod_idP].Status = RRC_IDLE;
-    eNB_rrc_inst[enb_mod_idP].Info.UE_list[ue_mod_idP] = 0;
-    free(eNB_rrc_inst[enb_mod_idP].SRB_configList[ue_mod_idP]);
+  DRB_ToAddModList_t                 *DRB_configList = eNB_rrc_inst[enb_mod_idP].DRB_configList[ue_mod_idP];
+  SRB_ToAddModList_t                 *SRB_configList = eNB_rrc_inst[enb_mod_idP].SRB_configList[ue_mod_idP];
+
+  AssertFatal(enb_mod_idP < NB_eNB_INST, "eNB inst invalid (%d/%d) for UE %d!", enb_mod_idP, NB_eNB_INST, ue_mod_idP);
+  AssertFatal(ue_mod_idP < NUMBER_OF_UE_MAX, "UE inst invalid (%d/%d) for eNB %d!", ue_mod_idP, NUMBER_OF_UE_MAX,
+	      enb_mod_idP);
+  
+  LOG_W(RRC, "[eNB %d] Removing UE %d rv 0x%" PRIx64 "\n", enb_mod_idP, ue_mod_idP,
+	eNB_rrc_inst[enb_mod_idP].Info.UE_list[ue_mod_idP]);
+  eNB_rrc_inst[enb_mod_idP].Info.UE[ue_mod_idP].Status = RRC_IDLE;
+  eNB_rrc_inst[enb_mod_idP].Info.UE_list[ue_mod_idP] = 0;
+
+  rrc_rlc_remove_rlc(enb_mod_idP, ue_mod_idP, frameP, ENB_FLAG_YES, SRB_FLAG_YES, MBMS_FLAG_NO, CONFIG_ACTION_REMOVE,
+		       1);
+  free(eNB_rrc_inst[enb_mod_idP].SRB_configList[ue_mod_idP]);
 }
 
 /*------------------------------------------------------------------------------*/

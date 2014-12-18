@@ -112,7 +112,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
   for (i=UE_list->head;i>0;i=UE_list->next[i]) {
     LOG_I(MAC,"UE %d: rnti %x (%p)\n",i,UE_RNTI(module_idP,i),mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i)));
     if (mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i))==NULL)
-      mac_remove_ue(module_idP,i);
+      mac_remove_ue(module_idP,i,frameP);
   }
 #if defined(ENABLE_ITTI)
   do {
@@ -206,7 +206,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
     next_i = UE_list->next[i];
     LOG_D(MAC,"UE %d : rnti %x, stats %p\n",i,UE_RNTI(module_idP,i),mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i)));
     if (mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i))==NULL) {
-      mac_remove_ue(module_idP,i);
+      mac_remove_ue(module_idP,i,frameP);
     }
     i=next_i;
   }

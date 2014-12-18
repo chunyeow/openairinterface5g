@@ -472,7 +472,7 @@ uint8_t *parse_ulsch_header(uint8_t *mac_header,
 int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active);
 int mac_init(void);
 int add_new_ue(module_id_t Mod_id, int CC_id, rnti_t rnti,int harq_pid);
-int mac_remove_ue(module_id_t Mod_id, int UE_id);
+int mac_remove_ue(module_id_t Mod_id, int UE_id,int frameP);
 
 
 int maxround(module_id_t Mod_id,uint16_t rnti,int frame,sub_frame_t subframe,uint8_t ul_flag);
