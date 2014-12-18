@@ -411,6 +411,8 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
         new_ip_p = (void *)skb_push(new_skb_p, iph2_p->ihl << 2);
         memcpy(new_ip_p, iph2_p, ntohs(iph2_p->tot_len));
         skb_reset_network_header(new_skb_p);
+        skb_reset_inner_network_header(new_skb_p);
+        skb_reset_inner_transport_header(new_skb_p);
 
         new_skb_p->mark = ntohl(gtpuh_p->tunid);
           //new_skb_p->mark     = skb_p->mark;
