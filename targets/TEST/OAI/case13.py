@@ -50,12 +50,15 @@ NUM_TRIALS=3
 
 PRB=[25,50,100]
 MCS=[0,4,9,10,13,16,17,22,27]
+#PRB=[100]
+#MCS=[16]
 ANT_TX=1  # 2 
 ANT_RX=2  # 2 
-CHANNEL=["N","I"] # A,B,C,D,E,F,
+CHANNEL=["N"]
+#CHANNEL=["C","E","F","G","H","I","L","M"] # A,B,C,D,E,F,
 TX_MODE=2 # 2, 
-MIN_SNR=2
-MAX_SNR=34
+MIN_SNR=0 
+MAX_SNR=40
 PERF=75
 OPT="-L"
 FRAME=2000
@@ -105,7 +108,10 @@ def execute(oai, user, pw, host,logfile,logdir,debug,cpu):
                                 conf = '-B' + str(PRB[i]) + ' -m'+str(MCS[j]) + ' -y'+str(m) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -e.1 -P -n'+str(FRAME)+' -O'+str(PERF)+' '+ OPT  
                                 trace = logdir + '/time_meas' + '_prb'+str(PRB[i])+'_mcs'+ str(MCS[j])+ '_antrx' + str(m)  + '_channel' +str(CHANNEL[o]) + '_tx' +str(p) + '_snr' +str(q)+'.'+case+str(test)+ '.log'
                                 tee = ' 2>&1 | tee ' + trace
-                                cmd = 'taskset -c ' + str(cpu) + ' ./ulsim.rel8.'+ host + ' ' + conf + tee
+                                if cpu > -1 :
+                                    cmd = 'taskset -c ' + str(cpu) + ' ./ulsim.rel8.'+ host + ' ' + conf + tee
+                                else :
+                                    cmd = './ulsim.rel8.'+ host + ' ' + conf + tee
                                 
                                 if debug :
                                     print cmd

@@ -258,8 +258,8 @@ int main(int argc, char **argv) {
   int s,Kr,Kr_bytes;
   int dump_perf=0;
   int test_perf=0;
-  int dump_table=0;
-  
+  int dump_table =0;
+
   double effective_rate=0.0;
   char channel_model_input[10];
   
@@ -277,7 +277,7 @@ int main(int argc, char **argv) {
 
   logInit();
 
-  while ((c = getopt (argc, argv, "hapbXm:n:Y:X:x:s:w:e:q:d:D:O:c:r:i:f:y:c:oA:C:R:g:N:l:S:T:QB:PI:L")) != -1) {
+  while ((c = getopt (argc, argv, "hapZbm:n:Y:X:x:s:w:e:q:d:D:O:c:r:i:f:y:c:oA:C:R:g:N:l:S:T:QB:PI:L")) != -1) {
     switch (c) {
     case 'a':
       channel_model = AWGN;
@@ -470,6 +470,9 @@ int main(int argc, char **argv) {
       break;
     case 'I':
       max_turbo_iterations=atoi(optarg);
+      break;
+    case 'Z':
+      dump_table = 1;
       break;
     case 'h':
     default:
@@ -1574,8 +1577,8 @@ int main(int argc, char **argv) {
       } //ABStraction
       
       if ( (test_perf != 0) && (100 * effective_rate > test_perf )) {
-	fprintf(time_meas_fd,"SNR; MCS; TBS; rate; err0; trials0; err1; trials1; err2; trials2; err3; trials3\n");
-  	fprintf(time_meas_fd,"%f;%d;%d;%f;%d;%d;%d;%d;%d;%d;%d;%d\n",
+	//fprintf(time_meas_fd,"SNR; MCS; TBS; rate; err0; trials0; err1; trials1; err2; trials2; err3; trials3\n");
+  	fprintf(time_meas_fd,"%f;%d;%d;%f;%d;%d;%d;%d;%d;%d;%d;%d;",
 		SNR,
 		mcs,
 		PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->TBS, 
@@ -1589,8 +1592,8 @@ int main(int argc, char **argv) {
 		errs[3],
 		round_trials[3]);
 	
-	fprintf(time_meas_fd,"SNR; MCS; TBS; rate; err0; trials0; err1; trials1; err2; trials2; err3; trials3;ND;\n");
-	fprintf(time_meas_fd,"%f;%d;%d;%f(%2.1f%%,%f);%d;%d;%d;%d;%d;%d;%d;%d;(%e,%e,%e,%e);%f(%f);\n",
+	//fprintf(time_meas_fd,"SNR; MCS; TBS; rate; err0; trials0; err1; trials1; err2; trials2; err3; trials3;ND;\n");
+	fprintf(time_meas_fd,"%f;%d;%d;%f;%2.1f;%f;%d;%d;%d;%d;%d;%d;%d;%d;%e;%e;%e;%e;%f;%f;",
 		SNR,
 		mcs,
 		PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->TBS, 
@@ -1612,7 +1615,8 @@ int main(int argc, char **argv) {
 		(1.0*(round_trials[0]-errs[0])+2.0*(round_trials[1]-errs[1])+3.0*(round_trials[2]-errs[2])+4.0*(round_trials[3]-errs[3]))/((double)round_trials[0])/(double)PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->TBS, 
 		(1.0*(round_trials[0]-errs[0])+2.0*(round_trials[1]-errs[1])+3.0*(round_trials[2]-errs[2])+4.0*(round_trials[3]-errs[3]))/((double)round_trials[0]));
 
-	fprintf(time_meas_fd,"UE_PROC_TX(%d); OFDM_MOD(%d); UL_MOD(%d); UL_ENC(%d); eNB_PROC_RX(%d); OFDM_DEMOD(%d); UL_DEMOD(%d); UL_DECOD(%d);\n",
+	//fprintf(time_meas_fd,"UE_PROC_TX(%d); OFDM_MOD(%d); UL_MOD(%d); UL_ENC(%d); eNB_PROC_RX(%d); OFDM_DEMOD(%d); UL_DEMOD(%d); UL_DECOD(%d);\n",
+	fprintf(time_meas_fd,"%d; %d; %d; %d; %d; %d; %d; %d;", 
 		PHY_vars_UE->phy_proc_tx.trials,
 		PHY_vars_UE->ofdm_mod_stats.trials,
 		PHY_vars_UE->ulsch_modulation_stats.trials,
@@ -1622,7 +1626,7 @@ int main(int argc, char **argv) {
 		PHY_vars_eNB->ulsch_demodulation_stats.trials,
 		PHY_vars_eNB->ulsch_decoding_stats.trials
 		);
-	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%f;%f;\n",
+	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%f;%f;",
 		get_time_meas_us(&PHY_vars_UE->phy_proc_tx),
 		get_time_meas_us(&PHY_vars_UE->ofdm_mod_stats),
 		get_time_meas_us(&PHY_vars_UE->ulsch_modulation_stats),
@@ -1633,28 +1637,28 @@ int main(int argc, char **argv) {
 		get_time_meas_us(&PHY_vars_eNB->ulsch_decoding_stats)
 		);
 
-	fprintf(time_meas_fd,"UE_PROC_TX_STD;UE_PROC_TX_MAX;UE_PROC_TX_MIN;UE_PROC_TX_MED;UE_PROC_TX_Q1;UE_PROC_TX_Q3;UE_PROC_TX_DROPPED;\n");
-	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%d;\n", std_phy_proc_tx, t_tx_max, t_tx_min, tx_median, tx_q1, tx_q3, n_tx_dropped);
+	//fprintf(time_meas_fd,"UE_PROC_TX_STD;UE_PROC_TX_MAX;UE_PROC_TX_MIN;UE_PROC_TX_MED;UE_PROC_TX_Q1;UE_PROC_TX_Q3;UE_PROC_TX_DROPPED;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%d;", std_phy_proc_tx, t_tx_max, t_tx_min, tx_median, tx_q1, tx_q3, n_tx_dropped);
 	
-	fprintf(time_meas_fd,"IFFT;\n");
-	fprintf(time_meas_fd,"%f;%f;%f;%f\n", std_phy_proc_tx_ifft, tx_ifft_median, tx_ifft_q1, tx_ifft_q3);
+	//fprintf(time_meas_fd,"IFFT;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f;", std_phy_proc_tx_ifft, tx_ifft_median, tx_ifft_q1, tx_ifft_q3);
 	
-	fprintf(time_meas_fd,"MOD;\n");
-	fprintf(time_meas_fd,"%f;%f;%f;%f\n", std_phy_proc_tx_mod, tx_mod_median, tx_mod_q1, tx_mod_q3);
+	//fprintf(time_meas_fd,"MOD;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f;", std_phy_proc_tx_mod, tx_mod_median, tx_mod_q1, tx_mod_q3);
 	
-	fprintf(time_meas_fd,"ENC;\n");
-	fprintf(time_meas_fd,"%f;%f;%f;%f\n", std_phy_proc_tx_enc, tx_enc_median, tx_enc_q1, tx_enc_q3);
+	//fprintf(time_meas_fd,"ENC;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f;", std_phy_proc_tx_enc, tx_enc_median, tx_enc_q1, tx_enc_q3);
 	
-	fprintf(time_meas_fd,"eNB_PROC_RX_STD;eNB_PROC_RX_MAX;eNB_PROC_RX_MIN;eNB_PROC_RX_MED;eNB_PROC_RX_Q1;eNB_PROC_RX_Q3;eNB_PROC_RX_DROPPED;\n");
-	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%d;\n", std_phy_proc_rx, t_rx_max, t_rx_min, rx_median, rx_q1, rx_q3, n_rx_dropped);
+	//fprintf(time_meas_fd,"eNB_PROC_RX_STD;eNB_PROC_RX_MAX;eNB_PROC_RX_MIN;eNB_PROC_RX_MED;eNB_PROC_RX_Q1;eNB_PROC_RX_Q3;eNB_PROC_RX_DROPPED;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%d;", std_phy_proc_rx, t_rx_max, t_rx_min, rx_median, rx_q1, rx_q3, n_rx_dropped);
 
-    fprintf(time_meas_fd,"FFT;\n");
-	fprintf(time_meas_fd,"%f;%f;%f;%f\n", std_phy_proc_rx_fft, rx_fft_median, rx_fft_q1, rx_fft_q3);
+	//fprintf(time_meas_fd,"FFT;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f;", std_phy_proc_rx_fft, rx_fft_median, rx_fft_q1, rx_fft_q3);
 	
-	fprintf(time_meas_fd,"DEMOD;\n");
-	fprintf(time_meas_fd,"%f;%f;%f;%f\n", std_phy_proc_rx_demod,rx_demod_median, rx_demod_q1, rx_demod_q3);
+	//fprintf(time_meas_fd,"DEMOD;\n");
+	fprintf(time_meas_fd,"%f;%f;%f;%f;", std_phy_proc_rx_demod,rx_demod_median, rx_demod_q1, rx_demod_q3);
 	
-	fprintf(time_meas_fd,"DEC;\n");
+	//fprintf(time_meas_fd,"DEC;\n");
 	fprintf(time_meas_fd,"%f;%f;%f;%f\n", std_phy_proc_rx_dec, rx_dec_median, rx_dec_q1, rx_dec_q3);
 	
 	

@@ -57,7 +57,7 @@ pw =''
 i = 0
 clean = 0 
 start_case  = 0
-cpu = 0 
+cpu = -1 
 
 for arg in sys.argv:
     if arg == '-d':
@@ -109,7 +109,10 @@ oai = openair('localdomain','localhost')
 try: 
     user = getpass.getuser()
     print '\n******* Note that the user <'+user+'> should be a sudoer *******\n'
-    print '******* Connecting to the localhost <'+host+'> to perform the test on CPU '+str(cpu)+' *******\n'
+    if cpu > -1 :
+        print '******* Connecting to the localhost <'+host+'> to perform the test on CPU '+str(cpu)+' *******\n'
+    else :
+        print '******* Connecting to the localhost <'+host+'> to perform the test *******\n'
    
     if not pw :
         print "username: " + user 
@@ -146,9 +149,9 @@ if clean == 1 :
 # start te test cases 
 #compile 
 
-rv=case11.execute(oai, user, pw, host,logfile,logdir,debug)
+rv=1 #case11.execute(oai, user, pw, host,logfile,logdir,debug)
 if rv == 1 :
-    case12.execute(oai, user, pw, host,logfile,logdir,debug,cpu)
+  #  case12.execute(oai, user, pw, host,logfile,logdir,debug,cpu)
     case13.execute(oai, user, pw, host,logfile,logdir,debug,cpu)
 else :
     print 'Compilation error: skip case 12 and 13'
