@@ -2585,7 +2585,7 @@ void rrc_eNB_generate_RRCConnectionSetup(
     eNB_rrc_inst[enb_mod_idP].Srb0.Tx_buffer.payload_size =
         do_RRCConnectionSetup(enb_mod_idP,
                               (uint8_t *) eNB_rrc_inst[enb_mod_idP].Srb0.Tx_buffer.Payload,
-			      (mac_xface->lte_frame_parms->nb_antennas_tx==2)?3:1,
+			      (mac_xface->lte_frame_parms->nb_antennas_tx==2)?2:1,
 			      ue_mod_idP,
                               rrc_eNB_get_next_transaction_identifier(enb_mod_idP),
                               mac_xface->lte_frame_parms,
