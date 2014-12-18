@@ -1532,8 +1532,12 @@ uint8_t do_RRCConnectionSetup(uint8_t Mod_id,
     break;
   case 3:
     physicalConfigDedicated2->antennaInfo->choice.explicitValue.transmissionMode=     AntennaInfoDedicated__transmissionMode_tm3;
-    physicalConfigDedicated2->antennaInfo->choice.explicitValue.codebookSubsetRestriction=     CALLOC(1,sizeof(struct AntennaInfoDedicated__codebookSubsetRestriction));
-    physicalConfigDedicated2->antennaInfo->choice.explicitValue.codebookSubsetRestriction->present = AntennaInfoDedicated__codebookSubsetRestriction_PR_NOTHING;
+    physicalConfigDedicated2->antennaInfo->choice.explicitValue.codebookSubsetRestriction=     CALLOC(1,sizeof(*physicalConfigDedicated2->antennaInfo->choice.explicitValue.codebookSubsetRestriction));
+    physicalConfigDedicated2->antennaInfo->choice.explicitValue.codebookSubsetRestriction->present = AntennaInfoDedicated__codebookSubsetRestriction_PR_n2TxAntenna_tm3;
+    physicalConfigDedicated2->antennaInfo->choice.explicitValue.codebookSubsetRestriction->choice.n2TxAntenna_tm3.buf= MALLOC(1);
+    physicalConfigDedicated2->antennaInfo->choice.explicitValue.codebookSubsetRestriction->choice.n2TxAntenna_tm3.buf[0] = 0x3;
+    physicalConfigDedicated2->antennaInfo->choice.explicitValue.codebookSubsetRestriction->choice.n2TxAntenna_tm3.size=1;
+    physicalConfigDedicated2->antennaInfo->choice.explicitValue.codebookSubsetRestriction->choice.n2TxAntenna_tm3.bits_unused=6;
 
     break;
   case 4:
