@@ -11,10 +11,12 @@
  */
 
 #include <linux/module.h>
+#include <linux/kallsyms.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/skbuff.h>
 #include <linux/ip.h>
+#include <linux/if_ether.h>
 #include <linux/route.h> 
 #include <linux/time.h>
 #include <net/checksum.h>
@@ -36,14 +38,16 @@
 #endif
 #include "xt_GTPUAH.h"
 #if !(defined KVERSION)
-#error "Kernel version is not defined!!!! Exiting."
+#    error "Kernel version is not defined!!!! Exiting."
 #endif
+#define INT_MODULE_PARM(n, v) static int n = v; module_param(n, int, 0444)
 //-----------------------------------------------------------------------------
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Pradip Biswas <pradip_biswas@polarisnetworks.net>");
 MODULE_DESCRIPTION("GTPu Data Path extension on netfilter");
 //-----------------------------------------------------------------------------
 static char*        _gtpuah_nf_inet_hook_2_string(int nf_inet_hookP);
+static void         _gtpuah_print_hex_octets(unsigned char* data_pP, unsigned short sizeP);
 static void         _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP);
 static unsigned int gtpuah_tg4(struct sk_buff *skb_pP, const struct xt_action_param *par_pP);
 static unsigned int gtpuah_tg6(struct sk_buff *skb_pP, const struct xt_action_param *par_pP);
@@ -56,7 +60,7 @@ static struct xt_target gtpuah_tg_reg[] __read_mostly = {
                                 .revision       = 0,
                                 .family         = NFPROTO_IPV4,
                                 .hooks          = (1 << NF_INET_POST_ROUTING) |
-                                                  (1 << NF_INET_LOCAL_IN)     ,
+                                                  (1 << NF_INET_LOCAL_IN),
                                 .table          = "mangle",
                                 .target         = gtpuah_tg4,
                                 .targetsize     = sizeof(struct xt_gtpuah_target_info),
@@ -68,7 +72,7 @@ static struct xt_target gtpuah_tg_reg[] __read_mostly = {
                                 .revision       = 0,
                                 .family         = NFPROTO_IPV6,
                                 .hooks          = (1 << NF_INET_POST_ROUTING) |
-                                                  (1 << NF_INET_LOCAL_IN)     ,
+                                                  (1 << NF_INET_LOCAL_IN),
                                 .table          = "mangle",
                                 .target         = gtpuah_tg6,
                                 .targetsize     = sizeof(struct xt_gtpuah_target_info),
@@ -77,15 +81,14 @@ static struct xt_target gtpuah_tg_reg[] __read_mostly = {
 #endif
 };
 
-struct gtpuhdr
-{
-    char flags;
-    char msgtype;
+struct gtpuhdr {
+    char      flags;
+    char      msgtype;
     u_int16_t length;
     u_int32_t tunid;
 };
+
 //-----------------------------------------------------------------------------
-#define MTU            1564
 #define GTPU_HDR_PNBIT 1
 #define GTPU_HDR_SBIT 1 << 1
 #define GTPU_HDR_EBIT 1 << 2
@@ -93,7 +96,7 @@ struct gtpuhdr
 
 #define GTPU_FAILURE 1
 #define GTPU_SUCCESS !GTPU_FAILURE
-#define GTPU_PORT 2152
+#define GTPUAH_2_PRINT_BUFFER_LEN 8192
 
 #define IP_MORE_FRAGMENTS 0x2000
 #define NIPADDR(addr) \
@@ -101,6 +104,15 @@ struct gtpuhdr
         (uint8_t)((addr & 0x0000FF00) >> 8), \
         (uint8_t)((addr & 0x00FF0000) >> 16), \
         (uint8_t)((addr & 0xFF000000) >> 24)
+//-----------------------------------------------------------------------------
+static void (*ip_local_deliver_fn_ptr)(struct sk_buff *skb);
+static char _gtpuah_print_buffer[GTPUAH_2_PRINT_BUFFER_LEN];
+INT_MODULE_PARM(tunnel_local, 0);
+MODULE_PARM_DESC(tunnel_local, "Act as a boolean, tels if the S1U tunnel(s) are both start/end local");
+INT_MODULE_PARM(gtpu_port, 2152);
+MODULE_PARM_DESC(gtpu_port, "UDP port number for S1U interface (eNB and S-GW sides)");
+INT_MODULE_PARM(mtu, 1564);
+MODULE_PARM_DESC(mtu, "MTU of the S1U IP interface");
 //-----------------------------------------------------------------------------
 static char*
 _gtpuah_nf_inet_hook_2_string(int nf_inet_hookP) {
@@ -115,22 +127,89 @@ _gtpuah_nf_inet_hook_2_string(int nf_inet_hookP) {
     }
 }
 //-----------------------------------------------------------------------------
+void
+_gtpuah_print_hex_octets(unsigned char* data_pP, unsigned short sizeP) {
+//-----------------------------------------------------------------------------
+
+  unsigned long octet_index = 0;
+  unsigned long buffer_marker = 0;
+  unsigned char aindex;
+  struct timeval tv;
+  char timeofday[64];
+  unsigned int h,m,s;
+
+  if (data_pP == NULL) {
+    return;
+  }
+  if (sizeP > 2000) {
+      return;
+  }
+
+  do_gettimeofday(&tv);
+  h = (tv.tv_sec/3600) % 24;
+  m = (tv.tv_sec / 60) % 60;
+  s = tv.tv_sec % 60;
+  snprintf(timeofday, 64, "%02d:%02d:%02d.%06ld", h,m,s,tv.tv_usec);
+
+  buffer_marker+=snprintf(&_gtpuah_print_buffer[buffer_marker], GTPUAH_2_PRINT_BUFFER_LEN - buffer_marker,"%s------+-------------------------------------------------+\n",timeofday);
+  buffer_marker+=snprintf(&_gtpuah_print_buffer[buffer_marker], GTPUAH_2_PRINT_BUFFER_LEN - buffer_marker,"%s      |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n",timeofday);
+  buffer_marker+=snprintf(&_gtpuah_print_buffer[buffer_marker], GTPUAH_2_PRINT_BUFFER_LEN - buffer_marker,"%s------+-------------------------------------------------+\n",timeofday);
+  pr_info("%s",_gtpuah_print_buffer);buffer_marker = 0;
+  for (octet_index = 0; octet_index < sizeP; octet_index++) {
+    if ((octet_index % 16) == 0){
+      if (octet_index != 0) {
+          buffer_marker+=snprintf(&_gtpuah_print_buffer[buffer_marker], GTPUAH_2_PRINT_BUFFER_LEN - buffer_marker, " |\n");
+          pr_info("%s",_gtpuah_print_buffer);buffer_marker = 0;
+      }
+      buffer_marker+=snprintf(&_gtpuah_print_buffer[buffer_marker], GTPUAH_2_PRINT_BUFFER_LEN - buffer_marker, "%s %04ld |",timeofday, octet_index);
+    }
+    /*
+     * Print every single octet in hexadecimal form
+     */
+    buffer_marker+=snprintf(&_gtpuah_print_buffer[buffer_marker], GTPUAH_2_PRINT_BUFFER_LEN - buffer_marker, " %02x", data_pP[octet_index]);
+    /*
+     * Align newline and pipes according to the octets in groups of 2
+     */
+  }
+
+  /*
+   * Append enough spaces and put final pipe
+   */
+  for (aindex = octet_index; aindex < 16; ++aindex)
+    buffer_marker+=snprintf(&_gtpuah_print_buffer[buffer_marker], GTPUAH_2_PRINT_BUFFER_LEN - buffer_marker, "   ");
+    //SGI_IF_DEBUG("   ");
+  buffer_marker+=snprintf(&_gtpuah_print_buffer[buffer_marker], GTPUAH_2_PRINT_BUFFER_LEN - buffer_marker, " |\n");
+  pr_info("%s",_gtpuah_print_buffer);
+}
+
+//-----------------------------------------------------------------------------
 static void
 _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP) {
 //-----------------------------------------------------------------------------
     struct rtable  *rt              = NULL;
+    struct ethhdr  *ethhdr_p        = NULL;
     struct iphdr   *old_iph_p       = ip_hdr(old_skb_pP);
     struct iphdr   *new_iph_p       = NULL;
+    struct iphdr   *tmp_iph_p       = NULL;
     struct udphdr  *udph_p          = NULL;
     struct gtpuhdr *gtpuh_p         = NULL;
     struct sk_buff *new_skb_p       = NULL;
-    uint16_t        headroom_reqd   =  LL_MAX_HEADER + sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(struct gtpuhdr);
+    uint16_t        headroom_reqd   =  ETH_HLEN + sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(struct gtpuhdr);
     uint16_t        orig_iplen = 0, udp_len = 0, ip_len = 0;
     int             flags = 0, offset = 0;
     unsigned int    addr_type       = RTN_UNSPEC;
 
+
+    if (ip_is_fragment(ip_hdr(old_skb_pP))) {
+        pr_info("GTPUAH: IP fragment, dropped\n");
+        return;
+    }
+    if (skb_linearize(old_skb_pP) < 0) {
+        pr_info("GTPUAH: skb no linearize\n");
+        return;
+    }
     if (old_skb_pP->mark == 0) {
-        pr_info("GTPUAH: _gtpuah_target_add force info_pP mark %u to skb_pP mark %u",
+        pr_info("GTPUAH: _gtpuah_target_add force info_pP mark %u to skb_pP mark %u\n",
                 old_skb_pP->mark,
                 ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->rtun);
         old_skb_pP->mark = ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->rtun;
@@ -142,19 +221,20 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
 
 
     /* Create a new copy of the original skb...can't avoid :-( */
-    if ((orig_iplen + headroom_reqd) <= MTU) {
+    if ((orig_iplen + headroom_reqd) <= mtu) {
 
-        new_skb_p = skb_copy_expand(old_skb_pP, headroom_reqd + skb_headroom(old_skb_pP), skb_tailroom(old_skb_pP), GFP_ATOMIC);
+        new_skb_p = alloc_skb(headroom_reqd + orig_iplen, GFP_ATOMIC);
         if (new_skb_p == NULL) {
-            pr_info("GTPUAH: skb_copy_expand returned NULL");
+            pr_info("GTPUAH: skb_copy_expand returned NULL\n");
             return;
         }
-        nf_reset(new_skb_p);
-        //skb_nfmark(new_skb_p) = 0;
-        skb_init_secmark(new_skb_p);
-        skb_shinfo(new_skb_p)->gso_size = 0;
-        skb_shinfo(new_skb_p)->gso_segs = 0;
-        skb_shinfo(new_skb_p)->gso_type = 0;
+        if (skb_linearize(new_skb_p) < 0) {
+            pr_info("GTPUAH: skb no linearize\n");
+            goto free_new_skb;
+        }
+        skb_reserve(new_skb_p, headroom_reqd + orig_iplen);
+        tmp_iph_p = (void *)skb_push(new_skb_p, orig_iplen);
+        memcpy(tmp_iph_p, old_iph_p, orig_iplen);
 
         /* Add GTPu header */
         gtpuh_p          = (struct gtpuhdr*)skb_push(new_skb_p, sizeof(struct gtpuhdr));
@@ -166,8 +246,8 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
         /* Add UDP header */
         udp_len        = sizeof(struct udphdr) + sizeof(struct gtpuhdr) + orig_iplen;
         udph_p         = (struct udphdr*)skb_push(new_skb_p, sizeof(struct udphdr));
-        udph_p->source = htons(GTPU_PORT);
-        udph_p->dest   = htons(GTPU_PORT);
+        udph_p->source = htons(gtpu_port);
+        udph_p->dest   = htons(gtpu_port);
         udph_p->len    = htons(udp_len);
         udph_p->check  = 0;
         udph_p->check  = csum_tcpudp_magic(((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->laddr,
@@ -189,31 +269,24 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
         new_iph_p->ttl      = 64;
         new_iph_p->protocol = IPPROTO_UDP;
         new_iph_p->saddr    = ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->laddr;
+        // !!!!!!!! LG TEST !!!!!!!!!!
+        //new_iph_p->saddr    = old_iph_p->saddr;
         new_iph_p->daddr    = ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->raddr;
         new_iph_p->check    = 0;
         new_iph_p->check    = ip_fast_csum((unsigned char *)new_iph_p, new_iph_p->ihl);
         skb_set_network_header(new_skb_p, 0);
 
+        skb_set_inner_network_header(new_skb_p, -ETH_HLEN);
+        skb_set_inner_transport_header(new_skb_p, -ETH_HLEN);
 
-        new_skb_p->ip_summed = CHECKSUM_COMPLETE;
-        new_skb_p->csum      = new_iph_p->check;
+
+
+        // CHECKSUM_NONE, CHECKSUM_UNNECESSARY, CHECKSUM_COMPLETE, CHECKSUM_PARTIAL
+        new_skb_p->ip_summed = CHECKSUM_NONE;
         new_skb_p->mark      = old_skb_pP->mark;
 
         switch (par_pP->hooknum) {
             case NF_INET_POST_ROUTING: {
-                struct flowi   fl    = {
-                    .u = {
-                        .ip4 = {
-                            .daddr        = new_iph_p->daddr,
-                            .flowi4_tos   = RT_TOS(new_iph_p->tos),
-                            .flowi4_scope = RT_SCOPE_UNIVERSE,
-                        }
-                    }
-                };
-                pr_info("GTPUAH: PACKET -> NF_HOOK NF_INET_POST_ROUTING/%s encapsulated src: %u.%u.%u.%u dst: %u.%u.%u.%u",
-                        gtpuah_tg_reg[0].table,
-                        NIPADDR(old_iph_p->saddr),
-                        NIPADDR(old_iph_p->daddr));
                 new_skb_p->pkt_type = PACKET_OTHERHOST; // PACKET_OUTGOING
 #ifdef CONFIG_BRIDGE_NETFILTER
                 if (new_skb_p->nf_bridge != NULL && new_skb_p->nf_bridge->mask & BRNF_BRIDGED) {
@@ -221,50 +294,80 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
                     new_skb_p->pkt_type =PACKET_HOST;
                 }
 #endif
-                rt = ip_route_output_key(&init_net, &fl.u.ip4);
-                if (rt == NULL) {
-                    pr_info("GTPURH: Failed to route packet to dst 0x%x.", fl.u.ip4.daddr);
-                    goto free_new_skb;
-                }
-                new_skb_p->priority = rt_tos2priority(new_iph_p->tos);
-                skb_dst_drop(new_skb_p);
-                if (rt->dst.dev) {
-                    pr_info("GTPURH: dst dev name %s\n", rt->dst.dev->name);
-                    skb_dst_set(new_skb_p, dst_clone(&rt->dst));
-                    new_skb_p->dev      = skb_dst(new_skb_p)->dev;
-                    if (new_skb_p->len > dst_mtu(skb_dst(new_skb_p))) {
+                if (tunnel_local == 0) {
+                    struct flowi   fl    = {
+                        .u = {
+                            .ip4 = {
+                                .daddr        = new_iph_p->daddr,
+                                .flowi4_tos   = RT_TOS(new_iph_p->tos),
+                                .flowi4_scope = RT_SCOPE_UNIVERSE,
+                            }
+                        }
+                    };
+                    pr_info("GTPUAH: PACKET -> NF_HOOK NF_INET_POST_ROUTING/%s encapsulated src: %u.%u.%u.%u dst: %u.%u.%u.%u\n",
+                            gtpuah_tg_reg[0].table,
+                            NIPADDR(old_iph_p->saddr),
+                            NIPADDR(old_iph_p->daddr));
+
+
+                    rt = ip_route_output_key(&init_net, &fl.u.ip4);
+                    if (rt == NULL) {
+                        pr_info("GTPURH: Failed to route packet to dst 0x%x.\n", fl.u.ip4.daddr);
                         goto free_new_skb;
                     }
-                    nf_ct_attach(new_skb_p, old_skb_pP);
+                    new_skb_p->priority = rt_tos2priority(new_iph_p->tos);
+                    skb_dst_drop(new_skb_p);
+                    if (rt->dst.dev) {
+                        pr_info("GTPURH: dst dev name %s\n", rt->dst.dev->name);
+                        skb_dst_set(new_skb_p, dst_clone(&rt->dst));
+                        new_skb_p->dev      = skb_dst(new_skb_p)->dev;
+                        if (new_skb_p->len > dst_mtu(skb_dst(new_skb_p))) {
+                            goto free_new_skb;
+                        }
+                        nf_ct_attach(new_skb_p, old_skb_pP);
+                        ip_local_out(new_skb_p);
+                    } else {
+                        pr_info("GTPURH: rt->dst.dev == NULL\n");
+                        goto free_new_skb;
+                    }
+                } else { // (tunnel_local)
 
-                    ip_local_out(new_skb_p);
-                } else {
-                    pr_info("GTPURH: rt->dst.dev == NULL\n");
-                    goto free_new_skb;
+                    new_skb_p->pkt_type = PACKET_HOST;
+                    new_skb_p->priority = rt_tos2priority(new_iph_p->tos);
+                    new_skb_p->protocol = htons(ETH_P_IP);
+
+                    // fake mac header
+                    ethhdr_p = (struct ethhdr*)skb_push(new_skb_p, ETH_HLEN);
+                    skb_set_mac_header(new_skb_p, 0);
+                    memset(ethhdr_p, 0, ETH_HLEN);
+                    ethhdr_p->h_proto = ntohs(ETH_P_IP);
+
+                    //_gtpuah_print_hex_octets(new_iph_p, ip_len);
+                    //ip_local_deliver_fn_ptr(new_skb_p);
+
+                    new_skb_p->ip_summed = CHECKSUM_NONE;
+                    skb_dst_drop(new_skb_p);
+                    nf_reset(new_skb_p);
+                    /*pr_info("GTPUAH(tun): PACKET -> NF_HOOK NF_INET_POST_ROUTING/%s encapsulated src: %u.%u.%u.%u dst: %u.%u.%u.%u\n",
+                            gtpuah_tg_reg[0].table,
+                            NIPADDR(old_iph_p->saddr),
+                            NIPADDR(old_iph_p->daddr));*/
+                    if ( dev_forward_skb(old_skb_pP->dev, new_skb_p) != NET_RX_SUCCESS) {
+                        pr_info("GTPUAH(tun): dev_forward_skb failed!!!\n");
+                    }
+                    return;
                 }
-
             }
             break;
 
-            case  NF_INET_LOCAL_IN:
-                addr_type = RTN_LOCAL;
-                pr_info("GTPUAH: PACKET -> NF_HOOK NF_INET_LOCAL_IN/%s src: %u.%u.%u.%u dst: %u.%u.%u.%u NOT PROCESSED",
-                    gtpuah_tg_reg[0].table,
-                    NIPADDR(old_iph_p->saddr),
-                    NIPADDR(old_iph_p->daddr));
-                //NF_HOOK(NFPROTO_IPV4, NF_INET_LOCAL_IN, new_skb_p, NULL,
-                //        skb_dst(new_skb_p)->dev, ip_local_deliver_finish);
-                goto free_new_skb;
-                break;
-
             default:
-                pr_info("GTPUAH: NF_HOOK %u not processed", par_pP->hooknum);
+                pr_info("GTPUAH: NF_HOOK %u not processed\n", par_pP->hooknum);
                 goto free_new_skb;
         }
         return;
-}
+    }
 free_new_skb:
-    pr_info("GTPUAH: PACKET DROPPED");
+    pr_info("GTPUAH: PACKET DROPPED\n");
     kfree_skb(new_skb_p);
     return ;
 }
@@ -299,11 +402,7 @@ gtpuah_tg4(struct sk_buff *skb_pP, const struct xt_action_param *par_pP) {
     }
 
     if (tgi_p->action == PARAM_GTPUAH_ACTION_ADD) {
-        pr_info("GTPUAH: PACKET -> NF_HOOK %s/%s src: %u.%u.%u.%u dst: %u.%u.%u.%u NOT PROCESSED",
-            _gtpuah_nf_inet_hook_2_string(par_pP->hooknum),
-            NIPADDR(iph_p->saddr),
-            NIPADDR(iph_p->daddr));
-        //_gtpuah_tg4_add(skb_pP, par_pP);
+        _gtpuah_tg4_add(skb_pP, par_pP);
         return NF_DROP;
     }
     return NF_ACCEPT;
@@ -313,6 +412,8 @@ gtpuah_tg4(struct sk_buff *skb_pP, const struct xt_action_param *par_pP) {
 static int
 __init gtpuah_tg_init(void) {
 //-----------------------------------------------------------------------------
+    char          *name = "ip_local_deliver";
+    unsigned long  addr = 0L;
 
     pr_info("GTPUAH: Initializing module (KVersion: %d)\n", KVERSION);
     pr_info("GTPUAH: Copyright Polaris Networks 2010-2011\n");
@@ -322,6 +423,8 @@ __init gtpuah_tg_init(void) {
 #else
     pr_info("GTPURH: IPv4 only enabled\n");
 #endif
+    addr = kallsyms_lookup_name(name);
+    ip_local_deliver_fn_ptr = addr;
     return xt_register_targets(gtpuah_tg_reg, ARRAY_SIZE(gtpuah_tg_reg));
 }
 
