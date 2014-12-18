@@ -149,9 +149,9 @@ if clean == 1 :
 # start te test cases 
 #compile 
 
-rv=1 #case11.execute(oai, user, pw, host,logfile,logdir,debug)
+rv=case11.execute(oai, user, pw, host,logfile,logdir,debug)
 if rv == 1 :
-  #  case12.execute(oai, user, pw, host,logfile,logdir,debug,cpu)
+    case12.execute(oai, user, pw, host,logfile,logdir,debug,cpu)
     case13.execute(oai, user, pw, host,logfile,logdir,debug,cpu)
 else :
     print 'Compilation error: skip case 12 and 13'
