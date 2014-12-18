@@ -96,6 +96,7 @@ typedef struct sgw_config_s {
         int       sgw_ip_netmask_for_S11;
     } ipv4;
     int sgw_interface_mtu_for_S1u_S12_S4_up;
+    int sgw_udp_port_for_S1u_S12_S4_up;
 
     uint8_t       sgw_drop_uplink_traffic;
     uint8_t       sgw_drop_downlink_traffic;
@@ -148,7 +149,7 @@ extern spgw_config_t spgw_config;
 
 typedef enum { SPGW_WARN_ON_ERROR = 0, SPGW_ABORT_ON_ERROR} spgw_system_abort_control_e;
 
-int spgw_system(char *command_pP, spgw_system_abort_control_e abort_on_errorP);
+int spgw_system(char *command_pP, spgw_system_abort_control_e abort_on_errorP, const char * const file_nameP, const int line_numberP);
 int spgw_config_process(spgw_config_t* config_pP);
 int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP);
 
