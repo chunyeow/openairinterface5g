@@ -690,7 +690,7 @@ EOF
     cat $output >$input
     
     BUILD_LTE="NONE"
-    dialog --clear --title "MENU BOX" \
+    dialog --clear --title "BUILD TARGET SELECTION" \
             --menu "You did not choose a target \n\
     to build (optionaly to run) \n\
     You can use the UP/DOWN arrow keys, \n\
