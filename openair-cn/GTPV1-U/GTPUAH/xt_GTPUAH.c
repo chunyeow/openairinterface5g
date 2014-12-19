@@ -11,7 +11,6 @@
  */
 
 #include <linux/module.h>
-#include <linux/kallsyms.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/skbuff.h>
@@ -49,8 +48,11 @@ MODULE_DESCRIPTION("GTPu Data Path extension on netfilter");
 static char*        _gtpuah_nf_inet_hook_2_string(int nf_inet_hookP);
 static void         _gtpuah_print_hex_octets(unsigned char* data_pP, unsigned short sizeP);
 static void         _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP);
-static unsigned int gtpuah_tg4(struct sk_buff *skb_pP, const struct xt_action_param *par_pP);
+#ifdef WITH_IPV6
+static void         _gtpuah_tg6_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP);
 static unsigned int gtpuah_tg6(struct sk_buff *skb_pP, const struct xt_action_param *par_pP);
+#endif
+static unsigned int gtpuah_tg4(struct sk_buff *skb_pP, const struct xt_action_param *par_pP);
 static int          __init gtpuah_tg_init(void);
 static void         __exit gtpuah_tg_exit(void);
 //-----------------------------------------------------------------------------
@@ -105,7 +107,6 @@ struct gtpuhdr {
         (uint8_t)((addr & 0x00FF0000) >> 16), \
         (uint8_t)((addr & 0xFF000000) >> 24)
 //-----------------------------------------------------------------------------
-static void (*ip_local_deliver_fn_ptr)(struct sk_buff *skb);
 static char _gtpuah_print_buffer[GTPUAH_2_PRINT_BUFFER_LEN];
 INT_MODULE_PARM(tunnel_local, 0);
 MODULE_PARM_DESC(tunnel_local, "Act as a boolean, tels if the S1U tunnel(s) are both start/end local");
@@ -182,6 +183,14 @@ _gtpuah_print_hex_octets(unsigned char* data_pP, unsigned short sizeP) {
   pr_info("%s",_gtpuah_print_buffer);
 }
 
+#ifdef WITH_IPV6
+//-----------------------------------------------------------------------------
+static void
+_gtpuah_tg6_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP) {
+//-----------------------------------------------------------------------------
+}
+#endif
+
 //-----------------------------------------------------------------------------
 static void
 _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP) {
@@ -225,7 +234,7 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
 
         new_skb_p = alloc_skb(headroom_reqd + orig_iplen, GFP_ATOMIC);
         if (new_skb_p == NULL) {
-            pr_info("GTPUAH: skb_copy_expand returned NULL\n");
+            pr_info("GTPUAH: alloc_skb returned NULL\n");
             return;
         }
         if (skb_linearize(new_skb_p) < 0) {
@@ -388,6 +397,7 @@ gtpuah_tg6(struct sk_buff *skb_pP, const struct xt_action_param *par_pP) {
     }
 
     if (tgi_p->action == PARAM_GTPUAH_ACTION_ADD) {
+        _gtpuah_tg6_add(skb_pP, par_pP);
         return NF_DROP; // TODO
     }
     return NF_ACCEPT;
@@ -415,9 +425,6 @@ gtpuah_tg4(struct sk_buff *skb_pP, const struct xt_action_param *par_pP) {
 static int
 __init gtpuah_tg_init(void) {
 //-----------------------------------------------------------------------------
-    char          *name = "ip_local_deliver";
-    unsigned long  addr = 0L;
-
     pr_info("GTPUAH: Initializing module (KVersion: %d)\n", KVERSION);
     pr_info("GTPUAH: Copyright Polaris Networks 2010-2011\n");
     pr_info("GTPUAH: Modified by EURECOM Lionel GAUTHIER 2014\n");
@@ -426,19 +433,14 @@ __init gtpuah_tg_init(void) {
 #else
     pr_info("GTPURH: IPv4 only enabled\n");
 #endif
-    addr = kallsyms_lookup_name(name);
-    ip_local_deliver_fn_ptr = addr;
     return xt_register_targets(gtpuah_tg_reg, ARRAY_SIZE(gtpuah_tg_reg));
 }
 
-static void __exit gtpuah_tg_exit(void)
-{
+//-----------------------------------------------------------------------------
+static void
+__exit gtpuah_tg_exit(void) {
+    //-----------------------------------------------------------------------------
     xt_unregister_targets(gtpuah_tg_reg, ARRAY_SIZE(gtpuah_tg_reg));
-#if defined(WITH_IPV6)
-    pr_info("GTPURH: IPv4/IPv6 enabled\n");
-#else
-    pr_info("GTPURH: IPv4 only enabled\n");
-#endif
     pr_info("GTPUAH: Unloading module\n");
 }
 
