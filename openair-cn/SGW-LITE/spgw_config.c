@@ -272,7 +272,6 @@ int spgw_config_process(spgw_config_t* config_pP) {
     }
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
     if (snprintf(system_cmd, 256,
-                 //"iptables -I POSTROUTING -t mangle -o %s -m state --state NEW  -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
                  "iptables -I POSTROUTING -t mangle -o %s -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
                  config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
         ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
@@ -297,54 +296,6 @@ int spgw_config_process(spgw_config_t* config_pP) {
         SPGW_APP_ERROR("Restore mark\n");
         ret = -1;
     }
-
-    /*// Mark already there
-    if (snprintf(system_cmd, 256,
-                     "iptables -I INPUT -t mangle  ! --protocol sctp  -j CONNMARK --restore-mark") > 0) {
-            ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    } else {
-            SPGW_APP_ERROR("iptables -I INPUT -t mangle  ! --protocol sctp  -j CONNMARK --restore-mark\n");
-            ret = -1;
-    }*/
-
-    ret += spgw_system("iptables -X INGTPU", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
-    ret += spgw_system("iptables -N INGTPU", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    if (snprintf(system_cmd, 256,
-                 "iptables -I INPUT  --protocol udp --destination-port 2152  -j INGTPU") > 0) {
-        ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    } else {
-        SPGW_APP_ERROR("Trace IP traffic mark\n");
-        ret = -1;
-    }
-    ret += spgw_system("iptables -A INGTPU  -j LOG --log-prefix ' INGTPU ' --log-ip-options --log-level 4", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    //ret += spgw_system("iptables -A INGTPU  -j ACCEPT", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-
-
-    ret += spgw_system("iptables -X OUTGTPU", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
-    ret += spgw_system("iptables -N OUTGTPU", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    if (snprintf(system_cmd, 256,
-                 "iptables -I OUTPUT  --protocol udp --destination-port 2152  -j OUTGTPU") > 0) {
-        ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    } else {
-        SPGW_APP_ERROR("Trace IP traffic mark\n");
-        ret = -1;
-    }
-    ret += spgw_system("iptables -A OUTGTPU  -j LOG --log-prefix ' OUTGTPU ' --log-ip-options --log-level 4", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    //ret += spgw_system("iptables -A OUTGTPU  -j ACCEPT", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-
-
-    ret += spgw_system("iptables -X FW", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
-    ret += spgw_system("iptables -N FW", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    if (snprintf(system_cmd, 256,
-                 "iptables -I FORWARD   -j FW") > 0) {
-        ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    } else {
-        SPGW_APP_ERROR("Trace IP traffic mark\n");
-        ret = -1;
-    }
-    ret += spgw_system("iptables -A FW  -j LOG --log-prefix ' FW ' --log-ip-options --log-level 4", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    //ret += spgw_system("iptables -A FW  -j ACCEPT", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-
 #endif
    return ret;
 }
@@ -594,87 +545,68 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                   astring = config_setting_get_string_elem(sub2setting,i);
                   if (astring != NULL) {
                       trim(astring, strlen(astring)+1);
-                      if (inet_pton(AF_INET, astring, buf_in_addr) < 1) {
-                          // failure, test if there is a range specified in the string
-                          atoken = strtok(astring, PGW_CONFIG_STRING_IPV4_PREFIX_DELIMITER);
-                          if (inet_pton(AF_INET, atoken, buf_in_addr) == 1) {
-                              memcpy (&addr_start, buf_in_addr, sizeof(struct in_addr));
-                              // valid address
-                              atoken2 = strtok(NULL, PGW_CONFIG_STRING_IPV4_PREFIX_DELIMITER);
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
-                              in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
-
-                              if (snprintf(system_cmd, 128, "ip route add %s/%s via %s dev %s",
-                                           astring,
-                                           atoken2,
-                                           inet_ntoa(in_addr_var),
-                                           config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
-                                       spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-                              } else {
-                                  SPGW_APP_ERROR("Add route: for %s\n", astring);
-                              }
-
-
-                              if (config_pP->sgw_config.sgw_drop_downlink_traffic) {
-                                  if (snprintf(system_cmd, 128,
-                                          "iptables -t filter -I FORWARD  -d %s/%s  -j DROP",
-                                          astring, atoken2) > 0) {
-                                      spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-                                  } else {
-                                      SPGW_APP_ERROR("Drop downlink traffic\n");
-                                  }
-                                  if (snprintf(system_cmd, 128,
-                                          "iptables -t filter -I OUTPUT  -d %s/%s  -j DROP",
-                                          astring, atoken2) > 0) {
-                                      spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-                                  } else {
-                                      SPGW_APP_ERROR("Drop downlink traffic\n");
-                                  }
-                              }
-#endif
-                              prefix_mask = atoi(atoken2);
-                              if ((prefix_mask >= 2)&&(prefix_mask < 32)) {
-                                  memcpy (&addr_start, buf_in_addr, sizeof(struct in_addr));
-                                  memcpy (&addr_mask,  buf_in_addr, sizeof(struct in_addr));
-
-                                  addr_mask.s_addr = addr_mask.s_addr & htonl(0xFFFFFFFF << (32 - prefix_mask));
-
-                                  if (memcmp(&addr_start, &addr_mask, sizeof(struct in_addr)) != 0) {
-                                      AssertFatal(0, "BAD IPV4 ADDR CONFIG/MASK PAIRING %s/%d addr %X mask %X\n",
-                                              astring, prefix_mask, addr_start.s_addr, addr_mask.s_addr);
-                                  }
-
-                                  counter64 = 0x00000000FFFFFFFF >> prefix_mask; // address Prefix_mask/0..0 not valid
-                                  counter64 = counter64 - 2;
-                                  do {
-                                      addr_start.s_addr = addr_start.s_addr + htonl(2);
-                                      ip4_ref = calloc(1, sizeof(pgw_lite_conf_ipv4_list_elm_t));
-                                      ip4_ref->addr       = addr_start;
-
-                                      STAILQ_INSERT_TAIL(&config_pP->pgw_config.pgw_lite_ipv4_pool_list, ip4_ref, ipv4_entries);
-                                      counter64 = counter64 - 1;
-                                  } while (counter64 > 0);
-                              } else {
-                                  SPGW_APP_ERROR("CONFIG POOL ADDR IPV4: BAD MASQ: %s\n", atoken2);
-                              }
-                          } else {
-                              SPGW_APP_ERROR("CONFIG POOL ADDR IPV4: ADDR not recognized: %s\n", atoken);
-                          }
-                      } else {
+                      // failure, test if there is a range specified in the string
+                      atoken = strtok(astring, PGW_CONFIG_STRING_IPV4_PREFIX_DELIMITER);
+                      if (inet_pton(AF_INET, atoken, buf_in_addr) == 1) {
                           memcpy (&addr_start, buf_in_addr, sizeof(struct in_addr));
-                          ip4_ref = calloc(1, sizeof(pgw_lite_conf_ipv4_list_elm_t));
-                          ip4_ref->addr = addr_start;
-                          STAILQ_INSERT_TAIL(&config_pP->pgw_config.pgw_lite_ipv4_pool_list, ip4_ref, ipv4_entries);
+                          // valid address
+                          atoken2 = strtok(NULL, PGW_CONFIG_STRING_IPV4_PREFIX_DELIMITER);
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
-                          /*if (snprintf(system_cmd, 128, "ip route add %s dev %s",
-                                  buf_in_addr,
-                                  config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
-                              SPGW_APP_INFO("Add route: %s\n",system_cmd);
+                          in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
+
+                          if (snprintf(system_cmd, 128, "ip route add %s/%s via %s dev %s",
+                                       astring,
+                                       atoken2,
+                                       inet_ntoa(in_addr_var),
+                                       config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
                               spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
                           } else {
-                              SPGW_APP_ERROR("Add route: for %s\n", buf_in_addr);
-                          }*/
+                              SPGW_APP_ERROR("Add route: for %s\n", astring);
+                          }
+
+
+                          if (config_pP->sgw_config.sgw_drop_downlink_traffic) {
+                              if (snprintf(system_cmd, 128,
+                                           "iptables -t filter -I FORWARD  -d %s/%s  -j DROP",
+                                           astring, atoken2) > 0) {
+                                  spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+                              } else {
+                                  SPGW_APP_ERROR("Drop downlink traffic\n");
+                              }
+                              if (snprintf(system_cmd, 128,
+                                           "iptables -t filter -I OUTPUT  -d %s/%s  -j DROP",
+                                           astring, atoken2) > 0) {
+                                  spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+                              } else {
+                                  SPGW_APP_ERROR("Drop downlink traffic\n");
+                              }
+                          }
 #endif
+                          prefix_mask = atoi(atoken2);
+                          if ((prefix_mask >= 2)&&(prefix_mask < 32)) {
+                              memcpy (&addr_start, buf_in_addr, sizeof(struct in_addr));
+                              memcpy (&addr_mask,  buf_in_addr, sizeof(struct in_addr));
+
+                              addr_mask.s_addr = addr_mask.s_addr & htonl(0xFFFFFFFF << (32 - prefix_mask));
+
+                              if (memcmp(&addr_start, &addr_mask, sizeof(struct in_addr)) != 0) {
+                                  AssertFatal(0, "BAD IPV4 ADDR CONFIG/MASK PAIRING %s/%d addr %X mask %X\n",
+                                              astring, prefix_mask, addr_start.s_addr, addr_mask.s_addr);
+                              }
+
+                              counter64 = 0x00000000FFFFFFFF >> prefix_mask; // address Prefix_mask/0..0 not valid
+                              counter64 = counter64 - 2;
+                              do {
+                                  addr_start.s_addr = addr_start.s_addr + htonl(2);
+                                  ip4_ref = calloc(1, sizeof(pgw_lite_conf_ipv4_list_elm_t));
+                                  ip4_ref->addr       = addr_start;
+
+                                  STAILQ_INSERT_TAIL(&config_pP->pgw_config.pgw_lite_ipv4_pool_list, ip4_ref, ipv4_entries);
+                                  counter64 = counter64 - 1;
+                              } while (counter64 > 0);
+                          } else {
+                              SPGW_APP_ERROR("CONFIG POOL ADDR IPV4: BAD MASQ: %s\n", atoken2);
+                          }
                       }
                   }
               }

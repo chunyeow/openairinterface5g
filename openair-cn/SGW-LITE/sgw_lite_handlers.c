@@ -671,7 +671,7 @@ sgw_lite_handle_sgi_endpoint_updated(
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
             ret = snprintf(cmd,
                     256,
-                    "iptables -t mangle -A POSTROUTING -d %u.%u.%u.%u -m mark --mark %u -j GTPUAH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action add",
+                    "iptables -t mangle -I POSTROUTING -d %u.%u.%u.%u -m mark --mark %u -j GTPUAH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action add",
                     eps_bearer_entry_p->paa.ipv4_address[0],
                     eps_bearer_entry_p->paa.ipv4_address[1],
                     eps_bearer_entry_p->paa.ipv4_address[2],
@@ -736,7 +736,7 @@ sgw_lite_handle_sgi_endpoint_updated(
 
                 ret = snprintf(cmd,
                                    256,
-                                   "iptables -t raw -A %s -s %u.%u.%u.%u -d %u.%u.%u.%u -p udp --dport 2152 -j GTPURH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action remove",
+                                   "iptables -t raw -I %s -s %u.%u.%u.%u -d %u.%u.%u.%u -p udp --dport 2152 -j GTPURH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action remove",
                                    chain,
                                    eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
                                    eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[1],
