@@ -28,9 +28,9 @@
 ################################################################################
 # file build_oai.bash
 # brief OAI automated build tool that can be used to install, compile, run OAI.
-# author  Navid Nikaein 
+# author  Navid Nikaein, Lionel GAUTHIER
 # company Eurecom
-# email:  navid.nikaein@eurecom.fr 
+# email:  navid.nikaein@eurecom.fr, lionel.gauthier@eurecom.fr 
 #
 
 #!/bin/bash
@@ -47,7 +47,7 @@ check_for_root_rights
 ######################################
 
 #only one could be set at the time
-declare BUILD_LTE="ENB" # ENB, EPC, HSS, NONE
+declare BUILD_LTE="" # ENB, EPC, HSS, NONE
 
 declare HW="EXMIMO" # EXMIMO, USRP, ETHERNET, NONE
 declare TARGET="ALL" # ALL, SOFTMODEM, OAISIM, UNISIM, NONE
@@ -62,6 +62,7 @@ declare RUN_GDB=0
 declare RUN=0
 declare DISABLE_CHECK_INSTALLED_SOFTWARE=0
 declare OAI_CLEAN=0
+declare CLEAN_IPTABLES=0
 
 declare OAI_TEST=0
 declare XFORMS=0
@@ -112,6 +113,10 @@ fi
             OAI_CLEAN=1
             echo "setting clean flag to: $OAI_CLEAN"
             echo "may check package installation, and recompile OAI"
+            shift;
+            ;;
+       --clean-iptables)
+            CLEAN_IPTABLES=1;
             shift;
             ;;
        -C | --config-file)
@@ -257,7 +262,22 @@ touch bin/install_log.txt
 #$SUDO kill -9 `ps -ef | grep dlsim | awk '{print $2}'`  2>&1
 #$SUDO kill -9 `ps -ef | grep ulsim | awk '{print $2}'`  2>&1
 
-
+if [ $CLEAN_IPTABLES -eq 1 ]; then 
+    echo_info "Flushing iptables..."
+    $SUDO modprobe ip_tables
+    $SUDO modprobe x_tables
+    $SUDO iptables -P INPUT ACCEPT
+    $SUDO iptables -F INPUT
+    $SUDO iptables -P OUTPUT ACCEPT
+    $SUDO iptables -F OUTPUT
+    $SUDO iptables -P FORWARD ACCEPT
+    $SUDO iptables -F FORWARD
+    $SUDO iptables -t nat -F
+    $SUDO iptables -t mangle -F
+    $SUDO iptables -t filter -F
+    $SUDO iptables -t raw -F
+    echo_info "Flushed iptables"
+fi
 ############################################
 # setting and printing OAI envs, we should check here
 ############################################
@@ -643,6 +663,64 @@ build_hss(){
 # set the build 
 ############################################
 
+if [ x$BUILD_LTE == x ]; then
+    : ${DIALOG_OK=0}
+    : ${DIALOG_CANCEL=1}
+    : ${DIALOG_HELP=2}
+    : ${DIALOG_EXTRA=3}
+    : ${DIALOG_ITEM_HELP=4}
+    : ${DIALOG_ESC=255}
+
+    : ${SIG_NONE=0}
+    : ${SIG_HUP=1}
+    : ${SIG_INT=2}
+    : ${SIG_QUIT=3}
+    : ${SIG_KILL=9}
+    : ${SIG_TERM=15}
+    input=`tempfile 2>/dev/null` || input=/tmp/input$$
+    output=`tempfile 2>/dev/null` || output=/tmp/test$$
+    trap "rm -f $input $output" $SIG_NONE $SIG_HUP $SIG_INT $SIG_TRAP $SIG_TERM
+    cat >$input <<-EOF
+ENB:  evolved Node B target
+EPC:  Experimental Evolved Packet Core target
+HSS:  Home Subscriber Server target
+NONE: Do not build/run anything
+EOF
+    cat $input | sed -e 's/^/"/' -e 's/:/" "/g' -e 's/$/"/' >$output
+    cat $output >$input
+    
+    BUILD_LTE="NONE"
+    dialog --clear --title "MENU BOX" \
+            --menu "You did not choose a target \n\
+    to build (optionaly to run) \n\
+    You can use the UP/DOWN arrow keys, \n\
+    the first letter of the choice as a hot key,\n\
+    or the number keys 1-4 to choose an option.\n\
+    \n\n\
+        Choose the target:" 20 69 4 \
+        --file $input 2> $output
+    retval=$?
+    tempfile=$output
+    case $retval in
+      $DIALOG_OK)
+        BUILD_LTE=`cat $tempfile`
+        echo_info "returned choice BUILD_LTE=$BUILD_LTE  "`cat $tempfile`
+        ;;
+      $DIALOG_CANCEL)
+        ;;
+      $DIALOG_HELP)
+        ;;
+      $DIALOG_EXTRA)
+        ;;
+      $DIALOG_ITEM_HELP)
+        ;;
+      $DIALOG_ESC)
+        ;;
+      *)
+         ;;
+    esac
+fi
+
 echo_info "3. set the top-level build target"
 case "$BUILD_LTE" in
     'ENB')
@@ -660,7 +738,6 @@ case "$BUILD_LTE" in
     'NONE')
          ;;
     *)
-         echo_error "Unknown option $BUILD_LTE: do not build"
          ;;
 esac
 

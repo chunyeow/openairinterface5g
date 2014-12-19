@@ -381,6 +381,7 @@ check_install_oai_software() {
         test_install_package automake 
         test_install_package bison 
         test_install_package build-essential
+        test_install_package dialog
         test_install_package flex 
         test_install_package gawk
         test_install_package gcc
@@ -474,7 +475,8 @@ check_install_hss_software() {
 	test_install_package build-essential
 	test_install_package cmake
 	test_install_package cmake-curses-gui 
-	test_install_package dkms
+    test_install_package dialog
+    test_install_package dkms
 	test_install_package flex 
 	test_install_package gawk
 	test_install_package gcc
@@ -535,6 +537,7 @@ check_install_epc_software() {
         test_install_package check
         test_install_package cmake
         test_install_package cmake-curses-gui
+        test_install_package dialog
         test_install_package ethtool
         test_install_package flex
         test_install_package g++
