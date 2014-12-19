@@ -81,7 +81,7 @@ typedef struct sctp_cnx_list_elm_s {
     uint16_t   in_streams;      ///< Number of input streams negociated for this connection
     uint16_t   out_streams;     ///< Number of output streams negotiated for this connection
     uint16_t   ppid;            ///< Payload protocol Identifier
-    int32_t    assoc_id;        ///< SCTP association id for the connection
+    int32_t    assoc_id;        ///< SCTP association id for the connection     (note4debug host byte order)
     uint32_t   messages_recv;   ///< Number of messages received on this connection
     uint32_t   messages_sent;   ///< Number of messages sent on this connection
     task_id_t  task_id;         ///< Task id of the task who asked for this connection
@@ -310,7 +310,7 @@ void sctp_handle_new_association_req(
                 return;
             } else {
                 SCTP_DEBUG("connectx assoc_id  %d in progress..., used %d addresses\n",
-                		assoc_id, used_address);
+                           assoc_id, used_address);
             }
         } else {
             SCTP_DEBUG("sctp_connectx SUCCESS, used %d addresses assoc_id %d\n",
@@ -609,8 +609,8 @@ inline void sctp_eNB_accept_associations(struct sctp_cnx_list_elm_s *sctp_cnx)
 static
 inline void sctp_eNB_read_from_socket(struct sctp_cnx_list_elm_s *sctp_cnx)
 {
-    int flags = 0, n;
-    socklen_t from_len;
+    int                    flags = 0, n;
+    socklen_t              from_len;
     struct sctp_sndrcvinfo sinfo;
 
     struct sockaddr_in addr;
@@ -705,12 +705,13 @@ inline void sctp_eNB_read_from_socket(struct sctp_cnx_list_elm_s *sctp_cnx)
     } else {
         sctp_cnx->messages_recv++;
 
-        if (sinfo.sinfo_ppid != sctp_cnx->ppid) {
+        if (ntohl(sinfo.sinfo_ppid) != sctp_cnx->ppid) {
             /* Mismatch in Payload Protocol Identifier,
              * may be we received unsollicited traffic from stack other than S1AP.
              */
             SCTP_ERROR("Received data from peer with unsollicited PPID %d, expecting %d\n",
-                sinfo.sinfo_ppid, sctp_cnx->ppid);
+                       ntohl(sinfo.sinfo_ppid),
+                       sctp_cnx->ppid);
         }
 
         SCTP_DEBUG("[%d][%d] Msg of length %d received from port %u, on stream %d, PPID %d\n",
@@ -771,17 +772,17 @@ void *sctp_eNB_task(void *arg)
                     SCTP_DEBUG("Received SCTP_INIT_MSG\n");
                     /* We received a new connection request */
                     if (sctp_create_new_listener(
-                    		ITTI_MESSAGE_GET_INSTANCE(received_msg),
-                            ITTI_MSG_ORIGIN_ID(received_msg),
-                            &received_msg->ittiMsg.sctp_init) < 0) {
+                                    ITTI_MESSAGE_GET_INSTANCE(received_msg),
+                                    ITTI_MSG_ORIGIN_ID(received_msg),
+                                    &received_msg->ittiMsg.sctp_init) < 0) {
                         /* SCTP socket creation or bind failed... */
                         SCTP_ERROR("Failed to create new SCTP listener\n");
                     }
                 } break;
                 case SCTP_CLOSE_ASSOCIATION:
                     sctp_close_association(ITTI_MESSAGE_GET_INSTANCE(received_msg),
-                                                    ITTI_MSG_ORIGIN_ID(received_msg),
-                                                    &received_msg->ittiMsg.sctp_close_association);
+                                           ITTI_MSG_ORIGIN_ID(received_msg),
+                                           &received_msg->ittiMsg.sctp_close_association);
                     break;
 
                 case TERMINATE_MESSAGE:
