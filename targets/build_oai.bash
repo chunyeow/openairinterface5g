@@ -683,7 +683,7 @@ if [ x$BUILD_LTE == x ]; then
     cat >$input <<-EOF
 ENB:  evolved Node B target
 EPC:  Experimental Evolved Packet Core target
-HSS:  Home Subscriber Server target
+HSS:  Experimental Home Subscriber Server target
 NONE: Do not build/run anything
 EOF
     cat $input | sed -e 's/^/"/' -e 's/:/" "/g' -e 's/$/"/' >$output
@@ -704,7 +704,6 @@ EOF
     case $retval in
       $DIALOG_OK)
         BUILD_LTE=`cat $tempfile`
-        echo_info "returned choice BUILD_LTE=$BUILD_LTE  "`cat $tempfile`
         ;;
       $DIALOG_CANCEL)
         ;;
