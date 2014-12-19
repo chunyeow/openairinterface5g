@@ -543,8 +543,7 @@ void rrc_eNB_free_UE_index(
   eNB_rrc_inst[enb_mod_idP].Info.UE[ue_mod_idP].Status = RRC_IDLE;
   eNB_rrc_inst[enb_mod_idP].Info.UE_list[ue_mod_idP] = 0;
 
-  rrc_rlc_remove_rlc(enb_mod_idP, ue_mod_idP, frameP, ENB_FLAG_YES, SRB_FLAG_YES, MBMS_FLAG_NO, CONFIG_ACTION_REMOVE,
-		       1);
+  rrc_rlc_remove_rlc(enb_mod_idP, ue_mod_idP, frameP, ENB_FLAG_YES, SRB_FLAG_YES, MBMS_FLAG_NO,1);
   free(eNB_rrc_inst[enb_mod_idP].SRB_configList[ue_mod_idP]);
 }
 
