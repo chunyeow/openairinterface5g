@@ -607,9 +607,9 @@ uint8_t do_SIB23(uint8_t Mod_id,
                , RrcConfigurationReq *configuration
 #endif
                  ) {
-  struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member *sib2_part,*sib3_part;
+  struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member *sib2_part,*sib3_part;
 #ifdef Rel10
-  struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member *sib13_part;
+  struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member *sib13_part;
   MBSFN_SubframeConfigList_t *MBSFNSubframeConfigList;
   MBSFN_AreaInfoList_r9_t *MBSFNArea_list;
   struct MBSFN_AreaInfo_r9 *MBSFN_Area1, *MBSFN_Area2;
@@ -637,22 +637,22 @@ uint8_t do_SIB23(uint8_t Mod_id,
 #else
   LOG_I(RRC,"[eNB %d] Configuration SIB2/3\n", Mod_id);
 #endif
-  sib2_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
-  sib3_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
-  memset(sib2_part,0,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
-  memset(sib3_part,0,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
+  sib2_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
+  sib3_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
+  memset(sib2_part,0,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
+  memset(sib3_part,0,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
 
-  sib2_part->present = SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib2;
-  sib3_part->present = SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib3;
+  sib2_part->present = SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib2;
+  sib3_part->present = SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib3;
 
   *sib2 = &sib2_part->choice.sib2;
   *sib3 = &sib3_part->choice.sib3;
 
 #ifdef Rel10
   if (MBMS_flag > 0) {
-    sib13_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
-    memset(sib13_part,0,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
-    sib13_part->present = SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib13_v920;
+    sib13_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
+    memset(sib13_part,0,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
+    sib13_part->present = SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib13_v920;
     *sib13 = &sib13_part->choice.sib13_v920;
   }
 #endif
