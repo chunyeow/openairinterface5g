@@ -107,4 +107,5 @@ void  add_log_label(unsigned int label, unsigned int * start_log_metric);
 
 void otg_kpi_nb_loss_pkts(void);
 
+void average_total_jitter(void);
 #endif

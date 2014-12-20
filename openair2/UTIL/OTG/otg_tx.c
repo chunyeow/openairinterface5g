@@ -245,58 +245,61 @@ Send Packets when:
       payload = random_string(size, RANDOM_STRING, PAYLOAD_ALPHABET);
       if (payload == NULL) return NULL;
       flag=0xffff;
-  	flow=otg_info->flow_id[src][dst];
-  	seq_num=otg_info->seq_num[src][dst][otg_info->traffic_type[src][dst]];
-  	otg_info->header_type[src][dst]=type_header;
-  	otg_info->seq_num[src][dst][otg_info->traffic_type[src][dst]]+=1;
-    otg_info->tx_num_bytes[src][dst][otg_info->traffic_type[src][dst]]+=  otg_hdr_size(src,dst) + header_size + strlen(payload) ;
-  	otg_info->tx_num_pkt[src][dst][otg_info->traffic_type[src][dst]]+=1;
-  	if (size!=strlen(payload))
-  	  LOG_E(OTG,"[%d][%d] [0x %x] The expected packet size does not match the payload size : size %d, strlen %d, seq_num %d packet: |%s|%s| \n", src, dst, flag, 	size, strlen(payload), seq_num, header, payload);
-  	else 
-	  LOG_D(OTG,"[%d][%d] 0x %x][m2m Aggre %d][Flow %d][Type %d] TX INFO pkt at time %d Size= [payload %d] [Total %d] with seq num %d, state=%d : |%s|%s| \n", src, dst, flag, otg_info->m2m_aggregation[src][dst],otg_info->flow_id[src][dst], 
-		otg_info->traffic_type[src][dst], ctime,  size, header_size+strlen(payload), seq_num,state, header, payload);
-	LOG_D(OTG, "[%d]MY_SEQ %d \n", otg_info->traffic_type[src][dst], otg_info->seq_num[src][dst][otg_info->traffic_type[src][dst]] );  
-	 } 	
-	else {
-	  if ((g_otg->aggregation_level[src][dst][application]*otg_info->size_background[src][dst])<=PAYLOAD_MAX)
-	    otg_info->size_background[src][dst]=g_otg->aggregation_level[src][dst][application]*otg_info->size_background[src][dst];
-	  else{
-	    //otg_info->size_background[src][dst]=PAYLOAD_MAX;
-	    LOG_E(OTG,"[BACKGROUND] Aggregated packet larger than PAYLOAD_MAX, payload is limited to %d\n", PAYLOAD_MAX);
-	  }
- 	 header =random_string(header_size_gen_background(src,dst),  g_otg->packet_gen_type, HEADER_ALPHABET);
- 	 payload = random_string(otg_info->size_background[src][dst],  RANDOM_STRING, PAYLOAD_ALPHABET);
-	  flag=0xbbbb;
- 	 flow=flow_id_background;
- 	 seq_num=otg_info->seq_num_background[src][dst];
-    otg_info->tx_num_bytes_background[src][dst]+= otg_hdr_size(src,dst) + header_size + strlen(payload) ;
-  	otg_info->tx_num_pkt_background[src][dst]+=1;
-  	otg_info->seq_num_background[src][dst]+=1;
-  	if (otg_info->size_background[src][dst]!=strlen(payload))
-   	 LOG_E(OTG,"[%d][%d] [0x %x] The expected packet size does not match the payload size : size %d, strlen %d, seq num %d, packet |%s|%s| \n", src, dst, flag, otg_info->size_background[src][dst], strlen(payload), seq_num, header, payload);
- 		else
-    	LOG_T(OTG,"[%d][%d][0x %x] TX INFO pkt at time %d size is %d with seq num %d, state=%d : |%s|%s| \n", src, dst, flag,ctime, otg_info->size_background[src][dst], seq_num, state, header, payload);
-	}
+      flow=otg_info->flow_id[src][dst];
+      seq_num=otg_info->seq_num[src][dst][otg_info->traffic_type[src][dst]];
+      otg_info->header_type[src][dst]=type_header;
+      otg_info->seq_num[src][dst][otg_info->traffic_type[src][dst]]+=1;
+      otg_info->tx_num_bytes[src][dst][otg_info->traffic_type[src][dst]]+=  otg_hdr_size(src,dst) + header_size + strlen(payload) ;
+      otg_info->tx_num_pkt[src][dst][otg_info->traffic_type[src][dst]]+=1;
+      if (size!=strlen(payload))
+	LOG_E(OTG,"[%d][%d] [0x %x] The expected packet size does not match the payload size : size %d, strlen %d, seq_num %d packet: |%s|%s| \n", src, dst, flag, 	size, strlen(payload), seq_num, header, payload);
+      else 
+	LOG_D(OTG,"[%d][%d] 0x %x][m2m Aggre %d][Flow %d][Type %d/%s] TX INFO pkt at time %d Size= [payload %d] [Total %d] with seq num %d, state=%d : |%s|%s| \n", src, dst, flag, otg_info->m2m_aggregation[src][dst],otg_info->flow_id[src][dst], 
+	      otg_info->traffic_type[src][dst], map_int_to_str(otg_app_type_names,otg_info->traffic_type[src][dst]), 
+	      ctime,  size, header_size+strlen(payload), seq_num,state, header, payload);
+      LOG_D(OTG, "[%d]MY_SEQ %d \n", otg_info->traffic_type[src][dst], otg_info->seq_num[src][dst][otg_info->traffic_type[src][dst]] );  
+    } 	
+    else {
+      if ((g_otg->aggregation_level[src][dst][application]*otg_info->size_background[src][dst])<=PAYLOAD_MAX)
+	otg_info->size_background[src][dst]=g_otg->aggregation_level[src][dst][application]*otg_info->size_background[src][dst];
+      else{
+	//otg_info->size_background[src][dst]=PAYLOAD_MAX;
+	LOG_E(OTG,"[BACKGROUND] Aggregated packet larger than PAYLOAD_MAX, payload is limited to %d\n", PAYLOAD_MAX);
+      }
+      header =random_string(header_size_gen_background(src,dst),  g_otg->packet_gen_type, HEADER_ALPHABET);
+      payload = random_string(otg_info->size_background[src][dst],  RANDOM_STRING, PAYLOAD_ALPHABET);
+      flag=0xbbbb;
+      flow=flow_id_background;
+      seq_num=otg_info->seq_num_background[src][dst];
+      otg_info->tx_num_bytes_background[src][dst]+= otg_hdr_size(src,dst) + header_size + strlen(payload) ;
+      otg_info->tx_num_pkt_background[src][dst]+=1;
+      otg_info->seq_num_background[src][dst]+=1;
+      if (otg_info->size_background[src][dst]!=strlen(payload))
+	LOG_E(OTG,"[%d][%d] [0x %x] The expected packet size does not match the payload size : size %d, strlen %d, seq num %d, packet |%s|%s| \n", src, dst, flag, otg_info->size_background[src][dst], strlen(payload), seq_num, header, payload);
+      else
+    	LOG_D(OTG,"[%d][%d][%s][0x %x] TX INFO pkt at time %d size is %d with seq num %d, state=%d : |%s|%s| \n", src, dst, flag,ctime, 
+	      map_int_to_str(otg_app_type_names,otg_info->traffic_type[src][dst]),
+	      otg_info->size_background[src][dst], seq_num, state, header, payload);
+    }
+    
+    buffer_size = otg_hdr_size(src,dst) + header_size + strlen(payload);
+    *pkt_size = buffer_size;
+    if (src<NB_eNB_INST)
+      otg_info->tx_total_bytes_dl+=buffer_size;
+    else
+      otg_info->tx_total_bytes_ul+=buffer_size;
+    
+    if (otg_info->traffic_type[src][dst] > MAX_NUM_APPLICATION) {
+      LOG_W(OTG,"application type out of range %d for the pair of (src %d, dst %d) \n", 
+	    otg_info->traffic_type[src][dst], src, dst);
+      otg_info->traffic_type[src][dst]=0;
+    } 
  
-  buffer_size = otg_hdr_size(src,dst) + header_size + strlen(payload);
-	*pkt_size = buffer_size;
-	if (src<NB_eNB_INST)
-		otg_info->tx_total_bytes_dl+=buffer_size;
-	else
-		otg_info->tx_total_bytes_ul+=buffer_size;
-	
-	if (otg_info->traffic_type[src][dst] > MAX_NUM_APPLICATION) {
-	  LOG_W(OTG,"application type out of range %d for the pair of (src %d, dst %d) \n", 
-		otg_info->traffic_type[src][dst], src, dst);
-	  otg_info->traffic_type[src][dst]=0;
-	} 
-  
- 	return serialize_buffer(header, payload, buffer_size, otg_info->traffic_type[src][dst], flag, flow, ctime, seq_num, otg_info->header_type_app[src][dst][flow], state, otg_info->m2m_aggregation[src][dst]);
-	}
+    return serialize_buffer(header, payload, buffer_size, otg_info->traffic_type[src][dst], flag, flow, ctime, seq_num, otg_info->header_type_app[src][dst][flow], state, otg_info->m2m_aggregation[src][dst]);
+  }
 
-	else 
-		return NULL;
+  else 
+    return NULL;
 
 
 }
@@ -460,7 +463,7 @@ int check_data_transmit(int src,int dst, int app, int ctime){
 			size=size_dist(src, dst, app,state); 
 			otg_info->header_size[src][dst]=otg_info->header_size_app[src][dst][app]; 
 			otg_info->flow_id[src][dst]=app;
-			otg_info->traffic_type[src][dst]=g_otg->application_type[src][dst][app];
+			otg_info->traffic_type[src][dst]=app;//g_otg->application_type[src][dst][app];
 		  /*} */
 
 
@@ -474,7 +477,7 @@ int check_data_transmit(int src,int dst, int app, int ctime){
 		else if ((otg_info->gen_pkts==0) && (g_otg->background[src][dst][app]==1)&&(background_gen(src, dst, ctime)!=0)){ // the gen_pkts condition could be relaxed here
 		  otg_info->traffic_type_background[src][dst]=1;
  			if   (g_otg->m2m[src][dst][app]==M2M)
-				otg_info->traffic_type[src][dst]=M2M;
+			  otg_info->traffic_type[src][dst]=app;//g_otg->application_idx[src][dst];//M2M;
 
 		  LOG_D(OTG,"[BACKGROUND=%d] Time To Transmit [SRC %d][DST %d][APPLI %d] \n", otg_info->traffic_type_background[src][dst], src, dst, app);
 		}
@@ -625,7 +628,7 @@ return(size);
 }
 
 
-unsigned char * serialize_buffer(char* header, char* payload, unsigned int buffer_size, int traffic_type, int flag, int flow_id, int ctime, int seq_num, int hdr_type, int state, unsigned int aggregation_level){
+unsigned char * serialize_buffer(char* header, char* payload, unsigned int buffer_size, unsigned int traffic_type, int flag, int flow_id, int ctime, int seq_num, int hdr_type, int state, unsigned int aggregation_level){
  
   unsigned char *tx_buffer=NULL;
   otg_hdr_info_t *otg_hdr_info_p=NULL;
@@ -651,6 +654,7 @@ unsigned char * serialize_buffer(char* header, char* payload, unsigned int buffe
   otg_hdr_p->traffic_type=traffic_type;
   byte_tx_count += sizeof(otg_hdr_t);
   
+  LOG_I(OTG,"traffic type %d\n",otg_hdr_p->traffic_type);
   // copy the header first 
   memcpy(&tx_buffer[byte_tx_count], header, strlen(header));
   byte_tx_count += strlen(header);
@@ -803,10 +807,9 @@ for (i=0; i<2; i++){ // src //maxServiceCount
    }
  }
 }
+
 void init_predef_traffic(unsigned char nb_ue_local, unsigned char nb_enb_local) {
-int i;
-int j;
-int k;
+  int i,j, k;
 
 //LOG_I(OTG,"OTG_CONFIG num_node %d\n",  g_otg->num_nodes);
 //LOG_I(OTG,"MAX_NODES [MAX UE= %d] [MAX eNB= %d] \n",nb_ue_local,  nb_enb_local);
@@ -1471,7 +1474,7 @@ break;
        g_otg->trans_proto[i][j][k] = UDP;
        g_otg->ip_v[i][j][k] = IPV4;
        g_otg->idt_dist[i][j][k][SIMPLE_TALK] = FIXED;
-       LOG_I(OTG,"OTG_CONFIG  VOIP G729, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][SIMPLE_TALK]);
+       LOG_I(OTG,"OTG_CONFIG  VOIP G729, src = %d, dst = %d, traffic id %d, dist IDT = %d\n", i, j, k, g_otg->idt_dist[i][j][k][SIMPLE_TALK]);
        g_otg->idt_min[i][j][k][SIMPLE_TALK] =  30;
        g_otg->idt_max[i][j][k][SIMPLE_TALK] =  30;
        g_otg->size_dist[i][j][k][SIMPLE_TALK] = FIXED;

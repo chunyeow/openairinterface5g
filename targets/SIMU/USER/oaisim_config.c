@@ -776,7 +776,7 @@ int ocg_config_app(void){
 		    g_otg->m2m[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]], 
 		    g_otg->flow_start[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]],
 		    g_otg->flow_duration[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]]);
-	     g_otg->application_idx[source_id_index][destination_id_index]+=1;
+	      g_otg->application_idx[source_id_index][destination_id_index]+=1;
 	    }
 	  }
 	}
@@ -821,18 +821,18 @@ int ocg_config_app(void){
 	      g_otg->aggregation_level[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]]=oai_emulation.application_config.predefined_traffic.aggregation_level[predefined_traffic_config_index];
 	      g_otg->flow_start[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]]=oai_emulation.application_config.predefined_traffic.flow_start[predefined_traffic_config_index];
 	      g_otg->flow_duration[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]]=oai_emulation.application_config.predefined_traffic.flow_duration[predefined_traffic_config_index];
-	      g_otg->application_idx[source_id_index][destination_id_index]+=1;
-	    }
-
-	    LOG_I(OTG,"predef (2):: OCG_config_OTG: [MAX UE=%d] [MAX eNB=%d]: FORMAT (%d:%d) source = %d, dest = %d, Application ID %d, Background=%d, Aggregation=%d, m2m=%d, start/duration %d/%d\n", 
+	      
+	      LOG_I(OTG,"predef (2):: OCG_config_OTG: [MAX UE=%d] [MAX eNB=%d]: FORMAT (%d:%d) source = %d, dest = %d, Application ID %d, type %d, Background=%d, Aggregation=%d, m2m=%d, start/duration %d/%d\n", 
 		  oai_emulation.info.nb_ue_local, oai_emulation.info.nb_enb_local, sid_start, sid_end, source_id_index, destination_id_index,
 		  g_otg->application_idx[source_id_index][destination_id_index], 
+		  g_otg->application_type[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]],
 		  g_otg->background[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]], 
 		  g_otg->aggregation_level[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]], 
 		  g_otg->m2m[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]],
 		  g_otg->flow_start[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]],
 		  g_otg->flow_duration[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]]);
-
+	      g_otg->application_idx[source_id_index][destination_id_index]+=1;
+	    }
 	  }
 	}
       }

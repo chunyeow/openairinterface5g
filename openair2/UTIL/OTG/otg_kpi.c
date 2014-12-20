@@ -169,7 +169,7 @@ void average_pkt_jitter(int src, int dst, int application){
 
 }
 
-void average_total_jitter(){
+void average_total_jitter(void){
 unsigned int i,j,k;
 
 otg_info->average_jitter_dl=0;
@@ -273,15 +273,19 @@ fc=fopen("/tmp/otg.log","w");;
 	rx_total_pkts_ul_background+=otg_info->rx_num_pkt_background[i][j];
       }
       
-      for (k=0; k<MAX_EMU_TRAFFIC; k++) {    
+      for (k=0; k<MAX_NUM_APPLICATION; k++) {    
 	
 	tx_throughput(i,j,k);
 	rx_goodput(i,j,k);
 	rx_loss_rate_pkts(i,j,k);
 	average_pkt_jitter(i,j,k);
-
-	//	LOG_I(OTG,"KPI: (src=%d, dst=%d, traffic=%d) NB packet TX= %d,  NB packet RX= %d\n ",i, j,  k,otg_info->tx_num_pkt[i][j][k],  otg_info->rx_num_pkt[i][j][k]);
-	
+	/*
+       	LOG_I(OTG,"KPI: (src=%d, dst=%d, traffic=%d) NB TX Bytes= %d, NB packet TX= %d,  NB packet RX= %d\n ",
+	      i, j,  k,
+	      otg_info->tx_num_bytes[i][j][k],
+	      otg_info->tx_num_pkt[i][j][k],  
+	      otg_info->rx_num_pkt[i][j][k]);
+	*/
 	if (otg_multicast_info->tx_throughput[i][j]>0)  { 
 	  //multicast
 	  tx_total_bytes_dl_multicast+=otg_multicast_info->tx_num_bytes[i][j][k];
@@ -332,6 +336,7 @@ fc=fopen("/tmp/otg.log","w");;
 	  
 	}// end for multicast
 	
+
 	if ((otg_info->tx_throughput[i][j][k]>0)||((otg_info->tx_throughput_background[i][j]>0) && (otg_info->tx_num_bytes[i][j][k]>0)))  {
 	  
 	  num_active_source+=1;
@@ -385,121 +390,13 @@ fc=fopen("/tmp/otg.log","w");;
 	  else
 	    strcpy(traffic_type,"APPLICATION");
 	  
-	  
-	  switch  (k) {
-	  case  0 : 
-	    strcpy(traffic,"CUSTOMIZED TRAFFIC ");
-	    break;
-	  case 1 :
-	    strcpy(traffic,"M2M");
-	    break;
-	  case 2 :
-	    strcpy(traffic,"SCBR");
-	    break;
-	  case 3 :
-	    strcpy(traffic,"MCBR");
-	    break;
-	  case 4 :
-	    strcpy(traffic,"BCBR");
-	    break;
-	  case 5 :
-	    strcpy(traffic,"AUTO_PILOT");
-	    break;
-	  case 6 :
-	    strcpy(traffic,"BICYCLE_RACE");
-	    break;
-	  case 7 :
-	    strcpy(traffic,"OPENARENA");
-	    break;
-	  case 8 :
-	    strcpy(traffic,"TEAM_FORTRESS");
-	    break;
-	  case 9 :
-	    strcpy(traffic,"FULL_BUFFER");
-	    break;
-	  case 10 :
-	    strcpy(traffic,"M2M_TRAFFIC");
-	    break;
-	  case 11 :
-	    strcpy(traffic,"AUTO_PILOT_L");
-	    break;
-	  case 12 :
-	    strcpy(traffic,"AUTO_PILOT_M");
-	    break;
-	  case 13 :
-	    strcpy(traffic,"AUTO_PILOT_H");
-	    break;
-	  case 14 :
-	    strcpy(traffic,"AUTO_PILOT_E");
-	    break;
-	  case 15 :
-	    strcpy(traffic,"VIRTUAL_GAME_L");
-	    break;
-	  case 16 :
-	    strcpy(traffic,"VIRTUAL_GAME_M");
-	    break;
-	  case 17 :
-	    strcpy(traffic,"VIRTUAL_GAME_H");
-	    break;
-	  case 18 :
-	    strcpy(traffic,"VIRTUAL_GAME_F"); 
-	    break;
-	  case 19 :
-	    strcpy(traffic,"ALARM_HUMIDITY"); 
-	    break;
-	  case 20 :
-	    strcpy(traffic,"ALARM_SMOKE"); 
-	    break;
-	  case 21 :
-	    strcpy(traffic,"ALARM_TEMPERATURE"); 
-	    break;
-	  case 22 :
-	    strcpy(traffic,"OPENARENA_DL"); 
-	    break;
-	  case 23 :
-	    strcpy(traffic,"OPENARENA_UL"); 
-	    break;
-	  case 24 :
-	    strcpy(traffic,"VOIP_G711"); 
-	    break;
-	  case 25 :
-	    strcpy(traffic,"VOIP_G729"); 
-	    break;
-	  case 26 :
-	    strcpy(traffic,"IQSIM_MANGO"); 
-	    break;
-	  case 27 :
-	    strcpy(traffic,"IQSIM_NEWSTEO"); 
-	    break;
-	  case 28 :
-	    strcpy(traffic,"OPEMARENA_DL_TARMA"); 
-	    break;
-	  case 29 :
-	    strcpy(traffic,"VIDEO_VBR_10MBPS"); 
-	    break;
-	  case 30 :
-	    strcpy(traffic,"VIDEO_VBR_4MBPS"); 
-	    break;
-	  case 31 :
-	    strcpy(traffic,"VIDEO_VBR_2MBPS"); 
-	    break;
-	  case 32 :
-	    strcpy(traffic,"VIDEO_VBR_768KBPS"); 
-	    break;
-	  case 33 :
-	    strcpy(traffic,"VIDEO_VBR_384KBPS"); 
-	    break;
-	  case 34 :
-	    strcpy(traffic,"VIDEO_VBR_192KBPS"); 
-	    break;
-	  default:
-	    strcpy(traffic,"UKNOWN TRAFFIC"); 
-	    break;
+	  if (map_int_to_str(otg_app_type_names,g_otg->application_type[i][j][k]) == -1){
+	    LOG_E(OTG,"(src=%d, dst=%d, appli %d) : Unknown traffic \n ", i, j,k);
+	  strcpy(traffic,"UKNOWN TRAFFIC"); 	   
+	  } else {
+	    strcpy (traffic, map_int_to_str(otg_app_type_names,g_otg->application_type[i][j][k]));
 	  }
 	  
-	  
-
-
 
 #ifdef STANDALONE
 	

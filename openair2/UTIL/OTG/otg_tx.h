@@ -144,7 +144,7 @@ flow id, simulation time, , sequence number, header type (to know the transport/
 * @ingroup  _otg
 */
 
-unsigned char * serialize_buffer(char* header, char* payload, unsigned int buffer_size, int traffic_type, int flag, int flow_id, int ctime, int seq_num, int hdr_type, int state, unsigned int aggregation_level);
+unsigned char * serialize_buffer(char* header, char* payload, unsigned int buffer_size, unsigned int traffic_type, int flag, int flow_id, int ctime, int seq_num, int hdr_type, int state, unsigned int aggregation_level);
 
 
 /*! \fn int adjust_size(int size);
