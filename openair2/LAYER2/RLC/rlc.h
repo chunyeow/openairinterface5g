@@ -361,6 +361,17 @@ public_rlc_rrc(void
     rb_free_rlc_union (void *rlcu_pP);)
 
 
+/*! \fn rlc_op_status_t rrc_rlc_remove_ue   (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const  eNB_flag_t eNB_flagP)
+ * \brief  Remove all RLC protocol instances from all radio bearers allocated to a UE.
+ * \param[in]  enb_mod_idP      Virtualized enb module identifier, Not used if eNB_flagP = 0.
+ * \param[in]  ue_mod_idP       Virtualized ue module identifier.
+ * \param[in]  frameP           Frame index.
+ * \param[in]  eNB_flagP        Flag to indicate eNB (1) or UE (0)
+ * \return     A status about the processing, OK or error code.
+*/
+public_rlc_rrc(rlc_op_status_t rrc_rlc_remove_ue (const module_id_t enb_mod_idP,const module_id_t ue_mod_idP,const eNB_flag_t  enb_flagP,const frame_t     frameP,const eNB_flag_t  enb_flagP);)
+
+
 /*! \fn rlc_op_status_t rrc_rlc_remove_rlc   (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const srb_flag_t srb_flagP, const MBMS_flag_t MBMS_flagP, const  rb_id_t rb_idP)
 * \brief  Remove a RLC protocol instance from a radio bearer.
 * \param[in]  enb_mod_idP      Virtualized enb module identifier, Not used if eNB_flagP = 0.

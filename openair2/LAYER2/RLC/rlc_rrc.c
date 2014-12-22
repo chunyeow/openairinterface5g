@@ -470,6 +470,38 @@ rb_free_rlc_union (void *rlcu_pP)
 }
 
 //-----------------------------------------------------------------------------
+rlc_op_status_t rrc_rlc_remove_ue (
+    const module_id_t enb_mod_idP,
+    const module_id_t ue_mod_idP,
+    const eNB_flag_t  enb_flagP,
+    const frame_t     frameP,
+    const eNB_flag_t  enb_flagP) {
+//-----------------------------------------------------------------------------
+    logical_chan_id_t      lcid            = 0;
+    rb_id_t                rb_id;
+
+    for (rb_id = 1; rb_id <= 2; rb_id++) {
+        rrc_rlc_remove_rlc(enb_mod_idP,
+                           ue_mod_idP,
+                           frameP,
+                           enb_flagP,
+                           SRB_FLAG_YES,
+                           MBMS_FLAG_NO,
+                           rb_id);
+    }
+    for (rb_id = 1; rb_id <= maxDRB; rb_id++) {
+        rrc_rlc_remove_rlc(enb_mod_idP,
+                           ue_mod_idP,
+                           frameP,
+                           enb_flagP,
+                           SRB_FLAG_NO,
+                           MBMS_FLAG_NO,
+                           rb_id);
+    }
+    return RLC_OP_STATUS_OK;
+}
+
+//-----------------------------------------------------------------------------
 rlc_op_status_t rrc_rlc_remove_rlc   (
     const module_id_t enb_mod_idP,
     const module_id_t ue_mod_idP,
