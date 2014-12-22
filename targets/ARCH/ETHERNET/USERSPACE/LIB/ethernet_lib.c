@@ -106,7 +106,9 @@ int ethernet_write_data(int Mod_id, openair0_timestamp timestamp, const void **b
   ((int16_t *)buff2)[0] = 1+(antenna_id<<1);
   ((int16_t *)buff2)[1] = nsamps;
   *((openair0_timestamp *)(buff2+(sizeof(int16_t)*2))) = timestamp;
+  printf("Timestamp TX sent : %d\n",timestamp);
 
+//  printf("buffer head : %d %d %d %d \n",((int16_t *)buff2)[0],((int16_t *)buff2)[1],((int16_t *)buff2)[2],((int16_t *)buff2)[3]);
   while(n_written < nsamps) {
     /* Send packet */
     if ((n_written += sendto(sockfd[Mod_id], 
@@ -129,11 +131,11 @@ int ethernet_write_data(int Mod_id, openair0_timestamp timestamp, const void **b
 
 int ethernet_read_data(int Mod_id,openair0_timestamp *timestamp,void **buff, int antenna_id, int nsamps) {
 
-  void *buff2 = buff[antenna_id]-sizeof(openair0_timestamp);
+  void *buff2 = (void*)buff[antenna_id]-sizeof(openair0_timestamp);
   int bytes_received;
   int block_cnt;
   int ret;
-  openair0_timestamp temp = *(openair0_timestamp*)buff2;
+  openair0_timestamp temp = *(openair0_timestamp*)(buff2);
   int16_t mesg[2];
   char str[INET_ADDRSTRLEN];
 
@@ -142,21 +144,21 @@ int ethernet_read_data(int Mod_id,openair0_timestamp *timestamp,void **buff, int
 
   inet_ntop(AF_INET, &(dest_addr[Mod_id].sin_addr), str, INET_ADDRSTRLEN);
   // send command RX for nsamps samples
-  //  printf("requesting %d samples from (%s:%d)\n",nsamps,str,ntohs(dest_addr[Mod_id].sin_port));
+    printf("requesting %d samples from (%s:%d)\n",nsamps,str,ntohs(dest_addr[Mod_id].sin_port));
 
   sendto(sockfd[Mod_id],mesg,4,0,(struct sockaddr *)&dest_addr[Mod_id],dest_addr_len[Mod_id]);
 
-  bytes_received=-sizeof(openair0_timestamp);
+  bytes_received=0;
   block_cnt=0;
   while(bytes_received < (int)((nsamps<<2))) {
-    printf("requesting %d bytes\n",(nsamps<<2)-bytes_received);
+    //printf("requesting %d bytes\n",(nsamps<<2));
     ret=recvfrom(sockfd[Mod_id],
-		 &buff2[bytes_received],
-		 (nsamps<<2)-bytes_received,
+		 buff2+bytes_received,
+		 (nsamps<<2)+sizeof(openair0_timestamp)-bytes_received,
 		 0,//MSG_DONTWAIT,
 		 (struct sockaddr *)&dest_addr[Mod_id],
 		 &dest_addr_len[Mod_id]);
-    printf("bytes_received %d (ret %d)\n",bytes_received+ret,ret);
+    //printf("bytes_received %d (ret %d)\n",bytes_received+ret,ret);
     if (ret==-1) {
       if (errno == EAGAIN) {
 	perror("ETHERNET: ");
@@ -174,10 +176,11 @@ int ethernet_read_data(int Mod_id,openair0_timestamp *timestamp,void **buff, int
   }
 
 
-  *timestamp =  *(openair0_timestamp *)(buff-sizeof(openair0_timestamp));
-  printf("Received %d samples, timestamp = %d\n",bytes_received>>2,*timestamp);
-  *(openair0_timestamp *)(buff-sizeof(openair0_timestamp)) = temp;
-  return bytes_received>>2;
+  //printf("buffer head : %x %x %x %x \n",((int32_t *)buff2)[0],((int32_t *)buff2)[1],((int32_t *)buff2)[2],((int32_t *)buff2)[3]);
+  *timestamp =  *(openair0_timestamp *)(buff2);
+  printf("Received %d samples, timestamp = %d\n",bytes_received>>2,*(int32_t*)timestamp);
+  *(openair0_timestamp *)(buff2) = temp;
+  return nsamps;
   
 }
 
