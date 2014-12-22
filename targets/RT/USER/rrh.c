@@ -61,7 +61,7 @@
 //#define RRH_UE_DEST_IP "192.168.12.148"  //Hecatonchire ip address
 #define RRH_UE_DEST_IP "192.168.12.196"  //Haswell ip address
 
-#define FRAME_MAX_SIZE 76800*4
+#define FRAME_MAX_SIZE 307200 
 #define DEFAULT_PERIOD_NS 133333
 
 typedef struct {
@@ -418,12 +418,12 @@ void *rrh_UE_thread(void *arg) {
 	
 	if ((timestamp_UE_rx[antenna_index]%(FRAME_MAX_SIZE)+nsamps) > FRAME_MAX_SIZE)   // Wrap around if nsamps exceeds the buffer limit
 	{
-          if ((timestamp_eNB_tx[antenna_index]%FRAME_MAX_SIZE < nsamps) && (eNB_tx_started==1))
+          if (((timestamp_eNB_tx[antenna_index]%(FRAME_MAX_SIZE)) < ((timestamp_UE_rx[antenna_index]+nsamps)%(FRAME_MAX_SIZE))) && (eNB_tx_started==1))
           {
-            printf("UE underflow timestamp_UE_rx : %d, timestamp_eNB_tx : %d\n",(int)(timestamp_UE_rx[antenna_index]%(FRAME_MAX_SIZE)),(int)(timestamp_eNB_tx[antenna_index]%FRAME_MAX_SIZE));
+            printf("UE underflow wraparound timestamp_UE_rx : %d, timestamp_eNB_tx : %d\n",(int)(timestamp_UE_rx[antenna_index]%(FRAME_MAX_SIZE)),(int)(timestamp_eNB_tx[antenna_index]%FRAME_MAX_SIZE));
             if (NRT_FLAG==1)
             {
-              while ((timestamp_eNB_tx[antenna_index]%FRAME_MAX_SIZE) < nsamps)
+              while ((timestamp_eNB_tx[antenna_index]%FRAME_MAX_SIZE) < ((timestamp_UE_rx[antenna_index]+nsamps)%(FRAME_MAX_SIZE)))
                 nanosleep(&time_req_1us,&time_rem_1us);
             }
           }
@@ -619,7 +619,7 @@ void *rrh_eNB_thread(void *arg) {
 	
 	if ((timestamp_eNB_rx[antenna_index]%(FRAME_MAX_SIZE)+nsamps) > FRAME_MAX_SIZE)   // Wrap around if nsamps exceeds the buffer limit
 	{
-          if ((timestamp_UE_tx[antenna_index]%FRAME_MAX_SIZE < nsamps) && (UE_tx_started==1))
+          if ((timestamp_UE_tx[antenna_index]%FRAME_MAX_SIZE < ((timestamp_eNB_rx[antenna_index]+nsamps)%FRAME_MAX_SIZE)) && (UE_tx_started==1))
           {
             printf("eNB underflow\n");
             if (NRT_FLAG==1)
