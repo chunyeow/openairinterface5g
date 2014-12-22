@@ -937,7 +937,7 @@ void pdcp_run (
 }
 
 boolean_t pdcp_remove_UE(
-			 const moduled_id_t              enb_mod_idP,
+			 const module_id_t              enb_mod_idP,
 		         const module_id_t               ue_mod_idP,
 			 const frame_t              frameP) {
 
