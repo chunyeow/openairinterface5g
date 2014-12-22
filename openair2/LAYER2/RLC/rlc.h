@@ -369,7 +369,7 @@ public_rlc_rrc(void
  * \param[in]  eNB_flagP        Flag to indicate eNB (1) or UE (0)
  * \return     A status about the processing, OK or error code.
 */
-public_rlc_rrc(rlc_op_status_t rrc_rlc_remove_ue (const module_id_t enb_mod_idP,const module_id_t ue_mod_idP,const frame_t     frameP,const eNB_flag);)
+public_rlc_rrc(rlc_op_status_t rrc_rlc_remove_ue (const module_id_t enb_mod_idP,const module_id_t ue_mod_idP,const frame_t     frameP,const eNB_flag_t eNB_flag);)
 
 
 /*! \fn rlc_op_status_t rrc_rlc_remove_rlc   (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const srb_flag_t srb_flagP, const MBMS_flag_t MBMS_flagP, const  rb_id_t rb_idP)

@@ -583,6 +583,7 @@ rlc_op_status_t rrc_rlc_remove_rlc   (
                 rlc_tm_cleanup(&rlc_union_p->rlc.tm);
                 break;
             default:
+	      break;
         }
         h_rc = hashtable_remove(rlc_coll_p, key);
         LOG_D(RLC, "[Frame %05u][%s][RLC_RRC][INST %u/%u][%s %u] RELEASED %s\n",
