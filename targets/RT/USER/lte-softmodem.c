@@ -1012,7 +1012,7 @@ static void * eNB_thread_tx(void *param) {
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe),0);
     
     //LOG_I(PHY,"Locking mutex for eNB proc %d (IC %d,mutex %p)\n",proc->subframe,proc->instance_cnt,&proc->mutex);
-    //    printf("Locking mutex for eNB proc %d (subframe_tx %d))\n",proc->subframe,proc->subframe_tx);
+    //    printf("Locking mutex for eNB proc %d (subframe_tx %d))\n",proc->subframe,proc->instance_cnt_tx);
 
     if (pthread_mutex_lock(&proc->mutex_tx) != 0) {
       LOG_E(PHY,"[SCHED][eNB] error locking mutex for eNB TX proc %d\n",proc->subframe);
@@ -1022,11 +1022,11 @@ static void * eNB_thread_tx(void *param) {
       
       while (proc->instance_cnt_tx < 0) {
 	//	LOG_I(PHY,"Waiting and unlocking mutex for eNB proc %d (IC %d,lock %d)\n",proc->subframe,proc->instance_cnt,pthread_mutex_trylock(&proc->mutex));
-	//printf("Waiting and unlocking mutex for eNB proc %d (subframe_tx %d)\n",proc->subframe,subframe_tx);
+	//printf("Waiting and unlocking mutex for eNB proc %d (subframe_tx %d)\n",proc->subframe,proc->instance_cnt_tx);
 	
 	pthread_cond_wait(&proc->cond_tx,&proc->mutex_tx);
       }
-      //      LOG_I(PHY,"Waking up and unlocking mutex for eNB proc %d\n",proc->subframe);
+      //      LOG_I(PHY,"Waking up and unlocking mutex for eNB proc %d instance_cnt_tx %d\n",proc->subframe,proc->instance_cnt_tx);
       if (pthread_mutex_unlock(&proc->mutex_tx) != 0) {	
 	LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for eNB TX proc %d\n",proc->subframe);
 	oai_exit=1;
@@ -1042,14 +1042,13 @@ static void * eNB_thread_tx(void *param) {
     if ((((PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == TDD)&&
 	  (subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_tx)==SF_DL))||
 	 (PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == FDD))) {
-      
+
       phy_procedures_eNB_TX(proc->subframe,PHY_vars_eNB_g[0][proc->CC_id],0,no_relay,NULL);
       
     }
     if ((subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_tx)==SF_S)) {
       phy_procedures_eNB_TX(proc->subframe,PHY_vars_eNB_g[0][proc->CC_id],0,no_relay,NULL);
     }
-    
     
     do_OFDM_mod_rt(proc->subframe_tx,PHY_vars_eNB_g[0][proc->CC_id]);  
     
@@ -1166,18 +1165,18 @@ static void * eNB_thread_rx(void *param) {
 
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_RX0+(2*proc->subframe),0);
     
-    //    LOG_I(PHY,"Locking mutex for eNB proc %d (IC %d,mutex %p)\n",proc->subframe,proc->instance_cnt,&proc->mutex);
+    // LOG_I(PHY,"Locking mutex for eNB proc %d (IC %d,mutex %p)\n",proc->subframe,proc->instance_cnt_rx,&proc->mutex_rx);
     if (pthread_mutex_lock(&proc->mutex_rx) != 0) {
       LOG_E(PHY,"[SCHED][eNB] error locking mutex for eNB RX proc %d\n",proc->subframe);
     }
     else {
         
       while (proc->instance_cnt_rx < 0) {
-	//	LOG_I(PHY,"Waiting and unlocking mutex for eNB proc %d (IC %d,lock %d)\n",proc->subframe,proc->instance_cnt,pthread_mutex_trylock(&proc->mutex));
+	//	LOG_I(PHY,"Waiting and unlocking mutex for eNB proc %d (IC %d,lock %d)\n",proc->subframe,proc->instance_cnt_rx,pthread_mutex_trylock(&proc->mutex_rx));
 
 	pthread_cond_wait(&proc->cond_rx,&proc->mutex_rx);
       }
-      //      LOG_I(PHY,"Waking up and unlocking mutex for eNB proc %d\n",proc->subframe);
+      //      LOG_I(PHY,"Waking up and unlocking mutex for eNB RX proc %d instance_cnt_rx %d\n",proc->subframe,proc->instance_cnt_rx);
       if (pthread_mutex_unlock(&proc->mutex_rx) != 0) {	
 	LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for eNB RX proc %d\n",proc->subframe);
       }
@@ -1560,6 +1559,7 @@ static void *eNB_thread(void *arg)
 				     samples_per_packets,
 				     PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_rx);
 	stop_meas(&softmodem_stats_hw);
+
 	if (rxs != samples_per_packets)
 	  oai_exit=1;
  
@@ -1677,16 +1677,18 @@ static void *eNB_thread(void *arg)
 	    LOG_E(PHY,"[eNB] ERROR pthread_mutex_lock for eNB RX thread %d (IC %d)\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx);   
 	  }
 	  else {
-	    //		      LOG_I(PHY,"[eNB] Waking up eNB process %d (IC %d)\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt); 
+	    //		      LOG_I(PHY,"[eNB] Waking up eNB process %d (IC %d) CC_id %d rx_cnt %d\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx,CC_id,rx_cnt); 
 	    PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx++;
 	    pthread_mutex_unlock(&PHY_vars_eNB_g[0][CC_id]->proc[sf].mutex_rx);
 	    if (PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx == 0) {
 	      if (pthread_cond_signal(&PHY_vars_eNB_g[0][CC_id]->proc[sf].cond_rx) != 0) {
 		LOG_E(PHY,"[eNB] ERROR pthread_cond_signal for eNB RX thread %d\n",sf);
 	      }
+              //else
+		// LOG_I(PHY,"[eNB] pthread_cond_signal for eNB RX thread %d instance_cnt_rx %d\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx);
 	    }
 	    else {
-	      LOG_W(PHY,"[eNB] Frame %d, eNB RX thread %d busy!!\n",PHY_vars_eNB_g[0][CC_id]->proc[sf].frame_rx,sf);
+	      LOG_W(PHY,"[eNB] Frame %d, eNB RX thread %d busy!! instance_cnt %d CC_id %d\n",PHY_vars_eNB_g[0][CC_id]->proc[sf].frame_rx,sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx,CC_id);
 	      oai_exit=1;
 	    }
 	  }
@@ -1944,7 +1946,7 @@ static void *UE_thread_rx(void *arg) {
   mlockall(MCL_CURRENT | MCL_FUTURE);
   
 #ifndef EXMIMO
-  printf("waiting for USRP sync (UE_thread_rx)\n");
+  printf("waiting for sync (UE_thread_rx)\n");
 #ifdef RTAI
   rt_sem_wait(sync_sem);
 #else
@@ -2039,7 +2041,7 @@ static void *UE_thread(void *arg) {
   unsigned int rxs;
   void *rxp[2],*txp[2];
 
-  printf("waiting for USRP sync (UE_thread)\n");
+  printf("waiting for sync (UE_thread)\n");
 #ifdef RTAI
   rt_sem_wait(sync_sem);
 #else
@@ -2872,8 +2874,10 @@ int main(int argc, char **argv) {
 #endif
 
 #ifdef ETHERNET
-  char *rrh_ip = "127.0.0.1";
-  int rrh_port = 22222;
+  char *rrh_eNB_ip = "192.168.12.196";
+  int rrh_eNB_port = 50000;
+  char *rrh_UE_ip = "192.168.12.196";
+  int rrh_UE_port = 22222;
 #endif
   //  int amp;
   // uint8_t prach_fmt;
@@ -3278,9 +3282,17 @@ int main(int argc, char **argv) {
 	   ((UE_flag==0) ? PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_rx : PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_rx)); 
     openair0_cfg[card].Mod_id = 0;
 #ifdef ETHERNET
-    printf("ETHERNET: Configuring ETH for %s:%d\n",rrh_ip,rrh_port);
-    openair0_cfg[card].rrh_ip   = &rrh_ip[0];
-    openair0_cfg[card].rrh_port = rrh_port;
+    if (UE_flag){
+    printf("ETHERNET: Configuring UE ETH for %s:%d\n",rrh_UE_ip,rrh_UE_port);
+    openair0_cfg[card].rrh_ip   = &rrh_UE_ip[0];
+    openair0_cfg[card].rrh_port = rrh_UE_port;
+    }
+    else
+    {
+    printf("ETHERNET: Configuring eNB ETH for %s:%d\n",rrh_eNB_ip,rrh_eNB_port);
+    openair0_cfg[card].rrh_ip   = &rrh_eNB_ip[0];
+    openair0_cfg[card].rrh_port = rrh_eNB_port;
+    }
 #endif
     openair0_cfg[card].sample_rate = sample_rate;
     openair0_cfg[card].tx_bw = bw;
@@ -3918,7 +3930,7 @@ int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_c
     }
     for (i=0;i<frame_parms->nb_antennas_tx;i++) {
       free(phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i]);
-      txdata[i] = (int32_t*)(16 + malloc16(16+samples_per_frame*sizeof(int32_t)));
+      txdata[i] = (int32_t*)(16 + malloc16(16 + samples_per_frame*sizeof(int32_t)));
       phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i] = txdata[i];
       memset(txdata[i], 0, samples_per_frame*sizeof(int32_t));
       printf("txdata[%d] @ %p\n", i, phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i]);
