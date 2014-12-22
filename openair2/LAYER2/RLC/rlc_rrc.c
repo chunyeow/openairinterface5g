@@ -473,7 +473,6 @@ rb_free_rlc_union (void *rlcu_pP)
 rlc_op_status_t rrc_rlc_remove_ue (
     const module_id_t enb_mod_idP,
     const module_id_t ue_mod_idP,
-    const eNB_flag_t  enb_flagP,
     const frame_t     frameP,
     const eNB_flag_t  enb_flagP) {
 //-----------------------------------------------------------------------------

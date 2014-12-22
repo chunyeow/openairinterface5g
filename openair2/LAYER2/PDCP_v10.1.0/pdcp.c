@@ -936,6 +936,87 @@ void pdcp_run (
 
 }
 
+boolean_t pdcp_remove_UE(
+			 const moduled_id_t              enb_mod_idP,
+		         const module_id_t               ue_mod_idP,
+			 const frame_t              frameP) {
+
+
+  pdcp_t         *pdcp_p         = NULL;
+  DRB_Identity_t  srb_id         = 0;
+  DRB_Identity_t  drb_id         = 0;
+
+  // check and remove SRBs first
+
+  for (srb_id=0;srb_id<2;srb_id++) {
+    pdcp_p = &pdcp_array_srb_eNB[enb_mod_idP][ue_mod_idP][srb_id-1];
+    if (pdcp_p->instanciated_instance == TRUE) {
+      pdcp_p->instanciated_instance = FALSE;
+      pdcp_p->lcid = 0;
+      pdcp_p->header_compression_profile = 0x0;
+      pdcp_p->cipheringAlgorithm = 0xff;
+      pdcp_p->integrityProtAlgorithm = 0xff;
+      pdcp_p->status_report = 0;
+      pdcp_p->rlc_mode = RLC_MODE_NONE;
+      pdcp_p->next_pdcp_tx_sn = 0;
+      pdcp_p->next_pdcp_rx_sn = 0;
+      pdcp_p->tx_hfn = 0;
+      pdcp_p->rx_hfn = 0;
+      pdcp_p->last_submitted_pdcp_rx_sn = 4095;
+      pdcp_p->seq_num_size = 0;
+      pdcp_p->first_missing_pdu = -1;
+      pdcp_p->security_activated = 0;
+      /* Security keys */
+      if (pdcp_p->kUPenc != NULL) {
+        free(pdcp_p->kUPenc);
+      }
+      if (pdcp_p->kRRCint != NULL) {
+        free(pdcp_p->kRRCint);
+      }
+      if (pdcp_p->kRRCenc != NULL) {
+        free(pdcp_p->kRRCenc);
+      }
+    }
+
+  }
+
+  for (drb_id=0;drb_id<maxDRB;drb_id++) {
+    pdcp_p = &pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][drb_id-1];
+    if (pdcp_p->instanciated_instance == TRUE) {
+      pdcp_p->instanciated_instance = FALSE;
+      pdcp_p->lcid = 0;
+      pdcp_p->header_compression_profile = 0x0;
+      pdcp_p->cipheringAlgorithm = 0xff;
+      pdcp_p->integrityProtAlgorithm = 0xff;
+      pdcp_p->status_report = 0;
+      pdcp_p->rlc_mode = RLC_MODE_NONE;
+      pdcp_p->next_pdcp_tx_sn = 0;
+      pdcp_p->next_pdcp_rx_sn = 0;
+      pdcp_p->tx_hfn = 0;
+      pdcp_p->rx_hfn = 0;
+      pdcp_p->last_submitted_pdcp_rx_sn = 4095;
+      pdcp_p->seq_num_size = 0;
+      pdcp_p->first_missing_pdu = -1;
+      pdcp_p->security_activated = 0;
+
+      /* Security keys */
+      if (pdcp_p->kUPenc != NULL) {
+        free(pdcp_p->kUPenc);
+      }
+      if (pdcp_p->kRRCint != NULL) {
+        free(pdcp_p->kRRCint);
+      }
+      if (pdcp_p->kRRCenc != NULL) {
+        free(pdcp_p->kRRCenc);
+      }
+    }
+
+  }
+
+  return 1;
+}
+
+
 boolean_t rrc_pdcp_config_asn1_req (
         const module_id_t               enb_mod_idP,
         const module_id_t               ue_mod_idP,

@@ -348,6 +348,20 @@ public_pdcp(boolean_t pdcp_config_req_asn1 (
         uint8_t         *const kRRCenc,
         uint8_t         *const kRRCint,
         uint8_t         *const kUPenc));
+
+
+/*! \fn boolean_t pdcp_remove_UE(const module_id_t enb_mod_idP,const module_id_t ue_mod_idP,const frame_t frameP)
+* \brief  Function for RRC to configure a Radio Bearer clear all PDCP resources for a particular UE 
+* \param[in]  enb_mod_idP index of eNB
+* \param[in]  enb_mod_idP index of UE
+* \param[in]  frameP frame
+* \return     A status about the processing, OK or error code.
+*/
+public_pdcp(boolean_t pdcp_remove_UE(
+				const module_id_t              enb_mod_idP,
+				const module_id_t               ue_mod_idP,
+				const frame_t              frameP));
+
 /*! \fn void rrc_pdcp_config_release(module_id_t, rb_id_t)
 * \brief This functions is unused
 * \param[in] module_id Module ID of relevant PDCP entity
