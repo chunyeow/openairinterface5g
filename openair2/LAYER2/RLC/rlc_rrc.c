@@ -514,6 +514,7 @@ rlc_op_status_t rrc_rlc_remove_rlc   (
     logical_chan_id_t      lcid            = 0;
     hash_key_t             key             = HASHTABLE_QUESTIONABLE_KEY_VALUE;
     hashtable_rc_t         h_rc;
+    rlc_union_t           *rlc_union_p = NULL;
 #ifdef Rel10
     rlc_mbms_id_t         *mbms_id_p  = NULL;
 #endif
@@ -570,8 +571,21 @@ rlc_op_status_t rrc_rlc_remove_rlc   (
 
     AssertFatal (rb_idP < NB_RB_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MAX);
 
-    h_rc = hashtable_remove(rlc_coll_p, key);
+    h_rc = hashtable_get(rlc_coll_p, key, &rlc_union_p);
     if (h_rc == HASH_TABLE_OK) {
+        switch (rlc_union_p->mode) {
+            case RLC_MODE_AM:
+                rlc_am_cleanup(&rlc_union_p->rlc.am);
+                break;
+            case RLC_MODE_UM:
+                rlc_um_cleanup(&rlc_union_p->rlc.um);
+                break;
+            case RLC_MODE_TM:
+                rlc_tm_cleanup(&rlc_union_p->rlc.tm);
+                break;
+            default:
+        }
+        h_rc = hashtable_remove(rlc_coll_p, key);
         LOG_D(RLC, "[Frame %05u][%s][RLC_RRC][INST %u/%u][%s %u] RELEASED %s\n",
             frameP,
             (enb_flagP) ? "eNB" : "UE",
