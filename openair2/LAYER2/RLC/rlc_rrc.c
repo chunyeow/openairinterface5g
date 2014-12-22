@@ -476,7 +476,6 @@ rlc_op_status_t rrc_rlc_remove_ue (
     const frame_t     frameP,
     const eNB_flag_t  enb_flagP) {
 //-----------------------------------------------------------------------------
-    logical_chan_id_t      lcid            = 0;
     rb_id_t                rb_id;
 
     for (rb_id = 1; rb_id <= 2; rb_id++) {
