@@ -105,8 +105,8 @@ int s1ap_ue_context_release_complete(instance_t instance,
                                      length, ue_context_p->stream);
 
 
-    s1ap_eNB_itti_send_sctp_close_association(s1ap_eNB_instance_p->instance,
-                                     ue_context_p->mme_ref->assoc_id);
+    //LG s1ap_eNB_itti_send_sctp_close_association(s1ap_eNB_instance_p->instance,
+    //                                 ue_context_p->mme_ref->assoc_id);
 
 
 

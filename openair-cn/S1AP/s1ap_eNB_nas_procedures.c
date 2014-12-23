@@ -202,9 +202,23 @@ int s1ap_eNB_handle_nas_first_req(
     /* Update the current S1AP UE state */
     ue_desc_p->ue_state = S1AP_UE_WAITING_CSR;
 
-    /* Assign a stream for this UE */
-    mme_desc_p->nextstream %= mme_desc_p->out_streams;
-    ue_desc_p->stream = ++mme_desc_p->nextstream;
+    /* Assign a stream for this UE :
+     * From 3GPP 36.412 7)Transport layers:
+     *  Within the SCTP association established between one MME and eNB pair:
+     *  - a single pair of stream identifiers shall be reserved for the sole use
+     *      of S1AP elementary procedures that utilize non UE-associated signalling.
+     *  - At least one pair of stream identifiers shall be reserved for the sole use
+     *      of S1AP elementary procedures that utilize UE-associated signallings.
+     *      However a few pairs (i.e. more than one) should be reserved.
+     *  - A single UE-associated signalling shall use one SCTP stream and
+     *      the stream should not be changed during the communication of the
+     *      UE-associated signalling.
+     */
+    mme_desc_p->nextstream = (mme_desc_p->nextstream + 1) % mme_desc_p->out_streams;
+    if ((mme_desc_p->nextstream == 0) && (mme_desc_p->out_streams > 1)) {
+        mme_desc_p->nextstream += 1;
+    }
+    ue_desc_p->stream = mme_desc_p->nextstream;
 
     /* Send encoded message over sctp */
     s1ap_eNB_itti_send_sctp_data_req(instance_p->instance, mme_desc_p->assoc_id,
