@@ -819,30 +819,13 @@ void rrc_eNB_send_S1AP_UE_CONTEXT_RELEASE_REQ (uint8_t mod_id, uint8_t ue_index,
       int      e_rab;
       int      mod_id = 0;
       eNB_RRC_UE_INFO *UE_info = &eNB_rrc_inst[mod_id].Info.UE[ue_index];
-/*      MessageDef *msg_delete_tunnels_p = NULL;
 
-      msg_delete_tunnels_p = itti_alloc_new_message(TASK_RRC_ENB, GTPV1U_ENB_DELETE_TUNNEL_REQ);
-      memset(&GTPV1U_ENB_DELETE_TUNNEL_REQ(msg_delete_tunnels_p),
-             0,
-             sizeof(GTPV1U_ENB_DELETE_TUNNEL_REQ(msg_delete_tunnels_p)));
-
-      // do not wait response
-      GTPV1U_ENB_DELETE_TUNNEL_REQ(msg_delete_tunnels_p).ue_index = ue_index;
-      for (e_rab = 0; e_rab < UE_info->nb_of_e_rabs; e_rab++) {
-          GTPV1U_ENB_DELETE_TUNNEL_REQ(msg_delete_tunnels_p).eps_bearer_id[e_rab] = UE_info->enb_gtp_ebi[e_rab];
-          // erase data
-          UE_info->enb_gtp_teid[e_rab] = 0;
-          memset(&UE_info->enb_gtp_addrs[e_rab], 0, sizeof(UE_info->enb_gtp_addrs[e_rab]));
-          UE_info->enb_gtp_ebi[e_rab]  = 0;
-      }
-      itti_send_msg_to_task(TASK_GTPV1_U, mod_id, msg_delete_tunnels_p);
-*/
-      MessageDef *msg_complete_p = NULL;
-      msg_complete_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_UE_CONTEXT_RELEASE_REQ);
-      S1AP_UE_CONTEXT_RELEASE_REQ(msg_complete_p).eNB_ue_s1ap_id = UE_info->eNB_ue_s1ap_id;
-      S1AP_UE_CONTEXT_RELEASE_REQ(msg_complete_p).cause          = causeP;
-      S1AP_UE_CONTEXT_RELEASE_REQ(msg_complete_p).cause_value    = cause_valueP;
-      itti_send_msg_to_task(TASK_S1AP, mod_id, msg_complete_p);
+      MessageDef *msg_context_release_req_p = NULL;
+      msg_context_release_req_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_UE_CONTEXT_RELEASE_REQ);
+      S1AP_UE_CONTEXT_RELEASE_REQ(msg_context_release_req_p).eNB_ue_s1ap_id = UE_info->eNB_ue_s1ap_id;
+      S1AP_UE_CONTEXT_RELEASE_REQ(msg_context_release_req_p).cause          = causeP;
+      S1AP_UE_CONTEXT_RELEASE_REQ(msg_context_release_req_p).cause_value    = cause_valueP;
+      itti_send_msg_to_task(TASK_S1AP, mod_id, msg_context_release_req_p);
       return (0);
   }
 }
