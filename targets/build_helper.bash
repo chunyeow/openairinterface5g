@@ -662,7 +662,7 @@ compile_hss() {
             echo_error "Build failed, exiting"
             return 1
 	else 
-	    cp -f ./openair-hss $OPENAIR_TARGETS/bin
+	    cp -pf ./openair-hss $OPENAIR_TARGETS/bin
 	    return 0
         fi
     else
@@ -715,7 +715,7 @@ compile_epc() {
             echo_error "Build failed, exiting"
             return 1
         else 
-            cp -f ./OAI_EPC/oai_epc  $OPENAIR_TARGETS/bin
+            cp -pf ./OAI_EPC/oai_epc  $OPENAIR_TARGETS/bin
         fi
     else
         echo_error "Configure failed, exiting"
@@ -728,8 +728,8 @@ compile_epc() {
         echo_error "Build GTPUAH module failed, exiting"
         return 1
     else 
-        cp -fv ./Bin/libxt_*.so /lib/xtables
-        cp -fv ./Bin/*.ko $OPENAIR_TARGETS/bin
+        cp -pfv ./Bin/libxt_*.so /lib/xtables
+        cp -pfv ./Bin/*.ko $OPENAIR_TARGETS/bin
     fi
     
     cd $OPENAIRCN_DIR/GTPV1-U/GTPURH;
@@ -738,8 +738,8 @@ compile_epc() {
         echo_error "Build GTPURH module failed, exiting"
         return 1
     else 
-        cp -fv ./Bin/libxt_*.so /lib/xtables
-        cp -fv ./Bin/*.ko $OPENAIR_TARGETS/bin
+        cp -pfv ./Bin/libxt_*.so /lib/xtables
+        cp -pfv ./Bin/*.ko $OPENAIR_TARGETS/bin
     fi
     return 0
 }
@@ -754,6 +754,7 @@ compile_exmimo2_driver() {
 compile_ltesoftmodem() {
     cd $OPENAIR_TARGETS/RT/USER
     if [ -f Makefile ];  then
+        rm -f ./lte-softmodem
         echo "LTE softmodem compiling directives: $SOFTMODEM_DIRECTIVES"
         if [ $OAI_CLEAN -ne 0 ]; then
             echo "Cleaning LTE softmodem"
@@ -769,11 +770,11 @@ compile_ltesoftmodem() {
                 echo_error "Build lte-softmodem failed, returning"
                 return 1
             else 
-                cp -f ./lte-softmodem  $OPENAIR_TARGETS/bin
+                cp -pf ./lte-softmodem  $OPENAIR_TARGETS/bin
                 return 0
             fi 
         else
-            cp -f ./lte-softmodem  $OPENAIR_TARGETS/bin
+            cp -pf ./lte-softmodem  $OPENAIR_TARGETS/bin
             return 0
         fi
     else
@@ -792,7 +793,7 @@ compile_oaisim() {
             echo_error "Build oaisim failed, returning"
             return 1
         else 
-            cp -f ./oaisim $OPENAIR_TARGETS/bin
+            cp -pf ./oaisim $OPENAIR_TARGETS/bin
             return 0
         fi
     else
@@ -811,13 +812,13 @@ compile_unisim() {
             echo_error "Build unisim failed, returning"
             return 1
         else 
-            cp -f ./dlsim     $OPENAIR_TARGETS/bin
-            cp -f ./ulsim     $OPENAIR_TARGETS/bin
-            cp -f ./pucchsim  $OPENAIR_TARGETS/bin
-            cp -f ./prachsim  $OPENAIR_TARGETS/bin
-            cp -f ./pdcchsim  $OPENAIR_TARGETS/bin
-            cp -f ./pbchsim   $OPENAIR_TARGETS/bin
-            cp -f ./mbmssim   $OPENAIR_TARGETS/bin
+            cp -pf ./dlsim     $OPENAIR_TARGETS/bin
+            cp -pf ./ulsim     $OPENAIR_TARGETS/bin
+            cp -pf ./pucchsim  $OPENAIR_TARGETS/bin
+            cp -pf ./prachsim  $OPENAIR_TARGETS/bin
+            cp -pf ./pdcchsim  $OPENAIR_TARGETS/bin
+            cp -pf ./pbchsim   $OPENAIR_TARGETS/bin
+            cp -pf ./mbmssim   $OPENAIR_TARGETS/bin
             return 0
         fi
     else
