@@ -51,6 +51,7 @@
 
 #include "s1ap_eNB_nas_procedures.h"
 #include "s1ap_eNB_management_procedures.h"
+#include "s1ap_eNB_context_management_procedures.h"
 
 #include "s1ap_eNB_itti_messaging.h"
 
@@ -299,6 +300,10 @@ void *s1ap_eNB_task(void *arg)
             case S1AP_UE_CONTEXT_RELEASE_COMPLETE: {
                 s1ap_ue_context_release_complete(ITTI_MESSAGE_GET_INSTANCE(received_msg),
                                               &S1AP_UE_CONTEXT_RELEASE_COMPLETE(received_msg));
+            } break;
+            case S1AP_UE_CONTEXT_RELEASE_REQ: {
+                s1ap_ue_context_release_req(ITTI_MESSAGE_GET_INSTANCE(received_msg),
+                                              &S1AP_UE_CONTEXT_RELEASE_REQ(received_msg));
             } break;
             default:
                 S1AP_ERROR("Received unhandled message: %d:%s\n",

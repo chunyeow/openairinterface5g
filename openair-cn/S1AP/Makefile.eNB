@@ -51,15 +51,19 @@ endif
 include $(ASN1MESSAGESDIR)/Makefile.inc
 
 libs1ap_OBJECTS = \
-	s1ap_eNB.o s1ap_common.o		\
-	s1ap_eNB_itti_messaging.o		\
-	s1ap_eNB_decoder.o			\
-	s1ap_eNB_encoder.o			\
-	s1ap_eNB_handlers.o			\
-	s1ap_eNB_nnsf.o	s1ap_eNB_ue_context.o	\
-	s1ap_eNB_trace.o s1ap_eNB_overload.o	\
-	s1ap_eNB_nas_procedures.o		\
-	s1ap_eNB_management_procedures.o	\
+	s1ap_common.o \
+	s1ap_eNB.o \
+	s1ap_eNB_context_management_procedures.o \
+	s1ap_eNB_decoder.o \
+	s1ap_eNB_encoder.o \
+	s1ap_eNB_handlers.o \
+	s1ap_eNB_itti_messaging.o \
+	s1ap_eNB_management_procedures.o \
+	s1ap_eNB_nas_procedures.o \
+	s1ap_eNB_nnsf.o \
+	s1ap_eNB_overload.o \
+	s1ap_eNB_trace.o \
+	s1ap_eNB_ue_context.o \
 	$(addprefix MESSAGES/, $(S1AP_ASN_MODULE_SOURCES))
 
 ifeq ($(USE_MME), R10)

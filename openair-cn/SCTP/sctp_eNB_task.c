@@ -97,8 +97,7 @@ static STAILQ_HEAD(sctp_cnx_list_head, sctp_cnx_list_elm_s) sctp_cnx_list;
 static uint16_t sctp_nb_cnx = 0;
 
 
-struct sctp_cnx_list_elm_s *sctp_get_cnx(int32_t assoc_id, int sd)
-{
+struct sctp_cnx_list_elm_s *sctp_get_cnx(int32_t assoc_id, int sd) {
     struct sctp_cnx_list_elm_s *elm;
 
     STAILQ_FOREACH(elm, &sctp_cnx_list, entries)
@@ -117,10 +116,11 @@ struct sctp_cnx_list_elm_s *sctp_get_cnx(int32_t assoc_id, int sd)
     return NULL;
 }
 
-void sctp_handle_new_association_req(
-    const instance_t instance,
-    const task_id_t requestor,
-    const sctp_new_association_req_t * const sctp_new_association_req_p)
+void
+sctp_handle_new_association_req(
+                const instance_t instance,
+                const task_id_t requestor,
+                const sctp_new_association_req_t * const sctp_new_association_req_p)
 {
     int                           sd;
     int32_t                       assoc_id;
@@ -358,9 +358,9 @@ void sctp_handle_new_association_req(
 }
 
 void sctp_send_data(
-		instance_t       instance,
-		task_id_t        task_id,
-		sctp_data_req_t *sctp_data_req_p)
+                instance_t       instance,
+                task_id_t        task_id,
+                sctp_data_req_t *sctp_data_req_p)
 {
     struct sctp_cnx_list_elm_s *sctp_cnx = NULL;
 
@@ -400,9 +400,9 @@ void sctp_send_data(
 }
 
 static int sctp_close_association(
-		const instance_t instance,
-	    const task_id_t  requestor,
-	    sctp_close_association_t     *close_association_p)
+                const instance_t instance,
+                const task_id_t  requestor,
+                sctp_close_association_t     *close_association_p)
 {
 
     struct sctp_cnx_list_elm_s *sctp_cnx = NULL;
@@ -507,11 +507,10 @@ static int sctp_create_new_listener(
 
     /* Some pre-bind socket configuration */
     if (sctp_set_init_opt(sd,
-    		sctp_cnx->in_streams,
-    		sctp_cnx->out_streams,
-            0,
-            0) < 0)
-    {
+                          sctp_cnx->in_streams,
+                          sctp_cnx->out_streams,
+                          0,
+                          0) < 0) {
         goto err;
     }
 
@@ -540,11 +539,12 @@ err:
     return -1;
 }
 
-static
-inline void sctp_eNB_accept_associations(struct sctp_cnx_list_elm_s *sctp_cnx)
+static inline
+void
+sctp_eNB_accept_associations(
+                struct sctp_cnx_list_elm_s *sctp_cnx)
 {
-    int client_sd;
-
+    int             client_sd;
     struct sockaddr saddr;
     socklen_t       saddr_size;
 
@@ -606,8 +606,10 @@ inline void sctp_eNB_accept_associations(struct sctp_cnx_list_elm_s *sctp_cnx)
     }
 }
 
-static
-inline void sctp_eNB_read_from_socket(struct sctp_cnx_list_elm_s *sctp_cnx)
+static inline
+void
+sctp_eNB_read_from_socket(
+                struct sctp_cnx_list_elm_s *sctp_cnx)
 {
     int                    flags = 0, n;
     socklen_t              from_len;
@@ -724,7 +726,9 @@ inline void sctp_eNB_read_from_socket(struct sctp_cnx_list_elm_s *sctp_cnx)
     }
 }
 
-void sctp_eNB_flush_sockets(struct epoll_event *events, int nb_events)
+void
+sctp_eNB_flush_sockets(
+                struct epoll_event *events, int nb_events)
 {
     int i;
     struct sctp_cnx_list_elm_s *sctp_cnx = NULL;

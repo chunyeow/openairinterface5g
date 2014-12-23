@@ -95,6 +95,11 @@ int s1ap_eNB_encode_ue_context_release_complete(
     uint8_t                           **buffer,
     uint32_t                           *length);
 
+static inline
+int s1ap_eNB_encode_ue_context_release_request(
+        S1ap_UEContextReleaseRequestIEs_t *s1ap_UEContextReleaseRequestIEs,
+    uint8_t                              **buffer,
+    uint32_t                              *length);
 
 int s1ap_eNB_encode_pdu(s1ap_message *message, uint8_t **buffer, uint32_t *len)
 {
@@ -169,6 +174,15 @@ int s1ap_eNB_encode_initiating(s1ap_message *s1ap_message_p,
                                                           message_string, s1ap_message_p);
             message_id = S1AP_NAS_NON_DELIVERY_IND_LOG;
             break;
+
+        case S1ap_ProcedureCode_id_UEContextReleaseRequest:
+            ret = s1ap_eNB_encode_ue_context_release_request(
+                &s1ap_message_p->msg.s1ap_UEContextReleaseRequestIEs, buffer, len);
+            s1ap_xer_print_s1ap_uecontextreleaserequest(s1ap_xer__print2sp,
+                                                          message_string, s1ap_message_p);
+            message_id = S1AP_UE_CONTEXT_RELEASE_REQ_LOG;
+            break;
+
 
         default:
             S1AP_DEBUG("Unknown procedure ID (%d) for initiating message\n",
@@ -466,19 +480,19 @@ int s1ap_eNB_encode_initial_context_setup_response(
 
 static inline
 int s1ap_eNB_encode_ue_context_release_complete(
-		S1ap_UEContextReleaseCompleteIEs_t *s1ap_UEContextReleaseCompleteIEs,
+        S1ap_UEContextReleaseCompleteIEs_t *s1ap_UEContextReleaseCompleteIEs,
     uint8_t                              **buffer,
     uint32_t                              *length)
 {
-	S1ap_UEContextReleaseComplete_t  ue_context_release_complete;
-	S1ap_UEContextReleaseComplete_t *ue_context_release_complete_p =
+    S1ap_UEContextReleaseComplete_t  ue_context_release_complete;
+    S1ap_UEContextReleaseComplete_t *ue_context_release_complete_p =
         &ue_context_release_complete;
 
     memset((void *)ue_context_release_complete_p, 0,
            sizeof(ue_context_release_complete));
 
     if (s1ap_encode_s1ap_uecontextreleasecompleteies(
-    		ue_context_release_complete_p, s1ap_UEContextReleaseCompleteIEs) < 0)
+            ue_context_release_complete_p, s1ap_UEContextReleaseCompleteIEs) < 0)
     {
         return -1;
     }
@@ -489,5 +503,32 @@ int s1ap_eNB_encode_ue_context_release_complete(
             S1ap_Criticality_reject,
             &asn_DEF_S1ap_UEContextReleaseComplete,
             ue_context_release_complete_p);
+}
+
+static inline
+int s1ap_eNB_encode_ue_context_release_request(
+        S1ap_UEContextReleaseRequestIEs_t *s1ap_UEContextReleaseRequestIEs,
+    uint8_t                              **buffer,
+    uint32_t                              *length)
+{
+    S1ap_UEContextReleaseRequest_t  ue_context_release_request;
+    S1ap_UEContextReleaseRequest_t *ue_context_release_request_p =
+        &ue_context_release_request;
+
+    memset((void *)ue_context_release_request_p, 0,
+           sizeof(ue_context_release_request));
+
+    if (s1ap_encode_s1ap_uecontextreleaserequesties(
+                    ue_context_release_request_p, s1ap_UEContextReleaseRequestIEs) < 0)
+    {
+        return -1;
+    }
+
+    return s1ap_generate_initiating_message(buffer,
+            length,
+            S1ap_ProcedureCode_id_UEContextReleaseRequest,
+            S1ap_Criticality_reject,
+            &asn_DEF_S1ap_UEContextReleaseRequest,
+            ue_context_release_request_p);
 }
 
