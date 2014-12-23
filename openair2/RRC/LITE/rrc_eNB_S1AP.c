@@ -90,9 +90,8 @@ static uint16_t get_next_ue_initial_id(uint8_t mod_id) {
 
   /* Never use UE_INITIAL_ID_INVALID this is the invalid id! */
   if (ue_initial_id[mod_id] == UE_INITIAL_ID_INVALID) {
-    ue_initial_id[mod_id]++;
+      ue_initial_id[mod_id]++;
   }
-
   return ue_initial_id[mod_id];
 }
 
@@ -109,16 +108,16 @@ static uint8_t get_UE_index_from_initial_id(uint8_t mod_id, uint16_t ue_initial_
   LOG_D(RRC, "[eNB %d] get_UE_index_from_initial_id: ue_initial_id %d\n", ue_initial_id);
 
   for (ue_index = 0; ue_index < NUMBER_OF_UE_MAX; ue_index++) {
-    /* Check if this UE is in use */
-    LOG_D(RRC, "[eNB %d][UE %d] UE rv 0x%" PRIx64 " %d\n", mod_id, ue_index,
-          eNB_rrc_inst[mod_id].Info.UE_list[ue_index], eNB_rrc_inst[mod_id].Info.UE[ue_index].ue_initial_id);
+      /* Check if this UE is in use */
+      LOG_D(RRC, "[eNB %d][UE %d] UE rv 0x%" PRIx64 " %d\n", mod_id, ue_index,
+            eNB_rrc_inst[mod_id].Info.UE_list[ue_index], eNB_rrc_inst[mod_id].Info.UE[ue_index].ue_initial_id);
 
-    if (eNB_rrc_inst[mod_id].Info.UE_list[ue_index] != 0) {
-      /* Check if the initial id match */
-      if (eNB_rrc_inst[mod_id].Info.UE[ue_index].ue_initial_id == ue_initial_id) {
-        return ue_index;
+      if (eNB_rrc_inst[mod_id].Info.UE_list[ue_index] != 0) {
+          /* Check if the initial id match */
+          if (eNB_rrc_inst[mod_id].Info.UE[ue_index].ue_initial_id == ue_initial_id) {
+              return ue_index;
+          }
       }
-    }
   }
   return UE_INDEX_INVALID;
 }
@@ -137,20 +136,20 @@ static uint8_t get_UE_index_from_eNB_ue_s1ap_id(uint8_t mod_id, uint32_t eNB_ue_
 
   for (ue_index = 0; ue_index < NUMBER_OF_UE_MAX; ue_index++) {
     /* Check if this UE is in use */
-    LOG_D(RRC, "[eNB %d][UE %d] UE rv 0x%" PRIx64 " %d\n", mod_id, ue_index,
-          eNB_rrc_inst[mod_id].Info.UE_list[ue_index], eNB_rrc_inst[mod_id].Info.UE[ue_index].eNB_ue_s1ap_id);
+      LOG_D(RRC, "[eNB %d][UE %d] UE rv 0x%" PRIx64 " %d\n", mod_id, ue_index,
+            eNB_rrc_inst[mod_id].Info.UE_list[ue_index], eNB_rrc_inst[mod_id].Info.UE[ue_index].eNB_ue_s1ap_id);
 
-    if (eNB_rrc_inst[mod_id].Info.UE_list[ue_index] != 0) {
-      /* Check if the initial id match */
-      if (eNB_rrc_inst[mod_id].Info.UE[ue_index].eNB_ue_s1ap_id == eNB_ue_s1ap_id) {
-        return ue_index;
+      if (eNB_rrc_inst[mod_id].Info.UE_list[ue_index] != 0) {
+          /* Check if the initial id match */
+          if (eNB_rrc_inst[mod_id].Info.UE[ue_index].eNB_ue_s1ap_id == eNB_ue_s1ap_id) {
+              return ue_index;
+          }
       }
-    }
   }
   LOG_D(RRC,
-      "[eNB %d] return UE_INDEX_INVALID for eNB_ue_s1ap_id %u\n",
-      mod_id,
-      eNB_ue_s1ap_id);
+        "[eNB %d] return UE_INDEX_INVALID for eNB_ue_s1ap_id %u\n",
+        mod_id,
+        eNB_ue_s1ap_id);
   return UE_INDEX_INVALID;
 }
 
@@ -166,12 +165,12 @@ static uint8_t get_UE_index_from_s1ap_ids(uint8_t mod_id, uint16_t ue_initial_id
   uint8_t ue_index;
 
   if (ue_initial_id == UE_INITIAL_ID_INVALID) {
-    /* If "ue_initial_id" is not set search if "eNB_ue_s1ap_id" is know by RRC */
-    ue_index = get_UE_index_from_eNB_ue_s1ap_id (mod_id, eNB_ue_s1ap_id);
+      /* If "ue_initial_id" is not set search if "eNB_ue_s1ap_id" is know by RRC */
+      ue_index = get_UE_index_from_eNB_ue_s1ap_id (mod_id, eNB_ue_s1ap_id);
   }
   else {
-    /* If "ue_initial_id" is set there is probably not yet an associated "eNB_ue_s1ap_id" with S1AP */
-    ue_index = get_UE_index_from_initial_id (mod_id, ue_initial_id);
+      /* If "ue_initial_id" is set there is probably not yet an associated "eNB_ue_s1ap_id" with S1AP */
+      ue_index = get_UE_index_from_initial_id (mod_id, ue_initial_id);
   }
 
   return ue_index;
@@ -188,11 +187,11 @@ static e_SecurityAlgorithmConfig__cipheringAlgorithm rrc_eNB_select_ciphering(ui
   return SecurityAlgorithmConfig__cipheringAlgorithm_eea0;
 
   if (algorithms & S1AP_ENCRYPTION_EEA2_MASK) {
-    return SecurityAlgorithmConfig__cipheringAlgorithm_eea2;
+      return SecurityAlgorithmConfig__cipheringAlgorithm_eea2;
   }
 
   if (algorithms & S1AP_ENCRYPTION_EEA1_MASK) {
-    return SecurityAlgorithmConfig__cipheringAlgorithm_eea1;
+      return SecurityAlgorithmConfig__cipheringAlgorithm_eea1;
   }
 
   return SecurityAlgorithmConfig__cipheringAlgorithm_eea0;
@@ -206,11 +205,11 @@ static e_SecurityAlgorithmConfig__cipheringAlgorithm rrc_eNB_select_ciphering(ui
 static e_SecurityAlgorithmConfig__integrityProtAlgorithm rrc_eNB_select_integrity(uint16_t algorithms) {
   
   if (algorithms & S1AP_INTEGRITY_EIA2_MASK) {
-    return SecurityAlgorithmConfig__integrityProtAlgorithm_eia2;
+      return SecurityAlgorithmConfig__integrityProtAlgorithm_eia2;
   }
 
   if (algorithms & S1AP_INTEGRITY_EIA1_MASK) {
-    return SecurityAlgorithmConfig__integrityProtAlgorithm_eia1;
+      return SecurityAlgorithmConfig__integrityProtAlgorithm_eia1;
   }
 
   return INTEGRITY_ALGORITHM_NONE;
@@ -242,14 +241,14 @@ static int rrc_eNB_process_security (uint8_t mod_id, uint8_t ue_index, security_
   /* Select relevant algorithms */
   cipheringAlgorithm = rrc_eNB_select_ciphering (eNB_rrc_inst[mod_id].Info.UE[ue_index].security_capabilities.encryption_algorithms);
   if (eNB_rrc_inst[mod_id].ciphering_algorithm[ue_index] != cipheringAlgorithm) {
-    eNB_rrc_inst[mod_id].ciphering_algorithm[ue_index] = cipheringAlgorithm;
-    changed = TRUE;
+      eNB_rrc_inst[mod_id].ciphering_algorithm[ue_index] = cipheringAlgorithm;
+      changed = TRUE;
   }
 
   integrityProtAlgorithm = rrc_eNB_select_integrity (eNB_rrc_inst[mod_id].Info.UE[ue_index].security_capabilities.integrity_algorithms);
   if (eNB_rrc_inst[mod_id].integrity_algorithm[ue_index] != integrityProtAlgorithm) {
-    eNB_rrc_inst[mod_id].integrity_algorithm[ue_index] = integrityProtAlgorithm;
-    changed = TRUE;
+      eNB_rrc_inst[mod_id].integrity_algorithm[ue_index] = integrityProtAlgorithm;
+      changed = TRUE;
   }
 
   LOG_I (RRC, "[eNB %d][UE %d] Selected security algorithms (%x): %x, %x, %s\n",
@@ -296,13 +295,13 @@ static void rrc_pdcp_config_security(uint8_t enb_mod_idP, uint8_t ue_mod_idP, ui
   /* Derive the keys from kenb */
   if (SRB_configList != NULL) {
     derive_key_up_enc(eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP],
-		      eNB_rrc_inst[enb_mod_idP].kenb[ue_mod_idP], &kUPenc);
+                      eNB_rrc_inst[enb_mod_idP].kenb[ue_mod_idP], &kUPenc);
   }
   
   derive_key_rrc_enc(eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP],
-		     eNB_rrc_inst[enb_mod_idP].kenb[ue_mod_idP], &kRRCenc);
+                     eNB_rrc_inst[enb_mod_idP].kenb[ue_mod_idP], &kRRCenc);
   derive_key_rrc_int(eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP],
-		     eNB_rrc_inst[enb_mod_idP].kenb[ue_mod_idP], &kRRCint);
+                     eNB_rrc_inst[enb_mod_idP].kenb[ue_mod_idP], &kRRCint);
   
 #define DEBUG_SECURITY 1 
  
@@ -313,17 +312,17 @@ static void rrc_pdcp_config_security(uint8_t enb_mod_idP, uint8_t ue_mod_idP, ui
       int i;
       msg("\nKeNB:");
       for(i = 0; i < 32; i++)
-	msg("%02x", eNB_rrc_inst[enb_mod_idP].kenb[ue_mod_idP][i]);
+          msg("%02x", eNB_rrc_inst[enb_mod_idP].kenb[ue_mod_idP][i]);
       msg("\n");
             
       msg("\nKRRCenc:");
       for(i = 0; i < 32; i++)
-	msg("%02x", kRRCenc[i]);
+          msg("%02x", kRRCenc[i]);
       msg("\n");
       
       msg("\nKRRCint:");
       for(i = 0; i < 32; i++)
-	msg("%02x", kRRCint[i]);
+          msg("%02x", kRRCint[i]);
       msg("\n");
       
     }
@@ -807,6 +806,47 @@ int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_REQ (MessageDef *msg_p, const char *
     return (0);
   }
 }
+
+/*------------------------------------------------------------------------------*/
+void rrc_eNB_send_S1AP_UE_CONTEXT_RELEASE_REQ (uint8_t mod_id, uint8_t ue_index, s1ap_Cause_t causeP, long cause_valueP) {
+  uint32_t eNB_ue_s1ap_id;
+
+  if (ue_index == UE_INDEX_INVALID) {
+    LOG_W(RRC,
+            "[eNB] In S1AP_UE_CONTEXT_RELEASE_COMMAND: invalid  UE\n");
+    return (-1);
+  } else {
+      int      e_rab;
+      int      mod_id = 0;
+      eNB_RRC_UE_INFO *UE_info = &eNB_rrc_inst[mod_id].Info.UE[ue_index];
+/*      MessageDef *msg_delete_tunnels_p = NULL;
+
+      msg_delete_tunnels_p = itti_alloc_new_message(TASK_RRC_ENB, GTPV1U_ENB_DELETE_TUNNEL_REQ);
+      memset(&GTPV1U_ENB_DELETE_TUNNEL_REQ(msg_delete_tunnels_p),
+             0,
+             sizeof(GTPV1U_ENB_DELETE_TUNNEL_REQ(msg_delete_tunnels_p)));
+
+      // do not wait response
+      GTPV1U_ENB_DELETE_TUNNEL_REQ(msg_delete_tunnels_p).ue_index = ue_index;
+      for (e_rab = 0; e_rab < UE_info->nb_of_e_rabs; e_rab++) {
+          GTPV1U_ENB_DELETE_TUNNEL_REQ(msg_delete_tunnels_p).eps_bearer_id[e_rab] = UE_info->enb_gtp_ebi[e_rab];
+          // erase data
+          UE_info->enb_gtp_teid[e_rab] = 0;
+          memset(&UE_info->enb_gtp_addrs[e_rab], 0, sizeof(UE_info->enb_gtp_addrs[e_rab]));
+          UE_info->enb_gtp_ebi[e_rab]  = 0;
+      }
+      itti_send_msg_to_task(TASK_GTPV1_U, mod_id, msg_delete_tunnels_p);
+*/
+      MessageDef *msg_complete_p = NULL;
+      msg_complete_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_UE_CONTEXT_RELEASE_REQ);
+      S1AP_UE_CONTEXT_RELEASE_REQ(msg_complete_p).eNB_ue_s1ap_id = UE_info->eNB_ue_s1ap_id;
+      S1AP_UE_CONTEXT_RELEASE_REQ(msg_complete_p).cause          = causeP;
+      S1AP_UE_CONTEXT_RELEASE_REQ(msg_complete_p).cause_value    = cause_valueP;
+      itti_send_msg_to_task(TASK_S1AP, mod_id, msg_complete_p);
+      return (0);
+  }
+}
+
 
 /*------------------------------------------------------------------------------*/
 int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_COMMAND (MessageDef *msg_p, const char *msg_name, instance_t instance) {

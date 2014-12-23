@@ -475,6 +475,7 @@ typedef struct s1ap_paging_ind_s {
     paging_priority_t paging_priority;
 } s1ap_paging_ind_t;
 
+// S1AP --> RRC messages
 typedef struct s1ap_ue_release_command_s {
 
     unsigned eNB_ue_s1ap_id:24;
@@ -483,10 +484,21 @@ typedef struct s1ap_ue_release_command_s {
 
 
 //-------------------------------------------------------------------------------------------//
-// S1AP <-> RRC messages
+typedef enum S1ap_Cause_e {
+    S1AP_CAUSE_NOTHING,  /* No components present */
+    S1AP_CAUSE_RADIO_NETWORK,
+    S1AP_CAUSE_TRANSPORT,
+    S1AP_CAUSE_NAS,
+    S1AP_CAUSE_PROTOCOL,
+    S1AP_CAUSE_MISC,
+    /* Extensions may appear below */
+
+} s1ap_Cause_t;
+// S1AP <-- RRC messages
 typedef struct s1ap_ue_release_req_s {
-    unsigned  eNB_ue_s1ap_id:24;
-    /* TODO: add cause */
+    unsigned      eNB_ue_s1ap_id:24;
+    s1ap_Cause_t  cause;
+    long          cause_value;
 } s1ap_ue_release_req_t, s1ap_ue_release_resp_t;
 
 #endif /* S1AP_MESSAGES_TYPES_H_ */

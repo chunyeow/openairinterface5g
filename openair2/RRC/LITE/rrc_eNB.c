@@ -540,9 +540,18 @@ void rrc_eNB_free_UE_index(
   
   LOG_W(RRC, "[eNB %d] Removing UE %d rv 0x%" PRIx64 "\n", enb_mod_idP, ue_mod_idP,
 	eNB_rrc_inst[enb_mod_idP].Info.UE_list[ue_mod_idP]);
+
+#if defined(ENABLE_USE_MME)
+  rrc_eNB_send_S1AP_UE_CONTEXT_RELEASE_REQ(enb_mod_idP, ue_mod_idP, S1AP_CAUSE_RADIO_NETWORK, 0); // ue_mod_idP ??? or ???
+  /* From 3GPP 36300v10 p129 : 19.2.2.2.2 S1 UE Context Release Request (eNB triggered)
+   * If the E-UTRAN internal reason is a radio link failure detected in the eNB, the eNB shall wait a sufficient time before
+   *  triggering the S1 UE Context Release Request procedure
+   *  in order to allow the UE to perform the NAS recovery
+   *  procedure, see TS 23.401 [17].
+   */
+#endif
   eNB_rrc_inst[enb_mod_idP].Info.UE[ue_mod_idP].Status = RRC_IDLE;
   eNB_rrc_inst[enb_mod_idP].Info.UE_list[ue_mod_idP] = 0;
-
   rrc_rlc_remove_ue(enb_mod_idP, ue_mod_idP, frameP,ENB_FLAG_YES);
   pdcp_remove_UE(enb_mod_idP, ue_mod_idP, frameP);
 

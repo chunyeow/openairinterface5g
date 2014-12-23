@@ -51,7 +51,6 @@
  *\param ue_index Instance ID of UE in the eNB.
  */
 void rrc_eNB_send_S1AP_INITIAL_CONTEXT_SETUP_RESP(uint8_t Mod_id, uint8_t UE_index);
-#   endif
 
 /*! \fn void rrc_eNB_send_S1AP_UPLINK_NAS(uint8_t Mod_id, uint8_t UE_index, UL_DCCH_Message_t *ul_dcch_msg)
  *\brief create a S1AP_UPLINK_NAS to transfer a NAS message to S1AP.
@@ -79,9 +78,19 @@ void rrc_eNB_send_S1AP_UE_CAPABILITIES_IND(uint8_t mod_id, uint8_t ue_index, UL_
 void rrc_eNB_send_S1AP_NAS_FIRST_REQ(uint8_t Mod_id, uint8_t UE_index,
                                      RRCConnectionSetupComplete_r8_IEs_t *rrcConnectionSetupComplete);
 
+
+/*! \fn rrc_eNB_send_S1AP_UE_CONTEXT_RELEASE_REQ(uint8_t Mod_id, uint8_t UE_index, s1ap_Cause_t causeP, long cause_valueP)
+ *\brief create a S1AP_UE_CONTEXT_RELEASE_REQ message, the message is sent by the eNB to S1AP task to request the release of
+the UE-associated S1-logical connection over the S1 interface. .
+ *\param mod_id Instance ID of eNB.
+ *\param ue_index Instance ID of UE in the eNB.
+ *\param causeP   Origin of the cause for the UE removal.
+ *\param cause_valueP Contextual value (in regard of the origin) of the cause.
+ */
+void rrc_eNB_send_S1AP_UE_CONTEXT_RELEASE_REQ (uint8_t mod_id, uint8_t ue_index, s1ap_Cause_t causeP, long cause_valueP);
+
 /* Down link procedures */
 
-#   if defined(ENABLE_ITTI)
 /*! \fn rrc_eNB_process_S1AP_DOWNLINK_NAS(MessageDef *msg_p, const char *msg_name, instance_t instance, mui_t *rrc_eNB_mui)
  *\brief process a S1AP_DOWNLINK_NAS message received from S1AP and transfer the embedded NAS message to UE.
  *\param msg_p Message received by RRC.
