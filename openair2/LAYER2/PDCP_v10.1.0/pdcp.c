@@ -82,10 +82,7 @@ extern int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned in
  * code at targets/TEST/PDCP/test_pdcp.c:test_pdcp_data_req()
  */
 boolean_t pdcp_data_req(
-        const module_id_t    enb_mod_idP,
-        const module_id_t    ue_mod_idP,
-        const frame_t        frameP,
-        const eNB_flag_t     enb_flagP,
+        const protocol_ctxt_t* const  ctxt_pP,
         const srb_flag_t     srb_flagP,
         const rb_id_t        rb_idP,
         const mui_t          muiP,
@@ -105,41 +102,42 @@ boolean_t pdcp_data_req(
   rlc_op_status_t    rlc_status;
   boolean_t          ret             = TRUE;
 
+
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_REQ,VCD_FUNCTION_IN);
 
-  AssertError (enb_mod_idP < NUMBER_OF_eNB_MAX, return FALSE, "eNB id is too high (%u/%d) %u %u!\n", enb_mod_idP, NUMBER_OF_eNB_MAX, ue_mod_idP, rb_idP);
-  AssertError (ue_mod_idP < NUMBER_OF_UE_MAX, return FALSE, "UE id is too high (%u/%d) %u %u!\n", ue_mod_idP, NUMBER_OF_UE_MAX, enb_mod_idP, rb_idP);
+  AssertError (ctxt_pP->enb_module_id < NUMBER_OF_eNB_MAX, return FALSE, "eNB id is too high (%u/%d) %u %u!\n", ctxt_pP->enb_module_id, NUMBER_OF_eNB_MAX, ctxt_pP->ue_module_id, rb_idP);
+  AssertError (ctxt_pP->ue_module_id < NUMBER_OF_UE_MAX, return FALSE, "UE id is too high (%u/%d) %u %u!\n", ctxt_pP->ue_module_id, NUMBER_OF_UE_MAX, ctxt_pP->enb_module_id, rb_idP);
   if (modeP == PDCP_TRANSMISSION_MODE_TRANSPARENT) {
-      AssertError (rb_idP < NB_RB_MBMS_MAX, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_idP, NB_RB_MBMS_MAX, ue_mod_idP, enb_mod_idP);
+      AssertError (rb_idP < NB_RB_MBMS_MAX, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_idP, NB_RB_MBMS_MAX, ctxt_pP->ue_module_id, ctxt_pP->enb_module_id);
   } else {
       if (srb_flagP) {
-          AssertError (rb_idP < 2, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_idP, 2, ue_mod_idP, enb_mod_idP);
+          AssertError (rb_idP < 2, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_idP, 2, ctxt_pP->ue_module_id, ctxt_pP->enb_module_id);
       } else {
-          AssertError (rb_idP < maxDRB, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_idP, maxDRB, ue_mod_idP, enb_mod_idP);
+          AssertError (rb_idP < maxDRB, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_idP, maxDRB, ctxt_pP->ue_module_id, ctxt_pP->enb_module_id);
       }
   }
 
-  if (enb_flagP == ENB_FLAG_NO) {
+  if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
       if (srb_flagP) {
-          pdcp_p = &pdcp_array_srb_ue[ue_mod_idP][rb_idP-1];
+          pdcp_p = &pdcp_array_srb_ue[ctxt_pP->ue_module_id][rb_idP-1];
   } else {
-          pdcp_p = &pdcp_array_drb_ue[ue_mod_idP][rb_idP-1];
+          pdcp_p = &pdcp_array_drb_ue[ctxt_pP->ue_module_id][rb_idP-1];
       }
   } else {
       if (srb_flagP) {
-          pdcp_p = &pdcp_array_srb_eNB[enb_mod_idP][ue_mod_idP][rb_idP-1];
+          pdcp_p = &pdcp_array_srb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][rb_idP-1];
       } else {
-          pdcp_p = &pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][rb_idP-1];
+          pdcp_p = &pdcp_array_drb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][rb_idP-1];
       }
   }
 
   if ((pdcp_p->instanciated_instance == FALSE) && (modeP != PDCP_TRANSMISSION_MODE_TRANSPARENT)) {
-      if (enb_flagP == ENB_FLAG_NO) {
+      if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
           LOG_W(PDCP, "[UE %d] Instance is not configured for eNB %d, rb_id %d Ignoring SDU...\n",
-              ue_mod_idP, enb_mod_idP, rb_idP);
+              ctxt_pP->ue_module_id, ctxt_pP->enb_module_id, rb_idP);
       } else {
           LOG_W(PDCP, "[eNB %d] Instance is not configured for UE %d, rb_id %d Ignoring SDU...\n",
-              enb_mod_idP, ue_mod_idP, rb_idP);
+              ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, rb_idP);
       }
       return FALSE;
   }
@@ -158,10 +156,10 @@ boolean_t pdcp_data_req(
       mac_xface->macphy_exit("PDCP sdu buffer size > MAX_IP_PACKET_SIZE");
   }
 
-  if (enb_flagP == ENB_FLAG_NO)
-    start_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
+  if (ctxt_pP->enb_flag == ENB_FLAG_NO)
+    start_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].data_req);
   else
-    start_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
+    start_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].data_req);
  
    
   // PDCP transparent mode for MBMS traffic
@@ -176,21 +174,21 @@ boolean_t pdcp_data_req(
                                     (unsigned char*)&pdcp_pdu_p->data[0],
                                     sdu_buffer_sizeP);
 #endif
-          rlc_status = rlc_data_req(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, srb_flagP, MBMS_FLAG_YES, rb_idP, muiP, confirmP, sdu_buffer_sizeP, pdcp_pdu_p);
+          rlc_status = rlc_data_req(ctxt_pP, srb_flagP, MBMS_FLAG_YES, rb_idP, muiP, confirmP, sdu_buffer_sizeP, pdcp_pdu_p);
       } else {
         rlc_status = RLC_OP_STATUS_OUT_OF_RESSOURCES;
 	LOG_W(PDCP,"[FRAME %5u][%s][PDCP][MOD %u/%u][RB %u] PDCP_DATA_REQ SDU DROPPED, OUT OF MEMORY \n",
-	      frameP,
-	      (enb_flagP) ? "eNB" : "UE",
-	      enb_mod_idP,
-	      ue_mod_idP,
+	      ctxt_pP->frame,
+	      (ctxt_pP->enb_flag) ? "eNB" : "UE",
+	      ctxt_pP->enb_module_id,
+	      ctxt_pP->ue_module_id,
 	      rb_idP);
 #if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
         AssertFatal(0, "[FRAME %5u][%s][PDCP][MOD %u/%u][RB %u] PDCP_DATA_REQ SDU DROPPED, OUT OF MEMORY \n",
-            frameP,
-            (enb_flagP) ? "eNB" : "UE",
-            enb_mod_idP,
-            ue_mod_idP,
+            ctxt_pP->frame,
+            (ctxt_pP->enb_flag) ? "eNB" : "UE",
+            ctxt_pP->enb_module_id,
+            ctxt_pP->ue_module_id,
             rb_idP);
 #endif
       }
@@ -206,9 +204,9 @@ boolean_t pdcp_data_req(
       pdcp_pdu_size = sdu_buffer_sizeP + pdcp_header_len + pdcp_tailer_len;
 
       LOG_D(PDCP, "Data request notification for PDCP entity %s enb id %u ue_id %u and radio bearer ID %d pdu size %d (header%d, trailer%d)\n",
-          (enb_flagP) ? "eNB" : "UE",
-              enb_mod_idP,
-              ue_mod_idP,
+          (ctxt_pP->enb_flag) ? "eNB" : "UE",
+              ctxt_pP->enb_module_id,
+              ctxt_pP->ue_module_id,
               rb_idP,
               pdcp_pdu_size,
               pdcp_header_len,
@@ -235,10 +233,10 @@ boolean_t pdcp_data_req(
               memset(&pdcp_pdu_p->data[sdu_buffer_sizeP + pdcp_header_len],0,PDCP_CONTROL_PLANE_DATA_PDU_MAC_I_SIZE);
               if (pdcp_serialize_control_plane_data_pdu_with_SRB_sn_buffer((unsigned char*)pdcp_pdu_p->data, &pdu_header) == FALSE) {
                   LOG_E(PDCP, "Cannot fill PDU buffer with relevant header fields!\n");
-                  if (enb_flagP == ENB_FLAG_NO)
-                    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
+                  if (ctxt_pP->enb_flag == ENB_FLAG_NO)
+                    stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].data_req);
                   else
-                    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
+                    stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].data_req);
 		  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_REQ,VCD_FUNCTION_OUT);
                   return FALSE;
               }
@@ -249,10 +247,10 @@ boolean_t pdcp_data_req(
               current_sn = pdu_header.sn ;
               if (pdcp_serialize_user_plane_data_pdu_with_long_sn_buffer((unsigned char*)pdcp_pdu_p->data, &pdu_header) == FALSE) {
                   LOG_E(PDCP, "Cannot fill PDU buffer with relevant header fields!\n");
-                  if (enb_flagP == ENB_FLAG_NO)
-                    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
+                  if (ctxt_pP->enb_flag == ENB_FLAG_NO)
+                    stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].data_req);
                   else
-                    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
+                    stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].data_req);
 		  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_REQ,VCD_FUNCTION_OUT);
                   return FALSE;
               }
@@ -265,10 +263,10 @@ boolean_t pdcp_data_req(
               LOG_E(PDCP, "There must be a problem with PDCP initialization, ignoring this PDU...\n");
 
               free_mem_block(pdcp_pdu_p);
-              if (enb_flagP == ENB_FLAG_NO)
-                stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
+              if (ctxt_pP->enb_flag == ENB_FLAG_NO)
+                stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].data_req);
               else
-                stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
+                stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].data_req);
 	      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_REQ,VCD_FUNCTION_OUT);
               return FALSE;
           }
@@ -289,23 +287,24 @@ boolean_t pdcp_data_req(
               (((pdcp_p->cipheringAlgorithm) != 0) ||
               ((pdcp_p->integrityProtAlgorithm) != 0))) {
 
-              if (enb_flagP == ENB_FLAG_NO)
-                start_meas(&eNB_pdcp_stats[enb_mod_idP].apply_security);
+              if (ctxt_pP->enb_flag == ENB_FLAG_NO)
+                start_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].apply_security);
               else
-                start_meas(&UE_pdcp_stats[ue_mod_idP].apply_security);
+                start_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].apply_security);
 
-              pdcp_apply_security(pdcp_p,
-                      srb_flagP,
-                      rb_idP % maxDRB,
-                      pdcp_header_len,
-                      current_sn,
-                      pdcp_pdu_p->data,
-                      sdu_buffer_sizeP);
+              pdcp_apply_security(ctxt_pP,
+                                  pdcp_p,
+                                  srb_flagP,
+                                  rb_idP % maxDRB,
+                                  pdcp_header_len,
+                                  current_sn,
+                                  pdcp_pdu_p->data,
+                                  sdu_buffer_sizeP);
 
-              if (enb_flagP == ENB_FLAG_NO)
-                stop_meas(&eNB_pdcp_stats[enb_mod_idP].apply_security);
+              if (ctxt_pP->enb_flag == ENB_FLAG_NO)
+                stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].apply_security);
               else
-                stop_meas(&UE_pdcp_stats[ue_mod_idP].apply_security);
+                stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].apply_security);
           }
 
 #endif
@@ -317,16 +316,16 @@ boolean_t pdcp_data_req(
           //util_flush_hex_octets(PDCP, (unsigned char*)pdcp_pdu->data, pdcp_pdu_size);
       } else {
           LOG_E(PDCP, "Cannot create a mem_block for a PDU!\n");
-          if (enb_flagP == ENB_FLAG_NO)
-              stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
+          if (ctxt_pP->enb_flag == ENB_FLAG_NO)
+              stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].data_req);
           else
-              stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
+              stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].data_req);
 #if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
         AssertFatal(0, "[FRAME %5u][%s][PDCP][MOD %u/%u][RB %u] PDCP_DATA_REQ SDU DROPPED, OUT OF MEMORY \n",
-            frameP,
-            (enb_flagP) ? "eNB" : "UE",
-            enb_mod_idP,
-            ue_mod_idP,
+            ctxt_pP->frame,
+            (ctxt_pP->enb_flag) ? "eNB" : "UE",
+            ctxt_pP->enb_module_id,
+            ctxt_pP->ue_module_id,
             rb_idP);
 #endif
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_REQ,VCD_FUNCTION_OUT);
@@ -343,7 +342,7 @@ boolean_t pdcp_data_req(
 	LOG_F(PDCP,"%02x ", ((uint8_t*)pdcp_pdu_p->data)[i]);
       LOG_F(PDCP,"\n");
 #endif 
-      rlc_status = rlc_data_req(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, srb_flagP, MBMS_FLAG_NO, rb_idP, muiP, confirmP, pdcp_pdu_size, pdcp_pdu_p);
+      rlc_status = rlc_data_req(ctxt_pP, srb_flagP, MBMS_FLAG_NO, rb_idP, muiP, confirmP, pdcp_pdu_size, pdcp_pdu_p);
 
   }
   switch (rlc_status) {
@@ -371,17 +370,17 @@ boolean_t pdcp_data_req(
     ret= FALSE;
     break;
   }
-  if (enb_flagP == ENB_FLAG_NO)
-    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
+  if (ctxt_pP->enb_flag == ENB_FLAG_NO)
+    stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].data_req);
   else
-    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
+    stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].data_req);
   /*
    * Control arrives here only if rlc_data_req() returns RLC_OP_STATUS_OK
    * so we return TRUE afterwards
    */
   /*
    if (rb_id>=DTCH) {
-    if (enb_flagP == 1) {
+    if (ctxt_pP->enb_flag == 1) {
       Pdcp_stats_tx[module_id][(rb_id & RAB_OFFSET2 )>> RAB_SHIFT2][(rb_id & RAB_OFFSET)-DTCH]++;
       Pdcp_stats_tx_bytes[module_id][(rb_id & RAB_OFFSET2 )>> RAB_SHIFT2][(rb_id & RAB_OFFSET)-DTCH] += sdu_buffer_size;
     } else {
@@ -396,10 +395,7 @@ boolean_t pdcp_data_req(
 
 
 boolean_t pdcp_data_ind(
-        const module_id_t  enb_mod_idP,
-        const module_id_t  ue_mod_idP,
-        const frame_t      frameP,
-        const eNB_flag_t   enb_flagP,
+        const protocol_ctxt_t* const ctxt_pP,
         const srb_flag_t   srb_flagP,
         const MBMS_flag_t  MBMS_flagP,
         const rb_id_t      rb_idP,
@@ -425,27 +421,27 @@ boolean_t pdcp_data_ind(
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_IN);
 
   #ifdef OAI_EMU
-  if (enb_flagP) {
-      AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+  if (ctxt_pP->enb_flag) {
+      AssertFatal ((ctxt_pP->enb_module_id  == oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
           "eNB module id is too low (%u/%d)!\n",
-          enb_mod_idP,
+          ctxt_pP->enb_module_id,
           oai_emulation.info.first_enb_local);
-      AssertFatal ((enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+      AssertFatal ((ctxt_pP->enb_module_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
           "eNB module id is too high (%u/%d)!\n",
-          enb_mod_idP,
+          ctxt_pP->enb_module_id,
           oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-      AssertFatal (ue_mod_idP  < NB_UE_INST,
+      AssertFatal (ctxt_pP->ue_module_id  < NB_UE_INST,
           "UE module id is too high (%u/%d)!\n",
-          ue_mod_idP,
+          ctxt_pP->ue_module_id,
           oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
   } else {
-      AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+      AssertFatal (ctxt_pP->ue_module_id  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
           "UE module id is too high (%u/%d)!\n",
-          ue_mod_idP,
+          ctxt_pP->ue_module_id,
           oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
-      AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+      AssertFatal (ctxt_pP->ue_module_id  >= oai_emulation.info.first_ue_local,
           "UE module id is too low (%u/%d)!\n",
-          ue_mod_idP,
+          ctxt_pP->ue_module_id,
           oai_emulation.info.first_ue_local);
   }
 #endif
@@ -458,51 +454,51 @@ boolean_t pdcp_data_ind(
 #endif 
 
   if (MBMS_flagP) {
-      AssertError (rb_idP < NB_RB_MBMS_MAX, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_idP, NB_RB_MBMS_MAX, ue_mod_idP, enb_mod_idP);
-      if (enb_flagP == ENB_FLAG_NO) {
+      AssertError (rb_idP < NB_RB_MBMS_MAX, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_idP, NB_RB_MBMS_MAX, ctxt_pP->ue_module_id, ctxt_pP->enb_module_id);
+      if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
           LOG_I(PDCP, "e-MBMS Data indication notification for PDCP entity from eNB %u to UE %u "
-                "and radio bearer ID %d rlc sdu size %d enb_flagP %d\n",
-                enb_mod_idP, ue_mod_idP, rb_idP, sdu_buffer_sizeP, enb_flagP);
+                "and radio bearer ID %d rlc sdu size %d ctxt_pP->enb_flag %d\n",
+                ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, rb_idP, sdu_buffer_sizeP, ctxt_pP->enb_flag);
       } else {
           LOG_I(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
-          "and radio bearer ID %d rlc sdu size %d enb_flagP %d eNB_id %d\n",
-          ue_mod_idP, enb_mod_idP , rb_idP, sdu_buffer_sizeP, enb_flagP, enb_mod_idP);
+          "and radio bearer ID %d rlc sdu size %d ctxt_pP->enb_flag %d eNB_id %d\n",
+          ctxt_pP->ue_module_id, ctxt_pP->enb_module_id , rb_idP, sdu_buffer_sizeP, ctxt_pP->enb_flag, ctxt_pP->enb_module_id);
       }
   } else {
       rb_id = rb_idP % maxDRB;
-      AssertError (rb_id < maxDRB, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_id, maxDRB, ue_mod_idP, enb_mod_idP);
-      AssertError (rb_id > 0, return FALSE, "RB id is too low (%u/%d) %u %u!\n", rb_id, maxDRB, ue_mod_idP, enb_mod_idP);
-      if (enb_flagP == ENB_FLAG_NO) {
+      AssertError (rb_id < maxDRB, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_id, maxDRB, ctxt_pP->ue_module_id, ctxt_pP->enb_module_id);
+      AssertError (rb_id > 0, return FALSE, "RB id is too low (%u/%d) %u %u!\n", rb_id, maxDRB, ctxt_pP->ue_module_id, ctxt_pP->enb_module_id);
+      if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
           if (srb_flagP) {
-              pdcp_p = &pdcp_array_srb_ue[ue_mod_idP][rb_id-1];
+              pdcp_p = &pdcp_array_srb_ue[ctxt_pP->ue_module_id][rb_id-1];
 #if 0
               LOG_D(PDCP, "Data indication notification for PDCP entity from eNB %u to UE %u "
-                    "and signalling radio bearer ID %d rlc sdu size %d enb_flagP %d\n",
-                    enb_mod_idP, ue_mod_idP, rb_id, sdu_buffer_sizeP, enb_flagP);
+                    "and signalling radio bearer ID %d rlc sdu size %d ctxt_pP->enb_flag %d\n",
+                    ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, rb_id, sdu_buffer_sizeP, ctxt_pP->enb_flag);
 #endif
           } else {
-              pdcp_p = &pdcp_array_drb_ue[ue_mod_idP][rb_id-1];
+              pdcp_p = &pdcp_array_drb_ue[ctxt_pP->ue_module_id][rb_id-1];
 #if 0
               LOG_D(PDCP, "Data indication notification for PDCP entity from eNB %u to UE %u "
-                    "and data radio bearer ID %d rlc sdu size %d enb_flagP %d\n",
-                    enb_mod_idP, ue_mod_idP, rb_id, sdu_buffer_sizeP, enb_flagP);
+                    "and data radio bearer ID %d rlc sdu size %d ctxt_pP->enb_flag %d\n",
+                    ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, rb_id, sdu_buffer_sizeP, ctxt_pP->enb_flag);
 #endif
           }
 
       } else {
           if (srb_flagP) {
-              pdcp_p = &pdcp_array_srb_eNB[enb_mod_idP][ue_mod_idP][rb_id-1];
+              pdcp_p = &pdcp_array_srb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][rb_id-1];
 #if 0
               LOG_D(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
-                  "and signalling radio bearer ID %d rlc sdu size %d enb_flagP %d eNB_id %d\n",
-                  ue_mod_idP, enb_mod_idP , rb_id, sdu_buffer_sizeP, enb_flagP, enb_mod_idP);
+                  "and signalling radio bearer ID %d rlc sdu size %d ctxt_pP->enb_flag %d eNB_id %d\n",
+                  ctxt_pP->ue_module_id, ctxt_pP->enb_module_id , rb_id, sdu_buffer_sizeP, ctxt_pP->enb_flag, ctxt_pP->enb_module_id);
 #endif
           } else {
-              pdcp_p = &pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][rb_id-1];
+              pdcp_p = &pdcp_array_drb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][rb_id-1];
 #if 0
               LOG_D(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
-                  "and data radio bearer ID %d rlc sdu size %d enb_flagP %d eNB_id %d\n",
-                  ue_mod_idP, enb_mod_idP , rb_id, sdu_buffer_sizeP, enb_flagP, enb_mod_idP);
+                  "and data radio bearer ID %d rlc sdu size %d ctxt_pP->enb_flag %d eNB_id %d\n",
+                  ctxt_pP->ue_module_id, ctxt_pP->enb_module_id , rb_id, sdu_buffer_sizeP, ctxt_pP->enb_flag, ctxt_pP->enb_module_id);
 #endif
           }
 
@@ -516,10 +512,10 @@ boolean_t pdcp_data_ind(
       return FALSE;
   }
   
-  if (enb_flagP)
-    start_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
+  if (ctxt_pP->enb_flag)
+    start_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].data_ind);
   else
-    start_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);  
+    start_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].data_ind);
 
   /*
    * Parse the PDU placed at the beginning of SDU to check
@@ -552,10 +548,10 @@ boolean_t pdcp_data_ind(
     if (sdu_buffer_sizeP < pdcp_header_len + pdcp_tailer_len ) {
           LOG_W(PDCP, "Incoming (from RLC) SDU is short of size (size:%d)! Ignoring...\n", sdu_buffer_sizeP);
           free_mem_block(sdu_buffer_pP);
-          if (enb_flagP)
-            stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
+          if (ctxt_pP->enb_flag)
+            stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].data_ind);
           else
-            stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+            stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].data_ind);
 	  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_OUT);
           return FALSE;
       }
@@ -569,7 +565,7 @@ boolean_t pdcp_data_ind(
 	 else
 	 LOG_D(PDCP, "Passing piggybacked SDU to RRC ...\n");*/
     } else {
-      LOG_W(PDCP, "Incoming PDU has an unexpected sequence number (%d), RX window snychronisation have probably been lost!\n", sequence_number);
+      LOG_W(PDCP, "Incoming PDU has an unexpected sequence number (%d), RX window synchronisation have probably been lost!\n", sequence_number);
       /*
        * XXX Till we implement in-sequence delivery and duplicate discarding
        * mechanism all out-of-order packets will be delivered to RRC/IP
@@ -586,38 +582,39 @@ boolean_t pdcp_data_ind(
     if (srb_flagP){
 #if defined(ENABLE_SECURITY)
       if (pdcp_p->security_activated == 1) {
-          if (enb_flagP == ENB_FLAG_NO)
-              start_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+          if (ctxt_pP->enb_flag == ENB_FLAG_NO)
+              start_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].validate_security);
           else
-              start_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+              start_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].validate_security);
 
-          pdcp_validate_security(pdcp_p,
+          pdcp_validate_security(ctxt_pP,
+                  pdcp_p,
                   srb_flagP,
                   rb_idP,
                   pdcp_header_len,
                   sequence_number,
                   sdu_buffer_pP->data,
                   sdu_buffer_sizeP - pdcp_tailer_len);
-          if (enb_flagP == ENB_FLAG_NO)
-              stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+          if (ctxt_pP->enb_flag == ENB_FLAG_NO)
+              stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].validate_security);
           else
-              stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+              stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].validate_security);
       }
 #endif
       //rrc_lite_data_ind(module_id, //Modified MW - L2 Interface
-      pdcp_rrc_data_ind(enb_mod_idP,
-              ue_mod_idP,
-              frameP,
-              enb_flagP,
+      pdcp_rrc_data_ind(ctxt_pP->enb_module_id,
+              ctxt_pP->ue_module_id,
+              ctxt_pP->frame,
+              ctxt_pP->enb_flag,
               rb_id,
               sdu_buffer_sizeP - pdcp_header_len - pdcp_tailer_len,
               (uint8_t*)&sdu_buffer_pP->data[pdcp_header_len]);
       free_mem_block(sdu_buffer_pP);
       // free_mem_block(new_sdu);
-      if (enb_flagP)
-          stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
+      if (ctxt_pP->enb_flag)
+          stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].data_ind);
       else
-          stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+          stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].data_ind);
       vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_OUT);
       return TRUE;
     }
@@ -627,22 +624,24 @@ boolean_t pdcp_data_ind(
     payload_offset=pdcp_header_len;// PDCP_USER_PLANE_DATA_PDU_LONG_SN_HEADER_SIZE;
 #if defined(ENABLE_SECURITY)
     if (pdcp_p->security_activated == 1) {
-      if (enb_flagP == ENB_FLAG_NO)
-          start_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+      if (ctxt_pP->enb_flag == ENB_FLAG_NO)
+          start_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].validate_security);
       else
-          start_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+          start_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].validate_security);
       
-      pdcp_validate_security(pdcp_p, 
-              srb_flagP,
-              rb_idP,
-              pdcp_header_len,
-              sequence_number,
-              sdu_buffer_pP->data,
-              sdu_buffer_sizeP - pdcp_tailer_len);
-      if (enb_flagP == ENB_FLAG_NO)
-          stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+      pdcp_validate_security(
+                      ctxt_pP,
+                      pdcp_p,
+                      srb_flagP,
+                      rb_idP,
+                      pdcp_header_len,
+                      sequence_number,
+                      sdu_buffer_pP->data,
+                      sdu_buffer_sizeP - pdcp_tailer_len);
+      if (ctxt_pP->enb_flag == ENB_FLAG_NO)
+          stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].validate_security);
       else
-          stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+          stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].validate_security);
       
     }
     
@@ -666,19 +665,19 @@ boolean_t pdcp_data_ind(
                                 sdu_buffer_sizeP - payload_offset);
 #endif
 
-      src_id = (enb_flagP == ENB_FLAG_NO) ?  enb_mod_idP : ue_mod_idP +   NB_eNB_INST;
-      dst_id = (enb_flagP == ENB_FLAG_NO) ? ue_mod_idP +  NB_eNB_INST: enb_mod_idP;
+      src_id = (ctxt_pP->enb_flag == ENB_FLAG_NO) ?  ctxt_pP->enb_module_id : ctxt_pP->ue_module_id +   NB_eNB_INST;
+      dst_id = (ctxt_pP->enb_flag == ENB_FLAG_NO) ? ctxt_pP->ue_module_id +  NB_eNB_INST: ctxt_pP->enb_module_id;
       ctime = oai_emulation.info.time_ms; // avg current simulation time in ms : we may get the exact time through OCG?
       LOG_D(PDCP, "Check received buffer : enb_flag %d  rab id %d (src %d, dst %d)\n",
-          enb_flagP, rb_id, src_id, dst_id);
+          ctxt_pP->enb_flag, rb_id, src_id, dst_id);
 
       if (otg_rx_pkt(src_id, dst_id,ctime,&sdu_buffer_pP->data[payload_offset],
           sdu_buffer_sizeP - payload_offset ) == 0 ) {
             free_mem_block(sdu_buffer_pP);
-            if (enb_flagP)
-                stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
+            if (ctxt_pP->enb_flag)
+                stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].data_ind);
             else
-                stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+                stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].data_ind);
             vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_OUT);
             return TRUE;
       }
@@ -687,10 +686,10 @@ boolean_t pdcp_data_ind(
   if (otg_enabled==1) {
       LOG_D(OTG,"Discarding received packed\n");
       free_mem_block(sdu_buffer_pP);
-      if (enb_flagP)
-          stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
+      if (ctxt_pP->enb_flag)
+          stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].data_ind);
       else
-          stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+          stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].data_ind);
       vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_OUT);
       return TRUE;
   }
@@ -706,7 +705,7 @@ boolean_t pdcp_data_ind(
    * PDCP header)
    */
 #if defined(LINK_PDCP_TO_GTPV1U)
-  if ((TRUE == enb_flagP) && (FALSE == srb_flagP)) {
+  if ((TRUE == ctxt_pP->enb_flag) && (FALSE == srb_flagP)) {
       //LOG_T(PDCP,"Sending to GTPV1U %d bytes\n", sdu_buffer_sizeP - payload_offset);
       gtpu_buffer_p = itti_malloc(TASK_PDCP_ENB, TASK_GTPV1_U,
                sdu_buffer_sizeP - payload_offset + GTPU_HEADER_OVERHEAD_MAX);
@@ -717,7 +716,7 @@ boolean_t pdcp_data_ind(
       GTPV1U_ENB_TUNNEL_DATA_REQ(message_p).buffer       = gtpu_buffer_p;
       GTPV1U_ENB_TUNNEL_DATA_REQ(message_p).length       = sdu_buffer_sizeP - payload_offset;
       GTPV1U_ENB_TUNNEL_DATA_REQ(message_p).offset       = GTPU_HEADER_OVERHEAD_MAX;
-      GTPV1U_ENB_TUNNEL_DATA_REQ(message_p).ue_index     = ue_mod_idP;
+      GTPV1U_ENB_TUNNEL_DATA_REQ(message_p).ue_index     = ctxt_pP->ue_module_id;
       GTPV1U_ENB_TUNNEL_DATA_REQ(message_p).rab_id       = rb_id + 4;
       itti_send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p);
       packet_forwarded = TRUE;
@@ -740,15 +739,15 @@ boolean_t pdcp_data_ind(
 
           // Here there is no virtualization possible
           // set ((pdcp_data_ind_header_t *) new_sdu_p->data)->inst for IP layer here
-          if (enb_flagP == ENB_FLAG_NO) {
+          if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
               ((pdcp_data_ind_header_t *) new_sdu_p->data)->rb_id = rb_id;
 #if defined(OAI_EMU)
-              ((pdcp_data_ind_header_t *) new_sdu_p->data)->inst  = ue_mod_idP + oai_emulation.info.nb_enb_local - oai_emulation.info.first_ue_local;
+              ((pdcp_data_ind_header_t *) new_sdu_p->data)->inst  = ctxt_pP->ue_module_id + oai_emulation.info.nb_enb_local - oai_emulation.info.first_ue_local;
 #endif
           } else {
-              ((pdcp_data_ind_header_t *) new_sdu_p->data)->rb_id = rb_id + (ue_mod_idP * maxDRB);
+              ((pdcp_data_ind_header_t *) new_sdu_p->data)->rb_id = rb_id + (ctxt_pP->ue_module_id * maxDRB);
 #if defined(OAI_EMU)
-              ((pdcp_data_ind_header_t *) new_sdu_p->data)->inst  = enb_mod_idP - oai_emulation.info.first_enb_local;
+              ((pdcp_data_ind_header_t *) new_sdu_p->data)->inst  = ctxt_pP->enb_module_id - oai_emulation.info.first_enb_local;
 #endif
           }
 
@@ -769,7 +768,7 @@ boolean_t pdcp_data_ind(
            * XXX Following two actions are identical, is there a merge error?
            */
 
-          /*if (enb_flagP == 1) {
+          /*if (ctxt_pP->enb_flag == 1) {
               Pdcp_stats_rx[module_id][(rb_idP & RAB_OFFSET2) >> RAB_SHIFT2][(rb_idP & RAB_OFFSET) - DTCH]++;
               Pdcp_stats_rx_bytes[module_id][(rb_idP & RAB_OFFSET2) >> RAB_SHIFT2][(rb_idP & RAB_OFFSET) - DTCH] += sdu_buffer_sizeP;
             } else {
@@ -781,47 +780,44 @@ boolean_t pdcp_data_ind(
 #if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
 else {
   AssertFatal(0, "[FRAME %5u][%s][PDCP][MOD %u/%u][RB %u] PDCP_DATA_IND SDU DROPPED, OUT OF MEMORY \n",
-        frameP,
-        (enb_flagP) ? "eNB" : "UE",
-        enb_mod_idP,
-        ue_mod_idP,
+        ctxt_pP->frame,
+        (ctxt_pP->enb_flag) ? "eNB" : "UE",
+        ctxt_pP->enb_module_id,
+        ctxt_pP->ue_module_id,
         rb_id);
 }
 #endif
 
   free_mem_block(sdu_buffer_pP);
-  if (enb_flagP)
-    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
+  if (ctxt_pP->enb_flag)
+    stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].data_ind);
   else
-    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+    stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].data_ind);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_OUT);
   return TRUE;
 }
 
 //-----------------------------------------------------------------------------
-void pdcp_run (
-        const frame_t frameP,
-        const eNB_flag_t  enb_flagP,
-        const module_id_t ue_mod_idP,
-        const module_id_t enb_mod_idP) {
+void pdcp_run (const protocol_ctxt_t* const  ctxt_pP) {
   //-----------------------------------------------------------------------------
 #if defined(ENABLE_ITTI)
   MessageDef   *msg_p;
   const char   *msg_name;
   instance_t    instance;
   int           result;
+  protocol_ctxt_t  ctxt;
 #endif
-  if (enb_flagP)
-    start_meas(&eNB_pdcp_stats[enb_mod_idP].pdcp_run);
+  if (ctxt_pP->enb_flag)
+    start_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].pdcp_run);
   else
-    start_meas(&UE_pdcp_stats[ue_mod_idP].pdcp_run);
+    start_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].pdcp_run);
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_IN);
 
 #if defined(ENABLE_ITTI)
   do {
       // Checks if a message has been sent to PDCP sub-task
-      itti_poll_msg (enb_flagP ? TASK_PDCP_ENB : TASK_PDCP_UE, &msg_p);
+      itti_poll_msg (ctxt_pP->enb_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, &msg_p);
 
       if (msg_p != NULL) {
           msg_name = ITTI_MSG_NAME (msg_p);
@@ -829,15 +825,17 @@ void pdcp_run (
 
           switch (ITTI_MSG_ID(msg_p)) {
           case RRC_DCCH_DATA_REQ:
-            LOG_D(PDCP, "Received %s from %s: instance %d, frame %d, enb_flagP %d, rb_id %d, muiP %d, confirmP %d, mode %d\n",
+            LOG_D(PDCP, "Received %s from %s: instance %d, frame %d, ctxt_pP->enb_flag %d, rb_id %d, muiP %d, confirmP %d, mode %d\n",
                 msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
                 RRC_DCCH_DATA_REQ (msg_p).frame, RRC_DCCH_DATA_REQ (msg_p).enb_flag, RRC_DCCH_DATA_REQ (msg_p).rb_id,
                 RRC_DCCH_DATA_REQ (msg_p).muip, RRC_DCCH_DATA_REQ (msg_p).confirmp, RRC_DCCH_DATA_REQ (msg_p).mode);
 
-            result = pdcp_data_req (RRC_DCCH_DATA_REQ (msg_p).eNB_index,
-                RRC_DCCH_DATA_REQ (msg_p).ue_index,
-                RRC_DCCH_DATA_REQ (msg_p).frame,
-                RRC_DCCH_DATA_REQ (msg_p).enb_flag,
+            ctxt.enb_module_id = RRC_DCCH_DATA_REQ (msg_p).eNB_index;
+            ctxt.ue_module_id  = RRC_DCCH_DATA_REQ (msg_p).ue_index;
+            ctxt.frame         = RRC_DCCH_DATA_REQ (msg_p).frame;
+            ctxt.enb_flag      = RRC_DCCH_DATA_REQ (msg_p).enb_flag;
+
+            result = pdcp_data_req (&ctxt,
                 SRB_FLAG_YES,
                 RRC_DCCH_DATA_REQ (msg_p).rb_id,
                 RRC_DCCH_DATA_REQ (msg_p).muip,
@@ -893,53 +891,50 @@ void pdcp_run (
   int               ue_id=0;
   int               read_otg=1;
     // add check for other rb_ids later
-  if (enb_flagP == ENB_FLAG_NO) {
-    if (pdcp_array_drb_ue[ue_mod_idP][drb_id-1].instanciated_instance  != TRUE )
+  if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
+    if (pdcp_array_drb_ue[ctxt_pP->ue_module_id][drb_id-1].instanciated_instance  != TRUE )
       read_otg=0;
   } else {
     for (ue_id=0; ue_id < NB_UE_INST; ue_id++)
-      if (pdcp_array_drb_eNB[enb_mod_idP][ue_id][drb_id-1].instanciated_instance  != TRUE ){
+      if (pdcp_array_drb_eNB[ctxt_pP->enb_module_id][ue_id][drb_id-1].instanciated_instance  != TRUE ){
 	read_otg =0;
 	break;
       }
   }
   if (read_otg == 1 )
-    pdcp_fifo_read_input_sdus_from_otg(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
+    pdcp_fifo_read_input_sdus_from_otg(ctxt_pP);
 #endif
 
   // IP/NAS -> PDCP traffic : TX, read the pkt from the upper layer buffer
 #if defined(LINK_PDCP_TO_GTPV1U)
-  if (enb_flagP == ENB_FLAG_NO)
+  if (ctxt_pP->enb_flag == ENB_FLAG_NO)
 #endif
   {
-      pdcp_fifo_read_input_sdus(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
+      pdcp_fifo_read_input_sdus(ctxt_pP);
   }
   // PDCP -> NAS/IP traffic: RX
-  if (enb_flagP)
-    start_meas(&eNB_pdcp_stats[enb_mod_idP].pdcp_ip);
+  if (ctxt_pP->enb_flag)
+    start_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].pdcp_ip);
   else
-    start_meas(&UE_pdcp_stats[ue_mod_idP].pdcp_ip);
+    start_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].pdcp_ip);
 
-  pdcp_fifo_flush_sdus(frameP, enb_flagP, enb_mod_idP, ue_mod_idP);
+  pdcp_fifo_flush_sdus(ctxt_pP);
 
-  if (enb_flagP)
-    stop_meas(&eNB_pdcp_stats[enb_mod_idP].pdcp_ip);
+  if (ctxt_pP->enb_flag)
+    stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].pdcp_ip);
   else
-    stop_meas(&UE_pdcp_stats[ue_mod_idP].pdcp_ip);
+    stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].pdcp_ip);
 
-  if (enb_flagP)
-    stop_meas(&eNB_pdcp_stats[enb_mod_idP].pdcp_run);
+  if (ctxt_pP->enb_flag)
+    stop_meas(&eNB_pdcp_stats[ctxt_pP->enb_module_id].pdcp_run);
   else
-    stop_meas(&UE_pdcp_stats[ue_mod_idP].pdcp_run);
+    stop_meas(&UE_pdcp_stats[ctxt_pP->ue_module_id].pdcp_run);
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_OUT);
 
 }
 
-boolean_t pdcp_remove_UE(
-			 const module_id_t              enb_mod_idP,
-		         const module_id_t               ue_mod_idP,
-			 const frame_t              frameP) {
+boolean_t pdcp_remove_UE(const protocol_ctxt_t* const  ctxt_pP) {
 
 
   pdcp_t         *pdcp_p         = NULL;
@@ -949,7 +944,7 @@ boolean_t pdcp_remove_UE(
   // check and remove SRBs first
 
   for (srb_id=0;srb_id<2;srb_id++) {
-    pdcp_p = &pdcp_array_srb_eNB[enb_mod_idP][ue_mod_idP][srb_id-1];
+    pdcp_p = &pdcp_array_srb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][srb_id-1];
     if (pdcp_p->instanciated_instance == TRUE) {
       pdcp_p->instanciated_instance = FALSE;
       pdcp_p->lcid = 0;
@@ -977,11 +972,10 @@ boolean_t pdcp_remove_UE(
         free(pdcp_p->kRRCenc);
       }
     }
-
   }
 
   for (drb_id=0;drb_id<maxDRB;drb_id++) {
-    pdcp_p = &pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][drb_id-1];
+    pdcp_p = &pdcp_array_drb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][drb_id-1];
     if (pdcp_p->instanciated_instance == TRUE) {
       pdcp_p->instanciated_instance = FALSE;
       pdcp_p->lcid = 0;
@@ -1018,10 +1012,7 @@ boolean_t pdcp_remove_UE(
 
 
 boolean_t rrc_pdcp_config_asn1_req (
-        const module_id_t               enb_mod_idP,
-        const module_id_t               ue_mod_idP,
-        const frame_t              frameP,
-        const eNB_flag_t           enb_flagP,
+        const protocol_ctxt_t* const  ctxt_pP,
         SRB_ToAddModList_t  *const srb2add_list_pP,
         DRB_ToAddModList_t  *const drb2add_list_pP,
         DRB_ToReleaseList_t *const drb2release_list_pP,
@@ -1056,10 +1047,10 @@ boolean_t rrc_pdcp_config_asn1_req (
   MBMS_SessionInfo_r9_t     *MBMS_SessionInfo_p        = NULL;
 #endif
 
-  if (enb_flagP == ENB_FLAG_NO) {
-      LOG_D(PDCP, "[UE %u] CONFIG REQ ASN1 for eNB %u\n", ue_mod_idP, enb_mod_idP);
+  if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
+      LOG_D(PDCP, "[UE %u] CONFIG REQ ASN1 for eNB %u\n", ctxt_pP->ue_module_id, ctxt_pP->enb_module_id);
   } else {
-      LOG_D(PDCP, "[eNB %u] CONFIG REQ ASN1 for UE %u\n", enb_mod_idP, ue_mod_idP);
+      LOG_D(PDCP, "[eNB %u] CONFIG REQ ASN1 for UE %u\n", ctxt_pP->enb_module_id, ctxt_pP->ue_module_id);
   }
   // srb2add_list does not define pdcp config, we use rlc info to setup the pdcp dcch0 and dcch1 channels
 
@@ -1070,10 +1061,10 @@ boolean_t rrc_pdcp_config_asn1_req (
           rlc_type = RLC_MODE_AM;
           lc_id = srb_id + 2;
 
-          if (enb_flagP == ENB_FLAG_NO) {
-              pdcp_p = &pdcp_array_srb_ue[ue_mod_idP][srb_id-1];
+          if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
+              pdcp_p = &pdcp_array_srb_ue[ctxt_pP->ue_module_id][srb_id-1];
           } else {
-              pdcp_p = &pdcp_array_srb_eNB[enb_mod_idP][ue_mod_idP][srb_id-1];
+              pdcp_p = &pdcp_array_srb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][srb_id-1];
           }
 
 
@@ -1092,24 +1083,22 @@ boolean_t rrc_pdcp_config_asn1_req (
                 case RLC_Config_PR_NOTHING:
                   break;
                 default:
-                  pdcp_config_req_asn1 (pdcp_p,
-                      enb_mod_idP,
-                      ue_mod_idP,
-                      frameP,
-                      enb_flagP, // not really required
-                      SRB_FLAG_YES,
-                      rlc_type,
-                      action,
-                      lc_id,
-                      mch_id,
-                      srb_id,
-                      srb_sn,
-                      0, // drb_report
-                      0, // header compression
-                      security_modeP,
-                      kRRCenc_pP,
-                      kRRCint_pP,
-                      kUPenc_pP);
+                  pdcp_config_req_asn1 (
+                                  ctxt_pP,
+                                  pdcp_p,
+                                  SRB_FLAG_YES,
+                                  rlc_type,
+                                  action,
+                                  lc_id,
+                                  mch_id,
+                                  srb_id,
+                                  srb_sn,
+                                  0, // drb_report
+                                  0, // header compression
+                                  security_modeP,
+                                  kRRCenc_pP,
+                                  kRRCint_pP,
+                                  kUPenc_pP);
                   break;
                 }
                 break;
@@ -1117,7 +1106,7 @@ boolean_t rrc_pdcp_config_asn1_req (
                   // already the default values
                   break;
                 default:
-                  DevParam(srb_toaddmod_p->rlc_Config->present, ue_mod_idP, enb_mod_idP);
+                  DevParam(srb_toaddmod_p->rlc_Config->present, ctxt_pP->ue_module_id, ctxt_pP->enb_module_id);
                   break;
               }
           }
@@ -1135,12 +1124,12 @@ boolean_t rrc_pdcp_config_asn1_req (
           lc_id = drb_id + 2;
 
 
-          DevCheck4(drb_id < maxDRB, drb_id, maxDRB, ue_mod_idP, enb_mod_idP);
+          DevCheck4(drb_id < maxDRB, drb_id, maxDRB, ctxt_pP->ue_module_id, ctxt_pP->enb_module_id);
 
-          if (enb_flagP == ENB_FLAG_NO) {
-              pdcp_p = &pdcp_array_drb_ue[ue_mod_idP][drb_id-1];
+          if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
+              pdcp_p = &pdcp_array_drb_ue[ctxt_pP->ue_module_id][drb_id-1];
           } else {
-              pdcp_p = &pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][drb_id-1];
+              pdcp_p = &pdcp_array_drb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][drb_id-1];
           }
 
           if (pdcp_p->instanciated_instance == TRUE)
@@ -1194,27 +1183,25 @@ boolean_t rrc_pdcp_config_asn1_req (
                 break;
               default:
                 LOG_W(PDCP,"[MOD_id %u/%u][RB %u] unknown drb_toaddmod->PDCP_Config->headerCompression->present \n",
-                    enb_mod_idP, ue_mod_idP, drb_id);
+                    ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, drb_id);
                 break;
               }
-              pdcp_config_req_asn1 (pdcp_p,
-                  enb_mod_idP,
-                  ue_mod_idP,
-                  frameP,
-                  enb_flagP, // not really required
-                  SRB_FLAG_NO,
-                  rlc_type,
-                  action,
-                  lc_id,
-                  mch_id,
-                  drb_id,
-                  drb_sn,
-                  drb_report,
-                  header_compression_profile,
-                  security_modeP,
-                  kRRCenc_pP,
-                  kRRCint_pP,
-                  kUPenc_pP);
+              pdcp_config_req_asn1 (
+                              ctxt_pP,
+                              pdcp_p,
+                              SRB_FLAG_NO,
+                              rlc_type,
+                              action,
+                              lc_id,
+                              mch_id,
+                              drb_id,
+                              drb_sn,
+                              drb_report,
+                              header_compression_profile,
+                              security_modeP,
+                              kRRCenc_pP,
+                              kRRCint_pP,
+                              kUPenc_pP);
           }
       }
   }
@@ -1224,30 +1211,28 @@ boolean_t rrc_pdcp_config_asn1_req (
           pdrb_id_p = drb2release_list_pP->list.array[cnt];
           drb_id =  *pdrb_id_p;
           lc_id = drb_id + 2;
-          if (enb_flagP == ENB_FLAG_NO) {
-              pdcp_p = &pdcp_array_drb_ue[ue_mod_idP][drb_id-1];
+          if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
+              pdcp_p = &pdcp_array_drb_ue[ctxt_pP->ue_module_id][drb_id-1];
           } else {
-              pdcp_p = &pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][drb_id-1];
+              pdcp_p = &pdcp_array_drb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][drb_id-1];
           }
           action = CONFIG_ACTION_REMOVE;
-          pdcp_config_req_asn1 (pdcp_p,
-              enb_mod_idP,
-              ue_mod_idP,
-              frameP,
-              enb_flagP, // not really required
-              SRB_FLAG_NO,
-              rlc_type,
-              action,
-              lc_id,
-              mch_id,
-              drb_id,
-              0,
-              0,
-              0,
-              security_modeP,
-              kRRCenc_pP,
-              kRRCint_pP,
-              kUPenc_pP);
+          pdcp_config_req_asn1 (
+                          ctxt_pP,
+                          pdcp_p,
+                          SRB_FLAG_NO,
+                          rlc_type,
+                          action,
+                          lc_id,
+                          mch_id,
+                          drb_id,
+                          0,
+                          0,
+                          0,
+                          security_modeP,
+                          kRRCenc_pP,
+                          kRRCint_pP,
+                          kUPenc_pP);
       }
   }
 
@@ -1261,16 +1246,16 @@ boolean_t rrc_pdcp_config_asn1_req (
               mch_id = MBMS_SessionInfo_p->tmgi_r9.serviceId_r9.buf[2]; //serviceId is 3-octet string
 
               // can set the mch_id = i
-              if (enb_flagP) {
+              if (ctxt_pP->enb_flag) {
                   drb_id =  (mch_id * maxSessionPerPMCH ) + lc_id ;//+ (maxDRB + 3)*MAX_MOBILES_PER_ENB; // 1
-                  if (pdcp_mbms_array_eNB[enb_mod_idP][mch_id][lc_id].instanciated_instance == TRUE) {
+                  if (pdcp_mbms_array_eNB[ctxt_pP->enb_module_id][mch_id][lc_id].instanciated_instance == TRUE) {
                       action = CONFIG_ACTION_MBMS_MODIFY;
                   }else {
                       action = CONFIG_ACTION_MBMS_ADD;
                   }
               } else {
                   drb_id =  (mch_id * maxSessionPerPMCH ) + lc_id; // + (maxDRB + 3); // 15
-                  if (pdcp_mbms_array_ue[ue_mod_idP][mch_id][lc_id].instanciated_instance == TRUE) {
+                  if (pdcp_mbms_array_ue[ctxt_pP->ue_module_id][mch_id][lc_id].instanciated_instance == TRUE) {
                       action = CONFIG_ACTION_MBMS_MODIFY;
                   } else {
                       action = CONFIG_ACTION_MBMS_ADD;
@@ -1278,24 +1263,21 @@ boolean_t rrc_pdcp_config_asn1_req (
               }
 
               pdcp_config_req_asn1 (
-                  NULL,  // unused for MBMS
-                  enb_mod_idP,
-                  ue_mod_idP,
-                  frameP,
-                  enb_flagP,
-                  SRB_FLAG_NO,
-                  RLC_MODE_NONE,
-                  action,
-                  lc_id,
-                  mch_id,
-                  drb_id,
-                  0,   // unused for MBMS
-                  0,   // unused for MBMS
-                  0,   // unused for MBMS
-                  0,   // unused for MBMS
-                  NULL,  // unused for MBMS
-                  NULL,  // unused for MBMS
-                  NULL); // unused for MBMS
+                              ctxt_pP,
+                              NULL,  // unused for MBMS
+                              SRB_FLAG_NO,
+                              RLC_MODE_NONE,
+                              action,
+                              lc_id,
+                              mch_id,
+                              drb_id,
+                              0,   // unused for MBMS
+                              0,   // unused for MBMS
+                              0,   // unused for MBMS
+                              0,   // unused for MBMS
+                              NULL,  // unused for MBMS
+                              NULL,  // unused for MBMS
+                              NULL); // unused for MBMS
           }
       }
   }
@@ -1305,31 +1287,30 @@ boolean_t rrc_pdcp_config_asn1_req (
 
 }
 
-boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
-    module_id_t     enb_mod_idP,
-    module_id_t     ue_mod_idP,
-    frame_t         frameP,
-    eNB_flag_t      enb_flagP,
-    srb_flag_t      srb_flagP,
-    rlc_mode_t      rlc_modeP,
-    config_action_t actionP,
-    uint16_t        lc_idP,
-    uint16_t        mch_idP,
-    rb_id_t         rb_idP,
-    uint8_t         rb_snP,
-    uint8_t         rb_reportP,
-    uint16_t        header_compression_profileP,
-    uint8_t         security_modeP,
-    uint8_t         *kRRCenc_pP,
-    uint8_t         *kRRCint_pP,
-    uint8_t         *kUPenc_pP)
+boolean_t
+pdcp_config_req_asn1 (
+    const protocol_ctxt_t* const  ctxt_pP,
+    pdcp_t         * const        pdcp_pP,
+    const srb_flag_t              srb_flagP,
+    const rlc_mode_t              rlc_modeP,
+    const config_action_t         actionP,
+    const uint16_t                lc_idP,
+    const uint16_t                mch_idP,
+    const rb_id_t                 rb_idP,
+    const uint8_t                 rb_snP,
+    const uint8_t                 rb_reportP,
+    const uint16_t                header_compression_profileP,
+    const uint8_t                 security_modeP,
+    uint8_t         *const        kRRCenc_pP,
+    uint8_t         *const        kRRCint_pP,
+    uint8_t         *const        kUPenc_pP)
 {
 
   switch (actionP) {
   case CONFIG_ACTION_ADD:
     DevAssert(pdcp_pP != NULL);
     pdcp_pP->instanciated_instance      = TRUE;
-    pdcp_pP->is_ue                      = (enb_flagP == ENB_FLAG_NO) ? TRUE : FALSE;
+    pdcp_pP->is_ue                      = (ctxt_pP->enb_flag == ENB_FLAG_NO) ? TRUE : FALSE;
     pdcp_pP->is_srb                     = (srb_flagP == SRB_FLAG_YES) ? TRUE : FALSE;
     pdcp_pP->lcid                       = lc_idP;
     pdcp_pP->rb_id                      = rb_idP;
@@ -1355,24 +1336,32 @@ boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
     pdcp_pP->first_missing_pdu                = -1;
     pdcp_pP->rx_hfn_offset                    = 0;
     
-    if (enb_flagP == ENB_FLAG_NO) {
+    if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
         LOG_I(PDCP, "[UE %d] Config request : Action ADD for eNB %d: Frame %d LCID %d (rb id %d) "
             "configured with SN size %d bits and RLC %s\n",
-            ue_mod_idP, enb_mod_idP, frameP, lc_idP, rb_idP, pdcp_pP->seq_num_size,
+            ctxt_pP->ue_module_id, ctxt_pP->enb_module_id, ctxt_pP->frame, lc_idP, rb_idP, pdcp_pP->seq_num_size,
             (rlc_modeP == RLC_MODE_AM ) ? "AM" : (rlc_modeP == RLC_MODE_TM) ? "TM" : "UM");
     } else {
         LOG_D(PDCP, "[eNB %d] Config request : Action ADD for UE %d: Frame %d LCID %d (rb id %d) "
             "configured with SN size %d bits and RLC %s\n",
-            enb_mod_idP, ue_mod_idP, frameP, lc_idP, rb_idP, pdcp_pP->seq_num_size,
+            ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, ctxt_pP->frame, lc_idP, rb_idP, pdcp_pP->seq_num_size,
             (rlc_modeP == RLC_MODE_AM) ? "AM" : (rlc_modeP == RLC_MODE_TM) ? "TM" : "UM");
     }
 
     /* Setup security */
     if (security_modeP != 0xff) {
-        pdcp_config_set_security(pdcp_pP, enb_mod_idP, ue_mod_idP, frameP, enb_flagP, rb_idP, lc_idP, security_modeP, kRRCenc_pP, kRRCint_pP, kUPenc_pP);
+        pdcp_config_set_security(
+                        ctxt_pP,
+                        pdcp_pP,
+                        rb_idP,
+                        lc_idP,
+                        security_modeP,
+                        kRRCenc_pP,
+                        kRRCint_pP,
+                        kUPenc_pP);
     }
 
-    LOG_D(PDCP, "[FRAME %5u][%s][PDCP][MOD %u/%u][RB %u]\n", frameP, (enb_flagP == ENB_FLAG_NO) ? "UE" : "eNB",  enb_mod_idP, ue_mod_idP, rb_idP);
+    LOG_D(PDCP, "[FRAME %5u][%s][PDCP][MOD %u/%u][RB %u]\n", ctxt_pP->frame, (ctxt_pP->enb_flag == ENB_FLAG_NO) ? "UE" : "eNB",  ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, rb_idP);
     break;
 
   case CONFIG_ACTION_MODIFY:
@@ -1383,7 +1372,15 @@ boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
 
     /* Setup security */
     if (security_modeP != 0xff) {
-        pdcp_config_set_security(pdcp_pP, enb_mod_idP, ue_mod_idP, frameP, enb_flagP, rb_idP, lc_idP, security_modeP, kRRCenc_pP, kRRCint_pP, kUPenc_pP);
+        pdcp_config_set_security(
+                        ctxt_pP,
+                        pdcp_pP,
+                        rb_idP,
+                        lc_idP,
+                        security_modeP,
+                        kRRCenc_pP,
+                        kRRCint_pP,
+                        kUPenc_pP);
     }
 
     if (rb_snP == PDCP_Config__rlc_UM__pdcp_SN_Size_len7bits) {
@@ -1394,15 +1391,15 @@ boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
         pdcp_pP->seq_num_size=5;
     }
 
-    if (enb_flagP == ENB_FLAG_NO) {
+    if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
         LOG_I(PDCP,"[UE %d] Config request : Action MODIFY for eNB %d: Frame %d LCID %d "
             "RB id %d configured with SN size %d and RLC %s \n",
-            ue_mod_idP, enb_mod_idP, frameP, lc_idP, rb_idP, rb_snP,
+            ctxt_pP->ue_module_id, ctxt_pP->enb_module_id, ctxt_pP->frame, lc_idP, rb_idP, rb_snP,
             (rlc_modeP == RLC_MODE_AM) ? "AM" : (rlc_modeP == RLC_MODE_TM) ? "TM" : "UM");
     } else {
         LOG_D(PDCP,"[eNB %d] Config request : Action MODIFY for UE %d: Frame %d LCID %d "
             "RB id %d configured with SN size %d and RLC %s \n",
-            enb_mod_idP, ue_mod_idP, frameP, lc_idP, rb_idP, rb_snP,
+            ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, ctxt_pP->frame, lc_idP, rb_idP, rb_snP,
             (rlc_modeP == RLC_MODE_AM) ? "AM" : (rlc_modeP == RLC_MODE_TM) ? "TM" : "UM");
     }
     break;
@@ -1424,12 +1421,12 @@ boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
     pdcp_pP->first_missing_pdu = -1;
     pdcp_pP->security_activated = 0;
 
-    if (enb_flagP == ENB_FLAG_NO) {
+    if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
         LOG_I(PDCP, "[UE %d] Config request : CONFIG_ACTION_REMOVE for eNB %d: Frame %d LCID %d RBID %d configured\n",
-            ue_mod_idP, enb_mod_idP, frameP, lc_idP, rb_idP);
+            ctxt_pP->ue_module_id, ctxt_pP->enb_module_id, ctxt_pP->frame, lc_idP, rb_idP);
     } else {
         LOG_D(PDCP, "[eNB %d] Config request : CONFIG_ACTION_REMOVE for UE %d: Frame %d LCID %d RBID %d configured\n",
-            enb_mod_idP, ue_mod_idP, frameP, lc_idP, rb_idP);
+            ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, ctxt_pP->frame, lc_idP, rb_idP);
     }
     /* Security keys */
     if (pdcp_pP->kUPenc != NULL) {
@@ -1445,43 +1442,49 @@ boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
 #if defined(Rel10)
   case CONFIG_ACTION_MBMS_ADD:
   case CONFIG_ACTION_MBMS_MODIFY:
-    if (enb_flagP == ENB_FLAG_NO) {
+    if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
         LOG_I(PDCP,"[UE %d] Config request for eNB %d: %s: Frame %d service_id/mch index %d, session_id/lcid %d, rbid %d configured\n",
-            ue_mod_idP, enb_mod_idP, actionP == CONFIG_ACTION_MBMS_ADD ? "CONFIG_ACTION_MBMS_ADD" : "CONFIG_ACTION_MBMS_MODIFY", frameP, mch_idP, lc_idP, rb_idP);
+            ctxt_pP->ue_module_id, ctxt_pP->enb_module_id, actionP == CONFIG_ACTION_MBMS_ADD ? "CONFIG_ACTION_MBMS_ADD" : "CONFIG_ACTION_MBMS_MODIFY", ctxt_pP->frame, mch_idP, lc_idP, rb_idP);
     } else {
         LOG_D(PDCP,"[eNB %d] Config request for UE %d: %s: Frame %d service_id/mch index %d, session_id/lcid %d, rbid %d configured\n",
-            enb_mod_idP, ue_mod_idP, actionP == CONFIG_ACTION_MBMS_ADD ? "CONFIG_ACTION_MBMS_ADD" : "CONFIG_ACTION_MBMS_MODIFY", frameP, mch_idP, lc_idP, rb_idP);
+            ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, actionP == CONFIG_ACTION_MBMS_ADD ? "CONFIG_ACTION_MBMS_ADD" : "CONFIG_ACTION_MBMS_MODIFY", ctxt_pP->frame, mch_idP, lc_idP, rb_idP);
     }
-    if (enb_flagP == 1) {
-        pdcp_mbms_array_eNB[enb_mod_idP][mch_idP][lc_idP].instanciated_instance = TRUE ;
-        pdcp_mbms_array_eNB[enb_mod_idP][mch_idP][lc_idP].rb_id = rb_idP;
+    if (ctxt_pP->enb_flag == 1) {
+        pdcp_mbms_array_eNB[ctxt_pP->enb_module_id][mch_idP][lc_idP].instanciated_instance = TRUE ;
+        pdcp_mbms_array_eNB[ctxt_pP->enb_module_id][mch_idP][lc_idP].rb_id = rb_idP;
     } else {
-        pdcp_mbms_array_ue[ue_mod_idP][mch_idP][lc_idP].instanciated_instance = TRUE ;
-        pdcp_mbms_array_ue[ue_mod_idP][mch_idP][lc_idP].rb_id = rb_idP;
+        pdcp_mbms_array_ue[ctxt_pP->ue_module_id][mch_idP][lc_idP].instanciated_instance = TRUE ;
+        pdcp_mbms_array_ue[ctxt_pP->ue_module_id][mch_idP][lc_idP].rb_id = rb_idP;
     }
     break;
 #endif
   case CONFIG_ACTION_SET_SECURITY_MODE:
-    pdcp_config_set_security(pdcp_pP, enb_mod_idP, ue_mod_idP, frameP, enb_flagP, rb_idP, lc_idP, security_modeP, kRRCenc_pP, kRRCint_pP, kUPenc_pP);
+    pdcp_config_set_security(
+                    ctxt_pP,
+                    pdcp_pP,
+                    rb_idP,
+                    lc_idP,
+                    security_modeP,
+                    kRRCenc_pP,
+                    kRRCint_pP,
+                    kUPenc_pP);
     break;
   default:
-    DevParam(actionP, enb_mod_idP, ue_mod_idP);
+    DevParam(actionP, ctxt_pP->enb_module_id, ctxt_pP->ue_module_id);
     break;
   }
   return 0;
 }
 
-void pdcp_config_set_security(pdcp_t    *pdcp_pP,
-    module_id_t     enb_mod_idP,
-    module_id_t     ue_mod_idP,
-    frame_t    frameP,
-    eNB_flag_t enb_flagP,
-    rb_id_t    rb_idP,
-    uint16_t        lc_idP,
-    uint8_t         security_modeP,
-    uint8_t        *kRRCenc,
-    uint8_t        *kRRCint,
-    uint8_t        *kUPenc)
+void pdcp_config_set_security(
+    const protocol_ctxt_t* const  ctxt_pP,
+    pdcp_t         * const pdcp_pP,
+    const rb_id_t         rb_idP,
+    const uint16_t        lc_idP,
+    const uint8_t         security_modeP,
+    uint8_t        * const kRRCenc,
+    uint8_t        * const kRRCint,
+    uint8_t        * const  kUPenc)
 {
   DevAssert(pdcp_pP != NULL);
 
@@ -1489,21 +1492,21 @@ void pdcp_config_set_security(pdcp_t    *pdcp_pP,
       pdcp_pP->cipheringAlgorithm     = security_modeP & 0x0f;
       pdcp_pP->integrityProtAlgorithm = (security_modeP>>4) & 0xf;
 
-      if (enb_flagP == ENB_FLAG_NO) {
+      if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
           LOG_D(PDCP,"[UE %d][RB %02d] Set security mode : CONFIG_ACTION_SET_SECURITY_MODE: "
               "Frame %d  cipheringAlgorithm %d integrityProtAlgorithm %d\n",
-              ue_mod_idP,
+              ctxt_pP->ue_module_id,
               rb_idP,
-              frameP,
+              ctxt_pP->frame,
               pdcp_pP->cipheringAlgorithm,
               pdcp_pP->integrityProtAlgorithm);
       } else {
           LOG_D(PDCP,"[eNB %d][UE %d][RB %02d] Set security mode : CONFIG_ACTION_SET_SECURITY_MODE: "
               "Frame %d  cipheringAlgorithm %d integrityProtAlgorithm %d\n",
-              enb_mod_idP,
-              ue_mod_idP,
+              ctxt_pP->enb_module_id,
+              ctxt_pP->ue_module_id,
               rb_idP,
-              frameP,
+              ctxt_pP->frame,
               pdcp_pP->cipheringAlgorithm,
               pdcp_pP->integrityProtAlgorithm);
       }
@@ -1518,21 +1521,27 @@ void pdcp_config_set_security(pdcp_t    *pdcp_pP,
   }
 }
 
-void rrc_pdcp_config_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, srb_flag_t srb_flagP, uint32_t actionP, rb_id_t rb_idP, uint8_t security_modeP)
+void
+rrc_pdcp_config_req (
+                const protocol_ctxt_t* const  ctxt_pP,
+                const srb_flag_t srb_flagP,
+                const uint32_t actionP,
+                const rb_id_t rb_idP,
+                const uint8_t security_modeP)
 {
   pdcp_t *pdcp_p = NULL;
 
-  if (enb_flagP == ENB_FLAG_NO) {
+  if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
       if (srb_flagP) {
-          pdcp_p = &pdcp_array_srb_ue[ue_mod_idP][rb_idP-1];
+          pdcp_p = &pdcp_array_srb_ue[ctxt_pP->ue_module_id][rb_idP-1];
       } else {
-          pdcp_p = &pdcp_array_drb_ue[ue_mod_idP][rb_idP-1];
+          pdcp_p = &pdcp_array_drb_ue[ctxt_pP->ue_module_id][rb_idP-1];
       }
   } else {
       if (srb_flagP) {
-          pdcp_p = &pdcp_array_srb_eNB[enb_mod_idP][ue_mod_idP][rb_idP-1];
+          pdcp_p = &pdcp_array_srb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][rb_idP-1];
       } else {
-          pdcp_p = &pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][rb_idP-1];
+          pdcp_p = &pdcp_array_drb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][rb_idP-1];
       }
   }
 
@@ -1544,7 +1553,7 @@ void rrc_pdcp_config_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame
     pdcp_p->instanciated_instance = TRUE;
     pdcp_p->is_srb = srb_flagP;
     pdcp_p->rb_id  = rb_idP;
-    if (enb_flagP == ENB_FLAG_NO) {
+    if (ctxt_pP->enb_flag == ENB_FLAG_NO) {
         pdcp_p->is_ue = TRUE;
     } else {
         pdcp_p->is_ue = FALSE;
@@ -1564,7 +1573,7 @@ void rrc_pdcp_config_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame
     }
     pdcp_p->first_missing_pdu = -1;
     LOG_D(PDCP,"[%s %d] Config request : Action ADD: Frame %d radio bearer id %d configured\n",
-        (enb_flagP) ? "eNB" : "UE", (enb_flagP) ? enb_mod_idP : ue_mod_idP, frameP, rb_idP);
+        (ctxt_pP->enb_flag) ? "eNB" : "UE", (ctxt_pP->enb_flag) ? ctxt_pP->enb_module_id : ctxt_pP->ue_module_id, ctxt_pP->frame, rb_idP);
     break;
   case CONFIG_ACTION_MODIFY:
     break;
@@ -1579,7 +1588,7 @@ void rrc_pdcp_config_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame
     pdcp_p->first_missing_pdu = -1;
     pdcp_p->security_activated = 0;
     LOG_D(PDCP,"[%s %d] Config request : CONFIG_ACTION_REMOVE: Frame %d radio bearer id %d configured\n",
-        (enb_flagP) ? "eNB" : "UE",  (enb_flagP) ? enb_mod_idP : ue_mod_idP, frameP, rb_idP);
+        (ctxt_pP->enb_flag) ? "eNB" : "UE",  (ctxt_pP->enb_flag) ? ctxt_pP->enb_module_id : ctxt_pP->ue_module_id, ctxt_pP->frame, rb_idP);
 
     break;
   case CONFIG_ACTION_SET_SECURITY_MODE:
@@ -1587,7 +1596,7 @@ void rrc_pdcp_config_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame
         pdcp_p->cipheringAlgorithm= security_modeP & 0x0f;
         pdcp_p->integrityProtAlgorithm = (security_modeP>>4) & 0xf;
         LOG_D(PDCP,"[%s %d]Set security mode : CONFIG_ACTION_SET_SECURITY_MODE: Frame %d  cipheringAlgorithm %d integrityProtAlgorithm %d\n",
-            (enb_flagP) ? "eNB" : "UE",  (enb_flagP) ? enb_mod_idP : ue_mod_idP, frameP,
+            (ctxt_pP->enb_flag) ? "eNB" : "UE",  (ctxt_pP->enb_flag) ? ctxt_pP->enb_module_id : ctxt_pP->ue_module_id, ctxt_pP->frame,
                 pdcp_p->cipheringAlgorithm,
                 pdcp_p->integrityProtAlgorithm );
     } else {
@@ -1595,7 +1604,7 @@ void rrc_pdcp_config_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame
     }
     break;
   default:
-    DevParam(actionP, ue_mod_idP, enb_mod_idP);
+    DevParam(actionP, ctxt_pP->ue_module_id, ctxt_pP->enb_module_id);
     break;
   }
 }

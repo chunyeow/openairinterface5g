@@ -291,7 +291,8 @@ static void rrc_pdcp_config_security(uint8_t enb_mod_idP, uint8_t ue_mod_idP, ui
   uint8_t                            *kRRCint = NULL;
   uint8_t                            *kUPenc = NULL;
   pdcp_t                             *pdcp_p   = NULL;
-  static int                         print_keys= 1;
+  static int                          print_keys= 1;
+  protocol_ctxt_t                     ctxt;
   /* Derive the keys from kenb */
   if (SRB_configList != NULL) {
     derive_key_up_enc(eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP],
@@ -330,21 +331,23 @@ static void rrc_pdcp_config_security(uint8_t enb_mod_idP, uint8_t ue_mod_idP, ui
 
 
     pdcp_p = &pdcp_array_srb_eNB[enb_mod_idP][ue_mod_idP][DCCH-1];
-    
-    pdcp_config_set_security(pdcp_p,
-        enb_mod_idP,
-        ue_mod_idP,
-        0,
-        ENB_FLAG_YES,
-        DCCH,
-        DCCH+2,
-        (send_security_mode_command == TRUE)  ?
-            0 | (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4) :
-            (eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP] )         |
-            (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4),
-        kRRCenc,
-        kRRCint,
-        kUPenc);
+
+    ctxt.enb_module_id = enb_mod_idP;
+    ctxt.ue_module_id  = ue_mod_idP;
+    ctxt.frame         = 0;
+    ctxt.enb_flag      = ENB_FLAG_YES;
+    pdcp_config_set_security(
+                    &ctxt,
+                    pdcp_p,
+                    DCCH,
+                    DCCH+2,
+                    (send_security_mode_command == TRUE)  ?
+                                    0 | (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4) :
+                                    (eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP] )         |
+                                    (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4),
+                    kRRCenc,
+                    kRRCint,
+                    kUPenc);
 #endif
 }
 

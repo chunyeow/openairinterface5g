@@ -41,8 +41,8 @@
 //#define TRACE_RLC_AM_ACK
 //-----------------------------------------------------------------------------
 void rlc_am_nack_pdu (
+        const protocol_ctxt_t* const  ctxt_pP,
         rlc_am_entity_t *const rlc_pP,
-        const frame_t frameP,
         const rlc_sn_t snP,
         const sdu_size_t so_startP,
         const sdu_size_t so_endP)
@@ -74,25 +74,25 @@ void rlc_am_nack_pdu (
         // increasing order among calls refering to only one status PDU
         //  and among time
         //-----------------------------------------
-        if (rlc_pP->pdu_retrans_buffer[snP].last_nack_time != frameP) {
-            rlc_pP->pdu_retrans_buffer[snP].last_nack_time = frameP;
-            rlc_am_clear_holes(rlc_pP, snP);
+        if (rlc_pP->pdu_retrans_buffer[snP].last_nack_time != ctxt_pP->frame) {
+            rlc_pP->pdu_retrans_buffer[snP].last_nack_time = ctxt_pP->frame;
+            rlc_am_clear_holes(ctxt_pP, rlc_pP, snP);
         }
         if (!((so_startP == 0) && (so_endP == 0x7FFF))) {
             rlc_pP->num_nack_so += 1;
         }
-        rlc_am_add_hole(rlc_pP, frameP, snP, so_startP, so_endP);
+        rlc_am_add_hole(ctxt_pP, rlc_pP, snP, so_startP, so_endP);
 
         if (rlc_pP->first_retrans_pdu_sn < 0) {
             rlc_pP->first_retrans_pdu_sn = snP;
-        } else if (rlc_am_tx_sn1_gt_sn2(rlc_pP, rlc_pP->first_retrans_pdu_sn, snP)){
+        } else if (rlc_am_tx_sn1_gt_sn2(ctxt_pP, rlc_pP, rlc_pP->first_retrans_pdu_sn, snP)){
             rlc_pP->first_retrans_pdu_sn = snP;
         }
         LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][NACK-PDU] NACK PDU SN %04d previous retx_count %d  1ST_RETRANS_PDU %04d\n",
-                frameP,
-                (rlc_pP->is_enb) ? "eNB" : "UE",
-                rlc_pP->enb_module_id,
-                rlc_pP->ue_module_id,
+                ctxt_pP->frame,
+                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                ctxt_pP->enb_module_id,
+                ctxt_pP->ue_module_id,
                 rlc_pP->rb_id,
                 snP,
                 rlc_pP->pdu_retrans_buffer[snP].retx_count,
@@ -116,20 +116,20 @@ void rlc_am_nack_pdu (
                     #ifdef TEST_RLC_AM
                     rlc_am_v9_3_0_test_data_conf (rlc_pP->module_id, rlc_pP->rb_id, rlc_pP->input_sdus[sdu_index].mui, RLC_SDU_CONFIRM_NO);
                     #else
-                    rlc_data_conf(rlc_pP->enb_module_id, rlc_pP->ue_module_id, frameP, rlc_pP->is_enb, rlc_pP->rb_id, rlc_pP->input_sdus[sdu_index].mui, RLC_SDU_CONFIRM_NO, rlc_pP->is_data_plane);
+                    rlc_data_conf(ctxt_pP, rlc_pP->rb_id, rlc_pP->input_sdus[sdu_index].mui, RLC_SDU_CONFIRM_NO, rlc_pP->is_data_plane);
                     #endif
                     rlc_pP->stat_tx_pdcp_sdu_discarded   += 1;
                     rlc_pP->stat_tx_pdcp_bytes_discarded += rlc_pP->input_sdus[sdu_index].sdu_size;
-                    rlc_am_free_in_sdu(rlc_pP, frameP, sdu_index);
+                    rlc_am_free_in_sdu(ctxt_pP, rlc_pP, sdu_index);
                 }
             }
         }
     } else {
         LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][NACK-PDU] ERROR NACK MISSING PDU SN %05d\n",
-              frameP,
-              (rlc_pP->is_enb) ? "eNB" : "UE",
-              rlc_pP->enb_module_id,
-              rlc_pP->ue_module_id,
+              ctxt_pP->frame,
+              (ctxt_pP->enb_flag) ? "eNB" : "UE",
+              ctxt_pP->enb_module_id,
+              ctxt_pP->ue_module_id,
               rlc_pP->rb_id,
               snP);
         //assert(2==3);
@@ -137,9 +137,9 @@ void rlc_am_nack_pdu (
 }
 //-----------------------------------------------------------------------------
 void rlc_am_ack_pdu (
-        rlc_am_entity_t *const rlc_pP,
-        const frame_t frameP,
-        const rlc_sn_t snP)
+                const protocol_ctxt_t* const  ctxt_pP,
+                rlc_am_entity_t *const rlc_pP,
+                const rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
     mem_block_t* mb_p         = rlc_pP->pdu_retrans_buffer[snP].mem_block;
@@ -153,10 +153,10 @@ void rlc_am_ack_pdu (
         free_mem_block(mb_p);
         rlc_pP->pdu_retrans_buffer[snP].mem_block = NULL;
         LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][ACK-PDU] ACK PDU SN %05d previous retx_count %d \n",
-              frameP,
-              (rlc_pP->is_enb) ? "eNB" : "UE",
-              rlc_pP->enb_module_id,
-              rlc_pP->ue_module_id,
+              ctxt_pP->frame,
+              (ctxt_pP->enb_flag) ? "eNB" : "UE",
+              ctxt_pP->enb_module_id,
+              ctxt_pP->ue_module_id,
               rlc_pP->rb_id,
               snP,
               rlc_pP->pdu_retrans_buffer[snP].retx_count);
@@ -182,16 +182,13 @@ void rlc_am_ack_pdu (
                         RLC_SDU_CONFIRM_YES);
 #else
                 rlc_data_conf(
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
-                        frameP,
-                        rlc_pP->is_enb,
+                        ctxt_pP,
                         rlc_pP->rb_id,
                         rlc_pP->input_sdus[sdu_index].mui,
                         RLC_SDU_CONFIRM_YES,
                         rlc_pP->is_data_plane);
 #endif
-                rlc_am_free_in_sdu(rlc_pP, frameP, sdu_index);
+                rlc_am_free_in_sdu(ctxt_pP, rlc_pP, sdu_index);
             }
         }
         // 7.1...
@@ -213,10 +210,10 @@ void rlc_am_ack_pdu (
 
             rlc_pP->vt_ms   = (rlc_pP->vt_a + RLC_AM_WINDOW_SIZE) & RLC_AM_SN_MASK;
             LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][ACK-PDU] UPDATED VT(A) %04d VT(MS) %04d  VT(S) %04d\n",
-                  frameP,
-                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   rlc_pP->rb_id,
                   rlc_pP->vt_a,
                   rlc_pP->vt_ms,
@@ -227,10 +224,10 @@ void rlc_am_ack_pdu (
                 rlc_pP->first_retrans_pdu_sn = (rlc_pP->first_retrans_pdu_sn  + 1) & RLC_AM_SN_MASK;
                 if (rlc_pP->pdu_retrans_buffer[rlc_pP->first_retrans_pdu_sn].retx_count >= 0) {
                     LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][ACK-PDU] UPDATED  first_retrans_pdu_sn -> %04d\n",
-                          frameP,
-                          (rlc_pP->is_enb) ? "eNB" : "UE",
-                          rlc_pP->enb_module_id,
-                          rlc_pP->ue_module_id,
+                          ctxt_pP->frame,
+                          (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                          ctxt_pP->enb_module_id,
+                          ctxt_pP->ue_module_id,
                           rlc_pP->rb_id,
                           rlc_pP->first_retrans_pdu_sn);
                     break;
@@ -239,20 +236,20 @@ void rlc_am_ack_pdu (
             if (rlc_pP->vt_s == rlc_pP->first_retrans_pdu_sn) {
                 rlc_pP->first_retrans_pdu_sn = -1;
                 LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][ACK-PDU] UPDATED  first_retrans_pdu_sn -> %04d\n",
-                      frameP,
-                      (rlc_pP->is_enb) ? "eNB" : "UE",
-                      rlc_pP->enb_module_id,
-                      rlc_pP->ue_module_id,
+                      ctxt_pP->frame,
+                      (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                      ctxt_pP->enb_module_id,
+                      ctxt_pP->ue_module_id,
                       rlc_pP->rb_id,
                       rlc_pP->first_retrans_pdu_sn);
             }
         }
     } else {
         LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][ACK-PDU] WARNING ACK PDU SN %05d -> NO PDU TO ACK\n",
-              frameP,
-              (rlc_pP->is_enb) ? "eNB" : "UE",
-              rlc_pP->enb_module_id,
-              rlc_pP->ue_module_id,
+              ctxt_pP->frame,
+              (ctxt_pP->enb_flag) ? "eNB" : "UE",
+              ctxt_pP->enb_module_id,
+              ctxt_pP->ue_module_id,
               rlc_pP->rb_id,
               snP);
         if (mb_p != NULL) {
@@ -272,10 +269,10 @@ void rlc_am_ack_pdu (
 
                 rlc_pP->vt_ms   = (rlc_pP->vt_a + RLC_AM_WINDOW_SIZE) & RLC_AM_SN_MASK;
                 LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][ACK-PDU] UPDATED VT(A) %04d VT(MS) %04d  VT(S) %04d\n",
-                    frameP,
-                    (rlc_pP->is_enb) ? "eNB" : "UE",
-                    rlc_pP->enb_module_id,
-                    rlc_pP->ue_module_id,
+                    ctxt_pP->frame,
+                    (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                    ctxt_pP->enb_module_id,
+                    ctxt_pP->ue_module_id,
                     rlc_pP->rb_id,
                     rlc_pP->vt_a,
                     rlc_pP->vt_ms,
@@ -286,9 +283,9 @@ void rlc_am_ack_pdu (
 }
 //-----------------------------------------------------------------------------
 mem_block_t* rlc_am_retransmit_get_copy (
-        rlc_am_entity_t *const rlc_pP,
-        const frame_t frameP,
-        const rlc_sn_t snP)
+                const protocol_ctxt_t* const  ctxt_pP,
+                rlc_am_entity_t *const rlc_pP,
+                const rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
     mem_block_t* mb_original_p = rlc_pP->pdu_retrans_buffer[snP].mem_block;
@@ -305,7 +302,7 @@ mem_block_t* rlc_am_retransmit_get_copy (
 
         pdu_mngt->flags.retransmit = 0;
 
-        rlc_am_pdu_polling(rlc_pP, frameP, pdu_p, pdu_mngt->payload_size);
+        rlc_am_pdu_polling(ctxt_pP, rlc_pP, pdu_p, pdu_mngt->payload_size);
         return mb_copy;
     } else {
         return NULL;
@@ -313,10 +310,10 @@ mem_block_t* rlc_am_retransmit_get_copy (
 }
 //-----------------------------------------------------------------------------
 mem_block_t* rlc_am_retransmit_get_subsegment(
-        rlc_am_entity_t *const rlc_pP,
-        const frame_t frameP,
-        const rlc_sn_t snP,
-        sdu_size_t * const sizeP /* in-out*/)
+                const protocol_ctxt_t* const  ctxt_pP,
+                rlc_am_entity_t *const rlc_pP,
+                const rlc_sn_t snP,
+                sdu_size_t * const sizeP /* in-out*/)
 //-----------------------------------------------------------------------------
 {
 
@@ -376,19 +373,19 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
 
         ((struct mac_tb_req*)(mb_sub_segment_p->data))->data_ptr         = (uint8_t*)&(mb_sub_segment_p->data[sizeof(struct mac_tb_req)]);
 
-        if (rlc_am_get_data_pdu_infos(frameP,pdu_original_p, rlc_pP->pdu_retrans_buffer[snP].header_and_payload_size, &pdu_info) >= 0) {
+        if (rlc_am_get_data_pdu_infos(ctxt_pP,pdu_original_p, rlc_pP->pdu_retrans_buffer[snP].header_and_payload_size, &pdu_info) >= 0) {
             int li_index = 0;
             int start_offset       = rlc_pP->pdu_retrans_buffer[snP].nack_so_start;
             int stop_offset        = rlc_pP->pdu_retrans_buffer[snP].nack_so_stop;
 
             LOG_D(RLC, "\n[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] ORIGINAL PDU SN %04d:\n",
-                  frameP,
-                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   rlc_pP->rb_id,
                   snP);
-            rlc_am_display_data_pdu_infos(rlc_pP, frameP,&pdu_info);
+            rlc_am_display_data_pdu_infos(ctxt_pP, rlc_pP, &pdu_info);
 
             // all 15 bits set to 1 (indicate that the missing portion of the AMD PDU includes all bytes
             // to the last byte of the AMD PDU)
@@ -396,10 +393,10 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
                 rlc_pP->pdu_retrans_buffer[snP].nack_so_stop = rlc_pP->pdu_retrans_buffer[snP].payload_size - 1;
                 stop_offset = rlc_pP->pdu_retrans_buffer[snP].nack_so_stop;
                 LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] UPDATED RETRANS PDU SN %04d nack_so_stop FROM 0x7FFF to %05d\n",
-                      frameP,
-                      (rlc_pP->is_enb) ? "eNB" : "UE",
-                      rlc_pP->enb_module_id,
-                      rlc_pP->ue_module_id,
+                      ctxt_pP->frame,
+                      (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                      ctxt_pP->enb_module_id,
+                      ctxt_pP->ue_module_id,
                       rlc_pP->rb_id,
                       snP, stop_offset);
             }
@@ -446,32 +443,32 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
             //-------------------------------------------------------
             // set MAX payload size that can be copied
             // first constraint : the size of the hole to retransmit
-            rlc_am_get_next_hole(rlc_pP, frameP, snP, &start_offset, &stop_offset);
+            rlc_am_get_next_hole(ctxt_pP, rlc_pP, snP, &start_offset, &stop_offset);
             max_copy_payload_size = stop_offset - start_offset + 1;
             assert(max_copy_payload_size > 0);
             assert(test_pdu_remaining_size > 0);
             LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] HOLE FOUND SO %d -> %d\n",
-                  frameP,
-                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   rlc_pP->rb_id,
                   start_offset,
                   stop_offset);
             LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] ORIGINAL FI %d\n",
-                  frameP,
-                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   rlc_pP->rb_id,
                   (pdu_original_p->b1 & 0x18) >> 3);
             // second constraint the size of the pdu_p requested by MAC layer
             if (max_copy_payload_size > test_pdu_remaining_size) {
                   LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] CUT max_copy_payload_size with test_pdu_remaining_size %d -> %d\n",
-                      frameP,
-                      (rlc_pP->is_enb) ? "eNB" : "UE",
-                      rlc_pP->enb_module_id,
-                      rlc_pP->ue_module_id,
+                      ctxt_pP->frame,
+                      (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                      ctxt_pP->enb_module_id,
+                      ctxt_pP->ue_module_id,
                       rlc_pP->rb_id,
                       max_copy_payload_size,
                       test_pdu_remaining_size);
@@ -487,26 +484,26 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
             //.find the li corresponding to the nack_so_start (start_offset)
             if (pdu_info.num_li > 0) {
                 LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] ORIGINAL NUM LI %d\n",
-                    frameP,
-                    (rlc_pP->is_enb) ? "eNB" : "UE",
-                    rlc_pP->enb_module_id,
-                    rlc_pP->ue_module_id,
+                    ctxt_pP->frame,
+                    (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                    ctxt_pP->enb_module_id,
+                    ctxt_pP->ue_module_id,
                     rlc_pP->rb_id,
                     pdu_info.num_li);
                 while ((li_index < pdu_info.num_li) && (continue_fill_pdu_with_pdu)) {
                     LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] FIND LI %d\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxt_pP->frame,
+                        (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                        ctxt_pP->enb_module_id,
+                        ctxt_pP->ue_module_id,
                         rlc_pP->rb_id,
                         pdu_info.li_list[li_index]);
                     if (max_copy_payload_size > test_pdu_remaining_size) {
                         LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] CUT max_copy_payload_size with test_pdu_remaining_size %d -> %d\n",
-                            frameP,
-                            (rlc_pP->is_enb) ? "eNB" : "UE",
-                            rlc_pP->enb_module_id,
-                            rlc_pP->ue_module_id,
+                            ctxt_pP->frame,
+                            (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                            ctxt_pP->enb_module_id,
+                            ctxt_pP->ue_module_id,
                             rlc_pP->rb_id,
                             max_copy_payload_size,
                             test_pdu_remaining_size);
@@ -521,35 +518,35 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
                     if (test_start_offset < test_li_sum) {
 
                         LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] test_start_offset < test_li_sum  %d < %d\n",
-                            frameP,
-                            (rlc_pP->is_enb) ? "eNB" : "UE",
-                            rlc_pP->enb_module_id,
-                            rlc_pP->ue_module_id,
+                            ctxt_pP->frame,
+                            (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                            ctxt_pP->enb_module_id,
+                            ctxt_pP->ue_module_id,
                             rlc_pP->rb_id,
                             test_start_offset,
                             test_li_sum);
                         /*if (test_max_copy_payload_size > (test_li_sum - test_start_offset)) {
                             #ifdef TRACE_RLC_AM_RESEGMENT
-                            LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] CUT test_max_copy_payload_size with test_li_sum - test_start_offset %d -> %d\n",frameP, rlc_pP->module_id, rlc_pP->rb_id,  test_max_copy_payload_size, test_li_sum - test_start_offset);
+                            LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] CUT test_max_copy_payload_size with test_li_sum - test_start_offset %d -> %d\n",ctxt_pP->frame, rlc_pP->module_id, rlc_pP->rb_id,  test_max_copy_payload_size, test_li_sum - test_start_offset);
                             #endif
                             test_max_copy_payload_size = test_li_sum - test_start_offset;
                         }*/
 
                         if ((max_copy_payload_size + test_start_offset) < test_li_sum) {
                             LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] (max_copy_payload_size %d + test_start_offset %d) < test_li_sum %d\n",
-                                frameP,
-                                (rlc_pP->is_enb) ? "eNB" : "UE",
-                                rlc_pP->enb_module_id,
-                                rlc_pP->ue_module_id,
+                                ctxt_pP->frame,
+                                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                                ctxt_pP->enb_module_id,
+                                ctxt_pP->ue_module_id,
                                 rlc_pP->rb_id,
                                 max_copy_payload_size,
                                 test_start_offset,
                                 test_li_sum);
                             LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] COPY SO %d -> %d  %d BYTES\n",
-                                frameP,
-                                (rlc_pP->is_enb) ? "eNB" : "UE",
-                                rlc_pP->enb_module_id,
-                                rlc_pP->ue_module_id,
+                                ctxt_pP->frame,
+                                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                                ctxt_pP->enb_module_id,
+                                ctxt_pP->ue_module_id,
                                 rlc_pP->rb_id,
                                 test_start_offset ,
                                 test_start_offset + max_copy_payload_size - 1,
@@ -563,18 +560,18 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
 
                         } else if ((max_copy_payload_size + test_start_offset) == test_li_sum) {
                             LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] (max_copy_payload_size + test_start_offset) == test_li_sum %d == %d\n",
-                                frameP,
-                                (rlc_pP->is_enb) ? "eNB" : "UE",
-                                rlc_pP->enb_module_id,
-                                rlc_pP->ue_module_id,
+                                ctxt_pP->frame,
+                                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                                ctxt_pP->enb_module_id,
+                                ctxt_pP->ue_module_id,
                                 rlc_pP->rb_id,
                                 (max_copy_payload_size + test_start_offset) ,
                                 test_li_sum);
                             LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] COPY SO %d -> %d  %d BYTES\n",
-                                frameP,
-                                (rlc_pP->is_enb) ? "eNB" : "UE",
-                                rlc_pP->enb_module_id,
-                                rlc_pP->ue_module_id,
+                                ctxt_pP->frame,
+                                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                                ctxt_pP->enb_module_id,
+                                ctxt_pP->ue_module_id,
                                 rlc_pP->rb_id,
                                 test_start_offset ,
                                 test_start_offset + max_copy_payload_size - 1,
@@ -588,19 +585,19 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
 
                         } else if ((max_copy_payload_size + test_start_offset - (test_li_length_in_bytes ^ 3)) > test_li_sum) {
                             LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] (max_copy_payload_size + test_start_offset - (test_li_length_in_bytes ^ 3)) > test_li_sum %d > %d\n SET LI %d\n",
-                                frameP,
-                                (rlc_pP->is_enb) ? "eNB" : "UE",
-                                rlc_pP->enb_module_id,
-                                rlc_pP->ue_module_id,
+                                ctxt_pP->frame,
+                                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                                ctxt_pP->enb_module_id,
+                                ctxt_pP->ue_module_id,
                                 rlc_pP->rb_id,
                                 (max_copy_payload_size + test_start_offset)  + (test_li_length_in_bytes ^ 3),
                                 test_li_sum,
                                 test_li_sum - test_start_offset);
                             LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] COPY SO %d -> %d  %d BYTES\n",
-                                frameP,
-                                (rlc_pP->is_enb) ? "eNB" : "UE",
-                                rlc_pP->enb_module_id,
-                                rlc_pP->ue_module_id,
+                                ctxt_pP->frame,
+                                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                                ctxt_pP->enb_module_id,
+                                ctxt_pP->ue_module_id,
                                 rlc_pP->rb_id,
                                 test_start_offset ,
                                 test_li_sum - 1,
@@ -615,10 +612,10 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
 
                             max_copy_payload_size       = max_copy_payload_size - test_li_sum + test_start_offset - test_li_length_in_bytes;
                             LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] NOW max_copy_payload_size %d BYTES test_start_offset %d\n",
-                                  frameP,
-                                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                                  rlc_pP->enb_module_id,
-                                  rlc_pP->ue_module_id,
+                                  ctxt_pP->frame,
+                                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                                  ctxt_pP->enb_module_id,
+                                  ctxt_pP->ue_module_id,
                                   rlc_pP->rb_id,
                                   max_copy_payload_size,
                                   test_li_sum);
@@ -628,18 +625,18 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
 
                         } else {
                             LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] (test_max_copy_payload_size + test_start_offset ) > test_li_sum %d > %d\n NO REMAINING SIZE FOR LI",
-                                frameP,
-                                (rlc_pP->is_enb) ? "eNB" : "UE",
-                                rlc_pP->enb_module_id,
-                                rlc_pP->ue_module_id,
+                                ctxt_pP->frame,
+                                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                                ctxt_pP->enb_module_id,
+                                ctxt_pP->ue_module_id,
                                 rlc_pP->rb_id,
                                 (max_copy_payload_size + test_start_offset),
                                 test_li_sum);
                             LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] COPY SO %d -> %d  %d BYTES\n",
-                                frameP,
-                                (rlc_pP->is_enb) ? "eNB" : "UE",
-                                rlc_pP->enb_module_id,
-                                rlc_pP->ue_module_id,
+                                ctxt_pP->frame,
+                                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                                ctxt_pP->enb_module_id,
+                                ctxt_pP->ue_module_id,
                                 rlc_pP->rb_id,
                                 test_start_offset ,
                                 test_li_sum - 1,
@@ -659,10 +656,10 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
                     // and it cant be the first data field of the original PDU
                     } else if (test_start_offset == test_li_sum) {
                         LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] (test_start_offset == test_li_sum) %d == %d\n",
-                            frameP,
-                            (rlc_pP->is_enb) ? "eNB" : "UE",
-                            rlc_pP->enb_module_id,
-                            rlc_pP->ue_module_id,
+                            ctxt_pP->frame,
+                            (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                            ctxt_pP->enb_module_id,
+                            ctxt_pP->ue_module_id,
                             rlc_pP->rb_id,
                             test_start_offset ,
                             test_li_sum);
@@ -680,10 +677,10 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
 
                     if (max_copy_payload_size > test_pdu_remaining_size) {
                         LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] TRYING HIDDEN SIZE...CUT max_copy_payload_size with test_pdu_remaining_size %d -> %d\n",
-                            frameP,
-                            (rlc_pP->is_enb) ? "eNB" : "UE",
-                            rlc_pP->enb_module_id,
-                            rlc_pP->ue_module_id,
+                            ctxt_pP->frame,
+                            (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                            ctxt_pP->enb_module_id,
+                            ctxt_pP->ue_module_id,
                             rlc_pP->rb_id,
                             max_copy_payload_size,
                             test_pdu_remaining_size);
@@ -693,10 +690,10 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
                     if  ((max_copy_payload_size + test_start_offset) >= (pdu_info.hidden_size + test_li_sum)) {
                         test_pdu_copy_size += (pdu_info.hidden_size  + test_li_sum - test_start_offset);
                         LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] COPYING WHOLE REMAINING SIZE %d (max_copy_payload_size %d, test_start_offset %d, pdu_info.hidden_size %d test_li_sum %d test_pdu_copy_size %d)\n",
-                              frameP,
-                              (rlc_pP->is_enb) ? "eNB" : "UE",
-                              rlc_pP->enb_module_id,
-                              rlc_pP->ue_module_id,
+                              ctxt_pP->frame,
+                              (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                              ctxt_pP->enb_module_id,
+                              ctxt_pP->ue_module_id,
                               rlc_pP->rb_id,
                               pdu_info.hidden_size  + test_li_sum - test_start_offset,
                               max_copy_payload_size,
@@ -708,10 +705,10 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
                         not_test_fi = (not_test_fi & 0x2) | (not_fi_original & 0x1);  // set b0 idendical to the b0 of the non segmented PDU
                     } else {
                     	LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] COPYING REMAINING SIZE %d (/%d)\n",
-                              frameP,
-                              (rlc_pP->is_enb) ? "eNB" : "UE",
-                              rlc_pP->enb_module_id,
-                              rlc_pP->ue_module_id,
+                              ctxt_pP->frame,
+                              (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                              ctxt_pP->enb_module_id,
+                              ctxt_pP->ue_module_id,
                               rlc_pP->rb_id,
                               max_copy_payload_size,
                               pdu_info.hidden_size);
@@ -722,10 +719,10 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
                 }
             } else { // num_li == 0
                 LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] (num_li == 0)\n",
-                      frameP,
-                      (rlc_pP->is_enb) ? "eNB" : "UE",
-                      rlc_pP->enb_module_id,
-                      rlc_pP->ue_module_id,
+                      ctxt_pP->frame,
+                      (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                      ctxt_pP->enb_module_id,
+                      ctxt_pP->ue_module_id,
                       rlc_pP->rb_id);
                 test_pdu_copy_size = max_copy_payload_size;
                 if ((stop_offset ==  (start_offset + max_copy_payload_size - 1)) && (stop_offset == rlc_pP->pdu_retrans_buffer[snP].payload_size - 1)) {
@@ -774,19 +771,19 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
                         *sizeP               = *sizeP - 1;
                     }
                     LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] ADD LI %d\n",
-                          frameP,
-                          (rlc_pP->is_enb) ? "eNB" : "UE",
-                          rlc_pP->enb_module_id,
-                          rlc_pP->ue_module_id,
+                          ctxt_pP->frame,
+                          (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                          ctxt_pP->enb_module_id,
+                          ctxt_pP->ue_module_id,
                           rlc_pP->rb_id,
                           test_li_list[fill_num_li]);
                 }
             } else {
                     LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] ADD NO LI\n",
-                          frameP,
-                          (rlc_pP->is_enb) ? "eNB" : "UE",
-                          rlc_pP->enb_module_id,
-                          rlc_pP->ue_module_id,
+                          ctxt_pP->frame,
+                          (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                          ctxt_pP->enb_module_id,
+                          ctxt_pP->ue_module_id,
                           rlc_pP->rb_id);
                 fill_payload_p = (uint8_t*)e_li_sub_segment;
             }
@@ -806,10 +803,10 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
                 rlc_pP->pdu_retrans_buffer[snP].flags.retransmit = 0;
 
                 LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] RE-SEND DATA PDU SN %04d SO %d %d BYTES PAYLOAD %d BYTES LSF!\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxt_pP->frame,
+                        (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                        ctxt_pP->enb_module_id,
+                        ctxt_pP->ue_module_id,
                         rlc_pP->rb_id,
                         snP,
                         start_offset,
@@ -818,10 +815,10 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
             }
               else {
                 LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] RE-SEND DATA PDU SN %04d SO %d %d BYTES PAYLOAD %d BYTES\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxt_pP->frame,
+                        (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                        ctxt_pP->enb_module_id,
+                        ctxt_pP->ue_module_id,
                         rlc_pP->rb_id,
                         snP,
                         start_offset,
@@ -836,13 +833,13 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
             //---------------------------------------------------------------
             // update nack_so_start
             //---------------------------------------------------------------
-            rlc_am_remove_hole(rlc_pP, frameP, snP, start_offset, test_pdu_copy_size+start_offset - 1);
+            rlc_am_remove_hole(ctxt_pP, rlc_pP, snP, start_offset, test_pdu_copy_size+start_offset - 1);
             //rlc_pP->pdu_retrans_buffer[snP].nack_so_start = rlc_pP->pdu_retrans_buffer[snP].nack_so_start + test_pdu_copy_size;
             LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] RE-SEND DATA PDU SN %04d NOW nack_so_start %d nack_so_stop %d\n",
-                  frameP,
-                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   rlc_pP->rb_id,
                   snP,
                   rlc_pP->pdu_retrans_buffer[snP].nack_so_start,
@@ -853,22 +850,22 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
             }*/
         } else {
             LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] COULD NOT GET INFO FOR DATA PDU SN %04d -> RETURN NULL\n",
-                  frameP,
-                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   rlc_pP->rb_id, snP);
             return NULL;
         }
-        rlc_am_pdu_polling(rlc_pP, frameP, pdu_sub_segment_p, test_pdu_copy_size);
+        rlc_am_pdu_polling(ctxt_pP, rlc_pP, pdu_sub_segment_p, test_pdu_copy_size);
 
         return mb_sub_segment_p;
     } else {
         LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] RE-SEND DATA PDU SN %04d BUT NO PDU AVAILABLE -> RETURN NULL\n",
-              frameP,
-              (rlc_pP->is_enb) ? "eNB" : "UE",
-              rlc_pP->enb_module_id,
-              rlc_pP->ue_module_id,
+              ctxt_pP->frame,
+              (ctxt_pP->enb_flag) ? "eNB" : "UE",
+              ctxt_pP->enb_module_id,
+              ctxt_pP->ue_module_id,
               rlc_pP->rb_id,
               snP);
         assert(3==4);
@@ -877,9 +874,9 @@ mem_block_t* rlc_am_retransmit_get_subsegment(
 }
 //-----------------------------------------------------------------------------
 void rlc_am_tx_buffer_display (
-        rlc_am_entity_t* const rlc_pP,
-        const frame_t frameP,
-        char* const message_pP)
+                const protocol_ctxt_t* const  ctxt_pP,
+                rlc_am_entity_t* const rlc_pP,
+                char* const message_pP)
 //-----------------------------------------------------------------------------
 {
     rlc_sn_t       sn = rlc_pP->vt_a;
@@ -887,20 +884,20 @@ void rlc_am_tx_buffer_display (
 
     if (message_pP) {
         LOG_D(RLC, "\n[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] Retransmission buffer %s VT(A)=%04d VT(S)=%04d:",
-              frameP,
-              (rlc_pP->is_enb) ? "eNB" : "UE",
-              rlc_pP->enb_module_id,
-              rlc_pP->ue_module_id,
+              ctxt_pP->frame,
+              (ctxt_pP->enb_flag) ? "eNB" : "UE",
+              ctxt_pP->enb_module_id,
+              ctxt_pP->ue_module_id,
               rlc_pP->rb_id,
               message_pP,
               rlc_pP->vt_a,
               rlc_pP->vt_s);
     } else {
         LOG_D(RLC, "\n[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] Retransmission buffer VT(A)=%04d VT(S)=%04d:",
-              frameP,
-              (rlc_pP->is_enb) ? "eNB" : "UE",
-              rlc_pP->enb_module_id,
-              rlc_pP->ue_module_id,
+              ctxt_pP->frame,
+              (ctxt_pP->enb_flag) ? "eNB" : "UE",
+              ctxt_pP->enb_module_id,
+              ctxt_pP->ue_module_id,
               rlc_pP->rb_id,
               rlc_pP->vt_a,
               rlc_pP->vt_s);
@@ -932,8 +929,8 @@ void rlc_am_tx_buffer_display (
 }
 //-----------------------------------------------------------------------------
 void rlc_am_retransmit_any_pdu(
-        rlc_am_entity_t* const rlc_pP,
-        const frame_t frameP)
+                const protocol_ctxt_t* const  ctxt_pP,
+                rlc_am_entity_t* const rlc_pP)
 //-----------------------------------------------------------------------------
 {
     rlc_sn_t             sn           = (rlc_pP->vt_s - 1) & RLC_AM_SN_MASK;
@@ -944,10 +941,10 @@ void rlc_am_retransmit_any_pdu(
     rlc_am_pdu_sn_10_t*  pdu_sn_10_p  = NULL;
 
     LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][FORCE-TRAFFIC] rlc_am_retransmit_any_pdu()\n",
-          frameP,
-          (rlc_pP->is_enb) ? "eNB" : "UE",
-          rlc_pP->enb_module_id,
-          rlc_pP->ue_module_id,
+          ctxt_pP->frame,
+          (ctxt_pP->enb_flag) ? "eNB" : "UE",
+          ctxt_pP->enb_module_id,
+          ctxt_pP->ue_module_id,
           rlc_pP->rb_id);
     while (sn != sn_end) {
         if (rlc_pP->pdu_retrans_buffer[sn].mem_block != NULL) {
@@ -957,21 +954,21 @@ void rlc_am_retransmit_any_pdu(
             }
             if (rlc_pP->pdu_retrans_buffer[sn].header_and_payload_size <= rlc_pP->nb_bytes_requested_by_mac) {
                 LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][FORCE-TRAFFIC] RE-SEND DATA PDU SN %04d\n",
-                      frameP,
-                      (rlc_pP->is_enb) ? "eNB" : "UE",
-                      rlc_pP->enb_module_id,
-                      rlc_pP->ue_module_id,
+                      ctxt_pP->frame,
+                      (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                      ctxt_pP->enb_module_id,
+                      ctxt_pP->ue_module_id,
                       rlc_pP->rb_id, sn);
-                rlc_am_nack_pdu (rlc_pP, frameP, sn, 0, 0x7FFF);
+                rlc_am_nack_pdu (ctxt_pP, rlc_pP, sn, 0, 0x7FFF);
                 // no need for update rlc_pP->nb_bytes_requested_by_mac
-                pdu_p = rlc_am_retransmit_get_copy(rlc_pP, frameP, sn);
+                pdu_p = rlc_am_retransmit_get_copy(ctxt_pP, rlc_pP, sn);
                 pdu_sn_10_p = (rlc_am_pdu_sn_10_t*) (&pdu_p->data[sizeof(struct mac_tb_req)]);
-                rlc_am_pdu_polling(rlc_pP, frameP, pdu_sn_10_p, rlc_pP->pdu_retrans_buffer[sn].header_and_payload_size);
+                rlc_am_pdu_polling(ctxt_pP, rlc_pP, pdu_sn_10_p, rlc_pP->pdu_retrans_buffer[sn].header_and_payload_size);
                 pdu_sn_10_p->b1 = pdu_sn_10_p->b1 | 0x20;
                 rlc_pP->c_pdu_without_poll     = 0;
                 rlc_pP->c_byte_without_poll    = 0;
                 //rlc_pP->poll_sn = (rlc_pP->vt_s -1) & RLC_AM_SN_MASK;
-                rlc_am_start_timer_poll_retransmit(rlc_pP,frameP);
+                rlc_am_start_timer_poll_retransmit(ctxt_pP, rlc_pP);
                 rlc_pP->stat_tx_data_pdu                   += 1;
                 rlc_pP->stat_tx_retransmit_pdu             += 1;
                 rlc_pP->stat_tx_data_bytes                 += ((struct mac_tb_req*)(pdu_p->data))->tb_size;
@@ -986,22 +983,22 @@ void rlc_am_retransmit_any_pdu(
     // so re-segment a pdu_p if possible
     if (found_pdu) {
         LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][FORCE-TRAFFIC] SEND SEGMENT OF DATA PDU SN %04d\n",
-              frameP,
-              (rlc_pP->is_enb) ? "eNB" : "UE",
-              rlc_pP->enb_module_id,
-              rlc_pP->ue_module_id,
+              ctxt_pP->frame,
+              (ctxt_pP->enb_flag) ? "eNB" : "UE",
+              ctxt_pP->enb_module_id,
+              ctxt_pP->ue_module_id,
               rlc_pP->rb_id,
               found_pdu_sn);
         if (rlc_pP->nb_bytes_requested_by_mac > 4) {
-            rlc_am_nack_pdu (rlc_pP, frameP, found_pdu_sn, 0, 0x7FFF);
-            pdu_p = rlc_am_retransmit_get_subsegment(rlc_pP, frameP, found_pdu_sn, &rlc_pP->nb_bytes_requested_by_mac);
+            rlc_am_nack_pdu (ctxt_pP, rlc_pP, found_pdu_sn, 0, 0x7FFF);
+            pdu_p = rlc_am_retransmit_get_subsegment(ctxt_pP, rlc_pP, found_pdu_sn, &rlc_pP->nb_bytes_requested_by_mac);
             pdu_sn_10_p = (rlc_am_pdu_sn_10_t*) (&pdu_p->data[sizeof(struct mac_tb_req)]);
-            rlc_am_pdu_polling(rlc_pP, frameP, pdu_sn_10_p, rlc_pP->pdu_retrans_buffer[found_pdu_sn].header_and_payload_size);
+            rlc_am_pdu_polling(ctxt_pP, rlc_pP, pdu_sn_10_p, rlc_pP->pdu_retrans_buffer[found_pdu_sn].header_and_payload_size);
             pdu_sn_10_p->b1 = pdu_sn_10_p->b1 | 0x20;
             rlc_pP->c_pdu_without_poll     = 0;
             rlc_pP->c_byte_without_poll    = 0;
             //rlc_pP->poll_sn = (rlc_pP->vt_s -1) & RLC_AM_SN_MASK;
-            rlc_am_start_timer_poll_retransmit(rlc_pP,frameP);
+            rlc_am_start_timer_poll_retransmit(ctxt_pP, rlc_pP);
             rlc_pP->stat_tx_data_pdu                   += 1;
             rlc_pP->stat_tx_retransmit_pdu             += 1;
             rlc_pP->stat_tx_data_bytes                 += ((struct mac_tb_req*)(pdu_p->data))->tb_size;
@@ -1010,10 +1007,10 @@ void rlc_am_retransmit_any_pdu(
             return;
         } else {
             LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][FORCE-TRAFFIC] ... BUT NOT ENOUGH BYTES ALLOWED BY MAC %0d\n",
-                  frameP,
-                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   rlc_pP->rb_id,
                   rlc_pP->nb_bytes_requested_by_mac);
         }

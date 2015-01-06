@@ -58,19 +58,15 @@
 
 #undef GTP_DUMP_SOCKET
 
-extern boolean_t
-    pdcp_data_req(
-            const module_id_t    enb_mod_idP,
-            const module_id_t    ue_mod_idP,
-            const frame_t        frameP,
-            const eNB_flag_t     enb_flagP,
-            const srb_flag_t     srb_flagP,
-            const rb_id_t        rb_idP,
-            const mui_t          muiP,
-            const confirm_t      confirmP,
-            const sdu_size_t     sdu_buffer_sizeP,
-            unsigned char *const sdu_buffer_pP,
-            const pdcp_transmission_mode_t modeP);
+extern boolean_t pdcp_data_req(
+                const protocol_ctxt_t* const  ctxt_pP,
+                const srb_flag_t     srb_flagP,
+                const rb_id_t        rb_idP,
+                const mui_t          muiP,
+                const confirm_t      confirmP,
+                const sdu_size_t     sdu_buffer_sizeP,
+                unsigned char *const sdu_buffer_pP,
+                const pdcp_transmission_mode_t modeP);
 
 
 static int
@@ -282,6 +278,7 @@ NwGtpv1uRcT gtpv1u_eNB_process_stack_req(
     teid_t              teid               = 0;
     hashtable_rc_t      hash_rc            = HASH_TABLE_KEY_NOT_EXISTS;
     gtpv1u_teid_data_t *gtpv1u_teid_data_p = NULL;
+    protocol_ctxt_t     ctxt;
 
     switch(pUlpApi->apiType) {
             /* Here there are two type of messages handled:
@@ -319,12 +316,13 @@ NwGtpv1uRcT gtpv1u_eNB_process_stack_req(
 #endif
 
 #warning "LG eps bearer mapping to DRB id to do (offset -4)"
+                ctxt.enb_module_id = gtpv1u_teid_data_p->enb_id;
+                ctxt.ue_module_id  = gtpv1u_teid_data_p->ue_id;
+                ctxt.frame         = 0;
+                ctxt.enb_flag      = ENB_FLAG_YES;
 
                 result = pdcp_data_req(
-                    gtpv1u_teid_data_p->enb_id,
-                    gtpv1u_teid_data_p->ue_id,
-                    0, // frame TO DO
-                    ENB_FLAG_YES,
+                    &ctxt,
                     SRB_FLAG_NO,
                     (gtpv1u_teid_data_p->eps_bearer_id) ? gtpv1u_teid_data_p->eps_bearer_id - 4: 5-4,
                     0, // mui

@@ -51,7 +51,7 @@ void mac_lite_sync_ind(module_id_t module_idP, uint8_t statusP);
 
 void mac_rrc_meas_ind(module_id_t, MAC_MEAS_REQ_ENTRY*);
 
-void rlcrrc_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t rb_idP, sdu_size_t sdu_sizeP, uint8_t *buffer_pP);
+void rlcrrc_data_ind(const protocol_ctxt_t* const ctxt_pP, rb_id_t rb_idP, sdu_size_t sdu_sizeP, uint8_t *buffer_pP);
 
 uint8_t pdcp_rrc_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t rb_idP, mui_t muiP, boolean_t confirmP,
                      sdu_size_t sdu_buffer_size, uint8_t* sdu_buffer, uint8_t mode);

@@ -520,7 +520,13 @@ uint8_t rrc_lite_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame
 
   }
 #else
-  return pdcp_data_req (enb_mod_idP, ue_mod_idP, frameP, enb_flagP, SRB_FLAG_YES, rb_idP, muiP, confirmP, sdu_size, buffer_pP, mode);
+  protocol_ctxt_t ctxt;
+  ctxt.enb_module_id = enb_mod_idP;
+  ctxt.ue_module_id  = ue_mod_idP;
+  ctxt.frame         = frameP;
+  ctxt.enb_flag      = enb_flagP;
+
+  return pdcp_data_req (&ctxt, SRB_FLAG_YES, rb_idP, muiP, confirmP, sdu_size, buffer_pP, mode);
 #endif
 }
 

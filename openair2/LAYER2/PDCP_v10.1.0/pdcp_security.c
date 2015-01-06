@@ -49,12 +49,17 @@
 #if defined(ENABLE_SECURITY)
 
 static
-uint32_t pdcp_get_next_count_tx(pdcp_t *pdcp_entity, srb_flag_t srb_flagP, uint16_t pdcp_sn);
+uint32_t pdcp_get_next_count_tx(pdcp_t *const pdcp_entity, const srb_flag_t srb_flagP, const uint16_t pdcp_sn);
 static
-uint32_t pdcp_get_next_count_rx(pdcp_t *pdcp_entity, srb_flag_t srb_flagP, uint16_t pdcp_sn);
+uint32_t pdcp_get_next_count_rx(pdcp_t *const pdcp_entity, const srb_flag_t srb_flagP, const uint16_t pdcp_sn);
 
+//-----------------------------------------------------------------------------
 static
-uint32_t pdcp_get_next_count_tx(pdcp_t *pdcp_entity, srb_flag_t srb_flagP, uint16_t pdcp_sn)
+uint32_t pdcp_get_next_count_tx(
+                pdcp_t * const pdcp_entity,
+                const srb_flag_t srb_flagP,
+                const uint16_t pdcp_sn
+                )
 {
   uint32_t count;
   /* For TX COUNT = TX_HFN << length of SN | pdcp SN */
@@ -73,8 +78,12 @@ uint32_t pdcp_get_next_count_tx(pdcp_t *pdcp_entity, srb_flag_t srb_flagP, uint1
   return count;
 }
 
+//-----------------------------------------------------------------------------
 static
-uint32_t pdcp_get_next_count_rx(pdcp_t *pdcp_entity, srb_flag_t srb_flagP, uint16_t pdcp_sn) 
+uint32_t pdcp_get_next_count_rx(
+                pdcp_t * const pdcp_entity,
+                const srb_flag_t srb_flagP,
+                const uint16_t pdcp_sn)
 {
   uint32_t count;
   /* For RX COUNT = RX_HFN << length of SN | pdcp SN of received PDU */
@@ -97,13 +106,19 @@ uint32_t pdcp_get_next_count_rx(pdcp_t *pdcp_entity, srb_flag_t srb_flagP, uint1
   return count;
 }
 
-int pdcp_apply_security(pdcp_t        *pdcp_entity, 
-			srb_flag_t     srb_flagP,
-			rb_id_t        rb_id,
-			uint8_t        pdcp_header_len, 
-			uint16_t       current_sn, 
-			uint8_t       *pdcp_pdu_buffer,
-                        uint16_t      sdu_buffer_size)
+
+//-----------------------------------------------------------------------------
+int
+pdcp_apply_security(
+                const protocol_ctxt_t* const ctxtP,
+                pdcp_t        *const pdcp_entity,
+                const srb_flag_t     srb_flagP,
+                const rb_id_t        rb_id,
+                const uint8_t        pdcp_header_len,
+                const uint16_t       current_sn,
+                uint8_t       * const pdcp_pdu_buffer,
+                const uint16_t      sdu_buffer_size
+                )
 {
     uint8_t *buffer_encrypted = NULL;
     stream_cipher_t encrypt_params;
@@ -161,13 +176,18 @@ int pdcp_apply_security(pdcp_t        *pdcp_entity,
     return 0;
 }
 
-int pdcp_validate_security(pdcp_t         *pdcp_entity, 
-        srb_flag_t     srb_flagP,
-        rb_id_t        rb_id,
-        uint8_t        pdcp_header_len,
-        uint16_t       current_sn,
-        uint8_t       *pdcp_pdu_buffer,
-        uint16_t       sdu_buffer_size)
+//-----------------------------------------------------------------------------
+int
+pdcp_validate_security(
+                const protocol_ctxt_t* const ctxtP,
+                pdcp_t         * const pdcp_entity,
+                const srb_flag_t     srb_flagP,
+                const rb_id_t        rb_id,
+                const uint8_t        pdcp_header_len,
+                const uint16_t       current_sn,
+                uint8_t       *const pdcp_pdu_buffer,
+                const uint16_t       sdu_buffer_size
+        )
 {
     uint8_t *buffer_decrypted = NULL;
     stream_cipher_t decrypt_params;

@@ -156,7 +156,7 @@ int pdcp_netlink_init(void) {
        * should be avoided if we want a reliable link.
        */
       if (pthread_create(&pdcp_netlink_thread, &attr, pdcp_netlink_thread_fct, NULL) != 0) {
-          LOG_E(PDCP, "[NETLINK]Failed to create new thread for Netlink/PDCP communcation (%d:%s)\n",
+          LOG_E(PDCP, "[NETLINK]Failed to create new thread for Netlink/PDCP communication (%d:%s)\n",
               errno, strerror(errno));
           exit(EXIT_FAILURE);
       }
@@ -164,23 +164,20 @@ int pdcp_netlink_init(void) {
   return 0;
 }
 
-int pdcp_netlink_dequeue_element(
-                                 module_id_t                     enb_mod_idP,
-                                 module_id_t                     ue_mod_idP,
-                                 eNB_flag_t                      eNB_flagP,
+int pdcp_netlink_dequeue_element(const protocol_ctxt_t* const  ctxt_pP,
                                  struct pdcp_netlink_element_s **data_ppP)
 {
   int ret = 0;
 
-  if (eNB_flagP) {
-      ret = lfds611_queue_dequeue(pdcp_netlink_queue_enb[enb_mod_idP], (void **)data_ppP);
+  if (ctxt_pP->enb_flag) {
+      ret = lfds611_queue_dequeue(pdcp_netlink_queue_enb[ctxt_pP->enb_module_id], (void **)data_ppP);
       if (ret != 0) {
-          LOG_D(PDCP,"[NETLINK]De-queueing packet for eNB instance %d\n", enb_mod_idP);
+          LOG_D(PDCP,"[NETLINK]De-queueing packet for eNB instance %d\n", ctxt_pP->enb_module_id);
       }
   } else {
-      ret = lfds611_queue_dequeue(pdcp_netlink_queue_ue[ue_mod_idP], (void **)data_ppP);
+      ret = lfds611_queue_dequeue(pdcp_netlink_queue_ue[ctxt_pP->ue_module_id], (void **)data_ppP);
       if (ret != 0) {
-          LOG_D(PDCP, "[NETLINK]De-queueing packet for UE instance %d\n", ue_mod_idP);
+          LOG_D(PDCP, "[NETLINK]De-queueing packet for UE instance %d\n", ctxt_pP->ue_module_id);
       }
   }
 
@@ -219,7 +216,7 @@ void *pdcp_netlink_thread_fct(void *arg) {
           for (nas_nlh_rx = (struct nlmsghdr *) nl_rx_buf;
               NLMSG_OK(nas_nlh_rx, (unsigned int)len);
               nas_nlh_rx = NLMSG_NEXT (nas_nlh_rx, len)) {
-	    start_meas(&ip_pdcp_stats_tmp);
+              start_meas(&ip_pdcp_stats_tmp);
               /* There is no need to check for nlmsg_type because
                * the header is not set in our drivers.
                */
@@ -272,8 +269,8 @@ void *pdcp_netlink_thread_fct(void *arg) {
 
                       /* Enqueue the element in the right queue */
                       lfds611_queue_guaranteed_enqueue(pdcp_netlink_queue_enb[new_data_p->pdcp_read_header.inst], new_data_p);
-		      stop_meas(&ip_pdcp_stats_tmp);
-		      copy_meas(&eNB_pdcp_stats[new_data_p->pdcp_read_header.inst].pdcp_ip,&ip_pdcp_stats_tmp);
+                      stop_meas(&ip_pdcp_stats_tmp);
+                      copy_meas(&eNB_pdcp_stats[new_data_p->pdcp_read_header.inst].pdcp_ip,&ip_pdcp_stats_tmp);
                   } else {
                       if (pdcp_netlink_nb_element_ue[new_data_p->pdcp_read_header.inst]
                                                   > PDCP_QUEUE_NB_ELEMENTS) {
@@ -285,8 +282,8 @@ void *pdcp_netlink_thread_fct(void *arg) {
 
                       /* Enqueue the element in the right queue */
                       lfds611_queue_guaranteed_enqueue(pdcp_netlink_queue_ue[new_data_p->pdcp_read_header.inst], new_data_p);
-		      stop_meas(&ip_pdcp_stats_tmp);
-		      copy_meas(&UE_pdcp_stats[new_data_p->pdcp_read_header.inst].pdcp_ip,&ip_pdcp_stats_tmp);
+                      stop_meas(&ip_pdcp_stats_tmp);
+                      copy_meas(&UE_pdcp_stats[new_data_p->pdcp_read_header.inst].pdcp_ip,&ip_pdcp_stats_tmp);
                   }
               }
           }

@@ -99,9 +99,15 @@ int8_t mac_rrc_data_ind(module_id_t module_idP, frame_t frameP, rb_id_t srb_idP,
 }
 
 /********************************************************************************************************************/
-void rlcrrc_data_ind(module_id_t enb_instP, module_id_t ue_instP, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t srb_idP, sdu_size_t sdu_lenP,uint8_t *buffer_pP){
+void rlcrrc_data_ind(const protocol_ctxt_t* const ctxt_pP, rb_id_t srb_idP, sdu_size_t sdu_lenP,uint8_t *buffer_pP){
 /********************************************************************************************************************/
-  rrc_lite_data_ind(enb_instP, ue_instP,frameP,eNB_flagP,srb_idP,sdu_lenP,buffer_pP);
+  rrc_lite_data_ind(ctxt_pP->enb_module_id,
+                    ctxt_pP->ue_module_id,
+                    ctxt_pP->frame,
+                    ctxt_pP->enb_flag,
+                    srb_idP,
+                    sdu_lenP,
+                    buffer_pP);
 }
 
 /********************************************************************************************************************/

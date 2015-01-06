@@ -59,19 +59,19 @@
 #        include "rlc_um_entity.h"
 #        include "mac_primitives.h"
 
-/*! \fn void rlc_um_display_rx_window(rlc_um_entity_t *rlc_pP)
+/*! \fn void rlc_um_display_rx_window(const protocol_ctxt_t* const ctxtP,rlc_um_entity_t * const rlc_pP)
 * \brief    Display the content of the RX buffer, the output stream is targeted to TTY terminals because of escape sequences.
+* \param[in]  ctxtP       Running context.
 * \param[in]  rlc_pP      RLC UM protocol instance pointer.
 */
-protected_rlc_um_receiver( void rlc_um_display_rx_window(rlc_um_entity_t *rlc_pP);)
+protected_rlc_um_receiver( void rlc_um_display_rx_window(const protocol_ctxt_t* const ctxtP, rlc_um_entity_t * const rlc_pP);)
 
-/*! \fn void rlc_um_receive (rlc_um_entity_t *rlc_pP, frame_t frameP, struct mac_data_ind data_indP)
+/*! \fn void rlc_um_receive (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t * const rlc_pP, struct mac_data_ind data_indP)
 * \brief    Handle the MAC data indication, retreive the transport blocks and send them one by one to the DAR process.
+* \param[in]  ctxtP       Running context.
 * \param[in]  rlc_pP      RLC UM protocol instance pointer.
-* \param[in]  frameP      Frame index.
-* \param[in]  eNB_flagP   Flag to indicated eNB (1) or UE (0).
 * \param[in]  data_indP   Data indication structure containing transport block received from MAC layer.
 */
-protected_rlc_um_receiver( void rlc_um_receive (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind data_indP));
+protected_rlc_um_receiver( void rlc_um_receive (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t * const rlc_pP, struct mac_data_ind data_indP));
 /** @} */
 #    endif

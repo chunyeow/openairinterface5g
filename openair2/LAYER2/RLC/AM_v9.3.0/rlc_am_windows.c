@@ -39,7 +39,10 @@
 #include "rlc_am.h"
 #include "UTIL/LOG/log.h"
 //-----------------------------------------------------------------------------
-signed int rlc_am_in_tx_window(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
+signed int rlc_am_in_tx_window(
+                const protocol_ctxt_t* const  ctxt_pP,
+                const rlc_am_entity_t* const rlc_pP,
+                const rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
   rlc_usn_t shifted_sn;
@@ -57,7 +60,11 @@ signed int rlc_am_in_tx_window(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_in_rx_window(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
+signed int
+rlc_am_in_rx_window(
+                const protocol_ctxt_t* const  ctxt_pP,
+                const rlc_am_entity_t* const rlc_pP,
+                const rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
   rlc_usn_t shifted_sn;
@@ -75,7 +82,11 @@ signed int rlc_am_in_rx_window(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_sn_gte_vr_h(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
+signed int
+rlc_am_sn_gte_vr_h(
+                const protocol_ctxt_t* const  ctxt_pP,
+                const rlc_am_entity_t* const rlc_pP,
+                const rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
   rlc_usn_t shifted_sn;
@@ -93,7 +104,10 @@ signed int rlc_am_sn_gte_vr_h(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_sn_gte_vr_x(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
+signed int rlc_am_sn_gte_vr_x(
+                const protocol_ctxt_t* const  ctxt_pP,
+                const rlc_am_entity_t* const rlc_pP,
+                const rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
   rlc_usn_t shifted_sn;
@@ -111,7 +125,11 @@ signed int rlc_am_sn_gte_vr_x(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_sn_gt_vr_ms(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
+signed int
+rlc_am_sn_gt_vr_ms(
+                const protocol_ctxt_t* const  ctxt_pP,
+                const rlc_am_entity_t* const rlc_pP,
+                const rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
   rlc_usn_t shifted_sn;
@@ -129,7 +147,12 @@ signed int rlc_am_sn_gt_vr_ms(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_tx_sn1_gt_sn2(rlc_am_entity_t* rlc_pP, rlc_sn_t sn1P, rlc_sn_t sn2P)
+signed int
+rlc_am_tx_sn1_gt_sn2(
+                const protocol_ctxt_t* const  ctxt_pP,
+                const rlc_am_entity_t* const rlc_pP,
+                const rlc_sn_t sn1P,
+                const rlc_sn_t sn2P)
 //-----------------------------------------------------------------------------
 {
   rlc_usn_t shifted_sn;
@@ -147,7 +170,12 @@ signed int rlc_am_tx_sn1_gt_sn2(rlc_am_entity_t* rlc_pP, rlc_sn_t sn1P, rlc_sn_t
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_rx_sn1_gt_sn2(rlc_am_entity_t* rlc_pP, rlc_sn_t sn1P, rlc_sn_t sn2P)
+signed int
+rlc_am_rx_sn1_gt_sn2(
+                const protocol_ctxt_t* const  ctxt_pP,
+                const rlc_am_entity_t* const rlc_pP,
+                const rlc_sn_t sn1P,
+                const rlc_sn_t sn2P)
 //-----------------------------------------------------------------------------
 {
   rlc_usn_t shifted_sn;

@@ -151,7 +151,7 @@ typedef  struct {
     rlc_buffer_occupancy_t       pdus_in_buffer;  /*!< \brief Number of PDUs buffered in RLC protocol instance (OBSOLETE). */
     frame_t                      head_sdu_creation_time;           /*!< \brief Head SDU creation time. */
     sdu_size_t                   head_sdu_remaining_size_to_send;  /*!< \brief remaining size of sdu: could be the total size or the remaining size of already segmented sdu */
-    boolean_t                    head_sdu_is_segmented;	    /*!< \brief 0 if head SDU has not been segmented, 1 if already segmeneted */
+    boolean_t                    head_sdu_is_segmented;	    /*!< \brief 0 if head SDU has not been segmented, 1 if already segmented */
 } mac_rlc_status_resp_t;
 
 
@@ -168,6 +168,8 @@ typedef struct {
   } dummy;
 } mac_rlc_max_rx_header_size_t;
 
+
+
 //-----------------------------------------------------------------------------
 //   PRIVATE INTERNALS OF RLC
 //-----------------------------------------------------------------------------
@@ -176,38 +178,28 @@ typedef struct {
 #define  RLC_MAX_LC  ((max_val_DRB_Identity+1)* NUMBER_OF_UE_MAX)
 
 protected_rlc(void (*rlc_rrc_data_ind)(
-    const module_id_t eNB_inst,
-    const module_id_t UE_inst,
-    const frame_t     frameP,
-    const eNB_flag_t  eNB_flagP,
-    const rb_id_t     rb_idP,
-    const sdu_size_t  sdu_sizeP,
-    uint8_t   * const sduP);)
+                const protocol_ctxt_t* const ctxtP,
+                const rb_id_t     rb_idP,
+                const sdu_size_t  sdu_sizeP,
+                uint8_t   * const sduP);)
 
 protected_rlc(void (*rlc_rrc_data_conf)(
-    const module_id_t     eNB_inst,
-    const module_id_t     UE_inst,
-    const eNB_flag_t      eNB_flagP,
-    const rb_id_t         rb_idP,
-    const mui_t           muiP,
-    const rlc_tx_status_t statusP);)
+                const protocol_ctxt_t* const ctxtP,
+                const rb_id_t         rb_idP,
+                const mui_t           muiP,
+                const rlc_tx_status_t statusP);)
 
 typedef void (rrc_data_ind_cb_t)(
-                  const module_id_t eNB_inst,
-                  const module_id_t UE_inst,
-                  const frame_t     frameP,
-                  const eNB_flag_t  eNB_flagP,
-                  const rb_id_t     rb_idP,
-                  const sdu_size_t  sdu_sizeP,
-                  uint8_t   * const sduP);
+                const protocol_ctxt_t* const ctxtP,
+                const rb_id_t     rb_idP,
+                const sdu_size_t  sdu_sizeP,
+                uint8_t   * const sduP);
 
 typedef void (rrc_data_conf_cb_t)(
-                  const module_id_t     eNB_inst,
-                  const module_id_t     UE_inst,
-                  const eNB_flag_t      eNB_flagP,
-                  const rb_id_t         rb_idP,
-                  const mui_t           muiP,
-                  const rlc_tx_status_t statusP);
+                const protocol_ctxt_t* const ctxtP,
+                const rb_id_t         rb_idP,
+                const mui_t           muiP,
+                const rlc_tx_status_t statusP);
 
 
 /*! \struct  rlc_t
@@ -308,12 +300,9 @@ private_rlc_mac(struct mac_data_ind   mac_rlc_deserialize_tb (char*, tb_size_t, 
 //   PUBLIC INTERFACE WITH RRC
 //-----------------------------------------------------------------------------
 #ifdef Rel10
-/*! \fn rlc_op_status_t rrc_rlc_config_asn1_req (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const eNB_flag_t eNB_flagP, const srb_flag_t srb_flagP, const SRB_ToAddMod_t* const srb2addmod, const DRB_ToAddModList_t* const drb2add_listP, const DRB_ToReleaseList_t*  const drb2release_listP, const PMCH_InfoList_r9_t * const pmch_info_listP)
+/*! \fn rlc_op_status_t rrc_rlc_config_asn1_req (const protocol_ctxt_t* const ctxtP, const srb_flag_t srb_flagP, const SRB_ToAddMod_t* const srb2addmod, const DRB_ToAddModList_t* const drb2add_listP, const DRB_ToReleaseList_t*  const drb2release_listP, const PMCH_InfoList_r9_t * const pmch_info_listP)
 * \brief  Function for RRC to configure a Radio Bearer.
-* \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
-* \param[in]  ue_mod_idP         Virtualized ue module identifier.
-* \param[in]  frameP             Frame index.
-* \param[in]  eNB_flagP          Flag to indicate eNB (1) or UE (0)
+* \param[in]  ctxtP              Running context.
 * \param[in]  srb2add_listP      SRB configuration list to be created.
 * \param[in]  drb2add_listP      DRB configuration list to be created.
 * \param[in]  drb2release_listP  DRB configuration list to be released.
@@ -321,100 +310,77 @@ private_rlc_mac(struct mac_data_ind   mac_rlc_deserialize_tb (char*, tb_size_t, 
 * \return     A status about the processing, OK or error code.
 */
 public_rlc_rrc( rlc_op_status_t rrc_rlc_config_asn1_req (
-    const module_id_t,
-    const module_id_t,
-    const frame_t,
-    const eNB_flag_t,
-    const SRB_ToAddModList_t* const ,
-    const DRB_ToAddModList_t* const ,
-    const DRB_ToReleaseList_t* const ,
-    const PMCH_InfoList_r9_t * const pmch_info_listP);)
+                const protocol_ctxt_t* const,
+                const SRB_ToAddModList_t* const ,
+                const DRB_ToAddModList_t* const ,
+                const DRB_ToReleaseList_t* const ,
+                const PMCH_InfoList_r9_t * const pmch_info_listP);)
 #else
-/*! \fn rlc_op_status_t rrc_rlc_config_asn1_req (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const eNB_flag_t eNB_flagP, const srb_flag_t srb_flagP, const SRB_ToAddModList_t* const srb2add_listP, const DRB_ToAddModList_t* const drb2add_listP, const DRB_ToReleaseList_t* const drb2release_listP)
+/*! \fn rlc_op_status_t rrc_rlc_config_asn1_req (const protocol_ctxt_t* const ctxtP, const SRB_ToAddModList_t* const srb2add_listP, const DRB_ToAddModList_t* const drb2add_listP, const DRB_ToReleaseList_t* const drb2release_listP)
 * \brief  Function for RRC to configure a Radio Bearer.
-* \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
-* \param[in]  ue_mod_idP         Virtualized ue module identifier.
-* \param[in]  frameP             Frame index.
-* \param[in]  eNB_flagP          Flag to indicate eNB (1) or UE (0)
+* \param[in]  ctxtP              Running context.
 * \param[in]  srb2add_listP      SRB configuration list to be created.
 * \param[in]  drb2add_listP      DRB configuration list to be created.
 * \param[in]  drb2release_listP  DRB configuration list to be released.
 * \return     A status about the processing, OK or error code.
 */
 public_rlc_rrc( rlc_op_status_t rrc_rlc_config_asn1_req (
-    const module_id_t,
-    const module_id_t,
-    const frame_t,
-    const eNB_flag_t,
-    const SRB_ToAddModList_t* const ,
-    const DRB_ToAddModList_t* const ,
-    const DRB_ToReleaseList_t* const );)
+                const protocol_ctxt_t* const,
+                const SRB_ToAddModList_t* const ,
+                const DRB_ToAddModList_t* const ,
+                const DRB_ToReleaseList_t* const );)
 #endif
 
 
 /*! \fn void rb_free_rlc_union (void *rlcu_pP)
  * \brief  Free the rlc memory contained in the RLC embedded in the rlc_union_t
  *  struct pointed by of the rlcu_pP parameter. Free the rlc_union_t struct also.
+ * \param[in]  ctxtP              Running context.
  * \param[in]  rlcu_pP          Pointer on the rlc_union_t struct.
  */
 public_rlc_rrc(void
-    rb_free_rlc_union (void *rlcu_pP);)
+    rb_free_rlc_union (const protocol_ctxt_t* const ctxt_pP, void *rlcu_pP);)
 
 
-/*! \fn rlc_op_status_t rrc_rlc_remove_ue   (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const  eNB_flag_t eNB_flagP)
+/*! \fn rlc_op_status_t rrc_rlc_remove_ue   (const protocol_ctxt_t* const ctxtP)
  * \brief  Remove all RLC protocol instances from all radio bearers allocated to a UE.
- * \param[in]  enb_mod_idP      Virtualized enb module identifier, Not used if eNB_flagP = 0.
- * \param[in]  ue_mod_idP       Virtualized ue module identifier.
- * \param[in]  frameP           Frame index.
- * \param[in]  eNB_flagP        Flag to indicate eNB (1) or UE (0)
+ * \param[in]  ctxtP              Running context.
  * \return     A status about the processing, OK or error code.
 */
-public_rlc_rrc(rlc_op_status_t rrc_rlc_remove_ue (const module_id_t enb_mod_idP,const module_id_t ue_mod_idP,const frame_t     frameP,const eNB_flag_t eNB_flag);)
+public_rlc_rrc(rlc_op_status_t rrc_rlc_remove_ue (const protocol_ctxt_t* const);)
 
 
-/*! \fn rlc_op_status_t rrc_rlc_remove_rlc   (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const srb_flag_t srb_flagP, const MBMS_flag_t MBMS_flagP, const  rb_id_t rb_idP)
+/*! \fn rlc_op_status_t rrc_rlc_remove_rlc   (const protocol_ctxt_t* const ctxtP, const srb_flag_t srb_flagP, const MBMS_flag_t MBMS_flagP, const  rb_id_t rb_idP)
 * \brief  Remove a RLC protocol instance from a radio bearer.
-* \param[in]  enb_mod_idP      Virtualized enb module identifier, Not used if eNB_flagP = 0.
-* \param[in]  ue_mod_idP       Virtualized ue module identifier.
-* \param[in]  frameP           Frame index.
-* \param[in]  eNB_flagP        Flag to indicate eNB (1) or UE (0)
-* \param[in]  srb_flagP        Flag to indicate SRB (1) or DRB (0)
-* \param[in]  MBMS_flag        Flag to indicate whether this is an MBMS service (1) or not (0)
-* \param[in]  rb_idP           Radio bearer identifier.
+* \param[in]  ctxtP              Running context.
+* \param[in]  srb_flagP          Flag to indicate SRB (1) or DRB (0)
+* \param[in]  MBMS_flag          Flag to indicate whether this is an MBMS service (1) or not (0)
+* \param[in]  rb_idP             Radio bearer identifier.
 * \return     A status about the processing, OK or error code.
 */
-public_rlc_rrc(rlc_op_status_t rrc_rlc_remove_rlc   (const module_id_t , const module_id_t , const frame_t , const  eNB_flag_t , const srb_flag_t, const MBMS_flag_t, const  rb_id_t );)
+public_rlc_rrc(rlc_op_status_t rrc_rlc_remove_rlc   (const protocol_ctxt_t* const, const srb_flag_t, const MBMS_flag_t, const  rb_id_t );)
 
-/*! \fn rlc_union_t*  rrc_rlc_add_rlc   (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const srb_flag_t srb_flagP, const  MBMS_flag_t MBMS_flagP, const  rb_id_t rb_idP, logical_chan_id_t chan_idP, rlc_mode_t rlc_modeP)
+/*! \fn rlc_union_t*  rrc_rlc_add_rlc   (const protocol_ctxt_t* const ctxtP, const srb_flag_t srb_flagP, const  MBMS_flag_t MBMS_flagP, const  rb_id_t rb_idP, logical_chan_id_t chan_idP, rlc_mode_t rlc_modeP)
 * \brief  Add a RLC protocol instance to a radio bearer.
-* \param[in]  enb_mod_idP      Virtualized enb module identifier, Not used if eNB_flagP = 0.
-* \param[in]  ue_mod_idP       Virtualized ue module identifier.
-* \param[in]  frameP           Frame index.
-* \param[in]  eNB_flagP        Flag to indicate eNB (1) or UE (0)
-* \param[in]  srb_flagP        Flag to indicate SRB (1) or DRB (0)
-* \param[in]  MBMS_flag        Flag to indicate whether this is an MBMS service (1) or not (0)
-* \param[in]  rb_idP           Radio bearer identifier.
-* \param[in]  chan_idP         Logical channel identifier.
-* \param[in]  rlc_modeP        Mode of RLC (AM, UM, TM).
+* \param[in]  ctxtP              Running context.
+* \param[in]  srb_flagP          Flag to indicate SRB (1) or DRB (0)
+* \param[in]  MBMS_flag          Flag to indicate whether this is an MBMS service (1) or not (0)
+* \param[in]  rb_idP             Radio bearer identifier.
+* \param[in]  chan_idP           Logical channel identifier.
+* \param[in]  rlc_modeP          Mode of RLC (AM, UM, TM).
 * \return     A status about the processing, OK or error code.
 */
-private_rlc_rrc(rlc_union_t*  rrc_rlc_add_rlc      (const module_id_t, const module_id_t, const frame_t, const  eNB_flag_t, const srb_flag_t,  const  MBMS_flag_t MBMS_flagP, const  rb_id_t, logical_chan_id_t, rlc_mode_t);)
+private_rlc_rrc(rlc_union_t*  rrc_rlc_add_rlc      (const protocol_ctxt_t* const, const srb_flag_t,  const  MBMS_flag_t MBMS_flagP, const  rb_id_t, logical_chan_id_t, rlc_mode_t);)
 
 /*! \fn rlc_op_status_t rrc_rlc_config_req (
-     const module_id_t enb_mod_idP,
-     const module_id_t ue_mod_idP,
-     const frame_t frameP,
-     const  eNB_flag_t eNB_flagP,
+     const protocol_ctxt_t* const ctxtP,
      const srb_flag_t   srb_flagP,
      const MBMS_flag_t  MBMS_flagP,
      config_action_t actionP,
      const  rb_id_t rb_idP,
      rlc_info_t rlc_infoP)
 * \brief  Function for RRC to configure a Radio Bearer.
-* \param[in]  enb_mod_idP      Virtualized enb module identifier, Not used if eNB_flagP = 0.
-* \param[in]  ue_mod_idP       Virtualized ue module identifier.
-* \param[in]  frameP           Frame index.
-* \param[in]  eNB_flagP        Flag to indicate eNB (1) or UE (0)
+* \param[in]  ctxtP            Running context.
 * \param[in]  srb_flagP        Flag to indicate SRB (1) or DRB (0)
 * \param[in]  MBMS_flag        Flag to indicate whether this is an MBMS service (1) or not (0)
 * \param[in]  actionP          Action for this radio bearer (add, modify, remove).
@@ -423,22 +389,16 @@ private_rlc_rrc(rlc_union_t*  rrc_rlc_add_rlc      (const module_id_t, const mod
 * \return     A status about the processing, OK or error code.
 */
 public_rlc_rrc( rlc_op_status_t rrc_rlc_config_req   (
-    const module_id_t,
-    const module_id_t,
-    const frame_t,
-    const  eNB_flag_t ,
-    const srb_flag_t,
-    const MBMS_flag_t,
-    config_action_t,
-    const  rb_id_t,
-    rlc_info_t );)
+                const protocol_ctxt_t* const,
+                const srb_flag_t,
+                const MBMS_flag_t,
+                config_action_t,
+                const  rb_id_t,
+                rlc_info_t );)
 
-/*! \fn rlc_op_status_t rrc_rlc_data_req     (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const  MBMS_flag_t MBMS_flagP, const  rb_id_t rb_idP, mui_t muiP, confirm_t confirmP, sdu_size_t sdu_sizeP, char* sduP)
+/*! \fn rlc_op_status_t rrc_rlc_data_req     (const protocol_ctxt_t* const ctxtP, const  MBMS_flag_t MBMS_flagP, const  rb_id_t rb_idP, mui_t muiP, confirm_t confirmP, sdu_size_t sdu_sizeP, char* sduP)
 * \brief  Function for RRC to send a SDU through a Signalling Radio Bearer.
-* \param[in]  enb_mod_idP      Virtualized enb module identifier, Not used if eNB_flagP = 0.
-* \param[in]  ue_mod_idP       Virtualized ue module identifier.
-* \param[in]  frameP            Frame index
-* \param[in]  eNB_flagP         Flag to indicate eNB (1) or UE (0)
+* \param[in]  ctxtP            Running context.
 * \param[in]  MBMS_flag        Flag to indicate whether this is an MBMS service (1) or not (0)
 * \param[in]  rb_idP           Radio bearer identifier.
 * \param[in]  muiP             Message Unit identifier.
@@ -447,9 +407,9 @@ public_rlc_rrc( rlc_op_status_t rrc_rlc_config_req   (
 * \param[in]  sduP             SDU.
 * \return     A status about the processing, OK or error code.
 */
-public_rlc_rrc( rlc_op_status_t rrc_rlc_data_req     (const module_id_t, const module_id_t, const frame_t, const  eNB_flag_t, const  MBMS_flag_t, const  rb_id_t, mui_t, confirm_t, sdu_size_t, char *);)
+public_rlc_rrc( rlc_op_status_t rrc_rlc_data_req     (const protocol_ctxt_t* const , const  MBMS_flag_t, const  rb_id_t, mui_t, confirm_t, sdu_size_t, char *);)
 
-/*! \fn void  rrc_rlc_register_rrc ( void (*rrc_data_indP)  (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const  rb_id_t rb_idP, sdu_size_t sdu_sizeP, char* sduP), void (*rrc_data_confP) (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const  rb_id_t rb_idP, mui_t muiP, rlc_tx_status_t statusP)
+/*! \fn void  rrc_rlc_register_rrc ( void (*rrc_data_indP)  (const protocol_ctxt_t* const ctxtP, const  rb_id_t rb_idP, sdu_size_t sdu_sizeP, char* sduP), void (*rrc_data_confP) (const protocol_ctxt_t* const ctxtP, const  rb_id_t rb_idP, mui_t muiP, rlc_tx_status_t statusP)
 * \brief  This function is called by RRC to register its DATA-INDICATE and DATA-CONFIRM handlers to RLC layer.
 * \param[in]  rrc_data_indP       Pointer on RRC data indicate function.
 * \param[in]  rrc_data_confP      Pointer on RRC data confirm callback function.
@@ -480,7 +440,6 @@ public_rlc_mac(tbs_size_t            mac_rlc_data_req     (const module_id_t, co
 * \param[in]  eNB_flagP        Flag to indicate eNB (1) or UE (0)
 * \param[in]  MBMS_flagP       Flag to indicate whether this is the MBMS service (1) or not (0)
 * \param[in]  rb_idP           Radio bearer identifier.
-* \param[in]  frameP            Frame index.
 * \param[in]  bufferP          Memory area containing the transport blocks sent by MAC.
 * \param[in]  tb_sizeP         Size of a transport block in bits.
 * \param[in]  num_tbP          Number of transport blocks.
@@ -517,12 +476,9 @@ public_rlc(void rlc_util_print_hex_octets(
 
 
 
-/*! \fn rlc_op_status_t rlc_data_req     (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const  srb_flag_t srb_flagP,  const  MBMS_flag_t MBMS_flagP, const  rb_id_t rb_idP, mui_t muiP, confirm_t confirmP, sdu_size_t sdu_sizeP, mem_block_t *sduP)
+/*! \fn rlc_op_status_t rlc_data_req     (const protocol_ctxt_t* const ctxtP, const  srb_flag_t srb_flagP,  const  MBMS_flag_t MBMS_flagP, const  rb_id_t rb_idP, mui_t muiP, confirm_t confirmP, sdu_size_t sdu_sizeP, mem_block_t *sduP)
 * \brief    Interface with higher layers, map request to the RLC corresponding to the radio bearer.
-* \param[in]  enb_mod_idP      Virtualized enb module identifier, Not used if eNB_flagP = 0.
-* \param[in]  ue_mod_idP       Virtualized ue module identifier.
-* \param[in]  frameP           Frame index.
-* \param[in]  eNB_flagP        Flag to indicate eNB (1) or UE (0)
+* \param[in]  ctxtP            Running context.
 * \param[in]  srb_flagP        Flag to indicate SRB (1) or DRB (0)
 * \param[in]  MBMS_flagP       Flag to indicate whether this is the MBMS service (1) or not (0)
 * \param[in]  rb_idP           Radio bearer identifier.
@@ -533,24 +489,18 @@ public_rlc(void rlc_util_print_hex_octets(
 * \return     A status about the processing, OK or error code.
 */
 public_rlc(rlc_op_status_t rlc_data_req     (
-        const module_id_t ,
-        const module_id_t ,
-        const frame_t ,
-        const  eNB_flag_t ,
-        const  srb_flag_t,
-        const  MBMS_flag_t ,
-        const  rb_id_t ,
-        const  mui_t ,
-        const confirm_t ,
-        const sdu_size_t ,
-        mem_block_t * const);)
+                const protocol_ctxt_t* const,
+                const  srb_flag_t,
+                const  MBMS_flag_t ,
+                const  rb_id_t ,
+                const  mui_t ,
+                const confirm_t ,
+                const sdu_size_t ,
+                mem_block_t * const);)
 
-/*! \fn void rlc_data_ind     (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const  srb_flag_t srb_flagP, const  MBMS_flag_t MBMS_flagP, const  rb_id_t rb_idP, const sdu_size_t sdu_sizeP, mem_block_t* sduP) {
+/*! \fn void rlc_data_ind     (const protocol_ctxt_t* const ctxtP, const  srb_flag_t srb_flagP, const  MBMS_flag_t MBMS_flagP, const  rb_id_t rb_idP, const sdu_size_t sdu_sizeP, mem_block_t* sduP) {
 * \brief    Interface with higher layers, route SDUs coming from RLC protocol instances to upper layer instance.
-* \param[in]  enb_mod_idP      Virtualized enb module identifier, Not used if eNB_flagP = 0.
-* \param[in]  ue_mod_idP       Virtualized ue module identifier.
-* \param[in]  frameP           Frame index
-* \param[in]  eNB_flagP        Flag to indicate eNB (1) or UE (0)
+* \param[in]  ctxtP            Running context.
 * \param[in]  srb_flagP        Flag to indicate SRB (1) or DRB (0)
 * \param[in]  MBMS_flagP       Flag to indicate whether this is the MBMS service (1) or not (0)
 * \param[in]  rb_idP           Radio bearer identifier.
@@ -558,44 +508,32 @@ public_rlc(rlc_op_status_t rlc_data_req     (
 * \param[in]  sduP             SDU.
 */
 public_rlc(void rlc_data_ind(
-        const module_id_t ,
-        const module_id_t ,
-        const frame_t ,
-        const eNB_flag_t ,
-        const srb_flag_t,
-        const MBMS_flag_t ,
-        const rb_id_t,
-        const sdu_size_t,
-        mem_block_t* const);)
+                const protocol_ctxt_t* const,
+                const srb_flag_t,
+                const MBMS_flag_t ,
+                const rb_id_t,
+                const sdu_size_t,
+                mem_block_t* const);)
 
 
-/*! \fn void rlc_data_conf     (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const srb_flag_t srb_flagP, const  rb_id_t rb_idP, const mui_t muiP, const rlc_tx_status_t statusP)
+/*! \fn void rlc_data_conf     (const protocol_ctxt_t* const ctxtP, const srb_flag_t srb_flagP, const  rb_id_t rb_idP, const mui_t muiP, const rlc_tx_status_t statusP)
 * \brief    Interface with higher layers, confirm to upper layer the transmission status for a SDU stamped with a MUI, scheduled for transmission.
-* \param[in]  enb_mod_idP      Virtualized enb module identifier, Not used if eNB_flagP = 0.
-* \param[in]  ue_mod_idP       Virtualized ue module identifier.
-* \param[in]  frameP           Frame index
-* \param[in]  eNB_flagP        Flag to indicate eNB (1) or UE (0)
+* \param[in]  ctxtP            Running context.
 * \param[in]  srb_flagP        Flag to indicate SRB (1) or DRB (0)
 * \param[in]  rb_idP           Radio bearer identifier.
 * \param[in]  muiP             Message Unit identifier.
 * \param[in]  statusP          Status of the transmission (RLC_SDU_CONFIRM_YES, RLC_SDU_CONFIRM_NO).
 */
 public_rlc(void rlc_data_conf(
-        const module_id_t,
-        const module_id_t,
-        const frame_t,
-        const  eNB_flag_t ,
-        const  srb_flag_t,
-        const  rb_id_t,
-        const mui_t,
-        const rlc_tx_status_t );)
+                const protocol_ctxt_t* const,
+                const  srb_flag_t,
+                const  rb_id_t,
+                const mui_t,
+                const rlc_tx_status_t );)
 
 
 /*! \fn rlc_op_status_t rlc_stat_req     (
-                        const module_id_t   enb_mod_idP,
-                        const module_id_t   ue_mod_idP,
-                        const frame_t       frameP,
-                        const  eNB_flag_t    eNB_flagP,
+                        const protocol_ctxt_t* const ctxtP,
                         const  srb_flag_t    srb_flagP,
                         const  rb_id_t       rb_idP,
                         unsigned int* stat_tx_pdcp_sdu,
@@ -627,10 +565,7 @@ public_rlc(void rlc_data_conf(
                         unsigned int* stat_timer_status_prohibit_timed_out)
 
 * \brief    Request RLC statistics of a particular radio bearer.
-* \param[in]  enb_mod_idP          Virtualized enb module identifier, Not used if eNB_flagP = 0.
-* \param[in]  ue_mod_idP           Virtualized ue module identifier.
-* \param[in]  frameP
-* \param[in]  eNB_flag             Flag to indicate eNB (1) or UE (0)
+* \param[in]  ctxtP                Running context.
 * \param[in]  srb_flagP            Flag to indicate signalling radio bearer (1) or data radio bearer (0).
 * \param[in]  rb_idP                       .
 * \param[out] stat_tx_pdcp_sdu                     Number of SDUs coming from upper layers.
@@ -663,10 +598,7 @@ public_rlc(void rlc_data_conf(
 */
 
 public_rlc(rlc_op_status_t rlc_stat_req     (
-        const module_id_t   enb_mod_idP,
-        const module_id_t   ue_mod_idP,
-        const frame_t       frameP,
-        const eNB_flag_t    eNB_flagP,
+        const protocol_ctxt_t* const ctxtP,
         const srb_flag_t    srb_flagP,
         const rb_id_t       rb_idP,
         unsigned int* const stat_tx_pdcp_sdu,

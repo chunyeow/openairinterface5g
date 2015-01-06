@@ -83,6 +83,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
   unsigned int nCCE[MAX_NUM_CCs];
   int mbsfn_status[MAX_NUM_CCs];
   uint32_t RBalloc[MAX_NUM_CCs];
+  protocol_ctxt_t   ctxt;
 #ifdef EXMIMO
   int ret;
 #endif
@@ -181,14 +182,18 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
 
   //if (subframeP%5 == 0)
   //#ifdef EXMIMO
-  pdcp_run(frameP, 1, 0, module_idP);
+  ctxt.enb_module_id = module_idP;
+  ctxt.ue_module_id  = 0;
+  ctxt.frame         = frameP;
+  ctxt.enb_flag      = ENB_FLAG_YES;
+  pdcp_run(&ctxt);
   //#endif
 
   // check HO
   rrc_rx_tx(module_idP,
-	    frameP,
-	    1,
-	    module_idP,
+            frameP,
+            1,
+            module_idP,
             CC_id);
 
 #ifdef Rel10

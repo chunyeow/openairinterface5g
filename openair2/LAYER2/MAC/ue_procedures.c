@@ -1321,6 +1321,7 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
   // int8_t lcg_id;
   struct RACH_ConfigCommon *rach_ConfigCommon = (struct RACH_ConfigCommon *)NULL;
 #ifdef EXMIMO
+  protocol_ctxt_t   ctxt;
   int ret;
 #endif
 #if defined(ENABLE_ITTI)
@@ -1366,7 +1367,11 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
   //Rrc_xface->Frame_index=Mac_rlc_xface->frameP;
   //if (subframe%5 == 0)
 #ifdef EXMIMO
-  pdcp_run(frameP, 0, module_idP, eNB_indexP);
+  ctxt.enb_module_id = eNB_indexP;
+  ctxt.ue_module_id  = module_idP;
+  ctxt.frame         = frameP;
+  ctxt.enb_flag      = ENB_FLAG_NO;
+  pdcp_run(&ctxt);
 #endif
   UE_mac_inst[module_idP].frame = frameP;
   UE_mac_inst[module_idP].subframe = subframeP;

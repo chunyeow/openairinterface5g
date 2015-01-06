@@ -170,4 +170,16 @@ typedef enum config_action_e {
 //-----------------------------------------------------------------------------
 typedef uint32_t           teid_t; // tunnel endpoint identifier
 typedef uint8_t            ebi_t;  // eps bearer id
+
+
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+typedef struct protocol_ctxt_s {
+    module_id_t enb_module_id; /*!< \brief  Virtualized enb module identifier, Not used if eNB_flagP = 0. */
+    module_id_t ue_module_id;  /*!< \brief  Virtualized ue module identifier */
+    frame_t     frame;         /*!< \brief  LTE Frame number.*/
+    eNB_flag_t  enb_flag;      /*!< \brief  Flag to indicate eNB (1) or UE (0) */
+} protocol_ctxt_t;
 #endif

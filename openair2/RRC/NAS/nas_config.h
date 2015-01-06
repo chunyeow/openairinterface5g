@@ -113,7 +113,7 @@ void setBaseNetAddress(char* baseAddr);
  * \note
  * @ingroup  ?????
  */
-char* getBaseNetAddress();
+char* getBaseNetAddress(void);
 
 /*! \fn void  setNetMask(char*)
  * \brief This function sets the new default network mask used
@@ -129,7 +129,7 @@ void setNetMask(char* baseAddr);
  * \note
  * @ingroup  ?????
  */
-char* getNetMask();
+char* getNetMask(void);
 
 /*! \fn coid setBroadcastAddress(char*)
  * \brief This function sets the new broadcast address used
@@ -145,7 +145,7 @@ void setBroadcastAddress(char* baseAddr);
  * \note
  * @ingroup  ?????
  */
-char* getBroadcastAddress();
+char* getBroadcastAddress(void);
 
 int bringInterfaceUp(char *interfaceName, int up);
 

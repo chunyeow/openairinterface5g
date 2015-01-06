@@ -36,13 +36,16 @@
 #include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
 //-----------------------------------------------------------------------------
-void rlc_am_init(rlc_am_entity_t *rlc_pP, frame_t frameP)
+void
+rlc_am_init(
+                const protocol_ctxt_t* const  ctxt_pP,
+                rlc_am_entity_t *const        rlc_pP)
 //-----------------------------------------------------------------------------
 {
     if (rlc_pP->initialized == TRUE) {
-        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] INITIALIZATION ALREADY DONE, DOING NOTHING\n", frameP);
+        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] INITIALIZATION ALREADY DONE, DOING NOTHING\n", ctxt_pP->frame);
     } else {
-        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] INITIALIZATION: STATE VARIABLES, BUFFERS, LISTS\n", frameP);
+        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] INITIALIZATION: STATE VARIABLES, BUFFERS, LISTS\n", ctxt_pP->frame);
         memset(rlc_pP, 0, sizeof(rlc_am_entity_t));
 
         list2_init(&rlc_pP->receiver_buffer,      "RX BUFFER");
@@ -56,8 +59,8 @@ void rlc_am_init(rlc_am_entity_t *rlc_pP, frame_t frameP)
 #warning "cast the rlc retrans buffer to uint32"
 	//        rlc_pP->pdu_retrans_buffer       = calloc(1, (uint16_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
         rlc_pP->pdu_retrans_buffer       = calloc(1, (uint32_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
-        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] input_sdus[] = %p  element size=%d\n", frameP, rlc_pP->input_sdus,sizeof(rlc_am_tx_sdu_management_t));
-        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] pdu_retrans_buffer[] = %p element size=%d\n", frameP, rlc_pP->pdu_retrans_buffer,sizeof(rlc_am_tx_data_pdu_management_t));
+        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] input_sdus[] = %p  element size=%d\n", ctxt_pP->frame, rlc_pP->input_sdus,sizeof(rlc_am_tx_sdu_management_t));
+        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] pdu_retrans_buffer[] = %p element size=%d\n", ctxt_pP->frame, rlc_pP->pdu_retrans_buffer,sizeof(rlc_am_tx_data_pdu_management_t));
 
         // TX state variables
         //rlc_pP->vt_a    = 0;
@@ -81,7 +84,10 @@ void rlc_am_init(rlc_am_entity_t *rlc_pP, frame_t frameP)
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_reestablish(rlc_am_entity_t *rlc_pP, frame_t frameP)
+void
+rlc_am_reestablish(
+                const protocol_ctxt_t* const  ctxt_pP,
+                rlc_am_entity_t* const        rlc_pP)
 //-----------------------------------------------------------------------------
 {
     /*
@@ -98,7 +104,7 @@ void rlc_am_reestablish(rlc_am_entity_t *rlc_pP, frame_t frameP)
      *    - stop and reset all timers;
      *    - reset all state variables to their initial values.
      */
-    LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][REESTABLISH] RE-INIT STATE VARIABLES, BUFFERS, LISTS\n", frameP);
+    LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][REESTABLISH] RE-INIT STATE VARIABLES, BUFFERS, LISTS\n", ctxt_pP->frame);
 
 #warning TODO when possible reassemble RLC SDUs from any byte segments of AMD PDUs with SN inf VR(MR)
     list2_free(&rlc_pP->receiver_buffer);
@@ -133,13 +139,16 @@ void rlc_am_reestablish(rlc_am_entity_t *rlc_pP, frame_t frameP)
 }
 
 //-----------------------------------------------------------------------------
-void rlc_am_cleanup(rlc_am_entity_t *rlc_pP)
+void
+rlc_am_cleanup(
+                const protocol_ctxt_t* const  ctxt_pP,
+                rlc_am_entity_t* const        rlc_pP)
 //-----------------------------------------------------------------------------
 {
     LOG_I(RLC, "[FRAME ?????][%s][RLC_AM][MOD %u/%u][RB %u][CLEANUP]\n",
-          (rlc_pP->is_enb) ? "eNB" : "UE",
-          rlc_pP->enb_module_id,
-          rlc_pP->ue_module_id,
+          (ctxt_pP->enb_flag) ? "eNB" : "UE",
+          ctxt_pP->enb_module_id,
+          ctxt_pP->ue_module_id,
           rlc_pP->rb_id);
 
     list2_free(&rlc_pP->receiver_buffer);
@@ -177,22 +186,24 @@ void rlc_am_cleanup(rlc_am_entity_t *rlc_pP)
     memset(rlc_pP, 0, sizeof(rlc_am_entity_t));
 }
 //-----------------------------------------------------------------------------
-void rlc_am_configure(rlc_am_entity_t *rlc_pP,
-		      frame_t          frameP,
-                      uint16_t            max_retx_thresholdP,
-                      uint16_t            poll_pduP,
-                      uint16_t            poll_byteP,
-                      uint32_t            t_poll_retransmitP,
-                      uint32_t            t_reorderingP,
-                      uint32_t            t_status_prohibitP)
+void
+rlc_am_configure(
+                const protocol_ctxt_t* const  ctxt_pP,
+                rlc_am_entity_t *const        rlc_pP,
+                const uint16_t                max_retx_thresholdP,
+                const uint16_t                poll_pduP,
+                const uint16_t                poll_byteP,
+                const uint32_t                t_poll_retransmitP,
+                const uint32_t                t_reorderingP,
+                const uint32_t                t_status_prohibitP)
 //-----------------------------------------------------------------------------
 {
   if (rlc_pP->configured == TRUE) {
       LOG_I(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RECONFIGURE] max_retx_threshold %d poll_pdu %d poll_byte %d t_poll_retransmit %d t_reordering %d t_status_prohibit %d\n",
-          frameP,
-          (rlc_pP->is_enb) ? "eNB" : "UE",
-          rlc_pP->enb_module_id,
-          rlc_pP->ue_module_id,
+          ctxt_pP->frame,
+          (ctxt_pP->enb_flag) ? "eNB" : "UE",
+          ctxt_pP->enb_module_id,
+          ctxt_pP->ue_module_id,
           rlc_pP->rb_id,
           max_retx_thresholdP,
           poll_pduP,
@@ -211,10 +222,10 @@ void rlc_am_configure(rlc_am_entity_t *rlc_pP,
       rlc_pP->t_status_prohibit.time_out   = t_status_prohibitP;
   } else {
       LOG_I(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][CONFIGURE] max_retx_threshold %d poll_pdu %d poll_byte %d t_poll_retransmit %d t_reordering %d t_status_prohibit %d\n",
-          frameP,
-          (rlc_pP->is_enb) ? "eNB" : "UE",
-          rlc_pP->enb_module_id,
-          rlc_pP->ue_module_id,
+          ctxt_pP->frame,
+          (ctxt_pP->enb_flag) ? "eNB" : "UE",
+          ctxt_pP->enb_module_id,
+          ctxt_pP->ue_module_id,
           rlc_pP->rb_id,
           max_retx_thresholdP,
           poll_pduP,
@@ -229,42 +240,39 @@ void rlc_am_configure(rlc_am_entity_t *rlc_pP,
       rlc_pP->protocol_state     = RLC_DATA_TRANSFER_READY_STATE;
 
 
-      rlc_am_init_timer_poll_retransmit(rlc_pP, t_poll_retransmitP);
-      rlc_am_init_timer_reordering     (rlc_pP, t_reorderingP);
-      rlc_am_init_timer_status_prohibit(rlc_pP, t_status_prohibitP);
+      rlc_am_init_timer_poll_retransmit(ctxt_pP, rlc_pP, t_poll_retransmitP);
+      rlc_am_init_timer_reordering     (ctxt_pP, rlc_pP, t_reorderingP);
+      rlc_am_init_timer_status_prohibit(ctxt_pP, rlc_pP, t_status_prohibitP);
 
       rlc_pP->configured = TRUE;
   }
 
 }
 //-----------------------------------------------------------------------------
-void rlc_am_set_debug_infos(rlc_am_entity_t *rlc_pP,
-                            frame_t          frameP,
-                            eNB_flag_t       eNB_flagP,
-                            srb_flag_t       srb_flagP,
-                            module_id_t      enb_module_idP,
-                            module_id_t      ue_module_idP,
-                            rb_id_t          rb_idP)
+void
+rlc_am_set_debug_infos(
+                const protocol_ctxt_t* const  ctxt_pP,
+                rlc_am_entity_t *const        rlc_pP,
+                const srb_flag_t              srb_flagP,
+                const rb_id_t                 rb_idP)
 //-----------------------------------------------------------------------------
 {
     LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SET DEBUG INFOS] module_id %d rb_id %d is SRB %d\n",
-          frameP,
-          (rlc_pP->is_enb) ? "eNB" : "UE",
-          rlc_pP->enb_module_id,
-          rlc_pP->ue_module_id,
+          ctxt_pP->frame,
+          (ctxt_pP->enb_flag) ? "eNB" : "UE",
+          ctxt_pP->enb_module_id,
+          ctxt_pP->ue_module_id,
           rb_idP,
-          enb_module_idP,
-          ue_module_idP,
+          ctxt_pP->enb_module_id,
+          ctxt_pP->ue_module_id,
           rb_idP,
           (srb_flagP) ? "TRUE" : "FALSE");
 
-    rlc_pP->enb_module_id = enb_module_idP;
-    rlc_pP->ue_module_id  = ue_module_idP;
+
     rlc_pP->rb_id         = rb_idP;
     if (srb_flagP) {
       rlc_pP->is_data_plane = 0;
     } else {
       rlc_pP->is_data_plane = 1;
     }
-    rlc_pP->is_enb = eNB_flagP;
 }

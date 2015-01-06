@@ -37,9 +37,11 @@
 #include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
 //-----------------------------------------------------------------------------
-void rlc_am_check_timer_poll_retransmit(
-        rlc_am_entity_t *const rlc_pP,
-        const frame_t frameP)
+void
+rlc_am_check_timer_poll_retransmit(
+                const protocol_ctxt_t* const ctxt_pP,
+                rlc_am_entity_t * const      rlc_pP
+                )
 //-----------------------------------------------------------------------------
 {
   // 5.2.2.3 Expiry of t-PollRetransmit
@@ -59,50 +61,56 @@ void rlc_am_check_timer_poll_retransmit(
         //        +-----------+------------------+----------+
         //FRAME # 0                                     FRAME MAX
         ((rlc_pP->t_poll_retransmit.frame_start < rlc_pP->t_poll_retransmit.frame_time_out) &&
-            ((frameP >= rlc_pP->t_poll_retransmit.frame_time_out) ||
-             (frameP < rlc_pP->t_poll_retransmit.frame_start)))                                   ||
+            ((ctxt_pP->frame >= rlc_pP->t_poll_retransmit.frame_time_out) ||
+             (ctxt_pP->frame < rlc_pP->t_poll_retransmit.frame_start)))                                   ||
         // CASE 2:        time out            start
         //        +-----------+------------------+----------+
         //        |***********|                  |**********|
         //        +-----------+------------------+----------+
         //FRAME # 0                                     FRAME MAX VALUE
         ((rlc_pP->t_poll_retransmit.frame_start > rlc_pP->t_poll_retransmit.frame_time_out) &&
-           (frameP < rlc_pP->t_poll_retransmit.frame_start) && (frameP >= rlc_pP->t_poll_retransmit.frame_time_out))
+           (ctxt_pP->frame < rlc_pP->t_poll_retransmit.frame_start) && (ctxt_pP->frame >= rlc_pP->t_poll_retransmit.frame_time_out))
         ) {
-        //if (rlc_pP->t_poll_retransmit.frame_time_out <= frameP) {
+        //if (rlc_pP->t_poll_retransmit.frame_time_out <= ctxt_pP->frame) {
             rlc_pP->t_poll_retransmit.running   = 0;
             rlc_pP->t_poll_retransmit.timed_out = 1;
             rlc_pP->stat_timer_poll_retransmit_timed_out += 1;
 
             LOG_D(RLC, "[FRAME %05d][%s][RLC_AM][MOD %u/%u][RB %u][T_POLL_RETRANSMIT] TIME-OUT\n",
-                  frameP,
-                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   rlc_pP->rb_id);
 
 //#warning         TO DO rlc_am_check_timer_poll_retransmit
-            rlc_pP->t_poll_retransmit.frame_time_out = frameP + rlc_pP->t_poll_retransmit.time_out;
+            rlc_pP->t_poll_retransmit.frame_time_out = ctxt_pP->frame + rlc_pP->t_poll_retransmit.time_out;
         }
     }
 }
 //-----------------------------------------------------------------------------
-int rlc_am_is_timer_poll_retransmit_timed_out(rlc_am_entity_t *const rlc_pP)
+int
+rlc_am_is_timer_poll_retransmit_timed_out(
+                const protocol_ctxt_t* const ctxt_pP,
+                rlc_am_entity_t * const      rlc_pP
+                )
 //-----------------------------------------------------------------------------
 {
     return rlc_pP->t_poll_retransmit.timed_out;
 }
 //-----------------------------------------------------------------------------
-void rlc_am_stop_and_reset_timer_poll_retransmit(
-        rlc_am_entity_t *const rlc_pP,
-        const frame_t frameP)
+void
+rlc_am_stop_and_reset_timer_poll_retransmit(
+                const protocol_ctxt_t* const ctxt_pP,
+                rlc_am_entity_t * const      rlc_pP
+                )
 //-----------------------------------------------------------------------------
 {
    LOG_D(RLC, "[FRAME %05d][%s][RLC_AM][MOD %u/%u][RB %u][T_POLL_RETRANSMIT] STOPPED AND RESET\n",
-         frameP,
-         (rlc_pP->is_enb) ? "eNB" : "UE",
-         rlc_pP->enb_module_id,
-         rlc_pP->ue_module_id,
+         ctxt_pP->frame,
+         (ctxt_pP->enb_flag) ? "eNB" : "UE",
+         ctxt_pP->enb_module_id,
+         ctxt_pP->ue_module_id,
          rlc_pP->rb_id);
     rlc_pP->t_poll_retransmit.running         = 0;
     rlc_pP->t_poll_retransmit.frame_time_out  = 0;
@@ -110,27 +118,31 @@ void rlc_am_stop_and_reset_timer_poll_retransmit(
     rlc_pP->t_poll_retransmit.timed_out       = 0;
 }
 //-----------------------------------------------------------------------------
-void rlc_am_start_timer_poll_retransmit(
-        rlc_am_entity_t *const rlc_pP,
-        const frame_t frameP)
+void
+rlc_am_start_timer_poll_retransmit(
+                const protocol_ctxt_t* const ctxt_pP,
+                rlc_am_entity_t * const      rlc_pP
+                )
 //-----------------------------------------------------------------------------
 {
     rlc_pP->t_poll_retransmit.running         = 1;
-    rlc_pP->t_poll_retransmit.frame_time_out  = frameP + rlc_pP->t_poll_retransmit.time_out;
-    rlc_pP->t_poll_retransmit.frame_start     = frameP;
+    rlc_pP->t_poll_retransmit.frame_time_out  = ctxt_pP->frame + rlc_pP->t_poll_retransmit.time_out;
+    rlc_pP->t_poll_retransmit.frame_start     = ctxt_pP->frame;
     rlc_pP->t_poll_retransmit.timed_out       = 0;
     LOG_D(RLC, "[FRAME %05d][%s][RLC_AM][MOD %u/%u][RB %u][T_POLL_RETRANSMIT] STARTED (TIME-OUT = FRAME %05d)\n",
-          frameP,
-          (rlc_pP->is_enb) ? "eNB" : "UE",
-          rlc_pP->enb_module_id,
-          rlc_pP->ue_module_id,
+          ctxt_pP->frame,
+          (ctxt_pP->enb_flag) ? "eNB" : "UE",
+          ctxt_pP->enb_module_id,
+          ctxt_pP->ue_module_id,
           rlc_pP->rb_id,
           rlc_pP->t_poll_retransmit.frame_time_out);
 }
 //-----------------------------------------------------------------------------
-void rlc_am_init_timer_poll_retransmit(
-        rlc_am_entity_t *const rlc_pP,
-        const uint32_t time_outP)
+void
+rlc_am_init_timer_poll_retransmit(
+                const protocol_ctxt_t* const ctxt_pP,
+                rlc_am_entity_t * const      rlc_pP,
+                const uint32_t time_outP)
 //-----------------------------------------------------------------------------
 {
     rlc_pP->t_poll_retransmit.running         = 0;

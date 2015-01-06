@@ -301,6 +301,13 @@ void rrc_top_cleanup(void) {
 
 void rrc_t310_expiration(const frame_t frameP, uint8_t Mod_id, uint8_t eNB_index) {
 
+  protocol_ctxt_t ctxt;
+
+  ctxt.enb_module_id = eNB_index;
+  ctxt.ue_module_id  = Mod_id;
+  ctxt.frame         = frameP;
+  ctxt.enb_flag      = ENB_FLAG_NO;
+
   if (UE_rrc_inst[Mod_id].Info[eNB_index].State != RRC_CONNECTED) {
     LOG_D(RRC, "Timer 310 expired, going to RRC_IDLE\n");
     UE_rrc_inst[Mod_id].Info[eNB_index].State = RRC_IDLE;
@@ -315,10 +322,17 @@ void rrc_t310_expiration(const frame_t frameP, uint8_t Mod_id, uint8_t eNB_index
     if (UE_rrc_inst[Mod_id].Srb2[eNB_index].Active == 1) {
       msg ("[RRC Inst %d] eNB_index %d, Remove RB %d\n ", Mod_id, eNB_index,
            UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id);
-      rrc_pdcp_config_req (eNB_index, Mod_id, frameP, ENB_FLAG_NO, SRB_FLAG_YES, CONFIG_ACTION_REMOVE,
-                           UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id, 0);
-      rrc_rlc_config_req (eNB_index, Mod_id, frameP, ENB_FLAG_NO, SRB_FLAG_YES, MBMS_FLAG_NO, CONFIG_ACTION_REMOVE,
-                          UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id, Rlc_info_um);
+      rrc_pdcp_config_req (&ctxt,
+                           SRB_FLAG_YES,
+                           CONFIG_ACTION_REMOVE,
+                           UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id,
+                           0);
+      rrc_rlc_config_req (&ctxt,
+                          SRB_FLAG_YES,
+                          MBMS_FLAG_NO,
+                          CONFIG_ACTION_REMOVE,
+                          UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id,
+                          Rlc_info_um);
       UE_rrc_inst[Mod_id].Srb2[eNB_index].Active = 0;
       UE_rrc_inst[Mod_id].Srb2[eNB_index].Status = IDLE;
       UE_rrc_inst[Mod_id].Srb2[eNB_index].Next_check_frame = 0;

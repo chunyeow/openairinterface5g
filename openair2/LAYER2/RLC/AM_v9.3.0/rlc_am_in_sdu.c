@@ -43,9 +43,9 @@
 #define TRACE_RLC_AM_FREE_SDU
 //-----------------------------------------------------------------------------
 void rlc_am_free_in_sdu(
-        rlc_am_entity_t *const rlcP,
-        const frame_t frameP,
-        const unsigned int index_in_bufferP)
+                const protocol_ctxt_t* const  ctxt_pP,
+                rlc_am_entity_t *const        rlcP,
+                const unsigned int            index_in_bufferP)
 //-----------------------------------------------------------------------------
 {
     if (index_in_bufferP <= RLC_AM_SDU_CONTROL_BUFFER_SIZE) {
@@ -69,10 +69,10 @@ void rlc_am_free_in_sdu(
     }
 #ifdef TRACE_RLC_AM_FREE_SDU
     LOG_D(RLC, "[FRAME %05d][%s][RLC_AM][MOD %u/%u][RB %u][FREE SDU] SDU INDEX %03d current_sdu_index=%d next_sdu_index=%d nb_sdu_no_segmented=%d\n",
-          frameP,
-          (rlcP->is_enb) ? "eNB" : "UE",
-          rlcP->enb_module_id,
-          rlcP->ue_module_id,
+          ctxt_pP->frame,
+          (ctxt_pP->enb_flag) ? "eNB" : "UE",
+          ctxt_pP->enb_module_id,
+          ctxt_pP->ue_module_id,
           rlcP->rb_id,
           index_in_bufferP,
           rlcP->current_sdu_index,
@@ -82,9 +82,11 @@ void rlc_am_free_in_sdu(
 }
 // called when segmentation is done
 //-----------------------------------------------------------------------------
-void rlc_am_free_in_sdu_data(
-        rlc_am_entity_t *const rlcP,
-        const unsigned int index_in_bufferP)
+void
+rlc_am_free_in_sdu_data(
+                const protocol_ctxt_t* const ctxt_pP,
+                rlc_am_entity_t* const       rlcP,
+                const unsigned int           index_in_bufferP)
 //-----------------------------------------------------------------------------
 {
     if (index_in_bufferP <= RLC_AM_SDU_CONTROL_BUFFER_SIZE) {
@@ -97,7 +99,10 @@ void rlc_am_free_in_sdu_data(
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_in_sdu_is_empty(rlc_am_entity_t *const rlcP)
+signed int
+rlc_am_in_sdu_is_empty(
+                const protocol_ctxt_t* const ctxt_pP,
+                rlc_am_entity_t       *const rlcP)
 //-----------------------------------------------------------------------------
 {
     if (rlcP->nb_sdu == 0) {

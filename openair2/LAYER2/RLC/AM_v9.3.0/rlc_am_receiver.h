@@ -56,60 +56,58 @@
 #                define public_rlc_am_receiver(x)     extern x
 #            endif
 #        endif
-/*! \fn signed int rlc_am_get_data_pdu_infos(const frame_t frameP, rlc_am_pdu_sn_10_t* headerP, int16_t sizeP, rlc_am_pdu_info_t* pdu_infoP)
+/*! \fn signed int rlc_am_get_data_pdu_infos( const protocol_ctxt_t* const ctxt_pP, rlc_am_pdu_sn_10_t* headerP, int16_t sizeP, rlc_am_pdu_info_t* pdu_infoP)
 * \brief    Extract PDU informations (header fields, data size, etc) from the serialized PDU.
-* \param[in]  frame          Frame index.
+* \param[in]  ctxt_pP          Running context.
 * \param[in]  headerP        RLC AM header PDU pointer.
 * \param[in]  sizeP          Size of RLC AM PDU.
 * \param[in]  pdu_infoP      Structure containing extracted informations from PDU.
 * \return     0 if no error was encountered during the parsing of the PDU, else -1;
 */
-protected_rlc_am_receiver( signed int rlc_am_get_data_pdu_infos(const frame_t frameP, rlc_am_pdu_sn_10_t* headerP, int16_t sizeP, rlc_am_pdu_info_t* pdu_infoP));
+protected_rlc_am_receiver( signed int rlc_am_get_data_pdu_infos(const protocol_ctxt_t* const ctxt_pP, rlc_am_pdu_sn_10_t* headerP, int16_t sizeP, rlc_am_pdu_info_t* pdu_infoP));
 
-/*! \fn void rlc_am_display_data_pdu_infos(rlc_am_entity_t * const rlc_pP, const frame_t frameP, rlc_am_pdu_info_t* pdu_infoP)
+/*! \fn void rlc_am_display_data_pdu_infos(const protocol_ctxt_t* const ctxt_pP, rlc_am_entity_t * const rlc_pP,  rlc_am_pdu_info_t* pdu_infoP)
 * \brief      Display RLC AM PDU informations.
-* \param[in]  rlc_pP           RLC AM protocol instance pointer.
-* \param[in]  frame          Frame index.
+* \param[in]  ctxt_pP          Running context.
+* \param[in]  rlc_pP         RLC AM protocol instance pointer.
 * \param[in]  pdu_infoP      Structure containing extracted informations of a PDU.
 */
-protected_rlc_am_receiver( void rlc_am_display_data_pdu_infos(rlc_am_entity_t * const rlc_pP, const frame_t frameP, rlc_am_pdu_info_t* pdu_infoP);)
+protected_rlc_am_receiver( void rlc_am_display_data_pdu_infos(const protocol_ctxt_t* const ctxt_pP,rlc_am_entity_t * const rlc_pP, rlc_am_pdu_info_t* pdu_infoP);)
 
-/*! \fn void rlc_am_rx_update_vr_ms(rlc_am_entity_t * const rlc_pP,mem_block_t* tb_pP)
+/*! \fn void rlc_am_rx_update_vr_ms(const protocol_ctxt_t* const ctxt_pP,rlc_am_entity_t * const rlc_pP,mem_block_t* tb_pP)
 * \brief      Update RLC AM protocol variable VR(MS).
-* \param[in]  rlc_pP           RLC AM protocol instance pointer.
-* \param[in]  frame          Frame index.
-* \param[in]  tb_pP            PDU embedded in a mem_block_t struct.
+* \param[in]  ctxt_pP          Running context.
+* \param[in]  rlc_pP         RLC AM protocol instance pointer.
+* \param[in]  tb_pP          PDU embedded in a mem_block_t struct.
 * \note It is assumed that the sequence number of the transport block is equal to VR(MS)
 */
-protected_rlc_am_receiver( void rlc_am_rx_update_vr_ms(rlc_am_entity_t * const rlc_pP,const frame_t frameP, mem_block_t* tb_pP);)
+protected_rlc_am_receiver( void rlc_am_rx_update_vr_ms(const protocol_ctxt_t* const ctxt_pP, rlc_am_entity_t * const rlc_pP, mem_block_t* tb_pP);)
 
-/*! \fn void rlc_am_rx_update_vr_r (rlc_am_entity_t * const rlc_pP,const frame_t frameP,mem_block_t* tb_pP)
+/*! \fn void rlc_am_rx_update_vr_r (const protocol_ctxt_t* const ctxt_pP, rlc_am_entity_t * const rlc_pP,mem_block_t* tb_pP)
 * \brief      Update RLC AM protocol variable VR(R).
-* \param[in]  rlc_pP           RLC AM protocol instance pointer.
-* \param[in]  frame          Frame index.
-* \param[in]  tb_pP            PDU embedded in a mem_block_t struct.
+* \param[in]  ctxt_pP          Running context.
+* \param[in]  rlc_pP         RLC AM protocol instance pointer.
+* \param[in]  tb_pP          PDU embedded in a mem_block_t struct.
 * \note It is assumed that the sequence number of the transport block is equal to VR(R)
 */
-protected_rlc_am_receiver( void rlc_am_rx_update_vr_r (rlc_am_entity_t * const rlc_pP,const frame_t frameP, mem_block_t* tb_pP);)
+protected_rlc_am_receiver( void rlc_am_rx_update_vr_r (const protocol_ctxt_t* const ctxt_pP, rlc_am_entity_t * const rlc_pP, mem_block_t* tb_pP);)
 
-/*! \fn void rlc_am_receive_routing (rlc_am_entity_t * const rlc_pP, const frame_t frameP, uint8_t eNB_flagP, struct mac_data_ind data_indP)
+/*! \fn void rlc_am_receive_routing (const protocol_ctxt_t* const ctxt_pP, rlc_am_entity_t * const rlc_pP, struct mac_data_ind data_indP)
 * \brief      Convert transport blocks received from MAC layer into RLC AM PDUs, and dispatch to the right processing block these PDUS upon their type (CONTROL/DATA).
-* \param[in]  rlc_pP           RLC AM protocol instance pointer.
-* \param[in]  frame          Frame index.
-* \param[in]  eNB_flagP       Flag to indicate eNB (1) or UE (0).
+* \param[in]  ctxt_pP          Running context.
+* \param[in]  rlc_pP         RLC AM protocol instance pointer.
 * \param[in]  data_indP      Transport blocks received from MAC layer.
 */
-protected_rlc_am_receiver( void rlc_am_receive_routing (rlc_am_entity_t * const rlc_pP, const frame_t frameP, const eNB_flag_t eNB_flagP, struct mac_data_ind data_indP));
+protected_rlc_am_receiver( void rlc_am_receive_routing (const protocol_ctxt_t* const ctxt_pP, rlc_am_entity_t * const rlc_pP, struct mac_data_ind data_indP));
 
-/*! \fn void rlc_am_receive_process_data_pdu (rlc_am_entity_t * const rlc_pP, const frame_t frameP, uint8_t eNB_flagP, mem_block_t* tb_pP, uint8_t* first_byteP, uint16_t tb_size_in_bytesP)
+/*! \fn void rlc_am_receive_process_data_pdu (const protocol_ctxt_t* const ctxt_pP, rlc_am_entity_t * const rlc_pP, mem_block_t* tb_pP, uint8_t* first_byteP, uint16_t tb_size_in_bytesP)
 * \brief      Process an incoming data PDU received from MAC layer.
+* \param[in]  ctxt_pP                       Running context.
 * \param[in]  rlc_pP              RLC AM protocol instance pointer.
-* \param[in]  frame             Frame index.
-* \param[in]  eNB_flagP          Flag to indicate eNB (1) or UE (0).
 * \param[in]  tb_pP               PDU embedded in a mem_block_t struct.
 * \param[in]  first_byteP       Pointer on first byte of the PDU.
 * \param[in]  tb_size_in_bytesP Transport block size in bytes (same as PDU size in bytes).
 */
-private_rlc_am_receiver( void rlc_am_receive_process_data_pdu (rlc_am_entity_t * const rlc_pP, const frame_t frameP, const eNB_flag_t eNB_flagP, mem_block_t* tb_pP, uint8_t* first_byteP, uint16_t tb_size_in_bytesP));
+private_rlc_am_receiver( void rlc_am_receive_process_data_pdu (const protocol_ctxt_t* const ctxt_pP, rlc_am_entity_t * const rlc_pP, mem_block_t* tb_pP, uint8_t* first_byteP, uint16_t tb_size_in_bytesP));
 /** @} */
 #    endif

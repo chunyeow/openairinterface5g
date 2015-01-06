@@ -174,23 +174,29 @@ boolean_t pdcp_serialize_user_plane_data_pdu_with_long_sn_buffer(unsigned char* 
 boolean_t pdcp_serialize_control_pdu_for_pdcp_status_report(unsigned char* pdu_buffer, \
      uint8_t bitmap[512], pdcp_control_pdu_for_pdcp_status_report* pdu);
 
-int pdcp_netlink_dequeue_element(module_id_t enb_mod_idP, module_id_t ue_mod_idP, eNB_flag_t eNB_flagP,
+int pdcp_netlink_dequeue_element(const protocol_ctxt_t* const  ctxt_pP,
                                  struct pdcp_netlink_element_s **data_ppP);
 
-void pdcp_config_set_security(pdcp_t *pdcp_pP, module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t rb_idP,
+void pdcp_config_set_security(const protocol_ctxt_t* const  ctxt_pP, pdcp_t *pdcp_pP, rb_id_t rb_idP,
                               uint16_t lc_idP, uint8_t security_modeP, uint8_t *kRRCenc_pP, uint8_t *kRRCint_pP, uint8_t *kUPenc_pP);
 
 #if defined(ENABLE_SECURITY)
-int pdcp_apply_security(pdcp_t *pdcp_entity, 
-			srb_flag_t srb_flagP,
-			rb_id_t rb_id,
-                        uint8_t pdcp_header_len, uint16_t current_sn, uint8_t *pdcp_pdu_buffer,
-                        uint16_t sdu_buffer_size);
+int pdcp_apply_security(const protocol_ctxt_t* const  ctxt_pP,
+                        pdcp_t     *pdcp_entity,
+                        srb_flag_t  srb_flagP,
+                        rb_id_t     rb_id,
+                        uint8_t     pdcp_header_len,
+                        uint16_t    current_sn,
+                        uint8_t    *pdcp_pdu_buffer,
+                        uint16_t    sdu_buffer_size);
 
-int pdcp_validate_security(pdcp_t *pdcp_entity, 
-			   srb_flag_t srb_flagP,
-			   rb_id_t rb_id,
-                           uint8_t pdcp_header_len, uint16_t current_sn, uint8_t *pdcp_pdu_buffer,
+int pdcp_validate_security(const protocol_ctxt_t* const  ctxt_pP,
+                           pdcp_t *pdcp_entity,
+                           srb_flag_t srb_flagP,
+                           rb_id_t rb_id,
+                           uint8_t pdcp_header_len,
+                           uint16_t current_sn,
+                           uint8_t *pdcp_pdu_buffer,
                            uint16_t sdu_buffer_size);
 #endif /* defined(ENABLE_SECURITY) */
 

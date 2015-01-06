@@ -42,7 +42,11 @@
 //#define DEBUG_RLC_UM_RX               1
 
 //-----------------------------------------------------------------------------
-void rlc_um_display_rx_window(rlc_um_entity_t *rlc_pP)
+void
+rlc_um_display_rx_window(
+                const protocol_ctxt_t* const ctxtP,
+                rlc_um_entity_t * const rlc_pP
+                )
 //-----------------------------------------------------------------------------
 {
     unsigned long sn = 0;
@@ -103,7 +107,7 @@ void rlc_um_display_rx_window(rlc_um_entity_t *rlc_pP)
             strcpy(color, RLC_FG_COLOR_RED);
         }
 
-        if (rlc_um_get_pdu_from_dar_buffer(rlc_pP, sn)) {
+        if (rlc_um_get_pdu_from_dar_buffer(ctxtP, rlc_pP, sn)) {
             // test RLC_REVERSE_VIDEO
             if (str_index <= 2) str[str_index] = '.';
             LOG_T(RLC, "%s%s%s", color, RLC_REVERSE_VIDEO, str);
@@ -119,7 +123,10 @@ void rlc_um_display_rx_window(rlc_um_entity_t *rlc_pP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_receive (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind data_indP)
+rlc_um_receive (
+                const protocol_ctxt_t* const ctxtP,
+                rlc_um_entity_t * const rlc_pP,
+                struct mac_data_ind data_indP)
 {
 //-----------------------------------------------------------------------------
 
@@ -136,7 +143,7 @@ rlc_um_receive (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, s
         rlc_pP->stat_rx_data_pdu   += 1;
 
         if (tb_size_in_bytes > 0) {
-            rlc_um_receive_process_dar (rlc_pP, frameP, eNB_flagP, tb_p, (rlc_um_pdu_sn_10_t *)first_byte_p, tb_size_in_bytes);
+            rlc_um_receive_process_dar (ctxtP, rlc_pP, tb_p, (rlc_um_pdu_sn_10_t *)first_byte_p, tb_size_in_bytes);
 #if defined(DEBUG_RLC_UM_RX)
             LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] VR(UR)=%03d VR(UX)=%03d VR(UH)=%03d\n",
                     frameP,
@@ -148,7 +155,7 @@ rlc_um_receive (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, s
                     rlc_pP->vr_ur,
                     rlc_pP->vr_ux,
                     rlc_pP->vr_uh);
-            //rlc_um_display_rx_window(rlc_pP); comented because bad display
+            //rlc_um_display_rx_window(rlc_pP); commented because bad display
 #endif
         }
     }

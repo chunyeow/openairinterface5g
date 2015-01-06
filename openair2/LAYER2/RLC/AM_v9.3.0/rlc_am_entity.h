@@ -57,12 +57,12 @@
 * \brief Structure containing a RLC AM instance protocol variables, statistic variables, allocation variables, buffers and other miscellaneous variables.
 */
 typedef struct rlc_am_entity_s {
-  module_id_t       enb_module_id;                      /*!< \brief eNB Virtualization index for this protocol instance. */
-  module_id_t       ue_module_id;                       /*!< \brief UE Virtualization index for this protocol instance. */
+  //module_id_t       enb_module_id;                      /*!< \brief eNB Virtualization index for this protocol instance. */
+  //module_id_t       ue_module_id;                       /*!< \brief UE Virtualization index for this protocol instance. */
   rb_id_t           rb_id;                              /*!< \brief Radio bearer identifier, for statistics and trace purpose. */
   logical_chan_id_t channel_id;                         /*!< \brief Transport channel identifier. */
   boolean_t         is_data_plane;                      /*!< \brief To know if the RLC belongs to a data radio bearer or a signalling radio bearer, for statistics and trace purpose. */
-  boolean_t         is_enb;                             /*!< \brief To know if the RLC belongs to a eNB or UE. */
+  //boolean_t         is_enb;                             /*!< \brief To know if the RLC belongs to a eNB or UE. */
 
   rlc_buffer_occupancy_t sdu_buffer_occupancy;               /*!< \brief Number of bytes of unsegmented SDUs. */
   rlc_buffer_occupancy_t retransmission_buffer_occupancy;    /*!< \brief Number of bytes of PDUs in retransmission buffer waiting for a ACK. */

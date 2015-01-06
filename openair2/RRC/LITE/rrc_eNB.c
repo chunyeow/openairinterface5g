@@ -526,11 +526,13 @@ static module_id_t rrc_eNB_get_next_free_UE_index(
       return (UE_MODULE_INVALID);
 }
 
-void rrc_eNB_free_UE_index(
-			   module_id_t enb_mod_idP,
-			   module_id_t ue_mod_idP,
-			   int frameP) {
+void
+rrc_eNB_free_UE_index(
+                module_id_t enb_mod_idP,
+                module_id_t ue_mod_idP,
+                int frameP) {
 
+  protocol_ctxt_t                     ctxt;
   DRB_ToAddModList_t                 *DRB_configList = eNB_rrc_inst[enb_mod_idP].DRB_configList[ue_mod_idP];
   SRB_ToAddModList_t                 *SRB_configList = eNB_rrc_inst[enb_mod_idP].SRB_configList[ue_mod_idP];
 
@@ -552,8 +554,14 @@ void rrc_eNB_free_UE_index(
 #endif
   eNB_rrc_inst[enb_mod_idP].Info.UE[ue_mod_idP].Status = RRC_IDLE;
   eNB_rrc_inst[enb_mod_idP].Info.UE_list[ue_mod_idP] = 0;
-  rrc_rlc_remove_ue(enb_mod_idP, ue_mod_idP, frameP,ENB_FLAG_YES);
-  pdcp_remove_UE(enb_mod_idP, ue_mod_idP, frameP);
+
+  ctxt.enb_module_id = enb_mod_idP;
+  ctxt.ue_module_id  = ue_mod_idP;
+  ctxt.frame         = frameP;
+  ctxt.enb_flag      = ENB_FLAG_YES;
+
+  rrc_rlc_remove_ue(&ctxt);
+  pdcp_remove_UE(&ctxt);
 
   free(eNB_rrc_inst[enb_mod_idP].SRB_configList[ue_mod_idP]);
 }
@@ -1437,11 +1445,19 @@ void rrc_eNB_process_handoverPreparationInformation(
 /*------------------------------------------------------------------------------*/
 void check_handovers(
     module_id_t enb_mod_idP,
-    frame_t frameP) {
+    frame_t frameP
+    )
+{
     uint8_t                             i;
     int                                 result;
+    protocol_ctxt_t                     ctxt;
 
+    ctxt.enb_module_id = enb_mod_idP;
+    ctxt.frame         = frameP;
+    ctxt.enb_flag      = ENB_FLAG_YES;
     for (i = 0; i < NUMBER_OF_UE_MAX; i++) {
+        ctxt.ue_module_id  = i;
+
         if (eNB_rrc_inst[enb_mod_idP].handover_info[i] != NULL) {
             if (eNB_rrc_inst[enb_mod_idP].handover_info[i]->ho_prepare == 0xFF) {
                 LOG_D(RRC,
@@ -1457,9 +1473,11 @@ void check_handovers(
                       "[eNB %d] Frame %d: handover Command received for new UE_idx %d current eNB %d target eNB: %d \n",
                       enb_mod_idP, frameP, i, enb_mod_idP, eNB_rrc_inst[enb_mod_idP].handover_info[i]->modid_t);
                 //rrc_eNB_process_handoverPreparationInformation(enb_mod_idP,frameP,i);
-                result = pdcp_data_req(enb_mod_idP, i, frameP, ENB_FLAG_YES, SRB_FLAG_YES,
+                result = pdcp_data_req(&ctxt,
+                                       SRB_FLAG_YES,
                                        DCCH,
-                                       rrc_eNB_mui++, FALSE,
+                                       rrc_eNB_mui++,
+                                       FALSE,
                                        eNB_rrc_inst[enb_mod_idP].handover_info[i]->size,
                                        eNB_rrc_inst[enb_mod_idP].handover_info[i]->buf, 1);
                 AssertFatal(result == TRUE, "PDCP data request failed!\n");
@@ -1537,6 +1555,12 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
     // phy config dedicated
     PhysicalConfigDedicated_t          *physicalConfigDedicated2;
     struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList *dedicatedInfoNASList;
+    protocol_ctxt_t                     ctxt;
+
+    ctxt.enb_module_id = enb_mod_idP;
+    ctxt.ue_module_id  = ue_mod_idP;
+    ctxt.frame         = frameP;
+    ctxt.enb_flag      = ENB_FLAG_YES;
 
     LOG_D(RRC, "[eNB %d] Frame %d: handover preparation: get the newSourceUEIdentity (C-RNTI): ", enb_mod_idP, frameP);
     for (i = 0; i < 2; i++) {
@@ -2227,7 +2251,7 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
     //      rrc_pdcp_config_req (enb_mod_idP, frameP, 1, CONFIG_ACTION_ADD, idx, UNDEF_SECURITY_MODE);
     //      rrc_rlc_config_req(enb_mod_idP,frameP,1,CONFIG_ACTION_ADD,Idx,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
 
-    rrc_pdcp_config_asn1_req(enb_mod_idP, ue_mod_idP, frameP, 1,
+    rrc_pdcp_config_asn1_req(&ctxt,
                              eNB_rrc_inst[enb_mod_idP].SRB_configList[ue_mod_idP],
                              (DRB_ToAddModList_t *) NULL, (DRB_ToReleaseList_t *) NULL, 0xff, NULL, NULL, NULL
 #ifdef Rel10
@@ -2235,7 +2259,7 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
 #endif
         );
 
-    rrc_rlc_config_asn1_req(enb_mod_idP, ue_mod_idP, frameP, 1,
+    rrc_rlc_config_asn1_req(&ctxt,
                             eNB_rrc_inst[enb_mod_idP].SRB_configList[ue_mod_idP],
                             (DRB_ToAddModList_t *) NULL, (DRB_ToReleaseList_t *) NULL
 #ifdef Rel10
@@ -2366,6 +2390,12 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
 
     DRB_ToAddModList_t                 *DRB_configList = eNB_rrc_inst[enb_mod_idP].DRB_configList[ue_mod_idP];
     SRB_ToAddModList_t                 *SRB_configList = eNB_rrc_inst[enb_mod_idP].SRB_configList[ue_mod_idP];
+    protocol_ctxt_t                     ctxt;
+
+    ctxt.enb_module_id = enb_mod_idP;
+    ctxt.ue_module_id  = ue_mod_idP;
+    ctxt.frame         = frameP;
+    ctxt.enb_flag      = ENB_FLAG_YES;
 
 #if defined(ENABLE_SECURITY)
     /* Derive the keys from kenb */
@@ -2410,30 +2440,29 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
     }
 #endif
     // Refresh SRBs/DRBs
-    rrc_pdcp_config_asn1_req(enb_mod_idP, ue_mod_idP, frameP, ENB_FLAG_YES,
-			     NULL,  //LG-RK 14/05/2014 SRB_configList,
-                             DRB_configList, (DRB_ToReleaseList_t *) NULL,
-                             /*eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP] |
+    rrc_pdcp_config_asn1_req(
+                    &ctxt,
+                    NULL,  //LG-RK 14/05/2014 SRB_configList,
+                    DRB_configList, (DRB_ToReleaseList_t *) NULL,
+                    /*eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP] |
                              (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4), 
-                              */
-                             0xff, // already configured during the securitymodecommand
-                             kRRCenc,
-                             kRRCint,
-                             kUPenc
+                     */
+                    0xff, // already configured during the securitymodecommand
+                    kRRCenc,
+                    kRRCint,
+                    kUPenc
 #ifdef Rel10
-                             , (PMCH_InfoList_r9_t *) NULL
+                    , (PMCH_InfoList_r9_t *) NULL
 #endif
         );
     // Refresh SRBs/DRBs
-    rrc_rlc_config_asn1_req(enb_mod_idP,
-        ue_mod_idP,
-        frameP,
-        1,
-        NULL,  //LG-RK 14/05/2014 SRB_configList,
-        DRB_configList,
-        (DRB_ToReleaseList_t *) NULL
+    rrc_rlc_config_asn1_req(
+                    &ctxt,
+                    NULL,  //LG-RK 14/05/2014 SRB_configList,
+                    DRB_configList,
+                    (DRB_ToReleaseList_t *) NULL
 #ifdef Rel10
-                            , (PMCH_InfoList_r9_t *) NULL
+                    , (PMCH_InfoList_r9_t *) NULL
 #endif
         );
 
@@ -2524,10 +2553,10 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
                         (uint8_t *) NULL,
                         (uint16_t *) NULL, NULL, NULL, NULL, (MBSFN_SubframeConfigList_t *) NULL
 #ifdef Rel10
-                                       , 0, (MBSFN_AreaInfoList_r9_t *) NULL, (PMCH_InfoList_r9_t *) NULL
+                        , 0, (MBSFN_AreaInfoList_r9_t *) NULL, (PMCH_InfoList_r9_t *) NULL
 #endif
 #ifdef CBA
-                                       , eNB_rrc_inst[enb_mod_idP].num_active_cba_groups, eNB_rrc_inst[enb_mod_idP].cba_rnti[0]
+                        , eNB_rrc_inst[enb_mod_idP].num_active_cba_groups, eNB_rrc_inst[enb_mod_idP].cba_rnti[0]
 #endif
                         );
 
@@ -2538,8 +2567,13 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
                         /*      rrc_pdcp_config_req (enb_mod_idP, frameP, 1, CONFIG_ACTION_REMOVE,
                            (ue_mod_idP * NB_RB_MAX) + DRB2LCHAN[i],UNDEF_SECURITY_MODE);
                          */
-                        rrc_rlc_config_req(enb_mod_idP, ue_mod_idP, frameP, ENB_FLAG_YES, SRB_FLAG_NO, MBMS_FLAG_NO, CONFIG_ACTION_REMOVE,
-                                           DRB2LCHAN[i], Rlc_info_um);
+                        rrc_rlc_config_req(
+                                        &ctxt,
+                                        SRB_FLAG_NO,
+                                        MBMS_FLAG_NO,
+                                        CONFIG_ACTION_REMOVE,
+                                        DRB2LCHAN[i],
+                                        Rlc_info_um);
                     }
                     eNB_rrc_inst[enb_mod_idP].DRB_active[ue_mod_idP][i] = 0;
                     LOG_D(RRC,
@@ -2790,6 +2824,11 @@ int rrc_eNB_decode_ccch(
     RRCConnectionRequest_r8_IEs_t      *rrcConnectionRequest;
     RRCConnectionReestablishmentRequest_r8_IEs_t *rrcConnectionReestablishmentRequest;
     int                                 i, rval;
+    protocol_ctxt_t                     ctxt;
+
+    ctxt.enb_module_id = enb_mod_idP;
+    ctxt.frame         = frameP;
+    ctxt.enb_flag      = ENB_FLAG_YES;
 
     //memset(ul_ccch_msg,0,sizeof(UL_CCCH_Message_t));
 
@@ -2858,15 +2897,14 @@ int rrc_eNB_decode_ccch(
                       "[FRAME %05d][MAC_eNB][MOD %02d][][--- MAC_DATA_IND (rrcConnectionReestablishmentRequest on SRB0) -->][RRC_eNB][MOD %02d][]\n",
                       frameP, enb_mod_idP, enb_mod_idP);
 
-		rrcConnectionReestablishmentRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionReestablishmentRequest.criticalExtensions.choice.rrcConnectionReestablishmentRequest_r8;
+                rrcConnectionReestablishmentRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionReestablishmentRequest.criticalExtensions.choice.rrcConnectionReestablishmentRequest_r8;
 
                 LOG_I(RRC, "[eNB %d] Frame %d UE %d: RRCConnectionReestablishmentRequest cause %s\n", enb_mod_idP,
                       frameP, ue_mod_id,
-		      ((rrcConnectionReestablishmentRequest->reestablishmentCause == ReestablishmentCause_otherFailure) ?    "Other Failure" :
-		       (rrcConnectionReestablishmentRequest->reestablishmentCause == ReestablishmentCause_handoverFailure) ? "Handover Failure" : 
-		                                                                                                            "reconfigurationFailure"));
-		/*
-		{
+                      ((rrcConnectionReestablishmentRequest->reestablishmentCause == ReestablishmentCause_otherFailure) ?    "Other Failure" :
+                                      (rrcConnectionReestablishmentRequest->reestablishmentCause == ReestablishmentCause_handoverFailure) ? "Handover Failure" :
+                                                      "reconfigurationFailure"));
+                /*{
 		  uint64_t                            c_rnti = 0;
 		  
 		  memcpy(((uint8_t *) & c_rnti) + 3, rrcConnectionReestablishmentRequest.UE_identity.c_RNTI.buf,
@@ -2893,16 +2931,18 @@ int rrc_eNB_decode_ccch(
                       "[FRAME %05d][MAC_eNB][MOD %02d][][--- MAC_DATA_IND  (rrcConnectionRequest on SRB0) -->][RRC_eNB][MOD %02d][]\n",
                       frameP, enb_mod_idP, enb_mod_idP);
 
-	      rrcConnectionRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionRequest.criticalExtensions.choice.rrcConnectionRequest_r8;
+                rrcConnectionRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionRequest.criticalExtensions.choice.rrcConnectionRequest_r8;
                 {
                     uint64_t                            random_value = 0;
-
                     memcpy(((uint8_t *) & random_value) + 3, rrcConnectionRequest->ue_Identity.choice.randomValue.buf,
                            rrcConnectionRequest->ue_Identity.choice.randomValue.size);
                     ue_mod_id = rrc_eNB_get_next_free_UE_index(enb_mod_idP, random_value);
                 }
 
                 if (ue_mod_id != UE_MODULE_INVALID) {
+                    ctxt.ue_module_id  = ue_mod_id;
+
+
 #if defined(ENABLE_ITTI)
                     /* Check s-TMSI presence in message */
                     eNB_rrc_inst[enb_mod_idP].Info.UE[ue_mod_id].Initialue_identity_s_TMSI.presence =
@@ -2966,7 +3006,7 @@ int rrc_eNB_decode_ccch(
 
                     //      rrc_rlc_config_req(enb_mod_idP,frameP,1,CONFIG_ACTION_ADD,Idx,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
 
-                    rrc_pdcp_config_asn1_req(enb_mod_idP, ue_mod_id, frameP, 1,
+                    rrc_pdcp_config_asn1_req(&ctxt,
                                              eNB_rrc_inst[enb_mod_idP].SRB_configList[ue_mod_id],
                                              (DRB_ToAddModList_t *) NULL,
                                              (DRB_ToReleaseList_t *) NULL, 0xff, NULL, NULL, NULL
@@ -2975,7 +3015,7 @@ int rrc_eNB_decode_ccch(
 #   endif
                         );
 
-                    rrc_rlc_config_asn1_req(enb_mod_idP, ue_mod_id, frameP, 1,
+                    rrc_rlc_config_asn1_req(&ctxt,
                                             eNB_rrc_inst[enb_mod_idP].SRB_configList[ue_mod_id],
                                             (DRB_ToAddModList_t *) NULL, (DRB_ToReleaseList_t *) NULL
 #   ifdef Rel10

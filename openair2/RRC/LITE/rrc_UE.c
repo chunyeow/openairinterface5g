@@ -815,6 +815,7 @@ rrc_ue_process_radioResourceConfigDedicated(module_id_t ue_mod_idP, frame_t fram
   long SRB_id,DRB_id;
   int i,cnt;
   LogicalChannelConfig_t *SRB1_logicalChannelConfig,*SRB2_logicalChannelConfig;
+  protocol_ctxt_t   ctxt;
 #ifdef CBA  
   uint8_t cba_found = 0;
   uint16_t cba_RNTI;
@@ -885,8 +886,12 @@ rrc_ue_process_radioResourceConfigDedicated(module_id_t ue_mod_idP, frame_t fram
           UE_rrc_inst[ue_mod_idP].kenb, &kRRCint);
 #endif
 
-// Refresh SRBs
-      rrc_pdcp_config_asn1_req(eNB_index,ue_mod_idP,frameP,0,
+      ctxt.enb_module_id = eNB_index;
+      ctxt.ue_module_id  = ue_mod_idP;
+      ctxt.frame         = frameP;
+      ctxt.enb_flag      = ENB_FLAG_NO;
+      // Refresh SRBs
+      rrc_pdcp_config_asn1_req(&ctxt,
           radioResourceConfigDedicated->srb_ToAddModList,
           (DRB_ToAddModList_t*)NULL,
           (DRB_ToReleaseList_t*)NULL,
@@ -901,7 +906,7 @@ rrc_ue_process_radioResourceConfigDedicated(module_id_t ue_mod_idP, frame_t fram
       );
 
       // Refresh SRBs
-      rrc_rlc_config_asn1_req(eNB_index,ue_mod_idP,frameP,0,
+      rrc_rlc_config_asn1_req(&ctxt,
           radioResourceConfigDedicated->srb_ToAddModList,
           (DRB_ToAddModList_t*)NULL,
           (DRB_ToReleaseList_t*)NULL
@@ -1048,8 +1053,12 @@ rrc_ue_process_radioResourceConfigDedicated(module_id_t ue_mod_idP, frame_t fram
           UE_rrc_inst[ue_mod_idP].kenb, &kUPenc);
 #endif
 
+      ctxt.enb_module_id = eNB_index;
+      ctxt.ue_module_id  = ue_mod_idP;
+      ctxt.frame         = frameP;
+      ctxt.enb_flag      = ENB_FLAG_NO;
       // Refresh DRBs
-      rrc_pdcp_config_asn1_req(eNB_index, ue_mod_idP,frameP,0,
+      rrc_pdcp_config_asn1_req(&ctxt,
           (SRB_ToAddModList_t*)NULL,
           radioResourceConfigDedicated->drb_ToAddModList,
           (DRB_ToReleaseList_t*)NULL,
@@ -1064,7 +1073,7 @@ rrc_ue_process_radioResourceConfigDedicated(module_id_t ue_mod_idP, frame_t fram
       );
 
       // Refresh DRBs
-      rrc_rlc_config_asn1_req(eNB_index,ue_mod_idP,frameP,0,
+      rrc_rlc_config_asn1_req(&ctxt,
           (SRB_ToAddModList_t*)NULL,
           radioResourceConfigDedicated->drb_ToAddModList,
           (DRB_ToReleaseList_t*)NULL
@@ -1416,7 +1425,8 @@ void rrc_ue_process_rrcConnectionReconfiguration(module_id_t ue_mod_idP, frame_t
 /* 36.331, 5.3.5.4      Reception of an RRCConnectionReconfiguration including the mobilityControlInfo by the UE (handover) */
 void rrc_ue_process_mobilityControlInfo(uint8_t eNB_index, uint8_t UE_id, frame_t frameP, struct MobilityControlInfo *mobilityControlInfo)
 {
-  module_id_t ue_mod_idP = UE_id;
+  module_id_t          ue_mod_idP = UE_id;
+  protocol_ctxt_t      ctxt;
   /*
   DRB_ToReleaseList_t*  drb2release_list;
   DRB_Identity_t *lcid;
@@ -1436,16 +1446,20 @@ void rrc_ue_process_mobilityControlInfo(uint8_t eNB_index, uint8_t UE_id, frame_
   }
    */
 
+  ctxt.enb_module_id = eNB_index;
+  ctxt.ue_module_id  = ue_mod_idP;
+  ctxt.frame         = frameP;
+  ctxt.enb_flag      = ENB_FLAG_NO;
   //Removing SRB1 and SRB2 and DRB0
   LOG_N(RRC,"[UE %d] : Update needed for rrc_pdcp_config_req (deprecated) and rrc_rlc_config_req commands(deprecated)\n", UE_id);
-  rrc_pdcp_config_req (eNB_index, UE_id, frameP, ENB_FLAG_NO, SRB_FLAG_YES, CONFIG_ACTION_REMOVE, DCCH,UNDEF_SECURITY_MODE);
-  rrc_rlc_config_req(eNB_index, ue_mod_idP,frameP,ENB_FLAG_NO, SRB_FLAG_YES, MBMS_FLAG_NO, CONFIG_ACTION_REMOVE,ue_mod_idP+DCCH,Rlc_info_am_config);
+  rrc_pdcp_config_req (&ctxt, SRB_FLAG_YES, CONFIG_ACTION_REMOVE, DCCH,UNDEF_SECURITY_MODE);
+  rrc_rlc_config_req(&ctxt, SRB_FLAG_YES, MBMS_FLAG_NO, CONFIG_ACTION_REMOVE,ue_mod_idP+DCCH,Rlc_info_am_config);
 
-  rrc_pdcp_config_req (eNB_index, UE_id, frameP, ENB_FLAG_NO, SRB_FLAG_YES, CONFIG_ACTION_REMOVE, DCCH1,UNDEF_SECURITY_MODE);
-  rrc_rlc_config_req(eNB_index, ue_mod_idP,frameP,ENB_FLAG_NO, SRB_FLAG_YES,CONFIG_ACTION_REMOVE, MBMS_FLAG_NO,ue_mod_idP+DCCH1,Rlc_info_am_config);
+  rrc_pdcp_config_req (&ctxt, SRB_FLAG_YES, CONFIG_ACTION_REMOVE, DCCH1,UNDEF_SECURITY_MODE);
+  rrc_rlc_config_req(&ctxt, SRB_FLAG_YES,CONFIG_ACTION_REMOVE, MBMS_FLAG_NO,ue_mod_idP+DCCH1,Rlc_info_am_config);
 
-  rrc_pdcp_config_req (eNB_index, UE_id, frameP, ENB_FLAG_NO, SRB_FLAG_NO, CONFIG_ACTION_REMOVE, DTCH,UNDEF_SECURITY_MODE);
-  rrc_rlc_config_req(eNB_index, ue_mod_idP,frameP,ENB_FLAG_NO, SRB_FLAG_NO,CONFIG_ACTION_REMOVE, MBMS_FLAG_NO,ue_mod_idP+DTCH,Rlc_info_um);
+  rrc_pdcp_config_req (&ctxt, SRB_FLAG_NO, CONFIG_ACTION_REMOVE, DTCH,UNDEF_SECURITY_MODE);
+  rrc_rlc_config_req(&ctxt, SRB_FLAG_NO,CONFIG_ACTION_REMOVE, MBMS_FLAG_NO,ue_mod_idP+DTCH,Rlc_info_um);
   /*
   rrc_pdcp_config_asn1_req(NB_eNB_INST+ue_mod_idP,frameP, 0,eNB_index,
 			   NULL, // SRB_ToAddModList
@@ -2188,12 +2202,20 @@ void dump_sib2(SystemInformationBlockType2_t *sib2) {
   LOG_D(RRC,"timeAlignmentTimerCommon : %ld\n", sib2->timeAlignmentTimerCommon);
 }
 
-void dump_sib3(SystemInformationBlockType3_t *sib3) {
+void
+dump_sib3(
+                SystemInformationBlockType3_t *sib3
+                )
+{
 
 }
 
 #ifdef Rel10
-void dump_sib13(SystemInformationBlockType13_r9_t *sib13) {
+void
+dump_sib13(
+                SystemInformationBlockType13_r9_t *sib13
+                )
+{
 
   LOG_D(RRC,"[RRC][UE] Dumping SIB13\n");
   LOG_D(RRC,"[RRC][UE] dumping sib13 second time\n");
@@ -2206,7 +2228,14 @@ void dump_sib13(SystemInformationBlockType13_r9_t *sib13) {
 
 //const char SIBPeriod[7][7]= {"80ms\0","160ms\0","320ms\0","640ms\0","1280ms\0","2560ms\0","5120ms\0"};
 
-int decode_SI(module_id_t ue_mod_idP, frame_t frameP,uint8_t eNB_index,uint8_t si_window) {
+int
+decode_SI(
+                module_id_t ue_mod_idP,
+                frame_t frameP,
+                uint8_t eNB_index,
+                uint8_t si_window
+                )
+{
 
   SystemInformation_t **si=&UE_rrc_inst[ue_mod_idP].si[eNB_index][si_window];
   int i;
@@ -2400,7 +2429,13 @@ int decode_SI(module_id_t ue_mod_idP, frame_t frameP,uint8_t eNB_index,uint8_t s
 }
 
 // layer 3 filtering of RSRP (EUTRA) measurements: 36.331, Sec. 5.5.3.2
-void ue_meas_filtering(module_id_t ue_mod_idP, frame_t frameP,uint8_t eNB_index){
+void
+ue_meas_filtering(
+                module_id_t ue_mod_idP,
+                frame_t frameP,
+                uint8_t eNB_index
+                )
+{
   float a  = UE_rrc_inst[ue_mod_idP].filter_coeff_rsrp; // 'a' in 36.331 Sec. 5.5.3.2
   float a1 = UE_rrc_inst[ue_mod_idP].filter_coeff_rsrq;
   //float rsrp_db, rsrq_db;
@@ -2467,7 +2502,13 @@ void ue_meas_filtering(module_id_t ue_mod_idP, frame_t frameP,uint8_t eNB_index)
 }
 
 //Below routine implements Measurement Reporting procedure from 36.331 Section 5.5.5
-void rrc_ue_generate_MeasurementReport(module_id_t eNB_id, module_id_t UE_id, frame_t frameP) {
+void
+rrc_ue_generate_MeasurementReport(
+                module_id_t eNB_id,
+                module_id_t UE_id,
+                frame_t frameP
+                )
+{
 
   uint8_t             buffer[32], size;
   uint8_t             i;
@@ -2480,6 +2521,12 @@ void rrc_ue_generate_MeasurementReport(module_id_t eNB_id, module_id_t UE_id, fr
   float            rsrp_filtered, rsrq_filtered;
   static frame_t   pframe=0;
   int              result;
+  protocol_ctxt_t  ctxt;
+
+  ctxt.enb_module_id = eNB_id;
+  ctxt.ue_module_id  = UE_id;
+  ctxt.frame         = frameP;
+  ctxt.enb_flag      = ENB_FLAG_NO;
 
 
 
@@ -2515,12 +2562,12 @@ void rrc_ue_generate_MeasurementReport(module_id_t eNB_id, module_id_t UE_id, fr
               pframe=frameP;
               LOG_D(RRC, "[UE %d] Frame %d: doing MeasReport: servingCell(%d) targetCell(%d) rsrp_s(%ld) rsrq_s(%ld) rsrp_t(%ld) rsrq_t(%ld) \n",
                   UE_id, frameP, cellId,targetCellId,rsrp_s,rsrq_s,rsrp_t,rsrq_t);
-	      size = do_MeasurementReport(UE_id, buffer,measId,targetCellId,rsrp_s,rsrq_s,rsrp_t,rsrq_t);
+              size = do_MeasurementReport(UE_id, buffer,measId,targetCellId,rsrp_s,rsrq_s,rsrp_t,rsrq_t);
               
               LOG_I(RRC, "[UE %d] Frame %d : Generating Measurement Report for eNB %d\n", UE_id, frameP, eNB_id);
               LOG_D(RLC, "[MSC_MSG][FRAME %05d][RRC_UE][UE %02d][][--- PDCP_DATA_REQ/%d Bytes (MeasurementReport to eNB %d MUI %d) --->][PDCP][MOD %02d][RB %02d]\n",
                   frameP, UE_id, size, eNB_id, rrc_mui, eNB_id, DCCH);
-              result = pdcp_data_req(eNB_id, UE_id, frameP, ENB_FLAG_NO,  SRB_FLAG_YES, DCCH, rrc_mui++, 0, size, buffer, PDCP_TRANSMISSION_MODE_DATA);
+              result = pdcp_data_req(&ctxt,  SRB_FLAG_YES, DCCH, rrc_mui++, 0, size, buffer, PDCP_TRANSMISSION_MODE_DATA);
               AssertFatal (result == TRUE, "PDCP data request failed!\n");
               //LOG_D(RRC, "[UE %d] Frame %d Sending MeasReport (%d bytes) through DCCH%d to PDCP \n",ue_mod_idP,frameP, size, DCCH);
           }
@@ -2531,7 +2578,13 @@ void rrc_ue_generate_MeasurementReport(module_id_t eNB_id, module_id_t UE_id, fr
 }
 
 // Measurement report triggering, described in 36.331 Section 5.5.4.1: called periodically 
-void ue_measurement_report_triggering(module_id_t ue_mod_idP, frame_t frameP,uint8_t eNB_index) {
+void
+ue_measurement_report_triggering(
+                module_id_t ue_mod_idP,
+                frame_t frameP,
+                uint8_t eNB_index
+                )
+{
   uint8_t               i,j;
   Hysteresis_t     hys;
   TimeToTrigger_t  ttt_ms;

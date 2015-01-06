@@ -136,6 +136,12 @@ tbs_size_t mac_rlc_data_req(
     hashtable_rc_t         h_rc;
     srb_flag_t             srb_flag        = (channel_idP <= 2) ? SRB_FLAG_YES : SRB_FLAG_NO;
     tbs_size_t             ret_tb_size         = 0;
+    protocol_ctxt_t     ctxt;
+
+    ctxt.enb_module_id = enb_module_idP;
+    ctxt.ue_module_id  = ue_module_idP;
+    ctxt.frame    = frameP;
+    ctxt.enb_flag = enb_flagP;
 
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_DATA_REQ,VCD_FUNCTION_IN);
 #ifdef DEBUG_MAC_INTERFACE
@@ -205,17 +211,17 @@ tbs_size_t mac_rlc_data_req(
 	  break;
 
         case RLC_MODE_AM:
-            data_request = rlc_am_mac_data_request(&rlc_union_p->rlc.am, frameP);
+            data_request = rlc_am_mac_data_request(&ctxt, &rlc_union_p->rlc.am);
             ret_tb_size =mac_rlc_serialize_tb(buffer_pP, data_request.data);
 	    break;
 
         case RLC_MODE_UM:
-            data_request = rlc_um_mac_data_request(&rlc_union_p->rlc.um, frameP);
+            data_request = rlc_um_mac_data_request(&ctxt, &rlc_union_p->rlc.um);
             ret_tb_size = mac_rlc_serialize_tb(buffer_pP, data_request.data);
             break;
 
         case RLC_MODE_TM:
-            data_request = rlc_tm_mac_data_request(&rlc_union_p->rlc.tm, frameP);
+            data_request = rlc_tm_mac_data_request(&ctxt, &rlc_union_p->rlc.tm);
             ret_tb_size = mac_rlc_serialize_tb(buffer_pP, data_request.data);
 	    break;
         default:;
@@ -231,10 +237,10 @@ void mac_rlc_data_ind     (
     const eNB_flag_t          enb_flagP,
     const MBMS_flag_t         MBMS_flagP,
     const logical_chan_id_t   channel_idP,
-    char               *buffer_pP,
+    char                     *buffer_pP,
     const tb_size_t           tb_sizeP,
-    num_tb_t            num_tbP,
-    crc_t              *crcs_pP) {
+    num_tb_t                  num_tbP,
+    crc_t                    *crcs_pP) {
 //-----------------------------------------------------------------------------
     rb_id_t                rb_id      = 0;
     rlc_mode_t             rlc_mode   = RLC_MODE_NONE;
@@ -243,6 +249,12 @@ void mac_rlc_data_ind     (
     hash_key_t             key             = HASHTABLE_QUESTIONABLE_KEY_VALUE;
     hashtable_rc_t         h_rc;
     srb_flag_t             srb_flag        = (channel_idP <= 2) ? SRB_FLAG_YES : SRB_FLAG_NO;
+    protocol_ctxt_t     ctxt;
+
+    ctxt.enb_module_id = enb_module_idP;
+    ctxt.ue_module_id  = ue_module_idP;
+    ctxt.frame    = frameP;
+    ctxt.enb_flag = enb_flagP;
 
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_DATA_IND,VCD_FUNCTION_IN);
 #ifdef DEBUG_MAC_INTERFACE
@@ -326,21 +338,21 @@ void mac_rlc_data_ind     (
 #ifdef DEBUG_MAC_INTERFACE
             LOG_D(RLC, "MAC DATA IND TO RLC_AM MOD_ID %s enb id %u ue id %u \n", (enb_flagP) ? "eNB" : "UE", enb_module_idP, ue_module_idP);
 #endif
-            rlc_am_mac_data_indication(&rlc_union_p->rlc.am, frameP, enb_flagP, data_ind);
+            rlc_am_mac_data_indication(&ctxt, &rlc_union_p->rlc.am, data_ind);
             break;
 
         case RLC_MODE_UM:
 #ifdef DEBUG_MAC_INTERFACE
             LOG_D(RLC, "MAC DATA IND TO RLC_UM MOD_ID %s enb id %u ue id %u \n", (enb_flagP) ? "eNB" : "UE", enb_module_idP, ue_module_idP);
 #endif
-            rlc_um_mac_data_indication(&rlc_union_p->rlc.um, frameP, enb_flagP, data_ind);
+            rlc_um_mac_data_indication(&ctxt, &rlc_union_p->rlc.um, data_ind);
             break;
 
         case RLC_MODE_TM:
 #ifdef DEBUG_MAC_INTERFACE
             LOG_D(RLC, "MAC DATA IND TO RLC_TM MOD_ID %s enb id %u ue id %u \n", (enb_flagP) ? "eNB" : "UE", enb_module_idP, ue_module_idP);
 #endif
-            rlc_tm_mac_data_indication(&rlc_union_p->rlc.tm, frameP, enb_flagP, data_ind);
+            rlc_tm_mac_data_indication(&ctxt, &rlc_union_p->rlc.tm, data_ind);
             break;
     }
     
@@ -367,6 +379,12 @@ mac_rlc_status_resp_t mac_rlc_status_ind(
   hash_key_t             key         = HASHTABLE_QUESTIONABLE_KEY_VALUE;
   hashtable_rc_t         h_rc;
   srb_flag_t             srb_flag    = (channel_idP <= 2) ? SRB_FLAG_YES : SRB_FLAG_NO;
+  protocol_ctxt_t     ctxt;
+
+  ctxt.enb_module_id = enb_module_idP;
+  ctxt.ue_module_id  = ue_module_idP;
+  ctxt.frame    = frameP;
+  ctxt.enb_flag = enb_flagP;
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_STATUS_IND,VCD_FUNCTION_IN);
   memset (&mac_rlc_status_resp, 0, sizeof(mac_rlc_status_resp_t));
@@ -448,7 +466,7 @@ mac_rlc_status_resp_t mac_rlc_status_ind(
            break;
 
         case RLC_MODE_AM:
-            status_resp = rlc_am_mac_status_indication(&rlc_union_p->rlc.am, frameP, tb_sizeP, tx_status);
+            status_resp = rlc_am_mac_status_indication(&ctxt, &rlc_union_p->rlc.am, tb_sizeP, tx_status);
             mac_rlc_status_resp.bytes_in_buffer                 = status_resp.buffer_occupancy_in_bytes;
             mac_rlc_status_resp.head_sdu_creation_time          = status_resp.head_sdu_creation_time;
             mac_rlc_status_resp.head_sdu_remaining_size_to_send = status_resp.head_sdu_remaining_size_to_send;
@@ -457,7 +475,7 @@ mac_rlc_status_resp_t mac_rlc_status_ind(
             break;
 
         case RLC_MODE_UM:
-            status_resp = rlc_um_mac_status_indication(&rlc_union_p->rlc.um, frameP, enb_flagP, tb_sizeP, tx_status);
+            status_resp = rlc_um_mac_status_indication(&ctxt, &rlc_union_p->rlc.um, tb_sizeP, tx_status);
             mac_rlc_status_resp.bytes_in_buffer                 = status_resp.buffer_occupancy_in_bytes;
             mac_rlc_status_resp.pdus_in_buffer                  = status_resp.buffer_occupancy_in_pdus;
             mac_rlc_status_resp.head_sdu_creation_time          = status_resp.head_sdu_creation_time;
@@ -467,7 +485,7 @@ mac_rlc_status_resp_t mac_rlc_status_ind(
             break;
 
         case RLC_MODE_TM:
-            status_resp = rlc_tm_mac_status_indication(&rlc_union_p->rlc.tm, frameP, tb_sizeP, tx_status);
+            status_resp = rlc_tm_mac_status_indication(&ctxt, &rlc_union_p->rlc.tm, tb_sizeP, tx_status);
             mac_rlc_status_resp.bytes_in_buffer = status_resp.buffer_occupancy_in_bytes;
             mac_rlc_status_resp.pdus_in_buffer  = status_resp.buffer_occupancy_in_pdus;
 	    // return mac_rlc_status_resp;

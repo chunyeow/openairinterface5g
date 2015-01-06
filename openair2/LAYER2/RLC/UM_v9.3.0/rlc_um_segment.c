@@ -45,7 +45,7 @@
 //#define TRACE_RLC_UM_SEGMENT 1
 //-----------------------------------------------------------------------------
 void
-rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
+rlc_um_segment_10 (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
 {
 //-----------------------------------------------------------------------------
     list_t              pdus;
@@ -79,10 +79,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
     if (nb_bytes_to_transmit < 3) {
 #if defined(TRACE_RLC_UM_SEGMENT)
         LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] NO SEGMENTATION nb_bytes to transmit = %d\n",
-                frameP,
-                (rlc_pP->is_enb) ? "eNB" : "UE",
-                rlc_pP->enb_module_id,
-                rlc_pP->ue_module_id,
+                ctxtP->frame,
+                (ctxtP->enb_flag) ? "eNB" : "UE",
+                ctxtP->enb_module_id,
+                ctxtP->ue_module_id,
                 rlc_pP->rb_id,
                 nb_bytes_to_transmit);
 #endif
@@ -90,10 +90,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
     }
 #if defined(TRACE_RLC_UM_SEGMENT)
     LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10\n",
-          frameP,
-          (rlc_pP->is_enb) ? "eNB" : "UE",
-          rlc_pP->enb_module_id,
-          rlc_pP->ue_module_id,
+          ctxtP->frame,
+          (ctxtP->enb_flag) ? "eNB" : "UE",
+          ctxtP->enb_module_id,
+          ctxtP->ue_module_id,
           rlc_pP->rb_id);
 #endif
     list_init (&pdus, NULL);    // param string identifying the list is NULL
@@ -105,10 +105,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
 
 #if defined(TRACE_RLC_UM_SEGMENT)
         LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 nb_bytes_to_transmit %d BO %d\n",
-                frameP,
-                (rlc_pP->is_enb) ? "eNB" : "UE",
-                rlc_pP->enb_module_id,
-                rlc_pP->ue_module_id,
+                ctxtP->frame,
+                (ctxtP->enb_flag) ? "eNB" : "UE",
+                ctxtP->enb_module_id,
+                ctxtP->ue_module_id,
                 rlc_pP->rb_id,
                 nb_bytes_to_transmit,
                 rlc_pP->buffer_occupancy);
@@ -124,10 +124,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                 data_pdu_size = rlc_pP->buffer_occupancy + rlc_pP->tx_header_min_length_in_bytes + max_li_overhead;
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 alloc PDU size %d bytes to contain not all bytes requested by MAC but all BO of RLC@1\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         data_pdu_size);
 #endif
@@ -135,10 +135,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                 data_pdu_size = nb_bytes_to_transmit;
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 alloc PDU size %d bytes to contain all bytes requested by MAC@1\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         data_pdu_size);
 #endif
@@ -146,10 +146,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             if (!(pdu_mem_p = get_free_mem_block (data_pdu_size + sizeof(struct mac_tb_req)))) {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_E(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 ERROR COULD NOT GET NEW PDU, EXIT\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id);
 #endif
                 pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
@@ -157,10 +157,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             }
 #if defined(TRACE_RLC_UM_SEGMENT)
             LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 get new PDU %d bytes\n",
-                    frameP,
-                    (rlc_pP->is_enb) ? "eNB" : "UE",
-                    rlc_pP->enb_module_id,
-                    rlc_pP->ue_module_id,
+                    ctxtP->frame,
+                    (ctxtP->enb_flag) ? "eNB" : "UE",
+                    ctxtP->enb_module_id,
+                    ctxtP->ue_module_id,
                     rlc_pP->rb_id,
                     data_pdu_size);
 #endif
@@ -219,10 +219,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             } else {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 sdu_mngt_p->sdu_remaining_size=%d test_pdu_remaining_size=%d test_li_length_in_bytes=%d\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         sdu_mngt_p->sdu_remaining_size,
                         test_pdu_remaining_size,
@@ -248,10 +248,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
         //----------------------------------------
 #if defined(TRACE_RLC_UM_SEGMENT)
         LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] data shift %d Bytes num_li %d\n",
-                frameP,
-                (rlc_pP->is_enb) ? "eNB" : "UE",
-                rlc_pP->enb_module_id,
-                rlc_pP->ue_module_id,
+                ctxtP->frame,
+                (ctxtP->enb_flag) ? "eNB" : "UE",
+                ctxtP->enb_module_id,
+                ctxtP->ue_module_id,
                 rlc_pP->rb_id,
                 ((test_num_li*3) +1) >> 1,
                 test_num_li);
@@ -276,10 +276,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             if (sdu_mngt_p->sdu_segmented_size == 0) {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 GET NEW SDU %p AVAILABLE SIZE %d Bytes\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         sdu_mngt_p,
                         sdu_mngt_p->sdu_remaining_size);
@@ -287,10 +287,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             } else {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 GET AGAIN SDU %p REMAINING AVAILABLE SIZE %d Bytes / %d Bytes \n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         sdu_mngt_p,
                         sdu_mngt_p->sdu_remaining_size,
@@ -302,17 +302,17 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             if (sdu_mngt_p->sdu_remaining_size > pdu_remaining_size) {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 Filling all remaining PDU with %d bytes\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         pdu_remaining_size);
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 pdu_mem_p %p pdu_mem_p->data %p pdu_p %p pdu_p->data %p data %p data_sdu_p %p pdu_remaining_size %d\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         pdu_mem_p,
                         pdu_mem_p->data,
@@ -334,10 +334,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             } else if (sdu_mngt_p->sdu_remaining_size == pdu_remaining_size) {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 Exactly Filling remaining PDU with %d remaining bytes of SDU\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         pdu_remaining_size);
 #endif
@@ -358,10 +358,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             } else if ((sdu_mngt_p->sdu_remaining_size + (li_length_in_bytes ^ 3)) < pdu_remaining_size ) {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 Filling  PDU with %d all remaining bytes of SDU\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         sdu_mngt_p->sdu_remaining_size);
 #endif
@@ -382,10 +382,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                     e_li_p->b2 = sdu_mngt_p->sdu_remaining_size << 4;
 #if defined(TRACE_RLC_UM_SEGMENT)
                     LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 set e_li_p->b1=%02X set e_li_p->b2=%02X fill_num_li=%d test_num_li=%d\n",
-                            frameP,
-                            (rlc_pP->is_enb) ? "eNB" : "UE",
-                            rlc_pP->enb_module_id,
-                            rlc_pP->ue_module_id,
+                            ctxtP->frame,
+                            (ctxtP->enb_flag) ? "eNB" : "UE",
+                            ctxtP->enb_module_id,
+                            ctxtP->ue_module_id,
                             rlc_pP->rb_id,
                             e_li_p->b1,
                             e_li_p->b2,
@@ -402,10 +402,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                     e_li_p->b3 = sdu_mngt_p->sdu_remaining_size & 0xFF;
 #if defined(TRACE_RLC_UM_SEGMENT)
                     LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 set e_li_p->b2=%02X set e_li_p->b3=%02X fill_num_li=%d test_num_li=%d\n",
-                            frameP,
-                            (rlc_pP->is_enb) ? "eNB" : "UE",
-                            rlc_pP->enb_module_id,
-                            rlc_pP->ue_module_id,
+                            ctxtP->frame,
+                            (ctxtP->enb_flag) ? "eNB" : "UE",
+                            ctxtP->enb_module_id,
+                            ctxtP->ue_module_id,
                             rlc_pP->rb_id,
                             e_li_p->b2,
                             e_li_p->b3,
@@ -427,10 +427,10 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             } else {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10 Filling  PDU with %d all remaining bytes of SDU and reduce TB size by %d bytes\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         sdu_mngt_p->sdu_remaining_size,
                         pdu_remaining_size - sdu_mngt_p->sdu_remaining_size);
@@ -492,7 +492,7 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
 }
 //-----------------------------------------------------------------------------
 void
-rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
+rlc_um_segment_5 (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
 {
 //-----------------------------------------------------------------------------
     list_t              pdus;
@@ -526,10 +526,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
     if (nb_bytes_to_transmit < 2) {
 #if defined(TRACE_RLC_UM_SEGMENT)
         LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] NO SEGMENTATION5 nb_bytes to transmit = %d\n",
-                frameP,
-                (rlc_pP->is_enb) ? "eNB" : "UE",
-                rlc_pP->enb_module_id,
-                rlc_pP->ue_module_id,
+                ctxtP->frame,
+                (ctxtP->enb_flag) ? "eNB" : "UE",
+                ctxtP->enb_module_id,
+                ctxtP->ue_module_id,
                 rlc_pP->rb_id,
                 nb_bytes_to_transmit);
 #endif
@@ -537,10 +537,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
     }
 #if defined(TRACE_RLC_UM_SEGMENT)
     LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5\n",
-            frameP,
-            (rlc_pP->is_enb) ? "eNB" : "UE",
-            rlc_pP->enb_module_id,
-            rlc_pP->ue_module_id,
+            ctxtP->frame,
+            (ctxtP->enb_flag) ? "eNB" : "UE",
+            ctxtP->enb_module_id,
+            ctxtP->ue_module_id,
             rlc_pP->rb_id);
 #endif
     list_init (&pdus, NULL);    // param string identifying the list is NULL
@@ -550,10 +550,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
     while ((list_get_head(&rlc_pP->input_sdus)) && (nb_bytes_to_transmit > 0)) {
 #if defined(TRACE_RLC_UM_SEGMENT)
         LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 nb_bytes_to_transmit %d BO %d\n",
-                frameP,
-                (rlc_pP->is_enb) ? "eNB" : "UE",
-                rlc_pP->enb_module_id,
-                rlc_pP->ue_module_id,
+                ctxtP->frame,
+                (ctxtP->enb_flag) ? "eNB" : "UE",
+                ctxtP->enb_module_id,
+                ctxtP->ue_module_id,
                 rlc_pP->rb_id,
                 nb_bytes_to_transmit,
                 rlc_pP->buffer_occupancy);
@@ -569,10 +569,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                 data_pdu_size = rlc_pP->buffer_occupancy + rlc_pP->tx_header_min_length_in_bytes + max_li_overhead;
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 alloc PDU size %d bytes to contain not all bytes requested by MAC but all BO of RLC@1\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         data_pdu_size);
 #endif
@@ -580,10 +580,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                 data_pdu_size = nb_bytes_to_transmit;
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 alloc PDU size %d bytes to contain all bytes requested by MAC@1\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         data_pdu_size);
 #endif
@@ -591,10 +591,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             if (!(pdu_mem_p = get_free_mem_block (data_pdu_size + sizeof(struct mac_tb_req)))) {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_E(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 ERROR COULD NOT GET NEW PDU, EXIT\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id);
 #endif
                 pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
@@ -602,10 +602,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             }
 #if defined(TRACE_RLC_UM_SEGMENT)
             LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 get new PDU %d bytes\n",
-                    frameP,
-                    (rlc_pP->is_enb) ? "eNB" : "UE",
-                    rlc_pP->enb_module_id,
-                    rlc_pP->ue_module_id,
+                    ctxtP->frame,
+                    (ctxtP->enb_flag) ? "eNB" : "UE",
+                    ctxtP->enb_module_id,
+                    ctxtP->ue_module_id,
                     rlc_pP->rb_id,
                     data_pdu_size);
 #endif
@@ -665,10 +665,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             } else {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 sdu_mngt_p->sdu_remaining_size=%d test_pdu_remaining_size=%d test_li_length_in_bytes=%d\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         sdu_mngt_p->sdu_remaining_size,
                         test_pdu_remaining_size,
@@ -695,10 +695,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
         //----------------------------------------
 #if defined(TRACE_RLC_UM_SEGMENT)
         LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] data shift %d Bytes num_li %d\n",
-                frameP,
-                (rlc_pP->is_enb) ? "eNB" : "UE",
-                rlc_pP->enb_module_id,
-                rlc_pP->ue_module_id,
+                ctxtP->frame,
+                (ctxtP->enb_flag) ? "eNB" : "UE",
+                ctxtP->enb_module_id,
+                ctxtP->ue_module_id,
                 rlc_pP->rb_id,
                 ((test_num_li*3) +1) >> 1,
                 test_num_li);
@@ -723,10 +723,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             if (sdu_mngt_p->sdu_segmented_size == 0) {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 GET NEW SDU %p AVAILABLE SIZE %d Bytes\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         sdu_mngt_p,
                         sdu_mngt_p->sdu_remaining_size);
@@ -734,10 +734,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             } else {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 GET AGAIN SDU %p REMAINING AVAILABLE SIZE %d Bytes / %d Bytes \n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         sdu_mngt_p,
                         sdu_mngt_p->sdu_remaining_size,
@@ -749,17 +749,17 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             if (sdu_mngt_p->sdu_remaining_size > pdu_remaining_size) {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 Filling all remaining PDU with %d bytes\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         pdu_remaining_size);
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 pdu_mem_p %p pdu_p %p pdu_p->data %p data %p data_sdu_p %p pdu_remaining_size %d\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         pdu_mem_p,
                         pdu_p,
@@ -780,10 +780,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             } else if (sdu_mngt_p->sdu_remaining_size == pdu_remaining_size) {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 Exactly Filling remaining PDU with %d remaining bytes of SDU\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         pdu_remaining_size);
 #endif
@@ -802,10 +802,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             } else if ((sdu_mngt_p->sdu_remaining_size + (li_length_in_bytes ^ 3)) < pdu_remaining_size ) {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 Filling  PDU with %d all remaining bytes of SDU\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         sdu_mngt_p->sdu_remaining_size);
 #endif
@@ -826,10 +826,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                     e_li_p->b2 = sdu_mngt_p->sdu_remaining_size << 4;
 #if defined(TRACE_RLC_UM_SEGMENT)
                     LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 set e_li_p->b1=%02X set e_li_p->b2=%02X fill_num_li=%d test_num_li=%d\n",
-                            frameP,
-                            (rlc_pP->is_enb) ? "eNB" : "UE",
-                            rlc_pP->enb_module_id,
-                            rlc_pP->ue_module_id,
+                            ctxtP->frame,
+                            (ctxtP->enb_flag) ? "eNB" : "UE",
+                            ctxtP->enb_module_id,
+                            ctxtP->ue_module_id,
                             rlc_pP->rb_id,
                             e_li_p->b1,
                             e_li_p->b2,
@@ -846,10 +846,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                     e_li_p->b3 = sdu_mngt_p->sdu_remaining_size & 0xFF;
 #if defined(TRACE_RLC_UM_SEGMENT)
                     LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 set e_li_p->b2=%02X set e_li_p->b3=%02X fill_num_li=%d test_num_li=%d\n",
-                            frameP,
-                            (rlc_pP->is_enb) ? "eNB" : "UE",
-                            rlc_pP->enb_module_id,
-                            rlc_pP->ue_module_id,
+                            ctxtP->frame,
+                            (ctxtP->enb_flag) ? "eNB" : "UE",
+                            ctxtP->enb_module_id,
+                            ctxtP->ue_module_id,
                             rlc_pP->rb_id,
                             e_li_p->b2,
                             e_li_p->b3,
@@ -871,10 +871,10 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
             } else {
 #if defined(TRACE_RLC_UM_SEGMENT)
                 LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT5 Filling  PDU with %d all remaining bytes of SDU and reduce TB size by %d bytes\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
+                        ctxtP->frame,
+                        (ctxtP->enb_flag) ? "eNB" : "UE",
+                        ctxtP->enb_module_id,
+                        ctxtP->ue_module_id,
                         rlc_pP->rb_id,
                         sdu_mngt_p->sdu_remaining_size,
                         pdu_remaining_size - sdu_mngt_p->sdu_remaining_size);

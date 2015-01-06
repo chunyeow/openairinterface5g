@@ -42,7 +42,12 @@
 //#define DEBUG_RLC_AM_DISPLAY_TB_DATA
 //#define RLC_AM_GENERATE_ERRORS
 //-----------------------------------------------------------------------------
-signed int rlc_am_get_data_pdu_infos(const const frame_t frameP, rlc_am_pdu_sn_10_t* header_pP, int16_t total_sizeP, rlc_am_pdu_info_t* pdu_info_pP)
+signed int
+rlc_am_get_data_pdu_infos(
+                const protocol_ctxt_t* const ctxt_pP,
+                rlc_am_pdu_sn_10_t* header_pP,
+                int16_t total_sizeP,
+                rlc_am_pdu_info_t* pdu_info_pP)
 //-----------------------------------------------------------------------------
 {
     memset(pdu_info_pP, 0, sizeof (rlc_am_pdu_info_t));
@@ -97,7 +102,7 @@ signed int rlc_am_get_data_pdu_infos(const const frame_t frameP, rlc_am_pdu_sn_1
                 pdu_info_pP->num_li = pdu_info_pP->num_li + 1;
                 if (pdu_info_pP->num_li > RLC_AM_MAX_SDU_IN_PDU) {
                     LOG_E(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][GET PDU INFO]  SN %04d TOO MANY LIs ",
-                          frameP,
+                          ctxt_pP->frame,
                           pdu_info_pP->sn);
                     return -2;
                 }
@@ -115,13 +120,17 @@ signed int rlc_am_get_data_pdu_infos(const const frame_t frameP, rlc_am_pdu_sn_1
         return 0;
     } else {
         LOG_W(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][GET DATA PDU INFO]  SN %04d ERROR CONTROL PDU ",
-              frameP,
+              ctxt_pP->frame,
               pdu_info_pP->sn);
         return -1;
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_display_data_pdu_infos(rlc_am_entity_t * const rlc_pP, const const frame_t frameP, rlc_am_pdu_info_t* pdu_info_pP)
+void
+rlc_am_display_data_pdu_infos(
+                const protocol_ctxt_t* const ctxt_pP,
+                rlc_am_entity_t * const rlc_pP,
+                rlc_am_pdu_info_t* pdu_info_pP)
 //-----------------------------------------------------------------------------
 {
     int num_li;
@@ -129,10 +138,10 @@ void rlc_am_display_data_pdu_infos(rlc_am_entity_t * const rlc_pP, const const f
     if (pdu_info_pP->d_c) {
         if (pdu_info_pP->rf) {
             LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][DISPLAY DATA PDU] RX DATA PDU SN %04d FI %1d SO %05d LSF %01d POLL %1d ",
-                  frameP,
-                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   rlc_pP->rb_id,
                   pdu_info_pP->sn,
                   pdu_info_pP->fi,
@@ -140,10 +149,10 @@ void rlc_am_display_data_pdu_infos(rlc_am_entity_t * const rlc_pP, const const f
                   pdu_info_pP->lsf, pdu_info_pP->p);
         } else {
             LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][DISPLAY DATA PDU] RX DATA PDU SN %04d FI %1d POLL %1d ",
-                  frameP,
-                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   rlc_pP->rb_id,
                   pdu_info_pP->sn,
                   pdu_info_pP->fi,
@@ -158,16 +167,20 @@ void rlc_am_display_data_pdu_infos(rlc_am_entity_t * const rlc_pP, const const f
         LOG_D(RLC, "\n");
     } else {
         LOG_E(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][DISPLAY DATA PDU] ERROR RX CONTROL PDU\n",
-              frameP,
-              (rlc_pP->is_enb) ? "eNB" : "UE",
-              rlc_pP->enb_module_id,
-              rlc_pP->ue_module_id,
+              ctxt_pP->frame,
+              (ctxt_pP->enb_flag) ? "eNB" : "UE",
+              ctxt_pP->enb_module_id,
+              ctxt_pP->ue_module_id,
               rlc_pP->rb_id);
     }
 }
 // assumed the sn of the tb_p is equal to VR(MS)
 //-----------------------------------------------------------------------------
-void rlc_am_rx_update_vr_ms(rlc_am_entity_t * const rlc_pP, const const frame_t frameP, mem_block_t* tb_pP)
+void
+rlc_am_rx_update_vr_ms(
+                const protocol_ctxt_t* const ctxt_pP,
+                rlc_am_entity_t * const rlc_pP,
+                mem_block_t* tb_pP)
 //-----------------------------------------------------------------------------
 {
     //rlc_am_pdu_info_t* pdu_info_p        = &((rlc_am_rx_pdu_management_t*)(tb_pP->data))->pdu_info;
@@ -181,10 +194,10 @@ void rlc_am_rx_update_vr_ms(rlc_am_entity_t * const rlc_pP, const const frame_t 
             if (((rlc_am_rx_pdu_management_t*)(cursor_p->data))->all_segments_received == 0) {
 #ifdef TRACE_RLC_AM_RX
                LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][UPDATE VR(MS)] UPDATED VR(MS) %04d -> %04d\n",
-                     frameP,
-                     (rlc_pP->is_enb) ? "eNB" : "UE",
-                     rlc_pP->enb_module_id,
-                     rlc_pP->ue_module_id,
+                     ctxt_pP->frame,
+                     (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                     ctxt_pP->enb_module_id,
+                     ctxt_pP->ue_module_id,
                      rlc_pP->rb_id,
                      rlc_pP->vr_ms, pdu_info_cursor_p->sn);
 #endif
@@ -195,10 +208,10 @@ void rlc_am_rx_update_vr_ms(rlc_am_entity_t * const rlc_pP, const const frame_t 
         } while (cursor_p != NULL);
 #ifdef TRACE_RLC_AM_RX
         LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][UPDATE VR(MS)] UPDATED VR(MS) %04d -> %04d\n",
-              frameP,
-              (rlc_pP->is_enb) ? "eNB" : "UE",
-              rlc_pP->enb_module_id,
-              rlc_pP->ue_module_id,
+              ctxt_pP->frame,
+              (ctxt_pP->enb_flag) ? "eNB" : "UE",
+              ctxt_pP->enb_module_id,
+              ctxt_pP->ue_module_id,
               rlc_pP->rb_id,
               rlc_pP->vr_ms,
               (pdu_info_cursor_p->sn + 1)  & RLC_AM_SN_MASK);
@@ -208,7 +221,11 @@ void rlc_am_rx_update_vr_ms(rlc_am_entity_t * const rlc_pP, const const frame_t 
 }
 // assumed the sn of the tb_p is equal to VR(R)
 //-----------------------------------------------------------------------------
-void rlc_am_rx_update_vr_r(rlc_am_entity_t * const rlc_pP,const const frame_t frameP,mem_block_t* tb_pP)
+void
+rlc_am_rx_update_vr_r(
+                const protocol_ctxt_t* const ctxt_pP,
+                rlc_am_entity_t * const rlc_pP,
+                mem_block_t* tb_pP)
 //-----------------------------------------------------------------------------
 {
     rlc_am_pdu_info_t* pdu_info_cursor_p = NULL;
@@ -224,10 +241,10 @@ void rlc_am_rx_update_vr_r(rlc_am_entity_t * const rlc_pP,const const frame_t fr
             }
 #ifdef TRACE_RLC_AM_RX
             LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][UPDATE VR(R)] UPDATED VR(R) %04d -> %04d\n",
-                  frameP,
-                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   rlc_pP->rb_id,
                   rlc_pP->vr_r,
                   (pdu_info_cursor_p->sn + 1) & RLC_AM_SN_MASK);
@@ -246,7 +263,10 @@ void rlc_am_rx_update_vr_r(rlc_am_entity_t * const rlc_pP,const const frame_t fr
 }
 //-----------------------------------------------------------------------------
 void
-rlc_am_receive_routing (rlc_am_entity_t * const rlc_pP, const const frame_t frameP, const eNB_flag_t eNB_flagP, struct mac_data_ind data_indP)
+rlc_am_receive_routing (
+                const protocol_ctxt_t* const ctxt_pP,
+                rlc_am_entity_t * const rlc_pP,
+                struct mac_data_ind data_indP)
 //-----------------------------------------------------------------------------
 {
     mem_block_t           *tb_p             = NULL;
@@ -261,21 +281,21 @@ rlc_am_receive_routing (rlc_am_entity_t * const rlc_pP, const const frame_t fram
             if ((*first_byte_p & 0x80) == 0x80) {
                 rlc_pP->stat_rx_data_bytes += tb_size_in_bytes;
                 rlc_pP->stat_rx_data_pdu   += 1;
-                rlc_am_receive_process_data_pdu (rlc_pP, frameP, eNB_flagP, tb_p, first_byte_p, tb_size_in_bytes);
+                rlc_am_receive_process_data_pdu (ctxt_pP, rlc_pP, tb_p, first_byte_p, tb_size_in_bytes);
             } else {
                 rlc_pP->stat_rx_control_bytes += tb_size_in_bytes;
                 rlc_pP->stat_rx_control_pdu += 1;
-                rlc_am_receive_process_control_pdu (rlc_pP, frameP, tb_p, &first_byte_p, &tb_size_in_bytes);
+                rlc_am_receive_process_control_pdu (ctxt_pP, rlc_pP, tb_p, &first_byte_p, &tb_size_in_bytes);
                 // Test if remaining bytes not processed (up to know, highest probability is bug in MAC)
                 AssertFatal( tb_size_in_bytes == 0,
                                         "Remaining %d bytes following a control PDU",
                                         tb_size_in_bytes);
             }
             LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RX ROUTING] VR(R)=%03d VR(MR)=%03d\n",
-                  frameP,
-                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   rlc_pP->rb_id,
                   rlc_pP->vr_r,
                   rlc_pP->vr_mr);
@@ -283,7 +303,13 @@ rlc_am_receive_routing (rlc_am_entity_t * const rlc_pP, const const frame_t fram
     } // end while
 }
 //-----------------------------------------------------------------------------
-void rlc_am_receive_process_data_pdu (rlc_am_entity_t * const rlc_pP, const const frame_t frameP, const eNB_flag_t eNB_flagP, mem_block_t* tb_pP, uint8_t* first_byte_pP, uint16_t tb_size_in_bytesP)
+void
+rlc_am_receive_process_data_pdu (
+                const protocol_ctxt_t* const ctxt_pP,
+                rlc_am_entity_t * const rlc_pP,
+                mem_block_t* tb_pP,
+                uint8_t* first_byte_pP,
+                uint16_t tb_size_in_bytesP)
 //-----------------------------------------------------------------------------
 {
   // 5.1.3.2 Receive operations
@@ -315,25 +341,25 @@ void rlc_am_receive_process_data_pdu (rlc_am_entity_t * const rlc_pP, const cons
   rlc_am_pdu_info_t*  pdu_info_p         = &((rlc_am_rx_pdu_management_t*)(tb_pP->data))->pdu_info;
   rlc_am_pdu_sn_10_t* rlc_am_pdu_sn_10_p = (rlc_am_pdu_sn_10_t*)first_byte_pP;
 
-  if (rlc_am_get_data_pdu_infos(frameP,rlc_am_pdu_sn_10_p, tb_size_in_bytesP, pdu_info_p) >= 0) {
+  if (rlc_am_get_data_pdu_infos(ctxt_pP,rlc_am_pdu_sn_10_p, tb_size_in_bytesP, pdu_info_p) >= 0) {
 
       ((rlc_am_rx_pdu_management_t*)(tb_pP->data))->all_segments_received = 0;
-      if (rlc_am_in_rx_window(rlc_pP, pdu_info_p->sn)) {
+      if (rlc_am_in_rx_window(ctxt_pP, rlc_pP, pdu_info_p->sn)) {
 
           if (pdu_info_p->p) {
               LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][PROCESS RX PDU]  POLL BIT SET, STATUS REQUESTED:\n",
-                  frameP,
-                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   rlc_pP->rb_id);
               rlc_pP->status_requested = 1;
           }
           LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][PROCESS RX PDU] VR(R) %04d VR(H) %04d VR(MR) %04d VR(MS) %04d VR(X) %04d\n",
-                frameP,
-                (rlc_pP->is_enb) ? "eNB" : "UE",
-                rlc_pP->enb_module_id,
-                rlc_pP->ue_module_id,
+                ctxt_pP->frame,
+                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                ctxt_pP->enb_module_id,
+                ctxt_pP->ue_module_id,
                 rlc_pP->rb_id,
                 rlc_pP->vr_r,
                 rlc_pP->vr_h,
@@ -341,24 +367,24 @@ void rlc_am_receive_process_data_pdu (rlc_am_entity_t * const rlc_pP, const cons
                 rlc_pP->vr_ms,
                 rlc_pP->vr_x);
 
-          if (rlc_am_rx_list_insert_pdu(rlc_pP, frameP,tb_pP) < 0) {
+          if (rlc_am_rx_list_insert_pdu(ctxt_pP, rlc_pP,tb_pP) < 0) {
               rlc_pP->stat_rx_data_pdu_dropped     += 1;
               rlc_pP->stat_rx_data_bytes_dropped   += tb_size_in_bytesP;
               free_mem_block (tb_pP);
               LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][PROCESS RX PDU]  PDU DISCARDED, STATUS REQUESTED:\n",
-                  frameP,
-                  (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   rlc_pP->rb_id);
               rlc_pP->status_requested = 1;
 #if defined(RLC_STOP_ON_LOST_PDU)
               AssertFatal( 0 == 1,
                     "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] LOST PDU DETECTED\n",
-                    frameP,
-                    (rlc_pP->is_enb) ? "eNB" : "UE",
-                    rlc_pP->enb_module_id,
-                    rlc_pP->ue_module_id,
+                    ctxt_pP->frame,
+                    (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                    ctxt_pP->enb_module_id,
+                    ctxt_pP->ue_module_id,
                     rlc_pP->rb_id);
 #endif
           } else {
@@ -396,45 +422,45 @@ void rlc_am_receive_process_data_pdu (rlc_am_entity_t * const rlc_pP, const cons
 
 #ifdef TRACE_RLC_AM_RX
               LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][PROCESS RX PDU]  RX LIST AFTER INSERTION:\n",
-                    frameP,
-                    (rlc_pP->is_enb) ? "eNB" : "UE",
-                    rlc_pP->enb_module_id,
-                    rlc_pP->ue_module_id,
+                    ctxt_pP->frame,
+                    (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                    ctxt_pP->enb_module_id,
+                    ctxt_pP->ue_module_id,
                     rlc_pP->rb_id);
               rlc_am_rx_list_display(rlc_pP, "rlc_am_receive_process_data_pdu AFTER INSERTION ");
 #endif
-              if (rlc_am_sn_gte_vr_h(rlc_pP, pdu_info_p->sn) > 0) {
+              if (rlc_am_sn_gte_vr_h(ctxt_pP, rlc_pP, pdu_info_p->sn) > 0) {
                   rlc_pP->vr_h = (pdu_info_p->sn + 1) & RLC_AM_SN_MASK;
               }
-              rlc_am_rx_check_all_byte_segments(rlc_pP, frameP, tb_pP);
+              rlc_am_rx_check_all_byte_segments(ctxt_pP, rlc_pP, tb_pP);
               if ((pdu_info_p->sn == rlc_pP->vr_ms) && (((rlc_am_rx_pdu_management_t*)(tb_pP->data))->all_segments_received)) {
-                  rlc_am_rx_update_vr_ms(rlc_pP, frameP, tb_pP);
+                  rlc_am_rx_update_vr_ms(ctxt_pP, rlc_pP,  tb_pP);
               }
               if (pdu_info_p->sn == rlc_pP->vr_r) {
                  if (((rlc_am_rx_pdu_management_t*)(tb_pP->data))->all_segments_received) {
-                      rlc_am_rx_update_vr_r(rlc_pP, frameP, tb_pP);
+                      rlc_am_rx_update_vr_r(ctxt_pP, rlc_pP, tb_pP);
                       rlc_pP->vr_mr = (rlc_pP->vr_r + RLC_AM_WINDOW_SIZE) & RLC_AM_SN_MASK;
                   }
-                  rlc_am_rx_list_reassemble_rlc_sdus(rlc_pP,frameP,eNB_flagP);
+                  rlc_am_rx_list_reassemble_rlc_sdus(ctxt_pP, rlc_pP);
               }
 
               if (rlc_pP->t_reordering.running) {
-                  if ((rlc_pP->vr_x == rlc_pP->vr_r) || ((rlc_am_in_rx_window(rlc_pP, pdu_info_p->sn) == 0) && (rlc_pP->vr_x != rlc_pP->vr_mr))) {
-                      rlc_am_stop_and_reset_timer_reordering(rlc_pP,frameP);
+                  if ((rlc_pP->vr_x == rlc_pP->vr_r) || ((rlc_am_in_rx_window(ctxt_pP, rlc_pP, pdu_info_p->sn) == 0) && (rlc_pP->vr_x != rlc_pP->vr_mr))) {
+                      rlc_am_stop_and_reset_timer_reordering(ctxt_pP, rlc_pP);
                   }
               }
               if (!(rlc_pP->t_reordering.running)) {
                   if (rlc_pP->vr_h != rlc_pP->vr_r) { // - if VR (H) > VR(R) translated to - if VR (H) != VR(R)
-                      rlc_am_start_timer_reordering(rlc_pP,frameP);
+                      rlc_am_start_timer_reordering(ctxt_pP, rlc_pP);
                       rlc_pP->vr_x = rlc_pP->vr_h;
                   }
               }
           }
           LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][PROCESS RX PDU] VR(R) %04d VR(H) %04d  VR(MS) %04d  VR(MR) %04d\n",
-                frameP,
-                (rlc_pP->is_enb) ? "eNB" : "UE",
-                rlc_pP->enb_module_id,
-                rlc_pP->ue_module_id,
+                ctxt_pP->frame,
+                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                ctxt_pP->enb_module_id,
+                ctxt_pP->ue_module_id,
                 rlc_pP->rb_id,
                 rlc_pP->vr_r,
                 rlc_pP->vr_h,
@@ -445,10 +471,10 @@ void rlc_am_receive_process_data_pdu (rlc_am_entity_t * const rlc_pP, const cons
           rlc_pP->stat_rx_data_bytes_out_of_window   += tb_size_in_bytesP;
           free_mem_block (tb_pP);
           LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][PROCESS RX PDU]  PDU OUT OF RX WINDOW, DISCARDED, STATUS REQUESTED:\n",
-                frameP,
-                (rlc_pP->is_enb) ? "eNB" : "UE",
-                rlc_pP->enb_module_id,
-                rlc_pP->ue_module_id,
+                ctxt_pP->frame,
+                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                ctxt_pP->enb_module_id,
+                ctxt_pP->ue_module_id,
                 rlc_pP->rb_id);
           rlc_pP->status_requested = 1;
       }

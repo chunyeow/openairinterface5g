@@ -78,23 +78,24 @@ typedef volatile struct {
 } rlc_am_info_t;
 
 //-----------------------------------------------------------------------------
-/*! \fn void rlc_am_init   (rlc_am_entity_t* rlc_pP,frame_t frameP)
+/*! \fn void rlc_am_init   (const protocol_ctxt_t* const ctxtP, rlc_am_entity_t * const rlc_pP)
 * \brief    Initialize the RLC AM protocol instance, reset variables, allocate buffers, lists, then, the next step in order have a running RLC AM instance is to configure and set debug informations for this RLC instance.
-* \param[in]  rlc_pP                      RLC AM protocol instance pointer.
-* \param[in]  frame                     Frame index
+* \param[in]  ctxtP                     Running context.
+* \param[in]  rlc_pP                    RLC AM protocol instance pointer.
 */
-public_rlc_am_init( void rlc_am_init   (rlc_am_entity_t* rlc_pP,frame_t frameP);)
+public_rlc_am_init( void rlc_am_init   (const protocol_ctxt_t* const ctxtP, rlc_am_entity_t* rlc_pP);)
 
-/*! \fn void rlc_am_cleanup(rlc_am_entity_t* rlc_pP)
+/*! \fn void rlc_am_cleanup(const protocol_ctxt_t* const ctxtP, rlc_am_entity_t *const rlc_pP)
 * \brief    Free all memory resources allocated and kept by this RLC AM instance.
-* \param[in]  rlc_pP                      RLC AM protocol instance pointer.
+* \param[in]  ctxtP                     Running context.
+* \param[in]  rlc_pP                    RLC AM protocol instance pointer.
 */
-public_rlc_am_init( void rlc_am_cleanup(rlc_am_entity_t* rlc_pP);)
+public_rlc_am_init( void rlc_am_cleanup(const protocol_ctxt_t* const ctxtP, rlc_am_entity_t* rlc_pP);)
 
-/*! \fn void rlc_am_configure(rlc_am_entity_t *rlc_pP, frame_t frameP, uint16_t max_retx_thresholdP, uint16_t poll_pduP, uint16_t poll_byteP, uint32_t t_poll_retransmitP, uint32_t t_reorderingP, uint32_t t_status_prohibitP)
+/*! \fn void rlc_am_configure(const protocol_ctxt_t* const ctxtP, rlc_am_entity_t * const rlc_pP,  uint16_t max_retx_thresholdP, uint16_t poll_pduP, uint16_t poll_byteP, uint32_t t_poll_retransmitP, uint32_t t_reorderingP, uint32_t t_status_prohibitP)
 * \brief    Set RLC AM protocol parameters.
-* \param[in]  rlc_pP                      RLC AM protocol instance pointer.
-* \param[in]  frame                     Frame index
+* \param[in]  ctxtP                     Running context.
+* \param[in]  rlc_pP                    RLC AM protocol instance pointer.
 * \param[in]  max_retx_thresholdP       Limit the number of retransmissions of an
 AMD PDU.
 * \param[in]  poll_pduP                 Trigger a poll for every poll_pduP PDUs.
@@ -103,25 +104,22 @@ AMD PDU.
 * \param[in]  t_reorderingP             This timer is used by the receiving side of an AM RLC entity in order to detect loss of RLC PDUs at lower layer, value in frames.
 * \param[in]  t_status_prohibitP        This timer is used by the receiving side of an AM RLC entity in order to prohibit transmission of a STATUS PDU, value in frames.
 */
-public_rlc_am_init( void rlc_am_configure(rlc_am_entity_t *rlc_pP,
-                                          frame_t frameP,
-                                          uint16_t max_retx_thresholdP,
-                                          uint16_t poll_pduP,
-                                          uint16_t poll_byteP,
-                                          uint32_t t_poll_retransmitP,
-                                          uint32_t t_reorderingP,
-                                          uint32_t t_status_prohibitP);)
+public_rlc_am_init( void rlc_am_configure(const protocol_ctxt_t* const ctxtP,
+                                          rlc_am_entity_t * const rlc_pP,
+                                          const uint16_t max_retx_thresholdP,
+                                          const uint16_t poll_pduP,
+                                          const uint16_t poll_byteP,
+                                          const uint32_t t_poll_retransmitP,
+                                          const uint32_t t_reorderingP,
+                                          const uint32_t t_status_prohibitP);)
 
-/*! \fn void rlc_am_set_debug_infos(rlc_am_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, srb_flag_t srb_flagP, module_id_t enb_module_idP, module_id_t ue_module_idP, rb_id_t rb_idP)
+/*! \fn void rlc_am_set_debug_infos(const protocol_ctxt_t* const ctxtP, rlc_am_entity_t * const rlc_pP, const srb_flag_t srb_flagP, const rb_id_t rb_idP)
 * \brief    Set informations that will be displayed in traces, helping the debug process.
-* \param[in]  rlc_pP                      RLC AM protocol instance pointer.
-* \param[in]  frame                     Frame index
-* \param[in]  eNB_flag                  Flag to indicate eNB (1) or UE (0)
+* \param[in]  ctxtP                     Running context.
+* \param[in]  rlc_pP                    RLC AM protocol instance pointer.
 * \param[in]  srb_flagP                 Flag to indicate signalling radio bearer (1) or data radio bearer (0).
-* \param[in]  enb_module_idP            eNB Virtualization variable, module identifier.
-* \param[in]  ue_module_idP             UE Virtualization variable, module identifier.
 * \param[in]  rb_idP                    Radio bearer identifier.
 */
-public_rlc_am_init( void rlc_am_set_debug_infos(rlc_am_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, srb_flag_t srb_flagP, module_id_t enb_module_idP, module_id_t ue_module_idP, rb_id_t rb_idP);)
+public_rlc_am_init( void rlc_am_set_debug_infos(const protocol_ctxt_t* const ctxtP, rlc_am_entity_t * const rlc_pP, const srb_flag_t srb_flagP, const rb_id_t rb_idP);)
 /** @} */
 #endif

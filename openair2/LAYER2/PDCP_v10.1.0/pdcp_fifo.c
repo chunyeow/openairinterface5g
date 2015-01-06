@@ -100,7 +100,7 @@ extern Packet_OTG_List_t *otg_pdcp_buffer;
 pdcp_data_req_header_t pdcp_read_header_g;
 
 //-----------------------------------------------------------------------------
-int pdcp_fifo_flush_sdus(frame_t frameP, eNB_flag_t enb_flagP, module_id_t enb_mod_idP, module_id_t ue_mod_idP)
+int pdcp_fifo_flush_sdus(const protocol_ctxt_t* const  ctxt_pP)
 {
   //-----------------------------------------------------------------------------
 
@@ -123,18 +123,18 @@ int pdcp_fifo_flush_sdus(frame_t frameP, eNB_flag_t enb_flagP, module_id_t enb_m
 #endif
 
 #if defined(LINK_PDCP_TO_GTPV1U)
-      if (enb_flagP) {
+      if (ctxt_pP->enb_flag) {
           AssertFatal(0, "Now execution should not go here");
           LOG_D(PDCP,"Sending to GTPV1U %d bytes\n", ((pdcp_data_ind_header_t *)(sdu_p->data))->data_size);
           /*message_p = itti_alloc_new_message(TASK_PDCP_ENB, GTPV1U_TUNNEL_DATA_REQ);
           GTPV1U_TUNNEL_DATA_REQ(message_p).buffer       = &(((uint8_t *) sdu_p->data)[sizeof (pdcp_data_ind_header_t)]);
           GTPV1U_TUNNEL_DATA_REQ(message_p).length       = ((pdcp_data_ind_header_t *)(sdu_p->data))->data_size;
-          GTPV1U_TUNNEL_DATA_REQ(message_p).ue_module_id = ue_mod_idP;
+          GTPV1U_TUNNEL_DATA_REQ(message_p).ue_module_id = ctxt_pP->ue_module_id;
           GTPV1U_TUNNEL_DATA_REQ(message_p).rab_id;      = ((pdcp_data_ind_header_t *)(sdu_p->data))->rb_id;
           */
           gtpv1u_new_data_req(
-              enb_mod_idP, //gtpv1u_data_t *gtpv1u_data_p,
-              ue_mod_idP,//rb_id/maxDRB, TO DO UE ID
+              ctxt_pP->enb_module_id, //gtpv1u_data_t *gtpv1u_data_p,
+              ctxt_pP->ue_module_id,//rb_id/maxDRB, TO DO UE ID
               ((pdcp_data_ind_header_t *)(sdu_p->data))->rb_id + 4,
               &(((uint8_t *) sdu_p->data)[sizeof (pdcp_data_ind_header_t)]),
               ((pdcp_data_ind_header_t *)(sdu_p->data))->data_size);
@@ -150,7 +150,7 @@ int pdcp_fifo_flush_sdus(frame_t frameP, eNB_flag_t enb_flagP, module_id_t enb_m
 #endif /* defined(ENABLE_USE_MME) */
 #ifdef PDCP_DEBUG
       LOG_I(PDCP, "PDCP->IP TTI %d INST %d: Preparing %d Bytes of data from rab %d to Nas_mesh\n",
-          frameP, ((pdcp_data_ind_header_t *)(sdu_p->data))->inst,
+          ctxt_pP->frame, ((pdcp_data_ind_header_t *)(sdu_p->data))->inst,
           ((pdcp_data_ind_header_t *)(sdu_p->data))->data_size, ((pdcp_data_ind_header_t *)(sdu_p->data))->rb_id);
 #endif //PDCP_DEBUG
       cont = 0;
@@ -179,7 +179,7 @@ int pdcp_fifo_flush_sdus(frame_t frameP, eNB_flag_t enb_flagP, module_id_t enb_m
 
 #ifdef PDCP_DEBUG
           LOG_I(PDCP, "Frame %d Sent %d Bytes of header to Nas_mesh\n",
-              frameP,
+              ctxt_pP->frame,
               bytes_wrote);
 #endif //PDCP_DEBUG
 
@@ -210,7 +210,7 @@ int pdcp_fifo_flush_sdus(frame_t frameP, eNB_flag_t enb_flagP, module_id_t enb_m
 
 #ifdef PDCP_DEBUG
                   LOG_I(PDCP, "PDCP->IP Frame %d INST %d: Sent %d Bytes of data from rab %d to Nas_mesh\n",
-                      frameP,
+                      ctxt_pP->frame,
                       ((pdcp_data_ind_header_t *)(sdu_p->data))->inst,
                       bytes_wrote,
                       ((pdcp_data_ind_header_t *)(sdu_p->data))->rb_id);
@@ -222,7 +222,7 @@ int pdcp_fifo_flush_sdus(frame_t frameP, eNB_flag_t enb_flagP, module_id_t enb_m
                           // LOG_D(PDCP, "rb sent a sdu qos_sap %d\n", sapiP);
                           LOG_D(PDCP,
                               "[FRAME %05d][xxx][PDCP][MOD xx/xx][RB %u][--- PDCP_DATA_IND / %d Bytes --->][IP][INSTANCE %u][RB %u]\n",
-                              frameP,
+                              ctxt_pP->frame,
                               ((pdcp_data_ind_header_t *)(sdu_p->data))->rb_id,
                               ((pdcp_data_ind_header_t *)(sdu_p->data))->data_size,
                               ((pdcp_data_ind_header_t *)(sdu_p->data))->inst,
@@ -271,13 +271,13 @@ int pdcp_fifo_flush_sdus(frame_t frameP, eNB_flag_t enb_flagP, module_id_t enb_m
       if ((pdcp_2_nas_irq > 0)) {
 #ifdef PDCP_DEBUG
           LOG_I(PDCP, "Frame %d : Trigger NAS RX interrupt\n",
-              frameP);
+              ctxt_pP->frame);
 #endif //PDCP_DEBUG
 
           rt_pend_linux_srq (pdcp_2_nas_irq);
       } else {
           LOG_E(PDCP, "Frame %d: ERROR IF IP STACK WANTED : NOTIF PACKET(S) pdcp_2_nas_irq not initialized : %d\n",
-              frameP,
+              ctxt_pP->frame,
               pdcp_2_nas_irq);
       }
   }
@@ -292,7 +292,7 @@ int pdcp_fifo_flush_sdus(frame_t frameP, eNB_flag_t enb_flagP, module_id_t enb_m
  * returns zero  value if whole bytes that had to be read were not read at all
  * returns a negative  value if an error was encountered while reading the rt fifo
  */
-int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_flagP)
+int pdcp_fifo_read_input_sdus_remaining_bytes (const protocol_ctxt_t* const  ctxt_pP)
 {
   //-----------------------------------------------------------------------------
   sdu_size_t             bytes_read = 0;
@@ -320,7 +320,7 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_fl
           } else {
 #ifdef PDCP_DEBUG
               LOG_I(PDCP, "Frame %d: IP->RADIO RECEIVED COMPLETE SDU size %d inst %d rb %d\n",
-                  frameP,
+                  ctxt_pP->frame,
                   pdcp_input_sdu_size_read,
                   pdcp_input_header.inst,
                   pdcp_input_header.rb_id);
@@ -330,7 +330,7 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_fl
               pdcp_read_header_g.inst = 0;
 #endif
 
-              if (enb_flagP == 0) {
+              if (ctxt_pP->enb_flag == 0) {
                   ue_inst  = pdcp_read_header_g.inst;
                   rb_id    = pdcp_read_header_g.rb_id;
                   enb_inst = 0;
@@ -355,8 +355,8 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_fl
 
               if (pdcp_input_header.rb_id != 0) {
                   LOG_D(PDCP, "[FRAME %5u][%s][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %u/%u][RB %u]\n",
-                      frameP,
-                      (enb_flagP) ? "eNB" : "UE",
+                      ctxt_pP->frame,
+                      (ctxt_pP->enb_flag) ? "eNB" : "UE",
                       pdcp_read_header_g.inst,
                       pdcp_read_header_g.rb_id,
                       pdcp_read_header_g.data_size,
@@ -366,10 +366,7 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_fl
 
                   if (pdcp_p->instanciated_instance) {
                       result = pdcp_data_req (
-                              enb_inst,
-                              ue_inst,
-                              frameP,
-                              enb_flagP,
+                              ctxt_pP,
                               SRB_FLAG_NO,
                               rb_id % maxDRB,
                               RLC_MUI_UNDEFINED,
@@ -382,8 +379,8 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_fl
 
               } else if ((pdcp_input_header.traffic_type == TRAFFIC_IPV6_TYPE_MULTICAST) || (pdcp_input_header.traffic_type == TRAFFIC_IPV4_TYPE_MULTICAST)) {
                   LOG_D(PDCP, "[FRAME %5u][%s][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ on MBMS bearer/ %d Bytes --->][PDCP][MOD %u/%u][RB %u]\n",
-                      frameP,
-                      (enb_flagP) ? "eNB" : "UE",
+                      ctxt_pP->frame,
+                      (ctxt_pP->enb_flag) ? "eNB" : "UE",
                           pdcp_read_header_g.inst,
                           pdcp_read_header_g.rb_id,
                           pdcp_read_header_g.data_size,
@@ -393,10 +390,7 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_fl
 
                   if (pdcp_p->instanciated_instance) {
                       result = pdcp_data_req (
-                          enb_inst,
-                          ue_inst,
-                          frameP,
-                          enb_flagP,
+                          ctxt_pP,
                           SRB_FLAG_NO,
                           rb_id,
                           RLC_MUI_UNDEFINED,
@@ -407,7 +401,7 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_fl
                       AssertFatal (result == TRUE, "PDCP data request failed!\n");
                   }
 
-              } else if (enb_flagP) {
+              } else if (ctxt_pP->enb_flag) {
                   // is a broadcast packet, we have to send this packet on all default RABS of all connected UEs
                   LOG_D(PDCP, "Checking if could sent on default rabs\n");
                   for (ue_inst = 0; ue_inst < NUMBER_OF_UE_MAX; ue_inst++) {
@@ -415,8 +409,8 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_fl
                       pdcp_p = &pdcp_array_drb_eNB[enb_inst][ue_inst][DEFAULT_RAB_ID-1];
                       if (pdcp_p->instanciated_instance) {
                           LOG_D(PDCP, "[FRAME %5u][%s][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %u/%u][RB DEFAULT_RAB_ID %u]\n",
-                              frameP,
-                              (enb_flagP) ? "eNB" : "UE",
+                              ctxt_pP->frame,
+                              (ctxt_pP->enb_flag) ? "eNB" : "UE",
                               pdcp_read_header_g.inst,
                               pdcp_read_header_g.rb_id,
                               pdcp_read_header_g.data_size,
@@ -424,10 +418,7 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_fl
                               ue_inst,
                               DEFAULT_RAB_ID);
                           result = pdcp_data_req (
-                              enb_inst,
-                              ue_inst,
-                              frameP,
-                              enb_flagP,
+                              ctxt_pP,
                               SRB_FLAG_NO,
                               DEFAULT_RAB_ID,
                               RLC_MUI_UNDEFINED,
@@ -441,8 +432,8 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_fl
               } else {
                   LOG_D(PDCP, "Forcing send on DEFAULT_RAB_ID\n");
                   LOG_D(PDCP, "[FRAME %5u][%s][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %u/%u][RB DEFAULT_RAB_ID %u]\n",
-                      frameP,
-                      (enb_flagP) ? "eNB" : "UE",
+                      ctxt_pP->frame,
+                      (ctxt_pP->enb_flag) ? "eNB" : "UE",
                       pdcp_read_header_g.inst,
                       pdcp_read_header_g.rb_id,
                       pdcp_read_header_g.data_size,
@@ -450,10 +441,7 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_fl
                       ue_inst,
                       DEFAULT_RAB_ID);
                   result = pdcp_data_req (
-                      enb_inst,
-                      ue_inst,
-                      frameP,
-                      enb_flagP,
+                      ctxt_pP,
                       SRB_FLAG_NO,
                       DEFAULT_RAB_ID,
                       RLC_MUI_UNDEFINED,
@@ -475,7 +463,7 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_fl
 }
 
 //-----------------------------------------------------------------------------
-int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t ue_mod_idP, module_id_t enb_mod_idP)
+int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
 {
 #ifdef NAS_NETLINK
 # if defined(ENABLE_PDCP_NETLINK_FIFO)
@@ -485,37 +473,37 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
   pdcp_transmission_mode_t       pdcp_mode = PDCP_TRANSMISSION_MODE_UNKNOWN;
   struct pdcp_netlink_element_s *data      = NULL;
 
-  while (pdcp_netlink_dequeue_element(enb_mod_idP, ue_mod_idP, enb_flagP, &data) != 0) {
+  while (pdcp_netlink_dequeue_element(ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, ctxt_pP->enb_flag, &data) != 0) {
       DevAssert(data != NULL);
-      if (enb_flagP == 0) {
+      if (ctxt_pP->enb_flag == 0) {
           rab_id = data->pdcp_read_header.rb_id % maxDRB;
-          pdcp = &pdcp_array_drb_ue[ue_mod_idP][rab_id-1];
+          pdcp = &pdcp_array_drb_ue[ctxt_pP->ue_module_id][rab_id-1];
       } else {
           rab_id = data->pdcp_read_header.rb_id % maxDRB;
-          ue_mod_idP = data->pdcp_read_header.rb_id / maxDRB;
-          pdcp = &pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][rab_id-1];
+          ctxt_pP->ue_module_id = data->pdcp_read_header.rb_id / maxDRB;
+          pdcp = &pdcp_array_drb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][rab_id-1];
       }
-      if (enb_flagP) {
-          AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+      if (ctxt_pP->enb_flag) {
+          AssertFatal ((ctxt_pP->enb_module_id >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
               "eNB module id is too low (%u/%d)!\n",
-              enb_mod_idP,
+              ctxt_pP->enb_module_id,
               oai_emulation.info.first_enb_local);
-          AssertFatal ((enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+          AssertFatal ((ctxt_pP->enb_module_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
               "eNB module id is too high (%u/%d)!\n",
-              enb_mod_idP,
+              ctxt_pP->enb_module_id,
               oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-          AssertFatal (ue_mod_idP  < NB_UE_INST,
+          AssertFatal (ctxt_pP->ue_module_id  < NB_UE_INST,
               "UE module id is too high (%u/%d)!\n",
-              ue_mod_idP,
+              ctxt_pP->ue_module_id,
               oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
       } else {
-          AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+          AssertFatal (ctxt_pP->ue_module_id  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
               "UE module id is too high (%u/%d)!\n",
-              ue_mod_idP,
+              ctxt_pP->ue_module_id,
               oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
-          AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+          AssertFatal (ctxt_pP->ue_module_id  >= oai_emulation.info.first_ue_local,
               "UE module id is too low (%u/%d)!\n",
-              ue_mod_idP,
+              ctxt_pP->ue_module_id,
               oai_emulation.info.first_ue_local);
       }
       AssertFatal (rab_id    < maxDRB,                       "RB id is too high (%u/%d)!\n", rab_id, maxDRB);
@@ -524,13 +512,13 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
           if (pdcp->instanciated_instance) {
               LOG_D(PDCP, "[FRAME %05d][%s][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ "
                   "/ %d Bytes --->][PDCP][MOD %u/%u][RB %u]\n",
-                  frameP,
-                  (enb_flagP) ? "eNB" : "UE",
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
                       data->pdcp_read_header.inst,
                       data->pdcp_read_header.rb_id,
                       data->pdcp_read_header.data_size,
-                      enb_mod_idP,
-                      ue_mod_idP,
+                      ctxt_pP->enb_module_id,
+                      ctxt_pP->ue_module_id,
                       rab_id);
 #ifdef 	OAI_NW_DRIVER_TYPE_ETHERNET
               if ((data->pdcp_read_header.traffic_type == TRAFFIC_IPV6_TYPE_MULTICAST) /*TRAFFIC_IPV6_TYPE_MULTICAST */ ||
@@ -551,10 +539,10 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
 #else // NASMESH driver does not curreenlty support multicast traffic
               pdcp_mode = PDCP_TRANSMISSION_MODE_DATA;
 #endif
-              pdcp_data_req(enb_mod_idP,
-                  ue_mod_idP,
-                  frameP,
-                  enb_flagP,
+              pdcp_data_req(ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
+                  ctxt_pP->frame,
+                  ctxt_pP->enb_flag,
                   SRB_FLAG_NO,
                   rab_id % maxDRB,
                   RLC_MUI_UNDEFINED,
@@ -563,24 +551,24 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
                   data->data,
                   pdcp_mode);
           } else {
-              LOG_E(PDCP, "Received packet for non-instanciated instance %u with rb_id %u, UE_index %d, enb_flagP %d eNB_index %d\n",
-                  data->pdcp_read_header.inst, data->pdcp_read_header.rb_id, ue_mod_idP, enb_flagP,enb_mod_idP);
+              LOG_E(PDCP, "Received packet for non-instanciated instance %u with rb_id %u, UE_index %d, ctxt_pP->enb_flag %d eNB_index %d\n",
+                  data->pdcp_read_header.inst, data->pdcp_read_header.rb_id, ctxt_pP->ue_module_id, ctxt_pP->enb_flag,ctxt_pP->enb_module_id);
           }
-      } else if (enb_flagP) {
+      } else if (ctxt_pP->enb_flag) {
           /* rb_id = 0, thus interpreated as broadcast and transported as
            * multiple unicast is a broadcast packet, we have to send this
            * packet on all default RABS of all connected UEs
            */
           LOG_D(PDCP, "eNB Try Forcing send on DEFAULT_RAB_ID first_ue_local %u nb_ue_local %u\n", oai_emulation.info.first_ue_local, oai_emulation.info.nb_ue_local);
           for (ue_id = 0; ue_id < NB_UE_INST; ue_id++) {
-              pdcp = &pdcp_array_drb_eNB[enb_mod_idP][ue_id][DEFAULT_RAB_ID-1];
+              pdcp = &pdcp_array_drb_eNB[ctxt_pP->enb_module_id][ue_id][DEFAULT_RAB_ID-1];
               if (pdcp->instanciated_instance) {
                   LOG_D(PDCP, "eNB Try Forcing send on DEFAULT_RAB_ID UE %d\n", ue_id);
                   pdcp_data_req(
-                      enb_mod_idP,
+                      ctxt_pP->enb_module_id,
                       ue_id,
-                      frameP,
-                      enb_flagP,
+                      ctxt_pP->frame,
+                      ctxt_pP->enb_flag,
                       SRB_FLAG_NO,
                       DEFAULT_RAB_ID,
                       RLC_MUI_UNDEFINED,
@@ -593,10 +581,10 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
       } else {
           LOG_D(PDCP, "Forcing send on DEFAULT_RAB_ID\n");
           pdcp_data_req(
-              enb_mod_idP,
-              ue_mod_idP,
-              frameP,
-              enb_flagP,
+              ctxt_pP->enb_module_id,
+              ctxt_pP->ue_module_id,
+              ctxt_pP->frame,
+              ctxt_pP->enb_flag,
               SRB_FLAG_NO,
               DEFAULT_RAB_ID,
               RLC_MUI_UNDEFINED,
@@ -653,31 +641,31 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
 #ifdef OAI_EMU
                   // overwrite function input parameters, because only one netlink socket for all instances
                   if (pdcp_read_header_g.inst < oai_emulation.info.nb_enb_local) {
-                      enb_flagP  = 1;
-                      ue_mod_idP  = pdcp_read_header_g.rb_id / maxDRB + oai_emulation.info.first_ue_local;
-                      enb_mod_idP = pdcp_read_header_g.inst  +  oai_emulation.info.first_enb_local;
+                      ctxt_pP->enb_flag  = 1;
+                      ctxt_pP->ue_module_id  = pdcp_read_header_g.rb_id / maxDRB + oai_emulation.info.first_ue_local;
+                      ctxt_pP->enb_module_id = pdcp_read_header_g.inst  +  oai_emulation.info.first_enb_local;
                       rab_id    = pdcp_read_header_g.rb_id % maxDRB;
                   } else {
-                      enb_flagP  = 0;
-                      ue_mod_idP  = pdcp_read_header_g.inst - oai_emulation.info.nb_enb_local + oai_emulation.info.first_ue_local;
-                      enb_mod_idP = 0;
+                      ctxt_pP->enb_flag  = 0;
+                      ctxt_pP->ue_module_id  = pdcp_read_header_g.inst - oai_emulation.info.nb_enb_local + oai_emulation.info.first_ue_local;
+                      ctxt_pP->enb_module_id = 0;
                       rab_id    = pdcp_read_header_g.rb_id;
                   }
-                  AssertFatal (enb_mod_idP >= oai_emulation.info.first_enb_local,
+                  AssertFatal (ctxt_pP->enb_module_id >= oai_emulation.info.first_enb_local,
                               "eNB inst is too low (%u/%d)!\n",
-                              enb_mod_idP,
+                              ctxt_pP->enb_module_id,
                               oai_emulation.info.first_enb_local);
-                  AssertFatal (enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local),
+                  AssertFatal (ctxt_pP->enb_module_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local),
                               "eNB inst is too high (%u/%d)!\n",
-                              enb_mod_idP,
+                              ctxt_pP->enb_module_id,
                               oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-                  AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+                  AssertFatal (ctxt_pP->ue_module_id  >= oai_emulation.info.first_ue_local,
                                "UE inst is too low (%u/%d)!\n",
-                               ue_mod_idP,
+                               ctxt_pP->ue_module_id,
                                oai_emulation.info.first_ue_local);
-                  AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+                  AssertFatal (ctxt_pP->ue_module_id  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
                                "UE inst is too high (%u/%d)!\n",
-                               ue_mod_idP,
+                               ctxt_pP->ue_module_id,
                                oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
                   AssertFatal (rab_id    < maxDRB,                       "RB id is too high (%u/%d)!\n", rab_id, maxDRB);
                   /*LGpdcp_read_header.inst = (pdcp_read_header_g.inst >= oai_emulation.info.nb_enb_local) ? \
@@ -686,24 +674,24 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
 #else
                   pdcp_read_header_g.inst = 0;
 #warning "TO DO CORRCT VALUES FOR ue mod id, enb mod id"
-                  if (enb_flagP) {
-		    ue_mod_idP  = 0;
-		    enb_mod_idP = 0;
+                  if (ctxt_pP->enb_flag) {
+		    ctxt_pP->ue_module_id  = 0;
+		    ctxt_pP->enb_module_id = 0;
 		    rab_id      = pdcp_read_header_g.rb_id % maxDRB;
 		  } else {
-		    ue_mod_idP  = 0;
-		    enb_mod_idP = 0;
+		    ctxt_pP->ue_module_id  = 0;
+		    ctxt_pP->enb_module_id = 0;
 		    rab_id      = pdcp_read_header_g.rb_id % maxDRB;
 		  }
 #endif
 
-                  if (enb_flagP) {
+                  if (ctxt_pP->enb_flag) {
                       if (rab_id != 0) {
                           rab_id = rab_id % maxDRB;
-                          if (pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][rab_id-1].instanciated_instance) {
+                          if (pdcp_array_drb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][rab_id-1].instanciated_instance) {
 #ifdef PDCP_DEBUG
                               LOG_I(PDCP, "[FRAME %5u][eNB][NETLINK][IP->PDCP] INST %d: Received socket with length %d (nlmsg_len = %d) on Rab %d \n",
-                                  frameP,
+                                  ctxt_pP->frame,
                                   pdcp_read_header_g.inst,
                                   len,
                                   nas_nlh_rx->nlmsg_len-sizeof(struct nlmsghdr),
@@ -711,15 +699,15 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
 #endif
 
                               LOG_D(PDCP, "[FRAME %5u][eNB][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %u/%u][RB %u]\n",
-                                  frameP,
+                                  ctxt_pP->frame,
                                   pdcp_read_header_g.inst,
                                   pdcp_read_header_g.rb_id,
                                   pdcp_read_header_g.data_size,
-                                  enb_mod_idP,
-                                  ue_mod_idP,
+                                  ctxt_pP->enb_module_id,
+                                  ctxt_pP->ue_module_id,
                                   rab_id);
 
-                              pdcp_data_req(enb_mod_idP,ue_mod_idP,frameP, enb_flagP,SRB_FLAG_NO,
+                              pdcp_data_req(ctxt_pP->enb_module_id,ctxt_pP->ue_module_id,ctxt_pP->frame, ctxt_pP->enb_flag,SRB_FLAG_NO,
                                   rab_id,
                                   RLC_MUI_UNDEFINED,
                                   RLC_SDU_CONFIRM_NO,
@@ -728,32 +716,32 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
                                   PDCP_TRANSMISSION_MODE_DATA);
                           } else {
                               LOG_D(PDCP, "[FRAME %5u][eNB][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ / %d Bytes ---X][PDCP][MOD %u/%u][RB %u] NON INSTANCIATED INSTANCE, DROPPED\n",
-                                  frameP,
+                                  ctxt_pP->frame,
                                   pdcp_read_header_g.inst,
                                   pdcp_read_header_g.rb_id,
                                   pdcp_read_header_g.data_size,
-                                  enb_mod_idP,
-                                  ue_mod_idP,
+                                  ctxt_pP->enb_module_id,
+                                  ctxt_pP->ue_module_id,
                                   rab_id);
                           }
                       } else  { // rb_id =0, thus interpreated as broadcast and transported as multiple unicast
                           // is a broadcast packet, we have to send this packet on all default RABS of all connected UEs
 #warning CODE TO BE REVIEWED, ONLY WORK FOR SIMPLE TOPOLOGY CASES
-                          for (ue_mod_idP = 0; ue_mod_idP < NB_UE_INST; ue_mod_idP++) {
-                              if (pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][rab_id-1].instanciated_instance == TRUE) {
+                          for (ctxt_pP->ue_module_id = 0; ctxt_pP->ue_module_id < NB_UE_INST; ctxt_pP->ue_module_id++) {
+                              if (pdcp_array_drb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][rab_id-1].instanciated_instance == TRUE) {
                                   LOG_D(PDCP, "[FRAME %5u][eNB][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %u/%u][RB DEFAULT_RAB_ID %u]\n",
-                                      frameP,
+                                      ctxt_pP->frame,
                                       pdcp_read_header_g.inst,
                                       pdcp_read_header_g.rb_id,
                                       pdcp_read_header_g.data_size,
-                                      enb_mod_idP,
-                                      ue_mod_idP,
+                                      ctxt_pP->enb_module_id,
+                                      ctxt_pP->ue_module_id,
                                       DEFAULT_RAB_ID);
                                   pdcp_data_req (
-                                      enb_mod_idP,
-                                      ue_mod_idP,
-                                      frameP,
-                                      enb_flagP,
+                                      ctxt_pP->enb_module_id,
+                                      ctxt_pP->ue_module_id,
+                                      ctxt_pP->frame,
+                                      ctxt_pP->enb_flag,
                                       SRB_FLAG_NO,
                                       DEFAULT_RAB_ID,
                                       RLC_MUI_UNDEFINED,
@@ -766,30 +754,30 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
                       }
                   } else {
                       if (rab_id != 0) {
-                          if (pdcp_array_drb_ue[ue_mod_idP][rab_id-1].instanciated_instance) {
+                          if (pdcp_array_drb_ue[ctxt_pP->ue_module_id][rab_id-1].instanciated_instance) {
 #ifdef PDCP_DEBUG
                               LOG_I(PDCP, "[FRAME %5u][UE][NETLINK][IP->PDCP] INST %d: Received socket with length %d (nlmsg_len = %d) on Rab %d \n",
-                                  frameP,
+                                  ctxt_pP->frame,
                                   pdcp_read_header_g.inst,
                                   len,
                                   nas_nlh_rx->nlmsg_len-sizeof(struct nlmsghdr),
                                   pdcp_read_header_g.rb_id);
 
                               LOG_D(PDCP, "[FRAME %5u][UE][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %u/%u][RB %u]\n",
-                                  frameP,
+                                  ctxt_pP->frame,
                                   pdcp_read_header_g.inst,
                                   pdcp_read_header_g.rb_id,
                                   pdcp_read_header_g.data_size,
-                                  enb_mod_idP,
-                                  ue_mod_idP,
+                                  ctxt_pP->enb_module_id,
+                                  ctxt_pP->ue_module_id,
                                   rab_id);
 #endif
 
                               pdcp_data_req(
-                                  enb_mod_idP,
-                                  ue_mod_idP,
-                                  frameP,
-                                  enb_flagP,
+                                  ctxt_pP->enb_module_id,
+                                  ctxt_pP->ue_module_id,
+                                  ctxt_pP->frame,
+                                  ctxt_pP->enb_flag,
                                   SRB_FLAG_NO,
                                   rab_id,
                                   RLC_MUI_UNDEFINED,
@@ -799,29 +787,29 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
                                   PDCP_TRANSMISSION_MODE_DATA);
                           } else {
                               LOG_D(PDCP, "[FRAME %5u][UE][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ / %d Bytes ---X][PDCP][MOD %u/%u][RB %u] NON INSTANCIATED INSTANCE, DROPPED\n",
-                                  frameP,
+                                  ctxt_pP->frame,
                                   pdcp_read_header_g.inst,
                                   pdcp_read_header_g.rb_id,
                                   pdcp_read_header_g.data_size,
-                                  enb_mod_idP,
-                                  ue_mod_idP,
+                                  ctxt_pP->enb_module_id,
+                                  ctxt_pP->ue_module_id,
                                   rab_id);
                           }
                       }  else {
                           LOG_D(PDCP, "Forcing send on DEFAULT_RAB_ID\n");
                           LOG_D(PDCP, "[FRAME %5u][eNB][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %u/%u][RB DEFAULT_RAB_ID %u]\n",
-                              frameP,
+                              ctxt_pP->frame,
                               pdcp_read_header_g.inst,
                               pdcp_read_header_g.rb_id,
                               pdcp_read_header_g.data_size,
-                              enb_mod_idP,
-                              ue_mod_idP,
+                              ctxt_pP->enb_module_id,
+                              ctxt_pP->ue_module_id,
                               DEFAULT_RAB_ID);
                           pdcp_data_req (
-                              enb_mod_idP,
-                              ue_mod_idP,
-                              frameP,
-                              enb_flagP,
+                              ctxt_pP->enb_module_id,
+                              ctxt_pP->ue_module_id,
+                              ctxt_pP->frame,
+                              ctxt_pP->enb_flag,
                               SRB_FLAG_NO,
                               DEFAULT_RAB_ID,
                               RLC_MUI_UNDEFINED,
@@ -844,7 +832,7 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
 }
 
 
-void pdcp_fifo_read_input_sdus_from_otg (frame_t frameP, eNB_flag_t enb_flagP, module_id_t ue_mod_idP, module_id_t enb_mod_idP) {
+void pdcp_fifo_read_input_sdus_from_otg (const protocol_ctxt_t* const  ctxt_pP) {
   unsigned char       *otg_pkt=NULL;
   module_id_t          src_id, module_id; // src for otg
   module_id_t          dst_id; // dst for otg
@@ -855,17 +843,19 @@ void pdcp_fifo_read_input_sdus_from_otg (frame_t frameP, eNB_flag_t enb_flagP, m
   Packet_otg_elt_t    *otg_pkt_info=NULL;
   int                  result;
 
-  src_id = enb_mod_idP;
+  protocol_ctxt_t  ctxt;
+
+  src_id = ctxt_pP->enb_module_id;
 
   // we need to add conditions to avoid transmitting data when the UE is not RRC connected.
 #if defined(USER_MODE) && defined(OAI_EMU)
   if (oai_emulation.info.otg_enabled ==1 ){
-      module_id = (enb_flagP == 1) ?  enb_mod_idP : ue_mod_idP+NB_eNB_INST;
-      //rb_id    = (enb_flagP == 1) ? enb_mod_idP * MAX_NUM_RB + DTCH : (NB_eNB_INST + UE_index -1 ) * MAX_NUM_RB + DTCH ;
+      module_id = (ctxt_pP->enb_flag == 1) ?  ctxt_pP->enb_module_id : ctxt_pP->ue_module_id+NB_eNB_INST;
+      //rb_id    = (ctxt_pP->enb_flag == 1) ? ctxt_pP->enb_module_id * MAX_NUM_RB + DTCH : (NB_eNB_INST + UE_index -1 ) * MAX_NUM_RB + DTCH ;
       src_id = module_id;
       while ((otg_pkt_info = pkt_list_remove_head(&(otg_pdcp_buffer[module_id]))) != NULL) {
           LOG_I(OTG,"Mod_id %d Frame %d Got a packet (%p), HEAD of otg_pdcp_buffer[%d] is %p and Nb elements is %d\n",
-              module_id,frameP, otg_pkt_info, module_id, pkt_list_get_head(&(otg_pdcp_buffer[module_id])), otg_pdcp_buffer[module_id].nb_elements);
+              module_id,ctxt_pP->frame, otg_pkt_info, module_id, pkt_list_get_head(&(otg_pdcp_buffer[module_id])), otg_pdcp_buffer[module_id].nb_elements);
           //otg_pkt_info = pkt_list_remove_head(&(otg_pdcp_buffer[module_id]));
           dst_id = (otg_pkt_info->otg_pkt).dst_id;
           module_id = (otg_pkt_info->otg_pkt).module_id;
@@ -875,19 +865,19 @@ void pdcp_fifo_read_input_sdus_from_otg (frame_t frameP, eNB_flag_t enb_flagP, m
           //    LOG_I(PDCP,"pdcp_fifo, pdcp mode is= %d\n",pdcp_mode);
 
           // generate traffic if the ue is rrc reconfigured state
-          // if (mac_get_rrc_status(module_id, enb_flagP, dst_id ) > 2 /*RRC_CONNECTED*/) { // not needed: this test is already done in update_otg_enb
+          // if (mac_get_rrc_status(module_id, ctxt_pP->enb_flag, dst_id ) > 2 /*RRC_CONNECTED*/) { // not needed: this test is already done in update_otg_enb
           otg_pkt = (unsigned char*) (otg_pkt_info->otg_pkt).sdu_buffer;
           pkt_size = (otg_pkt_info->otg_pkt).sdu_buffer_size;
           if (otg_pkt != NULL) {
               if (is_ue == 0 ) {
-		/*rlc_util_print_hex_octets(PDCP,
+                  /*rlc_util_print_hex_octets(PDCP,
                                             otg_pkt,
                                             pkt_size);
-		*/
+                   */
                   //rb_id = (/*NB_eNB_INST +*/ dst_id -1 ) * MAX_NUM_RB + DTCH;
                   LOG_D(OTG,"[eNB %d] Frame %d sending packet %d from module %d on rab id %d (src %d, dst %d) pkt size %d for pdcp mode %d\n",
-                      enb_mod_idP, frameP, pkt_cnt_enb++, module_id, rb_id, module_id, dst_id, pkt_size, pdcp_mode);
-                  result = pdcp_data_req(enb_mod_idP, dst_id, frameP, enb_flagP, SRB_FLAG_NO, rb_id, RLC_MUI_UNDEFINED, RLC_SDU_CONFIRM_NO, pkt_size, otg_pkt,pdcp_mode);
+                      ctxt_pP->enb_module_id, ctxt_pP->frame, pkt_cnt_enb++, module_id, rb_id, module_id, dst_id, pkt_size, pdcp_mode);
+                  result = pdcp_data_req(ctxt_pP->enb_module_id, dst_id, ctxt_pP->frame, ctxt_pP->enb_flag, SRB_FLAG_NO, rb_id, RLC_MUI_UNDEFINED, RLC_SDU_CONFIRM_NO, pkt_size, otg_pkt,pdcp_mode);
                   AssertFatal (result == TRUE, "PDCP data request failed!\n");
               }
               else {
@@ -895,11 +885,14 @@ void pdcp_fifo_read_input_sdus_from_otg (frame_t frameP, eNB_flag_t enb_flagP, m
 
 
                   LOG_D(OTG,"[UE %d] Frame %d: sending packet %d from module %d on rab id %d (src %d, dst %d) pkt size %d\n",
-			ue_mod_idP, frameP, pkt_cnt_ue++, src_id, rb_id, src_id, dst_id, pkt_size);
-                  result = pdcp_data_req( dst_id,
-                                          ue_mod_idP,
-                                          frameP,
-                                          enb_flagP,
+                        ctxt_pP->ue_module_id, ctxt_pP->frame, pkt_cnt_ue++, src_id, rb_id, src_id, dst_id, pkt_size);
+
+                  ctxt.enb_module_id = dst_id;
+                  ctxt.ue_module_id  = ue_module_id;
+                  ctxt.frame         = ctxt_pP->frame;
+                  ctxt.enb_flag      = ctxt_pP->enb_flag;
+
+                  result = pdcp_data_req( &ctxt,
                                           SRB_FLAG_NO,
                                           rb_id,
                                           RLC_MUI_UNDEFINED,
@@ -912,24 +905,36 @@ void pdcp_fifo_read_input_sdus_from_otg (frame_t frameP, eNB_flag_t enb_flagP, m
               free(otg_pkt);
               otg_pkt = NULL;
           }
-          // } //else LOG_D(OTG,"frameP %d enb %d-> ue %d link not yet established state %d  \n", frameP, eNB_index,dst_id - NB_eNB_INST, mac_get_rrc_status(module_id, enb_flagP, dst_id - NB_eNB_INST));
+          // } //else LOG_D(OTG,"ctxt_pP->frame %d enb %d-> ue %d link not yet established state %d  \n", ctxt_pP->frame, eNB_index,dst_id - NB_eNB_INST, mac_get_rrc_status(module_id, ctxt_pP->enb_flag, dst_id - NB_eNB_INST));
 
       }
   }
 #else
-  if ((otg_enabled==1) && (enb_flagP == 1)) { // generate DL traffic
+  if ((otg_enabled==1) && (ctxt_pP->enb_flag == 1)) { // generate DL traffic
       unsigned int ctime=0;
-      ctime = frameP * 100;
+      ctime = ctxt_pP->frame * 100;
 
-      /*if  ((mac_get_rrc_status(eNB_index, enb_flagP, 0 ) > 2) &&
-      (mac_get_rrc_status(eNB_index, enb_flagP, 1 ) > 2)) { */
+      /*if  ((mac_get_rrc_status(eNB_index, ctxt_pP->enb_flag, 0 ) > 2) &&
+      (mac_get_rrc_status(eNB_index, ctxt_pP->enb_flag, 1 ) > 2)) { */
+      ctxt.enb_module_id = ctxt_pP->enb_module_id;
+      ctxt.frame         = ctxt_pP->frame;
+      ctxt.enb_flag      = ctxt_pP->enb_flag;
+
       for (dst_id = 0; dst_id<NUMBER_OF_UE_MAX; dst_id++) {
-          if (mac_get_rrc_status(enb_mod_idP, enb_flagP, dst_id ) > 2) {
+          if (mac_get_rrc_status(ctxt_pP->enb_module_id, ctxt_pP->enb_flag, dst_id ) > 2) {
               otg_pkt=packet_gen(src_id, dst_id, 0, ctime, &pkt_size);
               if (otg_pkt != NULL){
                   rb_id = dst_id * maxDRB + DTCH;
-                  pdcp_data_req(enb_mod_idP, dst_id, frameP, enb_flagP, SRB_FLAG_NO, rb_id, RLC_MUI_UNDEFINED, RLC_SDU_CONFIRM_NO,pkt_size, otg_pkt, PDCP_TRANSMISSION_MODE_DATA);
-                  LOG_I(OTG,"send packet from module %d on rab id %d (src %d, dst %d) pkt size %d\n", enb_mod_idP, rb_id, src_id, dst_id, pkt_size);
+                  ctxt.ue_module_id  = dst_id;
+                  pdcp_data_req(&ctxt,
+                                SRB_FLAG_NO,
+                                rb_id,
+                                RLC_MUI_UNDEFINED,
+                                RLC_SDU_CONFIRM_NO,
+                                pkt_size,
+                                otg_pkt,
+                                PDCP_TRANSMISSION_MODE_DATA);
+                  LOG_I(OTG,"send packet from module %d on rab id %d (src %d, dst %d) pkt size %d\n", ctxt_pP->enb_module_id, rb_id, src_id, dst_id, pkt_size);
                   free(otg_pkt);
               }
               /*else {
@@ -937,7 +942,7 @@ void pdcp_fifo_read_input_sdus_from_otg (frame_t frameP, eNB_flag_t enb_flagP, m
       }*/
           }
           /*else {
-    LOG_I(OTG,"rrc_status (src %d, dst %d) = %d\n",src_id, dst_id, mac_get_rrc_status(src_id, enb_flagP, dst_id ));
+    LOG_I(OTG,"rrc_status (src %d, dst %d) = %d\n",src_id, dst_id, mac_get_rrc_status(src_id, ctxt_pP->enb_flag, dst_id ));
     }*/
       }
   }

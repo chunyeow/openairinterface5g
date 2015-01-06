@@ -104,7 +104,7 @@ rlc_um_get_buffer_occupancy (rlc_um_entity_t *rlc_pP)
 }
 //-----------------------------------------------------------------------------
 void
-rlc_um_get_pdus (void *argP, frame_t frameP)
+rlc_um_get_pdus (const protocol_ctxt_t* const ctxt_pP, void *argP)
 {
 //-----------------------------------------------------------------------------
   rlc_um_entity_t *rlc_p = (rlc_um_entity_t *) argP;
@@ -140,10 +140,10 @@ rlc_um_get_pdus (void *argP, frame_t frameP)
 
         // SEND DATA TO MAC
     	  if (rlc_p->tx_sn_length == 10) {
-              rlc_um_segment_10 (rlc_p,frameP);
+              rlc_um_segment_10 (ctxt_pP, rlc_p);
     	  }
     	  if (rlc_p->tx_sn_length == 5) {
-              rlc_um_segment_5 (rlc_p,frameP);
+              rlc_um_segment_5 (ctxt_pP, rlc_p);
     	  }
         break;
 
@@ -170,10 +170,10 @@ rlc_um_get_pdus (void *argP, frame_t frameP)
 
       default:
         LOG_E(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_DATA_REQ UNKNOWN PROTOCOL STATE %02X hex\n",
-                frameP,
-                (rlc_p->is_enb) ? "eNB" : "UE",
-                rlc_p->enb_module_id,
-                rlc_p->ue_module_id,
+                ctxt_pP->frame,
+                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                ctxt_pP->enb_module_id,
+                ctxt_pP->ue_module_id,
                 (rlc_p->is_data_plane) ? "DRB" : "SRB",
                 rlc_p->rb_id,
                 rlc_p->protocol_state);
@@ -182,7 +182,7 @@ rlc_um_get_pdus (void *argP, frame_t frameP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind data_indP)
+rlc_um_rx (const protocol_ctxt_t* const ctxt_pP, void *argP, struct mac_data_ind data_indP)
 {
 //-----------------------------------------------------------------------------
   rlc_um_entity_t    *l_rlc_p = (rlc_um_entity_t *) argP;
@@ -207,13 +207,13 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
         // establishment, the RLC entity:
         //   - is created; and
         //   - enters the DATA_TRANSFER_READY state.
-        LOG_N(RLC, "[RLC_UM][MOD %02u/%02u] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", l_rlc_p->enb_module_id, l_rlc_p->ue_module_id);
+        LOG_N(RLC, "[RLC_UM][MOD %02u/%02u] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", ctxt_pP->enb_module_id, ctxt_pP->ue_module_id);
 
         /*if (data_indP.data.nb_elements > 0) {
-            LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, frameP, data_indP.data.nb_elements);
+            LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, ctxt_pP->frame, data_indP.data.nb_elements);
             rlc_p[l_rlc_p->module_id].m_mscgen_trace_length = sprintf(rlc_p[l_rlc_p->module_id].m_mscgen_trace, "[MSC_MSG][FRAME %05d][MAC_%s][MOD %02d][][--- MAC_DATA_IND/ %d TB(s) ",
-                frameP,
-                (l_rlc_p->is_enb) ? "eNB":"UE",
+                ctxt_pP->frame,
+                (ctxt_pP->enb_flag) ? "eNB":"UE",
                 l_rlc_p->module_id,
                 data_indP.data.nb_elements);
 
@@ -258,10 +258,10 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
 #ifdef TRACE_RLC_UM_PDU
         if (data_indP.data.nb_elements > 0) {
             LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_DATA_IND %d TBs\n",
-                    frameP,
-                    (l_rlc_p->is_enb) ? "eNB" : "UE",
-                    l_rlc_p->enb_module_id,
-                    l_rlc_p->ue_module_id,
+                    ctxt_pP->frame,
+                    (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                    ctxt_pP->enb_module_id,
+                    ctxt_pP->ue_module_id,
                     (l_rlc_p->is_data_plane) ? "DRB" : "SRB",
                     l_rlc_p->rb_id,
                     data_indP.data.nb_elements);
@@ -270,7 +270,7 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
             while (tb_p != NULL) {
                 tb_size_in_bytes   = ((struct mac_tb_ind *) (tb_p->data))->size;
 
-                rlc_um_get_pdu_infos(frameP,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_ind *) (tb_p->data))->data_ptr, tb_size_in_bytes, &pdu_info, l_rlc_p->rx_sn_length);
+                rlc_um_get_pdu_infos(ctxt_pP->frame,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_ind *) (tb_p->data))->data_ptr, tb_size_in_bytes, &pdu_info, l_rlc_p->rx_sn_length);
                   message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
                   message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", tb_size_in_bytes);
                   message_string_size += sprintf(&message_string[message_string_size], "Header size : %u\n", pdu_info.header_size);
@@ -316,14 +316,14 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
                   message_string_size += sprintf(&message_string[message_string_size], " |\n");
 
 #   if defined(ENABLE_ITTI)
-                  msg_p = itti_alloc_new_message_sized (l_rlc_p->is_enb ? TASK_RLC_ENB:TASK_RLC_UE , RLC_UM_DATA_PDU_IND, message_string_size + sizeof (IttiMsgText));
+                  msg_p = itti_alloc_new_message_sized (ctxt_pP->enb_flag ? TASK_RLC_ENB:TASK_RLC_UE , RLC_UM_DATA_PDU_IND, message_string_size + sizeof (IttiMsgText));
                   msg_p->ittiMsg.rlc_um_data_pdu_ind.size = message_string_size;
                   memcpy(&msg_p->ittiMsg.rlc_um_data_pdu_ind.text, message_string, message_string_size);
 
-                  if (l_rlc_p->is_enb) {
-                      itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->enb_module_id, msg_p);
+                  if (ctxt_pP->enb_flag) {
+                      itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->enb_module_id, msg_p);
                   } else {
-                      itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->ue_module_id + NB_eNB_INST, msg_p);
+                      itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->ue_module_id + NB_eNB_INST, msg_p);
                   }
 # else
                   LOG_T(RLC, "%s", message_string);
@@ -333,7 +333,7 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
             }
         }
 #endif
-        rlc_um_receive (l_rlc_p, frameP, eNB_flagP, data_indP);
+        rlc_um_receive (ctxt_pP, l_rlc_p, data_indP);
         break;
 
       case RLC_LOCAL_SUSPEND_STATE:
@@ -354,17 +354,17 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
         // - modifies only the protocol parameters and timers as indicated by
         //   upper layers.
         LOG_N(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] RLC_LOCAL_SUSPEND_STATE\n",
-                frameP,
-                (l_rlc_p->is_enb) ? "eNB" : "UE",
-                l_rlc_p->enb_module_id,
-                l_rlc_p->ue_module_id,
+                ctxt_pP->frame,
+                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                ctxt_pP->enb_module_id,
+                ctxt_pP->ue_module_id,
                 (l_rlc_p->is_data_plane) ? "DRB" : "SRB",
                 l_rlc_p->rb_id);
         /*if (data_indP.data.nb_elements > 0) {
-            LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, frameP, data_indP.data.nb_elements);
+            LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, ctxt_pP->frame, data_indP.data.nb_elements);
             rlc_p[l_rlc_p->module_id].m_mscgen_trace_length = sprintf(rlc_p[l_rlc_p->module_id].m_mscgen_trace, "[MSC_MSG][FRAME %05d][MAC_%s][MOD %02d][][--- MAC_DATA_IND/ %d TB(s) ",
-                frameP,
-                (l_rlc_p->is_enb) ? "eNB":"UE",
+                ctxt_pP->frame,
+                (ctxt_pP->enb_flag) ? "eNB":"UE",
                 l_rlc_p->module_id,
                 data_indP.data.nb_elements);
 
@@ -390,10 +390,10 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
 
       default:
         LOG_E(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] TX UNKNOWN PROTOCOL STATE %02X hex\n",
-                frameP,
-                (l_rlc_p->is_enb) ? "eNB" : "UE",
-                l_rlc_p->enb_module_id,
-                l_rlc_p->ue_module_id,
+                ctxt_pP->frame,
+                (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                ctxt_pP->enb_module_id,
+                ctxt_pP->ue_module_id,
                 (l_rlc_p->is_data_plane) ? "DRB" : "SRB",
                 l_rlc_p->rb_id,
                 l_rlc_p->protocol_state);
@@ -402,7 +402,7 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
 
 //-----------------------------------------------------------------------------
 struct mac_status_resp
-rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, uint16_t tbs_sizeP, struct mac_status_ind tx_statusP)
+rlc_um_mac_status_indication (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP, uint16_t tbs_sizeP, struct mac_status_ind tx_statusP)
 {
 //-----------------------------------------------------------------------------
   struct mac_status_resp status_resp;
@@ -421,7 +421,7 @@ rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP
 
   if (rlc_pP) {
       rlc_p = (rlc_um_entity_t *) rlc_pP;
-      rlc_um_check_timer_dar_time_out(rlc_p,frameP,eNB_flagP);
+      rlc_um_check_timer_dar_time_out(ctxt_pP, rlc_p);
 
       rlc_p->nb_bytes_requested_by_mac = tbs_sizeP;
 
@@ -431,9 +431,9 @@ rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP
           status_resp.buffer_occupancy_in_bytes += rlc_p->tx_header_min_length_in_bytes;
           status_resp.buffer_occupancy_in_pdus = rlc_p->input_sdus.nb_elements;
 
-          diff_time =   frameP - ((struct rlc_um_tx_sdu_management *)mb_p->data)->sdu_creation_time;
-          status_resp.head_sdu_creation_time = (diff_time > 0 ) ? (uint32_t) diff_time :  (uint32_t)(0xffffffff - diff_time + frameP) ;
-          //msg("rlc_p status for frameP %d diff time %d resp %d\n", frameP, diff_time,status_resp.head_sdu_creation_time) ;
+          diff_time =   ctxt_pP->frame - ((struct rlc_um_tx_sdu_management *)mb_p->data)->sdu_creation_time;
+          status_resp.head_sdu_creation_time = (diff_time > 0 ) ? (uint32_t) diff_time :  (uint32_t)(0xffffffff - diff_time + ctxt_pP->frame) ;
+          //msg("rlc_p status for ctxt_pP->frame %d diff time %d resp %d\n", ctxt_pP->frame, diff_time,status_resp.head_sdu_creation_time) ;
 
           sdu_size            = ((struct rlc_um_tx_sdu_management *) mb_p->data)->sdu_size;
           sdu_remaining_size  = ((struct rlc_um_tx_sdu_management *) mb_p->data)->sdu_remaining_size;
@@ -454,10 +454,10 @@ rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP
       #ifdef DEBUG_RLC_UM_TX_STATUS
       if ((((rlc_um_entity_t *) rlc_pP)->rb_id > 0) && (status_resp.buffer_occupancy_in_bytes > 0)) {
           LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_STATUS_INDICATION (DATA) %d bytes requested -> %d bytes available\n",
-                  frameP,
-                  (rlc_p->is_enb) ? "eNB" : "UE",
-                  rlc_p->enb_module_id,
-                  rlc_p->ue_module_id,
+                  ctxt_pP->frame,
+                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                  ctxt_pP->enb_module_id,
+                  ctxt_pP->ue_module_id,
                   (rlc_p->is_data_plane) ? "DRB" : "SRB",
                   rlc_p->rb_id,
                   tbs_sizeP,
@@ -465,20 +465,20 @@ rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP
 
           if ((tx_statusP.tx_status == MAC_TX_STATUS_SUCCESSFUL) && (tx_statusP.no_pdu)) {
               LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_STATUS_INDICATION  TX STATUS   SUCCESSFUL %d PDUs\n",
-                      frameP,
-                      (rlc_p->is_enb) ? "eNB" : "UE",
-                      rlc_p->enb_module_id,
-                      rlc_p->ue_module_id,
+                      ctxt_pP->frame,
+                      (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                      ctxt_pP->enb_module_id,
+                      ctxt_pP->ue_module_id,
                       (rlc_p->is_data_plane) ? "DRB" : "SRB",
                       rlc_p->rb_id,
                       tx_statusP.no_pdu);
           }
           if ((tx_statusP.tx_status == MAC_TX_STATUS_UNSUCCESSFUL) && (tx_statusP.no_pdu)) {
               LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_STATUS_INDICATION  TX STATUS UNSUCCESSFUL %d PDUs\n",
-                      frameP,
-                      (rlc_p->is_enb) ? "eNB" : "UE",
-                      rlc_p->enb_module_id,
-                      rlc_p->ue_module_id,
+                      ctxt_pP->frame,
+                      (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                      ctxt_pP->enb_module_id,
+                      ctxt_pP->ue_module_id,
                       (rlc_p->is_data_plane) ? "DRB" : "SRB",
                       rlc_p->rb_id,
                       tx_statusP.no_pdu);
@@ -493,7 +493,7 @@ rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP
 
 //-----------------------------------------------------------------------------
 struct mac_data_req
-rlc_um_mac_data_request (void *rlc_pP,frame_t frameP)
+rlc_um_mac_data_request (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP)
 {
     //-----------------------------------------------------------------------------
     struct mac_data_req data_req;
@@ -509,7 +509,7 @@ rlc_um_mac_data_request (void *rlc_pP,frame_t frameP)
 #endif
     rlc_um_entity_t *l_rlc_p = (rlc_um_entity_t *) rlc_pP;
 
-    rlc_um_get_pdus (rlc_pP,frameP);
+    rlc_um_get_pdus (ctxt_pP, rlc_pP);
 
     list_init (&data_req.data, NULL);
     list_add_list (&l_rlc_p->pdus_to_mac_layer, &data_req.data);
@@ -526,10 +526,10 @@ rlc_um_mac_data_request (void *rlc_pP,frame_t frameP)
             tb_size_in_bytes   = ((struct mac_tb_req *) (tb_p->data))->tb_size;
 
             LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_DATA_REQUEST  TB SIZE %u\n",
-                    frameP,
-                    (l_rlc_p->is_enb) ? "eNB" : "UE",
-                    l_rlc_p->enb_module_id,
-                    l_rlc_p->ue_module_id,
+                    ctxt_pP->frame,
+                    (ctxt_pP->enb_flag) ? "eNB" : "UE",
+                    ctxt_pP->enb_module_id,
+                    ctxt_pP->ue_module_id,
                     (l_rlc_p->is_data_plane) ? "DRB" : "SRB",
                     l_rlc_p->rb_id,
                     ((struct mac_tb_req *) (tb_p->data))->tb_size);
@@ -539,7 +539,7 @@ rlc_um_mac_data_request (void *rlc_pP,frame_t frameP)
             AssertFatal( tb_size_in_bytes > 0 , "RLC UM PDU LENGTH %d", tb_size_in_bytes);
 
 #ifdef TRACE_RLC_UM_PDU
-            rlc_um_get_pdu_infos(frameP,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_req *) (tb_p->data))->data_ptr, tb_size_in_bytes, &pdu_info, l_rlc_p->rx_sn_length);
+            rlc_um_get_pdu_infos(ctxt_pP->frame,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_req *) (tb_p->data))->data_ptr, tb_size_in_bytes, &pdu_info, l_rlc_p->rx_sn_length);
             message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
             message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", tb_size_in_bytes);
             message_string_size += sprintf(&message_string[message_string_size], "Header size : %u\n", pdu_info.header_size);
@@ -585,14 +585,14 @@ rlc_um_mac_data_request (void *rlc_pP,frame_t frameP)
             message_string_size += sprintf(&message_string[message_string_size], " |\n");
 
 #   if defined(ENABLE_ITTI)
-            msg_p = itti_alloc_new_message_sized (l_rlc_p->is_enb > 0 ? TASK_RLC_ENB:TASK_RLC_UE , RLC_UM_DATA_PDU_REQ, message_string_size + sizeof (IttiMsgText));
+            msg_p = itti_alloc_new_message_sized (ctxt_pP->enb_flag > 0 ? TASK_RLC_ENB:TASK_RLC_UE , RLC_UM_DATA_PDU_REQ, message_string_size + sizeof (IttiMsgText));
             msg_p->ittiMsg.rlc_um_data_pdu_req.size = message_string_size;
             memcpy(&msg_p->ittiMsg.rlc_um_data_pdu_req.text, message_string, message_string_size);
 
-            if (l_rlc_p->is_enb) {
-                itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->enb_module_id, msg_p);
+            if (ctxt_pP->enb_flag) {
+                itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->enb_module_id, msg_p);
             } else {
-                itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->ue_module_id + NB_eNB_INST, msg_p);
+                itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->ue_module_id + NB_eNB_INST, msg_p);
             }
 # else
             LOG_T(RLC, "%s", message_string);
@@ -606,16 +606,16 @@ rlc_um_mac_data_request (void *rlc_pP,frame_t frameP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_mac_data_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind data_indP)
+rlc_um_mac_data_indication (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP, struct mac_data_ind data_indP)
 {
 //-----------------------------------------------------------------------------
-    rlc_um_rx (rlc_pP, frameP, eNB_flagP, data_indP);
-    rlc_um_check_timer_dar_time_out(rlc_pP,frameP,eNB_flagP);
+    rlc_um_rx (ctxt_pP, rlc_pP, data_indP);
+    rlc_um_check_timer_dar_time_out(ctxt_pP, rlc_pP);
 }
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
+rlc_um_data_req (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP, mem_block_t *sdu_pP)
 {
 //-----------------------------------------------------------------------------
   rlc_um_entity_t *rlc_p = (rlc_um_entity_t *) rlc_pP;
@@ -634,10 +634,10 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
 #endif
 
   LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] RLC_UM_DATA_REQ size %d Bytes, BO %d , NB SDU %d\n",
-     frameP,
-     (rlc_p->is_enb) ? "eNB" : "UE",
-     rlc_p->enb_module_id,
-     rlc_p->ue_module_id,
+     ctxt_pP->frame,
+     (ctxt_pP->enb_flag) ? "eNB" : "UE",
+     ctxt_pP->enb_module_id,
+     ctxt_pP->ue_module_id,
      (rlc_p->is_data_plane) ? "DRB" : "SRB",
      rlc_p->rb_id,
      ((struct rlc_um_data_req *) (sdu_pP->data))->data_size,
@@ -656,7 +656,7 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
     ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_remaining_size = ((struct rlc_um_tx_sdu_management *)
                                                                               (sdu_pP->data))->sdu_size;
     ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_segmented_size = 0;
-    ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_creation_time = frameP;
+    ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_creation_time = ctxt_pP->frame;
     //rlc_p->next_sdu_index = (rlc_p->next_sdu_index + 1) % rlc_p->size_input_sdus_buffer;
 
     rlc_p->stat_tx_pdcp_sdu   += 1;
@@ -695,14 +695,14 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
       message_string_size += sprintf(&message_string[message_string_size], " |\n");
 
 #   if defined(ENABLE_ITTI)
-      msg_p = itti_alloc_new_message_sized (rlc_p->is_enb > 0 ? TASK_RLC_ENB:TASK_RLC_UE , RLC_UM_SDU_REQ, message_string_size + sizeof (IttiMsgText));
+      msg_p = itti_alloc_new_message_sized (ctxt_pP->enb_flag > 0 ? TASK_RLC_ENB:TASK_RLC_UE , RLC_UM_SDU_REQ, message_string_size + sizeof (IttiMsgText));
       msg_p->ittiMsg.rlc_um_sdu_req.size = message_string_size;
       memcpy(&msg_p->ittiMsg.rlc_um_sdu_req.text, message_string, message_string_size);
 
-      if (rlc_p->is_enb) {
-          itti_send_msg_to_task(TASK_UNKNOWN, rlc_p->enb_module_id, msg_p);
+      if (ctxt_pP->enb_flag) {
+          itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->enb_module_id, msg_p);
       } else {
-          itti_send_msg_to_task(TASK_UNKNOWN, rlc_p->ue_module_id + NB_eNB_INST, msg_p);
+          itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->ue_module_id + NB_eNB_INST, msg_p);
       }
 #else 
       LOG_T(RLC, "%s", message_string);
@@ -712,26 +712,4 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
       rlc_p->buffer_occupancy += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
       list_add_tail_eurecom(sdu_pP, &rlc_p->input_sdus);
       pthread_mutex_unlock(&rlc_p->lock_input_sdus);
-
-  /*} else {
-    LOG_W(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] RLC-UM_DATA_REQ input buffer full SDU garbaged\n",
-          frameP,
-          (rlc_p->is_enb) ? "eNB" : "UE",
-          rlc_p->enb_module_id,
-          rlc_p->ue_module_id,
-          rlc_p->rb_id);
-    rlc_p->stat_tx_pdcp_sdu             += 1;
-    rlc_p->stat_tx_pdcp_bytes           += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
-    rlc_p->stat_tx_pdcp_sdu_discarded   += 1;
-    rlc_p->stat_tx_pdcp_bytes_discarded += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
-    free_mem_block (sdu_pP);
-#if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
-      AssertFatal(0, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] RLC_UM_DATA_REQ, SDU DROPPED, INPUT BUFFER OVERFLOW\n",
-          frameP,
-          (rlc_p->is_enb) ? "eNB" : "UE",
-          rlc_p->enb_module_id,
-          rlc_p->ue_module_id,
-          rlc_p->rb_id);
-#endif
-  }*/
 }

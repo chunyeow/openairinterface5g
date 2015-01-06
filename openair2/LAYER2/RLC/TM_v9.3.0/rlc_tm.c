@@ -40,12 +40,11 @@
 //-----------------------------------------------------------------------------
 void
 rlc_tm_send_sdu (
-        rlc_tm_entity_t * const rlc_pP,
-        const frame_t           frameP,
-        const eNB_flag_t        eNB_flag,
-        const boolean_t         error_indicationP,
-        uint8_t * const         srcP,
-        const sdu_size_t        length_in_bitsP)
+                const protocol_ctxt_t* const  ctxt_pP,
+                rlc_tm_entity_t * const rlc_pP,
+                const boolean_t         error_indicationP,
+                uint8_t * const         srcP,
+                const sdu_size_t        length_in_bitsP)
 {
     //-----------------------------------------------------------------------------
     int             length_in_bytes;
@@ -71,15 +70,12 @@ rlc_tm_send_sdu (
         memcpy (&rlc_pP->output_sdu_in_construction->data[rlc_pP->output_sdu_size_to_write], srcP, length_in_bytes);
 
         rlc_data_ind (
-            rlc_pP->enb_module_id,
-            rlc_pP->ue_module_id,
-            frameP,
-            eNB_flag,
-            BOOL_NOT(rlc_pP->is_data_plane),
-            MBMS_FLAG_NO,
-            rlc_pP->rb_id,
-            length_in_bytes,
-            rlc_pP->output_sdu_in_construction);
+                        ctxt_pP,
+                        BOOL_NOT(rlc_pP->is_data_plane),
+                        MBMS_FLAG_NO,
+                        rlc_pP->rb_id,
+                        length_in_bytes,
+                        rlc_pP->output_sdu_in_construction);
         rlc_pP->output_sdu_in_construction = NULL;
     } else {
         msg ("[RLC_TM %p][SEND_SDU] ERROR  OUTPUT SDU IS NULL\n", rlc_pP);
@@ -88,7 +84,8 @@ rlc_tm_send_sdu (
 //-----------------------------------------------------------------------------
 void
 rlc_tm_no_segment (
-        rlc_tm_entity_t *const rlc_pP
+                const protocol_ctxt_t* const  ctxt_pP,
+                rlc_tm_entity_t *const rlc_pP
         )
 {
     //-----------------------------------------------------------------------------
@@ -129,10 +126,9 @@ rlc_tm_no_segment (
 //-----------------------------------------------------------------------------
 void
 rlc_tm_rx (
-        void *const         argP,
-        const frame_t       frameP,
-        const eNB_flag_t    eNB_flagP,
-        struct mac_data_ind data_indP)
+                const protocol_ctxt_t* const  ctxt_pP,
+                void * const         argP,
+                struct mac_data_ind data_indP)
 {
 //-----------------------------------------------------------------------------
 
@@ -146,7 +142,7 @@ rlc_tm_rx (
 
         ((struct rlc_tm_rx_pdu_management *) (tb_p->data))->first_byte = first_byte_p;
 
-        rlc_tm_send_sdu (rlc_p,  frameP, eNB_flagP, (((struct mac_tb_ind *) (tb_p->data))->error_indication), first_byte_p, data_indP.tb_size);
+        rlc_tm_send_sdu (ctxt_pP, rlc_p, (((struct mac_tb_ind *) (tb_p->data))->error_indication), first_byte_p, data_indP.tb_size);
         free_mem_block (tb_p);
     }
 }
@@ -154,9 +150,10 @@ rlc_tm_rx (
 //-----------------------------------------------------------------------------
 struct mac_status_resp
 rlc_tm_mac_status_indication (
-        void *const           rlc_pP,
-        const tb_size_t       tb_sizeP,
-        struct mac_status_ind tx_statusP)
+                const protocol_ctxt_t* const  ctxt_pP,
+                void * const                  rlc_pP,
+                const tb_size_t               tb_sizeP,
+                struct mac_status_ind         tx_statusP)
 {
 //-----------------------------------------------------------------------------
   struct mac_status_resp status_resp;
@@ -172,14 +169,14 @@ rlc_tm_mac_status_indication (
 //-----------------------------------------------------------------------------
 struct mac_data_req
 rlc_tm_mac_data_request (
-        void * const rlc_pP,
-        const frame_t frameP)
+                const protocol_ctxt_t* const  ctxt_pP,
+                void * const rlc_pP)
 {
 //-----------------------------------------------------------------------------
   rlc_tm_entity_t    *l_rlc_p = (rlc_tm_entity_t *) rlc_pP;
   struct mac_data_req data_req;
 
-  rlc_tm_no_segment (l_rlc_p);
+  rlc_tm_no_segment (ctxt_pP, l_rlc_p);
   list_init (&data_req.data, NULL);
   list_add_list (&l_rlc_p->pdus_to_mac_layer, &data_req.data);
 
@@ -188,11 +185,11 @@ rlc_tm_mac_data_request (
   data_req.rlc_info.rlc_protocol_state = l_rlc_p->protocol_state;
   if (data_req.data.nb_elements > 0) {
       LOG_D(RLC, "[RLC_TM][%s][MOD %02u/%02u][RB %d][FRAME %05d] MAC_DATA_REQUEST %d TBs\n",
-            (l_rlc_p->is_enb) ? "eNB" : "UE",
-            l_rlc_p->enb_module_id,
-            l_rlc_p->ue_module_id,
+            (ctxt_pP->enb_flag) ? "eNB" : "UE",
+            ctxt_pP->enb_module_id,
+            ctxt_pP->ue_module_id,
             l_rlc_p->rb_id,
-            frameP,
+            ctxt_pP->frame,
             data_req.data.nb_elements);
   }
 
@@ -202,40 +199,40 @@ rlc_tm_mac_data_request (
 //-----------------------------------------------------------------------------
 void
 rlc_tm_mac_data_indication (
-        void * const        rlc_pP,
-        const frame_t       frameP,
-        const eNB_flag_t    eNB_flag,
-        struct mac_data_ind data_indP)
+                const protocol_ctxt_t* const  ctxt_pP,
+                void * const        rlc_pP,
+                struct mac_data_ind data_indP)
 {
 //-----------------------------------------------------------------------------
     rlc_tm_entity_t *l_rlc_p = (rlc_tm_entity_t *) rlc_pP;
 
     if (data_indP.data.nb_elements > 0) {
         LOG_D(RLC, "[RLC_TM][%s][MOD %02u/%02u][RB %d][FRAME %05d] MAC_DATA_IND %d TBs\n",
-              (l_rlc_p->is_enb) ? "eNB" : "UE",
-              l_rlc_p->enb_module_id,
-              l_rlc_p->ue_module_id,
+              (ctxt_pP->enb_flag) ? "eNB" : "UE",
+              ctxt_pP->enb_module_id,
+              ctxt_pP->ue_module_id,
               l_rlc_p->rb_id,
-              frameP,
+              ctxt_pP->frame,
               data_indP.data.nb_elements);
     }
-    rlc_tm_rx (rlc_pP, frameP, eNB_flag, data_indP);
+    rlc_tm_rx (ctxt_pP, rlc_pP, data_indP);
 }
 
 //-----------------------------------------------------------------------------
 void
 rlc_tm_data_req (
-        void *const rlc_pP,
-        mem_block_t *const sdu_pP)
+                const protocol_ctxt_t* const  ctxt_pP,
+                void *const rlc_pP,
+                mem_block_t *const sdu_pP)
 {
 //-----------------------------------------------------------------------------
   rlc_tm_entity_t *rlc_p = (rlc_tm_entity_t *) rlc_pP;
 
   #ifdef DEBUG_RLC_TM_DATA_REQUEST
   LOG_D (RLC, "[RLC_TM][%s][MOD %02u/%02u] RLC_TM_DATA_REQ size %d Bytes, BO %ld , NB SDU %d current_sdu_index=%d next_sdu_index=%d\n",
-         (l_rlc_p->is_enb) ? "eNB" : "UE",
-         l_rlc_p->enb_module_id,
-         l_rlc_p->ue_module_id,
+         (ctxt_pP->enb_flag) ? "eNB" : "UE",
+         ctxt_pP->enb_module_id,
+         ctxt_pP->ue_module_id,
          ((struct rlc_um_data_req *) (sdu_pP->data))->data_size,
          rlc_p->buffer_occupancy,
          rlc_p->nb_sdu,

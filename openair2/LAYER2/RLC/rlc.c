@@ -44,15 +44,12 @@
 #include "assertions.h"
 
 extern boolean_t pdcp_data_ind(
-    const module_id_t enb_mod_idP,
-    const module_id_t ue_mod_idP,
-    const frame_t frameP,
-    const eNB_flag_t enb_flagP,
-    const srb_flag_t srb_flagP,
-    const MBMS_flag_t MBMS_flagP,
-    const rb_id_t rb_idP,
-    const sdu_size_t sdu_buffer_sizeP,
-    mem_block_t* const sdu_buffer_pP);
+                const protocol_ctxt_t* const ctxt_pP,
+                const srb_flag_t srb_flagP,
+                const MBMS_flag_t MBMS_flagP,
+                const rb_id_t rb_idP,
+                const sdu_size_t sdu_buffer_sizeP,
+                mem_block_t* const sdu_buffer_pP);
 
 #define DEBUG_RLC_PDCP_INTERFACE 1
 //#define DEBUG_RLC_PAYLOAD 1
@@ -102,39 +99,36 @@ void rlc_util_print_hex_octets(comp_name_t componentP, unsigned char* dataP, con
 #endif
 //-----------------------------------------------------------------------------
 rlc_op_status_t rlc_stat_req     (
-                  const module_id_t   enb_module_idP,
-                  const module_id_t   ue_module_idP,
-                  const frame_t       frameP,
-                  const eNB_flag_t    enb_flagP,
-                  const srb_flag_t    srb_flagP,
-                  const rb_id_t       rb_idP,
-                  unsigned int* stat_tx_pdcp_sdu,
-                  unsigned int* stat_tx_pdcp_bytes,
-                  unsigned int* stat_tx_pdcp_sdu_discarded,
-                  unsigned int* stat_tx_pdcp_bytes_discarded,
-                  unsigned int* stat_tx_data_pdu,
-                  unsigned int* stat_tx_data_bytes,
-                  unsigned int* stat_tx_retransmit_pdu_by_status,
-                  unsigned int* stat_tx_retransmit_bytes_by_status,
-                  unsigned int* stat_tx_retransmit_pdu,
-                  unsigned int* stat_tx_retransmit_bytes,
-                  unsigned int* stat_tx_control_pdu,
-                  unsigned int* stat_tx_control_bytes,
-                  unsigned int* stat_rx_pdcp_sdu,
-                  unsigned int* stat_rx_pdcp_bytes,
-                  unsigned int* stat_rx_data_pdus_duplicate,
-                  unsigned int* stat_rx_data_bytes_duplicate,
-                  unsigned int* stat_rx_data_pdu,
-                  unsigned int* stat_rx_data_bytes,
-                  unsigned int* stat_rx_data_pdu_dropped,
-                  unsigned int* stat_rx_data_bytes_dropped,
-                  unsigned int* stat_rx_data_pdu_out_of_window,
-                  unsigned int* stat_rx_data_bytes_out_of_window,
-                  unsigned int* stat_rx_control_pdu,
-                  unsigned int* stat_rx_control_bytes,
-                  unsigned int* stat_timer_reordering_timed_out,
-                  unsigned int* stat_timer_poll_retransmit_timed_out,
-                  unsigned int* stat_timer_status_prohibit_timed_out) {
+                const protocol_ctxt_t* const ctxtP,
+                const srb_flag_t    srb_flagP,
+                const rb_id_t       rb_idP,
+                unsigned int* stat_tx_pdcp_sdu,
+                unsigned int* stat_tx_pdcp_bytes,
+                unsigned int* stat_tx_pdcp_sdu_discarded,
+                unsigned int* stat_tx_pdcp_bytes_discarded,
+                unsigned int* stat_tx_data_pdu,
+                unsigned int* stat_tx_data_bytes,
+                unsigned int* stat_tx_retransmit_pdu_by_status,
+                unsigned int* stat_tx_retransmit_bytes_by_status,
+                unsigned int* stat_tx_retransmit_pdu,
+                unsigned int* stat_tx_retransmit_bytes,
+                unsigned int* stat_tx_control_pdu,
+                unsigned int* stat_tx_control_bytes,
+                unsigned int* stat_rx_pdcp_sdu,
+                unsigned int* stat_rx_pdcp_bytes,
+                unsigned int* stat_rx_data_pdus_duplicate,
+                unsigned int* stat_rx_data_bytes_duplicate,
+                unsigned int* stat_rx_data_pdu,
+                unsigned int* stat_rx_data_bytes,
+                unsigned int* stat_rx_data_pdu_dropped,
+                unsigned int* stat_rx_data_bytes_dropped,
+                unsigned int* stat_rx_data_pdu_out_of_window,
+                unsigned int* stat_rx_data_bytes_out_of_window,
+                unsigned int* stat_rx_control_pdu,
+                unsigned int* stat_rx_control_bytes,
+                unsigned int* stat_timer_reordering_timed_out,
+                unsigned int* stat_timer_poll_retransmit_timed_out,
+                unsigned int* stat_timer_status_prohibit_timed_out) {
 //-----------------------------------------------------------------------------
     rlc_mode_t             rlc_mode        = RLC_MODE_NONE;
     rlc_union_t           *rlc_union_p     = NULL;
@@ -142,32 +136,32 @@ rlc_op_status_t rlc_stat_req     (
     hashtable_rc_t         h_rc;
 
 #ifdef OAI_EMU
-    if (enb_flagP) {
-        AssertFatal ((enb_module_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+    if (ctxtP->enb_flag) {
+        AssertFatal ((ctxtP->enb_module_id >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
             "eNB module id is too low (%u/%d)!\n",
-            enb_module_idP,
+            ctxtP->enb_module_id,
             oai_emulation.info.first_enb_local);
-        AssertFatal ((enb_module_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+        AssertFatal ((ctxtP->enb_module_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
             "eNB module id is too high (%u/%d)!\n",
-            enb_module_idP,
+            ctxtP->enb_module_id,
             oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-        AssertFatal (ue_module_idP  < NB_UE_INST,
+        AssertFatal (ctxtP->ue_module_id  < NB_UE_INST,
             "UE module id is too high (%u/%d)!\n",
-            ue_module_idP,
+            ctxtP->ue_module_id,
             oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
     } else {
-        AssertFatal (ue_module_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+        AssertFatal (ctxtP->ue_module_id  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
             "UE module id is too high (%u/%d)!\n",
-            ue_module_idP,
+            ctxtP->ue_module_id,
             oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
-        AssertFatal (ue_module_idP  >= oai_emulation.info.first_ue_local,
+        AssertFatal (ctxtP->ue_module_id  >= oai_emulation.info.first_ue_local,
             "UE module id is too low (%u/%d)!\n",
-            ue_module_idP,
+            ctxtP->ue_module_id,
             oai_emulation.info.first_ue_local);
     }
 #endif
     AssertFatal (rb_idP < NB_RB_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MAX);
-    key = RLC_COLL_KEY_VALUE(enb_module_idP, ue_module_idP, enb_flagP, rb_idP, srb_flagP);
+    key = RLC_COLL_KEY_VALUE(ctxtP->enb_module_id, ctxtP->ue_module_id, ctxtP->enb_flag, rb_idP, srb_flagP);
     h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
     if (h_rc == HASH_TABLE_OK) {
         rlc_mode = rlc_union_p->mode;
@@ -205,7 +199,8 @@ rlc_op_status_t rlc_stat_req     (
             break;
 
         case RLC_MODE_AM:
-            rlc_am_stat_req(&rlc_union_p->rlc.am,
+            rlc_am_stat_req(ctxtP,
+                            &rlc_union_p->rlc.am,
                             stat_tx_pdcp_sdu,
                             stat_tx_pdcp_bytes,
                             stat_tx_pdcp_sdu_discarded,
@@ -249,7 +244,8 @@ rlc_op_status_t rlc_stat_req     (
            *stat_rx_data_bytes_out_of_window     = 0;
            *stat_timer_poll_retransmit_timed_out = 0;
            *stat_timer_status_prohibit_timed_out = 0;
-           rlc_um_stat_req (&rlc_union_p->rlc.um,
+           rlc_um_stat_req (ctxtP,
+                            &rlc_union_p->rlc.um,
                               stat_tx_pdcp_sdu,
                               stat_tx_pdcp_bytes,
                               stat_tx_pdcp_sdu_discarded,
@@ -334,10 +330,7 @@ rlc_op_status_t rlc_stat_req     (
 }
 
 //-----------------------------------------------------------------------------
-rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
-                                  const module_id_t  ue_module_idP,
-                                  const frame_t      frameP,
-                                  const eNB_flag_t   enb_flagP,
+rlc_op_status_t rlc_data_req     (const protocol_ctxt_t* const ctxtP,
                                   const srb_flag_t   srb_flagP,
                                   const MBMS_flag_t  MBMS_flagP,
                                   const rb_id_t      rb_idP,
@@ -358,9 +351,9 @@ rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
 #endif
 #ifdef DEBUG_RLC_DATA_REQ
   LOG_D(RLC,"rlc_data_req: %s enb id  %u  ue id %u, rb_id %u (MAX %d), muip %d, confirmP %d, sud_sizeP %d, sdu_pP %p\n",
-        (enb_flagP) ? "eNB" : "UE",
-        enb_module_idP,
-        ue_module_idP,
+        (ctxtP->enb_flag) ? "eNB" : "UE",
+        ctxtP->enb_module_id,
+        ctxtP->ue_module_id,
         rb_idP,
         NB_RAB_MAX,
         muiP,
@@ -373,27 +366,27 @@ rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
   AssertFatal(MBMS_flagP == 0, "MBMS_flagP %u", MBMS_flagP);
 #endif
 #ifdef OAI_EMU
-  if (enb_flagP) {
-      AssertFatal ((enb_module_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+  if (ctxtP->enb_flag) {
+      AssertFatal ((ctxtP->enb_module_id >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
           "eNB module id is too low (%u/%d)!\n",
-          enb_module_idP,
+          ctxtP->enb_module_id,
           oai_emulation.info.first_enb_local);
-      AssertFatal ((enb_module_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+      AssertFatal ((ctxtP->enb_module_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
           "eNB module id is too high (%u/%d)!\n",
-          enb_module_idP,
+          ctxtP->enb_module_id,
           oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-      AssertFatal (ue_module_idP  < NB_UE_INST,
+      AssertFatal (ctxtP->ue_module_id  < NB_UE_INST,
           "UE module id is too high (%u/%d)!\n",
-          ue_module_idP,
+          ctxtP->ue_module_id,
           oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
   } else {
-      AssertFatal (ue_module_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+      AssertFatal (ctxtP->ue_module_id  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
           "UE module id is too high (%u/%d)!\n",
-          ue_module_idP,
+          ctxtP->ue_module_id,
           oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
-      AssertFatal (ue_module_idP  >= oai_emulation.info.first_ue_local,
+      AssertFatal (ctxtP->ue_module_id  >= oai_emulation.info.first_ue_local,
           "UE module id is too low (%u/%d)!\n",
-          ue_module_idP,
+          ctxtP->ue_module_id,
           oai_emulation.info.first_ue_local);
   }
 #endif
@@ -413,18 +406,18 @@ rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
 
 #ifdef Rel10
   if (MBMS_flagP == TRUE) {
-      if (enb_flagP) {
-            log_ch_id = rlc_mbms_enb_get_lcid_by_rb_id(enb_module_idP,rb_idP);
-            mbms_id_p = &rlc_mbms_lcid2service_session_id_eNB[enb_module_idP][log_ch_id];
+      if (ctxtP->enb_flag) {
+            log_ch_id = rlc_mbms_enb_get_lcid_by_rb_id(ctxtP->enb_module_id,rb_idP);
+            mbms_id_p = &rlc_mbms_lcid2service_session_id_eNB[ctxtP->enb_module_id][log_ch_id];
       } else {
-            log_ch_id = rlc_mbms_ue_get_lcid_by_rb_id(ue_module_idP,rb_idP);
-            mbms_id_p = &rlc_mbms_lcid2service_session_id_ue[ue_module_idP][log_ch_id];
+            log_ch_id = rlc_mbms_ue_get_lcid_by_rb_id(ctxtP->ue_module_id,rb_idP);
+            mbms_id_p = &rlc_mbms_lcid2service_session_id_ue[ctxtP->ue_module_id][log_ch_id];
       }
-      key = RLC_COLL_KEY_MBMS_VALUE(enb_module_idP, ue_module_idP, enb_flagP, mbms_id_p->service_id, mbms_id_p->session_id);
+      key = RLC_COLL_KEY_MBMS_VALUE(ctxtP->enb_module_id, ctxtP->ue_module_id, ctxtP->enb_flag, mbms_id_p->service_id, mbms_id_p->session_id);
   } else
 #endif
   {
-      key = RLC_COLL_KEY_VALUE(enb_module_idP, ue_module_idP, enb_flagP, rb_idP, srb_flagP);
+      key = RLC_COLL_KEY_VALUE(ctxtP->enb_module_id, ctxtP->ue_module_id, ctxtP->enb_flag, rb_idP, srb_flagP);
   }
 
   h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
@@ -437,10 +430,10 @@ rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
 
   if (MBMS_flagP == 0) {
       LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][RB %u] Display of rlc_data_req:\n",
-          frameP,
-          (enb_flagP) ? "eNB" : "UE",
-          enb_module_idP,
-          ue_module_idP,
+          ctxtP->frame,
+          (ctxtP->enb_flag) ? "eNB" : "UE",
+          ctxtP->enb_module_id,
+          ctxtP->ue_module_id,
           rb_idP);
 #if defined(DEBUG_RLC_PAYLOAD)
       rlc_util_print_hex_octets(RLC, (unsigned char*)sdu_pP->data, sdu_sizeP);
@@ -453,11 +446,11 @@ rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
           case RLC_MODE_NONE:
               free_mem_block(sdu_pP);
               LOG_E(RLC, "Received RLC_MODE_NONE as rlc_type for %s eNB id  %u, ue id %u, rb_id %u\n",
-                    (enb_flagP) ? "eNB" : "UE",
-                    enb_module_idP,
-                    ue_module_idP,
+                    (ctxtP->enb_flag) ? "eNB" : "UE",
+                    ctxtP->enb_module_id,
+                    ctxtP->ue_module_id,
                     rb_idP);
-	      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
+              vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
               return RLC_OP_STATUS_BAD_PARAMETER;
 
           case RLC_MODE_AM:
@@ -479,24 +472,24 @@ rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
                   LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
 
                   LOG_D(RLC, "[FRAME %5u][%s][%s][INST %u/%u][%s %u][--- RLC_AM_DATA_REQ/%d Bytes --->][RLC_AM][INST %u/%u][%s %u]\n",
-                          frameP,
-                          (enb_flagP) ? "eNB" : "UE",
+                          ctxtP->frame,
+                          (ctxtP->enb_flag) ? "eNB" : "UE",
                           (srb_flagP) ? "RRC" : "PDCP",
-                          enb_module_idP,
-                          ue_module_idP,
+                          ctxtP->enb_module_id,
+                          ctxtP->ue_module_id,
                           (srb_flagP) ? "SRB" : "DRB",
                           rb_idP,
                           sdu_sizeP,
-                          enb_module_idP,
-                          ue_module_idP,
+                          ctxtP->enb_module_id,
+                          ctxtP->ue_module_id,
                           (srb_flagP) ? "SRB" : "DRB",
                           rb_idP);
                   LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-                  rlc_am_data_req(&rlc_union_p->rlc.am, frameP, new_sdu_p);
-		  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
+                  rlc_am_data_req(ctxtP, &rlc_union_p->rlc.am, new_sdu_p);
+                  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
                   return RLC_OP_STATUS_OK;
               } else {
-		vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
+                  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
                   return RLC_OP_STATUS_INTERNAL_ERROR;
               }
               break;
@@ -515,20 +508,20 @@ rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
 
                   //LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
                   LOG_D(RLC, "[FRAME %5u][%s][%s][INST %u/%u][%s %u][--- RLC_UM_DATA_REQ/%d Bytes --->][RLC_UM][INST %u/%u][%s %u]\n",
-                          frameP,
-                          (enb_flagP) ? "eNB" : "UE",
+                          ctxtP->frame,
+                          (ctxtP->enb_flag) ? "eNB" : "UE",
                           (srb_flagP) ? "RRC" : "PDCP",
-                          enb_module_idP,
-                          ue_module_idP,
+                          ctxtP->enb_module_id,
+                          ctxtP->ue_module_id,
                           (srb_flagP) ? "SRB" : "DRB",
                           rb_idP,
                           sdu_sizeP,
-                          enb_module_idP,
-                          ue_module_idP,
+                          ctxtP->enb_module_id,
+                          ctxtP->ue_module_id,
                           (srb_flagP) ? "SRB" : "DRB",
                           rb_idP);
                   //LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-                  rlc_um_data_req(&rlc_union_p->rlc.um, frameP, new_sdu_p);
+                  rlc_um_data_req(ctxtP, &rlc_union_p->rlc.um, new_sdu_p);
 
                   //free_mem_block(new_sdu);
 		  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
@@ -552,20 +545,20 @@ rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
                   free_mem_block(sdu_pP);
                   LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
                   LOG_D(RLC, "[FRAME %5u][%s][%s][INST %u/%u][%s %u][--- RLC_TM_DATA_REQ/%d Bytes --->][RLC_TM][INST %u/%u][%s %u]\n",
-                                 frameP,
-                                 (enb_flagP) ? "eNB" : "UE",
+                                 ctxtP->frame,
+                                 (ctxtP->enb_flag) ? "eNB" : "UE",
                                  (srb_flagP) ? "RRC" : "PDCP",
-                                 enb_module_idP,
-                                 ue_module_idP,
+                                 ctxtP->enb_module_id,
+                                 ctxtP->ue_module_id,
                                  (srb_flagP) ? "SRB" : "DRB",
                                  rb_idP,
                                  sdu_sizeP,
-                                 enb_module_idP,
-                                 ue_module_idP,
+                                 ctxtP->enb_module_id,
+                                 ctxtP->ue_module_id,
                                  (srb_flagP) ? "SRB" : "DRB",
                                  rb_idP);
                   LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-                  rlc_tm_data_req(&rlc_union_p->rlc.tm, new_sdu_p);
+                  rlc_tm_data_req(ctxtP, &rlc_union_p->rlc.tm, new_sdu_p);
 		  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
                   return RLC_OP_STATUS_OK;
               } else {
@@ -598,18 +591,18 @@ rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
                       free_mem_block(sdu_pP);
                       LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
                           LOG_D(RLC, "[FRAME %5u][%s][%s][INST %u/%u][RB %u][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][INST %u/%u][RB %u]\n",
-                            frameP,
-                            (enb_flagP) ? "eNB" : "UE",
+                            ctxtP->frame,
+                            (ctxtP->enb_flag) ? "eNB" : "UE",
                             (srb_flagP) ? "RRC" : "PDCP",
-                            enb_module_idP,
-                            ue_module_idP,
+                            ctxtP->enb_module_id,
+                            ctxtP->ue_module_id,
                             rb_idP,
                             sdu_sizeP,
-                            enb_module_idP,
-                            ue_module_idP,
+                            ctxtP->enb_module_id,
+                            ctxtP->ue_module_id,
                             rb_idP);
                       LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-                      rlc_um_data_req(&rlc_union_p->rlc.um, frameP, new_sdu_p);
+                      rlc_um_data_req(ctxtP, &rlc_union_p->rlc.um, new_sdu_p);
 
                       //free_mem_block(new_sdu);
 		      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
@@ -640,24 +633,21 @@ rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
 
 //-----------------------------------------------------------------------------
 void rlc_data_ind     (
-    const module_id_t enb_module_idP,
-    const module_id_t ue_module_idP,
-    const frame_t     frameP,
-    const eNB_flag_t  enb_flagP,
-    const srb_flag_t  srb_flagP,
-    const MBMS_flag_t MBMS_flagP,
-    const rb_id_t     rb_idP,
-    const sdu_size_t  sdu_sizeP,
-    mem_block_t      *sdu_pP) {
+                const protocol_ctxt_t* const ctxtP,
+                const srb_flag_t  srb_flagP,
+                const MBMS_flag_t MBMS_flagP,
+                const rb_id_t     rb_idP,
+                const sdu_size_t  sdu_sizeP,
+                mem_block_t      *sdu_pP) {
 //-----------------------------------------------------------------------------
 
 
 #if defined(DEBUG_RLC_PAYLOAD)
   LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][%s %u] Display of rlc_data_ind: size %u\n",
-        frameP,
-        (enb_flagP) ? "eNB" : "UE",
-        enb_module_idP,
-        ue_module_idP,
+        ctxtP->frame,
+        (ctxtP->enb_flag) ? "eNB" : "UE",
+        ctxtP->enb_module_id,
+        ctxtP->ue_module_id,
         (srb_flagP) ? "SRB" : "DRB",
         rb_idP,
         sdu_sizeP);
@@ -665,23 +655,20 @@ void rlc_data_ind     (
   rlc_util_print_hex_octets(RLC, (unsigned char*)sdu_pP->data, sdu_sizeP);
 #endif
   LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][%s %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][%s %u]\n",
-      frameP,
-      (enb_flagP) ? "eNB" : "UE",
-      enb_module_idP,
-      ue_module_idP,
+      ctxtP->frame,
+      (ctxtP->enb_flag) ? "eNB" : "UE",
+      ctxtP->enb_module_id,
+      ctxtP->ue_module_id,
       (srb_flagP) ? "SRB" : "DRB",
       rb_idP,
       sdu_sizeP,
-      enb_module_idP,
-      ue_module_idP,
+      ctxtP->enb_module_id,
+      ctxtP->ue_module_id,
       (srb_flagP) ? "SRB" : "DRB",
       rb_idP);
 
   pdcp_data_ind (
-      enb_module_idP,
-      ue_module_idP,
-      frameP,
-      enb_flagP,
+      ctxtP,
       srb_flagP,
       MBMS_flagP,
       rb_idP,
@@ -689,10 +676,7 @@ void rlc_data_ind     (
       sdu_pP);
 }
 //-----------------------------------------------------------------------------
-void rlc_data_conf     (const module_id_t     enb_module_idP,
-                        const module_id_t     ue_module_idP,
-                        const frame_t         frameP,
-                        const eNB_flag_t      enb_flagP,
+void rlc_data_conf     (const protocol_ctxt_t* const ctxtP,
                         const srb_flag_t      srb_flagP,
                         const rb_id_t         rb_idP,
                         const mui_t           muiP,
@@ -703,20 +687,20 @@ void rlc_data_conf     (const module_id_t     enb_module_idP,
         if (rlc_rrc_data_conf != NULL) {
             LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
             LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][INST %u/%u][%s %u][--- RLC_DATA_CONF /MUI %d --->][%s][INST %u/%u][][RLC_DATA_CONF/ MUI %d]\n",
-                frameP,
-                (enb_flagP) ? "eNB" : "UE",
-                enb_module_idP,
-                ue_module_idP,
+                ctxtP->frame,
+                (ctxtP->enb_flag) ? "eNB" : "UE",
+                ctxtP->enb_module_id,
+                ctxtP->ue_module_id,
                 (srb_flagP) ? "SRB" : "DRB",
                 rb_idP,
                 muiP,
                 (srb_flagP) ? "RRC" : "PDCP",
-                enb_module_idP,
-                ue_module_idP,
+                ctxtP->enb_module_id,
+                ctxtP->ue_module_id,
                 muiP);
 
             LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-            rlc_rrc_data_conf (enb_module_idP , ue_module_idP, enb_flagP, rb_idP , muiP, statusP);
+            rlc_rrc_data_conf (ctxtP, rb_idP , muiP, statusP);
         }
     }
 }
