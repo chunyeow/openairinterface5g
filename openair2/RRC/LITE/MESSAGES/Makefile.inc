@@ -2,8 +2,8 @@
 current_release_asn1_module=$(strip $(notdir $(wildcard $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-*)))
 
 ifdef CBA
-    CFLAGS += -DRel10
-    CFLAGS += -DCBA
+    COMMON_CFLAGS += -DRel10
+    COMMON_CFLAGS += -DCBA
     ifneq ($(current_release_asn1_module), .lock-rel10-cba)
         tmp3:=$(shell cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES ;\
                 rm -f ${ASN_MODULE_SOURCES} $(ASN_MODULE_HEADERS) *.o *.d ;\
@@ -25,7 +25,7 @@ ifdef CBA
     endif
 
 else ifdef Rel10
-   CFLAGS += -DRel10
+   COMMON_CFLAGS += -DRel10
    ifneq  ($(current_release_asn1_module), .lock-rel10)
       tmp3:=$(shell cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES ;\
               rm -f ${ASN_MODULE_SOURCES} $(ASN_MODULE_HEADERS) *.o *.d ;\
@@ -47,7 +47,7 @@ else ifdef Rel10
    endif
 
 else # default is rel 8
-   CFLAGS += -DRel8
+   COMMON_CFLAGS += -DRel8
    ifneq  ($(current_release_asn1_module), .lock-rel8)
        tmp3:=$(shell cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES ;\
                rm -f ${ASN_MODULE_SOURCES} $(ASN_MODULE_HEADERS) *.o *.d ;\
@@ -82,7 +82,7 @@ include $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc.generated
 
 ASN_CONVERTER_SOURCES+=asn1_msg.c
  
-#CFLAGS += -DEMIT_ASN_DEBUG=1
+#COMMON_CFLAGS += -DEMIT_ASN_DEBUG=1
 
 EXTRA_CFLAGS += -I. -I$(OPENAIR2_DIR)/RRC/LITE/MESSAGES 
 
