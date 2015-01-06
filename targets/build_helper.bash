@@ -834,6 +834,7 @@ check_for_ltesoftmodem_executable() {
     if [ ! -f $OPENAIR_TARGETS/RT/USER/lte-softmodem ];   then
         echo_error "Cannot find lte-softmodem executable object in directory $OPENAIR_TARGETS/RT/USER"
         echo_error "Check the compilation logs in bin/install_log.txt"
+        exit 1
     fi
 }
 
