@@ -64,11 +64,9 @@ typedef enum {
 int derive_key(algorithm_type_dist_t nas_alg_type, uint8_t nas_enc_alg_id,
                const uint8_t key[32], uint8_t **out);
 
-//#define derive_key_nas_enc(aLGiD, kEY, kNAS)  \
-    derive_key(NAS_ENC_ALG, aLGiD, kEY, kNAS)
+//#define derive_key_nas_enc(aLGiD, kEY, kNAS)    derive_key(NAS_ENC_ALG, aLGiD, kEY, kNAS)
 
-//#define derive_key_nas_int(aLGiD, kEY, kNAS)  \
-    derive_key(NAS_INT_ALG, aLGiD, kEY, kNAS)
+//#define derive_key_nas_int(aLGiD, kEY, kNAS)    derive_key(NAS_INT_ALG, aLGiD, kEY, kNAS)
 
 #define derive_key_rrc_enc(aLGiD, kEY, kNAS)  \
     derive_key(RRC_ENC_ALG, aLGiD, kEY, kNAS)
