@@ -138,13 +138,11 @@ protected_rlc_um_control_primitives(void rlc_um_reset_state_variables (
                 const protocol_ctxt_t* const ctxt_pP,
                 rlc_um_entity_t * const rlc_pP);)
 
-/*! \fn void rlc_um_cleanup(const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP)
+/*! \fn void rlc_um_cleanup(rlc_um_entity_t * const rlc_pP)
 * \brief    Free all allocated memory (lists and buffers) previously allocated by this RLC UM instance.
-* \param[in]  ctxtP                     Running context.
 * \param[in]  rlc_pP                    RLC UM protocol instance pointer.
 */
 public_rlc_um_control_primitives(   void rlc_um_cleanup(
-                const protocol_ctxt_t* const ctxt_pP,
                 rlc_um_entity_t * const rlc_pP);)
 
 /*! \fn void rlc_um_configure(

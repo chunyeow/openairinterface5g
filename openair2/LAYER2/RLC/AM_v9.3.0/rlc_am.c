@@ -70,7 +70,10 @@ rlc_am_get_buffer_occupancy_in_bytes (
       if (rlc_pP->t_status_prohibit.running == 0) {
 #ifdef TRACE_RLC_AM_BO
           if (((15  +  rlc_pP->num_nack_sn*(10+1)  +  rlc_pP->num_nack_so*(15+15+1) + 7) >> 3) > 0) {
-              LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] BO : CONTROL PDU %d bytes \n", ctxt_pP->frame, rlc_pP->module_id, rlc_pP->rb_id, ((15  +  rlc_pP->num_nack_sn*(10+1)  +  rlc_pP->num_nack_so*(15+15+1) + 7) >> 3));
+              LOG_D(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT" BO : CONTROL PDU %d bytes \n",
+                    PROTOCOL_CTXT_ARGS(ctxt_pP),
+                    RB_AM_ARGS(rlc_pP),
+                    ((15  +  rlc_pP->num_nack_sn*(10+1)  +  rlc_pP->num_nack_so*(15+15+1) + 7) >> 3));
           }
 #endif
           return ((15  +  rlc_pP->num_nack_sn*(10+1)  +  rlc_pP->num_nack_so*(15+15+1) + 7) >> 3);
@@ -92,9 +95,15 @@ rlc_am_get_buffer_occupancy_in_bytes (
 
 #ifdef TRACE_RLC_AM_BO
   if ((rlc_pP->status_buffer_occupancy + rlc_pP->retransmission_buffer_occupancy + rlc_pP->sdu_buffer_occupancy + max_li_overhead + header_overhead) > 0) {
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] BO : STATUS  BUFFER %d bytes \n", ctxt_pP->frame, rlc_pP->module_id, rlc_pP->rb_id, rlc_pP->status_buffer_occupancy);
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] BO : RETRANS BUFFER %d bytes \n", ctxt_pP->frame, rlc_pP->module_id,rlc_pP->rb_id, rlc_pP->retransmission_buffer_occupancy);
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] BO : SDU     BUFFER %d bytes + li_overhead %d bytes header_overhead %d bytes (nb sdu not segmented %d)\n", ctxt_pP->frame, rlc_pP->module_id,rlc_pP->rb_id, rlc_pP->sdu_buffer_occupancy, max_li_overhead, header_overhead, rlc_pP->nb_sdu_no_segmented);
+    LOG_D(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT" BO : STATUS  BUFFER %d bytes \n", PROTOCOL_CTXT_ARGS(ctxt_pP), RB_AM_ARGS(rlc_pP), rlc_pP->status_buffer_occupancy);
+    LOG_D(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT" BO : RETRANS BUFFER %d bytes \n", PROTOCOL_CTXT_ARGS(ctxt_pP), RB_AM_ARGS(rlc_pP), rlc_pP->retransmission_buffer_occupancy);
+    LOG_D(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT" BO : SDU     BUFFER %d bytes + li_overhead %d bytes header_overhead %d bytes (nb sdu not segmented %d)\n",
+          PROTOCOL_CTXT_ARGS(ctxt_pP),
+          RB_AM_ARGS(rlc_pP),
+          rlc_pP->sdu_buffer_occupancy,
+          max_li_overhead,
+          header_overhead,
+          rlc_pP->nb_sdu_no_segmented);
   }
 #endif
   return rlc_pP->status_buffer_occupancy + rlc_pP->retransmission_buffer_occupancy + rlc_pP->sdu_buffer_occupancy + max_li_overhead + header_overhead;
@@ -128,20 +137,15 @@ config_req_rlc_am (
     if (h_rc == HASH_TABLE_OK) {
         l_rlc_p = &rlc_union_p->rlc.am;
         LOG_D(RLC,
-            "[FRAME %5u][%s][RRC][MOD %u/%u][][--- CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d) --->][RLC_AM][MOD %u/%u][RB %u]\n",
-            ctxt_pP->frame,
-            ( ctxt_pP->enb_flag > 0) ? "eNB":"UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            config_am_pP->max_retx_threshold,
-            config_am_pP->poll_pdu,
-            config_am_pP->poll_byte,
-            config_am_pP->t_poll_retransmit,
-            config_am_pP->t_reordering,
-            config_am_pP->t_status_prohibit,
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rb_idP);
+              PROTOCOL_CTXT_FMT RB_AM_FMT" CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d)\n",
+              PROTOCOL_CTXT_ARGS(ctxt_pP),
+              RB_AM_ARGS(l_rlc_p),
+              config_am_pP->max_retx_threshold,
+              config_am_pP->poll_pdu,
+              config_am_pP->poll_byte,
+              config_am_pP->t_poll_retransmit,
+              config_am_pP->t_reordering,
+              config_am_pP->t_status_prohibit);
         rlc_am_init(ctxt_pP, l_rlc_p);
         rlc_am_set_debug_infos(ctxt_pP, l_rlc_p, srb_flagP, rb_idP);
         rlc_am_configure(ctxt_pP, l_rlc_p,
@@ -152,14 +156,9 @@ config_req_rlc_am (
                config_am_pP->t_reordering,
                config_am_pP->t_status_prohibit);
     } else {
-        LOG_E(RLC, "[FRAME %5u][%s][RRC][MOD %u/%u][][--- CONFIG_REQ  --->][RLC_AM][MOD %u/%u][RB %u] RLC NOT FOUND\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rb_idP);
+        LOG_E(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT" CONFIG_REQ RLC NOT FOUND\n",
+              PROTOCOL_CTXT_ARGS(ctxt_pP),
+              RB_AM_ARGS(l_rlc_p));
     }
 }
 uint32_t pollPDU_tab[PollPDU_pInfinity+1]={4,8,16,32,64,128,256,1024};  // What is PollPDU_pInfinity??? 1024 for now
@@ -192,20 +191,15 @@ void config_req_rlc_am_asn1 (
           (config_am_pP->dl_AM_RLC.t_Reordering<T_Reordering_spare1) &&
           (config_am_pP->dl_AM_RLC.t_StatusProhibit<T_StatusProhibit_spare8) ){
 
-          LOG_D(RLC, "[FRAME %5u][%s][RRC][MOD %u/%u][][--- CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d) --->][RLC_AM][MOD %u/%u][RB %u]\n",
-              ctxt_pP->frame,
-              (ctxt_pP->enb_flag) ? "eNB" : "UE",
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
+          LOG_D(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT" CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d)\n",
+                PROTOCOL_CTXT_ARGS(ctxt_pP),
+                RB_AM_ARGS(l_rlc_p),
               maxRetxThreshold_tab[config_am_pP->ul_AM_RLC.maxRetxThreshold],
               pollPDU_tab[config_am_pP->ul_AM_RLC.pollPDU],
               pollByte_tab[config_am_pP->ul_AM_RLC.pollByte],
               PollRetransmit_tab[config_am_pP->ul_AM_RLC.t_PollRetransmit],
               am_t_Reordering_tab[config_am_pP->dl_AM_RLC.t_Reordering],
-              t_StatusProhibit_tab[config_am_pP->dl_AM_RLC.t_StatusProhibit],
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
-              rb_idP);
+              t_StatusProhibit_tab[config_am_pP->dl_AM_RLC.t_StatusProhibit]);
 
           rlc_am_init(ctxt_pP, l_rlc_p);
           rlc_am_set_debug_infos(ctxt_pP, l_rlc_p, srb_flagP, rb_idP);
@@ -218,30 +212,20 @@ void config_req_rlc_am_asn1 (
               t_StatusProhibit_tab[config_am_pP->dl_AM_RLC.t_StatusProhibit]);
       } else {
           LOG_D(RLC,
-              "[FRAME %5u][%s][RRC][MOD %u/%u][][--- ILLEGAL CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d) --->][RLC_AM][MOD %u/%u][RB %u], RLC-AM NOT CONFIGURED\n",
-              ctxt_pP->frame,
-              (ctxt_pP->enb_flag) ? "eNB" : "UE",
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
-              config_am_pP->ul_AM_RLC.maxRetxThreshold,
-              config_am_pP->ul_AM_RLC.pollPDU,
-              config_am_pP->ul_AM_RLC.pollByte,
-              config_am_pP->ul_AM_RLC.t_PollRetransmit,
-              config_am_pP->dl_AM_RLC.t_Reordering,
-              config_am_pP->dl_AM_RLC.t_StatusProhibit,
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
-              rb_idP);
+                PROTOCOL_CTXT_FMT RB_AM_FMT "ILLEGAL CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d), RLC-AM NOT CONFIGURED\n",
+                PROTOCOL_CTXT_ARGS(ctxt_pP),
+                RB_AM_ARGS(l_rlc_p),
+                config_am_pP->ul_AM_RLC.maxRetxThreshold,
+                config_am_pP->ul_AM_RLC.pollPDU,
+                config_am_pP->ul_AM_RLC.pollByte,
+                config_am_pP->ul_AM_RLC.t_PollRetransmit,
+                config_am_pP->dl_AM_RLC.t_Reordering,
+                config_am_pP->dl_AM_RLC.t_StatusProhibit);
       }
   } else {
-      LOG_E(RLC, "[FRAME %5u][%s][RRC][MOD %u/%u][][--- CONFIG_REQ  --->][RLC_AM][MOD %u/%u][RB %u] RLC NOT FOUND\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rb_idP);
+      LOG_E(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT "CONFIG_REQ RLC NOT FOUND\n",
+            PROTOCOL_CTXT_ARGS(ctxt_pP),
+            RB_AM_ARGS(l_rlc_p));
   }
 }
 

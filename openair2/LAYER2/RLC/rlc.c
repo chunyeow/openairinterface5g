@@ -524,11 +524,11 @@ rlc_op_status_t rlc_data_req     (const protocol_ctxt_t* const ctxtP,
                   rlc_um_data_req(ctxtP, &rlc_union_p->rlc.um, new_sdu_p);
 
                   //free_mem_block(new_sdu);
-		  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
+                  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
                   return RLC_OP_STATUS_OK;
               } else {
-		vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
-		return RLC_OP_STATUS_INTERNAL_ERROR;
+                  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
+                  return RLC_OP_STATUS_INTERNAL_ERROR;
               }
               break;
 
@@ -559,18 +559,18 @@ rlc_op_status_t rlc_data_req     (const protocol_ctxt_t* const ctxtP,
                                  rb_idP);
                   LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
                   rlc_tm_data_req(ctxtP, &rlc_union_p->rlc.tm, new_sdu_p);
-		  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
+                  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
                   return RLC_OP_STATUS_OK;
               } else {
                   //handle_event(ERROR,"FILE %s FONCTION rlc_data_req() LINE %s : out of memory\n", __FILE__, __LINE__);
-		vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
-		return RLC_OP_STATUS_INTERNAL_ERROR;
+                  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
+                  return RLC_OP_STATUS_INTERNAL_ERROR;
               }
               break;
 
           default:
               free_mem_block(sdu_pP);
-	      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
+              vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
               return RLC_OP_STATUS_INTERNAL_ERROR;
 
       }
@@ -605,18 +605,18 @@ rlc_op_status_t rlc_data_req     (const protocol_ctxt_t* const ctxtP,
                       rlc_um_data_req(ctxtP, &rlc_union_p->rlc.um, new_sdu_p);
 
                       //free_mem_block(new_sdu);
-		      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
+                      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
                       return RLC_OP_STATUS_OK;
                   } else {
-		    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
+                      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
                       return RLC_OP_STATUS_BAD_PARAMETER;
                   }
               } else {
-		vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
+                  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
                   return RLC_OP_STATUS_BAD_PARAMETER;
               }
           } else {
-	    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
+              vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_DATA_REQ,VCD_FUNCTION_OUT);
               return RLC_OP_STATUS_BAD_PARAMETER;
           }
   }

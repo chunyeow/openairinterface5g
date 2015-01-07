@@ -407,22 +407,22 @@ rlc_op_status_t rrc_rlc_config_asn1_req (const protocol_ctxt_t   * const ctxt_pP
 //-----------------------------------------------------------------------------
 void
 rb_free_rlc_union (
-                const protocol_ctxt_t* const ctxt_pP,
                 void *rlcu_pP)
 {
 //-----------------------------------------------------------------------------
   rlc_union_t * rlcu_p;
     if (rlcu_pP) {
         rlcu_p = (rlc_union_t *)(rlcu_pP);
+        LOG_D(RLC,"%s %p \n",__FUNCTION__,rlcu_pP);
         switch (rlcu_p->mode) {
           case RLC_MODE_AM:
-              rlc_am_cleanup(ctxt_pP, &rlcu_p->rlc.am);
+              rlc_am_cleanup(&rlcu_p->rlc.am);
               break;
           case RLC_MODE_UM:
-              rlc_um_cleanup(ctxt_pP, &rlcu_p->rlc.um);
+              rlc_um_cleanup(&rlcu_p->rlc.um);
               break;
           case RLC_MODE_TM:
-              rlc_tm_cleanup(ctxt_pP, &rlcu_p->rlc.tm);
+              rlc_tm_cleanup(&rlcu_p->rlc.tm);
               break;
           default:
             LOG_W(RLC,
@@ -431,11 +431,6 @@ rb_free_rlc_union (
                 rlcu_pP);
             break;
         }
-        LOG_D(RLC,
-            "%s %p \n",
-            __FUNCTION__,
-            rlcu_pP);
-        free(rlcu_p);
     }
 }
 
@@ -529,7 +524,7 @@ rlc_op_status_t rrc_rlc_remove_rlc   (
 
     h_rc = hashtable_get(rlc_coll_p, key, &rlc_union_p);
     if (h_rc == HASH_TABLE_OK) {
-        switch (rlc_union_p->mode) {
+        /*switch (rlc_union_p->mode) {
             case RLC_MODE_AM:
                 rlc_am_cleanup(ctxt_pP, &rlc_union_p->rlc.am);
                 break;
@@ -542,6 +537,8 @@ rlc_op_status_t rrc_rlc_remove_rlc   (
             default:
 	      break;
         }
+        cleanup is done in free() callback function configured in hashtable
+        */
         h_rc = hashtable_remove(rlc_coll_p, key);
         LOG_D(RLC, "[Frame %05u][%s][RLC_RRC][INST %u/%u][%s %u] RELEASED %s\n",
             ctxt_pP->frame,

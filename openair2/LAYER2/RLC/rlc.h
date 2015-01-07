@@ -335,11 +335,10 @@ public_rlc_rrc( rlc_op_status_t rrc_rlc_config_asn1_req (
 /*! \fn void rb_free_rlc_union (void *rlcu_pP)
  * \brief  Free the rlc memory contained in the RLC embedded in the rlc_union_t
  *  struct pointed by of the rlcu_pP parameter. Free the rlc_union_t struct also.
- * \param[in]  ctxtP              Running context.
  * \param[in]  rlcu_pP          Pointer on the rlc_union_t struct.
  */
 public_rlc_rrc(void
-    rb_free_rlc_union (const protocol_ctxt_t* const ctxt_pP, void *rlcu_pP);)
+    rb_free_rlc_union (void *rlcu_pP);)
 
 
 /*! \fn rlc_op_status_t rrc_rlc_remove_ue   (const protocol_ctxt_t* const ctxtP)

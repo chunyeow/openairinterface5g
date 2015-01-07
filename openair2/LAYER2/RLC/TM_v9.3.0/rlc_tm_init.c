@@ -122,7 +122,6 @@ rlc_tm_reset_state_variables (
 //-----------------------------------------------------------------------------
 void
 rlc_tm_cleanup (
-                const protocol_ctxt_t* const  ctxt_pP,
                 rlc_tm_entity_t * const rlcP
                 )
 {

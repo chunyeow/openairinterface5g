@@ -86,6 +86,11 @@
 
 
 
+#define RB_AM_FMT "[%s %02u]"
+#define RB_AM_ARGS(RLC_Pp) \
+        (RLC_Pp->is_data_plane == TRUE) ? "DRB AM":"SRB AM", \
+        RLC_Pp->rb_id
+
 /*! \fn void     rlc_am_release (const protocol_ctxt_t* const ctxtP, rlc_am_entity_t * const rlc_pP)
 * \brief    Empty function, TO DO.
 * \param[in]  ctxt_pP          Running context.

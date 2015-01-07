@@ -286,7 +286,6 @@ rlc_um_reset_state_variables (
 //-----------------------------------------------------------------------------
 void
 rlc_um_cleanup (
-                const protocol_ctxt_t* const ctxt_pP,
                 rlc_um_entity_t * const rlc_pP)
 {
   //-----------------------------------------------------------------------------

@@ -43,9 +43,11 @@ rlc_am_init(
 //-----------------------------------------------------------------------------
 {
     if (rlc_pP->initialized == TRUE) {
-        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] INITIALIZATION ALREADY DONE, DOING NOTHING\n", ctxt_pP->frame);
+        LOG_D(RLC, PROTOCOL_CTXT_FMT"[AM INIT] INITIALIZATION ALREADY DONE, DOING NOTHING\n",
+              PROTOCOL_CTXT_ARGS(ctxt_pP));
     } else {
-        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] INITIALIZATION: STATE VARIABLES, BUFFERS, LISTS\n", ctxt_pP->frame);
+        LOG_D(RLC, PROTOCOL_CTXT_FMT"[AM INIT] INITIALIZATION: STATE VARIABLES, BUFFERS, LISTS\n",
+              PROTOCOL_CTXT_ARGS(ctxt_pP));
         memset(rlc_pP, 0, sizeof(rlc_am_entity_t));
 
         list2_init(&rlc_pP->receiver_buffer,      "RX BUFFER");
@@ -59,8 +61,14 @@ rlc_am_init(
 #warning "cast the rlc retrans buffer to uint32"
 	//        rlc_pP->pdu_retrans_buffer       = calloc(1, (uint16_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
         rlc_pP->pdu_retrans_buffer       = calloc(1, (uint32_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
-        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] input_sdus[] = %p  element size=%d\n", ctxt_pP->frame, rlc_pP->input_sdus,sizeof(rlc_am_tx_sdu_management_t));
-        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] pdu_retrans_buffer[] = %p element size=%d\n", ctxt_pP->frame, rlc_pP->pdu_retrans_buffer,sizeof(rlc_am_tx_data_pdu_management_t));
+        LOG_D(RLC, PROTOCOL_CTXT_FMT"[AM INIT] input_sdus[] = %p  element size=%d\n",
+              PROTOCOL_CTXT_ARGS(ctxt_pP),
+              rlc_pP->input_sdus,
+              sizeof(rlc_am_tx_sdu_management_t));
+        LOG_D(RLC, PROTOCOL_CTXT_FMT"[AM INIT] pdu_retrans_buffer[] = %p element size=%d\n",
+              PROTOCOL_CTXT_ARGS(ctxt_pP),
+              rlc_pP->pdu_retrans_buffer,
+              sizeof(rlc_am_tx_data_pdu_management_t));
 
         // TX state variables
         //rlc_pP->vt_a    = 0;
@@ -104,7 +112,8 @@ rlc_am_reestablish(
      *    - stop and reset all timers;
      *    - reset all state variables to their initial values.
      */
-    LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][REESTABLISH] RE-INIT STATE VARIABLES, BUFFERS, LISTS\n", ctxt_pP->frame);
+    LOG_D(RLC, PROTOCOL_CTXT_FMT"[AM REESTABLISH] RE-INIT STATE VARIABLES, BUFFERS, LISTS\n",
+          PROTOCOL_CTXT_ARGS(ctxt_pP));
 
 #warning TODO when possible reassemble RLC SDUs from any byte segments of AMD PDUs with SN inf VR(MR)
     list2_free(&rlc_pP->receiver_buffer);
@@ -141,15 +150,13 @@ rlc_am_reestablish(
 //-----------------------------------------------------------------------------
 void
 rlc_am_cleanup(
-                const protocol_ctxt_t* const  ctxt_pP,
-                rlc_am_entity_t* const        rlc_pP)
+                rlc_am_entity_t* const        rlc_pP
+                )
 //-----------------------------------------------------------------------------
 {
-    LOG_I(RLC, "[FRAME ?????][%s][RLC_AM][MOD %u/%u][RB %u][CLEANUP]\n",
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rlc_pP->rb_id);
+    LOG_I(RLC, RB_AM_FMT"[CLEANUP %p]\n",
+          RB_AM_ARGS(rlc_pP),
+          rlc_pP);
 
     list2_free(&rlc_pP->receiver_buffer);
     list_free(&rlc_pP->pdus_to_mac_layer);
@@ -199,11 +206,8 @@ rlc_am_configure(
 //-----------------------------------------------------------------------------
 {
   if (rlc_pP->configured == TRUE) {
-      LOG_I(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RECONFIGURE] max_retx_threshold %d poll_pdu %d poll_byte %d t_poll_retransmit %d t_reordering %d t_status_prohibit %d\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
+      LOG_I(RLC, PROTOCOL_CTXT_FMT"[RB AM %u][RECONFIGURE] max_retx_threshold %d poll_pdu %d poll_byte %d t_poll_retransmit %d t_reordering %d t_status_prohibit %d\n",
+          PROTOCOL_CTXT_ARGS(ctxt_pP),
           rlc_pP->rb_id,
           max_retx_thresholdP,
           poll_pduP,
@@ -221,18 +225,15 @@ rlc_am_configure(
       rlc_pP->t_reordering.time_out        = t_reorderingP;
       rlc_pP->t_status_prohibit.time_out   = t_status_prohibitP;
   } else {
-      LOG_I(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][CONFIGURE] max_retx_threshold %d poll_pdu %d poll_byte %d t_poll_retransmit %d t_reordering %d t_status_prohibit %d\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rlc_pP->rb_id,
-          max_retx_thresholdP,
-          poll_pduP,
-          poll_byteP,
-          t_poll_retransmitP,
-          t_reorderingP,
-          t_status_prohibitP);
+      LOG_I(RLC, PROTOCOL_CTXT_FMT"[RB AM %u][CONFIGURE] max_retx_threshold %d poll_pdu %d poll_byte %d t_poll_retransmit %d t_reordering %d t_status_prohibit %d\n",
+            PROTOCOL_CTXT_ARGS(ctxt_pP),
+            rlc_pP->rb_id,
+            max_retx_thresholdP,
+            poll_pduP,
+            poll_byteP,
+            t_poll_retransmitP,
+            t_reorderingP,
+            t_status_prohibitP);
 
       rlc_pP->max_retx_threshold = max_retx_thresholdP;
       rlc_pP->poll_pdu           = poll_pduP;
@@ -257,17 +258,6 @@ rlc_am_set_debug_infos(
                 const rb_id_t                 rb_idP)
 //-----------------------------------------------------------------------------
 {
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SET DEBUG INFOS] module_id %d rb_id %d is SRB %d\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rb_idP,
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rb_idP,
-          (srb_flagP) ? "TRUE" : "FALSE");
-
 
     rlc_pP->rb_id         = rb_idP;
     if (srb_flagP) {
@@ -275,4 +265,8 @@ rlc_am_set_debug_infos(
     } else {
       rlc_pP->is_data_plane = 1;
     }
+    LOG_D(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT "[SET DEBUG INFOS]\n",
+          PROTOCOL_CTXT_ARGS(ctxt_pP),
+          RB_AM_ARGS(rlc_pP));
+
 }

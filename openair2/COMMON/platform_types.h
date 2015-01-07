@@ -182,4 +182,10 @@ typedef struct protocol_ctxt_s {
     frame_t     frame;         /*!< \brief  LTE Frame number.*/
     eNB_flag_t  enb_flag;      /*!< \brief  Flag to indicate eNB (1) or UE (0) */
 } protocol_ctxt_t;
+#define PROTOCOL_CTXT_FMT "[FRAME %05u][%s][MOD %02u/%02u]"
+#define PROTOCOL_CTXT_ARGS(CTXT_Pp) \
+        CTXT_Pp->frame, \
+        (CTXT_Pp->enb_flag == ENB_FLAG_YES) ? "eNB":" UE", \
+        CTXT_Pp->enb_module_id, \
+        CTXT_Pp->ue_module_id
 #endif

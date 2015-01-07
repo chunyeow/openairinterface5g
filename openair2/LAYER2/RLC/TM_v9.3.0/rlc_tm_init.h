@@ -104,12 +104,11 @@ protected_rlc_tm_init(void rlc_tm_reset_state_variables (
                 const protocol_ctxt_t* const  ctxt_pP,
                 rlc_tm_entity_t * const rlcP);)
 
-/*! \fn void rlc_tm_cleanup(const protocol_ctxt_t* const  ctxt_pP,rlc_tm_entity_t * const rlcP)
+/*! \fn void rlc_tm_cleanup(rlc_tm_entity_t * const rlcP)
 * \brief    Free all allocated memory (lists and buffers) previously allocated by this RLC TM instance.
 * \param[in]  rlcP                      RLC TM protocol instance pointer.
 */
 public_rlc_tm_init(   void rlc_tm_cleanup(
-                const protocol_ctxt_t* const  ctxt_pP,
                 rlc_tm_entity_t * const rlcP);)
 
 /*! \fn void rlc_tm_configure(const protocol_ctxt_t* const  ctxt_pP,rlc_tm_entity_t * const rlcP, const boolean_t is_uplink_downlinkP)

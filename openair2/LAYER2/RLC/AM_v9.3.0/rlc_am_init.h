@@ -85,12 +85,11 @@ typedef volatile struct {
 */
 public_rlc_am_init( void rlc_am_init   (const protocol_ctxt_t* const ctxtP, rlc_am_entity_t* rlc_pP);)
 
-/*! \fn void rlc_am_cleanup(const protocol_ctxt_t* const ctxtP, rlc_am_entity_t *const rlc_pP)
+/*! \fn void rlc_am_cleanup(rlc_am_entity_t *const rlc_pP)
 * \brief    Free all memory resources allocated and kept by this RLC AM instance.
-* \param[in]  ctxtP                     Running context.
 * \param[in]  rlc_pP                    RLC AM protocol instance pointer.
 */
-public_rlc_am_init( void rlc_am_cleanup(const protocol_ctxt_t* const ctxtP, rlc_am_entity_t* rlc_pP);)
+public_rlc_am_init( void rlc_am_cleanup(rlc_am_entity_t* rlc_pP);)
 
 /*! \fn void rlc_am_configure(const protocol_ctxt_t* const ctxtP, rlc_am_entity_t * const rlc_pP,  uint16_t max_retx_thresholdP, uint16_t poll_pduP, uint16_t poll_byteP, uint32_t t_poll_retransmitP, uint32_t t_reorderingP, uint32_t t_status_prohibitP)
 * \brief    Set RLC AM protocol parameters.
