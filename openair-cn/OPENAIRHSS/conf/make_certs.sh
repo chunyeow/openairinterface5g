@@ -60,6 +60,14 @@ openssl req -new -batch -out hss.csr.pem -key hss.key.pem -subj /CN=hss.$REALM/C
 # Certification authority
 openssl ca -cert cacert.pem -keyfile cakey.pem -in hss.csr.pem -out hss.cert.pem -outdir . -batch
 
+if [ ! -d /usr/local/etc/freeDiameter ]
+then
+    echo "Creating non existing directory: /usr/local/etc/freeDiameter/"
+    sudo mkdir /usr/local/etc/freeDiameter/
+fi
+
+sudo cp -upv cakey.pem hss.cert.pem cacert.pem /usr/local/etc/freeDiameter/
+
 # openssl genrsa -out $hss.key.pem 1024
 # openssl req -new -batch -out $hss.csr.pem -key $hss.key.pem -subj /CN=$hss.test.fr/C=FR/ST=Biot/L=Aix/O=test.fr/OU=mobiles
 # openssl ca -cert cacert.pem -keyfile cakey.pem -in $hss.csr.pem -out $hss.cert.pem -outdir . -batch
