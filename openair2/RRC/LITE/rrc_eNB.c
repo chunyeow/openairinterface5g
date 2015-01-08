@@ -413,15 +413,22 @@ static void init_MBMS(
     module_id_t enb_mod_idP,
     frame_t frameP) {
     // init the configuration for MTCH
+    protocol_ctxt_t               ctxt;
 
     if (eNB_rrc_inst[enb_mod_idP].MBMS_flag > 0) {
+        ctxt.enb_module_id = enb_mod_idP;
+        ctxt.ue_module_id  = 0;
+        ctxt.frame         = frameP;
+        ctxt.enb_flag      = ENB_FLAG_YES;
 
         LOG_D(RRC, "[eNB %d] Frame %d : Radio Bearer config request for MBMS\n", enb_mod_idP, frameP);   //check the lcid
         // Configuring PDCP and RLC for MBMS Radio Bearer
 
-        rrc_pdcp_config_asn1_req(enb_mod_idP, 0, frameP, 1, NULL,    // SRB_ToAddModList
-                                 NULL,  // DRB_ToAddModList
-                                 (DRB_ToReleaseList_t *) NULL, 0,   // security mode
+        rrc_pdcp_config_asn1_req(&ctxt,
+                                 (SRB_ToAddModList_t  *)NULL,  // SRB_ToAddModList
+                                 (DRB_ToAddModList_t  *)NULL,  // DRB_ToAddModList
+                                 (DRB_ToReleaseList_t *)NULL,
+                                 0,     // security mode
                                  NULL,  // key rrc encryption
                                  NULL,  // key rrc integrity
                                  NULL   // key encryption
@@ -430,7 +437,8 @@ static void init_MBMS(
 #   endif
             );
 
-        rrc_rlc_config_asn1_req(enb_mod_idP, 0, frameP, ENB_FLAG_YES, NULL, // SRB_ToAddModList
+        rrc_rlc_config_asn1_req(&ctxt,
+                                NULL, // SRB_ToAddModList
                                 NULL,   // DRB_ToAddModList
                                 NULL,   // DRB_ToReleaseList
                                 &(eNB_rrc_inst[enb_mod_idP].mcch_message->pmch_InfoList_r9));
@@ -473,9 +481,12 @@ uint8_t rrc_eNB_get_next_transaction_identifier(
 /* Functions to handle UE index in eNB UE list */
 
 
-static module_id_t rrc_eNB_get_UE_index(
+static module_id_t
+rrc_eNB_get_UE_index(
     module_id_t enb_mod_idP,
-    uint64_t UE_identity) {
+    uint64_t    UE_identity
+    )
+{
 
     boolean_t      reg = FALSE;
     module_id_t    i;
@@ -496,9 +507,12 @@ static module_id_t rrc_eNB_get_UE_index(
       return (i);
 }
 
-static module_id_t rrc_eNB_get_next_free_UE_index(
+static module_id_t
+rrc_eNB_get_next_free_UE_index(
     module_id_t enb_mod_idP,
-    uint64_t UE_identity) {
+    uint64_t UE_identity
+    )
+{
 
     boolean_t      reg = FALSE;
     module_id_t    i, first_index = UE_MODULE_INVALID;
@@ -530,7 +544,9 @@ void
 rrc_eNB_free_UE_index(
                 module_id_t enb_mod_idP,
                 module_id_t ue_mod_idP,
-                int frameP) {
+                int frameP
+                )
+{
 
   protocol_ctxt_t                     ctxt;
   DRB_ToAddModList_t                 *DRB_configList = eNB_rrc_inst[enb_mod_idP].DRB_configList[ue_mod_idP];
@@ -571,7 +587,9 @@ void rrc_eNB_process_RRCConnectionSetupComplete(
     module_id_t enb_mod_idP,
     frame_t     frameP,
     module_id_t ue_mod_idP,
-    RRCConnectionSetupComplete_r8_IEs_t * rrcConnectionSetupComplete) {
+    RRCConnectionSetupComplete_r8_IEs_t * rrcConnectionSetupComplete
+    )
+{
     LOG_I(RRC,
           "[eNB %d][RAPROC] Frame %d : Logical Channel UL-DCCH, " "processing RRCConnectionSetupComplete from UE %d\n",
           enb_mod_idP, frameP, ue_mod_idP);
@@ -593,7 +611,9 @@ void rrc_eNB_process_RRCConnectionSetupComplete(
 void rrc_eNB_generate_SecurityModeCommand(
     module_id_t enb_mod_idP,
     frame_t     frameP,
-    module_id_t ue_mod_idP) {
+    module_id_t ue_mod_idP
+    )
+{
     uint8_t                             buffer[100];
     uint8_t                             size;
 

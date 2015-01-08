@@ -1845,7 +1845,17 @@ const char SIBType[16][6] ={"SIB3\0","SIB4\0","SIB5\0","SIB6\0","SIB7\0","SIB8\0
 const char SIBPeriod[7][7]= {"80ms\0","160ms\0","320ms\0","640ms\0","1280ms\0","2560ms\0","5120ms\0"};
 int siPeriod_int[7] = {80,160,320,640,1280,2560,5120};
 
-int decode_BCCH_DLSCH_Message(module_id_t ue_mod_idP, frame_t frameP,uint8_t eNB_index,uint8_t *Sdu,uint8_t Sdu_len, uint8_t rsrq, uint8_t rsrp) {
+int
+decode_BCCH_DLSCH_Message(
+                module_id_t ue_mod_idP,
+                frame_t     frameP,
+                uint8_t     eNB_index,
+                uint8_t    *Sdu,
+                uint8_t     Sdu_len,
+                uint8_t     rsrq,
+                uint8_t     rsrp
+                )
+{
 
   //BCCH_DL_SCH_Message_t bcch_message;
   BCCH_DL_SCH_Message_t *bcch_message=NULL;//_ptr=&bcch_message;
@@ -1979,7 +1989,14 @@ int decode_BCCH_DLSCH_Message(module_id_t ue_mod_idP, frame_t frameP,uint8_t eNB
 }
 
 
-int decode_SIB1(module_id_t ue_mod_idP,uint8_t eNB_index, uint8_t rsrq, uint8_t rsrp) {
+int
+decode_SIB1(
+                module_id_t ue_mod_idP,
+                uint8_t eNB_index,
+                uint8_t rsrq,
+                uint8_t rsrp
+                )
+{
   SystemInformationBlockType1_t **sib1=&UE_rrc_inst[ue_mod_idP].sib1[eNB_index];
   int i;
 
@@ -2121,7 +2138,11 @@ int decode_SIB1(module_id_t ue_mod_idP,uint8_t eNB_index, uint8_t rsrq, uint8_t 
 }
 
 
-void dump_sib2(SystemInformationBlockType2_t *sib2) {
+void
+dump_sib2(
+                SystemInformationBlockType2_t *sib2
+                )
+{
 
   LOG_D(RRC,"radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.numberOfRA_Preambles : %ld\n",
       sib2->radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.numberOfRA_Preambles);
@@ -2670,12 +2691,26 @@ ue_measurement_report_triggering(
 }
 
 //check_trigger_meas_event(ue_mod_idP, frameP, eNB_index, i,j,ofn,ocn,hys,ofs,ocs,a3_offset,ttt_ms)
-uint8_t check_trigger_meas_event(module_id_t ue_mod_idP,frame_t frameP, uint8_t eNB_index, uint8_t ue_cnx_index, uint8_t meas_index,
-    Q_OffsetRange_t ofn, Q_OffsetRange_t ocn, Hysteresis_t hys,
-    Q_OffsetRange_t ofs, Q_OffsetRange_t ocs, long a3_offset, TimeToTrigger_t ttt) {
+uint8_t
+check_trigger_meas_event(
+                module_id_t     ue_mod_idP,
+                frame_t         frameP,
+                uint8_t         eNB_index,
+                uint8_t         ue_cnx_index,
+                uint8_t         meas_index,
+                Q_OffsetRange_t ofn,
+                Q_OffsetRange_t ocn,
+                Hysteresis_t    hys,
+                Q_OffsetRange_t ofs,
+                Q_OffsetRange_t ocs,
+                long            a3_offset,
+                TimeToTrigger_t ttt
+                )
+{
   uint8_t eNB_offset;
   uint8_t currentCellIndex = mac_xface->lte_frame_parms->Nid_cell;
   uint8_t tmp_offset;
+
   LOG_I(RRC,"[UE %d] ofn(%d) ocn(%d) hys(%d) ofs(%d) ocs(%d) a3_offset(%d) ttt(%d) rssi %3.1f\n",
 	ue_mod_idP, 
 	ofn,ocn,hys,ofs,ocs,a3_offset,ttt,
@@ -2720,11 +2755,20 @@ uint8_t check_trigger_meas_event(module_id_t ue_mod_idP,frame_t frameP, uint8_t 
 }
 
 #ifdef Rel10
-int decode_MCCH_Message(module_id_t ue_mod_idP, frame_t frameP, uint8_t eNB_index, uint8_t *Sdu, uint8_t Sdu_len,uint8_t mbsfn_sync_area) {
+int
+decode_MCCH_Message(
+                module_id_t ue_mod_idP,
+                frame_t     frameP,
+                uint8_t     eNB_index,
+                uint8_t    *Sdu,
+                uint8_t     Sdu_len,
+                uint8_t     mbsfn_sync_area
+                )
+{
 
-  MCCH_Message_t *mcch=NULL;
+  MCCH_Message_t               *mcch=NULL;
   MBSFNAreaConfiguration_r9_t **mcch_message=&UE_rrc_inst[ue_mod_idP].mcch_message[eNB_index];
-  asn_dec_rval_t dec_rval;
+  asn_dec_rval_t                dec_rval;
 
   if (UE_rrc_inst[ue_mod_idP].Info[eNB_index].MCCHStatus[mbsfn_sync_area] == 1) {
       LOG_D(RRC,"[UE %d] Frame %d: MCCH MESSAGE for MBSFN sync area %d has been already received!\n",
@@ -2764,7 +2808,16 @@ int decode_MCCH_Message(module_id_t ue_mod_idP, frame_t frameP, uint8_t eNB_inde
   return 0;
 }
 
-void decode_MBSFNAreaConfiguration(module_id_t ue_mod_idP, uint8_t eNB_index, frame_t frameP,uint8_t mbsfn_sync_area) {
+void
+decode_MBSFNAreaConfiguration(
+                module_id_t ue_mod_idP,
+                uint8_t     eNB_index,
+                frame_t     frameP,
+                uint8_t     mbsfn_sync_area
+                )
+{
+    protocol_ctxt_t               ctxt;
+
   LOG_D(RRC,"[UE %d] Frame %d : Number of MCH(s) in the MBSFN Sync Area %d  is %d\n", 
       ue_mod_idP, frameP, mbsfn_sync_area, UE_rrc_inst[ue_mod_idP].mcch_message[eNB_index]->pmch_InfoList_r9.list.count);
   //  store to MAC/PHY necessary parameters for receiving MTCHs
@@ -2803,8 +2856,13 @@ void decode_MBSFNAreaConfiguration(module_id_t ue_mod_idP, uint8_t eNB_index, fr
 
   UE_rrc_inst[ue_mod_idP].Info[eNB_index].MCCHStatus[mbsfn_sync_area] = 1;
 
+  ctxt.enb_module_id = eNB_index;
+  ctxt.ue_module_id  = ue_mod_idP;
+  ctxt.frame         = frameP;
+  ctxt.enb_flag      = ENB_FLAG_NO;
+
   // Config Radio Bearer for MBMS user data (similar way to configure for eNB side in init_MBMS function)
-  rrc_pdcp_config_asn1_req(eNB_index, ue_mod_idP, frameP, 0,
+  rrc_pdcp_config_asn1_req(&ctxt,
       NULL, // SRB_ToAddModList
       NULL, // DRB_ToAddModList
       (DRB_ToReleaseList_t*)NULL,
@@ -2817,7 +2875,7 @@ void decode_MBSFNAreaConfiguration(module_id_t ue_mod_idP, uint8_t eNB_index, fr
 #endif
   );
 
-  rrc_rlc_config_asn1_req(eNB_index, ue_mod_idP, frameP,0,
+  rrc_rlc_config_asn1_req(&ctxt,
       NULL,// SRB_ToAddModList
       NULL,// DRB_ToAddModList
       NULL,// DRB_ToReleaseList
@@ -2836,7 +2894,11 @@ EXPORT_SYMBOL(Rlc_info_am_config);
 #endif
 
 #if defined(ENABLE_ITTI)
-void *rrc_ue_task(void *args_p) {
+void
+*rrc_ue_task(
+                void *args_p
+                )
+{
   MessageDef   *msg_p;
   const char   *msg_name;
   instance_t    instance;
