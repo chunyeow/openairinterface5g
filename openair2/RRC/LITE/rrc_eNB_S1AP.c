@@ -847,7 +847,7 @@ int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_COMMAND (MessageDef *msg_p, const ch
     MessageDef *msg_complete_p;
 
     LOG_W(RRC,
-            "[eNB %d] In S1AP_UE_CONTEXT_RELEASE_COMMAND: unknown UE from eNB_ue_s1ap_id (%d) for eNB %d\n",
+            "[eNB %d] In S1AP_UE_CONTEXT_RELEASE_COMMAND: unknown UE from eNB_ue_s1ap_id (%d)\n",
             instance,
             eNB_ue_s1ap_id);
 
@@ -862,7 +862,7 @@ int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_COMMAND (MessageDef *msg_p, const ch
       LOG_W(RRC,
               "[eNB %d] In S1AP_UE_CONTEXT_RELEASE_COMMAND: TODO call rrc_eNB_connection_release for eNB %d\n",
               instance,
-              ue_index);
+              eNB_ue_s1ap_id);
     {
         int      e_rab;
         int      mod_id = 0;
