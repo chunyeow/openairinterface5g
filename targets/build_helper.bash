@@ -550,6 +550,7 @@ check_install_epc_software() {
         test_install_package iperf
         test_install_package iproute
         test_install_package iptables
+        test_install_package iptables-dev
         test_install_package libatlas-base-dev
         test_install_package libatlas-dev
         test_install_package libblas
@@ -572,6 +573,7 @@ check_install_epc_software() {
         test_install_package libsctp1
         test_install_package libsctp-dev
         test_install_package libtasn1-3-dev
+        test_install_package libtool 
         test_install_package libxml2
         test_install_package libxml2-dev
 #        test_install_package linux-headers-`uname -r`
@@ -591,7 +593,6 @@ check_install_epc_software() {
         test_install_package unzip
         test_install_package valgrind
         test_install_package vlan
-        test_install_package libtool 
 	
         if [ $OAI_INSTALLED = 1 ]; then 
             touch ./.lock_oaibuild
