@@ -63,6 +63,7 @@ declare RUN=0
 declare DISABLE_CHECK_INSTALLED_SOFTWARE=0
 declare OAI_CLEAN=0
 declare CLEAN_IPTABLES=0
+declare CLEAN_HSS=0
 
 declare OAI_TEST=0
 declare XFORMS=0
@@ -111,6 +112,7 @@ fi
        -c | --clean)
             rm -rf ./.lock_oaibuild
             OAI_CLEAN=1
+            CLEAN_HSS=1
             echo "setting clean flag to: $OAI_CLEAN"
             echo "may check package installation, and recompile OAI"
             shift;
@@ -618,7 +620,8 @@ build_hss(){
 ######################################
     echo_info "5. compile HSS"
 
-     output=$(compile_hss  $OAI_CLEAN >> bin/install_log.txt  2>&1 )
+     # Bad behaviour of $OAI_CLEAN with ./.lock_oaibuild ...
+     output=$(compile_hss  $CLEAN_HSS >> bin/install_log.txt  2>&1 )
      hss_compiled=$?
      if [ $hss_compiled -eq 1 ]; then
          echo_error "Failed in compiling hss target: check the installation log file bin/install_log.txt"

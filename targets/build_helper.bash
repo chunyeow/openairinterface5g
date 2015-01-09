@@ -631,24 +631,27 @@ check_install_asn1c(){
 ################################################
 compile_hss() {
     cd $OPENAIRCN_DIR/OPENAIRHSS
-    pwd
-    OBJ_DIR=`find . -maxdepth 1 -type d -iname obj*`
-    if [ $1 -eq 1 ]; then
-        echo_info "build a clean EPC"
-        bash_exec "rm -rf obj*"
-        bash_exec "rm configure"
+    
+    if [ "$1" -eq 1 ]; then
+        echo_info "build a clean HSS"
+        rm -rfv obj*
+        rm -rfv m4
+        rm -rfv .autom4*
+        rm -fv configure
     fi
+
+    OBJ_DIR=`find . -maxdepth 1 -type d -iname obj*`
+    
     if [ ! -n "$OBJ_DIR" ]; then
         OBJ_DIR="objs"
-        bash_exec "mkdir -m 777 ./$OBJ_DIR"
-        echo_success "Created $OBJ_DIR directory"
+        mkdir --verbose -m 777 ./$OBJ_DIR
     else
         OBJ_DIR=`basename $OBJ_DIR`
     fi
     
-    if [ ! -f $OBJ_DIR/Makefile ]; then
-        if [ ! -d "m4" ]; then
-            mkdir -m 777 m4
+    if [ ! -f "$OBJ_DIR"/Makefile ]; then
+        if [ ! -d m4 ]; then
+            mkdir --verbose -m 777 m4
         fi
         echo_success "Invoking autogen"
         ./autogen.sh
@@ -656,13 +659,17 @@ compile_hss() {
             return 1
         fi
         cd $OBJ_DIR
-        echo_success "Invoking configure from "`pwd`
+        echo_success "Invoking configure"
         ../configure 
+        if [ $? -ne 0 ]; then
+            return 1
+        fi
     else
         cd $OBJ_DIR
     fi
+
     if [ -f Makefile ];  then
-        echo_success "Compiling..."pwd
+        echo_success "Compiling..."
         make ; #-j $NUM_CPU
         if [ $? -ne 0 ]; then
             echo_error "Build failed, exiting"
