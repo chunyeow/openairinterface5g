@@ -347,9 +347,10 @@ check_hss_s6a_certificate() {
     cd $OPENAIRCN_DIR/OPENAIRHSS/conf
     ./make_certs.sh ${1:-'eur'}
     if [ $# -lt 2 ] ; then
-        check_hss_s6a_certificate ${1:-'eur'} 2
+        __i=check_hss_s6a_certificate ${1:-'eur'} 2
+        return $__i
     fi
-    exit 1
+    return 1
 }
 
 check_install_usrp_uhd_driver(){
