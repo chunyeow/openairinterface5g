@@ -593,18 +593,17 @@ build_epc(){
 }
 
 build_hss(){
-
-    hss_compiled=1
-    
     echo_info "Note: this script tested only for Ubuntu 12.04 x64 -> 14.04 x64"
 
 ######################################
 # CHECK MISC SOFTWARES AND LIBS      #
 ######################################
-    echo_info "4. check the required packages for HSS"
-    hss_certificate_generated=1;
-    
-    check_install_hss_software
+    if [ $DISABLE_CHECK_INSTALLED_SOFTWARE -eq 0 ]; then 
+        echo_info "4. check the required packages for HSS"
+        check_install_hss_software
+    else
+        echo_info "6. Not checking the required packages for HSS"
+    fi
     
     if [ $OAI_CLEAN -eq 1 ]; then
         check_install_freediamter
@@ -618,7 +617,7 @@ build_hss(){
 # compile HSS                        #
 ######################################
     echo_info "5. compile HSS"
-    
+
      output=$(compile_hss  $OAI_CLEAN >> bin/install_log.txt  2>&1 )
      hss_compiled=$?
      if [ $hss_compiled -eq 1 ]; then
