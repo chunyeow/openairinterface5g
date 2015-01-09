@@ -172,6 +172,7 @@ fi
             BUILD_LTE=$2
             echo "setting top-level build target to: $2"
             shift 2;
+            echo > bin/install_log.txt
             ;;
        -h | --help)
             print_help
@@ -555,14 +556,15 @@ build_epc(){
         exit 1
     fi
     
-    rm -f /tmp/source.txt
+    TEMP_FILE=`tempfile`
     VARIABLES=" S6A_CONF\|\
            REALM"
 
     VARIABLES=$(echo $VARIABLES | sed -e 's/\\r//g')
     VARIABLES=$(echo $VARIABLES | tr -d ' ')
-    cat $CONFIG_FILE | grep -w "$VARIABLES"| tr -d " " | tr -d ";" > /tmp/source.txt
-    source /tmp/source.txt
+    cat $CONFIG_FILE | grep -w "$VARIABLES"| tr -d " " | tr -d ";" > $TEMP_FILE
+    source $TEMP_FILE
+    rm -f $TEMP_FILE
 
     if [ x"$REALM" == "x" ]; then
         echo_error "Your config file do not contain a REALM for S6A configuration"
@@ -594,7 +596,7 @@ build_hss(){
 
     hss_compiled=1
     
-    echo_info "Note: this scripts works only for Ubuntu 12.04"
+    echo_info "Note: this script tested only for Ubuntu 12.04 x64 -> 14.04 x64"
 
 ######################################
 # CHECK MISC SOFTWARES AND LIBS      #
@@ -607,13 +609,10 @@ build_hss(){
     if [ $OAI_CLEAN -eq 1 ]; then
         check_install_freediamter
     else 
-    if [ ! -d /usr/local/etc/freeDiameter ]; then
-        check_install_freediamter
+        if [ ! -d /usr/local/etc/freeDiameter ]; then
+            check_install_freediamter
+        fi
     fi
-    fi
-    $(make_certs >> bin/install_log.txt  2>&1)
-    output=$(check_s6a_certificate >> bin/install_log.txt  2>&1)
-    hss_certificate_generated=$?
   
 ######################################
 # compile HSS                        #
@@ -622,9 +621,29 @@ build_hss(){
     
      output=$(compile_hss  $OAI_CLEAN >> bin/install_log.txt  2>&1 )
      hss_compiled=$?
+     if [ $hss_compiled -eq 1 ]; then
+         echo_error "Failed in compiling hss target: check the installation log file bin/install_log.txt"
+         exit 1
+     fi
      check_for_hss_executable
      echo_info "finished hss target: check the installation log file bin/install_log.txt" 
  
+######################################
+# Check certificates                 #
+######################################
+  
+    TEMP_FILE=`tempfile`
+    cat $OPENAIRCN_DIR/OPENAIRHSS/conf/hss_fd.conf | grep -w "Identity" | tr -d " " | tr -d ";" > $TEMP_FILE
+    source $TEMP_FILE
+    rm -f  $TEMP_FILE
+
+    if [ x"$Identity" == "x" ]; then
+        echo_error "Your config file do not contain a host identity for S6A configuration"
+        exit 1
+    fi
+    HSS_REALM=$(echo $Identity | sed 's/.*\.//')
+    check_hss_s6a_certificate $HSS_REALM
+    
 ######################################
 # fill the HSS DB
 ######################################
@@ -635,7 +654,7 @@ build_hss(){
      output=$(create_hss_database $USER $PW )
      hss_db_created=$?
      if [ $hss_db_created = 0 ]; then
-	 echo_warning "hss DB not created"
+         echo_warning "hss DB not created"
      fi
 ######################################
 # install hss
@@ -646,14 +665,16 @@ build_hss(){
          echo_success "target hss built, DB created  and installed in the bin directory"
          echo "target hss built, DB created, and installed in the bin directory"  >>  bin/${oai_build_date}
          cp -rf $OPENAIRCN_DIR/OPENAIRHSS/conf  $OPENAIR_TARGETS/bin
-	     $SUDO cp $OPENAIR_TARGETS/bin/conf/hss_fd.local.conf /etc/openair-hss
+         $SUDO cp $OPENAIR_TARGETS/bin/conf/hss_fd.local.conf /etc/openair-hss
+         rm -f $OPENAIR_TARGETS/bin/openair-hss
+         cp -pv $OPENAIRCN_DIR/OPENAIRHSS/objs/openair-hss $OPENAIR_TARGETS/bin/
      fi
 
 ######################################
 # LAUNCH HSS                         #
 ######################################
-     echo_info "8. run hss in bin/:  ./openair-hss -c conf/hss.local.conf"
-     cd bin
+     echo_info "8. run hss in $OPENAIR_TARGETS/bin/:  ./openair-hss -c conf/hss.local.conf"
+     cd $OPENAIR_TARGETS/bin
      ./openair-hss -c conf/hss.local.conf
 }
 
@@ -731,6 +752,7 @@ case "$BUILD_LTE" in
          build_epc
          ;;
     'HSS')
+         echo_warning "BUILD_LTE: $BUILD_LTE"
          echo_warning "build HSS: Experimental"
          build_hss 
          ;;

@@ -306,7 +306,6 @@ check_install_freediamter(){
 }
 
 check_epc_s6a_certificate() {
-    cnt=0
     if [ -d /usr/local/etc/freeDiameter ]
     then
         if [ -f /usr/local/etc/freeDiameter/user.cert.pem ]
@@ -323,35 +322,34 @@ check_epc_s6a_certificate() {
     echo_warning "EPC S6A: generatting new certificate in /usr/local/etc/freeDiameter..."
     cd $OPENAIRCN_DIR/S6A/freediameter
     ./make_certs.sh ${1:-'eur'}
-    if [ $cnt = 0 ] ; then
-        cnt=1
-        check_epc_s6a_certificate ${1:-'eur'}
+    if [ $# -lt 2 ] ; then
+        check_epc_s6a_certificate ${1:-'eur'}  2
     fi
-    return 1
+    exit 1
 }
 
 
-check_s6a_certificate() {
-    cnt=0
+check_hss_s6a_certificate() {
     if [ -d /usr/local/etc/freeDiameter ]; then
         if [ -f /usr/local/etc/freeDiameter/hss.cert.pem ];  then
             full_hostname=`cat /usr/local/etc/freeDiameter/hss.cert.pem | grep "Subject" | grep "CN" | cut -d '=' -f6`
-#	    if [ $full_hostname = `hostname`.eur ];   then
-	    if [ $full_hostname = hss.eur ];   then
-                echo_success "S6A: Found valid certificate in /usr/local/etc/freeDiameter"
+            if [ a$full_hostname == a`hostname`.${1:-'eur'} ]
+            then
+                echo_success "HSS S6A: Found valid certificate in /usr/local/etc/freeDiameter"
                 return 0
+            else 
+                echo_error "Bad hss hostname found in cert file: "$full_hostname " hostname is "`hostname`
             fi
         fi
     fi
     echo_error "S6A: Did not find valid certificate in /usr/local/etc/freeDiameter"
     echo_warning "S6A: generatting new certificate in /usr/local/etc/freeDiameter..."
-    cd $OPENAIRCN_DIR/S6A/freediameter
-    make_certs
-    if [ $cnt = 0 ] ; then
-        cnt=1
-        check_s6a_certificate
+    cd $OPENAIRCN_DIR/OPENAIRHSS/conf
+    ./make_certs.sh ${1:-'eur'}
+    if [ $# -lt 2 ] ; then
+        check_hss_s6a_certificate ${1:-'eur'} 2
     fi
-    return 1
+    exit 1
 }
 
 check_install_usrp_uhd_driver(){
@@ -632,10 +630,12 @@ check_install_asn1c(){
 ################################################
 compile_hss() {
     cd $OPENAIRCN_DIR/OPENAIRHSS
+    pwd
     OBJ_DIR=`find . -maxdepth 1 -type d -iname obj*`
-    if [ $1 = 1 ]; then
+    if [ $1 -eq 1 ]; then
         echo_info "build a clean EPC"
-        bash_exec "rm -rf obj"
+        bash_exec "rm -rf obj*"
+        bash_exec "rm configure"
     fi
     if [ ! -n "$OBJ_DIR" ]; then
         OBJ_DIR="objs"
@@ -644,32 +644,36 @@ compile_hss() {
     else
         OBJ_DIR=`basename $OBJ_DIR`
     fi
+    
     if [ ! -f $OBJ_DIR/Makefile ]; then
-        if [ ! -n "m4" ]; then
+        if [ ! -d "m4" ]; then
             mkdir -m 777 m4
         fi
         echo_success "Invoking autogen"
-        bash_exec "./autogen.sh"
-        cd ./$OBJ_DIR
-        echo_success "Invoking configure"
+        ./autogen.sh
+        if [ $? -ne 0 ]; then
+            return 1
+        fi
+        cd $OBJ_DIR
+        echo_success "Invoking configure from "`pwd`
         ../configure 
     else
-        cd ./$OBJ_DIR
+        cd $OBJ_DIR
     fi
     if [ -f Makefile ];  then
-        echo_success "Compiling..."
-        make -j $NUM_CPU
+        echo_success "Compiling..."pwd
+        make ; #-j $NUM_CPU
         if [ $? -ne 0 ]; then
             echo_error "Build failed, exiting"
             return 1
-	else 
-	    cp -pf ./openair-hss $OPENAIR_TARGETS/bin
-	    return 0
+        else 
+            cp -pfv ./openair-hss $OPENAIR_TARGETS/bin
+            return 0
         fi
     else
-        echo_error "Configure failed, exiting"
-        return 1
+        echo_error "Configure failed, aborting"
     fi
+    return 1
 }
 
 
@@ -850,6 +854,7 @@ check_for_hss_executable() {
     if [ ! -f $OPENAIRCN_DIR/OPENAIRHSS/objs/openair-hss ]; then
         echo_error "Cannot find openair-hss executable object in directory $OPENAIRCN_DIR/OPENAIRHSS/objs/"
         echo_error "Please make sure you have compiled OAI HSS"
+        exit 1
     fi
 }
 
