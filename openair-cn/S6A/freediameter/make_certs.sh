@@ -43,7 +43,7 @@ touch demoCA/index.txt
 user=$(whoami)
 HOSTNAME=$(hostname -f)
 
-echo "Creating certificate for user '$HOSTNAME'.'$REALM'"
+echo "Creating MME certificate for user '$HOSTNAME'.'$REALM'"
 
 # CA self certificate
 openssl req  -new -batch -x509 -days 3650 -nodes -newkey rsa:1024 -out cacert.pem -keyout cakey.pem -subj /CN=$REALM/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
