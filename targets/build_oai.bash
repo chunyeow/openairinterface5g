@@ -601,17 +601,17 @@ build_hss(){
     if [ $DISABLE_CHECK_INSTALLED_SOFTWARE -eq 0 ]; then 
         echo_info "4. check the required packages for HSS"
         check_install_hss_software
+        if [ $OAI_CLEAN -eq 1 ]; then
+            check_install_freediamter
+        else 
+            if [ ! -d /usr/local/etc/freeDiameter ]; then
+                check_install_freediamter
+            fi
+        fi
     else
-        echo_info "6. Not checking the required packages for HSS"
+        echo_info "4. Not checking the required packages for HSS"
     fi
     
-    if [ $OAI_CLEAN -eq 1 ]; then
-        check_install_freediamter
-    else 
-        if [ ! -d /usr/local/etc/freeDiameter ]; then
-            check_install_freediamter
-        fi
-    fi
   
 ######################################
 # compile HSS                        #
