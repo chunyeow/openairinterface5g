@@ -672,12 +672,6 @@ build_hss(){
          cp -pv $OPENAIRCN_DIR/OPENAIRHSS/objs/openair-hss $OPENAIR_TARGETS/bin/
      fi
 
-######################################
-# LAUNCH HSS                         #
-######################################
-     echo_info "8. run hss in $OPENAIR_TARGETS/bin/:  ./openair-hss -c conf/hss.local.conf"
-     cd $OPENAIR_TARGETS/bin
-     ./openair-hss -c conf/hss.local.conf
 }
 
 
@@ -794,7 +788,7 @@ esac
 # run 
 ############################################
 if [ $RUN -ne 0 ]; then 
-    echo_info "11. Running ... To be completed"
+    echo_info "11. Running ..."
     cd $OPENAIR_TARGETS/bin
     case "$BUILD_LTE" in
         'ENB')
@@ -818,7 +812,7 @@ if [ $RUN -ne 0 ]; then
         
         
         'EPC')
-            echo "############# running epc #############"
+            echo "############# running EPC #############"
             if [ $RUN_GDB -eq 0 ]; then
                 $SUDO exec $OPENAIR_TARGETS/bin/oai_epc  `echo $EXE_ARGUMENTS`
             else
@@ -832,7 +826,17 @@ if [ $RUN -ne 0 ]; then
         
         
         'HSS')
-             echo_warning "TODO execute HSS: Experimental"
+            echo "############# running HSS #############"
+            cd $OPENAIR_TARGETS/bin
+            if [ $RUN_GDB -eq 0 ]; then
+                $SUDO exec ./openair-hss -c conf/hss.local.conf
+            else
+                $SUDO touch ~/.gdb_hss
+                $SUDO echo "file ./openair-hss" > ~/.gdb_hss
+                $SUDO echo "set args -c conf/hss.local.conf" >> ~/.gdb_hss
+                $SUDO echo "run" >> ~/.gdb_hss
+                $SUDO gdb -nh -x ~/.gdb_hss 2>&1 
+            fi
              ;;
          
          
