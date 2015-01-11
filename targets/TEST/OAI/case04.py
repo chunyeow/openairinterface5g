@@ -83,20 +83,20 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
         log.ok(case, test, name, conf, '', logfile)
-        
-    try:
-        test = '05'
-        name = 'Perf oai.dlsim.test5'
-        diag = 'Test 5, 1.4 MHz, R4.FDD (MCS 4), EVA5, 0dB (70%)'
-        conf = '-m4 -gF -s0 -w1.0 -f.2 -n500 -B6 -c4 -z2 -O70'
-        trace = logdir + '/log_' + host + case + test + '.txt'
-        tee = ' 2>&1 | tee ' + trace
-        cmd = 'taskset -c 0 ./dlsim.rel8.' + host + ' ' + conf + tee
-        oai.send_expect(cmd, 'passed', 150)
-    except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
-    else:
-        log.ok(case, test, name, conf, '', logfile)
+       
+#    try:
+#        test = '05'
+#        name = 'Perf oai.dlsim.test5'
+#        diag = 'Test 5, 1.4 MHz, R4.FDD (MCS 4), EVA5, 0dB (70%)'
+#        conf = '-m4 -gF -s0 -w1.0 -f.2 -n500 -B6 -c4 -z2 -O70'
+#        trace = logdir + '/log_' + host + case + test + '.txt'
+#        tee = ' 2>&1 | tee ' + trace
+#        cmd = 'taskset -c 0 ./dlsim.rel8.' + host + ' ' + conf + tee
+#        oai.send_expect(cmd, 'passed', 150)
+#    except log.err, e:
+#        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+#    else:
+#        log.ok(case, test, name, conf, '', logfile)
   
     try:
         test = '06'
