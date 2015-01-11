@@ -922,6 +922,7 @@ void init_openair2(void) {
   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++)
     l2_init (&PHY_vars_eNB_g[0][CC_id]->lte_frame_parms,
 	     oai_emulation.info.eMBMS_active_state,
+	     NULL,
 	     oai_emulation.info.cba_group_active,
 	     oai_emulation.info.handover_active);
   

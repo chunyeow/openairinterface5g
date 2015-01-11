@@ -232,7 +232,7 @@ uint8_t do_DLInformationTransfer(uint8_t Mod_id, uint8_t **buffer, uint8_t trans
 
 uint8_t do_ULInformationTransfer(uint8_t **buffer, uint32_t pdu_length, uint8_t *pdu_buffer);
 
-OAI_UECapability_t *fill_ue_capability(void);
+OAI_UECapability_t *fill_ue_capability(char *UE_EUTRA_Capability_xer);
 
 uint8_t do_UECapabilityEnquiry(uint8_t Mod_id,
                                uint8_t *buffer,

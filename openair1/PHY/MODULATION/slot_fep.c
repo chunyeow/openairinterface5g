@@ -153,7 +153,7 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
 
   }
 
-#ifndef PERFECT_CE    
+  if (phy_vars_ue->perfect_ce == 0) {
   if ((l==0) || (l==(4-frame_parms->Ncp))) {
     for (aa=0;aa<frame_parms->nb_antennas_tx_eNB;aa++) {
 
@@ -193,7 +193,7 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
 
       }
   }
-#endif
+  }
 #ifdef DEBUG_FEP
   msg("slot_fep: done\n");
 #endif

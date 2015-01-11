@@ -1905,10 +1905,12 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
 				     eNB_id,subframe_rx);
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_DCI_DECODING, VCD_FUNCTION_OUT);
     //LOG_D(PHY,"[UE  %d][PUSCH] Frame %d subframe %d PHICH RX\n",phy_vars_ue->Mod_id,frame_rx,subframe_rx);
- 
+
     if (is_phich_subframe(&phy_vars_ue->lte_frame_parms,subframe_rx)) {
+      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RX_PHICH, VCD_FUNCTION_IN);
       rx_phich(phy_vars_ue,
 	       subframe_rx,eNB_id);
+      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RX_PHICH, VCD_FUNCTION_OUT);
     }
   }
 #ifdef PHY_ABSTRACTION
@@ -2318,6 +2320,9 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
   int CC_id = phy_vars_ue->CC_id;
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_IN);
+  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_SLOT_NUMBER_UE, (slot_rx + 1) % 20);
+  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER_UE, frame_rx);
+
   start_meas(&phy_vars_ue->phy_proc_rx);
 #ifdef DEBUG_PHY_PROC
   LOG_D(PHY,"[%s %d] Frame %d subframe %d: Doing phy_procedures_UE_RX(%d)\n", 
@@ -3426,8 +3431,6 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
   prach_resources_local.ra_PreambleIndex = 0;
 #endif
 
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_SLOT_NUMBER_UE, (slot_rx + 1) % 20);
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER_UE, frame_rx);
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_LTE,1);
 #ifdef EXMIMO

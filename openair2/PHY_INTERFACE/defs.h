@@ -63,7 +63,7 @@ do {                                                                            
 typedef struct
   {
     /// Pointer function that initializes L2
-    int (*macphy_init)(int eMBMS_active, uint8_t CBA_active,uint8_t HO_active);
+    int (*macphy_init)(int eMBMS_active, char *uecap_xer, uint8_t CBA_active,uint8_t HO_active);
 
     /// Pointer function that stops the low-level scheduler due an exit condition
     void (*macphy_exit)(const char *);

@@ -616,7 +616,7 @@ int lte_dl_channel_estimation(PHY_VARS_UE *phy_vars_ue,
     }
     
     
-#ifndef PERFECT_CE    
+    if (phy_vars_ue->perfect_ce == 0) {
     // Temporal Interpolation
     // printf("ch_offset %d\n",ch_offset);
 
@@ -691,7 +691,7 @@ int lte_dl_channel_estimation(PHY_VARS_UE *phy_vars_ue,
       }
     
     }
-#endif
+    }
   }
 
   void (*idft)(int16_t *,int16_t *, int);

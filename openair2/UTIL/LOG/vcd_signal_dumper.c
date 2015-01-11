@@ -152,6 +152,7 @@ const char* eurecomFunctionsNames[] = {
     "dlsch_decoding7",
     "rx_pdcch",
     "dci_decoding",  
+    "rx_phich",  
     "phy_ue_config_sib2", 
     "macxface_phy_config_sib1_eNB",
     "macxface_phy_config_sib2_eNB",

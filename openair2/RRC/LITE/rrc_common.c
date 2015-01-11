@@ -206,7 +206,7 @@ void rrc_config_buffer(SRB_INFO *Srb_info, uint8_t Lchan_type, uint8_t Role) {
 }
 
 /*------------------------------------------------------------------------------*/
-void openair_rrc_top_init(int eMBMS_active, uint8_t cba_group_active,uint8_t HO_active){
+void openair_rrc_top_init(int eMBMS_active, char *uecap_xer, uint8_t cba_group_active,uint8_t HO_active){
   /*-----------------------------------------------------------------------------*/
 
   module_id_t         module_id;
@@ -221,16 +221,11 @@ void openair_rrc_top_init(int eMBMS_active, uint8_t cba_group_active,uint8_t HO_
     LOG_D(RRC, "ALLOCATE %d Bytes for UE_RRC_INST @ %p\n", (unsigned int)(NB_UE_INST*sizeof(UE_RRC_INST)), UE_rrc_inst);
 
     // fill UE capability
-    UECap = fill_ue_capability ();
+    UECap = fill_ue_capability (uecap_xer);
     for (module_id = 0; module_id < NB_UE_INST; module_id++) {
       UE_rrc_inst[module_id].UECapability = UECap->sdu;
       UE_rrc_inst[module_id].UECapability_size = UECap->sdu_size;
     }
-    /*
-     do_UECapabilityEnquiry(0,
-     dummy_buffer,
-     0,
-     0);*/
 #ifdef Rel10
     LOG_I(RRC,"[UE] eMBMS active state is %d \n", eMBMS_active);
     for (module_id=0;module_id<NB_UE_INST;module_id++) {

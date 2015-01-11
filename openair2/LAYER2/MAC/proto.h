@@ -156,7 +156,7 @@ void chbch_phy_sync_success(module_id_t module_idP,frame_t frameP,uint8_t eNB_in
 
 void mrbch_phy_sync_failure(module_id_t module_idP, frame_t frameP,uint8_t free_eNB_index);
 
-int mac_top_init(int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active);
+int mac_top_init(int eMBMS_active, char *uecap_xer,uint8_t cba_group_active, uint8_t HO_active);
 
 char layer2_init_UE(module_id_t module_idP);
 
@@ -469,7 +469,7 @@ uint8_t *parse_ulsch_header(uint8_t *mac_header,
                        uint16_t tx_lenght);
 
 
-int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active);
+int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, char *uecap_xer, uint8_t cba_group_active, uint8_t HO_active);
 int mac_init(void);
 int add_new_ue(module_id_t Mod_id, int CC_id, rnti_t rnti,int harq_pid);
 int mac_remove_ue(module_id_t Mod_id, int UE_id,int frameP);

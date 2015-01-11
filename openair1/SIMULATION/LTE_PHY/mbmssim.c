@@ -60,7 +60,7 @@
 PHY_VARS_eNB *PHY_vars_eNB;
 PHY_VARS_UE *PHY_vars_UE;
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,uint8_t extended_prefix_flag,lte_frame_type_t frame_type, uint16_t Nid_cell,uint8_t tdd_config,uint8_t N_RB_DL,uint8_t osf) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,uint8_t extended_prefix_flag,lte_frame_type_t frame_type, uint16_t Nid_cell,uint8_t tdd_config,uint8_t N_RB_DL,uint8_t osf,uint32_t perfect_ce) {
 
   LTE_DL_FRAME_PARMS *lte_frame_parms;
 
@@ -121,7 +121,8 @@ void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmi
   phy_init_lte_ue(PHY_vars_UE,1,0);
   phy_init_lte_eNB(PHY_vars_eNB,0,0,0);
 
-  
+ 
+  PHY_vars_UE->perfect_ce = perfect_ce; 
   printf("Done lte_param_init\n");
 
 
@@ -174,6 +175,7 @@ int main(int argc, char **argv) {
   
   uint8_t N_RB_DL=25,osf=1;
   double BW=5.0;
+  uint32_t perfect_ce = 0;
 
   lte_frame_type_t frame_type = FDD; 
 
@@ -201,7 +203,7 @@ int main(int argc, char **argv) {
     rxdata[0] = (int *)malloc16(FRAME_LENGTH_BYTES);
     rxdata[1] = (int *)malloc16(FRAME_LENGTH_BYTES);
   */
-  while ((c = getopt (argc, argv, "ahA:Cp:n:s:S:t:x:y:z:N:F:R:O:dm:i:")) != -1)
+  while ((c = getopt (argc, argv, "ahA:Cp:n:s:S:t:x:y:z:N:F:R:O:dm:i:Y")) != -1)
     {
       switch (c)
 	{
@@ -266,6 +268,9 @@ int main(int argc, char **argv) {
 	case 'O':
 	  osf = atoi(optarg);
 	  break;
+        case 'Y':
+          perfect_ce = 1;
+          break;
 	default:
 	case 'h':
 	  printf("%s -h(elp) -p(subframe) -N cell_id -g channel_model -n n_frames -t Delayspread -s snr0 -S snr1 -i snr increment -z RXant \n",argv[0]);
@@ -309,7 +314,7 @@ int main(int argc, char **argv) {
   if (transmission_mode==2)
     n_tx=2;
 
-  lte_param_init(n_tx,n_rx,transmission_mode,extended_prefix_flag,frame_type,Nid_cell,tdd_config,N_RB_DL,osf);
+  lte_param_init(n_tx,n_rx,transmission_mode,extended_prefix_flag,frame_type,Nid_cell,tdd_config,N_RB_DL,osf,perfect_ce);
 
 
 

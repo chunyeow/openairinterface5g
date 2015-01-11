@@ -106,15 +106,15 @@ int ethernet_write_data(int Mod_id, openair0_timestamp timestamp, const void **b
   ((int16_t *)buff2)[0] = 1+(antenna_id<<1);
   ((int16_t *)buff2)[1] = nsamps;
   *((openair0_timestamp *)(buff2+(sizeof(int16_t)*2))) = timestamp;
-  printf("Timestamp TX sent : %d\n",timestamp);
+  //printf("Timestamp TX sent : %d\n",timestamp);
 
 //  printf("buffer head : %d %d %d %d \n",((int16_t *)buff2)[0],((int16_t *)buff2)[1],((int16_t *)buff2)[2],((int16_t *)buff2)[3]);
-  while(n_written < nsamps) {
+  while(n_written < (nsamps<<2)) {
     /* Send packet */
     if ((n_written += sendto(sockfd[Mod_id], 
 			     buff2,
 			     (nsamps<<2)+sizeof(openair0_timestamp)+(2*sizeof(int16_t)), 
-			     0, 
+			     MSG_DONTWAIT, 
 			     (struct sockaddr*)&dest_addr[Mod_id], 
 			     dest_addr_len[Mod_id])) < 0) {
       printf("Send failed for Mod_id %d\n",Mod_id);
@@ -137,16 +137,14 @@ int ethernet_read_data(int Mod_id,openair0_timestamp *timestamp,void **buff, int
   int ret;
   openair0_timestamp temp = *(openair0_timestamp*)(buff2);
   int16_t mesg[2];
-  char str[INET_ADDRSTRLEN];
 
   mesg[0] = 0+(antenna_id<<1);
   mesg[1] = nsamps;
 
-  inet_ntop(AF_INET, &(dest_addr[Mod_id].sin_addr), str, INET_ADDRSTRLEN);
-  // send command RX for nsamps samples
-    printf("requesting %d samples from (%s:%d)\n",nsamps,str,ntohs(dest_addr[Mod_id].sin_port));
 
-  sendto(sockfd[Mod_id],mesg,4,0,(struct sockaddr *)&dest_addr[Mod_id],dest_addr_len[Mod_id]);
+  // send command RX for nsamps samples
+
+  sendto(sockfd[Mod_id],mesg,4,MSG_DONTWAIT,(struct sockaddr *)&dest_addr[Mod_id],dest_addr_len[Mod_id]);
 
   bytes_received=0;
   block_cnt=0;
@@ -178,7 +176,7 @@ int ethernet_read_data(int Mod_id,openair0_timestamp *timestamp,void **buff, int
 
   //printf("buffer head : %x %x %x %x \n",((int32_t *)buff2)[0],((int32_t *)buff2)[1],((int32_t *)buff2)[2],((int32_t *)buff2)[3]);
   *timestamp =  *(openair0_timestamp *)(buff2);
-  printf("Received %d samples, timestamp = %d\n",bytes_received>>2,*(int32_t*)timestamp);
+//  printf("Received %d samples, timestamp = %d\n",bytes_received>>2,*(int32_t*)timestamp);
   *(openair0_timestamp *)(buff2) = temp;
   return nsamps;
   

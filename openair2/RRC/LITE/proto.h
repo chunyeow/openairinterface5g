@@ -39,7 +39,7 @@
 //main.c
 int rrc_init_global_param(void);
 int L3_xface_init(void);
-void openair_rrc_top_init(int eMBMS_active, uint8_t cba_group_active,uint8_t HO_enabled);
+void openair_rrc_top_init(int eMBMS_active, char *uecap_xer, uint8_t cba_group_active,uint8_t HO_enabled);
 char openair_rrc_lite_eNB_init(module_id_t module_idP);
 char openair_rrc_lite_ue_init(module_id_t module_idP,uint8_t CH_IDX);
 void rrc_config_buffer(SRB_INFO *srb_info, uint8_t Lchan_type, uint8_t Role);

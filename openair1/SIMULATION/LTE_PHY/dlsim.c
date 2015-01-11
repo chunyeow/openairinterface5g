@@ -73,7 +73,6 @@ extern unsigned char offset_mumimo_llr_drange_fix;
 
 
 //#define ABSTRACTION
-//#define PERFECT_CE
 
 /*
   #define RBmask0 0x00fc00fc
@@ -107,7 +106,7 @@ void handler(int sig) {
   exit(1);
 }
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,uint8_t extended_prefix_flag,uint8_t fdd_flag, uint16_t Nid_cell,uint8_t tdd_config,uint8_t N_RB_DL,uint8_t osf) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,uint8_t extended_prefix_flag,uint8_t fdd_flag, uint16_t Nid_cell,uint8_t tdd_config,uint8_t N_RB_DL,uint8_t osf,uint32_t perfect_ce) {
 
   LTE_DL_FRAME_PARMS *lte_frame_parms;
   int i;
@@ -186,6 +185,7 @@ void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmi
     ((PHY_vars_UE->lte_frame_parms).pdsch_config_common).p_b = 1;
   }
 
+  PHY_vars_UE->perfect_ce = perfect_ce;
 
   printf("Done lte_param_init\n");
 
@@ -344,6 +344,7 @@ int main(int argc, char **argv) {
   char channel_model_input[10]="I";
 
   int TB0_active = 1;
+  uint32_t perfect_ce = 0;
 
   LTE_DL_UE_HARQ_t *dlsch0_ue_harq;
   LTE_DL_eNB_HARQ_t *dlsch0_eNB_harq;
@@ -365,8 +366,9 @@ int main(int argc, char **argv) {
   n_frames = 1000;
   snr0 = 0;
   num_layers = 1;
+  perfect_ce = 0;
 
-  while ((c = getopt (argc, argv, "ahdpZDe:m:n:o:s:f:t:c:g:r:F:x:y:z:AM:N:I:i:O:R:S:C:T:b:u:v:w:B:PLl:")) != -1) {
+  while ((c = getopt (argc, argv, "ahdpZDe:m:n:o:s:f:t:c:g:r:F:x:y:z:AM:N:I:i:O:R:S:C:T:b:u:v:w:B:PLl:Y")) != -1) {
     switch (c)
       {
       case 'a':
@@ -564,6 +566,9 @@ int main(int argc, char **argv) {
       case 'Z':
 	dump_table=1;
 	break;
+      case 'Y':
+	perfect_ce=1;
+	break;
       case 'h':
       default:
 	printf("%s -h(elp) -a(wgn on) -d(ci decoding on) -p(extended prefix on) -m mcs1 -M mcs2 -n n_frames -s snr0 -x transmission mode (1,2,5,6) -y TXant -z RXant -I trch_file\n",argv[0]);
@@ -645,7 +650,7 @@ int main(int argc, char **argv) {
     printf("dual_stream_UE=%d\n", dual_stream_UE);
   }
 
-  lte_param_init(n_tx,n_rx,transmission_mode,extended_prefix_flag,fdd_flag,Nid_cell,tdd_config,N_RB_DL,osf);  
+  lte_param_init(n_tx,n_rx,transmission_mode,extended_prefix_flag,fdd_flag,Nid_cell,tdd_config,N_RB_DL,osf,perfect_ce);  
 
   eNB_id_i = PHY_vars_UE->n_connected_eNB;
   
@@ -2718,7 +2723,7 @@ int main(int argc, char **argv) {
 		       0,
 		       0);
 	      stop_meas(&PHY_vars_UE->ofdm_demod_stats);
-#ifdef PERFECT_CE
+              if (PHY_vars_UE->perfect_ce==1) {
 	      if (awgn_flag==0) {
 		// fill in perfect channel estimates
 		freq_channel(eNB2UE[round],PHY_vars_UE->lte_frame_parms.N_RB_DL,12*PHY_vars_UE->lte_frame_parms.N_RB_DL + 1);
@@ -2751,7 +2756,7 @@ int main(int argc, char **argv) {
 		      }
 		  }
 	      }
-#endif
+              }
  
 
 	      if ((Ns==((2*subframe))) && (l==0)) {

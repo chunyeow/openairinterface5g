@@ -253,19 +253,19 @@ check_install_freediamter(){
     
     echo "Downloading gnutls archive"
     
-    if [ -f gnutls-3.1.0.tar.xz ];  then
-	$SUDO rm -f gnutls-3.1.0.tar.xz
+    if [ -f gnutls-3.1.23.tar.xz ];  then
+	$SUDO rm -f gnutls-3.1.23.tar.xz
     fi
-    if [ -d gnutls-3.1.0/ ];  then
-	$SUDO rm -rf gnutls-3.1.0/
+    if [ -d gnutls-3.1.23/ ];  then
+	$SUDO rm -rf gnutls-3.1.23/
     fi
     
     test_uninstall_package libgnutls-dev
     
-    $SUDO wget ftp://ftp.gnutls.org/gcrypt/gnutls/v3.1/gnutls-3.1.0.tar.xz 
-    $SUDO tar -xf gnutls-3.1.0.tar.xz
+    $SUDO wget ftp://ftp.gnutls.org/gcrypt/gnutls/v3.1/gnutls-3.1.23.tar.xz 
+    $SUDO tar -xf gnutls-3.1.23.tar.xz
     echo "Uncompressing gnutls archive ($PWD)"
-    cd gnutls-3.1.0/
+    cd gnutls-3.1.23/
     $SUDO ./configure --prefix=/usr
     if [ $? -ne 0 ];   then
 	exit -1

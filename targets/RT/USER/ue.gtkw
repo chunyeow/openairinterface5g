@@ -1,22 +1,24 @@
 [*]
 [*] GTKWave Analyzer v3.3.58 (w)1999-2014 BSI
-[*] Tue Sep  9 07:03:39 2014
+[*] Sat Jan  3 21:45:58 2015
 [*]
 [dumpfile] "/tmp/openair_dump_UE.vcd"
-[dumpfile_mtime] "Tue Sep  9 06:37:26 2014"
-[dumpfile_size] 94912
-[savefile] "/homes/knopp/Devel/openair4G/trunk/targets/RT/USER/ue.gtkw"
-[timestart] 12883150000
+[dumpfile_mtime] "Sat Jan  3 21:45:33 2015"
+[dumpfile_size] 98393197
+[savefile] "/home/haswell/openair4G_knopp/targets/RT/USER/ue.gtkw"
+[timestart] 72755430000
 [size] 1221 600
-[pos] 90 3
-*-21.000000 12886782928 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] 251 123
+*-21.000000 72759034000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [sst_width] 224
 [signals_width] 262
 [sst_expanded] 1
 [sst_vpaned_height] 143
 @24
-variables.frame_number_UE[63:0]
 variables.hw_subframe[63:0]
+variables.frame_number_UE[63:0]
+@25
+variables.slot_number_UE[63:0]
 @28
 functions.phy_procedures_ue_rx
 functions.ue_slot_fep
@@ -25,7 +27,12 @@ functions.ue_rrc_measurements
 functions.ue_gain_control
 functions.ue_adjust_synch
 functions.lte_ue_pbch_procedures
-@29
 functions.lte_ue_pdcch_procedures
+functions.rx_pdcch
+functions.dci_decoding
+functions.phy_ue_ulsch_encoding
+functions.phy_ue_ulsch_modulation
+functions.phy_ue_ulsch_scrambling
+functions.phy_ue_config_sib2
 [pattern_trace] 1
 [pattern_trace] 0

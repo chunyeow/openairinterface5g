@@ -173,7 +173,7 @@ int slot_fep_mbsfn(PHY_VARS_UE *phy_vars_ue,
 // changed to invoke MBSFN channel estimation in symbols 2,6,10    
     if ((l==2)||(l==6)||(l==10)) {
     for (aa=0;aa<frame_parms->nb_antennas_tx;aa++) {
-#ifndef PERFECT_CE
+     if (phy_vars_ue->perfect_ce == 0) {
 #ifdef DEBUG_FEP
       msg("Channel estimation eNB %d, aatx %d, subframe %d, symbol %d\n",eNB_id,aa,subframe,l);
 #endif
@@ -201,7 +201,6 @@ int slot_fep_mbsfn(PHY_VARS_UE *phy_vars_ue,
 				  l,
 				  symbol); */
     //  } 
-#endif
 
       // do frequency offset estimation here!
       // use channel estimates from current symbol (=ch_t) and last symbol (ch_{t-1}) 
@@ -214,6 +213,7 @@ int slot_fep_mbsfn(PHY_VARS_UE *phy_vars_ue,
 			    frame_parms,
 			    l,
 			    &ue_common_vars->freq_offset); */
+    }
     }
   }
 #ifdef DEBUG_FEP

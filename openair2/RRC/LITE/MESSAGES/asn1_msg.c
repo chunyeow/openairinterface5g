@@ -356,7 +356,7 @@ uint8_t do_MIB(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint32_t frame, 
                                    (void*)&mib,
                                    buffer,
                                    100);
-  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
                enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
@@ -560,7 +560,7 @@ uint8_t do_SIB1(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer
                                    (void*)bcch_message,
                                    buffer,
                                    100);
-  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
                enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
@@ -1074,7 +1074,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
                                    (void*)bcch_message,
                                    buffer,
                                    900);
-  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
                enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
@@ -1164,7 +1164,7 @@ uint8_t do_RRCConnectionRequest(uint8_t Mod_id, uint8_t *buffer,uint8_t *rv) {
                                    (void*)&ul_ccch_msg,
                                    buffer,
                                    100);
-  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
                enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
@@ -1242,7 +1242,7 @@ uint8_t do_RRCConnectionSetupComplete(uint8_t Mod_id, uint8_t *buffer, const uin
                                    (void*)&ul_dcch_msg,
                                    buffer,
                                    100);
-  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
                enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
@@ -1296,7 +1296,7 @@ uint8_t do_RRCConnectionReconfigurationComplete(uint8_t Mod_id, uint8_t *buffer,
                                    (void*)&ul_dcch_msg,
                                    buffer,
                                    100);
-  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
                enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
@@ -1611,7 +1611,7 @@ uint8_t do_RRCConnectionSetup(uint8_t Mod_id,
                                    (void*)&dl_ccch_msg,
                                    buffer,
                                    100);
-  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
                enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
@@ -1678,7 +1678,7 @@ uint8_t do_SecurityModeCommand(uint8_t Mod_id,
                                    (void*)&dl_dcch_msg,
                                    buffer,
                                    100);
-  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
                enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
@@ -1745,7 +1745,7 @@ uint8_t do_UECapabilityEnquiry(uint8_t Mod_id,
                                    (void*)&dl_dcch_msg,
                                    buffer,
                                    100);
-  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
                enc_rval.failed_type->name, enc_rval.encoded);
 
   #if defined(ENABLE_ITTI)
@@ -1891,7 +1891,7 @@ uint16_t do_RRCConnectionReconfiguration(uint8_t                             Mod
                                    (void*)&dl_dcch_msg,
                                    buffer,
                                    RRC_BUF_SIZE); 
-  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
                enc_rval.failed_type->name, enc_rval.encoded);
 
 #ifdef XER_PRINT
@@ -2077,7 +2077,7 @@ uint8_t do_MBSFNAreaConfig(uint8_t Mod_id,
                                    (void*)mcch_message,
                                    buffer,
                                    100);
-  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
                enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
@@ -2202,7 +2202,7 @@ uint8_t do_MeasurementReport(uint8_t Mod_id, uint8_t *buffer,int measid,int phy_
 
 
 
-  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
                enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
@@ -2295,143 +2295,169 @@ uint8_t do_ULInformationTransfer(uint8_t **buffer, uint32_t pdu_length, uint8_t 
   return encoded;
 }
 
-OAI_UECapability_t *fill_ue_capability(void) {
+//OAI_UECapability_t *fill_ue_capability(void) {
+OAI_UECapability_t *fill_ue_capability(char *UE_EUTRA_Capability_xer_fname) {
   static OAI_UECapability_t UECapability; /* TODO declared static to allow returning this has an address should be allocated in a cleaner way. */
   SupportedBandEUTRA_t Bandlist[4];
   // BandInfoEUTRA_t BandInfo_meas[4];
   InterFreqBandInfo_t InterFreqBandInfo[4][4];
   BandInfoEUTRA_t BandInfoEUTRA[4];
 
-  UE_EUTRA_Capability_t *UE_EUTRA_Capability;
   asn_enc_rval_t enc_rval;
+  asn_dec_rval_t dec_rval;
+
   long maxNumberROHC_ContextSessions = PDCP_Parameters__maxNumberROHC_ContextSessions_cs16;
   int i;
 
-  Bandlist[0].bandEUTRA  = 33;  // 1900-1920 TDD
-  Bandlist[0].halfDuplex = 0;
-  Bandlist[1].bandEUTRA  = 38;  // 2570-2620 TDD 
+  UE_EUTRA_Capability_t *UE_EUTRA_Capability;
+  char UE_EUTRA_Capability_xer[8192];
+  size_t size; 
+  FILE *f;
 
-  Bandlist[1].halfDuplex = 0;
-  Bandlist[2].bandEUTRA  = 5;   // 824-849 , 869-894 FDD
-  Bandlist[2].halfDuplex = 0;
-  Bandlist[3].bandEUTRA  = 7;   // 2500-2570, 2620-2690 FDD
-  Bandlist[3].halfDuplex = 0;
-
-  memset((void*)InterFreqBandInfo, 0, sizeof(InterFreqBandInfo));
-  memset((void*)BandInfoEUTRA, 0, sizeof(BandInfoEUTRA));
-
-  InterFreqBandInfo[0][0].interFreqNeedForGaps = 0;
-  InterFreqBandInfo[0][1].interFreqNeedForGaps = 1;
-  InterFreqBandInfo[0][2].interFreqNeedForGaps = 1;
-  InterFreqBandInfo[0][3].interFreqNeedForGaps = 1;
-  InterFreqBandInfo[1][0].interFreqNeedForGaps = 1;
-  InterFreqBandInfo[1][1].interFreqNeedForGaps = 0;
-  InterFreqBandInfo[1][2].interFreqNeedForGaps = 1;
-  InterFreqBandInfo[1][3].interFreqNeedForGaps = 1;
-  InterFreqBandInfo[2][0].interFreqNeedForGaps = 1;
-  InterFreqBandInfo[2][1].interFreqNeedForGaps = 1;
-  InterFreqBandInfo[2][2].interFreqNeedForGaps = 0;
-  InterFreqBandInfo[2][3].interFreqNeedForGaps = 1;
-  InterFreqBandInfo[3][0].interFreqNeedForGaps = 1;
-  InterFreqBandInfo[3][1].interFreqNeedForGaps = 1;
-  InterFreqBandInfo[3][2].interFreqNeedForGaps = 1;
-  InterFreqBandInfo[3][3].interFreqNeedForGaps = 0;
-
-  LOG_I(RRC,"Allocating %d bytes for UE_EUTRA_Capability\n",sizeof(*UE_EUTRA_Capability));
-
+  LOG_I(RRC,"Allocating %u bytes for UE_EUTRA_Capability\n",sizeof(*UE_EUTRA_Capability));
+  
   UE_EUTRA_Capability = CALLOC(1, sizeof(*UE_EUTRA_Capability));
 
-  UE_EUTRA_Capability->accessStratumRelease = 0;//AccessStratumRelease_rel8;
-  UE_EUTRA_Capability->ue_Category          = 4;
-  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0001=0;
-  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0002=0;
-  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0003=0;
-  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0004=0;
-  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0006=0;
-  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0101=0;
-  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0102=0;
-  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0103=0;
-  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0104=0;
+  assert(UE_EUTRA_Capability);
 
-  UE_EUTRA_Capability->pdcp_Parameters.maxNumberROHC_ContextSessions = &maxNumberROHC_ContextSessions;
+  if (!UE_EUTRA_Capability_xer_fname)  {
+    Bandlist[0].bandEUTRA  = 33;  // 1900-1920 TDD
+    Bandlist[0].halfDuplex = 0;
+    Bandlist[1].bandEUTRA  = 38;  // 2570-2620 TDD 
+    
+    Bandlist[1].halfDuplex = 0;
+    Bandlist[2].bandEUTRA  = 5;   // 824-849 , 869-894 FDD
+    Bandlist[2].halfDuplex = 0;
+    Bandlist[3].bandEUTRA  = 7;   // 2500-2570, 2620-2690 FDD
+    Bandlist[3].halfDuplex = 0;
+    
+    memset((void*)InterFreqBandInfo, 0, sizeof(InterFreqBandInfo));
+    memset((void*)BandInfoEUTRA, 0, sizeof(BandInfoEUTRA));
+    
+    InterFreqBandInfo[0][0].interFreqNeedForGaps = 0;
+    InterFreqBandInfo[0][1].interFreqNeedForGaps = 1;
+    InterFreqBandInfo[0][2].interFreqNeedForGaps = 1;
+    InterFreqBandInfo[0][3].interFreqNeedForGaps = 1;
+    InterFreqBandInfo[1][0].interFreqNeedForGaps = 1;
+    InterFreqBandInfo[1][1].interFreqNeedForGaps = 0;
+    InterFreqBandInfo[1][2].interFreqNeedForGaps = 1;
+    InterFreqBandInfo[1][3].interFreqNeedForGaps = 1;
+    InterFreqBandInfo[2][0].interFreqNeedForGaps = 1;
+    InterFreqBandInfo[2][1].interFreqNeedForGaps = 1;
+    InterFreqBandInfo[2][2].interFreqNeedForGaps = 0;
+    InterFreqBandInfo[2][3].interFreqNeedForGaps = 1;
+    InterFreqBandInfo[3][0].interFreqNeedForGaps = 1;
+    InterFreqBandInfo[3][1].interFreqNeedForGaps = 1;
+    InterFreqBandInfo[3][2].interFreqNeedForGaps = 1;
+    InterFreqBandInfo[3][3].interFreqNeedForGaps = 0;
+    
+    
+    UE_EUTRA_Capability->accessStratumRelease = 0;//AccessStratumRelease_rel8;
+    UE_EUTRA_Capability->ue_Category          = 4;
+    UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0001=0;
+    UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0002=0;
+    UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0003=0;
+    UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0004=0;
+    UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0006=0;
+    UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0101=0;
+    UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0102=0;
+    UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0103=0;
+    UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0104=0;
+    
+    UE_EUTRA_Capability->pdcp_Parameters.maxNumberROHC_ContextSessions = &maxNumberROHC_ContextSessions;
+    
+    UE_EUTRA_Capability->phyLayerParameters.ue_TxAntennaSelectionSupported = 0;
+    UE_EUTRA_Capability->phyLayerParameters.ue_SpecificRefSigsSupported    = 0;
+    UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list.count                          = 0;
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list,(void*)&Bandlist[0]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list,(void*)&Bandlist[1]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list,(void*)&Bandlist[2]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list,(void*)&Bandlist[3]);
+    
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list,(void*)&BandInfoEUTRA[0]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list,(void*)&BandInfoEUTRA[1]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list,(void*)&BandInfoEUTRA[2]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list,(void*)&BandInfoEUTRA[3]);
+    
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[0]->interFreqBandList.list,(void*)&InterFreqBandInfo[0][0]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[0]->interFreqBandList.list,(void*)&InterFreqBandInfo[0][1]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[0]->interFreqBandList.list,(void*)&InterFreqBandInfo[0][2]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[0]->interFreqBandList.list,(void*)&InterFreqBandInfo[0][3]);
+    
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[1]->interFreqBandList.list,(void*)&InterFreqBandInfo[1][0]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[1]->interFreqBandList.list,(void*)&InterFreqBandInfo[1][1]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[1]->interFreqBandList.list,(void*)&InterFreqBandInfo[1][2]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[1]->interFreqBandList.list,(void*)&InterFreqBandInfo[1][3]);
+    
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[2]->interFreqBandList.list,(void*)&InterFreqBandInfo[2][0]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[2]->interFreqBandList.list,(void*)&InterFreqBandInfo[2][1]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[2]->interFreqBandList.list,(void*)&InterFreqBandInfo[2][2]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[2]->interFreqBandList.list,(void*)&InterFreqBandInfo[2][3]);
+    
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[3]->interFreqBandList.list,(void*)&InterFreqBandInfo[3][0]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[3]->interFreqBandList.list,(void*)&InterFreqBandInfo[3][1]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[3]->interFreqBandList.list,(void*)&InterFreqBandInfo[3][2]);
+    ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[3]->interFreqBandList.list,(void*)&InterFreqBandInfo[3][3]);
+    
+    // UE_EUTRA_Capability->measParameters.bandListEUTRA.list.count                         = 0;  // no measurements on other bands
+    // UE_EUTRA_Capability->featureGroupIndicators  // null
+    // UE_EUTRA_Capability->interRAT_Parameters     // null
+  }
 
-  UE_EUTRA_Capability->phyLayerParameters.ue_TxAntennaSelectionSupported = 0;
-  UE_EUTRA_Capability->phyLayerParameters.ue_SpecificRefSigsSupported    = 0;
-  UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list.count                          = 0;
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list,(void*)&Bandlist[0]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list,(void*)&Bandlist[1]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list,(void*)&Bandlist[2]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list,(void*)&Bandlist[3]);
+  else {
+   
+    f = fopen(UE_EUTRA_Capability_xer_fname, "r"); 
+    assert(f); 
+    size = fread(UE_EUTRA_Capability_xer, 1, sizeof UE_EUTRA_Capability_xer, f); 
+    if (size == 0 || size == sizeof UE_EUTRA_Capability_xer) { 
+       LOG_E(RRC,"UE Capabilities XER file %s is too large\n", UE_EUTRA_Capability_xer_fname); 
+       return(NULL);      
+    }
+ 
+    dec_rval = xer_decode(0, &asn_DEF_UE_EUTRA_Capability, (void*)UE_EUTRA_Capability, UE_EUTRA_Capability_xer, size); 
+    assert(dec_rval.code == RC_OK);
+  }
 
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list,(void*)&BandInfoEUTRA[0]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list,(void*)&BandInfoEUTRA[1]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list,(void*)&BandInfoEUTRA[2]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list,(void*)&BandInfoEUTRA[3]);
-
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[0]->interFreqBandList.list,(void*)&InterFreqBandInfo[0][0]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[0]->interFreqBandList.list,(void*)&InterFreqBandInfo[0][1]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[0]->interFreqBandList.list,(void*)&InterFreqBandInfo[0][2]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[0]->interFreqBandList.list,(void*)&InterFreqBandInfo[0][3]);
-
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[1]->interFreqBandList.list,(void*)&InterFreqBandInfo[1][0]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[1]->interFreqBandList.list,(void*)&InterFreqBandInfo[1][1]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[1]->interFreqBandList.list,(void*)&InterFreqBandInfo[1][2]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[1]->interFreqBandList.list,(void*)&InterFreqBandInfo[1][3]);
-
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[2]->interFreqBandList.list,(void*)&InterFreqBandInfo[2][0]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[2]->interFreqBandList.list,(void*)&InterFreqBandInfo[2][1]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[2]->interFreqBandList.list,(void*)&InterFreqBandInfo[2][2]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[2]->interFreqBandList.list,(void*)&InterFreqBandInfo[2][3]);
-
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[3]->interFreqBandList.list,(void*)&InterFreqBandInfo[3][0]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[3]->interFreqBandList.list,(void*)&InterFreqBandInfo[3][1]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[3]->interFreqBandList.list,(void*)&InterFreqBandInfo[3][2]);
-  ASN_SEQUENCE_ADD(&UE_EUTRA_Capability->measParameters.bandListEUTRA.list.array[3]->interFreqBandList.list,(void*)&InterFreqBandInfo[3][3]);
-
-  // UE_EUTRA_Capability->measParameters.bandListEUTRA.list.count                         = 0;  // no measurements on other bands
-  // UE_EUTRA_Capability->featureGroupIndicators  // null
-  // UE_EUTRA_Capability->interRAT_Parameters     // null
-  
   UECapability.UE_EUTRA_Capability = UE_EUTRA_Capability;
 #ifdef XER_PRINT
   xer_fprint(stdout,&asn_DEF_UE_EUTRA_Capability,(void *)UE_EUTRA_Capability);
 #endif
   enc_rval = uper_encode_to_buffer(&asn_DEF_UE_EUTRA_Capability,
-                                   (void*)UE_EUTRA_Capability,
-                                   &UECapability.sdu[0],
-                                   MAX_UE_CAPABILITY_SIZE);
-  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
-               enc_rval.failed_type->name, enc_rval.encoded);
-
+				   (void*)UE_EUTRA_Capability,
+				   &UECapability.sdu[0],
+				   MAX_UE_CAPABILITY_SIZE);
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
+	       enc_rval.failed_type->name, enc_rval.encoded);
+  
 #if defined(ENABLE_ITTI)
 # if defined(DISABLE_XER_SPRINT)
   {
     MessageDef *msg_p;
-
+    
     msg_p = itti_alloc_new_message (TASK_RRC_UE, RRC_UE_EUTRA_CAPABILITY);
     memcpy (&msg_p->ittiMsg, (void *) UE_EUTRA_Capability, sizeof(RrcUeEutraCapability));
-
+    
     itti_send_msg_to_task (TASK_UNKNOWN, NB_eNB_INST, msg_p);
   }
 # else
   {
     char        message_string[10000];
     size_t      message_string_size;
-
+    
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UE_EUTRA_Capability, (void *)UE_EUTRA_Capability)) > 0)
-    {
-      MessageDef *msg_p;
-
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, RRC_UE_EUTRA_CAPABILITY, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_ue_eutra_capability.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_ue_eutra_capability.text, message_string, message_string_size);
-
-      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, msg_p);
-    }
+      {
+	MessageDef *msg_p;
+	
+	msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, RRC_UE_EUTRA_CAPABILITY, message_string_size + sizeof (IttiMsgText));
+	msg_p->ittiMsg.rrc_ue_eutra_capability.size = message_string_size;
+	memcpy(&msg_p->ittiMsg.rrc_ue_eutra_capability.text, message_string, message_string_size);
+	
+	itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, msg_p);
+      }
   }
 # endif
 #endif
-
+  
   UECapability.sdu_size = (enc_rval.encoded + 7) / 8;
   LOG_I(PHY, "[RRC]UE Capability encoded, %d bytes (%d bits)\n",
         UECapability.sdu_size, enc_rval.encoded + 7);

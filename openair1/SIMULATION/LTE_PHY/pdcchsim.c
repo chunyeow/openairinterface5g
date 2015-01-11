@@ -59,7 +59,7 @@ PHY_VARS_UE *PHY_vars_UE;
 #define CCCH_RB_ALLOC computeRIV(PHY_vars_eNB->lte_frame_parms.N_RB_UL,0,2)
 #define DLSCH_RB_ALLOC 0x1fbf // igore DC component,RB13
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,uint16_t Nid_cell,uint8_t tdd_config,uint8_t N_RB_DL,lte_frame_type_t frame_type,uint8_t osf) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,uint16_t Nid_cell,uint8_t tdd_config,uint8_t N_RB_DL,lte_frame_type_t frame_type,uint8_t osf,uint32_t perfect_ce) {
 
   unsigned int i;
   LTE_DL_FRAME_PARMS *lte_frame_parms;
@@ -135,6 +135,7 @@ void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmi
   PHY_vars_UE->PHY_measurements.n_adj_cells=2;
   PHY_vars_UE->PHY_measurements.adj_cell_id[0] = Nid_cell+1;
   PHY_vars_UE->PHY_measurements.adj_cell_id[1] = Nid_cell+2;
+  PHY_vars_UE->perfect_ce = perfect_ce;
   for (i=0;i<3;i++)
     lte_gold(lte_frame_parms,PHY_vars_UE->lte_gold_table[i],Nid_cell+i);    
   
@@ -548,10 +549,9 @@ int main(int argc, char **argv) {
   int re_offset;
   uint32_t *txptr; 
   int aarx;
-#ifdef PERFECT_CE
   int k;
-#endif
   double BW=5.0;
+  uint32_t perfect_ce = 0;
 
   number_of_cards = 1;
   openair_daq_vars.rx_rf_mode = 1;
@@ -565,7 +565,7 @@ int main(int argc, char **argv) {
     rxdata[0] = (int *)malloc16(FRAME_LENGTH_BYTES);
     rxdata[1] = (int *)malloc16(FRAME_LENGTH_BYTES);
   */
-  while ((c = getopt (argc, argv, "hapFg:R:c:n:s:x:y:z:L:M:N:I:f:i:S:P:")) != -1) {
+  while ((c = getopt (argc, argv, "hapFg:R:c:n:s:x:y:z:L:M:N:I:f:i:S:P:Y")) != -1) {
     switch (c)
       {
       case 'a':
@@ -699,6 +699,9 @@ int main(int argc, char **argv) {
       case 'P':
 	num_phich_interf=atoi(optarg);
 	break;
+      case 'Y':
+        perfect_ce = 1;
+        break;
       case 'h':  
 	printf("%s -h(elp) -a(wgn on) -c tdd_config -n n_frames -r RiceanFactor -s snr0 -t Delayspread -x transmission mode (1,2,6) -y TXant -z RXant -L AggregLevelUEspec -M AggregLevelCommonDCI -N DCIFormat\n\n",argv[0]);
 	printf("-h This message\n");
@@ -757,7 +760,8 @@ int main(int argc, char **argv) {
 		 Nid_cell,
 		 tdd_config,
 		 N_RB_DL,frame_type,
-		 osf);
+		 osf,
+                 perfect_ce);
   
 #ifdef XFORMS
   fl_initialize (&argc, argv, NULL, 0, 0);
@@ -1131,7 +1135,7 @@ int main(int argc, char **argv) {
 	       0,
 	       0);
         
-#ifdef PERFECT_CE
+              if (PHY_vars_UE->perfect_ce == 1) {
 	      if (awgn_flag==0) {
 		// fill in perfect channel estimates
 		freq_channel(eNB2UE,PHY_vars_UE->lte_frame_parms.N_RB_DL,12*PHY_vars_UE->lte_frame_parms.N_RB_DL + 1);
@@ -1164,8 +1168,7 @@ int main(int argc, char **argv) {
 		      }
 		  }
 	      }
-#endif
-
+              }
 
       if (l==((PHY_vars_eNB->lte_frame_parms.Ncp==0)?4:3)) {
           

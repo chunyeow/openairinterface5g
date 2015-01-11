@@ -567,7 +567,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
   uint16_t                TBS,i;
   int32_t                buffer_occupancy=0;
   uint32_t                cqi_req,cshift,ndi,mcs,rballoc,tpc;
-  int32_t                 normalized_rx_power, target_rx_power=-75;
+  int32_t                 normalized_rx_power, target_rx_power=-90;
   static int32_t          tpc_accumulated=0;
 
   int n,CC_id;
