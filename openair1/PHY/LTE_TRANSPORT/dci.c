@@ -1934,12 +1934,13 @@ uint8_t generate_dci_top(uint8_t num_ue_spec_dci,
 	LOG_I(PHY,"Generating common DCI %d/%d (nCCE %d) of length %d, aggregation %d (%x)\n",i,num_common_dci,dci_alloc[i].nCCE,dci_alloc[i].dci_length,1<<dci_alloc[i].L,*(unsigned int*)dci_alloc[i].dci_pdu);
 	dump_dci(frame_parms,&dci_alloc[i]);
 #endif
-
-	e_ptr = generate_dci0(dci_alloc[i].dci_pdu,
-			      e+(72*dci_alloc[i].nCCE),
-			      dci_alloc[i].dci_length,
-			      dci_alloc[i].L,
-			      dci_alloc[i].rnti);    
+	if (dci_alloc[i].nCCE>=0) {
+	  e_ptr = generate_dci0(dci_alloc[i].dci_pdu,
+				e+(72*dci_alloc[i].nCCE),
+				dci_alloc[i].dci_length,
+				dci_alloc[i].L,
+				dci_alloc[i].rnti);    
+	}
       }
     }
     for (;i<num_ue_spec_dci + num_common_dci;i++) {
@@ -1950,12 +1951,13 @@ uint8_t generate_dci_top(uint8_t num_ue_spec_dci,
 	LOG_I(PHY," Generating UE (rnti %x) specific DCI %d of length %d, aggregation %d, format %d (%x)\n",dci_alloc[i].rnti,i,dci_alloc[i].dci_length,1<<dci_alloc[i].L,dci_alloc[i].format,dci_alloc[i].dci_pdu);
 	dump_dci(frame_parms,&dci_alloc[i]);
 #endif
-
-	e_ptr = generate_dci0(dci_alloc[i].dci_pdu,
-			      e+(72*dci_alloc[i].nCCE),
-			      dci_alloc[i].dci_length,
-			      dci_alloc[i].L,
-			      dci_alloc[i].rnti);        
+	if (dci_alloc[i].nCCE >= 0) {
+	  e_ptr = generate_dci0(dci_alloc[i].dci_pdu,
+				e+(72*dci_alloc[i].nCCE),
+				dci_alloc[i].dci_length,
+				dci_alloc[i].L,
+				dci_alloc[i].rnti);        
+	}
       }
     }
   }

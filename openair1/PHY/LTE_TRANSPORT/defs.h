@@ -700,7 +700,7 @@ typedef struct {
   /// Aggregation level 
   uint8_t L;
   /// Position of first CCE of the dci
-  unsigned int nCCE;
+  int nCCE;
   /// flag to indicate that this is a RA response
   boolean_t ra_flag;
   /// rnti

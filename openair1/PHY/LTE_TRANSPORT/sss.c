@@ -70,20 +70,12 @@ int generate_sss(mod_sym_t **txdataF,
    
   for (i=0;i<62;i++) {
     for (aa=0;aa<frame_parms->nb_antennas_tx;aa++) {
-      //aa=0;
-      
+       
       ((int16_t*)txdataF[aa])[2*(slot_offset*Nsymb/2*frame_parms->ofdm_symbol_size +
 			       symbol*frame_parms->ofdm_symbol_size + k)] = 
-	(amp * d[i]); 
+	(a * d[i]); 
       ((int16_t*)txdataF[aa])[2*(slot_offset*Nsymb/2*frame_parms->ofdm_symbol_size +
 			       symbol*frame_parms->ofdm_symbol_size + k)+1] = 0;
-      /*
-      if (aa==0)
-	printf("sss (slot %d, symbol %d): txdataF[%d] => (%d,%d)\n",slot_offset,symbol,
-	       slot_offset*Nsymb/2*frame_parms->ofdm_symbol_size +
-	       symbol*frame_parms->ofdm_symbol_size + k,
-	       (amp * d[i]),0);
-      */
     }
     k+=1;
     if (k >= frame_parms->ofdm_symbol_size) {

@@ -157,10 +157,11 @@ int allocate_REs_in_RB(LTE_DL_FRAME_PARMS *frame_parms,
   uint8_t mod_order0      = get_Qm(dlsch0_harq->mcs);
 
 
-  uint8_t *x1;
-  int Nlayers1;
-  int first_layer1;
-  uint8_t mod_order1;
+  uint8_t *x1=NULL;
+  uint8_t mod_order1=2;
+  // Fill these in later for TM8-10
+  //  int Nlayers1;
+  //  int first_layer1;
 
 
   int use2ndpilots = (frame_parms->mode1_flag==1)?1:0;
@@ -196,8 +197,9 @@ int allocate_REs_in_RB(LTE_DL_FRAME_PARMS *frame_parms,
 
   if (dlsch1_harq) {
     x1             = dlsch1_harq->e;
-    Nlayers1       = dlsch1_harq->Nlayers; 
-    first_layer1   = dlsch1_harq->first_layer;
+    // Fill these in later for TM8-10
+    //    Nlayers1       = dlsch1_harq->Nlayers; 
+    //    first_layer1   = dlsch1_harq->first_layer;
     mod_order1     = get_Qm(dlsch1_harq->mcs);
 
   }
