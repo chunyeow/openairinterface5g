@@ -53,12 +53,6 @@
 
 #include "MAC_INTERFACE/extern.h"
 
-#ifdef CBMIMO1
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/cbmimo1_device.h"
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/extern.h"
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/defs.h"
-#endif // CBMIMO1
-
 #include "UTIL/LOG/vcd_signal_dumper.h"
 
 RTIME time0,time1;
@@ -90,22 +84,21 @@ extern pthread_cond_t dlsch_cond[8];
 static void * rx_pdsch_thread(void *param) {
 
   //unsigned long cpuid;
-  uint8_t rx_pdsch_thread_index = 0;
   uint8_t dlsch_thread_index = 0;
-  uint8_t pilot1,pilot2,pilot3,harq_pid,subframe;
+  uint8_t pilot2,harq_pid,subframe;
   //  uint8_t last_slot;
 
   uint8_t dual_stream_UE = 0;
   uint8_t i_mod = 0;
 
-  RTIME time_in,time_out;
+
 #ifdef RTAI
   RT_TASK *task;
 #endif
 
   int m,eNB_id = 0;
   int eNB_id_i = 1;
-  PHY_VARS_UE *UE = PHY_vars_UE_g[0];
+  PHY_VARS_UE *UE = PHY_vars_UE_g[0][0];
 
 #ifdef RTAI
   task = rt_task_init_schmod(nam2num("RX_PDSCH_THREAD"), 0, 0, 0, SCHED_FIFO, 0xF);
@@ -128,15 +121,11 @@ static void * rx_pdsch_thread(void *param) {
   rt_make_hard_real_time();
 #endif
 
-  if (UE->lte_frame_parms.Ncp == 0) {  // normal prefix
-    pilot1 = 4;
+  if (UE->lte_frame_parms.Ncp == NORMAL) {  // normal prefix
     pilot2 = 7;
-    pilot3 = 11;
   }
   else {  // extended prefix
-    pilot1 = 3;
     pilot2 = 6;
-    pilot3 = 9;
   }
 
 
@@ -190,7 +179,6 @@ static void * rx_pdsch_thread(void *param) {
 
     LOG_D(PHY,"[SCHED][RX_PDSCH] Frame %d, slot %d: Calling rx_pdsch_decoding with harq_pid %d\n",UE->frame_rx,UE->slot_rx,harq_pid);
 
-    time_in = rt_get_time_ns();
 
     // Check if we are in even or odd slot
     if (UE->slot_rx%2) { // odd slots
@@ -256,7 +244,6 @@ static void * rx_pdsch_thread(void *param) {
         }
     }    
     
-    time_out = rt_get_time_ns();
     
     if (pthread_mutex_lock(&rx_pdsch_mutex) != 0) {
         msg("[openair][SCHED][RX_PDSCH] error locking mutex.\n");

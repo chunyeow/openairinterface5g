@@ -95,10 +95,10 @@ static void * dlsch_thread(void *param) {
 
   //unsigned long cpuid;
   unsigned char dlsch_thread_index = *((unsigned char *)param);
-  unsigned int ret;
+  unsigned int ret=0;
   uint8_t harq_pid;
 
-  RTIME time_in,time_out;
+
 #ifdef RTAI
   RT_TASK *task;
   char task_name[8];
@@ -159,7 +159,7 @@ static void * dlsch_thread(void *param) {
     
     LOG_I(PHY,"[SCHED][DLSCH] Frame %d: Calling dlsch_decoding with dlsch_thread_index = %d\n",phy_vars_ue->frame_rx,dlsch_thread_index);
 
-    time_in = rt_get_time_ns();
+
     
     if (phy_vars_ue->frame_rx < phy_vars_ue->dlsch_errors[eNB_id]) {
         phy_vars_ue->dlsch_errors[eNB_id]=0;
@@ -244,7 +244,6 @@ static void * dlsch_thread(void *param) {
     }
     */
 
-    time_out = rt_get_time_ns();
 
 #ifdef DEBUG_PHY
     LOG_I(PHY,"[UE  %d][PDSCH %x/%d] Frame %d subframe %d: PDSCH/DLSCH decoding iter %d (mcs %d, rv %d, TBS %d)\n",
