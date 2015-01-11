@@ -139,7 +139,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         diag = 'check the compilation errors for dlsim in $OPENAIR1_DIR/SIMULATION/LTE_PHY'
         oai.send('make clean;')
         oai.send('rm -f ./dlsim.rel8.'+host)
-        oai.send_expect_false('make dlsim -j4' + tee, makerr1,  1500)
+        oai.send_expect_false('make dlsim -j4 PERFECT_CE=1' + tee, makerr1,  1500)
         oai.send('cp ./dlsim ./dlsim.rel8.'+host)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
