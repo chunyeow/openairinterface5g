@@ -5126,7 +5126,7 @@ uint32_t fill_subband_cqi(PHY_MEASUREMENTS *meas,uint8_t eNB_id,uint8_t trans_mo
   return(cqivect);
 }
 
-void fill_CQI(LTE_UE_ULSCH_t *ulsch,PHY_MEASUREMENTS *meas,uint8_t eNB_id,int N_RB_DL,uint16_t rnti, uint8_t trans_mode, double sinr_eff) {
+void fill_CQI(LTE_UE_ULSCH_t *ulsch,PHY_MEASUREMENTS *meas,uint8_t eNB_id,uint8_t harq_pid,int N_RB_DL,uint16_t rnti, uint8_t trans_mode, double sinr_eff) {
   
   //  msg("[PHY][UE] Filling CQI for eNB %d, meas->wideband_cqi_tot[%d] %d\n",
   //      eNB_id,eNB_id,meas->wideband_cqi_tot[eNB_id]);
@@ -5141,7 +5141,7 @@ void fill_CQI(LTE_UE_ULSCH_t *ulsch,PHY_MEASUREMENTS *meas,uint8_t eNB_id,int N_
 
 
 
-  //LOG_I(PHY,"Filling CQI %f for eNB %d\n",sinr_tmp,eNB_id);
+  //LOG_I(PHY,"[UE][UCI] Filling CQI format %d for eNB %d N_RB_DL %d\n",uci_format,eNB_id,N_RB_DL);
 
   switch (N_RB_DL) {
 
@@ -5175,9 +5175,9 @@ void fill_CQI(LTE_UE_ULSCH_t *ulsch,PHY_MEASUREMENTS *meas,uint8_t eNB_id,int N_
       break;
     case HLC_subband_cqi_mcs_CBA:
       // this is the cba mcs uci for cba transmission 
-      ((HLC_subband_cqi_mcs_CBA_1_5MHz *)o)->mcs     = 2; //fixme
+      ((HLC_subband_cqi_mcs_CBA_1_5MHz *)o)->mcs     = ulsch->harq_processes[harq_pid]->mcs;
       ((HLC_subband_cqi_mcs_CBA_1_5MHz *)o)->crnti  = rnti;
-      LOG_D(PHY,"fill uci for cba rnti %x, mcs %d \n", rnti, 2);
+      LOG_D(PHY,"fill uci for cba rnti %x, mcs %d \n", rnti, ulsch->harq_processes[harq_pid]->mcs);
       break;
     case ue_selected:
       LOG_E(PHY,"fill_CQI ue_selected CQI not supported yet!!!\n");
@@ -5220,9 +5220,9 @@ void fill_CQI(LTE_UE_ULSCH_t *ulsch,PHY_MEASUREMENTS *meas,uint8_t eNB_id,int N_
       break;
     case HLC_subband_cqi_mcs_CBA:
       // this is the cba mcs uci for cba transmission 
-      ((HLC_subband_cqi_mcs_CBA_5MHz *)o)->mcs     = 2; //fixme
+      ((HLC_subband_cqi_mcs_CBA_5MHz *)o)->mcs     = ulsch->harq_processes[harq_pid]->mcs;
       ((HLC_subband_cqi_mcs_CBA_5MHz *)o)->crnti  = rnti;
-      LOG_D(PHY,"fill uci for cba rnti %x, mcs %d \n", rnti, 2);
+      LOG_N(PHY,"fill uci for cba rnti %x, mcs %d \n", rnti, ulsch->harq_processes[harq_pid]->mcs);
       break;
     case ue_selected:
       LOG_E(PHY,"fill_CQI ue_selected CQI not supported yet!!!\n");
@@ -5265,9 +5265,9 @@ void fill_CQI(LTE_UE_ULSCH_t *ulsch,PHY_MEASUREMENTS *meas,uint8_t eNB_id,int N_
       break;
     case HLC_subband_cqi_mcs_CBA:
       // this is the cba mcs uci for cba transmission 
-      ((HLC_subband_cqi_mcs_CBA_10MHz *)o)->mcs     = 2; //fixme
+      ((HLC_subband_cqi_mcs_CBA_10MHz *)o)->mcs     = ulsch->harq_processes[harq_pid]->mcs; 
       ((HLC_subband_cqi_mcs_CBA_10MHz *)o)->crnti  = rnti;
-      LOG_D(PHY,"fill uci for cba rnti %x, mcs %d \n", rnti, 2);
+      LOG_N(PHY,"fill uci for cba rnti %x, mcs %d \n", rnti, ulsch->harq_processes[harq_pid]->mcs);
       break;
     case ue_selected:
       LOG_E(PHY,"fill_CQI ue_selected CQI not supported yet!!!\n");
@@ -5310,9 +5310,9 @@ void fill_CQI(LTE_UE_ULSCH_t *ulsch,PHY_MEASUREMENTS *meas,uint8_t eNB_id,int N_
       break;
     case HLC_subband_cqi_mcs_CBA:
       // this is the cba mcs uci for cba transmission 
-      ((HLC_subband_cqi_mcs_CBA_20MHz *)o)->mcs     = 2; //fixme
+      ((HLC_subband_cqi_mcs_CBA_20MHz *)o)->mcs     = ulsch->harq_processes[harq_pid]->mcs; 
       ((HLC_subband_cqi_mcs_CBA_20MHz *)o)->crnti  = rnti;
-      LOG_D(PHY,"fill uci for cba rnti %x, mcs %d \n", rnti, 2);
+      LOG_N(PHY,"fill uci for cba rnti %x, mcs %d \n", rnti, ulsch->harq_processes[harq_pid]->mcs);
       break;
     case ue_selected:
       LOG_E(PHY,"fill_CQI ue_selected CQI not supported yet!!!\n");
@@ -5526,7 +5526,7 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
 
     // indicate that this process is to be serviced in subframe n+4
     if ((rnti >= cba_rnti) && (rnti < p_rnti))
-      ulsch->harq_processes[harq_pid]->subframe_cba_scheduling_flag = 1;
+      ulsch->harq_processes[harq_pid]->subframe_cba_scheduling_flag = 1; //+=1 this indicates the number of dci / cba group: not supported in the data struct
     else 
       ulsch->harq_processes[harq_pid]->subframe_scheduling_flag = 1;
     

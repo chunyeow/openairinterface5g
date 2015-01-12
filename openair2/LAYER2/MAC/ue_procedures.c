@@ -127,6 +127,10 @@ void ue_init_mac(module_id_t module_idP){
         UE_mac_inst[module_idP].scheduling_info.LCGID[i]=1;
       UE_mac_inst[module_idP].scheduling_info.LCID_status[i]=0;
   }
+#ifdef CBA
+  for (i=0; i <NUM_MAX_CBA_GROUP;i++) 
+    UE_mac_inst[module_idP].cba_last_access[i]= round(uniform_rngen(1,30));
+#endif 
 }
 
 
@@ -256,7 +260,7 @@ uint32_t ue_get_SR(module_id_t module_idP,int CC_id,frame_t frameP,uint8_t eNB_i
           UE_mac_inst[module_idP].scheduling_info.sr_ProhibitTimer_Running=1;
       } else
         UE_mac_inst[module_idP].scheduling_info.sr_ProhibitTimer_Running=0;
-      LOG_D(MAC,"[UE %d][SR %x] Frame %d subframe %d send SR_indication (SR_COUNTER/dsr_TransMax %d/%d), SR_pending %d\n",
+      LOG_D(MAC,"[UE %d][SR %x] Frame %d subframe %d send SR indication (SR_COUNTER/dsr_TransMax %d/%d), SR_pending %d\n",
           module_idP,rnti,frameP,subframe,
           UE_mac_inst[module_idP].scheduling_info.SR_COUNTER,
           (1<<(2+UE_mac_inst[module_idP].physicalConfigDedicated->schedulingRequestConfig->choice.setup.dsr_TransMax)),
@@ -1074,12 +1078,12 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
       LOG_D(MAC,"[UE %d] frameP %d subframe %d try CBA transmission\n",
           module_idP, frameP, subframe);
       //if (UE_mac_inst[module_idP].scheduling_info.LCID_status[DTCH] == LCID_EMPTY)
-      if (use_cba_access(module_idP,frameP,subframe,eNB_index)==0){
+      if (cba_access(module_idP,frameP,subframe,eNB_index,buflen)==0){
           *access_mode=POSTPONED_ACCESS;
           vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_GET_SDU, VCD_FUNCTION_OUT);
           return;
       }
-      LOG_D(MAC,"[UE %d] frameP %d subframe %d CBA transmission oppurtunity, tbs %d\n",
+      LOG_I(MAC,"[UE %d] frameP %d subframe %d CBA transmission oppurtunity, tbs %d\n",
           module_idP, frameP, subframe,buflen);
   }
 #endif
@@ -1117,7 +1121,7 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
 
   if (UE_mac_inst[module_idP].scheduling_info.LCID_status[DCCH] == LCID_NOT_EMPTY) {
 
-      rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
+    rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO, // eNB_index
           DCCH,
           (buflen-dcch_header_len-bsr_len-phr_len));
       LOG_D(MAC, "[UE %d] Frame %d : UL-DCCH -> ULSCH, RRC message has %d bytes to "
@@ -1143,7 +1147,7 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
   // DCCH1
   if (UE_mac_inst[module_idP].scheduling_info.LCID_status[DCCH1] == LCID_NOT_EMPTY) {
 
-      rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
+    rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO, // eNB_index
           DCCH1,
           (buflen-bsr_len-phr_len-dcch_header_len-dcch1_header_len-sdu_length_total));
 
@@ -1177,7 +1181,7 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
     else
       dtch_header_len = 2;//sizeof(SCH_SUBHEADER_SHORT);
        */
-      rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
+    rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO, // eNB_index
           DTCH,
           buflen-bsr_len-phr_len-dcch_header_len-dcch1_header_len-dtch_header_len-sdu_length_total);
 
@@ -1185,7 +1189,7 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
           module_idP,frameP, rlc_status.bytes_in_buffer,buflen,dtch_header_len,
           UE_mac_inst[module_idP].scheduling_info.BSR_bytes[DTCH]);
 
-      sdu_lengths[num_sdus] = mac_rlc_data_req(0, module_idP,frameP, ENB_FLAG_NO, MBMS_FLAG_NO,
+      sdu_lengths[num_sdus] = mac_rlc_data_req(0, module_idP,frameP, ENB_FLAG_NO, MBMS_FLAG_NO, // eNB_index
           DTCH,
           (char *)&ulsch_buff[sdu_length_total]);
 
@@ -1527,13 +1531,19 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
 
 // to be improved
 #ifdef CBA
+extern int cba_backoff;
 double uniform_rngen(int min, int max) {
   double random = (double)taus()/((double)0xffffffff);
   return (max - min) * random + min;
 }
 
-int use_cba_access(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint8_t eNB_index){
+int cba_access(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint8_t eNB_index,uint16_t buflen){
 
+  mac_rlc_status_resp_t rlc_status;
+  int header_offset=4;
+  int rv =0;
+
+  /*  
   if (( ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID1]>0)&&(UE_mac_inst[module_idP].scheduling_info.BSR[LCGID1]<64))   ||
       ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID2]>0)&&(UE_mac_inst[module_idP].scheduling_info.BSR[LCGID2]<64))   ||
       ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID3]>0)&&(UE_mac_inst[module_idP].scheduling_info.BSR[LCGID3]<64)) )
@@ -1542,11 +1552,11 @@ int use_cba_access(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, u
       //  LOG_D(MAC,"[UE %d] Frame %d Subframe %d: the current CBA backoff is %d \n", module_idP, frameP, subframe,
       //  UE_mac_inst[module_idP].cba_last_access[0] );
 
-      UE_mac_inst[module_idP].cba_last_access[0]= round(uniform_rngen(1,10));
+      UE_mac_inst[module_idP].cba_last_access[0]= round(uniform_rngen(1,40));
       LOG_D(MAC,"[UE %d] Frame %d Subframe %d: start a new CBA backoff  %d UL active state %d \n", module_idP, frameP, subframe,
           UE_mac_inst[module_idP].cba_last_access[0], UE_mac_inst[module_idP].ul_active);
 
-      return 1;
+      rv=1;
   } else if (( ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID1]> 0 ))   ||
       ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID2]> 0 ))   ||
       ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID3]> 0 )) )
@@ -1558,15 +1568,113 @@ int use_cba_access(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, u
           module_idP, frameP, subframe,
           UE_mac_inst[module_idP].cba_last_access[0], UE_mac_inst[module_idP].ul_active);
 
-  } /*else if (( ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID1] == 0 ))   &&
-	       ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID2] == 0 ))   &&
-	       ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID3] ==  0 )) )
-	     && (UE_mac_inst[module_idP].cba_last_access[0]> 0) ){
+  } else if (( ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID1] == 0 ))   &&
+               ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID2] == 0 ))   &&
+               ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID3] ==  0 )) )
+             && (UE_mac_inst[module_idP].cba_last_access[0]> 0) ){
     UE_mac_inst[module_idP].cba_last_access[0]-=1;
     }*/
 
-  return 0;
+  if ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID0]>0)&&(UE_mac_inst[module_idP].scheduling_info.BSR[LCGID0]<64) )
+    return 0;
+ 
+  if ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID1] <= 0 ) &&
+      (UE_mac_inst[module_idP].scheduling_info.BSR[LCGID2] <= 0 ) &&
+      (UE_mac_inst[module_idP].scheduling_info.BSR[LCGID3] <= 0 ) )
+    return 0;
 
+  if (cba_backoff == 0 ){ // apply probablisitc method
+    UE_mac_inst[module_idP].cba_last_access[0]= uniform_rngen(0,1);
+    if (uniform_rngen(0,1) > 0.6 ){
+      LOG_I(MAC,"[UE %d] Frame %d Subframe %d: CBA probability-based backoff (%d), UL active state %d \n", module_idP, frameP, subframe,
+	    cba_backoff,UE_mac_inst[module_idP].ul_active);
+   
+      rv=1;
+    }
+  }
+  else {
+    
+    if (UE_mac_inst[module_idP].cba_last_access[0] <= 0) {
+      UE_mac_inst[module_idP].cba_last_access[0]= round(uniform_rngen(1,cba_backoff));
+      
+      LOG_I(MAC,"[UE %d] Frame %d Subframe %d: start a new CBA backoff  %d/%d UL active state %d \n", module_idP, frameP, subframe,
+	    UE_mac_inst[module_idP].cba_last_access[0], cba_backoff,UE_mac_inst[module_idP].ul_active);
+      
+      rv = 1; 
+      /*    
+	    rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO, // eNB_index
+	    DTCH,
+	    0);
+	    
+	    if ((
+	    //	(rlc_status.pdus_in_buffer > 0 )           && 
+	    // (UE_mac_inst[module_idP].ul_active == 0)  && // check if the ul is acrtive
+	    (rlc_status.head_sdu_is_segmented  == 0 )          &&	 
+	    ((rlc_status.head_sdu_remaining_size_to_send + header_offset ) <= buflen )
+	    )){
+	    rv = 1;
+	    
+	    UE_mac_inst[module_idP].cba_last_access[0]= round(uniform_rngen(1,30));
+	    LOG_D(MAC,"[UE %d] Frame %d Subframe %d: start a new CBA backoff  %d UL active state %d \n", module_idP, frameP, subframe,
+	    UE_mac_inst[module_idP].cba_last_access[0], UE_mac_inst[module_idP].ul_active);
+      */
+    } else {
+      UE_mac_inst[module_idP].cba_last_access[0]-=1;
+      LOG_D(MAC,"[UE %d] Frame %d Subframe %d: wait for backoff to expire (%d) CBA UL active state %d \n",
+	    module_idP, frameP, subframe,
+	    UE_mac_inst[module_idP].cba_last_access[0], UE_mac_inst[module_idP].ul_active);
+    }	
+  }
+
+  return rv;
+  /*
+    if (( ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID1]>0)&&(UE_mac_inst[module_idP].scheduling_info.BSR[LCGID1]<64))   ||
+	  ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID2]>0)&&(UE_mac_inst[module_idP].scheduling_info.BSR[LCGID2]<64))   ||
+	  ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID3]>0)&&(UE_mac_inst[module_idP].scheduling_info.BSR[LCGID3]<64)) ) 
+	//  && (UE_mac_inst[module_idP].ul_active == 0) // check if the ul is acrtive
+	&& (UE_mac_inst[module_idP].cba_last_access[0] <= 0) ) {
+  
+      UE_mac_inst[module_idP].cba_last_access[0]= round(uniform_rngen(1,cba_backoff));
+      
+      LOG_I(MAC,"[UE %d] Frame %d Subframe %d: start a new CBA backoff  %d/%d UL active state %d \n", module_idP, frameP, subframe,
+	    UE_mac_inst[module_idP].cba_last_access[0], cba_backoff,UE_mac_inst[module_idP].ul_active);
+      
+      rv = 1; 
+  
+      rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO, // eNB_index
+				    DTCH,
+				    0);
+    
+    if ((
+	 //	(rlc_status.pdus_in_buffer > 0 )           && 
+	// (UE_mac_inst[module_idP].ul_active == 0)  && // check if the ul is acrtive
+	 (rlc_status.head_sdu_is_segmented  == 0 )          &&	 
+	 ((rlc_status.head_sdu_remaining_size_to_send + header_offset ) <= buflen )
+	 )){
+      rv = 1;
+      
+      UE_mac_inst[module_idP].cba_last_access[0]= round(uniform_rngen(1,30));
+      LOG_D(MAC,"[UE %d] Frame %d Subframe %d: start a new CBA backoff  %d UL active state %d \n", module_idP, frameP, subframe,
+	    UE_mac_inst[module_idP].cba_last_access[0], UE_mac_inst[module_idP].ul_active);
+    } else 
+      UE_mac_inst[module_idP].cba_last_access[0]= round(uniform_rngen(1,5));
+  
+
+    } else if (( ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID1]> 0 ))   ||
+		 ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID2]> 0 ))   ||
+		 ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID3]> 0 )) )
+	       // && (UE_mac_inst[module_idP].ul_active == 0) // check if the ul is acrtive
+	       && (UE_mac_inst[module_idP].cba_last_access[0]> 0) )
+      {
+	
+	UE_mac_inst[module_idP].cba_last_access[0]-=1;
+	LOG_D(MAC,"[UE %d] Frame %d Subframe %d: wait for backoff to expire (%d) CBA UL active state %d \n",
+	      module_idP, frameP, subframe,
+	      UE_mac_inst[module_idP].cba_last_access[0], UE_mac_inst[module_idP].ul_active);
+      }
+  }
+*/  
+  
 }
 #endif
 
@@ -1631,15 +1739,15 @@ boolean_t  update_bsr(module_id_t module_idP, frame_t frameP, uint8_t lcid, uint
   //  for (lcid =0 ; lcid < MAX_NUM_LCID; lcid++) {
   if (UE_mac_inst[module_idP].scheduling_info.LCGID[lcid] == lcg_id) {
       rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
-          lcid,
-          0);
+				      lcid,
+				      0);
       if (rlc_status.bytes_in_buffer > 0 ) {
-          sr_pending = TRUE;
-          UE_mac_inst[module_idP].scheduling_info.LCID_status[lcid] = LCID_NOT_EMPTY;
-          UE_mac_inst[module_idP].scheduling_info.BSR[lcg_id] += locate (BSR_TABLE,BSR_TABLE_SIZE, rlc_status.bytes_in_buffer);
-          UE_mac_inst[module_idP].scheduling_info.BSR_bytes[lcg_id] += rlc_status.bytes_in_buffer;
-          // UE_mac_inst[module_idP].scheduling_info.BSR_short_lcid = lcid; // only applicable to short bsr
-          LOG_D(MAC,"[UE %d] BSR level %d (LCGID %d, rlc buffer %d byte)\n",
+	sr_pending = TRUE;
+	UE_mac_inst[module_idP].scheduling_info.LCID_status[lcid] = LCID_NOT_EMPTY;
+	UE_mac_inst[module_idP].scheduling_info.BSR[lcg_id] += locate (BSR_TABLE,BSR_TABLE_SIZE, rlc_status.bytes_in_buffer);
+	UE_mac_inst[module_idP].scheduling_info.BSR_bytes[lcg_id] += rlc_status.bytes_in_buffer;
+	// UE_mac_inst[module_idP].scheduling_info.BSR_short_lcid = lcid; // only applicable to short bsr
+	LOG_D(MAC,"[UE %d] BSR level %d (LCGID %d, rlc buffer %d byte)\n",
               module_idP, UE_mac_inst[module_idP].scheduling_info.BSR[lcg_id],lcg_id,  UE_mac_inst[module_idP].scheduling_info.BSR_bytes[lcg_id]);
       }
       else

@@ -1555,9 +1555,9 @@ uint8_t phich_frame2_pusch_frame(LTE_DL_FRAME_PARMS *frame_parms,frame_t frame,u
 
 void print_CQI(void *o,UCI_format_t uci_format,uint8_t eNB_id,int N_RB_DL);
 
-void extract_CQI(void *o,UCI_format_t uci_format,LTE_eNB_UE_stats *stats,uint16_t * crnti, uint8_t * access_mode);
+void extract_CQI(void *o,UCI_format_t uci_format,LTE_eNB_UE_stats *stats,uint8_t N_RB_DL, uint16_t * crnti, uint8_t * access_mode);
 
-void fill_CQI(LTE_UE_ULSCH_t *ulsch,PHY_MEASUREMENTS *meas,uint8_t eNB_id, int N_RB_DL, rnti_t rnti, uint8_t trans_mode,double sinr_eff);
+void fill_CQI(LTE_UE_ULSCH_t *ulsch,PHY_MEASUREMENTS *meas,uint8_t eNB_id, uint8_t harq_pid,int N_RB_DL, rnti_t rnti, uint8_t trans_mode,double sinr_eff);
 void reset_cba_uci(void *o);
 
 uint16_t quantize_subband_pmi(PHY_MEASUREMENTS *meas,uint8_t eNB_id,int nb_subbands);

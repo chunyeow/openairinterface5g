@@ -256,7 +256,7 @@ uint32_t ulsch_encoding(uint8_t *a,
       sinr_eff = 0;
     */
     rnti = phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->crnti;
-    fill_CQI(ulsch,meas,0,phy_vars_ue->lte_frame_parms.N_RB_DL,rnti, tmode,phy_vars_ue->sinr_eff);
+    fill_CQI(ulsch,meas,0,harq_pid,phy_vars_ue->lte_frame_parms.N_RB_DL,rnti, tmode,phy_vars_ue->sinr_eff);
    
     LOG_D(PHY,"UE CQI\n");
     print_CQI(ulsch->o,ulsch->uci_format,0,phy_vars_ue->lte_frame_parms.N_RB_DL);
@@ -884,7 +884,7 @@ int ulsch_encoding_emul(uint8_t *ulsch_buffer,
 			uint8_t harq_pid,
 			uint8_t control_only_flag) {
 
-  LTE_UE_ULSCH_t *ulsch = phy_vars_ue->ulsch_ue[eNB_id];
+  LTE_UE_ULSCH_t *ulsch = phy_vars_ue->ulsch_ue[eNB_id]; 
   LTE_UE_DLSCH_t **dlsch = phy_vars_ue->dlsch_ue[eNB_id];
   PHY_MEASUREMENTS *meas = &phy_vars_ue->PHY_measurements;
   uint8_t tmode = phy_vars_ue->transmission_mode[eNB_id];
@@ -901,7 +901,7 @@ int ulsch_encoding_emul(uint8_t *ulsch_buffer,
       sinr_eff = meas->wideband_cqi_avg[eNB_id];
     */
    
-    fill_CQI(ulsch,meas,eNB_id,phy_vars_ue->lte_frame_parms.N_RB_DL,rnti,tmode,phy_vars_ue->sinr_eff);
+    fill_CQI(ulsch,meas,eNB_id,harq_pid,phy_vars_ue->lte_frame_parms.N_RB_DL,rnti,tmode,phy_vars_ue->sinr_eff);
        //LOG_D(PHY,"UE CQI\n");
     //    print_CQI(ulsch->o,ulsch->uci_format,eNB_id);
 

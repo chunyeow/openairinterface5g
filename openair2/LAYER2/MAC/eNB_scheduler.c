@@ -111,7 +111,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
   }
   // refresh UE list based on UEs dropped by PHY in previous subframe
   for (i=UE_list->head;i>0;i=UE_list->next[i]) {
-    LOG_I(MAC,"UE %d: rnti %x (%p)\n",i,UE_RNTI(module_idP,i),mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i)));
+    LOG_T(MAC,"UE %d: rnti %x (%p)\n",i,UE_RNTI(module_idP,i),mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i)));
     if (mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i))==NULL)
       mac_remove_ue(module_idP,i,frameP);
   }
@@ -209,7 +209,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
   i=UE_list->head;
   while (i>=0) {
     next_i = UE_list->next[i];
-    LOG_D(MAC,"UE %d : rnti %x, stats %p\n",i,UE_RNTI(module_idP,i),mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i)));
+    LOG_T(MAC,"UE %d : rnti %x, stats %p\n",i,UE_RNTI(module_idP,i),mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i)));
     if (mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i))==NULL) {
       mac_remove_ue(module_idP,i,frameP);
     }
@@ -260,7 +260,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
     else {  //FDD
       schedule_ulsch(module_idP,frameP,cooperation_flag,1,5,nCCE);
         // schedule_ue_spec(module_idP,subframeP,nprb,nCCE,mbsfn_status);
-        // fill_DLSCH_dci(module_idP,subframeP,RBalloc,0,mbsfn_status);
+      //fill_DLSCH_dci(module_idP,subframeP,RBalloc,0,mbsfn_status);
     }
     break;
 
@@ -291,9 +291,9 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
         }
     }
     else { //FDD
-        //      schedule_ulsch(module_idP,frameP,cooperation_flag,3,7,nCCE);
+      //      schedule_ulsch(module_idP,frameP,cooperation_flag,3,7,nCCE);
         // schedule_ue_spec(module_idP,subframeP,0,0,mbsfn_status);
-        // fill_DLSCH_dci(module_idP,subframeP,RBalloc,0,mbsfn_status);
+      //fill_DLSCH_dci(module_idP,frameP,subframeP,RBalloc,0,mbsfn_status);
     }
     break;
 

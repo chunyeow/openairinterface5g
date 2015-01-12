@@ -275,7 +275,7 @@ int get_ue_active_harq_pid(uint8_t Mod_id,uint8_t CC_id,uint16_t rnti,int frame,
 				  ulsch_frame,
 				  ulsch_subframe);
     *round    = ULSCH_ptr->harq_processes[*harq_pid]->round;
-    LOG_D(PHY,"[eNB %d][PUSCH %d] Frame %d subframe %d Checking HARQ, round %d\n",Mod_id,*harq_pid,frame,subframe,*round);
+    LOG_T(PHY,"[eNB %d][PUSCH %d] Frame %d subframe %d Checking HARQ, round %d\n",Mod_id,*harq_pid,frame,subframe,*round);
   }
   return(0);
 }
@@ -2990,7 +2990,11 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	//if (((phy_vars_eNB->proc[sched_subframe].frame_tx%10) == 0) || (phy_vars_eNB->proc[sched_subframe].frame_tx < 50)) 
 	print_CQI(phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->uci_format,0,phy_vars_eNB->lte_frame_parms.N_RB_DL);
 #endif
-	extract_CQI(phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->uci_format,&phy_vars_eNB->eNB_UE_stats[i], &rnti, &access_mode);
+	extract_CQI(phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o,
+		    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->uci_format,
+		    &phy_vars_eNB->eNB_UE_stats[i], 
+		    phy_vars_eNB->lte_frame_parms.N_RB_DL,
+		    &rnti, &access_mode);
 	phy_vars_eNB->eNB_UE_stats[i].rank = phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o_RI[0];
       }
     
@@ -3622,7 +3626,12 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	//if (((phy_vars_eNB->proc[sched_subframe].frame_tx%10) == 0) || (phy_vars_eNB->proc[sched_subframe].frame_tx < 50)) 
 	print_CQI(phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->uci_format,0,phy_vars_eNB->lte_frame_parms.N_RB_DL);
 #endif
-	extract_CQI(phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->uci_format,&phy_vars_eNB->eNB_UE_stats[i], &rnti, &access_mode);
+	access_mode = UNKNOWN_ACCESS;
+	extract_CQI(phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o,
+		    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->uci_format,
+		    &phy_vars_eNB->eNB_UE_stats[i], 
+		    phy_vars_eNB->lte_frame_parms.N_RB_DL,
+		    &rnti, &access_mode);
 	phy_vars_eNB->eNB_UE_stats[i].rank = phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o_RI[0];
       }
       /*  LOG_D(PHY,"[eNB %d][PUSCH %d] frame %d subframe %d UE %d harq_pid %d resetting the sched_subframeuling_flag, total cba groups %d %d\n",
@@ -3688,17 +3697,23 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 			      harq_pid,
 			      NULL);
 
-	    phy_vars_eNB->cba_last_reception[i%num_active_cba_groups]=1;//(subframe);
+	    phy_vars_eNB->cba_last_reception[i%num_active_cba_groups]+=1;//(subframe);
 	  } else {
-	    LOG_N(PHY,"[eNB %d] Frame %d subframe %d : CBA collision detected for UE%d for group %d, set the SR for this UE \n ",
+	    if (phy_vars_eNB->cba_last_reception[i%num_active_cba_groups] == 1 )
+	      LOG_N(PHY,"[eNB%d] Frame %d subframe %d : first CBA collision detected \n ",
+		    phy_vars_eNB->Mod_id,frame,subframe); 
+	    
+	    LOG_N(PHY,"[eNB%d] Frame %d subframe %d : CBA collision set SR for UE %d in group %d \n ",
 		  phy_vars_eNB->Mod_id,frame,subframe,
-		  i,i%num_active_cba_groups ); 
+		  phy_vars_eNB->cba_last_reception[i%num_active_cba_groups],i%num_active_cba_groups ); 
+	    
+	    phy_vars_eNB->cba_last_reception[i%num_active_cba_groups]+=1;
+	    
 	    mac_xface->SR_indication(phy_vars_eNB->Mod_id,
 				     phy_vars_eNB->CC_id,
 				     frame,
 				     phy_vars_eNB->dlsch_eNB[i][0]->rnti,subframe);
 	  }
-	  
 	}
       } // ULSCH CBA not in error 
     }
@@ -3941,9 +3956,10 @@ void phy_procedures_eNB_lte(unsigned char subframe,PHY_VARS_eNB **phy_vars_eNB,u
 
     phy_vars_eNB[CC_id]->proc[subframe].frame_tx++;
     phy_vars_eNB[CC_id]->proc[subframe].frame_rx++;
-    if (phy_vars_eNB[CC_id]->proc[subframe].frame_tx==1024)
+    
+    if (phy_vars_eNB[CC_id]->proc[subframe].frame_tx==MAX_FRAME_NUMBER) // defined in impl_defs_top.h
       phy_vars_eNB[CC_id]->proc[subframe].frame_tx=0;
-    if (phy_vars_eNB[CC_id]->proc[subframe].frame_rx==1024)
+    if (phy_vars_eNB[CC_id]->proc[subframe].frame_rx==MAX_FRAME_NUMBER)
       phy_vars_eNB[CC_id]->proc[subframe].frame_rx=0;
   }
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_ENB_LTE,0);

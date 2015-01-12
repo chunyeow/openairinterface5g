@@ -50,9 +50,6 @@ enum THREAD_INDEX { OPENAIR_THREAD_INDEX = 0,
 #define OPENAIR_THREAD_STACK_SIZE    8192 //4096 //RTL_PTHREAD_STACK_MIN*6
 //#define DLC_THREAD_STACK_SIZE        4096 //DLC stack size
 
-
-
-
 enum openair_SCHED_STATUS {
       openair_SCHED_STOPPED=1,
       openair_SCHED_STARTING,

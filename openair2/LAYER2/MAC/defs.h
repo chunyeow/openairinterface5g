@@ -335,6 +335,15 @@ typedef enum {
   S_DL_NUM_STATUS
 } UE_DLSCH_STATUS;
 
+typedef enum {
+  CBA_ES=0, // equal share of RB among groups w
+  CBA_ES_S,  // equal share of RB among groups with small allocation
+  CBA_PF, // proportional fair (kind of) 
+  CBA_PF_S,  // proportional fair (kind of) with small RB allocation
+  CBA_RS // random allocation
+} CBA_POLICY;
+
+
 // temp struct for sched
 typedef struct {
   
@@ -419,6 +428,11 @@ typedef struct{
  //  total rb used for retransmission 
   uint32_t total_rbs_used_retx;
  
+  /// preassigned mcs after rate adaptation  
+  uint8_t ulsch_mcs1;
+  /// adjusted mcs 
+  uint8_t ulsch_mcs2;
+ 
 
   /// TX 
   /// Num pkt
@@ -452,6 +466,14 @@ typedef struct{
   //  uint32_t avg_pdu_size;
  
   /// RX 
+  /// estimated average pdu inter-departure time
+  uint32_t avg_pdu_idt;
+  /// estimated average pdu size
+  uint32_t avg_pdu_ps;
+  /// 
+  uint32_t aggregated_pdu_size;
+  uint32_t aggregated_pdu_arrival;
+  
   /// num rx pdu 
   uint32_t num_pdu_rx[NB_RB_MAX];
   /// num bytes rx 
@@ -512,9 +534,12 @@ typedef struct{
   /// total allocated RBs
   int8_t total_allocated_rbs;
   
-  /// assigned MCS by the ulsch preprocessor
+  /// pre-assigned MCS by the ulsch preprocessor
   uint8_t pre_assigned_mcs_ul;
-  
+
+  /// assigned MCS by the ulsch scheduler
+  uint8_t assigned_mcs_ul;
+
   /// DCI buffer for ULSCH
   uint8_t ULSCH_DCI[8][(MAX_DCI_SIZE_BITS>>3)+1];
 
@@ -576,31 +601,31 @@ typedef struct{
 } UE_TEMPLATE;
 
 typedef struct{
-		//UL transmission bandwidth in RBs
-		uint8_t ul_bandwidth[MAX_NUM_LCID];
-		//DL transmission bandwidth in RBs
-		uint8_t dl_bandwidth[MAX_NUM_LCID];
-
-		//To do GBR bearer
-		uint8_t min_ul_bandwidth[MAX_NUM_LCID];
-		
-		uint8_t min_dl_bandwidth[MAX_NUM_LCID];
-
-		//aggregated bit rate of non-gbr bearer per UE
-		uint64_t	ue_AggregatedMaximumBitrateDL;
-		//aggregated bit rate of non-gbr bearer per UE
-		uint64_t	ue_AggregatedMaximumBitrateUL;
-		//CQI scheduling interval in subframes.
-		uint16_t cqiSchedInterval;
-		//Contention resolution timer used during random access
-		uint8_t mac_ContentionResolutionTimer;
-		
-		uint16_t max_allowed_rbs[MAX_NUM_LCID];
-
-		uint8_t max_mcs[MAX_NUM_LCID];
-
-		uint16_t priority[MAX_NUM_LCID];
-	
+  //UL transmission bandwidth in RBs
+  uint8_t ul_bandwidth[MAX_NUM_LCID];
+  //DL transmission bandwidth in RBs
+  uint8_t dl_bandwidth[MAX_NUM_LCID];
+  
+  //To do GBR bearer
+  uint8_t min_ul_bandwidth[MAX_NUM_LCID];
+  
+  uint8_t min_dl_bandwidth[MAX_NUM_LCID];
+  
+  //aggregated bit rate of non-gbr bearer per UE
+  uint64_t	ue_AggregatedMaximumBitrateDL;
+  //aggregated bit rate of non-gbr bearer per UE
+  uint64_t	ue_AggregatedMaximumBitrateUL;
+  //CQI scheduling interval in subframes.
+  uint16_t cqiSchedInterval;
+  //Contention resolution timer used during random access
+  uint8_t mac_ContentionResolutionTimer;
+  
+  uint16_t max_allowed_rbs[MAX_NUM_LCID];
+  
+  uint8_t max_mcs[MAX_NUM_LCID];
+  
+  uint16_t priority[MAX_NUM_LCID];
+  
 } UE_sched_ctrl;
 
 typedef struct {
@@ -725,6 +750,7 @@ typedef struct{
 #ifdef CBA
   uint8_t num_active_cba_groups; 
   uint16_t cba_rnti[NUM_MAX_CBA_GROUP];
+  uint8_t group_mcs[NUM_MAX_CBA_GROUP];
 #endif 
 }COMMON_channels_t;
 

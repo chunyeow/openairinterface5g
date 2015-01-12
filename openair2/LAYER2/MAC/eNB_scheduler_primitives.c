@@ -169,6 +169,7 @@ unsigned char process_ue_cqi (module_id_t module_idP, int ue_idP) {
   return aggregation;
 }
 #ifdef CBA
+/*
 uint8_t find_num_active_UEs_in_cbagroup(module_id_t module_idP, int CC_id,unsigned char group_id){
 
   module_id_t    UE_id;
@@ -176,7 +177,7 @@ uint8_t find_num_active_UEs_in_cbagroup(module_id_t module_idP, int CC_id,unsign
   unsigned char nb_ue_in_pusch=0;
   LTE_eNB_UE_stats* eNB_UE_stats;
 
-  for (UE_id=group_id;UE_id<NUMBER_OF_UE_MAX;UE_id+=eNB_mac_inst[module_idP][CC_id].num_active_cba_groups) {
+  for (UE_id=group_id;UE_id<NUMBER_OF_UE_MAX;UE_id+=eNB_mac_inst[module_idP].common_channels[CC_id].num_active_cba_groups) {
 
       if (((rnti=eNB_mac_inst[module_idP][CC_id].UE_template[UE_id].rnti) !=0) &&
           (eNB_mac_inst[module_idP][CC_id].UE_template[UE_id].ul_active==TRUE)    &&
@@ -192,6 +193,7 @@ uint8_t find_num_active_UEs_in_cbagroup(module_id_t module_idP, int CC_id,unsign
   }
   return(nb_ue_in_pusch);
 }
+*/
 #endif
 
 void dump_ue_list(UE_list_t *listP, int ul_flag) {
@@ -220,7 +222,7 @@ int add_new_ue(module_id_t mod_idP, int cc_idP, rnti_t rntiP,int harq_pidP) {
     UE_id = UE_list->avail;
     UE_list->avail = UE_list->next[UE_list->avail];
     UE_list->next[UE_id] = UE_list->head;
-    UE_list->next_ul[UE_id] = UE_list->head;
+    UE_list->next_ul[UE_id] = UE_list->head_ul;
     UE_list->head = UE_id;
     UE_list->head_ul = UE_id;
     UE_list->UE_template[cc_idP][UE_id].rnti       = rntiP;
@@ -612,7 +614,7 @@ void add_common_dci(DCI_PDU *DCI_pdu,
 
 
   DCI_pdu->Num_common_dci++;
-  LOG_D(MAC,"add common dci format %d for rnti %d \n",dci_fmt,rnti);
+  LOG_D(MAC,"add common dci format %d for rnti %x \n",dci_fmt,rnti);
 }
 
 void add_ue_spec_dci(DCI_PDU *DCI_pdu,void *pdu,rnti_t rnti,unsigned char dci_size_bytes,unsigned char aggregation,unsigned char dci_size_bits,unsigned char dci_fmt,uint8_t ra_flag) {
@@ -626,7 +628,7 @@ void add_ue_spec_dci(DCI_PDU *DCI_pdu,void *pdu,rnti_t rnti,unsigned char dci_si
 
   DCI_pdu->Num_ue_spec_dci++;
 
-  LOG_D(MAC,"add ue specific dci format %d for rnti %d \n",dci_fmt,rnti);
+  LOG_D(MAC,"add ue specific dci format %d for rnti %x \n",dci_fmt,rnti);
 }
 
 

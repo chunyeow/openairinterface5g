@@ -73,7 +73,8 @@ return random;
 double uniform_dist(int min, int max) {
   double uniform_rn;
   uniform_rn = (max - min) * uniform_rng() + min;
-  LOG_T(OTG,"Uniform Random Nb = %lf, (min %d, max %d)\n", uniform_rn, min, max);	
+  //  LOG_T(OTG,"Uniform Random Nb = %lf, (min %d, max %d)\n", uniform_rn, min, max);	
+  //printf("Uniform Random Nb = %lf, (min %d, max %d)\n", uniform_rn, min, max);	
   return uniform_rn;
 }
 

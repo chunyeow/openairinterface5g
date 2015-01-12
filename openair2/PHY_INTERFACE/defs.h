@@ -127,12 +127,11 @@ typedef struct
 
 #ifdef Rel10
     /// Get MCH sdu and corresponding MCS for particular MBSFN subframe
-    MCH_PDU* (*get_mch_sdu)(module_id_t Mod_id, uint8_t CC_id, frame_t frameP,sub_frame_t subframe);
+    MCH_PDU* (*get_mch_sdu)(module_id_t Mod_id, int CC_id, frame_t frameP,sub_frame_t subframe);
 #endif
     // configure the cba rnti at the physical layer 
-    void (*phy_config_cba_rnti)(module_id_t Mod_id,eNB_flag_t eNB_flag, uint8_t index, uint16_t cba_rnti, uint8_t cba_group_id, uint8_t num_active_cba_groups);
+    void (*phy_config_cba_rnti)(module_id_t Mod_id,int CC_id,eNB_flag_t eNB_flag, uint8_t index, uint16_t cba_rnti, uint8_t cba_group_id, uint8_t num_active_cba_groups);
     /// get delta mcs for fast UL AMC
-    // uint8_t eNB_id,uint8_t harq_pid, uint8_t UE_id,
     int16_t (*estimate_ue_tx_power)(uint32_t tbs, uint32_t nb_rb, uint8_t control_only, lte_prefix_type_t ncp, uint8_t use_srs);
 
 

@@ -950,58 +950,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 	  phy_vars_ue->sr[subframe_tx]=0;
 	}
       } // ULSCH is active
-      else if ((phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->subframe_cba_scheduling_flag == 1) && 
-	       (phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->status == CBA_ACTIVE)) {
-	phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->subframe_scheduling_flag = 0;
-	//	phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->status= IDLE; 
-	first_rb = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->first_rb;
-	nb_rb = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->nb_rb;
-	input_buffer_length = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->TBS/8;
-	access_mode=CBA_ACCESS;
-	
-	LOG_I(PHY,"[UE %d] Frame %d, subframe %d: CBA num dci %d \n", 
-	      Mod_id,frame_tx,subframe_tx,
-	      phy_vars_ue->ulsch_ue[eNB_id]->num_cba_dci[subframe_tx]);
-	
-	mac_xface->ue_get_sdu(Mod_id,
-			      CC_id,
-			      frame_tx,
-			      subframe_tx,
-			      eNB_id,
-			      ulsch_input_buffer,
-			      input_buffer_length,
-			      &access_mode);
-	
-	phy_vars_ue->ulsch_ue[eNB_id]->num_cba_dci[subframe_tx]=0;
-	
-	if (access_mode > UNKNOWN_ACCESS){
-
-	  if (abstraction_flag==0) {
-	    if (ulsch_encoding(ulsch_input_buffer,
-			       phy_vars_ue,
-			       harq_pid,
-			       eNB_id,
-			       phy_vars_ue->transmission_mode[eNB_id],0,
-			       0)!=0) {  //  Nbundled, to be updated!!!!
-	      LOG_E(PHY,"ulsch_coding.c: FATAL ERROR: returning\n");
-              vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_TX, VCD_FUNCTION_OUT);
-	      stop_meas(&phy_vars_ue->phy_proc_tx);
-	      return;
-	    }
-	  }
-#ifdef PHY_ABSTRACTION
-	  else {
-	    ulsch_encoding_emul(ulsch_input_buffer,phy_vars_ue,eNB_id,harq_pid,0);
-	  }
-#endif
-	} else {
-	  phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->status= IDLE; 
-	  //reset_cba_uci(phy_vars_ue->ulsch_ue[eNB_id]->o);
-	  LOG_N(PHY,"[UE %d] Frame %d, subframe %d: CBA transmission cancelled or postponed\n",
-		Mod_id, frame_tx,subframe_tx);
-	}
-      }
-
+      
 #ifdef PUCCH
       else if (phy_vars_ue->UE_mode[eNB_id] == PUSCH){  // check if we need to use PUCCH 1a/1b
 	//      debug_LOG_D(PHY,"[UE%d] Frame %d, subframe %d: Checking for PUCCH 1a/1b\n",Mod_id,frame_tx,subframe_tx);
@@ -1174,6 +1123,58 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
       }
 #endif  // PUCCH
 
+#ifdef CBA
+      if ((phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->subframe_cba_scheduling_flag >= 1) && 
+	  (phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->status == CBA_ACTIVE)) {
+	phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->subframe_scheduling_flag=0; //-=1
+	//	phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->status= IDLE; 
+	first_rb = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->first_rb;
+	nb_rb = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->nb_rb;
+	//cba_mcs=phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->mcs;
+	input_buffer_length = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->TBS/8;
+	access_mode=CBA_ACCESS;
+	
+	LOG_I(PHY,"[UE %d] Frame %d, subframe %d: CBA num dci %d\n", 
+	      Mod_id,frame_tx,subframe_tx,
+	      phy_vars_ue->ulsch_ue[eNB_id]->num_cba_dci[subframe_tx]);
+	
+	mac_xface->ue_get_sdu(Mod_id,
+			      CC_id,
+			      frame_tx,
+			      subframe_tx,
+			      eNB_id,
+			      ulsch_input_buffer,
+			      input_buffer_length,
+			      &access_mode);
+	
+	phy_vars_ue->ulsch_ue[eNB_id]->num_cba_dci[subframe_tx]=0;
+	
+	if (access_mode > UNKNOWN_ACCESS){
+
+	  if (abstraction_flag==0) {
+	    if (ulsch_encoding(ulsch_input_buffer,
+			       phy_vars_ue,
+			       harq_pid,
+			       eNB_id,
+			       phy_vars_ue->transmission_mode[eNB_id],0,
+			       0)!=0) {  //  Nbundled, to be updated!!!!
+	      LOG_E(PHY,"ulsch_coding.c: FATAL ERROR: returning\n");
+	      return;
+	    }
+	  }
+#ifdef PHY_ABSTRACTION
+	  else {
+	    ulsch_encoding_emul(ulsch_input_buffer,phy_vars_ue,eNB_id,harq_pid,0);
+	  }
+#endif
+	} else {
+	  phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->status= IDLE; 
+	  //reset_cba_uci(phy_vars_ue->ulsch_ue[eNB_id]->o);
+	  LOG_N(PHY,"[UE %d] Frame %d, subframe %d: CBA transmission cancelled or postponed\n",
+		Mod_id, frame_tx,subframe_tx);
+	}
+      }
+#endif // end CBA
 
       if (abstraction_flag == 0) {
 	if (generate_ul_signal == 1 ) {

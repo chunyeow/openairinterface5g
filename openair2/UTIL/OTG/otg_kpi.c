@@ -239,7 +239,7 @@ void kpi_gen() {
   int num_active_source=0;
  
   
-  int dl_ok=0,ul_ok=0;
+  int dl_ok=1,ul_ok=1;
 
 char traffic_type[12];
 char traffic[30];
@@ -637,9 +637,11 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
   LOG_I(OTG,"[DATA] Estimated E2E JITTER AVG ms= %lf \n", otg_info->average_jitter_dl_e2e/(float)num_active_source );
   LOG_I(OTG,"[DATA] TX throughput = %.7f(Kbit/s) \n", ((double)tx_total_bytes_dl*1000*8)/(otg_info->ctime*1024));
   LOG_I(OTG,"[DATA] RX throughput = %.7f(Kbit/s) \n", ((double)rx_total_bytes_dl*1000*8)/(otg_info->ctime*1024));
-  LOG_I(OTG,"[DATA] NB lost packet = %d \n", tx_total_pkts_dl - rx_total_pkts_dl );
-  if (tx_total_pkts_dl - rx_total_pkts_dl  <  (int) (tx_total_pkts_dl / 10) ) // below 10% of loss
-    dl_ok=1;
+  LOG_I(OTG,"[DATA] NB lost packet = %d \n", tx_total_pkts_dl - rx_total_pkts_dl);
+  if ( (tx_total_pkts_dl > 0) &&
+       ((10*(tx_total_pkts_dl - rx_total_pkts_dl))  >  tx_total_pkts_dl)) // below 10% of loss
+    dl_ok=0;
+    
  if ((g_otg->background_stats==1)&&(tx_total_pkts_dl_background>0)){
     LOG_I(OTG,"[BACKGROUND] Total packets(TX)= %d \n", tx_total_pkts_dl_background);
     LOG_I(OTG,"[BACKGROUND] Total bytes(TX)= %d \n", tx_total_bytes_dl_background);
@@ -708,8 +710,9 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
   LOG_I(OTG,"[DATA] TX throughput = %.7f(Kbit/s) \n", ((double)tx_total_bytes_ul*1000*8)/(otg_info->ctime*1024));
   LOG_I(OTG,"[DATA] RX throughput = %.7f(Kbit/s) \n", ((double)rx_total_bytes_ul*1000*8)/(otg_info->ctime*1024));
   LOG_I(OTG,"[DATA] NB lost packet = %d \n", tx_total_pkts_ul - rx_total_pkts_ul );
-  if ((tx_total_pkts_ul - rx_total_pkts_ul)  < (int)(tx_total_pkts_ul / 10) )
-    ul_ok=1;
+  if ( (tx_total_pkts_ul > 0 ) &&
+       ((10*(tx_total_pkts_ul - rx_total_pkts_ul)) > tx_total_pkts_ul))
+    ul_ok=0;
   
   if ((g_otg->background_stats==1)&&(tx_total_pkts_ul_background>0)){
     LOG_I(OTG,"[BACKGROUND] Total packets(TX)= %d \n", tx_total_pkts_ul_background);
@@ -720,7 +723,7 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
     LOG_I(OTG,"[BACKGROUND] RX throughput = %.7f(Kbit/s) \n", ((double)rx_total_bytes_ul_background*1000*8)/(otg_info->ctime*1024));
 
   }
-	LOG_F(OTG,"**************** TOTAL UL RESULTS ******************\n");
+  LOG_F(OTG,"**************** TOTAL UL RESULTS ******************\n");
   LOG_F(OTG,"Total Time (ms)= %d \n", otg_info->ctime+1);
   LOG_F(OTG,"[DATA] Total packets(TX)= %d \n", tx_total_pkts_ul);
   LOG_F(OTG,"[DATA] Total packets(RX)= %d \n", rx_total_pkts_ul);
@@ -735,6 +738,7 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
   LOG_F(OTG,"[DATA] TX throughput = %.7f(Kbit/s) \n", ((double)tx_total_bytes_ul*1000*8)/(otg_info->ctime*1024));
   LOG_F(OTG,"[DATA] RX throughput = %.7f(Kbit/s) \n", ((double)rx_total_bytes_ul*1000*8)/(otg_info->ctime*1024));
   LOG_F(OTG,"[DATA] NB lost packet = %d \n", tx_total_pkts_ul - rx_total_pkts_ul );
+
   if ((g_otg->background_stats==1)&&(tx_total_pkts_ul_background>0)){
     LOG_F(OTG,"[BACKGROUND] Total packets(TX)= %d \n", tx_total_pkts_ul_background);
     LOG_F(OTG,"[BACKGROUND] Total bytes(TX)= %d \n", tx_total_bytes_ul_background);
@@ -748,7 +752,7 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
   if ((dl_ok == 1 ) && (ul_ok ==1))
     LOG_I(OTG,"************ DL and UL loss rate below 10 *************\n");
   else 
-    LOG_I(OTG,"************ DL and UL loss rate above 10 *************\n");
+    LOG_I(OTG,"************ DL(%d) and UL(%d) loss rate above 10 *************\n",dl_ok,ul_ok);
 #endif
 }
 
@@ -781,7 +785,7 @@ void add_log_metric(int src, int dst, int ctime, double metric, unsigned int lab
    LOG_E(OTG, "File label unknown %d \n", label);
  }
 
- LOG_F(label,"%d  ", ctime);
+ LOG_F(label,"%d ", ctime);
   for (i=0; i<=(NB_eNB_INST + NB_UE_INST); i++){
     for (j=0; j<=(NB_eNB_INST + NB_UE_INST); j++){
     node_actif=0;
@@ -789,9 +793,9 @@ void add_log_metric(int src, int dst, int ctime, double metric, unsigned int lab
       node_actif=1;
     
     if ((node_actif>0) && ((i==src) && (j==dst)))
-          LOG_F(label,"  %f  ", metric);
+          LOG_F(label,"%f ", metric);
       if  ((node_actif>0) && ((i!=src) || (j!=dst)))
-          LOG_F(label,"  %d  ", 0);
+          LOG_F(label,"%d ", 0);
   }
  }
  LOG_F(label,"%f\n", metric);
@@ -806,14 +810,14 @@ void  add_log_label(unsigned int label, unsigned int * start_log_metric){
 
  if (*start_log_metric==0){
  *start_log_metric=1;
-   LOG_F(label,"Time   ");
+   LOG_F(label,"Time ");
    for (i=0; i<=(NB_eNB_INST + NB_UE_INST); i++){
      for (j=0; j<=(NB_eNB_INST + NB_UE_INST); j++){
        node_actif=0;
           if (g_otg->idt_dist[i][j][0][PE_STATE]>0 )
 	    node_actif++; 
       if (node_actif>0)
-        LOG_F(label,"%d->%d    ", i, j);  
+        LOG_F(label,"%d->%d ", i, j);  
     }
    }
    LOG_F(label,"Aggregated\n");

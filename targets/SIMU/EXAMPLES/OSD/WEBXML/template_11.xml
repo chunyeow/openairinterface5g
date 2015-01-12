@@ -107,9 +107,9 @@
     <EMULATION_TIME_ms>0</EMULATION_TIME_ms> <!--set to infinity--> 
     
     <PERFORMANCE_METRICS>
-      <THROUGHPUT>1</THROUGHPUT>
-      <LATENCY>1</LATENCY> <!-- include both OWD and RTT-->
-      <LOSS_RATE>1</LOSS_RATE>
+      <THROUGHPUT>enable</THROUGHPUT>
+      <LATENCY>enable</LATENCY> <!-- include both OWD and RTT-->
+      <LOSS_RATE>enable</LOSS_RATE>
     </PERFORMANCE_METRICS>
     <LOG>  <!-- set the global log level -->
       <LEVEL>warning</LEVEL>

@@ -474,14 +474,15 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
 	else  // rb required based only on the buffer - rb allloctaed in the 1st round + extra reaming rb form the 1st round
 	  nb_rbs_required_remaining[CC_id][i] = nb_rbs_required[CC_id][i]-nb_rbs_required_remaining_1[CC_id][i]+nb_rbs_required_remaining[CC_id][i];
 
-	LOG_D(MAC,"round %d : nb_rbs_required_remaining[%d][%d]= %d (remaining_1 %d, required %d,  pre_nb_available_rbs %d, N_RBG %d, rb_unit %d)\n", 
-	      r1, CC_id, i, 
-	      nb_rbs_required_remaining[CC_id][i],
-	      nb_rbs_required_remaining_1[CC_id][i], 
-	      nb_rbs_required[CC_id][i],
-	      pre_nb_available_rbs[CC_id][i],
-	      N_RBG[CC_id],
-	      min_rb_unit[CC_id]);
+	if (nb_rbs_required[CC_id][i]> 0 )
+	  LOG_D(MAC,"round %d : nb_rbs_required_remaining[%d][%d]= %d (remaining_1 %d, required %d,  pre_nb_available_rbs %d, N_RBG %d, rb_unit %d)\n", 
+		r1, CC_id, i, 
+		nb_rbs_required_remaining[CC_id][i],
+		nb_rbs_required_remaining_1[CC_id][i], 
+		nb_rbs_required[CC_id][i],
+		pre_nb_available_rbs[CC_id][i],
+		N_RBG[CC_id],
+		min_rb_unit[CC_id]);
 	
       }
     }
@@ -630,15 +631,18 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
     for (ii=0;ii<UE_num_active_CC(UE_list,UE_id);ii++) {
       CC_id = UE_list->ordered_CCids[ii][UE_id];
       //PHY_vars_eNB_g[Mod_id]->mu_mimo_mode[UE_id].dl_pow_off = dl_pow_off[UE_id];
-      LOG_D(MAC,"******************DL Scheduling Information for UE%d ************************\n",UE_id);
-      LOG_D(MAC,"dl power offset UE%d = %d \n",UE_id,dl_pow_off[CC_id][UE_id]);
-      LOG_D(MAC,"***********RB Alloc for every subband for UE%d ***********\n",UE_id);
-      for(j=0;j<N_RBG[CC_id];j++){
-	//PHY_vars_eNB_g[Mod_id]->mu_mimo_mode[UE_id].rballoc_sub[i] = rballoc_sub_UE[CC_id][UE_id][i];
-	LOG_D(MAC,"RB Alloc for UE%d and Subband%d = %d\n",UE_id,j,rballoc_sub_UE[CC_id][UE_id][j]);
+     
+      if (pre_nb_available_rbs[CC_id][UE_id] > 0 ){
+	LOG_D(MAC,"******************DL Scheduling Information for UE%d ************************\n",UE_id);
+	LOG_D(MAC,"dl power offset UE%d = %d \n",UE_id,dl_pow_off[CC_id][UE_id]);
+	LOG_D(MAC,"***********RB Alloc for every subband for UE%d ***********\n",UE_id);
+	for(j=0;j<N_RBG[CC_id];j++){
+	  //PHY_vars_eNB_g[Mod_id]->mu_mimo_mode[UE_id].rballoc_sub[i] = rballoc_sub_UE[CC_id][UE_id][i];
+	  LOG_D(MAC,"RB Alloc for UE%d and Subband%d = %d\n",UE_id,j,rballoc_sub_UE[CC_id][UE_id][j]);
+	}
+	//PHY_vars_eNB_g[Mod_id]->mu_mimo_mode[UE_id].pre_nb_available_rbs = pre_nb_available_rbs[CC_id][UE_id];
+	LOG_D(MAC,"Total RBs allocated for UE%d = %d\n",UE_id,pre_nb_available_rbs[CC_id][UE_id]);
       }
-      //PHY_vars_eNB_g[Mod_id]->mu_mimo_mode[UE_id].pre_nb_available_rbs = pre_nb_available_rbs[CC_id][UE_id];
-      LOG_D(MAC,"Total RBs allocated for UE%d = %d\n",UE_id,pre_nb_available_rbs[CC_id][UE_id]);
     }
   }
 }
@@ -807,7 +811,7 @@ void ulsch_scheduler_pre_processor(module_id_t module_idP,
     }
   }
   
-  LOG_D(MAC,"[eNB %d] Frame %d subframe %d: total ue %d, max num ue to be scheduled %d\n", 
+  LOG_D(MAC,"[eNB %d] Frame %d subframe %d: total ue to be scheduled %d/%d\n", 
 	module_idP, frameP, subframeP,total_ue_count, max_num_ue_to_be_scheduled);
 
   //LOG_D(MAC,"step3\n");
@@ -885,11 +889,14 @@ void store_ulsch_buffer(module_id_t module_idP, int frameP, sub_frame_t subframe
   
   for (UE_id=UE_list->head_ul;UE_id>=0;UE_id=UE_list->next_ul[UE_id]) {
     
+    
     UE_template = &UE_list->UE_template[UE_PCCID(module_idP,UE_id)][UE_id];
+    //LOG_I(MAC,"[UE %d next %d] SR is %d\n",UE_id, UE_list->next_ul[UE_id], UE_template->ul_SR); 
+      
     UE_template->ul_total_buffer=0;
     for (lcgid=0; lcgid<MAX_NUM_LCGID; lcgid++){
       UE_template->ul_buffer_info[lcgid]=BSR_TABLE[UE_template->bsr_info[lcgid]];
-      UE_template->ul_total_buffer+= UE_template->ul_buffer_info[lcgid];
+      UE_template->ul_total_buffer+= UE_template->ul_buffer_info[lcgid]; // apply traffic aggregtaion if packets are small
       //   UE_template->ul_buffer_creation_time_max=cmax(UE_template->ul_buffer_creation_time_max, frame_cycle*1024 + frameP-UE_template->ul_buffer_creation_time[lcgid]));
     }
     if ( UE_template->ul_total_buffer >0)
@@ -920,7 +927,9 @@ void assign_max_mcs_min_rb(module_id_t module_idP,int frameP, sub_frame_t subfra
   rnti_t             rnti           = -1;
   int                mcs=cmin(16,openair_daq_vars.target_ue_ul_mcs); 
   int                rb_table_index=0,tbs,tx_power;
-  UE_list_t          *UE_list = &eNB_mac_inst[module_idP].UE_list; 
+  eNB_MAC_INST       *eNB = &eNB_mac_inst[module_idP];
+  UE_list_t          *UE_list = &eNB->UE_list; 
+  
   UE_TEMPLATE       *UE_template;
   LTE_DL_FRAME_PARMS   *frame_parms;
   

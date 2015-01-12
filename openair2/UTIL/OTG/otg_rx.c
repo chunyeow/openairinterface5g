@@ -40,7 +40,7 @@
 
 #include "otg_rx.h"
 #include "otg_externs.h"
-#include "../UTIL/MATH/oml.h"
+#include "UTIL/MATH/oml.h"
 #include <math.h>
 #include "otg_form.h"
 #include "otg_kpi.h"
@@ -70,8 +70,7 @@ int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned int size)
   unsigned int seq_num_rx;
   unsigned int nb_loss_pkts;
   unsigned int lost_packet=0;
-  //int header_size;
-
+     
   if (buffer_tx!=NULL) {
     otg_hdr_info_rx = (otg_hdr_info_t *) (&buffer_tx[bytes_read]);
     bytes_read += sizeof (otg_hdr_info_t);
@@ -299,9 +298,10 @@ float owd_const_application_v=owd_const_application()/2;
 	/*measurements are done for the data and background traffic */
 
 	if (g_otg->latency_metric) {
-	  if (g_otg->owd_radio_access==0)
+	  if (g_otg->owd_radio_access==0){
 	    add_log_metric(src, dst, otg_hdr_rx->time, otg_info->rx_pkt_owd[src][dst], OTG_LATENCY);
-	  else {
+	    add_log_metric(src, dst, otg_hdr_rx->time, otg_info->rx_pkt_jitter_e2e[src][dst], OTG_JITTER);
+	  } else {
 	    add_log_metric(src, dst, otg_hdr_rx->time, otg_info->radio_access_delay[src][dst], OTG_LATENCY);
 	    add_log_metric(src, dst, otg_hdr_rx->time, otg_info->rx_pkt_jitter[src][dst], OTG_JITTER);
 	  }

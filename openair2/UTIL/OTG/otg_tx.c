@@ -413,14 +413,14 @@ int check_data_transmit(int src,int dst, int app, int ctime){
 	  //g_ otg->flow_start_flag[src][dst][app]=1;
 	  LOG_T(OTG,"Flow start time not reached : do not generate packet for this pair of src=%d, dst =%d, start %d < ctime %d \n", 
 		src, dst,g_otg->flow_start[src][dst][app], ctime); 
-	  size+=0;	
+	  size=0;	
 	}else if (g_otg->flow_duration[src][dst][app] + g_otg->flow_start[src][dst][app] < ctime ){
 	  LOG_T(OTG,"Flow duration reached: do not generate packet for this pair of src=%d, dst =%d, duration %d < ctime %d + start %d\n", 
 		src, dst,g_otg->flow_duration[src][dst][app], ctime, g_otg->flow_start[src][dst][app]); 
-	  size+=0;	
+	  size=0;	
 	}else if ((g_otg->application_type[src][dst][app]==0)&&(g_otg->idt_dist[src][dst][app][PE_STATE]==0)){  
 	  LOG_T(OTG,"Do not generate packet for this pair of src=%d, dst =%d, IDT zero and app %d not specificed\n", src, dst, app); 
-	  size+=0;	 
+	  size=0;	 
 	}
 
 	else if ((g_otg->application_type[src][dst][app] >0) || (g_otg->idt_dist[src][dst][app][PE_STATE] > 0)) {

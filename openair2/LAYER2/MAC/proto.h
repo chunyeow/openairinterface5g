@@ -94,7 +94,7 @@ int8_t ue_get_mbsfn_sf_alloction (module_id_t module_idP, uint8_t mbsfn_sync_are
 */
 void schedule_ulsch(module_id_t module_idP,frame_t frameP,unsigned char cooperation_flag,sub_frame_t subframe,unsigned char sched_subframe,unsigned int *nCCE);
 
-/** \brief ULSCH Scheduling per RNTI TDD config (config 1-6).
+/** \brief ULSCH Scheduling per RNTI 
 @param Mod_id Instance ID of eNB
 @param frame Frame index
 @param subframe Subframe number on which to act
@@ -103,14 +103,14 @@ void schedule_ulsch(module_id_t module_idP,frame_t frameP,unsigned char cooperat
 */
 void schedule_ulsch_rnti(module_id_t module_idP, unsigned char cooperation_flag, frame_t frameP, sub_frame_t subframe, unsigned char sched_subframe, unsigned int *nCCE, unsigned int *nCCE_available, uint16_t *first_rb);
 
-/** \brief ULSCH Scheduling for CBA  RNTI TDD config (config 1-6).
+/** \brief ULSCH Scheduling for CBA  RNTI 
 @param Mod_id Instance ID of eNB
 @param frame Frame index
 @param subframe Subframe number on which to act
 @param sched_subframe Subframe number where PUSCH is transmitted (for DAI lookup)
 @param nCCE Pointer to current nCCE count
 */
-void schedule_ulsch_cba_rnti(module_id_t module_idP, unsigned char cooperation_flag, frame_t frameP, sub_frame_t subframe, unsigned char sched_subframe, uint8_t granted_UEs, unsigned int *nCCE, unsigned int *nCCE_available, uint16_t *first_rb);
+void schedule_ulsch_cba_rnti(module_id_t module_idP, unsigned char cooperation_flag, frame_t frameP, sub_frame_t subframe, unsigned char sched_subframe, unsigned int *nCCE, unsigned int *nCCE_available, uint16_t *first_rb);
 
 /** \brief Second stage of DLSCH scheduling, after schedule_SI, schedule_RA and schedule_dlsch have been called.  This routine first allocates random frequency assignments for SI and RA SDUs using distributed VRB allocations and adds the corresponding DCI SDU to the DCI buffer for PHY.  It then loops over the UE specific DCIs previously allocated and fills in the remaining DCI fields related to frequency allocation.  It assumes localized allocation of type 0 (DCI.rah=0).  The allocation is done for tranmission modes 1,2,4. 
 @param Mod_id Instance of eNB
@@ -500,7 +500,7 @@ void adjust_bsr_info(int buffer_occupancy, uint16_t TBS, UE_TEMPLATE *UE_templat
 */
 UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t subframe, lte_subframe_t direction,uint8_t eNB_index,int CC_id);
 
-/*! \fn  int use_cba_access(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint8_t eNB_index);
+/*! \fn  int cba_access(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint8_t eNB_index,uint16_t buflen);
 \brief determine whether to use cba resource to transmit or not
 \param[in] Mod_id instance of the UE
 \param[in] frame the frame number
@@ -508,7 +508,7 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
 \param[in] eNB_index instance of eNB
 \param[out] access(1) or postpone (0) 
 */
-int use_cba_access(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint8_t eNB_index);
+int cba_access(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint8_t eNB_index,uint16_t buflen);
 
 /*! \fn  int get_bsr_lcgid (module_id_t module_idP);
 \brief determine the lcgid for the bsr

@@ -52,7 +52,7 @@ temp=split(strrep(inputf,"\\","/"),"/");
 outputf=split(deblank(temp(size(temp,1),:)),".");
 ylbl=outputf(1,:);
 
-ylbl(1,1)=toupper(ylbl(1,1));
+#ylbl(1,1)=toupper(ylbl(1,1));
 ylabel(ylbl);
 xlabel("Time (ms)");
 

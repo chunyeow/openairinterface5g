@@ -706,6 +706,7 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     char *vcd_file;
     unsigned char eMBMS_active_state;
     unsigned char cba_group_active;
+    unsigned char cba_backoff;
     unsigned char handover_active;
     char * otg_traffic;
     unsigned char otg_bg_traffic_enabled;

@@ -44,7 +44,8 @@
 #ifdef DEBUG_UCI_TOOLS
 #include "PHY/vars.h"
 #endif
-//#define DEBUG_UCI
+
+//#define DEBUG_UCI 1
 
 uint64_t pmi2hex_2Ar1(uint32_t pmi) {
 
@@ -159,13 +160,13 @@ void do_diff_cqi(uint8_t N_RB_DL,
   }
 }
 
-void extract_CQI(void *o,UCI_format_t uci_format,LTE_eNB_UE_stats *stats, uint16_t * crnti, uint8_t * access_mode) {
+void extract_CQI(void *o,UCI_format_t uci_format,LTE_eNB_UE_stats *stats, uint8_t N_RB_DL, uint16_t * crnti, uint8_t * access_mode) {
 
   //unsigned char rank;
   //UCI_format fmt;
-  uint8_t N_RB_DL = 25;
-  
-  *access_mode=SCHEDULED_ACCESS;
+  //uint8_t N_RB_DL = 25;
+  LOG_D(PHY,"[eNB][UCI] N_RB_DL %d uci format %d\n", N_RB_DL,uci_format);
+
   switch(N_RB_DL) {
   case 6:
     switch(uci_format){
@@ -211,18 +212,16 @@ void extract_CQI(void *o,UCI_format_t uci_format,LTE_eNB_UE_stats *stats, uint16
     case HLC_subband_cqi_mcs_CBA:
       if ((*crnti == ((HLC_subband_cqi_mcs_CBA_1_5MHz *)o)->crnti) && (*crnti !=0)){
 	*access_mode=CBA_ACCESS;
-	LOG_D(PHY,"[eNB] UCI for CBA : mcs %d  crnti %x\n", 
+	LOG_N(PHY,"[eNB] UCI for CBA : mcs %d  crnti %x\n", 
 	      ((HLC_subband_cqi_mcs_CBA_1_5MHz *)o)->mcs, ((HLC_subband_cqi_mcs_CBA_1_5MHz *)o)->crnti);
       } else {
-	*access_mode=UNKNOWN_ACCESS;
-	LOG_N(PHY,"[eNB] UCI for CBA : rnti (enb context %x, rx uci %x) invalid, unknown access\n",
+	LOG_D(PHY,"[eNB] UCI for CBA : rnti (enb context %x, rx uci %x) invalid, unknown access\n",
 	      *crnti, ((HLC_subband_cqi_mcs_CBA_1_5MHz *)o)->crnti);
       }
       break;
     case unknown_cqi:
     default:
-      LOG_N(PHY,"[eNB][UCI] received unknown uci \n");
-      *access_mode=UNKNOWN_ACCESS;
+      LOG_N(PHY,"[eNB][UCI] received unknown uci (rb %d)\n",N_RB_DL);
       break;
     }
     break;
@@ -271,27 +270,136 @@ void extract_CQI(void *o,UCI_format_t uci_format,LTE_eNB_UE_stats *stats, uint16
     case HLC_subband_cqi_mcs_CBA:
       if ((*crnti == ((HLC_subband_cqi_mcs_CBA_5MHz *)o)->crnti) && (*crnti !=0)){
 	*access_mode=CBA_ACCESS;
-	LOG_D(PHY,"[eNB] UCI for CBA : mcs %d  crnti %x\n", 
+	LOG_N(PHY,"[eNB] UCI for CBA : mcs %d  crnti %x\n", 
 	      ((HLC_subband_cqi_mcs_CBA_5MHz *)o)->mcs, ((HLC_subband_cqi_mcs_CBA_5MHz *)o)->crnti);
       } else {
-	*access_mode=UNKNOWN_ACCESS;
-	LOG_N(PHY,"[eNB] UCI for CBA : rnti (enb context %x, rx uci %x) invalid, unknown access\n",
+	LOG_D(PHY,"[eNB] UCI for CBA : rnti (enb context %x, rx uci %x) invalid, unknown access\n",
 	      *crnti, ((HLC_subband_cqi_mcs_CBA_5MHz *)o)->crnti);
       }
       break;
     case unknown_cqi:
     default:
-      LOG_N(PHY,"[eNB][UCI] received unknown uci \n");
-      *access_mode=UNKNOWN_ACCESS;
+      LOG_N(PHY,"[eNB][UCI] received unknown uci (rb %d)\n",N_RB_DL);
       break;
     }
     break;
   case 50:
-
+    switch(uci_format){
+    case wideband_cqi_rank1_2A:
+      stats->DL_cqi[0]     = (((wideband_cqi_rank1_2A_10MHz *)o)->cqi1);
+      if (stats->DL_cqi[0] > 24)
+	stats->DL_cqi[0] = 24;
+      stats->DL_pmi_single = ((wideband_cqi_rank1_2A_10MHz *)o)->pmi;   
+      break;
+    case wideband_cqi_rank2_2A:
+      stats->DL_cqi[0]     = (((wideband_cqi_rank2_2A_10MHz *)o)->cqi1);
+      if (stats->DL_cqi[0] > 24)
+	stats->DL_cqi[0] = 24;      
+      stats->DL_cqi[1]     = (((wideband_cqi_rank2_2A_10MHz *)o)->cqi2);
+      if (stats->DL_cqi[1] > 24)
+	stats->DL_cqi[1] = 24;      
+      stats->DL_pmi_dual   = ((wideband_cqi_rank2_2A_10MHz *)o)->pmi; 
+      break;
+    case HLC_subband_cqi_nopmi:
+      stats->DL_cqi[0]     = (((HLC_subband_cqi_nopmi_10MHz *)o)->cqi1);
+      if (stats->DL_cqi[0] > 24)
+	stats->DL_cqi[0] = 24;      
+      do_diff_cqi(N_RB_DL,stats->DL_subband_cqi[0],stats->DL_cqi[0],((HLC_subband_cqi_nopmi_10MHz *)o)->diffcqi1);
+      break;
+    case HLC_subband_cqi_rank1_2A:
+      stats->DL_cqi[0]     = (((HLC_subband_cqi_rank1_2A_10MHz *)o)->cqi1);
+      if (stats->DL_cqi[0] > 24)
+	stats->DL_cqi[0] = 24;     
+      do_diff_cqi(N_RB_DL,stats->DL_subband_cqi[0],stats->DL_cqi[0],(((HLC_subband_cqi_rank1_2A_10MHz *)o)->diffcqi1));      
+      stats->DL_pmi_single = ((HLC_subband_cqi_rank1_2A_10MHz *)o)->pmi;    
+      break;
+    case HLC_subband_cqi_rank2_2A:
+      stats->DL_cqi[0]     = (((HLC_subband_cqi_rank2_2A_10MHz *)o)->cqi1);
+      if (stats->DL_cqi[0] > 24)
+	stats->DL_cqi[0] = 24;      
+      stats->DL_cqi[1]     = (((HLC_subband_cqi_rank2_2A_10MHz *)o)->cqi2);
+      if (stats->DL_cqi[1] > 24)
+	stats->DL_cqi[1] = 24;      
+      do_diff_cqi(N_RB_DL,stats->DL_subband_cqi[0],stats->DL_cqi[0],(((HLC_subband_cqi_rank2_2A_10MHz *)o)->diffcqi1));      
+      do_diff_cqi(N_RB_DL,stats->DL_subband_cqi[1],stats->DL_cqi[1],(((HLC_subband_cqi_rank2_2A_10MHz *)o)->diffcqi2));      
+      stats->DL_pmi_dual   = ((HLC_subband_cqi_rank2_2A_10MHz *)o)->pmi; 
+      break;
+    case HLC_subband_cqi_mcs_CBA:
+      if ((*crnti == ((HLC_subband_cqi_mcs_CBA_10MHz *)o)->crnti) && (*crnti !=0)){
+	*access_mode=CBA_ACCESS;
+	LOG_N(PHY,"[eNB] UCI for CBA : mcs %d  crnti %x\n", 
+	      ((HLC_subband_cqi_mcs_CBA_10MHz *)o)->mcs, ((HLC_subband_cqi_mcs_CBA_10MHz *)o)->crnti);
+      } else {
+	LOG_D(PHY,"[eNB] UCI for CBA : rnti (enb context %x, rx uci %x) invalid, unknown access\n",
+	      *crnti, ((HLC_subband_cqi_mcs_CBA_10MHz *)o)->crnti);
+      }
+      break;
+    case unknown_cqi:
+    default:
+      LOG_N(PHY,"[eNB][UCI] received unknown uci (RB %d)\n",N_RB_DL);
+      break;
+    }
     break;
-
+   
   case 100:
-    
+    switch(uci_format){
+    case wideband_cqi_rank1_2A:
+      stats->DL_cqi[0]     = (((wideband_cqi_rank1_2A_20MHz *)o)->cqi1);
+      if (stats->DL_cqi[0] > 24)
+	stats->DL_cqi[0] = 24;
+      stats->DL_pmi_single = ((wideband_cqi_rank1_2A_20MHz *)o)->pmi;   
+      break;
+    case wideband_cqi_rank2_2A:
+      stats->DL_cqi[0]     = (((wideband_cqi_rank2_2A_20MHz *)o)->cqi1);
+      if (stats->DL_cqi[0] > 24)
+	stats->DL_cqi[0] = 24;      
+      stats->DL_cqi[1]     = (((wideband_cqi_rank2_2A_20MHz *)o)->cqi2);
+      if (stats->DL_cqi[1] > 24)
+	stats->DL_cqi[1] = 24;      
+      stats->DL_pmi_dual   = ((wideband_cqi_rank2_2A_20MHz *)o)->pmi; 
+      break;
+    case HLC_subband_cqi_nopmi:
+      stats->DL_cqi[0]     = (((HLC_subband_cqi_nopmi_20MHz *)o)->cqi1);
+      if (stats->DL_cqi[0] > 24)
+	stats->DL_cqi[0] = 24;      
+      do_diff_cqi(N_RB_DL,stats->DL_subband_cqi[0],stats->DL_cqi[0],((HLC_subband_cqi_nopmi_20MHz *)o)->diffcqi1);
+      break;
+    case HLC_subband_cqi_rank1_2A:
+      stats->DL_cqi[0]     = (((HLC_subband_cqi_rank1_2A_20MHz *)o)->cqi1);
+      if (stats->DL_cqi[0] > 24)
+	stats->DL_cqi[0] = 24;     
+      do_diff_cqi(N_RB_DL,stats->DL_subband_cqi[0],stats->DL_cqi[0],(((HLC_subband_cqi_rank1_2A_20MHz *)o)->diffcqi1));      
+      stats->DL_pmi_single = ((HLC_subband_cqi_rank1_2A_20MHz *)o)->pmi;    
+      break;
+    case HLC_subband_cqi_rank2_2A:
+      stats->DL_cqi[0]     = (((HLC_subband_cqi_rank2_2A_20MHz *)o)->cqi1);
+      if (stats->DL_cqi[0] > 24)
+	stats->DL_cqi[0] = 24;      
+      stats->DL_cqi[1]     = (((HLC_subband_cqi_rank2_2A_20MHz *)o)->cqi2);
+      if (stats->DL_cqi[1] > 24)
+	stats->DL_cqi[1] = 24;      
+      do_diff_cqi(N_RB_DL,stats->DL_subband_cqi[0],stats->DL_cqi[0],(((HLC_subband_cqi_rank2_2A_20MHz *)o)->diffcqi1));      
+      do_diff_cqi(N_RB_DL,stats->DL_subband_cqi[1],stats->DL_cqi[1],(((HLC_subband_cqi_rank2_2A_20MHz *)o)->diffcqi2));      
+      stats->DL_pmi_dual   = ((HLC_subband_cqi_rank2_2A_20MHz *)o)->pmi; 
+      break;
+    case HLC_subband_cqi_mcs_CBA:
+      if ((*crnti == ((HLC_subband_cqi_mcs_CBA_20MHz *)o)->crnti) && (*crnti !=0)){
+	*access_mode=CBA_ACCESS;
+	LOG_N(PHY,"[eNB] UCI for CBA : mcs %d  crnti %x\n", 
+	      ((HLC_subband_cqi_mcs_CBA_20MHz *)o)->mcs, ((HLC_subband_cqi_mcs_CBA_20MHz *)o)->crnti);
+      } else {
+	LOG_D(PHY,"[eNB] UCI for CBA : rnti (enb context %x, rx uci %x) invalid, unknown access\n",
+	      *crnti, ((HLC_subband_cqi_mcs_CBA_20MHz *)o)->crnti);
+      }
+      break;
+    case unknown_cqi:
+    default:
+      LOG_N(PHY,"[eNB][UCI] received unknown uci (RB %d)\n",N_RB_DL);
+      break;
+    }
+    break;
+  default:
+    LOG_N(PHY,"[eNB][UCI] unknown RB %d\n",N_RB_DL);
     break;
   }
 

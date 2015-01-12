@@ -116,7 +116,7 @@ node_list*     ue_node_list          = NULL;
 node_list*     enb_node_list         = NULL;
 int           omg_period            = 0;
 int           pdcp_period           = 0;
-
+int           cba_backoff           = 30;
 // time calibration for soft realtime mode
 struct timespec time_spec;
 unsigned long   time_last           = 0;
@@ -191,6 +191,8 @@ void get_simulation_options(int argc, char *argv[]) {
     LONG_OPTION_UE_MIHF_ID,
 
     LONG_OPTION_MALLOC_TRACE_ENABLED,
+
+    LONG_OPTION_CBA_BACKOFF_TIMER,
   };
 
   static struct option long_options[] = {
@@ -219,6 +221,9 @@ void get_simulation_options(int argc, char *argv[]) {
       {"ue-mihf-id",             required_argument, 0, LONG_OPTION_UE_MIHF_ID},
 
       {"malloc-trace-enabled",   no_argument,       0, LONG_OPTION_MALLOC_TRACE_ENABLED},
+
+      {"cba-backoff",            required_argument, 0, LONG_OPTION_CBA_BACKOFF_TIMER},
+
       {NULL, 0, NULL, 0}
   };
 
@@ -240,119 +245,125 @@ void get_simulation_options(int argc, char *argv[]) {
 
       case LONG_OPTION_OMG_PERIOD:
         if (optarg) {
-            omg_period = atoi(optarg);
+	  omg_period = atoi(optarg);
             printf("OMG period is %d\n", omg_period);
         }
         break;
       
       case LONG_OPTION_OEH_ENABLED:
-	      oai_emulation.info.oeh_enabled = 1;
-	    break;
+	oai_emulation.info.oeh_enabled = 1;
+	break;
 
       case LONG_OPTION_MALLOC_TRACE_ENABLED:
     	 mtrace();
-	     break;
+	 break;
+
+      case LONG_OPTION_CBA_BACKOFF_TIMER:
+	oai_emulation.info.cba_backoff=atoi(optarg);
+	cba_backoff=atoi(optarg);
+	printf("setting CBA backoff to %d\n", cba_backoff);
+	break;
 
 #if defined(ENABLE_RAL)
       case LONG_OPTION_ENB_RAL_LISTENING_PORT:
         if (optarg) {
-            g_conf_enb_ral_listening_port = strdup(optarg);
-            printf("eNB RAL listening port is %s\n", g_conf_enb_ral_listening_port);
+	  g_conf_enb_ral_listening_port = strdup(optarg);
+	  printf("eNB RAL listening port is %s\n", g_conf_enb_ral_listening_port);
         }
         break;
-
+	
       case LONG_OPTION_ENB_RAL_IP_ADDRESS:
         if (optarg) {
-            g_conf_enb_ral_ip_address = strdup(optarg);
-            printf("eNB RAL IP address is %s\n", g_conf_enb_ral_ip_address);
+	  g_conf_enb_ral_ip_address = strdup(optarg);
+	  printf("eNB RAL IP address is %s\n", g_conf_enb_ral_ip_address);
         }
         break;
-
+	
       case LONG_OPTION_ENB_RAL_LINK_ADDRESS:
         if (optarg) {
-            g_conf_enb_ral_link_address = strdup(optarg);
-            printf("eNB RAL link address is %s\n", g_conf_enb_ral_link_address);
+	  g_conf_enb_ral_link_address = strdup(optarg);
+	  printf("eNB RAL link address is %s\n", g_conf_enb_ral_link_address);
         }
         break;
-
+	
       case LONG_OPTION_ENB_RAL_LINK_ID:
         if (optarg) {
-            g_conf_enb_ral_link_id = strdup(optarg);
-            printf("eNB RAL link id is %s\n", g_conf_enb_ral_link_id);
+	  g_conf_enb_ral_link_id = strdup(optarg);
+	  printf("eNB RAL link id is %s\n", g_conf_enb_ral_link_id);
         }
         break;
-
+	
       case LONG_OPTION_ENB_MIHF_REMOTE_PORT:
         if (optarg) {
-            g_conf_enb_mihf_remote_port = strdup(optarg);
-            printf("eNB MIH-F remote port is %s\n", g_conf_enb_mihf_remote_port);
+	  g_conf_enb_mihf_remote_port = strdup(optarg);
+	  printf("eNB MIH-F remote port is %s\n", g_conf_enb_mihf_remote_port);
         }
         break;
-
+	
       case LONG_OPTION_ENB_MIHF_IP_ADDRESS:
         if (optarg) {
-            g_conf_enb_mihf_ip_address = strdup(optarg);
-            printf("eNB MIH-F IP address is %s\n", g_conf_enb_mihf_ip_address);
+	  g_conf_enb_mihf_ip_address = strdup(optarg);
+	  printf("eNB MIH-F IP address is %s\n", g_conf_enb_mihf_ip_address);
         }
         break;
-
+	
       case LONG_OPTION_ENB_MIHF_ID:
         if (optarg) {
-            g_conf_enb_mihf_id = strdup(optarg);
-            printf("eNB MIH-F id is %s\n", g_conf_enb_mihf_id);
+	  g_conf_enb_mihf_id = strdup(optarg);
+	  printf("eNB MIH-F id is %s\n", g_conf_enb_mihf_id);
         }
         break;
-
+	
       case LONG_OPTION_UE_RAL_LISTENING_PORT:
         if (optarg) {
-            g_conf_ue_ral_listening_port = strdup(optarg);
-            printf("UE RAL listening port is %s\n", g_conf_ue_ral_listening_port);
+	  g_conf_ue_ral_listening_port = strdup(optarg);
+	  printf("UE RAL listening port is %s\n", g_conf_ue_ral_listening_port);
         }
         break;
-
+	
       case LONG_OPTION_UE_RAL_IP_ADDRESS:
         if (optarg) {
-            g_conf_ue_ral_ip_address = strdup(optarg);
-            printf("UE RAL IP address is %s\n", g_conf_ue_ral_ip_address);
+	  g_conf_ue_ral_ip_address = strdup(optarg);
+	  printf("UE RAL IP address is %s\n", g_conf_ue_ral_ip_address);
         }
         break;
-
+	
       case LONG_OPTION_UE_RAL_LINK_ID:
         if (optarg) {
-            g_conf_ue_ral_link_id = strdup(optarg);
-            printf("UE RAL link id is %s\n", g_conf_ue_ral_link_id);
+	  g_conf_ue_ral_link_id = strdup(optarg);
+	  printf("UE RAL link id is %s\n", g_conf_ue_ral_link_id);
         }
         break;
-
+	
       case LONG_OPTION_UE_RAL_LINK_ADDRESS:
         if (optarg) {
-            g_conf_ue_ral_link_address = strdup(optarg);
-            printf("UE RAL link address is %s\n", g_conf_ue_ral_link_address);
+	  g_conf_ue_ral_link_address = strdup(optarg);
+	  printf("UE RAL link address is %s\n", g_conf_ue_ral_link_address);
         }
         break;
-
+	
       case LONG_OPTION_UE_MIHF_REMOTE_PORT:
         if (optarg) {
-            g_conf_ue_mihf_remote_port = strdup(optarg);
-            printf("UE MIH-F remote port is %s\n", g_conf_ue_mihf_remote_port);
+	  g_conf_ue_mihf_remote_port = strdup(optarg);
+	  printf("UE MIH-F remote port is %s\n", g_conf_ue_mihf_remote_port);
         }
         break;
-
+	
       case LONG_OPTION_UE_MIHF_IP_ADDRESS:
         if (optarg) {
-            g_conf_ue_mihf_ip_address = strdup(optarg);
-            printf("UE MIH-F IP address is %s\n", g_conf_ue_mihf_ip_address);
+	  g_conf_ue_mihf_ip_address = strdup(optarg);
+	  printf("UE MIH-F IP address is %s\n", g_conf_ue_mihf_ip_address);
         }
         break;
 
       case LONG_OPTION_UE_MIHF_ID:
         if (optarg) {
-            g_conf_ue_mihf_id = strdup(optarg);
-            printf("UE MIH-F id is %s\n", g_conf_ue_mihf_id);
+	  g_conf_ue_mihf_id = strdup(optarg);
+	  printf("UE MIH-F id is %s\n", g_conf_ue_mihf_id);
         }
         break;
 #endif
-
+	
       case 'a':
         abstraction_flag = 1;
         break;
@@ -406,6 +417,7 @@ void get_simulation_options(int argc, char *argv[]) {
       case 'F':                   // set FDD
         printf("Setting Frame to FDD\n");
         oai_emulation.info.frame_type[0] = 0;
+	oai_emulation.info.frame_type_name[0] = "FDD";
         break;
 
       case 'g':
@@ -482,6 +494,7 @@ void get_simulation_options(int argc, char *argv[]) {
 
       case 'n':
         oai_emulation.info.n_frames = atoi (optarg);
+	oai_emulation.emulation_config.emulation_time_ms= oai_emulation.info.n_frames * 10; // 10 ms frame
         //n_frames = (n_frames >1024) ? 1024: n_frames; // adjust the n_frames if higher that 1024
         oai_emulation.info.n_frames_flag = 1;
         break;

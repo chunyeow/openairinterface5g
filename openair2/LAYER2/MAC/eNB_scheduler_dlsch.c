@@ -1885,7 +1885,7 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
 
     // UE specific DCIs
     for (UE_id=UE_list->head;UE_id>=0;UE_id=UE_list->next[UE_id]) {
-      LOG_D(MAC,"CC_id %d, UE_id: %d => status %d\n",CC_id,UE_id,eNB_dlsch_info[module_idP][CC_id][UE_id].status);
+      LOG_T(MAC,"CC_id %d, UE_id: %d => status %d\n",CC_id,UE_id,eNB_dlsch_info[module_idP][CC_id][UE_id].status);
       if (eNB_dlsch_info[module_idP][CC_id][UE_id].status == S_DL_SCHEDULED) {
 
 	// clear scheduling flag

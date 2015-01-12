@@ -118,7 +118,7 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
 #endif
 ) {
 
-  int i,CC_id;
+  int i,CC_id=0;
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_MAC_CONFIG, VCD_FUNCTION_IN);
 
@@ -442,22 +442,22 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
           UE_mac_inst[Mod_id].cba_rnti[num_active_cba_groups-1] = cba_rnti;
           LOG_D(MAC,"[UE %d] configure CBA group %d RNTI %x for eNB %d (total active cba group %d)\n",
               Mod_id,Mod_id%num_active_cba_groups, cba_rnti,eNB_index,num_active_cba_groups);
-          mac_xface->phy_config_cba_rnti(Mod_id,eNB_flagP,eNB_index,cba_rnti,num_active_cba_groups-1, num_active_cba_groups);
+          mac_xface->phy_config_cba_rnti(Mod_id,CC_id,eNB_flagP,eNB_index,cba_rnti,num_active_cba_groups-1, num_active_cba_groups);
       }
   }else {
       if (cba_rnti) {
           LOG_D(MAC,"[eNB %d] configure CBA RNTI for UE  %d (total active cba groups %d)\n",
               Mod_id, UE_id, num_active_cba_groups);
-          eNB_mac_inst[Mod_id].num_active_cba_groups=num_active_cba_groups;
+          eNB_mac_inst[Mod_id].common_channels[CC_id].num_active_cba_groups=num_active_cba_groups;
           for (i=0; i < num_active_cba_groups; i ++){
-              if (eNB_mac_inst[Mod_id].cba_rnti[i] != cba_rnti + i)
-                eNB_mac_inst[Mod_id].cba_rnti[i] = cba_rnti + i;
+              if (eNB_mac_inst[Mod_id].common_channels[CC_id].cba_rnti[i] != cba_rnti + i)
+                eNB_mac_inst[Mod_id].common_channels[CC_id].cba_rnti[i] = cba_rnti + i;
               //only configure UE ids up to num_active_cba_groups
               //we use them as candidates for the transmission of dci format0)
               if (UE_id%num_active_cba_groups == i){
-                  mac_xface->phy_config_cba_rnti(Mod_id,eNB_flagP,UE_id,cba_rnti + i,i,num_active_cba_groups );
+		mac_xface->phy_config_cba_rnti(Mod_id,CC_id,eNB_flagP,UE_id,cba_rnti + i,i,num_active_cba_groups );
                   LOG_D(MAC,"[eNB %d] configure CBA groups %d with RNTI %x for UE  %d (total active cba groups %d)\n",
-                      Mod_id, i, eNB_mac_inst[Mod_id].cba_rnti[i],UE_id, num_active_cba_groups);
+                      Mod_id, i, eNB_mac_inst[Mod_id].common_channels[CC_id].cba_rnti[i],UE_id, num_active_cba_groups);
               }
           }
       }

@@ -2958,7 +2958,7 @@ int main(int argc, char **argv) {
   //  int *eNB_thread_status_rx[10],*eNB_thread_status_tx[10];
 #endif
   int i,aa,card;
-#if defined (XFORMS) || defined (EMOS)
+#if defined (XFORMS) || defined (EMOS) || defined(EXMIMO)
   void *status;
 #endif
   

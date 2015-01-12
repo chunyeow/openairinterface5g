@@ -81,10 +81,10 @@
 	<BACKGROUND_STATS>enable</BACKGROUND_STATS>
 	<CURVE>enable</CURVE>
 	<PERFORMANCE_METRICS>
-		    <THROUGHPUT>1</THROUGHPUT>
-		    <LATENCY>1</LATENCY>
-		    <LOSS_RATE>1</LOSS_RATE>
-		    <OWD_RADIO_ACESS>1</OWD_RADIO_ACESS>
+		    <THROUGHPUT>enable</THROUGHPUT>
+		    <LATENCY>enable</LATENCY>
+		    <LOSS_RATE>enable</LOSS_RATE>
+		    <OWD_RADIO_ACESS>enable</OWD_RADIO_ACESS>
 	</PERFORMANCE_METRICS>
 	<LOG>  <!-- set the global log level -->
       		<LEVEL>debug</LEVEL>

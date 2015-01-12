@@ -88,5 +88,7 @@ int ocg_config_omg(void);
 int ocg_config_topo(void);
 int ocg_config_app(void);
 int ocg_config_emu(void);
+
+int flow_start_time(int sid, int did, uint32_t n_frames, uint32_t start, uint32_t duration);
 /* @}*/
 

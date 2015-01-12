@@ -38,7 +38,7 @@ typedef enum {
   HLC_subband_cqi_rank1_2A, //HLC_subband_cqi_rank1_2A,
   HLC_subband_cqi_rank2_2A, //HLC_subband_cqi_rank2_2A,
   HLC_subband_cqi_modes123, //HLC_subband_cqi_modes123
-  HLC_subband_cqi_mcs_CBA,
+  HLC_subband_cqi_mcs_CBA, // MCS and RNTI, for contention-based acces
   unknown_cqi// 
 } UCI_format_t;
 
@@ -91,11 +91,11 @@ typedef struct __attribute__((packed)) {
 #define sizeof_HLC_subband_cqi_modes123_1_5MHz 16
 
 typedef struct __attribute__((packed)) { 
-  uint32_t padding:12;
+  uint32_t padding:11;
   uint32_t crnti:16;   
-  uint32_t mcs:4;
+  uint32_t mcs:5;
 } HLC_subband_cqi_mcs_CBA_1_5MHz;
-#define sizeof_HLC_subband_cqi_mcs_CBA_1_5MHz 20
+#define sizeof_HLC_subband_cqi_mcs_CBA_1_5MHz 21
 
 
 // **********************************************5 MHz***************************************************************************
@@ -147,11 +147,11 @@ typedef struct __attribute__((packed)) {
 #define sizeof_HLC_subband_cqi_modes123_5MHz 18
 
 typedef struct __attribute__((packed)) { 
-  uint32_t padding:12;
+  uint32_t padding:11;
   uint32_t crnti:16;   
-  uint32_t mcs:4;
+  uint32_t mcs:5;
 } HLC_subband_cqi_mcs_CBA_5MHz;
-#define sizeof_HLC_subband_cqi_mcs_CBA_5MHz 20
+#define sizeof_HLC_subband_cqi_mcs_CBA_5MHz 21
 
 // **********************************************10 MHz***************************************************************************
 typedef struct __attribute__((packed)) {
@@ -202,11 +202,11 @@ typedef struct __attribute__((packed)) {
 #define sizeof_HLC_subband_cqi_modes123_10MHz 22
 
 typedef struct __attribute__((packed)) { 
-  uint32_t padding:12;
+  uint32_t padding:11;
   uint32_t crnti:16;   
-  uint32_t mcs:4;
+  uint32_t mcs:5;
 } HLC_subband_cqi_mcs_CBA_10MHz;
-#define sizeof_HLC_subband_cqi_mcs_CBA_10MHz 20
+#define sizeof_HLC_subband_cqi_mcs_CBA_10MHz 21
 
 // **********************************************20 MHz***************************************************************************
 typedef struct __attribute__((packed)) {
@@ -257,11 +257,11 @@ typedef struct __attribute__((packed)) {
 #define sizeof_HLC_subband_cqi_modes123_20MHz 30
 
 typedef struct __attribute__((packed)) { 
-  uint32_t padding:12;
+  uint32_t padding:11;
   uint32_t crnti:16;   
-  uint32_t mcs:4;
+  uint32_t mcs:5;
 } HLC_subband_cqi_mcs_CBA_20MHz;
-#define sizeof_HLC_subband_cqi_mcs_CBA_20MHz 20
+#define sizeof_HLC_subband_cqi_mcs_CBA_20MHz 21
 
 
 #define MAX_CQI_PAYLOAD (sizeof(HLC_subband_cqi_rank2_2A_20MHz)*8*20)
