@@ -815,7 +815,7 @@ if [ $RUN -ne 0 ]; then
         'EPC')
             echo "############# running EPC #############"
             if [ $RUN_GDB -eq 0 ]; then
-                $SUDO exec $OPENAIR_TARGETS/bin/oai_epc  `echo $EXE_ARGUMENTS`
+                $SUDO $OPENAIR_TARGETS/bin/oai_epc  `echo $EXE_ARGUMENTS`
             else
                 $SUDO touch ~/.gdb_epc
                 $SUDO echo "file $OPENAIR_TARGETS/bin/oai_epc" > ~/.gdb_epc
