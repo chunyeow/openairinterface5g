@@ -443,9 +443,6 @@ check_install_oai_software() {
         test_install_package doxygen
         test_install_package graphviz
 	
-# TODO: install the USRP UHD packages 
-#        if [ $1 = "USRP" ] ; then 
-	
 #        test_install_package libboost-all-dev
 	
         if [ $OAI_INSTALLED = 1 ]; then 
@@ -741,8 +738,8 @@ compile_epc() {
         echo_error "Build GTPUAH module failed, exiting"
         return 1
     else 
-        cp -pfv ./Bin/libxt_*.so /lib/xtables
-        cp -pfv ./Bin/*.ko $OPENAIR_TARGETS/bin
+       	$SUDO cp -pfv ./Bin/libxt_*.so /lib/xtables
+        $SUDO cp -pfv ./Bin/*.ko $OPENAIR_TARGETS/bin
     fi
     
     cd $OPENAIRCN_DIR/GTPV1-U/GTPURH;
@@ -751,8 +748,8 @@ compile_epc() {
         echo_error "Build GTPURH module failed, exiting"
         return 1
     else 
-        cp -pfv ./Bin/libxt_*.so /lib/xtables
-        cp -pfv ./Bin/*.ko $OPENAIR_TARGETS/bin
+       $SUDO cp -pfv ./Bin/libxt_*.so /lib/xtables
+       $SUDO cp -pfv ./Bin/*.ko $OPENAIR_TARGETS/bin
     fi
     return 0
 }
@@ -938,13 +935,13 @@ install_ltesoftmodem() {
     if [ $1 = "RTAI" ]; then 
 	if [ ! -f /tmp/init_rt_done.tmp ]; then
             echo_info "  8.1 Insert RTAI modules"
-            $SUDO$ insmod /usr/realtime/modules/rtai_hal.ko     > /dev/null 2>&1
-            $SUDO$ insmod /usr/realtime/modules/rtai_sched.ko   > /dev/null 2>&1
-            $SUDO$ insmod /usr/realtime/modules/rtai_sem.ko     > /dev/null 2>&1
-            $SUDO$ insmod /usr/realtime/modules/rtai_fifos.ko   > /dev/null 2>&1
-            $SUDO$ insmod /usr/realtime/modules/rtai_mbx.ko     > /dev/null 2>&1
-            $SUDO$ touch /tmp/init_rt_done.tmp
-            $SUDO$ chmod 666 /tmp/init_rt_done.tmp
+            $SUDO insmod /usr/realtime/modules/rtai_hal.ko     > /dev/null 2>&1
+            $SUDO insmod /usr/realtime/modules/rtai_sched.ko   > /dev/null 2>&1
+            $SUDO insmod /usr/realtime/modules/rtai_sem.ko     > /dev/null 2>&1
+            $SUDO insmod /usr/realtime/modules/rtai_fifos.ko   > /dev/null 2>&1
+            $SUDO insmod /usr/realtime/modules/rtai_mbx.ko     > /dev/null 2>&1
+            $SUDO touch /tmp/init_rt_done.tmp
+            $SUDO chmod 666 /tmp/init_rt_done.tmp
         else
             echo_warning "  8.1 RTAI modules already inserted"
         fi
