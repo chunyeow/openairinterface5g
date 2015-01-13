@@ -524,21 +524,6 @@ rlc_op_status_t rrc_rlc_remove_rlc   (
 
     h_rc = hashtable_get(rlc_coll_p, key, &rlc_union_p);
     if (h_rc == HASH_TABLE_OK) {
-        /*switch (rlc_union_p->mode) {
-            case RLC_MODE_AM:
-                rlc_am_cleanup(ctxt_pP, &rlc_union_p->rlc.am);
-                break;
-            case RLC_MODE_UM:
-                rlc_um_cleanup(ctxt_pP, &rlc_union_p->rlc.um);
-                break;
-            case RLC_MODE_TM:
-                rlc_tm_cleanup(ctxt_pP, &rlc_union_p->rlc.tm);
-                break;
-            default:
-	      break;
-        }
-        cleanup is done in free() callback function configured in hashtable
-        */
         h_rc = hashtable_remove(rlc_coll_p, key);
         LOG_D(RLC, "[Frame %05u][%s][RLC_RRC][INST %u/%u][%s %u] RELEASED %s\n",
             ctxt_pP->frame,
@@ -549,7 +534,7 @@ rlc_op_status_t rrc_rlc_remove_rlc   (
             rb_idP,
             (srb_flagP) ? "SRB" : "DRB");
     } else if (h_rc == HASH_TABLE_KEY_NOT_EXISTS) {
-        LOG_W(RLC, "[Frame %05u][%s][RLC_RRC][INST %u/%u][%s %u] RELEASE : RLC NOT FOUND %s\n",
+        LOG_D(RLC, "[Frame %05u][%s][RLC_RRC][INST %u/%u][%s %u] RELEASE : RLC NOT FOUND %s\n",
             ctxt_pP->frame,
             (ctxt_pP->enb_flag) ? "eNB" : "UE",
             ctxt_pP->enb_module_id,
