@@ -219,6 +219,7 @@ fi
             ;;
        -x | --xforms)
             XFORMS=1
+            EXE_ARGUMENTS="$EXE_ARGUMENTS -d"
             echo "setting xforms to: $XFORMS"
             shift;
             ;;
