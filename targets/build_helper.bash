@@ -681,7 +681,6 @@ compile_hss() {
             echo_error "Build failed, exiting"
             return 1
         else 
-            cp -pfv ./openair-hss $OPENAIR_TARGETS/bin
             return 0
         fi
     else
