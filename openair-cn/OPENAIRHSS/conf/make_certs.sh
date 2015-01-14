@@ -31,7 +31,6 @@
 # BY DEFAULT REALM IS "eur"
 
 DEFAULTREALMVALUE="eur"
-echo "ARG is $1"
 REALM=${1:-$DEFAULTREALMVALUE}
 
 rm -rf demoCA
@@ -69,7 +68,7 @@ then
     sudo mkdir /usr/local/etc/freeDiameter/
 fi
 
-sudo cp -upv cakey.pem hss.cert.pem cacert.pem /usr/local/etc/freeDiameter/
+sudo cp -upv cakey.pem hss.cert.pem cacert.pem hss.key.pem /usr/local/etc/freeDiameter/
 
 # openssl genrsa -out $hss.key.pem 1024
 # openssl req -new -batch -out $hss.csr.pem -key $hss.key.pem -subj /CN=$hss.test.fr/C=FR/ST=Biot/L=Aix/O=test.fr/OU=mobiles
