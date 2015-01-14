@@ -79,3 +79,38 @@ The 3 folders have the following structures
 ----------------------------------------------------------------
 	you may download the image using this URL: https://emu.openairinterface.org/openairlab/openairlab.zip
 	check that all the packages are there as some packages might be added later.
+
+
+----------------------------------------------------------------
+6) Installing phpmyadmin for HSS  
+----------------------------------------------------------------
+
+Step 1:
+
+Configure database for phpmyadmin with dbconfig-common?  SELECT <Yes>
+
+
+Step 2:
+
+Please provide the password for the administrative account with which this package should create its MySQL database and user.
+Password of the database's administrative user:  The mysql administrative user.
+
+
+Step 3:
+
+Please provide a password for phpmyadmin to register with the database server.  If left blank, a random password will be generated.
+MySQL application password for phpmyadmin: admin
+
+
+Step 4:
+
+Password confirmation: admin
+
+
+Step 5:
+
+Please choose the web server that should be automatically configured to run phpMyAdmin.
+Web server to reconfigure automatically:
+        [*] apache2 
+        [ ] lighttpd 
+    
