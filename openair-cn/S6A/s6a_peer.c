@@ -130,7 +130,8 @@ int s6a_fd_new_peer(void)
               fd_g_config->cnf_diamid, fd_g_config->cnf_diamid_len);
 
     hss_name = calloc(1,100);
-    strcat(hss_name, "hss.");
+    strcat(hss_name, mme_config.s6a_config.hss_host_name);
+    strcat(hss_name, ".");
     strcat(hss_name, mme_config.realm);
     info.pi_diamid = hss_name;
     info.pi_diamidlen = strlen(info.pi_diamid);
