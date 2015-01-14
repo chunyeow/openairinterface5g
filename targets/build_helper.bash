@@ -320,7 +320,7 @@ check_epc_s6a_certificate() {
             if [ a$full_hostname == a`hostname`.${1:-'eur'} ]
             then
                 echo_success "EPC S6A: Found valid certificate in /usr/local/etc/freeDiameter"
-                return 1
+                return 0
             fi
         fi
     fi
@@ -329,7 +329,8 @@ check_epc_s6a_certificate() {
     cd $OPENAIRCN_DIR/S6A/freediameter
     ./make_certs.sh ${1:-'eur'}
     if [ $# -lt 2 ] ; then
-        check_epc_s6a_certificate ${1:-'eur'}  2
+        __i=check_epc_s6a_certificate ${1:-'eur'}  2
+        return $__i
     else
        exit 1
     fi
@@ -356,8 +357,9 @@ check_hss_s6a_certificate() {
     if [ $# -lt 2 ] ; then
         __i=check_hss_s6a_certificate ${1:-'eur'} 2
         return $__i
+    else
+       exit 1
     fi
-    return 1
 }
 
 check_install_usrp_uhd_driver(){
@@ -858,15 +860,14 @@ check_for_ltesoftmodem_executable() {
 check_for_epc_executable() {
     if [ ! -f $OPENAIRCN_DIR/objs/OAI_EPC/oai_epc ]; then
         echo_error "Cannot find oai_epc executable object in directory $OPENAIRCN_DIR/objs/OAI_EPC/"
-        echo_error "Please make sure you have compiled OAI EPC with --enable-standalone-epc option"
+        echo_fatal "Please make sure you have compiled OAI EPC with --enable-standalone-epc option"
     fi
 }
 
 check_for_hss_executable() {
     if [ ! -f $OPENAIRCN_DIR/OPENAIRHSS/objs/openair-hss ]; then
         echo_error "Cannot find openair-hss executable object in directory $OPENAIRCN_DIR/OPENAIRHSS/objs/"
-        echo_error "Please make sure you have compiled OAI HSS"
-        exit 1
+        echo_fatal "Please make sure you have compiled OAI HSS"
     fi
 }
 
@@ -1006,7 +1007,7 @@ create_hss_database(){
     if [ $# -ne $EXPECTED_ARGS ]
     then
         echo_fatal "Usage: $0 dbuser dbpass"
-	rv=1
+        rv=1
     fi
 
     set_openair_env
@@ -1016,17 +1017,22 @@ create_hss_database(){
     $MYSQL -u $1 --password=$2 -e "$SQL"
     if [ $? -ne 0 ]; then
        echo_error "oai_db creation failed"
-       rv=1
+       return 1
     else
        echo_success "oai_db creation succeeded"
     fi
     
-    $MYSQL -u $1 --password=$2 oai_db < $OPENAIRCN_DIR/OPENAIRHSS/db/oai_db.sql
-    if [ $? -ne 0 ]; then
-       echo_error "oai_db tables creation failed"
-       rv=1
-    else
-       echo_success "oai_db tables creation succeeded"
+    # test if tables have been created
+    mysql -u $1 --password=$2  -e "desc oai_db.users" > /dev/null 2>&1
+    
+    if [ $? -eq 1 ]; then 
+        $MYSQL -u $1 --password=$2 oai_db < $OPENAIRCN_DIR/OPENAIRHSS/db/oai_db.sql
+        if [ $? -ne 0 ]; then
+            echo_error "oai_db tables creation failed"
+            return 1
+        else
+            echo_success "oai_db tables creation succeeded"
+        fi
     fi
     
     Q1="GRANT ALL PRIVILEGES ON *.* TO 'hssadmin'@'%' IDENTIFIED BY 'admin' WITH GRANT OPTION;"
@@ -1035,11 +1041,11 @@ create_hss_database(){
     $MYSQL -u $1 --password=$2 -e "$SQL"
     if [ $? -ne 0 ]; then
        echo_error "hssadmin permissions failed"
-       rv=1
+       return 1
     else
        echo_success "hssadmin permissions succeeded"
     fi
-    return rv
+    return 0
 }
 
 ################################
