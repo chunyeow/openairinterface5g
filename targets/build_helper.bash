@@ -307,7 +307,8 @@ check_install_freediamter(){
 
 
 test_is_host_reachable() {
-    ping -c 1 $1 > /dev/null || { echo_fatal "$1 does not respond to ping" >&2 ; }
+    ping -c 1 $1 > /dev/null || { echo_fatal "$2 host $1 does not respond to ping" >&2 ; }
+    echo_success "$2 host $1 is reachable"
 }
 
 

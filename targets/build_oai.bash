@@ -563,6 +563,7 @@ build_epc(){
     
     TEMP_FILE=`tempfile`
     VARIABLES=" S6A_CONF\|\
+           HSS_HOSTNAME\|\
            REALM"
 
     VARIABLES=$(echo $VARIABLES | sed -e 's/\\r//g')
@@ -802,7 +803,7 @@ if [ $RUN -ne 0 ]; then
         
         'EPC')
             echo "############# running EPC #############"
-            #test_is_host_reachable 
+            test_is_host_reachable $HSS_HOSTNAME.$REALM HSS
             if [ $RUN_GDB -eq 0 ]; then
                 $SUDO $OPENAIR_TARGETS/bin/oai_epc  `echo $EXE_ARGUMENTS`
             else
