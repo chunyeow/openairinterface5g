@@ -1,16 +1,16 @@
-fc  = 2680000000;
+fc  = 1907600000;
 %fc  = 1907600000;
 %fc = 859.5e6;
 
 rxgain=0;
-txgain=20;
+txgain=0;
 eNB_flag = 0;
 card = 0;
-active_rf = [1 0 0 0];
+active_rf = [1 1 1 1];
 autocal = [1 1 1 1];
-resampling_factor = [0 0 0 0];
+resampling_factor = [2 2 2 2];
 limeparms;
-rf_mode   = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF10+RXLPFNORM+RXLPFEN+RXLPF10+LNA1ON+LNAMax+RFBBNORM) * active_rf;
+rf_mode   = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM) * active_rf;
 rf_mode = rf_mode + (DMAMODE_RX + DMAMODE_TX)*active_rf;
 %rf_mode = rf_mode + (DMAMODE_TX)*active_rf + DMAMODE_RX*active_rf;
 %rf_mode   = RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAByp+RFBBLNA1;
@@ -37,6 +37,7 @@ rffe_rxg_final = 61*[1 1 1 1];
 rffe_band = B19G_TDD*[1 1 1 1];
 
 oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,eNB_flag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal,resampling_factor);
+%oarf_config_exmimo(1, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,eNB_flag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal,resampling_factor);
 amp = pow2(14)-1;
 n_bit = 16;
 
@@ -44,7 +45,7 @@ length = 307200/pow2(resampling_factor(1));
 
 s = zeros(length,4);
 
-select = 6;
+select = 1;
 
 switch(select)
 
@@ -55,10 +56,10 @@ case 0
   s(:,4) = amp * ones(1,length);
 
 case 1
-  s(:,1) = floor(amp * (exp(1i*2*pi*(0:((length*4)-1))/4)));
-  s(:,2) = floor(amp * (exp(1i*2*pi*(0:((length*4)-1))/4)));
-  s(:,3) = floor(amp * (exp(1i*2*pi*(0:((length*4)-1))/4)));
-  s(:,4) = floor(amp * (exp(1i*2*pi*(0:((length*4)-1))/4)));
+  s(:,1) = floor(amp * (exp(1i*2*pi*(0:((length)-1))/4)));
+  s(:,2) = floor(amp * (exp(1i*2*pi*(0:((length)-1))/4)));
+  s(:,3) = floor(amp * (exp(1i*2*pi*(0:((length)-1))/4)));
+  s(:,4) = floor(amp * (exp(1i*2*pi*(0:((length)-1))/4)));
 
 case 2
   s(38400+128,1)= 80-1j*40;
@@ -117,7 +118,7 @@ end %switch
 s = s*2;
 
 oarf_send_frame(card,s,n_bit);
-
+%oarf_send_frame(1,s,n_bit);
 %sleep (1)
 %r = oarf_get_frame(card);
 
