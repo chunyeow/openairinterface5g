@@ -45,6 +45,8 @@ check_for_root_rights
 #######################################
 # Default PARAMETERS
 ######################################
+declare OAI_DB_ADMIN_USER_NAME="root"
+declare OAI_DB_ADMIN_USER_PASSWORD="linux"
 
 #only one could be set at the time
 declare BUILD_LTE="" # ENB, EPC, HSS, NONE
@@ -622,14 +624,10 @@ build_hss(){
     echo_info "5. compile HSS"
 
      # Bad behaviour of $OAI_CLEAN with ./.lock_oaibuild ...
-     output=$(compile_hss  $CLEAN_HSS >> bin/install_log.txt  2>&1 )
+     compile_hss $CLEAN_HSS
      hss_compiled=$?
-     if [ $hss_compiled -eq 1 ]; then
-         echo_error "Failed in compiling hss target: check the installation log file bin/install_log.txt"
-         exit 1
-     fi
      check_for_hss_executable
-     echo_info "finished hss target: check the installation log file bin/install_log.txt" 
+     echo_info "finished hss target" 
  
 ######################################
 # Check certificates                 #
@@ -652,27 +650,10 @@ build_hss(){
 ######################################
      echo_info "6. create HSS database (for EURECOM SIM CARDS)"
      hss_db_created=1
-     USER="hssadmin"
-     PW=""
-     output=$(create_hss_database $USER $PW )
-     hss_db_created=$?
-     if [ $hss_db_created = 0 ]; then
-         echo_warning "hss DB not created"
+     create_hss_database $OAI_DB_ADMIN_USER_NAME $OAI_DB_ADMIN_USER_PASSWORD
+     if [ $? -eq 1 ]; then
+         echo_fatal "hss DB not created"
      fi
-######################################
-# install hss
-######################################
-
-     echo_info "7. install the binary file"
-     if [ $hss_compiled -eq 0 ]; then
-         echo_success "target hss built, DB created  and installed in the bin directory"
-         echo "target hss built, DB created, and installed in the bin directory"  >>  bin/${oai_build_date}
-         cp -rf $OPENAIRCN_DIR/OPENAIRHSS/conf  $OPENAIR_TARGETS/bin
-         $SUDO cp $OPENAIR_TARGETS/bin/conf/hss_fd.local.conf /etc/openair-hss
-         rm -f $OPENAIR_TARGETS/bin/openair-hss
-         cp -pv $OPENAIRCN_DIR/OPENAIRHSS/objs/openair-hss $OPENAIR_TARGETS/bin/
-     fi
-
 }
 
 
@@ -830,14 +811,14 @@ if [ $RUN -ne 0 ]; then
         
         'HSS')
             echo "############# running HSS #############"
-            cd $OPENAIR_TARGETS/bin
+            cd $OPENAIRCN_DIR/OPENAIRHSS/objs
             if [ $RUN_GDB -eq 0 ]; then
-                $SUDO exec ./openair-hss -c conf/hss.local.conf
+                $SUDO exec ./openair-hss -c ./conf/hss.conf
             else
                 touch ~/.gdb_hss
                 chmod 777 ~/.gdb_hss
                 echo "file ./openair-hss" > ~/.gdb_hss
-                echo "set args -c conf/hss.local.conf" >> ~/.gdb_hss
+                echo "set args -c ./conf/hss.conf" >> ~/.gdb_hss
                 echo "run" >> ~/.gdb_hss
                 $SUDO gdb -nh -x ~/.gdb_hss 2>&1 
             fi
