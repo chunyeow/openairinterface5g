@@ -270,6 +270,15 @@ static int config_parse_file(mme_config_t *mme_config_p)
                 if (astring != NULL)
                     mme_config_p->s6a_config.conf_file = strdup(astring);
             }
+
+            if(  (config_setting_lookup_string( setting, MME_CONFIG_STRING_S6A_HSS_HOSTNAME, (const char **)&astring) )) {
+                if (astring != NULL)
+                    mme_config_p->s6a_config.hss_host_name  = strdup(astring);
+                else
+                    AssertFatal (1 == 0,
+                                 "You have to provide a valid HSS hostname %s=...\n",
+                                 MME_CONFIG_STRING_S6A_HSS_HOSTNAME);
+            }
         }
 
         // SCTP SETTING
@@ -494,6 +503,7 @@ static int config_parse_file(mme_config_t *mme_config_p)
             }
         }
     }
+
     return 0;
 }
 

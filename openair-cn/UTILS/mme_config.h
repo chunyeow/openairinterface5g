@@ -48,6 +48,7 @@
 
 #define MME_CONFIG_STRING_S6A_CONFIG                     "S6A"
 #define MME_CONFIG_STRING_S6A_CONF_FILE_PATH             "S6A_CONF"
+#define MME_CONFIG_STRING_S6A_HSS_HOSTNAME               "HSS_HOSTNAME"
 
 #define MME_CONFIG_STRING_SCTP_CONFIG                    "SCTP"
 #define MME_CONFIG_STRING_SCTP_INSTREAMS                 "SCTP_INSTREAMS"
@@ -96,6 +97,8 @@
 #define NAS_CONFIG_SECURITY_ALGORITHMS_EIA5    0b101
 #define NAS_CONFIG_SECURITY_ALGORITHMS_EIA6    0b110
 #define NAS_CONFIG_SECURITY_ALGORITHMS_EIA7    0b111
+
+
 
 typedef struct mme_config_s {
     /* Reader/writer lock for this configuration */
@@ -155,6 +158,7 @@ typedef struct mme_config_s {
     } ipv4;
     struct {
         char *conf_file;
+        char *hss_host_name;
     } s6a_config;
     struct {
         uint32_t  queue_size;
@@ -165,6 +169,8 @@ typedef struct mme_config_s {
         uint8_t prefered_integrity_algorithm[8];
         uint8_t prefered_ciphering_algorithm[8];
     } nas_config;
+
+
 
 } mme_config_t;
 
