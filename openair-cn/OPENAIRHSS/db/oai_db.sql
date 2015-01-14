@@ -2,10 +2,10 @@
 -- version 3.4.10.1deb1
 -- http://www.phpmyadmin.net
 --
--- Client: localhost
--- G√©n√©r√© le : Mer 18 D√©cembre 2013 √† 18:01
--- Version du serveur: 5.5.34
--- Version de PHP: 5.3.10-1ubuntu3.9
+-- Host: localhost
+-- Generation Time: Jan 14, 2015 at 12:09 PM
+-- Server version: 5.5.40
+-- PHP Version: 5.3.10-1ubuntu3.15
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -17,13 +17,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8 */;
 
 --
--- Base de donn√©es: `oai_db`
+-- Database: `oai_db`
 --
 
 -- --------------------------------------------------------
 
 --
--- Structure de la table `apn`
+-- Table structure for table `apn`
 --
 
 CREATE TABLE IF NOT EXISTS `apn` (
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS `apn` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `mmeidentity`
+-- Table structure for table `mmeidentity`
 --
 
 CREATE TABLE IF NOT EXISTS `mmeidentity` (
@@ -46,10 +46,10 @@ CREATE TABLE IF NOT EXISTS `mmeidentity` (
   `mmerealm` varchar(200) DEFAULT NULL,
   `UE-Reachability` tinyint(1) NOT NULL COMMENT 'Indicates whether the MME supports UE Reachability Notifcation',
   PRIMARY KEY (`idmmeidentity`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=39 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=43 ;
 
 --
--- Contenu de la table `mmeidentity`
+-- Dumping data for table `mmeidentity`
 --
 
 INSERT INTO `mmeidentity` (`idmmeidentity`, `mmehost`, `mmerealm`, `UE-Reachability`) VALUES
@@ -61,12 +61,16 @@ INSERT INTO `mmeidentity` (`idmmeidentity`, `mmehost`, `mmerealm`, `UE-Reachabil
 (36, 'caviar.eur', 'eur', 0),
 (37, 'sud.eur', 'eur', 0),
 (38, 'tapenade.eur', 'eur', 1),
-(39, 'mme0.eur', 'eur', 0);
+(39, 'mme0.eur', 'eur', 0),
+(40, 'calisson.eur', 'eur', 0),
+(1, 'yang.pft', 'pft', 0),
+(41, 'calisson.eur', 'eur', 0),
+(42, 'calisson.pft', 'pft', 0);
 
 -- --------------------------------------------------------
 
 --
--- Structure de la table `pdn`
+-- Table structure for table `pdn`
 --
 
 CREATE TABLE IF NOT EXISTS `pdn` (
@@ -87,25 +91,29 @@ CREATE TABLE IF NOT EXISTS `pdn` (
   PRIMARY KEY (`id`,`pgw_id`,`users_imsi`),
   KEY `fk_pdn_pgw1_idx` (`pgw_id`),
   KEY `fk_pdn_users1_idx` (`users_imsi`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=8 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=18 ;
 
 --
--- Contenu de la table `pdn`
+-- Dumping data for table `pdn`
 --
 
 INSERT INTO `pdn` (`id`, `apn`, `pdn_type`, `pdn_ipv4`, `pdn_ipv6`, `aggregate_ambr_ul`, `aggregate_ambr_dl`, `pgw_id`, `users_imsi`, `qci`, `priority_level`, `pre_emp_cap`, `pre_emp_vul`, `LIPA-Permissions`) VALUES
-(2, 'wap.test.fr', 'IPv4v6', '10.0.0.5', '0:0:0:0:0:0:0:1', 1048576, 14400000, 2, '20834123456789', 8, 2, 'ENABLED', 'DISABLED', 'LIPA-only'),
-(3, 'toto.eurecom.fr', 'IPv4v6', '0.0.0.0', '2001:0db8:85a3:0042:1000:8a2e:0370:7334', 50000, 100000, 2, '20834123456710', 1, 3, 'DISABLED', 'DISABLED', 'LIPA-only'),
-(4, 'edge.eurecom.fr', 'IPv4_or_IPv6', '0.0.0.0', '2001:0db8:85a3:0042:1000:8a2e:0370:7356', 50000000, 100000000, 1, '20834123456789', 3, 4, 'ENABLED', 'DISABLED', 'LIPA-only'),
 (7, 'internet.v6.eur', 'IPv6', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 4, '20834123456789', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only'),
 (1, 'internet.v4.eur', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '20834123456789', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only'),
 (8, 'internet.v4.eur', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '208920000000008', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only'),
 (9, 'internet.v4.eur', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '208920000000009', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only'),
-(10, 'internet.v4.eur', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '20810000001234', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only');
+(10, 'internet.v4.eur', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '20810000001234', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only'),
+(11, 'internet.v4.eur', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '208920000000053', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only'),
+(12, 'internet.v4.eur', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '208920000000055', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only'),
+(13, 'internet.v4.eur', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '31002890832150', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only'),
+(15, 'internet.v4.pft', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '208920000000055', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only'),
+(16, 'internet.v4.pft', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '208920000000054', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only'),
+(17, 'internet.v4.pft', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '208920000000053', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only');
+
 -- --------------------------------------------------------
 
 --
--- Structure de la table `pgw`
+-- Table structure for table `pgw`
 --
 
 CREATE TABLE IF NOT EXISTS `pgw` (
@@ -118,7 +126,7 @@ CREATE TABLE IF NOT EXISTS `pgw` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=4 ;
 
 --
--- Contenu de la table `pgw`
+-- Dumping data for table `pgw`
 --
 
 INSERT INTO `pgw` (`id`, `ipv4`, `ipv6`) VALUES
@@ -129,7 +137,7 @@ INSERT INTO `pgw` (`id`, `ipv4`, `ipv6`) VALUES
 -- --------------------------------------------------------
 
 --
--- Structure de la table `terminal-info`
+-- Table structure for table `terminal-info`
 --
 
 CREATE TABLE IF NOT EXISTS `terminal-info` (
@@ -141,7 +149,7 @@ CREATE TABLE IF NOT EXISTS `terminal-info` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `users`
+-- Table structure for table `users`
 --
 
 CREATE TABLE IF NOT EXISTS `users` (
@@ -150,30 +158,34 @@ CREATE TABLE IF NOT EXISTS `users` (
   `imei` varchar(15) DEFAULT NULL COMMENT 'International Mobile Equipment Identity',
   `imei_sv` varchar(2) DEFAULT NULL COMMENT 'International Mobile Equipment Identity Software Version Number',
   `ms_ps_status` enum('PURGED','NOT_PURGED') DEFAULT 'PURGED' COMMENT 'Indicates that ESM and EMM status are purged from MME',
-  `rau_tau_timer` int(10) unsigned DEFAULT '120' COMMENT '',
+  `rau_tau_timer` int(10) unsigned DEFAULT '120',
   `ue_ambr_ul` bigint(20) unsigned DEFAULT '50000000' COMMENT 'The Maximum Aggregated uplink MBRs to be shared across all Non-GBR bearers according to the subscription of the user.',
   `ue_ambr_dl` bigint(20) unsigned DEFAULT '100000000' COMMENT 'The Maximum Aggregated downlink MBRs to be shared across all Non-GBR bearers according to the subscription of the user.',
   `access_restriction` int(10) unsigned DEFAULT '60' COMMENT 'Indicates the access restriction subscription information. 3GPP TS.29272 #7.3.31',
   `mme_cap` int(10) unsigned zerofill DEFAULT NULL COMMENT 'Indicates the capabilities of the MME with respect to core functionality e.g. regional access restrictions.',
-  `mmeidentity_idmmeidentity` int(11) NOT NULL DEFAULT '0' COMMENT '',
+  `mmeidentity_idmmeidentity` int(11) NOT NULL DEFAULT '0',
   `key` varbinary(16) NOT NULL DEFAULT '0' COMMENT 'UE security key',
   `RFSP-Index` smallint(5) unsigned NOT NULL DEFAULT '1' COMMENT 'An index to specific RRM configuration in the E-UTRAN. Possible values from 1 to 256',
   `urrp_mme` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'UE Reachability Request Parameter indicating that UE activity notification from MME has been requested by the HSS.',
-  `sqn` bigint(20) unsigned zerofill NOT NULL COMMENT '',
-  `rand` varbinary(16) NOT NULL COMMENT '',
+  `sqn` bigint(20) unsigned zerofill NOT NULL,
+  `rand` varbinary(16) NOT NULL,
   PRIMARY KEY (`imsi`,`mmeidentity_idmmeidentity`),
   KEY `fk_users_mmeidentity_idx1` (`mmeidentity_idmmeidentity`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 --
--- Contenu de la table `users`
+-- Dumping data for table `users`
 --
 
 INSERT INTO `users` (`imsi`, `msisdn`, `imei`, `imei_sv`, `ms_ps_status`, `rau_tau_timer`, `ue_ambr_ul`, `ue_ambr_dl`, `access_restriction`, `mme_cap`, `mmeidentity_idmmeidentity`, `key`, `RFSP-Index`, `urrp_mme`, `sqn`, `rand`) VALUES
-('20834123456789', '380561234567', '12345678', '23', 'PURGED', 50, 50000000, 100000000, 47, 0000000000, 36, '+÷EüÇ≈≥\0ï,IHÅˇH', 0, 0, 0000000096, 'PxºX \Z1°…xôﬂ'),
-('208920000000008', '33638060008', NULL, NULL, 'PURGED', 120, 50000000, 100000000, 60, 0000000000, 0, 'ãØG?/è–îáÃÀ◊	|hb', 1, 0, 0000027276, '''©$Ãy2®dÀÍm˘'),
-('208920000000009', '33638060009', NULL, NULL, 'PURGED', 120, 50000000, 100000000, 47, 0000000000, 0, 'ãØG?/è–îWdiHC◊æΩ', 1, 0, 0000027276, '\r®è`Àdé∂_Ìé√d¿'),
-('20810000001234', '33611123456', NULL, NULL, 'PURGED', 120, 50000000, 100000000, 47, 0000000000, 39, 'ãØG?/è–îáÃÀ◊	|hb', 1, 0, 0000009600, 'LyVÄ≥LæuzÜ√>mØπ');
+('20834123456789', '380561234567', '12345678', '23', 'PURGED', 50, 40000000, 100000000, 47, 0000000000, 36, '+÷EüÇ≈≥\0ï,IHÅˇH', 0, 0, 00000000000000000096, 'PxºX \Z1°…xôﬂ'),
+('208920000000008', '33638060008', NULL, NULL, 'PURGED', 120, 40000000, 100000000, 47, 0000000000, 29, 'ãØG?/è–îáÃÀ◊	|hb', 1, 0, 00000000004294969388, 'ÅôIjÑùÊ∑>OÉO◊K)'),
+('208920000000009', '33638060009', NULL, NULL, 'PURGED', 120, 40000000, 100000000, 47, 0000000000, 41, 'ãØG?/è–îWdiHC◊æΩ', 1, 0, 00000000000000033361, '\ZM{ôhƒœ#á\\*l·‡'),
+('20810000001234', '33611123456', NULL, NULL, 'PURGED', 120, 40000000, 100000000, 47, 0000000000, 41, 'ãØG?/è–îáÃÀ◊	|hb', 1, 0, 00000000000000012192, 'Ï\0ù>¿;iIèÖX‘®c'),
+('208920000000053', '33638060053', NULL, NULL, 'PURGED', 120, 40000000, 100000000, 47, 0000000000, 41, '∫ÙsÚ¯˝	Cjfd"gq', 1, 0, 00000000004294969420, 'ãYŒ3çãí†)∞c!Æ\r'),
+('208920000000055', '33638060055', NULL, NULL, 'PURGED', 120, 40000000, 100000000, 47, 0000000000, 41, 'ãØG?/è–îM_^r	v', 1, 0, 00000000004294969388, 'ÅôIjÑùÊ∑>OÉO◊K)'),
+('31002890832150', '33638060059', '35611302209414', NULL, 'PURGED', 120, 40000000, 100000000, 47, 0000000000, 41, 'ãØG?/è–îáÃÀ◊	|hb', 1, 0, 00000000000000012416, '`œFÆ›ÜÙÈD¢ºœõâ¡º'),
+('208920000000054', '33638060054', NULL, NULL, 'NOT_PURGED', 120, 40000000, 100000000, 47, 0000000000, 42, 'ãØG?/è–îM_^r	v', 1, 0, 00000000000000039788, '&ç1.-2]YØŒ÷®*y˝');
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
