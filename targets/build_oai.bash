@@ -636,6 +636,9 @@ build_hss(){
   
     TEMP_FILE=`tempfile`
     cat $OPENAIRCN_DIR/OPENAIRHSS/conf/hss_fd.conf | grep -w "Identity" | tr -d " " | tr -d ";" > $TEMP_FILE
+    cat $OPENAIRCN_DIR/OPENAIRHSS/conf/hss.conf    | grep -w "MYSQL_user" | tr -d " " | tr -d ";" >> $TEMP_FILE
+    cat $OPENAIRCN_DIR/OPENAIRHSS/conf/hss.conf    | grep -w "MYSQL_pass" | tr -d " " | tr -d ";" >> $TEMP_FILE
+    cat $OPENAIRCN_DIR/OPENAIRHSS/conf/hss.conf    | grep -w "MYSQL_db" | tr -d " " | tr -d ";" >> $TEMP_FILE
     source $TEMP_FILE
     rm -f  $TEMP_FILE
 
@@ -657,7 +660,7 @@ build_hss(){
 ######################################
      echo_info "6. create HSS database (for EURECOM SIM CARDS)"
      hss_db_created=1
-     create_hss_database $OAI_DB_ADMIN_USER_NAME $OAI_DB_ADMIN_USER_PASSWORD
+     create_hss_database $OAI_DB_ADMIN_USER_NAME $OAI_DB_ADMIN_USER_PASSWORD $MYSQL_user $MYSQL_pass $MYSQL_db
      if [ $? -eq 1 ]; then
          echo_fatal "hss DB not created"
      fi

@@ -330,8 +330,8 @@ check_epc_s6a_certificate() {
     cd $OPENAIRCN_DIR/S6A/freediameter
     ./make_certs.sh ${1:-'eur'}
     if [ $# -lt 2 ] ; then
-        __i=check_epc_s6a_certificate ${1:-'eur'}  2
-        return $__i
+        check_epc_s6a_certificate ${1:-'eur'}  2
+        return $?
     else
        exit 1
     fi
@@ -356,8 +356,8 @@ check_hss_s6a_certificate() {
     cd $OPENAIRCN_DIR/OPENAIRHSS/conf
     ./make_certs.sh ${1:-'eur'}
     if [ $# -lt 2 ] ; then
-        __i=check_hss_s6a_certificate ${1:-'eur'} 2
-        return $__i
+        check_hss_s6a_certificate ${1:-'eur'} 2
+        return $?
     else
        exit 1
     fi
@@ -467,14 +467,14 @@ check_install_oai_software() {
 
 check_install_hss_software() {
     if [ ! -f ./.lock_oaibuild ]; then 
-	$SUDO apt-get update
-	if [ $UBUNTU_REL = "12.04" ]; then 
-	    test_uninstall_package nettle-dev
-	    test_uninstall_package nettle-bin
+        $SUDO apt-get update
+        if [ $UBUNTU_REL = "12.04" ]; then 
+            test_uninstall_package nettle-dev
+            test_uninstall_package nettle-bin
         else 
             test_install_package nettle-dev
             test_install_package nettle-bin
-	fi 
+        fi 
 	test_install_package autoconf 
 	test_install_package automake 
 	test_install_package bison 
@@ -500,9 +500,9 @@ check_install_hss_software() {
 	test_install_package libxml2-dev 
 #	test_install_package linux-headers-`uname -r` 
 	test_install_package make
-	test_install_package mysql-client-core-5.5 
+	test_install_package mysql-client 
 	test_install_package mysql-server-core-5.5 
-	test_install_package mysql-server-5.5 
+	test_install_package mysql-server
 	test_install_package openssh-client
 	test_install_package openssh-server
         sudo service ssh start
@@ -999,52 +999,60 @@ install_oaisim() {
 
 # arg 1 is mysql user      (root)
 # arg 2 is mysql password  (linux)
+# arg 3 is hss username    (hssadmin)
+# arg 4 is hss password    (admin)
+# arg 5 is database name   (oai_db)
 create_hss_database(){
-    EXPECTED_ARGS=2
+    EXPECTED_ARGS=5
     E_BADARGS=65
     MYSQL=`which mysql`
     rv=0
     if [ $# -ne $EXPECTED_ARGS ]
     then
-        echo_fatal "Usage: $0 dbuser dbpass"
+        echo_fatal "Usage: $0 dbuser dbpass hssuser hsspass databasename"
         rv=1
     fi
 
     set_openair_env
     
-    Q1="CREATE DATABASE IF NOT EXISTS ${BTICK}oai_db${BTICK};"
-    SQL="${Q1}"
-    $MYSQL -u $1 --password=$2 -e "$SQL"
-    if [ $? -ne 0 ]; then
-       echo_error "oai_db creation failed"
-       return 1
-    else
-       echo_success "oai_db creation succeeded"
-    fi
-    
-    # test if tables have been created
-    mysql -u $1 --password=$2  -e "desc oai_db.users" > /dev/null 2>&1
-    
-    if [ $? -eq 1 ]; then 
-        $MYSQL -u $1 --password=$2 oai_db < $OPENAIRCN_DIR/OPENAIRHSS/db/oai_db.sql
-        if [ $? -ne 0 ]; then
-            echo_error "oai_db tables creation failed"
-            return 1
-        else
-            echo_success "oai_db tables creation succeeded"
-        fi
-    fi
-    
-    Q1="GRANT ALL PRIVILEGES ON *.* TO 'hssadmin'@'%' IDENTIFIED BY 'admin' WITH GRANT OPTION;"
+    # removed %
+    #Q1="GRANT ALL PRIVILEGES ON *.* TO '$3'@'%' IDENTIFIED BY '$4' WITH GRANT OPTION;"
+    Q1="GRANT ALL PRIVILEGES ON *.* TO '$3'@'localhost' IDENTIFIED BY '$4' WITH GRANT OPTION;"
     Q2="FLUSH PRIVILEGES;"
     SQL="${Q1}${Q2}"
     $MYSQL -u $1 --password=$2 -e "$SQL"
     if [ $? -ne 0 ]; then
-       echo_error "hssadmin permissions failed"
+       echo_error "$3 permissions failed"
        return 1
     else
-       echo_success "hssadmin permissions succeeded"
+       echo_success "$3 permissions succeeded"
     fi
+    
+    
+    Q1="CREATE DATABASE IF NOT EXISTS ${BTICK}$5${BTICK};"
+    SQL="${Q1}"
+    $MYSQL -u $3 --password=$4 -e "$SQL"
+    if [ $? -ne 0 ]; then
+       echo_error "$5 creation failed"
+       return 1
+    else
+       echo_success "$5 creation succeeded"
+    fi
+    
+    
+    # test if tables have been created
+    mysql -u $3 --password=$4  -e "desc $5.users" > /dev/null 2>&1
+    
+    if [ $? -eq 1 ]; then 
+        $MYSQL -u $3 --password=$4 $5 < $OPENAIRCN_DIR/OPENAIRHSS/db/oai_db.sql
+        if [ $? -ne 0 ]; then
+            echo_error "$5 tables creation failed"
+            return 1
+        else
+            echo_success "$5 tables creation succeeded"
+        fi
+    fi
+    
     return 0
 }
 
