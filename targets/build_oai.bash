@@ -643,6 +643,12 @@ build_hss(){
         exit 1
     fi
     HSS_REALM=$(echo $Identity | sed 's/.*\.//')
+    HSS_HOSTNAME=${Identity%.$HSS_REALM}
+    NEW_HOSTNAME=`hostname -s`
+    if [ "x$HSS_HOSTNAME" != "x$NEW_HOSTNAME" ]; then
+       echo_warning "Changing identity of HSS from <$HSS_HOSTNAME.$HSS_REALM> to <$NEW_HOSTNAME.$HSS_REALM>"
+       sed -ibak "s/$HSS_HOSTNAME/$NEW_HOSTNAME/"  $OPENAIRCN_DIR/OPENAIRHSS/conf/hss_fd.conf 
+    fi
     check_hss_s6a_certificate $HSS_REALM
     
 ######################################
