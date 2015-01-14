@@ -20,7 +20,7 @@
 #    see <http://www.gnu.org/licenses/>.
 #
 #  Contact Information
-#  OpenAirInterface Admin: openair_admin@eurecom.fr
+#  OpenAirInterface Admin: openair_admin@eurecom.frARG is
 #  OpenAirInterface Tech : openair_tech@eurecom.fr
 #  OpenAirInterface Dev  : openair4g-devel@eurecom.fr
 #
@@ -32,7 +32,6 @@
 # BY DEFAULT REALM IS "eur"
 
 DEFAULTREALMVALUE="eur"
-echo "ARG is $1"
 REALM=${1:-$DEFAULTREALMVALUE}
 
 rm -rf demoCA
