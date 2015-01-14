@@ -814,13 +814,15 @@ if [ $RUN -ne 0 ]; then
         
         'EPC')
             echo "############# running EPC #############"
+            #test_is_host_reachable 
             if [ $RUN_GDB -eq 0 ]; then
                 $SUDO $OPENAIR_TARGETS/bin/oai_epc  `echo $EXE_ARGUMENTS`
             else
-                $SUDO touch ~/.gdb_epc
-                $SUDO echo "file $OPENAIR_TARGETS/bin/oai_epc" > ~/.gdb_epc
-                $SUDO echo "set args $EXE_ARGUMENTS" >> ~/.gdb_epc
-                $SUDO echo "run" >> ~/.gdb_epc
+                touch ~/.gdb_epc
+                chmod 777 ~/.gdb_epc
+                echo "file $OPENAIR_TARGETS/bin/oai_epc" > ~/.gdb_epc
+                echo "set args $EXE_ARGUMENTS" >> ~/.gdb_epc
+                echo "run" >> ~/.gdb_epc
                 $SUDO gdb -nh -x ~/.gdb_epc 2>&1 
             fi
             ;;
@@ -832,10 +834,11 @@ if [ $RUN -ne 0 ]; then
             if [ $RUN_GDB -eq 0 ]; then
                 $SUDO exec ./openair-hss -c conf/hss.local.conf
             else
-                $SUDO touch ~/.gdb_hss
-                $SUDO echo "file ./openair-hss" > ~/.gdb_hss
-                $SUDO echo "set args -c conf/hss.local.conf" >> ~/.gdb_hss
-                $SUDO echo "run" >> ~/.gdb_hss
+                touch ~/.gdb_hss
+                chmod 777 ~/.gdb_hss
+                echo "file ./openair-hss" > ~/.gdb_hss
+                echo "set args -c conf/hss.local.conf" >> ~/.gdb_hss
+                echo "run" >> ~/.gdb_hss
                 $SUDO gdb -nh -x ~/.gdb_hss 2>&1 
             fi
              ;;

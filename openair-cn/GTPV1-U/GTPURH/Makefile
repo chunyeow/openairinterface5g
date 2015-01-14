@@ -21,6 +21,7 @@ EXTRA_CFLAGS += -DKVERSION=$(KVERSION_LAST_DIGIT)
 all: xtlib
 	echo "Building for Kernel Version: $(KVERSION_LAST_DIGIT)"
 	make -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
+	chmod 777 xt_GTPURH.ko
 	mv xt_GTPURH.ko $(BIN_DIR)/
 
 clean: libclean

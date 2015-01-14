@@ -305,6 +305,12 @@ check_install_freediamter(){
    
 }
 
+
+test_is_host_reachable() {
+    ping -c 1 $1 > /dev/null || { echo_fatal "$1 does not respond to ping" >&2 ; }
+}
+
+
 check_epc_s6a_certificate() {
     if [ -d /usr/local/etc/freeDiameter ]
     then
@@ -324,8 +330,9 @@ check_epc_s6a_certificate() {
     ./make_certs.sh ${1:-'eur'}
     if [ $# -lt 2 ] ; then
         check_epc_s6a_certificate ${1:-'eur'}  2
+    else
+       exit 1
     fi
-    exit 1
 }
 
 
