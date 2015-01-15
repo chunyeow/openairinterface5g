@@ -54,23 +54,41 @@
 
 #define BUF_LEN 4096+32
 #define RRH_eNB_PORT 50000
-#define RRH_eNB_DEST_IP "192.168.12.196"  //Haswell ip address
-//#define RRH_eNB_DEST_IP "192.168.12.148"  //Hecatonchire ip address
-
+#define RRH_eNB_DEST_IP "127.0.0.1"  
 #define RRH_UE_PORT 22222
-//#define RRH_UE_DEST_IP "192.168.12.148"  //Hecatonchire ip address
-#define RRH_UE_DEST_IP "192.168.12.196"  //Haswell ip address
+#define RRH_UE_DEST_IP "127.0.0.1"  
 
 #define FRAME_MAX_SIZE 307200 
 #define DEFAULT_PERIOD_NS 133333
 
+#define START_CMD 1
+#define PRINTF_PERIOD 3750
+
 typedef struct {
   int eNB_port;
-  char *eNB_dest_ip;
+  char eNB_dest_ip[20];
   int UE_port;
-  char *UE_dest_ip;
+  char UE_dest_ip[20];
   struct timespec time_req;  
 } rrh_desc_t;
+
+typedef struct {
+  int32_t nsamps;
+  int32_t antenna_index_eNB_rx;
+  int32_t antenna_index_eNB_tx;
+  int sockid_eNB;
+  struct sockaddr clientaddr;
+  socklen_t clientaddrlen;
+} rrh_eNB_desc_t;
+
+typedef struct {
+  int32_t nsamps;
+  int32_t antenna_index_UE_rx;
+  int32_t antenna_index_UE_tx;
+  int sockid_UE;
+  struct sockaddr clientaddr;
+  socklen_t clientaddrlen;  
+} rrh_UE_desc_t;
 
 int rrh_exit=0;
 
@@ -104,6 +122,17 @@ pthread_mutex_t timer_mutex;
 int sync_UE_rx[4]={-1,-1,-1,-1};
 int sync_eNB_rx[4]={-1,-1,-1,-1};
 
+//functions prototype
+void timer_signal_handler(int);
+void *timer_proc(void *);
+void *rrh_proc_eNB_thread();
+void *rrh_proc_UE_thread();
+void *rrh_UE_thread(void *);
+void *rrh_UE_rx_thread(void *);
+void *rrh_UE_tx_thread(void *);
+void *rrh_eNB_thread(void *);
+void *rrh_eNB_rx_thread(void *);
+void *rrh_eNB_tx_thread(void *);
 
 void timer_signal_handler(int sig){
 
@@ -183,7 +212,8 @@ void *rrh_proc_eNB_thread() {
             }
             else
             {
-              while (hw_counter != last_hw_counter+1)
+              //printf("hw_counter : %llu, last_hw_counter : %llu\n",hw_counter,last_hw_counter);
+              while (hw_counter < last_hw_counter+1)
                 nanosleep(&time_req,&time_rem); 
             }
           }
@@ -271,7 +301,7 @@ void *rrh_proc_UE_thread() {
             }
             else
             {
-              while (hw_counter != last_hw_counter+1)
+              while (hw_counter < last_hw_counter+1)
                 nanosleep(&time_req,&time_rem);
             }
           }
@@ -323,72 +353,42 @@ void *rrh_proc_UE_thread() {
   return(0);
 }
 
-void *rrh_UE_thread(void *arg) {
 
-  int sockid=-1;
-  struct sockaddr_in serveraddr;
+void *rrh_UE_rx_thread(void *arg){ 
+  
   struct sockaddr clientaddr;
   socklen_t clientaddrlen;
-  rrh_desc_t *rrh_desc = (rrh_desc_t *)arg;
-  char str[INET_ADDRSTRLEN];
-  //int8_t msg_header[4+sizeof(openair0_timestamp)];
-  int8_t buf[BUF_LEN];
-  int16_t cmd,nsamps,antenna_index;
-  ssize_t bytes_received;
-  struct timespec time_rem;
-  ssize_t bytes_sent;
-  openair0_timestamp temp;
-  openair0_timestamp last_hw_counter=0;
+  rrh_UE_desc_t *rrh_UE_rx_desc = (rrh_UE_desc_t *)arg;
+  struct timespec time0,time1,time2;
   struct timespec time_req_1us, time_rem_1us;
+  ssize_t bytes_sent;
+  int antenna_index, nsamps;
+  int trace_cnt=0;
+  int sockid;
+  char str[INET_ADDRSTRLEN];
+  unsigned long long max_rx_time=0, min_rx_time=133333, total_rx_time=0, average_rx_time=133333, s_period=0, trial=0;
+  
+  openair0_timestamp temp, last_hw_counter=0;
+  
+  antenna_index =  rrh_UE_rx_desc->antenna_index_UE_rx;
+  nsamps = rrh_UE_rx_desc->nsamps;
+  sockid = rrh_UE_rx_desc->sockid_UE;
 
 
-  time_req_1us.tv_sec = 0;
-  time_req_1us.tv_nsec = 1000;
+       bzero((void*)&clientaddr,sizeof(struct sockaddr));
+       clientaddrlen = sizeof(struct sockaddr);
+      //printf("Waiting for eNB ...\n");
+  //printf("[RRH eNB RX thread] received parameters : nsamps : %d, antenna_index : %d\n",nsamps,antenna_index);
+  clientaddr = rrh_UE_rx_desc->clientaddr;
+  clientaddrlen = rrh_UE_rx_desc->clientaddrlen;     
 
-  while (rrh_exit==0) {
-
-    
-    sockid=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
-    if (sockid==-1) {
-      perror("Cannot create UE socket: ");
-      rrh_exit=1;
-    }
-
-
-    bzero((char *)&serveraddr,sizeof(serveraddr));
-    serveraddr.sin_family=AF_INET;
-    serveraddr.sin_port=htons(rrh_desc->UE_port);
-    inet_pton(AF_INET,rrh_desc->UE_dest_ip,&serveraddr.sin_addr.s_addr);
-
-    inet_ntop(AF_INET, &(serveraddr.sin_addr), str, INET_ADDRSTRLEN);      
-    printf("Binding to UE socket for %s:%d\n",str,ntohs(serveraddr.sin_port));
-
-    if (bind(sockid,(struct sockaddr *)&serveraddr,sizeof(serveraddr))<0) {
-      perror("Cannot bind to UE socket: ");
-      rrh_exit = 1;
-    }
-     
-    // now wait for commands from eNB
-    while (rrh_exit==0) {
-
-      // get header info
-      bzero((void*)&clientaddr,sizeof(struct sockaddr));
-      clientaddrlen = sizeof(struct sockaddr);
-      //printf("Waiting for UE ...\n");
-      bytes_received = recvfrom(sockid,buf,BUF_LEN,0,&clientaddr,&clientaddrlen);
-      cmd = buf[0];
-      antenna_index = cmd>>1;
-      timestamp_UE_tx[antenna_index] = *(openair0_timestamp*)(buf+4);
-      nsamps = *(int16_t *)(buf+2);
-      cmd = cmd&1;
       inet_ntop(AF_INET, &(((struct sockaddr_in*)&clientaddr)->sin_addr), str, INET_ADDRSTRLEN);
+      printf("Received UE RX request for antenna %d, nsamps %d (from %s:%d)\n",antenna_index,nsamps,str, 
+	       ntohs(((struct sockaddr_in*)&clientaddr)->sin_port));
 
-      switch (cmd) {
-      case 0: // RX
-	printf("Received UE RX request for antenna %d, nsamps %d (from %s:%d)\n",antenna_index,nsamps,str, 
-		       ntohs(((struct sockaddr_in*)&clientaddr)->sin_port));
-
-        if (!UE_rx_started)
+       while (rrh_exit == 0)
+       { 
+         if (!UE_rx_started)
         {
           UE_rx_started=1;  //Set this flag to 1 to indicate that a UE started retrieving data
           if (RT_FLAG==1)
@@ -406,12 +406,13 @@ void *rrh_UE_thread(void *arg) {
             }
             else
             {
-              while (hw_counter != last_hw_counter+1)
+              while (hw_counter < last_hw_counter+1)
                 nanosleep(&time_req_1us,&time_rem_1us);
             }
           }
         }
-
+        clock_gettime(CLOCK_MONOTONIC,&time1);
+	
 	// send return	
 	temp=*(openair0_timestamp*)&rx_buffer_UE[antenna_index][timestamp_UE_rx[antenna_index]%(FRAME_MAX_SIZE)];
         *(openair0_timestamp*)&rx_buffer_UE[antenna_index][timestamp_UE_rx[antenna_index]%(FRAME_MAX_SIZE)]=timestamp_UE_rx[antenna_index];
@@ -463,17 +464,84 @@ void *rrh_UE_thread(void *arg) {
 				sizeof(struct sockaddr)))<0)
 	    perror("RRH UE thread: sendto for RX");
 	}
-	printf("bytes_sent %d(timestamp_UE_rx[%d] %d)\n",(int)bytes_sent,antenna_index,(int)timestamp_UE_rx[antenna_index]);
+	//printf("bytes_sent %d(timestamp_UE_rx[%d] %d)\n",(int)bytes_sent,antenna_index,(int)timestamp_UE_rx[antenna_index]);
         *(openair0_timestamp*)&rx_buffer_UE[antenna_index][timestamp_UE_rx[antenna_index]%(FRAME_MAX_SIZE)]=temp;
 	timestamp_UE_rx[antenna_index]+=nsamps;
         last_hw_counter=hw_counter; 
-	break;
-      case 1: // TX
-        if (NRT_FLAG==1)
+
+	clock_gettime(CLOCK_MONOTONIC,&time2);
+
+	if (trace_cnt++ > 10)
+        {
+          total_rx_time = (unsigned int)(time2.tv_nsec - time0.tv_nsec);
+          if (total_rx_time < 0) total_rx_time=1000000000-total_rx_time;
+          if ((total_rx_time > 0) && (total_rx_time < 1000000000))
+          {
+            trial++;
+            if (total_rx_time < min_rx_time) 
+              min_rx_time = total_rx_time;
+            if (total_rx_time > max_rx_time) 
+              max_rx_time = total_rx_time;
+
+            average_rx_time = (long long unsigned int)((average_rx_time*trial)+total_rx_time)/(trial+1);
+          }
+         
+          if (s_period++ == PRINTF_PERIOD)
+          {  
+            s_period=0;
+            printf("Average UE RX time : %lu\tMax RX time : %lu\tMin RX time : %lu\n",average_rx_time,max_rx_time,min_rx_time);
+            
+          }
+	  //printf("RX: t1 %llu (time from last send), t2 %llu (sendto of %lu bytes) total time : %llu\n",(long long unsigned int)(time1.tv_nsec  - time0.tv_nsec), (long long unsigned int)(time2.tv_nsec - time1.tv_nsec),
+	//	 (nsamps<<2)+sizeof(openair0_timestamp),(long long unsigned int)(time2.tv_nsec - time0.tv_nsec));  
+	 
+        } 
+	memcpy(&time0,&time2,sizeof(struct timespec));
+  
+  
+    }  //while (rrh_exit==0)
+
+  return(0);  
+  
+}
+
+
+void *rrh_UE_tx_thread(void *arg)
+{
+  struct sockaddr clientaddr;
+  socklen_t clientaddrlen;
+  struct timespec time0a,time0,time1,time2;
+  rrh_UE_desc_t *rrh_UE_tx_desc = (rrh_UE_desc_t *)arg;
+//  struct timespec time_rem;
+  struct timespec time_req_1us, time_rem_1us;
+  ssize_t bytes_received;
+  int antenna_index, nsamps;
+  int8_t buf[BUF_LEN];
+  int trace_cnt=0;
+  int sockid;
+    
+  bzero((void*)&clientaddr,sizeof(struct sockaddr));
+  clientaddrlen = sizeof(struct sockaddr);  
+ 
+  antenna_index =  rrh_UE_tx_desc->antenna_index_UE_tx;
+  nsamps = rrh_UE_tx_desc->nsamps;
+  sockid = rrh_UE_tx_desc->sockid_UE; 
+  
+       while (rrh_exit == 0)
+       {
+
+         clock_gettime(CLOCK_MONOTONIC,&time0a);
+	 
+        bytes_received = recvfrom(sockid,buf,BUF_LEN,0,&clientaddr,&clientaddrlen); 
+        timestamp_eNB_tx[antenna_index] = *(openair0_timestamp*)(buf+4);
+	 
+	clock_gettime(CLOCK_MONOTONIC,&time1);
+  
+         if (NRT_FLAG==1)
         {
           nrt_UE_counter[antenna_index]++;
         }
-	printf("Received UE TX request for antenna %d, nsamps %d, timestamp %d bytes_received %d\n",antenna_index,nsamps,(int)timestamp_UE_tx[antenna_index],(int)bytes_received);
+	//printf("Received UE TX request for antenna %d, nsamps %d, timestamp %d bytes_received %d\n",antenna_index,nsamps,(int)timestamp_UE_tx[antenna_index],(int)bytes_received);
         if ((timestamp_UE_tx[antenna_index]%(FRAME_MAX_SIZE)+nsamps) > FRAME_MAX_SIZE)   // Wrap around if nsamps exceeds the buffer limit
 	{
 	  memcpy(&tx_buffer_UE[antenna_index][timestamp_UE_tx[antenna_index]%(FRAME_MAX_SIZE)],buf+sizeof(openair0_timestamp)+2*sizeof(int16_t),(FRAME_MAX_SIZE<<2)-((timestamp_UE_tx[antenna_index]%(FRAME_MAX_SIZE))<<2));
@@ -485,10 +553,6 @@ void *rrh_UE_thread(void *arg) {
 	}
 	//printf("Received UE TX samples for antenna %d, nsamps %d (%d)\n",antenna_index,nsamps,(int)(bytes_received>>2));
 	
-        if (rrh_desc->time_req.tv_sec !=0 || rrh_desc->time_req.tv_nsec !=0)  
-        {
-          nanosleep(&rrh_desc->time_req,&time_rem); 
-        }
         while (sync_UE_rx[antenna_index]==0)
           nanosleep(&time_req_1us,&time_rem_1us);
 	
@@ -505,11 +569,109 @@ void *rrh_UE_thread(void *arg) {
 	  exit(-1);
 	}
         pthread_mutex_unlock(&sync_UE_mutex[antenna_index]);
+	
+	clock_gettime(CLOCK_MONOTONIC,&time2);
+	  
+	memcpy(&time0,&time2,sizeof(struct timespec));
+
+       }
+  
+  return(0);  
+  
+}
 
 
-	break;
-      }
-      //      rrh_exit = 1;
+
+void *rrh_UE_thread(void *arg) {
+
+  int sockid=-1;
+  struct sockaddr_in serveraddr;
+  struct sockaddr clientaddr;
+  socklen_t clientaddrlen;
+  rrh_desc_t *rrh_desc = (rrh_desc_t *)arg;
+  char str[INET_ADDRSTRLEN];
+  //int8_t msg_header[4+sizeof(openair0_timestamp)];
+  int8_t buf[BUF_LEN];
+  int16_t cmd;   //,nsamps,antenna_index;
+  ssize_t bytes_received;
+//  struct timespec time_rem;
+//  ssize_t bytes_sent;
+//  openair0_timestamp temp;
+//  openair0_timestamp last_hw_counter=0;
+  struct timespec time_req_1us, time_rem_1us;
+
+  rrh_UE_desc_t rrh_UE_desc;
+  pthread_t UE_rx_thread, UE_tx_thread;
+  pthread_attr_t attr_UE_rx, attr_UE_tx;
+  struct sched_param sched_param_UE_rx, sched_param_UE_tx;
+  int error_code_UE_rx, error_code_UE_tx;  
+  
+  time_req_1us.tv_sec = 0;
+  time_req_1us.tv_nsec = 1000;
+
+  while (rrh_exit==0) {
+
+    
+    sockid=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
+    if (sockid==-1) {
+      perror("Cannot create UE socket: ");
+      rrh_exit=1;
+    }
+
+
+    bzero((char *)&serveraddr,sizeof(serveraddr));
+    serveraddr.sin_family=AF_INET;
+    serveraddr.sin_port=htons(rrh_desc->UE_port);
+    inet_pton(AF_INET,rrh_desc->UE_dest_ip,&serveraddr.sin_addr.s_addr);
+
+    inet_ntop(AF_INET, &(serveraddr.sin_addr), str, INET_ADDRSTRLEN);      
+    printf("Binding to UE socket for %s:%d\n",str,ntohs(serveraddr.sin_port));
+
+    if (bind(sockid,(struct sockaddr *)&serveraddr,sizeof(serveraddr))<0) {
+      perror("Cannot bind to UE socket: ");
+      rrh_exit = 1;
+    }
+     
+    // now wait for commands from eNB
+
+      // get header info
+      bzero((void*)&clientaddr,sizeof(struct sockaddr));
+      clientaddrlen = sizeof(struct sockaddr);
+      //printf("Waiting for UE ...\n");
+      
+      bytes_received = recvfrom(sockid,buf,BUF_LEN,0,&clientaddr,&clientaddrlen);
+      cmd = buf[0];
+      
+      rrh_UE_desc.antenna_index_UE_rx = cmd>>1;
+      rrh_UE_desc.antenna_index_UE_tx = cmd>>1;
+      //rrh_eNB_desc.timestamp_eNB_tx[rrh_eNB_desc.antenna_index_eNB_tx] = *(openair0_timestamp*)(buf+4);  //we don't need timestamp when receiving the first command
+      rrh_UE_desc.nsamps = *(int16_t *)(buf+2);
+      rrh_UE_desc.sockid_UE = sockid;
+      rrh_UE_desc.clientaddr = clientaddr;
+      rrh_UE_desc.clientaddrlen = clientaddrlen;
+      
+      cmd = cmd&1;
+      inet_ntop(AF_INET, &(((struct sockaddr_in*)&clientaddr)->sin_addr), str, INET_ADDRSTRLEN);
+
+      if (cmd==START_CMD){
+	
+	pthread_attr_init(&attr_UE_rx);
+	pthread_attr_init(&attr_UE_tx);
+        sched_param_UE_rx.sched_priority = sched_get_priority_max(SCHED_FIFO);
+        sched_param_UE_tx.sched_priority = sched_get_priority_max(SCHED_FIFO);
+        pthread_attr_setschedparam(&attr_UE_rx,&sched_param_UE_rx);
+        pthread_attr_setschedparam(&attr_UE_tx,&sched_param_UE_tx);
+        pthread_attr_setschedpolicy(&attr_UE_rx,SCHED_FIFO);
+        pthread_attr_setschedpolicy(&attr_UE_tx,SCHED_FIFO);
+
+	error_code_UE_rx = pthread_create(&UE_rx_thread, &attr_UE_rx, rrh_UE_rx_thread, (void *)&rrh_UE_desc);
+	error_code_UE_tx = pthread_create(&UE_tx_thread, &attr_UE_tx, rrh_UE_tx_thread, (void *)&rrh_UE_desc);
+	
+	if (error_code_UE_rx) {printf("Error while creating UE RX thread\n"); exit(-1);}
+        if (error_code_UE_tx) {printf("Error while creating UE TX thread\n"); exit(-1);}
+        
+	while (rrh_exit==0)
+	  sleep(1);
     }
   }
 
@@ -523,71 +685,42 @@ void *rrh_UE_thread(void *arg) {
 
 
 
-
-void *rrh_eNB_thread(void *arg) {
-
-  int sockid=-1;
-  struct sockaddr_in serveraddr;
+void *rrh_eNB_rx_thread(void *arg) {
+  
   struct sockaddr clientaddr;
   socklen_t clientaddrlen;
-  rrh_desc_t *rrh_desc = (rrh_desc_t *)arg;
-  char str[INET_ADDRSTRLEN];
-  //int8_t msg_header[4+sizeof(openair0_timestamp)];
-  int8_t buf[BUF_LEN];
-  int16_t cmd,nsamps,antenna_index;
-  ssize_t bytes_received;
-  ssize_t bytes_sent;
-  openair0_timestamp temp, last_hw_counter=0;
-  struct timespec time_rem;
+  rrh_eNB_desc_t *rrh_eNB_rx_desc = (rrh_eNB_desc_t *)arg;
+  struct timespec time0,time1,time2;
   struct timespec time_req_1us, time_rem_1us;
+  ssize_t bytes_sent;
+  int antenna_index, nsamps;
+  int trace_cnt=0;
+  int sockid;
+  char str[INET_ADDRSTRLEN];
+  unsigned long long max_rx_time=0, min_rx_time=133333, total_rx_time=0, average_rx_time=133333, s_period=0, trial=0;
+  
+  openair0_timestamp temp, last_hw_counter=0;
+  
+  antenna_index =  rrh_eNB_rx_desc->antenna_index_eNB_rx;
+  nsamps = rrh_eNB_rx_desc->nsamps;
+  sockid = rrh_eNB_rx_desc->sockid_eNB;
 
 
-  time_req_1us.tv_sec = 0;
-  time_req_1us.tv_nsec = 1000;
-
-
-  while (rrh_exit==0) {
-
-    
-    sockid=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
-    if (sockid==-1) {
-      perror("Cannot create eNB socket: ");
-      rrh_exit=1;
-    }
-
-
-    bzero((char *)&serveraddr,sizeof(serveraddr));
-    serveraddr.sin_family=AF_INET;
-    serveraddr.sin_port=htons(rrh_desc->eNB_port);
-    inet_pton(AF_INET,rrh_desc->eNB_dest_ip,&serveraddr.sin_addr.s_addr);
-
-    inet_ntop(AF_INET, &(serveraddr.sin_addr), str, INET_ADDRSTRLEN);      
-    printf("Binding to eNB socket for %s:%d\n",str,ntohs(serveraddr.sin_port));
-
-    if (bind(sockid,(struct sockaddr *)&serveraddr,sizeof(serveraddr))<0) {
-      perror("Cannot bind to eNB socket: ");
-      rrh_exit = 1;
-    }
-     
-    // now wait for commands from eNB
-    while (rrh_exit==0) {
-
-      // get header info
-      bzero((void*)&clientaddr,sizeof(struct sockaddr));
-      clientaddrlen = sizeof(struct sockaddr);
+       bzero((void*)&clientaddr,sizeof(struct sockaddr));
+       clientaddrlen = sizeof(struct sockaddr);
       //printf("Waiting for eNB ...\n");
-      bytes_received = recvfrom(sockid,buf,BUF_LEN,0,&clientaddr,&clientaddrlen);
-      cmd = buf[0];
-      antenna_index = cmd>>1;
-      timestamp_eNB_tx[antenna_index] = *(openair0_timestamp*)(buf+4);
-      nsamps = *(int16_t *)(buf+2);
-      cmd = cmd&1;
-      inet_ntop(AF_INET, &(((struct sockaddr_in*)&clientaddr)->sin_addr), str, INET_ADDRSTRLEN);
+  //printf("[RRH eNB RX thread] received parameters : nsamps : %d, antenna_index : %d\n",nsamps,antenna_index);
+  clientaddr = rrh_eNB_rx_desc->clientaddr;
+  clientaddrlen = rrh_eNB_rx_desc->clientaddrlen;     
 
-      switch (cmd) {
-      case 0: // RX
-	printf("Received eNB RX request for antenna %d, nsamps %d (from %s:%d)\n",antenna_index,nsamps,str, 
-		       ntohs(((struct sockaddr_in*)&clientaddr)->sin_port));
+      inet_ntop(AF_INET, &(((struct sockaddr_in*)&clientaddr)->sin_addr), str, INET_ADDRSTRLEN);
+      printf("Received eNB RX request for antenna %d, nsamps %d (from %s:%d)\n",antenna_index,nsamps,str, 
+	       ntohs(((struct sockaddr_in*)&clientaddr)->sin_port));
+
+       while (rrh_exit == 0)
+       {
+	//printf("Received eNB RX request for antenna %d, nsamps %d (from %s:%d)\n",antenna_index,nsamps,str, 
+	//	       ntohs(((struct sockaddr_in*)&clientaddr)->sin_port));
 	
         if (!eNB_rx_started)
         {
@@ -607,11 +740,13 @@ void *rrh_eNB_thread(void *arg) {
             }
             else
             {
-              while (hw_counter != last_hw_counter+1)
+              while (hw_counter < last_hw_counter+1)
                 nanosleep(&time_req_1us,&time_rem_1us);
             }
           }
         }
+
+        clock_gettime(CLOCK_MONOTONIC,&time1);
 
 	// send return
 	temp=*(openair0_timestamp*)&rx_buffer_eNB[antenna_index][timestamp_eNB_rx[antenna_index]%(FRAME_MAX_SIZE)];
@@ -665,19 +800,87 @@ void *rrh_eNB_thread(void *arg) {
 	    perror("RRH eNB : sendto for RX");
 
 	}
-	printf("bytes_sent %d(timestamp_eNB_rx[%d] %d)\n",(int)bytes_sent,antenna_index,(int)timestamp_eNB_rx[antenna_index]);
+	//printf("bytes_sent %d(timestamp_eNB_rx[%d] %d)\n",(int)bytes_sent,antenna_index,(int)timestamp_eNB_rx[antenna_index]);
 	
 	
         *(openair0_timestamp*)&rx_buffer_eNB[antenna_index][timestamp_eNB_rx[antenna_index]%(FRAME_MAX_SIZE)]=temp;
 	timestamp_eNB_rx[antenna_index]+=nsamps;
         last_hw_counter=hw_counter;
-	break;
-      case 1: // TX
+
+	clock_gettime(CLOCK_MONOTONIC,&time2);
+
+	if (trace_cnt++ > 10)
+        {
+          total_rx_time = (unsigned int)(time2.tv_nsec - time0.tv_nsec);
+          if (total_rx_time < 0) total_rx_time=1000000000-total_rx_time;
+          if ((total_rx_time > 0) && (total_rx_time < 1000000000))
+          {
+            trial++;
+            if (total_rx_time < min_rx_time) 
+              min_rx_time = total_rx_time;
+            if (total_rx_time > max_rx_time) 
+              max_rx_time = total_rx_time;
+
+            average_rx_time = (long long unsigned int)((average_rx_time*trial)+total_rx_time)/(trial+1);
+          }
+         
+          if (s_period++ == PRINTF_PERIOD)
+          {  
+            s_period=0;
+            printf("Average eNB RX time : %lu\tMax RX time : %lu\tMin RX time : %lu\n",average_rx_time,max_rx_time,min_rx_time);
+            
+          }
+	  //printf("RX: t1 %llu (time from last send), t2 %llu (sendto of %lu bytes) total time : %llu\n",(long long unsigned int)(time1.tv_nsec  - time0.tv_nsec), (long long unsigned int)(time2.tv_nsec - time1.tv_nsec),
+	//	 (nsamps<<2)+sizeof(openair0_timestamp),(long long unsigned int)(time2.tv_nsec - time0.tv_nsec));  
+	 
+        } 
+	memcpy(&time0,&time2,sizeof(struct timespec));
+  
+  
+    }  //while (rrh_exit==0)
+
+  return(0);  
+  
+}
+
+
+void *rrh_eNB_tx_thread(void *arg) {
+  
+  struct sockaddr clientaddr;
+  socklen_t clientaddrlen;
+  struct timespec time0a,time0,time1,time2;
+  rrh_eNB_desc_t *rrh_eNB_tx_desc = (rrh_eNB_desc_t *)arg;
+//  struct timespec time_rem;
+  struct timespec time_req_1us, time_rem_1us;
+  ssize_t bytes_received;
+  int antenna_index, nsamps;
+  int8_t buf[BUF_LEN];
+  int trace_cnt=0;
+  int sockid;
+    
+  bzero((void*)&clientaddr,sizeof(struct sockaddr));
+  clientaddrlen = sizeof(struct sockaddr);
+      //printf("Waiting for eNB ...\n");
+
+  antenna_index =  rrh_eNB_tx_desc->antenna_index_eNB_tx;
+  nsamps = rrh_eNB_tx_desc->nsamps;
+  sockid = rrh_eNB_tx_desc->sockid_eNB;
+  
+       while (rrh_exit == 0)
+       {
+
+         clock_gettime(CLOCK_MONOTONIC,&time0a);
+	 
+        bytes_received = recvfrom(sockid,buf,BUF_LEN,0,&clientaddr,&clientaddrlen); 
+        timestamp_eNB_tx[antenna_index] = *(openair0_timestamp*)(buf+4);
+	 
+	clock_gettime(CLOCK_MONOTONIC,&time1);
+
         if (NRT_FLAG==1)
         {
           nrt_eNB_counter[antenna_index]++;
         }
-	printf("Received eNB TX request for antenna %d, nsamps %d, timestamp %d bytes_received %d\n",antenna_index,nsamps,(int)timestamp_eNB_tx[antenna_index],(int)bytes_received);
+	//printf("Received eNB TX request for antenna %d, nsamps %d, timestamp %d bytes_received %d\n",antenna_index,nsamps,(int)timestamp_eNB_tx[antenna_index],(int)bytes_received);
 	
 	if ((timestamp_eNB_tx[antenna_index]%(FRAME_MAX_SIZE)+nsamps) > FRAME_MAX_SIZE)   // Wrap around if nsamps exceeds the buffer limit
 	{
@@ -689,13 +892,10 @@ void *rrh_eNB_thread(void *arg) {
 	else {
 	  memcpy(&tx_buffer_eNB[antenna_index][timestamp_eNB_tx[antenna_index]%(FRAME_MAX_SIZE)],buf+sizeof(openair0_timestamp)+2*sizeof(int16_t),nsamps<<2);
 	}
-	
-        if (rrh_desc->time_req.tv_sec !=0 || rrh_desc->time_req.tv_nsec !=0)  
-        {
-          nanosleep(&rrh_desc->time_req,&time_rem); 
-        }	
+		
         while (sync_eNB_rx[antenna_index]==0)
           nanosleep(&time_req_1us,&time_rem_1us);
+        //printf("launching eNB proc\n");
         pthread_mutex_lock(&sync_eNB_mutex[antenna_index]);
 	sync_eNB_rx[antenna_index]++;
 	if (!sync_eNB_rx[antenna_index])
@@ -710,10 +910,119 @@ void *rrh_eNB_thread(void *arg) {
 	}
 	pthread_mutex_unlock(&sync_eNB_mutex[antenna_index]);
 	
-	break;
-      } //switch(cmd)
+	clock_gettime(CLOCK_MONOTONIC,&time2);
+	
+	//if (trace_cnt++ < 10)
+	//  printf("TX: t0 %llu (time from previous run) t1 %llu (time of memcpy TX samples), t2 %llu (total time)\n",(long long unsigned int)(time1.tv_nsec  - time0.tv_nsec), 
+	//	 (long long unsigned int)(time2.tv_nsec  - time1.tv_nsec), 
+	//	 (long long unsigned int)(time2.tv_nsec - time0.tv_nsec));
+	  
+	memcpy(&time0,&time2,sizeof(struct timespec));
 
-    }  //while (rrh_exit==0)
+
+
+       }
+  
+  return(0);
+  
+}
+
+void *rrh_eNB_thread(void *arg) {
+
+  int sockid=-1;
+  struct sockaddr_in serveraddr;
+  struct sockaddr clientaddr;
+  socklen_t clientaddrlen;
+  rrh_desc_t *rrh_desc = (rrh_desc_t *)arg;
+  char str[INET_ADDRSTRLEN];
+  //int8_t msg_header[4+sizeof(openair0_timestamp)];
+  int8_t buf[BUF_LEN];
+  int16_t cmd;   //,nsamps,antenna_index;
+  ssize_t bytes_received;
+  //ssize_t bytes_sent;
+  //openair0_timestamp temp, last_hw_counter=0;
+  //struct timespec time_rem;
+  struct timespec time_req_1us, time_rem_1us;
+  //struct timespec time0a,time0,time1,time2;
+  //int trace_cnt=0;
+  rrh_eNB_desc_t rrh_eNB_desc;
+  pthread_t eNB_rx_thread, eNB_tx_thread;
+  pthread_attr_t attr_eNB_rx, attr_eNB_tx;
+  struct sched_param sched_param_eNB_rx, sched_param_eNB_tx;
+  int error_code_eNB_rx, error_code_eNB_tx;
+  
+  time_req_1us.tv_sec = 0;
+  time_req_1us.tv_nsec = 1000;
+
+
+  while (rrh_exit==0) {
+
+    
+    sockid=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
+    if (sockid==-1) {
+      perror("Cannot create eNB socket: ");
+      rrh_exit=1;
+    }
+
+
+    bzero((char *)&serveraddr,sizeof(serveraddr));
+    serveraddr.sin_family=AF_INET;
+    serveraddr.sin_port=htons(rrh_desc->eNB_port);
+    inet_pton(AF_INET,rrh_desc->eNB_dest_ip,&serveraddr.sin_addr.s_addr);
+
+    inet_ntop(AF_INET, &(serveraddr.sin_addr), str, INET_ADDRSTRLEN);      
+    printf("Binding to eNB socket for %s:%d\n",str,ntohs(serveraddr.sin_port));
+
+    if (bind(sockid,(struct sockaddr *)&serveraddr,sizeof(serveraddr))<0) {
+      perror("Cannot bind to eNB socket: ");
+      rrh_exit = 1;
+    }
+     
+    // now wait for commands from eNB
+
+      // get header info
+      bzero((void*)&clientaddr,sizeof(struct sockaddr));
+      clientaddrlen = sizeof(struct sockaddr);
+      //printf("Waiting for eNB ...\n");
+
+      
+
+      bytes_received = recvfrom(sockid,buf,BUF_LEN,0,&clientaddr,&clientaddrlen);
+      cmd = buf[0];
+      rrh_eNB_desc.antenna_index_eNB_rx = cmd>>1;
+      rrh_eNB_desc.antenna_index_eNB_tx = cmd>>1;
+      //rrh_eNB_desc.timestamp_eNB_tx[rrh_eNB_desc.antenna_index_eNB_tx] = *(openair0_timestamp*)(buf+4);  //we don't need timestamp when receiving the first command
+      rrh_eNB_desc.nsamps = *(int16_t *)(buf+2);
+      rrh_eNB_desc.sockid_eNB = sockid;
+      rrh_eNB_desc.clientaddr = clientaddr;
+      rrh_eNB_desc.clientaddrlen = clientaddrlen;
+      
+      cmd = cmd&1;
+      inet_ntop(AF_INET, &(((struct sockaddr_in*)&clientaddr)->sin_addr), str, INET_ADDRSTRLEN);
+
+      if (cmd==START_CMD){
+	
+	pthread_attr_init(&attr_eNB_rx);
+	pthread_attr_init(&attr_eNB_tx);
+        sched_param_eNB_rx.sched_priority = sched_get_priority_max(SCHED_FIFO);
+        sched_param_eNB_tx.sched_priority = sched_get_priority_max(SCHED_FIFO);
+        pthread_attr_setschedparam(&attr_eNB_rx,&sched_param_eNB_rx);
+        pthread_attr_setschedparam(&attr_eNB_tx,&sched_param_eNB_tx);
+        pthread_attr_setschedpolicy(&attr_eNB_rx,SCHED_FIFO);
+        pthread_attr_setschedpolicy(&attr_eNB_tx,SCHED_FIFO);
+
+	error_code_eNB_rx = pthread_create(&eNB_rx_thread, &attr_eNB_rx, rrh_eNB_rx_thread, (void *)&rrh_eNB_desc);
+	error_code_eNB_tx = pthread_create(&eNB_tx_thread, &attr_eNB_tx, rrh_eNB_tx_thread, (void *)&rrh_eNB_desc);
+	
+	if (error_code_eNB_rx) {printf("Error while creating eNB RX thread\n"); exit(-1);}
+        if (error_code_eNB_tx) {printf("Error while creating eNB TX thread\n"); exit(-1);}
+        
+	while (rrh_exit==0)
+	  sleep(1);
+	
+      }
+      
+
   }  //while (rrh_exit==0)
 
   close(sockid);
@@ -754,15 +1063,22 @@ int main(int argc, char **argv) {
   int i;
   int opt;
   int nsecs=0, rt_period=0;
+  rrh_desc_t rrh;
+  struct itimerspec timer;
+
+
+  rrh.time_req.tv_sec = 0;
+  rrh.time_req.tv_nsec = 0;
+  
+  rrh.eNB_port = RRH_eNB_PORT;
+  strcpy(rrh.eNB_dest_ip,RRH_eNB_DEST_IP);
+  rrh.UE_port = RRH_UE_PORT;
+  strcpy(rrh.UE_dest_ip ,RRH_UE_DEST_IP);
 
   nsecs = 0;
 
-  while ((opt = getopt(argc, argv, "d:t:r")) != -1) {
+  while ((opt = getopt(argc, argv, "t:rE:U:")) != -1) {
     switch (opt) {
-      case 'd':
-        nsecs = atoi(optarg);
-        NRT_FLAG=1;
-      break;
       case 't':
         rt_period = atoi(optarg);
         RT_FLAG=1;
@@ -772,6 +1088,12 @@ int main(int argc, char **argv) {
         rt_period = DEFAULT_PERIOD_NS;
         RT_FLAG=1;
         NRT_FLAG=0;
+      break;
+      case 'E':
+        strcpy(rrh.eNB_dest_ip,optarg);
+      break;
+      case 'U':
+        strcpy(rrh.UE_dest_ip,optarg);
       break;
 
       default: /* '?' */
@@ -785,22 +1107,12 @@ int main(int argc, char **argv) {
  //              exit(EXIT_FAILURE);
  //          }
 
-  struct itimerspec timer;
     // setup the timer (1s delay, 1s reload)
   timer.it_value.tv_sec = rt_period/1000000000;
   timer.it_value.tv_nsec = rt_period%1000000000;
   timer.it_interval.tv_sec = rt_period/1000000000;
   timer.it_interval.tv_nsec = rt_period%1000000000;
-
-
-  rrh_desc_t rrh;
-  rrh.time_req.tv_sec = nsecs/1000000000;
-  rrh.time_req.tv_nsec = nsecs%1000000000;
   
-  rrh.eNB_port = RRH_eNB_PORT;
-  rrh.eNB_dest_ip = RRH_eNB_DEST_IP;
-  rrh.UE_port = RRH_UE_PORT;
-  rrh.UE_dest_ip = RRH_UE_DEST_IP;
 
   // to make a graceful exit when ctrl-c is pressed
   signal(SIGSEGV, signal_handler);
@@ -831,7 +1143,7 @@ int main(int argc, char **argv) {
 
   error_code_eNB = pthread_create(&main_rrh_eNB_thread, &attr, rrh_eNB_thread, (void *)&rrh);
   error_code_UE = pthread_create(&main_rrh_UE_thread, &attr, rrh_UE_thread, (void *)&rrh);
-  error_code_proc_UE = pthread_create(&main_rrh_proc_UE_thread, &attr_proc, rrh_proc_UE_thread,NULL);
+  error_code_proc_UE = pthread_create(&main_rrh_proc_UE_thread, &attr_proc, rrh_proc_UE_thread, NULL);
   error_code_proc_eNB = pthread_create(&main_rrh_proc_eNB_thread, &attr_proc, rrh_proc_eNB_thread, NULL);
   error_code_timer = pthread_create(&main_timer_proc_thread, &attr_timer, timer_proc, (void *)&timer);
 
