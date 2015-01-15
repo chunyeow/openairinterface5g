@@ -203,9 +203,12 @@ int s6a_generate_update_location(s6a_update_location_req_t *ulr_pP)
 
     /* Destination Host */
     {
-        char host[40]  = "hss.";
+        char host[100]  = "hss.";
         size_t hostlen;
 
+        memset(host, 0, 100);
+        strcat(host, mme_config.s6a_config.hss_host_name);
+        strcat(host, ".");
         strcat(host, mme_config.realm);
 
         hostlen = strlen(host);
