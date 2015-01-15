@@ -106,15 +106,15 @@ int ethernet_write_data(int Mod_id, openair0_timestamp timestamp, const void **b
   ((int16_t *)buff2)[0] = 1+(antenna_id<<1);
   ((int16_t *)buff2)[1] = nsamps;
   *((openair0_timestamp *)(buff2+(sizeof(int16_t)*2))) = timestamp;
-  //printf("Timestamp TX sent : %d\n",timestamp);
+//  printf("Timestamp TX sent : %d\n",timestamp);
 
 //  printf("buffer head : %d %d %d %d \n",((int16_t *)buff2)[0],((int16_t *)buff2)[1],((int16_t *)buff2)[2],((int16_t *)buff2)[3]);
-  while(n_written < (nsamps<<2)) {
+  while(n_written < nsamps) {
     /* Send packet */
     if ((n_written += sendto(sockfd[Mod_id], 
 			     buff2,
 			     (nsamps<<2)+sizeof(openair0_timestamp)+(2*sizeof(int16_t)), 
-			     MSG_DONTWAIT, 
+			     0, 
 			     (struct sockaddr*)&dest_addr[Mod_id], 
 			     dest_addr_len[Mod_id])) < 0) {
       printf("Send failed for Mod_id %d\n",Mod_id);
@@ -137,14 +137,16 @@ int ethernet_read_data(int Mod_id,openair0_timestamp *timestamp,void **buff, int
   int ret;
   openair0_timestamp temp = *(openair0_timestamp*)(buff2);
   int16_t mesg[2];
+  char str[INET_ADDRSTRLEN];
 
-  mesg[0] = 0+(antenna_id<<1);
-  mesg[1] = nsamps;
+  //mesg[0] = 0+(antenna_id<<1);
+  //mesg[1] = nsamps;
 
-
+  inet_ntop(AF_INET, &(dest_addr[Mod_id].sin_addr), str, INET_ADDRSTRLEN);
   // send command RX for nsamps samples
+  //  printf("requesting %d samples from (%s:%d)\n",nsamps,str,ntohs(dest_addr[Mod_id].sin_port));
 
-  sendto(sockfd[Mod_id],mesg,4,MSG_DONTWAIT,(struct sockaddr *)&dest_addr[Mod_id],dest_addr_len[Mod_id]);
+  //sendto(sockfd[Mod_id],mesg,4,0,(struct sockaddr *)&dest_addr[Mod_id],dest_addr_len[Mod_id]);
 
   bytes_received=0;
   block_cnt=0;
@@ -185,8 +187,19 @@ int ethernet_read_data(int Mod_id,openair0_timestamp *timestamp,void **buff, int
 
 int trx_eth_start(openair0_device *openair0) {
 
-  return(ethernet_socket_init(openair0->openair0_cfg.Mod_id, openair0->openair0_cfg.rrh_ip,openair0->openair0_cfg.rrh_port));
+  int16_t mesg[2];
+  int Mod_id;
+  
+  Mod_id = openair0->openair0_cfg.Mod_id;
+  ethernet_socket_init(openair0->openair0_cfg.Mod_id, openair0->openair0_cfg.rrh_ip,openair0->openair0_cfg.rrh_port);
 
+  mesg[0] = 1 + 0;  //antenna index is 0, to be replaced by the number of active antennas
+  mesg[1] = openair0->openair0_cfg.samples_per_packet;
+
+  sendto(sockfd[Mod_id],mesg,4,0,(struct sockaddr *)&dest_addr[Mod_id],dest_addr_len[Mod_id]);
+
+
+  return(0);
 }
 
 void trx_eth_write(openair0_device *device, openair0_timestamp timestamp, const void **buff, int nsamps, int cc, int flags)
