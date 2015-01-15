@@ -57,8 +57,7 @@ then
     sudo mkdir /usr/local/etc/freeDiameter/
 fi
 
-echo "Copying cakey.pem user.key.pem cacert.pem to /usr/local/etc/freeDiameter/"
-sudo cp user.key.pem user.cert.pem cacert.pem /usr/local/etc/freeDiameter/
+sudo cp -uv user.key.pem user.cert.pem cacert.pem cakey.pem /usr/local/etc/freeDiameter/
 
 # openssl genrsa -out ubuntu.key.pem 1024
 # openssl req -new -batch -x509 -out ubuntu.csr.pem -key ubuntu.key.pem -subj /CN=ubuntu.localdomain/C=FR/ST=BdR/L=Aix/O=fD/OU=Tests
