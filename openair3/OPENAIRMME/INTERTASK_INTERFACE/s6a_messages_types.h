@@ -1,4 +1,0 @@
-#ifndef S6A_MESSAGES_TYPES_H_
-#define S6A_MESSAGES_TYPES_H_
-
-#endif /* S6A_MESSAGES_TYPES_H_ */
