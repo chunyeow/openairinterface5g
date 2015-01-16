@@ -80,9 +80,9 @@ declare TIME_MEAS=0
 declare DOXYGEN=0
 declare DEV=0
 
-EMULATION_DEV_INTERFACE="eth0"
-EMULATION_MULTICAST_GROUP=1
-EMULATION_DEV_ADDRESS=`ifconfig $EMULATION_DEV_INTERFACE | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}'`
+#EMULATION_DEV_INTERFACE="eth0"
+#EMULATION_MULTICAST_GROUP=1
+#EMULATION_DEV_ADDRESS=`ifconfig $EMULATION_DEV_INTERFACE | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}'`
 
 ############## script params #####################
 
