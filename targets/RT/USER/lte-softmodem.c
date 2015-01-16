@@ -1858,7 +1858,7 @@ static void *UE_thread_synch(void *arg) {
 	  for (i=0; i<openair0_cfg[card].rx_num_channels; i++) {
 	    openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i]+openair_daq_vars.freq_offset;
 	    openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i]+openair_daq_vars.freq_offset;
-	    openair0_cfg[card].rx_gain[i] = PHY_vars_UE_g[0][0]->rx_total_gain_dB-73;  // 65 calibrated for USRP B210 @ 2.6 GHz
+	    openair0_cfg[card].rx_gain[i] = PHY_vars_UE_g[0][0]->rx_total_gain_dB-82;  // 65 calibrated for USRP B210 @ 2.6 GHz
 #ifdef USRP
 #ifndef USRP_DEBUG
 	    openair0_set_frequencies(&openair0,&openair0_cfg[0]);
@@ -1977,32 +1977,32 @@ static void *UE_thread_rx(void *arg) {
   
   PHY_VARS_UE *UE = (PHY_VARS_UE*)arg;
   int i;
-
+  /*
 #ifdef LOWLATENCY
   struct sched_attr attr;
   unsigned int flags = 0;
 #endif
-  
+  */
   UE->instance_cnt_rx=-1;
-
+  /*
 #ifdef LOWLATENCY
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
   attr.sched_nice = 0;
   attr.sched_priority = 0;
   
-  /* This creates a 1ms reservation every 10ms period*/
+  // This creates a 1ms reservation every 10ms period
   attr.sched_policy = SCHED_DEADLINE;
-  attr.sched_runtime = 1 * 1000000;  // each tx thread requires 1ms to finish its job
+  attr.sched_runtime = 1 * 800000;  // each tx thread requires 1ms to finish its job
   attr.sched_deadline =1 * 1000000; // each tx thread will finish within 1ms
-  attr.sched_period = 1 * 10000000; // each tx thread has a period of 10ms from the starting point
+  attr.sched_period = 1 * 1000000; // each tx thread has a period of 10ms from the starting point
   
   if (sched_setattr(0, &attr, flags) < 0 ){
     perror("[SCHED] eNB tx thread: sched_setattr failed\n");
     exit(-1);
   }  
 #endif
-
+*/
   mlockall(MCL_CURRENT | MCL_FUTURE);
   
 #ifndef EXMIMO
@@ -2101,12 +2101,13 @@ static void *UE_thread(void *arg) {
   unsigned int rxs;
   void *rxp[2],*txp[2];
 
+  /*
 #ifdef LOWLATENCY
   struct sched_attr attr;
   unsigned int flags = 0;
-  unsigned long mask = 1; /* processor 0 */
+  unsigned long mask = 1; // processor 0 
 #endif
-
+*/
 
   printf("waiting for sync (UE_thread)\n");
 #ifdef RTAI
@@ -2121,22 +2122,23 @@ static void *UE_thread(void *arg) {
 #endif
 
   printf("starting UE thread\n");
+  /*
 #ifdef LOWLATENCY
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
   attr.sched_nice = 0;
   attr.sched_priority = 0;
    
-  /* This creates a .5 ms  reservation */
+  // This creates a .5 ms  reservation
   attr.sched_policy = SCHED_DEADLINE;
   attr.sched_runtime  = 0.5 * 1000000;
   attr.sched_deadline = 0.5 * 1000000;
   attr.sched_period   = 1   * 1000000;
    
-  /* pin the UE main thread to CPU0*/
-  /* if (pthread_setaffinity_np(pthread_self(), sizeof(mask),&mask) <0) {
-     perror("[MAIN_ENB_THREAD] pthread_setaffinity_np failed\n");
-     }*/
+  // pin the UE main thread to CPU0
+  // if (pthread_setaffinity_np(pthread_self(), sizeof(mask),&mask) <0) {
+  //   perror("[MAIN_ENB_THREAD] pthread_setaffinity_np failed\n");
+  //   }
    
   if (sched_setattr(0, &attr, flags) < 0 ){
     perror("[SCHED] main eNB thread: sched_setattr failed\n");
@@ -2146,6 +2148,7 @@ static void *UE_thread(void *arg) {
 	  gettid(),sched_getcpu());
   }
 #endif
+*/
   mlockall(MCL_CURRENT | MCL_FUTURE);
 
   T0 = rt_get_time_ns();
@@ -3411,7 +3414,7 @@ int main(int argc, char **argv) {
 
       openair0_cfg[card].tx_gain[i] = tx_gain[0][i];
       openair0_cfg[card].rx_gain[i] = ((UE_flag==0) ? PHY_vars_eNB_g[0][0]->rx_total_gain_eNB_dB : 
-                                       PHY_vars_UE_g[0][0]->rx_total_gain_dB) - 73.0;  // calibrated for USRP B210 @ 2.6 GHz
+                                       PHY_vars_UE_g[0][0]->rx_total_gain_dB) - 82.0;  // calibrated for USRP B210 @ 2.6 GHz
       openair0_cfg[card].tx_freq[i] = (UE_flag==0) ? downlink_frequency[0][i] : downlink_frequency[0][i]+uplink_frequency_offset[0][i];
       openair0_cfg[card].rx_freq[i] = (UE_flag==0) ? downlink_frequency[0][i] + uplink_frequency_offset[0][i] : downlink_frequency[0][i];
       printf("Setting tx_gain %f, rx_gain %f, tx_freq %f, rx_freq %f\n",
