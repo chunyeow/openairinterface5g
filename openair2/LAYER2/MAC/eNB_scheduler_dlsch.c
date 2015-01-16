@@ -450,12 +450,12 @@ void schedule_ue_spec(module_id_t   module_idP,
       rnti = UE_RNTI(module_idP,UE_id);
       eNB_UE_stats = mac_xface->get_eNB_UE_stats(module_idP,CC_id,rnti);
       if (rnti==0) {
-	LOG_N(MAC,"Cannot find rnti for UE_id %d (num_UEs %d)\n",UE_id,UE_list->num_UEs);
+	LOG_D(MAC,"Cannot find rnti for UE_id %d (num_UEs %d)\n",UE_id,UE_list->num_UEs);
 	// mac_xface->macphy_exit("Cannot find rnti for UE_id");
 	continue_flag=1;
       }
       if (eNB_UE_stats==NULL) {
-	LOG_N(MAC,"[eNB] Cannot find eNB_UE_stats\n");
+	LOG_D(MAC,"[eNB] Cannot find eNB_UE_stats\n");
 	//	mac_xface->macphy_exit("[MAC][eNB] Cannot find eNB_UE_stats\n");
 	continue_flag=1; 
       }
@@ -707,9 +707,10 @@ void schedule_ue_spec(module_id_t   module_idP,
 	TBS = mac_xface->get_TBS_DL(eNB_UE_stats->dlsch_mcs1,nb_available_rb);
 	// check first for RLC data on DCCH
 	// add the length for  all the control elements (timing adv, drx, etc) : header + payload
-#ifndef EXMIMO_IOT
+
+	//#ifndef EXMIMO_IOT
         // to be checked by RK, NN, FK
-        uint8_t update_TA;
+        uint8_t update_TA=4;
         switch (frame_parms[CC_id]->N_RB_DL) 
         {
         case 6:
@@ -726,9 +727,9 @@ void schedule_ue_spec(module_id_t   module_idP,
           break;
        }        
 	ta_len = ((eNB_UE_stats->timing_advance_update/update_TA)!=0) ? 2 : 0;
-#else
+	/*#else
 	ta_len = 0;
-#endif
+	#endif*/
 	
 	header_len_dcch = 2; // 2 bytes DCCH SDU subheader
 	
@@ -952,11 +953,11 @@ void schedule_ue_spec(module_id_t   module_idP,
 	    
 	    post_padding = TBS - sdu_length_total - header_len_dcch - header_len_dtch - ta_len ; // 1 is for the postpadding header
 	  }
-#ifndef EXMIMO_IOT
+	  //#ifndef EXMIMO_IOT
 	  ta_update = eNB_UE_stats->timing_advance_update/update_TA;
-#else
+	  /*#else
 	  ta_update = 0;
-#endif
+	  #endif*/
 	  
 	  offset = generate_dlsch_header((unsigned char*)UE_list->DLSCH_pdu[CC_id][0][UE_id].payload[0],
 					 // offset = generate_dlsch_header((unsigned char*)eNB_mac_inst[0].DLSCH_pdu[0][0].payload[0],
@@ -969,9 +970,11 @@ void schedule_ue_spec(module_id_t   module_idP,
 					 padding,
 					 post_padding);
 	  //#ifdef DEBUG_eNB_SCHEDULER
-	  LOG_D(MAC,"[eNB %d][DLSCH] Frame %d Generate header for UE_id %d on CC_id %d: sdu_length_total %d, num_sdus %d, sdu_lengths[0] %d, sdu_lcids[0] %d => payload offset %d,timing advance value : %d, padding %d,post_padding %d,(mcs %d, TBS %d, nb_rb %d),header_dcch %d, header_dtch %d\n",
+	  if (ta_update) {
+	  LOG_I(MAC,"[eNB %d][DLSCH] Frame %d Generate header for UE_id %d on CC_id %d: sdu_length_total %d, num_sdus %d, sdu_lengths[0] %d, sdu_lcids[0] %d => payload offset %d,timing advance value : %d, padding %d,post_padding %d,(mcs %d, TBS %d, nb_rb %d),header_dcch %d, header_dtch %d\n",
 		module_idP,frameP, UE_id, CC_id, sdu_length_total,num_sdus,sdu_lengths[0],sdu_lcids[0],offset,
-		ta_len,padding,post_padding,mcs,TBS,nb_rb,header_len_dcch,header_len_dtch);
+		ta_update,padding,post_padding,mcs,TBS,nb_rb,header_len_dcch,header_len_dtch);
+	  }
 	  //#endif
 	  
 	  LOG_T(MAC,"[eNB %d] First 16 bytes of DLSCH : \n");

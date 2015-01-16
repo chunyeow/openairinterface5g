@@ -3246,7 +3246,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	// estimate timing advance for MAC
 	if (abstraction_flag == 0) {
 	  sync_pos = lte_est_timing_advance_pusch(phy_vars_eNB,i,sched_subframe);
-	  phy_vars_eNB->eNB_UE_stats[i].timing_advance_update = sync_pos - phy_vars_eNB->lte_frame_parms.nb_prefix_samples/8; //to check 
+	  phy_vars_eNB->eNB_UE_stats[i].timing_advance_update = sync_pos - phy_vars_eNB->lte_frame_parms.nb_prefix_samples/4; //to check 
 	}
 
 #ifdef DEBUG_PHY_PROC	
