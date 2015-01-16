@@ -921,9 +921,17 @@ void do_OFDM_mod_rt(int subframe,PHY_VARS_eNB *phy_vars_eNB) {
 	if (tx_offset>=(LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*phy_vars_eNB->lte_frame_parms.samples_per_tti))
 	  tx_offset -= LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*phy_vars_eNB->lte_frame_parms.samples_per_tti;
 	((short*)&phy_vars_eNB->lte_eNB_common_vars.txdata[0][aa][tx_offset])[0]=
+#ifdef EXMIMO
 	  ((short*)dummy_tx_b)[2*i]<<4;
+#else
+	  ((short*)dummy_tx_b)[2*i]<<5;
+#endif
 	((short*)&phy_vars_eNB->lte_eNB_common_vars.txdata[0][aa][tx_offset])[1]=
+#ifdef EXMIMO
 	  ((short*)dummy_tx_b)[2*i+1]<<4;
+#else
+	  ((short*)dummy_tx_b)[2*i+1]<<5;
+#endif
       }
     }
   }
@@ -1582,10 +1590,10 @@ static void *eNB_thread(void *arg)
 	clock_gettime(CLOCK_MONOTONIC,&trx_time2);
 
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,0);
-
+	/*
 	if (trace_cnt++<10) 
 	  printf("TRX: t1 %llu (trx_read), t2 %llu (trx_write)\n",(long long unsigned int)(trx_time1.tv_nsec  - trx_time0.tv_nsec), (long long unsigned int)(trx_time2.tv_nsec - trx_time1.tv_nsec));
-
+	*/
 #else
 	rt_sleep_ns(1000000);
 #endif
