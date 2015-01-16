@@ -176,7 +176,6 @@ fi
             BUILD_LTE=$2
             echo "setting top-level build target to: $2"
             shift 2;
-            echo > bin/install_log.txt
             ;;
        -h | --help)
             print_help
@@ -257,7 +256,10 @@ mkdir -m 777 -p bin
 build_date=`date +%Y_%m_%d`
 oai_build_date="oai_built_${build_date}"
 touch bin/${oai_build_date} 
+chmod -f 777 bin/${oai_build_date}
+
 touch bin/install_log.txt
+chmod -f 777 bin/install_log.txt
 ################################
 # cleanup first 
 ################################
