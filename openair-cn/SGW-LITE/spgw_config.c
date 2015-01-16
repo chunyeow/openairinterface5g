@@ -257,6 +257,17 @@ int spgw_config_process(spgw_config_t* config_pP) {
         }
     }
 
+    if (snprintf(system_cmd, 256,
+                 "ethtool -K %s tso off gso off gro off",
+                 config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
+        SPGW_APP_INFO("Disable tcp segmentation offload, generic segmentation offload: %s\n",system_cmd);
+        ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+    } else {
+        SPGW_APP_ERROR("Disable tcp segmentation offload, generic segmentation offload\n");
+       ret = -1;
+    }
+
+
     if (config_pP->pgw_config.pgw_masquerade_SGI) {
         inaddr.s_addr = config_pP->pgw_config.ipv4.pgw_ipv4_address_for_SGI;
         if (snprintf(system_cmd, 256,
@@ -660,6 +671,8 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
               config_pP->pgw_config.ipv4.pgw_interface_name_for_S5_S8 = strdup(pgw_interface_name_for_S5_S8);
               IPV4_STR_ADDR_TO_INT_NWBO ( pgw_default_dns_ipv4_address,     config_pP->pgw_config.ipv4.default_dns_v4, "BAD IPv4 ADDRESS FORMAT FOR DEFAULT DNS !\n" )
               IPV4_STR_ADDR_TO_INT_NWBO ( pgw_default_dns_sec_ipv4_address, config_pP->pgw_config.ipv4.default_dns_sec_v4, "BAD IPv4 ADDRESS FORMAT FOR DEFAULT DNS SEC!\n" )
+          } else {
+              SPGW_APP_WARN("NO DNS CONFIGURATION FOUND\n");
           }
       }
   } else {
