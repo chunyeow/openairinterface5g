@@ -2321,14 +2321,14 @@ OAI_UECapability_t *fill_ue_capability(char *UE_EUTRA_Capability_xer_fname) {
   assert(UE_EUTRA_Capability);
 
   if (!UE_EUTRA_Capability_xer_fname)  {
-    Bandlist[0].bandEUTRA  = 33;  // 1900-1920 TDD
+    Bandlist[0].bandEUTRA  = 3;  // UL 1710-1785, DL 1805-1880 FDD
     Bandlist[0].halfDuplex = 0;
-    Bandlist[1].bandEUTRA  = 38;  // 2570-2620 TDD 
+    Bandlist[1].bandEUTRA  = 5;  // UL 824-849 , DL 869-894 FDD
     
     Bandlist[1].halfDuplex = 0;
-    Bandlist[2].bandEUTRA  = 5;   // 824-849 , 869-894 FDD
+    Bandlist[2].bandEUTRA  = 7;   // UL 2500-2570, DL 2620-2690 FDD
     Bandlist[2].halfDuplex = 0;
-    Bandlist[3].bandEUTRA  = 7;   // 2500-2570, 2620-2690 FDD
+    Bandlist[3].bandEUTRA  = 38;  // UL/DL 2570-2620, TDD 
     Bandlist[3].halfDuplex = 0;
     
     memset((void*)InterFreqBandInfo, 0, sizeof(InterFreqBandInfo));

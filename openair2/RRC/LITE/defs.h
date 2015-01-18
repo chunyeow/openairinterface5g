@@ -431,6 +431,7 @@ typedef struct UE_RRC_INST_s {
   Byte_t          rat;
   as_nas_info_t   initialNasMsg;
 # endif
+  OAI_UECapability_t *UECap;
   uint8_t *UECapability;
   uint8_t UECapability_size;
   UE_RRC_INFO Info[NB_SIG_CNX_UE];
