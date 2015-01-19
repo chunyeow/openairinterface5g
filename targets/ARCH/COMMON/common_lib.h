@@ -44,6 +44,8 @@ typedef struct openair0_device_t openair0_device;
 #define MAX_CARDS 1
 #endif
 
+#define USRP_GAIN_OFFSET (82.0)  // 82 calibrated for USRP B210 @ 2.6 GHz
+
 typedef enum {
   max_gain=0,med_gain,byp_gain
 } rx_gain_t;
