@@ -277,7 +277,7 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
       iind = 123 + ((Kr_bytes-256)>>3);
     else {
       msg("dlsch_decoding: Illegal codeword size %d!!!\n",Kr_bytes);
-      return(-1);
+      return(dlsch->max_turbo_iterations);
     }
   
 #ifdef DEBUG_DLSCH_DECODING     

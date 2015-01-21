@@ -34,7 +34,6 @@
 #include "PHY/defs.h"
 #include "PHY/vars.h"
 #include "MAC_INTERFACE/vars.h"
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/vars.h"
 
 #include "PHY/CODING/defs.h"
 #include "SCHED/defs.h"
@@ -66,7 +65,7 @@ int current_dlsch_cqi;
 
 PHY_VARS_eNB *PHY_vars_eNB;
 PHY_VARS_UE *PHY_vars_UE;
-DCI2_5MHz_2A_M10PRB_TDD_t DLSCH_alloc_pdu2;
+DCI1_5MHz_TDD_t DLSCH_alloc_pdu;
 channel_desc_t *UE2eNB[NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX];
 
 void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,uint16_t Nid_cell,uint8_t tdd_config) {
@@ -238,9 +237,9 @@ int test_logmap8(LTE_eNB_DLSCH_t *dlsch_eNB,
 #ifdef DEBUG_CODER
       if ((i&0xf)==0) 
 	printf("\ne %d..%d:    ",i,i+15);
-      printf("%d.",PHY_vars_eNB->dlsch_eNB[0][0]->e[i]);
+      printf("%d.",PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->e[i]);
 #endif
-      channel_output[i] = (short)quantize(sigma/4.0,(2.0*PHY_vars_eNB->dlsch_eNB[0][0]->e[i]) - 1.0 + sigma*gaussdouble(0.0,1.0),qbits);
+      channel_output[i] = (short)quantize(sigma/4.0,(2.0*PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->e[i]) - 1.0 + sigma*gaussdouble(0.0,1.0),qbits);
       //            printf("input %d, output %f\n",(2*PHY_vars_eNB->dlsch_eNB[0][0]->e[i]) - 1,
       //      	     (2.0*PHY_vars_eNB->dlsch_eNB[0][0]->e[i]) - 1.0 + sigma*gaussdouble(0.0,1.0));
     }
@@ -365,7 +364,7 @@ int main(int argc, char *argv[]) {
   unsigned int coded_bits;
   unsigned char NB_RB=25;
 
-  int num_pdcch_symbols = 3;
+  int num_pdcch_symbols = 1;
   int subframe = 6;
 
   randominit(0);
@@ -383,15 +382,15 @@ int main(int argc, char *argv[]) {
     mcs = 0;
 
   printf("NB_RB %d\n",NB_RB);
-  DLSCH_alloc_pdu2.rah              = 0;
-  DLSCH_alloc_pdu2.rballoc          = DLSCH_RB_ALLOC;
-  DLSCH_alloc_pdu2.TPC              = 0;
-  DLSCH_alloc_pdu2.dai              = 0;
-  DLSCH_alloc_pdu2.harq_pid         = 0;
-  DLSCH_alloc_pdu2.tb_swap          = 0;
-  DLSCH_alloc_pdu2.mcs1             = mcs;  
-  DLSCH_alloc_pdu2.ndi1             = 1;
-  DLSCH_alloc_pdu2.rv1              = 0;
+  DLSCH_alloc_pdu.rah              = 0;
+  DLSCH_alloc_pdu.rballoc          = DLSCH_RB_ALLOC;
+  DLSCH_alloc_pdu.TPC              = 0;
+  DLSCH_alloc_pdu.dai              = 0;
+  DLSCH_alloc_pdu.harq_pid         = 0;
+  //DLSCH_alloc_pdu2.tb_swap          = 0;
+  DLSCH_alloc_pdu.mcs             = mcs;  
+  DLSCH_alloc_pdu.ndi             = 1;
+  DLSCH_alloc_pdu.rv              = 0;
 
   if (argc>2)
     qbits = atoi(argv[2]);
@@ -401,9 +400,9 @@ int main(int argc, char *argv[]) {
   printf("Quantization bits %d\n",qbits);
 
   generate_eNB_dlsch_params_from_dci(subframe,
-                                     &DLSCH_alloc_pdu2,
+                                     &DLSCH_alloc_pdu,
 				     0x1234,
-				     format2_2A_M10PRB,
+				     format1,
 				     PHY_vars_eNB->dlsch_eNB[0],
 				     &PHY_vars_eNB->lte_frame_parms,
 				     PHY_vars_eNB->pdsch_config_dedicated,
@@ -412,9 +411,9 @@ int main(int argc, char *argv[]) {
 				     P_RNTI,
 				     0); //change this later
   generate_ue_dlsch_params_from_dci(subframe,
-				    &DLSCH_alloc_pdu2,
+				    &DLSCH_alloc_pdu,
 				    C_RNTI,
-				    format2_2A_M10PRB,
+				    format1,
 				    PHY_vars_UE->dlsch_ue[0],
 				    &PHY_vars_UE->lte_frame_parms,
 				    PHY_vars_UE->pdsch_config_dedicated,
@@ -423,8 +422,8 @@ int main(int argc, char *argv[]) {
 				    P_RNTI);
   
   coded_bits = 	get_G(&PHY_vars_eNB->lte_frame_parms,
-		      PHY_vars_eNB->dlsch_eNB[0][0]->nb_rb,
-		      PHY_vars_eNB->dlsch_eNB[0][0]->rb_alloc,
+		      PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->nb_rb,
+		      PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->rb_alloc,
 		      get_Qm(mcs),
 		      1,
 		      num_pdcch_symbols,
@@ -438,7 +437,7 @@ int main(int argc, char *argv[]) {
 	 dlsch_tbs25[get_I_TBS(mcs)][NB_RB-1],(double)dlsch_tbs25[get_I_TBS(mcs)][NB_RB-1]/coded_bits,
 	 mcs,get_I_TBS(mcs),PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->F,NB_RB);
 
-  for (SNR=-5;SNR<5;SNR+=.1) {
+  for (SNR=-5;SNR<15;SNR+=.1) {
 
 
     
