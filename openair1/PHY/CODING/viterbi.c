@@ -34,7 +34,7 @@
 
 
 #ifndef EXPRESSMIMO_TARGET
-#include "emmintrin.h"
+#include "PHY/sse_intrin.h"
 #endif //EXPRESSMIMO_TARGET
 
 extern unsigned char ccodedot11_table[128],ccodedot11_table_rev[128];
@@ -212,9 +212,9 @@ void phy_viterbi_dot11_sse2(char *y,unsigned char *decoded_bytes,unsigned short 
     // set initial metrics
     
     metrics0_15 = _mm_cvtsi32_si128(INIT0);
-    metrics16_31 = _mm_xor_si128(metrics16_31,metrics16_31);
-    metrics32_47 = _mm_xor_si128(metrics32_47,metrics32_47);
-    metrics48_63 = _mm_xor_si128(metrics32_47,metrics32_47);
+    metrics16_31 = _mm_setzero_si128();
+    metrics32_47 = _mm_setzero_si128();
+    metrics48_63 = _mm_setzero_si128();
   }
   rescale = _mm_cvtsi32_si128(RESCALE);
 

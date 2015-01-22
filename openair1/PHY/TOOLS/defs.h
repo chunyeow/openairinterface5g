@@ -38,14 +38,7 @@
 
 #include <stdint.h>
 
-#ifdef __SSE2__
-#include <emmintrin.h>
-#include <xmmintrin.h>
-#endif
-#ifdef __SSE3__
-#include <pmmintrin.h>
-#include <tmmintrin.h>
-#endif
+#include "PHY/sse_intrin.h"
 
 
 //defined in rtai_math.h

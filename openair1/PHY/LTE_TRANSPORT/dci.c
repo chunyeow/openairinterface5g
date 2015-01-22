@@ -46,12 +46,7 @@
 #include "PHY/extern.h"
 #include "SCHED/defs.h"
 #include "SIMULATION/TOOLS/defs.h" // for taus 
-#include <emmintrin.h>
-#include <xmmintrin.h>
-#ifdef __SSE3__
-#include <pmmintrin.h>
-#include <tmmintrin.h>
-#endif
+#include "PHY/sse_intrin.h"
 
 #include "assertions.h"
 
@@ -60,12 +55,6 @@
 //#define DEBUG_PHY
  
 //#undef ALL_AGGREGATION
-
-#ifndef __SSE3__
-__m128i zero2;
-#define _mm_abs_epi16(xmmx) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zero2,(xmmx)))
-#define _mm_sign_epi16(xmmx,xmmy) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zero2,(xmmy)))
-#endif
 
 //extern uint16_t phich_reg[MAX_NUM_PHICH_GROUPS][3];
 //extern uint16_t pcfich_reg[4];
@@ -636,7 +625,7 @@ void pdcch_channel_level(int32_t **dl_ch_estimates_ext,
   for (aatx=0;aatx<frame_parms->nb_antennas_tx_eNB;aatx++)
     for (aarx=0;aarx<frame_parms->nb_antennas_rx;aarx++) {
       //clear average level
-      avg128P = _mm_xor_si128(avg128P,avg128P);
+      avg128P = _mm_setzero_si128();
       dl_ch128=(__m128i *)&dl_ch_estimates_ext[(aatx<<1)+aarx][frame_parms->N_RB_DL*12];
 
       for (rb=0;rb<nb_rb;rb++) {
@@ -1272,9 +1261,6 @@ void pdcch_channel_compensation(int32_t **rxdataF_ext,
 
 
 
-#ifndef __SSE3__
-  zero2 = _mm_xor_si128(zero2,zero2);
-#endif
 
 #ifdef DEBUG_DCI_DECODING
   msg("[PHY] PDCCH comp: symbol %d\n",symbol);

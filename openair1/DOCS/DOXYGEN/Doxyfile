@@ -567,6 +567,7 @@ WARN_LOGFILE           =
 INPUT                  = ../../PHY/impl_defs_top.h \
                          ../../PHY/impl_defs_lte.h \
                          ../../PHY/defs.h \
+                         ../../PHY/sse_intrin.h \
                          ../../PHY/CODING/defs.h \
                          ../../PHY/TOOLS/defs.h \
                          ../../PHY/LTE_TRANSPORT/defs.h \

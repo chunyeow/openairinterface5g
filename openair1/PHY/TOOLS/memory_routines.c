@@ -27,7 +27,7 @@
 
  *******************************************************************************/
 #ifndef EXPRESSMIMO_TARGET
-#include <mmintrin.h>
+#include "PHY/sse_intrin.h"
 
 void Zero_Buffer(void *buf,unsigned int length)
 {

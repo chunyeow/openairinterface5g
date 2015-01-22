@@ -39,8 +39,7 @@
 */
 #include "PHY/defs.h"
 #include "PHY/extern.h"
-#include <emmintrin.h>
-#include <xmmintrin.h>
+#include "PHY/sse_intrin.h"
 //#define DEBUG_DRS
 
 int generate_drs_pusch(PHY_VARS_UE *phy_vars_ue,

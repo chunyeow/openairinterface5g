@@ -192,5 +192,6 @@ showflags :
 showobj:
 	@echo $(SCHED_OBJS)
 
-run: syncsim
-	rtai-load --verbose
+cppcheck:
+	@echo "cppcheck ..."
+	cppcheck $(INCLUDES) ${OBJ:.o=.c} ${OAISIM_OBJS,.o=.c} ${ASN1_RRC_MSG_OBJS1,.o=.c}

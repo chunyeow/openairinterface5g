@@ -28,8 +28,7 @@
  *******************************************************************************/
 #include "PHY/defs.h"
 #include "PHY/extern.h"
-#include <emmintrin.h>
-#include <xmmintrin.h>
+#include "PHY/sse_intrin.h"
 
 // This is 512/(1:256) in __m128i format
 int16_t inv_ch[256*8] = {512,512,512,512,512,512,512,512,

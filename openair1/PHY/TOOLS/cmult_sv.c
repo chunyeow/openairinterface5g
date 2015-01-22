@@ -26,8 +26,7 @@
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
-#include "emmintrin.h"
-#include "smmintrin.h"
+#include "PHY/sse_intrin.h"
 #include "defs.h"
 
 #ifndef EXPRESSMIMO_TARGET

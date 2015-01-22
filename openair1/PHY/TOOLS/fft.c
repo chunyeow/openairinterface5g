@@ -76,8 +76,7 @@
 //                 ** WARNING log2size>=2 **
 //
 
-#include "emmintrin.h"
-#include "mmintrin.h"
+#include "PHY/sse_intrin.h"
 
 /// Function ReverseBits()
 /// computes bit reversed permutation vector

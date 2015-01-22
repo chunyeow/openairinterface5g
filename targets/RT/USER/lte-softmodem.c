@@ -1839,6 +1839,8 @@ static void *UE_thread_synch(void *arg) {
   sync_mode_t sync_mode = rssi;
   int rssi_lin,rssi_min,rssi_max,rssi_avg;
   double rssi_dBm,rssi_min_dBm,rssi_max_dBm;
+  int16_t spectrum[1024*2];
+  int16_t power_avg[600];
 
   printf("UE_thread_sync in with PHY_vars_UE %p\n",arg);
 #ifdef USRP
@@ -1901,11 +1903,22 @@ static void *UE_thread_synch(void *arg) {
 	rssi_min = 1<<31;
 	rssi_max = 0;
 	rssi_avg = 0;
-	for (i=0;i<76800;i+=7680) {
-	
+	memset(power_dBm_max,0,1024);
+	for (i=0;i<76800*4;i+=1024) {
+	  //compute frequency-domain representation of 1024-sample chunk
+	  dft1024(&PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[0][i],
+		  spectrum,
+		  1);
+	  compute_spectrum_stats(spectrum,
+				 power_avg,
+				 power_max,
+				 power_min,
+				 PHY_vars_UE_g[0][0]->rx_total_gain_dB);
+	}
+	  /*
 	rssi_lin = signal_energy(&PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[0][i],7680);
 	if (PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_rx>1)
-	  rssi_lin += signal_energy(&PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[0][i],7680);
+	  rssi_lin += signal_energy(&PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[1][i],7680);
 	rssi_avg += rssi;
 	rssi_min = (rssi < rssi_min) ? rssi : rssi_min;
 	rssi_max = (rssi > rssi_max) ? rssi : rssi_max;
@@ -1945,7 +1958,7 @@ static void *UE_thread_synch(void *arg) {
 #endif
       }
     }	
-
+	  */
 	  break;
       case pbch:
 	

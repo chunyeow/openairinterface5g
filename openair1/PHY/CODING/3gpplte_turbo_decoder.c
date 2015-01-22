@@ -34,10 +34,10 @@
 
 */
 
-#include "emmintrin.h"
 #include "PHY/defs.h"
 #include "PHY/CODING/defs.h"
 #include "PHY/CODING/lte_interleaver_inline.h"
+#include "PHY/sse_intrin.h"
 
 /*
 // 3gpp2 polynomials

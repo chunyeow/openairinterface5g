@@ -438,6 +438,9 @@ cleancell:
 cleanlfds:
 	$(MAKE) -C $(LFDS_DIR) -f makefile.linux clean
 
+cppcheck:
+	@echo "cppcheck oaisim ..."
+	cppcheck $(INCLUDES) ${OBJ:.o=.c} ${OAISIM_OBJS,.o=.c} ${ASN1_RRC_MSG_OBJS1,.o=.c}
 print:
 	@echo "OBJ "				$(OBJ)
 	@echo "OAISIM_OBJS "		$(OAISIM_OBJS)

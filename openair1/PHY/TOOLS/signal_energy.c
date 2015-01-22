@@ -29,7 +29,7 @@
 #include "defs.h"
 
 #ifndef EXPRESSMIMO_TARGET
-#include "mmintrin.h"
+#include "PHY/sse_intrin.h"
 #endif //EXPRESSMIMO_TARGET
 
 // Compute Energy of a complex signal vector, removing the DC component!

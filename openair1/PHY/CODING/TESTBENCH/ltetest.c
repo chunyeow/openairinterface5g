@@ -55,7 +55,7 @@
 #define F1 3
 #define F2 10
 
-#include "emmintrin.h"
+#include "PHY/sse_intrin.h"
 
 #define sgn(a) (((a)<0) ? 0 : 1)
 

@@ -46,7 +46,7 @@ int dl_channel_level(int16_t *dl_ch,
   int avg;
 
       //clear average level
-  avg128F = _mm_xor_si128(avg128F,avg128F);
+  avg128F = _mm_setzero_si128();
   dl_ch128=(__m128i *)dl_ch;
 
   for (rb=0;rb<frame_parms->N_RB_DL;rb++) {

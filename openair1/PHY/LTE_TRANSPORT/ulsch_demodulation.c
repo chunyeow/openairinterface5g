@@ -38,15 +38,6 @@
 * \warning
 */
 
-#include <emmintrin.h>
-#include <xmmintrin.h>
-#ifdef __SSE4_1__
-#include <smmintrin.h>
-#endif
-#ifdef __SSE3__
-#include <pmmintrin.h>
-#include <tmmintrin.h>
-#endif
 #include "PHY/defs.h"
 #include "PHY/extern.h"
 #include "MAC_INTERFACE/defs.h"
@@ -54,16 +45,12 @@
 #include "defs.h"
 #include "extern.h"
 //#define DEBUG_ULSCH
+#include "PHY/sse_intrin.h"
 
 //extern char* namepointer_chMag ;
 //eren
 //extern int **ulchmag_eren;
 //eren
-#ifndef __SSE3__
-__m128i zeroU;
-#define _mm_abs_epi16(xmmx) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zeroU,(xmmx)))
-#define _mm_sign_epi16(xmmx,xmmy) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zeroU,(xmmy)))
-#endif
 
 
 static short jitter[8]  __attribute__ ((aligned(16))) = {1,0,0,1,0,1,1,0};
@@ -502,7 +489,6 @@ void ulsch_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
     mmtmpU2 = _mm_abs_epi16(mmtmpU1);
     mmtmpU2 = _mm_subs_epi16(ch_magb[i],mmtmpU2);
 
-#ifdef __SSE4_1__
     (*llrp32)[0]  = _mm_extract_epi32(rxF[i],0);
     (*llrp32)[1]  = _mm_extract_epi32(mmtmpU1,0);
     (*llrp32)[2]  = _mm_extract_epi32(mmtmpU2,0);
@@ -515,7 +501,6 @@ void ulsch_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
     (*llrp32)[9]  = _mm_extract_epi32(rxF[i],3);
     (*llrp32)[10] = _mm_extract_epi32(mmtmpU1,3);
     (*llrp32)[11] = _mm_extract_epi32(mmtmpU2,3);
-#endif    
     (*llrp32)+=12;
   }
 
@@ -660,10 +645,6 @@ void ulsch_channel_compensation(int32_t **rxdataF_ext,
   __m128i QAM_amp128U,QAM_amp128bU;
 #endif
   //  symbol_mod = (symbol>=(7-frame_parms->Ncp)) ? symbol-(7-frame_parms->Ncp) : symbol;
-
-#ifndef __SSE3__
-  zeroU = _mm_xor_si128(zeroU,zeroU);
-#endif
 
   //    printf("comp: symbol %d\n",symbol);
 
@@ -861,10 +842,6 @@ void ulsch_channel_compensation_alamouti(int32_t **rxdataF_ext,                 
   __m128i mmtmpU0,mmtmpU1,mmtmpU2,mmtmpU3;
 
   //  symbol_mod = (symbol>=(7-frame_parms->Ncp)) ? symbol-(7-frame_parms->Ncp) : symbol;
-
-#ifndef __SSE3__
-  zeroU = _mm_xor_si128(zeroU,zeroU);
-#endif
 
   //    printf("comp: symbol %d\n",symbol);
 
@@ -1219,7 +1196,7 @@ void ulsch_channel_level(int32_t **drs_ch_estimates_ext,
 
   for (aarx=0;aarx<frame_parms->nb_antennas_rx;aarx++) {
     //clear average level
-    avg128U = _mm_xor_si128(avg128U,avg128U);
+    avg128U = _mm_setzero_si128();
     ul_ch128=(__m128i *)drs_ch_estimates_ext[aarx];
 
     for (rb=0;rb<nb_rb;rb++) {

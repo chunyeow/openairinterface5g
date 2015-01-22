@@ -36,7 +36,7 @@
 #include "extern_3GPPinterleaver.h"
 #include <stdlib.h>
 
-#include "smmintrin.h"
+#include "PHY/sse_intrin.h"
 
 //#define DEBUG_TURBO_ENCODER 1
 #define CALLGRIND 1

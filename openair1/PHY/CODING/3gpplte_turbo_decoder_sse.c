@@ -42,10 +42,9 @@
 ///
 ///
 
-#include "emmintrin.h"
-#include "smmintrin.h"
+#include "PHY/sse_intrin.h"
 
-#ifndef TEST_DEBUG 
+#ifndef TEST_DEBUG
 #include "PHY/defs.h"
 #include "PHY/CODING/defs.h"
 #include "PHY/CODING/lte_interleaver_inline.h"

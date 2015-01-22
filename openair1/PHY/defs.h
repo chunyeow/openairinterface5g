@@ -92,6 +92,9 @@
 
 #define cmax3(a,b,c) ((cmax(a,b)>c) ? (cmax(a,b)) : (c))
 
+/// suppress compiler warning for unused arguments
+#define UNUSED(x) (void)x;
+
 #ifdef EXPRESSMIMO_TARGET
 #define Zero_Buffer(x,y) Zero_Buffer_nommx(x,y)
 #endif //EXPRESSMiMO_TARGET

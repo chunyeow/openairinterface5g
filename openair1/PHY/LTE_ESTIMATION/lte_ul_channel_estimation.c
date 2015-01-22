@@ -28,16 +28,9 @@
  *******************************************************************************/
 #include "PHY/defs.h"
 #include "PHY/extern.h"
-#include <emmintrin.h>
-#include <xmmintrin.h>
+#include "PHY/sse_intrin.h"
 //#define DEBUG_CH
 
-#ifndef __SSE3__
-__m128i zeroE;//,tmp_over_sqrt_10,tmp_sum_4_over_sqrt_10,tmp_sign,tmp_sign_3_over_sqrt_10;
-//#define _mm_abs_epi16(xmmx) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zero,(xmmx)))
-#define _mm_abs_epi16(xmmx) _mm_add_epi16(_mm_xor_si128((xmmx),_mm_cmpgt_epi16(zeroE,(xmmx))),_mm_srli_epi16(_mm_cmpgt_epi16(zeroE,(xmmx)),15))
-#define _mm_sign_epi16(xmmx,xmmy) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zeroE,(xmmy)))
-#endif
 
 // For Channel Estimation in Distributed Alamouti Scheme
 //static int16_t temp_out_ifft[2048*4] __attribute__((aligned(16)));
@@ -696,8 +689,8 @@ int16_t lte_ul_freq_offset_estimation(LTE_DL_FRAME_PARMS *frame_parms,
     int16_t alpha[128] = {201, 402, 603, 804, 1006, 1207, 1408, 1610, 1811, 2013, 2215, 2417, 2619, 2822, 3024, 3227, 3431, 3634, 3838, 4042, 4246, 4450, 4655, 4861, 5066, 5272, 5479, 5686, 5893, 6101, 6309, 6518, 6727, 6937, 7147, 7358, 7570, 7782, 7995, 8208, 8422, 8637, 8852, 9068, 9285, 9503, 9721, 9940, 10160, 10381, 10603, 10825, 11049, 11273, 11498, 11725, 11952, 12180, 12410, 12640, 12872, 13104, 13338, 13573, 13809, 14046, 14285, 14525, 14766, 15009, 15253, 15498, 15745, 15993, 16243, 16494, 16747, 17001, 17257, 17515, 17774, 18035, 18298, 18563, 18829, 19098, 19368, 19640, 19915, 20191, 20470, 20750, 21033, 21318, 21605, 21895, 22187, 22481, 22778, 23078, 23380, 23685, 23992, 24302, 24615, 24931, 25250, 25572, 25897, 26226, 26557, 26892, 27230, 27572, 27917, 28266, 28618, 28975, 29335, 29699, 30067, 30440, 30817, 31198, 31583, 31973, 32368, 32767};
  
     // compute log2_maxh (output_shift)
-    avg128U1 = _mm_xor_si128(avg128U1,avg128U1);
-    avg128U2 = _mm_xor_si128(avg128U2,avg128U2);
+    avg128U1 = _mm_setzero_si128();
+    avg128U2 = _mm_setzero_si128();
 
     for (rb=0;rb<nb_rb;rb++) {      
         avg128U1 = _mm_add_epi32(avg128U1,_mm_madd_epi16(ul_ch1[0],ul_ch1[0]));

@@ -52,21 +52,11 @@ int rev2048[2048],rev512[512],rev4096[4096],rev8192[8192];
 #endif
 
 
-#include "emmintrin.h"
-#include "xmmintrin.h"
+#include "PHY/sse_intrin.h"
 
 
 static int16_t conjugatedft[8] __attribute__((aligned(16))) = {-1,1,-1,1,-1,1,-1,1} ;
 
-
-#ifndef __SSE3__
-__m128i zerodft;
-#define _mm_abs_epi16(xmmx) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zerodft,(xmmx)))
-#define _mm_sign_epi16(xmmx,xmmy) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zerodft,(xmmy)))
-#else
-#include <pmmintrin.h>
-#include <tmmintrin.h>
-#endif
 
 static short reflip[8]  __attribute__((aligned(16))) = {1,-1,1,-1,1,-1,1,-1};
 

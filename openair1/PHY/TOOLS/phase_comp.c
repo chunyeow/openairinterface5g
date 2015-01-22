@@ -49,7 +49,7 @@
 #include "defs.h"
 #include "extern.h"
 
-#include "mmintrin.h"
+#include "PHY/sse_intrin.h"
 
 
 #ifndef USER_MODE

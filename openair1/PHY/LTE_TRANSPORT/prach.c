@@ -37,14 +37,7 @@
  * \note
  * \warning
  */
-#ifdef __SSE2__
-#include <emmintrin.h>
-#include <xmmintrin.h>
-#endif
-#ifdef __SSE3__
-#include <pmmintrin.h>
-#include <tmmintrin.h>
-#endif
+#include "PHY/sse_intrin.h"
 #include "PHY/defs.h"
 #include "PHY/extern.h"
 //#include "prach.h"
@@ -960,8 +953,14 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
 	  (numshift>0) ? (not_found = 0) : (preamble_offset++);
 	}
       }
-      preamble_shift = -((d_start * (preamble_index0/n_shift_ra)) + ((preamble_index0%n_shift_ra)*NCS)); // minus because the channel is h(t -\tau + Cv)
-      (preamble_shift < 0) ? (preamble_shift+=N_ZC) : preamble_shift;
+      if (n_shift_ra>0) 
+	preamble_shift = -((d_start * (preamble_index0/n_shift_ra)) + ((preamble_index0%n_shift_ra)*NCS)); // minus because the channel is h(t -\tau + Cv)
+      else
+	preamble_shift = 0;
+
+      if (preamble_shift < 0) 
+	preamble_shift+=N_ZC;
+
       preamble_index0++;
       if (preamble_index == 0)
               first_nonzero_root_idx = preamble_offset;

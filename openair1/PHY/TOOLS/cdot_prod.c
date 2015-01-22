@@ -27,16 +27,7 @@
 
  *******************************************************************************/
 #include "defs.h"
-#include <xmmintrin.h>
-#ifdef __SSE3__
-#include <pmmintrin.h>
-#include <tmmintrin.h>
-#else
-static short zero[8]={0,0,0,0,0,0,0,0};
-#define _mm_abs_epi16(xmmx) xmmx=_mm_xor_si128((xmmx),_mm_cmpgt_epi16(*(__m128i *)&zero[0],(xmmx)))
-#define _mm_sign_epi16(xmmx,xmmy) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(*(__m128i *)&zero[0],(xmmy)))
-#define _mm_hadd_epi32(xmmx,xmmy) _mm_unpacklo_epi64(_mm_add_epi32(_mm_shuffle_epi32((xmmx),_MM_SHUFFLE(0,2,0,2)),_mm_shuffle_epi32((xmmx),_MM_SHUFFLE(1,3,1,3))),_mm_add_epi32(_mm_shuffle_epi32((xmmy),_MM_SHUFFLE(0,2,0,2)),_mm_shuffle_epi32((xmmy),_MM_SHUFFLE(1,3,1,3))))
-#endif
+#include "PHY/sse_intrin.h"
 
 // returns the complex dot product of x and y 
 

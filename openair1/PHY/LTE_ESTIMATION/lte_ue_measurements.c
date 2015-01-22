@@ -33,17 +33,7 @@
 #include "SCHED/defs.h"
 #include "SCHED/extern.h"
 #include "log.h"
-
-#include "emmintrin.h"
-
-#ifdef __SSE3__
-#include "pmmintrin.h"
-#include "tmmintrin.h"
-#else
-__m128i zeroPMI;
-#define _mm_abs_epi16(xmmx) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zeroPMI,(xmmx)))
-#define _mm_sign_epi16(xmmx,xmmy) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zeroPMI,(xmmy)))
-#endif
+#include "PHY/sse_intrin.h"
 
 //#define k1 1000
 #define k1 ((long long int) 1000)
@@ -489,8 +479,8 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
 	  
 	    // pmi
 	  
-	    pmi128_re = _mm_xor_si128(pmi128_re,pmi128_re);
-	    pmi128_im = _mm_xor_si128(pmi128_im,pmi128_im);
+            pmi128_re = _mm_setzero_si128();
+            pmi128_im = _mm_setzero_si128();
 	    // limit is the number of groups of 4 REs in a subband (12 = 4 RBs, 3 = 1 RB)
 	    // for 5 MHz channelization, there are 7 subbands, 6 of size 4 RBs and 1 of size 1 RB
 	    if ((N_RB_DL==6) || (subband<(nb_subbands-1)))
@@ -507,8 +497,8 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
 	      //print_shorts("ch1",dl_ch1_128);
 	      // }
 	      // if(i==0){
-	      mmtmpPMI0 = _mm_xor_si128(mmtmpPMI0,mmtmpPMI0);
-	      mmtmpPMI1 = _mm_xor_si128(mmtmpPMI1,mmtmpPMI1);
+              mmtmpPMI0 = _mm_setzero_si128();
+              mmtmpPMI1 = _mm_setzero_si128();
 	      //	    }
 	      // if(eNB_id==0)
 	      // print_ints("Pre_re",&mmtmpPMI0);

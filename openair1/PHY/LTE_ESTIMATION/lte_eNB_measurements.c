@@ -29,13 +29,8 @@
 #include "PHY/defs.h"
 #include "PHY/extern.h"
 
-#include "emmintrin.h"
+#include "PHY/sse_intrin.h"
 
-#ifdef __SSE3__
-#include "pmmintrin.h"
-#include "tmmintrin.h"
-#else
-#endif
 
 //#define k1 1000
 #define k1 1024

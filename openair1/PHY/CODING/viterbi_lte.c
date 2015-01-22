@@ -50,7 +50,7 @@
 #endif
 
 #ifndef EXPRESSMIMO_TARGET
-#include "emmintrin.h"
+#include "PHY/sse_intrin.h"
 #endif //EXPRESSMIMO_TARGET
 
 extern uint8_t ccodelte_table[128],ccodelte_table_rev[128];
@@ -163,10 +163,10 @@ void phy_viterbi_lte_sse2(int8_t *y,uint8_t *decoded_bytes,uint16_t n) {
   // set initial metrics
   //debug_msg("Doing viterbi\n");
 
-  metrics0_15 = _mm_xor_si128(metrics0_15,metrics0_15);
-  metrics16_31 = _mm_xor_si128(metrics16_31,metrics16_31);
-  metrics32_47 = _mm_xor_si128(metrics32_47,metrics32_47);
-  metrics48_63 = _mm_xor_si128(metrics32_47,metrics32_47);
+  metrics0_15 = _mm_setzero_si128();
+  metrics16_31 = _mm_setzero_si128();
+  metrics32_47 = _mm_setzero_si128();
+  metrics48_63 = _mm_setzero_si128();
 #ifndef USER_MODE
   //debug_msg("Doing viterbi 2\n");
 #endif

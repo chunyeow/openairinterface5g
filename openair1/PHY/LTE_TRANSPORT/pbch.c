@@ -37,28 +37,18 @@
 * \note
 * \warning
 */
-#include <emmintrin.h>
-#include <xmmintrin.h>
-#ifdef __SSE3__
-#include <pmmintrin.h>
-#include <tmmintrin.h>
-#endif
 #include "PHY/defs.h"
 #include "PHY/CODING/extern.h"
 #include "PHY/CODING/lte_interleaver_inline.h"
 #include "defs.h"
 #include "extern.h"
 #include "PHY/extern.h"
+#include "PHY/sse_intrin.h"
 
 #ifdef PHY_ABSTRACTION
 #include "SIMULATION/TOOLS/defs.h"
 #endif 
 
-#ifndef __SSE3__
-extern __m128i zero;
-#define _mm_abs_epi16(xmmx) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zero,(xmmx)))
-#define _mm_sign_epi16(xmmx,xmmy) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zero,(xmmy)))
-#endif
   
 //#define DEBUG_PBCH 1
 //#define DEBUG_PBCH_ENCODING
@@ -524,7 +514,7 @@ int pbch_channel_level(int **dl_ch_estimates_ext,
   for (aatx=0;aatx<4;aatx++) //frame_parms->nb_antennas_tx_eNB;aatx++)
     for (aarx=0;aarx<frame_parms->nb_antennas_rx;aarx++) {
       //clear average level
-      avg128 = _mm_xor_si128(avg128,avg128);
+      avg128 = _mm_setzero_si128();
       dl_ch128=(__m128i *)&dl_ch_estimates_ext[(aatx<<1)+aarx][symbol_mod*6*12];
 
       for (rb=0;rb<nb_rb;rb++) {

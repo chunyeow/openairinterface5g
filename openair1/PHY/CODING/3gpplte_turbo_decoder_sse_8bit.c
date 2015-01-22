@@ -43,8 +43,7 @@
 ///
 ///
 
-#include "emmintrin.h"
-#include "smmintrin.h"
+#include "PHY/sse_intrin.h"
 
 #ifndef TEST_DEBUG 
 #include "PHY/defs.h"

@@ -28,6 +28,7 @@
  *******************************************************************************/
 #include "PHY/defs.h"
 #include "PHY/extern.h"
+#include "PHY/sse_intrin.h"
 
 // Mask for identifying subframe for MBMS 
 #define MBSFN_TDD_SF3 0x80// for TDD
@@ -46,14 +47,6 @@
 #define MBSFN_FDD_SF8 0x04
 
  
-#ifndef __SSE3__
-#warning SSE3 instruction set not preset
-__m128i zeroM;//,tmp_over_sqrt_10,tmp_sum_4_over_sqrt_10,tmp_sign,tmp_sign_3_over_sqrt_10;
-//#define _mm_abs_epi16(xmmx) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zero,(xmmx)))
-#define _mm_abs_epi16(xmmx) _mm_add_epi16(_mm_xor_si128((xmmx),_mm_cmpgt_epi16(zeroM,(xmmx))),_mm_srli_epi16(_mm_cmpgt_epi16(zeroM,(xmmx)),15))
-#define _mm_sign_epi16(xmmx,xmmy) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zeroM,(xmmy)))
-#endif
-
 
 void dump_mch(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint16_t coded_bits_per_codeword,int subframe) {
 
@@ -375,7 +368,7 @@ void mch_channel_level(int **dl_ch_estimates_ext,
   
   for (aarx=0;aarx<frame_parms->nb_antennas_rx;aarx++) {
     //clear average level
-    avg128 = _mm_xor_si128(avg128,avg128);
+    avg128 = _mm_setzero_si128();
     // 5 is always a symbol with no pilots for both normal and extended prefix
     
     dl_ch128=(__m128i *)&dl_ch_estimates_ext[aarx][symbol*frame_parms->N_RB_DL*12];
