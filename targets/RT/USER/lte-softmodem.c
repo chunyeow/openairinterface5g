@@ -1870,99 +1870,96 @@ static void *UE_thread_synch(void *arg) {
 	openair0_cfg[card].rx_gain[i] = PHY_vars_UE_g[0][0]->rx_total_gain_dB-USRP_GAIN_OFFSET;  
 #ifdef USRP
 #ifndef USRP_DEBUG
-	openair0_set_frequencies(&openair0,&openair0_cfg[0]);
-	//	    openair0_set_gains(&openair0,&openair0_cfg[0]);
+	openair0_set_rx_frequencies(&openair0,&openair0_cfg[0]);
+	openair0_set_gains(&openair0,&openair0_cfg[0]);
 #endif
 #endif
       }
-      }    
-	LOG_D(PHY,"[SCHED][UE] Scanning band %d, freq %u\n",bands_to_scan.band_info[0].band, bands_to_scan.band_info[0].dl_min);
-      }
+    }    
+    LOG_D(PHY,"[SCHED][UE] Scanning band %d, freq %u\n",bands_to_scan.band_info[0].band, bands_to_scan.band_info[0].dl_min);
+  }
   else {
-	LOG_D(PHY,"[SCHED][UE] Check absolute frequency %u\n",downlink_frequency[0][0]);
-      }
+    LOG_D(PHY,"[SCHED][UE] Check absolute frequency %u\n",downlink_frequency[0][0]);
+  }
+
   while (!oai_exit) {
     
-	if (pthread_mutex_lock(&UE->mutex_synch) != 0) {
-	LOG_E(PHY,"[SCHED][UE] error locking mutex for UE initial synch thread\n");
-	oai_exit=1;
-      }
-	else {
-	while (UE->instance_cnt_synch < 0) {
+    if (pthread_mutex_lock(&UE->mutex_synch) != 0) {
+      LOG_E(PHY,"[SCHED][UE] error locking mutex for UE initial synch thread\n");
+      oai_exit=1;
+    }
+    else {
+      while (UE->instance_cnt_synch < 0) {
 	pthread_cond_wait(&UE->cond_synch,&UE->mutex_synch);
       }
-	if (pthread_mutex_unlock(&UE->mutex_synch) != 0) {	
+      if (pthread_mutex_unlock(&UE->mutex_synch) != 0) {	
 	LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for UE Initial Synch thread\n");
 	oai_exit=1;
       }
-      }  // mutex_lock      
-
-
-	switch (sync_mode) {
-      case rssi:
-	rssi_min = 1<<31;
-	rssi_max = 0;
-	rssi_avg = 0;
-	memset(power_dBm_max,0,1024);
-	for (i=0;i<76800*4;i+=1024) {
-	  //compute frequency-domain representation of 1024-sample chunk
-	  dft1024(&PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[0][i],
-		  spectrum,
-		  1);
-	  compute_spectrum_stats(spectrum,
-				 power_avg,
-				 power_max,
-				 power_min,
-				 PHY_vars_UE_g[0][0]->rx_total_gain_dB);
-	}
-	  /*
+    }  // mutex_lock      
+    
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,1); 
+    switch (sync_mode) {
+    case rssi:
+      rssi_min = (1<<31)-1;
+      rssi_max = 0;
+      rssi_avg = 0;
+      for (i=0;i<76800;i+=7680) {
+	
 	rssi_lin = signal_energy(&PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[0][i],7680);
 	if (PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_rx>1)
 	  rssi_lin += signal_energy(&PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[1][i],7680);
-	rssi_avg += rssi;
-	rssi_min = (rssi < rssi_min) ? rssi : rssi_min;
-	rssi_max = (rssi > rssi_max) ? rssi : rssi_max;
+	rssi_avg += rssi_lin;
+	rssi_min = (rssi_lin < rssi_min) ? rssi_lin : rssi_min;
+	rssi_max = (rssi_lin > rssi_max) ? rssi_lin : rssi_max;
       }
-
-	rssi_dBm = dB_fixed_times10(rssi_avg/10)/10.0 - PHY_vars_UE_g[0][0]->rx_total_gain_dB;
-	rssi_max_dBm = dB_fixed_times10(rssi_max)/10.0 - PHY_vars_UE_g[0][0]->rx_total_gain_dB;
-	rssi_min_dBm = dB_fixed_times10(rssi_min)/10.0 - PHY_vars_UE_g[0][0]->rx_total_gain_dB;
-
-	LOG_D(PHY,"Band %d, DL Freq %u: RSSI (avg, min, max) %f,%f,%f dBm\n",
-	  bands_to_scan.band_info[current_band].band,
-	  downlink_frequency[0][0],
-	  rssi_dBm,
-	  rssi_min_dBm,
-	  rssi_max_dBm);
-
-	current_offset += 100000; // increase by 1 EARFCN (100kHz)
-	if (current_offset+5000000 > bands_to_scan.band_info[current_band].dl_max-bands_to_scan.band_info[current_band].dl_min) {
-	  current_band++;
-	  current_offset=0;
+      
+      rssi_dBm = dB_fixed_times10(rssi_avg/10)/10.0 - PHY_vars_UE_g[0][0]->rx_total_gain_dB;
+      rssi_max_dBm = dB_fixed_times10(rssi_max)/10.0 - PHY_vars_UE_g[0][0]->rx_total_gain_dB;
+      rssi_min_dBm = dB_fixed_times10(rssi_min)/10.0 - PHY_vars_UE_g[0][0]->rx_total_gain_dB;
+      
+      LOG_D(PHY,"Band %d, DL Freq %u: RSSI (%d,%d,%d) (avg, min, max) %f,%f,%f dBm\n",
+	    bands_to_scan.band_info[current_band].band,
+	    downlink_frequency[0][0],
+	    rssi_avg/10,
+	    rssi_min,
+	    rssi_max,
+	    rssi_dBm,
+	    rssi_min_dBm,
+	    rssi_max_dBm);
+      
+      current_offset += 100000; // increase by 1 EARFCN (100kHz)
+      if (current_offset+5000000 > bands_to_scan.band_info[current_band].dl_max-bands_to_scan.band_info[current_band].dl_min) {
+	current_band++;
+	current_offset=0;
       }
-	if (current_band==bands_to_scan.nbands) {
-	  current_band=0;
-	  
+      if (current_band==bands_to_scan.nbands) {
+	current_band=0;
+	oai_exit=1; 
       }
-
-	for (card=0;card<MAX_CARDS;card++) {
+      
+      for (card=0;card<MAX_CARDS;card++) {
 	for (i=0; i<openair0_cfg[card].rx_num_channels; i++) {
-	openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i]+openair_daq_vars.freq_offset;
-	openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i]+openair_daq_vars.freq_offset;
-	openair0_cfg[card].rx_gain[i] = PHY_vars_UE_g[0][0]->rx_total_gain_dB-USRP_GAIN_OFFSET;  // 65 calibrated for USRP B210 @ 2.6 GHz
+	  downlink_frequency[card][i] = bands_to_scan.band_info[current_band].dl_min+current_offset;
+	  uplink_frequency_offset[card][i] = bands_to_scan.band_info[current_band].ul_min-bands_to_scan.band_info[0].dl_min + current_offset;
+	  
+	  
+	  openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i]+openair_daq_vars.freq_offset;
+	  openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i]+openair_daq_vars.freq_offset;
+	  openair0_cfg[card].rx_gain[i] = PHY_vars_UE_g[0][0]->rx_total_gain_dB-USRP_GAIN_OFFSET;  // 65 calibrated for USRP B210 @ 2.6 GHz
 #ifdef USRP
 #ifndef USRP_DEBUG
-	openair0_set_frequencies(&openair0,&openair0_cfg[0]);
-	//	    openair0_set_gains(&openair0,&openair0_cfg[0]);
+	openair0_set_rx_frequencies(&openair0,&openair0_cfg[0]);
+	//	openair0_set_gains(&openair0,&openair0_cfg[0]);
 #endif
 #endif
-      }
-    }	
-	  */
-	  break;
-      case pbch:
-	
-	if (initial_sync(PHY_vars_UE_g[0][0],mode)==0) {
+	}
+      }	
+      
+      break;
+    case pbch:
+      
+      if (initial_sync(PHY_vars_UE_g[0][0],mode)==0) {
 	/*
 	  lte_adjust_synch(&PHY_vars_UE_g[0]->lte_frame_parms,
 	  PHY_vars_UE_g[0],
@@ -1976,9 +1973,9 @@ static void *UE_thread_synch(void *arg) {
 	  memset(PHY_vars_UE_g[0]->lte_ue_common_vars.rxdata[aa],0,
 	  PHY_vars_UE_g[0]->lte_frame_parms.samples_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*sizeof(int));
 	*/
-	  
+	
 	T0 = rt_get_time_ns();
-	  
+	
 	is_synchronized = 1;
 	PHY_vars_UE_g[0][0]->slot_rx = 0;
 	//oai_exit=1;
@@ -2030,7 +2027,7 @@ static void *UE_thread_synch(void *arg) {
  default:
 break;
 }
-    
+     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,0);  
 if (pthread_mutex_lock(&PHY_vars_UE_g[0][0]->mutex_synch) != 0) {
   printf("[openair][SCHED][eNB] error locking mutex for UE synch\n");
  }
@@ -2041,7 +2038,7 @@ if (pthread_mutex_lock(&PHY_vars_UE_g[0][0]->mutex_synch) != 0) {
      printf("[openair][SCHED][eNB] error unlocking mutex for UE synch\n");
    }
  }
-    
+   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,0); 
 }  // while !oai_exit
 return(0);
 }
