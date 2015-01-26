@@ -158,6 +158,8 @@ int32_t **txdata;
 int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg, openair0_rf_map rf_map[MAX_NUM_CCs]);
 int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_cfg, openair0_rf_map rf_map[MAX_NUM_CCs]);
 
+void fill_ue_band_info(void);
+
 #ifdef XFORMS
 // current status is that every UE has a DL scope for a SINGLE eNB (eNB_id=0)
 // at eNB 0, an UL scope for every UE 
@@ -243,10 +245,10 @@ static char                     UE_flag=0;
 static uint8_t                  eNB_id=0,UE_id=0;
 
 //uint32_t                        carrier_freq[MAX_NUM_CCs][4] =           {{1907600000,1907600000,1907600000,1907600000}}; /* For UE! */
-static uint32_t                 downlink_frequency[MAX_NUM_CCs][4] =     {{1907600000,1907600000,1907600000,1907600000},
-									  {1907600000,1907600000,1907600000,1907600000}};
-static int32_t                  uplink_frequency_offset[MAX_NUM_CCs][4]= {{0,0,0,0},{0,0,0,0}};
-
+static uint32_t                 downlink_frequency[MAX_NUM_CCs][4];/* =     {{1907600000,1907600000,1907600000,1907600000},
+								      {1907600000,1907600000,1907600000,1907600000}};*/
+static int32_t                  uplink_frequency_offset[MAX_NUM_CCs][4]; /*= {{0,0,0,0},{0,0,0,0}};
+									  */
 openair0_rf_map rf_map[MAX_NUM_CCs];
 
 static char                    *conf_config_file_name = NULL;
@@ -279,7 +281,7 @@ double rx_gain[MAX_NUM_CCs][4] = {{125,0,0,0}};
 double sample_rate=30.72e6;
 double bw = 14e6;
 
-static int                      tx_max_power[MAX_NUM_CCs] =  {0,0};
+static int                      tx_max_power[MAX_NUM_CCs]; /* =  {0,0}*/;
 
 #ifndef EXMIMO
 char ref[128] = "internal";
@@ -1427,7 +1429,7 @@ static void *eNB_thread(void *arg)
   int frame=0;
   int CC_id;
 
-  RTIME time_in, time_diff;
+  RTIME time_diff;
 
   int sf;
 #ifdef EXMIMO
@@ -1444,7 +1446,7 @@ static void *eNB_thread(void *arg)
   void *rxp[2],*txp[2];
   int i;
 
-  int trace_cnt=0;
+  //  int trace_cnt=0;
   hw_subframe = 0;
 #endif
 
@@ -1597,7 +1599,7 @@ static void *eNB_thread(void *arg)
       vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame);
       while (rx_cnt < sf_bounds[hw_subframe]) {
 
-	openair0_timestamp time0,time1;
+	//	openair0_timestamp time0,time1;
 	unsigned int rxs;
 #ifndef USRP_DEBUG
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,1);
@@ -1825,22 +1827,18 @@ int is_synchronized=0;
 #endif
 
 typedef enum {
-  rssi=0,
+  pss=0,
   pbch=1,
   si=2
 } sync_mode_t;
 
 static void *UE_thread_synch(void *arg) {
 
-  int i,hw_slot_offset,CC_id;
+  int i,hw_slot_offset;
   PHY_VARS_UE *UE = arg;
   int current_band = 0;
   int current_offset = 0;
-  sync_mode_t sync_mode = rssi;
-  int rssi_lin,rssi_min,rssi_max,rssi_avg;
-  double rssi_dBm,rssi_min_dBm,rssi_max_dBm;
-  int16_t spectrum[1024*2];
-  int16_t power_avg[600];
+  sync_mode_t sync_mode = pss;
 
   printf("UE_thread_sync in with PHY_vars_UE %p\n",arg);
 #ifdef USRP
@@ -1896,40 +1894,18 @@ static void *UE_thread_synch(void *arg) {
 	LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for UE Initial Synch thread\n");
 	oai_exit=1;
       }
+
     }  // mutex_lock      
-    
+
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,1); 
+
     switch (sync_mode) {
-    case rssi:
-      rssi_min = (1<<31)-1;
-      rssi_max = 0;
-      rssi_avg = 0;
-      for (i=0;i<76800;i+=7680) {
+    case pss:
 	
-	rssi_lin = signal_energy(&PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[0][i],7680);
-	if (PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_rx>1)
-	  rssi_lin += signal_energy(&PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[1][i],7680);
-	rssi_avg += rssi_lin;
-	rssi_min = (rssi_lin < rssi_min) ? rssi_lin : rssi_min;
-	rssi_max = (rssi_lin > rssi_max) ? rssi_lin : rssi_max;
-      }
-      
-      rssi_dBm = dB_fixed_times10(rssi_avg/10)/10.0 - PHY_vars_UE_g[0][0]->rx_total_gain_dB;
-      rssi_max_dBm = dB_fixed_times10(rssi_max)/10.0 - PHY_vars_UE_g[0][0]->rx_total_gain_dB;
-      rssi_min_dBm = dB_fixed_times10(rssi_min)/10.0 - PHY_vars_UE_g[0][0]->rx_total_gain_dB;
-      
-      LOG_D(PHY,"Band %d, DL Freq %u: RSSI (%d,%d,%d) (avg, min, max) %f,%f,%f dBm\n",
-	    bands_to_scan.band_info[current_band].band,
-	    downlink_frequency[0][0],
-	    rssi_avg/10,
-	    rssi_min,
-	    rssi_max,
-	    rssi_dBm,
-	    rssi_min_dBm,
-	    rssi_max_dBm);
-      
-      current_offset += 100000; // increase by 1 EARFCN (100kHz)
-      if (current_offset+5000000 > bands_to_scan.band_info[current_band].dl_max-bands_to_scan.band_info[current_band].dl_min) {
+
+
+      current_offset += 20000000; // increase by 20 MHz
+      if (current_offset > bands_to_scan.band_info[current_band].dl_max-bands_to_scan.band_info[current_band].dl_min) {
 	current_band++;
 	current_offset=0;
       }
@@ -2027,20 +2003,20 @@ static void *UE_thread_synch(void *arg) {
  default:
 break;
 }
-     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,0);  
-if (pthread_mutex_lock(&PHY_vars_UE_g[0][0]->mutex_synch) != 0) {
-  printf("[openair][SCHED][eNB] error locking mutex for UE synch\n");
- }
- else {
-   PHY_vars_UE_g[0][0]->instance_cnt_synch--;
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,0);  
+    if (pthread_mutex_lock(&PHY_vars_UE_g[0][0]->mutex_synch) != 0) {
+      printf("[openair][SCHED][eNB] error locking mutex for UE synch\n");
+    }
+    else {
+      PHY_vars_UE_g[0][0]->instance_cnt_synch--;
       
-   if (pthread_mutex_unlock(&PHY_vars_UE_g[0][0]->mutex_synch) != 0) {	
-     printf("[openair][SCHED][eNB] error unlocking mutex for UE synch\n");
-   }
- }
-   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,0); 
-}  // while !oai_exit
-return(0);
+      if (pthread_mutex_unlock(&PHY_vars_UE_g[0][0]->mutex_synch) != 0) {	
+	printf("[openair][SCHED][eNB] error unlocking mutex for UE synch\n");
+      }
+    }
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,0); 
+  }  // while !oai_exit
+  return(0);
 }
 
 static void *UE_thread_tx(void *arg) {
@@ -2241,7 +2217,7 @@ static void *UE_thread(void *arg) {
 
   LTE_DL_FRAME_PARMS *frame_parms=&PHY_vars_UE_g[0][0]->lte_frame_parms;
 
-  int slot=1,frame=0,hw_slot,last_slot, next_slot,hw_subframe=0,rx_cnt=0,tx_cnt=0;
+  int slot=1,frame=0,hw_subframe=0,rx_cnt=0,tx_cnt=0;
   // unsigned int aa;
   int dummy[2][samples_per_packets];
   int dummy_dump = 0;
@@ -2251,7 +2227,6 @@ static void *UE_thread(void *arg) {
   int rx_correction_timer = 0;
   int i;
 
-  openair0_timestamp time0,time1;
   unsigned int rxs;
   void *rxp[2],*txp[2];
 
@@ -2455,10 +2430,11 @@ static void *UE_thread(void *arg) {
 	    //LOG_D(PHY,"HW RESYNC: hw_frame %d: Resynchronizing sample stream\n");
 	    frame=0;
 	    // dump ahead in time to start of frame
+
 #ifndef USRP_DEBUG
 	    rxs = openair0.trx_read_func(&openair0,
 					 &timestamp,
-					 &rxdata[0],
+					 (void**)rxdata,
 					 PHY_vars_UE_g[0][0]->rx_offset,
 					 PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_rx);
 #else
@@ -2485,6 +2461,7 @@ static void *UE_thread(void *arg) {
     itti_update_lte_time(frame, slot);
 #endif
   }
+  return(0);
 }
 #endif
 
@@ -2801,7 +2778,7 @@ void fill_ue_band_info() {
 	       &eutra_bands[j],
 	       sizeof(eutra_band_t));
 	
-	printf("Band %d (%d) : DL %u..%u Hz, UL %u..%u Hz, Duplex %s \n",
+	printf("Band %d (%lu) : DL %u..%u Hz, UL %u..%u Hz, Duplex %s \n",
 	       bands_to_scan.band_info[i].band,
 	       UE_EUTRA_Capability->rf_Parameters.supportedBandListEUTRA.list.array[i]->bandEUTRA,
 	       bands_to_scan.band_info[i].dl_min,
@@ -2830,8 +2807,8 @@ static void get_options (int argc, char **argv) {
 #endif
 
 
-  size_t size; 
-  FILE *f;
+ 
+
 
   const Enb_properties_array_t *enb_properties;
   
@@ -3176,6 +3153,8 @@ int main(int argc, char **argv) {
 #endif
 
   memset(&openair0_cfg[0],0,sizeof(openair0_config_t)*MAX_CARDS);
+
+  memset(tx_max_power,0,sizeof(int)*MAX_NUM_CCs);
 
   set_latency_target();
 
