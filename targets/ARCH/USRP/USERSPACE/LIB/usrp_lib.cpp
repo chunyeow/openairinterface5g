@@ -282,10 +282,10 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
 
   // create tx & rx streamer
   uhd::stream_args_t stream_args_rx("sc16", "sc16");
-  stream_args_rx.args["spp"] = str(boost::format("%d") % (openair0_cfg[0].samples_per_packet));
+  //stream_args_rx.args["spp"] = str(boost::format("%d") % (openair0_cfg[0].samples_per_packet));
   
   uhd::stream_args_t stream_args_tx("sc16", "sc16");
-  stream_args_tx.args["spp"] = str(boost::format("%d") % (openair0_cfg[0].samples_per_packet));
+  //stream_args_tx.args["spp"] = str(boost::format("%d") % (openair0_cfg[0].samples_per_packet));
   for (i = 0; i<openair0_cfg[0].rx_num_channels; i++)
       stream_args_rx.channels.push_back(i);
   for (i = 0; i<openair0_cfg[0].tx_num_channels; i++)
