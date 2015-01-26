@@ -199,6 +199,23 @@ int openair0_set_frequencies(openair0_device* device, openair0_config_t *openair
   
 }
 
+int openair0_set_rx_frequencies(openair0_device* device, openair0_config_t *openair0_cfg) {
+
+  usrp_state_t *s = (usrp_state_t*)device->priv;
+  static int first_call=1;
+  static double rf_freq,diff;
+
+  uhd::tune_request_t rx_tune_req(openair0_cfg[0].rx_freq[0]);
+
+  rx_tune_req.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
+  rx_tune_req.rf_freq = openair0_cfg[0].rx_freq[0];
+  rf_freq=openair0_cfg[0].rx_freq[0];
+  s->usrp->set_rx_freq(rx_tune_req);
+
+  return(0);
+  
+}
+
 int openair0_set_gains(openair0_device* device, openair0_config_t *openair0_cfg) {
 
   usrp_state_t *s = (usrp_state_t*)device->priv;
@@ -246,7 +263,7 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
     if (i<openair0_cfg[0].rx_num_channels) {
       s->usrp->set_rx_rate(openair0_cfg[0].sample_rate,i);
       s->usrp->set_rx_bandwidth(openair0_cfg[0].rx_bw);
-      printf("Setting rx freq/gain on channel %d/%d\n",i,s->usrp->get_rx_num_channels());
+      printf("Setting rx freq/gain on channel %lu/%lu\n",i,s->usrp->get_rx_num_channels());
       s->usrp->set_rx_freq(openair0_cfg[0].rx_freq[i],i);
       s->usrp->set_rx_gain(openair0_cfg[0].rx_gain[i],i);
     }
@@ -255,7 +272,7 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
     if (i<openair0_cfg[0].tx_num_channels) {
       s->usrp->set_tx_rate(openair0_cfg[0].sample_rate,i);
       s->usrp->set_tx_bandwidth(openair0_cfg[0].tx_bw,i);
-      printf("Setting tx freq/gain on channel %d/%d\n",i,s->usrp->get_tx_num_channels());
+      printf("Setting tx freq/gain on channel %lu/%lu\n",i,s->usrp->get_tx_num_channels());
       s->usrp->set_tx_freq(openair0_cfg[0].tx_freq[i],i);
       s->usrp->set_tx_gain(openair0_cfg[0].tx_gain[i],i);
     }
@@ -265,10 +282,10 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
 
   // create tx & rx streamer
   uhd::stream_args_t stream_args_rx("sc16", "sc16");
-  stream_args_rx.args["spp"] = str(boost::format("%d") % openair0_cfg[0].samples_per_packet);
+  stream_args_rx.args["spp"] = str(boost::format("%d") % (openair0_cfg[0].samples_per_packet));
   
   uhd::stream_args_t stream_args_tx("sc16", "sc16");
-  stream_args_tx.args["spp"] = str(boost::format("%d") % openair0_cfg[0].samples_per_packet);
+  stream_args_tx.args["spp"] = str(boost::format("%d") % (openair0_cfg[0].samples_per_packet));
   for (i = 0; i<openair0_cfg[0].rx_num_channels; i++)
       stream_args_rx.channels.push_back(i);
   for (i = 0; i<openair0_cfg[0].tx_num_channels; i++)
@@ -282,7 +299,7 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   // display USRP settings
   for (i=0;i<openair0_cfg[0].rx_num_channels;i++) {
     if (i<openair0_cfg[0].rx_num_channels) {
-      printf("RX Channel %d\n",i);
+      printf("RX Channel %lu\n",i);
       std::cout << boost::format("Actual RX sample rate: %fMSps...") % (s->usrp->get_rx_rate(i)/1e6) << std::endl;
       std::cout << boost::format("Actual RX frequency: %fGHz...") % (s->usrp->get_rx_freq(i)/1e9) << std::endl;
       std::cout << boost::format("Actual RX gain: %f...") % (s->usrp->get_rx_gain(i)) << std::endl;
@@ -294,7 +311,7 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   for (i=0;i<openair0_cfg[0].tx_num_channels;i++) {
 
     if (i<openair0_cfg[0].tx_num_channels) { 
-      printf("TX Channel %d\n",i);
+      printf("TX Channel %lu\n",i);
       std::cout << std::endl<<boost::format("Actual TX sample rate: %fMSps...") % (s->usrp->get_tx_rate(i)/1e6) << std::endl;
       std::cout << boost::format("Actual TX frequency: %fGHz...") % (s->usrp->get_tx_freq(i)/1e9) << std::endl;
       std::cout << boost::format("Actual TX gain: %f...") % (s->usrp->get_tx_gain(i)) << std::endl;
