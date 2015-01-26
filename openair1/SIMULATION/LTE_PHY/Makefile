@@ -133,7 +133,6 @@ test: $(SIMULATION_OBJS) $(TOOLS_OBJS) $(TOP_DIR)/PHY/INIT/lte_init.o test.c
 OBJ += $(LIST_OBJ) 
 OBJ += $(MEM_OBJ)
 $(OBJ) : %.o : %.c
-	@echo 
 	@echo Compiling $< ...
 	@$(CC) -c $(CFLAGS) -o $@ $<
 

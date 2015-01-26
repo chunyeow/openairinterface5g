@@ -283,13 +283,16 @@ void compute_beta8(llr_t* alpha,llr_t* beta,llr_t *m_11,llr_t* m_10,unsigned sho
 
   __m128i *beta128,*alpha128,*beta_ptr;
   __m128i beta_max; 
-  int16_t m11,m10,beta0_16,beta1_16,beta2_16,beta3_16,beta4_16,beta5_16,beta6_16,beta7_16,beta0_2,beta1_2,beta2_2,beta3_2,beta_m; 
+
   llr_t beta0,beta1;
 
   llr_t beta2,beta3,beta4,beta5,beta6,beta7;
-  __m128i beta_16;
+
 
 #if 0
+  int16_t m11,m10;
+  int16_t beta0_16,beta1_16,beta2_16,beta3_16,beta4_16,beta5_16,beta6_16,beta7_16,beta0_2,beta1_2,beta2_2,beta3_2,beta_m; 
+  __m128i beta_16;
   // termination for beta initialization
 
   m11=(int16_t)m_11[2+frame_length];
@@ -626,7 +629,8 @@ unsigned char phy_threegpplte_turbo_decoder8(short *y,
   llr_t m10[n+16] __attribute__ ((aligned(16)));
 
   
-  int *pi2_p,*pi4_p,*pi5_p,*pi6_p;
+  //  int *pi2_p,*pi4_p,*pi5_p,*pi6_p;
+  int *pi4_p,*pi5_p,*pi6_p;
   llr_t *s,*s1,*s2,*yp1,*yp2,*yp;
   __m128i *yp128;
   unsigned int i,j,iind;//,pi;

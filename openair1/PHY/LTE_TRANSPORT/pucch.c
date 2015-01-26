@@ -658,19 +658,10 @@ int32_t rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 	re_offset -= (frame_parms->ofdm_symbol_size);
       
       symbol_offset = (unsigned int)frame_parms->ofdm_symbol_size*l;
-#ifndef NEW_FFT
-      rxptr = (int16_t *)&eNB_common_vars->rxdataF[0][aa][2*symbol_offset];
-#else
       rxptr = (int16_t *)&eNB_common_vars->rxdataF[0][aa][symbol_offset];
-#endif      
       for (i=0;i<12;i++,j+=2,re_offset++) {
-#ifndef NEW_FFT	
 	rxcomp[aa][j]   = (int16_t)((rxptr[re_offset<<2]*(int32_t)zptr[j])>>15)   - ((rxptr[1+(re_offset<<2)]*(int32_t)zptr[1+j])>>15);
 	rxcomp[aa][1+j] = (int16_t)((rxptr[re_offset<<2]*(int32_t)zptr[1+j])>>15) + ((rxptr[1+(re_offset<<2)]*(int32_t)zptr[j])>>15);
-#else
-	rxcomp[aa][j]   = (int16_t)((rxptr[re_offset<<1]*(int32_t)zptr[j])>>15)   - ((rxptr[1+(re_offset<<1)]*(int32_t)zptr[1+j])>>15);
-	rxcomp[aa][1+j] = (int16_t)((rxptr[re_offset<<1]*(int32_t)zptr[1+j])>>15) + ((rxptr[1+(re_offset<<1)]*(int32_t)zptr[j])>>15);
-#endif
 	if (re_offset==frame_parms->ofdm_symbol_size)
 	  re_offset = 0; 
 #ifdef DEBUG_PUCCH_RX
@@ -956,7 +947,7 @@ int32_t rx_pucch_emul(PHY_VARS_eNB *phy_vars_eNB,
 
   rnti = phy_vars_eNB->ulsch_eNB[UE_index]->rnti;
   for (UE_id=0;UE_id<NB_UE_INST;UE_id++) {
-    if (rnti == PHY_vars_UE_g[UE_id][phy_vars_eNB->CC_id]->lte_ue_pdcch_vars[0]->crnti)
+    if (rnti == PHY_vars_UE_g[UE_id][CC_id]->lte_ue_pdcch_vars[0]->crnti)
       break;
   }
   if (UE_id==NB_UE_INST) {
@@ -965,19 +956,19 @@ int32_t rx_pucch_emul(PHY_VARS_eNB *phy_vars_eNB,
   }
 
   if (fmt == pucch_format1) {
-    payload[0] = PHY_vars_UE_g[UE_id][phy_vars_eNB->CC_id]->sr[subframe];
+    payload[0] = PHY_vars_UE_g[UE_id][CC_id]->sr[subframe];
   }
   else if (fmt == pucch_format1a) {
-    payload[0] = PHY_vars_UE_g[UE_id][phy_vars_eNB->CC_id]->pucch_payload[0];
+    payload[0] = PHY_vars_UE_g[UE_id][CC_id]->pucch_payload[0];
   }
   else if (fmt == pucch_format1b) {
-    payload[0] = PHY_vars_UE_g[UE_id][phy_vars_eNB->CC_id]->pucch_payload[0];
-    payload[1] = PHY_vars_UE_g[UE_id][phy_vars_eNB->CC_id]->pucch_payload[1];    
+    payload[0] = PHY_vars_UE_g[UE_id][CC_id]->pucch_payload[0];
+    payload[1] = PHY_vars_UE_g[UE_id][CC_id]->pucch_payload[1];    
   }
   else 
     LOG_E(PHY,"[eNB] Frame %d: Can't handle formats 2/2a/2b\n",phy_vars_eNB->proc[sched_subframe].frame_rx);
 
-  if (PHY_vars_UE_g[UE_id][phy_vars_eNB->CC_id]->pucch_sel[subframe] == n1_pucch_sel)
+  if (PHY_vars_UE_g[UE_id][CC_id]->pucch_sel[subframe] == n1_pucch_sel)
     return(99);
   else
     return(0);

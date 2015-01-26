@@ -120,6 +120,8 @@
 
 #define NUMBER_OF_eNB_SECTORS_MAX 3
 
+#define NB_BANDS_MAX 8
+
 typedef enum {normal_txrx=0,rx_calib_ue=1,rx_calib_ue_med=2,rx_calib_ue_byp=3,debug_prach=4,no_L2_connect=5} runmode_t;
 
 enum transmission_access_mode{
@@ -130,6 +132,13 @@ enum transmission_access_mode{
   SCHEDULED_ACCESS,
   CBA_ACCESS
 };
+
+typedef struct UE_SCAN_INFO_s {
+  /// 10 best amplitudes (linear) for each pss signals
+  int32_t amp[2][10];
+  /// 10 frequency offsets (kHz) corresponding to best amplitudes, with respect do minimum DL frequency in the band
+  int32_t freq_offset_Hz[2][10];
+} UE_SCAN_INFO_t;
 
 #if defined(ENABLE_RAL)
   typedef struct ral_threshold_phy_s {
@@ -439,6 +448,7 @@ typedef struct
   uint32_t high_speed_flag;
   uint32_t perfect_ce;
   int16_t ch_est_alpha;
+  UE_SCAN_INFO_t scan_info[NB_BANDS_MAX];
 
   char ulsch_no_allocation_counter[NUMBER_OF_CONNECTED_eNB_MAX];
 

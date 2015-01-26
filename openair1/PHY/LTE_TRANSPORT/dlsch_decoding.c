@@ -474,19 +474,19 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
 #include "LAYER2/MAC/defs.h"
 #endif
 
- int dlsch_abstraction_EESM(double* sinr_dB, uint8_t TM, uint32_t rb_alloc[4], uint8_t mcs, uint8_t dl_power_off) {
-
-   int index,ii;
+int dlsch_abstraction_EESM(double* sinr_dB, uint8_t TM, uint32_t rb_alloc[4], uint8_t mcs, uint8_t dl_power_off) {
+  
+  int ii;
   double sinr_eff = 0;
   int rb_count = 0;
   int offset;
   double bler = 0;
   if(TM==5 && dl_power_off==1)
     { //do nothing -- means there is no second UE and TM 5 is behaving like TM 6 for a singal user
-}
+    }
   else
-  TM = TM-1;
-
+    TM = TM-1;
+  
   for (offset = 0; offset <= 24; offset++) {
     if (rb_alloc[0] & (1<<offset)) {
       rb_count++;
@@ -505,12 +505,12 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
   LOG_D(OCM,"sinr_eff (lin, weighted) = %f\n",sinr_eff);
   sinr_eff = 10 * log10(sinr_eff);
   LOG_D(OCM,"sinr_eff (dB) = %f\n",sinr_eff);
-
+  
   bler = interp(sinr_eff,&sinr_bler_map[mcs][0][0],&sinr_bler_map[mcs][1][0],table_length[mcs]);
-
+  
 #ifdef USER_MODE // need to be adapted for the emulation in the kernel space 
-   if (uniformrandom() < bler) {
-     LOG_I(OCM,"abstraction_decoding failed (mcs=%d, sinr_eff=%f, bler=%f, TM %d)\n",mcs,sinr_eff,bler, TM);
+  if (uniformrandom() < bler) {
+    LOG_I(OCM,"abstraction_decoding failed (mcs=%d, sinr_eff=%f, bler=%f, TM %d)\n",mcs,sinr_eff,bler, TM);
     return(1);
   }
   else {
@@ -520,11 +520,11 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
 #endif
 }
 
- int dlsch_abstraction_MIESM(double* sinr_dB,uint8_t TM, uint32_t rb_alloc[4], uint8_t mcs,uint8_t dl_power_off) {
-  int index,ii;
+int dlsch_abstraction_MIESM(double* sinr_dB,uint8_t TM, uint32_t rb_alloc[4], uint8_t mcs,uint8_t dl_power_off) {
+  int ii;
   double sinr_eff = 0;
   double x = 0;
-   double I =0;
+  double I =0;
   double qpsk_max=12.2;
   double qam16_max=19.2;
   double qam64_max=25.2;

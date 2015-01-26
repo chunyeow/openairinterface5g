@@ -152,7 +152,7 @@ uint8_t get_Msg3_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,
 		     unsigned char current_subframe) {
 
   uint8_t ul_subframe=0;
-  uint32_t ul_frame;
+  uint32_t ul_frame=0;
 
   if (frame_parms->frame_type ==FDD) {
     ul_subframe = (current_subframe>3) ? (current_subframe-4) : (current_subframe+6);

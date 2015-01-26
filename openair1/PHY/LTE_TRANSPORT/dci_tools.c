@@ -5371,7 +5371,7 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
   //  uint32_t current_dlsch_cqi = phy_vars_ue->current_dlsch_cqi[eNB_id];
 
   uint32_t cqi_req;
-  uint32_t dai;
+  uint32_t dai=0;
   uint32_t cshift;
   uint32_t TPC;
   uint32_t ndi;
@@ -6141,7 +6141,6 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
   uint32_t dai = 0;
   uint32_t cshift = 0;
   uint32_t TPC = 0;
-  uint32_t ndi = 0;
   uint32_t mcs = 0;
   uint32_t rballoc = UINT32_MAX;
   uint32_t RIV_max = 0;
@@ -6170,7 +6169,6 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 	dai     = ((DCI0_1_5MHz_TDD_1_6_t *)dci_pdu)->dai;
 	cshift  = ((DCI0_1_5MHz_TDD_1_6_t *)dci_pdu)->cshift;
 	TPC     = ((DCI0_1_5MHz_TDD_1_6_t *)dci_pdu)->TPC;
-	ndi     = ((DCI0_1_5MHz_TDD_1_6_t *)dci_pdu)->ndi;
 	mcs     = ((DCI0_1_5MHz_TDD_1_6_t *)dci_pdu)->mcs;
 	rballoc = ((DCI0_1_5MHz_TDD_1_6_t *)dci_pdu)->rballoc;
 	//	hopping = ((DCI0_1_5MHz_TDD_1_6_t *)dci_pdu)->hopping;
@@ -6180,7 +6178,6 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 	cqi_req = ((DCI0_1_5MHz_FDD_t *)dci_pdu)->cqi_req;
 	cshift  = ((DCI0_1_5MHz_FDD_t *)dci_pdu)->cshift;
 	TPC     = ((DCI0_1_5MHz_FDD_t *)dci_pdu)->TPC;
-	ndi     = ((DCI0_1_5MHz_FDD_t *)dci_pdu)->ndi;
 	mcs     = ((DCI0_1_5MHz_FDD_t *)dci_pdu)->mcs;
 	rballoc = ((DCI0_1_5MHz_FDD_t *)dci_pdu)->rballoc;
 	//	hopping = ((DCI0_1_5MHz_FDD_t *)dci_pdu)->hopping;
@@ -6197,7 +6194,6 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 	dai     = ((DCI0_5MHz_TDD_1_6_t *)dci_pdu)->dai;
 	cshift  = ((DCI0_5MHz_TDD_1_6_t *)dci_pdu)->cshift;
 	TPC     = ((DCI0_5MHz_TDD_1_6_t *)dci_pdu)->TPC;
-	ndi     = ((DCI0_5MHz_TDD_1_6_t *)dci_pdu)->ndi;
 	mcs     = ((DCI0_5MHz_TDD_1_6_t *)dci_pdu)->mcs;
 	rballoc = ((DCI0_5MHz_TDD_1_6_t *)dci_pdu)->rballoc;
 	//	hopping = ((DCI0_5MHz_TDD_1_6_t *)dci_pdu)->hopping;
@@ -6207,7 +6203,6 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 	cqi_req = ((DCI0_5MHz_FDD_t *)dci_pdu)->cqi_req;
 	cshift  = ((DCI0_5MHz_FDD_t *)dci_pdu)->cshift;
 	TPC     = ((DCI0_5MHz_FDD_t *)dci_pdu)->TPC;
-	ndi     = ((DCI0_5MHz_FDD_t *)dci_pdu)->ndi;
 	mcs     = ((DCI0_5MHz_FDD_t *)dci_pdu)->mcs;
 	rballoc = ((DCI0_5MHz_FDD_t *)dci_pdu)->rballoc;
 	//	hopping = ((DCI0_5MHz_FDD_t *)dci_pdu)->hopping;
@@ -6224,7 +6219,6 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 	dai     = ((DCI0_10MHz_TDD_1_6_t *)dci_pdu)->dai;
 	cshift  = ((DCI0_10MHz_TDD_1_6_t *)dci_pdu)->cshift;
 	TPC     = ((DCI0_10MHz_TDD_1_6_t *)dci_pdu)->TPC;
-	ndi     = ((DCI0_10MHz_TDD_1_6_t *)dci_pdu)->ndi;
 	mcs     = ((DCI0_10MHz_TDD_1_6_t *)dci_pdu)->mcs;
 	rballoc = ((DCI0_10MHz_TDD_1_6_t *)dci_pdu)->rballoc;
 	//	hopping = ((DCI0_10MHz_TDD_1_6_t *)dci_pdu)->hopping;
@@ -6234,7 +6228,6 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 	cqi_req = ((DCI0_10MHz_FDD_t *)dci_pdu)->cqi_req;
 	cshift  = ((DCI0_10MHz_FDD_t *)dci_pdu)->cshift;
 	TPC     = ((DCI0_10MHz_FDD_t *)dci_pdu)->TPC;
-	ndi     = ((DCI0_10MHz_FDD_t *)dci_pdu)->ndi;
 	mcs     = ((DCI0_10MHz_FDD_t *)dci_pdu)->mcs;
 	rballoc = ((DCI0_10MHz_FDD_t *)dci_pdu)->rballoc;
 	//	hopping = ((DCI0_10MHz_FDD_t *)dci_pdu)->hopping;
@@ -6251,7 +6244,6 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 	dai     = ((DCI0_20MHz_TDD_1_6_t *)dci_pdu)->dai;
 	cshift  = ((DCI0_20MHz_TDD_1_6_t *)dci_pdu)->cshift;
 	TPC     = ((DCI0_20MHz_TDD_1_6_t *)dci_pdu)->TPC;
-	ndi     = ((DCI0_20MHz_TDD_1_6_t *)dci_pdu)->ndi;
 	mcs     = ((DCI0_20MHz_TDD_1_6_t *)dci_pdu)->mcs;
 	rballoc = ((DCI0_20MHz_TDD_1_6_t *)dci_pdu)->rballoc;
 	//	hopping = ((DCI0_20MHz_TDD_1_6_t *)dci_pdu)->hopping;
@@ -6261,7 +6253,6 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 	cqi_req = ((DCI0_20MHz_FDD_t *)dci_pdu)->cqi_req;
 	cshift  = ((DCI0_20MHz_FDD_t *)dci_pdu)->cshift;
 	TPC     = ((DCI0_20MHz_FDD_t *)dci_pdu)->TPC;
-	ndi     = ((DCI0_20MHz_FDD_t *)dci_pdu)->ndi;
 	mcs     = ((DCI0_20MHz_FDD_t *)dci_pdu)->mcs;
 	rballoc = ((DCI0_20MHz_FDD_t *)dci_pdu)->rballoc;
 	//	hopping = ((DCI0_20MHz_FDD_t *)dci_pdu)->hopping;
@@ -6288,14 +6279,12 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
     }
 
 #ifdef DEBUG_DCI
-    LOG_D(PHY,"generate_eNB_ulsch_params_from_dci: subframe %d, rnti %x,harq_pid %d,ndi %d,cqi_req %d\n",subframe,rnti,harq_pid,ndi,cqi_req);
+    LOG_D(PHY,"generate_eNB_ulsch_params_from_dci: subframe %d, rnti %x,harq_pid %d,cqi_req %d\n",subframe,rnti,harq_pid,cqi_req);
 #endif
 
     ulsch->harq_processes[harq_pid]->dci_alloc                             = 1;
     ulsch->harq_processes[harq_pid]->rar_alloc                             = 0;
     ulsch->harq_processes[harq_pid]->TPC                                   = TPC;
-    //    ulsch->harq_processes[harq_pid]->Ndi                                   = ndi;
-
     ulsch->harq_processes[harq_pid]->n_DMRS                                = cshift;                               
 
 

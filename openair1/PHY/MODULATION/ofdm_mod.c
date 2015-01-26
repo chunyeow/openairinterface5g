@@ -138,19 +138,9 @@ void PHY_ofdm_mod(int *input,                       /// pointer to complex input
     msg("[PHY] symbol %d/%d (%p,%p -> %p)\n",i,nb_symbols,input,&input[i<<log2fftsize],&output[(i<<log2fftsize) + ((i)*nb_prefix_samples)]);
 #endif
 
-#ifndef NEW_FFT
-    fft((short *)&input[i<<log2fftsize],
-	temp,
-	twiddle_ifft,
-	rev,
-	log2fftsize,
-	log2fftsize/2,     // normalized FFT (i.e. 1/sqrt(N) multiplicative factor)
-	0);
-#else
     idft((int16_t *)&input[i<<log2fftsize],
 	 (log2fftsize==7) ? (int16_t *)temp : (int16_t *)&output[(i<<log2fftsize) + ((1+i)*nb_prefix_samples)],
 	 1);
-#endif
     //    write_output("fft_out.m","fftout",temp,(1<<log2fftsize)*2,1,1);
 
     //memset(temp,0,1<<log2fftsize);
@@ -167,21 +157,12 @@ void PHY_ofdm_mod(int *input,                       /// pointer to complex input
 
       //      msg("Doing cyclic prefix method\n");
 
-#ifndef NEW_FFT
-      for (j=0;j<((1<<log2fftsize)) ; j++) {
-
-	output_ptr[j] = temp_ptr[j];
-	output_ptr[j] = temp_ptr[2*j];
-
-      }
-#else
       if (log2fftsize==7) {
 	for (j=0;j<((1<<log2fftsize)) ; j++) {
 	  output_ptr[j] = temp_ptr[j];
 	}
       }
       j=(1<<log2fftsize);
-#endif
       
       for (k=-1;k>=-nb_prefix_samples;k--) {
 	output_ptr[k] = output_ptr[--j];

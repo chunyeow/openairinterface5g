@@ -1048,8 +1048,7 @@ int mult_cpx_vector_norep_conj2(int16_t *x1,
 
       
 
-//   int16_t *temps;
-  int *tempw;
+
 
   
 
@@ -1089,20 +1088,10 @@ int mult_cpx_vector_norep_conj2(int16_t *x1,
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 */
     m0 = _mm_madd_epi16(m4,x2_128[0]); //pmaddwd_r2r(mm1,mm0);         // 1- compute x1[0]*x2[0]
-    /*
-        temp = m0;
-
-        tempd = &temp;
-        printf("m0 : %d,%d,%d,%d\n",tempd[0],tempd[1],tempd[2],tempd[3]);
-    
-    tempw = (int *)&m0;
-    printf("m0[0] : %d,%d,%d,%d\n",tempw[0],tempw[1],tempw[2],tempw[3]);
-    
-    */
     m0 = _mm_sra_epi32(m0,shift);        // 1- shift right by shift in order to  compensate for the input amplitude
 
     
-    tempw = (int *)&m0;
+    //    tempw = (int *)&m0;
     //   printf("m0[1] : %d,%d,%d,%d\n",tempw[0],tempw[1],tempw[2],tempw[3]);
     
 

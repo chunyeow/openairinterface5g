@@ -184,7 +184,6 @@ int generate_ue_ulsch_params_from_rar(PHY_VARS_UE *phy_vars_ue,
   uint8_t harq_pid = subframe2harq_pid(frame_parms,phy_vars_ue->frame_tx,subframe);
   uint16_t rballoc;
   uint8_t cqireq;
-  double sinr_eff;
   uint16_t *RIV2nb_rb_LUT, *RIV2first_rb_LUT;
   uint16_t RIV_max = 0;
 
@@ -258,12 +257,6 @@ int generate_ue_ulsch_params_from_rar(PHY_VARS_UE *phy_vars_ue,
     }
   
     ulsch->uci_format = HLC_subband_cqi_nopmi;
-    /*
-    if(flag_LA==1)
-      sinr_eff = sinr_eff_cqi_calc(phy_vars_ue, eNB_id);
-    else
-      sinr_eff = meas->wideband_cqi_avg[eNB_id];
-    */
     fill_CQI(ulsch,meas,eNB_id,0,phy_vars_ue->lte_frame_parms.N_RB_DL,0, transmission_mode,phy_vars_ue->sinr_eff);
 
     if (((phy_vars_ue->frame_tx % 100) == 0) || (phy_vars_ue->frame_tx < 10)) 

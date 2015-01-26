@@ -2550,11 +2550,11 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
   uint8_t format0_found=0,format_c_found=0;
   uint8_t tmode = phy_vars_ue->transmission_mode[eNB_id];
   uint8_t frame_type = frame_parms->frame_type;
-  uint8_t format1A_size_bits,format1A_size_bytes;
-  uint8_t format0_size_bits,format0_size_bytes;
-  uint8_t format1_size_bits,format1_size_bytes;
-  uint8_t format2_size_bits,format2_size_bytes;
-  uint8_t format2A_size_bits,format2A_size_bytes;
+  uint8_t format1A_size_bits=0,format1A_size_bytes=0;
+  uint8_t format0_size_bits=0,format0_size_bytes=0;
+  uint8_t format1_size_bits=0,format1_size_bytes=0;
+  uint8_t format2_size_bits=0,format2_size_bytes=0;
+  uint8_t format2A_size_bits=0,format2A_size_bytes=0;
 
   switch (frame_parms->N_RB_DL) {
   case 6:

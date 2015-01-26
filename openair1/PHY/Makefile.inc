@@ -37,6 +37,7 @@ PHY_OBJS += $(TOP_DIR)/PHY/MODULATION/slot_fep_ul.o
 PHY_OBJS += $(TOP_DIR)/PHY/MODULATION/ul_7_5_kHz.o
 PHY_OBJS += $(TOP_DIR)/PHY/LTE_ESTIMATION/freq_equalization.o
 PHY_OBJS += $(TOP_DIR)/PHY/LTE_ESTIMATION/lte_sync_time.o
+PHY_OBJS += $(TOP_DIR)/PHY/LTE_ESTIMATION/lte_sync_timefreq.o
 PHY_OBJS += $(TOP_DIR)/PHY/LTE_ESTIMATION/lte_adjust_sync.o
 PHY_OBJS += $(TOP_DIR)/PHY/LTE_ESTIMATION/lte_dl_channel_estimation.o
 PHY_OBJS += $(TOP_DIR)/PHY/LTE_ESTIMATION/lte_dl_mbsfn_channel_estimation.o

@@ -46,14 +46,14 @@ int32_t subcarrier_energy(int32_t *input,uint32_t length, int32_t *subcarrier_en
 
   int32_t i, subcarrier_pwr;
   register __m64 mm0,mm1, subcarrier;
-  subcarrier = _m_pxor(subcarrier,subcarrier);
+  subcarrier = _mm_setzero_si64();//_m_pxor(subcarrier,subcarrier);
   __m64 *in = (__m64 *)input;
 
 #ifdef MAIN
   int16_t *printb;
 #endif
 
-  mm0 = _m_pxor(mm0,mm0);
+  mm0 = _mm_setzero_si64();//pxor(mm0,mm0);
 
   for (i=0;i<length>>1;i++) {
     
@@ -82,8 +82,8 @@ int32_t signal_energy(int32_t *input,uint32_t length) {
   int16_t *printb;
 #endif
 
-  mm0 = _m_pxor(mm0,mm0);
-  mm3 = _m_pxor(mm3,mm3);
+  mm0 = _mm_setzero_si64();//pxor(mm0,mm0);
+  mm3 = _mm_setzero_si64();//pxor(mm3,mm3);
 
   for (i=0;i<length>>1;i++) {
     
@@ -156,20 +156,19 @@ int32_t signal_energy_nodc(int32_t *input,uint32_t length) {
 
   int32_t i;
   int32_t temp;
-  register __m64 mm0,mm1,mm2,mm3;
+  register __m64 mm0,mm1;//,mm2,mm3;
   __m64 *in = (__m64 *)input;
 
 #ifdef MAIN
   int16_t *printb;
 #endif
 
-  mm0 = _m_pxor(mm0,mm0);
-  mm3 = _m_pxor(mm3,mm3);
+  mm0 = _mm_setzero_si64();//_pxor(mm0,mm0);
+  //  mm3 = _mm_setzero_si64();//pxor(mm3,mm3);
 
   for (i=0;i<length>>1;i++) {
     
     mm1 = in[i]; 
-    mm2 = mm1;
     mm1 = _m_pmaddwd(mm1,mm1);// SIMD complex multiplication
     mm1 = _m_psradi(mm1,shift);
     mm0 = _m_paddd(mm0,mm1);

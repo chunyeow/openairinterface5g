@@ -105,10 +105,8 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
     *temp_out_fft_1_ptr = (int32_t*)0,*out_fft_ptr_1 = (int32_t*)0,
     *temp_in_ifft_ptr = (int32_t*)0;
 
-#ifdef NEW_FFT
   __m128i *rxdataF128,*ul_ref128,*ul_ch128;
   __m128i mmtmpU0,mmtmpU1,mmtmpU2,mmtmpU3;
- #endif
 
   Msc_RS = N_rb_alloc*12;
 
@@ -142,15 +140,7 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
 #endif
 #endif
 
-#ifndef NEW_FFT
-  if ( (frame_parms->ofdm_symbol_size == 128) ||
-       (frame_parms->ofdm_symbol_size == 512) )
-    rx_power_correction = 2;
-  else
-    rx_power_correction = 1;
-#else
   rx_power_correction = 1;
-#endif
 
   if (l == (3 - frame_parms->Ncp)) {
 
@@ -159,13 +149,6 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
     for (aa=0; aa<nb_antennas_rx; aa++){
       //           msg("Componentwise prod aa %d, symbol_offset %d,ul_ch_estimates %p,ul_ch_estimates[aa] %p,ul_ref_sigs_rx[0][0][Msc_RS_idx] %p\n",aa,symbol_offset,ul_ch_estimates,ul_ch_estimates[aa],ul_ref_sigs_rx[0][0][Msc_RS_idx]);
 
-#ifndef NEW_FFT
-      mult_cpx_vector_norep2((int16_t*) &rxdataF_ext[aa][symbol_offset<<1],
-			     (int16_t*) ul_ref_sigs_rx[u][v][Msc_RS_idx],
-			     (int16_t*) &ul_ch_estimates[aa][symbol_offset],
-			     Msc_RS,
-			     15);
-#else
       rxdataF128 = (__m128i *)&rxdataF_ext[aa][symbol_offset];
       ul_ch128   = (__m128i *)&ul_ch_estimates[aa][symbol_offset];
       ul_ref128  = (__m128i *)ul_ref_sigs_rx[u][v][Msc_RS_idx];
@@ -219,7 +202,6 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
 	ul_ref128+=3;
 	rxdataF128+=3;
       }
-#endif
 
       alpha_ind = 0;
       if((cyclic_shift != 0)){

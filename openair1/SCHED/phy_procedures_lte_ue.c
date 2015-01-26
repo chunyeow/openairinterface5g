@@ -609,7 +609,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
   uint16_t first_rb, nb_rb;
   uint8_t harq_pid;
   unsigned int input_buffer_length;
-  unsigned int i,aa;
+  unsigned int aa;
   uint8_t Msg3_flag=0;
   uint8_t pucch_ack_payload[2];
   uint8_t n1_pucch;
@@ -632,6 +632,9 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
   int frame_tx = phy_vars_ue->frame_tx;
   int Mod_id = phy_vars_ue->Mod_id;
   int CC_id = phy_vars_ue->CC_id;
+#ifndef OPENAIR2
+  int i;
+#endif
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_TX,VCD_FUNCTION_IN);
   start_meas(&phy_vars_ue->phy_proc_tx);
@@ -1395,7 +1398,6 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
   int aa;
 #endif
   int Mod_id=phy_vars_ue->Mod_id;
-  int frame_rx = phy_vars_ue->frame_rx;
   int slot_rx = phy_vars_ue->slot_rx;
   int subframe_rx = slot_rx>>1;
 
@@ -1871,13 +1873,18 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
   unsigned int dci_cnt=0, i;
   //DCI_PDU *DCI_pdu;
   //uint16_t ra_RNTI;
-  uint8_t harq_pid;
-  int UE_id;
-  int CC_id;
+
+
   int frame_rx = phy_vars_ue->frame_rx;
   int slot_rx = phy_vars_ue->slot_rx;
   int subframe_rx = slot_rx>>1;
 
+
+#ifdef PHY_ABSTRACTION
+  int CC_id;
+  int UE_id;
+  uint8_t harq_pid;
+#endif
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_PDCCH_PROCEDURES, VCD_FUNCTION_IN);
 
@@ -2299,13 +2306,15 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
 
   uint16_t l,m,n_symb;
   //  int eNB_id = 0, 
-  int eNB_id_i = 1;
-  uint8_t dual_stream_UE = 0;
   int ret=0;
   uint8_t harq_pid = -1;
   int timing_advance;
   uint8_t pilot1,pilot2,pilot3;
+#ifndef DLSCH_THREAD
   uint8_t i_mod = 0;
+  int eNB_id_i = 1;
+  uint8_t dual_stream_UE = 0;
+#endif
   int i;
 #ifndef OPENAIR2
   uint8_t *rar;
@@ -2318,7 +2327,9 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
   int slot_rx = phy_vars_ue->slot_rx;
   int subframe_rx = slot_rx>>1;
   int subframe_prev = (subframe_rx+9)%10;
+#ifdef OPENAIR2
   int CC_id = phy_vars_ue->CC_id;
+#endif
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_IN);
   vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_SLOT_NUMBER_UE, (slot_rx + 1) % 20);
@@ -3413,9 +3424,13 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
   unsigned int  Mod_id;
   int           result;
 #endif
+#   if defined(ENABLE_RAL)
   int           CC_id =0;
+#endif
   int           frame_rx = phy_vars_ue->frame_rx;
+#ifdef OPENAIR2
   int           frame_tx = phy_vars_ue->frame_tx;
+#endif
   int           slot_rx  = phy_vars_ue->slot_rx;
   int           slot_tx  = phy_vars_ue->slot_tx;
   int           subframe_tx = slot_tx>>1;

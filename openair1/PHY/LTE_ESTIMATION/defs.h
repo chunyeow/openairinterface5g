@@ -43,10 +43,17 @@
 /*!\brief Timing drift hysterisis in samples*/
 #define SYNCH_HYST 1
 
-
+/*!
+\brief This function is used for time-frequency scanning prior to complete cell search.  It scans
+over the entire LTE band for maximum correlation and keeps the 10 best scores and the correspoding frequency offset (5 kHz granularity) for each of the 3 PSS sequences.
+\param ue Pointer to UE variables
+\param band index of lte band
+\param DL_freq Central RF Frequency in Hz 
+*/
 /*!
 \brief This function allocates memory needed for the synchronization.
 \param frame_parms LTE DL frame parameter structure
+
  */
 
 int lte_sync_time_init(LTE_DL_FRAME_PARMS *frame_parms); //LTE_UE_COMMON *common_vars

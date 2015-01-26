@@ -175,46 +175,24 @@ int pss_sss_extract(PHY_VARS_UE *phy_vars_ue,
     //   (rx_offset + (symbol*(frame_parms->ofdm_symbol_size)))*2,
     //   LTE_CE_OFFSET+ch_offset+(symbol_mod*(frame_parms->ofdm_symbol_size)));
 
-#ifndef NEW_FFT
-    pss_rxF        = &rxdataF[aarx][(rx_offset + (pss_symb*(frame_parms->ofdm_symbol_size)))*2];
-    sss_rxF        = &rxdataF[aarx][(rx_offset + (sss_symb*(frame_parms->ofdm_symbol_size)))*2];
-#else
     pss_rxF        = &rxdataF[aarx][(rx_offset + (pss_symb*(frame_parms->ofdm_symbol_size)))];
     sss_rxF        = &rxdataF[aarx][(rx_offset + (sss_symb*(frame_parms->ofdm_symbol_size)))];
-#endif
     pss_rxF_ext    = &pss_ext[aarx][0];
-
     sss_rxF_ext    = &sss_ext[aarx][0];
 
     for (rb=0; rb<nb_rb; rb++) {
       // skip DC carrier
       if (rb==3) {
-#ifndef NEW_FFT
-	sss_rxF       = &rxdataF[aarx][(1 + (sss_symb*(frame_parms->ofdm_symbol_size)))*2];
-	pss_rxF       = &rxdataF[aarx][(1 + (pss_symb*(frame_parms->ofdm_symbol_size)))*2];
-#else
 	sss_rxF       = &rxdataF[aarx][(1 + (sss_symb*(frame_parms->ofdm_symbol_size)))];
 	pss_rxF       = &rxdataF[aarx][(1 + (pss_symb*(frame_parms->ofdm_symbol_size)))];
-#endif
       }
       for (i=0;i<12;i++) {
-#ifndef NEW_FFT
-	pss_rxF_ext[i]=pss_rxF[i<<1];
-	sss_rxF_ext[i]=sss_rxF[i<<1];
-#else
 	pss_rxF_ext[i]=pss_rxF[i];
 	sss_rxF_ext[i]=sss_rxF[i];
-#endif
       }
-#ifndef NEW_FFT
-      pss_rxF+=24;
-      sss_rxF+=24;
-#else
       pss_rxF+=12;
       sss_rxF+=12;
-#endif
       pss_rxF_ext+=12;
-
       sss_rxF_ext+=12;
     }
 

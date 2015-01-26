@@ -220,7 +220,6 @@ uint32_t ulsch_encoding(uint8_t *a,
   PHY_MEASUREMENTS *meas = &phy_vars_ue->PHY_measurements;
   LTE_UE_ULSCH_t *ulsch=phy_vars_ue->ulsch_ue[eNB_id];
   LTE_UE_DLSCH_t **dlsch = phy_vars_ue->dlsch_ue[eNB_id];
-  double sinr_eff;
   uint16_t rnti;
 
   if (!ulsch) {
@@ -249,12 +248,6 @@ uint32_t ulsch_encoding(uint8_t *a,
 
   // fill CQI/PMI information
   if (ulsch->O>0) {
-    /*  //not correctly done
-    if (flag_LA==1)
-      sinr_eff = sinr_eff_cqi_calc(phy_vars_ue, 0); //eNB_id is missing here
-    else
-      sinr_eff = 0;
-    */
     rnti = phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->crnti;
     fill_CQI(ulsch,meas,0,harq_pid,phy_vars_ue->lte_frame_parms.N_RB_DL,rnti, tmode,phy_vars_ue->sinr_eff);
    
@@ -888,7 +881,6 @@ int ulsch_encoding_emul(uint8_t *ulsch_buffer,
   LTE_UE_DLSCH_t **dlsch = phy_vars_ue->dlsch_ue[eNB_id];
   PHY_MEASUREMENTS *meas = &phy_vars_ue->PHY_measurements;
   uint8_t tmode = phy_vars_ue->transmission_mode[eNB_id];
-  double sinr_eff;  
   uint16_t rnti=phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->crnti;
   LOG_D(PHY,"EMUL UE ulsch_encoding for eNB %d,mod_id %d, harq_pid %d rnti %x, ACK(%d,%d) \n",
 	eNB_id,phy_vars_ue->Mod_id, harq_pid, rnti,ulsch->o_ACK[0],ulsch->o_ACK[1]);
