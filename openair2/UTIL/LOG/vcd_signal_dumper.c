@@ -120,6 +120,7 @@ const char* eurecomFunctionsNames[] = {
     "eNB_thread_rx9",
     
     /* PHY signals  */
+    "ue_synch",
     "ue_slot_fep",
     "ue_rrc_measurements",
     "ue_gain_control",
