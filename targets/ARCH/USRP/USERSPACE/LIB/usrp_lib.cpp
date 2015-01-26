@@ -232,6 +232,8 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   memset(s, 0, sizeof(usrp_state_t));
 
   // Initialize USRP device
+/* thomas 26.01.205*/
+//  std::string args = "type=b200";
   std::string args = "type=b200";
 
   /*  std::string rx_subdev = "A:A A:B";
@@ -240,22 +242,50 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   uhd::device_addrs_t device_adds = uhd::device::find(args);
   size_t i;
 
+  printf("Checking for USRPs\n");
+  
   if(device_adds.size() == 0)
   {
-    std::cerr<<"No USRP Device Found. " << std::endl;
-    free(s);
-    return -1;
+    double usrp_master_clock = 184.32e6;
+
+    std::string args = "type=x300";
+    
+    // workaround for an api problem, master clock has to be set with the constructor not via set_master_clock_rate
+    args += boost::str(boost::format(",master_clock_rate=%f") % usrp_master_clock);
+    
+    uhd::device_addrs_t device_adds = uhd::device::find(args);
+
+    if(device_adds.size() == 0)
+    {
+      std::cerr<<"No USRP Device Found. " << std::endl;
+      free(s);
+      return -1;
+
+    }
+
+    printf("Found USRP X300\n");
+    s->usrp = uhd::usrp::multi_usrp::make(args);
+    //  s->usrp->set_rx_subdev_spec(rx_subdev);
+    //  s->usrp->set_tx_subdev_spec(tx_subdev);
+
+    // lock mboard clocks
+    s->usrp->set_clock_source("internal");
+    
+    // this is not working yet, master clock has to be set via constructor
+    // set master clock rate and sample rate for tx & rx for streaming
+    //s->usrp->set_master_clock_rate(usrp_master_clock);
+  } else {
+    printf("Found USRP B200");
+    s->usrp = uhd::usrp::multi_usrp::make(args);
+
+    //  s->usrp->set_rx_subdev_spec(rx_subdev);
+    //  s->usrp->set_tx_subdev_spec(tx_subdev);
+
+    // lock mboard clocks
+    s->usrp->set_clock_source("internal");
+    // set master clock rate and sample rate for tx & rx for streaming
+    s->usrp->set_master_clock_rate(30.72e6);
   }
-  s->usrp = uhd::usrp::multi_usrp::make(args);
-
-  //  s->usrp->set_rx_subdev_spec(rx_subdev);
-  //  s->usrp->set_tx_subdev_spec(tx_subdev);
-
-  // lock mboard clocks
-  s->usrp->set_clock_source("internal");
-  // set master clock rate and sample rate for tx & rx for streaming
-  s->usrp->set_master_clock_rate(30.72e6);
-
 
 
 
@@ -297,6 +327,8 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   s->usrp->set_time_now(uhd::time_spec_t(0.0));
 
   // display USRP settings
+  std::cout << boost::format("Actual master clock: %fMHz...") % (s->usrp->get_master_clock_rate()/1e6) << std::endl << std::endl;
+
   for (i=0;i<openair0_cfg[0].rx_num_channels;i++) {
     if (i<openair0_cfg[0].rx_num_channels) {
       printf("RX Channel %lu\n",i);
