@@ -274,8 +274,8 @@ static unsigned int             nf_med[4] =    {12,13,22,17};
 static unsigned int             nf_byp[4] =    {15,20,29,23};
 static rx_gain_t                rx_gain_mode[MAX_NUM_CCs][4] = {{max_gain,max_gain,max_gain,max_gain},{max_gain,max_gain,max_gain,max_gain}};
 #else
-double tx_gain[MAX_NUM_CCs][4] = {{120,0,0,0}};
-double rx_gain[MAX_NUM_CCs][4] = {{125,0,0,0}};
+double tx_gain[MAX_NUM_CCs][4] = {{20,0,0,0}};
+double rx_gain[MAX_NUM_CCs][4] = {{110,0,0,0}};
 #endif
 
 double sample_rate=30.72e6;
@@ -1878,6 +1878,7 @@ static void *UE_thread_synch(void *arg) {
   }
   else {
     LOG_D(PHY,"[SCHED][UE] Check absolute frequency %u\n",downlink_frequency[0][0]);
+    sync_mode=pbch;
   }
 
   while (!oai_exit) {
@@ -3295,7 +3296,7 @@ int main(int argc, char **argv) {
     else
       { //UE_flag==1
 	frame_parms[CC_id]->nb_antennas_tx     = 1;
-	frame_parms[CC_id]->nb_antennas_rx     = 1;
+	frame_parms[CC_id]->nb_antennas_rx     = 2;
 	frame_parms[CC_id]->nb_antennas_tx_eNB = (transmission_mode == 1) ? 1 : 2; //initial value overwritten by initial sync later
       }
     frame_parms[CC_id]->mode1_flag         = (transmission_mode == 1) ? 1 : 0;
