@@ -612,7 +612,7 @@ check_install_epc_software() {
 
 check_install_asn1c(){
     
-    test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO"
+    test_command_install_script   "asn1c" "$OPENAIR_TARGETS/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO"
     
     # One mor check about version of asn1c
     ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE="ASN.1 Compiler, v0.9.24"
@@ -624,7 +624,7 @@ check_install_asn1c(){
         echo_error "$ASN1C_COMPILER_VERSION_MESSAGE"
         while read -r -n 1 -s answer; do
             if [[ $answer = [YyNn] ]]; then
-                [[ $answer = [Yy] ]] && $OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO
+                [[ $answer = [Yy] ]] && $OPENAIR_TARGETS/SCRIPTS/install_asn1c_0.9.24.modified.bash $SUDO
                 [[ $answer = [Nn] ]] && echo_error "Version of asn1c is not the required one, exiting." && exit 1
                 break
             fi
