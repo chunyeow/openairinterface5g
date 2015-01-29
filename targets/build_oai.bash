@@ -250,8 +250,7 @@ done
 # create a bin dir
 #####################
 echo_info "1. Creating the bin dir ..." 
-rm -rf bin
-mkdir -m 777 -p bin 
+mkdir -m 777 bin 
 
 build_date=`date +%Y_%m_%d`
 oai_build_date="oai_built_${build_date}"
@@ -522,7 +521,7 @@ build_epc(){
 
     epc_compiled=1
 
-    echo_info "Note: this scripts tested only on Ubuntu 12.04 x64, 14.04 x64"
+    echo_info "Note: this scripts tested only on Ubuntu 14.04x64"
 
 ######################################
 # CHECK MISC SOFTWARES AND LIBS      #
@@ -549,7 +548,7 @@ build_epc(){
 
     echo_info "5. configure and compile epc"
 
-    output=$(compile_epc $OAI_CLEAN  >> bin/install_log.txt  2>&1 )
+    output=$(compile_epc $OAI_CLEAN  >> $OPENAIR_TARGETS/bin/install_log.txt  2>&1 )
     epc_compiled=$?
     if [ $epc_compiled -ne 0 ]; then
         echo_error "EPC compilation failed : check the installation log file bin/install_log.txt" 
