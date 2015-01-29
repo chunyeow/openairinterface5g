@@ -565,12 +565,16 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
                           in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
 
-                          if (snprintf(system_cmd, 128, "ip route add %s/%s via %s dev %s",
+//                          if (snprintf(system_cmd, 128, "ip route add %s/%s via %s dev %s",
+//                                       astring,
+//                                       atoken2,
+//                                       inet_ntoa(in_addr_var),
+//                                       config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
+                          if (snprintf(system_cmd, 128, "ip route add %s/%s dev %s",
                                        astring,
                                        atoken2,
-                                       inet_ntoa(in_addr_var),
                                        config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
-                              spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+                              spgw_system(system_cmd, SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
                           } else {
                               SPGW_APP_ERROR("Add route: for %s\n", astring);
                           }
