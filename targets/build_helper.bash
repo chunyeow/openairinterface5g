@@ -578,6 +578,7 @@ check_install_epc_software() {
         test_install_package libpthread-stubs0-dev
         test_install_package libsctp1
         test_install_package libsctp-dev
+        test_install_package libssl-dev
         test_install_package libtasn1-3-dev
         test_install_package libtool 
         test_install_package libxml2
