@@ -1038,9 +1038,9 @@ static void * eNB_thread_tx(void *param) {
   
   /* This creates a 1ms reservation every 10ms period*/
   attr.sched_policy = SCHED_DEADLINE;
-  attr.sched_runtime = 1 * 1000000;  // each tx thread requires 1ms to finish its job
-  attr.sched_deadline =1 * 1000000; // each tx thread will finish within 1ms
-  attr.sched_period = 1 * 10000000; // each tx thread has a period of 10ms from the starting point
+  attr.sched_runtime  = 0.9   *  1000000;  // each tx thread requires 1ms to finish its job
+  attr.sched_deadline = 1   *  1000000; // each tx thread will finish within 1ms
+  attr.sched_period   = 1   * 10000000; // each tx thread has a period of 10ms from the starting point
   
   if (sched_setattr(0, &attr, flags) < 0 ){
     perror("[SCHED] eNB tx thread: sched_setattr failed\n");
@@ -1073,7 +1073,7 @@ static void * eNB_thread_tx(void *param) {
 
     if (pthread_mutex_lock(&proc->mutex_tx) != 0) {
       LOG_E(PHY,"[SCHED][eNB] error locking mutex for eNB TX proc %d\n",proc->subframe);
-      oai_exit=1;
+      exit_fun("nothing to add");
     }
     else {
       
@@ -1086,7 +1086,7 @@ static void * eNB_thread_tx(void *param) {
       //      LOG_I(PHY,"Waking up and unlocking mutex for eNB proc %d instance_cnt_tx %d\n",proc->subframe,proc->instance_cnt_tx);
       if (pthread_mutex_unlock(&proc->mutex_tx) != 0) {	
 	LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for eNB TX proc %d\n",proc->subframe);
-	oai_exit=1;
+	exit_fun("nothing to add");
       }
     }
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe),1);    
@@ -1192,9 +1192,9 @@ static void * eNB_thread_rx(void *param) {
   
   /* This creates a 2ms reservation every 10ms period*/
   attr.sched_policy = SCHED_DEADLINE;
-  attr.sched_runtime  = 1 * 2000000;  // each rx thread must finish its job in the worst case in 2ms
-  attr.sched_deadline = 1 * 2000000; // each rx thread will finish within 2ms
-  attr.sched_period   = 1 * 10000000; // each rx thread has a period of 10ms from the starting point
+  attr.sched_runtime  = 0.9   *  1000000;  // each rx thread must finish its job in the worst case in 2ms
+  attr.sched_deadline = 1   *  1000000; // each rx thread will finish within 2ms
+  attr.sched_period   = 1   * 10000000; // each rx thread has a period of 10ms from the starting point
   
   if (sched_setattr(0, &attr, flags) < 0 ){
     perror("[SCHED] eNB RX sched_setattr failed\n");
@@ -1433,6 +1433,7 @@ static void *eNB_thread(void *arg)
 
   int sf;
 #ifdef EXMIMO
+  RTIME time_in;
   volatile unsigned int *DAQ_MBOX = openair0_daq_cnt();
   int mbox_target=0,mbox_current=0;
   int hw_slot,delay_cnt;
@@ -1470,9 +1471,9 @@ static void *eNB_thread(void *arg)
    
   /* This creates a .5 ms  reservation */
   attr.sched_policy = SCHED_DEADLINE;
-  attr.sched_runtime  = 0.5 * 1000000;
+  attr.sched_runtime  = 0.1 * 1000000;
   attr.sched_deadline = 0.5 * 1000000;
-  attr.sched_period   = 1   * 1000000;
+  attr.sched_period   = 1.0   * 1000000;
    
   /* pin the eNB main thread to CPU0*/
   /* if (pthread_setaffinity_np(pthread_self(), sizeof(mask),&mask) <0) {
@@ -1623,7 +1624,7 @@ static void *eNB_thread(void *arg)
 	clock_gettime(CLOCK_MONOTONIC,&trx_time1);
 
 	if (rxs != samples_per_packets)
-	  oai_exit=1;
+	  exit_fun("problem receiving samples");
  
 
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,0);
@@ -1668,7 +1669,7 @@ static void *eNB_thread(void *arg)
 	      }
 	      else {
 		LOG_W(PHY,"[eNB] Frame %d, eNB TX thread %d busy!! (rx_cnt %d)\n",PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].frame_tx,hw_subframe,rx_cnt);
-		oai_exit=1;
+		exit_fun("nothing to add");
 	      }
 	    }
 	  }
@@ -1738,7 +1739,7 @@ static void *eNB_thread(void *arg)
 	    }
 	    else {
 	      LOG_W(PHY,"[eNB] Frame %d, eNB TX thread %d busy!!\n",PHY_vars_eNB_g[0][CC_id]->proc[sf].frame_tx,sf);
-	      oai_exit=1;
+	      exit_fun("nothing to add");
 	    }
 	  }
 #endif	    
@@ -1758,7 +1759,7 @@ static void *eNB_thread(void *arg)
 	    }
 	    else {
 	      LOG_W(PHY,"[eNB] Frame %d, eNB RX thread %d busy!! instance_cnt %d CC_id %d\n",PHY_vars_eNB_g[0][CC_id]->proc[sf].frame_rx,sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx,CC_id);
-	      oai_exit=1;
+	      exit_fun("nothing to add");
 	    }
 	  }
 	    
@@ -1885,7 +1886,7 @@ static void *UE_thread_synch(void *arg) {
     
     if (pthread_mutex_lock(&UE->mutex_synch) != 0) {
       LOG_E(PHY,"[SCHED][UE] error locking mutex for UE initial synch thread\n");
-      oai_exit=1;
+      exit_fun("noting to add");
     }
     else {
       while (UE->instance_cnt_synch < 0) {
@@ -1893,7 +1894,7 @@ static void *UE_thread_synch(void *arg) {
       }
       if (pthread_mutex_unlock(&UE->mutex_synch) != 0) {	
 	LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for UE Initial Synch thread\n");
-	oai_exit=1;
+	exit_fun("nothing to add");
       }
 
     }  // mutex_lock      
@@ -2061,7 +2062,7 @@ static void *UE_thread_tx(void *arg) {
 
     if (pthread_mutex_lock(&UE->mutex_tx) != 0) {
       LOG_E(PHY,"[SCHED][eNB] error locking mutex for UE TX\n");
-      oai_exit=1;
+      exit_fun("nothing to add");
     }
     else {
       
@@ -2070,7 +2071,7 @@ static void *UE_thread_tx(void *arg) {
       }
       if (pthread_mutex_unlock(&UE->mutex_tx) != 0) {	
 	LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for UE TX\n");
-	oai_exit=1;
+	exit_fun("nothing to add");
       }
     }
   
@@ -2156,7 +2157,7 @@ static void *UE_thread_rx(void *arg) {
     printf("UE_thread_rx: locking UE RX mutex\n");
     if (pthread_mutex_lock(&UE->mutex_rx) != 0) {
       LOG_E(PHY,"[SCHED][eNB] error locking mutex for UE RX\n");
-      oai_exit=1;
+      exit_fun("nothing to add");
     }
     else {
       
@@ -2168,7 +2169,7 @@ static void *UE_thread_rx(void *arg) {
       }
       if (pthread_mutex_unlock(&UE->mutex_rx) != 0) {	
 	LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for UE RX\n");
-	oai_exit=1;
+	exit_fun("nothing to add");
       }
       
       for (i=0;i<2;i++) {
@@ -2301,7 +2302,7 @@ static void *UE_thread(void *arg) {
 				   samples_per_packets - ((rx_cnt==0) ? rx_off_diff : 0),
 				   PHY_vars_UE_g[0][0]->lte_frame_parms.nb_antennas_rx);
       if (rxs != (samples_per_packets- ((rx_cnt==0) ? rx_off_diff : 0)))
-	oai_exit=1;
+	exit_fun("problem in rx");
 
       rx_off_diff = 0;
       vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,0);
@@ -2342,7 +2343,7 @@ static void *UE_thread(void *arg) {
 	//	printf("UE_thread: locking UE mutex_rx\n");
 	if (pthread_mutex_lock(&PHY_vars_UE_g[0][0]->mutex_rx) != 0) {
 	  LOG_E(PHY,"[SCHED][UE] error locking mutex for UE RX thread\n");
-	  oai_exit=1;
+	  exit_fun("nothing to add");
 	}
 	else {
  	  
@@ -2353,7 +2354,7 @@ static void *UE_thread(void *arg) {
 	    LOG_D(HW,"Scheduling UE RX for frame %d (hw frame %d), subframe %d (%d), mode %d\n",PHY_vars_UE_g[0][0]->frame_rx,frame,hw_subframe,PHY_vars_UE_g[0][0]->slot_rx>>1,mode);
 	    if (pthread_cond_signal(&PHY_vars_UE_g[0][0]->cond_rx) != 0) {
 	      LOG_E(PHY,"[SCHED][UE] ERROR pthread_cond_signal for UE RX thread\n");
-	      oai_exit=1;
+	      exit_fun("nothing to add");
 	    }
 	    else {
 	      //	      printf("UE_thread: cond_signal for RX ok (%p) @ %llu\n",(void*)&PHY_vars_UE_g[0][0]->cond_rx,rt_get_time_ns()-T0);
@@ -2379,7 +2380,7 @@ static void *UE_thread(void *arg) {
 	  }
 	  else {
 	    LOG_E(PHY,"[SCHED][UE] UE RX thread busy!!\n");
-	    oai_exit=1;
+	    exit_fun("nothing to add");
 	  }
 	}
       }
@@ -2390,7 +2391,7 @@ static void *UE_thread(void *arg) {
 	// Wake up initial synch thread
 	if (pthread_mutex_lock(&PHY_vars_UE_g[0][0]->mutex_synch) != 0) {
 	  LOG_E(PHY,"[SCHED][UE] error locking mutex for UE initial synch thread\n");
-	  oai_exit=1;
+	  exit_fun("nothing to add");
 	}
 	else {
 	  
@@ -2400,12 +2401,12 @@ static void *UE_thread(void *arg) {
 	  if (PHY_vars_UE_g[0][0]->instance_cnt_synch == 0) {
 	    if (pthread_cond_signal(&PHY_vars_UE_g[0][0]->cond_synch) != 0) {
 	      LOG_E(PHY,"[SCHED][UE] ERROR pthread_cond_signal for UE sync thread\n");
-	      oai_exit=1;
+	      exit_fun("nothing to add");
 	    }
 	  }
 	  else {
 	    LOG_E(PHY,"[SCHED][UE] UE sync thread busy!!\n");
-	    oai_exit=1;
+	    exit_fun("nothing to add");
 	  }
 	}
       }
