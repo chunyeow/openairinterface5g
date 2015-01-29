@@ -134,6 +134,8 @@ int s6a_init(const mme_config_t *mme_config_p)
     if (ret != 0) {
         S6A_ERROR("An error occurred during fd_core_parseconf file :%s.\n", mme_config_p->s6a_config.conf_file);
         return ret;
+    } else {
+        S6A_DEBUG("fd_core_parseconf done\n");
     }
     
     /* Set gnutls debug level ? */
@@ -148,6 +150,8 @@ int s6a_init(const mme_config_t *mme_config_p)
     if (ret != 0) {
         S6A_ERROR("An error occurred during freeDiameter core library start\n");
         return ret;
+    } else {
+        S6A_DEBUG("fd_core_start done\n");
     }
 
 
@@ -156,12 +160,16 @@ int s6a_init(const mme_config_t *mme_config_p)
     if (ret != 0) {
         S6A_ERROR("An error occurred during fd_core_waitstartcomplete.\n");
         return ret;
+    } else {
+        S6A_DEBUG("fd_core_waitstartcomplete done\n");
     }
 
     ret = s6a_fd_init_dict_objs();
     if (ret != 0) {
         S6A_ERROR("An error occurred during s6a_fd_init_dict_objs.\n");
         return ret;
+    } else {
+        S6A_DEBUG("s6a_fd_init_dict_objs done\n");
     }
 
     /* Trying to connect to peers */
