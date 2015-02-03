@@ -268,19 +268,19 @@ int spgw_config_process(spgw_config_t* config_pP) {
     }
 
 
-    if (config_pP->pgw_config.pgw_masquerade_SGI) {
-        inaddr.s_addr = config_pP->pgw_config.ipv4.pgw_ipv4_address_for_SGI;
-        if (snprintf(system_cmd, 256,
-                     "iptables -t nat -I POSTROUTING  -o %s  ! --protocol sctp -j SNAT --to-source %s",
-                     config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI,
-                     inet_ntoa(inaddr)) > 0) {
-            SPGW_APP_INFO("Masquerade SGI: %s\n",system_cmd);
-            ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-        } else {
-            SPGW_APP_ERROR("Masquerade SGI\n");
-            ret = -1;
-        }
-    }
+//    if (config_pP->pgw_config.pgw_masquerade_SGI) {
+//        inaddr.s_addr = config_pP->pgw_config.ipv4.pgw_ipv4_address_for_SGI;
+//        if (snprintf(system_cmd, 256,
+//                     "iptables -t nat -I POSTROUTING  -o %s  ! --protocol sctp -j SNAT --to-source %s",
+//                     config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI,
+//                     inet_ntoa(inaddr)) > 0) {
+//            SPGW_APP_INFO("Masquerade SGI: %s\n",system_cmd);
+//            ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+//        } else {
+//            SPGW_APP_ERROR("Masquerade SGI\n");
+//            ret = -1;
+//        }
+//    }
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
     if (snprintf(system_cmd, 256,
                  "iptables -I POSTROUTING -t mangle -o %s -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
@@ -356,8 +356,8 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
   struct in_addr    addr_mask;
   pgw_lite_conf_ipv4_list_elm_t *ip4_ref = NULL;
   pgw_lite_conf_ipv6_list_elm_t *ip6_ref = NULL;
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
   char              system_cmd[256];
+#if defined (ENABLE_USE_GTPU_IN_KERNEL)
   int               tun_id               = 21;
 #endif
 
@@ -619,6 +619,24 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                                   STAILQ_INSERT_TAIL(&config_pP->pgw_config.pgw_lite_ipv4_pool_list, ip4_ref, ipv4_entries);
                                   counter64 = counter64 - 1;
                               } while (counter64 > 0);
+
+                              //---------------
+                              if (config_pP->pgw_config.pgw_masquerade_SGI) {
+                                  in_addr_var.s_addr = config_pP->pgw_config.ipv4.pgw_ipv4_address_for_SGI;
+
+                                  if (snprintf(system_cmd, 256,
+                                               "iptables -t nat -I POSTROUTING -s %s/%s -o %s  ! --protocol sctp -j SNAT --to-source %s",
+                                               astring,
+                                               atoken2,
+                                               config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI,
+                                               inet_ntoa(in_addr_var)) > 0) {
+                                      SPGW_APP_INFO("Masquerade SGI: %s\n",system_cmd);
+                                      spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+                                  } else {
+                                      SPGW_APP_ERROR("Masquerade SGI\n");
+                                  }
+                              }
+
                           } else {
                               SPGW_APP_ERROR("CONFIG POOL ADDR IPV4: BAD MASQ: %s\n", atoken2);
                           }
