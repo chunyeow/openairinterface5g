@@ -203,7 +203,7 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
     struct udphdr  *udph_p          = NULL;
     struct gtpuhdr *gtpuh_p         = NULL;
     struct sk_buff *new_skb_p       = NULL;
-    uint16_t        headroom_reqd   =  ETH_HLEN + sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(struct gtpuhdr);
+    const uint16_t  headroom_reqd   =  ETH_HLEN + sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(struct gtpuhdr);
     uint16_t        orig_iplen = 0, udp_len = 0, ip_len = 0;
     int             flags = 0, offset = 0;
     unsigned int    addr_type       = RTN_UNSPEC;
@@ -313,10 +313,6 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
                             }
                         }
                     };
-                    pr_info("GTPUAH: PACKET -> NF_HOOK NF_INET_POST_ROUTING/%s encapsulated src: %u.%u.%u.%u dst: %u.%u.%u.%u\n",
-                            gtpuah_tg_reg[0].table,
-                            NIPADDR(old_iph_p->saddr),
-                            NIPADDR(old_iph_p->daddr));
 
 
                     rt = ip_route_output_key(&init_net, &fl.u.ip4);
@@ -327,14 +323,28 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
                     new_skb_p->priority = rt_tos2priority(new_iph_p->tos);
                     skb_dst_drop(new_skb_p);
                     if (rt->dst.dev) {
-                        pr_info("GTPURH: dst dev name %s\n", rt->dst.dev->name);
+                        pr_info("GTPUAH: dst dev name %s\n", rt->dst.dev->name);
                         skb_dst_set(new_skb_p, dst_clone(&rt->dst));
                         new_skb_p->dev      = skb_dst(new_skb_p)->dev;
                         if (new_skb_p->len > dst_mtu(skb_dst(new_skb_p))) {
                             goto free_new_skb;
                         }
                         nf_ct_attach(new_skb_p, old_skb_pP);
+
+                        pr_info("GTPUAH: PACKET -> NF_HOOK NF_INET_POST_ROUTING/%s mark %u encap src: %u.%u.%u.%u dst: %u.%u.%u.%u in src: %u.%u.%u.%u dst: %u.%u.%u.%u\n",
+                                gtpuah_tg_reg[0].table,
+                                new_skb_p->mark,
+                                NIPADDR(old_iph_p->saddr),
+                                NIPADDR(old_iph_p->daddr),
+                                NIPADDR(new_iph_p->saddr),
+                                NIPADDR(new_iph_p->daddr));
+
+                        _gtpuah_print_hex_octets(
+                            ip_hdr(new_skb_p),
+                            headroom_reqd);
+
                         ip_local_out(new_skb_p);
+                        return;
                     } else {
                         pr_info("GTPURH: rt->dst.dev == NULL\n");
                         goto free_new_skb;
@@ -428,6 +438,7 @@ __init gtpuah_tg_init(void) {
     pr_info("GTPUAH: Initializing module (KVersion: %d)\n", KVERSION);
     pr_info("GTPUAH: Copyright Polaris Networks 2010-2011\n");
     pr_info("GTPUAH: Modified by EURECOM Lionel GAUTHIER 2014\n");
+    pr_info("GTPUAH: Compiled %s at time %s\n",__DATE__,__TIME__);
 #if defined(WITH_IPV6)
     pr_info("GTPURH: IPv4/IPv6 enabled\n");
 #else
