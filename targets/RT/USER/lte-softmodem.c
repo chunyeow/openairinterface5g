@@ -405,7 +405,7 @@ int16_t           osa_log_verbosity  = LOG_MED;
 
 #ifdef ETHERNET
 char rrh_eNB_ip[20] = "127.0.0.1";
-int rrh_eNB_port = 1500;
+int rrh_eNB_port = 50000;
 char *rrh_UE_ip = "127.0.0.1";
 int rrh_UE_port = 1600;
 #endif
