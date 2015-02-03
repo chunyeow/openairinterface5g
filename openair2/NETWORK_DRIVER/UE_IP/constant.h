@@ -44,18 +44,18 @@
 #define UE_IP_RESET_RX_FLAGS         0
 
 
-#define UE_IP_RETRY_LIMIT_DEFAULT    5
+#define UE_IP_RETRY_LIMIT_DEFAULT    (int)5
 
-#define UE_IP_MESSAGE_MAXLEN         5004
+#define UE_IP_MESSAGE_MAXLEN         (int)5004
 
-#define UE_IP_TIMER_ESTABLISHMENT_DEFAULT 12
-#define UE_IP_TIMER_RELEASE_DEFAULT       2
+#define UE_IP_TIMER_ESTABLISHMENT_DEFAULT (int)12
+#define UE_IP_TIMER_RELEASE_DEFAULT       (int)2
 #define UE_IP_TIMER_IDLE                  UINT_MAX
 #define UE_IP_TIMER_TICK                  HZ
 
-#define UE_IP_PDCPH_SIZE                  sizeof(struct pdcp_data_req_header_s)
-#define UE_IP_IPV4_SIZE                   20
-#define UE_IP_IPV6_SIZE                   40
+#define UE_IP_PDCPH_SIZE                  (int)sizeof(struct pdcp_data_req_header_s)
+#define UE_IP_IPV4_SIZE                   (int)20
+#define UE_IP_IPV6_SIZE                   (int)40
 
 
 

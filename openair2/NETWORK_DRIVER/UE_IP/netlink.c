@@ -61,7 +61,7 @@ int ue_ip_netlink_init(void);
 static struct sock *nas_nl_sk = NULL;
 static int exit_netlink_thread=0;
 
-#ifdef LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 struct netlink_kernel_cfg cfg = {
     .input = nas_nl_data_ready,
 };
@@ -107,7 +107,7 @@ int ue_ip_netlink_init(void)
 
   nas_nl_sk = netlink_kernel_create(
           &init_net,
-#ifdef LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
           NAS_NETLINK_ID,
           &cfg
 #else

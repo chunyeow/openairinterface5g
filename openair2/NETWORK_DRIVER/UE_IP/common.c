@@ -105,7 +105,6 @@ ue_ip_common_class_wireless2ip(
     hard_header_len = ue_ip_dev[instP]->hard_header_len;
 
     skb_set_mac_header(skb_p, 0);
-    //skb_p->mac_header = skb_p->data;
 
     //printk("[NAC_COMMIN_RECEIVE]: Packet Type %d (%d,%d)",skb_p->pkt_type,PACKET_HOST,PACKET_BROADCAST);
     skb_p->pkt_type = PACKET_HOST;
@@ -129,7 +128,7 @@ ue_ip_common_class_wireless2ip(
         skb_p->ip_summed = CHECKSUM_UNNECESSARY;
 
 
-        ipv_p = (struct ipversion *)&(skb_p->data[hard_header_len]);
+        ipv_p = (ipversion_t *)((void*)&(skb_p->data[hard_header_len]));
         switch (ipv_p->version) {
 
             case 6:
@@ -165,7 +164,7 @@ ue_ip_common_class_wireless2ip(
                 printk("[UE_IP_DRV][%s] protocol  %d\n",__FUNCTION__, ((struct iphdr *)&skb_p->data[hard_header_len])->protocol);
                 #endif
 
-                skb_p->network_header = &skb_p->data[hard_header_len];
+                skb_set_network_header(skb_p, hard_header_len);
                 //network_header_p = (struct iphdr *)skb_network_header(skb_p);
                 network_header_p = (struct iphdr *)skb_network_header(skb_p);
                 protocol = network_header_p->protocol;
