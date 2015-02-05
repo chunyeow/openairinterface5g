@@ -51,6 +51,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
     oai.send('cd SIMU/USER;')
     
     try:
+        log.start()
         test = '00'
         name = 'Run oai.rel8.sf'
         conf = '-a -A AWGN -n 100'
@@ -71,6 +72,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
 
     try:
+        log.start()
         test = '01'
         name = 'Run oai.rel8.err'
         conf = '-a -A AWGN -n 100 -l7'
@@ -85,6 +87,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
         
     try:
+        log.start()
         test = '02'
         name = 'Run oai.rel8.abs.rrc'
         diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
@@ -100,6 +103,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
         
     try:
+        log.start()
         test = '03'
         name = 'Run oai.rel8.abs.ping'
         diag = 'Data-plane is not working normally, check the OAI protocol stack, OAI driver, and normal operation of the OS'
@@ -123,12 +127,13 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
 
                     oai.send_expect('ping 10.0.'+str(j+1)+'.'+str(NUM_eNB+i+1) + ' -c ' +  str(random.randint(2, 10))+ ' -s ' + str(random.randint(128, 1500)) + tee_ping, ' 0% packet loss', 20)
                 if user == 'root' :
-                    oai.send('pkill oaisim.rel8.nas.'+host)
-                    oai.send('pkill oaisim.rel8.nas.'+host)
-                else :
-                    oai.send('echo '+pw+ ' | sudo -S pkill oaisim.rel8.nas.'+host)
+                    oai.send('pkill -f oaisim.rel8.nas.'+host)
                     time.sleep(1)
-                    oai.send('echo '+pw+ ' | sudo -S pkill oaisim.rel8.nas.'+host)
+                    oai.send('pkill -f -KILL oaisim.rel8.nas.'+host)
+                else :
+                    oai.send('echo '+pw+ ' | sudo -S pkill -f oaisim.rel8.nas.'+host)
+                    time.sleep(1)
+                    oai.send('echo '+pw+ ' | sudo -S pkill -f -KILL oaisim.rel8.nas.'+host)
         
         oai.rm_driver(oai,user,pw)
 
@@ -138,6 +143,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
         
     try:
+        log.start()
         test = '04'
         name = 'Run oai.rel8.phy.rrc'
         diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
@@ -153,6 +159,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
 
     try:
+        log.start()
         test = '05'
         name = 'Run oai.rel8.phy.rrc.fdd'
         diag = 'RRC procedure is not finished completely in FDD mode, check the execution logs and trace BCCH, CCCH, and DCCH channels'
@@ -168,6 +175,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
 
     try:
+        log.start()
         test = '06'
         name = 'Run oai.rel8.itti.abs.rrc'
         diag = 'RRC procedure is not finished completely, check the eNB config file (default is enb.band7.generic.conf), in addition to the execution logs and trace BCCH, CCCH, and DCCH channels'
@@ -188,6 +196,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         
 
     try:
+        log.start()
         test='07'
         name = 'Run oai.rel8.abs.ocg.otg'
         diag = 'Check the scenario if the tests 0202 and 0203 are passed.'

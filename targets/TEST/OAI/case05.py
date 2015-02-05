@@ -51,6 +51,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
     oai.send('cd SIMULATION/LTE_PHY;')   
     
     try:
+        log.start()
         test = '00'
         name = 'Perf oai.dlsim.sanity'
         conf = '-a -A AWGN -n 100'
@@ -71,6 +72,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
     
     try:
+        log.start()
         test = '01'
         name = 'Perf oai.ulsim.test1'
         diag = 'Test 1, 10 MHz, R2.FDD (MCS 5), EVA5, -1dB'
@@ -86,6 +88,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
         
     try:
+        log.start()
         test = '06'
         name = 'Perf oai.ulsim.test5'
         diag = 'Test 5, 1.4 MHz, R4.FDD (MCS 4), EVA5, 0dB (70%)'
@@ -101,6 +104,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
   
     try:
+        log.start()
         test = '06'
         name = 'Perf oai.ulsim.test6'
         diag = 'Test 6, 10 MHz, R3.FDD (MCS 15), EVA5, 6.7dB (70%)'
@@ -116,6 +120,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
   
     try:
+        log.start()
         test = '06b'
         name = 'Perf oai.ulsim.test6b'
         diag = 'Test 6b, 5 MHz, R3-1.FDD (MCS 15), EVA5, 6.7dB (70%)'
@@ -131,6 +136,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
   
     try:
+        log.start()
         test = '07'
         name = 'Perf oai.ulsim.test7'
         diag = 'Test 6b, 5 MHz, R3-1.FDD (MCS 15), EVA5, 6.7dB (30%)'
@@ -146,6 +152,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
 
     try:
+        log.start()
         test = '10'
         name = 'Perf oai.ulsim.test10'
         diag = 'Test 10, 5 MHz, R6.FDD (MCS 25), EVA5, 17.4 dB (70%)'
@@ -161,6 +168,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
 
     try:
+        log.start()
         test = '10b'
         name = 'Perf oai.ulsim.test10b'
         diag = 'Test 10b, 5 MHz, R6-1.FDD (MCS 24,18 PRB), EVA5, 17.5dB (70%)'
@@ -176,6 +184,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
 
     try:
+        log.start()
         test = '11'
         name = 'Perf oai.ulsim.test11'
         diag = 'Test 11, 10 MHz, R7.FDD (MCS 25), EVA5, 17.7dB (70%)'

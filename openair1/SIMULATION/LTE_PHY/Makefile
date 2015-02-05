@@ -8,6 +8,8 @@ OPENAIR3 = $(OPENAIR3_DIR)
 
 CFLAGS += -DMAX_NUM_CCs=1 -Wall -DPHYSIM -DNODE_RG -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DPHY_CONTEXT=1 -DMALLOC_CHECK_=1 -DENABLE_VCD_FIFO -DLOG_NO_THREAD # -Wno-packed-bitfield-compat
 
+# enable C99 mode
+CFLAGS += -std=gnu99
 
 # DCI Debug
 # CFLAGS += -DDEBUG_DCI_ENCODING
@@ -122,7 +124,7 @@ ifdef STATIC
 LFLAGS += -static -L/usr/lib/libblas
 endif
 
-all: dlsim pbchsim pdcchsim ulsim pucchsim prachsim mbmssim
+all: dlsim pbchsim pdcchsim ulsim pucchsim prachsim mbmssim scansim
 
 $(LFDS_DIR)/bin/liblfds611.a:
 	$(MAKE) -C $(LFDS_DIR) -f makefile.linux
@@ -151,6 +153,10 @@ framegen: $(OBJ) framegen.c
 pbchsim : $(OBJ) pbchsim.c $(LFDS_DIR)/bin/liblfds611.a
 	@echo "Compiling pbchsim.c"
 	@$(CC) pbchsim.c  -o pbchsim $(CFLAGS) $(OBJ) $(LFLAGS) 
+
+scansim : $(OBJ) scansim.c $(LFDS_DIR)/bin/liblfds611.a
+	@echo "Compiling scansim.c"
+	@$(CC) scansim.c -o scansim $(CFLAGS) $(OBJ) $(LFLAGS)
 
 mbmssim : $(OBJ) mbmssim.c $(LFDS_DIR)/bin/liblfds611.a
 	@echo "Compiling mbmssim.c"

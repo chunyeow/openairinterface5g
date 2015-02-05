@@ -259,7 +259,7 @@ void lte_sync_time_free(void) {
 
 }
 
-inline int abs32(int x) { 
+static inline int abs32(int x) {
   return (((int)((short*)&x)[0])*((int)((short*)&x)[0]) + ((int)((short*)&x)[1])*((int)((short*)&x)[1]));
 }
 

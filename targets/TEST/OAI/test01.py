@@ -57,6 +57,7 @@ debug = 0
 pw =''
 i = 0
 dlsim=0
+localshell=0
 
 for arg in sys.argv:
     if arg == '-d':
@@ -69,11 +70,14 @@ for arg in sys.argv:
         pw = sys.argv[i+1]
     elif arg == '-P' :
         dlsim = 1
+    elif arg == '-l' :
+        localshell = 1
     elif arg == '-h' :
         print "-d:  low debug level"
         print "-dd: high debug level"
         print "-p:  set the prompt"
         print "-w:  set the password for ssh to localhost"
+        print "-l:  use local shell instead of ssh connection"
         sys.exit()
     i= i + 1     
 
@@ -99,26 +103,29 @@ except KeyError:
 host = os.uname()[1]
 oai = openair('localdomain','localhost')
 #start_time = time.time()  # datetime.datetime.now()
-try: 
-    user = getpass.getuser()
-    print '\n******* Note that the user <'+user+'> should be a sudoer *******\n'
-    print '******* Connecting to the localhost to perform the test *******\n'
-   
-    if not pw :
-        print "username: " + user 
-        pw = getpass.getpass() 
-    else :
-        print "username: " + user 
-        #print "password: " + pw 
+user = getpass.getuser()
+if localshell == 0:
+    try: 
+        print '\n******* Note that the user <'+user+'> should be a sudoer *******\n'
+        print '******* Connecting to the localhost to perform the test *******\n'
+    
+        if not pw :
+            print "username: " + user 
+            pw = getpass.getpass() 
+        else :
+            print "username: " + user 
+            #print "password: " + pw 
 
-       # issues in ubuntu 12.04
-    #  oai.connect(user,pw)
-    oai.connect2(user,pw) 
-    #oai.get_shell()
-except :
-    print 'Fail to connect to the local host'
-    sys.exit(1)
-
+        # issues in ubuntu 12.04
+        #  oai.connect(user,pw)
+        oai.connect2(user,pw) 
+        #oai.get_shell()
+    except :
+        print 'Fail to connect to the local host'
+        sys.exit(1)
+else:
+    pw = ''
+    oai.connect_localshell()
 
 test = 'test01'
 ctime=datetime.datetime.utcnow().strftime("%Y-%m-%d.%Hh%M")

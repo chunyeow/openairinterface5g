@@ -74,6 +74,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug,cpu):
     oai.send('cd $OPENAIR1_DIR;')     
     oai.send('cd SIMULATION/LTE_PHY;')   
     try:
+        log.start()
         test = '200'
         name = 'Run oai.dlsim.sanity'
         conf = '-a -n 100'
@@ -94,6 +95,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug,cpu):
         log.ok(case, test, name, conf, '', logfile)
     
     try:
+        log.start()
         test = 210
        
         name = 'Run oai.dlsim.perf.'+str(PERF)+'%'

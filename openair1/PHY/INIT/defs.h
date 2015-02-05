@@ -67,30 +67,37 @@ int phy_init_top(LTE_DL_FRAME_PARMS *frame_parms);
 
 
 /*!
-\brief Allocate and Initialize the PHY variables relevant to the LTE implementation
-@param phy_vars_ue Pointer to UE Variables
+\brief Allocate and Initialize the PHY variables relevant to the LTE implementation.
+\details Only a subset of phy_vars_ue is initialized.
+@param[out] phy_vars_ue Pointer to UE Variables
 @param nb_connected_eNB Number of eNB that UE can process in one PDSCH demodulation subframe
 @param abstraction_flag 1 indicates memory should be allocated for abstracted MODEM
 @returns 0 on success
+@returns -1 if any memory allocation failed
+@note The current implementation will never return -1, but segfault.
  */
 int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
                     int          nb_connected_eNB,
                     uint8_t         abstraction_flag);
 
 /*!
-\brief Allocate and Initialize the PHY variables relevant to the LTE implementation (eNB)
-@param phy_vars_eNb Pointer to eNB Variables
+\brief Allocate and initialize the PHY variables relevant to the LTE implementation (eNB).
+\details Only a subset of phy_vars_eNb is initialized.
+@param[out] phy_vars_eNb Pointer to eNB Variables
 @param is_secondary_eNb Flag to indicate this eNB gets synch from another
-@param cooperation_flag
+@param cooperation_flag 0 for no cooperation, 1 for Delay Diversity and 2 for Distributed Alamouti
 @param abstraction_flag 1 indicates memory should be allocated for abstracted MODEM
 @returns 0 on success
+@returns -1 if any memory allocation failed
+@note The current implementation will never return -1, but segfault.
  */
 int phy_init_lte_eNB(PHY_VARS_eNB *phy_vars_eNb,
                      unsigned char is_secondary_eNb,
                      unsigned char cooperation_flag,
                      unsigned char abstraction_flag);
 
-/** \brief Configure LTE_DL_FRAME_PARMS with components derived after initial synchronization (MIB decoding + primary/secondary synch).  The basically allows configuration of \f$N_{\mathrm{RB}}^{\mathrm{DL}}\f$, the cell id  \f$N_{\mathrm{ID}}^{\mathrm{cell}}\f$, the normal/extended prefix mode, the frame type (FDD/TDD), \f$N_{\mathrm{cp}}\f$, the number of TX antennas at eNB (\f$p\f$) and the number of PHICH groups, \f$N_{\mathrm{group}}^{\mathrm{PHICH}}\f$ 
+/** \brief Configure LTE_DL_FRAME_PARMS with components derived after initial synchronization (MIB decoding + primary/secondary synch).
+\details The basically allows configuration of \f$N_{\mathrm{RB}}^{\mathrm{DL}}\f$, the cell id  \f$N_{\mathrm{ID}}^{\mathrm{cell}}\f$, the normal/extended prefix mode, the frame type (FDD/TDD), \f$N_{\mathrm{cp}}\f$, the number of TX antennas at eNB (\f$p\f$) and the number of PHICH groups, \f$N_{\mathrm{group}}^{\mathrm{PHICH}}\f$
 @param lte_frame_parms pointer to LTE parameter structure
 @param N_RB_DL Number of DL resource blocks
 @param Nid_cell Cell ID
@@ -108,7 +115,8 @@ void phy_config_mib(LTE_DL_FRAME_PARMS *lte_frame_parms,
                     PHICH_CONFIG_COMMON *phich_config);
 
 
-/** \brief Configure LTE_DL_FRAME_PARMS with components derived after reception of SIB1.  From a PHY perspective this allows configuration of TDD framing parameters and SI reception.
+/** \brief Configure LTE_DL_FRAME_PARMS with components derived after reception of SIB1.
+\details From a PHY perspective this allows configuration of TDD framing parameters and SI reception.
 @param Mod_id Instance ID of eNB
 @param CC_id Component Carrier index
 @param tdd_Config TDD UL/DL and S-subframe configurations
@@ -120,7 +128,8 @@ void phy_config_sib1_eNB(module_id_t    Mod_id,
                          uint8_t           SIwindowsize,
                          uint16_t            SIperiod);
 
-/** \brief Configure LTE_DL_FRAME_PARMS with components derived after reception of SIB1.  From a PHY perspective this allows configuration of TDD framing parameters and SI reception.
+/** \brief Configure LTE_DL_FRAME_PARMS with components derived after reception of SIB1.
+\details From a PHY perspective this allows configuration of TDD framing parameters and SI reception.
 @param Mod_id Instance ID of UE
 @param CC_id Component Carrier index
 @param CH_index Index of eNB for this configuration
@@ -205,7 +214,8 @@ void phy_config_sib2_eNB(module_id_t                            Mod_id,
 /*!
 \fn void phy_config_dedicated_ue(module_id_t Mod_id,uint8_t CC_id,uint8_t CH_index,
  			         struct PhysicalConfigDedicated *physicalConfigDedicated)
-\brief Configure UE dedicated parameters. Invoked upon reception of RRCConnectionSetup or RRCConnectionReconfiguration from eNB.
+\brief Configure UE dedicated parameters.
+\details Invoked upon reception of RRCConnectionSetup or RRCConnectionReconfiguration from eNB.
 @param Mod_id Instance ID for eNB
 @param CC_id Component Carrier index
 @param CH_index Index of eNB for this configuration
@@ -219,7 +229,8 @@ void phy_config_dedicated_ue(module_id_t Mod_id,
 
 
 /**
-\brief Configure UE MBSFN common parameters. Invoked upon reception of SIB13 from eNB.
+\brief Configure UE MBSFN common parameters.
+\details Invoked upon reception of SIB13 from eNB.
 @param Mod_id Instance ID for UE
 @param CC_id Component Carrier Index
 @param CH_index eNB id (for multiple eNB reception)
@@ -232,7 +243,8 @@ void phy_config_sib13_ue(module_id_t Mod_id,
                          long mbsfn_AreaId_r9);
 
 /**
-\brief Configure eNB MBSFN common parameters. Invoked upon transmission of SIB13 from eNB.
+\brief Configure eNB MBSFN common parameters.
+\details Invoked upon transmission of SIB13 from eNB.
 @param Mod_id Instance ID for eNB
 @param CC_id Component Carrier index
 @param mbsfn_Area_idx Index of MBSFN-Area for which this command operates
@@ -270,7 +282,8 @@ void phy_config_meas_ue(module_id_t Mod_id,
 /*!
 \fn void phy_config_dedicated_eNB(module_id_t Mod_id,uint16_t rnti,
                                   struct PhysicalConfigDedicated *physicalConfigDedicated)
-\brief Prepare for configuration of PHY with dedicated parameters. Invoked just prior to transmission of RRCConnectionSetup or RRCConnectionReconfiguration at eNB.
+\brief Prepare for configuration of PHY with dedicated parameters.
+\details Invoked just prior to transmission of RRCConnectionSetup or RRCConnectionReconfiguration at eNB.
 @param Mod_id Instance ID for eNB
 @param CC_id Component Carrier index
 @param rnti rnti for UE context

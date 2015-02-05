@@ -855,7 +855,7 @@ rlc_um_get_pdu_from_dar_buffer(const protocol_ctxt_t* const ctxt_pP, rlc_um_enti
     return rlc_pP->dar_buffer[snP];
 }
 //-----------------------------------------------------------------------------
-inline void
+static inline void
 rlc_um_store_pdu_in_dar_buffer(
                 const protocol_ctxt_t* const ctxt_pP,
                 rlc_um_entity_t * const rlc_pP,

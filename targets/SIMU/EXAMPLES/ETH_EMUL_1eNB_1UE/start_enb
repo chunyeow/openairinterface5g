@@ -10,7 +10,7 @@ EMULATION_LOG_LEVEL=7 # 3 = error, 5 info, 7 debug, trace= 9
 #OAI_LOCAL_ADDRESS="10.0.1.1"
 #OAI_REMOTE_ADDRESS="10.0.1.2"
 #EMULATION_DEV_ADDRESS= `hostname -I cut -f1 -d' '`
-EMULATION_DEV_ADDRESS=`ifconfig $EMULATION_DEV_INTERFACE | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}'`
+EMULATION_DEV_ADDRESS=`LC_ALL=C ifconfig $EMULATION_DEV_INTERFACE | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}'`
 
 echo "Setting Emulation Interface to $EMULATION_DEV_INTERFACE ($EMULATION_DEV_ADDRESS)"
 

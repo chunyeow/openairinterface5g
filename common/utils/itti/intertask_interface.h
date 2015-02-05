@@ -204,7 +204,7 @@ const char *itti_get_task_name(task_id_t task_id);
  * \param message_id Message ID
  * @returns NULL in case of failure or newly allocated mesage ref
  **/
-inline MessageDef *itti_alloc_new_message(
+MessageDef *itti_alloc_new_message(
     task_id_t         origin_task_id,
     MessagesIds       message_id);
 
@@ -214,7 +214,7 @@ inline MessageDef *itti_alloc_new_message(
  * \param size size of the payload to send
  * @returns NULL in case of failure or newly allocated mesage ref
  **/
-inline MessageDef *itti_alloc_new_message_sized(
+MessageDef *itti_alloc_new_message_sized(
     task_id_t         origin_task_id,
     MessagesIds       message_id,
     MessageHeaderSize size);

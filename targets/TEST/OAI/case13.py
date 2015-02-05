@@ -73,6 +73,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug,cpu):
     oai.send('cd SIMULATION/LTE_PHY;')   
     
     try:
+        log.start()
         test = '300'
         name = 'Run oai.ulsim.sanity'
         conf = '-a -n 100'
@@ -93,6 +94,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug,cpu):
         log.ok(case, test, name, conf, '', logfile)
     
     try:
+        log.start()
         test = 310
         name = 'Run oai.ulsim.perf.'+str(PERF)+'%'
         diag = 'no diagnostic is available, check the log file'

@@ -58,6 +58,7 @@ i = 0
 clean = 0 
 start_case  = 0
 cpu = -1 
+localshell=0
 
 for arg in sys.argv:
     if arg == '-d':
@@ -74,6 +75,8 @@ for arg in sys.argv:
         cpu = sys.argv[i+1]
     elif arg == '-s' :
         start_case = sys.argv[i+1]
+    elif arg == '-l' :
+        localshell = 1
     elif arg == '-h' :
         print "-d:  low debug level"
         print "-dd: high debug level"
@@ -81,6 +84,7 @@ for arg in sys.argv:
         print "-w:  set the password for ssh to localhost"
         print "-c: clean the log directory " 
         print "-t: set the cpu "
+        print "-l:  use local shell instead of ssh connection"
         sys.exit()
     i= i + 1     
 
@@ -106,28 +110,32 @@ host = os.uname()[1]
 # get the oai object
 oai = openair('localdomain','localhost')
 #start_time = time.time()  # datetime.datetime.now()
-try: 
-    user = getpass.getuser()
-    print '\n******* Note that the user <'+user+'> should be a sudoer *******\n'
-    if cpu > -1 :
-        print '******* Connecting to the localhost <'+host+'> to perform the test on CPU '+str(cpu)+' *******\n'
-    else :
-        print '******* Connecting to the localhost <'+host+'> to perform the test *******\n'
-   
-    if not pw :
-        print "username: " + user 
-        pw = getpass.getpass() 
-    else :
-        print "username: " + user 
-        #print "password: " + pw 
-    print "prompt:   " + prompt
+user = getpass.getuser()
+if localshell == 0:
+    try: 
+        print '\n******* Note that the user <'+user+'> should be a sudoer *******\n'
+        if cpu > -1 :
+            print '******* Connecting to the localhost <'+host+'> to perform the test on CPU '+str(cpu)+' *******\n'
+        else :
+            print '******* Connecting to the localhost <'+host+'> to perform the test *******\n'
     
-    oai.connect(user,pw,prompt)
-    #oai.get_shell()
-except :
-    print 'Fail to connect to the local host'
-    sys.exit(1)
-
+        if not pw :
+            print "username: " + user 
+            pw = getpass.getpass() 
+        else :
+            print "username: " + user 
+            #print "password: " + pw 
+        print "prompt:   " + prompt
+        
+        oai.connect(user,pw,prompt)
+        #oai.get_shell()
+    except :
+        print 'Fail to connect to the local host'
+        sys.exit(1)
+else:
+    pw = ''
+    print "prompt:   " + prompt
+    oai.connect_localshell(prompt)
 
 test = 'test02'
 ctime=datetime.datetime.utcnow().strftime("%Y-%m-%d.%Hh%M")

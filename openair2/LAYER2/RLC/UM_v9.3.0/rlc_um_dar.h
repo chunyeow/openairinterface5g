@@ -154,7 +154,7 @@ private_rlc_um_dar(  mem_block_t *rlc_um_remove_pdu_from_dar_buffer(const protoc
 * \param[in]  snP           Sequence number.
 * \return     The PDU stored in the DAR buffer having sequence number snP, else return NULL.
 */
-protected_rlc_um_dar(  inline mem_block_t* rlc_um_get_pdu_from_dar_buffer(const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP, const uint16_t snP));
+protected_rlc_um_dar(mem_block_t* rlc_um_get_pdu_from_dar_buffer(const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP, const uint16_t snP));
 
 /*! \fn signed int rlc_um_in_window(const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP,rlc_sn_t lower_boundP, rlc_sn_t snP, rlc_sn_t higher_boundP)
 * \brief    Compute if the sequence number of a PDU is in a window .
@@ -165,7 +165,7 @@ protected_rlc_um_dar(  inline mem_block_t* rlc_um_get_pdu_from_dar_buffer(const 
 * \param[in]  higher_boundP  Higher bound of a window.
 * \return     -2 if lower_boundP  > sn, -1 if higher_boundP < sn, 0 if lower_boundP  < sn < higher_boundP, 1 if lower_boundP  == sn, 2 if higher_boundP == sn, 3 if higher_boundP == sn == lower_boundP.
 */
-protected_rlc_um_dar(inline signed int rlc_um_in_window(const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP, const rlc_sn_t lower_boundP, const rlc_sn_t snP, const rlc_sn_t higher_boundP));
+protected_rlc_um_dar(signed int rlc_um_in_window(const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP, const rlc_sn_t lower_boundP, const rlc_sn_t snP, const rlc_sn_t higher_boundP));
 
 /*! \fn signed int rlc_um_in_reordering_window(const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP, const rlc_sn_t snP)
 * \brief    Compute if the sequence number of a PDU is in a window .
@@ -174,7 +174,7 @@ protected_rlc_um_dar(inline signed int rlc_um_in_window(const protocol_ctxt_t* c
 * \param[in]  snP            Sequence number of a theorical PDU.
 * \return     0 if snP is in reordering window, else -1.
 */
-protected_rlc_um_dar(inline signed int rlc_um_in_reordering_window(const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP,  const rlc_sn_t snP));
+protected_rlc_um_dar(signed int rlc_um_in_reordering_window(const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP,  const rlc_sn_t snP));
 
 /*! \fn void rlc_um_receive_process_dar (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP, mem_block_t *pdu_mem_pP,rlc_um_pdu_sn_10_t * const pdu_pP, const sdu_size_t tb_sizeP)
 * \brief    Apply the DAR process for a PDU: put it in DAR buffer and try to reassembly or discard it.

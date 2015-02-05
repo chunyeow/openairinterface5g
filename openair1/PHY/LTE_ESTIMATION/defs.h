@@ -76,6 +76,16 @@ int lte_sync_time(int **rxdata,
     int *eNB_id);
 
 /*! 
+\brief This function performs the coarse frequency and PSS synchronization.
+The algorithm uses a frequency-domain correlation.  It scans over 20 MHz/10ms signal chunks using each of the 3 PSS finding the most likely (strongest) carriers and their frequency offset (+-2.5 kHz).
+\param ue Pointer to UE data structure
+\param band index of band in scan_info structure, used to store statistics
+\param DL_freq center frequency of band being scanned, used when storing statistics
+*/
+void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq);
+
+
+/*! 
 \brief This function performs detection of the PRACH (=SRS) at the eNb to estimate the timing advance
 The algorithm uses a time domain correlation with a downsampled version of the received signal. 
 \param rxdata Received time domain data for all rx antennas

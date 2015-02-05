@@ -71,28 +71,28 @@
 #include "MIH_C.h"
 //-----------------------------------------------------------------------------
 public_F9_codec(unsigned int MIH_C_MIN_PK_TX_DELAY2String(MIH_C_MIN_PK_TX_DELAY_T *dataP, char* bufP);)
-public_F9_codec(inline void MIH_C_MIN_PK_TX_DELAY_encode(Bit_Buffer_t* bbP, MIH_C_MIN_PK_TX_DELAY_T *dataP);)
-public_F9_codec(inline void MIH_C_MIN_PK_TX_DELAY_decode(Bit_Buffer_t* bbP, MIH_C_MIN_PK_TX_DELAY_T *dataP);)
+public_F9_codec(void MIH_C_MIN_PK_TX_DELAY_encode(Bit_Buffer_t* bbP, MIH_C_MIN_PK_TX_DELAY_T *dataP);)
+public_F9_codec(void MIH_C_MIN_PK_TX_DELAY_decode(Bit_Buffer_t* bbP, MIH_C_MIN_PK_TX_DELAY_T *dataP);)
 
 public_F9_codec(unsigned int MIH_C_AVG_PK_TX_DELAY2String(MIH_C_AVG_PK_TX_DELAY_T *dataP, char* bufP);)
-public_F9_codec(inline void MIH_C_AVG_PK_TX_DELAY_encode(Bit_Buffer_t* bbP, MIH_C_AVG_PK_TX_DELAY_T *dataP);)
-public_F9_codec(inline void MIH_C_AVG_PK_TX_DELAY_decode(Bit_Buffer_t* bbP, MIH_C_AVG_PK_TX_DELAY_T *dataP);)
+public_F9_codec(void MIH_C_AVG_PK_TX_DELAY_encode(Bit_Buffer_t* bbP, MIH_C_AVG_PK_TX_DELAY_T *dataP);)
+public_F9_codec(void MIH_C_AVG_PK_TX_DELAY_decode(Bit_Buffer_t* bbP, MIH_C_AVG_PK_TX_DELAY_T *dataP);)
 
 public_F9_codec(unsigned int MIH_C_MAX_PK_TX_DELAY2String(MIH_C_MAX_PK_TX_DELAY_T *dataP, char* bufP);)
-public_F9_codec(inline void MIH_C_MAX_PK_TX_DELAY_encode(Bit_Buffer_t* bbP, MIH_C_MAX_PK_TX_DELAY_T *dataP);)
-public_F9_codec(inline void MIH_C_MAX_PK_TX_DELAY_decode(Bit_Buffer_t* bbP, MIH_C_MAX_PK_TX_DELAY_T *dataP);)
+public_F9_codec(void MIH_C_MAX_PK_TX_DELAY_encode(Bit_Buffer_t* bbP, MIH_C_MAX_PK_TX_DELAY_T *dataP);)
+public_F9_codec(void MIH_C_MAX_PK_TX_DELAY_decode(Bit_Buffer_t* bbP, MIH_C_MAX_PK_TX_DELAY_T *dataP);)
 
 public_F9_codec(unsigned int MIH_C_PK_DELAY_JITTER2String(MIH_C_PK_DELAY_JITTER_T *dataP, char* bufP);)
-public_F9_codec(inline void MIH_C_PK_DELAY_JITTER_encode(Bit_Buffer_t* bbP, MIH_C_PK_DELAY_JITTER_T *dataP);)
-public_F9_codec(inline void MIH_C_PK_DELAY_JITTER_decode(Bit_Buffer_t* bbP, MIH_C_PK_DELAY_JITTER_T *dataP);)
+public_F9_codec(void MIH_C_PK_DELAY_JITTER_encode(Bit_Buffer_t* bbP, MIH_C_PK_DELAY_JITTER_T *dataP);)
+public_F9_codec(void MIH_C_PK_DELAY_JITTER_decode(Bit_Buffer_t* bbP, MIH_C_PK_DELAY_JITTER_T *dataP);)
 
 public_F9_codec(unsigned int MIH_C_PK_LOSS_RATE2String(MIH_C_PK_LOSS_RATE_T *dataP, char* bufP);)
-public_F9_codec(inline void MIH_C_PK_LOSS_RATE_encode(Bit_Buffer_t* bbP, MIH_C_PK_LOSS_RATE_T *dataP);)
-public_F9_codec(inline void MIH_C_PK_LOSS_RATE_decode(Bit_Buffer_t* bbP, MIH_C_PK_LOSS_RATE_T *dataP);)
+public_F9_codec(void MIH_C_PK_LOSS_RATE_encode(Bit_Buffer_t* bbP, MIH_C_PK_LOSS_RATE_T *dataP);)
+public_F9_codec(void MIH_C_PK_LOSS_RATE_decode(Bit_Buffer_t* bbP, MIH_C_PK_LOSS_RATE_T *dataP);)
 
 public_F9_codec(unsigned int MIH_C_QOS_PARAM_VAL2String(MIH_C_QOS_PARAM_VAL_T *dataP, char* bufP);)
-public_F9_codec(inline void MIH_C_QOS_PARAM_VAL_encode(Bit_Buffer_t* bbP, MIH_C_QOS_PARAM_VAL_T *dataP);)
-public_F9_codec(inline void MIH_C_QOS_PARAM_VAL_decode(Bit_Buffer_t* bbP, MIH_C_QOS_PARAM_VAL_T *dataP);)
+public_F9_codec(void MIH_C_QOS_PARAM_VAL_encode(Bit_Buffer_t* bbP, MIH_C_QOS_PARAM_VAL_T *dataP);)
+public_F9_codec(void MIH_C_QOS_PARAM_VAL_decode(Bit_Buffer_t* bbP, MIH_C_QOS_PARAM_VAL_T *dataP);)
 
 #endif
 /** @}*/

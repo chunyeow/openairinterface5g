@@ -350,7 +350,7 @@ int itti_send_broadcast_message(MessageDef *message_p) {
     return ret;
 }
 
-inline MessageDef *itti_alloc_new_message_sized(task_id_t origin_task_id, MessagesIds message_id, MessageHeaderSize size)
+MessageDef *itti_alloc_new_message_sized(task_id_t origin_task_id, MessagesIds message_id, MessageHeaderSize size)
 {
     MessageDef *temp = NULL;
 
@@ -379,7 +379,7 @@ inline MessageDef *itti_alloc_new_message_sized(task_id_t origin_task_id, Messag
     return temp;
 }
 
-inline MessageDef *itti_alloc_new_message(task_id_t origin_task_id, MessagesIds message_id)
+MessageDef *itti_alloc_new_message(task_id_t origin_task_id, MessagesIds message_id)
 {
     return itti_alloc_new_message_sized(origin_task_id, message_id, itti_desc.messages_info[message_id].size);
 }

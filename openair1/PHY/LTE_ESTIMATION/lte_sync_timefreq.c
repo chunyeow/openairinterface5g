@@ -46,19 +46,16 @@
 //#include "defs.h"
 #include "PHY/defs.h"
 #include "PHY/extern.h"
+#include "pss6144.h"
 
-int16_t pss6144_0[512]__attribute__((aligned(16))) ={-1,0,220,902,897,257,0,0,234,912,911,249,-1,-1,250,918,925,237,0,-1,270,920,934,218,-1,-1,295,913,939,189,0,0,327,892,933,145,-1,0,370,847,908,75,-1,0,431,758,845,-41,-1,0,523,578,700,-251,-1,-1,684,186,346,-688,-1,-1,1042,-842,-727,-1906,0,-1,2570,-5411,-8606,-11078,-18707,2819,-6900,13704,-2921,4880,-13868,12867,3212,31675,29080,13411,14492,-12161,-4346,380,9189,12659,18918,-1,13137,-8312,9729,-13278,-4210,-18444,-17822,-503,-308,18095,18542,3748,8014,-10063,3677,-477,18077,-5577,9518,-28369,-18568,-23434,-18707,2819,1866,3765,402,-13074,-15081,-11423,-17312,158,-15211,6289,-9460,16383,10422,15058,14327,-9459,-9460,-16384,-14800,2480,-1627,222,-15081,-11423,-30899,10197,-9093,31103,11795,14790,298,-1071,-10964,8476,-4210,18443,4468,18297,12087,15225,18542,3748,9032,-11975,-12015,-8164,-13868,12867,2703,16345,1145,4949,-9460,16383,10290,32065,32121,10735,14492,-12161,-3895,1841,8412,14854,18077,5576,15706,-414,17019,-6205,6911,-17611,-12957,-9364,-10719,13397,8630,16834,13163,4191,4947,4300,11795,14790,30157,4933,23119,-20716,-4210,-18444,-3763,5826,16581,4209,14492,-12161,5021,-11782,4494,-13565,-9460,-16384,-19234,4948,1759,20734,18077,5576,8599,-5126,5405,3659,18542,3748,22881,-14000,5014,-26653,-13868,-12868,-4043,7370,14695,-1146,6911,-17611,-4867,-12748,-3775,-10738,-15081,-11423,-20274,10778,5370,21891,18918,0,3825,-11116,-2642,-2520,-1,-1,-734,3537,7768,8755,18918,-1,16401,-15607,857,-23063,-15081,-11423,-7284,8627,13528,2043,6911,-17611,-8213,-12164,-4307,-7302,-13868,-12868,-25462,8974,738,26700,18542,3748,593,-6522,194,9894,18077,5576,17204,-11901,5387,-19247,-9460,-16384,-13867,2880,7748,10123,14492,-12161,-4518,-16475,-3109,-6287,-4210,-18444,-29373,-9674,-19296,23535,11795,14790,1378,-6445,-10157,9188,8630,16834,17089,2574,14642,-6655,6911,-17611,-13757,-11647,-7440,13694,18077,5576,8785,-14723,408,-4409,14492,-12161,-6636,-32768,-32768,-7236,-9460,16383,3840,-3477,-15453,-5947,-13868,12867,-936,14477,5909,13694,18542,3748,7269,-18091,-18025,-5395,-4210,18443,12950,5246,833,678,11795,14790,31610,-7688,6673,-31973,-15081,-11423,1133,1287,5307,-14173,-9460,-16384,-15227,-7689,-18198,1381,-9460,16383,13180,10017,8574,-15187,-15081,-11423,-11396,6178,-4139,-382,-18707,2819,-10883,27787,19864,22312,18077,-5577,-2124,-2956,4762,11856,18542,3748,15952,-8792,9401,-15298,-4210,-18444,-16236,-1797,684,15418,18918,-1,6496,-14298,1898,-4069,14492,-12161,-2799,-31900,-28984,-13171,-13868,12867,5814,79,-8363,-12943,-18707,2819,-5164,12981,3456,4816,-1,0,-1159,1572,263,1207,-1,-1,-642,33,-449,384,0,-1,-440,-492,-708,49,-1,-1,-330,-722,-817,-121,0,-1,-261,-834,-864,-218,-1,-1,-214,-891,-882,-278,-1,0,-178,-918,-884,-316,-1,-1,-151,-929,-877,-341,0,-1,-130,-930,-866,-358,0,0,-112,-925,-852,-369,-1,0}; 
+#define DEBUG_TF 1
 
-int16_t pss6144_1[512]__attribute__((aligned(16))) = {0,0,-75,-703,-641,-284,-1,-1,-77,-682,-622,-269,0,0,-81,-650,-592,-247,0,0,-87,-604,-550,-216,0,0,-94,-536,-488,-170,0,-1,-105,-438,-398,-103,0,0,-121,-291,-260,-3,0,-1,-146,-64,-44,154,-1,0,-183,308,320,416,-1,-1,-248,979,1012,908,0,0,-385,2438,2687,2103,-1,0,-1029,7780,12580,10062,18077,-5577,6808,-12074,5571,-9136,1413,-18866,-20051,-12000,-14063,16643,14492,12160,9180,-9248,-739,1189,18918,0,11581,-29398,-22453,-21889,-17045,8208,2659,1930,-9344,-7587,-15081,11422,6001,20595,20667,5444,15630,-10657,2688,-12056,2550,-1019,18077,-5577,12734,-29346,-15053,-28505,-18334,-4669,-1915,-1922,-1177,-13323,-9460,-16384,-19264,-13938,-26108,1564,-9460,16383,8111,1321,-5134,-14849,-18334,-4669,-14428,3684,-14417,7858,-4210,18443,15161,6283,4109,-16836,-17045,-8209,-11025,5771,-8448,1046,-15081,11422,5322,23247,22499,-674,1413,-18866,-10967,-3156,1594,-2038,-9460,-16384,-29439,2511,-9786,27468,14492,12160,2879,-4565,-3994,8819,15630,10656,20286,-13171,-171,-24168,-13868,-12868,-9897,-1934,-1535,-5328,-7781,-17244,-27765,-11606,-27629,13566,-4210,18443,848,317,-13296,-2621,-17045,8208,-12988,16121,-1931,22720,14492,12160,6065,-9110,-15296,-1993,-9460,16383,2388,13523,3104,12712,15630,10656,15155,-12654,-12784,-14450,-15081,11422,3202,11354,-2572,4187,1413,18865,25769,7933,13949,-22090,-13868,-12868,-5746,5444,754,-6292,-18334,-4669,-15498,21223,12113,22762,18918,0,4780,-8566,-1382,-2244,-1,0,-1380,2321,4966,8534,18918,0,13528,-21869,-10693,-23921,-18334,-4669,-5954,2495,-1904,-7586,-13868,-12868,-26234,-1033,-19817,18462,1413,18865,4783,136,-11497,-2792,-15081,11422,-6250,18298,3319,19564,15630,10656,9329,-9042,-12967,-4581,-9460,16383,5794,14245,4795,9919,14492,12160,20513,-9686,-7530,-19197,-17045,8208,4250,12828,-761,688,-4210,18443,25435,17146,23871,-18131,-7781,-17244,-3975,3996,6561,-7492,-13868,-12868,-20972,12234,1201,24266,15630,10656,9506,-948,2451,4888,14492,12160,28553,-5257,12482,-26639,-9460,-16384,-2690,-359,8155,-7807,1413,-18866,-11961,-19146,-22855,-6903,-15081,11422,5002,6796,453,-12322,-17045,-8209,-16763,4862,-13084,10100,-4210,18443,13885,8559,3961,-14225,-18334,-4669,-10421,11873,-5262,6476,-9460,16383,14280,21830,21641,-9602,-9460,-16384,-11078,7683,2560,-585,-18334,-4669,-17288,27291,18985,25813,18077,-5577,-2285,-1696,9035,8468,15630,-10657,-5747,-20618,-20899,-4988,-15081,11422,-2027,11888,-3063,1450,-17045,8208,-7859,30392,19607,24841,18918,-1,1271,47,3357,12686,14492,12160,21317,3859,20355,-11253,1413,-18866,-10826,-254,6990,12044,18077,-5577,2296,-15923,-6286,-4669,0,-1,349,-3376,-1982,-1440,0,0,151,-1328,-786,-592,-1,0,72,-483,-237,-200,-1,-1,27,-37,66,18,0,0,-1,229,251,153,0,-1,-19,398,370,240,-1,-1,-31,510,449,299,-1,0,-40,586,504,339,-1,-1,-46,639,541,367,0,0,-50,675,567,386,0,0};
-
-int16_t pss6144_2[512]__attribute__((aligned(16))) = {0,0,584,-400,-53,-700,-1,0,567,-387,-50,-676,-1,-1,541,-368,-46,-640,-1,0,504,-340,-40,-587,-1,-1,449,-300,-31,-511,0,-1,370,-241,-19,-399,0,-1,251,-154,-1,-230,-1,0,66,-19,27,36,0,0,-237,199,72,482,0,0,-786,591,151,1327,0,0,-1982,1439,349,3375,-1,0,-6286,4668,2296,15922,18077,5576,6990,-12045,-10826,253,1413,18865,20355,11252,21317,-3860,14492,-12161,3357,-12687,1271,-48,18918,0,19607,-24842,-7859,-30393,-17045,-8209,-3063,-1451,-2027,-11889,-15081,-11423,-20899,4987,-5747,20617,15630,10656,9035,-8469,-2285,1695,18077,5576,18985,-25814,-17288,-27292,-18334,4668,2560,584,-11078,-7684,-9460,16383,21641,9601,14280,-21831,-9460,-16384,-5262,-6477,-10421,-11874,-18334,4668,3961,14224,13885,-8560,-4210,-18444,-13084,-10101,-16763,-4863,-17045,8208,453,12321,5002,-6797,-15081,-11423,-22855,6902,-11961,19145,1413,18865,8155,7806,-2690,358,-9460,16383,12482,26638,28553,5256,14492,-12161,2451,-4889,9506,947,15630,-10657,1201,-24267,-20972,-12235,-13868,12867,6561,7491,-3975,-3997,-7781,17243,23871,18130,25435,-17147,-4210,-18444,-761,-689,4250,-12829,-17045,-8209,-7530,19196,20513,9685,14492,-12161,4795,-9920,5794,-14246,-9460,-16384,-12967,4580,9329,9041,15630,-10657,3319,-19565,-6250,-18299,-15081,-11423,-11497,2791,4783,-137,1413,-18866,-19817,-18463,-26234,1032,-13868,12867,-1904,7585,-5954,-2496,-18334,4668,-10693,23920,13528,21868,18918,-1,4966,-8535,-1380,-2322,-1,0,-1382,2243,4780,8565,18918,-1,12113,-22763,-15498,-21224,-18334,4668,754,6291,-5746,-5445,-13868,12867,13949,22089,25769,-7934,1413,-18866,-2572,-4188,3202,-11355,-15081,-11423,-12784,14449,15155,12653,15630,-10657,3104,-12713,2388,-13524,-9460,-16384,-15296,1992,6065,9109,14492,-12161,-1931,-22721,-12988,-16122,-17045,-8209,-13296,2620,848,-318,-4210,-18444,-27629,-13567,-27765,11605,-7781,17243,-1535,5327,-9897,1933,-13868,12867,-171,24167,20286,13170,15630,-10657,-3994,-8820,2879,4564,14492,-12161,-9786,-27469,-29439,-2512,-9460,16383,1594,2037,-10967,3155,1413,18865,22499,673,5322,-23248,-15081,-11423,-8448,-1047,-11025,-5772,-17045,8208,4109,16835,15161,-6284,-4210,-18444,-14417,-7859,-14428,-3685,-18334,4668,-5134,14848,8111,-1322,-9460,-16384,-26108,-1565,-19264,13937,-9460,16383,-1177,13322,-1915,1921,-18334,4668,-15053,28504,12734,29345,18077,5576,2550,1018,2688,12055,15630,10656,20667,-5445,6001,-20596,-15081,-11423,-9344,7586,2659,-1931,-17045,-8209,-22453,21888,11581,29397,18918,0,-739,-1190,9180,9247,14492,-12161,-14063,-16644,-20051,11999,1413,18865,5571,9135,6808,12073,18077,5576,12580,-10063,-1029,-7781,-1,-1,2687,-2104,-385,-2439,0,-1,1012,-909,-248,-980,-1,-1,320,-417,-183,-309,-1,0,-44,-155,-146,63,-1,0,-260,2,-121,290,-1,0,-398,102,-105,437,-1,0,-488,169,-94,535,0,0,-550,215,-87,603,-1,-1,-592,246,-81,649,0,0,-622,268,-77,681,0,0};
-
-void lte_sync_timefreq(PHY_VARS_UE *ue,int band,int DL_freq) {
+void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq) {
 
   UE_SCAN_INFO_t *scan_info = &ue->scan_info[band];
   int16_t spectrum[12288] __attribute__((aligned(16)));
   int16_t spectrum_p5ms[12288] __attribute__((aligned(16)));
-  int i,f,f2;
+  int i,f,f2,band_idx;
   __m128i autocorr0[256/4],autocorr1[256/4],autocorr2[256/4];
   __m128i autocorr0_t[256/4],autocorr1_t[256/4],autocorr2_t[256/4];
   __m128i tmp_t[256/4];
@@ -69,123 +66,241 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,int DL_freq) {
   int re;
   __m128i mmtmp00,mmtmp01,mmtmp02,mmtmp10,mmtmp11,mmtmp12;
   int maxcorr[3],minamp,pos,pssind;
+  int16_t *pss6144_0,*pss6144_1,*pss6144_2;
+  
+  
+  
+  //    for (i=0;i<38400*4;i+=3072)   // steps of 200 us with 100 us overlap, 0 to 5s
 
-  for (f = -2000;f<1999;f++){  // this is -10MHz to 10 MHz in 5 kHz steps
-    
-    for (i=0;i<38400*4;i+=3072) {  // steps of 200 us with 100 us overlap, 0 to 5s
+  for (i = 15360-3072*2;i<15360+3072+1;i+=3072)  {
+
+ 
       //compute frequency-domain representation of 6144-sample chunk
       
-      
-      for (rxp = &ue->lte_ue_common_vars.rxdata[0][i],sp=spectrum;;rxp = &ue->lte_ue_common_vars.rxdata[0][i+38400*4],sp=spectrum_p5ms) { 
+      rxp = &ue->lte_ue_common_vars.rxdata[0][i];
+      sp=spectrum;
+      while (1) {
+
 	//compute frequency-domain representation of 6144-sample chunk
 	fft6144((int16_t *)rxp,
 		sp);
-	
-	
-	
-	
-	if ((f<-256)||(f>=0)) { // no split around DC
-	  sp2 = (f<0) ? (__m128i*)&sp[6144] : (__m128i*)sp;
-	  for (re = 0; re<256/4; re++) {  // loop over 256 points of upsampled PSS
-	    f2 = f>>2;
-	    s = sp2[f2];
-	    mmtmp00 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
-	    mmtmp01 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
-	    mmtmp02 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
+	printf("sp %p\n",sp);
+	if (i==12288)
+	  write_output("scan6144F.m","s6144F",sp,6144,1,1);
+	  for (f = -130;f<-125;f++) {  // this is -10MHz to 10 MHz in 5 kHz steps
 	    
-	    s = _mm_shufflelo_epi16(s,_MM_SHUFFLE(2,3,0,1));
-	    s = _mm_shufflehi_epi16(s,_MM_SHUFFLE(2,3,0,1));
-	    s = _mm_sign_epi16(s,*(__m128i*)&conjugate[0]);
-	    mmtmp10 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
-	    mmtmp11 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
-	    mmtmp12 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
-	    
-	    autocorr0[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp00,mmtmp10),_mm_unpackhi_epi32(mmtmp00,mmtmp10));
-	    autocorr1[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp01,mmtmp11),_mm_unpackhi_epi32(mmtmp01,mmtmp11));
-	    autocorr2[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp02,mmtmp12),_mm_unpackhi_epi32(mmtmp02,mmtmp12));
-	    
-	  }
-	}
-	else {
-	  sp2 = (__m128i*)&sp[6144];
-	  for (re = 0; re<(256+f)/4; re++) {  // loop over 256 points of upsampled PSS
-	    f2 = f>>2;
-	    s = sp2[f2];
-	    mmtmp00 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
-	    mmtmp01 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
-	    mmtmp02 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
-	    
-	    s = _mm_shufflelo_epi16(s,_MM_SHUFFLE(2,3,0,1));
-	    s = _mm_shufflehi_epi16(s,_MM_SHUFFLE(2,3,0,1));
-	    s = _mm_sign_epi16(s,*(__m128i*)&conjugate[0]);
-	    mmtmp10 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
-	    mmtmp11 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
-	    mmtmp12 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
-	    
-	    autocorr0[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp00,mmtmp10),_mm_unpackhi_epi32(mmtmp00,mmtmp10));
-	    autocorr1[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp01,mmtmp11),_mm_unpackhi_epi32(mmtmp01,mmtmp11));
-	    autocorr2[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp02,mmtmp12),_mm_unpackhi_epi32(mmtmp02,mmtmp12));
-	    
-	    
-	  }
-	  sp2 = (__m128i*)sp;
-	  for (re = (256+f)/4; re<256/4; re++) {  // loop over 256 points of upsampled PSS
-	    f2 = f>>2;
-	    s = sp2[f2];
-	    mmtmp00 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
-	    mmtmp01 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
-	    mmtmp02 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
-	    
-	    s = _mm_shufflelo_epi16(s,_MM_SHUFFLE(2,3,0,1));
-	    s = _mm_shufflehi_epi16(s,_MM_SHUFFLE(2,3,0,1));
-	    s = _mm_sign_epi16(s,*(__m128i*)&conjugate[0]);
-	    mmtmp10 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
-	    mmtmp11 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
-	    mmtmp12 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
-	    
-	    autocorr0[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp00,mmtmp10),_mm_unpackhi_epi32(mmtmp00,mmtmp10));
-	    autocorr1[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp01,mmtmp11),_mm_unpackhi_epi32(mmtmp01,mmtmp11));
-	    autocorr2[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp02,mmtmp12),_mm_unpackhi_epi32(mmtmp02,mmtmp12));
-	    
-	  }
+	    if ((f<-256)||(f>=0)) { // no split around DC
+	      printf("No split, f %d\n",f);
+	      // align filters and input buffer pointer to 128-bit
+	      switch (f&3) {
+	      case 0: 
+		pss6144_0 = &pss6144_0_0[0];
+		pss6144_1 = &pss6144_1_0[0];
+		pss6144_2 = &pss6144_2_0[0];
+		sp2 = (f<0) ? (__m128i*)&sp[12288+(f<<1)] : (__m128i*)&sp;
+		break;
+	      case 1: 
+		pss6144_0 = &pss6144_0_1[0];
+		pss6144_1 = &pss6144_1_1[0];
+		pss6144_2 = &pss6144_2_1[0];
+		sp2 = (f<0) ? (__m128i*)&sp[12286+(f<<1)] : (__m128i*)sp;
+		break;
+	      case 2: 
+		pss6144_0 = &pss6144_0_2[0];
+		pss6144_1 = &pss6144_1_2[0];
+		pss6144_2 = &pss6144_2_2[0];
+		sp2 = (f<0) ? (__m128i*)&sp[12284+(f<<1)] : (__m128i*)sp;
+		break;
+	      case 3: 
+		pss6144_0 = &pss6144_0_3[0];
+		pss6144_1 = &pss6144_1_3[0];
+		pss6144_2 = &pss6144_2_3[0];
+		sp2 = (f<0) ? (__m128i*)&sp[12282+(f<<1)] : (__m128i*)sp;
+		break;
+	      } 
+
+	      for (re = 0; re<256/4; re++) {  // loop over 256 points of upsampled PSS
+		s = sp2[re];
+		mmtmp00 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
+		mmtmp01 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
+		mmtmp02 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
+		
+		s = _mm_shufflelo_epi16(s,_MM_SHUFFLE(2,3,0,1));
+		s = _mm_shufflehi_epi16(s,_MM_SHUFFLE(2,3,0,1));
+		s = _mm_sign_epi16(s,*(__m128i*)&conjugate[0]);
+		mmtmp10 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
+		mmtmp11 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
+		mmtmp12 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
+		
+		autocorr0[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp00,mmtmp10),_mm_unpackhi_epi32(mmtmp00,mmtmp10));
+		autocorr1[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp01,mmtmp11),_mm_unpackhi_epi32(mmtmp01,mmtmp11));
+		autocorr2[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp02,mmtmp12),_mm_unpackhi_epi32(mmtmp02,mmtmp12));
+		
+	      }
+	    }
+	    else { // Split around DC, this is the negative frequencies
+	      printf("split around DC, f %d (f/4 %d)\n",f,f>>2);
+	      // align filters and input buffer pointer to 128-bit	      
+	      switch (f&3) {
+	      case 0: 
+		pss6144_0 = &pss6144_0_0[0];
+		pss6144_1 = &pss6144_1_0[0];
+		pss6144_2 = &pss6144_2_0[0];
+		sp2 = (__m128i*)&sp[12288+(f<<1)];
+		break;
+	      case 1: 
+		pss6144_0 = &pss6144_0_1[0];
+		pss6144_1 = &pss6144_1_1[0];
+		pss6144_2 = &pss6144_2_1[0];
+		sp2 = (__m128i*)&sp[12286+(f<<1)];
+		break;
+	      case 2: 
+		pss6144_0 = &pss6144_0_2[0];
+		pss6144_1 = &pss6144_1_2[0];
+		pss6144_2 = &pss6144_2_2[0];
+		sp2 = (__m128i*)&sp[12284+(f<<1)];
+		break;
+	      case 3: 
+		pss6144_0 = &pss6144_0_3[0];
+		pss6144_1 = &pss6144_1_3[0];
+		pss6144_2 = &pss6144_2_3[0];
+		sp2 = (__m128i*)&sp[12282+(f<<1)];
+		break;
+	      } 
+	      for (re = 0; re<(256+f)/4; re++) {  // loop over 256 points of upsampled PSS
+		s = sp2[re];
+		printf("re %d, %p\n",re,&sp2[re]);
+		print_shorts("s",&s);
+		print_shorts("pss",&pss6144_0[re]);
+
+		mmtmp00 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
+		mmtmp01 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
+		mmtmp02 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
+		
+		s = _mm_shufflelo_epi16(s,_MM_SHUFFLE(2,3,0,1));
+		s = _mm_shufflehi_epi16(s,_MM_SHUFFLE(2,3,0,1));
+		s = _mm_sign_epi16(s,*(__m128i*)&conjugate[0]);
+		mmtmp10 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
+		mmtmp11 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
+		mmtmp12 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
+		
+		autocorr0[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp00,mmtmp10),_mm_unpackhi_epi32(mmtmp00,mmtmp10));
+		autocorr1[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp01,mmtmp11),_mm_unpackhi_epi32(mmtmp01,mmtmp11));
+		autocorr2[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp02,mmtmp12),_mm_unpackhi_epi32(mmtmp02,mmtmp12));
+		
+		
+	      }
+	      // This is the +ve frequencies
+
+	      // align filters to 128-bit
+	      sp2 = (__m128i*)&sp[0];
+	      switch (f&3) {
+	      case 0: 
+		pss6144_0 = &pss6144_0_0[256];
+		pss6144_1 = &pss6144_1_0[256];
+		pss6144_2 = &pss6144_2_0[256];
+		break;
+	      case 1: 
+		pss6144_0 = &pss6144_0_1[256];
+		pss6144_1 = &pss6144_1_1[256];
+		pss6144_2 = &pss6144_2_1[256];
+		break;
+	      case 2: 
+		pss6144_0 = &pss6144_0_2[256];
+		pss6144_1 = &pss6144_1_2[256];
+		pss6144_2 = &pss6144_2_2[256];
+		break;
+	      case 3: 
+		pss6144_0 = &pss6144_0_3[256];
+		pss6144_1 = &pss6144_1_3[256];
+		pss6144_2 = &pss6144_2_3[256];
+		break;
+	      } 
+	      for (re = 0; re<-f/4; re++) {  // loop over 256 points of upsampled PSS
+		s = sp2[re];
+		printf("re %d %p\n",re,&sp2[re]);
+		print_shorts("s",&s);
+		print_shorts("pss",&pss6144_0[re]);
+		mmtmp00 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
+		mmtmp01 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
+		mmtmp02 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
+		
+		s = _mm_shufflelo_epi16(s,_MM_SHUFFLE(2,3,0,1));
+		s = _mm_shufflehi_epi16(s,_MM_SHUFFLE(2,3,0,1));
+		s = _mm_sign_epi16(s,*(__m128i*)&conjugate[0]);
+		mmtmp10 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
+		mmtmp11 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
+		mmtmp12 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
+		
+		autocorr0[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp00,mmtmp10),_mm_unpackhi_epi32(mmtmp00,mmtmp10));
+		autocorr1[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp01,mmtmp11),_mm_unpackhi_epi32(mmtmp01,mmtmp11));
+		autocorr2[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp02,mmtmp12),_mm_unpackhi_epi32(mmtmp02,mmtmp12));
+		
+	      }
+	      
+	    }
+	    // ifft, accumulate energy over two half-frames
+	    idft256((int16_t*)autocorr0,(int16_t*)tmp_t,1);
+	    memset((void*)autocorr0_t,0,256*4);
+	    memset((void*)autocorr1_t,0,256*4);
+	    memset((void*)autocorr2_t,0,256*4);
+	    for (re=0;re<(256/4);re++)
+	      autocorr0_t[re] = _mm_add_epi32(autocorr0_t[re],_mm_madd_epi16(tmp_t[re],tmp_t[re]));
+	    idft256((int16_t*)autocorr1,(int16_t*)autocorr1_t,1);
+	    for (re=0;re<(256/4);re++)
+	      autocorr1_t[re] = _mm_add_epi32(autocorr1_t[re],_mm_madd_epi16(tmp_t[re],tmp_t[re]));
+	    idft256((int16_t*)autocorr2,(int16_t*)autocorr2_t,1);
+	    for (re=0;re<(256/4);re++)
+	      autocorr2_t[re] = _mm_add_epi32(autocorr2_t[re],_mm_madd_epi16(tmp_t[re],tmp_t[re]));
+
 	  
-	}
-	// ifft, accumulate energy over two half-frames
-	idft256((int16_t*)autocorr0,(int16_t*)tmp_t,1);
-	for (re=0;re<(256/4);re++)
-	  autocorr0_t[re] = _mm_adds_epi16(autocorr0_t[re],_mm_madd_epi16(tmp_t[re],tmp_t[re]));
-	idft256((int16_t*)autocorr1,(int16_t*)autocorr1_t,1);
-	for (re=0;re<(256/4);re++)
-	  autocorr1_t[re] = _mm_adds_epi16(autocorr1_t[re],_mm_madd_epi16(tmp_t[re],tmp_t[re]));
-	idft256((int16_t*)autocorr2,(int16_t*)autocorr2_t,1);
-	for (re=0;re<(256/4);re++)
-	  autocorr2_t[re] = _mm_adds_epi16(autocorr2_t[re],_mm_madd_epi16(tmp_t[re],tmp_t[re]));
-      } 
-      //compute max correlation over time window
-      maxcorr[0] = 0;
-      maxcorr[1] = 0;
-      maxcorr[2] = 0;
-      for (re=0;re<256;re++) {
-	if (((int32_t*)autocorr0_t)[re] > maxcorr[0])
-	  maxcorr[0]=((int32_t*)autocorr0_t)[re];
-	if (((int32_t*)autocorr1_t)[re] > maxcorr[1])
-	  maxcorr[1]=((int32_t*)autocorr1_t)[re];
-	if (((int32_t*)autocorr2_t)[re] > maxcorr[2])
-	  maxcorr[2]=((int32_t*)autocorr2_t)[re];
-      }
-      for (pssind=0;pssind<3;pssind++) {
-	minamp=(int)((1<<30)-1);
-	for (i=0;i<10;i++)
-	  if (minamp < scan_info->amp[pssind][i]) {
-	    minamp = scan_info->amp[pssind][i];
-	    pos    = i;
+	    //compute max correlation over time window
+	    maxcorr[0] = 0;
+	    maxcorr[1] = 0;
+	    maxcorr[2] = 0;
+	    for (re=0;re<256;re++) {
+#ifdef DEBUG_TF
+	      printf("%d,",((int32_t*)autocorr0_t)[re]);
+#endif
+	      if (((int32_t*)autocorr0_t)[re] > maxcorr[0]) {
+		maxcorr[0]=((int32_t*)autocorr0_t)[re];
+		printf("*");
+	      }
+	      if (((int32_t*)autocorr1_t)[re] > maxcorr[1])
+		maxcorr[1]=((int32_t*)autocorr1_t)[re];
+	      if (((int32_t*)autocorr2_t)[re] > maxcorr[2])
+		maxcorr[2]=((int32_t*)autocorr2_t)[re];
+	    }
+#ifdef DEBUG_TF
+	    printf("\n");
+#endif
+	    
+	    
+	    for (pssind=0;pssind<3;pssind++) {
+	      printf("pss %d, amp %d freq %u, i %d\n",pssind,maxcorr[pssind],((f+128)*5000)+DL_freq,i);
+	      minamp=(int)((1<<30)-1);
+	      for (band_idx=0;band_idx<10;band_idx++)
+		if (minamp > scan_info->amp[pssind][band_idx]) {
+		  minamp = scan_info->amp[pssind][band_idx];
+		  pos    = band_idx;
+		}
+	      if (maxcorr[pssind]>minamp) {
+		scan_info->amp[pssind][pos]=maxcorr[pssind];
+		scan_info->freq_offset_Hz[pssind][pos]=(f*5000)+DL_freq;
+	      }
+	    } // loop on pss index
 	  }
-	if (maxcorr[pssind]>minamp) {
-	  scan_info->amp[pssind][pos]=maxcorr[pssind];
-	  scan_info->freq_offset_Hz[pssind][pos]=(f*5000)+DL_freq;
-	}
-      } // loop on pss index
-    }   // loop on time index i
-  }  // loop on frequency shift f
+	  if (rxp == &ue->lte_ue_common_vars.rxdata[0][i+38400*4]) {
+	    rxp = &ue->lte_ue_common_vars.rxdata[0][i+38400*4];
+	    sp=spectrum_p5ms; 
+	  }
+	  else {
+	    break;
+	  }
+      }   
+      }// loop on time index i
+#ifdef DEBUG_TF
+      exit(-1);
+#endif
 }
 

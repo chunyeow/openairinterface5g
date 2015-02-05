@@ -71,13 +71,13 @@
 #include "MIH_C.h"
 //-----------------------------------------------------------------------------
 public_F3_codec(unsigned int  MIH_C_3GPP_2G_CELL_ID2String(MIH_C_3GPP_2G_CELL_ID_T *dataP, char* bufP);)
-public_F3_codec(inline void MIH_C_3GPP_2G_CELL_ID_encode     (Bit_Buffer_t* bbP, MIH_C_3GPP_2G_CELL_ID_T *dataP);)
-public_F3_codec(inline void MIH_C_3GPP_2G_CELL_ID_decode     (Bit_Buffer_t* bbP, MIH_C_3GPP_2G_CELL_ID_T *dataP);)
+public_F3_codec(void MIH_C_3GPP_2G_CELL_ID_encode     (Bit_Buffer_t* bbP, MIH_C_3GPP_2G_CELL_ID_T *dataP);)
+public_F3_codec(void MIH_C_3GPP_2G_CELL_ID_decode     (Bit_Buffer_t* bbP, MIH_C_3GPP_2G_CELL_ID_T *dataP);)
 public_F3_codec(unsigned int  MIH_C_3GPP_3G_CELL_ID2String(MIH_C_3GPP_3G_CELL_ID_T *dataP, char* bufP);)
-public_F3_codec(inline void MIH_C_3GPP_3G_CELL_ID_encode     (Bit_Buffer_t* bbP, MIH_C_3GPP_3G_CELL_ID_T *dataP);)
-public_F3_codec(inline void MIH_C_3GPP_3G_CELL_ID_decode     (Bit_Buffer_t* bbP, MIH_C_3GPP_3G_CELL_ID_T *dataP);)
+public_F3_codec(void MIH_C_3GPP_3G_CELL_ID_encode     (Bit_Buffer_t* bbP, MIH_C_3GPP_3G_CELL_ID_T *dataP);)
+public_F3_codec(void MIH_C_3GPP_3G_CELL_ID_decode     (Bit_Buffer_t* bbP, MIH_C_3GPP_3G_CELL_ID_T *dataP);)
 public_F3_codec(unsigned int MIH_C_LINK_ADDR2String(MIH_C_LINK_ADDR_T *dataP, char* bufP);)
-public_F3_codec(inline void MIH_C_LINK_ADDR_encode           (Bit_Buffer_t* bbP, MIH_C_LINK_ADDR_T       *dataP);)
-public_F3_codec(inline void MIH_C_LINK_ADDR_decode           (Bit_Buffer_t* bbP, MIH_C_LINK_ADDR_T       *dataP);)
+public_F3_codec(void MIH_C_LINK_ADDR_encode           (Bit_Buffer_t* bbP, MIH_C_LINK_ADDR_T       *dataP);)
+public_F3_codec(void MIH_C_LINK_ADDR_decode           (Bit_Buffer_t* bbP, MIH_C_LINK_ADDR_T       *dataP);)
 #endif
 /** @}*/

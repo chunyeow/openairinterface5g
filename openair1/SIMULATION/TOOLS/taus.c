@@ -47,7 +47,7 @@ unsigned int s0, s1, s2, b;
 */
 //
 
-inline unsigned int taus(void) {
+unsigned int taus(void) {
 
   b = (((s0 << 13) ^ s0) >> 19);
   s0 = (((s0 & 0xFFFFFFFE) << 12)^  b);

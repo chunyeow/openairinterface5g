@@ -50,6 +50,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
     oai.send('cd SIMULATION/LTE_PHY;')   
 
     try:
+        log.start()
         test = '01'
         name = 'Compile oai.rel8.phy.dlsim.make' 
         conf = 'make dlsim'  # PERFECT_CE=1 # for perfect channel estimation
@@ -68,6 +69,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
 
     try:
+        log.start()
         test = '02'
         name = 'Compile oai.rel8.phy.ulsim.make' 
         conf = 'make ulsim'

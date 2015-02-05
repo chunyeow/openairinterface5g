@@ -62,14 +62,14 @@ struct treillis {
 struct treillis all_treillis[8][256];
 int all_treillis_initialized=0;
 
-inline unsigned char threegpplte_rsc(unsigned char input,unsigned char *state) {
+static inline unsigned char threegpplte_rsc(unsigned char input,unsigned char *state) {
   unsigned char output;
   output = (input ^ (*state>>2) ^ (*state>>1))&1;
   *state = (((input<<2)^(*state>>1))^((*state>>1)<<2)^((*state)<<2))&7;
   return(output);
 }
 
-inline void threegpplte_rsc_termination(unsigned char *x,unsigned char *z,unsigned char *state) {
+static inline void threegpplte_rsc_termination(unsigned char *x,unsigned char *z,unsigned char *state) {
   *z     = ((*state>>2) ^ (*state))   &1;
   *x     = ((*state)    ^ (*state>>1))   &1;
   *state = (*state)>>1;

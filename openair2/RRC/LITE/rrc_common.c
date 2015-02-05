@@ -222,9 +222,9 @@ void openair_rrc_top_init(int eMBMS_active, char *uecap_xer, uint8_t cba_group_a
 
     // fill UE capability
     UECap = fill_ue_capability (uecap_xer);
-    UE_rrc_inst[module_id].UECap = UECap;
 
     for (module_id = 0; module_id < NB_UE_INST; module_id++) {
+      UE_rrc_inst[module_id].UECap = UECap;
       UE_rrc_inst[module_id].UECapability = UECap->sdu;
       UE_rrc_inst[module_id].UECapability_size = UECap->sdu_size;
     }

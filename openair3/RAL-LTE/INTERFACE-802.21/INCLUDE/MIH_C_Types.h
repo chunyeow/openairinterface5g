@@ -103,146 +103,146 @@ typedef struct MIH_C_BITMAP256 {u_int64_t val[4];}__attribute__((__packed__)) MI
      * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP8_T.
      */
     #define TYPEDEF_BITMAP6(DATA_TYPE_NAME)             typedef MIH_C_BITMAP8_T  DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_BITMAP8_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP8_T* dataP);\
-        extern inline void MIH_C_BITMAP8_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP8_T* dataP);\
+        void MIH_C_BITMAP8_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP8_T* dataP);\
+        void MIH_C_BITMAP8_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP8_T* dataP);\
         inline unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP) {\
             return sprintf(buffP, "0x%02X", *bitmapP);\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
             MIH_C_BITMAP8_encode(bbP, bitmapP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP8_decode(bbP, bitmapP);};
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP8_decode(bbP, bitmapP);};
 
     /*! \def TYPEDEF_BITMAP8(DATA_TYPE_NAME)
      * \ingroup MIH_C_F1_BASIC_DATA_TYPES
      * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP8_T.
      */
     #define TYPEDEF_BITMAP8(DATA_TYPE_NAME)             typedef MIH_C_BITMAP8_T  DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_BITMAP8_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP8_T* dataP);\
-        extern inline void MIH_C_BITMAP8_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP8_T* dataP);\
+        void MIH_C_BITMAP8_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP8_T* dataP);\
+        void MIH_C_BITMAP8_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP8_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP) {\
             return sprintf(buffP, "0x%02X", *bitmapP);\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
             MIH_C_BITMAP8_encode(bbP, bitmapP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP8_decode(bbP, bitmapP);};
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP8_decode(bbP, bitmapP);};
 
     /*! \def TYPEDEF_BITMAP16(DATA_TYPE_NAME)
      * \ingroup MIH_C_F1_BASIC_DATA_TYPES
      * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP16_T.
      */
     #define TYPEDEF_BITMAP16(DATA_TYPE_NAME)            typedef MIH_C_BITMAP16_T DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_BITMAP16_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP16_T* dataP);\
-        extern inline void MIH_C_BITMAP16_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP16_T* dataP);\
+        void MIH_C_BITMAP16_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP16_T* dataP);\
+        void MIH_C_BITMAP16_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP16_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP) {\
             return sprintf(buffP, "0x%04X", *bitmapP);\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
             MIH_C_BITMAP16_encode(bbP, bitmapP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP16_decode(bbP, bitmapP);};
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP16_decode(bbP, bitmapP);};
 
     /*! \def TYPEDEF_BITMAP20(DATA_TYPE_NAME)
      * \ingroup MIH_C_F1_BASIC_DATA_TYPES
      * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP24_T.
      */
     #define TYPEDEF_BITMAP20(DATA_TYPE_NAME)            typedef MIH_C_BITMAP24_T DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_BITMAP24_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP24_T* dataP);\
-        extern inline void MIH_C_BITMAP24_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP24_T* dataP);\
+        void MIH_C_BITMAP24_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP24_T* dataP);\
+        void MIH_C_BITMAP24_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP24_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP) {\
             return sprintf(buffP, "0x%02X%02X%02X", bitmapP->val[0], bitmapP->val[1], bitmapP->val[2]);\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
             MIH_C_BITMAP24_encode(bbP, bitmapP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP24_decode(bbP, bitmapP);};
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP24_decode(bbP, bitmapP);};
 
     /*! \def TYPEDEF_BITMAP32(DATA_TYPE_NAME)
      * \ingroup MIH_C_F1_BASIC_DATA_TYPES
      * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP32_T.
      */
     #define TYPEDEF_BITMAP32(DATA_TYPE_NAME)            typedef MIH_C_BITMAP32_T DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_BITMAP32_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP32_T* dataP);\
-        extern inline void MIH_C_BITMAP32_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP32_T* dataP);\
+        void MIH_C_BITMAP32_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP32_T* dataP);\
+        void MIH_C_BITMAP32_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP32_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP) {\
             return sprintf(buffP, "0x%08X", *bitmapP);\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
             MIH_C_BITMAP32_encode(bbP, bitmapP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP32_decode(bbP, bitmapP);};
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP32_decode(bbP, bitmapP);};
 
     /*! \def TYPEDEF_BITMAP64(DATA_TYPE_NAME)
      * \ingroup MIH_C_F1_BASIC_DATA_TYPES
      * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP64_T.
      */
     #define TYPEDEF_BITMAP64(DATA_TYPE_NAME)            typedef MIH_C_BITMAP64_T DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_BITMAP64_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP64_T* dataP);\
-        extern inline void MIH_C_BITMAP64_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP64_T* dataP);\
+        void MIH_C_BITMAP64_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP64_T* dataP);\
+        void MIH_C_BITMAP64_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP64_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP) {\
             unsigned int buffer_index = 0;\
             buffer_index = sprintf(buffP, "0x%08x", (MIH_C_UNSIGNED_INT4_T)(*bitmapP>>32));\
             buffer_index = sprintf(&buffP[buffer_index], "%08x", (MIH_C_UNSIGNED_INT4_T)(*bitmapP));\
             return buffer_index;\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
             MIH_C_BITMAP64_encode(bbP, bitmapP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP64_decode(bbP, bitmapP);};
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP64_decode(bbP, bitmapP);};
 
     /*! \def TYPEDEF_BITMAP128(DATA_TYPE_NAME)
      * \ingroup MIH_C_F1_BASIC_DATA_TYPES
      * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP128_T.
      */
     #define TYPEDEF_BITMAP128(DATA_TYPE_NAME)           typedef MIH_C_BITMAP128_T DATA_TYPE_NAME  ## _T;\
-        inline void MIH_C_BITMAP128_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP128_T* dataP);\
-        inline void MIH_C_BITMAP128_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP128_T* dataP);\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP128_encode(bbP, bitmapP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP128_decode(bbP, bitmapP);};
+        void MIH_C_BITMAP128_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP128_T* dataP);\
+        void MIH_C_BITMAP128_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP128_T* dataP);\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP128_encode(bbP, bitmapP);};\
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP128_decode(bbP, bitmapP);};
 
     /*! \def TYPEDEF_BITMAP256(DATA_TYPE_NAME)
      * \ingroup MIH_C_F1_BASIC_DATA_TYPES
      * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP256_T.
      */
     #define TYPEDEF_BITMAP256(DATA_TYPE_NAME)           typedef MIH_C_BITMAP256_T DATA_TYPE_NAME  ## _T;\
-        inline void MIH_C_BITMAP256_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP256_T* dataP);\
-        inline void MIH_C_BITMAP256_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP256_T* dataP);\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP256_encode(bbP, bitmapP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP256_decode(bbP, bitmapP);};
+        void MIH_C_BITMAP256_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP256_T* dataP);\
+        void MIH_C_BITMAP256_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP256_T* dataP);\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP256_encode(bbP, bitmapP);};\
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP256_decode(bbP, bitmapP);};
 
 #else
     #define TYPEDEF_BITMAP6(DATA_TYPE_NAME)             typedef MIH_C_BITMAP8_T  DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP);\
-        extern inline void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
-        extern inline void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
+        void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
+        void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 
     #define TYPEDEF_BITMAP8(DATA_TYPE_NAME)             typedef MIH_C_BITMAP8_T  DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP);\
-        extern inline void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
-        extern inline void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
+        void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
+        void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 
     #define TYPEDEF_BITMAP16(DATA_TYPE_NAME)            typedef MIH_C_BITMAP16_T DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP);\
-        extern inline void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
-        extern inline void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
+        void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
+        void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 
     #define TYPEDEF_BITMAP20(DATA_TYPE_NAME)            typedef MIH_C_BITMAP24_T DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP);\
-        extern inline void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
-        extern inline void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
+        void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
+        void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 
     #define TYPEDEF_BITMAP32(DATA_TYPE_NAME)            typedef MIH_C_BITMAP32_T DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP);\
-        extern inline void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
-        extern inline void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
+        void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
+        void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 
     #define TYPEDEF_BITMAP64(DATA_TYPE_NAME)            typedef MIH_C_BITMAP64_T DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP);\
-        extern inline void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
-        extern inline void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
+        void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
+        void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 
     #define TYPEDEF_BITMAP128(DATA_TYPE_NAME)           typedef MIH_C_BITMAP128_T DATA_TYPE_NAME  ## _T;\
-        extern inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
-        extern inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 
     #define TYPEDEF_BITMAP256(DATA_TYPE_NAME)           typedef MIH_C_BITMAP256_T DATA_TYPE_NAME  ## _T;\
-        extern inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
-        extern inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 #endif
 
 #define BITMAP6(VAR_NAME)                                   MIH_C_BITMAP8_T   VAR_NAME;
@@ -290,14 +290,14 @@ typedef int64_t                            MIH_C_INTEGER8_T;
      * \brief Defines DATA_TYPE_NAME as a MIH_C_INTEGER1_T.
      */
     #define TYPEDEF_INTEGER1(DATA_TYPE_NAME)            typedef MIH_C_INTEGER1_T   DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_INTEGER1_encode(Bit_Buffer_t* bbP, MIH_C_INTEGER1_T* dataP);\
-        extern inline void MIH_C_INTEGER1_decode(Bit_Buffer_t* bbP, MIH_C_INTEGER1_T* dataP);\
+        void MIH_C_INTEGER1_encode(Bit_Buffer_t* bbP, MIH_C_INTEGER1_T* dataP);\
+        void MIH_C_INTEGER1_decode(Bit_Buffer_t* bbP, MIH_C_INTEGER1_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
             return sprintf(buffP, "0x%02X", *dataP);\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_INTEGER1_encode(bbP, (MIH_C_INTEGER1_T*)dataP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_INTEGER1_decode(bbP, (MIH_C_INTEGER1_T*)dataP);\
         };
 
@@ -306,14 +306,14 @@ typedef int64_t                            MIH_C_INTEGER8_T;
      * \brief Defines DATA_TYPE_NAME as a MIH_C_INTEGER2_T.
      */
     #define TYPEDEF_INTEGER2(DATA_TYPE_NAME)            typedef MIH_C_INTEGER2_T   DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_INTEGER2_encode(Bit_Buffer_t* bbP, MIH_C_INTEGER2_T* dataP);\
-        extern inline void MIH_C_INTEGER2_decode(Bit_Buffer_t* bbP, MIH_C_INTEGER2_T* dataP);\
+        void MIH_C_INTEGER2_encode(Bit_Buffer_t* bbP, MIH_C_INTEGER2_T* dataP);\
+        void MIH_C_INTEGER2_decode(Bit_Buffer_t* bbP, MIH_C_INTEGER2_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
             return sprintf(buffP, "0x%04X", *dataP);\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_INTEGER2_encode(bbP, (MIH_C_INTEGER2_T*)dataP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_INTEGER2_decode(bbP, (MIH_C_INTEGER2_T*)dataP);\
         };
 
@@ -322,14 +322,14 @@ typedef int64_t                            MIH_C_INTEGER8_T;
      * \brief Defines DATA_TYPE_NAME as a MIH_C_INTEGER4_T.
      */
     #define TYPEDEF_INTEGER4(DATA_TYPE_NAME)            typedef MIH_C_INTEGER4_T   DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_INTEGER4_encode(Bit_Buffer_t* bbP, MIH_C_INTEGER4_T* dataP);\
-        extern inline void MIH_C_INTEGER4_decode(Bit_Buffer_t* bbP, MIH_C_INTEGER4_T* dataP);\
+        void MIH_C_INTEGER4_encode(Bit_Buffer_t* bbP, MIH_C_INTEGER4_T* dataP);\
+        void MIH_C_INTEGER4_decode(Bit_Buffer_t* bbP, MIH_C_INTEGER4_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
             return sprintf(buffP, "0x%08X", (MIH_C_INTEGER4_T)*dataP);\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_INTEGER4_encode(bbP, (MIH_C_INTEGER4_T*)dataP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_INTEGER4_decode(bbP, (MIH_C_INTEGER4_T*)dataP);\
         };
 
@@ -338,39 +338,39 @@ typedef int64_t                            MIH_C_INTEGER8_T;
      * \brief Defines DATA_TYPE_NAME as a MIH_C_INTEGER48T.
      */
     #define TYPEDEF_INTEGER8(DATA_TYPE_NAME)            typedef MIH_C_INTEGER8_T   DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_INTEGER8_encode(Bit_Buffer_t* bbP, MIH_C_INTEGER8_T* dataP);\
-        extern inline void MIH_C_INTEGER8_decode(Bit_Buffer_t* bbP, MIH_C_INTEGER8_T* dataP);\
+        void MIH_C_INTEGER8_encode(Bit_Buffer_t* bbP, MIH_C_INTEGER8_T* dataP);\
+        void MIH_C_INTEGER8_decode(Bit_Buffer_t* bbP, MIH_C_INTEGER8_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
             unsigned int buffer_index = 0;\
             buffer_index = sprintf(buffP, "0x%08x", (MIH_C_UNSIGNED_INT4_T)(*dataP>>32));\
             buffer_index = sprintf(&buffP[buffer_index], "%08x", (MIH_C_UNSIGNED_INT4_T)(*dataP));\
             return buffer_index;\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_INTEGER8_encode(bbP, (MIH_C_INTEGER8_T*)dataP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_INTEGER8_decode(bbP, (MIH_C_INTEGER8_T*)dataP);\
         };
 #else
     #define TYPEDEF_INTEGER1(DATA_TYPE_NAME)            typedef MIH_C_INTEGER1_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int  DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
-        extern inline void   DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
-        extern inline void   DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
+        void   DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
+        void   DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 
     #define TYPEDEF_INTEGER2(DATA_TYPE_NAME)            typedef MIH_C_INTEGER2_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int  DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
-        extern inline void   DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
-        extern inline void   DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
+        void   DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
+        void   DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 
     #define TYPEDEF_INTEGER4(DATA_TYPE_NAME)            typedef MIH_C_INTEGER4_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
-        extern inline void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
-        extern inline void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
+        void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
+        void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 
     #define TYPEDEF_INTEGER8(DATA_TYPE_NAME)            typedef MIH_C_INTEGER8_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int  DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
-        extern inline void   DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
-        extern inline void   DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
+        void   DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
+        void   DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 #endif
 
 /*! \def INTEGER1(VAR_NAME)
@@ -419,14 +419,14 @@ typedef u_int64_t                          MIH_C_UNSIGNED_INT8_T;
      * \brief Defines DATA_TYPE_NAME as a MIH_C_UNSIGNED_INT1_T.
      */
     #define TYPEDEF_UNSIGNED_INT1(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT1_T   DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_UNSIGNED_INT1_encode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT1_T* dataP);\
-        extern inline void MIH_C_UNSIGNED_INT1_decode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT1_T* dataP);\
+        void MIH_C_UNSIGNED_INT1_encode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT1_T* dataP);\
+        void MIH_C_UNSIGNED_INT1_decode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT1_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
             return sprintf(buffP, "0x%02X", *dataP);\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_UNSIGNED_INT1_encode(bbP, dataP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_UNSIGNED_INT1_decode(bbP, dataP);\
         };
 
@@ -435,14 +435,14 @@ typedef u_int64_t                          MIH_C_UNSIGNED_INT8_T;
      * \brief Defines DATA_TYPE_NAME as a MIH_C_UNSIGNED_INT2_T.
      */
     #define TYPEDEF_UNSIGNED_INT2(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT2_T   DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_UNSIGNED_INT2_encode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT2_T* dataP);\
-        extern inline void MIH_C_UNSIGNED_INT2_decode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT2_T* dataP);\
+        void MIH_C_UNSIGNED_INT2_encode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT2_T* dataP);\
+        void MIH_C_UNSIGNED_INT2_decode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT2_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
             return sprintf(buffP, "0x%04X", *dataP);\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_UNSIGNED_INT2_encode(bbP, dataP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_UNSIGNED_INT2_decode(bbP, dataP);\
         };
 
@@ -451,14 +451,14 @@ typedef u_int64_t                          MIH_C_UNSIGNED_INT8_T;
      * \brief Defines DATA_TYPE_NAME as a MIH_C_UNSIGNED_INT4_T.
      */
     #define TYPEDEF_UNSIGNED_INT4(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT4_T   DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_UNSIGNED_INT4_encode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT4_T* dataP);\
-        extern inline void MIH_C_UNSIGNED_INT4_decode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT4_T* dataP);\
+        void MIH_C_UNSIGNED_INT4_encode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT4_T* dataP);\
+        void MIH_C_UNSIGNED_INT4_decode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT4_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
             return sprintf(buffP, "0x%08X", *dataP);\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_UNSIGNED_INT4_encode(bbP, dataP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_UNSIGNED_INT4_decode(bbP, dataP);\
         };
 
@@ -467,36 +467,36 @@ typedef u_int64_t                          MIH_C_UNSIGNED_INT8_T;
      * \brief Defines DATA_TYPE_NAME as a MIH_C_UNSIGNED_INT8_T.
      */
     #define TYPEDEF_UNSIGNED_INT8(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT8_T   DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_UNSIGNED_INT8_encode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT8_T* dataP);\
-        extern inline void MIH_C_UNSIGNED_INT8_decode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT8_T* dataP);\
+        void MIH_C_UNSIGNED_INT8_encode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT8_T* dataP);\
+        void MIH_C_UNSIGNED_INT8_decode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT8_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
             return sprintf(buffP, "0x%16X", *dataP);\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_UNSIGNED_INT8_encode(bbP, dataP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_UNSIGNED_INT8_decode(bbP, dataP);\
         };
 #else
     #define TYPEDEF_UNSIGNED_INT1(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT1_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
-        extern inline void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
-        extern inline void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
+        void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
+        void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 
     #define TYPEDEF_UNSIGNED_INT2(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT2_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
-        extern inline void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
-        extern inline void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
+        void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
+        void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 
     #define TYPEDEF_UNSIGNED_INT4(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT4_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
-        extern inline void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
-        extern inline void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
+        void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
+        void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 
     #define TYPEDEF_UNSIGNED_INT8(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT8_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
-        extern inline void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
-        extern inline void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
+        void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
+        void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 #endif
 
 /*! \def UNSIGNED_INT1(VAR_NAME)
@@ -545,7 +545,7 @@ u_int16_t MIH_C_LIST_LENGTH_get_encode_length(u_int16_t lengthP);
         }\
         return buffer_index;\
     };\
-    inline void DATA_TYPE_NAME ## _LIST_decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _LIST_T *listP) {\
+    void DATA_TYPE_NAME ## _LIST_decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _LIST_T *listP) {\
         int index = 0;\
         MIH_C_LIST_LENGTH_decode(bbP, &listP->length);\
         if (listP->length > MAX_LENGTH) {printf("[MIH_C] ERROR DATA_TYPE_NAME ## _LIST_decode num elements in list out of bounds: %d, max is %d\n", listP->length, MAX_LENGTH);\
@@ -555,7 +555,7 @@ u_int16_t MIH_C_LIST_LENGTH_get_encode_length(u_int16_t lengthP);
             }\
         }\
     };\
-    inline void DATA_TYPE_NAME ## _LIST_encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _LIST_T *listP) {\
+    void DATA_TYPE_NAME ## _LIST_encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _LIST_T *listP) {\
         int index = 0;\
         if (listP->length > MAX_LENGTH) {\
             printf("[MIH_C] ERROR DATA_TYPE_NAME ## _LIST_encode num elements in list out of bounds: %d, max is %d\n", listP->length, MAX_LENGTH);\
@@ -566,7 +566,7 @@ u_int16_t MIH_C_LIST_LENGTH_get_encode_length(u_int16_t lengthP);
             }\
         }\
     };\
-    inline void DATA_TYPE_NAME ## _LIST_init(DATA_TYPE_NAME ## _LIST_T *listP) {\
+    void DATA_TYPE_NAME ## _LIST_init(DATA_TYPE_NAME ## _LIST_T *listP) {\
         listP->length = 0;\
         memset(listP->val, 0, MAX_LENGTH*sizeof(DATA_TYPE_NAME ## _T));\
     };
@@ -601,8 +601,8 @@ u_int16_t MIH_C_LIST_LENGTH_get_encode_length(u_int16_t lengthP);
         }\
         return buffer_index;\
     };\
-    inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) { BitBuffer_readMem(bbP, &dataP->val[0], LENGTH);};\
-    inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) { BitBuffer_writeMem(bbP, &dataP->val[0], LENGTH);};
+    void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) { BitBuffer_readMem(bbP, &dataP->val[0], LENGTH);};\
+    void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) { BitBuffer_writeMem(bbP, &dataP->val[0], LENGTH);};
 #else
 #define TYPEDEF_OCTET(DATA_TYPE_NAME, LENGTH)       typedef struct DATA_TYPE_NAME {u_int8_t val[LENGTH];} DATA_TYPE_NAME  ## _T;\
     extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* bufP);\
@@ -625,15 +625,15 @@ TYPEDEF_UNSIGNED_INT1(MIH_C_ENUMERATED)
      * \brief Defines DATA_TYPE_NAME as MIH_C_ENUMERATED_T, and its functions for de/serializing this type.
      */
     #define TYPEDEF_ENUMERATED(DATA_TYPE_NAME)          typedef MIH_C_ENUMERATED_T  DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_ENUMERATED_encode(Bit_Buffer_t* bbP, MIH_C_ENUMERATED_T* dataP);\
-        extern inline void MIH_C_ENUMERATED_decode(Bit_Buffer_t* bbP, MIH_C_ENUMERATED_T* dataP);\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void MIH_C_ENUMERATED_encode(Bit_Buffer_t* bbP, MIH_C_ENUMERATED_T* dataP);\
+        void MIH_C_ENUMERATED_decode(Bit_Buffer_t* bbP, MIH_C_ENUMERATED_T* dataP);\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_ENUMERATED_encode(bbP, dataP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {MIH_C_ENUMERATED_decode(bbP, dataP);};
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {MIH_C_ENUMERATED_decode(bbP, dataP);};
 #else
     #define TYPEDEF_ENUMERATED(DATA_TYPE_NAME)          typedef MIH_C_ENUMERATED_T  DATA_TYPE_NAME  ## _T;\
-        extern inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
-        extern inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 #endif
 
 /*! \def ENUMERATED(VAR_NAME)
@@ -654,8 +654,8 @@ TYPEDEF_ENUMERATED(MIH_C_BOOLEAN)
      * \brief Defines DATA_TYPE_NAME as MIH_C_BOOLEAN_T, and its functions for de/serializing this type.
      */
     #define TYPEDEF_BOOLEAN(DATA_TYPE_NAME)          typedef MIH_C_BOOLEAN_T  DATA_TYPE_NAME  ## _T;\
-        extern inline void MIH_C_BOOLEAN_encode(Bit_Buffer_t* bbP, MIH_C_BOOLEAN_T* dataP);\
-        extern inline void MIH_C_BOOLEAN_decode(Bit_Buffer_t* bbP, MIH_C_BOOLEAN_T* dataP);\
+        void MIH_C_BOOLEAN_encode(Bit_Buffer_t* bbP, MIH_C_BOOLEAN_T* dataP);\
+        void MIH_C_BOOLEAN_decode(Bit_Buffer_t* bbP, MIH_C_BOOLEAN_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* bufP) {\
             unsigned int buffer_index = 0;\
             if (*dataP != MIH_C_BOOLEAN_FALSE) {\
@@ -665,14 +665,14 @@ TYPEDEF_ENUMERATED(MIH_C_BOOLEAN)
             }\
             return buffer_index;\
         };\
-        inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+        void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_BOOLEAN_encode(bbP, dataP);};\
-        inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {MIH_C_ENUMERATED_decode(bbP, dataP);};
+        void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {MIH_C_ENUMERATED_decode(bbP, dataP);};
 #else
     #define TYPEDEF_BOOLEAN(DATA_TYPE_NAME)          typedef MIH_C_BOOLEAN_T  DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* bufP);\
-        extern inline void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
-        extern inline void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
+        void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
+        void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 #endif
 
 /*! \def BOOLEAN(VAR_NAME)
@@ -694,14 +694,14 @@ TYPEDEF_ENUMERATED(MIH_C_BOOLEAN)
         bufP[listP->length] = 0;\
         return listP->length;\
     };\
-    inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *listP) {\
+    void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *listP) {\
         MIH_C_LIST_LENGTH_decode(bbP, &listP->length);\
         if (listP->length > MAX_LENGTH) {printf("[MIH_C] ERROR DATA_TYPE_NAME ## _decode String length out of bounds: %d, max is %d\n", listP->length, MAX_LENGTH);\
         } else {\
             BitBuffer_readMem(bbP, listP->val, listP->length);\
         }\
     };\
-    inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *listP) {\
+    void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *listP) {\
         if (listP->length > MAX_LENGTH) {\
             printf("[MIH_C] ERROR DATA_TYPE_NAME ## _encode String length out of bounds: %d, max is %d\n", listP->length, MAX_LENGTH);\
         } else {\
@@ -709,7 +709,7 @@ TYPEDEF_ENUMERATED(MIH_C_BOOLEAN)
             BitBuffer_writeMem(bbP, listP->val, listP->length);\
         }\
     };\
-    inline void DATA_TYPE_NAME ## _set(DATA_TYPE_NAME ## _T *octet_strP, u_int8_t* strP, u_int16_t lengthP) {\
+    void DATA_TYPE_NAME ## _set(DATA_TYPE_NAME ## _T *octet_strP, u_int8_t* strP, u_int16_t lengthP) {\
         if (lengthP > MAX_LENGTH) {\
             printf("[MIH_C] ERROR DATA_TYPE_NAME ## _set String length out of bounds\n");\
             octet_strP->length = 0;\
@@ -842,11 +842,11 @@ TYPEDEF_OCTET_STRING(MIH_C_TRANSPORT_ADDR_VALUE, 128)
         buffer_index += MIH_C_TRANSPORT_ADDR_VALUE2String(&dataP->address, &bufP[buffer_index]);\
         return buffer_index;\
     };\
-    inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+    void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
         MIH_C_IANA_ADDR_decode(bbP, &dataP->address_family);\
         MIH_C_TRANSPORT_ADDR_VALUE_decode(bbP, &dataP->address);\
     };\
-    inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
+    void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
         MIH_C_IANA_ADDR_encode(bbP, &dataP->address_family);\
         MIH_C_TRANSPORT_ADDR_VALUE_encode(bbP, &dataP->address);\
     };

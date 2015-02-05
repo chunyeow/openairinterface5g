@@ -46,6 +46,7 @@
 #include <string.h>
 #include <math.h>
 //#include <complex.h>
+#include "assertions.h"
 #ifdef MEX
 # define msg mexPrintf
 #else
@@ -74,6 +75,27 @@
 #define bigmalloc16 malloc16
 #define openair_free(y,x) free((y))
 #define PAGE_SIZE 4096
+
+#ifdef EXPRESSMIMO_TARGET
+    //! \brief Allocate \c size bytes of memory on the heap and zero it afterwards.
+    //! If no more memory is available, this function will terminate the program with an assertion error.
+    static inline void* malloc16_clear( size_t size ) {
+        void* ptr = malloc(size);
+        DevAssert(ptr);
+        memset( ptr, 0, size );
+        return ptr;
+    }
+#else //EXPRESSMIMO_TARGET
+    //! \brief Allocate \c size bytes of memory on the heap with alignment 16 and zero it afterwards.
+    //! If no more memory is available, this function will terminate the program with an assertion error.
+    static inline void* malloc16_clear( size_t size ) {
+        void* ptr = memalign(16, size);
+        DevAssert(ptr);
+        memset( ptr, 0, size );
+        return ptr;
+    }
+#endif //EXPRESSMIMO_TARGET
+
 
 #define PAGE_MASK 0xfffff000
 #define virt_to_phys(x) (x)
@@ -135,9 +157,9 @@ enum transmission_access_mode{
 
 typedef struct UE_SCAN_INFO_s {
   /// 10 best amplitudes (linear) for each pss signals
-  int32_t amp[2][10];
+  int32_t amp[3][10];
   /// 10 frequency offsets (kHz) corresponding to best amplitudes, with respect do minimum DL frequency in the band
-  int32_t freq_offset_Hz[2][10];
+  int32_t freq_offset_Hz[3][10];
 } UE_SCAN_INFO_t;
 
 #if defined(ENABLE_RAL)
@@ -195,6 +217,9 @@ typedef struct PHY_VARS_eNB_s{
   LTE_eNB_COMMON       lte_eNB_common_vars;
   LTE_eNB_SRS          lte_eNB_srs_vars[NUMBER_OF_UE_MAX];
   LTE_eNB_PBCH         lte_eNB_pbch;
+  /// \brief ?.
+  /// - first index: UE [0..NUMBER_OF_UE_MAX[ (hard coded)
+  /// - second index: UE [0..NUMBER_OF_UE_MAX[
   LTE_eNB_PUSCH       *lte_eNB_pusch_vars[NUMBER_OF_UE_MAX];
   LTE_eNB_PRACH        lte_eNB_prach_vars;
   LTE_eNB_DLSCH_t     *dlsch_eNB[NUMBER_OF_UE_MAX][2];   // Nusers times two spatial streams
@@ -227,7 +252,8 @@ typedef struct PHY_VARS_eNB_s{
 
   int              N_TA_offset; ///timing offset used in TDD
 
-  /// sinr for all subcarriers of the current link (used only for abstraction)
+  /// \brief sinr for all subcarriers of the current link (used only for abstraction).
+  /// first index: ? [0..N_RB_DL*12[
   double *sinr_dB;
 
  /// N0 (used for abstraction)
@@ -390,12 +416,20 @@ typedef struct
   pthread_t       thread_tx;
   pthread_t       thread_synch;
   uint32_t tx_total_gain_dB;
-  uint32_t rx_total_gain_dB; ///this is a function of rx_gain_mode (and the corresponding gain) and the rx_gain of the card
+  /// \brief This is a function of rx_gain_mode (and the corresponding gain) and the rx_gain of the card.
+  uint32_t rx_total_gain_dB;
+  /// \brief ?.
+  /// - first index: ? [0..3] (hard coded)
   uint32_t rx_gain_max[4];
   /*
     rx_gain_t rx_gain_mode[4];*/
+  /// \brief ?.
+  /// - first index: ? [0..3] (hard coded)
   uint32_t rx_gain_med[4];
+  /// \brief ?.
+  /// - first index: ? [0..3] (hard coded)
   uint32_t rx_gain_byp[4];
+  /// \brief ?.
   int8_t tx_power_dBm;
   int tx_total_RE;
   int8_t tx_power_max_dBm;
@@ -405,9 +439,11 @@ typedef struct
   uint8_t n_connected_eNB;
   uint8_t ho_initiated;
   uint8_t ho_triggered;
-  PHY_MEASUREMENTS PHY_measurements; /// Measurement variables 
+  /// \brief Measurement variables.
+  PHY_MEASUREMENTS PHY_measurements;
   LTE_DL_FRAME_PARMS  lte_frame_parms;
-  LTE_DL_FRAME_PARMS  lte_frame_parms_before_ho; // frame parame before ho used to recover if ho fails
+  /// \brief Frame parame before ho used to recover if ho fails.
+  LTE_DL_FRAME_PARMS  lte_frame_parms_before_ho;
   LTE_UE_COMMON    lte_ue_common_vars;
 
   LTE_UE_PDSCH     *lte_ue_pdsch_vars[NUMBER_OF_CONNECTED_eNB_MAX+1];
@@ -459,9 +495,17 @@ typedef struct
   //unsigned char *Msg3_ptr[NUMBER_OF_CONNECTED_eNB_MAX];
   PRACH_RESOURCES_t *prach_resources[NUMBER_OF_CONNECTED_eNB_MAX];
   int turbo_iterations, turbo_cntl_iterations;
+  /// \brief ?.
+  /// - first index: eNB [0..NUMBER_OF_CONNECTED_eNB_MAX[ (hard coded)
   uint32_t total_TBS[NUMBER_OF_CONNECTED_eNB_MAX];
+  /// \brief ?.
+  /// - first index: eNB [0..NUMBER_OF_CONNECTED_eNB_MAX[ (hard coded)
   uint32_t total_TBS_last[NUMBER_OF_CONNECTED_eNB_MAX];
+  /// \brief ?.
+  /// - first index: eNB [0..NUMBER_OF_CONNECTED_eNB_MAX[ (hard coded)
   uint32_t bitrate[NUMBER_OF_CONNECTED_eNB_MAX];
+  /// \brief ?.
+  /// - first index: eNB [0..NUMBER_OF_CONNECTED_eNB_MAX[ (hard coded)
   uint32_t total_received_bits[NUMBER_OF_CONNECTED_eNB_MAX];
   int dlsch_errors[NUMBER_OF_CONNECTED_eNB_MAX];
   int dlsch_errors_last[NUMBER_OF_CONNECTED_eNB_MAX];
@@ -501,10 +545,12 @@ typedef struct
   /// Flag to initialize averaging of PHY measurements
   int init_averaging; 
 
-  /// sinr for all subcarriers of the current link (used only for abstraction)
+  /// \brief sinr for all subcarriers of the current link (used only for abstraction).
+  /// - first index: ? [0..12*N_RB_DL[
   double *sinr_dB;
   
-   /// sinr for all subcarriers of first symbol for the CQI Calculation 
+  /// \brief sinr for all subcarriers of first symbol for the CQI Calculation.
+  /// - first index: ? [0..12*N_RB_DL[
   double *sinr_CQI_dB;
 
   /// sinr_effective used for CQI calulcation

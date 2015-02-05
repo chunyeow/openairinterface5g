@@ -46,7 +46,7 @@ unsigned int ps0, ps1, ps2, pb;
 */
 //
 
-inline void pset_taus_seed(unsigned int off) {
+static inline void pset_taus_seed(unsigned int off) {
 
 
   ps0 = (unsigned int)0x1e23d852 + (off<<4);
@@ -55,7 +55,7 @@ inline void pset_taus_seed(unsigned int off) {
 
 }
 
-inline unsigned int ptaus(void) {
+static inline unsigned int ptaus(void) {
 
   pb = (((ps0 << 13) ^ ps0) >> 19);
   ps0 = (((ps0 & 0xFFFFFFFE) << 12)^  pb);

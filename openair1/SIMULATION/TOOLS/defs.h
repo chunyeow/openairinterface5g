@@ -281,11 +281,11 @@ void load_pbch_desc(FILE *pbch_file_fd);
  * @defgroup _taus_ Tausworthe Uniform Random Variable Generator
  * @ingroup _numerical_ 
  * @{
-\fn inline unsigned int taus()
+\fn unsigned int taus()
 \brief Tausworthe Uniform Random Generator.  This is based on the hardware implementation described in 
   Lee et al, "A Hardware Gaussian Noise Generator Usign the Box-Muller Method and its Error Analysis," IEEE Trans. on Computers, 2006.
 */
-inline unsigned int taus(void);
+unsigned int taus(void);
 
 
 /** 

@@ -42,13 +42,13 @@ unsigned int MIH_C_MIN_PK_TX_DELAY2String(MIH_C_MIN_PK_TX_DELAY_T *dataP, char* 
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_MIN_PK_TX_DELAY_encode(Bit_Buffer_t* bbP, MIH_C_MIN_PK_TX_DELAY_T *dataP) {
+void MIH_C_MIN_PK_TX_DELAY_encode(Bit_Buffer_t* bbP, MIH_C_MIN_PK_TX_DELAY_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_COS_ID_encode(bbP, &dataP->cos_id);
     MIH_C_UNSIGNED_INT2_encode(bbP, &dataP->value);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_MIN_PK_TX_DELAY_decode(Bit_Buffer_t* bbP, MIH_C_MIN_PK_TX_DELAY_T *dataP) {
+void MIH_C_MIN_PK_TX_DELAY_decode(Bit_Buffer_t* bbP, MIH_C_MIN_PK_TX_DELAY_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_COS_ID_decode(bbP, &dataP->cos_id);
     MIH_C_UNSIGNED_INT2_decode(bbP, &dataP->value);
@@ -64,13 +64,13 @@ unsigned int MIH_C_AVG_PK_TX_DELAY2String(MIH_C_AVG_PK_TX_DELAY_T *dataP, char* 
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_AVG_PK_TX_DELAY_encode(Bit_Buffer_t* bbP, MIH_C_AVG_PK_TX_DELAY_T *dataP) {
+void MIH_C_AVG_PK_TX_DELAY_encode(Bit_Buffer_t* bbP, MIH_C_AVG_PK_TX_DELAY_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_COS_ID_encode(bbP, &dataP->cos_id);
     MIH_C_UNSIGNED_INT2_encode(bbP, &dataP->value);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_AVG_PK_TX_DELAY_decode(Bit_Buffer_t* bbP, MIH_C_AVG_PK_TX_DELAY_T *dataP) {
+void MIH_C_AVG_PK_TX_DELAY_decode(Bit_Buffer_t* bbP, MIH_C_AVG_PK_TX_DELAY_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_COS_ID_decode(bbP, &dataP->cos_id);
     MIH_C_UNSIGNED_INT2_decode(bbP, &dataP->value);
@@ -86,13 +86,13 @@ unsigned int MIH_C_MAX_PK_TX_DELAY2String(MIH_C_MAX_PK_TX_DELAY_T *dataP, char* 
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_MAX_PK_TX_DELAY_encode(Bit_Buffer_t* bbP, MIH_C_MAX_PK_TX_DELAY_T *dataP) {
+void MIH_C_MAX_PK_TX_DELAY_encode(Bit_Buffer_t* bbP, MIH_C_MAX_PK_TX_DELAY_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_COS_ID_encode(bbP, &dataP->cos_id);
     MIH_C_UNSIGNED_INT2_encode(bbP, &dataP->value);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_MAX_PK_TX_DELAY_decode(Bit_Buffer_t* bbP, MIH_C_MAX_PK_TX_DELAY_T *dataP) {
+void MIH_C_MAX_PK_TX_DELAY_decode(Bit_Buffer_t* bbP, MIH_C_MAX_PK_TX_DELAY_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_COS_ID_decode(bbP, &dataP->cos_id);
     MIH_C_UNSIGNED_INT2_decode(bbP, &dataP->value);
@@ -108,13 +108,13 @@ unsigned int MIH_C_PK_DELAY_JITTER2String(MIH_C_PK_DELAY_JITTER_T *dataP, char* 
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_PK_DELAY_JITTER_encode(Bit_Buffer_t* bbP, MIH_C_PK_DELAY_JITTER_T *dataP) {
+void MIH_C_PK_DELAY_JITTER_encode(Bit_Buffer_t* bbP, MIH_C_PK_DELAY_JITTER_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_COS_ID_encode(bbP, &dataP->cos_id);
     MIH_C_UNSIGNED_INT2_encode(bbP, &dataP->value);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_PK_DELAY_JITTER_decode(Bit_Buffer_t* bbP, MIH_C_PK_DELAY_JITTER_T *dataP) {
+void MIH_C_PK_DELAY_JITTER_decode(Bit_Buffer_t* bbP, MIH_C_PK_DELAY_JITTER_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_COS_ID_decode(bbP, &dataP->cos_id);
     MIH_C_UNSIGNED_INT2_decode(bbP, &dataP->value);
@@ -130,13 +130,13 @@ unsigned int MIH_C_PK_LOSS_RATE2String(MIH_C_PK_LOSS_RATE_T *dataP, char* bufP) 
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_PK_LOSS_RATE_encode(Bit_Buffer_t* bbP, MIH_C_PK_LOSS_RATE_T *dataP) {
+void MIH_C_PK_LOSS_RATE_encode(Bit_Buffer_t* bbP, MIH_C_PK_LOSS_RATE_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_COS_ID_encode(bbP, &dataP->cos_id);
     MIH_C_UNSIGNED_INT2_encode(bbP, &dataP->value);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_PK_LOSS_RATE_decode(Bit_Buffer_t* bbP, MIH_C_PK_LOSS_RATE_T *dataP) {
+void MIH_C_PK_LOSS_RATE_decode(Bit_Buffer_t* bbP, MIH_C_PK_LOSS_RATE_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_COS_ID_decode(bbP, &dataP->cos_id);
     MIH_C_UNSIGNED_INT2_decode(bbP, &dataP->value);
@@ -177,7 +177,7 @@ unsigned int MIH_C_QOS_PARAM_VAL2String(MIH_C_QOS_PARAM_VAL_T *dataP, char* bufP
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_QOS_PARAM_VAL_encode(Bit_Buffer_t* bbP, MIH_C_QOS_PARAM_VAL_T *dataP) {
+void MIH_C_QOS_PARAM_VAL_encode(Bit_Buffer_t* bbP, MIH_C_QOS_PARAM_VAL_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -192,7 +192,7 @@ inline void MIH_C_QOS_PARAM_VAL_encode(Bit_Buffer_t* bbP, MIH_C_QOS_PARAM_VAL_T 
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_QOS_PARAM_VAL_decode(Bit_Buffer_t* bbP, MIH_C_QOS_PARAM_VAL_T *dataP) {
+void MIH_C_QOS_PARAM_VAL_decode(Bit_Buffer_t* bbP, MIH_C_QOS_PARAM_VAL_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
     switch (dataP->choice) {

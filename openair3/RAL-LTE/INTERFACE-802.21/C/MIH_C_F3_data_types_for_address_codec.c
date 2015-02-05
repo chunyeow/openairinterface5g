@@ -44,14 +44,14 @@ unsigned int  MIH_C_3GPP_2G_CELL_ID2String(MIH_C_3GPP_2G_CELL_ID_T *dataP, char*
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_3GPP_2G_CELL_ID_encode(Bit_Buffer_t* bbP, MIH_C_3GPP_2G_CELL_ID_T *dataP) {
+void MIH_C_3GPP_2G_CELL_ID_encode(Bit_Buffer_t* bbP, MIH_C_3GPP_2G_CELL_ID_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_PLMN_ID_encode(bbP, &dataP->plmn_id);
     MIH_C_LAC_encode(bbP, &dataP->lac);
     MIH_C_CI_encode(bbP, &dataP->ci);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_3GPP_2G_CELL_ID_decode(Bit_Buffer_t* bbP, MIH_C_3GPP_2G_CELL_ID_T *dataP) {
+void MIH_C_3GPP_2G_CELL_ID_decode(Bit_Buffer_t* bbP, MIH_C_3GPP_2G_CELL_ID_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_PLMN_ID_decode(bbP, &dataP->plmn_id);
     MIH_C_LAC_decode(bbP, &dataP->lac);
@@ -66,13 +66,13 @@ unsigned int  MIH_C_3GPP_3G_CELL_ID2String(MIH_C_3GPP_3G_CELL_ID_T *dataP, char*
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_3GPP_3G_CELL_ID_encode(Bit_Buffer_t* bbP, MIH_C_3GPP_3G_CELL_ID_T *dataP) {
+void MIH_C_3GPP_3G_CELL_ID_encode(Bit_Buffer_t* bbP, MIH_C_3GPP_3G_CELL_ID_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_PLMN_ID_encode(bbP, &dataP->plmn_id);
     MIH_C_CELL_ID_encode(bbP, &dataP->cell_id);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_3GPP_3G_CELL_ID_decode(Bit_Buffer_t* bbP, MIH_C_3GPP_3G_CELL_ID_T *dataP) {
+void MIH_C_3GPP_3G_CELL_ID_decode(Bit_Buffer_t* bbP, MIH_C_3GPP_3G_CELL_ID_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_PLMN_ID_decode(bbP, &dataP->plmn_id);
     MIH_C_CELL_ID_decode(bbP, &dataP->cell_id);
@@ -112,7 +112,7 @@ unsigned int MIH_C_LINK_ADDR2String(MIH_C_LINK_ADDR_T *dataP, char* bufP) {
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_ADDR_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ADDR_T *dataP) {
+void MIH_C_LINK_ADDR_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ADDR_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -139,7 +139,7 @@ inline void MIH_C_LINK_ADDR_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ADDR_T *dataP) 
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_ADDR_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ADDR_T *dataP) {
+void MIH_C_LINK_ADDR_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ADDR_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
     switch (dataP->choice) {

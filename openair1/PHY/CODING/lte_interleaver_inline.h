@@ -29,12 +29,12 @@
 extern unsigned int threegpplte_interleaver_output;
 extern unsigned int threegpplte_interleaver_tmp;
 
-extern inline void threegpplte_interleaver_reset(void) {
+static inline void threegpplte_interleaver_reset(void) {
   threegpplte_interleaver_output = 0;
   threegpplte_interleaver_tmp    = 0;
 }
 
-extern inline unsigned short threegpplte_interleaver(unsigned short f1,
+static inline unsigned short threegpplte_interleaver(unsigned short f1,
 					      unsigned short f2,
 					      unsigned short K) {
 
@@ -49,7 +49,7 @@ extern inline unsigned short threegpplte_interleaver(unsigned short f1,
 }
 
 
-extern inline short threegpp_interleaver_parameters(unsigned short bytes_per_codeword) {
+static inline short threegpp_interleaver_parameters(unsigned short bytes_per_codeword) {
   if (bytes_per_codeword<=64)
     return (bytes_per_codeword-5);
   else if (bytes_per_codeword <=128)

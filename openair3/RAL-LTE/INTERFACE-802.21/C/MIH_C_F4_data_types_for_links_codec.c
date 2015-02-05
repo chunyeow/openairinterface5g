@@ -56,7 +56,7 @@ unsigned int MIH_C_OPMODE2String2(MIH_C_OPMODE_T *dataP, char* bufP) {
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_DEV_STATE_RSP_encode(Bit_Buffer_t* bbP, MIH_C_DEV_STATE_RSP_T *dataP) {
+void MIH_C_DEV_STATE_RSP_encode(Bit_Buffer_t* bbP, MIH_C_DEV_STATE_RSP_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -71,7 +71,7 @@ inline void MIH_C_DEV_STATE_RSP_encode(Bit_Buffer_t* bbP, MIH_C_DEV_STATE_RSP_T 
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_DEV_STATE_RSP_decode(Bit_Buffer_t* bbP, MIH_C_DEV_STATE_RSP_T *dataP) {
+void MIH_C_DEV_STATE_RSP_decode(Bit_Buffer_t* bbP, MIH_C_DEV_STATE_RSP_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -149,13 +149,13 @@ unsigned int MIH_C_LINK_ID2String(MIH_C_LINK_ID_T *dataP, char* bufP) {
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_ID_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ID_T *dataP) {
+void MIH_C_LINK_ID_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ID_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_TYPE_encode(bbP, &dataP->link_type);
     MIH_C_LINK_ADDR_encode(bbP, &dataP->link_addr);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_ID_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ID_T *dataP) {
+void MIH_C_LINK_ID_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ID_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_TYPE_decode(bbP, &dataP->link_type);
     MIH_C_LINK_ADDR_decode(bbP, &dataP->link_addr);
@@ -206,7 +206,7 @@ unsigned int MIH_C_LINK_AC_TYPE2String2(MIH_C_LINK_AC_TYPE_T *dataP, char* bufP)
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_ACTION_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_T *dataP) {
+void MIH_C_LINK_ACTION_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_AC_TYPE_encode(bbP, &dataP->link_ac_type);
     MIH_C_LINK_AC_ATTR_encode(bbP, &dataP->link_ac_attr);
@@ -215,7 +215,7 @@ inline void MIH_C_LINK_ACTION_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_T *dat
 #endif
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_ACTION_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_T *dataP) {
+void MIH_C_LINK_ACTION_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_AC_TYPE_decode(bbP, &dataP->link_ac_type);
     MIH_C_LINK_AC_ATTR_decode(bbP, &dataP->link_ac_attr);
@@ -226,7 +226,7 @@ inline void MIH_C_LINK_ACTION_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_T *dat
 
 //-----------------------------------------------------------------------------
 // MW Function to bypass ODTONE problem
-inline void MIH_C_LINK_ACTION_short_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_T *dataP) {
+void MIH_C_LINK_ACTION_short_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_AC_TYPE_decode(bbP, &dataP->link_ac_type);
     MIH_C_LINK_AC_ATTR_decode(bbP, &dataP->link_ac_attr);
@@ -236,7 +236,7 @@ inline void MIH_C_LINK_ACTION_short_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_
 }
 
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_ACTION_REQ_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_REQ_T *dataP) {
+void MIH_C_LINK_ACTION_REQ_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_REQ_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_ID_encode(bbP, &dataP->link_id);
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
@@ -253,7 +253,7 @@ inline void MIH_C_LINK_ACTION_REQ_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_RE
     MIH_C_LINK_AC_EX_TIME_encode(bbP, &dataP->link_action_ex_time);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_ACTION_REQ_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_REQ_T *dataP) {
+void MIH_C_LINK_ACTION_REQ_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_REQ_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_ID_decode(bbP, &dataP->link_id);
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
@@ -286,7 +286,7 @@ unsigned int MIH_C_SIG_STRENGTH2String(MIH_C_SIG_STRENGTH_T *dataP, char* bufP) 
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_SIG_STRENGTH_encode(Bit_Buffer_t* bbP, MIH_C_SIG_STRENGTH_T *dataP) {
+void MIH_C_SIG_STRENGTH_encode(Bit_Buffer_t* bbP, MIH_C_SIG_STRENGTH_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -301,7 +301,7 @@ inline void MIH_C_SIG_STRENGTH_encode(Bit_Buffer_t* bbP, MIH_C_SIG_STRENGTH_T *d
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_SIG_STRENGTH_decode(Bit_Buffer_t* bbP, MIH_C_SIG_STRENGTH_T *dataP) {
+void MIH_C_SIG_STRENGTH_decode(Bit_Buffer_t* bbP, MIH_C_SIG_STRENGTH_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -329,14 +329,14 @@ unsigned int MIH_C_LINK_SCAN_RSP2String(MIH_C_LINK_SCAN_RSP_T *dataP, char* bufP
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_SCAN_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_SCAN_RSP_T *dataP) {
+void MIH_C_LINK_SCAN_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_SCAN_RSP_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_ADDR_encode(bbP, &dataP->link_addr);
     MIH_C_NETWORK_ID_encode(bbP, &dataP->network_id);
     MIH_C_SIG_STRENGTH_encode(bbP, &dataP->sig_strength);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_SCAN_RSP_decode(Bit_Buffer_t* bbP, MIH_C_LINK_SCAN_RSP_T *dataP) {
+void MIH_C_LINK_SCAN_RSP_decode(Bit_Buffer_t* bbP, MIH_C_LINK_SCAN_RSP_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_ADDR_decode(bbP, &dataP->link_addr);
     MIH_C_NETWORK_ID_decode(bbP, &dataP->network_id);
@@ -344,7 +344,7 @@ inline void MIH_C_LINK_SCAN_RSP_decode(Bit_Buffer_t* bbP, MIH_C_LINK_SCAN_RSP_T 
 }
 
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_ACTION_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_RSP_T *dataP) {
+void MIH_C_LINK_ACTION_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_RSP_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_ID_encode(bbP, &dataP->link_id);
     MIH_C_LINK_AC_RESULT_encode(bbP, &dataP->link_ac_result);
@@ -360,7 +360,7 @@ inline void MIH_C_LINK_ACTION_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_RS
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_ACTION_RSP_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_RSP_T *dataP) {
+void MIH_C_LINK_ACTION_RSP_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_RSP_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_ID_decode(bbP, &dataP->link_id);
     MIH_C_LINK_AC_RESULT_decode(bbP, &dataP->link_ac_result);
@@ -386,13 +386,13 @@ unsigned int MIH_C_THRESHOLD2String(MIH_C_THRESHOLD_T *dataP, char* bufP) {
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_THRESHOLD_encode(Bit_Buffer_t* bbP, MIH_C_THRESHOLD_T *dataP) {
+void MIH_C_THRESHOLD_encode(Bit_Buffer_t* bbP, MIH_C_THRESHOLD_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_THRESHOLD_VAL_encode(bbP, &dataP->threshold_val);
     MIH_C_THRESHOLD_XDIR_encode(bbP, &dataP->threshold_xdir);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_THRESHOLD_decode(Bit_Buffer_t* bbP, MIH_C_THRESHOLD_T *dataP) {
+void MIH_C_THRESHOLD_decode(Bit_Buffer_t* bbP, MIH_C_THRESHOLD_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_THRESHOLD_VAL_decode(bbP, &dataP->threshold_val);
     MIH_C_THRESHOLD_XDIR_decode(bbP, &dataP->threshold_xdir);
@@ -424,7 +424,7 @@ unsigned int MIH_C_LINK_PARAM_TYPE2String( MIH_C_LINK_PARAM_TYPE_T *dataP, char*
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_PARAM_TYPE_encode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_TYPE_T *dataP) {
+void MIH_C_LINK_PARAM_TYPE_encode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_TYPE_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -446,7 +446,7 @@ inline void MIH_C_LINK_PARAM_TYPE_encode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_TYP
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_PARAM_TYPE_decode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_TYPE_T *dataP) {
+void MIH_C_LINK_PARAM_TYPE_decode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_TYPE_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -500,7 +500,7 @@ unsigned int MIH_C_LINK_CFG_PARAM2String(MIH_C_LINK_CFG_PARAM_T *dataP, char* bu
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_CFG_PARAM_encode(Bit_Buffer_t* bbP, MIH_C_LINK_CFG_PARAM_T *dataP) {
+void MIH_C_LINK_CFG_PARAM_encode(Bit_Buffer_t* bbP, MIH_C_LINK_CFG_PARAM_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_PARAM_TYPE_encode(bbP, &dataP->link_param_type);
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
@@ -522,7 +522,7 @@ inline void MIH_C_LINK_CFG_PARAM_encode(Bit_Buffer_t* bbP, MIH_C_LINK_CFG_PARAM_
     MIH_C_THRESHOLD_LIST_encode(bbP, &dataP->threshold_list);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_CFG_PARAM_decode(Bit_Buffer_t* bbP, MIH_C_LINK_CFG_PARAM_T *dataP) {
+void MIH_C_LINK_CFG_PARAM_decode(Bit_Buffer_t* bbP, MIH_C_LINK_CFG_PARAM_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_PARAM_TYPE_decode(bbP, &dataP->link_param_type);
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
@@ -558,14 +558,14 @@ unsigned int MIH_C_LINK_CFG_STATUS2String(MIH_C_LINK_CFG_STATUS_T *dataP, char* 
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_CFG_STATUS_encode(Bit_Buffer_t* bbP, MIH_C_LINK_CFG_STATUS_T *dataP) {
+void MIH_C_LINK_CFG_STATUS_encode(Bit_Buffer_t* bbP, MIH_C_LINK_CFG_STATUS_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_PARAM_TYPE_encode(bbP, &dataP->link_param_type);
     MIH_C_THRESHOLD_encode(bbP, &dataP->threshold);
     MIH_C_CONFIG_STATUS_encode(bbP, &dataP->config_status);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_CFG_STATUS_decode(Bit_Buffer_t* bbP, MIH_C_LINK_CFG_STATUS_T *dataP) {
+void MIH_C_LINK_CFG_STATUS_decode(Bit_Buffer_t* bbP, MIH_C_LINK_CFG_STATUS_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_PARAM_TYPE_decode(bbP, &dataP->link_param_type);
     MIH_C_THRESHOLD_decode(bbP, &dataP->threshold);
@@ -590,7 +590,7 @@ unsigned int MIH_C_LINK_DESC_RSP2String(MIH_C_LINK_DESC_RSP_T *dataP, char* bufP
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_DESC_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_DESC_RSP_T *dataP) {
+void MIH_C_LINK_DESC_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_DESC_RSP_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -605,7 +605,7 @@ inline void MIH_C_LINK_DESC_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_DESC_RSP_T 
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_DESC_RSP_decode(Bit_Buffer_t* bbP, MIH_C_LINK_DESC_RSP_T *dataP) {
+void MIH_C_LINK_DESC_RSP_decode(Bit_Buffer_t* bbP, MIH_C_LINK_DESC_RSP_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -640,7 +640,7 @@ unsigned int MIH_C_LINK_PARAM2String(MIH_C_LINK_PARAM_T *dataP, char* bufP) {
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_PARAM_encode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_T *dataP) {
+void MIH_C_LINK_PARAM_encode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_PARAM_TYPE_encode(bbP, &dataP->link_param_type);
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
@@ -652,7 +652,7 @@ inline void MIH_C_LINK_PARAM_encode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_T *dataP
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_PARAM_decode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_T *dataP) {
+void MIH_C_LINK_PARAM_decode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_PARAM_TYPE_decode(bbP, &dataP->link_param_type);
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
@@ -683,7 +683,7 @@ unsigned int MIH_C_LINK_PARAM_RPT2String(MIH_C_LINK_PARAM_RPT_T *dataP, char* bu
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_PARAM_RPT_encode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_RPT_T *dataP) {
+void MIH_C_LINK_PARAM_RPT_encode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_RPT_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_PARAM_encode(bbP, &dataP->link_param);
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
@@ -695,7 +695,7 @@ inline void MIH_C_LINK_PARAM_RPT_encode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_RPT_
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_PARAM_RPT_decode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_RPT_T *dataP) {
+void MIH_C_LINK_PARAM_RPT_decode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_RPT_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_PARAM_decode(bbP, &dataP->link_param);
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
@@ -707,13 +707,13 @@ inline void MIH_C_LINK_PARAM_RPT_decode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_RPT_
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_POA_LIST_encode(Bit_Buffer_t* bbP, MIH_C_LINK_POA_LIST_T *dataP) {
+void MIH_C_LINK_POA_LIST_encode(Bit_Buffer_t* bbP, MIH_C_LINK_POA_LIST_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_ID_encode(bbP, &dataP->link_id);
     MIH_C_LINK_ADDR_LIST_encode(bbP, &dataP->link_addr_list);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_POA_LIST_decode(Bit_Buffer_t* bbP, MIH_C_LINK_POA_LIST_T *dataP) {
+void MIH_C_LINK_POA_LIST_decode(Bit_Buffer_t* bbP, MIH_C_LINK_POA_LIST_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_ID_decode(bbP, &dataP->link_id);
     MIH_C_LINK_ADDR_LIST_decode(bbP, &dataP->link_addr_list);
@@ -737,7 +737,7 @@ unsigned int MIH_C_LINK_STATES_RSP2String(MIH_C_LINK_STATES_RSP_T *dataP, char* 
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_STATES_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_STATES_RSP_T *dataP) {
+void MIH_C_LINK_STATES_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_STATES_RSP_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -748,7 +748,7 @@ inline void MIH_C_LINK_STATES_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_STATES_RS
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_STATES_RSP_decode(Bit_Buffer_t* bbP, MIH_C_LINK_STATES_RSP_T *dataP) {
+void MIH_C_LINK_STATES_RSP_decode(Bit_Buffer_t* bbP, MIH_C_LINK_STATES_RSP_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -775,35 +775,35 @@ unsigned int MIH_C_LINK_DESC_REQ2String2(MIH_C_LINK_DESC_REQ_T *dataP, char* buf
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_STATUS_REQ_encode(Bit_Buffer_t* bbP, MIH_C_LINK_STATUS_REQ_T *dataP) {
+void MIH_C_LINK_STATUS_REQ_encode(Bit_Buffer_t* bbP, MIH_C_LINK_STATUS_REQ_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_STATES_REQ_encode(bbP, &dataP->link_states_req);
     MIH_C_LINK_PARAM_TYPE_LIST_encode(bbP, &dataP->link_param_type_list);
     MIH_C_LINK_DESC_RSP_encode(bbP, &dataP->link_desc_rsp);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_STATUS_REQ_decode(Bit_Buffer_t* bbP, MIH_C_LINK_STATUS_REQ_T *dataP) {
+void MIH_C_LINK_STATUS_REQ_decode(Bit_Buffer_t* bbP, MIH_C_LINK_STATUS_REQ_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_STATES_REQ_decode(bbP, &dataP->link_states_req);
     MIH_C_LINK_PARAM_TYPE_LIST_decode(bbP, &dataP->link_param_type_list);
     MIH_C_LINK_DESC_RSP_decode(bbP, &dataP->link_desc_rsp);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_STATUS_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_STATUS_RSP_T *dataP) {
+void MIH_C_LINK_STATUS_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_STATUS_RSP_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_STATES_RSP_LIST_encode(bbP, &dataP->link_states_rsp_list);
     MIH_C_LINK_PARAM_LIST_encode(bbP, &dataP->link_param_list);
     MIH_C_LINK_DESC_RSP_LIST_encode(bbP, &dataP->link_desc_rsp_list);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_STATUS_RSP_decode(Bit_Buffer_t* bbP, MIH_C_LINK_STATUS_RSP_T *dataP) {
+void MIH_C_LINK_STATUS_RSP_decode(Bit_Buffer_t* bbP, MIH_C_LINK_STATUS_RSP_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_STATES_RSP_LIST_decode(bbP, &dataP->link_states_rsp_list);
     MIH_C_LINK_PARAM_LIST_decode(bbP, &dataP->link_param_list);
     MIH_C_LINK_DESC_RSP_LIST_decode(bbP, &dataP->link_desc_rsp_list);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_TUPLE_ID_encode(Bit_Buffer_t* bbP, MIH_C_LINK_TUPLE_ID_T *dataP) {
+void MIH_C_LINK_TUPLE_ID_encode(Bit_Buffer_t* bbP, MIH_C_LINK_TUPLE_ID_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_ID_encode(bbP, &dataP->link_id);
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
@@ -815,7 +815,7 @@ inline void MIH_C_LINK_TUPLE_ID_encode(Bit_Buffer_t* bbP, MIH_C_LINK_TUPLE_ID_T 
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_TUPLE_ID_decode(Bit_Buffer_t* bbP, MIH_C_LINK_TUPLE_ID_T *dataP) {
+void MIH_C_LINK_TUPLE_ID_decode(Bit_Buffer_t* bbP, MIH_C_LINK_TUPLE_ID_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_ID_decode(bbP, &dataP->link_id);
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
@@ -827,7 +827,7 @@ inline void MIH_C_LINK_TUPLE_ID_decode(Bit_Buffer_t* bbP, MIH_C_LINK_TUPLE_ID_T 
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_DET_INFO_encode(Bit_Buffer_t* bbP, MIH_C_LINK_DET_INFO_T *dataP) {
+void MIH_C_LINK_DET_INFO_encode(Bit_Buffer_t* bbP, MIH_C_LINK_DET_INFO_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_TUPLE_ID_encode(bbP,    &dataP->link_tuple_id);
     MIH_C_NETWORK_ID_encode(bbP,       &dataP->network_id);
@@ -840,7 +840,7 @@ inline void MIH_C_LINK_DET_INFO_encode(Bit_Buffer_t* bbP, MIH_C_LINK_DET_INFO_T 
 
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_DET_INFO_decode(Bit_Buffer_t* bbP, MIH_C_LINK_DET_INFO_T *dataP) {
+void MIH_C_LINK_DET_INFO_decode(Bit_Buffer_t* bbP, MIH_C_LINK_DET_INFO_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_TUPLE_ID_decode(bbP,    &dataP->link_tuple_id);
     MIH_C_NETWORK_ID_decode(bbP,       &dataP->network_id);

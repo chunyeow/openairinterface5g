@@ -57,13 +57,13 @@ unsigned int MIH_C_IP_TUPLE2String(MIH_C_IP_TUPLE_T *dataP, char* bufP) {
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_IP_TUPLE_encode(Bit_Buffer_t* bbP, MIH_C_IP_TUPLE_T *dataP) {
+void MIH_C_IP_TUPLE_encode(Bit_Buffer_t* bbP, MIH_C_IP_TUPLE_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_IP_ADDR_encode(bbP, &dataP->ip_addr);
     MIH_C_PORT_encode(bbP, &dataP->port);
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_IP_TUPLE_decode(Bit_Buffer_t* bbP, MIH_C_IP_TUPLE_T *dataP) {
+void MIH_C_IP_TUPLE_decode(Bit_Buffer_t* bbP, MIH_C_IP_TUPLE_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_IP_ADDR_decode(bbP, &dataP->ip_addr);
     MIH_C_PORT_decode(bbP, &dataP->port);
@@ -117,7 +117,7 @@ unsigned int MIH_C_MARK2String(MIH_C_MARK_T *dataP, char* bufP) {
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_MARK_encode(Bit_Buffer_t* bbP, MIH_C_MARK_T *dataP) {
+void MIH_C_MARK_encode(Bit_Buffer_t* bbP, MIH_C_MARK_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -132,7 +132,7 @@ inline void MIH_C_MARK_encode(Bit_Buffer_t* bbP, MIH_C_MARK_T *dataP) {
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_MARK_decode(Bit_Buffer_t* bbP, MIH_C_MARK_T *dataP) {
+void MIH_C_MARK_decode(Bit_Buffer_t* bbP, MIH_C_MARK_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -175,7 +175,7 @@ unsigned int MIH_C_QOS2String(MIH_C_QOS_T *dataP, char* bufP) {
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_QOS_encode(Bit_Buffer_t* bbP, MIH_C_QOS_T *dataP) {
+void MIH_C_QOS_encode(Bit_Buffer_t* bbP, MIH_C_QOS_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -193,7 +193,7 @@ inline void MIH_C_QOS_encode(Bit_Buffer_t* bbP, MIH_C_QOS_T *dataP) {
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_QOS_decode(Bit_Buffer_t* bbP, MIH_C_QOS_T *dataP) {
+void MIH_C_QOS_decode(Bit_Buffer_t* bbP, MIH_C_QOS_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -266,7 +266,7 @@ unsigned int MIH_C_RESOURCE_DESC2String(MIH_C_RESOURCE_DESC_T *dataP, char* bufP
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_RESOURCE_DESC_encode(Bit_Buffer_t* bbP, MIH_C_RESOURCE_DESC_T *dataP) {
+void MIH_C_RESOURCE_DESC_encode(Bit_Buffer_t* bbP, MIH_C_RESOURCE_DESC_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_ID_encode(bbP, &dataP->link_id);
     MIH_C_FLOW_ID_encode(bbP, &dataP->flow_id);
@@ -313,7 +313,7 @@ inline void MIH_C_RESOURCE_DESC_encode(Bit_Buffer_t* bbP, MIH_C_RESOURCE_DESC_T 
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_RESOURCE_DESC_decode(Bit_Buffer_t* bbP, MIH_C_RESOURCE_DESC_T *dataP) {
+void MIH_C_RESOURCE_DESC_decode(Bit_Buffer_t* bbP, MIH_C_RESOURCE_DESC_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_LINK_ID_decode(bbP, &dataP->link_id);
     MIH_C_FLOW_ID_decode(bbP, &dataP->flow_id);
@@ -403,7 +403,7 @@ unsigned int MIH_C_FLOW_ATTRIBUTE2String(MIH_C_FLOW_ATTRIBUTE_T *dataP, char* bu
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_FLOW_ATTRIBUTE_encode(Bit_Buffer_t* bbP, MIH_C_FLOW_ATTRIBUTE_T *dataP) {
+void MIH_C_FLOW_ATTRIBUTE_encode(Bit_Buffer_t* bbP, MIH_C_FLOW_ATTRIBUTE_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_FLOW_ID_encode(bbP, &dataP->flow_id);
 
@@ -441,7 +441,7 @@ inline void MIH_C_FLOW_ATTRIBUTE_encode(Bit_Buffer_t* bbP, MIH_C_FLOW_ATTRIBUTE_
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_FLOW_ATTRIBUTE_decode(Bit_Buffer_t* bbP, MIH_C_FLOW_ATTRIBUTE_T *dataP) {
+void MIH_C_FLOW_ATTRIBUTE_decode(Bit_Buffer_t* bbP, MIH_C_FLOW_ATTRIBUTE_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_FLOW_ID_decode(bbP, &dataP->flow_id);
 
@@ -500,7 +500,7 @@ unsigned int MIH_C_LINK_AC_PARAM2String(MIH_C_LINK_AC_PARAM_T *dataP, char* bufP
     return buffer_index;
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_AC_PARAM_encode(Bit_Buffer_t* bbP, MIH_C_LINK_AC_PARAM_T *dataP) {
+void MIH_C_LINK_AC_PARAM_encode(Bit_Buffer_t* bbP, MIH_C_LINK_AC_PARAM_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
     switch (dataP->choice) {
@@ -517,7 +517,7 @@ inline void MIH_C_LINK_AC_PARAM_encode(Bit_Buffer_t* bbP, MIH_C_LINK_AC_PARAM_T 
     }
 }
 //-----------------------------------------------------------------------------
-inline void MIH_C_LINK_AC_PARAM_decode(Bit_Buffer_t* bbP, MIH_C_LINK_AC_PARAM_T *dataP) {
+void MIH_C_LINK_AC_PARAM_decode(Bit_Buffer_t* bbP, MIH_C_LINK_AC_PARAM_T *dataP) {
 //-----------------------------------------------------------------------------
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
     switch (dataP->choice) {

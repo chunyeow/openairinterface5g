@@ -70,6 +70,7 @@
 #endif
 
 #ifdef SMBV
+// Rohde&Schwarz SMBV100A vector signal generator
 #include "PHY/TOOLS/smbv.h"
 char smbv_fname[] = "smbv_config_file.smbv";
 unsigned short smbv_nframes = 4; // how many frames to configure 1,..,4
@@ -87,13 +88,12 @@ char smbv_ip[16];
 #include "cor_SF_sim.h"
 #include "UTIL/OMG/omg_constants.h"
 #include "UTIL/FIFO/pad_list.h"
+#include "enb_app.h"
 
-//#ifdef PROC
 #include "../PROC/interface.h"
 #include "../PROC/channel_sim_proc.h"
 #include "../PROC/Tsync.h"
 #include "../PROC/Process.h"
-//#endif
 
 #include "UTIL/LOG/vcd_signal_dumper.h"
 #include "UTIL/OTG/otg_kpi.h"
@@ -103,10 +103,6 @@ char smbv_ip[16];
 # include "intertask_interface.h"
 # include "create_tasks.h"
 #endif
-
-#define RF                    1
-#define MCS_COUNT             24 /*added for PHY abstraction */
-#define N_TRIALS              1
 
 /*
  DCI0_5MHz_TDD0_t          UL_alloc_pdu;
@@ -149,10 +145,8 @@ extern double snr_step;
 extern uint8_t set_sinr;
 extern uint8_t ue_connection_test;
 extern uint8_t set_seed;
-uint8_t cooperation_flag; // for cooperative communication
 extern uint8_t target_dl_mcs;
 extern uint8_t target_ul_mcs;
-uint8_t rate_adaptation_flag;
 extern uint8_t abstraction_flag;
 extern uint8_t ethernet_flag;
 extern uint16_t Nid_cell;
@@ -230,7 +224,11 @@ help (void) {
     printf ("-U Set the mobility model for UE, options are: STATIC, RWP, RWALK\n");
     printf ("-V [vcd_file] Enable VCD dump into vcd_file\n");
     printf ("-w number of CBA groups, if not specified or zero, CBA is inactive\n");
-    printf ("-W IP address to connect to SMBV and configure SMBV from config file. Requires compilation with SMBV=1, -W0 uses default IP 192.168.12.201\n");
+#ifdef SMBV
+    printf ("-W IP address to connect to Rohde&Schwarz SMBV100A and configure SMBV from config file. -W0 uses default IP 192.168.12.201\n");
+#else
+    printf ("-W [Rohde&Schwarz SMBV100A functions disabled. Recompile with SMBV=1]\n");
+#endif
     printf ("-x Set the transmission mode (1,2,5,6 supported for now)\n");
     printf ("-Y Set the global log verbosity (none, low, medium, high, full) \n");
     printf ("-z Set the cooperation flag (0 for no cooperation, 1 for delay diversity and 2 for distributed alamouti\n");
@@ -240,7 +238,7 @@ help (void) {
 pthread_t log_thread;
 
 void
-log_thread_init () {
+log_thread_init (void) {
     //create log_list
     //log_list_init(&log_list);
 #ifndef LOG_NO_THREAD
@@ -263,7 +261,7 @@ log_thread_init () {
 
 //Call it after the last LOG call
 int
-log_thread_finalize () {
+log_thread_finalize (void) {
     int err = 0;
 
 #ifndef LOG_NO_THREAD
@@ -404,7 +402,6 @@ l2l1_task_state_t l2l1_state = L2L1_WAITTING;
 void *
 l2l1_task (void *args_p) {
 
-    clock_t t;
     int CC_id;
 
     // Framing variables
@@ -603,14 +600,6 @@ l2l1_task (void *args_p) {
         if (oai_emulation.info.oeh_enabled == 1)
             execute_events (frame);
 
-        /*
-         // Handling the cooperation Flag
-         if (cooperation_flag == 2)
-         {
-         if ((PHY_vars_eNB_g[0]->eNB_UE_stats[0].mode == PUSCH) && (PHY_vars_eNB_g[0]->eNB_UE_stats[1].mode == PUSCH))
-         PHY_vars_eNB_g[0]->cooperation_flag = 2;
-         }
-         */
         if (ue_connection_test == 1) {
             if ((frame % 20) == 0) {
                 snr_dB += snr_direction;
@@ -1124,6 +1113,7 @@ l2l1_task (void *args_p) {
 #endif
 
 #ifdef SMBV
+        // Rohde&Schwarz SMBV100A vector signal generator
         if ((frame == config_frames[0]) || (frame == config_frames[1]) || (frame == config_frames[2]) || (frame == config_frames[3])) {
             smbv_frame_cnt++;
         }
@@ -1164,36 +1154,21 @@ l2l1_task (void *args_p) {
 int
 main (int argc, char **argv) {
 
-    int32_t i;
-    // pointers signal buffers (s = transmit, r,r0 = receive)
     clock_t t;
 
-    //FILE *SINRpost;
-    //char SINRpost_fname[512];
-    // sprintf(SINRpost_fname,"postprocSINR.m");
-    //SINRpost = fopen(SINRpost_fname,"w");
-    // variables/flags which are set by user on command-line
-
 #ifdef SMBV
+    // Rohde&Schwarz SMBV100A vector signal generator
     strcpy(smbv_ip,DEFAULT_SMBV_IP);
 #endif
-
-    // time calibration for soft realtime mode  
-    char pbch_file_path[512];
-    FILE *pbch_file_fd;
 
 #ifdef PROC
     int node_id;
     int port,Process_Flag=0,wgt,Channel_Flag=0,temp;
 #endif
-    //double **s_re2[MAX_eNB+MAX_UE], **s_im2[MAX_eNB+MAX_UE], **r_re2[MAX_eNB+MAX_UE], **r_im2[MAX_eNB+MAX_UE], **r_re02, **r_im02;
-    //double **r_re0_d[MAX_UE][MAX_eNB], **r_im0_d[MAX_UE][MAX_eNB], **r_re0_u[MAX_eNB][MAX_UE],**r_im0_u[MAX_eNB][MAX_UE];
     //default parameters
-    rate_adaptation_flag = 0;
     oai_emulation.info.n_frames = 0xffff; //1024;          //10;
     oai_emulation.info.n_frames_flag = 0; //fixme
     snr_dB = 30;
-    cooperation_flag = 0; // default value 0 for no cooperation, 1 for Delay diversity, 2 for Distributed Alamouti
 
     //Default values if not changed by the user in get_simulation_options();
     pdcp_period = 1;
@@ -1259,6 +1234,7 @@ main (int argc, char **argv) {
     init_ocm ();
 
 #ifdef SMBV
+    // Rohde&Schwarz SMBV100A vector signal generator
     smbv_init_config(smbv_fname, smbv_nframes);
     smbv_write_config_from_frame_parms(smbv_fname, &PHY_vars_eNB_g[0][0]->lte_frame_parms);
 #endif
@@ -1297,7 +1273,6 @@ main (int argc, char **argv) {
     LOG_I(EMU, "Duration of the simulation: %f seconds\n",
           ((float) t) / CLOCKS_PER_SEC);
 
-    //  fclose(SINRpost);
     LOG_N(EMU,
           ">>>>>>>>>>>>>>>>>>>>>>>>>>> OAIEMU Ending <<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
 
@@ -1721,15 +1696,15 @@ sigh (void *arg) {
 void
 oai_shutdown (void) {
     static int done = 0;
-    int i;
-    char interfaceName[8];
 
     if (done)
         return;
 
     free (otg_pdcp_buffer);
+    otg_pdcp_buffer = 0;
 
 #ifdef SMBV
+    // Rohde&Schwarz SMBV100A vector signal generator
     if (config_smbv) {
         smbv_send_config (smbv_fname,smbv_ip);
     }
@@ -1764,7 +1739,7 @@ oai_shutdown (void) {
          #endif
          */
 
-        for (i = 0; i < 2; i++) {
+        for (int i = 0; i < 2; i++) {
             free (s_re[i]);
             free (s_im[i]);
             free (r_re[i]);
@@ -1774,6 +1749,10 @@ oai_shutdown (void) {
         free (s_im);
         free (r_re);
         free (r_im);
+        s_re = 0;
+        s_im = 0;
+        r_re = 0;
+        r_im = 0;
 
         lte_sync_time_free ();
     }
@@ -1782,9 +1761,11 @@ oai_shutdown (void) {
     if (oai_emulation.info.ocm_enabled == 1) {
         for (eNB_inst = 0; eNB_inst < NUMBER_OF_eNB_MAX; eNB_inst++) {
             free (enb_data[eNB_inst]);
+            enb_data[eNB_inst] = 0;
         }
         for (UE_inst = 0; UE_inst < NUMBER_OF_UE_MAX; UE_inst++) {
             free (ue_data[UE_inst]);
+            ue_data[UE_inst] = 0;
         }
     } //End of PHY abstraction changes
 
@@ -1799,8 +1780,10 @@ oai_shutdown (void) {
                     omv_end (pfd[1], omv_data);
 #endif
     if ((oai_emulation.info.ocm_enabled == 1) && (ethernet_flag == 0)
-                    && (ShaF != NULL))
+                    && (ShaF != NULL)) {
         destroyMat (ShaF, map1, map2);
+        ShaF = 0;
+    }
 
     if ((oai_emulation.info.opt_enabled == 1))
         terminate_opt ();
@@ -1808,16 +1791,18 @@ oai_shutdown (void) {
     if (oai_emulation.info.cli_enabled)
         cli_server_cleanup ();
 
-    for (i = 0; i < NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX; i++)
+    for (int i = 0; i < NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX; i++)
         if (oai_emulation.info.oai_ifup[i] == 1) {
-            sprintf (interfaceName, "oai%d", i);
+            char interfaceName[8];
+            snprintf (interfaceName, sizeof(interfaceName), "oai%d", i);
             bringInterfaceUp (interfaceName, 0);
         }
 
     log_thread_finalize ();
     logClean ();
     vcd_signal_dumper_close ();
-    done = 1;
+
+    done = 1; // prevent next invokation of this function
 
     LOG_N(EMU,
           ">>>>>>>>>>>>>>>>>>>>>>>>>>> OAIEMU shutdown <<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");

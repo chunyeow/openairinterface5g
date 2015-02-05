@@ -39,13 +39,23 @@ import re
 import time
 import datetime
 import array
+import xml.etree.ElementTree as ET
 
 
 debug = False
 docfile = ''
 start_time = time.time()
+testcase_starttime = start_time
 debug = 0
 stats = {'passed':0, 'failed':0, 'skipped':0, 'internal_errors':0, 'cmd':0}
+
+# xml result (jUnit like)
+xUnitTestsuites = ET.Element( 'testsuites' )
+xUnitTestsuite = ET.SubElement( xUnitTestsuites, 'testsuite' )
+xUnitTestsuite.set( 'name', 'OAI' )
+xUnitTestsuite.set( 'timestamp', datetime.datetime.fromtimestamp(start_time).strftime('%Y-%m-%dT%H:%M:%S') )
+xUnitTestsuite.set( 'hostname', 'localhost' )
+#xUnitSystemOut = ET.SubElement( xUnitTestsuite, 'system-out' )
 
 class bcolors:
     header = '\033[95m'
@@ -55,6 +65,10 @@ class bcolors:
     fail = '\033[91m'
     normal = '\033[0m'
     
+    def __init__(self):
+        if not sys.stdout.isatty():
+            self.disable()
+
     def disable(self):
         self.header = ''
         self.okblue = ''
@@ -77,6 +91,11 @@ def writefile(logfile, message):
 
 def sleep(seconds):
         time.sleep(seconds)
+
+def start():
+    """Start the timer for the following testcase."""
+    global testcase_starttime
+    testcase_starttime = time.time()
 
 def set_debug_level(level):
     debug = level
@@ -116,6 +135,14 @@ def statistics(logfile):
     writefile(logfile, 'Testing pass rate                    ' + repr((stats['passed'] * 100) / total_tests) + '%')
     writefile(logfile, '===============================================\n')
     
+    xUnitTestsuite.set( 'tests', repr(total_tests) )
+    xUnitTestsuite.set( 'failures', repr(stats['failed']) )
+    xUnitTestsuite.set( 'skipped', repr(stats['skipped']) )
+    xUnitTestsuite.set( 'errors', '0' )
+    time_delta = datetime.datetime.now() - datetime.datetime.fromtimestamp(start_time)
+    xUnitTestsuite.set( 'time', repr(time_delta.total_seconds()) )
+    writefile( logfile + '.xml', ET.tostring( xUnitTestsuites, encoding="utf-8", method="xml" ) )
+
 def log_record(level, message):
     ts = time.strftime('%d %b %Y %H:%M')
     message = ts + ' [' + level + '] ' + message
@@ -167,5 +194,13 @@ def report(case, test, name, conf, status, output, diag=None, desc=None):
     if desc:
         writefile(output, desc)
     #log_record('report', + case + test + ' documented')
-  
-    
+    e = ET.SubElement( xUnitTestsuite, 'testcase' )
+    e.set( 'name', case + '_' + test + '_' + name )
+    e.set( 'classname', 'shellscript' )
+    e.set( 'time', repr( time.time() - testcase_starttime ) )
+    if status == 'failed':
+        e = ET.SubElement( e, 'failure' )
+        e.set( 'message', 'failed' )
+        e.text = diag
+    if status == 'skipped':
+        e = ET.SubElement( e, 'skipped' )

@@ -132,8 +132,26 @@ class openair(core):
             except Exception, val:
                 time.sleep(5)
                 print "Error:", val
- 
+
+    def connect_localshell(self, prompt='$'):
+        self.prompt1 = prompt
+        self.prompt2 = prompt
+
+        while 1:
+            try:
+                # start a shell and use the current environment
+                self.oai = pexpect.spawn('bash --norc --noprofile')
                 
+                index = self.oai.expect([re.escape(self.prompt1), re.escape(self.prompt2), pexpect.TIMEOUT], timeout=40)
+                if index == 0 :
+                    return 'Ok'
+                else :
+                    sys.exit(1)
+
+            except Exception, val:
+                time.sleep(5)
+                print "Error:", val
+
     def disconnect(self):
         print 'disconnecting the ssh connection to ' + self.address + '\n'
         self.oai.send('exit')

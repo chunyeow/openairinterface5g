@@ -88,7 +88,6 @@ int           otg_times             = 0;
 int           if_times              = 0;
 int           for_times             = 0;
 
-static char  *conf_config_file_name = NULL;
 uint16_t           Nid_cell              = 0; //needed by init_lte_vars
 int           nb_antennas_rx        = 2; // //
 uint8_t            target_dl_mcs         = 16; // max mcs used by MAC scheduler
@@ -162,6 +161,7 @@ extern time_stats_t ul_chan_stats;
 void get_simulation_options(int argc, char *argv[]) {
   int                           option;
   const Enb_properties_array_t *enb_properties;
+  char  *conf_config_file_name = NULL;
 
   enum long_option_e {
     LONG_OPTION_START = 0x100, /* Start after regular single char options */
@@ -231,6 +231,7 @@ void get_simulation_options(int argc, char *argv[]) {
       switch (option) {
       case LONG_OPTION_ENB_CONF:
         if (optarg) {
+            free(conf_config_file_name); // prevent memory leak if option is used multiple times
             conf_config_file_name = strdup(optarg);
             printf("eNB configuration file is %s\n", conf_config_file_name);
         }
@@ -508,7 +509,10 @@ void get_simulation_options(int argc, char *argv[]) {
         break;
 
       case 'O':
-        conf_config_file_name = optarg;
+        if (optarg) {
+            free(conf_config_file_name); // prevent memory leak if option is used multiple times
+            conf_config_file_name = strdup(optarg);
+        }
         break;
 
       case 'o':
@@ -677,6 +681,9 @@ void get_simulation_options(int argc, char *argv[]) {
       oai_emulation.info.tdd_config_S[0] =         enb_properties->properties[0]->tdd_config_s[0];
       oai_emulation.info.extended_prefix_flag[0] = enb_properties->properties[0]->prefix_type[0];
     }
+
+    free(conf_config_file_name);
+    conf_config_file_name = 0;
 }
 
 void check_and_adjust_params(void) {
@@ -834,12 +841,12 @@ void init_openair1(void) {
           PHY_vars_eNB_g[eNB_id][CC_id]->pusch_config_dedicated[UE_id].betaOffset_ACK_Index = beta_ACK;
           PHY_vars_eNB_g[eNB_id][CC_id]->pusch_config_dedicated[UE_id].betaOffset_RI_Index  = beta_RI;
           PHY_vars_eNB_g[eNB_id][CC_id]->pusch_config_dedicated[UE_id].betaOffset_CQI_Index = beta_CQI;
-          ((PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms).pdsch_config_common).p_b = (frame_parms[CC_id]->nb_antennas_tx_eNB>1) ? 1 : 0; // rho_a = rhob
+          PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.pdsch_config_common.p_b = (frame_parms[CC_id]->nb_antennas_tx_eNB>1) ? 1 : 0; // rho_A = rho_B
 	
 	  PHY_vars_UE_g[UE_id][CC_id]->pusch_config_dedicated[eNB_id].betaOffset_ACK_Index = beta_ACK;
 	  PHY_vars_UE_g[UE_id][CC_id]->pusch_config_dedicated[eNB_id].betaOffset_RI_Index  = beta_RI;
 	  PHY_vars_UE_g[UE_id][CC_id]->pusch_config_dedicated[eNB_id].betaOffset_CQI_Index = beta_CQI;
-	  ((PHY_vars_UE_g[UE_id][CC_id]->lte_frame_parms).pdsch_config_common).p_b = (frame_parms[CC_id]->nb_antennas_tx_eNB>1) ? 1 : 0; // rho_a = rhob
+          PHY_vars_UE_g[UE_id][CC_id]->lte_frame_parms.pdsch_config_common.p_b = (frame_parms[CC_id]->nb_antennas_tx_eNB>1) ? 1 : 0; // rho_A = rho_B
 	}
       }
   }
