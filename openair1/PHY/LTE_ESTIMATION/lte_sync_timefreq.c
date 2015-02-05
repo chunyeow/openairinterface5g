@@ -49,6 +49,7 @@
 #include "pss6144.h"
 
 #define DEBUG_TF 1
+extern print_shorts(char*,__m128i*);
 
 void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq) {
 
