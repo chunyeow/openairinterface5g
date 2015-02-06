@@ -408,7 +408,7 @@ int16_t           osa_log_verbosity  = LOG_MED;
 char rrh_eNB_ip[20] = "127.0.0.1";
 int rrh_eNB_port = 50000;
 char *rrh_UE_ip = "127.0.0.1";
-int rrh_UE_port = 1600;
+int rrh_UE_port = 51000;
 #endif
 
 char uecap_xer[1024],uecap_xer_in=0;
@@ -2285,8 +2285,8 @@ static void *UE_thread_rx(void *arg) {
 
 static void *UE_thread(void *arg) {
 
-  LTE_DL_FRAME_PARMS *frame_parms=&UE->lte_frame_parms;
   PHY_VARS_UE *UE=PHY_vars_UE_g[0][0];
+  LTE_DL_FRAME_PARMS *frame_parms=&UE->lte_frame_parms;
 
   int slot=1,frame=0,hw_subframe=0,rx_cnt=0,tx_cnt=0;
   // unsigned int aa;
