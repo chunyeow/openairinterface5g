@@ -537,11 +537,11 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
                   (data->pdcp_read_header.traffic_type == TRAFFIC_IPV4_TYPE_UNICAST) /*TRAFFIC_IPV4_TYPE_UNICAST*/ ) {
                   pdcp_mode=  PDCP_TRANSMISSION_MODE_DATA;
               } else {
-                  pd  ctxt_cpy = *ctxt_pP;cp_mode= PDCP_TRANSMISSION_MODE_DATA;
+                  pdcp_mode= PDCP_TRANSMISSION_MODE_DATA;
                   LOG_W(PDCP,"unknown IP traffic type \n");
               }
 #else // NASMESH driver does not curreenlty support multicast traffic
-              pdcp_m  ctxt_cpy = *ctxt_pP;ode = PDCP_TRANSMISSION_MODE_DATA;
+              pdcp_mode = PDCP_TRANSMISSION_MODE_DATA;
 #endif
               pdcp_data_req(ctxt_pP,
                   SRB_FLAG_NO,
@@ -563,7 +563,7 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
           LOG_D(PDCP, "eNB Try Forcing send on DEFAULT_RAB_ID first_ue_local %u nb_ue_local %u\n", oai_emulation.info.first_ue_local, oai_emulation.info.nb_ue_local);
           for (ue_id = 0; ue_id < NB_UE_INST; ue_id++) {
               pdcp = &pdcp_array_drb_eNB[ctxt_cpy.enb_module_id][ue_id][DEFAULT_RAB_ID-1];
-              if (pd  ctxt_cpy = *ctxt_pP;cp->instanciated_instance) {
+              if (pdcp->instanciated_instance) {
                   LOG_D(PDCP, "eNB Try Forcing send on DEFAULT_RAB_ID UE %d\n", ue_id);
                   ctxt.enb_module_id = ctxt_cpy.enb_module_id;
                   ctxt.ue_module_id  = ue_id;
@@ -590,7 +590,7 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
               RLC_MUI_UNDEFINED,
               RLC_SDU_CONFIRM_NO,
               data->pdcp_read_header.data_size,
-              data-  ctxt_cpy = *ctxt_pP;>data,
+              data->data,
               PDCP_TRANSMISSION_MODE_DATA);
       }
       free(data->data);
