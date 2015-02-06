@@ -403,6 +403,7 @@ typedef struct
   uint8_t Mod_id;
   uint8_t CC_id;
   uint8_t local_flag;
+  int is_synchronized;
   int instance_cnt_tx;
   int instance_cnt_rx;
   int instance_cnt_synch;

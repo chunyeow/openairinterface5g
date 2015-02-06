@@ -187,7 +187,7 @@ static void * rx_pdsch_thread(void *param) {
         //time0 = rt_get_time_ns();
         //        rt_printk("[SCHED][RX_PDSCH][before rx_pdsch] Frame %d, slot %d, time %llu\n",UE->frame,last_slot,rt_get_time_ns());
         for (m=pilot2;m<UE->lte_frame_parms.symbols_per_tti;m++) {
-
+ 
             rx_pdsch(UE,
                      PDSCH,
                      eNB_id,

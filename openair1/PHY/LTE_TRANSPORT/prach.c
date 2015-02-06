@@ -45,7 +45,7 @@
 #include "SCHED/extern.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
 
-//#define PRACH_DEBUG 1
+#define PRACH_DEBUG 1
 
 uint16_t NCS_unrestricted[16] = {0,13,15,18,22,26,32,38,46,59,76,93,119,167,279,419};
 uint16_t NCS_restricted[15]   = {15,18,22,26,32,38,46,55,68,82,100,128,158,202,237}; // high-speed case

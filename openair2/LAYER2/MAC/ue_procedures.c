@@ -345,7 +345,7 @@ void ue_send_sdu(module_id_t module_idP, uint8_t CC_id,frame_t frameP,uint8_t *s
 #ifdef DEBUG_HEADER_PARSING
         LOG_D(MAC,"[UE] CE %d : UE Timing Advance : %d\n",i,payload_ptr[0]);
 #endif
-        //mac_xface->process_timing_advance(module_idP,payload_ptr[0]);
+        mac_xface->process_timing_advance(module_idP,CC_id,payload_ptr[0]);
         payload_ptr++;
         break;
       case DRX_CMD:
