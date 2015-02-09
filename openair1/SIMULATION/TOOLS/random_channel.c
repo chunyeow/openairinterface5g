@@ -471,7 +471,7 @@ channel_desc_t *new_channel_desc_scm(uint8_t nb_tx,
     for (i = 0; i<chan_desc->nb_taps; i++) 
       chan_desc->a[i]         = (struct complex*) malloc(nb_tx*nb_rx * sizeof(struct complex));
 
-    chan_desc->R_sqrt  = (struct complex**) malloc(6*sizeof(struct complex**));
+    chan_desc->R_sqrt  = (struct complex**) malloc(6*sizeof(struct complex*));
     for (i = 0; i<6; i++) {
       chan_desc->R_sqrt[i]    = (struct complex*) malloc(nb_tx*nb_rx*nb_tx*nb_rx * sizeof(struct complex));
       for (j = 0; j<nb_tx*nb_rx*nb_tx*nb_rx; j+=(nb_tx*nb_rx+1)) {

@@ -211,7 +211,8 @@ update_IDs (void)
 
   if (tmp_departed->string != NULL)
     {
-      char *tmp_string = malloc (sizeof (strlen (tmp_departed->string)));
+      // char *tmp_string = malloc (sizeof (strlen (tmp_departed->string)));
+      char *tmp_string = malloc( strlen(tmp_departed->string) + 1 );
       strcpy (tmp_string, tmp_departed->string);
       //printf("OMG - 2 head is not null and value is: %s\n",tmp_string);
       int OAI_ID = get_oaiID_by_SUMO (tmp_string, id_manager);
@@ -221,16 +222,19 @@ update_IDs (void)
 	    {
 	      // printf("Reached the Maximum of OAI nodes to be mapped to SUMO\n");
 	      // LOG_I(OMG, "Reached the Maximum of OAI nodes to be mapped to SUMO\n");
+	      free( tmp_string );
 	      return;		// stopping mapping as the maximum of OAI nodes has been reached;
 	    }
 
 	}
+      free( tmp_string );
     }
   while (tmp_departed->next != NULL)
     {
       // printf("OMG - 2 main is not null \n");
       //char tmp_string [strlen(tmp_departed->string)];
-      char *tmp_string = malloc (sizeof (strlen (tmp_departed->string)));
+      //char *tmp_string = malloc (sizeof (strlen (tmp_departed->string)));
+      char *tmp_string = malloc( strlen(tmp_departed->string) + 1 );
       strcpy (tmp_string, tmp_departed->string);
       //char *tmp_string = tmp_departed->string;
       int OAI_ID = get_oaiID_by_SUMO (tmp_string, id_manager);
@@ -240,9 +244,11 @@ update_IDs (void)
 	    {
 	      //printf("Reached the Maximum of OAI nodes to be mapped to SUMO\n");
 	      //LOG_I(OMG, "Reached the Maximum of OAI nodes to be mapped to SUMO\n");
+	      free( tmp_string );
 	      return;		// stopping mapping as the maximum of OAI nodes has been reached;
 	    }
 	}
+      free( tmp_string );
       tmp_departed = tmp_departed->next;
     }
 
@@ -324,8 +330,7 @@ activate_and_map (char *sumo_id)
   LOG_I (OMG, "activating node %s \n", sumo_id);
 #endif
   // TODO: So far, only UE can be SUMO mobile, but could change 
-  node_struct *active_node =
-    get_first_inactive_OAI_node (node_vector[SUMO], UE);
+  node_struct *active_node = get_first_inactive_OAI_node (node_vector[SUMO], UE);
   if (active_node != NULL)
     {				// found an inactive OAI node; will be mapped to SUMO
       active_node->mobile = 1;	// now node is active in SUMO
@@ -333,7 +338,8 @@ activate_and_map (char *sumo_id)
       active_nodes = add_entry (active_node, active_nodes);
 
       map->oai_id = active_node->id;
-      map->sumo_id = malloc (sizeof ((int) strlen (sumo_id)));
+      // map->sumo_id = malloc (sizeof ((int) strlen (sumo_id)));
+      map->sumo_id = malloc( strlen(sumo_id) + 1 );
       strcpy (map->sumo_id, sumo_id);
 
 #ifdef STANDALONE
@@ -345,6 +351,7 @@ activate_and_map (char *sumo_id)
 #endif
 
       // TODO fusion the two lists...leads to data inconsistency
+      // FIXME adding the same memory region to two lists => crash at free() time
       id_manager->map_sumo2oai =
 	add_map_entry (map, id_manager->map_sumo2oai);
 

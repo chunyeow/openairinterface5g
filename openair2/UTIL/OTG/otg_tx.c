@@ -1406,7 +1406,7 @@ break;
        g_otg->trans_proto[i][j][k] = TCP;
        g_otg->ip_v[i][j][k] = IPV4;
        g_otg->idt_dist[i][j][k][PE_STATE] = UNIFORM; 
-       g_otg->idt_lambda[i][j][k][PE_STATE] = 1/40;
+       g_otg->idt_lambda[i][j][k][PE_STATE] = 1.0/40.0;
        g_otg->idt_min[i][j][k][PE_STATE] =  40;
        g_otg->idt_max[i][j][k][PE_STATE] =  80;
        g_otg->size_dist[i][j][k][PE_STATE] = BACKGROUND_DIST;

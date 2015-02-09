@@ -815,7 +815,8 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     ASN_SEQUENCE_ADD(&SRB_configList2->list, SRB2_config);
 
     // Configure DRB
-    *DRB_configList = CALLOC(1, sizeof(*DRB_configList));
+    //*DRB_configList = CALLOC(1, sizeof(*DRB_configList));
+    *DRB_configList = CALLOC(1, sizeof(**DRB_configList));
     /// DRB
     DRB_config = CALLOC(1, sizeof(*DRB_config));
 
@@ -1395,10 +1396,16 @@ void rrc_eNB_generate_HandoverPreparationInformation(
 
     handoverInfo->as_config.antennaInfoCommon.antennaPortsCount = 0;    //Not used 0- but check value
     handoverInfo->as_config.sourceDl_CarrierFreq = 36090;   //Verify!
+    
     memcpy((void *)&handoverInfo->as_config.sourceMasterInformationBlock,
            (void *)&eNB_rrc_inst[enb_mod_idP].mib, sizeof(MasterInformationBlock_t));
     memcpy((void *)&handoverInfo->as_config.sourceMeasConfig,
            (void *)&eNB_rrc_inst[enb_mod_idP].measConfig[ue_mod_idP], sizeof(MeasConfig_t));
+    
+    // FIXME handoverInfo not used...
+    free( handoverInfo );
+    handoverInfo = 0;
+    
     //to be configured
     memset((void *)&eNB_rrc_inst[enb_mod_idP].handover_info[ue_mod_idP]->as_config.sourceSecurityAlgorithmConfig,
            0, sizeof(SecurityAlgorithmConfig_t));

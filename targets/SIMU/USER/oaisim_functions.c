@@ -388,8 +388,10 @@ void get_simulation_options(int argc, char *argv[]) {
         break;
 
       case 'c':
-        strcpy(oai_emulation.info.local_server, optarg);
-        oai_emulation.info.ocg_enabled=1;
+        //strcpy(oai_emulation.info.local_server, optarg);
+	strncpy(oai_emulation.info.local_server, optarg, sizeof(oai_emulation.info.local_server));
+	oai_emulation.info.local_server[sizeof(oai_emulation.info.local_server) - 1] = 0; // terminate string
+	oai_emulation.info.ocg_enabled=1;
         break;
 
       case 'C':

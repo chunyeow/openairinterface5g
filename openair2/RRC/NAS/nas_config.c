@@ -77,7 +77,7 @@ char* getNetMask  (){
 }
 
 void setBroadcastAddress (char* baseAddr){
-  strcpy(baseAddr, baseAddr);
+  strcpy(broadcastAddr, baseAddr);
 }
 
 char* getBroadcastAddress (){
@@ -219,6 +219,7 @@ int bringInterfaceUp(char *interfaceName, int up)
     }
 
  //   printf("UP/DOWN OK!\n");
+    close( sock_fd );
     return 0;
 }
 // non blocking full configuration of the interface (address, net mask, and broadcast mask)
@@ -283,14 +284,14 @@ int blocking_NAS_config(char *interfaceName, char *ipAddress, char *networkMask,
     command[0]='\0';
 
     strcat(command, "ifconfig ");
-    strcat(command, interfaceName);
-    strcat(command, " ");
-    strcat(command, ipAddress);
-    strcat(command, " networkMask ");
-    strcat(command, networkMask);
-    strcat(command, " broadcast ");
-    strcat(command, broadcastAddress);
-
+    strncat(command, interfaceName, sizeof(command) - strlen(command) - 1);
+    strncat(command, " ", sizeof(command) - strlen(command) - 1);
+    strncat(command, ipAddress, sizeof(command) - strlen(command) - 1);
+    strncat(command, " networkMask ", sizeof(command) - strlen(command) - 1);
+    strncat(command, networkMask, sizeof(command) - strlen(command) - 1);
+    strncat(command, " broadcast ", sizeof(command) - strlen(command) - 1);
+    strncat(command, broadcastAddress, sizeof(command) - strlen(command) - 1);
+    
     // ifconfig nasmesh0 10.0.1.1 networkMask 255.255.255.0 broadcast 10.0.1.255
     int i = system (command);
 

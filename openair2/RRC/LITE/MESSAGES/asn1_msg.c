@@ -967,7 +967,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
 
   (*sib3)->intraFreqCellReselectionInfo.q_RxLevMin = -70;
   (*sib3)->intraFreqCellReselectionInfo.p_Max = NULL;
-  (*sib3)->intraFreqCellReselectionInfo.s_IntraSearch = CALLOC(1,sizeof((*sib3)->intraFreqCellReselectionInfo.s_IntraSearch));
+  (*sib3)->intraFreqCellReselectionInfo.s_IntraSearch = CALLOC(1,sizeof(*(*sib3)->intraFreqCellReselectionInfo.s_IntraSearch));
   *(*sib3)->intraFreqCellReselectionInfo.s_IntraSearch = 31;
   (*sib3)->intraFreqCellReselectionInfo.allowedMeasBandwidth=CALLOC(1,sizeof(*(*sib3)->intraFreqCellReselectionInfo.allowedMeasBandwidth));
 
@@ -1365,7 +1365,8 @@ uint8_t do_RRCConnectionSetup(uint8_t Mod_id,
   // RRCConnectionSetup
   // Configure SRB1
 
-  *SRB_configList = CALLOC(1,sizeof(*SRB_configList));
+  //  *SRB_configList = CALLOC(1,sizeof(*SRB_configList));
+  *SRB_configList = CALLOC(1,sizeof(SRB_ToAddModList_t));
 
   /// SRB1
   SRB1_config = CALLOC(1,sizeof(*SRB1_config));
@@ -2151,8 +2152,9 @@ uint8_t do_MeasurementReport(uint8_t Mod_id, uint8_t *buffer,int measid,int phy_
 
   memset(&measresult_cgi2->cellGlobalId.plmn_Identity,0,sizeof(measresult_cgi2->cellGlobalId.plmn_Identity));
 
-  measresult_cgi2->cellGlobalId.plmn_Identity.mcc=CALLOC(1,sizeof(measresult_cgi2->cellGlobalId.plmn_Identity.mcc));
-
+  // measresult_cgi2->cellGlobalId.plmn_Identity.mcc=CALLOC(1,sizeof(measresult_cgi2->cellGlobalId.plmn_Identity.mcc));
+  measresult_cgi2->cellGlobalId.plmn_Identity.mcc = CALLOC(1, sizeof(*measresult_cgi2->cellGlobalId.plmn_Identity.mcc));
+ 
   asn_set_empty(&measresult_cgi2->cellGlobalId.plmn_Identity.mcc->list);//.size=0;
 
   MCC_MNC_Digit_t dummy;
@@ -2312,8 +2314,7 @@ OAI_UECapability_t *fill_ue_capability(char *UE_EUTRA_Capability_xer_fname) {
   UE_EUTRA_Capability_t *UE_EUTRA_Capability;
   char UE_EUTRA_Capability_xer[8192];
   size_t size; 
-  FILE *f;
-
+  
   LOG_I(RRC,"Allocating %u bytes for UE_EUTRA_Capability\n",sizeof(*UE_EUTRA_Capability));
   
   UE_EUTRA_Capability = CALLOC(1, sizeof(*UE_EUTRA_Capability));
@@ -2406,11 +2407,13 @@ OAI_UECapability_t *fill_ue_capability(char *UE_EUTRA_Capability_xer_fname) {
 
   else {
    
-    f = fopen(UE_EUTRA_Capability_xer_fname, "r"); 
+    FILE* f = fopen(UE_EUTRA_Capability_xer_fname, "r");
     assert(f); 
     size = fread(UE_EUTRA_Capability_xer, 1, sizeof UE_EUTRA_Capability_xer, f); 
+    fclose(f);
     if (size == 0 || size == sizeof UE_EUTRA_Capability_xer) { 
        LOG_E(RRC,"UE Capabilities XER file %s is too large\n", UE_EUTRA_Capability_xer_fname); 
+       free( UE_EUTRA_Capability);
        return(NULL);      
     }
  
@@ -2469,6 +2472,7 @@ OAI_UECapability_t *fill_ue_capability(char *UE_EUTRA_Capability_xer_fname) {
       sprintf (&sdu[3 * i], "%02x.", UECapability.sdu[i]);
 
     LOG_D(PHY, "[RRC]UE Capability encoded, %s\n", sdu);
+    free(sdu);
   }
 
   return(&UECapability);

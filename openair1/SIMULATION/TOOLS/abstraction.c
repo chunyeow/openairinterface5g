@@ -189,6 +189,8 @@ double compute_sinr(channel_desc_t *desc,
   struct complex S_i1;
   struct complex S_i2;
 
+  DevAssert( nb_rb > 0 );
+  
   avg_sinr=0.0;
   //  printf("nb_rb %d\n",nb_rb);
   for (f=0;f<2*nb_rb;f++) {

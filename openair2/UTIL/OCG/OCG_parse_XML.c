@@ -1249,15 +1249,17 @@ void characters(void *user_data, const xmlChar *xmlch, int xmllen) { // called o
 			oai_emulation.info.opp_enabled = atoi(ch);
 		  } else if (trace_file_) {
 		  	oai_emulation.info.opt_enabled = 1;
-		  	if (strcmp(strndup(ch, len), "wireshark") == 0) {
-            	opt_type = OPT_WIRESHARK;
-        	} else if (strcmp(strndup(ch, len), "pcap") == 0) {
-            	opt_type = OPT_PCAP;
-        	} else {
-            	opt_type = OPT_NONE;
-            	oai_emulation.info.opt_enabled = 0;
-        	}
-        	oai_emulation.info.opt_mode = opt_type;
+			//	if (strcmp(strndup(ch, len), "wireshark") == 0) {
+			if (strncmp(ch, "wireshark", len) == 0) {
+			  opt_type = OPT_WIRESHARK;
+			  //	} else if (strcmp(strndup(ch, len), "pcap") == 0) {
+			} else if (strncmp(ch, "pcap", len) == 0) {
+			  opt_type = OPT_PCAP;
+			} else {
+			  opt_type = OPT_NONE;
+			  oai_emulation.info.opt_enabled = 0;
+			}
+			oai_emulation.info.opt_mode = opt_type;
  		  } else if (background_stats_) {
 		    oai_emulation.emulation_config.background_stats = strndup(ch, len);
 		  }else if (performance_metrics_) {

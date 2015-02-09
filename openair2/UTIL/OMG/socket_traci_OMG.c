@@ -118,6 +118,7 @@ void sendExact(int cmdLength){
                 buf +=n;
         } 
         freeStorage(storageStart);
+	free(buf);
 }
 
 
@@ -147,6 +148,9 @@ storage * receiveExact(){
         // create storage to access the content
         tracker = writePacket(bufLength, 4);
         
+	free( bufLength );
+        bufLength = 0;
+	
         // store pointer to free the space later
 //         storage *freeTracker = tracker;   
         int s= readInt();
@@ -184,7 +188,10 @@ storage * receiveExact(){
 		bytesRead += readThisTime;
 	}
 	
-	return writePacket(buf, NN);
+	storage* temp = writePacket(buf, NN);
+	free( buf );
+	return temp;
+	//return writePacket(buf, NN);
         
 }
 

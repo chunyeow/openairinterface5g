@@ -877,7 +877,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                                         lib_config_file_name_pP, i, nb_antennas_rx);
 
                             enb_properties.properties[enb_properties_index]->tx_gain[j] = tx_gain;
-                            if ((tx_gain <0) || (nb_antennas_tx > 127))
+                            if ((tx_gain <0) || (tx_gain > 127))
                                 AssertError (0, parse_errors ++,
                                         "Failed to parse eNB configuration file %s, enb %d unknown value \"%d\" for tx_gain choice: 0..127 !\n",
                                         lib_config_file_name_pP, i, tx_gain);
@@ -1075,7 +1075,8 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                                         && config_setting_lookup_string(component_carrier, ENB_CONFIG_STRING_SRS_MAXUPPTS, &srs_MaxUpPts)
                                 ))
                                     AssertError(0, parse_errors++,"Failed to parse eNB configuration file %s, enb %d unknown values for srs_BandwidthConfig, srs_SubframeConfig, srs_ackNackST, srs_MaxUpPts\n",
-                                            lib_config_file_name_pP, i, srs_BandwidthConfig);
+						//            lib_config_file_name_pP, i, srs_BandwidthConfig);
+						lib_config_file_name_pP, i);
 
                                 enb_properties.properties[enb_properties_index]->srs_BandwidthConfig[j] = srs_BandwidthConfig;
                                 if ((srs_BandwidthConfig < 0) || (srs_BandwidthConfig >7))
@@ -1223,7 +1224,8 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                                         && config_setting_lookup_string(component_carrier, ENB_CONFIG_STRING_RACH_MESSAGEPOWEROFFSETGROUPB, &rach_messagePowerOffsetGroupB)))
                                     AssertError (0, parse_errors ++,
                                             "Failed to parse eNB configuration file %s, enb %d  rach_sizeOfRA_PreamblesGroupA, messageSizeGroupA,messagePowerOffsetGroupB!\n",
-                                            lib_config_file_name_pP, i, pucch_deltaF_Format2b);
+						 //            lib_config_file_name_pP, i, pucch_deltaF_Format2b);
+						 lib_config_file_name_pP, i);
 
                                 enb_properties.properties[enb_properties_index]->rach_sizeOfRA_PreamblesGroupA[j] = (rach_sizeOfRA_PreamblesGroupA/4)-1;
                                 if ((rach_numberOfRA_Preambles <4) || (rach_numberOfRA_Preambles>60) || ((rach_numberOfRA_Preambles&3)!=0))

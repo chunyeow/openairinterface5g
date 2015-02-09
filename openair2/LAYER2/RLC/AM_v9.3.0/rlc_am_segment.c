@@ -95,7 +95,7 @@ void rlc_am_pdu_polling (
                   rlc_pP->rb_id,
                   rlc_pP->poll_pdu);
         }
-        if (rlc_pP->c_pdu_without_poll >= rlc_pP->poll_pdu) {
+        if (rlc_pP->c_byte_without_poll >= rlc_pP->poll_byte) {
             LOG_T(RLC, "[FRAME %05d][%s][RLC_AM][MOD %u/%u][RB %u][POLL] SET POLL BECAUSE TX NUM BYTES THRESHOLD %d  HAS BEEN REACHED\n",
                   ctxt_pP->frame,
                   (ctxt_pP->enb_flag) ? "eNB" : "UE",

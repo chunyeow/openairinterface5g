@@ -52,21 +52,26 @@ int create_dir(char output_dir[DIR_LENGTH_MAX], char user_name[FILENAME_LENGTH_M
 	char directory[FILENAME_LENGTH_MAX + DIR_LENGTH_MAX] = "";
 	mode_t process_mask = umask(0);
 
-	strcpy(directory, output_dir);
-
+	//strcpy(directory, output_dir);
+	strncpy(directory, output_dir, FILENAME_LENGTH_MAX + DIR_LENGTH_MAX);
+	directory[FILENAME_LENGTH_MAX + DIR_LENGTH_MAX - 1] = 0; // terminate string
+ 
 	struct stat st;
 	if(stat(directory, &st) != 0) { // if output_dir does not exist, we create it here
 		mkdir(directory, S_IRWXU | S_IRWXG | S_IRWXO);
 		LOG_I(OCG, "output_dir %s is created", directory);
 	}
 
-	strcat(directory, user_name);
+	//strcat(directory, user_name);
+	strncat(directory, user_name, FILENAME_LENGTH_MAX + DIR_LENGTH_MAX - strlen(directory) - 1);
 
 	mkdir(directory, S_IRWXU | S_IRWXG | S_IRWXO);
 
-	strcat(directory, "/");
-	strcat(directory, file_date);
-
+	//	strcat(directory, "/");
+	//strcat(directory, file_date);
+	strncat(directory, "/", FILENAME_LENGTH_MAX + DIR_LENGTH_MAX - strlen(directory) - 1);
+	strncat(directory, file_date, FILENAME_LENGTH_MAX + DIR_LENGTH_MAX - strlen(directory) - 1);
+ 
 	mkdir(directory, S_IRWXU | S_IRWXG |S_IRWXO);
 
 	//char directory_extension[FILENAME_LENGTH_MAX + DIR_LENGTH_MAX + 64] = "";

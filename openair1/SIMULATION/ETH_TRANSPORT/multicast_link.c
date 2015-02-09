@@ -100,68 +100,69 @@ multicast_link_init(void)
     // struct ifreq ifr;
 
     for (group = 0; group < MULTICAST_LINK_NUM_GROUPS; group++) {
-        strcpy (group_list[group].host_addr, multicast_group_list[group]);
-        group_list[group].port = 46014 + group;
-        group_list[group].socket = make_socket_inet(
-            SOCK_DGRAM,
-            &group_list[group].port, &sin);
-
-        LOG_D(EMU, "multicast_link_init(): Created socket %d for group %d, port %d\n",
-              group_list[group].socket,group,group_list[group].port);
+      //strcpy (group_list[group].host_addr, multicast_group_list[group]);
+      strncpy (group_list[group].host_addr, multicast_group_list[group], sizeof(group_list[group].host_addr));
+      group_list[group].host_addr[sizeof(group_list[group].host_addr) - 1] = 0; // terminate string
+      group_list[group].port = 46014 + group;
+      group_list[group].socket = make_socket_inet(
+						  SOCK_DGRAM,
+						  &group_list[group].port, &sin);
+      
+      LOG_D(EMU, "multicast_link_init(): Created socket %d for group %d, port %d\n",
+	    group_list[group].socket,group,group_list[group].port);
 
         /* Used so we can re-bind to our port while a previous connection is still
          * in TIME_WAIT state.
          */
-        if (setsockopt(group_list[group].socket, SOL_SOCKET, SO_REUSEADDR,
-                       &reuse_addr, sizeof (reuse_addr)) < 0) {
-            LOG_E(EMU, "[MULTICAST] ERROR : setsockopt:SO_REUSEADDR, exiting ...");
-            exit (EXIT_FAILURE);
-        }
-        if (multicast_if != NULL) {
-            if (setsockopt(group_list[group].socket, SOL_SOCKET,SO_BINDTODEVICE,
-                           multicast_if, 4) < 0) {
-                LOG_E(EMU,
-                      "[MULTICAST] ERROR : setsockopt:SO_BINDTODEVICE on interface %s, exiting ...\n",
-                      multicast_if);
-                LOG_E(EMU,
-                      "[MULTICAST] make sure that you have a root privilage or run with sudo -E \n");
-                exit (EXIT_FAILURE);
-            }
-        }
-
+      if (setsockopt(group_list[group].socket, SOL_SOCKET, SO_REUSEADDR,
+		     &reuse_addr, sizeof (reuse_addr)) < 0) {
+	LOG_E(EMU, "[MULTICAST] ERROR : setsockopt:SO_REUSEADDR, exiting ...");
+	exit (EXIT_FAILURE);
+      }
+      if (multicast_if != NULL) {
+	if (setsockopt(group_list[group].socket, SOL_SOCKET,SO_BINDTODEVICE,
+		       multicast_if, 4) < 0) {
+	  LOG_E(EMU,
+		"[MULTICAST] ERROR : setsockopt:SO_BINDTODEVICE on interface %s, exiting ...\n",
+		multicast_if);
+	  LOG_E(EMU,
+		"[MULTICAST] make sure that you have a root privilage or run with sudo -E \n");
+	  exit (EXIT_FAILURE);
+	}
+      }
+      
 #if !defined(ENABLE_NEW_MULTICAST)
-        /* Make the socket blocking */
-        socket_setnonblocking(group_list[group].socket);
+      /* Make the socket blocking */
+      socket_setnonblocking(group_list[group].socket);
 #endif
-
-        multicast_loop = 0;
-        if (setsockopt (group_list[group].socket, IPPROTO_IP, IP_MULTICAST_LOOP,
-                        &multicast_loop, sizeof (multicast_loop)) < 0) {
-            LOG_E(EMU,
-                  "[MULTICAST] ERROR: %s line %d multicast_link_main_loop() IP_MULTICAST_LOOP %m",
-                  __FILE__, __LINE__);
-            exit (EXIT_FAILURE);
-        }
-
-        // Join the broadcast group:
-        command.imr_multiaddr.s_addr = inet_addr (group_list[group].host_addr);
-        command.imr_interface.s_addr = htonl (INADDR_ANY);
-        if (command.imr_multiaddr.s_addr == -1) {
-            LOG_E(EMU, "[MULTICAST] ERROR: %s line %d NO MULTICAST", __FILE__, __LINE__);
-            exit (EXIT_FAILURE);
-        }
-        if (setsockopt (group_list[group].socket, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-                        &command, sizeof (command)) < 0) {
-            LOG_E(EMU, "[MULTICAST] ERROR: %s line %d IP_ADD_MEMBERSHIP %m", __FILE__,
-                  __LINE__);
-            exit (EXIT_FAILURE);
-        }
-
-        memset (&group_list[group].sock_remote_addr, 0, sizeof (struct sockaddr_in));
-        group_list[group].sock_remote_addr.sin_family = AF_INET;
-        group_list[group].sock_remote_addr.sin_addr.s_addr = inet_addr (
-                    multicast_group_list[group]);
-        group_list[group].sock_remote_addr.sin_port = htons (group_list[group].port);
+      
+      multicast_loop = 0;
+      if (setsockopt (group_list[group].socket, IPPROTO_IP, IP_MULTICAST_LOOP,
+		      &multicast_loop, sizeof (multicast_loop)) < 0) {
+	LOG_E(EMU,
+	      "[MULTICAST] ERROR: %s line %d multicast_link_main_loop() IP_MULTICAST_LOOP %m",
+	      __FILE__, __LINE__);
+	exit (EXIT_FAILURE);
+      }
+      
+      // Join the broadcast group:
+      command.imr_multiaddr.s_addr = inet_addr (group_list[group].host_addr);
+      command.imr_interface.s_addr = htonl (INADDR_ANY);
+      if (command.imr_multiaddr.s_addr == -1) {
+	LOG_E(EMU, "[MULTICAST] ERROR: %s line %d NO MULTICAST", __FILE__, __LINE__);
+	exit (EXIT_FAILURE);
+      }
+      if (setsockopt (group_list[group].socket, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+		      &command, sizeof (command)) < 0) {
+	LOG_E(EMU, "[MULTICAST] ERROR: %s line %d IP_ADD_MEMBERSHIP %m", __FILE__,
+	      __LINE__);
+	exit (EXIT_FAILURE);
+      }
+      
+      memset (&group_list[group].sock_remote_addr, 0, sizeof (struct sockaddr_in));
+      group_list[group].sock_remote_addr.sin_family = AF_INET;
+      group_list[group].sock_remote_addr.sin_addr.s_addr = inet_addr (multicast_group_list[group]);
+      group_list[group].sock_remote_addr.sin_port = htons (group_list[group].port);
     }
 }
 

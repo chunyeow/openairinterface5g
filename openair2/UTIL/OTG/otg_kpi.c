@@ -394,7 +394,9 @@ fc=fopen("/tmp/otg.log","w");;
 	    LOG_E(OTG,"(src=%d, dst=%d, appli %d) : Unknown traffic \n ", i, j,k);
 	  strcpy(traffic,"UKNOWN TRAFFIC"); 	   
 	  } else {
-	    strcpy (traffic, map_int_to_str(otg_app_type_names,g_otg->application_type[i][j][k]));
+	    //strcpy (traffic, map_int_to_str(otg_app_type_names,g_otg->application_type[i][j][k]));
+	    strncpy (traffic, map_int_to_str(otg_app_type_names,g_otg->application_type[i][j][k]), sizeof(traffic));
+	    traffic[sizeof(traffic) - 1] = 0; // terminate string
 	  }
 	  
 
@@ -633,8 +635,10 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
   LOG_I(OTG,"[DATA] OWD MAX (one way)ms= %.2f \n", max_owd_dl);
   LOG_I(OTG,"[DATA] Estimated E2E OWD MIN (one way)ms= %.2f \n", min_owd_dl_e2e);
   LOG_I(OTG,"[DATA] Estimated E2E OWD MAX (one way)ms= %.2f \n", max_owd_dl_e2e);
-  LOG_I(OTG,"[DATA] JITTER AVG ms= %lf \n", otg_info->average_jitter_dl/(float)num_active_source );
-  LOG_I(OTG,"[DATA] Estimated E2E JITTER AVG ms= %lf \n", otg_info->average_jitter_dl_e2e/(float)num_active_source );
+  if (num_active_source != 0) {
+    LOG_I(OTG,"[DATA] JITTER AVG ms= %lf \n", otg_info->average_jitter_dl/(float)num_active_source );
+    LOG_I(OTG,"[DATA] Estimated E2E JITTER AVG ms= %lf \n", otg_info->average_jitter_dl_e2e/(float)num_active_source );
+  }
   LOG_I(OTG,"[DATA] TX throughput = %.7f(Kbit/s) \n", ((double)tx_total_bytes_dl*1000*8)/(otg_info->ctime*1024));
   LOG_I(OTG,"[DATA] RX throughput = %.7f(Kbit/s) \n", ((double)rx_total_bytes_dl*1000*8)/(otg_info->ctime*1024));
   LOG_I(OTG,"[DATA] NB lost packet = %d \n", tx_total_pkts_dl - rx_total_pkts_dl);
@@ -671,8 +675,10 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
   LOG_F(OTG,"[DATA] OWD MAX (one way)ms= %.2f \n", max_owd_dl);
   LOG_F(OTG,"[DATA] ESTIMATED E2E OWD MIN (one way)ms= %.2f \n", min_owd_dl_e2e);
   LOG_F(OTG,"[DATA] ESTIMATED E2E OWD MAX (one way)ms= %.2f \n", max_owd_dl_e2e);
-  LOG_F(OTG,"[DATA] JITTER AVG ms= %lf \n",  otg_info->average_jitter_dl/(float)num_active_source);
-  LOG_F(OTG,"[DATA]  ESTIMATED E2E JITTER AVG ms= %lf \n",  otg_info->average_jitter_dl_e2e/(float)num_active_source);
+  if (num_active_source != 0) {
+    LOG_F(OTG,"[DATA] JITTER AVG ms= %lf \n",  otg_info->average_jitter_dl/(float)num_active_source);
+    LOG_F(OTG,"[DATA]  ESTIMATED E2E JITTER AVG ms= %lf \n",  otg_info->average_jitter_dl_e2e/(float)num_active_source);
+  }
   LOG_F(OTG,"[DATA] TX throughput = %.7f(Kbit/s) \n", ((double)tx_total_bytes_dl*1000*8)/(otg_info->ctime*1024));
   LOG_F(OTG,"[DATA] RX throughput = %.7f(Kbit/s) \n", ((double)rx_total_bytes_dl*1000*8)/(otg_info->ctime*1024));
   LOG_F(OTG,"[DATA] NB lost packet = %d \n", tx_total_pkts_dl - rx_total_pkts_dl );
@@ -705,8 +711,10 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
   LOG_I(OTG,"[DATA] OWD MAX (one way)ms= %.2f \n", max_owd_ul);
   LOG_I(OTG,"[DATA] ESTIMATED E2E OWD MIN (one way)ms= %.2f \n", min_owd_ul_e2e);
   LOG_I(OTG,"[DATA] ESTIMATED E2E OWD MAX (one way)ms= %.2f \n", max_owd_ul_e2e);
-  LOG_I(OTG,"[DATA] JITTER AVG ms= %lf \n",  otg_info->average_jitter_ul_e2e/(float)num_active_source);
-  LOG_I(OTG,"[DATA] ESTIMATED E2E JITTER AVG ms= %lf \n",  otg_info->average_jitter_ul/(float)num_active_source);
+  if (num_active_source != 0) {
+    LOG_I(OTG,"[DATA] JITTER AVG ms= %lf \n",  otg_info->average_jitter_ul_e2e/(float)num_active_source);
+    LOG_I(OTG,"[DATA] ESTIMATED E2E JITTER AVG ms= %lf \n",  otg_info->average_jitter_ul/(float)num_active_source);
+  }
   LOG_I(OTG,"[DATA] TX throughput = %.7f(Kbit/s) \n", ((double)tx_total_bytes_ul*1000*8)/(otg_info->ctime*1024));
   LOG_I(OTG,"[DATA] RX throughput = %.7f(Kbit/s) \n", ((double)rx_total_bytes_ul*1000*8)/(otg_info->ctime*1024));
   LOG_I(OTG,"[DATA] NB lost packet = %d \n", tx_total_pkts_ul - rx_total_pkts_ul );
@@ -733,8 +741,10 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
   LOG_F(OTG,"[DATA] OWD MAX (one way)ms= %.2f \n", max_owd_ul);
   LOG_F(OTG,"[DATA] ESTIMATED E2E OWD MIN (one way)ms= %.2f \n", min_owd_ul_e2e);
   LOG_F(OTG,"[DATA] ESTIMATED E2E OWD MAX (one way)ms= %.2f \n", max_owd_ul_e2e);
-  LOG_F(OTG,"[DATA] JITTER AVG ms= %lf \n",  otg_info->average_jitter_ul/(float)num_active_source);
-  LOG_F(OTG,"[DATA] ESTIMATED E2E JITTER AVG ms= %lf \n",  otg_info->average_jitter_ul_e2e/(float)num_active_source);
+  if (num_active_source != 0) {
+    LOG_F(OTG,"[DATA] JITTER AVG ms= %lf \n",  otg_info->average_jitter_ul/(float)num_active_source);
+    LOG_F(OTG,"[DATA] ESTIMATED E2E JITTER AVG ms= %lf \n",  otg_info->average_jitter_ul_e2e/(float)num_active_source);
+  }
   LOG_F(OTG,"[DATA] TX throughput = %.7f(Kbit/s) \n", ((double)tx_total_bytes_ul*1000*8)/(otg_info->ctime*1024));
   LOG_F(OTG,"[DATA] RX throughput = %.7f(Kbit/s) \n", ((double)rx_total_bytes_ul*1000*8)/(otg_info->ctime*1024));
   LOG_F(OTG,"[DATA] NB lost packet = %d \n", tx_total_pkts_ul - rx_total_pkts_ul );

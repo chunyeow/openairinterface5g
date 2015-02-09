@@ -164,6 +164,7 @@ void processSubscriptions() {
                continue;
            }
        }
+      free( objID );
     }
 }
 
@@ -211,7 +212,8 @@ int extractCommandStatus(storage *s, unsigned char commandId, char * description
 
        	description = readString();
 	// print description if needed 
-
+	free( description );
+	description = 0;
 	
         //free actual message content
 	//depends on the message which is handled
@@ -325,6 +327,8 @@ void commandGetVehicleVariable(char *vehID, int varID)// malloc for vehID and va
         UNUSED_VARIABLE(rs);
         UNUSED_VARIABLE(valueDataType);
         UNUSED_VARIABLE(domID);
+	
+	free( rs );
     }
 }
 

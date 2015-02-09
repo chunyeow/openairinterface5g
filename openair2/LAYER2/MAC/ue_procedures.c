@@ -236,7 +236,7 @@ uint32_t ue_get_SR(module_id_t module_idP,int CC_id,frame_t frameP,uint8_t eNB_i
       T=MGRP/10;
       //check the measurement gap and sr prohibit timer
       if ((subframe ==  gapOffset %10) && ((frameP %T) == (floor(gapOffset/10)))
-          && (UE_mac_inst[module_idP].scheduling_info.sr_ProhibitTimer_Running =0)){
+          && (UE_mac_inst[module_idP].scheduling_info.sr_ProhibitTimer_Running ==0)){
           UE_mac_inst[module_idP].scheduling_info.SR_pending=1;
           return(0);
       }

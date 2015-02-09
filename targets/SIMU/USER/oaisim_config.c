@@ -736,8 +736,12 @@ int ocg_config_app(void){
 
       LOG_I(OTG,"OCG_config_OTG: predefined no. %d\n", predefined_traffic_config_index);
 
-      strcpy(tmp_source_id, oai_emulation.application_config.predefined_traffic.source_id[predefined_traffic_config_index]);
-      strcpy(tmp_destination_id, oai_emulation.application_config.predefined_traffic.destination_id[predefined_traffic_config_index]);
+      //strcpy(tmp_source_id, oai_emulation.application_config.predefined_traffic.source_id[predefined_traffic_config_index]);
+      //strcpy(tmp_destination_id, oai_emulation.application_config.predefined_traffic.destination_id[predefined_traffic_config_index]);
+      strncpy(tmp_source_id, oai_emulation.application_config.predefined_traffic.source_id[predefined_traffic_config_index], sizeof(tmp_source_id));
+      tmp_source_id[sizeof(tmp_source_id) - 1] = 0; // terminate string
+      strncpy(tmp_destination_id, oai_emulation.application_config.predefined_traffic.destination_id[predefined_traffic_config_index], sizeof(tmp_destination_id));
+      tmp_destination_id[sizeof(tmp_destination_id) - 1] = 0; // terminate string
       check_format1 = strstr(tmp_source_id, colon);
       check_format2 = strstr(tmp_source_id, comma);
       check_format1_dst = strstr(tmp_destination_id, colon);
@@ -1162,7 +1166,7 @@ int ocg_config_emu(void){
   if (oai_emulation.info.opt_enabled == 1) {
     radio_type_t radio_type;
 
-    if (oai_emulation.info.frame_type == FDD) {
+    if (oai_emulation.info.frame_type[0] == FDD) {
         radio_type = RADIO_TYPE_FDD;
     } else {
         radio_type = RADIO_TYPE_TDD;

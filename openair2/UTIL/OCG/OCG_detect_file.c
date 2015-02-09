@@ -92,8 +92,11 @@ int detect_file(char src_dir[DIR_LENGTH_MAX], char is_local_server[FILENAME_LENG
 					}
 
 					char check_src_file[FILENAME_LENGTH_MAX + DIR_LENGTH_MAX];
-					strcpy(check_src_file, src_dir);
-					strcat(check_src_file, filename);
+					//strcpy(check_src_file, src_dir);
+					//strcat(check_src_file, filename);
+					strncpy(check_src_file, src_dir, FILENAME_LENGTH_MAX + DIR_LENGTH_MAX);
+					check_src_file[FILENAME_LENGTH_MAX + DIR_LENGTH_MAX - 1] = 0; // terminate string
+					strncat(check_src_file, filename, FILENAME_LENGTH_MAX + DIR_LENGTH_MAX - strlen(check_src_file) - 1);
 					struct stat st;
 					if(stat(check_src_file, &st) != 0) {
 						LOG_E(OCG, "file %s does not exist\n", check_src_file);

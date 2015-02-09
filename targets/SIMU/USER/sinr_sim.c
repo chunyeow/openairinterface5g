@@ -625,7 +625,7 @@ void get_MIESM_param() {
               }
             }
 	  }
-       fclose(fp);
+
        for (t = 0; t < 162; t++){
 	 // MI_map_4Qam[0][t] = pow(10,0.1*(MI_map_4Qam[0][t]));
          LOG_D(OCM, "MIESM 4QAM Table: %lf  %lf  %1f\n ",MI_map_4qam[0][t],MI_map_4qam[1][t], MI_map_4qam[2][t]);
@@ -645,7 +645,7 @@ void get_MIESM_param() {
               }
             }
 	  }
-       fclose(fp);
+      
        for (t = 0; t < 197; t++){
 	 // MI_map_16Qam[0][t] = pow(10,0.1*(MI_map_16Qam[0][t]));
          LOG_D(OCM, "MIESM 16 QAM Table: %lf  %lf  %1f\n ",MI_map_16qam[0][t],MI_map_16qam[1][t], MI_map_16qam[2][t]);
@@ -667,7 +667,7 @@ void get_MIESM_param() {
               }
             }
 	  }
-       fclose(fp);
+     
        for (t = 0; t < 227; t++){
 	 //MI_map_64Qam[0][t] = pow(10,0.1*(MI_map_64Qam[0][t]));
          LOG_D(OCM, "MIESM 64QAM Table: %lf  %lf  %1f\n ",MI_map_64qam[0][t],MI_map_64qam[1][t], MI_map_64qam[2][t]);
@@ -681,6 +681,7 @@ void get_MIESM_param() {
 	}
 
       }
+      fclose(fp);
     }
   free(file_path);
 }

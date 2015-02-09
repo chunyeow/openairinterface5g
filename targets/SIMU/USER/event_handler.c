@@ -97,7 +97,9 @@ void schedule_delayed(Operation_Type_t op, Event_Type_t type, char * key, void* 
 	intps=time(NULL);
 	pdh = localtime(&intps);
 	char *date_cpy = malloc (sizeof (char) * 256);
-	strcpy(date_cpy,date);
+	//strcpy(date_cpy,date);
+	strncpy( date_cpy, date, 256 );
+	date_cpy[255] = 0; // terminate string
 // second count the frame to reach the time
 	char *heure = NULL;
 	int heure_int;
@@ -111,11 +113,14 @@ void schedule_delayed(Operation_Type_t op, Event_Type_t type, char * key, void* 
 	char *minute = NULL;
 	heure = strtok(date_cpy,"h");
 	//heure = strchr(date,'h');
-	printf("heure char : %s", heure);
+	printf("hour char : %s", heure);
 	
 	minute = strchr(date,'h');
 	printf("minute char : %s", minute+1);
 	
+	free( date_cpy );
+	date_cpy = 0;
+
 	heure_int = atoi(heure);
 
 	minute_int = atoi(minute+1);
@@ -451,7 +456,7 @@ void update_mac(Event_t event) {
 			if((Mac_config *) event.value !=NULL && validate_mac(event))
 			{
 
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+			  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 				mac_config = (Mac_config *) event.value;
 				LOG_I(EMU,"update complete mac params \n");
 				if(event.ue == -1 && event.lcid == -1)
@@ -571,12 +576,12 @@ void update_mac(Event_t event) {
 				}
 				else
 				{
-													Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
-							mac_config = (Mac_config *) event.value;
-							LOG_I(EMU,"update complete mac params \n");
-							i = event.ue;
-							int j = event.lcid;
-					
+				  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
+				  mac_config = (Mac_config *) event.value;
+				  LOG_I(EMU,"update complete mac params \n");
+				  i = event.ue;
+				  int j = event.lcid;
+				  
 							if(&mac_config[i].DCI_aggregation_min)
 							{
 								LOG_I(EMU,"update dci aggregation min\n");
@@ -694,7 +699,7 @@ void update_mac(Event_t event) {
 		}
 		else if(!strcmp((char *) event.key, "priority") && event.value!=NULL && validate_mac(event))
 		{			
-			Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 			mac_config = (Mac_config *) event.value;			
 			int j=0;			
 			LOG_I(EMU,"priority update \n");
@@ -725,7 +730,7 @@ void update_mac(Event_t event) {
 		}
 		else if(!strcmp((char *) event.key, "DCI_aggregation_min") && event.value!=NULL && validate_mac(event))
 		{
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 				mac_config = (Mac_config *) event.value;
 
 				LOG_I(EMU,"DCI_aggregation_min update \n");	
@@ -750,7 +755,7 @@ void update_mac(Event_t event) {
 		}
 		else if(!strcmp((char *) event.key, "DLSCH_dci_size_bits") && event.value!=NULL && validate_mac(event))
 		{
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 				mac_config = (Mac_config *) event.value;				
 				
 			
@@ -779,7 +784,7 @@ void update_mac(Event_t event) {
 		{
 				
 				
-					Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 					mac_config = (Mac_config *) event.value;
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
@@ -815,7 +820,7 @@ void update_mac(Event_t event) {
 		else if(!strcmp((char *) event.key, "dl_bandwidth") && event.value!=NULL && validate_mac(event))
 		{
 				
-					Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 					mac_config = (Mac_config *) event.value;
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
@@ -852,7 +857,7 @@ void update_mac(Event_t event) {
 		{
 				
 				
-					Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 					mac_config = (Mac_config *) event.value;
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
@@ -888,7 +893,7 @@ void update_mac(Event_t event) {
 		else if(!strcmp((char *) event.key, "min_dl_bandwidth") && event.value!=NULL && validate_mac(event))
 		{
 				
-					Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 					mac_config = (Mac_config *) event.value;
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
@@ -906,7 +911,7 @@ void update_mac(Event_t event) {
 									{								
 										oai_emulation->mac_config[i].min_dl_bandwidth[j]= mac_config[i].min_dl_bandwidth[j];
 										UE_list->UE_sched_ctrl[i].min_dl_bandwidth[j] = oai_emulation->mac_config[i].min_dl_bandwidth[j];
-										LOG_I(EMU,"dl_bandwidth UE %d LCID %d:",i,j);					
+										LOG_I(EMU,"min_dl_bandwidth UE %d LCID %d:",i,j);					
 										LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].min_dl_bandwidth[j]);
 									}
 								}
@@ -923,7 +928,7 @@ void update_mac(Event_t event) {
 		}
 		else if(!strcmp((char *) event.key, "ue_AggregatedMaximumBitrateDL") && event.value!=NULL && validate_mac(event))
 		{
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 				mac_config = (Mac_config *) event.value;				
 							
 				LOG_I(EMU,"ue_AggregatedMaximumBitrateDL update \n");					
@@ -950,7 +955,7 @@ void update_mac(Event_t event) {
 		else if(!strcmp((char *) event.key, "ue_AggregatedMaximumBitrateUL") && event.value!=NULL && validate_mac(event))
 		{
 				
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 				mac_config = (Mac_config *) event.value;				
 							
 				LOG_I(EMU,"ue_AggregatedMaximumBitrateUL update \n");					
@@ -976,7 +981,7 @@ void update_mac(Event_t event) {
 		}
 		else if(!strcmp((char *) event.key, "cqiSchedInterval") && event.value!=NULL && validate_mac(event))
 		{
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 				mac_config = (Mac_config *) event.value;					
 							
 				LOG_I(EMU,"cqiSchedInterval update \n");					
@@ -1001,7 +1006,7 @@ void update_mac(Event_t event) {
 		}
 		else if(!strcmp((char *) event.key, "mac_ContentionResolutionTimer") && event.value!=NULL && validate_mac(event))
 		{
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 				mac_config = (Mac_config *) event.value;				
 				LOG_I(EMU,"mac_ContentionResolutionTimer update \n");					
 				if(event.ue == -1)
@@ -1027,7 +1032,7 @@ void update_mac(Event_t event) {
 		{
 				
 				
-					Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 					mac_config = (Mac_config *) event.value;
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
@@ -1063,10 +1068,8 @@ void update_mac(Event_t event) {
 		}
 		else if(!strcmp((char *) event.key, "max_mcs") && event.value!=NULL && validate_mac(event))
 		{
-				
-				
-	
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 					mac_config = (Mac_config *) event.value;
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
@@ -2611,7 +2614,7 @@ int validate_mac(Event_t event)
 	int i=0;	
 	if(event.key ==NULL && event.value!=NULL)
 	{
-			Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+	  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 			mac_config = (Mac_config *) event.value;
 
 				if(event.ue == -1 && event.lcid == -1)
@@ -2724,7 +2727,7 @@ int validate_mac(Event_t event)
 	{
 		//check one param
 		
-							Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+	  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 							mac_config = (Mac_config *) event.value;
 
 							i = event.ue;
@@ -2824,7 +2827,7 @@ int validate_mac(Event_t event)
 		//printf("check one param");
 		if(!strcmp((char *) event.key, "priority") && event.value!=NULL)
 		{			
-			Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 			mac_config = (Mac_config *) event.value;			
 			int j=0;			
 			if(event.ue == -1 && event.lcid ==-1)
@@ -2857,7 +2860,7 @@ int validate_mac(Event_t event)
 		}
 		else if(!strcmp((char *) event.key, "DCI_aggregation_min") && event.value!=NULL)
 		{
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 				mac_config = (Mac_config *) event.value;
 				
 				if(event.ue == -1)
@@ -2883,7 +2886,7 @@ int validate_mac(Event_t event)
 		}
 		else if(!strcmp((char *) event.key, "DLSCH_dci_size_bits") && event.value!=NULL)
 		{
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 				mac_config = (Mac_config *) event.value;				
 				
 			
@@ -2911,7 +2914,7 @@ int validate_mac(Event_t event)
 		else if(!strcmp((char *) event.key, "ul_bandwidth") && event.value!=NULL)
 		{
 				
-					Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 					mac_config = (Mac_config *) event.value;
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
@@ -2945,7 +2948,7 @@ int validate_mac(Event_t event)
 		else if(!strcmp((char *) event.key, "min_ul_bandwidth") && event.value!=NULL)
 		{
 				
-					Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 					mac_config = (Mac_config *) event.value;
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
@@ -2980,7 +2983,7 @@ int validate_mac(Event_t event)
 		{
 				
 			
-					Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 					mac_config = (Mac_config *) event.value;
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
@@ -3014,8 +3017,8 @@ int validate_mac(Event_t event)
 	else if(!strcmp((char *) event.key, "min_dl_bandwidth") && event.value!=NULL)
 		{
 				
-			
-					Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 					mac_config = (Mac_config *) event.value;
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
@@ -3048,7 +3051,7 @@ int validate_mac(Event_t event)
 		}
 		else if(!strcmp((char *) event.key, "ue_AggregatedMaximumBitrateDL") && event.value!=NULL)
 		{
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 				mac_config = (Mac_config *) event.value;				
 							
 				LOG_I(EMU,"ue_AggregatedMaximumBitrateDL update \n");					
@@ -3072,7 +3075,7 @@ int validate_mac(Event_t event)
 		else if(!strcmp((char *) event.key, "ue_AggregatedMaximumBitrateUL") && event.value!=NULL)
 		{
 				
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 				mac_config = (Mac_config *) event.value;				
 							
 
@@ -3095,7 +3098,7 @@ int validate_mac(Event_t event)
 		}
 		else if(!strcmp((char *) event.key, "cqiSchedInterval") && event.value!=NULL)
 		{
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 				mac_config = (Mac_config *) event.value;					
 							
 				if(event.ue == -1)
@@ -3115,7 +3118,7 @@ int validate_mac(Event_t event)
 		}
 		else if(!strcmp((char *) event.key, "mac_ContentionResolutionTimer") && event.value!=NULL)
 		{
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 				mac_config = (Mac_config *) event.value;				
 								
 				if(event.ue == -1)
@@ -3138,7 +3141,7 @@ if(!(mac_config[i].mac_ContentionResolutionTimer==8 || mac_config[i].mac_Content
 				
 			
 				
-					Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 					mac_config = (Mac_config *) event.value;
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
@@ -3174,7 +3177,7 @@ if(!(mac_config[i].mac_ContentionResolutionTimer==8 || mac_config[i].mac_Content
 				
 				
 	
-				Mac_config* mac_config = malloc(sizeof(Mac_config)*16);
+		  Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
 					mac_config = (Mac_config *) event.value;
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)

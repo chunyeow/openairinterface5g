@@ -688,7 +688,7 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
       memcpy((void*)prach,(void*)(prach+36864),Ncp<<2);
       prach_len = 18432+Ncp;
       if (prach_fmt>1) {
-	memcpy((void*)(prach2+36834),(void*)prach2,73728);
+	memmove(prach2+36834,prach2,73728);
 	prach_len = 2*18432+Ncp;
       }
     }
