@@ -109,10 +109,10 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -s20 -l7 -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-A AWGN  -l7 -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
-                oai.send_expect('./oaisim.rel10.' + host + ' ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 200)
+                oai.send_expect('./oaisim.rel10.' + host + ' ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 500)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
@@ -125,10 +125,10 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         diag = 'RRC procedure is not finished completely in FDD mode, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -s20 -l7 -F -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-A AWGN -l7 -F -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
-                oai.send_expect('./oaisim.rel10.' + host + ' ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 200)
+                oai.send_expect('./oaisim.rel10.' + host + ' ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 500)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:

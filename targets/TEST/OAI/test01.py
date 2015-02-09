@@ -31,7 +31,7 @@
 # \file test01.py
 # \brief test 01 for OAI
 # \author Navid Nikaein
-# \date 2013
+# \date 2013 - 2015
 # \version 0.1
 # @ingroup _test
 
@@ -58,6 +58,8 @@ pw =''
 i = 0
 dlsim=0
 localshell=0
+is_compiled = 0
+timeout=2000
 
 for arg in sys.argv:
     if arg == '-d':
@@ -72,12 +74,17 @@ for arg in sys.argv:
         dlsim = 1
     elif arg == '-l' :
         localshell = 1
+    elif arg == '-c' :
+        is_compiled = 1
+    elif arg == '-t' :
+        timeout = sys.argv[i+1]
     elif arg == '-h' :
         print "-d:  low debug level"
         print "-dd: high debug level"
         print "-p:  set the prompt"
         print "-w:  set the password for ssh to localhost"
         print "-l:  use local shell instead of ssh connection"
+        print "-t:  set the time out in second for commands"
         sys.exit()
     i= i + 1     
 
@@ -127,6 +134,17 @@ else:
     pw = ''
     oai.connect_localshell()
 
+cpu_freq = int(oai.cpu_freq())
+if timeout == 2000 : 
+    if cpu_freq <= 2000 : 
+        timeout = 3000
+    elif cpu_freq < 2700 :
+        timeout = 2000 
+    elif cpu_freq < 3300 :
+        timeout = 1500
+#print "cpu freq(MHz): " + str(cpu_freq) + "timeout(s): " + str(timeout)
+
+
 test = 'test01'
 ctime=datetime.datetime.utcnow().strftime("%Y-%m-%d.%Hh%M")
 logfile = user+'.'+test+'.'+ctime+'.txt'  
@@ -144,12 +162,14 @@ oai.kill(user, pw)
 oai.rm_driver(oai,user,pw)
 
 # start te test cases 
-rv=case01.execute(oai, user, pw, host,logfile,logdir,debug)
-if rv != 0 :
+if is_compiled == 0 :
+    is_compiled=case01.execute(oai, user, pw, host,logfile,logdir,debug,timeout)
+    
+if is_compiled != 0 :
     case02.execute(oai, user, pw, host, logfile,logdir,debug)
     case03.execute(oai, user, pw, host, logfile,logdir,debug)
     case04.execute(oai, user, pw, host, logfile,logdir,debug)
-    #case05.execute(oai, user, pw, host, logfile,logdir,debug)
+    case05.execute(oai, user, pw, host, logfile,logdir,debug)
 else :
     print 'Compilation error: skip test case 02,03,04,05'
 

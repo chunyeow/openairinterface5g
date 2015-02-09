@@ -76,7 +76,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         test = '01'
         name = 'Perf oai.dlsim.test1'
         diag = 'Test 1, 10 MHz, R2.FDD (MCS 5), EVA5, -1dB'
-        conf = '-m5 -gF -s-1 -w1.0 -f.2 -n500 -B50 -c2 -z2 -O70'
+        conf = '-m5 -gF -s-1 -w1.0 -f.2 -n500 -B50 -c2 -z2 -O70 -L'
         trace = logdir + '/log_' + host + case + test +'.txt'
         tee = ' 2>&1 | tee ' + trace
         cmd = 'taskset -c 0 ./dlsim.rel8.' + host + ' ' + conf + tee
@@ -105,7 +105,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         test = '06'
         name = 'Perf oai.dlsim.test6'
         diag = 'Test 6, 10 MHz, R3.FDD (MCS 15), EVA5, 6.7dB (70%)'
-        conf = '-m15 -gF -s6.7 -w1.0 -f.2 -n500 -B50 -c2 -z2 -O70'
+        conf = '-m15 -gF -s6.7 -w1.0 -f.2 -n500 -B50 -c2 -z2 -O70 -L'
         trace = logdir + '/log_' + host + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
         cmd = 'taskset -c 0 ./dlsim.rel8.' + host + ' ' + conf + tee
@@ -120,7 +120,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         test = '06b'
         name = 'Perf oai.dlsim.test6b'
         diag = 'Test 6b, 5 MHz, R3-1.FDD (MCS 15), EVA5, 6.7dB (70%)'
-        conf = '-m14 -gF -s6.7 -w1.0 -f.2 -n500 -B25 -c3 -z2 -O70'
+        conf = '-m14 -gF -s6.7 -w1.0 -f.2 -n500 -B25 -c3 -z2 -O70 -L'
         trace = logdir + '/log_' + host + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
         cmd = 'taskset -c 0 ./dlsim.rel8.' + host + ' ' + conf + tee
@@ -135,7 +135,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         test = '07'
         name = 'Perf oai.dlsim.test7'
         diag = 'Test 6b, 5 MHz, R3-1.FDD (MCS 15), EVA5, 6.7dB (30%)'
-        conf = '-m15 -gG -s6.7 -w1.0 -f.2 -n500 -B50 -c2 -z2 -O30'
+        conf = '-m15 -gG -s6.7 -w1.0 -f.2 -n500 -B50 -c2 -z2 -O30 -L'
         trace = logdir + '/log_' + host + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
         cmd = 'taskset -c 0 ./dlsim.rel8.' + host + ' ' + conf + tee
@@ -151,7 +151,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         test = '07b'
         name = 'Perf oai.dlsim.test7b'
         diag = 'Test 7b, 5 MHz, R3-1.FDD (MCS 15), ETU70, 1.4 dB (30%)'
-        conf = '-m14 -gG -s1.4 -w1.0 -f.2 -n500 -B25 -c3 -z2 -O30'
+        conf = '-m14 -gG -s1.4 -w1.0 -f.2 -n500 -B25 -c3 -z2 -O30 -L'
         trace = logdir + '/log_' + host + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
         cmd = 'taskset -c 0 ./dlsim.rel8.' + host + ' ' + conf + tee
@@ -166,7 +166,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         test = '10'
         name = 'Perf oai.dlsim.test10'
         diag = 'Test 10, 5 MHz, R6.FDD (MCS 25), EVA5, 17.4 dB (70%)'
-        conf = '-m25 -gF -s17.4 -w1.0 -f.2 -n500 -B25 -c3 -z2 -O70'
+        conf = '-m25 -gF -s17.4 -w1.0 -f.2 -n500 -B25 -c3 -z2 -O70 -L'
         trace = logdir + '/log_' + host + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
         cmd = 'taskset -c 0 ./dlsim.rel8.' + host + ' ' + conf + tee
@@ -181,7 +181,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         test = '10b'
         name = 'Perf oai.dlsim.test10b'
         diag = 'Test 10b, 5 MHz, R6-1.FDD (MCS 24,18 PRB), EVA5, 17.5dB (70%)'
-        conf = '-m25 -gF -s17.5 -w1.0 -f.2 -n500 -B25 -c3 -z2 -r1022 -O70'
+        conf = '-m25 -gF -s17.5 -w1.0 -f.2 -n500 -B25 -c3 -z2 -r1022 -O70 -L'
         trace = logdir + '/log_' + host + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
         cmd = 'taskset -c 0 ./dlsim.rel8.' + host + ' ' + conf + tee
@@ -196,7 +196,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         test = '11'
         name = 'Perf oai.dlsim.test11'
         diag = 'Test 11, 10 MHz, R7.FDD (MCS 25), EVA5, 17.7dB (70%)'
-        conf = '-m26 -gF -s17.7 -w1.0 -f.2 -n500 -B50 -c2 -z2 -O70'
+        conf = '-m26 -gF -s17.7 -w1.0 -f.2 -n500 -B50 -c2 -z2 -O70 -L'
         trace = logdir + '/log_' + host + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
         cmd = 'taskset -c 0 ./dlsim.rel8.' + host + ' ' + conf + tee

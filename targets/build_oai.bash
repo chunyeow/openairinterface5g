@@ -737,18 +737,17 @@ case "$BUILD_LTE" in
          build_enb
          ;;
     'EPC')
-         echo_warning "build EPC(MME and xGW): Experimental"
+         echo_success "build EPC(MME and xGW)"
          build_epc
          ;;
     'HSS')
-         echo_warning "BUILD_LTE: $BUILD_LTE"
-         echo_warning "build HSS: Experimental"
-         build_hss 
-         ;;
+        echo_success "build HSS"
+        build_hss 
+        ;;
     'NONE')
-         ;;
+        ;;
     *)
-         ;;
+        ;;
 esac
 
 # Additional operation 
@@ -757,25 +756,25 @@ esac
 # Generate doxygen documentation
 ############################################
 
-    if [ $DOXYGEN = 1 ]; then 
-        echo_info "9. Generate doxygen documentation ..."
-        doxygen $OPENAIR_TARGETS/DOCS/Doxyfile
-        echo_info "9.1 use your navigator to open $OPENAIR_TARGETS/DOCS/html/index.html "
-    else 
-        echo_info "9. Bypassing doxygen documentation ..."
-    fi 
+if [ $DOXYGEN = 1 ]; then 
+    echo_info "9. Generate doxygen documentation ..."
+    doxygen $OPENAIR_TARGETS/DOCS/Doxyfile
+    echo_info "9.1 use your navigator to open $OPENAIR_TARGETS/DOCS/html/index.html "
+else 
+    echo_info "9. Bypassing doxygen documentation ..."
+fi 
 
 
 ############################################
 # testing
 ############################################
     
-    if [ $OAI_TEST -eq 1 ]; then 
-        echo_info "10. Testing ..."
-        python $OPENAIR_TARGETS/TEST/OAI/test01.py
-    else 
-        echo_info "10. Bypassing the Tests ..."
-    fi 
+if [ $OAI_TEST -eq 1 ]; then 
+    echo_info "10. Running OAI pre commit tests (pre-ci) ..."
+    python $OPENAIR_TARGETS/TEST/OAI/test01.py -l 
+else 
+    echo_info "10. Bypassing the Tests ..."
+fi 
     
 ############################################
 # run 

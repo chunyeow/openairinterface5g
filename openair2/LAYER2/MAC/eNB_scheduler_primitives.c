@@ -281,7 +281,8 @@ int mac_remove_ue(module_id_t mod_idP, int ue_idP, int frameP) {
   for (i=UE_list->head;i>=0;i=UE_list->next[i]) {
     if (i == ue_idP) {
       // link prev to next in Active list
-      if (prev==UE_list->head)
+      //if (prev==UE_list->head) 
+      if (i==UE_list->head) 
 	UE_list->head = UE_list->next[i];
       else
 	UE_list->next[prev] = UE_list->next[i];

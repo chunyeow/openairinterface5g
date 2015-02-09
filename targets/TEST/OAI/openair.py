@@ -40,7 +40,8 @@ import time
 import os
 import array
 import shutil
-from subprocess import call
+import subprocess 
+# import call
 
 from core import *
 
@@ -216,3 +217,15 @@ class openair(core):
             except OSError:
                 # There was an error on creation, so make sure we know about it
                 raise            
+    def cpu_freq(self):
+        freq=0
+        proc = subprocess.Popen(["cat","/proc/cpuinfo"],
+                                stdout=subprocess.PIPE)
+        out, err = proc.communicate()
+        
+        for line in out.split("\n"):
+            if "cpu MHz" in line:
+                freq = float(line.split(":")[1])
+                break 
+            
+        return freq 

@@ -75,8 +75,8 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
         log.start()
         test = '01'
         name = 'Perf oai.ulsim.test1'
-        diag = 'Test 1, 10 MHz, R2.FDD (MCS 5), EVA5, -1dB'
-        conf = '-m5 -gF -s-1 -w1.0 -f.2 -n500 -B50 -c2 -z2 -O70'
+        diag = 'Test 1, 5 MHz, FDD (MCS 5), AWGN, 6dB'
+        conf = '-B25 -m5 -y1 -gN -x1 -s6 -w1.0 -e.1 -P -n500 -O70 -L'
         trace = logdir + '/log_' + host + case + test +'.txt'
         tee = ' 2>&1 | tee ' + trace
         #print test + 'not performed'
@@ -89,10 +89,10 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
         
     try:
         log.start()
-        test = '06'
-        name = 'Perf oai.ulsim.test5'
-        diag = 'Test 5, 1.4 MHz, R4.FDD (MCS 4), EVA5, 0dB (70%)'
-        conf = '-m4 -gF -s0 -w1.0 -f.2 -n500 -B6 -c4 -z2 -O70'
+        test = '02'
+        name = 'Perf oai.ulsim.test2'
+        diag = 'Test 2, 5 MHz, FDD (MCS 16), AWGN , 12dB (70%)'
+        conf = '-B25 -m16 -y1 -gN -x1 -s12 -w1.0 -e.1 -P -n500 -O70 -L'
         trace = logdir + '/log_' + host + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
         #print test + 'not performed'
@@ -105,10 +105,10 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
   
     try:
         log.start()
-        test = '06'
-        name = 'Perf oai.ulsim.test6'
-        diag = 'Test 6, 10 MHz, R3.FDD (MCS 15), EVA5, 6.7dB (70%)'
-        conf = '-m15 -gF -s6.7 -w1.0 -f.2 -n500 -B50 -c2 -z2 -O70'
+        test = '03'
+        name = 'Perf oai.ulsim.test3'
+        diag = 'Test 3, 10 MHz, R3.FDD (MCS 5), AWGN, 6dB (70%)'
+        conf = '-B50 -m5 -y1 -gN -x1 -s6 -w1.0 -e.1 -P -n500 -O70 -L'
         trace = logdir + '/log_' + host + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
         #print test + 'not performed'
@@ -121,10 +121,10 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
   
     try:
         log.start()
-        test = '06b'
-        name = 'Perf oai.ulsim.test6b'
-        diag = 'Test 6b, 5 MHz, R3-1.FDD (MCS 15), EVA5, 6.7dB (70%)'
-        conf = '-m14 -gF -s6.7 -w1.0 -f.2 -n500 -B25 -c3 -z2 -O70'
+        test = '04'
+        name = 'Perf oai.ulsim.test4'
+        diag = 'Test 4, 10 MHz, R3-1.FDD (MCS 16), AWGN, 12dB (70%)'
+        conf = '-B50 -m16 -y1 -gN -x1 -s12 -w1.0 -e.1 -P -n500 -O70 -L'
         trace = logdir + '/log_' + host + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
         #print test + 'not performed'
@@ -137,10 +137,10 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
   
     try:
         log.start()
-        test = '07'
+        test = '05'
         name = 'Perf oai.ulsim.test7'
-        diag = 'Test 6b, 5 MHz, R3-1.FDD (MCS 15), EVA5, 6.7dB (30%)'
-        conf = '-m15 -gG -s6.7 -w1.0 -f.2 -n500 -B50 -c2 -z2 -O30'
+        diag = 'Test 5, 20 MHz, FDD (MCS 5), AWGN, 6dB (70%)'
+        conf = '-B100 -m5 -y1 -gN -x1 -s6 -w1.0 -e.1 -P -n500 -O70 -L'
         trace = logdir + '/log_' + host + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
         #print test + 'not performed'
@@ -153,10 +153,10 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
 
     try:
         log.start()
-        test = '10'
+        test = '06'
         name = 'Perf oai.ulsim.test10'
-        diag = 'Test 10, 5 MHz, R6.FDD (MCS 25), EVA5, 17.4 dB (70%)'
-        conf = '-m25 -gF -s17.4 -w1.0 -f.2 -n500 -B25 -c3 -z2 -O70'
+        diag = 'Test 06, 20 MHz, FDD (MCS 16), AWGN, 12 dB (70%)'
+        conf = '-B100 -m16 -y1 -gN -x1 -s12 -w1.0 -e.1 -P -n500 -O70 -L'
         trace = logdir + '/log_' + host + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
         #print test + 'not performed'
@@ -167,36 +167,5 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
     else:
         log.ok(case, test, name, conf, '', logfile)
 
-    try:
-        log.start()
-        test = '10b'
-        name = 'Perf oai.ulsim.test10b'
-        diag = 'Test 10b, 5 MHz, R6-1.FDD (MCS 24,18 PRB), EVA5, 17.5dB (70%)'
-        conf = '-m25 -gF -s17.5 -w1.0 -f.2 -n500 -B25 -c3 -z2 -r1022 -O70'
-        trace = logdir + '/log_' + host + case + test + '.txt'
-        tee = ' 2>&1 | tee ' + trace
-        #print test + 'not performed'
-        cmd = 'taskset -c 0 ./ulsim.rel8.' + host + ' ' + conf + tee
-        oai.send_expect(cmd, 'passed', 150)
-    except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
-    else:
-        log.ok(case, test, name, conf, '', logfile)
-
-    try:
-        log.start()
-        test = '11'
-        name = 'Perf oai.ulsim.test11'
-        diag = 'Test 11, 10 MHz, R7.FDD (MCS 25), EVA5, 17.7dB (70%)'
-        conf = '-m26 -gF -s17.7 -w1.0 -f.2 -n500 -B50 -c2 -z2 -O70'
-        trace = logdir + '/log_' + host + case + test + '.txt'
-        tee = ' 2>&1 | tee ' + trace
-        #print test + 'not performed'
-        cmd = 'taskset -c 0 ./ulsim.rel8.' + host + ' ' + conf + tee
-        oai.send_expect(cmd, 'passed', 150)
-    except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
-    else:
-        log.ok(case, test, name, conf, '', logfile)
-
+ 
 

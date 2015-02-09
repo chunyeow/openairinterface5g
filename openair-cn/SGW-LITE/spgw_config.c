@@ -261,7 +261,7 @@ int spgw_config_process(spgw_config_t* config_pP) {
                  "ethtool -K %s tso off gso off gro off",
                  config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
         SPGW_APP_INFO("Disable tcp segmentation offload, generic segmentation offload: %s\n",system_cmd);
-        ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+        ret += spgw_system(system_cmd, SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
     } else {
         SPGW_APP_ERROR("Disable tcp segmentation offload, generic segmentation offload\n");
        ret = -1;

@@ -30,7 +30,7 @@
 # \file case01.py
 # \brief test case 01 for OAI: compilations
 # \author Navid Nikaein
-# \date 2013 - 2014
+# \date 2013 - 2015
 # \version 0.1
 # @ingroup _test
 
@@ -41,7 +41,7 @@ import core
 makerr1 = '***'
 makerr2 = 'Error 1'
 
-def execute(oai, user, pw, host, logfile,logdir,debug):
+def execute(oai, user, pw, host, logfile,logdir,debug,timeout):
     
     case = '01'
     rv = 1
@@ -79,7 +79,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         oai.send('make cleanall;')
         oai.send('make cleanasn1;')
         oai.send('rm -f ./oaisim.rel8.'+host)
-        oai.send_expect_false('make -j4 JF=1' + tee, makerr1,  1500)
+        oai.send_expect_false('make -j4 JF=1' + tee, makerr1, timeout)
         oai.send('cp ./oaisim ./oaisim.rel8.'+host)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
@@ -103,7 +103,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         oai.send('cp $OPENAIR2_DIR/NAS/DRIVER/MESH/nasmesh.ko .')
         trace = logdir + '/log_' + case + test + '_2.txt;'
         tee = ' 2>&1 | tee ' + trace
-        oai.send_expect_false('make NAS=1 JF=1 -j4' + tee, makerr1,  1500)
+        oai.send_expect_false('make NAS=1 JF=1 -j4' + tee, makerr1, timeout)
         oai.send('cp ./oaisim ./oaisim.rel8.nas.'+host)
         
     except log.err, e:
@@ -125,7 +125,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         diag = 'check the compilation errors for Rel8'
         oai.send('make cleanall;')
         oai.send('rm -f ./oaisim.rel8.rf.'+host)
-        oai.send_expect_false('make RTAI=0 EXMIMO=1 -j4' + tee, makerr1,  1500)
+        oai.send_expect_false('make RTAI=0 EXMIMO=1 -j4' + tee, makerr1,  timeout)
         oai.send('cp ./oaisim ./oaisim.rel8.rf.'+host)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
@@ -145,7 +145,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         diag = 'check the compilation errors for dlsim in $OPENAIR1_DIR/SIMULATION/LTE_PHY'
         oai.send('make clean;')
         oai.send('rm -f ./dlsim.rel8.'+host)
-        oai.send_expect_false('make dlsim -j4 PERFECT_CE=1' + tee, makerr1,  1500)
+        oai.send_expect_false('make dlsim -j4 PERFECT_CE=1' + tee, makerr1,  timeout)
         oai.send('cp ./dlsim ./dlsim.rel8.'+host)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
@@ -163,7 +163,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         diag = 'check the compilation errors for ulsim in $OPENAIR1_DIR/SIMULATION/LTE_PHY'
         oai.send('make clean;')
         oai.send('rm -f ./ulsim.rel8.'+host)
-        oai.send_expect_false('make ulsim -j4' + tee, makerr1,  1500)
+        oai.send_expect_false('make ulsim -j4' + tee, makerr1,  timeout)
         oai.send('cp ./ulsim ./ulsim.rel8.'+host)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
@@ -184,7 +184,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         diag = 'check the compilation errors for ITTI Rel8'
         oai.send('make clean;')
         oai.send('rm -f ./oaisim.rel8.itti.'+host)
-        oai.send_expect_false('make DISABLE_XER_PRINT=1 ENABLE_ITTI=1 Rel8=1 -j4' + tee, makerr1,  1500)
+        oai.send_expect_false('make DISABLE_XER_PRINT=1 ENABLE_ITTI=1 Rel8=1 -j4' + tee, makerr1, timeout)
         oai.send('cp ./oaisim ./oaisim.rel8.itti.'+host)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
@@ -204,7 +204,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         oai.send('make cleanall;')
         oai.send('make cleanasn1;')
         oai.send('rm -f ./oaisim.rel10.'+host)
-        oai.send_expect_false('make RLC_STOP_ON_LOST_PDU=1 Rel10=1 -j4' + tee, makerr1,  1500)
+        oai.send_expect_false('make RLC_STOP_ON_LOST_PDU=1 Rel10=1 -j4' + tee, makerr1,  timeout)
         oai.send('cp ./oaisim ./oaisim.rel10.'+host)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
@@ -222,7 +222,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         diag = 'check the compilation errors for ITTI Rel10'
         oai.send('make cleanall;')
         oai.send('rm -f ./oaisim.rel10.itti.'+host)
-        oai.send_expect_false('make DISABLE_XER_PRINT=1 ENABLE_ITTI=1 RLC_STOP_ON_LOST_PDU=1 Rel10=1 -j4' + tee, makerr1,  1500)
+        oai.send_expect_false('make DISABLE_XER_PRINT=1 ENABLE_ITTI=1 RLC_STOP_ON_LOST_PDU=1 Rel10=1 -j4' + tee, makerr1,   timeout)
         oai.send('cp ./oaisim ./oaisim.rel10.itti.'+host)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
@@ -262,7 +262,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         oai.send('make cleanall;')
         oai.send('make cleanasn1;')
         oai.send('rm -f ./oaisim.rel8.itti.ral.'+host)
-        oai.send_expect_false('make DISABLE_XER_PRINT=1 NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1 RLC_STOP_ON_LOST_PDU=1 Rel8=1 -j4' + tee, makerr1,  1500)
+        oai.send_expect_false('make DISABLE_XER_PRINT=1 NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1 RLC_STOP_ON_LOST_PDU=1 Rel8=1 -j4' + tee, makerr1,  timeout)
         oai.send('cp ./oaisim ./oaisim.rel8.itti.ral.'+host)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
@@ -281,7 +281,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         oai.send('make cleanall;')
         oai.send('make cleanasn1;')
         oai.send('rm -f ./oaisim.rel10.itti.ral.'+host)
-        oai.send_expect_false('make DISABLE_XER_PRINT=1 NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1 RLC_STOP_ON_LOST_PDU=1 Rel10=1 -j4' + tee, makerr1,  1500)
+        oai.send_expect_false('make DISABLE_XER_PRINT=1 NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1 RLC_STOP_ON_LOST_PDU=1 Rel10=1 -j4' + tee, makerr1,  timeout)
         oai.send('cp ./oaisim ./oaisim.rel10.itti.ral.'+host)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)

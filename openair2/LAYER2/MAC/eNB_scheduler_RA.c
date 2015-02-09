@@ -339,7 +339,7 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
                                         TBsize = 49;
                                     }
                                     else if ((rrc_sdu_length+msg4_header) <= 57) {
-                                        ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+                                        ((DCI1A_10MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
                                         TBsize = 57;
                                     }
                                     break;
