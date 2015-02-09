@@ -194,7 +194,7 @@ class core:
     # 3) raise an error if not found
     # **************************************************************
     def send_expect(self, command, expect, delay = 50, rsp1=None, rsp2=None,debug=0):
-        if denug :
+        if debug :
             print command 
             print expect 
             print delay
