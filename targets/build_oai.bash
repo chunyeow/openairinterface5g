@@ -472,7 +472,13 @@ build_enb(){
             oaisim_compiled=$?	
             check_for_oaisim_executable
             echo_info "7.2 finished oaisim target: check the installation log file bin/install_log.txt" 
-        
+            
+            if [ $ENB_S1 -eq 1 ]; then
+                compile_nas_tools  2>&1
+                nas_tools_compiled=$?  
+                check_for_nas_tools_executable
+                echo_info "7.2.1 finished nas ue target: check the installation log file bin/install_log.txt"
+            fi
         fi
         if [ $TARGET = "UNISIM" ]; then 
            echo "################## compile_unisim ##################"  >> bin/install_log.txt 
@@ -799,6 +805,39 @@ if [ $RUN -ne 0 ]; then
                     $SUDO echo "set args $EXE_ARGUMENTS" >> ~/.gdb_lte_softmodem
                     $SUDO echo "run" >> ~/.gdb_lte_softmodem
                     $SUDO gdb -nh -x ~/.gdb_lte_softmodem 2>&1 
+                fi
+                
+            elif [ $TARGET == "OAISIM" ]; then
+            
+                if [ $ENB_S1 -eq 0 ]; then
+                    echo_error "TODO: LOAD NASMESH IP DRIVER FOR UE AND eNB" 
+                else
+                    # prepare NAS for UE
+                    if [ ! -f .ue.nvram ]; then
+                        echo_success "generate .ue_emm.nvram .ue.nvram"
+                        $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data --gen
+                    fi
+
+                    if [ ! -f .usim.nvram ]; then
+                        echo_success "generate .usim.nvram"
+                        $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data --gen
+                    fi
+                    $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data --print
+                    $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data --print
+
+                    insmod  $OPENAIR2_DIR/NETWORK_DRIVER/UE_IP/ue_ip.ko
+                    
+                fi
+                
+                if [ $RUN_GDB -eq 0 ]; then 
+                    $SUDO exec $OPENAIR_TARGETS/bin/oaisim  `echo $EXE_ARGUMENTS`
+                else
+                    $SUDO setenv MALLOC_CHECK_ 2
+                    $SUDO touch ~/.gdb_oaisim
+                    $SUDO echo "file $OPENAIR_TARGETS/bin/lte-oaisim" > ~/.gdb_oaisim
+                    $SUDO echo "set args $EXE_ARGUMENTS" >> ~/.gdb_oaisim
+                    $SUDO echo "run" >> ~/.gdb_oaisim
+                    $SUDO gdb -nh -x ~/.gdb_oaisim 2>&1 
                 fi
             fi
             ;;

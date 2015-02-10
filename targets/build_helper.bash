@@ -846,6 +846,29 @@ compile_unisim() {
         return 1
     fi
 }
+
+compile_nas_tools() {
+
+    export NVRAM_DIR=$OPENAIR_TARGETS/bin
+    
+    cd $NVRAM_DIR
+    
+        if [ ! -f /tmp/nas_cleaned ]; then
+            echo_success "make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS/tools veryveryclean"
+            make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS/tools veryveryclean
+        fi
+        echo_success "make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS/tools all"
+        make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS/tools all
+        rm .ue.nvram
+        rm .usim.nvram
+        touch /tmp/nas_cleaned
+}
+
+
+compile_ue_ip_nw_driver() {
+    cd $OPENAIR2_DIR && make ue_ip.ko
+}
+
 ################################################
 # 1. check if the executable functions exist
 ###############################################
@@ -935,14 +958,24 @@ check_for_mbmssim_executable() {
     fi
 }
 
+check_for_nas_ue_executable() {
+    if [ ! -f $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess ]; then
+        echo_error "Cannot find UserProcess executable object in directory  $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin"
+        echo_fatal "Check the compilation logs in bin/install_log.txt"
+    fi
+}
+
 ################################################
 # 1. check if the executable functions exist
 ###############################################
 
+# arg1 is RT
+# arg2 is HW 
+# arg3 is ENB_S1
 install_ltesoftmodem() {
     # RT
     if [ $1 = "RTAI" ]; then 
-	if [ ! -f /tmp/init_rt_done.tmp ]; then
+        if [ ! -f /tmp/init_rt_done.tmp ]; then
             echo_info "  8.1 Insert RTAI modules"
             $SUDO insmod /usr/realtime/modules/rtai_hal.ko     > /dev/null 2>&1
             $SUDO insmod /usr/realtime/modules/rtai_sched.ko   > /dev/null 2>&1
@@ -980,18 +1013,38 @@ install_ltesoftmodem() {
     
     # ENB_S1
     if [ $3 = 0 ]; then 
-	cd $OPENAIR2_DIR && make clean && make nasmesh_netlink.ko  #|| exit 1
-	cd $OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL && make clean && make  # || exit 1
+        cd $OPENAIR2_DIR && make clean && make nasmesh_netlink.ko  #|| exit 1
+        cd $OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL && make clean && make  # || exit 1
     fi
     
 }
 
+# arg1 is ENB_S1 'boolean'
 install_oaisim() {
    if [ $1 = 0 ]; then 
-	cd $OPENAIR2_DIR && make clean && make nasmesh_netlink.ko  #|| exit 1
-	cd $OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL && make clean && make  # || exit 1
+       cd $OPENAIR2_DIR && make clean && make nasmesh_netlink.ko  #|| exit 1
+       cd $OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL && make clean && make  # || exit 1
+   else
+       compile_ue_ip_nw_driver
+       install_nas_tools
    fi 
    
+}
+
+
+install_nas_tools() {
+    cd $OPENAIR_TARGETS/bin
+    if [ ! -f .ue.nvram ]; then
+        echo_success "generate .ue_emm.nvram .ue.nvram"
+        $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data --gen
+    fi
+
+    if [ ! -f .usim.nvram ]; then
+        echo_success "generate .usim.nvram"
+        $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data --gen
+    fi
+    $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data --print
+    $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data --print
 }
 
 ##################################

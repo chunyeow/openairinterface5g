@@ -34,13 +34,14 @@ endif
 
 include $(PROJDIR)/Makerules
 include $(PROJDIR)/Makefile.inc
+include $(PROJDIR)/../Makefile.tools
 
 export LD_RUN_PATH = $(LIBDIR):$(LIBPROCESS)
 
-LIBS		= -lapi -lutil -lEMMmsg -lESMmsg -lies -lrt 
+LIBS		= -luenas.a -lrt 
 INCLUDES	= -I. -I$(INCDIR) -I$(UTILDIR) -I$(USIMAPIDIR) -I$(EMMDIR) -I$(ESMDIR) -I$(IESDIR)
 
-LIBSUTIL	= $(LIBDIR)/$(LIBUTIL).a $(LIBDIR)/$(LIBUTIL).so
+#LIBSUTIL	= $(LIBDIR)/$(LIBUTIL).a $(LIBDIR)/$(LIBUTIL).so
 
 USIM_OBJ	= usim_data.o
 UE_OBJ		= ue_data.o
@@ -57,13 +58,13 @@ all: $(TARGETS)
 	$(CC) $(CFLAGS)   -c $< -o $@
 
 $(USIM_TARGET): $(USIM_OBJ) $(LIBSUTIL)
-	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS) $(SECUDIR)/*.o -lnettle -lcrypto -lm
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)  -lnettle -lcrypto -lm
 	@echo Replacing $@ to $(BINDIR)
 	@$(RM) $(BINDIR)/$@
 	@$(CP) $@ $(BINDIR)
 
 $(UE_TARGET): $(UE_OBJ) $(LIBSUTIL)
-	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS) $(SECUDIR)/*.o -lnettle -lcrypto -lm
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)  -lnettle -lcrypto -lm
 	@echo Replacing $@ to $(BINDIR)
 	@$(RM) $(BINDIR)/$@
 	@$(CP) $@ $(BINDIR)
@@ -73,6 +74,10 @@ clean:
 
 veryclean: clean
 	$(RM) $(TARGETS)
+
+veryveryclean: veryclean
+	$(RM) -Rf *.o $(PROJDIR)
+	$(RM) -Rf *.a $(PROJDIR)
 
 depend:
 	makedepend -- ${CFLAGS} -- ${SRCS}

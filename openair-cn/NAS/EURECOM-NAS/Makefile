@@ -37,7 +37,7 @@ export PROJDIR	= $(CURDIR)
 
 all:
 ifeq ($(PROCESS), UE)
-	@$(CD) $(SECUDIR)  && $(MAKE)
+	@$(CD) $(SECUDIR)  && $(MAKE) -f Makefile.NAS
 endif
 	@$(CD) $(UTILDIR) && $(MAKE)
 	@$(CD) $(APIDIR)  && $(MAKE)

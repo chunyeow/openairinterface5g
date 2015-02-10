@@ -70,11 +70,21 @@
 #define MAX_NUM_CHANNEL_BITS (14*1200*6)  // 14 symbols, 1200 REs, 12 bits/RE
 #define MAX_NUM_RE (14*1200)
 
+#if !defined(SI_RNTI)
 #define SI_RNTI  (rnti_t)0xffff
+#endif
+#if !defined(M_RNTI)
 #define M_RNTI   (rnti_t)0xfffd
+#endif
+#if !defined(P_RNTI)
 #define P_RNTI   (rnti_t)0xfffe
+#endif
+#if !defined(CBA_RNTI)
 #define CBA_RNTI (rnti_t)0xfff4
+#endif
+#if !defined(C_RNTI)
 #define C_RNTI   (rnti_t)0x1234
+#endif
 
 #define PMI_2A_11 0
 #define PMI_2A_1m1 1

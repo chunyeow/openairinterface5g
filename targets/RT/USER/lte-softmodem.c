@@ -159,7 +159,6 @@ int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg,
 int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_cfg, openair0_rf_map rf_map[MAX_NUM_CCs]);
 
 void fill_ue_band_info(void);
-
 #ifdef XFORMS
 // current status is that every UE has a DL scope for a SINGLE eNB (eNB_id=0)
 // at eNB 0, an UL scope for every UE 
@@ -250,6 +249,7 @@ static uint32_t                 downlink_frequency[MAX_NUM_CCs][4];/* =     {{19
 								      {1907600000,1907600000,1907600000,1907600000}};*/
 static int32_t                  uplink_frequency_offset[MAX_NUM_CCs][4]; /*= {{0,0,0,0},{0,0,0,0}};
 									  */
+
 openair0_rf_map rf_map[MAX_NUM_CCs];
 
 static char                    *conf_config_file_name = NULL;
@@ -464,7 +464,6 @@ static const eutra_band_t eutra_bands[] =
     {43, 3600    * MHz, 3800    * MHz, 3600    * MHz, 3800    * MHz, TDD},
     {44, 703    * MHz, 803    * MHz, 703    * MHz, 803    * MHz, TDD},
   };
-
 unsigned int build_rflocal(int txi, int txq, int rxi, int rxq)
 {
   return (txi + (txq<<6) + (rxi<<12) + (rxq<<18));
@@ -980,13 +979,13 @@ void do_OFDM_mod_rt(int subframe,PHY_VARS_eNB *phy_vars_eNB) {
 #ifdef EXMIMO
 	  ((short*)dummy_tx_b)[2*i]<<4;
 #else
-	((short*)dummy_tx_b)[2*i]<<5;
+	  ((short*)dummy_tx_b)[2*i]<<5;
 #endif
 	((short*)&phy_vars_eNB->lte_eNB_common_vars.txdata[0][aa][tx_offset])[1]=
 #ifdef EXMIMO
 	  ((short*)dummy_tx_b)[2*i+1]<<4;
 #else
-	((short*)dummy_tx_b)[2*i+1]<<5;
+	  ((short*)dummy_tx_b)[2*i+1]<<5;
 #endif
       }
     }
@@ -1021,15 +1020,15 @@ static void * eNB_thread_tx(void *param) {
   task = rt_task_init_schmod(nam2num(task_name), 0, 0, 0, SCHED_FIFO, 0xF);
 
   if (task==NULL) {
-    LOG_E(PHY,"[SCHED][eNB] Problem starting eNB_proc_TX thread_index %d (%s)!!!!\n",proc->subframe,task_name);
-    return 0;
-  }
+  LOG_E(PHY,"[SCHED][eNB] Problem starting eNB_proc_TX thread_index %d (%s)!!!!\n",proc->subframe,task_name);
+  return 0;
+}
   else {
-    LOG_I(PHY,"[SCHED][eNB] eNB TX thread CC %d SF %d started with id %p\n",
-	  proc->CC_id,
-	  proc->subframe,
-	  task);
-  }
+  LOG_I(PHY,"[SCHED][eNB] eNB TX thread CC %d SF %d started with id %p\n",
+    proc->CC_id,
+    proc->subframe,
+    task);
+}
 #else
 #ifdef LOWLATENCY
   attr.size = sizeof(attr);
@@ -1044,14 +1043,14 @@ static void * eNB_thread_tx(void *param) {
   attr.sched_period   = 1   * 10000000; // each tx thread has a period of 10ms from the starting point
   
   if (sched_setattr(0, &attr, flags) < 0 ){
-    perror("[SCHED] eNB tx thread: sched_setattr failed\n");
-    exit(-1);
-  }
+  perror("[SCHED] eNB tx thread: sched_setattr failed\n");
+  exit(-1);
+}
   LOG_I(HW,"[SCHED] eNB TX deadline thread %d(id %ld) started on CPU %d\n",
-	proc->subframe, gettid(),sched_getcpu());
+    proc->subframe, gettid(),sched_getcpu());
 #else 
   LOG_I(HW,"[SCHED] eNB TX thread %d started on CPU %d\n",
-	proc->subframe,sched_getcpu());
+    proc->subframe,sched_getcpu());
 #endif
 
 #endif
@@ -1067,10 +1066,10 @@ static void * eNB_thread_tx(void *param) {
 
   while (!oai_exit){
     
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe),0);
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe),0);
     
-    //LOG_I(PHY,"Locking mutex for eNB proc %d (IC %d,mutex %p)\n",proc->subframe,proc->instance_cnt,&proc->mutex);
-    //    printf("Locking mutex for eNB proc %d (subframe_tx %d))\n",proc->subframe,proc->instance_cnt_tx);
+  //LOG_I(PHY,"Locking mutex for eNB proc %d (IC %d,mutex %p)\n",proc->subframe,proc->instance_cnt,&proc->mutex);
+  //    printf("Locking mutex for eNB proc %d (subframe_tx %d))\n",proc->subframe,proc->instance_cnt_tx);
 
     if (pthread_mutex_lock(&proc->mutex_tx) != 0) {
       LOG_E(PHY,"[SCHED][eNB] error locking mutex for eNB TX proc %d\n",proc->subframe);
@@ -1078,9 +1077,9 @@ static void * eNB_thread_tx(void *param) {
     }
     else {
       
-      while (proc->instance_cnt_tx < 0) {
-	//	LOG_I(PHY,"Waiting and unlocking mutex for eNB proc %d (IC %d,lock %d)\n",proc->subframe,proc->instance_cnt,pthread_mutex_trylock(&proc->mutex));
-	//printf("Waiting and unlocking mutex for eNB proc %d (subframe_tx %d)\n",proc->subframe,proc->instance_cnt_tx);
+  while (proc->instance_cnt_tx < 0) {
+  //	LOG_I(PHY,"Waiting and unlocking mutex for eNB proc %d (IC %d,lock %d)\n",proc->subframe,proc->instance_cnt,pthread_mutex_trylock(&proc->mutex));
+  //printf("Waiting and unlocking mutex for eNB proc %d (subframe_tx %d)\n",proc->subframe,proc->instance_cnt_tx);
 	
 	pthread_cond_wait(&proc->cond_tx,&proc->mutex_tx);
       }
@@ -1094,39 +1093,39 @@ static void * eNB_thread_tx(void *param) {
     vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER_TX_ENB, proc->frame_tx);
     start_meas(&softmodem_stats_tx_sf[proc->subframe]);
 
-    if (oai_exit) break;
+  if (oai_exit) break;
 
     
-    if ((((PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == TDD)&&
-	  (subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_tx)==SF_DL))||
-	 (PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == FDD))) {
+  if ((((PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == TDD)&&
+    (subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_tx)==SF_DL))||
+    (PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == FDD))) {
 
-      phy_procedures_eNB_TX(proc->subframe,PHY_vars_eNB_g[0][proc->CC_id],0,no_relay,NULL);
+  phy_procedures_eNB_TX(proc->subframe,PHY_vars_eNB_g[0][proc->CC_id],0,no_relay,NULL);
       
-    }
-    if ((subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_tx)==SF_S)) {
-      phy_procedures_eNB_TX(proc->subframe,PHY_vars_eNB_g[0][proc->CC_id],0,no_relay,NULL);
-    }
+}
+  if ((subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_tx)==SF_S)) {
+  phy_procedures_eNB_TX(proc->subframe,PHY_vars_eNB_g[0][proc->CC_id],0,no_relay,NULL);
+}
     
-    do_OFDM_mod_rt(proc->subframe_tx,PHY_vars_eNB_g[0][proc->CC_id]);  
+  do_OFDM_mod_rt(proc->subframe_tx,PHY_vars_eNB_g[0][proc->CC_id]);  
     
-    if (pthread_mutex_lock(&proc->mutex_tx) != 0) {
-      printf("[openair][SCHED][eNB] error locking mutex for eNB TX proc %d\n",proc->subframe);
-    }
-    else {
-      proc->instance_cnt_tx--;
+  if (pthread_mutex_lock(&proc->mutex_tx) != 0) {
+  printf("[openair][SCHED][eNB] error locking mutex for eNB TX proc %d\n",proc->subframe);
+}
+  else {
+  proc->instance_cnt_tx--;
       
-      if (pthread_mutex_unlock(&proc->mutex_tx) != 0) {	
-	printf("[openair][SCHED][eNB] error unlocking mutex for eNB TX proc %d\n",proc->subframe);
-      }
-    }
+  if (pthread_mutex_unlock(&proc->mutex_tx) != 0) {	
+  printf("[openair][SCHED][eNB] error unlocking mutex for eNB TX proc %d\n",proc->subframe);
+}
+}
 
     
-    proc->frame_tx++;
-    if (proc->frame_tx==1024)
-      proc->frame_tx=0;
+  proc->frame_tx++;
+  if (proc->frame_tx==1024)
+    proc->frame_tx=0;
 
-  }    
+}    
   stop_meas(&softmodem_stats_tx_sf[proc->subframe]);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe),0);        
 #ifdef HARD_RT
@@ -1149,8 +1148,8 @@ static void * eNB_thread_tx(void *param) {
 #endif
 }
 
-int eNB_thread_rx_status[10];
-static void * eNB_thread_rx(void *param) {
+  int eNB_thread_rx_status[10];
+  static void * eNB_thread_rx(void *param) {
 
   //unsigned long cpuid;
   eNB_proc_t *proc = (eNB_proc_t*)param;
@@ -1175,9 +1174,9 @@ static void * eNB_thread_rx(void *param) {
   task = rt_task_init_schmod(nam2num(task_name), 0, 0, 0, SCHED_FIFO, 0xF);
 
   if (task==NULL) {
-    LOG_E(PHY,"[SCHED][eNB] Problem starting eNB_proc_RX thread_index %d (%s)!!!!\n",proc->subframe,task_name);
-    return 0;
-  }
+  LOG_E(PHY,"[SCHED][eNB] Problem starting eNB_proc_RX thread_index %d (%s)!!!!\n",proc->subframe,task_name);
+  return 0;
+}
   else {
     LOG_I(PHY,"[SCHED][eNB] eNB RX thread CC_id %d SF %d started with id %p\n", /*  on CPU %d*/
 	  proc->CC_id,
@@ -1475,6 +1474,7 @@ static void *eNB_thread(void *arg)
   attr.sched_runtime  = 0.1 * 1000000;
   attr.sched_deadline = 0.5 * 1000000;
   attr.sched_period   = 1.0   * 1000000;
+
    
   /* pin the eNB main thread to CPU0*/
   /* if (pthread_setaffinity_np(pthread_self(), sizeof(mask),&mask) <0) {
@@ -1648,7 +1648,7 @@ static void *eNB_thread(void *arg)
 
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,0);
 	/*
-	  if (trace_cnt++<10) 
+	if (trace_cnt++<10) 
 	  printf("TRX: t1 %llu (trx_read), t2 %llu (trx_write)\n",(long long unsigned int)(trx_time1.tv_nsec  - trx_time0.tv_nsec), (long long unsigned int)(trx_time2.tv_nsec - trx_time1.tv_nsec));
 	*/
 #else
@@ -1851,7 +1851,7 @@ static void *UE_thread_synch(void *arg) {
   printf("unlocked sync_mutex (UE_sync_thread)\n");
 #endif
   printf("starting UE synch thread\n");
-
+  
   if (UE_scan == 1) {
     for (card=0;card<MAX_CARDS;card++) {
       for (i=0; i<openair0_cfg[card].rx_num_channels; i++) {
@@ -1875,7 +1875,6 @@ static void *UE_thread_synch(void *arg) {
     LOG_D(PHY,"[SCHED][UE] Check absolute frequency %u\n",downlink_frequency[0][0]);
     sync_mode=pbch;
   }
-
   while (!oai_exit) {
     
     if (pthread_mutex_lock(&UE->mutex_synch) != 0) {
@@ -1890,9 +1889,8 @@ static void *UE_thread_synch(void *arg) {
 	LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for UE Initial Synch thread\n");
 	exit_fun("nothing to add");
       }
-
+    
     }  // mutex_lock      
-
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,1); 
 
     switch (sync_mode) {
@@ -1930,7 +1928,7 @@ static void *UE_thread_synch(void *arg) {
       
       break;
     case pbch:
-      
+
       if (initial_sync(UE,mode)==0) {
 	/*
 	  lte_adjust_synch(&PHY_vars_UE_g[0]->lte_frame_parms,
@@ -1966,14 +1964,14 @@ static void *UE_thread_synch(void *arg) {
 	  openair_daq_vars.freq_offset += 100;
 	  openair_daq_vars.freq_offset *= -1;
 	}
-	else {
+      else {
 	  openair_daq_vars.freq_offset *= -1;
 	}
-	if (abs(openair_daq_vars.freq_offset) > 7500) {
+      if (abs(openair_daq_vars.freq_offset) > 7500) {
 	  LOG_I(PHY,"[initial_sync] No cell synchronization found, abandoning\n");
 	  mac_xface->macphy_exit("No cell synchronization found, abandoning");
 	}
-	else {
+      else {
 	  LOG_I(PHY,"[initial_sync] trying carrier off %d Hz, rxgain %d\n",openair_daq_vars.freq_offset,
 		UE->rx_total_gain_dB);
 	  for (card=0;card<MAX_CARDS;card++) {
@@ -1991,15 +1989,16 @@ static void *UE_thread_synch(void *arg) {
 	  }
 	    
 	  //	    openair0_dump_config(&openair0_cfg[0],UE_flag);
-	    
-	  //	    rt_sleep_ns(FRAME_PERIOD);
-	} // freq_offset
-      } // initial_sync=0
-      break;
-    case si:
-    default:
-      break;
-    }
+	
+	//	    rt_sleep_ns(FRAME_PERIOD);
+      } // freq_offset
+    } // initial_sync=0
+    
+  break;
+ case si:
+ default:
+break;
+}
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,0);  
     printf("Finished synch : Locking synch mutex (thread_sync)\n");
     if (pthread_mutex_lock(&UE->mutex_synch) != 0) {
@@ -2012,6 +2011,7 @@ static void *UE_thread_synch(void *arg) {
 	printf("[openair][SCHED][eNB] error unlocking mutex for UE synch\n");
       }
     }
+    
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,0); 
   }  // while !oai_exit
   return(0);
@@ -2156,7 +2156,7 @@ static void *UE_thread_rx(void *arg) {
 #endif
   
   UE->instance_cnt_rx=-1;
-  
+
 #ifdef LOWLATENCY
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
@@ -2174,7 +2174,7 @@ static void *UE_thread_rx(void *arg) {
     exit(-1);
   }  
 #endif
-  
+
   mlockall(MCL_CURRENT | MCL_FUTURE);
   
 #ifndef EXMIMO
@@ -2302,11 +2302,11 @@ static void *UE_thread(void *arg) {
   void *rxp[2],*txp[2];
 
   /*
-    #ifdef LOWLATENCY
-    struct sched_attr attr;
-    unsigned int flags = 0;
+#ifdef LOWLATENCY
+  struct sched_attr attr;
+  unsigned int flags = 0;
     unsigned long mask = 1; // processor 0 
-    #endif
+#endif
   */
 
   printf("waiting for sync (UE_thread)\n");
@@ -2323,31 +2323,31 @@ static void *UE_thread(void *arg) {
 
   printf("starting UE thread\n");
   /*
-    #ifdef LOWLATENCY
-    attr.size = sizeof(attr);
-    attr.sched_flags = 0;
-    attr.sched_nice = 0;
-    attr.sched_priority = 0;
+#ifdef LOWLATENCY
+  attr.size = sizeof(attr);
+  attr.sched_flags = 0;
+  attr.sched_nice = 0;
+  attr.sched_priority = 0;
    
     // This creates a .5 ms  reservation
-    attr.sched_policy = SCHED_DEADLINE;
-    attr.sched_runtime  = 0.5 * 1000000;
-    attr.sched_deadline = 0.5 * 1000000;
-    attr.sched_period   = 1   * 1000000;
+  attr.sched_policy = SCHED_DEADLINE;
+  attr.sched_runtime  = 0.5 * 1000000;
+  attr.sched_deadline = 0.5 * 1000000;
+  attr.sched_period   = 1   * 1000000;
    
     // pin the UE main thread to CPU0
     // if (pthread_setaffinity_np(pthread_self(), sizeof(mask),&mask) <0) {
     //   perror("[MAIN_ENB_THREAD] pthread_setaffinity_np failed\n");
     //   }
    
-    if (sched_setattr(0, &attr, flags) < 0 ){
+  if (sched_setattr(0, &attr, flags) < 0 ){
     perror("[SCHED] main eNB thread: sched_setattr failed\n");
     exit_fun("Nothing to add");
-    } else {
+  } else {
     LOG_I(HW,"[SCHED][eNB] eNB main deadline thread %ld started on CPU %d\n",
-    gettid(),sched_getcpu());
-    }
-    #endif
+	  gettid(),sched_getcpu());
+  }
+#endif
   */
   mlockall(MCL_CURRENT | MCL_FUTURE);
 
@@ -2497,7 +2497,6 @@ static void *UE_thread(void *arg) {
 	    //LOG_D(PHY,"HW RESYNC: hw_frame %d: Resynchronizing sample stream\n");
 	    frame=0;
 	    // dump ahead in time to start of frame
-
 #ifndef USRP_DEBUG
 	    rxs = openair0.trx_read_func(&openair0,
 					 &timestamp,
@@ -2941,7 +2940,6 @@ void init_UE_threads(void) {
 }
 
 
-
 void fill_ue_band_info() {
 
   UE_EUTRA_Capability_t *UE_EUTRA_Capability = UE_rrc_inst[0].UECap->UE_EUTRA_Capability;
@@ -2969,7 +2967,6 @@ void fill_ue_band_info() {
       }
   }
 }
-
 static void get_options (int argc, char **argv) {
   int c;
   //  char                          line[1000];
@@ -2986,7 +2983,6 @@ static void get_options (int argc, char **argv) {
 #endif
 
 
- 
 
 
   const Enb_properties_array_t *enb_properties;
@@ -3309,7 +3305,7 @@ int main(int argc, char **argv) {
   //  int *eNB_thread_status_rx[10],*eNB_thread_status_tx[10];
 #endif
   int i,aa,card;
-#if defined (XFORMS) || defined (EMOS) || defined(EXMIMO)
+#if defined (XFORMS) || defined (EMOS) || defined (EXMIMO)
   void *status;
 #endif
   
@@ -3334,7 +3330,6 @@ int main(int argc, char **argv) {
   memset(&openair0_cfg[0],0,sizeof(openair0_config_t)*MAX_CARDS);
 
   memset(tx_max_power,0,sizeof(int)*MAX_NUM_CCs);
-
   set_latency_target();
 
   mode = normal_txrx;
@@ -3799,7 +3794,6 @@ int main(int argc, char **argv) {
   }
   printf("ITTI tasks created\n");
 #endif
-
   printf("Filling UE band info\n");
   if (UE_flag==1)
     fill_ue_band_info();

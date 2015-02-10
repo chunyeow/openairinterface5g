@@ -53,8 +53,7 @@ Description	Implements the utility used to generate data stored in the
 #include <stdlib.h>	// exit, free
 #include <string.h>	// memset, strncpy
 
-//#define SELECTED_PLMN SFR1
-#define SELECTED_PLMN FCT1
+#define SELECTED_PLMN SFR1
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -290,7 +289,7 @@ static void _gen_user_data(user_nvdata_t* data)
 static void _gen_emm_data(emm_nvdata_t* data)
 {
 //#if (SELECTED_PLMN == FCT1)
-#if 1
+#if 0
     /*
      * International Mobile Subscriber Identity
      * IMSI = MCC + MNC + MSIN = 310 (USA) + 028 (UNKNOWN) + 90832150
