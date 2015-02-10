@@ -170,19 +170,15 @@ unsigned char                   scope_enb_num_ue = 1;
 #endif //XFORMS
 
 #ifdef RTAI
-static SEM                     *mutex;
-//static CND *cond;
-
 static long                      main_eNB_thread;
 static long                      main_ue_thread;
-static SEM *sync_sem; // to sync rx & tx streaming
-
-//static int sync_thread;
 #else
 pthread_t                       main_eNB_thread;
 pthread_t                       main_ue_thread;
+
 pthread_attr_t                  attr_dlsch_threads;
 pthread_attr_t                  attr_UE_thread;
+#endif
 
 #ifndef LOWLATENCY
 struct sched_param              sched_param_dlsch;
@@ -191,7 +187,6 @@ struct sched_param              sched_param_dlsch;
 pthread_cond_t sync_cond;
 pthread_mutex_t sync_mutex;
 int sync_var=-1;
-#endif
 
 RTIME T0;
 
@@ -378,15 +373,15 @@ void print_opp_meas(void);
 int transmission_mode=1;
 
 
-int16_t           glog_level         = LOG_DEBUG;
+int16_t           glog_level         = LOG_INFO;
 int16_t           glog_verbosity     = LOG_MED;
 int16_t           hw_log_level       = LOG_INFO;
 int16_t           hw_log_verbosity   = LOG_MED;
-int16_t           phy_log_level      = LOG_DEBUG;
+int16_t           phy_log_level      = LOG_INFO;
 int16_t           phy_log_verbosity  = LOG_MED;
-int16_t           mac_log_level      = LOG_DEBUG;
+int16_t           mac_log_level      = LOG_INFO;
 int16_t           mac_log_verbosity  = LOG_MED;
-int16_t           rlc_log_level      = LOG_DEBUG;
+int16_t           rlc_log_level      = LOG_INFO;
 int16_t           rlc_log_verbosity  = LOG_MED;
 int16_t           pdcp_log_level     = LOG_INFO;
 int16_t           pdcp_log_verbosity = LOG_MED;
@@ -1461,7 +1456,7 @@ static void *eNB_thread(void *arg)
   */
 
 #ifdef RTAI
-  task = rt_task_init_schmod(nam2num("TASK0"), 0, 0, 0, SCHED_FIFO, 0xF);
+  task = rt_task_init_schmod(nam2num("eNBmain"), 0, 0, 0, SCHED_FIFO, 0xF);
 #else 
 #ifdef LOWLATENCY
   attr.size = sizeof(attr);
@@ -1513,15 +1508,11 @@ static void *eNB_thread(void *arg)
     timing_info.n_samples = 0;
 
     printf("waiting for sync (eNB_thread)\n");
-#ifdef RTAI
-    rt_sem_wait(sync_sem);
-#else
     pthread_mutex_lock(&sync_mutex);
     while (sync_var<0)
       pthread_cond_wait(&sync_cond, &sync_mutex);
     pthread_mutex_unlock(&sync_mutex);
-#endif
-    //    printf("starting eNB thread @ %llu\n",get_usrp_time(&openair0));
+    printf("starting eNB thread\n");
 
     while (!oai_exit) {
       start_meas(&softmodem_stats_mt);
@@ -1836,20 +1827,23 @@ static void *UE_thread_synch(void *arg) {
   int current_offset = 0;
   sync_mode_t sync_mode = pss;
 
+#ifdef RTAI
+  RT_TASK *task = rt_task_init_schmod(nam2num("UEsync"), 0, 0, 0, SCHED_FIFO, 0xF);
+  if (task==NULL) {
+    LOG_E(PHY,"[SCHED][UE] Problem starting UE_sync_thread!!!!\n");
+    return 0;
+  }
+#endif 
+
   UE->is_synchronized = 0;
   printf("UE_thread_sync in with PHY_vars_UE %p\n",arg);
   printf("waiting for sync (UE_thread_synch) \n");
-#ifdef RTAI
-  rt_sem_wait(sync_sem);
-#else
-
   pthread_mutex_lock(&sync_mutex);
   printf("Locked sync_mutex, waiting (UE_sync_thread)\n");
   while (sync_var<0)
     pthread_cond_wait(&sync_cond, &sync_mutex);
   pthread_mutex_unlock(&sync_mutex);
   printf("unlocked sync_mutex (UE_sync_thread)\n");
-#endif
   printf("starting UE synch thread\n");
   
   if (UE_scan == 1) {
@@ -2019,9 +2013,13 @@ break;
 
 static void *UE_thread_tx(void *arg) {
 
+#ifdef RTAI
+  RT_TASK *task;
+#else 
 #ifdef LOWLATENCY
   struct sched_attr attr;
   unsigned int flags = 0;
+#endif
 #endif
   int ret;
 
@@ -2029,6 +2027,13 @@ static void *UE_thread_tx(void *arg) {
 
   UE->instance_cnt_tx=-1;
 
+#ifdef RTAI
+  task = rt_task_init_schmod(nam2num("UETX"), 0, 0, 0, SCHED_FIFO, 0xF);
+  if (task==NULL) {
+    LOG_E(PHY,"[SCHED][UE] Problem starting UE_thread_TX!!!!\n");
+    return 0;
+  }
+#else
 #ifdef LOWLATENCY
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
@@ -2047,21 +2052,15 @@ static void *UE_thread_tx(void *arg) {
     exit(-1);
   }
 #endif
+#endif
 
-#ifndef EXMIMO
   printf("waiting for sync (UE_thread_tx)\n");
-#ifdef RTAI
-  rt_sem_wait(sync_sem);
-#else
   pthread_mutex_lock(&sync_mutex);
   printf("Locked sync_mutex, waiting (UE_thread_tx)\n");
   while (sync_var<0)
     pthread_cond_wait(&sync_cond, &sync_mutex);
   pthread_mutex_unlock(&sync_mutex);
   printf("unlocked sync_mutex, waiting (UE_thread_tx)\n");
-#endif
-#endif
-
   printf("Starting UE TX thread\n");
 
   mlockall(MCL_CURRENT | MCL_FUTURE);
@@ -2150,13 +2149,24 @@ static void *UE_thread_rx(void *arg) {
   int i;
   int ret;
   
+#ifdef RTAI
+  RT_TASK *task;
+#else 
 #ifdef LOWLATENCY
   struct sched_attr attr;
   unsigned int flags = 0;
 #endif
+#endif
   
   UE->instance_cnt_rx=-1;
 
+#ifdef RTAI
+  task = rt_task_init_schmod(nam2num("UERX"), 0, 0, 0, SCHED_FIFO, 0xF);
+  if (task==NULL) {
+    LOG_E(PHY,"[SCHED][UE] Problem starting UE_thread_RX!!!!\n");
+    return 0;
+  }
+#else
 #ifdef LOWLATENCY
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
@@ -2174,23 +2184,17 @@ static void *UE_thread_rx(void *arg) {
     exit(-1);
   }  
 #endif
-
+#endif
+  
   mlockall(MCL_CURRENT | MCL_FUTURE);
   
-#ifndef EXMIMO
   printf("waiting for sync (UE_thread_rx)\n");
-#ifdef RTAI
-  rt_sem_wait(sync_sem);
-#else
   pthread_mutex_lock(&sync_mutex);
   printf("Locked sync_mutex, waiting (UE_thread_rx)\n");
   while (sync_var<0)
     pthread_cond_wait(&sync_cond, &sync_mutex);
   pthread_mutex_unlock(&sync_mutex);
   printf("unlocked sync_mutex, waiting (UE_thread_rx)\n");
-#endif
-#endif
-  
   printf("Starting UE RX thread\n");
   
   while (!oai_exit) { 
@@ -2301,6 +2305,9 @@ static void *UE_thread(void *arg) {
   unsigned int rxs;
   void *rxp[2],*txp[2];
 
+#ifdef RTAI
+  RT_TASK *task;
+#else 
   /*
 #ifdef LOWLATENCY
   struct sched_attr attr;
@@ -2308,20 +2315,24 @@ static void *UE_thread(void *arg) {
     unsigned long mask = 1; // processor 0 
 #endif
   */
+#endif
 
   printf("waiting for sync (UE_thread)\n");
-#ifdef RTAI
-  rt_sem_wait(sync_sem);
-#else
   pthread_mutex_lock(&sync_mutex);
   printf("Locked sync_mutex, waiting (UE_thread)\n");
   while (sync_var<0)
     pthread_cond_wait(&sync_cond, &sync_mutex);
   pthread_mutex_unlock(&sync_mutex);
   printf("unlocked sync_mutex, waiting (UE_thread)\n");
-#endif
-
   printf("starting UE thread\n");
+
+#ifdef RTAI
+  task = rt_task_init_schmod(nam2num("UEmain"), 0, 0, 0, SCHED_FIFO, 0xF);
+  if (task==NULL) {
+    LOG_E(PHY,"[SCHED][UE] Problem starting main UE_thread!!!!\n");
+    return 0;
+  }
+#else
   /*
 #ifdef LOWLATENCY
   attr.size = sizeof(attr);
@@ -2349,6 +2360,8 @@ static void *UE_thread(void *arg) {
   }
 #endif
   */
+#endif
+
   mlockall(MCL_CURRENT | MCL_FUTURE);
 
   T0 = rt_get_time_ns();
@@ -2529,7 +2542,7 @@ static void *UE_thread(void *arg) {
   }
   return(0);
 }
-#endif
+#endif //#ifndef EXMIMO
 
 
 
@@ -2560,17 +2573,12 @@ static void *UE_thread(void *arg) {
 #endif
 
   printf("waiting for sync (UE_thread)\n");
-#ifdef RTAI
-  rt_sem_wait(sync_sem);
-#else
   pthread_mutex_lock(&sync_mutex);
   printf("Locked sync_mutex, waiting (UE_thread)\n");
   while (sync_var<0)
     pthread_cond_wait(&sync_cond, &sync_mutex);
   pthread_mutex_unlock(&sync_mutex);
   printf("unlocked sync_mutex, waiting (UE_thread)\n");
-#endif
-
   printf("starting UE thread\n");
   
 #if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
@@ -2579,7 +2587,7 @@ static void *UE_thread(void *arg) {
 #endif
 
 #ifdef RTAI
-  task = rt_task_init_schmod(nam2num("TASK0"), 0, 0, 0, SCHED_FIFO, 0xF);
+  task = rt_task_init_schmod(nam2num("UEmain"), 0, 0, 0, SCHED_FIFO, 0xF);
   LOG_D(HW,"Started UE thread (id %p)\n",task);
 #endif
 
@@ -3696,7 +3704,7 @@ int main(int argc, char **argv) {
     sf_bounds = sf_bounds_5;
     sf_bounds_tx = sf_bounds_5_tx;
     max_cnt = 75;
-    tx_delay = 5;
+    tx_delay = 6;
 #endif
   }
   else if (frame_parms[0]->N_RB_DL == 6) {
@@ -3888,7 +3896,7 @@ int main(int argc, char **argv) {
 
 #ifdef RTAI
   // make main thread LXRT soft realtime
-  /* task = */ rt_task_init_schmod(nam2num("MYTASK"), 9, 0, 0, SCHED_FIFO, 0xF);
+  /* task = */ rt_task_init_schmod(nam2num("MAIN"), 9, 0, 0, SCHED_FIFO, 0xF);
 
   // start realtime timer and scheduler
   //rt_set_oneshot_mode();
@@ -3897,26 +3905,10 @@ int main(int argc, char **argv) {
 
   //now = rt_get_time() + 10*PERIOD;
   //rt_task_make_periodic(task, now, PERIOD);
+#endif
 
-  printf("Init mutex\n");
-  //mutex = rt_get_adr(nam2num("MUTEX"));
-  mutex = rt_sem_init(nam2num("MUTEX"), 1);
-  if (mutex==0)
-    {
-      printf("Error init mutex\n");
-      exit(-1);
-    }
-  else
-    printf("mutex=%p\n",mutex);
-
-  sync_sem = rt_typed_sem_init(nam2num("syncsem"), 0, BIN_SEM|FIFO_Q);
-  if(sync_sem == 0)
-    printf("error init sync semphore\n");
-
-#else
   pthread_cond_init(&sync_cond,NULL);
   pthread_mutex_init(&sync_mutex, NULL);
-#endif
 
 #if defined(ENABLE_ITTI)
   // Wait for eNB application initialization to be complete (eNB registration to MME)
@@ -4017,7 +4009,7 @@ int main(int argc, char **argv) {
     rt_sleep_ns(FRAME_PERIOD/10);
     init_dlsch_threads();
 #endif
-    printf("UE threads created\n");
+
     sleep(1);
 #ifdef RTAI
     main_ue_thread = rt_thread_create(UE_thread, NULL, 100000000);
@@ -4031,6 +4023,7 @@ int main(int argc, char **argv) {
       LOG_D(HW,"[lte-softmodem.c] Allocate UE_thread successful\n");
     }
 #endif
+    printf("UE threads created\n");
   }
   else {
 
@@ -4064,15 +4057,11 @@ int main(int argc, char **argv) {
 #endif
 #endif
 
-#ifdef RTAI
-  rt_sem_signal(sync_sem);
-#else
+  printf("Starting all threads\n");
   pthread_mutex_lock(&sync_mutex);
-  printf("Sending sync ...\n");
   sync_var=0;
   pthread_cond_broadcast(&sync_cond);
   pthread_mutex_unlock(&sync_mutex);
-#endif
 
   // wait for end of program
   printf("TYPE <CTRL-C> TO TERMINATE\n");
@@ -4149,7 +4138,6 @@ int main(int argc, char **argv) {
 #endif
 
 #ifdef RTAI
-  rt_sem_delete(sync_sem);
   stop_rt_timer();
 #else
   pthread_cond_destroy(&sync_cond);
