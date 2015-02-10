@@ -27,8 +27,8 @@
 
  *******************************************************************************/
 
-/*! \file eNB_scheduler_primitives.c
- * \brief primitives used by eNB for BCH, RACH, ULSCH, DLSCH scheduling
+/*! \file eNB_scheduler_RAs.c
+ * \brief primitives used for random access
  * \author  Navid Nikaein and Raymond Knopp
  * \date 2010 - 2014
  * \email: navid.nikaein@eurecom.fr

@@ -487,7 +487,8 @@ typedef struct {
   /// aggregate physical states every n millisecond
   int32_t aggregation_period_ms; 
   /// a set of lists used for localization
-  struct list loc_rss_list, loc_rssi_list, loc_subcarrier_rss_list, loc_timing_advance_list, loc_timing_update_list;
+  struct list loc_rss_list[10], loc_rssi_list[10], loc_subcarrier_rss_list[10], loc_timing_advance_list[10], loc_timing_update_list[10];
+  struct list tot_loc_rss_list, tot_loc_rssi_list, tot_loc_subcarrier_rss_list, tot_loc_timing_advance_list, tot_loc_timing_update_list;
 #endif 
 } LTE_eNB_ULSCH_t;
 

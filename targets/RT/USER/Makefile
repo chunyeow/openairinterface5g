@@ -45,6 +45,8 @@ ifeq ($(DEBUG),1)
 CFLAGS += -g -ggdb
 #CFLAGS += -DRRC_MSG_PRINT
 #CFLAGS += -DPDCP_MSG_PRINT
+else 
+CFLAGS += -O2 
 endif
 
 ifdef ($(MSG_PRINT),1)
@@ -56,6 +58,14 @@ SRC = synctest.c condtest.c
 
 ifndef RTAI
 RTAI=1
+endif
+
+ifeq ($(LOCALIZATION), 1)
+CFLAGS += -DLOCALIZATION
+endif
+
+ifeq ($(LINUX_LIST), 1)
+CFLAGS += -DLINUX_LIST
 endif
 
 ifeq ($(RTAI),1)

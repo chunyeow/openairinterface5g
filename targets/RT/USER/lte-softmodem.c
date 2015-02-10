@@ -3406,6 +3406,10 @@ int main(int argc, char **argv) {
       set_comp_log(OSA,    osa_log_level,   osa_log_verbosity, 1);
 #endif
 #endif
+#ifdef LOCALIZATION
+      set_comp_log(LOCALIZE, LOG_DEBUG, LOG_LOW, 1);
+      set_component_filelog(LOCALIZE);
+#endif 
       set_comp_log(ENB_APP, LOG_INFO, LOG_HIGH, 1);
       set_comp_log(OTG,     LOG_INFO,   LOG_HIGH, 1);
       if (online_log_messages == 1) { 

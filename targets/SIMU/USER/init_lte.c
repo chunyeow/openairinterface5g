@@ -33,6 +33,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
+#include <sys/time.h>
 
 #include "init_lte.h"
 
@@ -98,11 +99,19 @@ PHY_VARS_eNB* init_lte_eNB(LTE_DL_FRAME_PARMS *frame_parms,
     struct timeval ts;
     gettimeofday(&ts, NULL);
     PHY_vars_eNB->ulsch_eNB[1+i]->reference_timestamp_ms = ts.tv_sec * 1000 + ts.tv_usec / 1000;
-    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_rss_list);
-    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_rssi_list);
-    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_subcarrier_rss_list);
-    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_timing_advance_list);    
-    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_timing_update_list);    
+    int j;
+    for (j=0; j<10; j++) {
+      initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_rss_list[j]);
+      initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_rssi_list[j]);
+      initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_subcarrier_rss_list[j]);
+      initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_timing_advance_list[j]);
+      initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->loc_timing_update_list[j]);
+    }
+    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->tot_loc_rss_list);
+    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->tot_loc_rssi_list);
+    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->tot_loc_subcarrier_rss_list);
+    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->tot_loc_timing_advance_list);
+    initialize(&PHY_vars_eNB->ulsch_eNB[1+i]->tot_loc_timing_update_list);
 #endif    
   }
   

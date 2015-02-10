@@ -304,10 +304,11 @@ del(struct list* z) {
 	struct node* cur;
 	struct node* x = z->head;
 	
-	while(x) {
+	while((x != NULL) && (z->size > 0)) {
 		cur = x;
 		x = x->next;
 		free(cur);
+		z->size--;
 	}
 
 	z->head = NULL;
@@ -410,14 +411,16 @@ int compare (const void * a, const void * b)
 */
 int32_t calculate_median(struct list *loc_list) {
     int32_t median = 0;    
-    double* table = (double*) malloc(loc_list->size * sizeof(double));
-    totable(table, loc_list);
-    /// sort the table in ascending way
-    qsort (table, loc_list->size, sizeof(double), &compare);
-    /// median is the value at middle the sorted table
-    /// Q1 is the value at 1/4 the sorted table
-    /// Q3 is the value at 3/4 the sorted table
-    median = table[loc_list->size/2];
-    free(table);
+    if (loc_list->size > 0) {
+      double* table = (double*) malloc(loc_list->size * sizeof(double));
+      totable(table, loc_list);
+      /// sort the table in ascending way
+      qsort (table, loc_list->size, sizeof(double), &compare);
+      /// median is the value at middle the sorted table
+      /// Q1 is the value at 1/4 the sorted table
+      /// Q3 is the value at 3/4 the sorted table
+      median = table[loc_list->size/2];
+      free(table);
+    }
     return median;
 }

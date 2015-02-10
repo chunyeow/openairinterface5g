@@ -1144,6 +1144,10 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
       num_sdus = 0;
   }
 
+  // if the RLC AM is used, then RLC will only provide 2 bytes for ACK
+  // in this case, we sould add bsr
+
+
   // DCCH1
   if (UE_mac_inst[module_idP].scheduling_info.LCID_status[DCCH1] == LCID_NOT_EMPTY) {
 

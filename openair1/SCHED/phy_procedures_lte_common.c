@@ -579,21 +579,21 @@ double aggregate_eNB_UE_localization_stats(PHY_VARS_eNB *phy_vars_eNB, int8_t UE
     current_timestamp_ms = ts.tv_sec * 1000 + ts.tv_usec / 1000;
   
     
-      LOG_F(LOCALIZE, "PHY: [UE %x/%d -> eNB %d], timestamp %d, "
+      LOG_D(LOCALIZE, " PHY: [UE %x/%d -> eNB %d], timestamp %d, "
           "frame %d, subframe %d"
           "UE Tx power %d dBm, "
           "RSSI ant1 %d dBm, "
           "RSSI ant2 %d dBm, "
           "pwr ant1 %d dBm, "
           "pwr ant2 %d dBm, "
-          "Rx gain %d dBm, "
+          "Rx gain %d dB, "
           "TA %d, "
           "TA update %d, "
           "DL_CQI (%d,%d), "
           "Wideband CQI (%d,%d), "
-          "DL Subband CQI[13] %s \n"
-          "timestamp %d, (%d active subcarrier) %s \n"
-          ,phy_vars_eNB->dlsch_eNB[(uint32_t)UE_id][0]->rnti, UE_id, Mod_id, current_timestamp_ms,
+          "DL Subband CQI[13] %s \n",
+//          "timestamp %d, (%d active subcarrier) %s \n"
+          phy_vars_eNB->dlsch_eNB[(uint32_t)UE_id][0]->rnti, UE_id, Mod_id, current_timestamp_ms,
           frame,subframe,
           UE_tx_power_dB,
           phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].UL_rssi[0],
@@ -606,7 +606,8 @@ double aggregate_eNB_UE_localization_stats(PHY_VARS_eNB *phy_vars_eNB, int8_t UE
           phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].DL_cqi[0],phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].DL_cqi[1],
           phy_vars_eNB->PHY_measurements_eNB[Mod_id].wideband_cqi_dB[(uint32_t)UE_id][0],
           phy_vars_eNB->PHY_measurements_eNB[Mod_id].wideband_cqi_dB[(uint32_t)UE_id][1],
-          cqis,
+          cqis);
+      LOG_D(LOCALIZE, " PHY: timestamp %d, (%d active subcarrier) %s \n",
           current_timestamp_ms,
           phy_vars_eNB->lte_eNB_pusch_vars[(uint32_t)UE_id]->active_subcarrier, 
           sub_powers);
@@ -628,33 +629,77 @@ double aggregate_eNB_UE_localization_stats(PHY_VARS_eNB *phy_vars_eNB, int8_t UE
           break;
        }  
 
-      if ((current_timestamp_ms - ref_timestamp_ms > phy_vars_eNB->ulsch_eNB[UE_id+1]->aggregation_period_ms) && 
-              (phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rss_list.size != 0)) {
-          // check the size of one list to be sure there was a message transmitted during the defined aggregation period
-          median_power = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rss_list);
-          del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rss_list);
-          median_rssi = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rssi_list);
-          del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rssi_list);
-          median_subcarrier_rss = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_subcarrier_rss_list);
-          del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_subcarrier_rss_list);
-          median_TA = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_advance_list);
-          del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_advance_list);       
-          median_TA_update = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_update_list);
-          del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_update_list);   
+      if ((current_timestamp_ms - ref_timestamp_ms > phy_vars_eNB->ulsch_eNB[UE_id+1]->aggregation_period_ms)) {
+        // check the size of one list to be sure there was a message transmitted during the defined aggregation period
+ 
+        // make the reference timestamp == current timestamp
+         phy_vars_eNB->ulsch_eNB[UE_id+1]->reference_timestamp_ms = current_timestamp_ms;
+	 int i;
+	 for (i=0; i<10; i++) {
+           median_power = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rss_list[i]);
+           del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rss_list[i]);
+           median_rssi = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rssi_list[i]);
+           del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rssi_list[i]);
+           median_subcarrier_rss = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_subcarrier_rss_list[i]);
+           del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_subcarrier_rss_list[i]);
+           median_TA = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_advance_list[i]);
+           del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_advance_list[i]);
+           median_TA_update = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_update_list[i]);
+           del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_update_list[i]);
+
+	   if (median_power != 0)
+	       push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_rss_list,median_power);
+           if (median_rssi != 0)
+	       push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_rssi_list,median_rssi);
+           if (median_subcarrier_rss != 0)
+	       push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_subcarrier_rss_list,median_subcarrier_rss);
+           if (median_TA != 0)
+	       push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_timing_advance_list,median_TA);
+           if (median_TA_update != 0)
+    	       push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_timing_update_list,median_TA_update);
+
+           initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rss_list[i]);
+           initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_subcarrier_rss_list[i]);
+           initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rssi_list[i]);
+           initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_advance_list[i]);
+           initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_update_list[i]);
+	  }
+
+          median_power = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_rss_list);
+          del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_rss_list);
+          median_rssi = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_rssi_list);
+          del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_rssi_list);
+          median_subcarrier_rss = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_subcarrier_rss_list);
+          del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_subcarrier_rss_list);
+          median_TA = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_timing_advance_list);
+          del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_timing_advance_list);
+          median_TA_update = calculate_median(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_timing_update_list);
+          del(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_timing_update_list);
+
+          initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_rss_list);
+          initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_subcarrier_rss_list);
+          initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_rssi_list);
+          initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_timing_advance_list);
+          initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->tot_loc_timing_update_list);
 
           double alpha = 2, power_distance, time_distance;
-          power_distance = pow(10, ((UE_tx_power_dB - (median_subcarrier_rss - phy_vars_eNB->rx_total_gain_eNB_dB))/(20.0*alpha)));
-          time_distance = (double) 299792458*(phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].UE_timing_offset)/(sys_bw*1000000);
+	  // distance = 10^((Ptx - Prx - A)/10alpha), A is a constance experimentally evaluated
+	  // A includes the rx gain (phy_vars_eNB->rx_total_gain_eNB_dB) and hardware calibration
+          power_distance = pow(10, ((UE_tx_power_dB - median_power - phy_vars_eNB->rx_total_gain_eNB_dB + 133)/(10.0*alpha)));
+	  /* current measurements shows constant UE_timing_offset = 18
+	     and timing_advance_update = 11 at 1m. at 5m, timing_advance_update = 12*/
+	  //time_distance = (double) 299792458*(phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].timing_advance_update)/(sys_bw*1000000);
+	  time_distance = (double) fabs(phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].timing_advance_update - 11) * 4.89;//  (3 x 108 x 1 / (15000 x 2048)) / 2 = 4.89 m
 
           phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].distance.time_based = time_distance;
           phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].distance.power_based = power_distance;
 
-          LOG_D(LOCALIZE, " PHY [UE %x/%d -> eNB %d], timestamp %d, "
+          LOG_D(LOCALIZE, " PHY agg [UE %x/%d -> eNB %d], timestamp %d, "
             "frame %d, subframe %d "
             "UE Tx power %d dBm, "
             "median RSSI %d dBm, "
             "median Power %d dBm, "
-            "Rx gain %d dBm, "
+            "Rx gain %d dB, "
             "power estimated r = %0.3f, "
             " TA %d, update %d "
             "TA estimated r = %0.3f\n"
@@ -668,27 +713,19 @@ double aggregate_eNB_UE_localization_stats(PHY_VARS_eNB *phy_vars_eNB, int8_t UE
             phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].UE_timing_offset, median_TA_update, 
             time_distance); 
 
-            initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rss_list);
-            initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_subcarrier_rss_list);        
-            initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rssi_list);
-            initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_advance_list);
-            initialize(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_update_list);
-            
-            // make the reference timestamp == current timestamp
-            phy_vars_eNB->ulsch_eNB[UE_id+1]->reference_timestamp_ms = current_timestamp_ms;
             return 0;
       }
       else {
           avg_power = (dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[(uint32_t)UE_id]->ulsch_power[0]) + dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[(uint32_t)UE_id]->ulsch_power[1]))/2;
           avg_rssi = (phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].UL_rssi[0] + phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].UL_rssi[1])/2;
 
-          push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rss_list,avg_power);
-          push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rssi_list,avg_rssi);
+          push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rss_list[subframe],avg_power);
+          push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_rssi_list[subframe],avg_rssi);
           for (i=0;i<phy_vars_eNB->lte_eNB_pusch_vars[(uint32_t)UE_id]->active_subcarrier;i++) {
-              push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_subcarrier_rss_list, phy_vars_eNB->lte_eNB_pusch_vars[(uint32_t)UE_id]->subcarrier_power[i]);
+              push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_subcarrier_rss_list[subframe], phy_vars_eNB->lte_eNB_pusch_vars[(uint32_t)UE_id]->subcarrier_power[i]);
           }       
-          push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_advance_list, phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].UE_timing_offset);
-          push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_update_list, phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].timing_advance_update);
+          push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_advance_list[subframe], phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].UE_timing_offset);
+          push_front(&phy_vars_eNB->ulsch_eNB[UE_id+1]->loc_timing_update_list[subframe], phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].timing_advance_update);
           return -1;
       }      
 }
