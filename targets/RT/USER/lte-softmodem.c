@@ -114,6 +114,10 @@ unsigned short config_frames[4] = {2,9,11,13};
 #include "enb_config.h"
 //#include "PHY/TOOLS/time_meas.h"
 
+#ifndef OPENAIR2
+#include "UTIL/OTG/otg_vars.h"
+#endif
+
 #if defined(ENABLE_ITTI)
 # include "intertask_interface_init.h"
 # include "create_tasks.h"
@@ -472,8 +476,8 @@ static void *scope_thread(void *arg) {
   char stats_buffer[16384];
 # ifdef ENABLE_XFORMS_WRITE_STATS
   FILE *UE_stats, *eNB_stats;
-  int len = 0;
 # endif
+  int len = 0;
   struct sched_param sched_param;
   int UE_id;
 
@@ -491,10 +495,7 @@ static void *scope_thread(void *arg) {
     
   while (!oai_exit) {
     if (UE_flag==1) {
-# ifdef ENABLE_XFORMS_WRITE_STATS
-      len =
-# endif
-	dump_ue_stats (PHY_vars_UE_g[0][0], stats_buffer, 0, mode,rx_input_level_dBm);
+      len = dump_ue_stats (PHY_vars_UE_g[0][0], stats_buffer, 0, mode,rx_input_level_dBm);
       fl_set_object_label(form_stats->stats_text, stats_buffer);
 
       phy_scope_UE(form_ue[0], 
@@ -503,16 +504,14 @@ static void *scope_thread(void *arg) {
 		   0,7);
             
     } else {
-# ifdef ENABLE_XFORMS_WRITE_STATS
-      len =
-# endif
-	dump_eNB_l2_stats (stats_buffer, 0);
+#ifdef OPENAIR2
+      len = dump_eNB_l2_stats (stats_buffer, 0);
       fl_set_object_label(form_stats_l2->stats_text, stats_buffer);
-
-# ifdef ENABLE_XFORMS_WRITE_STATS
-      len =
-# endif
-	dump_eNB_stats (PHY_vars_eNB_g[0][0], stats_buffer, 0);
+#endif
+      len = dump_eNB_stats (PHY_vars_eNB_g[0][0], stats_buffer, 0);
+      if (MAX_NUM_CCs>1)
+	len += dump_eNB_stats (PHY_vars_eNB_g[0][1], &stats_buffer[len], 0);
+    
       fl_set_object_label(form_stats->stats_text, stats_buffer);
 
       for(UE_id=0;UE_id<scope_enb_num_ue;UE_id++) {
@@ -759,6 +758,7 @@ void *l2l1_task(void *arg)
 	break;
 
       case TERMINATE_MESSAGE:
+	printf("received terminate message\n");
 	oai_exit=1;
 	itti_exit_task ();
 	break;
@@ -1719,6 +1719,8 @@ static void *eNB_thread(void *arg)
 }
 
 
+#endif
+
 static void get_options (int argc, char **argv) {
   int c;
   //  char                          line[1000];
@@ -1835,6 +1837,7 @@ static void get_options (int argc, char **argv) {
     case 't':
       target_ul_mcs = atoi (optarg);
       break;
+#ifdef OPENAIR2
     case 'P':
       /* enable openair packet tracer (OPT)*/
       if ((strcmp(optarg, "wireshark") == 0) || 
@@ -1851,7 +1854,7 @@ static void get_options (int argc, char **argv) {
 	printf("Possible values are either wireshark or pcap\n");
       }
       break;  
-      
+#endif
     case 'V':
       ouput_vcd = 1;
       break;
@@ -2186,6 +2189,7 @@ int main(int argc, char **argv) {
   if (opp_enabled ==1)
     reset_opp_meas();
 
+#ifdef OPENAIR2
   if (opt_type != OPT_NONE) {
     radio_type_t radio_type;
     if (frame_parms[0]->frame_type == FDD)
@@ -2195,6 +2199,7 @@ int main(int argc, char **argv) {
     if (init_opt(NULL, NULL, NULL, radio_type) == -1)
       LOG_E(OPT,"failed to run OPT \n");
   }
+#endif
   
 #if defined(ENABLE_ITTI)
   if (UE_flag == 1) {
@@ -2553,9 +2558,12 @@ int main(int argc, char **argv) {
   }
   printf("ITTI tasks created\n");
 #endif
+
+#ifdef OPENAIR2
   printf("Filling UE band info\n");
   if (UE_flag==1)
     fill_ue_band_info();
+#endif
 
   /* #ifdef OPENAIR2
   //if (otg_enabled) {
@@ -2905,8 +2913,10 @@ int main(int argc, char **argv) {
   if (ouput_vcd)
     vcd_signal_dumper_close();
 
+#ifdef OPENAIR2
   if (opt_type != OPT_NONE)
     terminate_opt();
+#endif
 
   logClean();
 

@@ -474,7 +474,7 @@ void phy_scope_UE(FD_lte_phy_scope_ue *form,
                                         frame,
                                         subframe);
     } else {
-        coded_bits_per_codeword = frame_parms->N_RB_DL*12*get_Qm(mcs)*(frame_parms->symbols_per_tti);
+      coded_bits_per_codeword = 0; //frame_parms->N_RB_DL*12*get_Qm(mcs)*(frame_parms->symbols_per_tti);
     }
     
     I = (float*) calloc(nsymb_ce*2,sizeof(float));
