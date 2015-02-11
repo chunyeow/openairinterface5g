@@ -111,19 +111,9 @@ struct sched_param              sched_param_UE_init_synch;
 struct sched_param              sched_param_UE_thread_tx;
 struct sched_param              sched_param_UE_thread_rx;
 
-#ifdef RTAI
-extern SEM                     *mutex;
-//static CND *cond;
-
-extern SEM *sync_sem; // to sync rx & tx streaming
-
-//static int sync_thread;
-#else
-
 extern pthread_cond_t sync_cond;
 extern pthread_mutex_t sync_mutex;
 extern int sync_var;
-#endif
 
 extern openair0_config_t openair0_cfg[MAX_CARDS];
 extern uint32_t          downlink_frequency[MAX_NUM_CCs][4];
@@ -453,8 +443,6 @@ static void *UE_thread_tx(void *arg) {
   pthread_mutex_unlock(&sync_mutex);
   printf("unlocked sync_mutex, waiting (UE_thread_tx)\n");
 
-
-
   printf("Starting UE TX thread\n");
 
   mlockall(MCL_CURRENT | MCL_FUTURE);
@@ -585,19 +573,14 @@ static void *UE_thread_rx(void *arg) {
   
   mlockall(MCL_CURRENT | MCL_FUTURE);
   
-#ifndef EXMIMO
   printf("waiting for sync (UE_thread_rx)\n");
-#ifdef RTAI
-  rt_sem_wait(sync_sem);
-#else
+
   pthread_mutex_lock(&sync_mutex);
   printf("Locked sync_mutex, waiting (UE_thread_rx)\n");
   while (sync_var<0)
     pthread_cond_wait(&sync_cond, &sync_mutex);
   pthread_mutex_unlock(&sync_mutex);
   printf("unlocked sync_mutex, waiting (UE_thread_rx)\n");
-#endif
-#endif
   
   printf("Starting UE RX thread\n");
   
@@ -672,17 +655,17 @@ static void *UE_thread_rx(void *arg) {
 	printf("[openair][SCHED][eNB] error locking mutex for UE RX\n");
       }
 	else {
-	UE->instance_cnt_rx--;
-	
-	if (pthread_mutex_unlock(&UE->mutex_rx) != 0) {	
-	printf("[openair][SCHED][eNB] error unlocking mutex for UE RX\n");
-      }
-      }
+	  UE->instance_cnt_rx--;
+	  
+	  if (pthread_mutex_unlock(&UE->mutex_rx) != 0) {	
+	    printf("[openair][SCHED][eNB] error unlocking mutex for UE RX\n");
+	  }
+	}
 	//    printf("UE_thread_rx done\n");
-      }
-      }      
-	return(0);
-      }
+    }
+  }      
+  return(0);
+}
     
 
 
