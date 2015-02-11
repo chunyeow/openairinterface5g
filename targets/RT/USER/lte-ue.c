@@ -59,8 +59,10 @@
 #include "PHY/types.h"
 
 #include "PHY/defs.h"
+#ifdef OPENAIR2
 #include "LAYER2/MAC/defs.h"
 #include "RRC/LITE/extern.h"
+#endif
 #include "PHY_INTERFACE/extern.h"
 
 #undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
@@ -76,8 +78,10 @@
 #include "MAC_INTERFACE/extern.h"
 //#include "SCHED/defs.h"
 #include "SCHED/extern.h"
+#ifdef OPENAIR2
 #include "LAYER2/MAC/extern.h"
 #include "LAYER2/MAC/proto.h"
+#endif
 
 #include "UTIL/LOG/log_extern.h"
 #include "UTIL/OTG/otg_tx.h"
@@ -481,7 +485,7 @@ static void *UE_thread_tx(void *arg) {
       phy_procedures_UE_S_TX(UE,0,0,no_relay);
     }
     
-    
+ #ifdef OPENAIR2   
     if (UE->lte_frame_parms.frame_type == TDD) {
       
       ret = mac_xface->ue_scheduler(UE->Mod_id, 
@@ -509,6 +513,8 @@ static void *UE_thread_tx(void *arg) {
 	UE->UE_mode[0] = PRACH;
       }
     }
+
+#endif
     
     
     if (pthread_mutex_lock(&UE->mutex_tx) != 0) {
@@ -620,7 +626,8 @@ static void *UE_thread_rx(void *arg) {
 	    ((UE->slot_rx&1)==0)) {
 	  phy_procedures_UE_RX(UE,0,0,UE->mode,no_relay,NULL);
 	}
-      	
+
+#ifdef OPENAIR2      	
 	if (i==0) {
 	  ret = mac_xface->ue_scheduler(UE->Mod_id, 
 					UE->frame_tx,
@@ -647,8 +654,8 @@ static void *UE_thread_rx(void *arg) {
 		  UE->Mod_id,UE->frame_rx,UE->slot_tx>>1);
 	    UE->UE_mode[0] = PRACH;
 	  }
-	}	  
-	
+        }	  
+#endif	
 	UE->slot_rx++;
 	
 	if (UE->slot_rx==20) {
@@ -714,7 +721,6 @@ void *UE_thread(void *arg) {
 #ifdef LOWLATENCY
   struct sched_attr attr;
   unsigned int flags = 0;
-  unsigned long mask = 1; // processor 0 
 #endif
   
 
@@ -1362,7 +1368,7 @@ void init_UE_threads(void) {
 }
 
 
-
+#ifdef OPENAIR2
 void fill_ue_band_info(void) {
 
   UE_EUTRA_Capability_t *UE_EUTRA_Capability = UE_rrc_inst[0].UECap->UE_EUTRA_Capability;
@@ -1390,7 +1396,7 @@ void fill_ue_band_info(void) {
       }
   }
 }
-
+#endif
 
 int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg, openair0_rf_map rf_map[MAX_NUM_CCs])
 {

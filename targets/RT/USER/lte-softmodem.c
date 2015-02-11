@@ -1719,7 +1719,7 @@ static void *eNB_thread(void *arg)
 }
 
 
-#endif
+
 
 static void get_options (int argc, char **argv) {
   int c;
@@ -1839,6 +1839,7 @@ static void get_options (int argc, char **argv) {
       break;
 #ifdef OPENAIR2
     case 'P':
+#ifdef OPENAIR2
       /* enable openair packet tracer (OPT)*/
       if ((strcmp(optarg, "wireshark") == 0) || 
 	  (strcmp(optarg, "WIRESHARK") == 0)) {
@@ -1853,6 +1854,7 @@ static void get_options (int argc, char **argv) {
 	printf("Unrecognized option for OPT module\n");
 	printf("Possible values are either wireshark or pcap\n");
       }
+#endif
       break;  
 #endif
     case 'V':
@@ -1950,6 +1952,9 @@ static void get_options (int argc, char **argv) {
     }
   }
   
+  AssertFatal(conf_config_file_name != NULL,"Please provide a configuration file\n");
+  
+    
   if ((UE_flag == 0) && (conf_config_file_name != NULL)) {
     int i,j;
     
@@ -2096,7 +2101,7 @@ int main(int argc, char **argv) {
   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
     frame_parms[CC_id] = (LTE_DL_FRAME_PARMS*) malloc(sizeof(LTE_DL_FRAME_PARMS));
     /* Set some default values that may be overwritten while reading options */
-    frame_parms[CC_id]->frame_type         = FDD; /* TDD */
+    frame_parms[CC_id]->frame_type         = TDD; /* TDD */
     frame_parms[CC_id]->tdd_config          = 3;
     frame_parms[CC_id]->tdd_config_S        = 0;
     frame_parms[CC_id]->N_RB_DL             = 25;
@@ -2105,6 +2110,9 @@ int main(int argc, char **argv) {
     frame_parms[CC_id]->Ncp_UL              = NORMAL;
     frame_parms[CC_id]->Nid_cell            = Nid_cell;
     frame_parms[CC_id]->num_MBSFN_config    = 0;
+    frame_parms[CC_id]->nb_antennas_tx_eNB  = 1;
+    frame_parms[CC_id]->nb_antennas_tx      = 1;
+    frame_parms[CC_id]->nb_antennas_rx      = 1;
   }
 
   // initialize the log (see log.h for details)
@@ -2188,7 +2196,6 @@ int main(int argc, char **argv) {
   
   if (opp_enabled ==1)
     reset_opp_meas();
-
 #ifdef OPENAIR2
   if (opt_type != OPT_NONE) {
     radio_type_t radio_type;
@@ -2278,7 +2285,7 @@ int main(int argc, char **argv) {
       UE[CC_id] = PHY_vars_UE_g[0][CC_id];
       printf("PHY_vars_UE_g[0][%d] = %p\n",CC_id,UE[CC_id]);
 #ifndef OPENAIR2
-      for (i=0;i<NUMBER_OF_eNB_MAX;i++) {
+      for (i=0;i<NUMBER_OF_CONNECTED_eNB_MAX;i++) {
 	UE[CC_id]->pusch_config_dedicated[i].betaOffset_ACK_Index = beta_ACK;
 	UE[CC_id]->pusch_config_dedicated[i].betaOffset_RI_Index  = beta_RI;
 	UE[CC_id]->pusch_config_dedicated[i].betaOffset_CQI_Index = beta_CQI;
