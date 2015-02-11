@@ -218,6 +218,7 @@ SHARED_DEPENDENCIES 	+= $(LFDS_LIB)
 -include $(ASN1_MSG_OBJS1:.o=.d)
 -include $(RTAI_OBJ:.o=.d)
 -include lte-softmodem.d
+-include lte-ue.d
 -include rrh.d
 
 $(LFDS_LIB):
@@ -238,7 +239,7 @@ $(ETHERNET_OBJ):$(ETHERNET_FILE_OBJ)
 endif
 
 ifeq ($(RTAI),1)
-$(RTAI_OBJ) lte-softmodem.o: %.o : %.c
+$(RTAI_OBJ) lte-softmodem.o lte-ue.o: %.o : %.c
 else
 $(RTAI_OBJ): %.o : %.c
 endif
@@ -258,7 +259,7 @@ endif
 ifeq ($(RTAI),1)
 $(OBJ) $(ASN1_MSG_OBJS1): %.o : %.c
 else
-$(OBJ) $(ASN1_MSG_OBJS1) lte-softmodem.o: %.o : %.c
+$(OBJ) $(ASN1_MSG_OBJS1) lte-softmodem.o lte-ue.o: %.o : %.c
 endif
 
 rrh.o: %.o : %.c
@@ -286,9 +287,9 @@ synctest: $(OBJ_SYNC) $(SHARED_DEPENDENCIES) synctest.c
 sleeptest: rt_wrapper.o sleeptest.c
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) rt_wrapper.o -o sleeptest sleeptest.c $(LDFLAGS) 
 
-lte-softmodem: $(OBJ) $(USRP_OBJ) $(ETHERNET_OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) lte-softmodem.o $(SHARED_DEPENDENCIES)
+lte-softmodem: $(OBJ) $(USRP_OBJ) $(ETHERNET_OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) lte-ue.o lte-softmodem.o $(SHARED_DEPENDENCIES)
 	@echo Linking $@
-	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(USRP_OBJ) $(ETHERNET_OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) lte-softmodem.o -o lte-softmodem $(LDFLAGS) $(LIBS)
+	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(USRP_OBJ) $(ETHERNET_OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) lte-ue.o lte-softmodem.o -o lte-softmodem $(LDFLAGS) $(LIBS)
 
 rrh: rrh.o
 	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) rrh.o -o rrh -lpthread -lrt
@@ -381,8 +382,8 @@ cleanmodem:
 	@$(RM_F_V) $(OBJ) $(RTAI_OBJ) $(OBJ_EMOS) $(OBJ_SYNC) $(USRP_OBJ) $(ETHERNET_OBJ)
 	@$(RM_F_V) $(OBJ:.o=.d) $(RTAI_OBJ:.o=.d) $(OBJ_EMOS:.o=.d) $(OBJ_SYNC:.o=.d)
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1_msg.o $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1_msg.d
-	@$(RM_F_V) rrh.o rrh.d lte-softmodem.o lte-softmodem.d
-	@$(RM_F_V) rrh.o lte-softmodem.o
+	@$(RM_F_V) lte-ue.o lte-ue.d rrh.o rrh.d lte-softmodem.o lte-softmodem.d
+	@$(RM_F_V) rrh.o lte-ue.o lte-softmodem.o
 
 cleanasn1:
 	rm -f $(ASN1_MSG_OBJS1)

@@ -23,6 +23,8 @@ functions.trx_write
 @24
 variables.txcnt[63:0]
 variables.rxcnt[63:0]
+variables.trx_ts[63:0]
+variables.trx_tst[63:0]
 @25
 variables.frame_number_TX_eNB[63:0]
 variables.frame_number_RX_eNB[63:0]

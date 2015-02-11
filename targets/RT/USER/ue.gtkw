@@ -26,6 +26,8 @@ variables.frame_number_TX_UE[63:0]
 variables.subframe_number_RX_UE[63:0]
 variables.subframe_number_TX_UE[63:0]
 @28
+functions.trx_read
+functions.ue_synch
 functions.ue_slot_fep
 functions.lte_ue_measurement_procedures
 functions.ue_rrc_measurements
