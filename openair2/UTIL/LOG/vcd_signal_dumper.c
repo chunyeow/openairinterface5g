@@ -91,6 +91,8 @@ const char* eurecomVariablesNames[] = {
     "hw_frame",
     "txcnt",
     "rxcnt",
+    "trx_ts",
+    "trx_tst",
     "itti_send_msg",
     "itti_poll_msg",
     "itti_recv_msg",
