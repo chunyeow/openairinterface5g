@@ -237,6 +237,7 @@
 #define AMP 128 
 #else
 #define AMP 512//1024 //4096
+#define AMP_BPSK 724
 #endif
 
 #define AMP_OVER_SQRT2 ((AMP*ONE_OVER_SQRT2_Q15)>>15)

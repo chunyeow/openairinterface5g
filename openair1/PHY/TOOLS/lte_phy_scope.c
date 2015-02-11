@@ -414,7 +414,7 @@ FD_lte_phy_scope_ue *create_lte_phy_scope_ue( void ) {
 
     return fdui;
 }
-
+ 
 void phy_scope_UE(FD_lte_phy_scope_ue *form, 
                   PHY_VARS_UE *phy_vars_ue,
                   int eNB_id,

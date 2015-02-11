@@ -399,46 +399,66 @@ typedef enum {
 /// Top-level PHY Data Structure for UE 
 typedef struct
 {
-  /// Module ID indicator for this instance
+  /// \brief Module ID indicator for this instance
   uint8_t Mod_id;
+  /// \brief Component carrier ID for this PHY instance
   uint8_t CC_id;
-  uint8_t local_flag;
+  //uint8_t local_flag;
+  /// \brief Indicator of current run mode of UE (normal_txrx, rx_calib_ue, no_L2_connect, debug_prach)
+  runmode_t mode;
+  /// \brief Indicator that UE should perform band scanning
+  int UE_scan;
+  /// \brief Indicator that UE is synchronized to an eNB
   int is_synchronized;
+  /// \brief Instance count of TX processing thread (-1 means ready, 0 means busy)
   int instance_cnt_tx;
+  /// \brief Instance count of RX processing thread (-1 means ready, 0 means busy)
   int instance_cnt_rx;
+  /// \brief Instance cound of initial synchronization thread (-1 means ready, 0 means busy)
   int instance_cnt_synch;
+  /// \brief Condition variable for TX processing thread
   pthread_cond_t cond_tx;
+  /// \brief Condition variable for RX processing thread
   pthread_cond_t cond_rx;
+  /// \brief Condition variable for initial synchronization thread
   pthread_cond_t cond_synch;
+  /// \brief Mutex for TX processing thread
   pthread_mutex_t mutex_tx;
+  /// \brief Mutex for RX processing thread
   pthread_mutex_t mutex_rx;
+  /// \brief Mutex for initial synchronization thread
   pthread_mutex_t mutex_synch;
+  /// \brief Pthread structure for RX processing thread
   pthread_t       thread_rx;
+  /// \brief Pthread structure for TX processing thread
   pthread_t       thread_tx;
+  /// \brief Pthread structure to RX processing thread
   pthread_t       thread_synch;
+  /// \brief Total gain of the TX chain (16-bit baseband I/Q to antenna)
   uint32_t tx_total_gain_dB;
-  /// \brief This is a function of rx_gain_mode (and the corresponding gain) and the rx_gain of the card.
+  /// \brief Total gain of the RX chain (antenna to baseband I/Q) This is a function of rx_gain_mode (and the corresponding gain) and the rx_gain of the card.
   uint32_t rx_total_gain_dB;
-  /// \brief ?.
-  /// - first index: ? [0..3] (hard coded)
+  /// \brief Total gains with maximum RF gain stage (ExpressMIMO2/Lime)
   uint32_t rx_gain_max[4];
-  /*
-    rx_gain_t rx_gain_mode[4];*/
-  /// \brief ?.
-  /// - first index: ? [0..3] (hard coded)
+  /// \brief Total gains with medium RF gain stage (ExpressMIMO2/Lime)
   uint32_t rx_gain_med[4];
-  /// \brief ?.
-  /// - first index: ? [0..3] (hard coded)
+  /// \brief Total gains with bypassed RF gain stage (ExpressMIMO2/Lime)
   uint32_t rx_gain_byp[4];
-  /// \brief ?.
+  /// \brief Current transmit power
   int8_t tx_power_dBm;
+  /// \brief Total number of REs in current transmission
   int tx_total_RE;
+  /// \brief Maximum transmit power
   int8_t tx_power_max_dBm;
-  //  uint32_t frame;
+  /// \brief Frame counters for TX and RX processing
   uint32_t frame_rx,frame_tx;
+  /// \brief Slot counters for TX and RX processing
   uint32_t slot_tx,slot_rx;
+  /// \brief Number of eNB seen by UE
   uint8_t n_connected_eNB;
+  /// \brief indicator that Handover procedure has been initiated
   uint8_t ho_initiated;
+  /// \brief indicator that Handover procedure has been triggered
   uint8_t ho_triggered;
   /// \brief Measurement variables.
   PHY_MEASUREMENTS PHY_measurements;

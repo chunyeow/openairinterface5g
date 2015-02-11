@@ -230,7 +230,7 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
 	}
       }
 
-      LOG_D(PHY,"eNB: %d, RSRP_tmp: %d \n",eNB_offset,phy_vars_ue->PHY_measurements.rsrp[eNB_offset]);
+//      LOG_D(PHY,"eNB: %d, RSRP_tmp: %d \n",eNB_offset,phy_vars_ue->PHY_measurements.rsrp[eNB_offset]);
       // 2 RE per PRB
       phy_vars_ue->PHY_measurements.rsrp[eNB_offset]/=(24*phy_vars_ue->lte_frame_parms.N_RB_DL);
      
@@ -256,7 +256,7 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
 
     }
     if (((phy_vars_ue->frame_rx %10) == 0) && (slot == 0)) {
-#ifdef DEBUG_MEAS
+//#ifdef DEBUG_MEAS
     if (eNB_offset == 0)
 	LOG_D(PHY,"[UE %d] Frame %d, slot %d RRC Measurements => rssi %3.1f dBm (digital: %3.1f dB, gain %d)\n",phy_vars_ue->Mod_id,
 	      phy_vars_ue->frame_rx,slot,10*log10(phy_vars_ue->PHY_measurements.rssi)-phy_vars_ue->rx_total_gain_dB,
@@ -274,7 +274,7 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
     //LOG_D(PHY,"RSRP_dB: %3.2f \n",(dB_fixed_times10(phy_vars_ue->PHY_measurements.rsrp[eNB_offset])/10.0));
     //LOG_D(PHY,"gain_loss_dB: %d \n",phy_vars_ue->rx_total_gain_dB);
     //LOG_D(PHY,"gain_fixed_dB: %d \n",dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12));
-#endif
+//#endif
     }
   }
 }
