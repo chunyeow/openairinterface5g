@@ -172,7 +172,6 @@ pthread_t                       main_ue_thread;
 
 pthread_attr_t                  attr_dlsch_threads;
 pthread_attr_t                  attr_UE_thread;
-#endif
 
 #ifndef LOWLATENCY
 struct sched_param              sched_param_dlsch;
