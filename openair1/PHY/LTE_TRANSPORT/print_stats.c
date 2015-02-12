@@ -632,9 +632,11 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
 		     phy_vars_eNB->eNB_UE_stats[UE_id].mode);
 #ifdef OPENAIR2
       UE_id_mac = find_UE_id(phy_vars_eNB->Mod_id,phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->rnti);
-      RRC_status = mac_get_rrc_status(phy_vars_eNB->Mod_id,1,UE_id_mac);
-	
-      len += sprintf(&buffer[len],"[eNB PROC] UE_id_mac = %d, RRC status = %d\n",UE_id_mac,RRC_status);
+      if (UE_id_mac != -1) {
+          RRC_status = mac_get_rrc_status(phy_vars_eNB->Mod_id,1,UE_id_mac);
+          len += sprintf(&buffer[len],"[eNB PROC] UE_id_mac = %d, RRC status = %d\n",UE_id_mac,RRC_status);
+      } else
+          len += sprintf(&buffer[len],"[eNB PROC] UE_id_mac = -1\n");
 #endif
       
 #ifdef OPENAIR2

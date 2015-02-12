@@ -91,16 +91,16 @@ int openair2_stats_read(char *buffer, char **my_buffer, off_t off, int length)
 
       len+=sprintf(&buffer[len],"UE TTI: %d\n",UE_mac_inst[ue_id].frame);
 
-      for (enb_id= 0; enb_id <NUM_eNB_INST;enb_id++) {
+      for (enb_id= 0; enb_id <NB_SIG_CNX_UE;enb_id++) {
 	
-	switch (mac_get_rrc_status(eNB_id,0,ue_id) > RRC_CONNECTED) {
+	switch (mac_get_rrc_status(ue_id,0,enb_id) > RRC_CONNECTED) {
 	case RRC_RECONFIGURED :
 	case RRC_CONNECTED:
 	case RRC_SI_RECEIVED:
 	case RRC_IDLE:
 	  break;
 	  
-	if (mac_get_rrc_status(eNB_id,0,ue_id) > RRC_CONNECTED) {
+	if (mac_get_rrc_status(ue_id,0,enb_id) > RRC_CONNECTED) {
 	  //	if (UE_mac_inst[ue_id].Dcch_lchan[CH_index].Active==1) {
 	  len+=sprintf(&buffer[len],"eNB %d: Wideband SINR %d dB---\n",
 		       CH_index,UE_mac_inst[Mod_id].Def_meas[CH_index].Wideband_sinr);

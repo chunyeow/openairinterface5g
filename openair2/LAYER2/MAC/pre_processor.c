@@ -249,8 +249,10 @@ int maxcqi(module_id_t Mod_id,int32_t UE_id) {
   for (n=0;n<UE_list->numactiveCCs[UE_id];n++) {
     CC_id = UE_list->ordered_CCids[n][UE_id];
     eNB_UE_stats = mac_xface->get_eNB_UE_stats(Mod_id,CC_id,UE_RNTI(Mod_id,UE_id));
-    if (eNB_UE_stats==NULL)
+    if (eNB_UE_stats==NULL) {
       mac_xface->macphy_exit("maxcqi: could not get eNB_UE_stats\n");
+      return 0; // not reached
+    }
     if (eNB_UE_stats->DL_cqi[0] > CQI)
       CQI = eNB_UE_stats->DL_cqi[0];
   }

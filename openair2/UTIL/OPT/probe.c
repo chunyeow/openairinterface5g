@@ -469,6 +469,7 @@ void trace_pdu(int direction, uint8_t *pdu_buffer, unsigned int pdu_buffer_size,
                       1, 0, 1,  //guint8 isPredefinedData, guint8 retx, guint8 crcStatus
                       oob_event,oob_event_value,
                       pdu_buffer, pdu_buffer_size);
+            break;
         case OPT_PCAP:
             if (file_fd == NULL) {
                 return;
@@ -496,15 +497,16 @@ int init_opt(char *path, char *ip, char *port, radio_type_t radio_type_p)
 {
     subframesSinceCaptureStart = 0;
 
-    if (ip != NULL) {
-        strcpy(&in_path[0], path);
-    } else {
-        strcpy(&in_path[0], "oai_opt.pcap");
-    }
     if (path != NULL) {
-        strcpy(&in_ip[0], ip);
+        strncpy( in_path, sizeof(in_path), path );
+        in_path[sizeof(in_path) - 1] = 0; // terminate string
     } else {
-        strcpy(&in_ip[0], "127.0.0.1");
+        strcpy( in_path, "oai_opt.pcap" );
+    }
+    if (ip != NULL) {
+        strncpy( in_ip, sizeof(in_ip), ip );
+    } else {
+        strcpy( in_ip, "127.0.0.1" );
     }
     if (port != NULL) {
         in_port = atoi(port);
@@ -544,6 +546,8 @@ int init_opt(char *path, char *ip, char *port, radio_type_t radio_type_p)
             break;
         case OPT_TSHARK:
             LOG_D(OPT, "Tshark is currently not supported\n");
+            opt_type = OPT_NONE;
+            break;
         default:
             opt_type = OPT_NONE;
             break;

@@ -50,6 +50,7 @@
 #include "sumo.h"
 
 #include "client_traci_OMG.h"
+#include "assertions.h"
 
 
 int
@@ -169,6 +170,9 @@ start_sumo_generator (omg_global_param omg_param_list)
       node->type = omg_param_list.nodes_type;	// UE eNB...
       node->generator = SUMO;	// SUMO
       node->mob = mobility;
+
+      DevAssert( SUMO >= sizeof(node_vector_end) ); // FIXME node_vector_end is declared with MAX_NUM_NODE_TYPES elements, but here we are indexing with SUMO from enum mobility_types
+      DevAssert( SUMO >= sizeof(node_vector) ); // FIXME node_vector is declared with MAX_NUM_NODE_TYPES elements, but here we are indexing with SUMO from enum mobility_types
 
       node_vector_end[SUMO] =
 	(node_list *) add_entry (node, node_vector_end[SUMO]);

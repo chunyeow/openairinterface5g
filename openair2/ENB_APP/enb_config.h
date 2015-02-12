@@ -37,7 +37,9 @@
 
 #ifndef ENB_CONFIG_H_
 #define ENB_CONFIG_H_
-#include  <netinet/in.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "commonDef.h"
 #include "platform_types.h"

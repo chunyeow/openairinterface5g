@@ -628,10 +628,15 @@ void rrc_lite_out_of_sync_ind(module_id_t Mod_idP, frame_t frameP, uint16_t eNB_
 //-------------------------------------------------------------------------------------------//
 int mac_get_rrc_lite_status(module_id_t Mod_idP,eNB_flag_t enb_flagP,uint8_t index){
     //-------------------------------------------------------------------------------------------//
-    if(enb_flagP == ENB_FLAG_YES)
+  if (enb_flagP == ENB_FLAG_YES) {
+        DevAssert( Mod_idP < NB_eNB_INST );
+        DevAssert( index < NUMBER_OF_UE_MAX );
         return(eNB_rrc_inst[Mod_idP].Info.UE[index].Status);
-    else
+    } else {
+        DevAssert( Mod_idP < NB_UE_INST );
+        DevAssert( index < NB_SIG_CNX_UE );
         return(UE_rrc_inst[Mod_idP].Info[index].State);
+    }
 }
 
 //-------------------------------------------------------------------------------------------//

@@ -366,7 +366,7 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
   typedef struct
   {
     char *command;
-    char *file;
+    char *file; //!< 256 bytes memory (see oaisim_config.c)
     int start;
     int end;
     int step;

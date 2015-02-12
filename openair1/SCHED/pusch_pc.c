@@ -52,6 +52,9 @@ int16_t get_hundred_times_delta_IF_eNB(PHY_VARS_eNB *phy_vars_eNB,uint8_t UE_id,
   uint32_t Nre,sumKr,MPR_x100,Kr,r;
   uint16_t beta_offset_pusch;
 
+  DevAssert( UE_id < NUMBER_OF_UE_MAX+1 );
+  DevAssert( harq_pid < 8 );
+
   Nre = phy_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->Nsymb_initial *
             phy_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->nb_rb*12;
 
@@ -74,6 +77,9 @@ int16_t get_hundred_times_delta_IF_eNB(PHY_VARS_eNB *phy_vars_eNB,uint8_t UE_id,
   beta_offset_pusch = 8;
     //(phy_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->control_only == 1) ? phy_vars_eNB->ulsch_eNB[UE_id]->beta_offset_cqi_times8:8;
 
+  DevAssert( UE_id < NUMBER_OF_UE_MAX );
+  DevAssert( MPR_x100/6 < 100 );
+
   if (phy_vars_eNB->ul_power_control_dedicated[UE_id].deltaMCS_Enabled == 1) {
     // This is the formula from Section 5.1.1.1 in 36.213 10*log10(deltaIF_PUSCH = (2^(MPR*Ks)-1)*beta_offset_pusch)
     if (bw_factor == 1) {
@@ -89,7 +95,12 @@ int16_t get_hundred_times_delta_IF_eNB(PHY_VARS_eNB *phy_vars_eNB,uint8_t UE_id,
 }
 
 int16_t get_hundred_times_delta_IF_mac(module_id_t module_idP, uint8_t CC_id, rnti_t rnti, uint8_t harq_pid) {
-  return get_hundred_times_delta_IF_eNB(PHY_vars_eNB_g[module_idP][CC_id],find_ue(rnti,PHY_vars_eNB_g[module_idP][CC_id]),harq_pid, 0); 
+  int8_t UE_id = find_ue( rnti, PHY_vars_eNB_g[module_idP][CC_id] );
+  if (UE_id == -1) {
+      // not found
+      return 0;
+  }
+  return get_hundred_times_delta_IF_eNB( PHY_vars_eNB_g[module_idP][CC_id], UE_id, harq_pid, 0 );
 }
 
 int16_t get_hundred_times_delta_IF(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t harq_pid) {

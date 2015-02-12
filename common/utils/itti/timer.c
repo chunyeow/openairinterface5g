@@ -222,7 +222,7 @@ int timer_remove(long timer_id)
     /* We didn't find the timer in list */
     if (timer_p == NULL) {
         pthread_mutex_unlock(&timer_desc.timer_list_mutex);
-        TMR_ERROR("Didn't find timer 0x%lx in list\n", (long)timer_p->timer);
+        TMR_ERROR("Didn't find timer 0x%lx in list\n", timer_id);
         return -1;
     }
 

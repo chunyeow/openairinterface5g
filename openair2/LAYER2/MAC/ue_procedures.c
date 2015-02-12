@@ -219,7 +219,7 @@ uint32_t ue_get_SR(module_id_t module_idP,int CC_id,frame_t frameP,uint8_t eNB_i
   if (CC_id>0) {
     LOG_E(MAC,"Transmission on secondary CCs is not supported yet\n");
     mac_xface->macphy_exit("MAC FATAL  CC_id>0");
-    return;
+    return 0;
   }
 
   // determin the measurement gap
@@ -1733,7 +1733,7 @@ boolean_t  update_bsr(module_id_t module_idP, frame_t frameP, uint8_t lcid, uint
   boolean_t sr_pending = FALSE;
 
 
-  if ((lcg_id < 0) || (lcg_id > MAX_NUM_LCGID) )
+  if ((lcg_id < 0) || (lcg_id >= MAX_NUM_LCGID) )
     return sr_pending;
   // fixme: need a better way to reset
   if ((lcid == DCCH) || (lcid == DTCH)){
@@ -1766,10 +1766,13 @@ uint8_t locate (const uint32_t *table, int size, int value){
   uint8_t ju, jm, jl;
   int ascend;
 
+  DevAssert( size > 0 );
+  DevAssert( size <= 256 );
+
   if (value == 0) return 0; //elseif (value > 150000) return 63;
 
-  jl = 0;      // lower bound
-  ju = size  ;// upper bound
+  jl = 0;        // lower bound
+  ju = size - 1; // upper bound
   ascend = (table[ju] >= table[jl]) ? 1 : 0; // determine the order of the the table:  1 if ascending order of table, 0 otherwise
 
   while (ju-jl > 1) { //If we are not yet done,

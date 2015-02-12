@@ -71,7 +71,7 @@ void schedule_SI(module_id_t module_idP,frame_t frameP, unsigned int *nprbP,unsi
 
 
 
-  unsigned char bcch_sdu_length;
+  int8_t bcch_sdu_length;
   int mcs = -1;
   void *BCCH_alloc_pdu;
   int CC_id;

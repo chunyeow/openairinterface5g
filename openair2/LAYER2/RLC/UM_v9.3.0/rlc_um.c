@@ -417,9 +417,10 @@ rlc_um_mac_status_indication (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP
   status_resp.head_sdu_remaining_size_to_send  = 0;
   status_resp.head_sdu_creation_time           = 0;
   status_resp.head_sdu_is_segmented            = 0;
-  status_resp.rlc_info.rlc_protocol_state      = ((rlc_um_entity_t *) rlc_pP)->protocol_state;
 
   if (rlc_pP) {
+      status_resp.rlc_info.rlc_protocol_state      = ((rlc_um_entity_t *) rlc_pP)->protocol_state;
+
       rlc_p = (rlc_um_entity_t *) rlc_pP;
       rlc_um_check_timer_dar_time_out(ctxt_pP, rlc_p);
 

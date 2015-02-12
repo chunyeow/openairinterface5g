@@ -1,31 +1,32 @@
 #******************************************************************************
 
-#  Eurecom OpenAirInterface
-#  Copyright(c) 1999 - 2013 Eurecom
+#    OpenAirInterface 
+#    Copyright(c) 1999 - 2014 Eurecom
 
-#  This program is free software; you can redistribute it and/or modify it
-#  under the terms and conditions of the GNU General Public License,
-#  version 2, as published by the Free Software Foundation.
+#    OpenAirInterface is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
 
-#  This program is distributed in the hope it will be useful, but WITHOUT
-#  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-#  more details.
 
-#  You should have received a copy of the GNU General Public License along with
-#  this program; if not, write to the Free Software Foundation, Inc.,
-#  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+#    OpenAirInterface is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
 
-#  The full GNU General Public License is included in this distribution in
-#  the file called "COPYING".
+#   You should have received a copy of the GNU General Public License
+#   along with OpenAirInterface.The full GNU General Public License is 
+#   included in this distribution in the file called "COPYING". If not, 
+#   see <http://www.gnu.org/licenses/>.
 
 #  Contact Information
-#  Openair Admin: openair_admin@eurecom.fr
-#  Openair Tech : openair_tech@eurecom.fr
-#  Forums       : http://forums.eurecom.fsr/openairinterface
-#  Address      : Eurecom, Compus SophiaTech 450, route des chappes, 06451 Biot, France
+#  OpenAirInterface Admin: openair_admin@eurecom.fr
+#  OpenAirInterface Tech : openair_tech@eurecom.fr
+#  OpenAirInterface Dev  : openair4g-devel@eurecom.fr
+  
+#  Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
-#*****************************************************************************
+#*******************************************************************************/
 
 # \file case03.py
 # \brief test case 03 for OAI: executions
@@ -76,7 +77,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         test = '01'
         name = 'Run oai.rel10.err'
         conf = '-a -A AWGN -l7 -n 100'
-        trace = logdir + '/log_' + host + case + test + '.txt'
+        trace = logdir + '/log_' + host + case + test + '.txt;'
         tee = ' 2>&1 | tee ' + trace
         diag = 'Error(s) found in the execution, check the execution logs'
         oai.send_expect_false('./oaisim.rel10.' + host + ' ' + conf + tee, '[E]', 30)
@@ -89,12 +90,12 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
     try:
         log.start()
         test = '02'
-        name = 'Run oai.rel10.abs.rrc'
+        name = 'Run oai.rel10.tdd.5MHz.abs.rrc'
         diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-a -l7 -A AWGN -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
+                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt;'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel10.' + host + ' ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
     except log.err, e:
@@ -105,12 +106,12 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
     try:
         log.start()
         test = '03'
-        name = 'Run oai.rel10.phy.rrc'
+        name = 'Run oai.rel10.tdd.5MHz.phy.rrc'
         diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-A AWGN  -l7 -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
+                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt;'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel10.' + host + ' ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 500)
     except log.err, e:
@@ -121,18 +122,19 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
     try:
         log.start()
         test = '04'
-        name = 'Run oai.rel10.phy.rrc.fdd'
+        name = 'Run oai.rel10.fdd.5MHz.phy.rrc'
         diag = 'RRC procedure is not finished completely in FDD mode, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-A AWGN -l7 -F -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
+                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt;'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel10.' + host + ' ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 500)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
         log.ok(case, test, name, conf, '', logfile)  
+
 
  #   try:
  #       test = '05'

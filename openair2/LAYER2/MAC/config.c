@@ -134,8 +134,8 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
       }
   }
 
-  if ((tdd_Config!=NULL)||(SIwindowsize!=NULL)||(SIperiod!=NULL)){
-      if (eNB_flagP==1)
+  if (tdd_Config && SIwindowsize && SIperiod) {
+      if (eNB_flagP == ENB_FLAG_YES)
         mac_xface->phy_config_sib1_eNB(Mod_id,0,tdd_Config,*SIwindowsize,*SIperiod);
       else
         mac_xface->phy_config_sib1_ue(Mod_id,0,eNB_index,tdd_Config,*SIwindowsize,*SIperiod);
@@ -226,7 +226,8 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
           UE_mac_inst[Mod_id].scheduling_info.prohibitPHR_SF =  get_sf_prohibitPHR_Timer(UE_mac_inst[Mod_id].scheduling_info.prohibitPHR_Timer);
           UE_mac_inst[Mod_id].scheduling_info.PathlossChange_db =  get_db_dl_PathlossChange(UE_mac_inst[Mod_id].scheduling_info.PathlossChange);
           LOG_D(MAC,"[UE %d] config PHR (%d): periodic %d (SF) prohibit %d (SF)  pathlosschange %d (db) \n",
-              Mod_id,mac_MainConfig->phr_Config->present,
+              Mod_id,
+              (mac_MainConfig->phr_Config)?mac_MainConfig->phr_Config->present:-1,
               UE_mac_inst[Mod_id].scheduling_info.periodicPHR_SF,
               UE_mac_inst[Mod_id].scheduling_info.prohibitPHR_SF,
               UE_mac_inst[Mod_id].scheduling_info.PathlossChange_db);

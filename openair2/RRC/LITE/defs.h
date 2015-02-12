@@ -131,8 +131,8 @@ typedef struct rrc_ral_threshold_key_s {
 
 //#define NUM_PRECONFIGURED_LCHAN (NB_CH_CX*2)  //BCCH, CCCH
 
-#define UE_MODULE_INVALID ((module_id_t) ~0)
-#define UE_INDEX_INVALID  ((module_id_t) ~0)
+#define UE_MODULE_INVALID ((module_id_t) ~0) // FIXME attention! depends on type uint8_t!!!
+#define UE_INDEX_INVALID  ((module_id_t) ~0) // FIXME attention! depends on type uint8_t!!! used to be -1
 
 typedef enum UE_STATE_e {
   RRC_INACTIVE=0,

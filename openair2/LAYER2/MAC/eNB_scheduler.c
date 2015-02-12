@@ -283,6 +283,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
         switch (mac_xface->lte_frame_parms->tdd_config) {
         case 2:
           schedule_ulsch(module_idP,frameP,cooperation_flag,subframeP,7,nCCE);
+          // no break here!
         case 5:
           schedule_ue_spec(module_idP,frameP,subframeP,nprb,nCCE,mbsfn_status);
           fill_DLSCH_dci(module_idP,frameP,subframeP,RBalloc,0,mbsfn_status);
@@ -307,8 +308,11 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
         case 1:
           //        schedule_RA(module_idP,frameP,subframeP,nprb,nCCE);
           schedule_ulsch(module_idP,frameP,cooperation_flag,subframeP,8,nCCE);
+          // no break here!
         case 2:
+          // no break here!
         case 4:
+          // no break here!
         case 5:
           schedule_ue_spec(module_idP,frameP,subframeP,nprb,nCCE,mbsfn_status);
           fill_DLSCH_dci(module_idP,frameP,subframeP,RBalloc,1,mbsfn_status);

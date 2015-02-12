@@ -549,7 +549,7 @@ void get_beta_map() {
   file_path = (char*) malloc(512);
 
   for (mcs = 0; mcs < MCS_COUNT; mcs++) {
-    sprintf(file_path,"%s/SIMULATION/LTE_PHY/BLER_SIMULATIONS/AWGN/AWGN_results/bler_tx1_chan18_nrx1_mcs%d.csv",getenv("OPENAIR1_DIR"),mcs);
+    snprintf( file_path, 512, "%s/SIMULATION/LTE_PHY/BLER_SIMULATIONS/AWGN/AWGN_results/bler_tx1_chan18_nrx1_mcs%d.csv", getenv("OPENAIR1_DIR"), mcs );
     fp = fopen(file_path,"r");
     if (fp == NULL) {
       LOG_E(OCM,"ERROR: Unable to open the file %s! Exitng.\n", file_path);

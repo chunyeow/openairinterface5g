@@ -782,7 +782,7 @@ void init_omv(void) {
       if(pipe(pfd) == -1)
         perror("pipe error \n");
 
-      sprintf(full_name, "%s/UTIL/OMV/OMV",getenv("OPENAIR2_DIR"));
+      snprintf( full_name, sizeof(full_name), "%s/UTIL/OMV/OMV",getenv("OPENAIR2_DIR") );
       LOG_I(EMU,"Stating the OMV path %s pfd[0] %d pfd[1] %d \n", full_name, pfd[0],pfd[1]);
 
       switch(fork()) {
@@ -1308,7 +1308,8 @@ void update_otg_UE(module_id_t ue_mod_idP, unsigned int ctime) {
 
       src_id = module_id;
 
-      for (dst_id=0;dst_id<NUMBER_OF_eNB_MAX;dst_id++) {
+      for (dst_id=0;dst_id<NB_SIG_CNX_UE;dst_id++) {
+	// only consider the first attached eNB
           if (mac_get_rrc_status(ue_mod_idP, 0, dst_id ) > 2 /*RRC_CONNECTED*/) {
               Packet_otg_elt_t *otg_pkt = malloc (sizeof(Packet_otg_elt_t));
               if (otg_pkt!=NULL)

@@ -1,36 +1,37 @@
 #******************************************************************************
 
-#  Eurecom OpenAirInterface
-#  Copyright(c) 1999 - 2013 Eurecom
+#    OpenAirInterface 
+#    Copyright(c) 1999 - 2014 Eurecom
 
-#  This program is free software; you can redistribute it and/or modify it
-#  under the terms and conditions of the GNU General Public License,
-#  version 2, as published by the Free Software Foundation.
+#    OpenAirInterface is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
 
-#  This program is distributed in the hope it will be useful, but WITHOUT
-#  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-#  more details.
 
-#  You should have received a copy of the GNU General Public License along with
-#  this program; if not, write to the Free Software Foundation, Inc.,
-#  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+#    OpenAirInterface is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
 
-#  The full GNU General Public License is included in this distribution in
-#  the file called "COPYING".
+#   You should have received a copy of the GNU General Public License
+#   along with OpenAirInterface.The full GNU General Public License is 
+#   included in this distribution in the file called "COPYING". If not, 
+#   see <http://www.gnu.org/licenses/>.
 
 #  Contact Information
-#  Openair Admin: openair_admin@eurecom.fr
-#  Openair Tech : openair_tech@eurecom.fr
-#  Forums       : http://forums.eurecom.fsr/openairinterface
-#  Address      : Eurecom, Compus SophiaTech 450, route des chappes, 06451 Biot, France
+#  OpenAirInterface Admin: openair_admin@eurecom.fr
+#  OpenAirInterface Tech : openair_tech@eurecom.fr
+#  OpenAirInterface Dev  : openair4g-devel@eurecom.fr
+  
+#  Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
-#*****************************************************************************
+#*******************************************************************************/
 
 # \file case02.py
 # \brief test case 02 for OAI: executions
 # \author Navid Nikaein
-# \date 2013
+# \date 2013 - 2015
 # \version 0.1
 # @ingroup _test
 
@@ -76,7 +77,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         test = '01'
         name = 'Run oai.rel8.err'
         conf = '-a -A AWGN -n 100 '
-        trace = logdir + '/log_' + host + case + test + '_3.txt;'
+        trace = logdir + '/log_' + host + case + test + '_1.txt;'
         tee = ' 2>&1 | tee ' + trace
         diag = '[E] Error(s) found during the execution, check the execution logs'
         oai.send_expect_false('./oaisim.rel8.'+ host + ' ' + conf, '[E]', 30)
@@ -89,12 +90,12 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
     try:
         log.start()
         test = '02'
-        name = 'Run oai.rel8.abs.rrc'
+        name = 'Run oai.rel8.tdd.5MHz.rrc.abs'
         diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-a -A AWGN -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
+                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt;'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel8.' + host + ' ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
     except log.err, e:
@@ -102,43 +103,10 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
     else:
         log.ok(case, test, name, conf, '', logfile)
         
-        
     try:
         log.start()
         test = '03'
-        name = 'Run oai.rel8.phy.rrc.tdd'
-        diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
-        for i in range(NUM_UE) :
-            for j in range(NUM_eNB) :
-                conf = '-A AWGN -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -x1'
-                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
-                tee = ' 2>&1 | tee ' + trace
-                oai.send_expect('./oaisim.rel8.' + host + ' ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 500)
-    except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
-    else:
-        log.ok(case, test, name, conf, '', logfile)
-
-    try:
-        log.start()
-        test = '04'
-        name = 'Run oai.rel8.phy.rrc.fdd'
-        diag = 'RRC procedure is not finished completely in FDD mode, check the execution logs and trace BCCH, CCCH, and DCCH channels'
-        for i in range(NUM_UE) :
-            for j in range(NUM_eNB) :
-                conf = '-A AWGN -F -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -x1'
-                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
-                tee = ' 2>&1 | tee ' + trace
-                oai.send_expect('./oaisim.rel8.' + host + ' ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i), (i+1) * 500)
-    except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
-    else:
-        log.ok(case, test, name, conf, '', logfile)
-
-    try:
-        log.start()
-        test = '05'
-        name = 'Run oai.rel8.itti.abs.rrc'
+        name = 'Run oai.rel8.tdd.5MHz.rrc.itti.abs'
         diag = 'RRC procedure is not finished completely, check the eNB config file (default is enb.band7.generic.conf), in addition to the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
@@ -154,15 +122,14 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         log.fail(case, test, name, conf, e.value, diag, logfile, trace_name)
     else:
         log.ok(case, test, name, conf, '', logfile)
-        
-
+    
     try:
         log.start()
-        test='06'
-        name = 'Run oai.rel8.abs.ocg.otg.tdd'
-        diag = 'Check the scenario if the tests 0202 and 0203 are passed.'
+        test='04'
+        name = 'Run oai.rel8.tdd.5MHz.abs.ocg.otg'
+        diag = 'Check the scenario if the test 0202 is passed.'
         conf = '-a -c26'
-        trace = logdir + '/log_' + host + case + test + '.txt'
+        trace = logdir + '/log_' + host + case + test + '.txt;'
         tee = ' 2>&1 | tee ' + trace
         oai.send_expect('./oaisim.rel8.' + host + ' ' + conf + tee, ' DL and UL loss rate below 10 ', 500)
     except log.err, e:
@@ -172,11 +139,11 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
 
     try:
         log.start()
-        test='07'
-        name = 'Run oai.rel8.abs.ocg.otg.fdd'
-        diag = 'Check the template 26 and the results of tests 0202 and 0203.'
+        test='05'
+        name = 'Run oai.rel8.fdd.5MHz.abs.ocg.otg'
+        diag = 'Check the template 26 and the results of test 0202.'
         conf = '-a -F -c26'
-        trace = logdir + '/log_' + host + case + test + '.txt'
+        trace = logdir + '/log_' + host + case + test + '.txt;'
         tee = ' 2>&1 | tee ' + trace
         oai.send_expect('./oaisim.rel8.' + host + ' ' + conf + tee, ' DL and UL loss rate below 10 ', 500)
     except log.err, e:
@@ -187,8 +154,8 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
 
     try:
         log.start()
-        test = '08'
-        name = 'Run oai.rel8.abs.ping'
+        test = '06'
+        name = 'Run oai.rel8.tdd.5MHz.abs.ping'
         diag = 'Data-plane is not working normally, check the OAI protocol stack, OAI driver, and normal operation of the OS'
         
         oai.driver(oai,user,pw)
@@ -196,7 +163,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         for i in range(NUM_eNB) :
             for j in range(NUM_UE) :
                 conf = '-a -A AWGN  -u' + str(j+1) +' -b'+ str(i+1)
-                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
+                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt;'
                 tee = ' 2>&1 > ' + trace
 
                 if user == 'root' :
@@ -205,7 +172,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
                     oai.send_nowait('echo '+pw+ ' | sudo -S -E ./oaisim.rel8.nas.'+ host + ' ' + conf + tee + ' &')
                 time.sleep(10)
                 for k in range(NUM_TRIALS) :
-                    trace_ping = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + str(k) + '_ping.txt'
+                    trace_ping = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + str(k) + '_ping.txt;'
                     tee_ping = ' 2>&1 | tee ' + trace_ping
 
                     oai.send_expect('ping 10.0.'+str(j+1)+'.'+str(NUM_eNB+i+1) + ' -c ' +  str(random.randint(2, 10))+ ' -s ' + str(random.randint(128, 1500)) + tee_ping, ' 0% packet loss', 20)
@@ -227,3 +194,63 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
         log.ok(case, test, name, conf, '', logfile)
+
+    try:
+        log.start()
+        test = '07'
+        name = 'Run oai.rel8.tdd.5MHz.phy.rrc'
+        diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
+        for i in range(NUM_UE) :
+            for j in range(NUM_eNB) :
+                conf = '-A AWGN -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -x1'
+                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt;'
+                tee = ' 2>&1 | tee ' + trace
+                oai.send_expect('./oaisim.rel8.' + host + ' ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 500)
+    except log.err, e:
+        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+    else:
+        log.ok(case, test, name, conf, '', logfile)
+
+    try:
+        log.start()
+        test = '08'
+        name = 'Run oai.rel8.fdd.5MHz.phy.rrc'
+        diag = 'RRC procedure is not finished completely in FDD mode, check the execution logs and trace BCCH, CCCH, and DCCH channels'
+        for i in range(NUM_UE) :
+            for j in range(NUM_eNB) :
+                conf = '-A AWGN -F -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -x1'
+                trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt;'
+                tee = ' 2>&1 | tee ' + trace
+                oai.send_expect('./oaisim.rel8.' + host + ' ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i), (i+1) * 500)
+    except log.err, e:
+        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+    else:
+        log.ok(case, test, name, conf, '', logfile)
+
+    try:
+        log.start()
+        test = '09'
+        name = 'Run oai.rel8.fdd.10MHz.phy.rrc'
+        diag = 'RRC procedure is not finished completely, check th execution logs and trace BCCH, CCCH, and DCCH channels and the results of test 0204'
+        conf = '-A AWGN -F -R 50 -n 150 -u 1 -b 1 -x1'
+        trace = logdir + '/log_' + host + case + test + '_1.txt;'
+        tee = ' 2>&1 | tee ' + trace
+        oai.send_expect('./oaisim.rel8.' + host + ' ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE 0', 600)
+    except log.err, e:
+        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+    else:
+        log.ok(case, test, name, conf, '', logfile)
+
+    try:
+        log.start()
+        test = '10'
+        name = 'Run oai.rel8.fdd.20MHz.phy.rrc'
+        diag = 'RRC procedure is not finished completely, check th execution logs and trace BCCH, CCCH, and DCCH channels and the results of test 0204'
+        conf = '-A AWGN -F -R 100 -n 200 -u 1 -b 1 -x1'
+        trace = logdir + '/log_' + host + case + test + '_1.txt;'
+        tee = ' 2>&1 | tee ' + trace
+        oai.send_expect('./oaisim.rel8.' + host + ' ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE 0', 700)
+    except log.err, e:
+        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+    else:
+        log.ok(case, test, name, conf, '', logfile)    

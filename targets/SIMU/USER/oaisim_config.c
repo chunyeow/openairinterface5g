@@ -154,7 +154,7 @@ void init_oai_emulation(void) {
   oai_emulation.topology_config.mobility.UE_mobility.sumo_config.command = (char*) malloc(20);
   sprintf(oai_emulation.topology_config.mobility.UE_mobility.sumo_config.command,"sumo");
   oai_emulation.topology_config.mobility.UE_mobility.sumo_config.file = (char*) malloc(256);
-  sprintf(oai_emulation.topology_config.mobility.UE_mobility.sumo_config.file,"%s/UTIL/OMG/SUMO/SCENARIOS/scen.sumo.cfg",getenv("OPENAIR2_DIR"));
+  snprintf( oai_emulation.topology_config.mobility.UE_mobility.sumo_config.file, 256, "%s/UTIL/OMG/SUMO/SCENARIOS/scen.sumo.cfg", getenv("OPENAIR2_DIR") );
   oai_emulation.topology_config.mobility.UE_mobility.sumo_config.start=0;
   oai_emulation.topology_config.mobility.UE_mobility.sumo_config.end=0;
   oai_emulation.topology_config.mobility.UE_mobility.sumo_config.step=1; //  1000ms
@@ -595,7 +595,7 @@ int ocg_config_topo(void) {
 	  omg_param_list[i].mobility_file = (char*) malloc(256);// user-specific trace file "%s/UTIL/OMG/mobility.txt",getenv("OPENAIR2_DIR")
 	  //memset(oai_emulation.topology_config.mobility.UE_mobility.trace_config.trace_mobility_file,0,256);
 	  //sprintf(omg_param_list.mobility_file,"%s",oai_emulation.topology_config.mobility.UE_mobility.trace_config.trace_mobility_file);
-	  sprintf(omg_param_list[i].mobility_file,"%s/UTIL/OMG/TRACE/%s",
+	  snprintf( omg_param_list[i].mobility_file, 256, "%s/UTIL/OMG/TRACE/%s",
 		  getenv("OPENAIR2_DIR"),
 		  oai_emulation.topology_config.mobility.UE_mobility.trace_config.trace_mobility_file);
 	  LOG_I(OMG,"TRACE file at %s\n", omg_param_list[i].mobility_file);

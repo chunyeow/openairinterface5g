@@ -2146,14 +2146,16 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
 
 unsigned char *get_dlsch_sdu(module_id_t module_idP, int CC_id, frame_t frameP, rnti_t rntiP, uint8_t TBindex) {
 
-  int UE_id;
   eNB_MAC_INST *eNB=&eNB_mac_inst[module_idP];
 
   if (rntiP==SI_RNTI) {
     LOG_D(MAC,"[eNB %d] Frame %d Get DLSCH sdu for BCCH \n",module_idP,frameP);
 
     return((unsigned char *)&eNB->common_channels[CC_id].BCCH_pdu.payload[0]);
-  } else if ((UE_id = find_UE_id(module_idP,rntiP)) != UE_INDEX_INVALID ){
+  }
+
+  int UE_id = find_UE_id(module_idP,rntiP);
+  if (UE_id != -1) {
     LOG_D(MAC,"[eNB %d] Frame %d:  CC_id %d Get DLSCH sdu for rnti %x => UE_id %d\n",module_idP,frameP,CC_id,rntiP,UE_id);
     return((unsigned char *)&eNB->UE_list.DLSCH_pdu[CC_id][TBindex][UE_id].payload[0]);
   } else {
@@ -2191,6 +2193,7 @@ void set_ue_dai(sub_frame_t   subframeP,
   case 0:
     if ((subframeP==0)||(subframeP==1)||(subframeP==3)||(subframeP==5)||(subframeP==6)||(subframeP==8))
       UE_list->UE_template[CC_id][UE_id].DAI = 0;
+    break;
   case 1:
     if ((subframeP==0)||(subframeP==4)||(subframeP==5)||(subframeP==9))
       UE_list->UE_template[CC_id][UE_id].DAI = 0;
@@ -2214,6 +2217,7 @@ void set_ue_dai(sub_frame_t   subframeP,
   case 6:
     if ((subframeP==0)||(subframeP==1)||(subframeP==5)||(subframeP==6)||(subframeP==9))
       UE_list->UE_template[CC_id][UE_id].DAI = 0;
+    break;
   default:
     UE_list->UE_template[CC_id][UE_id].DAI = 0;
     LOG_N(MAC,"unknow TDD config %d\n",tdd_config);

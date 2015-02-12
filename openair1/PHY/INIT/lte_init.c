@@ -619,8 +619,11 @@ void phy_config_dedicated_eNB(uint8_t Mod_id,
 			      struct PhysicalConfigDedicated *physicalConfigDedicated) {
 
   PHY_VARS_eNB *phy_vars_eNB = PHY_vars_eNB_g[Mod_id][CC_id];
-  uint8_t UE_id = find_ue(rnti,phy_vars_eNB);
-  
+  int8_t UE_id = find_ue(rnti,phy_vars_eNB);
+  if (UE_id == -1) {
+      LOG_E( PHY, "[eNB %"PRIu8"] Frame %d: find_ue() returns -1\n", Mod_id, phy_vars_eNB->proc[8].frame_tx );
+      return;
+  }
 
   
   if (physicalConfigDedicated) {

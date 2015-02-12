@@ -39,6 +39,7 @@
 */
 
 #include "id_manager.h"
+#include "assertions.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -135,13 +136,8 @@ void remove_oaiID_by_SUMO(char *sumo_id, IDManagerPtr ID_manager) {
 char* get_sumo_entry(int oai_id, Map_list Map_Vector) {
     Map_list tmp = Map_Vector;
     
-    if(Map_Vector == NULL) {
-       printf("bug here..should not be NULL");
-    }
-     
-    if(Map_Vector->map == NULL) {
-       printf("bug here..map should have been initialized");
-    } 
+    AssertFatal( Map_Vector, "bug here..should not be NULL" );
+    AssertFatal( Map_Vector->map, "bug here..map should have been initialized" );
     
     if (tmp->map->oai_id == oai_id) {
        //printf("got it...at the head and value is %s \n",tmp->map->sumo_id);

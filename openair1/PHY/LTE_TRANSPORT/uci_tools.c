@@ -132,6 +132,7 @@ void do_diff_cqi(uint8_t N_RB_DL,
     break;
   case 15:
     nb_sb = 4;
+    break;
   case 25:
     nb_sb = 7;
     break;

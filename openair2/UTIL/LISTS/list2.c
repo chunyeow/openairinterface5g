@@ -23,6 +23,8 @@
 #define NULL 0
 #endif
 
+#include <string.h>
+
 
 //-----------------------------------------------------------------------------
 /*
@@ -33,10 +35,9 @@ void
 list2_init (list2_t * listP, char *nameP)
 {
 //-----------------------------------------------------------------------------
-  unsigned char              i = 0;
-
   if (nameP) {
-    while ((listP->name[i] = nameP[i]) && (i++ < LIST_NAME_MAX_CHAR));
+      strncpy( listP->name, nameP, LIST_NAME_MAX_CHAR );
+      listP->name[LIST_NAME_MAX_CHAR-1] = 0; // terminate string
   }
   listP->tail = NULL;
   listP->head = NULL;

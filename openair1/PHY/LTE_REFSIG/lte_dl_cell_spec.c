@@ -155,6 +155,10 @@ int lte_dl_cell_spec(PHY_VARS_eNB *phy_vars_eNB,
 
   k+=phy_vars_eNB->lte_frame_parms.first_carrier_offset;
 
+  DevAssert( Ns < 20 );
+  DevAssert( l < 2 );
+  DevAssert( mprime>>4 < 14 );
+
   for (m=0;m<phy_vars_eNB->lte_frame_parms.N_RB_DL<<1;m++) {
 
     mprime_dword     = mprime>>4;

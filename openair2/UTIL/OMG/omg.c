@@ -78,7 +78,7 @@ init_omg_global_params (void)
       job_vector_end[mob_t] = NULL;
     }
 
-  for (node_t = eNB; node_t < MAX_NUM_MOB_TYPES; node_t++)
+  for (node_t = eNB; node_t < MAX_NUM_NODE_TYPES; node_t++)
     {
       node_vector[node_t] = NULL;
       node_vector_end[node_t] = NULL;

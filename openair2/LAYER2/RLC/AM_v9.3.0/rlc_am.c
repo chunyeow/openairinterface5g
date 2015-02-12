@@ -157,8 +157,7 @@ config_req_rlc_am (
                config_am_pP->t_status_prohibit);
     } else {
         LOG_E(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT" CONFIG_REQ RLC NOT FOUND\n",
-              PROTOCOL_CTXT_ARGS(ctxt_pP),
-              RB_AM_ARGS(l_rlc_p));
+              PROTOCOL_CTXT_ARGS(ctxt_pP) );
     }
 }
 uint32_t pollPDU_tab[PollPDU_pInfinity+1]={4,8,16,32,64,128,256,1024};  // What is PollPDU_pInfinity??? 1024 for now
@@ -224,8 +223,7 @@ void config_req_rlc_am_asn1 (
       }
   } else {
       LOG_E(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT "CONFIG_REQ RLC NOT FOUND\n",
-            PROTOCOL_CTXT_ARGS(ctxt_pP),
-            RB_AM_ARGS(l_rlc_p));
+            PROTOCOL_CTXT_ARGS(ctxt_pP) );
   }
 }
 

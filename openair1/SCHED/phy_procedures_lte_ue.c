@@ -1707,6 +1707,8 @@ void lte_ue_pbch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
   uint16_t frame_tx;
   static uint8_t first_run = 1;
   uint8_t pbch_trials = 0;
+
+  DevAssert(phy_vars_ue);
   int slot_rx = phy_vars_ue->slot_rx;
   int frame_rx = phy_vars_ue->frame_rx;
 
@@ -1832,7 +1834,7 @@ void lte_ue_pbch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
 	      phy_vars_ue->lte_frame_parms.N_RB_DL,
 	      phy_vars_ue->lte_frame_parms.phich_config_common.phich_duration,
 	      phy_vars_ue->lte_frame_parms.phich_config_common.phich_resource);
-    if ((frame_rx%100==0)&&(phy_vars_ue!=NULL)) {
+    if (frame_rx%100 == 0) {
       LOG_I(PHY,"[UE %d] frame %d, slot %d, PBCH: mode1_flag %d, tx_ant %d, frame_tx %d, phase %d. N_RB_DL %d, phich_duration %d, phich_resource %d/6\n",
 	      phy_vars_ue->Mod_id, 
 	      frame_rx,

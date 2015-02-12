@@ -525,13 +525,12 @@ update_steadystaterwp_nodes (double cur_time)
   node_struct *my_node;
   while (tmp != NULL && done == 0)
     {
-      my_node = (node_struct *) tmp->pair->b;
-
       //case1:time to next event equals to current time    
       if (tmp->pair != NULL
 	  && ((double) tmp->pair->next_event_t >= cur_time - omg_eps)
 	  && ((double) tmp->pair->next_event_t <= cur_time + omg_eps))
 	{
+	  my_node = tmp->pair->b;
 	  if (my_node->mobile == 1)
 	    sleep_rwp_node (tmp->pair, cur_time);
 	  else
@@ -544,6 +543,7 @@ update_steadystaterwp_nodes (double cur_time)
 	       && (cur_time - omg_eps) > tmp->pair->next_event_t)
 	{
 
+	  my_node = tmp->pair->b;
 	  while (cur_time >= tmp->pair->next_event_t)
 	    {
 	      if (my_node->mobile == 1)

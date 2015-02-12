@@ -46,8 +46,8 @@
 
       <BACKGROUND_TRAFFIC>disable</BACKGROUND_TRAFFIC> <!-- options: enable, disable. If enable, it generates a background traffic corresponding to the traffic direction-->
       <IDT_DIST>uniform</IDT_DIST>  <!-- available distributions: none (default), uniform, poission, gaussian, exponential,pareto, cauchy,fixed, weibull, gammav-->
-      <IDT_MIN_ms>40</IDT_MIN_ms>  <!--Minimum IDT values in milliseconds-->
-      <IDT_MAX_ms>50</IDT_MAX_ms>  <!--Minimum IDT values in milliseconds-->
+      <IDT_MIN_ms>50</IDT_MIN_ms>  <!--Minimum IDT values in milliseconds-->
+      <IDT_MAX_ms>100</IDT_MAX_ms>  <!--Minimum IDT values in milliseconds-->
       <SIZE_DIST>uniform</SIZE_DIST>   <!-- available distributions: none (default), uniform, poission, gaussian, exponential,pareto, cauchy,fixed, weibull, gammav-->
       <SIZE_MIN_byte>128</SIZE_MIN_byte>  <!--Minimum PAYLOAD size values in bytes-->
       <SIZE_MAX_byte>1400</SIZE_MAX_byte>  <!--MAximum PAYLOAD size values in bytes-->

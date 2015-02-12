@@ -145,7 +145,7 @@ void config_req_rlc_um_asn1 (
       (ctxt_pP->enb_flag) ? "eNB" : "UE",
       ctxt_pP->enb_module_id,
       ctxt_pP->ue_module_id,
-      (dl_rlc_pP->t_Reordering<31)?t_Reordering_tab[dl_rlc_pP->t_Reordering]:-1,
+      (dl_rlc_pP && dl_rlc_pP->t_Reordering<31)?t_Reordering_tab[dl_rlc_pP->t_Reordering]:-1,
       ctxt_pP->enb_module_id,
       ctxt_pP->ue_module_id,
       rb_idP);

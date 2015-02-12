@@ -94,7 +94,7 @@ void rx_sdu(module_id_t enb_mod_idP,int CC_idP,frame_t frameP,rnti_t rntiP,uint8
 
         switch (rx_ces[i]) { // implement and process BSR + CRNTI +
             case POWER_HEADROOM:
-                if (UE_id != UE_INDEX_INVALID ){
+                if (UE_id != -1){
                     UE_list->UE_template[CC_idP][UE_id].phr_info =  (payload_ptr[0] & 0x3f) - PHR_MAPPING_OFFSET;
                     LOG_D(MAC, "[eNB] MAC CE_LCID %d : Received PHR PH = %d (db)\n", rx_ces[i], UE_list->UE_template[CC_idP][UE_id].phr_info);
                     UE_list->UE_template[CC_idP][UE_id].phr_info_configured=1;
@@ -107,7 +107,7 @@ void rx_sdu(module_id_t enb_mod_idP,int CC_idP,frame_t frameP,rnti_t rntiP,uint8
                 break;
             case TRUNCATED_BSR:
             case SHORT_BSR: {
-                if (UE_id  != UE_INDEX_INVALID ){
+                if (UE_id  != -1){
                     uint8_t lcgid;
                     lcgid = (payload_ptr[0] >> 6);
                     LOG_D(MAC, "[eNB] MAC CE_LCID %d : Received short BSR LCGID = %u bsr = %d\n",
@@ -119,7 +119,7 @@ void rx_sdu(module_id_t enb_mod_idP,int CC_idP,frame_t frameP,rnti_t rntiP,uint8
                 payload_ptr += 1;//sizeof(SHORT_BSR); // fixme
             } break;
             case LONG_BSR:
-                if (UE_id  != UE_INDEX_INVALID ){
+                if (UE_id  != -1){
                     UE_list->UE_template[CC_idP][UE_id].bsr_info[LCGID0] = ((payload_ptr[0] & 0xFC) >> 2);
                     UE_list->UE_template[CC_idP][UE_id].bsr_info[LCGID1] =
                                     ((payload_ptr[0] & 0x03) << 4) | ((payload_ptr[1] & 0xF0) >> 4);

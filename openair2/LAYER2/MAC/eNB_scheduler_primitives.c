@@ -362,8 +362,10 @@ void swap_UEs(UE_list_t *listP,int nodeiP, int nodejP, int ul_flag) {
 
   prev_i = prev(listP,nodeiP,ul_flag);
   prev_j = prev(listP,nodejP,ul_flag);
-  if ((prev_i<0) || (prev_j<0))
-    mac_xface->macphy_exit("");    
+  if ((prev_i<0) || (prev_j<0)) {
+    mac_xface->macphy_exit("");
+    return; // not reached
+  }
 
   if (ul_flag == 0){
     next_i = listP->next[nodeiP];
@@ -471,7 +473,7 @@ void SR_indication(module_id_t mod_idP, int cc_idP, frame_t frameP, rnti_t rntiP
   int UE_id = find_UE_id(mod_idP, rntiP);
   UE_list_t *UE_list = &eNB_mac_inst[mod_idP].UE_list;
 
-  if (UE_id  != UE_INDEX_INVALID ) {
+  if (UE_id  != -1) {
     LOG_D(MAC,"[eNB %d][SR %x] Frame %d subframeP %d Signaling SR for UE %d on CC_id %d\n",mod_idP,rntiP,frameP,subframeP, UE_id,cc_idP);
       UE_list->UE_template[cc_idP][UE_id].ul_SR = 1;
       UE_list->UE_template[cc_idP][UE_id].ul_active = TRUE;

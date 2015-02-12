@@ -131,7 +131,8 @@ int32_t generate_srs_tx(PHY_VARS_UE *phy_vars_ue,
   mod_sym_t *txdataF = phy_vars_ue->lte_ue_common_vars.txdataF[0];
   uint16_t msrsb=0,Nb=0,nb,b,msrs0=0,k,Msc_RS,Msc_RS_idx,carrier_pos,symbol_offset;
   uint16_t *Msc_idx_ptr;
-  uint32_t k0,T_SFC;
+  int32_t k0;
+  uint32_t T_SFC;
   uint32_t subframe_offset;
   uint8_t Bsrs  = soundingrs_ul_config_dedicated->srs_Bandwidth;
   uint8_t Csrs  = frame_parms->soundingrs_ul_config_common.srs_BandwidthConfig;

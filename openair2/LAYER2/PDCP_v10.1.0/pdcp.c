@@ -655,6 +655,7 @@ boolean_t pdcp_data_ind(
       module_id_t src_id, dst_id;
       int    ctime;
    
+      DevAssert(pdcp_p);
       if (pdcp_p->rlc_mode == RLC_MODE_AM ) {
           pdcp_p->last_submitted_pdcp_rx_sn = sequence_number;
       }

@@ -336,6 +336,8 @@ void ulsch_modulation(mod_sym_t **txdataF,
   uint8_t qam16_table_offset_im = 0;
   short gain_lin_QPSK;
 
+  DevAssert(frame_parms);
+
   int re_offset,re_offset0,i,Msymb,j,k,nsymb,Msc_PUSCH,l;
   //  uint8_t harq_pid = (rag_flag == 1) ? 0 : subframe2harq_pid_tdd(frame_parms->tdd_config,subframe);
   uint8_t harq_pid = subframe2harq_pid(frame_parms,frame,subframe);
@@ -349,13 +351,13 @@ void ulsch_modulation(mod_sym_t **txdataF,
   uint32_t x1, x2, s=0;
   uint8_t c;
 
-  // x1 is set in lte_gold_generic
-  x2 = (ulsch->rnti<<14) + (subframe<<9) + frame_parms->Nid_cell; //this is c_init in 36.211 Sec 6.3.1
-
   if (!ulsch) {
     msg("ulsch_modulation.c: Null ulsch\n");
     return;
   }
+
+  // x1 is set in lte_gold_generic
+  x2 = (ulsch->rnti<<14) + (subframe<<9) + frame_parms->Nid_cell; //this is c_init in 36.211 Sec 6.3.1
 
   if (harq_pid > 7) {
     msg("ulsch_modulation.c: Illegal harq_pid %d\n",harq_pid);
@@ -644,6 +646,8 @@ void ulsch_modulation(mod_sym_t **txdataF,
 #else  
   dft_lte(ulsch->z,ulsch->d,Msc_PUSCH,ulsch->Nsymb_pusch);
 #endif
+
+DevAssert(txdataF);
 
 #ifdef OFDMA_ULSCH
   re_offset0 = frame_parms->first_carrier_offset + (ulsch->harq_processes[harq_pid]->first_rb*12);

@@ -127,15 +127,12 @@ int get_ctime(void){
 void free_otg(){
   int i,j,k; 
   
-  for (i=0; i<g_otg->num_nodes; i++){
-	if (NULL != g_otg->dst_ip[i]){
-	  free(g_otg->dst_ip[i]);
-	}
-  }
+  for (i=0; i<g_otg->num_nodes; i++)
+    for (j=0; j<g_otg->num_nodes; j++)
+      free( g_otg->dst_ip[i][j] );
 
-  if (NULL !=g_otg){
-	free(g_otg);
-  }
+  free( g_otg );
+  g_otg = 0;
 
   LOG_D(OTG,"DEBUG TARMA: free_otg() called \n");
   for(i=0; i<NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX; i++){
@@ -157,11 +154,6 @@ void free_otg(){
 	}
   }
 
-  if (NULL !=otg_info){
-	free(otg_info);
-  }
-
-
-
+  free(otg_info);
 }
 

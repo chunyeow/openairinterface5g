@@ -618,6 +618,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
       }          
     }
     else { // TM3
+      DevAssert(dlsch1_harq);
       if (get_Qm(dlsch1_harq->mcs) == 2) {
 	/*	dlsch_qpsk_llr(frame_parms,
 		       lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0,
