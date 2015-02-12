@@ -305,7 +305,8 @@ static void *UE_thread_synch(void *arg) {
       break;
     case pbch:
       printf("Running initial sync\n");
-
+      // This is a hack to fix a bug when using USRP
+      memset(PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[0],0,1024);
       if (initial_sync(UE,UE->mode)==0) {
 	/*
 	  lte_adjust_synch(&PHY_vars_UE_g[0]->lte_frame_parms,
@@ -760,6 +761,7 @@ void *UE_thread(void *arg) {
 
   T0 = rt_get_time_ns();
   first_rx = 1;
+  rxpos=0;
   while (!oai_exit) {
     vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_subframe);
     vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame);

@@ -1725,7 +1725,7 @@ static void get_options (int argc, char **argv) {
   int c;
   //  char                          line[1000];
   //  int                           l;
-  int k;//i,j,k;
+  int k,i;//,j,k;
 #ifdef USRP
   int clock_src;
 #endif
@@ -1748,7 +1748,8 @@ static void get_options (int argc, char **argv) {
     LONG_OPTION_CALIB_UE_RX_MED,
     LONG_OPTION_CALIB_UE_RX_BYP,
     LONG_OPTION_DEBUG_UE_PRACH,
-    LONG_OPTION_NO_L2_CONNECT
+    LONG_OPTION_NO_L2_CONNECT,
+    LONG_OPTION_RXGAIN
   };
   
   static const struct option long_options[] = {
@@ -1758,6 +1759,7 @@ static void get_options (int argc, char **argv) {
     {"calib-ue-rx-byp", required_argument,  NULL, LONG_OPTION_CALIB_UE_RX_BYP},
     {"debug-ue-prach",  no_argument,        NULL, LONG_OPTION_DEBUG_UE_PRACH},
     {"no-L2-connect",   no_argument,        NULL, LONG_OPTION_NO_L2_CONNECT},
+    {"ue_rxgain",   required_argument,  NULL, LONG_OPTION_RXGAIN},
     {NULL, 0, NULL, 0}};
   
   while ((c = getopt_long (argc, argv, "C:dK:g:F:G:qO:m:SUVRM:r:P:s:t:x:",long_options,NULL)) != -1) {
@@ -1791,6 +1793,10 @@ static void get_options (int argc, char **argv) {
       
     case LONG_OPTION_NO_L2_CONNECT:
       mode = no_L2_connect;
+      break;
+    case LONG_OPTION_RXGAIN:
+      for (i=0;i<4;i++)
+	rx_gain[0][i] = atof(optarg);
       break;
     case 'M':
 #ifdef ETHERNET
