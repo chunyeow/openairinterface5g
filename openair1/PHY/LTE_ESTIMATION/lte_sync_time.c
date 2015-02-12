@@ -263,6 +263,10 @@ static inline int abs32(int x) {
   return (((int)((short*)&x)[0])*((int)((short*)&x)[0]) + ((int)((short*)&x)[1])*((int)((short*)&x)[1]));
 }
 
+#ifdef DEBUG_PHY
+  int debug_cnt=0;
+#endif
+
 int lte_sync_time(int **rxdata, ///rx data in time domain
 		  LTE_DL_FRAME_PARMS *frame_parms,
 		  int *eNB_id) {
@@ -294,6 +298,7 @@ int lte_sync_time(int **rxdata, ///rx data in time domain
   peak_val = 0;
   peak_pos = 0;
   sync_source = 0;
+
 
   for (n=0; n<length; n+=4) {
 
@@ -396,9 +401,16 @@ int lte_sync_time(int **rxdata, ///rx data in time domain
 
   
 #ifdef USER_MODE
-  write_output("sync_corr0_ue.m","synccorr0",sync_corr_ue0,2*length,1,2);
-  write_output("sync_corr1_ue.m","synccorr1",sync_corr_ue1,2*length,1,2);
-  write_output("sync_corr2_ue.m","synccorr2",sync_corr_ue2,2*length,1,2);
+  if (debug_cnt == 5) {
+    write_output("sync_corr0_ue.m","synccorr0",sync_corr_ue0,2*length,1,2);
+    write_output("sync_corr1_ue.m","synccorr1",sync_corr_ue1,2*length,1,2);
+    write_output("sync_corr2_ue.m","synccorr2",sync_corr_ue2,2*length,1,2);
+    write_output("rxdata0.m","rxd0",rxdata[0],length<<1,1,1);
+    exit(-1);
+  }
+  else {
+    debug_cnt++;
+  }
 #endif
 #endif
 

@@ -468,8 +468,11 @@ int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
     generate_pcfich_reg_mapping(frame_parms);
     generate_phich_reg_mapping(frame_parms);
     //    init_prach625(frame_parms);
-   
+#ifndef OPENAIR2
+    phy_vars_ue->UE_mode[0] = PUSCH;
+#else   
     phy_vars_ue->UE_mode[0] = PRACH;
+#endif
     //phy_vars_ue->lte_ue_pbch_vars[0]->pdu_errors=0;
     phy_vars_ue->lte_ue_pbch_vars[0]->pdu_errors_conseq=0;
     //phy_vars_ue->lte_ue_pbch_vars[0]->pdu_errors_last=0;
