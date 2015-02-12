@@ -1952,7 +1952,8 @@ static void get_options (int argc, char **argv) {
     }
   }
   
-  AssertFatal(conf_config_file_name != NULL,"Please provide a configuration file\n");
+  if (UE_flag == 0)
+    AssertFatal(conf_config_file_name != NULL,"Please provide a configuration file\n");
   
     
   if ((UE_flag == 0) && (conf_config_file_name != NULL)) {
