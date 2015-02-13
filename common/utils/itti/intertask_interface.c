@@ -982,6 +982,8 @@ void itti_wait_tasks_end(void) {
         signal_handle (&end);
     }
 
+    printf("closing all tasks\n");
+
     do {
         ready_tasks = 0;
 
@@ -1012,6 +1014,8 @@ void itti_wait_tasks_end(void) {
             usleep (100 * 1000);
         }
     } while ((ready_tasks > 0) && (retries--));
+
+    printf("ready_tasks %d\n",ready_tasks);
 
     itti_desc.running = 0;
 

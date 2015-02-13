@@ -1312,6 +1312,7 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
   // there is at least one allocation for PDCCH
   uint8_t smbv_alloc_cnt = 1;
 #endif
+  int frame = phy_vars_eNB->proc[sched_subframe].frame_tx;
   int subframe = phy_vars_eNB->proc[sched_subframe].subframe_tx;
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_ENB_TX,1);
@@ -1320,8 +1321,23 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 #ifdef DEBUG_PHY_PROC
   LOG_D(PHY,"[%s %"PRIu8"] Frame %d subframe %d : Doing phy_procedures_eNB_TX(%d)\n",
 	(r_type == multicast_relay) ? "RN/eNB" : "eNB",
-	phy_vars_eNB->Mod_id,phy_vars_eNB->proc[sched_subframe].frame_tx, subframe, subframe);
+	phy_vars_eNB->Mod_id, frame, subframe);
 #endif
+
+  for (i=0;i<NUMBER_OF_UE_MAX;i++) {
+    // If we've dropped the UE, go back to PRACH mode for this UE
+    //#if !defined(EXMIMO_IOT)
+    if (phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors == ULSCH_max_consecutive_errors) {
+      LOG_I(PHY,"[eNB %d, CC %d] frame %d, subframe %d, UE %d: ULSCH consecutive error count reached %u, removing UE\n",
+	    phy_vars_eNB->Mod_id,phy_vars_eNB->CC_id,frame,subframe, i, phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors);
+	    phy_vars_eNB->eNB_UE_stats[i].mode = PRACH;
+	    remove_ue(phy_vars_eNB->eNB_UE_stats[i].crnti,phy_vars_eNB,abstraction_flag);
+	    phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors=0;
+    }
+    //#endif
+  }
+
+
 #ifdef OPENAIR2
   // Get scheduling info for next subframe 
   if (phy_vars_eNB->CC_id == 0)
@@ -3364,26 +3380,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	    phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors++;
 	    //dump_ulsch(phy_vars_eNB, sched_subframe, i);
 	  }
-	
-	  // If we've dropped the UE, go back to PRACH mode for this UE
-	  //#if !defined(EXMIMO_IOT)
-	  if (phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors == ULSCH_max_consecutive_errors) {
-	    LOG_I(PHY,"[eNB %d, CC %d] frame %d, subframe %d, UE %d: ULSCH consecutive error count reached %u, removing UE\n",
-		  phy_vars_eNB->Mod_id,phy_vars_eNB->CC_id,frame,subframe, i, phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors);
-
-	    //	    mac_xface->macphy_exit("Consecutive error count reached");
-
-	    phy_vars_eNB->eNB_UE_stats[i].mode = PRACH;
-#ifdef OPENAIR2
-	    /*	    mac_xface->cancel_ra_proc(phy_vars_eNB->Mod_id,
-				      frame,
-				      phy_vars_eNB->eNB_UE_stats[i].crnti);*/
-#endif
-	    remove_ue(phy_vars_eNB->eNB_UE_stats[i].crnti,phy_vars_eNB,abstraction_flag);
-	    phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors=0;
-	  }
-	  //#endif
-	}
+	}	
       }  // ulsch in error
       else {
 	LOG_D(PHY,"[eNB %d][PUSCH %d] Frame %d subframe %d ULSCH received, setting round to 0, PHICH ACK\n",

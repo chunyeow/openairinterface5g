@@ -1077,6 +1077,13 @@ uint8_t do_SIB23(uint8_t Mod_id,
   AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
                enc_rval.failed_type->name, enc_rval.encoded);
 
+#ifdef XER_PRINT
+      int i=0;
+      for (i = 0; i < (enc_rval.encoded+7)/8; i++)
+	printf("%02x ", ((uint8_t*)buffer)[i]);
+      printf("\n");
+#endif
+
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {

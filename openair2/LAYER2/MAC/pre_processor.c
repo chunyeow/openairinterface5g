@@ -196,7 +196,8 @@ void assign_rbs_required (module_id_t Mod_id,
       LOG_D(MAC,"[preprocessor] assign RB for UE %d\n",UE_id);
       for (i=0;i<UE_list->numactiveCCs[UE_id];i++) {
 	CC_id = UE_list->ordered_CCids[i][UE_id];
-
+	frame_parms[CC_id] = mac_xface->get_lte_frame_parms(Mod_id,CC_id); 
+	eNB_UE_stats[CC_id] = mac_xface->get_eNB_UE_stats(Mod_id,CC_id,rnti);	
 	if (eNB_UE_stats[CC_id]->dlsch_mcs1==0) nb_rbs_required[CC_id][UE_id] = 4;  // don't let the TBS get too small
 	else nb_rbs_required[CC_id][UE_id] = min_rb_unit[CC_id];
 	TBS = mac_xface->get_TBS_DL(eNB_UE_stats[CC_id]->dlsch_mcs1,nb_rbs_required[CC_id][UE_id]);
@@ -421,6 +422,7 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
 
       average_rbs_per_user[CC_id]=0;
 
+      frame_parms[CC_id] = mac_xface->get_lte_frame_parms(Mod_id,CC_id); 
 
       mac_xface->get_ue_active_harq_pid(Mod_id,CC_id,rnti,frameP,subframeP,&harq_pid,&round,0);
       if(round>0)
@@ -694,7 +696,7 @@ void dlsch_scheduler_pre_processor_allocate (module_id_t   Mod_id,
    
     if((rballoc_sub[CC_id][i] == 0)           && 
        (rballoc_sub_UE[CC_id][UE_id][i] == 0) && 
-       (nb_rbs_required_remaining[UE_id]>0)   &&
+       (nb_rbs_required_remaining[CC_id][UE_id]>0)   &&
        (pre_nb_available_rbs[CC_id][UE_id] < nb_rbs_required[CC_id][UE_id])){
       
       // if this UE is not scheduled for TM5
@@ -739,7 +741,7 @@ void ulsch_scheduler_pre_processor(module_id_t module_idP,
   int16_t            total_remaining_rbs[MAX_NUM_CCs];
   uint16_t           max_num_ue_to_be_scheduled=0,total_ue_count=0;
   rnti_t             rnti= -1;
-  uint32_t            nCCE_to_be_used[CC_id];
+  uint32_t            nCCE_to_be_used[MAX_NUM_CCs];
   UE_list_t          *UE_list = &eNB_mac_inst[module_idP].UE_list; 
   UE_TEMPLATE        *UE_template;
   LTE_DL_FRAME_PARMS   *frame_parms;
@@ -832,7 +834,7 @@ void ulsch_scheduler_pre_processor(module_id_t module_idP,
       if(round>0)
 	nb_allocated_rbs[CC_id][UE_id] = UE_list->UE_template[CC_id][UE_id].nb_rb_ul[harq_pid];
       else 
-	nb_allocated_rbs[CC_id][UE_id] = cmin(UE_template->pre_allocated_nb_rb_ul, average_rbs_per_user[CC_id]);
+	nb_allocated_rbs[CC_id][UE_id] = cmin(UE_list->UE_template[CC_id][UE_id].pre_allocated_nb_rb_ul, average_rbs_per_user[CC_id]);
       
       total_allocated_rbs[CC_id]+= nb_allocated_rbs[CC_id][UE_id];
       

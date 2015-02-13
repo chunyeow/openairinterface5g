@@ -134,7 +134,7 @@ int signal_handle(int *end)
                 break;
 
             case SIGINT:
-                SIG_DEBUG("Received SIGINT\n");
+                printf("Received SIGINT\n");
                 itti_send_terminate_message(TASK_UNKNOWN);
                 *end = 1;
                 break;
