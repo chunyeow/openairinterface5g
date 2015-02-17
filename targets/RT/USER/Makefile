@@ -13,11 +13,11 @@ LOWLATENCY_KERNEL:=$(shell if [ $(KERNEL_TYPE) = "lowlatency" ]; then echo "1" ;
 include $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc
 
 ifdef EXMIMO
-ifdef LOWLATENCY # this ifdef is to be removed after the debugging
+#ifdef LOWLATENCY # this ifdef is to be removed after the debugging
 ifeq ($(LOWLATENCY_KERNEL),1)
 CFLAGS+=-DLOWLATENCY
 endif 
-endif 
+#endif 
 endif
 
 ifndef USRP
