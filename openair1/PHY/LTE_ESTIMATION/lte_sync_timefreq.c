@@ -64,7 +64,7 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq) {
   int16_t *sp;
   __m128i *sp2;
   __m128i s;
-  int re;
+  int re,re256;
   __m128i mmtmp00,mmtmp01,mmtmp02,mmtmp10,mmtmp11,mmtmp12;
   int maxcorr[3],minamp,pos,pssind;
   int16_t *pss6144_0,*pss6144_1,*pss6144_2;
@@ -72,7 +72,7 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq) {
   
   
   //    for (i=0;i<38400*4;i+=3072)   // steps of 200 us with 100 us overlap, 0 to 5s
-
+  write_output("rxsig0.m","rxs0",ue->lte_ue_common_vars.rxdata[0],30720,1,1);
   for (i = 15360-3072*2;i<15360+3072+1;i+=3072)  {
 
  
@@ -85,25 +85,28 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq) {
 	//compute frequency-domain representation of 6144-sample chunk
 	fft6144((int16_t *)rxp,
 		sp);
-	printf("sp %p\n",sp);
-	if (i==12288)
+	printf("i %d: sp %p\n",i,sp);
+
+	if (i==12288){
 	  write_output("scan6144F.m","s6144F",sp,6144,1,1);
-	  for (f = -130;f<-125;f++) {  // this is -10MHz to 10 MHz in 5 kHz steps
-	    
-	    if ((f<-256)||(f>=0)) { // no split around DC
-	      printf("No split, f %d\n",f);
-	      // align filters and input buffer pointer to 128-bit
-	      switch (f&3) {
-	      case 0: 
-		pss6144_0 = &pss6144_0_0[0];
-		pss6144_1 = &pss6144_1_0[0];
-		pss6144_2 = &pss6144_2_0[0];
-		sp2 = (f<0) ? (__m128i*)&sp[12288+(f<<1)] : (__m128i*)&sp;
-		break;
-	      case 1: 
-		pss6144_0 = &pss6144_0_1[0];
-		pss6144_1 = &pss6144_1_1[0];
-		pss6144_2 = &pss6144_2_1[0];
+	  write_output("scan6144.m","s6144",rxp,6144,1,1);
+	}
+	for (f = -130;f<-125;f++) {  // this is -10MHz to 10 MHz in 5 kHz steps
+	  
+	  if ((f<-256)||(f>=0)) { // no split around DC
+	    printf("No split, f %d (%d)\n",f,f&3);
+	    // align filters and input buffer pointer to 128-bit
+	    switch (f&3) {
+	    case 0: 
+	      pss6144_0 = &pss6144_0_0[0];
+	      pss6144_1 = &pss6144_1_0[0];
+	      pss6144_2 = &pss6144_2_0[0];
+	      sp2 = (f<0) ? (__m128i*)&sp[12288+(f<<1)] : (__m128i*)&sp;
+	      break;
+	    case 1: 
+	      pss6144_0 = &pss6144_0_1[0];
+	      pss6144_1 = &pss6144_1_1[0];
+	      pss6144_2 = &pss6144_2_1[0];
 		sp2 = (f<0) ? (__m128i*)&sp[12286+(f<<1)] : (__m128i*)sp;
 		break;
 	      case 2: 
@@ -119,7 +122,7 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq) {
 		sp2 = (f<0) ? (__m128i*)&sp[12282+(f<<1)] : (__m128i*)sp;
 		break;
 	      } 
-
+	      re256=32;
 	      for (re = 0; re<256/4; re++) {  // loop over 256 points of upsampled PSS
 		s = sp2[re];
 		mmtmp00 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
@@ -133,14 +136,15 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq) {
 		mmtmp11 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
 		mmtmp12 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
 		
-		autocorr0[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp00,mmtmp10),_mm_unpackhi_epi32(mmtmp00,mmtmp10));
-		autocorr1[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp01,mmtmp11),_mm_unpackhi_epi32(mmtmp01,mmtmp11));
-		autocorr2[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp02,mmtmp12),_mm_unpackhi_epi32(mmtmp02,mmtmp12));
-		
+		autocorr0[re256] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp00,mmtmp10),_mm_unpackhi_epi32(mmtmp00,mmtmp10));
+		autocorr1[re256] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp01,mmtmp11),_mm_unpackhi_epi32(mmtmp01,mmtmp11));
+		autocorr2[re256] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp02,mmtmp12),_mm_unpackhi_epi32(mmtmp02,mmtmp12));
+
+		re256 = (re256+1)&0x3f;
 	      }
 	    }
 	    else { // Split around DC, this is the negative frequencies
-	      printf("split around DC, f %d (f/4 %d)\n",f,f>>2);
+	      printf("split around DC, f %d (f/4 %d, f&3 %d)\n",f,f>>2,f&3);
 	      // align filters and input buffer pointer to 128-bit	      
 	      switch (f&3) {
 	      case 0: 
@@ -168,11 +172,12 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq) {
 		sp2 = (__m128i*)&sp[12282+(f<<1)];
 		break;
 	      } 
-	      for (re = 0; re<(256+f)/4; re++) {  // loop over 256 points of upsampled PSS
+	      re256 = 32;
+	      for (re = 0; re<(-f+3)/4; re++) {  // loop over 256 points of upsampled PSS
 		s = sp2[re];
 		printf("re %d, %p\n",re,&sp2[re]);
 		print_shorts("s",&s);
-		print_shorts("pss",&pss6144_0[re]);
+		print_shorts("pss",&((__m128i*)pss6144_0)[re]);
 
 		mmtmp00 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
 		mmtmp01 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
@@ -185,11 +190,11 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq) {
 		mmtmp11 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
 		mmtmp12 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
 		
-		autocorr0[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp00,mmtmp10),_mm_unpackhi_epi32(mmtmp00,mmtmp10));
-		autocorr1[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp01,mmtmp11),_mm_unpackhi_epi32(mmtmp01,mmtmp11));
-		autocorr2[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp02,mmtmp12),_mm_unpackhi_epi32(mmtmp02,mmtmp12));
+		autocorr0[re256] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp00,mmtmp10),_mm_unpackhi_epi32(mmtmp00,mmtmp10));
+		autocorr1[re256] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp01,mmtmp11),_mm_unpackhi_epi32(mmtmp01,mmtmp11));
+		autocorr2[re256] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp02,mmtmp12),_mm_unpackhi_epi32(mmtmp02,mmtmp12));
 		
-		
+		re256 = (re256+1)&0x3f;
 	      }
 	      // This is the +ve frequencies
 
@@ -217,11 +222,11 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq) {
 		pss6144_2 = &pss6144_2_3[256];
 		break;
 	      } 
-	      for (re = 0; re<-f/4; re++) {  // loop over 256 points of upsampled PSS
+	      for (re = 0; re<(256+f)/4; re++) {  // loop over 256 points of upsampled PSS
 		s = sp2[re];
 		printf("re %d %p\n",re,&sp2[re]);
 		print_shorts("s",&s);
-		print_shorts("pss",&pss6144_0[re]);
+		print_shorts("pss",&((__m128i*)pss6144_0)[re]);
 		mmtmp00 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
 		mmtmp01 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
 		mmtmp02 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
@@ -233,15 +238,20 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq) {
 		mmtmp11 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
 		mmtmp12 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
 		
-		autocorr0[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp00,mmtmp10),_mm_unpackhi_epi32(mmtmp00,mmtmp10));
-		autocorr1[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp01,mmtmp11),_mm_unpackhi_epi32(mmtmp01,mmtmp11));
-		autocorr2[re] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp02,mmtmp12),_mm_unpackhi_epi32(mmtmp02,mmtmp12));
-		
+		autocorr0[re256] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp00,mmtmp10),_mm_unpackhi_epi32(mmtmp00,mmtmp10));
+		autocorr1[re256] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp01,mmtmp11),_mm_unpackhi_epi32(mmtmp01,mmtmp11));
+		autocorr2[re256] = _mm_packs_epi32(_mm_unpacklo_epi32(mmtmp02,mmtmp12),_mm_unpackhi_epi32(mmtmp02,mmtmp12));
+
+		re256 = (re256+1)&0x3f;		
 	      }
 	      
 	    }
 	    // ifft, accumulate energy over two half-frames
 	    idft256((int16_t*)autocorr0,(int16_t*)tmp_t,1);
+	    if (i==12288) {
+	      write_output("corr256F.m","c256F",autocorr0,256,1,1);
+	      write_output("corr256.m","c256",tmp_t,256,1,1);
+	    }
 	    memset((void*)autocorr0_t,0,256*4);
 	    memset((void*)autocorr1_t,0,256*4);
 	    memset((void*)autocorr2_t,0,256*4);

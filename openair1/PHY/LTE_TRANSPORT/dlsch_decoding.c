@@ -669,6 +669,7 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
     dlsch_ue  = phy_vars_ue->dlsch_ue[eNB_id][0];
     harq_pid = dlsch_ue->current_harq_pid;
     ue_id= (uint32_t)find_ue((int16_t)phy_vars_ue->lte_ue_pdcch_vars[(uint32_t)eNB_id]->crnti,PHY_vars_eNB_g[eNB_id2][CC_id]);
+    DevAssert( ue_id != (uint32_t)-1 );
     dlsch_eNB = PHY_vars_eNB_g[eNB_id2][CC_id]->dlsch_eNB[ue_id][0];
 
 #ifdef DEBUG_DLSCH_DECODING
@@ -705,11 +706,12 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
       }
 
     break;
-  case 3: // TB1
+  case 3: { // TB1
     dlsch_ue = phy_vars_ue->dlsch_ue[eNB_id][1];
     harq_pid = dlsch_ue->current_harq_pid;
-    dlsch_eNB = PHY_vars_eNB_g[eNB_id2][CC_id]->dlsch_eNB[(uint32_t)find_ue((int16_t)phy_vars_ue->lte_ue_pdcch_vars[(uint32_t)eNB_id]->crnti,
-								PHY_vars_eNB_g[eNB_id2][CC_id])][1];
+    int8_t UE_id = find_ue( phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->crnti, PHY_vars_eNB_g[eNB_id2][CC_id] );
+    DevAssert( UE_id != -1 );
+    dlsch_eNB = PHY_vars_eNB_g[eNB_id2][CC_id]->dlsch_eNB[UE_id][1];
      // reset HARQ 
     dlsch_ue->harq_processes[harq_pid]->status = SCH_IDLE;
     dlsch_ue->harq_processes[harq_pid]->round  = 0;
@@ -719,6 +721,7 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
     if (dlsch_ue->harq_processes[harq_pid]->round == 0)
       memcpy(dlsch_eNB->harq_processes[harq_pid]->b,dlsch_ue->harq_processes[harq_pid]->b,dlsch_ue->harq_processes[harq_pid]->TBS>>3);
     break;
+  }
   case 5: // PMCH
  
     dlsch_ue  = phy_vars_ue->dlsch_ue_MCH[eNB_id];

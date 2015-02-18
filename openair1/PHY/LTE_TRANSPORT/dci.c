@@ -2184,6 +2184,7 @@ uint8_t generate_dci_top_emul(PHY_VARS_eNB *phy_vars_eNB,
       }
       else {
 	ue_id = find_ue(dci_alloc[n_dci_dl].rnti,PHY_vars_eNB_g[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id]);
+	DevAssert( ue_id != (uint8_t)-1 );
 	dlsch_eNB = PHY_vars_eNB_g[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id]->dlsch_eNB[ue_id][0];
 	
 	eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].dlsch_type[n_dci_dl] = 2;//TB0;

@@ -171,8 +171,8 @@ start_sumo_generator (omg_global_param omg_param_list)
       node->generator = SUMO;	// SUMO
       node->mob = mobility;
 
-      DevAssert( SUMO >= sizeof(node_vector_end) ); // FIXME node_vector_end is declared with MAX_NUM_NODE_TYPES elements, but here we are indexing with SUMO from enum mobility_types
-      DevAssert( SUMO >= sizeof(node_vector) ); // FIXME node_vector is declared with MAX_NUM_NODE_TYPES elements, but here we are indexing with SUMO from enum mobility_types
+      DevAssert( SUMO >= MAX_NUM_NODE_TYPES ); // FIXME node_vector_end is declared with MAX_NUM_NODE_TYPES elements, but here we are indexing with SUMO from enum mobility_types
+      DevAssert( SUMO >= MAX_NUM_NODE_TYPES ); // FIXME node_vector is declared with MAX_NUM_NODE_TYPES elements, but here we are indexing with SUMO from enum mobility_types
 
       node_vector_end[SUMO] =
 	(node_list *) add_entry (node, node_vector_end[SUMO]);
@@ -297,6 +297,7 @@ desactivate_and_unmap (char *sumo_id)
   if (OAI_ID != -1)
     {
       //TODO generalize to UE and eNB (must change the method)
+      DevAssert( SUMO >= MAX_NUM_NODE_TYPES ); // FIXME node_vector is declared with MAX_NUM_NODE_TYPES elements, but here we are indexing with SUMO from enum mobility_types
       node_struct *node = find_node (node_vector[SUMO], OAI_ID, UE);
       if (node == NULL)
 	node = find_node (node_vector[SUMO], OAI_ID, eNB);
@@ -333,7 +334,8 @@ activate_and_map (char *sumo_id)
 #else
   LOG_I (OMG, "activating node %s \n", sumo_id);
 #endif
-  // TODO: So far, only UE can be SUMO mobile, but could change 
+  // TODO: So far, only UE can be SUMO mobile, but could change
+  AssertFatal( false, "node_vector array has only MAX_NUM_NODE_TYPES (=3) elements, but indexing here with SUMO (=4)");
   node_struct *active_node = get_first_inactive_OAI_node (node_vector[SUMO], UE);
   if (active_node != NULL)
     {				// found an inactive OAI node; will be mapped to SUMO
@@ -438,6 +440,7 @@ get_sumo_positions_updated (double cur_time)
 	 "--------GET SUMO Mobility for a group of ACTIVE OAI nodes--------\n");
 #endif
 
+  DevAssert( SUMO >= MAX_NUM_NODE_TYPES ); // FIXME node_vector is declared with MAX_NUM_NODE_TYPES elements, but here we are indexing with SUMO from enum mobility_types
   if (node_vector[SUMO] != NULL)
     {
       node_list *tmp = node_vector[SUMO];

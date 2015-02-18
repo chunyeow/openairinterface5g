@@ -81,7 +81,10 @@ void treillis_table_init(void) {
   int i, j,b;
   unsigned char v, current_state;
 
-  bzero(all_treillis,sizeof(all_treillis));
+  // clear all_treillis
+  for (i=0; i<8; i++)
+    bzero( all_treillis[i], sizeof(all_treillis[0]) );
+
   for (i=0; i<8; i++) { //all possible initial states
     for (j=0; j<=255; j++) { // all possible values of a byte
       current_state=i;
@@ -219,7 +222,7 @@ void threegpplte_turbo_encoder(unsigned char *input,
     treillis_table_init();
   
   // look for f1 and f2 precomputed interleaver values
-  for (i=0;f1f2mat[i].nb_bits!= input_length_bits && i <188; i++);
+  for (i=0; i < 188 && f1f2mat[i].nb_bits != input_length_bits; i++);
   if ( i == 188 ) {
     msg("Illegal frame length!\n");
     return;

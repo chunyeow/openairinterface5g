@@ -660,7 +660,7 @@ unsigned char phy_threegpplte_turbo_decoder8(short *y,
     n2 = n;
 
 
-  for (iind=0;f1f2mat[iind].nb_bits!=n && iind <188; iind++);
+  for (iind=0; iind < 188 && f1f2mat[iind].nb_bits != n; iind++);
   if ( iind == 188 ) {
     msg("Illegal frame length!\n");
     return 255;

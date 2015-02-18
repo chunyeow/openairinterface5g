@@ -772,7 +772,10 @@ LTE_DL_FRAME_PARMS* get_lte_frame_parms(module_id_t Mod_id, uint8_t  CC_id){
 
 }
 
-MU_MIMO_mode *get_mu_mimo_mode (module_id_t Mod_id, uint8_t  CC_id, rnti_t rnti){
-
-  return(&PHY_vars_eNB_g[Mod_id][CC_id]->mu_mimo_mode[find_ue(rnti,PHY_vars_eNB_g[Mod_id][CC_id])]);
+MU_MIMO_mode *get_mu_mimo_mode (module_id_t Mod_id, uint8_t  CC_id, rnti_t rnti)
+{
+  int8_t UE_id = find_ue( rnti, PHY_vars_eNB_g[Mod_id][CC_id] );
+  if (UE_id == -1)
+      return 0;
+  return &PHY_vars_eNB_g[Mod_id][CC_id]->mu_mimo_mode[UE_id];
 }

@@ -529,6 +529,7 @@ uint8_t get_transmission_mode(module_id_t Mod_id, uint8_t CC_id, rnti_t rnti) {
 
   // find the UE_index corresponding to rnti
   UE_id = find_ue(rnti,PHY_vars_eNB_g[Mod_id][CC_id]);
+  DevAssert( UE_id != (unsigned char)-1 );
 
   return(PHY_vars_eNB_g[Mod_id][CC_id]->transmission_mode[UE_id]);
 }

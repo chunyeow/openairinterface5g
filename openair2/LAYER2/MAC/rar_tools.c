@@ -78,6 +78,8 @@ unsigned short fill_rar(module_id_t module_idP,
       }
   }
 
+  DevAssert( ra_idx != -1 );
+
   // subheader fixed 
   rarh->E                     = 0; // First and last RAR
   rarh->T                     = 1; // 0 for E/T/R/R/BI subheader, 1 for E/T/RAPID subheader

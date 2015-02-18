@@ -403,6 +403,7 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
     if (Ncs_config>15) {
       LOG_E(PHY,"[PHY] FATAL, Illegal Ncs_config for unrestricted format %d\n",Ncs_config);
       mac_xface->macphy_exit("PRACH: Illegal Ncs_config for unrestricted format");
+      return 0; // not reached
     }
     NCS = NCS_unrestricted[Ncs_config];      
   }
@@ -410,6 +411,7 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
     if (Ncs_config>14) {
       LOG_E(PHY,"[PHY] FATAL, Illegal Ncs_config for restricted format %d\n",Ncs_config);
       mac_xface->macphy_exit("PRACH: Illegal Ncs_config for restricted format");
+      return 0; // not reached
     }
     NCS = NCS_restricted[Ncs_config];
   }
@@ -468,7 +470,15 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
     preamble_offset = 0; // relative rootSequenceIndex;
     while (not_found == 1) {
       // current root depending on rootSequenceIndex and preamble_offset
-      u = prach_root_sequence_map[(rootSequenceIndex + preamble_offset)%N_ZC];
+      int index = (rootSequenceIndex + preamble_offset) % N_ZC;
+      if (prach_fmt<4) {
+          // prach_root_sequence_map points to prach_root_sequence_map0_3
+          DevAssert( index < sizeof(prach_root_sequence_map0_3) );
+      } else {
+          // prach_root_sequence_map points to prach_root_sequence_map4
+          DevAssert( index < sizeof(prach_root_sequence_map4) );
+      }
+      u = prach_root_sequence_map[index];
       if ( (du[u]<(N_ZC/3)) && (du[u]>=NCS) ) {
 	n_shift_ra     = du[u]/NCS;
 	d_start        = (du[u]<<1) + (n_shift_ra * NCS);
@@ -718,6 +728,7 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
     //TODO: account for repeated format in fft output
     LOG_E(PHY,"prach_fmt4 not fully implemented");
     mac_xface->macphy_exit("prach_fmt4 not fully implemented");
+    return 0; // not reached
   }
   else {
 #ifdef BIT8_TX
@@ -807,6 +818,7 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
     if (Ncs_config>15) {
       LOG_E(PHY,"FATAL, Illegal Ncs_config for unrestricted format %d\n",Ncs_config);
       mac_xface->macphy_exit("PRACH Illegal Ncs_config for unrestricted format");
+      return; // not reached
     }
     NCS = NCS_unrestricted[Ncs_config];      
   }
@@ -814,6 +826,7 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
     if (Ncs_config>14) {
       LOG_E(PHY,"FATAL, Illegal Ncs_config for restricted format %d\n",Ncs_config);
       mac_xface->macphy_exit("PRACH Illegal Ncs_config for restricted format");
+      return; // not reached
     }
     NCS = NCS_restricted[Ncs_config];
   }
@@ -930,7 +943,15 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
 	(preamble_offset==0 && numshift==0) ? (preamble_offset) : (preamble_offset++);
 	while (not_found == 1) {
 	  // current root depending on rootSequenceIndex 
-	  u = prach_root_sequence_map[(rootSequenceIndex + preamble_offset)%N_ZC];
+	  int index = (rootSequenceIndex + preamble_offset) % N_ZC;
+	  if (prach_fmt<4) {
+	      // prach_root_sequence_map points to prach_root_sequence_map0_3
+	      DevAssert( index < sizeof(prach_root_sequence_map0_3) );
+	  } else {
+	      // prach_root_sequence_map points to prach_root_sequence_map4
+	      DevAssert( index < sizeof(prach_root_sequence_map4) );
+	  }
+	  u = prach_root_sequence_map[index];
 	  if ( (du[u]<(N_ZC/3)) && (du[u]>=NCS) ) {
 	    n_shift_ra     = du[u]/NCS;
 	    d_start        = (du[u]<<1) + (n_shift_ra * NCS);
@@ -1059,7 +1080,7 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
 	  break;
 	}
             
-	memset(prachF,0,4*1024);
+    memset( prachF, 0, sizeof(int16_t)*2*1024 );
 
 
 
@@ -1188,6 +1209,7 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
   if (prach_fmt>=4) {
     LOG_E(PHY, "PRACH sequence is only precomputed for prach_fmt<4 (have %d)\n");
     mac_xface->macphy_exit("PRACH sequence is only precomputed for prach_fmt<4");
+    return; // not reached
   }
 
   N_ZC = (prach_fmt < 4) ? 839 : 139;
@@ -1208,6 +1230,7 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
     if (prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig>15) {
       LOG_E(PHY,"FATAL, Illegal Ncs_config for unrestricted format %d\n",prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig);
       mac_xface->macphy_exit("PRACH Illegal Ncs_config for unrestricted format");
+      return; // not reached
     }
     else {
       NCS = NCS_unrestricted[prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig];
@@ -1224,6 +1247,7 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
     if (prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig>14) {
       LOG_E(PHY,"FATAL, Illegal Ncs_config for restricted format %d\n",prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig);
       mac_xface->macphy_exit("PRACH Illegal Ncs_config for restricted format");
+      return; // not reached
     }
     else {
       NCS = NCS_restricted[prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig];
@@ -1235,7 +1259,15 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
     preamble_offset = 0;
     while (not_found == 1) {
       // current root depending on rootSequenceIndex 
-      u = prach_root_sequence_map[(prach_config_common->rootSequenceIndex + preamble_offset)%N_ZC];
+      int index = (prach_config_common->rootSequenceIndex + preamble_offset) % N_ZC;
+      if (prach_fmt<4) {
+          // prach_root_sequence_map points to prach_root_sequence_map0_3
+          DevAssert( index < sizeof(prach_root_sequence_map0_3) );
+      } else {
+          // prach_root_sequence_map points to prach_root_sequence_map4
+          DevAssert( index < sizeof(prach_root_sequence_map4) );
+      }
+      u = prach_root_sequence_map[index];
       if ( (du[u]<(N_ZC/3)) && (du[u]>=NCS) ) {
 	n_shift_ra     = du[u]/NCS;
 	d_start        = (du[u]<<1) + (n_shift_ra * NCS);
@@ -1251,11 +1283,15 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
       else {
 	n_shift_ra     = 0;
 	n_shift_ra_bar = 0;
+	n_group_ra     = 0;
       }
       // This is the number of cyclic shifts for the current root u
       numshift = (n_shift_ra*n_group_ra) + n_shift_ra_bar;
       // skip to next root and recompute parameters if numshift==0
-      (numshift>0) ? (not_found = 0) : (preamble_offset++);
+      if (numshift>0)
+        not_found = 0;
+      else
+        preamble_offset++;
     }
   }
 
@@ -1265,7 +1301,15 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
 #endif
 
   for (i=0;i<num_preambles;i++) {
-    u = prach_root_sequence_map[(prach_config_common->rootSequenceIndex+i+preamble_offset)%N_ZC];
+    int index = (prach_config_common->rootSequenceIndex+i+preamble_offset) % N_ZC;
+    if (prach_fmt<4) {
+        // prach_root_sequence_map points to prach_root_sequence_map0_3
+        DevAssert( index < sizeof(prach_root_sequence_map0_3) );
+    } else {
+        // prach_root_sequence_map points to prach_root_sequence_map4
+        DevAssert( index < sizeof(prach_root_sequence_map4) );
+    }
+    u = prach_root_sequence_map[index];
         
     inv_u = ZC_inv[u]; // multiplicative inverse of u
     

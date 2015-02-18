@@ -203,7 +203,7 @@ multicast_link_read_data (int groupP)
 {
     int num_bytes;
 
-    if ((groupP <= MULTICAST_LINK_NUM_GROUPS) && (groupP >= 0)) {
+    if ((groupP < MULTICAST_LINK_NUM_GROUPS) && (groupP >= 0)) {
         if ((num_bytes = recvfrom (group_list[groupP].socket,
                                    group_list[groupP].rx_buffer, 40000, 0, 0, 0)) < 0) {
             LOG_E(EMU, "[MULTICAST] recvfrom has failed (%d:%s)\n   (%s:%d)\n",

@@ -1878,6 +1878,7 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
 	    RA_template->wait_ack_Msg4=0;
 	    RA_template->RA_active=FALSE;
  	    UE_id = find_UE_id(module_idP,RA_template->rnti);
+            DevAssert( UE_id != -1 );
  	    eNB_mac_inst[module_idP].UE_list.UE_template[UE_PCCID(module_idP,UE_id)][UE_id].configured=TRUE;
 
 	  }

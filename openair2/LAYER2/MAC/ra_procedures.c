@@ -62,7 +62,7 @@ int8_t get_DELTA_PREAMBLE(module_id_t module_idP,int CC_id) {
   if (CC_id>0) {
     LOG_E(MAC,"Transmission on secondary CCs is not supported yet\n");
     mac_xface->macphy_exit("MAC FATAL  CC_id>0");
-    return;
+    return 0; // not reached
   }
 
   uint8_t prachConfigIndex = UE_mac_inst[module_idP].radioResourceConfigCommon->prach_Config.prach_ConfigInfo.prach_ConfigIndex;
@@ -263,7 +263,7 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP, 
   if (CC_id>0) {
     LOG_E(MAC,"Transmission on secondary CCs is not supported yet\n");
     mac_xface->macphy_exit("MAC FATAL  CC_id>0");
-    return;
+    return 0; // not reached
   }
 
   if (UE_mode == PRACH) {

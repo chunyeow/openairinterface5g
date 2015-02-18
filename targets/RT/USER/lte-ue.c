@@ -209,7 +209,10 @@ static void *UE_thread_synch(void *arg) {
   int current_offset = 0;
   sync_mode_t sync_mode = pss;
   int card;
-
+  int ind;
+  int CC_id;
+  int k;
+  int found;
 
   UE->is_synchronized = 0;
   printf("UE_thread_sync in with PHY_vars_UE %p\n",arg);
@@ -224,8 +227,28 @@ static void *UE_thread_synch(void *arg) {
   printf("unlocked sync_mutex (UE_sync_thread)\n");
 
   printf("starting UE synch thread\n");
+  ind = 0;
+  found = 0;
+  current_band = eutra_bands[ind].band; 
+  do  {
+    if ((eutra_bands[ind].dl_min <= downlink_frequency[0][0]) && (eutra_bands[ind].dl_max>= downlink_frequency[0][0])) {
+      for (card=0;card<MAX_NUM_CCs;card++)
+	for (i=0; i<4; i++) 
+	  uplink_frequency_offset[card][i] = eutra_bands[ind].ul_min - eutra_bands[ind].dl_min;
+      found = 1;
+      break;
+    }
+    ind++;
+    current_band = eutra_bands[++ind].band; 
+  } while (current_band < 44);
+    
+  if (found == 0) {
+    exit_fun("Can't find EUTRA band for frequency");
+    oai_exit=1;
+  }
 
-  if (UE->UE_scan == 1) {
+
+  if  (UE->UE_scan == 1) {
     for (card=0;card<MAX_CARDS;card++) {
       for (i=0; i<openair0_cfg[card].rx_num_channels; i++) {
 	downlink_frequency[card][i] = bands_to_scan.band_info[0].dl_min;
@@ -239,9 +262,11 @@ static void *UE_thread_synch(void *arg) {
 	openair0_set_rx_frequencies(&openair0,&openair0_cfg[0]);
 	openair0_set_gains(&openair0,&openair0_cfg[0]);
 #endif
+#else
+	openair0_config(&openair0_cfg[0],1);
 #endif
       }
-    }    
+      }    
     LOG_D(PHY,"[SCHED][UE] Scanning band %d, freq %u\n",bands_to_scan.band_info[0].band, bands_to_scan.band_info[0].dl_min);
   }
   else {
@@ -361,6 +386,9 @@ static void *UE_thread_synch(void *arg) {
 	      openair0_set_frequencies(&openair0,&openair0_cfg[0]);
 	      //	    openair0_set_gains(&openair0,&openair0_cfg[0]);
 #endif
+
+#else
+	      openair0_config(&openair0_cfg[card],1);
 #endif
 	    }
 	  }

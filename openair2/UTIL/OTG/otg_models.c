@@ -262,7 +262,7 @@ double tarmaCalculateVideoSample(tarmaVideo_t *video){
 	frameidx=video->tarmaVideoGopStructure[video->tarmaVideoFrameNumber];
   LOG_D(OTG,"TARMA_DEBUG: tarmaCalculateVideoSample(%p) called\n", video);
   LOG_D(OTG,"TARMA_DEBUG:     frameidx=%d\n",frameidx);
-	if(frameidx>=0 && frameidx<=TARMA_NUM_FRAME_TYPES){
+        if(frameidx>=0 && frameidx<TARMA_NUM_FRAME_TYPES){
 	  for(cntpy=0; cntpy<TARMA_NUM_POLY_MAX; cntpy++){
 		proc->polyWeight[cntpy]=video->polyWeightFrame[frameidx][cntpy];
 	  }

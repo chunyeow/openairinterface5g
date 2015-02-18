@@ -55,7 +55,7 @@
 #define BUF_LEN 4096+32
 #define RRH_eNB_PORT 50000
 #define RRH_eNB_DEST_IP "127.0.0.1"  
-#define RRH_UE_PORT 22222
+#define RRH_UE_PORT 51000
 #define RRH_UE_DEST_IP "127.0.0.1"  
 
 #define FRAME_MAX_SIZE 307200 
@@ -180,10 +180,10 @@ return (0);
 void *rrh_proc_eNB_thread() {
 
   //rrh_desc_t *rrh_desc = (rrh_desc_t *)arg;
-  int antenna_index;
+  int antenna_index,i;
   openair0_timestamp truncated_timestamp, truncated_timestamp_final, last_hw_counter=0;
   struct timespec time_req, time_rem;  
-
+  int16_t *rxp,*txp;
 
   time_req.tv_sec = 0;
   time_req.tv_nsec = 1000;
@@ -233,8 +233,19 @@ void *rrh_proc_eNB_thread() {
                 nanosleep(&time_req,&time_rem);
             }
           }
-          memcpy(&rx_buffer_UE[antenna_index][truncated_timestamp + (sizeof(openair0_timestamp)>>2)],&tx_buffer_eNB[antenna_index][truncated_timestamp],(FRAME_MAX_SIZE<<2)-(truncated_timestamp<<2));
-          memcpy(&rx_buffer_UE[antenna_index][(sizeof(openair0_timestamp)>>2)],&tx_buffer_eNB[antenna_index][0],(nsamps_eNB[antenna_index]<<2)-(FRAME_MAX_SIZE<<2)+(truncated_timestamp<<2));
+	  rxp = (int16_t*)&rx_buffer_UE[antenna_index][truncated_timestamp+(sizeof(openair0_timestamp)>>2)];
+	  txp = (int16_t*)&tx_buffer_eNB[antenna_index][truncated_timestamp+(sizeof(openair0_timestamp)>>2)];
+	  for (i=0;i<(FRAME_MAX_SIZE<<1)-(truncated_timestamp<<1);i++) {
+	    rxp[i] = txp[i]>>6;
+	  }
+	  rxp = (int16_t*)&rx_buffer_UE[antenna_index][(sizeof(openair0_timestamp)>>2)];
+	  txp = (int16_t*)&tx_buffer_eNB[antenna_index][0];
+	  for (i=0;i<nsamps_eNB[antenna_index]-(FRAME_MAX_SIZE)+(truncated_timestamp);i++) {
+	    rxp[i] = txp[i]>>6;
+	  }
+
+	  /*          memcpy(&rx_buffer_UE[antenna_index][truncated_timestamp + (sizeof(openair0_timestamp)>>2)],&tx_buffer_eNB[antenna_index][truncated_timestamp],(FRAME_MAX_SIZE<<2)-(truncated_timestamp<<2));
+		      memcpy(&rx_buffer_UE[antenna_index][(sizeof(openair0_timestamp)>>2)],&tx_buffer_eNB[antenna_index][0],(nsamps_eNB[antenna_index]<<2)-(FRAME_MAX_SIZE<<2)+(truncated_timestamp<<2));*/
         }
         else
         {
@@ -248,7 +259,13 @@ void *rrh_proc_eNB_thread() {
                  nanosleep(&time_req,&time_rem);
             }
           }
-          memcpy(&rx_buffer_UE[antenna_index][truncated_timestamp + (sizeof(openair0_timestamp)>>2)],&tx_buffer_eNB[antenna_index][truncated_timestamp],(nsamps_eNB[antenna_index]<<2));
+	  rxp = (int16_t*)&rx_buffer_UE[antenna_index][truncated_timestamp+(sizeof(openair0_timestamp))];
+	  txp = (int16_t*)&tx_buffer_eNB[antenna_index][truncated_timestamp];
+	  for (i=0;i<(nsamps_eNB[antenna_index]);i++) {
+	    rxp[i] =txp[i]>>6; 
+	  }
+	  /*
+	    memcpy(&rx_buffer_UE[antenna_index][truncated_timestamp + (sizeof(openair0_timestamp)>>2)],&tx_buffer_eNB[antenna_index][truncated_timestamp],(nsamps_eNB[antenna_index]<<2));*/
         }
      
       
@@ -268,10 +285,10 @@ void *rrh_proc_eNB_thread() {
 void *rrh_proc_UE_thread() {
 
   //rrh_desc_t *rrh_desc = (rrh_desc_t *)arg;
-  int antenna_index;
+  int antenna_index,i;
   openair0_timestamp truncated_timestamp, truncated_timestamp_final, last_hw_counter=0;
   struct timespec time_req, time_rem;
-
+  int16_t *txp,*rxp;
 
   time_req.tv_sec = 0;
   time_req.tv_nsec = 1000;
@@ -322,8 +339,20 @@ void *rrh_proc_UE_thread() {
                 nanosleep(&time_req,&time_rem);
             }
           }
+	  rxp = (int16_t*)&rx_buffer_eNB[antenna_index][truncated_timestamp+(sizeof(openair0_timestamp)>>2)];
+	  txp = (int16_t*)&tx_buffer_UE[antenna_index][truncated_timestamp+(sizeof(openair0_timestamp)>>2)];
+	  for (i=0;i<(FRAME_MAX_SIZE<<1)-(truncated_timestamp<<1);i++) {
+	    rxp[i] = txp[i]>>6;
+	  }
+	  rxp = (int16_t*)&rx_buffer_eNB[antenna_index][(sizeof(openair0_timestamp)>>2)];
+	  txp = (int16_t*)&tx_buffer_UE[antenna_index][0];
+	  for (i=0;i<nsamps_eNB[antenna_index]-(FRAME_MAX_SIZE)+(truncated_timestamp);i++) {
+	    rxp[i] = txp[i]>>6;
+	  }
+	  /*
           memcpy(&rx_buffer_eNB[antenna_index][truncated_timestamp + (sizeof(openair0_timestamp)>>2)],&tx_buffer_UE[antenna_index][truncated_timestamp],(FRAME_MAX_SIZE<<2)-(truncated_timestamp<<2));
-          memcpy(&rx_buffer_eNB[antenna_index][(sizeof(openair0_timestamp)>>2)],&tx_buffer_UE[antenna_index][0],(nsamps_UE[antenna_index]<<2)-(FRAME_MAX_SIZE<<2)+(truncated_timestamp<<2));
+          memcpy(&rx_buffer_eNB[antenna_index][(sizeof(openair0_timestamp)>>2)],&tx_buffer_UE[antenna_index][0],(nsamps_UE[antenna_index]<<2)-(FRAME_MAX_SIZE<<2)+(truncated_timestamp<<2));*/
+
         }
         else
         {
@@ -337,7 +366,12 @@ void *rrh_proc_UE_thread() {
                  nanosleep(&time_req,&time_rem);
             }
           }
-          memcpy(&rx_buffer_eNB[antenna_index][truncated_timestamp+ (sizeof(openair0_timestamp)>>2)],&tx_buffer_UE[antenna_index][truncated_timestamp],(nsamps_UE[antenna_index]<<2));
+	  rxp = (int16_t*)&rx_buffer_eNB[antenna_index][truncated_timestamp+(sizeof(openair0_timestamp))];
+	  txp = (int16_t*)&tx_buffer_UE[antenna_index][truncated_timestamp];
+	  for (i=0;i<(nsamps_eNB[antenna_index]);i++) {
+	    rxp[i] =txp[i]>>6; 
+	  }
+	  /*          memcpy(&rx_buffer_eNB[antenna_index][truncated_timestamp+ (sizeof(openair0_timestamp)>>2)],&tx_buffer_UE[antenna_index][truncated_timestamp],(nsamps_UE[antenna_index]<<2));*/
         }
       
  //end_copy_UE :

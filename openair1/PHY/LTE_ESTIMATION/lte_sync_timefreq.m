@@ -21,7 +21,6 @@ pss2f = zeros(1,2048);
 pss2f(2:32) = d2(1:31);
 pss2f(2048+(-30:0)) = d2(32:62);
 
-
 pss0_6144f = fftshift(fft(ifft(pss0f)*sqrt(2048),6144)/sqrt(6144));
 pss1_6144f = fftshift(fft(ifft(pss1f)*sqrt(2048),6144)/sqrt(6144));
 pss2_6144f = fftshift(fft(ifft(pss2f)*sqrt(2048),6144)/sqrt(6144));

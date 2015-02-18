@@ -174,6 +174,7 @@ void assign_rbs_required (module_id_t Mod_id,
     // provide the list of CCs sorted according to MCS
     for (i=0;i<UE_list->numactiveCCs[UE_id];i++) {
       for (j=i+1;j<UE_list->numactiveCCs[UE_id];j++) {
+        DevAssert( j < MAX_NUM_CCs );
 	if (eNB_UE_stats[UE_list->ordered_CCids[i][UE_id]]->dlsch_mcs1 > 
 	    eNB_UE_stats[UE_list->ordered_CCids[j][UE_id]]->dlsch_mcs1) {
 	  tmp = UE_list->ordered_CCids[i][UE_id];
@@ -236,6 +237,7 @@ int maxround(module_id_t Mod_id,uint16_t rnti,int frame,sub_frame_t subframe,uin
       round_max = round;
   }
 
+  return round_max;
 }
 
 // This function scans all CC_ids for a particular UE to find the maximum DL CQI
@@ -360,7 +362,7 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
 
   uint8_t CC_id;
   UE_list_t *UE_list = &eNB_mac_inst[Mod_id].UE_list;
-  LTE_DL_FRAME_PARMS   *frame_parms[MAX_NUM_CCs];
+  LTE_DL_FRAME_PARMS   *frame_parms[MAX_NUM_CCs] = {0};
   int rrc_status           = RRC_IDLE;
   int transmission_mode = 0;
   
@@ -743,8 +745,8 @@ void ulsch_scheduler_pre_processor(module_id_t module_idP,
   rnti_t             rnti= -1;
   uint32_t            nCCE_to_be_used[MAX_NUM_CCs];
   UE_list_t          *UE_list = &eNB_mac_inst[module_idP].UE_list; 
-  UE_TEMPLATE        *UE_template;
-  LTE_DL_FRAME_PARMS   *frame_parms;
+  UE_TEMPLATE        *UE_template = 0;
+  LTE_DL_FRAME_PARMS   *frame_parms = 0;
 
   // LOG_I(MAC,"store ulsch buffers\n");
   // convert BSR to bytes for comparison with tbs
@@ -968,7 +970,7 @@ void assign_max_mcs_min_rb(module_id_t module_idP,int frameP, sub_frame_t subfra
 	while ((tbs < UE_template->ul_total_buffer) && 
 	       (rb_table[rb_table_index]<(frame_parms->N_RB_UL-first_rb[CC_id])) &&
 	       ((UE_template->phr_info - tx_power) > 0) && 
-	       (rb_table_index < 33 )){
+	       (rb_table_index < 32 )){
 	  //  LOG_I(MAC,"tbs %d ul buffer %d rb table %d max ul rb %d\n", tbs, UE_template->ul_total_buffer, rb_table[rb_table_index], frame_parms->N_RB_UL-first_rb[CC_id]);
 	  rb_table_index++;
 	  tbs = mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]);

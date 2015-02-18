@@ -1284,7 +1284,7 @@ int phy_init_lte_eNB(PHY_VARS_eNB *phy_vars_eNB,
     
   // ULSCH VARS
 
-  eNB_prach_vars->prachF = (int16_t*)malloc16_clear( 1024*sizeof(int16_t) );
+  eNB_prach_vars->prachF = (int16_t*)malloc16_clear( 2*1024 /*FIXME what is the correct number?*/ *sizeof(int16_t) );
  
   AssertFatal( frame_parms->nb_antennas_rx <= sizeof(eNB_prach_vars->rxsigF), "nb_antennas_rx too large" );
   for (i=0; i<frame_parms->nb_antennas_rx; i++) {

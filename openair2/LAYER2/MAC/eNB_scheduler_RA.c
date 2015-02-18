@@ -74,7 +74,7 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
 
     RA_TEMPLATE *RA_template;
     unsigned char i;//,harq_pid,round;
-    uint16_t rrc_sdu_length;
+    int16_t rrc_sdu_length;
     unsigned char lcid,offset;
     module_id_t UE_id= UE_INDEX_INVALID;
     unsigned short TBsize = -1;
@@ -111,9 +111,10 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
                                                           1,
                                                           module_idP,
                                                           0); // not used in this case
-                        if (rrc_sdu_length == -1)
+                        if (rrc_sdu_length == -1) {
                             mac_xface->macphy_exit("[MAC][eNB Scheduler] CCCH not allocated\n");
-                        else {
+                            return; // not reached
+                        } else {
                             //msg("[MAC][eNB %d] Frame %d, subframeP %d: got %d bytes from RRC\n",module_idP,frameP, subframeP,rrc_sdu_length);
                         }
                     }

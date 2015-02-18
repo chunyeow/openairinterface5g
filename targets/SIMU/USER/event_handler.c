@@ -340,7 +340,7 @@ void execute_events(frame_t frame){
 void update_mac(Event_t event) {
 	LOG_I(EMU,"A NEW MAC MODEL\n");
 	int i = 0;
-	UE_list_t *UE_list;
+	UE_list_t *UE_list = 0;
 	int enb_module_id=0;
 	int cc_id =0;	
 	eNB_MAC_INST *eNB_mac_inst = get_eNB_mac_inst(enb_module_id);
