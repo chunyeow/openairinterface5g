@@ -2,7 +2,7 @@ typedef struct {
   int mcc;
   int mnc;
   const char oper_country[100];
-  const char oper_short[20];
+  const char oper_short[100];
 } plmn_data_t;
 
 static const plmn_data_t plmn_data[] = {
@@ -13,7 +13,7 @@ static const plmn_data_t plmn_data[] = {
   //Afganistan
   {412, 	1,  	"Afghan Wireless Communication Company","AWCC Afganistan"}, 
   {412, 	20,   	"Telecom Development Company Afghanistan Ltd.","Roshan Afganistan"},
-  {412,	        40,   	"MNT Group Afganistan", 	"MTN Afganistan"}.
+  {412,	        40,   	"MNT Group Afganistan", 	"MNT Afganistan"},
   {412, 	50,   	"Etisalat Afghanistan", "Etisalat Afganistan"},
 
   //Albania
@@ -65,7 +65,7 @@ static const plmn_data_t plmn_data[] = {
   {722, 	330,   	"AMX Argentina S.A", 	"Claro Argentina"},
   {722, 	340,   	"Telecom Personal S.A.", 	"Personal Argentina"},
   {722, 	341,   	"Telecom Personal S.A.", "Personal Argentina"},
-  {722, 	350,   	"Hutchison Telecommunications Argentina S.A."}, 	"Port-Hable"},
+  {722, 	350,   	"Hutchison Telecommunications Argentina S.A.",	"Port-Hable"},
 /*
 Armenia
 {283 	1   	ArmenTel 	Beeline (telecommunications) 	Operational
@@ -1409,8 +1409,8 @@ Nepal
 */
 
 //Netherlands
-{204, 	1,   	"VastMobiel B.V.", 	"Scarlet Telecom B.V"},
-{204 	2,   	"Tele2", 	"Tele2 NL"},
+  {204, 	1,   	"VastMobiel B.V.", 	"Scarlet Telecom B.V"},
+  {204, 	2,   	"Tele2", 	"Tele2 NL"},
 {204, 	3,   	"Voiceworks B.V", 	"Voiceworks B.V"},
 {204, 	4,   	"Vodafone", 	"Vodafone NL"},
 {204, 	5,   	"Elephant Talk Communications", "Elephant NL"},
@@ -2047,7 +2047,7 @@ United Arab Emirates
 {310, 	10,   	"Verizon Wirelss", 	"Verizon USA"},
 {311, 	10,   	"Chariton Valley Communications", 	"Chariton Valley USA"},
 {310, 	11,   	"Southern Communications Services Inc.",""},
-{316, 	11,   	"Southern Communications Services", "Southern USA"),
+  {316, 	11,   	"Southern Communications Services", "Southern USA"},
 {310, 	12,   	"Verizon Wireless", 	"Verizon USA"},
 {310, 	13,   	"Alltel Wireless", 	"Alltel Wireless USA"},
 {310, 	14,   	"Testing",""},
@@ -2268,7 +2268,7 @@ Zimbabwe
 648 	4   	Econet Wireless 	Econet 	Operational
 
 */
-  }
+  };
 
 
 
