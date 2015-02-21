@@ -1,68 +1,76 @@
-Abkhazia
-289 	67   		Aquafon 	Operational
-289 	68   		A-Mobile 	Operational
+typedef struct {
+  int mcc;
+  int mnc;
+  const char oper_country[100];
+  const char oper_short[20];
+} plmn_data_t;
 
-Afganistan
-412 	1   	Afghan Wireless Communication Company 	AWCC 	Operational
-412 	20   	Telecom Development Company Afghanistan Ltd. 	Roshan 	Operational
-412 	40   	MNT Group Afganistan 	MTN 	Operational
-412 	50   	Etisalat Afghanistan 	Etisalat 	Operational
+static const plmn_data_t plmn_data[] = {
+  // Abkhazia
+  {289, 	67,   	"Aquafon Abkhazia", ""},
+  {289, 	68,   	"A-Mobile Abkhazia", ""},
 
-Albania
-276 	1   	Albanian Mobile Communications 	AMS 	Operational
-276 	2   	Vodafone Albania 	Vodafone 	Operational
-276 	3   	Eagle Mobile 	Eagle Mobile 	Operational
-276 	4   	Plus Communcation 	Plus Communication 	Operational
+  //Afganistan
+  {412, 	1,  	"Afghan Wireless Communication Company","AWCC Afganistan"}, 
+  {412, 	20,   	"Telecom Development Company Afghanistan Ltd.","Roshan Afganistan"},
+  {412,	        40,   	"MNT Group Afganistan", 	"MTN Afganistan"}.
+  {412, 	50,   	"Etisalat Afghanistan", "Etisalat Afganistan"},
 
-Algeria
-603 	1   	ATM Mobilis 	Mobilis 	Operational
-603 	2   	Orascom Telecom Algerie Spa 	Djezzy 	Operational
-603 	3   	Wataniya Telecom Algerie 	Nedjma 	Operational
+  //Albania
+  {276, 	1,   	"Albanian Mobile Communications","AMS Albania"},
+  {276, 	2,   	"Vodafone Albania", "Vodafone Albania"},
+  {276, 	3,   	"Eagle Mobile", "Eagle Mobile Albania"},
+  {276, 	4,   	"Plus Communcation", "Plus Communication Albania"},
 
-American Samoa
-544 	11   	Blue Sky Communications 		Operational
+  //Algeria
+  {603, 	1,   	"ATM Mobilis", 	"Mobilis Algeria"},
+  {603, 	2,   	"Orascom Telecom Algerie Spa", "Djezzy Algeria"},
+  {603, 	3,   	"Wataniya Telecom Algerie","Nedjma Algeria"},
 
-Andorra
-213 	3   	Servei De Tele. DAndorra 	Mobiland 	Operational
+  //American Samoa
+  {544, 	11,   	"Blue Sky Communications", "Blue Sky Samoa"},
 
-Angola
-631 	2   	Unitel S.a.r.l. 	Unitel 	Operational
-631 	3   	Movicel 	Movicel 	Operational
-631 	4   	Movicel 	Movicel 	Operational
+  //Andorra
+  {213, 	3,   	"Servei De Tele. DAndorra", 	"Mobiland Andorra"},
 
-Anguilla
-365 	5   	Mossel Ltd (Digicel) 		Operational
-365 	10   	Weblinks Limited 		Operational
-365 	840   	Cable & Wireless 		Operational
+  //Angola
+  {631, 	2,   	"Unitel S.a.r.l.", 	"Unitel Angola"},
+  {631, 	3,  	"Movicel", 	"Movicel Angola"},
+  {631, 	4,   	"Movicel", 	"Movicel Angola"},
 
-Antigua and Barbuda
-344 	30   	Antigua Public Utilities Authority 	APUA 	Operational
-344 	50   	Antigua Wireless Ventures Limited 	Digicel 	Inactive
-344 	920   	Cable & Wireless (Antigua) 	Lime 	Operational
-344 	930   	Antigua Wireless Ventures Limited 	Digicel 	Operational
+  //Anguilla
+  {365, 	5,   	"Mossel Ltd", "Digicel Anguilla"},
+  {365, 	10,   	"Weblinks Limited", "Weblinks Anguilla"},
+  {365, 	840,   	"Cable & Wireless", "Cable & Wireless Anguilla"},
 
-Argentina
-722 	1   	Telefonica Móviles Argentina SA 	Movistar 	Operational
-722 	2   	Nll Holdings 	Nextel 	Operational
-722 	7   	Telefonica Móviles Argentina SA 	Movistar 	Operational
-722 	10   	Telefonica Móviles Argentina SA 	Movistar 	Operational
-722 	20   	Nll Holdings 	Nextel 	Operational
-722 	34   	Telecom Personal S.A. 	Personal 	Inactive
-722 	35   	Hutchison Telecommunications Argentina S.A. 	Port-Hable 	Inactive
-722 	36   	Telecom Personal S.A. 	Personal 	Inactive
-722 	40   	TE.SA.M Argentina S.A 	Globalstar 	Inactive
-722 	70   	Telefonica Móviles Argentina SA 	Movistar 	Operational
-722 	310   	AMX Argentina S.A 	Claro 	Operational
-722 	320   	AMX Argentina S.A 	Claro 	Operational
-722 	330   	AMX Argentina S.A 	Claro 	Operational
-722 	340   	Telecom Personal S.A. 	Personal 	Operational
-722 	341   	Telecom Personal S.A. 	Personal 	Inactive
-722 	350   	Hutchison Telecommunications Argentina S.A. 	Port-Hable 	Operational
+  //Antigua and Barbuda
+  {344, 	30,   	"Antigua Public Utilities Authority", 	"APUA Antigua and Barbuda"},
+  {344, 	50,   	"Antigua Wireless Ventures Limited", 	"Digicel Antigua and Barbuda"},
+  {344, 	920,   	"Cable & Wireless (Antigua)", 	"Lime Antigua"},
+  {344, 	930,   	"Antigua Wireless Ventures Limited", 	"Digicel Antigua and Barbuda"},
 
+  //Argentina
+  {722, 	1,   	"Telefonica Móviles Argentina SA", 	"Movistar Argentina"},
+  {722, 	2,   	"Nll Holdings", 	"Nextel Argentina"},
+  {722, 	7,   	"Telefonica Móviles Argentina SA", 	"Movistar Argentina"},
+  {722, 	10,   	"Telefonica Móviles Argentina SA", 	"Movistar Argentina"},
+  {722, 	20,   	"Nll Holdings", 	"Nextel Argentina"},
+  {722, 	34,   	"Telecom Personal S.A.", 	"Personal Argentina"},
+  {722, 	35,   	"Hutchison Telecommunications Argentina S.A.", 	"Port-Hable Argentina"},
+  {722, 	36,   	"Telecom Personal S.A", 	"Personal Argentina"},
+  {722, 	40,   	"TE.SA.M Argentina S.A", 	"Globalstar"},
+  {722, 	70,   	"Telefonica Móviles Argentina SA", 	"Movistar Argentina"},
+  {722, 	310,   	"AMX Argentina S.A", 	"Claro Argentina"},
+  {722, 	320,   	"AMX Argentina S.A", 	"Claro Argentina"},
+  {722, 	330,   	"AMX Argentina S.A", 	"Claro Argentina"},
+  {722, 	340,   	"Telecom Personal S.A.", 	"Personal Argentina"},
+  {722, 	341,   	"Telecom Personal S.A.", "Personal Argentina"},
+  {722, 	350,   	"Hutchison Telecommunications Argentina S.A."}, 	"Port-Hable"},
+/*
 Armenia
-283 	1   	ArmenTel 	Beeline (telecommunications) 	Operational
-283 	4   	Karabakh Telecom 	Karabakh Telecom 	Inactive
-283 	5   	K Telecom CJSC 	VivaCell-MTS 	Operational
+{283 	1   	ArmenTel 	Beeline (telecommunications) 	Operational
+{283 	4   	Karabakh Telecom 	Karabakh Telecom 	Inactive
+{283 	5   	K Telecom CJSC 	VivaCell-MTS 	Operational
 283 	10   	Orange Armenia 	Orange 	Operational
 283 	77   	K Telecom 	VivaCell-MTS 	Operational
 
@@ -519,23 +527,23 @@ Finland
 244 	29   		Scnl Truphone 	Operational
 244 	41   	Saunalahti 	Saunalahti 	Inactive
 244 	91   	TeliaSonera Finland Oyj 	Sonera 	Operational
-
-France
-208 	0   	France Telecom 	Orange 	Inactive
-208 	1   	France Telecom 	Orange 	Operational
-208 	2   	France Telecom 	Orange 	Operational
-208 	5   	Globalstar Europe 		Inactive
-208 	6   	Globalstar Europe 		Inactive
-208 	7   	Globalstar Europe 		Inactive
-208 	10   	Vivendi 	SFR 	Operational
-208 	11   	Vivendi 	SFR 	Operational
-208 	13   	Vivendi 	SFR 	Inactive
-208 	14   	Iliad 	Free Mobile 	Operational
-208 	15   	Iliad 	Free Mobile 	Operational
-208 	20   	Bouygues Telecom 	Bouygues 	Operational
-208 	21   	Bouygues Telecom 	Bouygues 	Operational
-208 	88   	Bouygues Telecom (Zones Blanches) 	Bouygues 	Operational
-
+*/
+//France
+{208, 	0,   	"France Telecom", 	"Orange FR"},
+{208, 	1,   	"France Telecom", 	"Orange FR"},
+{208, 	2,   	"France Telecom", 	"Orange FR"},
+{208, 	5,   	"Globalstar Europe", ""},
+{208, 	6,   	"Globalstar Europe", ""},
+{208, 	7,   	"Globalstar Europe", ""},
+{208, 	10,   	"Vivendi", 	"SFR FR"},
+{208, 	11,   	"Vivendi", 	"SFR FR"},
+{208, 	13,   	"Vivendi", 	"SFR FR"},
+{208, 	14,   	"Iliad", 	"Free Mobile FR"},
+{208, 	15,   	"Iliad", 	"Free Mobile FR"},
+{208, 	20,   	"Bouygues Telecom", 	"Bouygues FR"},
+{208, 	21,   	"Bouygues Telecom", 	"Bouygues FR"},
+{208, 	88,   	"Bouygues Telecom (Zones Blanches)", 	"Bouygues FR"},
+/*
 French Guiana
 742 	1   	Orange Caribe French Guiana 	Orange Caribe French Guiana 	Inactive
 742 	20   	Digicel French Guiana 	Digicel 	Operational
@@ -569,32 +577,33 @@ Georgia
 282 	5   	Sliknet 	SLINKNET 	Operational
 282 	67   	Aquafon 		Operational
 282 	88   	A-Mobile 		Inactive
+*/
 
-Germany
-262 	1   	T-Mobile Deutschland GmbH 	T-Mobile 	Operational
-262 	2   	Vodafone D2 GmbH 	Vodafone 	Operational
-262 	3   	E-Plus Mobilfunk GmbH & Co. KG 	E-plus 	Operational
-262 	4   	Vodafone D2 GmbH 	Vodafone (Reserved) 	Inactive
-262 	5   	E-Plus Mobilfunk GmbH & Co. KG 	E-Plus (Reserved) 	Inactive
-262 	6   	T-Mobile Deutschland GmbH 	T-Mobile (Reserved) 	Inactive
-262 	7   	O2 (Germany) GmbH & Co. OHG 	O2 	Operational
-262 	8   	O2 (Germany) GmbH & Co. OHG 	O2 	Operational
-262 	9   	Vodafone D2 GmbH 	Vodafone 	Operational
-262 	10   	Arcor AG & Co. (GSM-R) 		Operational
-262 	11   	O2 (Germany) GmbH & Co. OHG 	O2 (RESERVED) 	Inactive
-262 	12   	Dolphin Telecom (Deutschland) GmbH 		Operational
-262 	13   	Mobilcom Multimedia GmbH 		Inactive
-262 	14   	Group 3G UMTS GmbH (Quam) 		Inactive
-262 	15   	Airdata AG 	Airdata 	Inactive
-262 	16   	MVNE (E-plus) 	Vistream 	Operational
-262 	17   	Ring Mobilfunk 	Ring Mobilfunk 	Operational
-262 	20   	E-Plus 	OnePhone 	Operational
-262 	43   	Lyca Mobile 	Lyca 	Operational
-262 	60   	DB Telematik (GSM-R) 		Inactive
-262 	76   	Siemens AG, 		Inactive
-262 	77   	E-Plus Mobilfunk GmbH & Co. KG 	E-Plus 	Inactive
-262 	901   	Debitel AG 	Debitel 	Operational
-
+//Germany
+{262, 	1,   	"T-Mobile Deutschland GmbH", 	"T-Mobile D"},
+{262, 	2,   	"Vodafone D2 GmbH", 	"Vodafone D"},
+{262, 	3,   	"E-Plus Mobilfunk GmbH & Co. KG", 	"E-plus D"},
+{262, 	4,   	"Vodafone D2 GmbH", 	"Vodafone D (Reserved)"},
+{262, 	5,   	"E-Plus Mobilfunk GmbH & Co. KG", 	"E-Plus D (Reserved)"},
+{262, 	6,   	"T-Mobile Deutschland GmbH", 	"T-Mobile D (Reserved)"},
+{262, 	7,   	"O2 (Germany) GmbH & Co. OHG", 	"O2 D"},
+{262, 	8,   	"O2 (Germany) GmbH & Co. OHG", 	"O2 D"},
+{262, 	9,   	"Vodafone D2 GmbH",	"Vodafone D"},
+{262, 	10,   	"Arcor AG & Co. (GSM-R)", ""},
+{262, 	11,   	"O2 (Germany) GmbH & Co. OHG", 	"O2 D (RESERVED)"},
+{262, 	12,   	"Dolphin Telecom (Deutschland) GmbH", "Dolphin D"},
+{262, 	13,   	"Mobilcom Multimedia GmbH", ""},
+{262, 	14,   	"Group 3G UMTS GmbH (Quam)",""},
+{262, 	15,   	"Airdata AG", 	"Airdata D"},
+{262, 	16,   	"MVNE (E-plus)", 	"Vistream D"},
+{262, 	17,   	"Ring Mobilfunk", 	"Ring Mobilfunk D"},
+{262, 	20,   	"E-Plus", 	"OnePhone D"},
+{262, 	43,   	"Lyca Mobile", 	"Lyca D"},
+{262, 	60,   	"DB Telematik (GSM-R)", ""},
+{262, 	76,   	"Siemens AG",""},
+{262, 	77,   	"E-Plus Mobilfunk GmbH & Co. KG","E-Plus D"},
+{262, 	901,   	"Debitel AG", 	"Debitel D"},
+/*
 Ghana
 620 	1   	MTN Group 	MTN 	Operational
 620 	2   	Vodafone Group 	Vodafone 	Operational
@@ -607,13 +616,14 @@ Gibraltar
 266 	1   	Gibtelecom GSM 	GibTel 	Operational
 266 	6   	CTS Gibraltar 	CTS Mobile 	Operational
 266 	9   	Cloud9 Mobile Communications 		Inactive
+*/
 
-Greece
-202 	1   	Cosmote Mobile Teelecommunications S.A. 	Cosmote 	Operational
-202 	5   	Vodafone - Panafon 	Vodafone 	Operational
-202 	9   	Wind Hellas Telecommunications S.A. 	Wind 	Operational
-202 	10   	Wind Hellas Telecommunications S.A. 	Wind 	Operational
-
+//Greece
+{202, 	1,   	"Cosmote Mobile Teelecommunications S.A.", 	"Cosmote G"},
+{202, 	5,   	"Vodafone - Panafon", 	"Vodafone G"},
+{202, 	9,   	"Wind Hellas Telecommunications S.A.", 	"Wind G"},
+{202, 	10,   	"Wind Hellas Telecommunications S.A.", 	"Wind G"},
+/*
 Greenland
 290 	1   	Tele Greenland 		Operational
 
@@ -1047,19 +1057,20 @@ Israel
 425 	7   	Hot Mobile 	Hot Mobile 	Operational
 425 	8   		Golan Telecom 	Operational
 425 	303   	Pelephone Communications Ltd. 	Rami Levy 	Operational
+*/
 
-Italy
-222 	1   	Telecom Italia SpA 	TIM 	Operational
-222 	2   	Elsacom 	Elsacom 	Inactive
-222 	7   		Noverca 	Operational
-222 	8   		Fastweb 	Operational
-222 	10   	Vodafone Omnitel N.V. 	Vodafone 	Operational
-222 	30   	Rete Ferroviaria Italiana 	RFI 	Inactive
-222 	77   		IPSE 2000 	Inactive
-222 	88   	Wind Telecomunicazioni SpA 	Wind 	Operational
-222 	98   		Blu 	Inactive
-222 	99   	Hutchison 3G 	3 Italia 	Operational
-
+//Italy
+{222, 	1,   	"Telecom Italia SpA", 	"TIM I"},
+{222, 	2,   	"Elsacom", 	"Elsacom I"},
+{222, 	7,   	"Noverca", 	"Noverca I"},
+{222, 	8,   	"Fastweb", "Fastweb I"},
+{222, 	10,   	"Vodafone Omnitel N.V.", 	"Vodafone I"},
+{222, 	30,   	"Rete Ferroviaria Italiana", 	"RFI I"},
+{222, 	77,   	"IPSE 2000", ""},
+{222, 	88,   	"Wind Telecomunicazioni SpA", 	"Wind I"},
+{222, 	98,   	"Blu", ""},
+{222, 	99,   	"Hutchison 3G", 	"3 Italia"},
+/*
 Jamaica
 338 	5   	JM DIGICEL 		Inactive
 338 	20   	Cable & Wireless Jamaica Ltd. 	LIME (formerly known as Cable & Wireless) 	Operational
@@ -1347,12 +1358,13 @@ Moldova
 259 	3   	Moldtelecom 	IDC 	Operational
 259 	4   	Eventis Mobile GSM 	Evntis 	Inactive
 259 	5   	Moldtelecom 	Unite 	Operational
+*/
 
-Monaco
-212 	0   		Media Telecom 	Operational
-212 	1   	Monaco Telecom 	Office des Telephones 	Operational
-212 	2   		Morocco Wana 	Operational
-
+//Monaco
+{212, 	0,   		"Media Telecom", ""},
+{212, 	1,   	"Monaco Telecom", "Office des Telephones Monaco"},
+{212, 	2,   	"Morocco Wana", "Wana Monaco"},
+/*
 Mongolia
 428 	88   	Unitel 	Unitel 	Operational
 428 	91   	Skytel LLC 	Skytel 	Operational
@@ -1394,39 +1406,40 @@ Nepal
 429 	2   	Spice Nepal Private Ltd. 	Ncell 	Operational
 429 	3   	Nepal Telecom 	Sky/C-Phone 	Operational
 429 	4   	Smart Telecom Pvt. Ltd 	SmartCell 	Operational
+*/
 
-Netherlands
-204 	1   	VastMobiel B.V. 	Scarlet Telecom B.V 	Inactive
-204 	2   	Tele2 	Tele2 	Operational
-204 	3   	Voiceworks B.V 	Voiceworks B.V 	Inactive
-204 	4   	Vodafone 	Vodafone 	Operational
-204 	5   		Elephant Talk Communications 	Operational
-204 	6   	Mundio Mobile Ltd 	Mundio Mobile 	Operational
-204 	7   	Teleena Holding B.V. 	Teleena 	Operational
-204 	8   	KPN B.V 	KPN 	Operational
-204 	9   	Lyca mobile Netherlands Ltd. 	Lyca mobile 	Operational
-204 	10   	KPN B.V 	KPN 	Operational
-204 	12   	Telfort B.V 	Telfort 	Operational
-204 	13   	Unica Installatietechniek B.V. 	Unica Installatietechniek B.V. 	Inactive
-204 	14   	6GMobile B.V 	6GMobile 	Operational
-204 	15   	Ziggo B.V 	Ziggo B.V 	Operational
-204 	16   	T-Mobile 	T-mobile 	Operational
-204 	17   	Intercity Mobile Communications B.V 	Intercity Mobile Communications B.V 	Operational
-204 	18   	UPC Netherlands B.V 	UPC 	Inactive
-204 	19   	Mixe Communication Solutions B.V 	Mixe Communication Solutions B.V 	Inactive
-204 	20   	T-mobile 	T-mobile 	Operational
-204 	21   	ProRail B.V 		Inactive
-204 	22   		Ministerie van Defensie 	Inactive
-204 	23   	ASPIDER Solutions B.V 		Inactive
-204 	24   	Private Mobility Netherlands B.V 	Private Mobility Netherlands B.V 	Inactive
-204 	25   	CapX B.V. 		Inactive
-204 	26   	SpeakUp B.V 	SpeakUp B.V 	Inactive
-204 	27   	Brezz Nederland B.V 	Brezz Nederland B.V 	Inactive
-204 	28   	Lancelot B.V 	Lancelot B.V 	Inactive
-204 	67   	RadioAccess B.V. 		Inactive
-204 	68   		Unify Group Holding B.V 	Inactive
-204 	69   	KPN B.V 	KPN 	Operational
-
+//Netherlands
+{204, 	1,   	"VastMobiel B.V.", 	"Scarlet Telecom B.V"},
+{204 	2,   	"Tele2", 	"Tele2 NL"},
+{204, 	3,   	"Voiceworks B.V", 	"Voiceworks B.V"},
+{204, 	4,   	"Vodafone", 	"Vodafone NL"},
+{204, 	5,   	"Elephant Talk Communications", "Elephant NL"},
+{204, 	6,   	"Mundio Mobile Ltd", 	"Mundio Mobile NL"},
+{204, 	7,   	"Teleena Holding B.V.", 	"Teleena NL"},
+{204, 	8,   	"KPN B.V", 	"KPN NL"},
+{204, 	9,   	"Lyca mobile Netherlands Ltd.", 	"Lyca mobile NL"},
+{204, 	10,   	"KPN B.V", 	"KPN NL"},
+{204, 	12,   	"Telfort B.V", 	"Telfort NL"},
+{204, 	13,   	"Unica Installatietechniek B.V.",""},
+{204, 	14,   	"6GMobile B.V", 	"6GMobile NL"},
+{204, 	15,   	"Ziggo B.V", 	"Ziggo B.V NL"},
+{204, 	16,   	"T-Mobile", 	"T-mobile NL"},
+{204, 	17,   	"Intercity Mobile Communications B.V", 	"Intercity NL"},
+{204, 	18,   	"UPC Netherlands B.V", 	"UPC NL"},
+{204, 	19,   	"Mixe Communication Solutions B.V",""},
+{204, 	20,   	"T-mobile", 	"T-mobile NL"},
+{204, 	21,   	"ProRail B.V",""},
+{204, 	22,   	"Ministerie van Defensie",""},
+{204, 	23,   	"ASPIDER Solutions B.V",""},
+{204, 	24,   	"Private Mobility Netherlands B.V", 	""},
+{204, 	25,   	"CapX B.V.", ""},
+{204, 	26,   	"SpeakUp B.V",""},
+{204, 	27,   	"Brezz Nederland B.V", ""},
+{204, 	28,   	"Lancelot B.V", ""},
+{204, 	67,   	"RadioAccess B.V.",""},
+{204, 	68,   	"Unify Group Holding B.V",""},
+{204, 	69,   	"KPN B.V", 	"KPN NL"},
+/*
 Netherlands Antilles
 362 	51   	TelCell 		Operational
 362 	69   	Digicel 		Operational
@@ -2018,34 +2031,38 @@ MCC 	MNC 	Network 	Operator or brand name 	Status
 United Arab Emirates
 424 	2   	E mirates Telecom Corp 	Etisalat 	Operational
 424 	3   	Emirates Integrated Telecommunications Company 	du 	Operational
+*/
 
-United States
-310 	0   	Mid-Tex Cellular Ltd. 	Mid-Tex Cellular 	Operational
-311 	0   	Mid-Tex Cellular Ltd. 	Mid-Tex Cellular 	Operational
-310 	2   	Sprint Spectrum 	Sprint 	Inactive
-310 	3   	Verizon Wireless 	Verizon 	Operational
-310 	4   	Verizon Wireless 	Verizon 	Operational
-310 	5   	Verizon Wireless 	Verizon 	Operational
-310 	6   	Consolidated Telcom 		Inactive
-310 	7   	Highland 		Operational
-310 	8   	Corr Wireless Communications 		Inactive
-310 	9   	Edge Wireless LLC 		Inactive
-310 	10   	Verizon Wirelss 	Verizon 	Operational
-311 	10   	Chariton Valley Communications 	Chariton Valley 	Operational
-310 	11   	Southern Communications Services Inc. 		Inactive
-316 	11   		Southern Communications Services 	Operational
-310 	12   	Verizon Wireless 	Verizon 	Operational
-310 	13   	Alltel Wireless 	Alltel Wireless 	Operational
-310 	14   	Testing 		Inactive
-310 	15   	Southern Communications dba Southern LINC 		Inactive
-310 	16   	Cricket Communications 		Operational
+//United States
+{310, 	0,   	"Mid-Tex Cellular Ltd.", 	"Mid-Tex Cellular USA"},
+{311, 	0,   	"Mid-Tex Cellular Ltd.", 	"Mid-Tex Cellular USA"},
+{310, 	2,   	"Sprint Spectrum", 	"Sprint USA"},
+{310, 	3,   	"Verizon Wireless", 	"Verizon USA"},
+{310, 	4,   	"Verizon Wireless", 	"Verizon USA"},
+{310, 	5,   	"Verizon Wireless", 	"Verizon USA"},
+{310, 	6,   	"Consolidated Telcom",""},
+{310, 	7,   	"Highland", "Highland USA"},
+{310, 	8,   	"Corr Wireless Communications",""},
+{310, 	9,   	"Edge Wireless LLC",""},
+{310, 	10,   	"Verizon Wirelss", 	"Verizon USA"},
+{311, 	10,   	"Chariton Valley Communications", 	"Chariton Valley USA"},
+{310, 	11,   	"Southern Communications Services Inc.",""},
+{316, 	11,   	"Southern Communications Services", "Southern USA"),
+{310, 	12,   	"Verizon Wireless", 	"Verizon USA"},
+{310, 	13,   	"Alltel Wireless", 	"Alltel Wireless USA"},
+{310, 	14,   	"Testing",""},
+{310, 	15,   	"Southern Communications dba Southern","LINC"},
+/*
+{310, 	16,   	"Cricket Communications","Cricket USA"},
 310 	17   	North Sight Communications Inc. 		Operational
 310 	20   	Union Telephone Company 		Operational
 311 	20   	Missouri RSA 5 Partnership 		Operational
 310 	23   	VoiceStream 23 		Inactive
 310 	24   	VoiceStream 24 		Inactive
 310 	25   	VoiceStream 25 		Inactive
-310 	26   	T-Mobile 	T-Mobile 	Operational
+*/
+{310, 	26,   	"T-Mobile", 	"T-Mobile USA"},
+/*
 311 	30   	Indigo Wireless 	Indigo Wireless 	Operational
 310 	30   	Centennial Communications 	Centennial 	Operational
 310 	31   	AERIAL 		Inactive
@@ -2060,24 +2077,34 @@ United States
 311 	60   	Farmers Cellular Telephone 	Farmers Cellular 	Operational
 310 	60   	Consolidated Telcom 		Operational
 310 	70   	Highland Cellular, Inc. 		Operational
-311 	70   	AT&T 	AT&T 	Operational
+*/
+{311, 	70,   	"AT&T", 	"AT&T USA"},
+/*
 311 	80   	Pine Telephone Company 	Pine Cellular 	Operational
 310 	80   	Corr Wireless Communications LLC 	Corr 	Operational
 311 	90   	Long Lines Wireless LLC 	Long Lines Wireless 	Operational
-310 	90   	AT&T 	AT&T 	Operational
+*/
+{310, 	90,   	"AT&T", 	"AT&T USA"},
+/*
 311 	100   	High Plains Wireless 	High Plains Wireless 	Operational
 310 	100   	New Mexico RSA 4 East Ltd. Partnership 	Plateau Wireless 	Operational
-310 	110   	Verizon Wireless 	Verizon 	Operational
-311 	110   	High Plains Wireless 	High Plains Wireless 	Operational
-310 	120   	Sprint 	Sprint 	Operational
+*/
+{310, 	110,   	"Verizon Wireless", 	"Verizon USA"},
+{311, 	110,   	"High Plains Wireless", "High Plains Wireless USA"},
+{310, 	120,   	"Sprint", 	"Sprint USA"},
+/*
 310 	130   	Carolina West Wireless 		Inactive
 311 	130   	Alltel 	Alltel 	Operational
 311 	140   	MBO Wireless 	Sprocket 	Operational
 310 	140   	GTA Wireless LLC 		Inactive
-310 	150   	AT&T Mobility 	AT&T 	Operational
+*/
+{310, 	150,   	"AT&T Mobility", 	"AT&T USA"},
+/*
 311 	150   	Wilkes Cellular 		Operational
-310 	160   	T-Mobile 	T-Mobile 	Operational
-310 	170   	Cingular Wireless 		Inactive
+*/
+{310, 	160,   	"T-Mobile", 	"T-Mobile USA"},
+{310, 	170,   	"Cingular Wireless", ""},
+/*
 311 	170   	Broadpoint Inc 	PetroCom 	Operational
 310 	180   	West Central Wireless 	West Central 	Operational
 310 	190   	Alaska Wireless Communications LLC 	Dutch Harbor 	Operational
@@ -2088,8 +2115,10 @@ United States
 310 	230   	T-Mobile 		Inactive
 310 	240   	T-Mobile 		Inactive
 310 	250   	T-Mobile 		Inactive
-310 	260   	T-Mobile 		Operational
-311 	260   	Cellular One 	Cellular One 	Operational
+*/
+{310, 	260,   	"T-Mobile", "T-Mobile USA"},
+{311, 	260,   	"Cellular One", 	"Cellular One USA"},
+/*
 311 	270   	Lamar Country Cellular 	Lamar Country Cellular 	Operational
 310 	270   	T-Mobile 		Inactive
 310 	280   	Verizon Wireless 	Verizon 	Inactive
@@ -2107,17 +2136,23 @@ United States
 310 	370   	Guamcell Cellular and Paging 		Inactive
 311 	370   	General Communication Inc. 	GCI Wireless in Alaska 	Operational
 310 	380   	New Cingular Wireless PCS, LLC 		Inactive
-310 	390   	Verizon Wireless 	Verizon 	Operational
+*/
+{310, 	390,   	"Verizon Wireless", 	"Verizon USA"},
+/*
 310 	400   	Wave Runner LLC 	i CAN_GSM 	Operational
-310 	410   	AT&T 	AT&T 	Operational
+*/
+{310, 	410,   	"AT&T", 	"AT&T USA"},
+/*
 310 	420   	Cincinnati Bell Wireless LLC 	Cincinnati Bell 	Operational
 310 	430   	Alaska Digitel LLC 		Operational
 310 	440   	Numerex Corp. 		Inactive
 310 	450   	Viaero Wireless 	Viaero 	Operational
 310 	460   	TMP Corp 	Simmetry 	Operational
 310 	470   	Omnipoint 		Inactive
-310 	480   	Verizon Wireless 	Verizon 	Operational
-310 	490   	T-Mobile 	T-Mobile 	Operational
+*/
+{310, 	480,   	"Verizon Wireless", 	"Verizon USA"},
+{310, 	490,   	"T-Mobile", 	"T-Mobile USA"},
+/*
 310 	500   	Alltel 	Alltel 	Operational
 310 	510   	Airtel Wireless LLC 	Airtel 	Operational
 310 	520   	VeriSign 		Inactive
@@ -2125,7 +2160,9 @@ United States
 311 	530   	NewCore Wireless 	NewCore Wireless 	Operational
 310 	540   	Oklahoma Western Telephone Company 	Oklahoma Western 	Operational
 310 	550   	Wireless Solutions International 	AT&T 	Inactive
-310 	560   	AT&T 	AT&T 	Operational
+*/
+{310, 	560,   	"AT&T", 	"AT&T USA"},
+/*
 310 	570   	MTPCS LLC 	Cellular One 	Operational
 310 	580   	Inland Cellular Telephone Company 		Inactive
 310 	590   	Alltel 	Alltel 	Operational
@@ -2135,9 +2172,13 @@ United States
 310 	630   	Choice Wireless 	AmeriLink PCS 	Operational
 310 	640   	Airadigm Communications 	Airadigm 	Operational
 310 	650   	Jasper Wireless Inc. 	Jasper 	Operational
-310 	660   	MetroPCS 	MetroPCS 	Operational
+*/
+{310, 	660,   	"MetroPCS", 	"MetroPCS USA"},
+/*
 310 	670   	Northstar 	Northstar 	Operational
-310 	680   	AT&T 	AT&T 	Operational
+*/
+{310, 	680,   	"AT&T", 	"AT&T USA"},
+/*
 310 	690   	Conestoga Wireless Company 	Conestoga 	Operational
 310 	700   	Cross Valiant Cellular Partnership 		Inactive
 310 	710   	Arctic Slopo Telephone Association Cooperative 		Inactive
@@ -2158,9 +2199,13 @@ United States
 310 	860   	TX RSA 15B2, LP dba Five Star Wireless 		Inactive
 310 	870   	Kaplan Telephone Company Inc. 	PACE 	Operational
 310 	880   	Advantage Cellular Systems, Inc. 	Advantage 	Operational
-310 	890   	Verizon Wireless 	Verizon 	Operational
+*/
+{310, 	890,   	"Verizon Wireless", 	"Verizon USA"},
+/*
 310 	900   	Mid-Rivers Communications 	Mid-Rivers Wireless 	Operational
-310 	910   	Verizon Wireless 	Verizon 	Operational
+*/
+{310, 	910,   	"Verizon Wireless", 	"Verizon USA"}
+/*
 310 	920   	Get Mobile 		Inactive
 310 	930   	Copper Valley Wireless 		Inactive
 310 	940   	Poka Lambro Telecommunications Ltd. 		Operational
@@ -2222,8 +2267,8 @@ Zimbabwe
 648 	3   	Telecel Zimbabwe Ltd 	Telecel 	Operational
 648 	4   	Econet Wireless 	Econet 	Operational
 
-
-
+*/
+  }
 
 
 
