@@ -186,7 +186,7 @@ static const eutra_band_t eutra_bands[] =
     {14,  788    * MHz,  798    * MHz,  758    * MHz,  768    * MHz, FDD},
 
     {17,  704    * MHz,  716    * MHz,  734    * MHz,  746    * MHz, FDD},
-
+    {20,  832    * MHz,  862    * MHz,  791    * MHz,  821    * MHz, FDD},
     {33, 1900    * MHz, 1920    * MHz, 1900    * MHz, 1920    * MHz, TDD},
     {34, 2010    * MHz, 2025    * MHz, 2010    * MHz, 2025    * MHz, TDD},
     {35, 1850    * MHz, 1910    * MHz, 1850    * MHz, 1910    * MHz, TDD},
@@ -231,6 +231,7 @@ static void *UE_thread_synch(void *arg) {
   found = 0;
   current_band = eutra_bands[ind].band; 
   do  {
+    printf("Scanning band %d, dl_min %u\n",current_band,eutra_bands[ind].dl_min);
     if ((eutra_bands[ind].dl_min <= downlink_frequency[0][0]) && (eutra_bands[ind].dl_max>= downlink_frequency[0][0])) {
       for (card=0;card<MAX_NUM_CCs;card++)
 	for (i=0; i<4; i++) 
@@ -239,7 +240,7 @@ static void *UE_thread_synch(void *arg) {
       break;
     }
     ind++;
-    current_band = eutra_bands[++ind].band; 
+    current_band = eutra_bands[ind].band; 
   } while (current_band < 44);
     
   if (found == 0) {
@@ -374,8 +375,10 @@ static void *UE_thread_synch(void *arg) {
 	  mac_xface->macphy_exit("No cell synchronization found, abandoning");
 	}
 	else {
-	  LOG_I(PHY,"[initial_sync] trying carrier off %d Hz, rxgain %d\n",openair_daq_vars.freq_offset,
-		UE->rx_total_gain_dB);
+	  LOG_I(PHY,"[initial_sync] trying carrier off %d Hz, rxgain %d (DL %u, UL %u)\n",openair_daq_vars.freq_offset,
+		UE->rx_total_gain_dB,
+		downlink_frequency[0][0]+openair_daq_vars.freq_offset,
+		downlink_frequency[0][0]+uplink_frequency_offset[0][0]+openair_daq_vars.freq_offset);
 	  for (card=0;card<MAX_CARDS;card++) {
 	    for (i=0; i<openair0_cfg[card].rx_num_channels; i++) {
 	      openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i]+openair_daq_vars.freq_offset;
@@ -802,7 +805,6 @@ void *UE_thread(void *arg) {
 
       for (i=0;i<UE->lte_frame_parms.nb_antennas_rx;i++)
 	rxp[i] = (dummy_dump==0) ? (void*)&rxdata[i][rxpos] : (void*)dummy[i];
-      //      printf("rxpos %d, hw_subframe %d, dummy_dump %d (asking %d)\n",rxpos,hw_subframe,dummy_dump,spp - ((first_rx==1) ? rx_off_diff : 0));
       rxs = openair0.trx_read_func(&openair0,
 				   &timestamp,
 				   rxp,
@@ -945,8 +947,9 @@ void *UE_thread(void *arg) {
 #endif
 	    UE->rx_offset=0;
 	  }
-	  else if ((UE->rx_offset < RX_OFF_MIN)&&(start_rx_stream==1)) {
-	    //	    rx_off_diff = -UE->rx_offset + RX_OFF_MIN;
+	  else if ((UE->rx_offset < RX_OFF_MIN)&&(start_rx_stream==1) && (rx_correction_timer == 0)) {
+	    rx_off_diff = -UE->rx_offset + RX_OFF_MIN;
+	    rx_correction_timer = 5;
 	  }
 	  else if ((UE->rx_offset > (FRAME_LENGTH_COMPLEX_SAMPLES-RX_OFF_MAX)) &&(start_rx_stream==1) && (rx_correction_timer == 0)) {
 	    rx_off_diff = FRAME_LENGTH_COMPLEX_SAMPLES-UE->rx_offset;
@@ -954,7 +957,7 @@ void *UE_thread(void *arg) {
 	  }
 	  if (rx_correction_timer>0)
 	    rx_correction_timer--;
-	  //	  LOG_D(PHY,"HW RESYNC: hw_frame %d: Correction: rx_off_diff %d (timer %d)\n",frame,rx_off_diff,rx_correction_timer);
+	  //	  LOG_D(PHY,"HW RESYNC: hw_frame %d: (rx_offset %d) Correction: rx_off_diff %d (timer %d)\n",frame,UE->rx_offset,rx_off_diff,rx_correction_timer);
 	}
 	dummy_dump=0;
       }

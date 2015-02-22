@@ -93,11 +93,11 @@ static int trx_usrp_start(openair0_device *device)
 
   // init recv and send streaming
   uhd::stream_cmd_t cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
-  cmd.time_spec = s->usrp->get_time_now() + uhd::time_spec_t(0.01);
+  cmd.time_spec = s->usrp->get_time_now() + uhd::time_spec_t(0.05);
   cmd.stream_now = false; // start at constant delay
   s->rx_stream->issue_stream_cmd(cmd);
 
-  s->tx_md.time_spec = s->usrp->get_time_now() + uhd::time_spec_t(1-(double)s->tx_forward_nsamps/s->sample_rate);
+  s->tx_md.time_spec = cmd.time_spec + uhd::time_spec_t(1-(double)s->tx_forward_nsamps/s->sample_rate);
   s->tx_md.has_time_spec = true;
   s->tx_md.start_of_burst = true;
   s->tx_md.end_of_burst = false;
@@ -144,7 +144,7 @@ static int trx_usrp_read(openair0_device *device, openair0_timestamp *ptimestamp
 
   usrp_state_t *s = (usrp_state_t*)device->priv;
 
-  int samples_received,i;
+  int samples_received=0,i;
   
   if (cc>1) {
     std::vector<void *> buff_ptrs;
@@ -154,6 +154,10 @@ static int trx_usrp_read(openair0_device *device, openair0_timestamp *ptimestamp
   else
     samples_received = s->rx_stream->recv(buff[0], nsamps, s->rx_md);
 
+  if (samples_received < nsamps) {
+    printf("[recv] received %d samples out of %d\n",samples_received,nsamps);
+    
+  }
   //handle the error code
   switch(s->rx_md.error_code){
   case uhd::rx_metadata_t::ERROR_CODE_NONE:
@@ -232,12 +236,9 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   memset(s, 0, sizeof(usrp_state_t));
 
   // Initialize USRP device
-/* thomas 26.01.205*/
-//  std::string args = "type=b200";
+
   std::string args = "type=b200";
 
-  /*  std::string rx_subdev = "A:A A:B";
-      std::string tx_subdev = "A:A A:B";*/
 
   uhd::device_addrs_t device_adds = uhd::device::find(args);
   size_t i;
@@ -309,25 +310,31 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   }
 
 
+  // display USRP settings
+  std::cout << boost::format("Actual master clock: %fMHz...") % (s->usrp->get_master_clock_rate()/1e6) << std::endl;
 
   // create tx & rx streamer
   uhd::stream_args_t stream_args_rx("sc16", "sc16");
-  //stream_args_rx.args["spp"] = str(boost::format("%d") % (openair0_cfg[0].samples_per_packet));
-  
-  uhd::stream_args_t stream_args_tx("sc16", "sc16");
-  //stream_args_tx.args["spp"] = str(boost::format("%d") % (openair0_cfg[0].samples_per_packet));
+  //stream_args_rx.args["spp"] = str(boost::format("%d") % 2048);//(openair0_cfg[0].rx_num_channels*openair0_cfg[0].samples_per_packet));
   for (i = 0; i<openair0_cfg[0].rx_num_channels; i++)
-      stream_args_rx.channels.push_back(i);
+    stream_args_rx.channels.push_back(i);
+  s->rx_stream = s->usrp->get_rx_stream(stream_args_rx);
+  std::cout << boost::format("rx_max_num_samps %u") % (s->rx_stream->get_max_num_samps()) << std::endl;
+  //openair0_cfg[0].samples_per_packet = s->rx_stream->get_max_num_samps();
+
+  uhd::stream_args_t stream_args_tx("sc16", "sc16");
+  //stream_args_tx.args["spp"] = str(boost::format("%d") % 2048);//(openair0_cfg[0].tx_num_channels*openair0_cfg[0].samples_per_packet));
   for (i = 0; i<openair0_cfg[0].tx_num_channels; i++)
       stream_args_tx.channels.push_back(i);
-
   s->tx_stream = s->usrp->get_tx_stream(stream_args_tx);
-  s->rx_stream = s->usrp->get_rx_stream(stream_args_rx);
+  std::cout << boost::format("tx_max_num_samps %u") % (s->tx_stream->get_max_num_samps()) << std::endl;
+
 
   s->usrp->set_time_now(uhd::time_spec_t(0.0));
 
-  // display USRP settings
-  std::cout << boost::format("Actual master clock: %fMHz...") % (s->usrp->get_master_clock_rate()/1e6) << std::endl << std::endl;
+
+
+  
 
   for (i=0;i<openair0_cfg[0].rx_num_channels;i++) {
     if (i<openair0_cfg[0].rx_num_channels) {

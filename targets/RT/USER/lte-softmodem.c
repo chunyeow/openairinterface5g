@@ -328,7 +328,7 @@ int16_t           rlc_log_level      = LOG_INFO;
 int16_t           rlc_log_verbosity  = LOG_MED;
 int16_t           pdcp_log_level     = LOG_INFO;
 int16_t           pdcp_log_verbosity = LOG_MED;
-int16_t           rrc_log_level      = LOG_INFO;
+int16_t           rrc_log_level      = LOG_DEBUG;
 int16_t           rrc_log_verbosity  = LOG_MED;
 # if defined(ENABLE_USE_MME)
 int16_t           gtpu_log_level     = LOG_DEBUG;
