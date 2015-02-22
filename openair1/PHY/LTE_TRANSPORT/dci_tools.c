@@ -658,7 +658,7 @@ int generate_eNB_dlsch_params_from_dci(uint8_t subframe,
 	rv       = ((DCI1A_10MHz_FDD_t *)dci_pdu)->rv;
 	TPC      = ((DCI1A_10MHz_FDD_t *)dci_pdu)->TPC; 
 	harq_pid = ((DCI1A_10MHz_FDD_t *)dci_pdu)->harq_pid;
-	//      printf("FDD 1A: mcs %d, rballoc %x,rv %d, NPRB %d\n",mcs,rballoc,rv,NPRB);
+	//printf("FDD 1A: mcs %d, rballoc %x,rv %d, TPC %d\n",mcs,rballoc,rv,TPC);
       }
 
       dlsch0_harq = dlsch[0]->harq_processes[harq_pid];
@@ -740,7 +740,7 @@ int generate_eNB_dlsch_params_from_dci(uint8_t subframe,
     if (NPRB==0)
       return(-1);
 
-    //  printf("NPRB %d, nb_rb %d, ndi %d\n",NPRB,dlsch0_harq->nb_rb,ndi);
+    //printf("NPRB %d, nb_rb %d, ndi %d\n",NPRB,dlsch0_harq->nb_rb,ndi);
     dlsch0_harq->rvidx     = rv; 
 
     dlsch0_harq->Nl          = 1;
@@ -3548,7 +3548,6 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
 	dlsch0_harq = dlsch[0]->harq_processes[harq_pid];
 	// see 36-212 V8.6.0 p. 45
 	NPRB = (TPC&1) + 2;
-	// toggle the ndi 
       }
       else {
                 
@@ -3589,34 +3588,36 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     }
     // change the mcs limit from 7 to 8, supported by MAC
     if (mcs > 10) {
-      LOG_E(PHY,"Format 1A: unlikely mcs for format 1A (%d)\n",mcs);
+      LOG_E(PHY,"Format 1A: subframe %d unlikely mcs for format 1A (%d), TPC %d rv %d\n",subframe,mcs,TPC,rv);
       return(-1);
     } 
 
     if ((rnti==si_rnti) || (rnti==p_rnti) || (rnti==ra_rnti)){  //
-      // toggle the ndi, always toggled for si,p and ra 
-      ndi  = 1-dlsch0_harq->DCINdi;
+      if (dlsch0_harq->round == 4) {
+          dlsch0_harq->round = 0;
+          dlsch0_harq->first_tx = 1;
+        }
+    //  if (dlsch0_harq->round == 0)
+   //      ndi = 1-dlsch0_harq->DCINdi;
     }
 
     dlsch[0]->current_harq_pid = harq_pid;
-    //    msg("Format 1A: harq_pid %d\n",harq_pid);        
+
     dlsch0_harq->rvidx = rv;        
     dlsch0_harq->Nl = 1;
     //    dlsch[0]->layer_index = 0;
     dlsch0_harq->mimo_mode = frame_parms->mode1_flag == 1 ?SISO : ALAMOUTI;
     dlsch0_harq->dl_power_off = 1; //no power offset
 
-    LOG_D(PHY,"UE (%x/%d): Subframe %d Format1A DCI: ndi %d, old_ndi %d (first tx %d) harq_status %d\n",dlsch[0]->rnti,harq_pid,subframe,ndi,dlsch0_harq->DCINdi,
-	  dlsch0_harq->first_tx,dlsch0_harq->status);
-    if ((rnti != si_rnti) && (rnti!=ra_rnti)) { 
+    //LOG_I(PHY,"UE (%x/%d): Subframe %d Format1A DCI: ndi %d, old_ndi %d (first tx %d) harq_status %d\n",dlsch[0]->rnti,harq_pid,subframe,ndi,dlsch0_harq->DCINdi,
+	  //dlsch0_harq->first_tx,dlsch0_harq->status);
     if ((ndi!=dlsch0_harq->DCINdi)||  // DCI has been toggled or this is the first transmission
 	(dlsch0_harq->first_tx==1)) {
       dlsch0_harq->round = 0;
       if (dlsch0_harq->first_tx==1) {
-	LOG_I(PHY,"[PDSCH %x/%d] Format 1A DCI First TX: Clearing flag\n");
+	//LOG_I(PHY,"[PDSCH %x/%d] Format 1A DCI First TX: Clearing flag\n");
 	dlsch0_harq->first_tx = 0;
       }
-    }
     }
     dlsch0_harq->DCINdi = ndi;
 
@@ -3624,6 +3625,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     dlsch0_harq->TBS = TBStable[get_I_TBS(mcs)][NPRB-1];        
     dlsch[0]->rnti = rnti;        
     dlsch0 = dlsch[0];
+    //printf("Format 1A: harq_pid %d, nb_rb %d, round %d\n",harq_pid,dlsch0_harq->nb_rb,dlsch0_harq->round);
     break;
 
   case format1:

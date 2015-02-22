@@ -2818,6 +2818,7 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 
 	if (rb_alloc_ind==1) {
 
+          //printf("demod: rb %d\n",rb);
 
 	  *pmi_loc = (pmi>>((rb>>2)<<1))&3;
 	  //	  printf("rb %d: sb %d : pmi %d\n",rb,rb>>2,*pmi_loc);

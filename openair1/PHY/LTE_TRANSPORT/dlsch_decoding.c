@@ -291,7 +291,7 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
 							       (r==0) ? harq_process->F : 0);
 
 #ifdef DEBUG_DLSCH_DECODING    
-    msg("HARQ_PID %d Rate Matching Segment %d (coded bits %d,unpunctured/repeated bits %d, TBS %d, mod_order %d, nb_rb %d, Nl %d, rv %d, round %d)...\n",
+    LOG_I(PHY,"HARQ_PID %d Rate Matching Segment %d (coded bits %d,unpunctured/repeated bits %d, TBS %d, mod_order %d, nb_rb %d, Nl %d, rv %d, round %d)...\n",
 	harq_pid,r, G,
 	Kr*3,
 	harq_process->TBS,

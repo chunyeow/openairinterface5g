@@ -1835,7 +1835,7 @@ void lte_ue_pbch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
 	      phy_vars_ue->lte_frame_parms.phich_config_common.phich_duration,
 	      phy_vars_ue->lte_frame_parms.phich_config_common.phich_resource);
     if (frame_rx%100 == 0) {
-      LOG_I(PHY,"[UE %d] frame %d, slot %d, PBCH: mode1_flag %d, tx_ant %d, frame_tx %d, phase %d. N_RB_DL %d, phich_duration %d, phich_resource %d/6\n",
+      LOG_I(PHY,"[UE %d] frame %d, slot %d, PBCH: mode1_flag %d, tx_ant %d, frame_tx %d, phase %d. N_RB_DL %d, phich_duration %d, phich_resource %d/6,Frequency offset %d Hz (%d)\n",
 	      phy_vars_ue->Mod_id, 
 	      frame_rx,
 	      slot_rx,
@@ -1845,7 +1845,8 @@ void lte_ue_pbch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
 	      pbch_phase,
 	      phy_vars_ue->lte_frame_parms.N_RB_DL,
 	      phy_vars_ue->lte_frame_parms.phich_config_common.phich_duration,
-          phy_vars_ue->lte_frame_parms.phich_config_common.phich_resource);
+              phy_vars_ue->lte_frame_parms.phich_config_common.phich_resource,
+              phy_vars_ue->lte_ue_common_vars.freq_offset,openair_daq_vars.freq_offset);
       //dump_frame_parms(&phy_vars_ue->lte_frame_parms);
       }
 #endif
@@ -2746,8 +2747,8 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
 	    LOG_D(PHY,"[UE  %d] Frame %d, subframe %d, received SI in error\n",phy_vars_ue->Mod_id,frame_rx,subframe_prev);
 #endif
 
-	    dump_dlsch_SI(phy_vars_ue,eNB_id,subframe_prev);
-	    exit(-1);
+	    //dump_dlsch_SI(phy_vars_ue,eNB_id,subframe_prev);
+	    //exit(-1);
             vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_OUT);
 	    stop_meas(&phy_vars_ue->phy_proc_rx);
 	    return(-1);
