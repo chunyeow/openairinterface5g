@@ -2600,7 +2600,7 @@ int dump_dci(LTE_DL_FRAME_PARMS *frame_parms, DCI_ALLOC_t *dci) {
       case 50:
 	msg("DCI format1A (TDD1-6, 10MHz), rnti %x (%x)\n",dci->rnti,((uint32_t*)&dci->dci_pdu[0])[0]);
 	msg("VRB_TYPE %d\n",((DCI1A_10MHz_TDD_1_6_t *)&dci->dci_pdu[0])->vrb_type);
-	msg("RB_ALLOC %x (NB_RB %d)\n",((DCI1A_10MHz_TDD_1_6_t *)&dci->dci_pdu[0])->rballoc,RIV2nb_rb_LUT25[((DCI1A_10MHz_TDD_1_6_t *)&dci->dci_pdu[0])->rballoc]);
+	msg("RB_ALLOC %x (NB_RB %d)\n",((DCI1A_10MHz_TDD_1_6_t *)&dci->dci_pdu[0])->rballoc,RIV2nb_rb_LUT50[((DCI1A_10MHz_TDD_1_6_t *)&dci->dci_pdu[0])->rballoc]);
 	msg("MCS %d\n",((DCI1A_10MHz_TDD_1_6_t *)&dci->dci_pdu[0])->mcs);
 	msg("HARQ_PID %d\n",((DCI1A_10MHz_TDD_1_6_t *)&dci->dci_pdu[0])->harq_pid);
 	msg("NDI %d\n",((DCI1A_10MHz_TDD_1_6_t *)&dci->dci_pdu[0])->ndi);
@@ -2611,7 +2611,7 @@ int dump_dci(LTE_DL_FRAME_PARMS *frame_parms, DCI_ALLOC_t *dci) {
       case 100:
 	msg("DCI format1A (TDD1-6, 20MHz), rnti %x (%x)\n",dci->rnti,((uint32_t*)&dci->dci_pdu[0])[0]);
 	msg("VRB_TYPE %d\n",((DCI1A_20MHz_TDD_1_6_t *)&dci->dci_pdu[0])->vrb_type);
-	msg("RB_ALLOC %x (NB_RB %d)\n",((DCI1A_20MHz_TDD_1_6_t *)&dci->dci_pdu[0])->rballoc,RIV2nb_rb_LUT25[((DCI1A_20MHz_TDD_1_6_t *)&dci->dci_pdu[0])->rballoc]);
+	msg("RB_ALLOC %x (NB_RB %d)\n",((DCI1A_20MHz_TDD_1_6_t *)&dci->dci_pdu[0])->rballoc,RIV2nb_rb_LUT100[((DCI1A_20MHz_TDD_1_6_t *)&dci->dci_pdu[0])->rballoc]);
 	msg("MCS %d\n",((DCI1A_20MHz_TDD_1_6_t *)&dci->dci_pdu[0])->mcs);
 	msg("HARQ_PID %d\n",((DCI1A_20MHz_TDD_1_6_t *)&dci->dci_pdu[0])->harq_pid);
 	msg("NDI %d\n",((DCI1A_20MHz_TDD_1_6_t *)&dci->dci_pdu[0])->ndi);
@@ -2651,7 +2651,7 @@ int dump_dci(LTE_DL_FRAME_PARMS *frame_parms, DCI_ALLOC_t *dci) {
       case 50:
 	msg("DCI format1A(FDD, 10MHz), rnti %x (%x)\n",dci->rnti,((uint32_t*)&dci->dci_pdu[0])[0]);
 	msg("VRB_TYPE %d\n",((DCI1A_10MHz_FDD_t *)&dci->dci_pdu[0])->vrb_type);
-	msg("RB_ALLOC %x (NB_RB %d)\n",((DCI1A_10MHz_FDD_t *)&dci->dci_pdu[0])->rballoc,RIV2nb_rb_LUT25[((DCI1A_10MHz_FDD_t *)&dci->dci_pdu[0])->rballoc]);
+	msg("RB_ALLOC %x (NB_RB %d)\n",((DCI1A_10MHz_FDD_t *)&dci->dci_pdu[0])->rballoc,RIV2nb_rb_LUT50[((DCI1A_10MHz_FDD_t *)&dci->dci_pdu[0])->rballoc]);
 	msg("MCS %d\n",((DCI1A_10MHz_FDD_t *)&dci->dci_pdu[0])->mcs);
 	msg("HARQ_PID %d\n",((DCI1A_10MHz_FDD_t *)&dci->dci_pdu[0])->harq_pid);
 	msg("NDI %d\n",((DCI1A_10MHz_FDD_t *)&dci->dci_pdu[0])->ndi);
@@ -2661,7 +2661,7 @@ int dump_dci(LTE_DL_FRAME_PARMS *frame_parms, DCI_ALLOC_t *dci) {
       case 100:
 	msg("DCI format1A(FDD, 20MHz), rnti %x (%x)\n",dci->rnti,((uint32_t*)&dci->dci_pdu[0])[0]);
 	msg("VRB_TYPE %d\n",((DCI1A_20MHz_FDD_t *)&dci->dci_pdu[0])->vrb_type);
-	msg("RB_ALLOC %x (NB_RB %d)\n",((DCI1A_20MHz_FDD_t *)&dci->dci_pdu[0])->rballoc,RIV2nb_rb_LUT25[((DCI1A_20MHz_FDD_t *)&dci->dci_pdu[0])->rballoc]);
+	msg("RB_ALLOC %x (NB_RB %d)\n",((DCI1A_20MHz_FDD_t *)&dci->dci_pdu[0])->rballoc,RIV2nb_rb_LUT100[((DCI1A_20MHz_FDD_t *)&dci->dci_pdu[0])->rballoc]);
 	msg("MCS %d\n",((DCI1A_20MHz_FDD_t *)&dci->dci_pdu[0])->mcs);
 	msg("HARQ_PID %d\n",((DCI1A_20MHz_FDD_t *)&dci->dci_pdu[0])->harq_pid);
 	msg("NDI %d\n",((DCI1A_20MHz_FDD_t *)&dci->dci_pdu[0])->ndi);
@@ -3490,7 +3490,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
 	ndi      = ((DCI1A_10MHz_FDD_t *)dci_pdu)->ndi;
 	TPC      = ((DCI1A_10MHz_FDD_t *)dci_pdu)->TPC; 
 	harq_pid  = ((DCI1A_10MHz_FDD_t *)dci_pdu)->harq_pid;
-	//printf("FDD 1A: mcs %d, rballoc %x,rv %d, TPC %d\n",mcs,rballoc,rv,TPC);
+	//printf("FDD 1A: mcs %d, rballoc %x,ndi %d, rv %d, TPC %d\n",mcs,rballoc,ndi,rv,TPC);
       }
             
       if ((rnti==si_rnti) || (rnti==p_rnti) || (rnti==ra_rnti)){  //
@@ -3588,7 +3588,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
       return(-1);
     }
     // change the mcs limit from 7 to 8, supported by MAC
-    if (mcs > 8) {
+    if (mcs > 10) {
       LOG_E(PHY,"Format 1A: unlikely mcs for format 1A (%d)\n",mcs);
       return(-1);
     } 
@@ -3608,14 +3608,15 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
 
     LOG_D(PHY,"UE (%x/%d): Subframe %d Format1A DCI: ndi %d, old_ndi %d (first tx %d) harq_status %d\n",dlsch[0]->rnti,harq_pid,subframe,ndi,dlsch0_harq->DCINdi,
 	  dlsch0_harq->first_tx,dlsch0_harq->status);
-
+    if ((rnti != si_rnti) && (rnti!=ra_rnti)) { 
     if ((ndi!=dlsch0_harq->DCINdi)||  // DCI has been toggled or this is the first transmission
 	(dlsch0_harq->first_tx==1)) {
       dlsch0_harq->round = 0;
       if (dlsch0_harq->first_tx==1) {
-	LOG_D(PHY,"[PDSCH %x/%d] Format 1A DCI First TX: Clearing flag\n");
+	LOG_I(PHY,"[PDSCH %x/%d] Format 1A DCI First TX: Clearing flag\n");
 	dlsch0_harq->first_tx = 0;
       }
+    }
     }
     dlsch0_harq->DCINdi = ndi;
 

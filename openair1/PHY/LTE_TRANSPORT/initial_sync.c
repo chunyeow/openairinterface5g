@@ -173,12 +173,7 @@ int pbch_detection(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
       return -1;
       break;
     }
-#ifndef USER_MODE
-    if (frame_parms->N_RB_DL != 25) {
-        LOG_E(PHY,"[UE%d] Initial sync: PBCH decoding: Detected NB_RB %d, but CBMIMO1 can only handle NB_RB=25\n",phy_vars_ue->Mod_id,frame_parms->N_RB_DL);
-      return -1;
-    }
-#endif
+
     
     // now check for PHICH parameters
     frame_parms->phich_config_common.phich_duration = (PHICH_DURATION_t)((phy_vars_ue->lte_ue_pbch_vars[0]->decoded_output[2]>>4)&1);

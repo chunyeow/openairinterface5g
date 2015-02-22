@@ -2075,8 +2075,9 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 			     1,
 			     num_pdcch_symbols,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe),
 		       0,
-		       subframe<<1);      
-      stop_meas(&phy_vars_eNB->dlsch_scrambling_stats);	      
+		       subframe<<1);
+
+            stop_meas(&phy_vars_eNB->dlsch_scrambling_stats);	      
 	
       start_meas(&phy_vars_eNB->dlsch_modulation_stats);	      
       //      for (sect_id=0;sect_id<number_of_cards;sect_id++) 

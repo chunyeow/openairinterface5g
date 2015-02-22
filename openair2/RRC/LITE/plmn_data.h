@@ -6,6 +6,8 @@ typedef struct {
 } plmn_data_t;
 
 static const plmn_data_t plmn_data[] = {
+  // Test
+  {1,            1,     "OAI Testing","OAI Test"},
   // Abkhazia
   {289, 	67,   	"Aquafon Abkhazia", ""},
   {289, 	68,   	"A-Mobile Abkhazia", ""},
@@ -294,39 +296,40 @@ Cambodia
 Cameroon
 624 	1   	Mobile Telephone Networks Cameroon 	MTN Cameroon 	Operational
 624 	2   	Orange Cameroun 	Orange 	Operational
+*/
 
-Canada
-302 	220   	Telus Mobility 	Telus 	Operational
-302 	221   	Telus Mobility (Unknown) 	Telus 	Operational
-302 	290   	Aurtek Wurekess 		Operational
-302 	320   	Dave Wireless 	Mobilicity 	Operational
-302 	350   	FIRST Networks Operations 	FIRST 	Operational
-302 	360   	Telus Mobility 	MiKE 	Operational
-302 	361   	Telus Mobility 	Telus 	Operational
-302 	370   	Fido Solutions (Rogers Wireless) 	Fido 	Operational
-302 	380   	Dryden Mobility 	DMTS 	Operational
-302 	490   	Globalive Communications 	WIND Mobile 	Operational
-302 	500   	Videotron 	Videotron 	Operational
-302 	510   	Videotron 	Videotron 	Operational
-302 	610   	Bell Mobility 	Bell 	Operational
-302 	620   	ICE Wireless 	ICE Wireless 	Operational
-302 	640   	Bell Mobility 	Bell 	Operational
-302 	651   	Bell Mobility 	Bell 	Operational
-302 	652   	BC Tel Mobility 		Operational
-302 	653   	Telus Mobility 	Telus 	Operational
-302 	654   	Sask Tel Mobility 		Operational
-302 	655   	MTS Mobility 	MTS 	Operational
-302 	656   	Thunder Bay Telephone Mobility 	TBay 	Operational
-302 	657   	Telus Mobility 	Telus 	Operational
-302 	680   	SaskTel Mobility 	SaskTel 	Operational
-302 	701   	MB Tel Mobility 		Operational
-302 	702   	MT&T Mobility (Aliant) 		Operational
-302 	703   	New Tel Mobility (Aliant 		Operational
-302 	710   	Globalstar Canada 	Globalstar 	Operational
-302 	720   	Rorges Communications 	Rogers Wireless 	Operational
-302 	780   	SaskTel Mobility 	SaskTel 	Operational
-302 	880   	Shared Telus, Bell, and SaskTel 	Bell / Telus / SaskTel 	Operational
-
+//Canada
+  {302, 	220,   	"Telus Mobility", 	"Telus CA"},
+  {302, 	221,   	"Telus Mobility (Unknown)", 	"Telus CA"},
+  {302, 	290,   	"Aurtek Wurekess", "Aurtek CA"},
+  {302, 	320,   	"Dave Wireless", 	"Mobilicity CA"},
+  {302, 	350,   	"FIRST Networks Operations", 	"FIRST CA"},
+  {302, 	360,   	"Telus Mobility", 	"MiKE CA"},
+  {302, 	361,   	"Telus Mobility", 	"Telus CA"},
+  {302, 	370,   	"Fido Solutions (Rogers Wireless)", 	"Fido CA"},
+  {302, 	380,   	"Dryden Mobility", 	"DMTS CA"},
+  {302, 	490,   	"Globalive Communications", 	"WIND Mobile CA"},
+  {302, 	500,   	"Videotron", 	"Videotron CA"},
+  {302, 	510,   	"Videotron",    "Videotron CA"},
+  {302, 	610,   	"Bell Mobility", 	"Bell CA"},
+  {302, 	620,   	"ICE Wireless", 	"ICE Wireless CA"},
+  {302, 	640,   	"Bell Mobility", 	"Bell CA"},
+  {302, 	651,   	"Bell Mobility", 	"Bell CA"},
+  {302, 	652,   	"BC Tel Mobility",      "BC Tel CA"},
+  {302, 	653,   	"Telus Mobility", 	"Telus"},
+  {302, 	654,   	"Sask Tel Mobility",    "Sask Tel CA"},
+  {302, 	655,   	"MTS Mobility", 	"MTS CA"},
+  {302, 	656,   	"Thunder Bay Telephone Mobility", 	"TBay CA"},
+  {302, 	657,   	"Telus Mobility", 	"Telus CA"},
+  {302, 	680,   	"SaskTel Mobility", 	"SaskTel CA"},
+  {302, 	701,   	"MB Tel Mobility",      "MB Tel CA"},
+  {302, 	702,   	"MT&T Mobility (Aliant)", "MT&T CA"},
+  {302, 	703,   	"New Tel Mobility (Aliant", "New Tel CA"},
+  {302, 	710,   	"Globalstar Canada", 	"Globalstar CA"},
+  {302, 	720,   	"Rogers Communications", "Rogers Wireless CA"},
+  {302, 	780,   	"SaskTel Mobility", 	"SaskTel CA"},
+  {302, 	880,   	"Shared Telus, Bell, and SaskTel", 	"Bell / Telus / SaskTel CA"},
+  /*
 Cape Verde
 625 	1   	CVMovel, S.A. 	CVMOVEL 	Operational
 625 	2   	T+Telecomunicaçôes 	T+ 	Operational
@@ -356,18 +359,20 @@ Chile
 730 	9   	Centennial Cayman Corp. Chile 	Nextel 	Operational
 730 	10   	Entel Telefonia Móvil S.A. 	entel 	Operational
 730 	99   	WILL Telefonia 	Will 	Operational
+*/
 
-China
-460 	0   	China Mobile 		Operational
-460 	1   	China Unicom 		Operational
-460 	2   	Liaoning PPTA 		Operational
-460 	3   	China Unicom CDMA 		Operational
-460 	4   	China Satellite Global Star Network 		Inactive
-460 	5   	China Telecom 		Operational
-460 	6   	China Unicom 		Operational
-460 	7   	China Mobile 		Operational
-460 	20   	China Tietong (GSM-R) 		Inactive
+//China
+  {460, 	0,   	"China Mobile", "China Mobile"},
+  {460, 	1,   	"China Unicom", "China Unicom"},
+  {460, 	2,   	"Liaoning PPTA","Liaoning China"},
+  {460, 	3,   	"China Unicom CDMA", "China Unicom"},
+  {460, 	4,   	"China Satellite Global Star Network",""},
+  {460, 	5,   	"China Telecom", "China Telecom"},
+  {460, 	6,   	"China Unicom", "China Unicom"},
+  {460, 	7,   	"China Mobile", "China Mobile"},
+  {460, 	20,   	"China Tietong (GSM-R)",""},
 
+  /*
 Colombia
 732 	1   	Colombia Telecomunicaciones S.A. 		Operational
 732 	2   	Edatel S.A. 	Edatel 	Operational

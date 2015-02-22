@@ -1254,7 +1254,7 @@ int dlsch_modulation(mod_sym_t **txdataF,
 
 	if (rb_alloc_ind > 0)
         {
-	  //	  printf("Allocated rb %d, subframe_offset %d, symbol_offset %d, re_offset %d, jj %d\n",rb,subframe_offset,symbol_offset,re_offset,jj);
+	  //	  printf("Allocated rb %d/symbol %d, skip_half %d, subframe_offset %d, symbol_offset %d, re_offset %d, jj %d\n",rb,l,skip_half,subframe_offset,symbol_offset,re_offset,jj);
 	  allocate_REs_in_RB(frame_parms,
 			     txdataF,
 			     &jj,

@@ -78,7 +78,7 @@ void lte_adjust_synch(LTE_DL_FRAME_PARMS *frame_parms,
     max_pos_fil = ((max_pos_fil * coef) + (max_pos * ncoef)) >> 15;
 
   
-  diff = max_pos_fil - 2; //frame_parms->nb_prefix_samples/8;
+  diff = max_pos_fil - frame_parms->nb_prefix_samples/8;
 
   if ( diff > SYNCH_HYST )
     phy_vars_ue->rx_offset++;

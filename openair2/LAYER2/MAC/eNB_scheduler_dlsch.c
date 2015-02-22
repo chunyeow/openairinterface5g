@@ -1336,7 +1336,7 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
       eNB->common_channels[CC_id].bcch_active = 0;
       LOG_D(MAC,"[eNB %d] Frame %d subframeP %d: BCCH active\n", module_idP, frameP, subframeP);
       // randomize frequency allocation for SI
-      first_rb = (unsigned char)(taus()%(PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.N_RB_DL-4));
+      first_rb = 10;//(unsigned char)(taus()%(PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.N_RB_DL-4));
 
       /*  Where is this from, should be removed!!!!
 

@@ -233,7 +233,7 @@ int adjust_G2(LTE_DL_FRAME_PARMS *frame_parms,uint32_t *rb_alloc,uint8_t mod_ord
       }
     }
   }
-  //    printf("re_pbch_sss %d\n",re_pbch_sss);
+    //  printf("re_pbch_sss %d\n",re_pbch_sss);
   return(re_pbch_sss);
 }
 
@@ -277,7 +277,6 @@ int adjust_G(LTE_DL_FRAME_PARMS *frame_parms,uint32_t *rb_alloc,uint8_t mod_orde
     for (rb=((frame_parms->N_RB_DL>>1)-3);
 	 rb<((frame_parms->N_RB_DL>>1)+3);
 	 rb++) {
-    
       if (rb < 32)
 	rb_alloc_ind = (rb_alloc[0]>>rb) & 1;
       else if (rb < 64)
@@ -290,7 +289,8 @@ int adjust_G(LTE_DL_FRAME_PARMS *frame_parms,uint32_t *rb_alloc,uint8_t mod_orde
 	rb_alloc_ind = 0;
       
       if (rb_alloc_ind==1) {
-	  re_pbch_sss += 12;
+//	printf("Adjust G: rb %d\n",rb);
+	re_pbch_sss += 12;
       }
     }
   }

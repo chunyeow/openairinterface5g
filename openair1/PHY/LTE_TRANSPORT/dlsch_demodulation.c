@@ -2355,12 +2355,10 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
 	else if (rb < 96)
 	  rb_alloc_ind = (rb_alloc[2]>>(rb-64)) & 1;
 	else if (rb < 100)
-	  rb_alloc_ind = (rb_alloc[0]>>(rb-96)) & 1;
+	  rb_alloc_ind = (rb_alloc[3]>>(rb-96)) & 1;
 	else
 	  rb_alloc_ind = 0;
 
-	if (rb_alloc_ind==1)
-	  nb_rb++;
 
 	// PBCH
 	if ((subframe==0) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l>=(nsymb>>1)) && (l<((nsymb>>1) + 4))) {
@@ -2412,13 +2410,10 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
 	    skip_half=2;
 	}
 
+
 	if (rb_alloc_ind==1) {
-	  /*	  	  
-			  printf("rb %d\n",rb);
-			  for (i=0;i<12;i++)
-			  printf("(%d %d)",((short *)dl_ch0)[i<<1],((short*)dl_ch0)[1+(i<<1)]);
-			  printf("\n");
-	  */
+	  //	  printf("rb %d/symbol %d (skip_half %d)\n",rb,l,skip_half);
+
 	  if (pilots==0) {
 	    //	    	    printf("Extracting w/o pilots (symbol %d, rb %d, skip_half %d)\n",l,rb,skip_half);
 	    if (skip_half==1) {
@@ -2482,6 +2477,7 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
 	      rxF_ext+=10;
 	    }
 	  }
+	  nb_rb++;
 	}	    
 	dl_ch0+=12;
 	rxF+=12;
@@ -2496,24 +2492,23 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
       else if (rb < 96)
 	rb_alloc_ind = (rb_alloc[2]>>(rb-64)) & 1;
       else if (rb < 100)
-	rb_alloc_ind = (rb_alloc[0]>>(rb-96)) & 1;
+	rb_alloc_ind = (rb_alloc[3]>>(rb-96)) & 1;
       else
 	rb_alloc_ind = 0;
 
-      if (rb_alloc_ind==1)
-	nb_rb++;
+
 
       // PBCH
-      if ((subframe==0) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l>=(nsymb>>1)) && (l<((nsymb>>1) + 4))) {
+      if ((subframe==0) && (rb>=((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l>=(nsymb>>1)) && (l<((nsymb>>1) + 4))) {
 	rb_alloc_ind = 0;
       }
       //SSS
-      if (((subframe==0)||(subframe==5)) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==sss_symb) ) {
+      if (((subframe==0)||(subframe==5)) && (rb>=((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==sss_symb) ) {
 	rb_alloc_ind = 0;
       }
       if (frame_parms->frame_type == FDD) {
 	//PSS
-	if (((subframe==0)||(subframe==5)) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
+	if (((subframe==0)||(subframe==5)) && (rb>=((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
 	  rb_alloc_ind = 0;
 	}
       }
@@ -2528,6 +2523,7 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
       //	printf("dlch_ext %d\n",dl_ch0_ext-&dl_ch_estimates_ext[aarx][0]);      
       //      printf("DC rb %d (%p)\n",rb,rxF);
       if (rb_alloc_ind==1) {
+	//	printf("rb %d/symbol %d (skip_half %d)\n",rb,l,skip_half);
 	if (pilots==0) {
 	  for (i=0;i<6;i++) {
 	    dl_ch0_ext[i]=dl_ch0[i];
@@ -2561,6 +2557,7 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
 	  dl_ch0_ext+=10;
 	  rxF_ext+=10;
 	} // symbol_mod==0
+	nb_rb++;
       } // rballoc==1
       else {
 	rxF       = &rxdataF[aarx][((symbol*(frame_parms->ofdm_symbol_size)))];
@@ -2580,12 +2577,11 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
 	else if (rb < 96)
 	  rb_alloc_ind = (rb_alloc[2]>>(rb-64)) & 1;
 	else if (rb < 100)
-	  rb_alloc_ind = (rb_alloc[0]>>(rb-96)) & 1;
+	  rb_alloc_ind = (rb_alloc[3]>>(rb-96)) & 1;
 	else
 	  rb_alloc_ind = 0;
 
-	if (rb_alloc_ind==1)
-	  nb_rb++;
+
 
 	// PBCH
 	if ((subframe==0) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l>=nsymb>>1) && (l<((nsymb>>1) + 4))) {
@@ -2630,6 +2626,7 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
 	}
 	
 	if (rb_alloc_ind==1) {
+	  //	  printf("rb %d/symbol %d (skip_half %d)\n",rb,l,skip_half);
 	  /*
   	    printf("rb %d\n",rb);
 	    for (i=0;i<12;i++)
@@ -2700,6 +2697,7 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
 	      rxF_ext+=10;
 	    }
 	  } // pilots=0
+	  nb_rb++;
 	}
 	dl_ch0+=12;
 	rxF+=12;
@@ -2777,7 +2775,7 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 	else if (rb < 96)
 	  rb_alloc_ind = (rb_alloc[2]>>(rb-64)) & 1;
 	else if (rb < 100)
-	  rb_alloc_ind = (rb_alloc[0]>>(rb-96)) & 1;
+	  rb_alloc_ind = (rb_alloc[3]>>(rb-96)) & 1;
 	else
 	  rb_alloc_ind = 0;
 	
@@ -2789,55 +2787,35 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 	}
 
 	// PBCH
-	if ((subframe==0) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l>=(nsymb>>1)) && (l<((nsymb>>1) + 4))) {
+	if ((subframe==0) && (rb>=((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l>=(nsymb>>1)) && (l<((nsymb>>1) + 4))) {
 	  rb_alloc_ind = 0;
 	}
-	//PBCH subframe 0, symbols nsymb>>1 ... nsymb>>1 + 3
-	if ((subframe==0) && (rb==((frame_parms->N_RB_DL>>1)-3)) && (l>=(nsymb>>1)) && (l<((nsymb>>1) + 4)))
-	  skip_half=1;
-	else if ((subframe==0) && (rb==((frame_parms->N_RB_DL>>1)+3)) && (l>=(nsymb>>1)) && (l<((nsymb>>1) + 4)))
-	  skip_half=2;
 	
 	//SSS
 
 	if (((subframe==0)||(subframe==5)) && 
-	    (rb>((frame_parms->N_RB_DL>>1)-3)) && 
+	    (rb>=((frame_parms->N_RB_DL>>1)-3)) && 
 	    (rb<((frame_parms->N_RB_DL>>1)+3)) && 
 	    (l==sss_symb) ) {
 	  rb_alloc_ind = 0;
 	}
-	//SSS 
-	if (((subframe==0)||(subframe==5)) && 
-	    (rb==((frame_parms->N_RB_DL>>1)-3)) && 
-	    (l==sss_symb))
-	  skip_half=1;
-	else if (((subframe==0)||(subframe==5)) && 
-		 (rb==((frame_parms->N_RB_DL>>1)+3)) && 
-		 (l==sss_symb))
-	  skip_half=2;
+
+
 
 	//PSS in subframe 0/5 if FDD
 	if (frame_parms->frame_type == FDD) {  //FDD
-	  if (((subframe==0)||(subframe==5)) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
+	  if (((subframe==0)||(subframe==5)) && (rb>=((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
 	    rb_alloc_ind = 0;
 	  }
-	  if (((subframe==0)||(subframe==5)) && (rb==((frame_parms->N_RB_DL>>1)-3)) && (l==pss_symb))
-	    skip_half=1;
-	  else if (((subframe==0)||(subframe==5)) && (rb==((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb))
-	    skip_half=2;
 	}
 	
 	if ((frame_parms->frame_type == TDD) &&
 	    (subframe==6)){  //TDD Subframe 6
-	  if ((rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
+	  if ((rb>=((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
 	    rb_alloc_ind = 0;
 	  }
-	  if ((rb==((frame_parms->N_RB_DL>>1)-3)) && (l==pss_symb))
-	    skip_half=1;
-	  else if ((rb==((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb))
-	    skip_half=2;
 	}
-	
+
 	if (rb_alloc_ind==1) {
 
 
@@ -2862,7 +2840,6 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 	      //	      printf("%d : (%d,%d)\n",(rxF+(2*i)-&rxdataF[(aatx<<1)+aarx][( (symbol*(frame_parms->ofdm_symbol_size)))*2])/2,
 	      //     ((short*)&rxF[i<<1])[0],((short*)&rxF[i<<1])[0]);
 	    }
-	    nb_rb++;
 	    dl_ch0_ext+=12;
 	    dl_ch1_ext+=12;
 	    rxF_ext+=12;
@@ -2880,11 +2857,13 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 		dl_ch1_ext[j++]=dl_ch1[i];
 	      }
 	    }
-	    nb_rb++;
 	    dl_ch0_ext+=8;
 	    dl_ch1_ext+=8;
 	    rxF_ext+=8;
 	  } // pilots==1
+	  
+	  nb_rb++;
+
 	}
 	dl_ch0+=12;
 	dl_ch1+=12;
@@ -2900,12 +2879,12 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 	else if (rb < 96)
 	  rb_alloc_ind = (rb_alloc[2]>>(rb-64)) & 1;
 	else if (rb < 100)
-	  rb_alloc_ind = (rb_alloc[0]>>(rb-96)) & 1;
+	  rb_alloc_ind = (rb_alloc[3]>>(rb-96)) & 1;
 	else
 	  rb_alloc_ind = 0;
 
-	if (rb_alloc_ind == 1)
-	  nb_rb++;
+
+
 	// PBCH
 	if ((subframe==0) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l>=(nsymb>>1)) && (l<((nsymb>>1) + 4))) {
 	  rb_alloc_ind = 0;
@@ -3045,6 +3024,7 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 	      rxF_ext+=8;		
 	    }
 	  }
+	  nb_rb++;
 	}
       
 	dl_ch0+=12;
@@ -3065,8 +3045,8 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
       else
 	rb_alloc_ind = 0;
       
-      if (rb_alloc_ind==1)
-	nb_rb++;
+
+
 
       
       // PBCH
@@ -3143,6 +3123,7 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 	  dl_ch1_ext+=8;
 	  rxF_ext+=8; 
 	}
+	nb_rb++;
       }
       else {
 	rxF       = &rxdataF[aarx][((symbol*(frame_parms->ofdm_symbol_size)))];
@@ -3162,12 +3143,10 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 	else if (rb < 96)
 	  rb_alloc_ind = (rb_alloc[2]>>(rb-64)) & 1;
 	else if (rb < 100)
-	  rb_alloc_ind = (rb_alloc[0]>>(rb-96)) & 1;
+	  rb_alloc_ind = (rb_alloc[3]>>(rb-96)) & 1;
 	else
 	  rb_alloc_ind = 0;
 	
-	if (rb_alloc_ind==1)
-	  nb_rb++;
 	
 	// PBCH
 	if ((subframe==0) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l>=(nsymb>>1)) && (l<((nsymb>>1) + 4))) {
@@ -3307,6 +3286,7 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 	      
 	    }
 	  }
+	  nb_rb++;
 	}
 	dl_ch0+=12;
 	dl_ch1+=12;

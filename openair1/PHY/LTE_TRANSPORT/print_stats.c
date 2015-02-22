@@ -49,8 +49,7 @@
 #endif
 
 extern int mac_get_rrc_status(uint8_t Mod_id,uint8_t eNB_flag,uint8_t index);
-
-#ifdef EXMIMO
+#if defined(USRP) || defined(EXMIMO)
 #include "common_lib.h"
 extern openair0_config_t openair0_cfg[];
 #endif
@@ -82,8 +81,10 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 		 phy_vars_ue->PHY_measurements.n0_power_dB[1]);
 #ifdef EXMIMO
   len += sprintf(&buffer[len], "[UE PROC] RX Gain %d dB (LNA %d, vga %d dB)\n",phy_vars_ue->rx_total_gain_dB, openair0_cfg[0].rxg_mode[0],(int)openair0_cfg[0].rx_gain[0]);
-#else
-    len += sprintf(&buffer[len], "[UE PROC] RX Gain %d dB\n",phy_vars_ue->rx_total_gain_dB);
+#endif
+#ifdef USRP
+  len += sprintf(&buffer[len], "[UE PROC] RX Gain %d (%f) dB\n",phy_vars_ue->rx_total_gain_dB,
+		 (double)phy_vars_ue->rx_total_gain_dB-USRP_GAIN_OFFSET);
 #endif
 
   len += sprintf(&buffer[len], "[UE_PROC] Frequency offset %d Hz (%d)\n",phy_vars_ue->lte_ue_common_vars.freq_offset,openair_daq_vars.freq_offset);
