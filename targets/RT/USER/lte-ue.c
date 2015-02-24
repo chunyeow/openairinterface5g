@@ -257,24 +257,42 @@ static void *UE_thread_synch(void *arg) {
     
 	openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i];
 	openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i];
+#ifdef USRP
 	openair0_cfg[card].rx_gain[i] = UE->rx_total_gain_dB-USRP_GAIN_OFFSET;  
+	switch(UE->lte_frame_parms.N_RB_DL) {
+	case 6:
+	  openair0_cfg[card].rx_gain[i] -= 12;
+	  break;
+	case 25:
+	  openair0_cfg[card].rx_gain[i] -= 6;
+	  break;
+	case 50:
+	  openair0_cfg[card].rx_gain[i] -= 3;
+	  break;
+	default:
+	  printf("Unknown number of RBs %d\n",UE->lte_frame_parms.N_RB_DL);
+	  break;
+	}
+	printf("UE synch: setting RX gain (%d,%d) to %d\n",card,i,openair0_cfg[card].rx_gain[i]);
+#endif
+      }
+#ifdef EXMIMO
+	openair0_config(&openair0_cfg[card],1);
+#endif
+      }
 #ifdef USRP
 #ifndef USRP_DEBUG
 	openair0_set_rx_frequencies(&openair0,&openair0_cfg[0]);
 	openair0_set_gains(&openair0,&openair0_cfg[0]);
 #endif
-#else
-	openair0_config(&openair0_cfg[0],1);
 #endif
+	LOG_D(PHY,"[SCHED][UE] Scanning band %d, freq %u\n",bands_to_scan.band_info[0].band, bands_to_scan.band_info[0].dl_min);
       }
-      }    
-    LOG_D(PHY,"[SCHED][UE] Scanning band %d, freq %u\n",bands_to_scan.band_info[0].band, bands_to_scan.band_info[0].dl_min);
-  }
   else {
     LOG_D(PHY,"[SCHED][UE] Check absolute frequency %u (oai_exit %d)\n",downlink_frequency[0][0],oai_exit);
 
     sync_mode=pbch;
-  }
+      }
 
   while (oai_exit==0) {
     
@@ -296,15 +314,15 @@ static void *UE_thread_synch(void *arg) {
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,1); 
     printf("Sync_mode %d\n",sync_mode);
     switch (sync_mode) {
-    case pss:
+      case pss:
 	
-
-
-      current_offset += 20000000; // increase by 20 MHz
-      if (current_offset > bands_to_scan.band_info[current_band].dl_max-bands_to_scan.band_info[current_band].dl_min) {
+	
+	
+	current_offset += 20000000; // increase by 20 MHz
+	if (current_offset > bands_to_scan.band_info[current_band].dl_max-bands_to_scan.band_info[current_band].dl_min) {
 	current_band++;
 	current_offset=0;
-      }
+	}
       if (current_band==bands_to_scan.nbands) {
 	current_band=0;
 	oai_exit=1; 
@@ -318,16 +336,36 @@ static void *UE_thread_synch(void *arg) {
 	  
 	  openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i]+openair_daq_vars.freq_offset;
 	  openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i]+openair_daq_vars.freq_offset;
+#ifdef USRP
 	  openair0_cfg[card].rx_gain[i] = UE->rx_total_gain_dB-USRP_GAIN_OFFSET;  // 65 calibrated for USRP B210 @ 2.6 GHz
+	  switch(UE->lte_frame_parms.N_RB_DL) {
+	  case 6:
+	    openair0_cfg[card].rx_gain[i] -= 12;
+	    break;
+	  case 25:
+	    openair0_cfg[card].rx_gain[i] -= 6;
+	    break;
+	  case 50:
+	    openair0_cfg[card].rx_gain[i] -= 3;
+	    break;
+	  default:
+	    printf("Unknown number of RBs %d\n",UE->lte_frame_parms.N_RB_DL);
+	    break;
+	  }
+	  printf("UE synch: setting RX gain (%d,%d) to %d\n",card,i,openair0_cfg[card].rx_gain[i]);
+#endif
+	
+      }
+#ifdef EXMIMO
+	  openair0_config(&openair0_cfg[card],1);	
+#endif
+    }	
 #ifdef USRP
 #ifndef USRP_DEBUG
-	  openair0_set_rx_frequencies(&openair0,&openair0_cfg[0]);
+      openair0_set_rx_frequencies(&openair0,&openair0_cfg[0]);
 	  //	openair0_set_gains(&openair0,&openair0_cfg[0]);
 #endif
 #endif
-	}
-      }	
-      
       break;
     case pbch:
       printf("Running initial sync\n");
@@ -385,22 +423,44 @@ static void *UE_thread_synch(void *arg) {
 	      openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i]+openair_daq_vars.freq_offset;
 	      openair0_cfg[card].rx_gain[i] = UE->rx_total_gain_dB-USRP_GAIN_OFFSET;  // 65 calibrated for USRP B210 @ 2.6 GHz
 #ifdef USRP
+	      switch(UE->lte_frame_parms.N_RB_DL) {
+	      case 6:
+		openair0_cfg[card].rx_gain[i] -= 12;
+		break;
+	      case 25:
+		openair0_cfg[card].rx_gain[i] -= 6;
+		break;
+	      case 50:
+		openair0_cfg[card].rx_gain[i] -= 3;
+		break;
+	      default:
+		printf("Unknown number of RBs %d\n",UE->lte_frame_parms.N_RB_DL);
+		break;
+	      }
+	      printf("UE synch: setting RX gain (%d,%d) to %d\n",card,i,openair0_cfg[card].rx_gain[i]);
+#endif
+	    }
+#ifdef EXMIMO
+	      openair0_config(&openair0_cfg[card],1);
+#endif
+	    }
+#ifdef USRP
 #ifndef USRP_DEBUG
 	      openair0_set_frequencies(&openair0,&openair0_cfg[0]);
 	      //	    openair0_set_gains(&openair0,&openair0_cfg[0]);
 #endif
 
 #else
-	      openair0_config(&openair0_cfg[card],1);
+
 #endif
-	    }
-	  }
+	    
+	  
 	    
 	  //	    openair0_dump_config(&openair0_cfg[0],UE_flag);
 	    
 	  //	    rt_sleep_ns(FRAME_PERIOD);
-	} // freq_offset
-      } // initial_sync=0
+	    } // freq_offset
+	    } // initial_sync=0
       break;
     case si:
     default:
@@ -496,8 +556,9 @@ static void *UE_thread_tx(void *arg) {
       }
     }
     
-    
-    if ((subframe_select(&UE->lte_frame_parms,UE->slot_tx>>1)==SF_UL)){
+
+    if ((subframe_select(&UE->lte_frame_parms,UE->slot_tx>>1)==SF_UL)||
+	(UE->lte_frame_parms.frame_type == FDD)){
       phy_procedures_UE_TX(UE,0,0,UE->mode,no_relay);
     }
     if ((subframe_select(&UE->lte_frame_parms,UE->slot_tx>>1)==SF_S) &&
@@ -890,6 +951,32 @@ void *UE_thread(void *arg) {
 	    exit_fun("nothing to add");
 	  }
 	}
+
+	if (pthread_mutex_lock(&UE->mutex_tx) != 0) {
+	  LOG_E(PHY,"[SCHED][UE] error locking mutex for UE TX thread\n");
+	  exit_fun("nothing to add");
+	}
+	else {
+
+	  if (tx_enabled == 1) {
+	    UE->instance_cnt_tx++;
+	    //printf("UE_thread: Unlocking UE mutex_rx\n");
+	    pthread_mutex_unlock(&UE->mutex_tx);
+	    if (UE->instance_cnt_tx == 0) {
+	      if (pthread_cond_signal(&UE->cond_tx) != 0) {
+		LOG_E(PHY,"[SCHED][UE] ERROR pthread_cond_signal for UE TX thread\n");
+		exit_fun("nothing to add");
+	      }
+	      else {
+		//	      printf("UE_thread: cond_signal for RX ok (%p) @ %llu\n",(void*)&UE->cond_rx,rt_get_time_ns()-T0);
+	      }
+	    }
+	    else {
+	      LOG_E(PHY,"[SCHED][UE] UE TX thread busy!!\n");
+	      exit_fun("nothing to add");
+	    }
+	  }
+	}
       }
     }
     else {  // we are not yet synchronized
@@ -946,6 +1033,7 @@ void *UE_thread(void *arg) {
 	    rt_sleep_ns(10000000);
 #endif
 	    UE->rx_offset=0;
+	    tx_enabled=1;
 	  }
 	  else if ((UE->rx_offset < RX_OFF_MIN)&&(start_rx_stream==1) && (rx_correction_timer == 0)) {
 	    rx_off_diff = -UE->rx_offset + RX_OFF_MIN;

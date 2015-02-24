@@ -125,15 +125,29 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
 	memcpy((short *)&ue_common_vars->rxdata[aa][frame_length_samples],
 	       (short *)&ue_common_vars->rxdata[aa][0],
 	       frame_parms->ofdm_symbol_size*sizeof(int));
-      start_meas(&phy_vars_ue->rx_dft_stats);
+
+      if ((rx_offset&3)!=0) {  // if input to dft is not 128-bit aligned, issue for size 6 and 15 PRBs
+	memcpy((void *)tmp_dft_in,
+	       (void *)&ue_common_vars->rxdata[aa][(rx_offset-nb_prefix_samples0) % frame_length_samples],
+	       frame_parms->ofdm_symbol_size*sizeof(int));
 #ifdef USRP
-      rescale((int16_t *)&ue_common_vars->rxdata[aa][(rx_offset-nb_prefix_samples0) % frame_length_samples],
-	      frame_parms->ofdm_symbol_size+nb_prefix_samples0);
+	rescale((int16_t *)tmp_dft_in,
+	        frame_parms->ofdm_symbol_size);
 #endif
-      dft((int16_t *)&ue_common_vars->rxdata[aa][(rx_offset) % frame_length_samples],
-	  (int16_t *)&ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*symbol],1);
-      stop_meas(&phy_vars_ue->rx_dft_stats);
-      
+	dft((int16_t *)tmp_dft_in,
+	    (int16_t *)&ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*symbol],1);
+      }
+      else {// use dft input from RX buffer directly 
+	start_meas(&phy_vars_ue->rx_dft_stats);
+#ifdef USRP
+	rescale((int16_t *)&ue_common_vars->rxdata[aa][(rx_offset-nb_prefix_samples0) % frame_length_samples],
+		frame_parms->ofdm_symbol_size+nb_prefix_samples0);
+#endif
+	dft((int16_t *)&ue_common_vars->rxdata[aa][(rx_offset) % frame_length_samples],
+	    (int16_t *)&ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*symbol],1);
+	stop_meas(&phy_vars_ue->rx_dft_stats);
+	
+      }
     }
     else {
       rx_offset += (frame_parms->ofdm_symbol_size+nb_prefix_samples) +

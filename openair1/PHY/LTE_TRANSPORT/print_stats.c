@@ -65,7 +65,7 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 
   if ((mode == normal_txrx) || (mode == no_L2_connect)) {
   len += sprintf(&buffer[len], "[UE_PROC] UE %d, RNTI %x\n",phy_vars_ue->Mod_id, phy_vars_ue->lte_ue_pdcch_vars[0]->crnti);
-  len += sprintf(&buffer[len], "[UE PROC] Frame count: %d\neNB0 RSSI %d dBm (%d dB, %d dB)\neNB1 RSSI %d dBm (%d dB, %d dB)\neNB2 RSSI %d dBm (%d dB, %d dB)\nN0 %d dBm (%d dB, %d dB)\n",
+  len += sprintf(&buffer[len], "[UE PROC] Frame count: %d\neNB0 RSSI %d dBm/RE (%d dB, %d dB)\neNB1 RSSI %d dBm/RE (%d dB, %d dB)\neNB2 RSSI %d dBm/RE (%d dB, %d dB)\nN0 %d dBm/RE, %f dBm/%dPRB (%d dB, %d dB)\n",
 		 phy_vars_ue->frame_rx,
 		 phy_vars_ue->PHY_measurements.rx_rssi_dBm[0],
 		 phy_vars_ue->PHY_measurements.rx_power_dB[0][0],
@@ -77,14 +77,15 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 		 phy_vars_ue->PHY_measurements.rx_power_dB[2][0],
 		 phy_vars_ue->PHY_measurements.rx_power_dB[2][1],
 		 phy_vars_ue->PHY_measurements.n0_power_tot_dBm,
+		 phy_vars_ue->PHY_measurements.n0_power_tot_dBm+10*log10(12*phy_vars_ue->lte_frame_parms.N_RB_DL),
+		 phy_vars_ue->lte_frame_parms.N_RB_DL,
 		 phy_vars_ue->PHY_measurements.n0_power_dB[0],
 		 phy_vars_ue->PHY_measurements.n0_power_dB[1]);
 #ifdef EXMIMO
   len += sprintf(&buffer[len], "[UE PROC] RX Gain %d dB (LNA %d, vga %d dB)\n",phy_vars_ue->rx_total_gain_dB, openair0_cfg[0].rxg_mode[0],(int)openair0_cfg[0].rx_gain[0]);
 #endif
 #ifdef USRP
-  len += sprintf(&buffer[len], "[UE PROC] RX Gain %d (%f) dB\n",phy_vars_ue->rx_total_gain_dB,
-		 (double)phy_vars_ue->rx_total_gain_dB-USRP_GAIN_OFFSET);
+  len += sprintf(&buffer[len], "[UE PROC] RX Gain %d dB\n",phy_vars_ue->rx_total_gain_dB);
 #endif
 
   len += sprintf(&buffer[len], "[UE_PROC] Frequency offset %d Hz (%d)\n",phy_vars_ue->lte_ue_common_vars.freq_offset,openair_daq_vars.freq_offset);
@@ -446,7 +447,9 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
       RRC_status = mac_get_rrc_status(phy_vars_ue->Mod_id,0,0);
       len += sprintf(&buffer[len],"[UE PROC] RRC status = %d\n",RRC_status);
 #endif
-      len += sprintf(&buffer[len],"[UE PROC] RSRP[0] %d, RSSI %d, RSRQ[0] %d\n",phy_vars_ue->PHY_measurements.rsrp[0], phy_vars_ue->PHY_measurements.rssi, phy_vars_ue->PHY_measurements.rsrq[0]);
+      len += sprintf(&buffer[len],"[UE PROC] RSRP[0] %.2f dBm/RE, RSSI %.2f, RSRQ[0] %.2f\n",
+		     10*log10(phy_vars_ue->PHY_measurements.rsrp[0])-phy_vars_ue->rx_total_gain_dB, 
+		     10*log10(phy_vars_ue->PHY_measurements.rssi)-phy_vars_ue->rx_total_gain_dB, 10*log10(phy_vars_ue->PHY_measurements.rsrq[0]));
     
     len += sprintf(&buffer[len], "[UE PROC] Transmission Mode %d (mode1_flag %d)\n",phy_vars_ue->transmission_mode[eNB],phy_vars_ue->lte_frame_parms.mode1_flag);
     len += sprintf(&buffer[len], "[UE PROC] PBCH err conseq %d, PBCH error total %d, PBCH FER %d\n",

@@ -1976,7 +1976,7 @@ decode_BCCH_DLSCH_Message(
 #endif
   ) {
       rrc_ue_generate_RRCConnectionRequest(ue_mod_idP, frameP, 0);
-      LOG_I(RRC, "not sending connection request\n");
+      //      LOG_I(RRC, "not sending connection request\n");
 
       rrc_set_sub_state (ue_mod_idP, RRC_SUB_STATE_IDLE_CONNECTING);
   }

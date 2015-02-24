@@ -56,10 +56,6 @@
 #include "openair0_lib.h"
 #include "gain_control.h"
 extern int card;
-#else
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/extern.h"
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/defs.h"
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/from_grlib_softregs.h"
 #endif
 #endif
 
@@ -125,18 +121,8 @@ DCI_ALLOC_t dci_alloc_rx[8];
 extern int rx_sig_fifo;
 #endif
 
-/*
-#if defined(CBMIMO) || defined(EXMIMO)
-#include <rtai_lxrt.h>
-extern struct timing_info_t {
-  unsigned int frame, hw_slot, last_slot, next_slot;
-  RTIME time0, time1, time2;
-  unsigned int mbox0, mbox1, mbox2, mbox_target;
-} timing_info[2];
-#endif
-*/
 
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(USRP)
 extern uint32_t downlink_frequency[MAX_NUM_CCs][4];
 #endif
 
@@ -206,7 +192,7 @@ void dump_dlsch_SI(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe) {
   exit(-1);
 }
 
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(USRP) 
 unsigned int prach_gain_table[31] = {100,112,126,141,158,178,200,224,251,282,316,359,398,447,501,562,631,708,794,891,1000,1122,1258,1412,1585,1778,1995,2239,2512,2818,3162};
 
 unsigned int get_tx_amp(int power_dBm, int power_max_dBm) {
@@ -623,7 +609,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
   uint8_t ack_status=0;
   int8_t Po_PUCCH;
   int32_t ulsch_start=0;
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(USRP)
   int overflow=0;
   int k,l;
 #endif
@@ -921,7 +907,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 
 	  LOG_I(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d, generating PUSCH, Po_PUSCH: %d dBm, amp %d\n",
 		Mod_id,harq_pid,frame_tx,subframe_tx,phy_vars_ue->tx_power_dBm,
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(USRP)
 		get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm)
 #else
 		AMP
@@ -929,7 +915,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 		);    
 	  start_meas(&phy_vars_ue->ulsch_modulation_stats);	      	      	  
 	  ulsch_modulation(phy_vars_ue->lte_ue_common_vars.txdataF,
-#ifdef EXMIMO                       
+#if defined(EXMIMO) || defined(USRP)                       
                        get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm),
 #else
                        AMP,
@@ -939,7 +925,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
                        &phy_vars_ue->lte_frame_parms,
                        phy_vars_ue->ulsch_ue[eNB_id]);
 
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(USRP)
 	  for (aa=0; aa<1/*frame_parms->nb_antennas_tx*/; aa++)
 	    generate_drs_pusch(phy_vars_ue,eNB_id,get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm),subframe_tx,first_rb,nb_rb,aa);
 #else
@@ -1027,7 +1013,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 		    frame_tx, subframe_tx,
 		    phy_vars_ue->scheduling_request_config[eNB_id].sr_PUCCH_ResourceIndex,
 		    Po_PUCCH,
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(USRP)
 		    get_tx_amp(Po_PUCCH,phy_vars_ue->tx_power_max_dBm)
 #else
 			AMP
@@ -1041,7 +1027,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 		    frame_tx, subframe_tx,
 		    n1_pucch,pucch_ack_payload[0],pucch_ack_payload[1],SR_payload,
 		    Po_PUCCH,
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(USRP)
 		    get_tx_amp(Po_PUCCH,phy_vars_ue->tx_power_max_dBm)
 #else
 			AMP
@@ -1060,7 +1046,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 			   0,  // n2_pucch
 			   1,  // shortened format
 			   pucch_ack_payload,
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(USRP)
 			   get_tx_amp(Po_PUCCH,phy_vars_ue->tx_power_max_dBm),
 #else
 			   AMP,
@@ -1108,7 +1094,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 			   0,  // n2_pucch
 			   1,  // shortened format
 			   pucch_ack_payload,  // this is ignored anyway, we just need a pointer
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(USRP)
 			   get_tx_amp(Po_PUCCH,phy_vars_ue->tx_power_max_dBm),
 #else
 			   AMP,
@@ -1184,7 +1170,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
       if (abstraction_flag == 0) {
 	nsymb = (frame_parms->Ncp == 0) ? 14 : 12;
 	
-#ifdef EXMIMO //this is the EXPRESS MIMO case
+#if defined(EXMIMO) || defined(USRP) //this is the EXPRESS MIMO case
 	ulsch_start = (phy_vars_ue->rx_offset+subframe_tx*frame_parms->samples_per_tti-openair_daq_vars.timing_advance-phy_vars_ue->timing_advance-phy_vars_ue->N_TA_offset+5)%(LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*frame_parms->samples_per_tti);
 #else //this is the normal case
 	ulsch_start = (frame_parms->samples_per_tti*subframe_tx)-phy_vars_ue->N_TA_offset;
@@ -1197,7 +1183,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 	  for (aa=0; aa<frame_parms->nb_antennas_tx; aa++) {
 	    if (frame_parms->Ncp == 1) 
 	      PHY_ofdm_mod(&phy_vars_ue->lte_ue_common_vars.txdataF[aa][subframe_tx*nsymb*frame_parms->ofdm_symbol_size],
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(USRP)
 			   dummy_tx_buffer, 
 #else
 			   &phy_vars_ue->lte_ue_common_vars.txdata[aa][ulsch_start],
@@ -1210,7 +1196,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 			   CYCLIC_PREFIX);
 	    else
 	      normal_prefix_mod(&phy_vars_ue->lte_ue_common_vars.txdataF[aa][subframe_tx*nsymb*frame_parms->ofdm_symbol_size],
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(USRP)
 				dummy_tx_buffer, 
 #else
 				&phy_vars_ue->lte_ue_common_vars.txdata[aa][ulsch_start],
@@ -1231,7 +1217,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 	      }
 	    */
 #ifndef OFDMA_ULSCH
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(USRP)
 	    apply_7_5_kHz(phy_vars_ue,dummy_tx_buffer,0);
 	    apply_7_5_kHz(phy_vars_ue,dummy_tx_buffer,1);
 #else
@@ -1246,7 +1232,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 	    */
 #endif
 	    
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(USRP)
 	    overflow = ulsch_start - 9*frame_parms->samples_per_tti;
 	    //if ((slot_tx==4) && (aa==0)) printf("ulsch_start %d, overflow %d\n",ulsch_start,overflow);
 	    for (k=ulsch_start,l=0; k<cmin(frame_parms->samples_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME,ulsch_start+frame_parms->samples_per_tti); k++,l++)
@@ -1275,13 +1261,14 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
     //  else {  // slot_tx is odd, do the PRACH here
  
 #ifdef OPENAIR2 
+
     if ((phy_vars_ue->UE_mode[eNB_id] == PRACH) && (phy_vars_ue->lte_frame_parms.prach_config_common.prach_Config_enabled==1)) {
+
 #else
     if (1) {
 #endif
       // check if we have PRACH opportunity
       if (is_prach_subframe(&phy_vars_ue->lte_frame_parms,frame_tx,subframe_tx)) {
-	LOG_D(PHY,"UE %d: Frame %d, SF %d Clearing generate_prach\n",Mod_id,frame_tx,subframe_tx);
 	phy_vars_ue->generate_prach=0;
 #ifdef OPENAIR2
 	// ask L2 for RACH transport
@@ -1291,7 +1278,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 									frame_tx,
 									eNB_id,
 									subframe_tx);
-	  LOG_D(PHY,"Got prach_resources for eNB %d address %d, RRCCommon %d\n",eNB_id,phy_vars_ue->prach_resources[eNB_id],UE_mac_inst[Mod_id].radioResourceConfigCommon);
+	  //	  LOG_I(PHY,"Got prach_resources for eNB %d address %d, RRCCommon %d\n",eNB_id,phy_vars_ue->prach_resources[eNB_id],UE_mac_inst[Mod_id].radioResourceConfigCommon);
 	}
 #endif
 	if (phy_vars_ue->prach_resources[eNB_id]!=NULL) {
@@ -1305,7 +1292,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 	  phy_vars_ue->prach_PreambleIndex=phy_vars_ue->prach_resources[eNB_id]->ra_PreambleIndex; 
 #endif
 	  if (abstraction_flag == 0) {
-	    LOG_D(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d : Generating PRACH, preamble %d, TARGET_RECEIVED_POWER %d dBm, PRACH TDD Resource index %d, RA-RNTI %d\n",
+	    LOG_I(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d : Generating PRACH, preamble %d, TARGET_RECEIVED_POWER %d dBm, PRACH TDD Resource index %d, RA-RNTI %d\n",
 		  Mod_id,
 		  frame_tx,
 		  subframe_tx,
@@ -1322,11 +1309,13 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 
 	    phy_vars_ue->tx_total_RE = 96;
 
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(USRP)
 	    phy_vars_ue->lte_ue_prach_vars[eNB_id]->amp = get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm);
 #else
 	    phy_vars_ue->lte_ue_prach_vars[eNB_id]->amp = AMP;
 #endif
+	    LOG_I(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d : PRACH TX power %d dBm, amp %d\n",Mod_id,phy_vars_ue->frame_rx,phy_vars_ue->slot_tx>>1,phy_vars_ue->tx_power_dBm,phy_vars_ue->lte_ue_prach_vars[eNB_id]->amp);
+
 	    //	    start_meas(&phy_vars_ue->tx_prach);
 	    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_GENERATE_PRACH, VCD_FUNCTION_IN);
 	    prach_power = generate_prach(phy_vars_ue,eNB_id,subframe_tx,frame_tx);
@@ -1385,7 +1374,7 @@ void phy_procedures_UE_S_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abst
     
     
     for (aa=0;aa<frame_parms->nb_antennas_tx;aa++){
-#ifdef EXMIMO //this is the EXPRESS MIMO case
+#if defined(EXMIMO) //this is the EXPRESS MIMO case
       int i;
       // set the whole tx buffer to RX
       for (i=0;i<LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*frame_parms->samples_per_tti;i++)
@@ -1660,9 +1649,6 @@ void restart_phy(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstraction_fla
   phy_vars_ue->frame_tx = -1;
   openair_daq_vars.synch_wait_cnt=0;
   openair_daq_vars.sched_cnt=-1;
-#if defined(EXMIMO) || defined(CBMIMO1)
-  //openair_daq_vars.timing_advance = TIMING_ADVANCE_HW;
-#endif
   
   phy_vars_ue->lte_ue_pbch_vars[eNB_id]->pdu_errors_conseq=0;
   phy_vars_ue->lte_ue_pbch_vars[eNB_id]->pdu_errors=0;
@@ -1798,16 +1784,7 @@ void lte_ue_pbch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
 	      frame_tx,
 	      frame_rx & 0x03FF,
 	      pbch_phase);
-	/*
-#if defined(CBMIMO) || defined(EXMIMO)
-	for (i=0;i<20;i++){
-	  LOG_D(PHY,"slot %d: frame %d, hw_slot %d, slot_rx %d, next_slot %d, time0 %llu, time1 %llu, time2 %llu, mbox0 %d, mbox1 %d, mbox2 %d, mbox_target %d\n",
-		i, timing_info[i].frame, timing_info[i].hw_slot, timing_info[i].slot_rx, timing_info[i].next_slot, 
-		timing_info[i].time0, timing_info[i].time1, timing_info[i].time2, 
-		timing_info[i].mbox0, timing_info[i].mbox1, timing_info[i].mbox2, timing_info[i].mbox_target);
-	}
-#endif
-	*/
+
 	phy_vars_ue->frame_rx = (phy_vars_ue->frame_rx & 0xFFFFFC00) | (frame_tx & 0x000003FF);
 	phy_vars_ue->frame_tx = phy_vars_ue->frame_rx;
 	frame_rx = phy_vars_ue->frame_rx;
@@ -3463,7 +3440,7 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
 
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_LTE,1);
-#ifdef EXMIMO
+#if defined(EXMIMO)
 #ifndef USRP
   vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[0].rxcnt_ptr[0]));
 #endif

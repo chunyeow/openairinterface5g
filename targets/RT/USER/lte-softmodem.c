@@ -123,6 +123,9 @@ unsigned short config_frames[4] = {2,9,11,13};
 # include "create_tasks.h"
 # if defined(ENABLE_USE_MME)
 #   include "s1ap_eNB.h"
+#ifdef NAS_NETLINK
+#   include "SIMULATION/ETH_TRANSPORT/proto.h"
+#endif
 # endif
 #endif
 
@@ -2529,11 +2532,24 @@ int main(int argc, char **argv) {
 
       openair0_cfg[card].tx_gain[i] = tx_gain[0][i];
       openair0_cfg[card].rx_gain[i] = ((UE_flag==0) ? PHY_vars_eNB_g[0][0]->rx_total_gain_eNB_dB : 
-                                       PHY_vars_UE_g[0][0]->rx_total_gain_dB) - USRP_GAIN_OFFSET;  // calibrated for USRP B210 @ 2.6 GHz
+                                       PHY_vars_UE_g[0][0]->rx_total_gain_dB) - USRP_GAIN_OFFSET;  // calibrated for USRP B210 @ 2.6 GHz, 30.72 MS/s
+      switch(frame_parms[0]->N_RB_DL) {
+      case 6:
+	openair0_cfg[card].rx_gain[i] -= 6;
+	break;
+      case 25:
+	openair0_cfg[card].rx_gain[i] += 6;
+	break;
+      case 50:
+	openair0_cfg[card].rx_gain[i] += 8;
+	break;
+      default:
+	break;
+      }
       openair0_cfg[card].tx_freq[i] = (UE_flag==0) ? downlink_frequency[0][i] : downlink_frequency[0][i]+uplink_frequency_offset[0][i];
       openair0_cfg[card].rx_freq[i] = (UE_flag==0) ? downlink_frequency[0][i] + uplink_frequency_offset[0][i] : downlink_frequency[0][i];
-      printf("Setting tx_gain %f, rx_gain %f, tx_freq %f, rx_freq %f\n",
-	     openair0_cfg[card].tx_gain[i],
+      printf("Card %d, channel %d, Setting tx_gain %f, rx_gain %f, tx_freq %f, rx_freq %f\n",
+	     card,i, openair0_cfg[card].tx_gain[i],
 	     openair0_cfg[card].rx_gain[i],
 	     openair0_cfg[card].tx_freq[i],
 	     openair0_cfg[card].rx_freq[i]);
@@ -2811,6 +2827,12 @@ int main(int argc, char **argv) {
 
   // Sleep to allow all threads to setup
   sleep(1);
+
+#ifdef USE_MME
+  while (start_UE == 0) {
+    sleep(1);
+  }
+#endif
 
 #ifndef EXMIMO
 #ifndef USRP_DEBUG
