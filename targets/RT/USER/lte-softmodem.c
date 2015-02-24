@@ -2612,7 +2612,7 @@ int main(int argc, char **argv) {
 
   // connect the TX/RX buffers
   if (UE_flag==1) {
-    openair_daq_vars.timing_advance = 170;
+    openair_daq_vars.timing_advance = 0;//170;
     if (setup_ue_buffers(UE,&openair0_cfg[0],rf_map)!=0) {
       printf("Error setting up eNB buffer\n");
       exit(-1);
