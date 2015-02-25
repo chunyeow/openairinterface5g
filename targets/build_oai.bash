@@ -49,13 +49,13 @@ declare OAI_DB_ADMIN_USER_NAME="root"
 declare OAI_DB_ADMIN_USER_PASSWORD="linux"
 
 #only one could be set at the time
-declare BUILD_LTE="" # ENB, EPC, HSS, NONE
+declare BUILD_LTE="ENB" # ENB, EPC, HSS
 
 declare HW="EXMIMO" # EXMIMO, USRP, ETHERNET, NONE
 declare TARGET="ALL" # ALL, SOFTMODEM, OAISIM, UNISIM, NONE
 declare ENB_S1=1
 declare REL="REL8" # REL8, REL10
-declare RT="NONE" # RTAI, RT_PREMPT or RT_DISABLED, NONE
+declare RT="NONE" # RTAI, RT_PREMPT, NONE
 declare DEBUG=0
 declare CONFIG_FILE=" "
 declare CONFIG_FILE_ACCESS_OK=0
@@ -725,6 +725,7 @@ fi
 ############################################
 # run 
 ############################################
+
 if [ $RUN -ne 0 ]; then 
     echo_info "11. Running ..."
     cd $OPENAIR_TARGETS/bin
@@ -750,7 +751,7 @@ if [ $RUN -ne 0 ]; then
             elif [ $TARGET == "OAISIM" ]; then
             
                 if [ $ENB_S1 -eq 0 ]; then
-                    echo_error "TODO: LOAD NASMESH IP DRIVER FOR UE AND eNB" 
+		    install_nasmesh
                 else
                     # prepare NAS for UE
                     if [ ! -f .ue.nvram ]; then

@@ -185,7 +185,7 @@ class openair(core):
             print "Error removing oai network driver module:", val
    
     def driver(self,oai,user,pw):
-        pwd = oai.send_recv('pwd') 
+        #pwd = oai.send_recv('pwd') 
         oai.send('cd $OPENAIR_TARGETS;')   
         oai.send('cd SIMU/USER;')   
         try:

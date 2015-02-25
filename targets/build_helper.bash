@@ -1047,6 +1047,14 @@ install_nas_tools() {
     $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data --print
 }
 
+install_nasmesh(){
+    echo_success "LOAD NASMESH IP DRIVER FOR UE AND eNB" 
+    (cd $OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL && make clean && make)
+    (cd $OPENAIR2_DIR && make clean && make nasmesh_netlink_address_fix.ko)
+    $SUDO rmmod nasmesh
+    $SUDO insmod $OPENAIR2_DIR/NAS/DRIVER/MESH/nasmesh.ko
+}
+
 ##################################
 # create HSS DB
 ################################
@@ -1157,6 +1165,21 @@ print_help(){
     echo_success "-w | --hardware                         : Set the hardware platform: EXMIMO, USRP (also installs UHD driver), ETHERNET, NONE, (default EXMIMO)"
     echo_success "-x | --xforms                           : Enable xforms (default disabled)"
     echo_success "-z | --defaults                         : Set the default build options"
+}
+
+print_help_perf(){
+    echo_success "Name : perf_oai  generate traffic and evaluate the performance "
+    echo_success "Usage: perf_oai.bash -l ITG "
+    echo_success "-l | --perf-app               : Set Performance evaluation app: ITGS, ITGD,PING, OTG-OAISIM, OTG-CBA, (default PING)"
+    echo_success "-m | --owd                    : enable D-ITG one-way-delay meter (default disabled)"
+    echo_success "-e | --duration               : set the duration of the experiment (default 60000ms)"
+    echo_success "-i | --idt-dist               : set the distribution of the inter-departure time: CONSTANT, UNIFORM,EXPONENTIAL (default CONSTANT)"
+    echo_success "-s | --ps-dist                : set the distribution of the inter-departure time (default CONSTANT, available options: UNIFORM,EXPONENTIAL)"
+    echo_success "-d | --dst                    : set the destination address (default 127.0.0.1)"
+    echo_success "-p | --dst-port               : set the destination address (default NONE)"
+    echo_success "-t | --test                   : enable test mode to validate the functionality (default disabled)"
+    echo_success "-k | --keep-log-file          : keep the log files (default disabled)"
+
 }
 ###############################
 ## echo and  family 

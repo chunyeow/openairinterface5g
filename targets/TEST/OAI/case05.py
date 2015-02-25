@@ -54,7 +54,7 @@ def execute(oai, user, pw, host,logfile,logdir,debug):
     try:
         log.start()
         test = '00'
-        name = 'Perf oai.dlsim.sanity'
+        name = 'Perf oai.ulsim.sanity'
         conf = '-a -A AWGN -n 100'
         diag = 'ulsim is not running normally (Segmentation fault / Exiting / FATAL), debugging might be needed'
         trace = logdir + '/log_' + host + case + test + '_1.txt;'
