@@ -277,7 +277,7 @@ static void *UE_thread_synch(void *arg) {
 #endif
       }
 #ifdef EXMIMO
-	openair0_config(&openair0_cfg[card],1);
+	//openair0_config(&openair0_cfg[card],1);
 #endif
       }
 #ifdef USRP
@@ -357,7 +357,7 @@ static void *UE_thread_synch(void *arg) {
 	
       }
 #ifdef EXMIMO
-	  openair0_config(&openair0_cfg[card],1);	
+	  //openair0_config(&openair0_cfg[card],1);	
 #endif
     }	
 #ifdef USRP
@@ -368,7 +368,7 @@ static void *UE_thread_synch(void *arg) {
 #endif
       break;
     case pbch:
-      printf("Running initial sync\n");
+      //      printf("synch: Running initial sync\n");
       // This is a hack to fix a bug when using USRP
       memset(PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[0],0,1024);
       if (initial_sync(UE,UE->mode)==0) {
@@ -399,7 +399,7 @@ static void *UE_thread_synch(void *arg) {
 	LOG_I(HW,"Got synch: hw_slot_offset %d\n",hw_slot_offset);
 	  
       }
-      else {
+      else {  // intial_synch
 	  
 	if (openair_daq_vars.freq_offset >= 0) {
 	  openair_daq_vars.freq_offset += 100;
@@ -408,6 +408,7 @@ static void *UE_thread_synch(void *arg) {
 	else {
 	  openair_daq_vars.freq_offset *= -1;
 	}
+
 	if (abs(openair_daq_vars.freq_offset) > 7500) {
 	  LOG_I(PHY,"[initial_sync] No cell synchronization found, abandoning\n");
 	  mac_xface->macphy_exit("No cell synchronization found, abandoning");
@@ -421,8 +422,9 @@ static void *UE_thread_synch(void *arg) {
 	    for (i=0; i<openair0_cfg[card].rx_num_channels; i++) {
 	      openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i]+openair_daq_vars.freq_offset;
 	      openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i]+openair_daq_vars.freq_offset;
-	      openair0_cfg[card].rx_gain[i] = UE->rx_total_gain_dB-USRP_GAIN_OFFSET;  // 65 calibrated for USRP B210 @ 2.6 GHz
 #ifdef USRP
+	      openair0_cfg[card].rx_gain[i] = UE->rx_total_gain_dB-USRP_GAIN_OFFSET;  // 65 calibrated for USRP B210 @ 2.6 GHz
+
 	      switch(UE->lte_frame_parms.N_RB_DL) {
 	      case 6:
 		openair0_cfg[card].rx_gain[i] -= 12;
@@ -437,37 +439,37 @@ static void *UE_thread_synch(void *arg) {
 		printf("Unknown number of RBs %d\n",UE->lte_frame_parms.N_RB_DL);
 		break;
 	      }
-	      printf("UE synch: setting RX gain (%d,%d) to %d\n",card,i,openair0_cfg[card].rx_gain[i]);
+	      //	      printf("UE synch: setting RX gain (%d,%d) to %d\n",card,i,openair0_cfg[card].rx_gain[i]);
 #endif
 	    }
 #ifdef EXMIMO
-	      openair0_config(&openair0_cfg[card],1);
+	      //openair0_config(&openair0_cfg[card],1);
+	      //rt_sleep_ns(FRAME_PERIOD);
 #endif
-	    }
+	  }
 #ifdef USRP
 #ifndef USRP_DEBUG
 	      openair0_set_frequencies(&openair0,&openair0_cfg[0]);
 	      //	    openair0_set_gains(&openair0,&openair0_cfg[0]);
 #endif
 
-#else
-
 #endif
 	    
 	  
+
+	      //	      openair0_dump_config(&openair0_cfg[0],UE_flag);
 	    
-	  //	    openair0_dump_config(&openair0_cfg[0],UE_flag);
-	    
-	  //	    rt_sleep_ns(FRAME_PERIOD);
-	    } // freq_offset
-	    } // initial_sync=0
+	      //	      rt_sleep_ns(FRAME_PERIOD);
+
+	} // freq_offset
+      } // initial_sync=0
       break;
     case si:
     default:
       break;
     }
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,0);  
-    printf("Finished synch : Locking synch mutex (thread_sync)\n");
+
     if (pthread_mutex_lock(&UE->mutex_synch) != 0) {
       printf("[openair][SCHED][eNB] error locking mutex for UE synch\n");
     }
@@ -653,7 +655,7 @@ static void *UE_thread_rx(void *arg) {
   
   // This creates a 1ms reservation every 10ms period
   attr.sched_policy = SCHED_DEADLINE;
-  attr.sched_runtime = 1 * 800000;  // each rx thread requires 1ms to finish its job
+  attr.sched_runtime = 1 * 500000;  // each rx thread requires 1ms to finish its job
   attr.sched_deadline =1 * 1000000; // each rx thread will finish within 1ms
   attr.sched_period = 1 * 1000000; // each rx thread has a period of 1ms from the starting point
   
@@ -1111,7 +1113,7 @@ void *UE_thread(void *arg) {
   
   // This creates a .25 ms  reservation
   attr.sched_policy = SCHED_DEADLINE;
-  attr.sched_runtime  = 0.25 * 1000000;
+  attr.sched_runtime  = 0.1 * 1000000;
   attr.sched_deadline = 0.25 * 1000000;
   attr.sched_period   = 0.5 * 1000000;
   
@@ -1119,7 +1121,7 @@ void *UE_thread(void *arg) {
   // if (pthread_setaffinity_np(pthread_self(), sizeof(mask),&mask) <0) {
   //   perror("[MAIN_ENB_THREAD] pthread_setaffinity_np failed\n");
   //   }
-  
+   
   if (sched_setattr(0, &attr, flags) < 0 ){
     perror("[SCHED] main UE thread: sched_setattr failed\n");
     exit_fun("Nothing to add");
@@ -1339,15 +1341,19 @@ void *UE_thread(void *arg) {
 
 
       // wait until we can lock mutex_synch
+      printf("Locking mutex_synch (UE_thread)\n");
       if (pthread_mutex_lock(&UE->mutex_synch) != 0) {
 	LOG_E(PHY,"[SCHED][UE] error locking mutex for UE initial synch thread\n");
 	exit_fun("noting to add");
       }
       else {
+	printf("Before getting frame IC %d (UE_thread)\n",UE->instance_cnt_synch);
 	if (UE->instance_cnt_synch < 0) {
 
 	  wait_sync_cnt=0;
+
 	  openair0_get_frame(0);
+	  rt_sleep_ns(FRAME_PERIOD);
 	  // increment instance count for sync thread
 	  UE->instance_cnt_synch++;
 	  pthread_mutex_unlock(&UE->mutex_synch);
@@ -1359,6 +1365,7 @@ void *UE_thread(void *arg) {
 	else {
 	  wait_sync_cnt++;
 	  pthread_mutex_unlock(&UE->mutex_synch);
+
 	  if (wait_sync_cnt>1000)
 	    exit_fun("waiting to long for synch thread");
 	  else
