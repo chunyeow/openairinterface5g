@@ -230,14 +230,14 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
       schedule_ulsch(module_idP,frameP,cooperation_flag,0,4,nCCE);//,calibration_flag);
     }
     else if  ((mac_xface->lte_frame_parms->tdd_config == TDD) || //TDD
-        (mac_xface->lte_frame_parms->tdd_config == 3) ||
-        (mac_xface->lte_frame_parms->tdd_config == 6))
+	      (mac_xface->lte_frame_parms->tdd_config == 3) ||
+	      (mac_xface->lte_frame_parms->tdd_config == 6)) {
       //schedule_ulsch(module_idP,frameP,cooperation_flag,subframeP,4,nCCE);//,calibration_flag);
+    }
+    
+    // schedule_ue_spec(module_idP,frameP,subframeP,nprb,nCCE,mbsfn_status);
 
-
-      // schedule_ue_spec(module_idP,frameP,subframeP,nprb,nCCE,mbsfn_status);
-
-      fill_DLSCH_dci(module_idP,frameP,subframeP,RBalloc,1,mbsfn_status);
+    fill_DLSCH_dci(module_idP,frameP,subframeP,RBalloc,1,mbsfn_status);
     break;
 
   case 1:
