@@ -137,7 +137,7 @@ unsigned short config_frames[4] = {2,9,11,13};
 #define FRAME_PERIOD    100000000ULL
 #define DAQ_PERIOD      66667ULL
 
-#define DEBUG_THREADS 1
+//#define DEBUG_THREADS 1
 
 //#define USRP_DEBUG 1
 
@@ -331,7 +331,7 @@ int16_t           rlc_log_level      = LOG_INFO;
 int16_t           rlc_log_verbosity  = LOG_MED;
 int16_t           pdcp_log_level     = LOG_INFO;
 int16_t           pdcp_log_verbosity = LOG_MED;
-int16_t           rrc_log_level      = LOG_DEBUG;
+int16_t           rrc_log_level      = LOG_INFO;
 int16_t           rrc_log_verbosity  = LOG_MED;
 # if defined(ENABLE_USE_MME)
 int16_t           gtpu_log_level     = LOG_DEBUG;
@@ -2043,7 +2043,7 @@ static void get_options (int argc, char **argv) {
       osa_log_level                  = enb_properties->properties[i]->osa_log_level;
       osa_log_verbosity              = enb_properties->properties[i]->osa_log_verbosity;
 #endif 
-    
+
       // adjust the log
       for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
 	for (k = 0 ; k < 4; k++) {
@@ -2127,15 +2127,14 @@ int main(int argc, char **argv) {
 
   // initialize the log (see log.h for details)
   logInit();
-  set_glog(glog_level, glog_verbosity);
-
+  
   //randominit (0);
   set_taus_seed (0);
-
-  
+ 
 
   get_options (argc, argv); //Command-line options
-  
+  set_glog(glog_level, glog_verbosity);
+
 
   if (UE_flag==1)
     {
