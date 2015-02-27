@@ -118,8 +118,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
     break;
 
   default:
-    //msg("[PHY][UE %d][FATAL] Frame %d subframe %d: Unknown PDSCH format %d\n",phy_vars_ue->frame,subframe,type);
-    mac_xface->macphy_exit("");
+    LOG_E(PHY,"[UE %d][FATAL] Frame %d subframe %d: Unknown PDSCH format %d\n",phy_vars_ue->frame_rx,subframe,type);
     return(-1);
     break;
   }

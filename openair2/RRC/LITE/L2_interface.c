@@ -83,7 +83,7 @@ int8_t mac_rrc_lite_data_req(module_id_t Mod_idP, frame_t frameP, uint16_t Srb_i
             // All even frames transmit SIB in SF 5
             if (eNB_rrc_inst[Mod_idP].sizeof_SIB1 == 255) {
                 LOG_E(RRC,"[eNB %d] MAC Request for SIB1 and SIB1 not initialized\n",Mod_idP);
-                mac_xface->macphy_exit("");
+                mac_xface->macphy_exit("mac_rrc_lite_data_req:  MAC Request for SIB1 and SIB1 not initialized");
             }
             if ((frameP%2) == 0) {
                 memcpy(&buffer_pP[0],eNB_rrc_inst[Mod_idP].SIB1,eNB_rrc_inst[Mod_idP].sizeof_SIB1);

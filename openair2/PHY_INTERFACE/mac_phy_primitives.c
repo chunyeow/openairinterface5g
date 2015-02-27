@@ -180,7 +180,7 @@ MACPHY_DATA_REQ *new_macphy_data_req(unsigned char Mod_id) {
  msg("[OPENAIR][MAC][ERROR] frame %d: No more DATA_REQ !!!!\n",mac_xface->frame);
  
  print_active_requests(Mod_id);
- mac_xface->macphy_exit("");
+ mac_xface->macphy_exit("new_macphy_data_req: no more DATA_REQ");
  //rt_sleep(nano2count(2000));
 
   return((MACPHY_DATA_REQ*)0);

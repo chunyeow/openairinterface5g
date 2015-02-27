@@ -284,7 +284,6 @@ void ra_failed(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index) {
   PHY_vars_UE_g[Mod_id][CC_id]->UE_mode[eNB_index] = PRACH;
   LOG_E(PHY,"[UE %d] Frame %d Random-access procedure fails, going back to PRACH, setting SIStatus = 0 and State RRC_IDLE\n",Mod_id,PHY_vars_UE_g[Mod_id][CC_id]->frame_rx);
   //mac_xface->macphy_exit("");
-  //  exit(-1);
 }
 
 void ra_succeeded(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index) {
@@ -689,7 +688,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 	if (harq_pid==255) {
 	  LOG_E(PHY,"[UE%d] Frame %d ulsch_decoding.c: FATAL ERROR: illegal harq_pid, returning\n",
 	      Mod_id,frame_tx);
-	  mac_xface->macphy_exit("");
+	  mac_xface->macphy_exit("Error in ulsch_decoding");
           vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_TX, VCD_FUNCTION_OUT);
 	  stop_meas(&phy_vars_ue->phy_proc_tx);
 	  return;
@@ -786,7 +785,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 			       eNB_id,
 			       phy_vars_ue->transmission_mode[eNB_id],0,0)!=0) {
 	      LOG_E(PHY,"ulsch_coding.c: FATAL ERROR: returning\n");
-	      mac_xface->macphy_exit("");
+	      mac_xface->macphy_exit("Error in ulsch_coding");
               vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_TX, VCD_FUNCTION_OUT);
 	      stop_meas(&phy_vars_ue->phy_proc_tx);
 	      return;
@@ -1641,8 +1640,8 @@ void restart_phy(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstraction_fla
 
   //  uint8_t last_slot;
   uint8_t i;
-  LOG_D(PHY,"[UE  %d] frame %d, slot %d, restarting PHY!\n",phy_vars_ue->Mod_id,phy_vars_ue->frame_rx,phy_vars_ue->slot_rx);
-  mac_xface->macphy_exit("");
+  LOG_I(PHY,"[UE  %d] frame %d, slot %d, restarting PHY!\n",phy_vars_ue->Mod_id,phy_vars_ue->frame_rx,phy_vars_ue->slot_rx);
+  mac_xface->macphy_exit("restart_phy called");
   //   first_run = 1;
   
   if (abstraction_flag ==0 ) {
@@ -1848,7 +1847,7 @@ void lte_ue_pbch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
 #else
     if (phy_vars_ue->lte_ue_pbch_vars[eNB_id]->pdu_errors_conseq>=100) {
       LOG_E(PHY,"More that 100 consecutive PBCH errors! Exiting!\n");
-      mac_xface->macphy_exit("");
+      mac_xface->macphy_exit("More that 100 consecutive PBCH errors!");
     }
 #endif
   }
@@ -2734,7 +2733,6 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
 #endif
 
 	    //dump_dlsch_SI(phy_vars_ue,eNB_id,subframe_prev);
-	    //exit(-1);
             vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_OUT);
 	    stop_meas(&phy_vars_ue->phy_proc_rx);
 	    return(-1);
@@ -2809,7 +2807,7 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
 	  phy_vars_ue->dlsch_ue_ra[eNB_id]->rnti = phy_vars_ue->prach_resources[eNB_id]->ra_RNTI;
 	else {
 	  LOG_E(PHY,"[UE %d] Frame %d, subframe %d: FATAL, prach_resources is NULL\n",phy_vars_ue->Mod_id,frame_rx,subframe_prev);
-	  mac_xface->macphy_exit("");
+	  mac_xface->macphy_exit("prach_resources is NULL");
 	  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_OUT);
 	  stop_meas(&phy_vars_ue->phy_proc_rx);
 	  return 0;
@@ -3225,7 +3223,8 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
 	  }
 	  LOG_T(PHY,"\n");
 #endif 
-	  if (subframe_rx==9) exit(-1);
+	  if (subframe_rx==9) 
+	    mac_xface->macphy_exit("Why are we exiting here?");
 	}
 	else {
 #ifdef Rel10
@@ -3654,7 +3653,6 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
 	    frame_rx,subframe_tx);
       phy_vars_ue->UE_mode[eNB_id] = RESYNCH;
       //     mac_xface->macphy_exit("Connection lost");
-      //exit(-1);
     } else if (ret == PHY_HO_PRACH) {
       LOG_I(PHY,"[UE %d] Frame %d, subframe %d, return to PRACH and perform a contention-free access\n",
 	    phy_vars_ue->Mod_id,frame_rx,subframe_tx);

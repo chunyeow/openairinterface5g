@@ -631,7 +631,7 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
   }
   if (eNB_id2==NB_eNB_INST) {
     LOG_E(PHY,"FATAL : Could not find attached eNB for DLSCH emulation !!!!\n");
-    mac_xface->macphy_exit("");
+    mac_xface->macphy_exit("Could not find attached eNB for DLSCH emulation");
   }
 
   LOG_D(PHY,"[UE] dlsch_decoding_emul : subframe %d, eNB_id %d, dlsch_id %d\n",subframe,eNB_id2,dlsch_id);

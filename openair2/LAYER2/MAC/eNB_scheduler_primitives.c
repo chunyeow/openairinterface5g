@@ -130,7 +130,7 @@ rnti_t UE_RNTI(module_id_t mod_idP, int ue_idP) {
   if (rnti>0)
     return (rnti);
   LOG_E(MAC,"[eNB %d] Couldn't find RNTI for UE %d\n",mod_idP,ue_idP);
-  mac_xface->macphy_exit("");
+  mac_xface->macphy_exit("UE_RNTI: Couldn't find RNTI for UE");
   return(0);
 }
 
@@ -317,7 +317,7 @@ int mac_remove_ue(module_id_t mod_idP, int ue_idP, int frameP) {
   
   LOG_E(MAC,"error in mac_remove_ue(), could not find previous to %d in UE_list, should never happen, Dumping UE list\n",ue_idP);
   dump_ue_list(UE_list,0);
-  mac_xface->macphy_exit("");    
+  mac_xface->macphy_exit("mac_remove_ue: Problem in UE_list");    
   return(-1);
 
 }
@@ -363,7 +363,7 @@ void swap_UEs(UE_list_t *listP,int nodeiP, int nodejP, int ul_flag) {
   prev_i = prev(listP,nodeiP,ul_flag);
   prev_j = prev(listP,nodejP,ul_flag);
   if ((prev_i<0) || (prev_j<0)) {
-    mac_xface->macphy_exit("");
+    mac_xface->macphy_exit("swap_UEs: problem");
     return; // not reached
   }
 
