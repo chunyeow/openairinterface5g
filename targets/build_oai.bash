@@ -738,7 +738,7 @@ if [ $RUN -ne 0 ]; then
                 fi
                 echo "############# running ltesoftmodem #############"
                 if [ $RUN_GDB -eq 0 ]; then 
-                    $SUDO exec $OPENAIR_TARGETS/bin/lte-softmodem  `echo $EXE_ARGUMENTS`
+                    $SUDO $OPENAIR_TARGETS/bin/lte-softmodem  `echo $EXE_ARGUMENTS`
                 else
                     $SUDO setenv MALLOC_CHECK_ 2
                     $SUDO touch ~/.gdb_lte_softmodem

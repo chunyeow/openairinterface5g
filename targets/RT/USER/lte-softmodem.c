@@ -2622,7 +2622,7 @@ int main(int argc, char **argv) {
 
   for(CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
     rf_map[CC_id].card=0;
-    rf_map[CC_id].chain=CC_id;
+    rf_map[CC_id].chain=CC_id+1;
   }
 
   // connect the TX/RX buffers

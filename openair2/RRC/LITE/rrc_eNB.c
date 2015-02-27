@@ -788,7 +788,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     SRB2_rlc_config->choice.explicitValue.choice.am.ul_AM_RLC.pollPDU = PollPDU_p8;
     SRB2_rlc_config->choice.explicitValue.choice.am.ul_AM_RLC.pollByte = PollByte_kB1000;
     SRB2_rlc_config->choice.explicitValue.choice.am.ul_AM_RLC.maxRetxThreshold = UL_AM_RLC__maxRetxThreshold_t32;
-    SRB2_rlc_config->choice.explicitValue.choice.am.dl_AM_RLC.t_Reordering = T_Reordering_ms50;
+    SRB2_rlc_config->choice.explicitValue.choice.am.dl_AM_RLC.t_Reordering = T_Reordering_ms35;
     SRB2_rlc_config->choice.explicitValue.choice.am.dl_AM_RLC.t_StatusProhibit = T_StatusProhibit_ms10;
 
     SRB2_lchan_config = CALLOC(1, sizeof(*SRB2_lchan_config));
@@ -844,9 +844,9 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     DRB_rlc_config->choice.um_Bi_Directional.ul_UM_RLC.sn_FieldLength = SN_FieldLength_size10;
     DRB_rlc_config->choice.um_Bi_Directional.dl_UM_RLC.sn_FieldLength = SN_FieldLength_size10;
 #ifdef CBA
-    DRB_rlc_config->choice.um_Bi_Directional.dl_UM_RLC.t_Reordering = T_Reordering_ms5;//T_Reordering_ms25;
+    DRB_rlc_config->choice.um_Bi_Directional.dl_UM_RLC.t_Reordering = T_Reordering_ms35;//T_Reordering_ms25;
 #else 
-    DRB_rlc_config->choice.um_Bi_Directional.dl_UM_RLC.t_Reordering = T_Reordering_ms25;
+    DRB_rlc_config->choice.um_Bi_Directional.dl_UM_RLC.t_Reordering = T_Reordering_ms35;
 #endif 
 #endif
 
@@ -1614,7 +1614,7 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
     SRB1_rlc_config->choice.explicitValue.choice.am.ul_AM_RLC.pollPDU = PollPDU_p8;
     SRB1_rlc_config->choice.explicitValue.choice.am.ul_AM_RLC.pollByte = PollByte_kB1000;
     SRB1_rlc_config->choice.explicitValue.choice.am.ul_AM_RLC.maxRetxThreshold = UL_AM_RLC__maxRetxThreshold_t16;
-    SRB1_rlc_config->choice.explicitValue.choice.am.dl_AM_RLC.t_Reordering = T_Reordering_ms50;
+    SRB1_rlc_config->choice.explicitValue.choice.am.dl_AM_RLC.t_Reordering = T_Reordering_ms35;
     SRB1_rlc_config->choice.explicitValue.choice.am.dl_AM_RLC.t_StatusProhibit = T_StatusProhibit_ms10;
 
     SRB1_lchan_config = CALLOC(1, sizeof(*SRB1_lchan_config));
@@ -1838,7 +1838,7 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
     SRB2_rlc_config->choice.explicitValue.choice.am.ul_AM_RLC.pollPDU = PollPDU_p8;
     SRB2_rlc_config->choice.explicitValue.choice.am.ul_AM_RLC.pollByte = PollByte_kB1000;
     SRB2_rlc_config->choice.explicitValue.choice.am.ul_AM_RLC.maxRetxThreshold = UL_AM_RLC__maxRetxThreshold_t32;
-    SRB2_rlc_config->choice.explicitValue.choice.am.dl_AM_RLC.t_Reordering = T_Reordering_ms50;
+    SRB2_rlc_config->choice.explicitValue.choice.am.dl_AM_RLC.t_Reordering = T_Reordering_ms35;
     SRB2_rlc_config->choice.explicitValue.choice.am.dl_AM_RLC.t_StatusProhibit = T_StatusProhibit_ms10;
 
     SRB2_lchan_config = CALLOC(1, sizeof(*SRB2_lchan_config));
@@ -1878,7 +1878,7 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
     DRB_rlc_config->present = RLC_Config_PR_um_Bi_Directional;
     DRB_rlc_config->choice.um_Bi_Directional.ul_UM_RLC.sn_FieldLength = SN_FieldLength_size10;
     DRB_rlc_config->choice.um_Bi_Directional.dl_UM_RLC.sn_FieldLength = SN_FieldLength_size10;
-    DRB_rlc_config->choice.um_Bi_Directional.dl_UM_RLC.t_Reordering = T_Reordering_ms5;
+    DRB_rlc_config->choice.um_Bi_Directional.dl_UM_RLC.t_Reordering = T_Reordering_ms35;
 
     DRB_pdcp_config = CALLOC(1, sizeof(*DRB_pdcp_config));
     DRB_config->pdcp_Config = DRB_pdcp_config;

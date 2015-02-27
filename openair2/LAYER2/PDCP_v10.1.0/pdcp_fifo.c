@@ -149,7 +149,7 @@ int pdcp_fifo_flush_sdus(const protocol_ctxt_t* const  ctxt_pP)
        }
 #endif /* defined(ENABLE_USE_MME) */
 #ifdef PDCP_DEBUG
-      LOG_I(PDCP, "PDCP->IP TTI %d INST %d: Preparing %d Bytes of data from rab %d to Nas_mesh\n",
+      LOG_D(PDCP, "PDCP->IP TTI %d INST %d: Preparing %d Bytes of data from rab %d to higher layers\n",
           ctxt_pP->frame, ((pdcp_data_ind_header_t *)(sdu_p->data))->inst,
           ((pdcp_data_ind_header_t *)(sdu_p->data))->data_size, ((pdcp_data_ind_header_t *)(sdu_p->data))->rb_id);
 #endif //PDCP_DEBUG
@@ -178,7 +178,7 @@ int pdcp_fifo_flush_sdus(const protocol_ctxt_t* const  ctxt_pP)
 #endif //NAS_FIFO
 
 #ifdef PDCP_DEBUG
-          LOG_I(PDCP, "Frame %d Sent %d Bytes of header to Nas_mesh\n",
+          LOG_D(PDCP, "Frame %d Sent %d Bytes of header to higher layers\n",
               ctxt_pP->frame,
               bytes_wrote);
 #endif //PDCP_DEBUG
@@ -209,7 +209,7 @@ int pdcp_fifo_flush_sdus(const protocol_ctxt_t* const  ctxt_pP)
 #endif // NAS_FIFO
 
 #ifdef PDCP_DEBUG
-                  LOG_I(PDCP, "PDCP->IP Frame %d INST %d: Sent %d Bytes of data from rab %d to Nas_mesh\n",
+                  LOG_D(PDCP, "PDCP->IP Frame %d INST %d: Sent %d Bytes of data from rab %d to higher layers\n",
                       ctxt_pP->frame,
                       ((pdcp_data_ind_header_t *)(sdu_p->data))->inst,
                       bytes_wrote,
@@ -319,7 +319,7 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (const protocol_ctxt_t* const  ctx
               return 0;
           } else {
 #ifdef PDCP_DEBUG
-              LOG_I(PDCP, "Frame %d: IP->RADIO RECEIVED COMPLETE SDU size %d inst %d rb %d\n",
+              LOG_D(PDCP, "Frame %d: IP->RADIO RECEIVED COMPLETE SDU size %d inst %d rb %d\n",
                   ctxt_pP->frame,
                   pdcp_input_sdu_size_read,
                   pdcp_input_header.inst,
@@ -615,18 +615,18 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
               nas_nlh_rx = NLMSG_NEXT (nas_nlh_rx, len)) {
 
               if (nas_nlh_rx->nlmsg_type == NLMSG_DONE) {
-                  LOG_I(PDCP, "[PDCP][FIFO] RX NLMSG_DONE\n");
+                  LOG_D(PDCP, "[PDCP][FIFO] RX NLMSG_DONE\n");
                   //return;
               }
 
               if (nas_nlh_rx->nlmsg_type == NLMSG_ERROR) {
-                  LOG_I(PDCP, "[PDCP][FIFO] RX NLMSG_ERROR\n");
+                  LOG_E(PDCP, "[PDCP][FIFO] RX NLMSG_ERROR\n");
               }
               if (pdcp_read_state_g == 0) {
                   if (nas_nlh_rx->nlmsg_len == sizeof (pdcp_data_req_header_t) + sizeof(struct nlmsghdr)) {
                       pdcp_read_state_g = 1;  //get
                       memcpy((void *)&pdcp_read_header_g, (void *)NLMSG_DATA(nas_nlh_rx), sizeof(pdcp_data_req_header_t));
-                      LOG_I(PDCP, "[PDCP][FIFO] RX pdcp_data_req_header_t inst %u, rb_id %u data_size %d\n",
+                      LOG_D(PDCP, "[PDCP][FIFO] RX pdcp_data_req_header_t inst %u, rb_id %u data_size %d\n",
                           pdcp_read_header_g.inst, pdcp_read_header_g.rb_id, pdcp_read_header_g.data_size);
                   } else {
                       LOG_E(PDCP, "[PDCP][FIFO] WRONG size %d should be sizeof (pdcp_data_req_header_t) + sizeof(struct nlmsghdr)\n",
@@ -636,7 +636,7 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
                   pdcp_read_state_g = 0;
                   // print_active_requests()
 #ifdef PDCP_DEBUG
-                  LOG_I(PDCP, "[PDCP][FIFO] Something in socket, length %d \n",
+                  LOG_D(PDCP, "[PDCP][FIFO] Something in socket, length %d \n",
                       nas_nlh_rx->nlmsg_len - sizeof(struct nlmsghdr));
 #endif
                   //memcpy(pdcp_read_payload, (unsigned char *)NLMSG_DATA(nas_nlh_rx), nas_nlh_rx->nlmsg_len - sizeof(struct nlmsghdr));
@@ -698,7 +698,7 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
                           rab_id = rab_id % maxDRB;
                           if (pdcp_array_drb_eNB[ctxt.enb_module_id][ctxt.ue_module_id][rab_id-1].instanciated_instance) {
 #ifdef PDCP_DEBUG
-                              LOG_I(PDCP, "[FRAME %5u][eNB][NETLINK][IP->PDCP] INST %d: Received socket with length %d (nlmsg_len = %d) on Rab %d \n",
+                              LOG_D(PDCP, "[FRAME %5u][eNB][NETLINK][IP->PDCP] INST %d: Received socket with length %d (nlmsg_len = %d) on Rab %d \n",
                                     ctxt.frame,
                                     pdcp_read_header_g.inst,
                                     len,
@@ -762,7 +762,7 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
                       if (rab_id != 0) {
                           if (pdcp_array_drb_ue[ctxt.ue_module_id][rab_id-1].instanciated_instance) {
 #ifdef PDCP_DEBUG
-                              LOG_I(PDCP, "[FRAME %5u][UE][NETLINK][IP->PDCP] INST %d: Received socket with length %d (nlmsg_len = %d) on Rab %d \n",
+                              LOG_D(PDCP, "[FRAME %5u][UE][NETLINK][IP->PDCP] INST %d: Received socket with length %d (nlmsg_len = %d) on Rab %d \n",
                                     ctxt.frame,
                                     pdcp_read_header_g.inst,
                                     len,
@@ -853,7 +853,7 @@ void pdcp_fifo_read_input_sdus_from_otg (const protocol_ctxt_t* const  ctxt_pP) 
       //rb_id    = (ctxt_pP->enb_flag == 1) ? ctxt_pP->enb_module_id * MAX_NUM_RB + DTCH : (NB_eNB_INST + UE_index -1 ) * MAX_NUM_RB + DTCH ;
       src_id = module_id;
       while ((otg_pkt_info = pkt_list_remove_head(&(otg_pdcp_buffer[module_id]))) != NULL) {
-          LOG_I(OTG,"Mod_id %d Frame %d Got a packet (%p), HEAD of otg_pdcp_buffer[%d] is %p and Nb elements is %d\n",
+          LOG_D(OTG,"Mod_id %d Frame %d Got a packet (%p), HEAD of otg_pdcp_buffer[%d] is %p and Nb elements is %d\n",
               module_id,ctxt_pP->frame, otg_pkt_info, module_id, pkt_list_get_head(&(otg_pdcp_buffer[module_id])), otg_pdcp_buffer[module_id].nb_elements);
           //otg_pkt_info = pkt_list_remove_head(&(otg_pdcp_buffer[module_id]));
           dst_id    = (otg_pkt_info->otg_pkt).dst_id;
@@ -947,7 +947,7 @@ void pdcp_fifo_read_input_sdus_from_otg (const protocol_ctxt_t* const  ctxt_pP) 
                                 pkt_size,
                                 otg_pkt,
                                 PDCP_TRANSMISSION_MODE_DATA);
-                  LOG_I(OTG,"send packet from module %d on rab id %d (src %d, dst %d) pkt size %d\n", ctxt_pP->enb_module_id, rb_id, src_id, dst_id, pkt_size);
+                  LOG_D(OTG,"send packet from module %d on rab id %d (src %d, dst %d) pkt size %d\n", ctxt_pP->enb_module_id, rb_id, src_id, dst_id, pkt_size);
                   free(otg_pkt);
               }
               /*else {

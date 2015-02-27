@@ -64,7 +64,7 @@
 #endif
 
 #define ENABLE_MAC_PAYLOAD_DEBUG
-#define DEBUG_eNB_SCHEDULER 1
+//#define DEBUG_eNB_SCHEDULER 1
 
 extern inline unsigned int taus(void);
 
@@ -970,18 +970,18 @@ void schedule_ue_spec(module_id_t   module_idP,
 					 padding,
 					 post_padding);
 	  //#ifdef DEBUG_eNB_SCHEDULER
-	  if (ta_update) {
-	  LOG_I(MAC,"[eNB %d][DLSCH] Frame %d Generate header for UE_id %d on CC_id %d: sdu_length_total %d, num_sdus %d, sdu_lengths[0] %d, sdu_lcids[0] %d => payload offset %d,timing advance value : %d, padding %d,post_padding %d,(mcs %d, TBS %d, nb_rb %d),header_dcch %d, header_dtch %d\n",
+	  //	  if (ta_update) {
+	  LOG_D(MAC,"[eNB %d][DLSCH] Frame %d Generate header for UE_id %d on CC_id %d: sdu_length_total %d, num_sdus %d, sdu_lengths[0] %d, sdu_lcids[0] %d => payload offset %d,timing advance value : %d, padding %d,post_padding %d,(mcs %d, TBS %d, nb_rb %d),header_dcch %d, header_dtch %d\n",
 		module_idP,frameP, UE_id, CC_id, sdu_length_total,num_sdus,sdu_lengths[0],sdu_lcids[0],offset,
 		ta_update,padding,post_padding,mcs,TBS,nb_rb,header_len_dcch,header_len_dtch);
-	  }
-	  //#endif
 	  
+	  //#endif
+#ifdef DEBUG_eNB_SCHEDULER	  
 	  LOG_T(MAC,"[eNB %d] First 16 bytes of DLSCH : \n");
 	  for (i=0;i<16;i++)
 	    LOG_T(MAC,"%x.",dlsch_buffer[i]);
 	  LOG_T(MAC,"\n");
-	  
+#endif	  
 	  // cycle through SDUs and place in dlsch_buffer
 	  memcpy(&UE_list->DLSCH_pdu[CC_id][0][UE_id].payload[0][offset],dlsch_buffer,sdu_length_total);
 	  // memcpy(&eNB_mac_inst[0].DLSCH_pdu[0][0].payload[0][offset],dcch_buffer,sdu_lengths[0]);

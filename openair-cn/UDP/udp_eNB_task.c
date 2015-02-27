@@ -383,6 +383,7 @@ void *udp_eNB_task(void *args_p)
                 } break;
 
                 case TERMINATE_MESSAGE: {
+                    LOG_W(UDP_, "Received TERMINATE_MESSAGE\n");
                     itti_exit_task();
                 } break;
 

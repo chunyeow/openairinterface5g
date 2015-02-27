@@ -18,28 +18,38 @@ NUM_CORES:=$(shell cat /proc/cpuinfo | grep processor | wc -l)
 NETTLE_FOUND    := $(shell if pkg-config --exists nettle; then echo "1" ; else echo "0"; fi)
 ifeq ($(NETTLE_FOUND), 1)
 NETTLE_LIBS     := $(shell pkg-config --libs nettle)
+#else 
+#@echo "package nettle not installed"
 endif
 
 OPENSSL_FOUND   := $(shell if pkg-config --exists openssl; then echo "1" ; else echo "0"; fi)
 ifeq ($(OPENSSL_FOUND), 1)
 OPENSSL_LIBS    := $(shell pkg-config --libs openssl)
+#else 
+#@echo "package openssl not installed"
 endif
 
 PGM_FOUND       := $(shell if pkg-config --exists openpgm-5.1; then echo "1" ; else echo "0"; fi)
 ifeq ($(PGM_FOUND), 1)
 PGM_CFLAGS  := $(shell pkg-config --cflags openpgm-5.1)
 PGM_LIBS    := $(shell pkg-config --libs openpgm-5.1)
+#else 
+#@echo "package pgm not installed"
 endif
 
 LIBXML2_FOUND   := $(shell if pkg-config --exists libxml-2.0; then echo "1" ; else echo "0"; fi)
 ifeq ($(LIBXML2_FOUND), 1)
 LIBXML2_CFLAGS  := $(shell pkg-config --cflags libxml-2.0)
 LIBXML2_LIBS    := $(shell pkg-config --libs libxml-2.0)
+#else 
+#@echo "package libxml2 not installed"
 endif
 
 XPM_FOUND       := $(shell if pkg-config --exists xpm; then echo "1" ; else echo "0"; fi)
 ifeq ($(XPM_FOUND), 1)
 XPM_LIBS        := $(shell pkg-config --libs xpm)
+#else 
+#@echo "package xmp not installed"
 endif
 
 LIBBLAS_FOUND   := $(shell if [ -f /usr/include/cblas.h ]; then echo "1"; else echo "0"; fi)

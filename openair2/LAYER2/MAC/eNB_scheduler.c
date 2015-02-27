@@ -224,7 +224,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
     // Schedule ULSCH for FDD or subframeP 4 (TDD config 0,3,6)
     // Schedule Normal DLSCH
 
-    schedule_RA(module_idP,frameP,subframeP,2,nprb,nCCE);
+    // 
 
     if (mac_xface->lte_frame_parms->frame_type == FDD) {  //FDD
       schedule_ulsch(module_idP,frameP,cooperation_flag,0,4,nCCE);//,calibration_flag);
@@ -237,7 +237,9 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
     
     // schedule_ue_spec(module_idP,frameP,subframeP,nprb,nCCE,mbsfn_status);
 
-    fill_DLSCH_dci(module_idP,frameP,subframeP,RBalloc,1,mbsfn_status);
+    //schedule_RA(module_idP,frameP,subframeP,2,nprb,nCCE);
+    //fill_DLSCH_dci(module_idP,frameP,subframeP,RBalloc,1,mbsfn_status);
+    
     break;
 
   case 1:
@@ -262,7 +264,6 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
       schedule_ue_spec(module_idP,frameP,subframeP,nprb,nCCE,mbsfn_status);
       fill_DLSCH_dci(module_idP,frameP,subframeP,RBalloc,0,mbsfn_status);
       schedule_ulsch(module_idP,frameP,cooperation_flag,1,5,nCCE);
-	
     }
     break;
 
@@ -273,7 +274,6 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
       schedule_ue_spec(module_idP,frameP,subframeP,nprb,nCCE,mbsfn_status);
       fill_DLSCH_dci(module_idP,frameP,subframeP,RBalloc,0,mbsfn_status);
       schedule_ulsch(module_idP,frameP,cooperation_flag,2,6,nCCE);
-    
     }
     break;
 
