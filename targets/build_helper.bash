@@ -696,7 +696,7 @@ compile_epc() {
     cd $OPENAIRCN_DIR
     if [ $1 = 1 ]; then
         echo_info "build a clean EPC"
-        bash_exec "rm -rf obj"
+        bash_exec "rm -rf objs"
     fi
     OBJ_DIR=`find . -maxdepth 1 -type d -iname obj*`
     if [ ! -n "$OBJ_DIR" ]; then
