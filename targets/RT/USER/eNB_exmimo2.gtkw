@@ -1,0 +1,59 @@
+[*]
+[*] GTKWave Analyzer v3.3.58 (w)1999-2014 BSI
+[*] Fri Feb 27 11:14:11 2015
+[*]
+[dumpfile] "/tmp/openair_dump_eNB.vcd"
+[dumpfile_mtime] "Fri Feb 27 11:06:12 2015"
+[dumpfile_size] 22907981
+[savefile] "/home/superserver/openair4G/trunk/targets/RT/USER/eNB_exmimo2.gtkw"
+[timestart] 26966900000
+[size] 1158 892
+[pos] -1 -1
+*-23.248880 26982603536 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 257
+[signals_width] 230
+[sst_expanded] 1
+[sst_vpaned_height] 241
+@24
+variables.hw_frame[63:0]
+variables.hw_subframe[63:0]
+variables.txcnt[63:0]
+variables.rxcnt[63:0]
+variables.frame_number_TX_eNB[63:0]
+variables.frame_number_RX_eNB[63:0]
+@28
+functions.phy_procedures_eNb_tx
+functions.phy_procedures_eNb_rx
+functions.phy_enb_prach_rx
+functions.eNB_thread_rx0
+functions.eNB_thread_tx0
+functions.eNB_thread_rx1
+functions.eNB_thread_tx1
+functions.eNB_thread_rx2
+functions.eNB_thread_tx2
+functions.eNB_thread_rx3
+functions.eNB_thread_tx3
+functions.eNB_thread_rx4
+functions.eNB_thread_tx4
+functions.eNB_thread_rx5
+functions.eNB_thread_tx5
+functions.eNB_thread_rx6
+functions.eNB_thread_tx6
+functions.eNB_thread_rx7
+functions.eNB_thread_tx7
+functions.eNB_thread_rx8
+functions.eNB_thread_tx8
+functions.eNB_thread_rx9
+functions.eNB_thread_tx9
+functions.phy_eNB_dlsch_encoding
+functions.phy_eNB_dlsch_modulation
+functions.phy_enb_pdcch_tx
+functions.phy_eNB_dlsch_scrambling
+functions.phy_enb_ulsch_decoding
+functions.phy_enb_rs_tx
+functions.phy_enb_sfgen
+functions.rrc_mac_config_req
+functions.rlc_data_req
+functions.udp_enb_task
+[pattern_trace] 1
+[pattern_trace] 0
