@@ -199,6 +199,11 @@ static int emu_;
 static int omg_;
 static int otg_;
 
+/* MAC*/
+static int protocol_;
+static int mac_;
+static int num_groups_;
+
 static int log_;
 static int level_;
 static int verbosity_;
@@ -572,7 +577,14 @@ void start_element(void *user_data, const xmlChar *name, const xmlChar **attrs) 
 	} else if (!xmlStrcmp(name,(unsigned char*) "START_UE")) {
 		cli_start_ue_ = 1;
 
-	} else if (!xmlStrcmp(name,(unsigned char*) "PROFILE")) {
+	} else if (!xmlStrcmp(name,(unsigned char*) "PROTOCOL")) {
+	  protocol_ = 1;
+	} else if (!xmlStrcmp(name,(unsigned char*) "MAC")) {
+	  mac_ = 1;
+	} else if (!xmlStrcmp(name,(unsigned char*) "NUM_GROUPS")) {
+	  num_groups_ = 1;
+	}
+	else if (!xmlStrcmp(name,(unsigned char*) "PROFILE")) {
 		profile_ = 1;
 	} else {
 		LOG_W(OCG, "One element could not be parsed : unknown element name '%s'\n", name);
@@ -905,6 +917,12 @@ void end_element(void *user_data, const xmlChar *name) { // called once at the e
 		cli_start_enb_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "START_UE")) {
 		cli_start_ue_ = 0;
+	} else if (!xmlStrcmp(name,(unsigned char*) "PROTOCOL")) {
+	  protocol_ = 0;
+	} else if (!xmlStrcmp(name,(unsigned char*) "MAC")) {
+	  mac_ = 0;
+	} else if (!xmlStrcmp(name,(unsigned char*) "NUM_GROUPS")) {
+	  num_groups_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "PROFILE")) {
 		profile_ = 0;
 	}
@@ -1312,7 +1330,15 @@ void characters(void *user_data, const xmlChar *xmlch, int xmllen) { // called o
 			oai_emulation.info.cli_start_ue[i] =  atoi(ch);
 		    }
 		  }
-		} else if (profile_) {
+		} 
+		else if (protocol_) {
+		  if (mac_){
+		    if (num_groups_){
+		      oai_emulation.protocol_config.eNB_mac_config.num_groups=atoi(ch);
+		    }
+		  }
+		}
+		else if (profile_) {
 		  oai_emulation.profile = strndup(ch, len);
 		}
 	}	

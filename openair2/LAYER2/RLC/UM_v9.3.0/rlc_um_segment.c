@@ -297,7 +297,7 @@ rlc_um_segment_10 (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
                         sdu_mngt_p->sdu_size);
 #endif
             }
-            data_sdu_p = &(sdu_in_buffer->data[sizeof (struct rlc_um_tx_sdu_management) + sdu_mngt_p->sdu_segmented_size]);
+            data_sdu_p = (char *) &(sdu_in_buffer->data[sizeof (struct rlc_um_tx_sdu_management) + sdu_mngt_p->sdu_segmented_size]);
 
             if (sdu_mngt_p->sdu_remaining_size > pdu_remaining_size) {
 #if defined(TRACE_RLC_UM_SEGMENT)
@@ -744,7 +744,7 @@ rlc_um_segment_5 (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
                         sdu_mngt_p->sdu_size);
 #endif
             }
-            data_sdu_p = &(sdu_in_buffer->data[sizeof (struct rlc_um_tx_sdu_management) + sdu_mngt_p->sdu_segmented_size]);
+            data_sdu_p = (char*) &(sdu_in_buffer->data[sizeof (struct rlc_um_tx_sdu_management) + sdu_mngt_p->sdu_segmented_size]);
 
             if (sdu_mngt_p->sdu_remaining_size > pdu_remaining_size) {
 #if defined(TRACE_RLC_UM_SEGMENT)

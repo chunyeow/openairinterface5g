@@ -416,7 +416,8 @@ rlc_am_write_status_pdu(
           rlc_am_write16_bit_field(&byte_pos_p, &bit_pos, 15, pdu_info_pP->nack_list[index].so_end);
       }
   }
-  num_bytes = ((unsigned int)byte_pos_p) - ((unsigned int)(&rlc_am_pdu_sn_10_pP->b1));
+  ptrdiff_t diff = byte_pos_p - &rlc_am_pdu_sn_10_pP->b1; // this is the difference in terms of typeof(byte_pos_p), which is uint8_t
+  num_bytes = diff;
   if (bit_pos > 0) {
       num_bytes += 1;
   }

@@ -2849,7 +2849,7 @@ int rrc_eNB_decode_ccch(
     SRB_INFO * Srb_info) {
   /*------------------------------------------------------------------------------*/
 
-    module_id_t                         Idx, ue_mod_id;
+    module_id_t                         Idx, ue_mod_id = 0;
     asn_dec_rval_t                      dec_rval;
     UL_CCCH_Message_t                  *ul_ccch_msg = NULL;
     RRCConnectionRequest_r8_IEs_t      *rrcConnectionRequest;

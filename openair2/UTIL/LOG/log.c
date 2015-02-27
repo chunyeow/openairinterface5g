@@ -487,6 +487,7 @@ void logRecord(const char *file, const char *func, int line,  int comp,
         log_list_nb_elements++;
     }
     if(pthread_cond_signal(&log_notify) != 0) {
+        pthread_mutex_unlock(&log_lock);
         return;
     }
 

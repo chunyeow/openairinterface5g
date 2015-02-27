@@ -3265,7 +3265,7 @@ void
                 switch (rrc_get_state(ue_mod_id)) {
                 case RRC_STATE_IDLE:
                   {
-                    if (rrc_get_sub_state(ue_mod_id) == RRC_SUB_STATE_IDLE_SIB_COMPLETE)
+                    if (rrc_get_sub_state(ue_mod_id) == RRC_SUB_STATE_IDLE_SIB_COMPLETE) {
                         rrc_set_sub_state (ue_mod_id, RRC_SUB_STATE_IDLE_CONNECTING);
                       }
                     break;

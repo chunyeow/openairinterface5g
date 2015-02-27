@@ -209,7 +209,8 @@ void init_oai_emulation(void) {
     oai_emulation.application_config.customized_traffic.ed_size_pkts[i]= 0;
   }
   
-  
+  /* protocol config */
+  oai_emulation.protocol_config.eNB_mac_config.num_groups=1;
   
   
   oai_emulation.emulation_config.emulation_time_ms = 0;
@@ -354,7 +355,8 @@ void oaisim_config(void) {
   ocg_config_emu();
   ocg_config_env();// mobility gen
   ocg_config_topo(); // packet tracer using wireshark
- 	// if T is set or ocg enabled
+  ocg_config_proto();
+  // if T is set or ocg enabled
   if (oai_emulation.info.otg_enabled ) {
     set_component_filelog(OTG);
     set_component_filelog(OTG_LATENCY);
@@ -367,10 +369,10 @@ void oaisim_config(void) {
     g_log->log_component[OTG_OWD].filelog = 1;*/
     ocg_config_app(); // packet generator
   }
-	// add a var to control this, and pass this var to OMG
-	set_component_filelog(OMG);
-	LOG_I(OMG,"setting OMG file log \n");
-
+  // add a var to control this, and pass this var to OMG
+  set_component_filelog(OMG);
+  LOG_I(OMG,"setting OMG file log \n");
+  
 }
 
 int olg_config(void) {
@@ -1178,5 +1180,11 @@ int ocg_config_emu(void){
   }
 
   return 1;
+}
+
+void  ocg_config_proto(void){
+  
+  LOG_I(MAC,"num groups is set to %d\n",oai_emulation.protocol_config.eNB_mac_config.num_groups);
+
 }
 

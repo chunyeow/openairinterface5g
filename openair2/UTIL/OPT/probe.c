@@ -498,13 +498,14 @@ int init_opt(char *path, char *ip, char *port, radio_type_t radio_type_p)
     subframesSinceCaptureStart = 0;
 
     if (path != NULL) {
-        strncpy( in_path, sizeof(in_path), path );
+        strncpy( in_path, path, sizeof(in_path) );
         in_path[sizeof(in_path) - 1] = 0; // terminate string
     } else {
         strcpy( in_path, "oai_opt.pcap" );
     }
     if (ip != NULL) {
-        strncpy( in_ip, sizeof(in_ip), ip );
+        strncpy( in_ip, ip, sizeof(in_ip) );
+        in_ip[sizeof(in_ip) - 1] = 0; // terminate string
     } else {
         strcpy( in_ip, "127.0.0.1" );
     }

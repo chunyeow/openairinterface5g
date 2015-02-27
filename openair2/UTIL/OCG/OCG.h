@@ -467,28 +467,33 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
 
   typedef struct
   {
-	uint16_t priority[11];//pas possible d'acceder au MAX_NUM_LCID
-	//
-	uint8_t DCI_aggregation_min;
-	uint8_t DLSCH_dci_size_bits;
-	//UL transmission bandwidth in RBs
-	uint8_t ul_bandwidth[11];
-	//DL transmission bandwidth in RBs
-	uint8_t dl_bandwidth[11];
-	//UL transmission bandwidth in RBs
-	uint8_t min_ul_bandwidth[11];
-	//DL transmission bandwidth in RBs
-	uint8_t min_dl_bandwidth[11];
-	//aggregated bit rate of non-gbr bearer per UE
-	uint64_t ue_AggregatedMaximumBitrateDL;
-	//aggregated bit rate of non-gbr bearer per UE
-	uint64_t ue_AggregatedMaximumBitrateUL;
-	//CQI scheduling interval in subframes.
-	uint16_t cqiSchedInterval;
-	//Contention resolution timer used during random access
-	uint8_t mac_ContentionResolutionTimer;		
-	uint16_t max_allowed_rbs[11];
-	uint8_t max_mcs[11];	
+    uint16_t priority[11];//pas possible d'acceder au MAX_NUM_LCID
+    //
+    uint8_t DCI_aggregation_min;
+    uint8_t DLSCH_dci_size_bits;
+    //UL transmission bandwidth in RBs
+    uint8_t ul_bandwidth[11];
+    //DL transmission bandwidth in RBs
+    uint8_t dl_bandwidth[11];
+    //UL transmission bandwidth in RBs
+    uint8_t min_ul_bandwidth[11];
+    //DL transmission bandwidth in RBs
+    uint8_t min_dl_bandwidth[11];
+    //aggregated bit rate of non-gbr bearer per UE
+    uint64_t ue_AggregatedMaximumBitrateDL;
+    //aggregated bit rate of non-gbr bearer per UE
+    uint64_t ue_AggregatedMaximumBitrateUL;
+    //CQI scheduling interval in subframes.
+    uint16_t cqiSchedInterval;
+    //Contention resolution timer used during random access
+    uint8_t mac_ContentionResolutionTimer;		
+    uint16_t max_allowed_rbs[11];
+    uint8_t max_mcs[11];	
+    
+    
+    uint8_t num_groups;	
+    
+    
   } Mac_config;
 
 /** @defgroup _Predefined_traffic Configuration
@@ -653,6 +658,24 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
   } Emulation_Config;
 /* @}*/
 
+/** @defgroup  _OSD_basic OAI protocol config
+ *  @ingroup _OCG
+ *  @brief OAI Emulation struct for protocol configuration 
+ * @{*/
+
+  typedef struct{
+    uint8_t num_groups; 
+  } eNB_MAC_Config;
+  
+  typedef struct
+  {
+    eNB_MAC_Config eNB_mac_config; 	/*!< \brief eNB MAC configuration parameters  */
+    
+  } Protocol_Config;
+
+
+/* @}*/
+
 /** @defgroup  _OSD_basic Basic OpenAirInterface Scenario Descriptor
  *  @ingroup _OCG
  *  @brief OAI Emulation struct for OSD_basic
@@ -762,11 +785,12 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
  * @{*/
   typedef struct
   {
-    		Mac_config mac_config[NUMBER_OF_UE_MAX];		
+    Mac_config mac_config[NUMBER_OF_UE_MAX];		
     Environment_System_Config environment_system_config;	/*!< \brief Evironment configuration */
     Topology_Config topology_config;	/*!< \brief Topology configuration */
     Application_Config application_config;	/*!< \brief Applications configuration */
     Emulation_Config emulation_config;	/*!< \brief Emulation configuration */
+    Protocol_Config protocol_config;  /* specific protocol configuration*/
     Info info;			/*!< \brief Some important information which should be able to be reached by OAISIM */
     char *profile;
   } OAI_Emulation;

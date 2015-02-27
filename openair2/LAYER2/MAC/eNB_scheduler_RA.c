@@ -393,7 +393,7 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
                         DevAssert( UE_id != UE_INDEX_INVALID ); // FIXME not sure how to gracefully return
                         offset = generate_dlsch_header((unsigned char*)eNB->UE_list.DLSCH_pdu[CC_id][0][(unsigned char)UE_id].payload[0],
                                                        1,                           //num_sdus
-                                                       &rrc_sdu_length,             //
+                                                       (unsigned short*)&rrc_sdu_length,             //
                                                        &lcid,                       // sdu_lcid
                                                        255,                         // no drx
                                                        0,                           // no timing advance

@@ -49,7 +49,7 @@ declare OAI_DB_ADMIN_USER_NAME="root"
 declare OAI_DB_ADMIN_USER_PASSWORD="linux"
 
 #only one could be set at the time
-declare BUILD_LTE="ENB" # ENB, EPC, HSS
+declare BUILD_LTE="NONE" # ENB, EPC, HSS
 
 declare HW="EXMIMO" # EXMIMO, USRP, ETHERNET, NONE
 declare TARGET="ALL" # ALL, SOFTMODEM, OAISIM, UNISIM, NONE

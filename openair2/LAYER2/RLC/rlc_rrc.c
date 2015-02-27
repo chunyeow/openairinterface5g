@@ -522,7 +522,7 @@ rlc_op_status_t rrc_rlc_remove_rlc   (
 
     AssertFatal (rb_idP < NB_RB_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MAX);
 
-    h_rc = hashtable_get(rlc_coll_p, key, &rlc_union_p);
+    h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
     if (h_rc == HASH_TABLE_OK) {
         h_rc = hashtable_remove(rlc_coll_p, key);
         LOG_D(RLC, "[Frame %05u][%s][RLC_RRC][INST %u/%u][%s %u] RELEASED %s\n",

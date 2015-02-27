@@ -450,9 +450,10 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
       else if( (min_rb_unit[CC_id] * total_ue_count) <= (frame_parms[CC_id]->N_RB_DL) )
 	average_rbs_per_user[CC_id] = (uint16_t) floor(frame_parms[CC_id]->N_RB_DL/total_ue_count);
       else 
-	average_rbs_per_user[CC_id] = min_rb_unit[CC_id];
+	average_rbs_per_user[CC_id] = min_rb_unit[CC_id]; // consider the total number of use that can be scheduled UE
     }
   }
+
   // note: nb_rbs_required is assigned according to total_buffer_dl
   // extend nb_rbs_required to capture per LCID RB required
   for(i=UE_list->head;i>=0;i=UE_list->next[i]){
@@ -461,14 +462,16 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
       // control channel
       if (mac_get_rrc_status(Mod_id,1,i) < RRC_RECONFIGURED)
 	nb_rbs_required_remaining_1[CC_id][i] = nb_rbs_required[CC_id][i];
-      else
+      else{
 	nb_rbs_required_remaining_1[CC_id][i] = cmin(average_rbs_per_user[CC_id],nb_rbs_required[CC_id][i]);
+      
+      }
     }
   }
 
   //Allocation to UEs is done in 2 rounds,
-  // 1st round: average number of RBs allocated to each UE
-  // 2nd round: remaining RBs are allocated to high priority UEs
+  // 1st stage: average number of RBs allocated to each UE
+  // 2nd stage: remaining RBs are allocated to high priority UEs
   for(r1=0;r1<2;r1++){ 
 
     for(i=UE_list->head; i>=0;i=UE_list->next[i]) {
@@ -511,7 +514,7 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
 	  // retransmission in data channels 
 	  // control channel in the 1st transmission
 	  // data channel for all TM 
-	  LOG_D(MAC,"calling dlsch_scheduler_pre_processor_allocate .. \n ");
+	  LOG_T(MAC,"calling dlsch_scheduler_pre_processor_allocate .. \n ");
 	  dlsch_scheduler_pre_processor_allocate (Mod_id,
 						  UE_id, 
 						  CC_id,

@@ -508,7 +508,6 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
   }
 
   len += sprintf(&buffer[len],"EOF\n");
-  len += sprintf(&buffer[len],"\0");
 
   return len;
 } // is_clusterhead
@@ -751,7 +750,6 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
     len += sprintf(&buffer[len],"\n");
   }
   len += sprintf(&buffer[len],"EOF\n");
-  len += sprintf(&buffer[len],"\0");
   
   return len;
 }

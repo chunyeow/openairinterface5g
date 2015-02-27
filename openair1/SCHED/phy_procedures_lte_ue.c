@@ -3640,7 +3640,8 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
 				  frame_tx,
 				  subframe_rx, 
 				  subframe_select(&phy_vars_ue->lte_frame_parms,subframe_tx),
-				  eNB_id);
+				  eNB_id,
+				  0/*FIXME CC_id*/);
     if (ret == CONNECTION_LOST) {
       LOG_E(PHY,"[UE %d] Frame %d, subframe %d RRC Connection lost, returning to PRACH\n",phy_vars_ue->Mod_id,
 	    frame_rx,subframe_tx);

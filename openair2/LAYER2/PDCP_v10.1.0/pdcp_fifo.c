@@ -933,7 +933,9 @@ void pdcp_fifo_read_input_sdus_from_otg (const protocol_ctxt_t* const  ctxt_pP) 
 
       for (dst_id = 0; dst_id<NUMBER_OF_UE_MAX; dst_id++) {
           if (mac_get_rrc_status(ctxt_pP->enb_module_id, ctxt_pP->enb_flag, dst_id ) > 2) {
-              otg_pkt=packet_gen(src_id, dst_id, 0, ctime, &pkt_size);
+              unsigned int temp = 0;
+              otg_pkt = packet_gen( src_id, dst_id, 0, ctime, &temp );
+              pkt_size = temp;
               if (otg_pkt != NULL){
                   rb_id = dst_id * maxDRB + DTCH;
                   ctxt.ue_module_id  = dst_id;

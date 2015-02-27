@@ -575,7 +575,8 @@ static void *UE_thread_tx(void *arg) {
 				    UE->frame_tx,
 				    UE->slot_rx>>1, 
 				    subframe_select(&UE->lte_frame_parms,UE->slot_tx>>1),
-				    0);
+                    0,
+                    0/*FIXME CC_id*/);
       
       if (ret == CONNECTION_LOST) {
 	LOG_E(PHY,"[UE %d] Frame %d, subframe %d RRC Connection lost, returning to PRACH\n",UE->Mod_id,
@@ -711,7 +712,8 @@ static void *UE_thread_rx(void *arg) {
 					UE->frame_tx,
 					UE->slot_rx>>1,
 					subframe_select(&UE->lte_frame_parms,UE->slot_tx>>1),
-					0);
+                    0,
+                    0/*FIXME CC_id*/);
 	  
 	  if (ret == CONNECTION_LOST) {
 	    LOG_E(PHY,"[UE %d] Frame %d, subframe %d RRC Connection lost, returning to PRACH\n",UE->Mod_id,

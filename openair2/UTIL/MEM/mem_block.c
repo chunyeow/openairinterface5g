@@ -82,43 +82,43 @@ pool_buffer_init ()
       //memory->mem_blocks[mb_index + index].next     = NULL; -> done in memset 0
       switch (pool_index) {
           case 0:
-            memory->mem_blocks[mb_index + index].data = &(memory->mem_pool0[index][0]);
+            memory->mem_blocks[mb_index + index].data = (unsigned char*)&(memory->mem_pool0[index][0]);
             break;
           case 1:
-            memory->mem_blocks[mb_index + index].data = &(memory->mem_pool1[index][0]);
+            memory->mem_blocks[mb_index + index].data = (unsigned char*)&(memory->mem_pool1[index][0]);
             break;
           case 2:
-            memory->mem_blocks[mb_index + index].data = &(memory->mem_pool2[index][0]);
+            memory->mem_blocks[mb_index + index].data = (unsigned char*)&(memory->mem_pool2[index][0]);
             break;
           case 3:
-            memory->mem_blocks[mb_index + index].data = &(memory->mem_pool3[index][0]);
+            memory->mem_blocks[mb_index + index].data = (unsigned char*)&(memory->mem_pool3[index][0]);
             break;
           case 4:
-            memory->mem_blocks[mb_index + index].data = &(memory->mem_pool4[index][0]);
+            memory->mem_blocks[mb_index + index].data = (unsigned char*)&(memory->mem_pool4[index][0]);
             break;
           case 5:
-            memory->mem_blocks[mb_index + index].data = &(memory->mem_pool5[index][0]);
+            memory->mem_blocks[mb_index + index].data = (unsigned char*)&(memory->mem_pool5[index][0]);
             break;
           case 6:
-            memory->mem_blocks[mb_index + index].data = &(memory->mem_pool6[index][0]);
+            memory->mem_blocks[mb_index + index].data = (unsigned char*)&(memory->mem_pool6[index][0]);
             break;
           case 7:
-            memory->mem_blocks[mb_index + index].data = &(memory->mem_pool7[index][0]);
+            memory->mem_blocks[mb_index + index].data = (unsigned char*)&(memory->mem_pool7[index][0]);
             break;
           case 8:
-            memory->mem_blocks[mb_index + index].data = &(memory->mem_pool8[index][0]);
+            memory->mem_blocks[mb_index + index].data = (unsigned char*)&(memory->mem_pool8[index][0]);
             break;
           case 9:
-            memory->mem_blocks[mb_index + index].data = &(memory->mem_pool9[index][0]);
+            memory->mem_blocks[mb_index + index].data = (unsigned char*)&(memory->mem_pool9[index][0]);
             break;
           case 10:
-            memory->mem_blocks[mb_index + index].data = &(memory->mem_pool10[index][0]);
+            memory->mem_blocks[mb_index + index].data = (unsigned char*)&(memory->mem_pool10[index][0]);
             break;
           case 11:
-            memory->mem_blocks[mb_index + index].data = &(memory->mem_pool11[index][0]);
+            memory->mem_blocks[mb_index + index].data = (unsigned char*)&(memory->mem_pool11[index][0]);
             break;
           case 12:
-            memory->mem_blocks[mb_index + index].data = &(memory->mem_pool12[index][0]);
+            memory->mem_blocks[mb_index + index].data = (unsigned char*)&(memory->mem_pool12[index][0]);
             break;
           default:;
             memory->mem_blocks[mb_index + index].data = NULL;   // pool copy
@@ -300,79 +300,79 @@ check_mem_area (void)
   mem_pool       *memory = (mem_pool *) &mem_block_var;
 
   for (index = 0; index < MEM_MNGT_MB0_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[index].data != &(memory->mem_pool0[index][0])) && (memory->mem_blocks[index].pool_id != MEM_MNGT_POOL_ID0)) {
+    if ((memory->mem_blocks[index].data != (unsigned char*)&(memory->mem_pool0[index][0])) && (memory->mem_blocks[index].pool_id != MEM_MNGT_POOL_ID0)) {
       msg ("[MEM] ERROR POOL0 block index %d\n", index);
     }
   }
   mb_index = MEM_MNGT_MB0_NB_BLOCKS;
   for (index = 0; index < MEM_MNGT_MB1_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != &(memory->mem_pool1[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID1)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool1[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID1)) {
       msg ("[MEM] ERROR POOL1 block index %d\n", index);
     }
   }
   mb_index += MEM_MNGT_MB1_NB_BLOCKS;
   for (index = 0; index < MEM_MNGT_MB2_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != &(memory->mem_pool2[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID2)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool2[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID2)) {
       msg ("[MEM] ERROR POOL2 block index %d\n", index);
     }
   }
   mb_index += MEM_MNGT_MB2_NB_BLOCKS;
   for (index = 0; index < MEM_MNGT_MB3_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != &(memory->mem_pool3[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID3)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool3[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID3)) {
       msg ("[MEM] ERROR POOL3 block index %d\n", index);
     }
   }
   mb_index += MEM_MNGT_MB3_NB_BLOCKS;
   for (index = 0; index < MEM_MNGT_MB4_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != &(memory->mem_pool4[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID4)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool4[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID4)) {
       msg ("[MEM] ERROR POOL4 block index %d\n", index);
     }
   }
   mb_index += MEM_MNGT_MB4_NB_BLOCKS;
   for (index = 0; index < MEM_MNGT_MB5_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != &(memory->mem_pool5[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID5)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool5[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID5)) {
       msg ("[MEM] ERROR POOL5 block index %d\n", index);
     }
   }
   mb_index += MEM_MNGT_MB5_NB_BLOCKS;
   for (index = 0; index < MEM_MNGT_MB6_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != &(memory->mem_pool6[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID6)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool6[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID6)) {
       msg ("[MEM] ERROR POOL6 block index %d\n", index);
     }
   }
   mb_index += MEM_MNGT_MB6_NB_BLOCKS;
   for (index = 0; index < MEM_MNGT_MB7_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != &(memory->mem_pool7[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID7)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool7[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID7)) {
       msg ("[MEM] ERROR POOL7 block index %d\n", index);
     }
   }
   mb_index += MEM_MNGT_MB7_NB_BLOCKS;
   for (index = 0; index < MEM_MNGT_MB8_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != &(memory->mem_pool8[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID8)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool8[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID8)) {
       msg ("[MEM] ERROR POOL8 block index %d\n", index);
     }
   }
   mb_index += MEM_MNGT_MB8_NB_BLOCKS;
   for (index = 0; index < MEM_MNGT_MB9_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != &(memory->mem_pool9[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID9)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool9[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID9)) {
       msg ("[MEM] ERROR POOL9 block index %d\n", index);
     }
   }
   mb_index += MEM_MNGT_MB9_NB_BLOCKS;
   for (index = mb_index; index < MEM_MNGT_MB10_NB_BLOCKS; index++) {
-	  if ((memory->mem_blocks[mb_index + index].data != &(memory->mem_pool10[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID10)) {
+      if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool10[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID10)) {
 		  msg ("[MEM] ERROR POOL10 block index %d\n", index);
 	  }
   }
   mb_index += MEM_MNGT_MB10_NB_BLOCKS;
   for (index = mb_index; index < MEM_MNGT_MB11_NB_BLOCKS; index++) {
-	  if ((memory->mem_blocks[mb_index + index].data != &(memory->mem_pool11[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID11)) {
+      if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool11[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID11)) {
 		  msg ("[MEM] ERROR POOL11 block index %d\n", index);
 	  }
   }
   mb_index += MEM_MNGT_MB11_NB_BLOCKS;
   for (index = mb_index; index < MEM_MNGT_MB12_NB_BLOCKS; index++) {
-	  if ((memory->mem_blocks[mb_index + index].data != &(memory->mem_pool12[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID12)) {
+      if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool12[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID12)) {
 		  msg ("[MEM] ERROR POOL12 block index %d\n", index);
 	  }
   }

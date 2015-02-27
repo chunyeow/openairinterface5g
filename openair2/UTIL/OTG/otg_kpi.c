@@ -390,11 +390,10 @@ fc=fopen("/tmp/otg.log","w");;
 	  else
 	    strcpy(traffic_type,"APPLICATION");
 	  
-	  if (map_int_to_str(otg_app_type_names,g_otg->application_type[i][j][k]) == -1){
+      if (map_int_to_str(otg_app_type_names,g_otg->application_type[i][j][k]) == 0){
 	    LOG_E(OTG,"(src=%d, dst=%d, appli %d) : Unknown traffic \n ", i, j,k);
 	  strcpy(traffic,"UKNOWN TRAFFIC"); 	   
 	  } else {
-	    //strcpy (traffic, map_int_to_str(otg_app_type_names,g_otg->application_type[i][j][k]));
 	    strncpy (traffic, map_int_to_str(otg_app_type_names,g_otg->application_type[i][j][k]), sizeof(traffic));
 	    traffic[sizeof(traffic) - 1] = 0; // terminate string
 	  }

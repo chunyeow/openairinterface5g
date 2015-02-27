@@ -431,7 +431,7 @@ void tarmaPrintVideoInit(tarmaVideo_t *video){
  input:		
  output: 	- random realization of R_s (B/s)
  */
-double backgroundRateRnd(){
+double backgroundRateRnd(void){
   double rate;
   rate=pow(10,lognormal_dist(1.3525, 0.1954))/8; /*Byte/s*/;
   if(rate>BACKGROUND_RATE_MAX){ 
@@ -447,7 +447,7 @@ double backgroundRateRnd(){
  input:		
  output: 	- random realization of D_s (ms)
  */
-int backgroundSessionDurationRnd(){
+int backgroundSessionDurationRnd(void){
   int duration;
   duration = ceil(pow(10,exponential_dist(1/0.3591))*1000); /*ms*/
   if(duration<0){
