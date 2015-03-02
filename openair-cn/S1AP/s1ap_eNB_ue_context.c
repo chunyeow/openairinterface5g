@@ -47,7 +47,7 @@
 #include "s1ap_eNB_defs.h"
 #include "s1ap_eNB_ue_context.h"
 
-inline int s1ap_eNB_compare_eNB_ue_s1ap_id(
+int s1ap_eNB_compare_eNB_ue_s1ap_id(
     struct s1ap_eNB_ue_context_s *p1, struct s1ap_eNB_ue_context_s *p2)
 {
     if (p1->eNB_ue_s1ap_id > p2->eNB_ue_s1ap_id) {
