@@ -86,7 +86,7 @@ void s1ap_eNB_insert_new_instance(s1ap_eNB_instance_t *new_instance_p)
                        new_instance_p, s1ap_eNB_entries);
 }
 
-inline struct s1ap_eNB_mme_data_s *s1ap_eNB_get_MME(
+struct s1ap_eNB_mme_data_s *s1ap_eNB_get_MME(
     s1ap_eNB_instance_t *instance_p,
     int32_t assoc_id, uint16_t cnx_id)
 {
