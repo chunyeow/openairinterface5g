@@ -44,7 +44,7 @@ s1ap_eNB_internal_data_t s1ap_eNB_internal_data;
 
 RB_GENERATE(s1ap_mme_map, s1ap_eNB_mme_data_s, entry, s1ap_eNB_compare_assoc_id);
 
-inline int s1ap_eNB_compare_assoc_id(
+int s1ap_eNB_compare_assoc_id(
     struct s1ap_eNB_mme_data_s *p1, struct s1ap_eNB_mme_data_s *p2)
 {
     if (p1->assoc_id == -1) {

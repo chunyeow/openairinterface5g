@@ -30,7 +30,7 @@
 #ifndef S1AP_ENB_MANAGEMENT_PROCEDURES_H_
 #define S1AP_ENB_MANAGEMENT_PROCEDURES_H_
 
-inline struct s1ap_eNB_mme_data_s *s1ap_eNB_get_MME(
+struct s1ap_eNB_mme_data_s *s1ap_eNB_get_MME(
     s1ap_eNB_instance_t *instance_p,
     int32_t assoc_id, uint16_t cnx_id);
 
