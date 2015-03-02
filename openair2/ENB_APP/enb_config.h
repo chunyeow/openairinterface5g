@@ -46,7 +46,11 @@
 #include "platform_constants.h"
 #include "PHY/impl_defs_lte.h"
 #include "s1ap_messages_types.h"
+#ifdef CMAKER
+#include "SystemInformationBlockType2.h"
+#else
 #include "RRC/LITE/MESSAGES/SystemInformationBlockType2.h"
+#endif
 
 // Hard to find a defined value for max enb...
 #define MAX_ENB 16

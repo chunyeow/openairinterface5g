@@ -36,7 +36,11 @@
 
  ***************************************************************************/
 
+#ifdef CMAKER
+#include "asn1_constants.h"
+#else
 #include "RRC/LITE/MESSAGES/asn1_constants.h"
+#endif
 
 #ifndef __PLATFORM_CONSTANTS_H__
 #    define __PLATFORM_CONSTANTS_H__

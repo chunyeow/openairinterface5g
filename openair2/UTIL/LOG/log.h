@@ -55,6 +55,9 @@
 #include "rtai_fifos.h"
 #endif
 
+#ifdef CMAKER
+#include <ConfigOAI.h>
+#endif
 /*----------------------------------------------------------------------------*/
 
 #ifdef __cplusplus

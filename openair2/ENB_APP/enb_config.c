@@ -56,7 +56,6 @@
 #   include "sctp_eNB_task.h"
 # endif
 #endif
-#include "RRC/LITE/MESSAGES/SystemInformationBlockType2.h"
 #include "LAYER2/MAC/extern.h"
 
 #define ENB_CONFIG_STRING_ACTIVE_ENBS                   "Active_eNBs"
