@@ -80,14 +80,15 @@ int16_t get_PL(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index) {
   else
     RSoffset = 3;
   
-
-  LOG_D(PHY,"get_PL : Frame %d : rssi %f dBm, eNB power %d dBm/RE\n", phy_vars_ue->frame_rx,
-	(1.0*dB_fixed_times10(phy_vars_ue->PHY_measurements.rssi/RSoffset)-(10.0*phy_vars_ue->rx_total_gain_dB))/10.0,
+  
+  LOG_D(PHY,"get_PL : Frame %d : rsrp %f dBm/RE (%f), eNB power %d dBm/RE\n", phy_vars_ue->frame_rx,
+	(1.0*dB_fixed_times10(phy_vars_ue->PHY_measurements.rsrp[eNB_index])-(10.0*phy_vars_ue->rx_total_gain_dB))/10.0,
+	10*log10((double)phy_vars_ue->PHY_measurements.rsrp[eNB_index]),
 	phy_vars_ue->lte_frame_parms.pdsch_config_common.referenceSignalPower);
   	
   return((int16_t)(((10*phy_vars_ue->rx_total_gain_dB) - 
-		    dB_fixed_times10(phy_vars_ue->PHY_measurements.rssi)+
-		    dB_fixed_times10(RSoffset*12*PHY_vars_UE_g[Mod_id][CC_id]->lte_frame_parms.N_RB_DL) + 
+		    dB_fixed_times10(phy_vars_ue->PHY_measurements.rsrp[eNB_index])+
+		    //		    dB_fixed_times10(RSoffset*12*PHY_vars_UE_g[Mod_id][CC_id]->lte_frame_parms.N_RB_DL) + 
 		    (phy_vars_ue->lte_frame_parms.pdsch_config_common.referenceSignalPower*10))/10));
 }
 
@@ -147,7 +148,7 @@ int8_t set_RSRQ_filtered(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index,float rs
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id][CC_id];
   if (phy_vars_ue){
     phy_vars_ue->PHY_measurements.rsrq_filtered[eNB_index]=rsrq;
-    return 0;
+    return 0; 
   }
   LOG_W(PHY,"[UE%d] could not set the rsrq\n",Mod_id);
   return -1;
@@ -175,6 +176,7 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
       if (abstraction_flag == 0) {
 	if ((phy_vars_ue->lte_frame_parms.frame_type == FDD) && 
 	    ((slot == 0) || (slot == 10))) {  // FDD PSS/SSS, compute noise in DTX REs
+
 	  if (phy_vars_ue->lte_frame_parms.Ncp==NORMAL) {
 	    for (aarx=0;aarx<phy_vars_ue->lte_frame_parms.nb_antennas_rx;aarx++) {
 	      
@@ -183,30 +185,30 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
 	      
 	      
 	      //-ve spectrum from SSS
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] = ((rxF_pss[-72]*rxF_pss[-72])+(rxF_pss[-71]*rxF_pss[-71]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_pss[-70]*rxF_pss[-70])+(rxF_pss[-69]*rxF_pss[-69]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_pss[-68]*rxF_pss[-68])+(rxF_pss[-67]*rxF_pss[-67]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_pss[-66]*rxF_pss[-66])+(rxF_pss[-65]*rxF_pss[-65]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_pss[-64]*rxF_pss[-64])+(rxF_pss[-63]*rxF_pss[-63]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] = (((int32_t)rxF_pss[-72]*rxF_pss[-72])+((int32_t)rxF_pss[-71]*rxF_pss[-71]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[-70]*rxF_pss[-70])+((int32_t)rxF_pss[-69]*rxF_pss[-69]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[-68]*rxF_pss[-68])+((int32_t)rxF_pss[-67]*rxF_pss[-67]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[-66]*rxF_pss[-66])+((int32_t)rxF_pss[-65]*rxF_pss[-65]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[-64]*rxF_pss[-64])+((int32_t)rxF_pss[-63]*rxF_pss[-63]));
 	      //+ve spectrum from SSS
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_sss[2+72]*rxF_sss[2+72])+(rxF_sss[2+71]*rxF_sss[2+71]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_sss[2+70]*rxF_sss[2+70])+(rxF_sss[2+69]*rxF_sss[2+69]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_sss[2+68]*rxF_sss[2+68])+(rxF_sss[2+67]*rxF_sss[2+67]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_sss[2+66]*rxF_sss[2+66])+(rxF_sss[2+65]*rxF_sss[2+65]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_sss[2+64]*rxF_sss[2+64])+(rxF_sss[2+63]*rxF_sss[2+63]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_sss[2+72]*rxF_sss[2+72])+((int32_t)rxF_sss[2+71]*rxF_sss[2+71]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_sss[2+70]*rxF_sss[2+70])+((int32_t)rxF_sss[2+69]*rxF_sss[2+69]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_sss[2+68]*rxF_sss[2+68])+((int32_t)rxF_sss[2+67]*rxF_sss[2+67]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_sss[2+66]*rxF_sss[2+66])+((int32_t)rxF_sss[2+65]*rxF_sss[2+65]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_sss[2+64]*rxF_sss[2+64])+((int32_t)rxF_sss[2+63]*rxF_sss[2+63]));
 	      //+ve spectrum from PSS
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_pss[2+72]*rxF_pss[2+72])+(rxF_pss[2+71]*rxF_pss[2+71]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_pss[2+70]*rxF_pss[2+70])+(rxF_pss[2+69]*rxF_pss[2+69]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_pss[2+68]*rxF_pss[2+68])+(rxF_pss[2+67]*rxF_pss[2+67]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_pss[2+66]*rxF_pss[2+66])+(rxF_pss[2+65]*rxF_pss[2+65]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_pss[2+64]*rxF_pss[2+64])+(rxF_pss[2+63]*rxF_pss[2+63]));	  
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[2+72]*rxF_pss[2+72])+((int32_t)rxF_pss[2+71]*rxF_pss[2+71]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[2+70]*rxF_pss[2+70])+((int32_t)rxF_pss[2+69]*rxF_pss[2+69]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[2+68]*rxF_pss[2+68])+((int32_t)rxF_pss[2+67]*rxF_pss[2+67]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[2+66]*rxF_pss[2+66])+((int32_t)rxF_pss[2+65]*rxF_pss[2+65]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[2+64]*rxF_pss[2+64])+((int32_t)rxF_pss[2+63]*rxF_pss[2+63]));	  
 	      //-ve spectrum from PSS
 	      rxF_pss = (int16_t *)&phy_vars_ue->lte_ue_common_vars.rxdataF[aarx][(7*phy_vars_ue->lte_frame_parms.ofdm_symbol_size)];
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_pss[-72]*rxF_pss[-72])+(rxF_pss[-71]*rxF_pss[-71]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_pss[-70]*rxF_pss[-70])+(rxF_pss[-69]*rxF_pss[-69]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_pss[-68]*rxF_pss[-68])+(rxF_pss[-67]*rxF_pss[-67]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_pss[-66]*rxF_pss[-66])+(rxF_pss[-65]*rxF_pss[-65]));
-	      phy_vars_ue->PHY_measurements.n0_power[aarx] += ((rxF_pss[-64]*rxF_pss[-64])+(rxF_pss[-63]*rxF_pss[-63]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[-72]*rxF_pss[-72])+((int32_t)rxF_pss[-71]*rxF_pss[-71]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[-70]*rxF_pss[-70])+((int32_t)rxF_pss[-69]*rxF_pss[-69]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[-68]*rxF_pss[-68])+((int32_t)rxF_pss[-67]*rxF_pss[-67]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[-66]*rxF_pss[-66])+((int32_t)rxF_pss[-65]*rxF_pss[-65]));
+	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[-64]*rxF_pss[-64])+((int32_t)rxF_pss[-63]*rxF_pss[-63]));
 	      phy_vars_ue->PHY_measurements.n0_power_dB[aarx] = (unsigned short) dB_fixed(phy_vars_ue->PHY_measurements.n0_power[aarx]/10);
 	      phy_vars_ue->PHY_measurements.n0_power_tot +=  phy_vars_ue->PHY_measurements.n0_power[aarx];
 	    }
@@ -218,9 +220,6 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
       }
     }
 
-#ifdef DEBUG_MEAS
-    LOG_D(PHY,"ue_rrc_measurements: eNB_offset %d => rssi %d\n",eNB_offset,phy_vars_ue->PHY_measurements.rssi);
-#endif
     // recompute nushift with eNB_offset corresponding to adjacent eNB on which to perform channel estimation
     //    printf("[PHY][UE %d] Frame %d slot %d Doing ue_rrc_measurements rsrp/rssi (Nid_cell %d, Nid2 %d, nushift %d, eNB_offset %d)\n",phy_vars_ue->Mod_id,phy_vars_ue->frame,slot,Nid_cell,Nid2,nushift,eNB_offset);
     if (eNB_offset > 0)
@@ -241,7 +240,7 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
       for (l=0,nu=0;l<=(4-phy_vars_ue->lte_frame_parms.Ncp);l+=(4-phy_vars_ue->lte_frame_parms.Ncp),nu=3) {
 	k = (nu + nushift)%6;
 #ifdef DEBUG_MEAS
-	LOG_D(PHY,"[UE %d] Frame %d slot %d Doing ue_rrc_measurements rsrp/rssi (Nid_cell %d, nushift %d, eNB_offset %d, k %d)\n",phy_vars_ue->Mod_id,phy_vars_ue->frame_rx,slot,Nid_cell,nushift,eNB_offset,k);
+	LOG_D(PHY,"[UE %d] Frame %d slot %d Doing ue_rrc_measurements rsrp/rssi (Nid_cell %d, nushift %d, eNB_offset %d, k %d, l %d)\n",phy_vars_ue->Mod_id,phy_vars_ue->frame_rx,slot,Nid_cell,nushift,eNB_offset,k,l);
 #endif
 	for (aarx=0;aarx<phy_vars_ue->lte_frame_parms.nb_antennas_rx;aarx++) {
 	  rxF = (int16_t *)&phy_vars_ue->lte_ue_common_vars.rxdataF[aarx][(l*phy_vars_ue->lte_frame_parms.ofdm_symbol_size)];
@@ -252,7 +251,8 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
 		
 		//	  printf("rb %d, off %d, off2 %d\n",rb,off,off2);
 		
-		phy_vars_ue->PHY_measurements.rsrp[eNB_offset] += ((rxF[off]*rxF[off])+(rxF[off+1]*rxF[off+1]));
+	      phy_vars_ue->PHY_measurements.rsrp[eNB_offset] += (((int32_t)(rxF[off])*rxF[off])+((int32_t)(rxF[off+1])*rxF[off+1]));
+	      //	      printf("rb %d, off %d : %d\n",rb,off,((((int32_t)rxF[off])*rxF[off])+((int32_t)(rxF[off+1])*rxF[off+1])));
 		/*		if ((phy_vars_ue->frame_rx&0x3ff) == 0)
 		  printf("rb %d, off %d : %d\n",rb,off,((rxF[off]*rxF[off])+(rxF[off+1]*rxF[off+1])));
 		
@@ -260,7 +260,8 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
 		off+=12;
 		if (off>=(phy_vars_ue->lte_frame_parms.ofdm_symbol_size<<1))
 		  off = (1+k)<<1;
-		phy_vars_ue->PHY_measurements.rsrp[eNB_offset] += ((rxF[off]*rxF[off])+(rxF[off+1]*rxF[off+1]));
+		phy_vars_ue->PHY_measurements.rsrp[eNB_offset] += (((int32_t)(rxF[off])*rxF[off])+((int32_t)(rxF[off+1])*rxF[off+1]));
+		//		printf("rb %d, off %d : %d\n",rb,off,(((int32_t)(rxF[off])*rxF[off])+((int32_t)(rxF[off+1])*rxF[off+1])));
 		/*
 		  if ((phy_vars_ue->frame_rx&0x3ff) == 0)
 		  printf("rb %d, off %d : %d\n",rb,off,((rxF[off]*rxF[off])+(rxF[off+1]*rxF[off+1])));
@@ -286,11 +287,11 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
 	}
       }
 
-//      LOG_D(PHY,"eNB: %d, RSRP_tmp: %d \n",eNB_offset,phy_vars_ue->PHY_measurements.rsrp[eNB_offset]);
+
       // 2 RE per PRB
       //      phy_vars_ue->PHY_measurements.rsrp[eNB_offset]/=(24*phy_vars_ue->lte_frame_parms.N_RB_DL);
-      phy_vars_ue->PHY_measurements.rsrp[eNB_offset]/=(2*phy_vars_ue->lte_frame_parms.N_RB_DL);
-     
+      phy_vars_ue->PHY_measurements.rsrp[eNB_offset]/=(2*phy_vars_ue->lte_frame_parms.N_RB_DL*phy_vars_ue->lte_frame_parms.ofdm_symbol_size);
+      LOG_D(PHY,"eNB: %d, RSRP: %d \n",eNB_offset,phy_vars_ue->PHY_measurements.rsrp[eNB_offset]);     
 
  
       if (eNB_offset == 0) {
@@ -313,28 +314,34 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
       phy_vars_ue->PHY_measurements.rsrq[eNB_offset] = 3;
 
     }
-    if (((phy_vars_ue->frame_rx %10) == 0) && (slot == 0)) {
-//#ifdef DEBUG_MEAS
+  
+#ifdef DEBUG_MEAS
+    if (slot == 0) {
+    
     if (eNB_offset == 0)
-	LOG_D(PHY,"[UE %d] Frame %d, slot %d RRC Measurements => rssi %3.1f dBm (digital: %3.1f dB, gain %d)\n",phy_vars_ue->Mod_id,
-	      phy_vars_ue->frame_rx,slot,10*log10(phy_vars_ue->PHY_measurements.rssi)-phy_vars_ue->rx_total_gain_dB,
-	      10*log10(phy_vars_ue->PHY_measurements.rssi),
-	      phy_vars_ue->rx_total_gain_dB);
-	LOG_D(PHY,"[UE %d] Frame %d, slot %d RRC Measurements (idx %d, Cell id %d) => rsrp: %3.1f (%3.1f) dBm, rsrq: %3.1f dB\n",
-	      phy_vars_ue->Mod_id,
-	      phy_vars_ue->frame_rx,slot,eNB_offset,
-	      (eNB_offset>0) ? phy_vars_ue->PHY_measurements.adj_cell_id[eNB_offset-1] : phy_vars_ue->lte_frame_parms.Nid_cell,
-	      (dB_fixed_times10(phy_vars_ue->PHY_measurements.rsrp[eNB_offset])/10.0)-phy_vars_ue->rx_total_gain_dB-dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12),
-	      (10*log10(phy_vars_ue->PHY_measurements.rx_power_avg[0])/10.0)-phy_vars_ue->rx_total_gain_dB-dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12),
-	      (10*log10(phy_vars_ue->PHY_measurements.rsrq[eNB_offset]))-20);
+      LOG_D(PHY,"[UE %d] Frame %d, slot %d RRC Measurements => rssi %3.1f dBm (digital: %3.1f dB, gain %d), N0 %d dBm\n",phy_vars_ue->Mod_id,
+      phy_vars_ue->frame_rx,slot,10*log10(phy_vars_ue->PHY_measurements.rssi)-phy_vars_ue->rx_total_gain_dB,
+      10*log10(phy_vars_ue->PHY_measurements.rssi),
+      phy_vars_ue->rx_total_gain_dB,
+      phy_vars_ue->PHY_measurements.n0_power_tot_dBm);
+
+    LOG_D(PHY,"[UE %d] Frame %d, slot %d RRC Measurements (idx %d, Cell id %d) => rsrp: %3.1f dBm/RE (%d), rsrq: %3.1f dB\n",
+      phy_vars_ue->Mod_id,
+      phy_vars_ue->frame_rx,slot,eNB_offset,
+      (eNB_offset>0) ? phy_vars_ue->PHY_measurements.adj_cell_id[eNB_offset-1] : phy_vars_ue->lte_frame_parms.Nid_cell,
+	      10*log10(phy_vars_ue->PHY_measurements.rsrp[eNB_offset])-phy_vars_ue->rx_total_gain_dB,
+	      phy_vars_ue->PHY_measurements.rsrp[eNB_offset],
+	      (10*log10(phy_vars_ue->PHY_measurements.rsrq[eNB_offset])));
 	//LOG_D(PHY,"RSRP_total_dB: %3.2f \n",(dB_fixed_times10(phy_vars_ue->PHY_measurements.rsrp[eNB_offset])/10.0)-phy_vars_ue->rx_total_gain_dB-dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12));
 
     //LOG_D(PHY,"RSRP_dB: %3.2f \n",(dB_fixed_times10(phy_vars_ue->PHY_measurements.rsrp[eNB_offset])/10.0));
     //LOG_D(PHY,"gain_loss_dB: %d \n",phy_vars_ue->rx_total_gain_dB);
     //LOG_D(PHY,"gain_fixed_dB: %d \n",dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12));
-//#endif
-    }
+
   }
+#endif
+  }
+
 }
 
 void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,

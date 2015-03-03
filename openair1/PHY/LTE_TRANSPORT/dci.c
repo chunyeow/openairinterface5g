@@ -1904,7 +1904,7 @@ uint8_t generate_dci_top(uint8_t num_ue_spec_dci,
 
   // reset all bits to <NIL>, here we set <NIL> elements as 2
   //memset(e, 2, DCI_BITS_MAX);
-  // here we interpred NIL as a random QPSK sequence. That makes power estimation easier.
+  // here we interpret NIL as a random QPSK sequence. That makes power estimation easier.
   for (i=0;i<DCI_BITS_MAX;i++) 
     e[i]=taus()&1;
   e_ptr = e;

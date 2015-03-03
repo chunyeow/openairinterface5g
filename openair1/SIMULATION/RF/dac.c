@@ -94,15 +94,15 @@ double dac_fixed_gain(double **s_re,
   int aa;
   double amp,amp1;
  
-  amp = sqrt(NB_RE)*pow(10.0,.05*txpwr_dBm)/sqrt(nb_tx_antennas); //this is amp per tx antenna
-
+  amp = //sqrt(NB_RE)*pow(10.0,.05*txpwr_dBm)/sqrt(nb_tx_antennas); //this is amp per tx antenna
+    pow(10.0,.05*txpwr_dBm)/sqrt(nb_tx_antennas); //this is amp per tx antenna
   amp1 = 0;
   for (aa=0;aa<nb_tx_antennas;aa++) {
-    amp1 += sqrt((double)signal_energy((int32_t*)&input[aa][input_offset_meas],length_meas));
+    amp1 += sqrt((double)signal_energy((int32_t*)&input[aa][input_offset_meas],length_meas)/NB_RE);
   }
   amp1/=nb_tx_antennas;
 
-  //printf("UL: amp1 %f dB (%d,%d), tx_power %f\n",20*log10(amp1),input_offset,input_offset_meas,txpwr_dBm);
+  //  printf("DAC: amp1 %f dB (%d,%d), tx_power %f\n",20*log10(amp1),input_offset,input_offset_meas,txpwr_dBm);
 
   /*
     if (nb_tx_antennas==2)
@@ -124,5 +124,5 @@ double dac_fixed_gain(double **s_re,
 
   //  printf("ener %e\n",signal_energy_fp(s_re,s_im,nb_tx_antennas,length,0));
 
-  return(signal_energy_fp(s_re,s_im,nb_tx_antennas,length_meas,0));
+  return(signal_energy_fp(s_re,s_im,nb_tx_antennas,length_meas,0)/NB_RE);
 }
