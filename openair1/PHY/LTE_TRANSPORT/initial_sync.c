@@ -229,7 +229,7 @@ int pbch_detection(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
 
 int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
  
-  uint32_t sync_pos,sync_pos2,sync_pos_slot;
+  int32_t sync_pos,sync_pos2,sync_pos_slot;
   int32_t metric_fdd_ncp=0,metric_fdd_ecp=0,metric_tdd_ncp=0,metric_tdd_ecp=0;
   uint8_t phase_fdd_ncp,phase_fdd_ecp,phase_tdd_ncp,phase_tdd_ecp;
   uint8_t flip_fdd_ncp,flip_fdd_ecp,flip_tdd_ncp,flip_tdd_ecp;
