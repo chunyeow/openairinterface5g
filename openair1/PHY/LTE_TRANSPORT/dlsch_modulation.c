@@ -1119,7 +1119,7 @@ int dlsch_modulation(mod_sym_t **txdataF,
 	skip_half=0;
 	if ((frame_parms->N_RB_DL&1) == 1) { // ODD N_RB_DL
 
-	  if ((rb==frame_parms->N_RB_DL>>1))
+	  if (rb==(frame_parms->N_RB_DL>>1))
 	    skip_dc = 1;
 	  else
 	    skip_dc = 0;
@@ -1340,7 +1340,7 @@ int mch_modulation(mod_sym_t **txdataF,
 
       if ((frame_parms->N_RB_DL&1) == 1) { // ODD N_RB_DL
 	
-	if ((rb==frame_parms->N_RB_DL>>1))
+	if (rb==(frame_parms->N_RB_DL>>1))
 	  skip_dc = 1;
 	else
 	  skip_dc = 0;

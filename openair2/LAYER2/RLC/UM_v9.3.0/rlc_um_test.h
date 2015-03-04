@@ -26,7 +26,7 @@
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
-#    ifndef __RLC_U_TEST_H__
+#    ifndef __RLC_UM_TEST_H__
 #        define __RLC_UM_TEST_H__
 #        ifdef RLC_UM_TEST_C
 #            define private_rlc_um_test(x)    x

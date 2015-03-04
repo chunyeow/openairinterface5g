@@ -689,7 +689,7 @@ double aggregate_eNB_UE_localization_stats(PHY_VARS_eNB *phy_vars_eNB, int8_t UE
 	  /* current measurements shows constant UE_timing_offset = 18
 	     and timing_advance_update = 11 at 1m. at 5m, timing_advance_update = 12*/
 	  //time_distance = (double) 299792458*(phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].timing_advance_update)/(sys_bw*1000000);
-	  time_distance = (double) fabs(phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].timing_advance_update - 11) * 4.89;//  (3 x 108 x 1 / (15000 x 2048)) / 2 = 4.89 m
+	  time_distance = (double) abs(phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].timing_advance_update - 11) * 4.89;//  (3 x 108 x 1 / (15000 x 2048)) / 2 = 4.89 m
 
           phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].distance.time_based = time_distance;
           phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].distance.power_based = power_distance;

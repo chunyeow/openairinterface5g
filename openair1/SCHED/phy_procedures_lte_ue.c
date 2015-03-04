@@ -632,7 +632,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
   if ((slot_tx%2)==0) {
     phy_vars_ue->tx_power_dBm=-127;
 
-    if ((abstraction_flag==0)) {      
+    if (abstraction_flag==0) {      
       for (aa=0;aa<frame_parms->nb_antennas_tx;aa++){
 	memset(&phy_vars_ue->lte_ue_common_vars.txdataF[aa][subframe_tx*frame_parms->ofdm_symbol_size*frame_parms->symbols_per_tti],
 	       0,
@@ -1448,7 +1448,7 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
     }
 
 #ifdef DEBUG_PHY_PROC    
-    if ((slot_rx == 2)) { // && (phy_vars_ue->frame%100==0)) {
+    if (slot_rx == 2) { // && (phy_vars_ue->frame%100==0)) {
 	
       LOG_D(PHY,"[UE  %d] frame %d, slot %d, freq_offset_filt = %d \n",Mod_id,phy_vars_ue->frame_tx, slot_rx, phy_vars_ue->lte_ue_common_vars.freq_offset);
       /*	

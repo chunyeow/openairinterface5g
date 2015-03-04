@@ -35,7 +35,7 @@
 
 int write_output(const char *fname,const char *vname,void *data,int length,int dec,char format) {
 
-  FILE *fp;
+  FILE *fp=NULL;
   int i;
  
  
@@ -139,9 +139,9 @@ int write_output(const char *fname,const char *vname,void *data,int length,int d
 
 			if((i < 2*(length-1)) && (i > 0))
 			fprintf(fp,"%d + j*(%d),",((short *)data)[i],((short *)data)[i+1]);
-			else if ((i == 2*(length-1)))
+			else if (i == 2*(length-1))
 			fprintf(fp,"%d + j*(%d);",((short *)data)[i],((short *)data)[i+1]);
-			else if ((i == 0))
+			else if (i == 0)
 			fprintf(fp,"\n%d + j*(%d),",((short *)data)[i],((short *)data)[i+1]);
 			
 				
@@ -155,7 +155,7 @@ int write_output(const char *fname,const char *vname,void *data,int length,int d
  
 			if((i <(length-1))&& (i > 0))
 			fprintf(fp,"%d,",((short *)data)[i]);
-			else if ((i == (length-1)))
+			else if (i == (length-1))
 			fprintf(fp,"%d;",((short *)data)[i]);
 			else if (i == 0)
 			fprintf(fp,"\n%d,",((short *)data)[i]);	

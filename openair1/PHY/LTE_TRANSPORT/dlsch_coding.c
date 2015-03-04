@@ -169,7 +169,7 @@ LTE_eNB_DLSCH_t *new_eNB_dlsch(unsigned char Kmimo,unsigned char Mdlharq,unsigne
       }
     }
 
-    if ((exit_flag==0)) {
+    if (exit_flag==0) {
       for (i=0;i<Mdlharq;i++) {
 	dlsch->harq_processes[i]->round=0;
 	if (abstraction_flag==0) {
