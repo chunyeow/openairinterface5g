@@ -166,7 +166,8 @@ typedef struct itti_desc_s {
     task_id_t task_max;
     MessagesIds messages_id_max;
 
-    pthread_t thread_handling_signals;
+    boolean_t thread_handling_signals;
+    pthread_t thread_ref;
 
     const task_info_t *tasks_info;
     const message_info_t *messages_info;
@@ -791,8 +792,8 @@ void itti_terminate_tasks(task_id_t task_id) {
     // Sends Terminate signals to all tasks.
     itti_send_terminate_message (task_id);
 
-    if (itti_desc.thread_handling_signals >= 0) {
-        pthread_kill (itti_desc.thread_handling_signals, SIGUSR1);
+    if (itti_desc.thread_handling_signals) {
+        pthread_kill (itti_desc.thread_ref, SIGUSR1);
     }
 
     pthread_exit (NULL);
@@ -856,7 +857,7 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
     itti_desc.task_max = task_max;
     itti_desc.thread_max = thread_max;
     itti_desc.messages_id_max = messages_id_max;
-    itti_desc.thread_handling_signals = -1;
+    itti_desc.thread_handling_signals = FALSE;
     itti_desc.tasks_info = tasks_info;
     itti_desc.messages_info = messages_info;
 
@@ -975,7 +976,8 @@ void itti_wait_tasks_end(void) {
     int result;
     int retries = 10;
 
-    itti_desc.thread_handling_signals = pthread_self ();
+    itti_desc.thread_handling_signals = TRUE;
+    itti_desc.thread_ref=pthread_self ();
 
     /* Handle signals here */
     while (end == 0) {

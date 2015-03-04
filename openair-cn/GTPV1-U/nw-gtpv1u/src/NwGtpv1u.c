@@ -362,7 +362,7 @@ NwGtpv1uCreateTunnelEndPoint( NW_IN  NwGtpv1uStackT *thiz,
                    "Tunnel already exists", teid);
             rc = nwGtpTunnelEndPointDestroy(thiz, pTunnelEndPoint);
             NW_ASSERT(rc == NW_GTPV1U_OK);
-            *phStackSession = (NwGtpv1uStackSessionHandleT) 0;
+            *phStackSession = (NwGtpv1uStackSessionHandleT) NULL;
             NW_ASSERT(0);
             rc = NW_GTPV1U_FAILURE;
         } else {

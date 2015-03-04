@@ -92,8 +92,8 @@ nwGtpv1uTrxnPeerRspTimeout(void *arg)
 
     NW_ASSERT(pStack);
 
-    NW_LOG(pStack, NW_LOG_LEVEL_WARN, "T3 timer expired for transaction 0x%x",
-           (unsigned int)thiz);
+    NW_LOG(pStack, NW_LOG_LEVEL_WARN, "T3 timer expired for transaction 0x%p",
+           thiz);
 
     rc = nwGtpv1uTrxnSendMsgRetransmission(thiz);
 
@@ -213,7 +213,7 @@ nwGtpv1uTrxnNew( NW_IN  NwGtpv1uStackT *thiz,
         rc = NW_GTPV1U_FAILURE;
     }
 
-    NW_LOG(thiz, NW_LOG_LEVEL_DEBG, "Created transaction 0x%X", (unsigned int)pTrxn);
+    NW_LOG(thiz, NW_LOG_LEVEL_DEBG, "Created transaction 0x%p", pTrxn);
 
     *ppTrxn = pTrxn;
 
@@ -254,7 +254,7 @@ nwGtpv1uTrxnWithSeqNew( NW_IN  NwGtpv1uStackT *thiz,
         rc = NW_GTPV1U_FAILURE;
     }
 
-    NW_LOG(thiz, NW_LOG_LEVEL_DEBG, "Created transaction 0x%X", (unsigned int)pTrxn);
+    NW_LOG(thiz, NW_LOG_LEVEL_DEBG, "Created transaction 0x%p", pTrxn);
 
     *ppTrxn = pTrxn;
 
@@ -290,7 +290,7 @@ nwGtpv1uTrxnDelete( NW_INOUT NwGtpv1uTrxnT **pthiz)
     thiz->next = gpGtpv1uTrxnPool;
     gpGtpv1uTrxnPool = thiz;
 
-    NW_LOG(pStack, NW_LOG_LEVEL_DEBG, "Purged transaction 0x%X", (unsigned int)thiz);
+    NW_LOG(pStack, NW_LOG_LEVEL_DEBG, "Purged transaction 0x%p", thiz);
 
     *pthiz = NULL;
     return rc;
