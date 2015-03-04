@@ -85,6 +85,7 @@ mapping omg_rwp_names[] =
   {NULL, -1}
 };
 
+void  ocg_config_proto(void);
 
 void init_oai_emulation(void) {
 
