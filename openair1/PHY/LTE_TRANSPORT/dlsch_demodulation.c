@@ -384,22 +384,29 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
 				     dlsch0_harq->round,
 				     nb_rb, 
 				     lte_ue_pdsch_vars[eNB_id]->log2_maxh); 
-      // compute correlation between signal and interference channels
+      // compute correlation between signal and interference channels (rho12 and rho21)
       dlsch_dual_stream_correlation(frame_parms,
 				    symbol,
 				    nb_rb,
 				    lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext,
-				    NULL,
+				    &(lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext[2]),
 				    lte_ue_pdsch_vars[eNB_id]->dl_ch_rho_ext,
+				    lte_ue_pdsch_vars[eNB_id]->log2_maxh);
+      dlsch_dual_stream_correlation(frame_parms,
+				    symbol,
+				    nb_rb,
+				    &(lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext[2]),
+				    lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext,
+				    lte_ue_pdsch_vars[eNB_id]->dl_ch_rho2_ext,
 				    lte_ue_pdsch_vars[eNB_id]->log2_maxh);
       //printf("TM3 log2_maxh : %d\n",lte_ue_pdsch_vars[eNB_id]->log2_maxh);
 
     }
     else {
-
+      LOG_E(PHY, "only 2 tx antennas supported for TM3\n");
     }
   }
-  else if (dlsch0_harq->mimo_mode<DUALSTREAM_UNIFORM_PRECODING1) {// single-layer precoding, TM4 (Single-codeword)/5 (single or 2 user)/6
+  else if (dlsch0_harq->mimo_mode<DUALSTREAM_UNIFORM_PRECODING1) {// single-layer precoding (TM5, TM6), potentially TM4 (Single-codeword)
     //    printf("Channel compensation for precoding\n");
     //    if ((dual_stream_flag==1) && (eNB_id_i==NUMBER_OF_CONNECTED_eNB_MAX)) {
     if ((dual_stream_flag==1) && (eNB_id_i==phy_vars_ue->n_connected_eNB)) {  // TM5 two-user
@@ -484,7 +491,13 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
       }
 #endif  
 
-      dlsch_dual_stream_correlation(frame_parms, symbol, nb_rb, lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext, lte_ue_pdsch_vars[eNB_id_i]->dl_ch_estimates_ext, lte_ue_pdsch_vars[eNB_id]->dl_ch_rho_ext, lte_ue_pdsch_vars[eNB_id]->log2_maxh);
+      dlsch_dual_stream_correlation(frame_parms, 
+				    symbol, 
+				    nb_rb, 
+				    lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext, 
+				    lte_ue_pdsch_vars[eNB_id_i]->dl_ch_estimates_ext, 
+				    lte_ue_pdsch_vars[eNB_id]->dl_ch_rho_ext, 
+				    lte_ue_pdsch_vars[eNB_id]->log2_maxh);
 
     }
     else {
@@ -634,6 +647,14 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
 			    symbol,first_symbol_flag,nb_rb,
 			    adjust_G2(frame_parms,dlsch0_harq->rb_alloc,2,subframe,symbol),
 			    lte_ue_pdsch_vars[eNB_id]->llr128);
+	dlsch_qpsk_qpsk_llr(frame_parms,
+			    lte_ue_pdsch_vars[eNB_id]->rxdataF_comp1[dlsch0_harq->round],
+			    lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0,
+			    lte_ue_pdsch_vars[eNB_id]->dl_ch_rho2_ext,
+			    lte_ue_pdsch_vars[eNB_id]->llr[1],
+			    symbol,first_symbol_flag,nb_rb,
+			    adjust_G2(frame_parms,dlsch1_harq->rb_alloc,2,subframe,symbol),
+			    lte_ue_pdsch_vars[eNB_id]->llr128_2ndstream);
       }
       else if (get_Qm(dlsch1_harq->mcs) == 4) { 
 	dlsch_qpsk_16qam_llr(frame_parms,
@@ -1364,7 +1385,7 @@ void dlsch_channel_compensation_TM3(LTE_DL_FRAME_PARMS *frame_parms,
   int **dl_ch_magb0           = lte_ue_pdsch_vars->dl_ch_magb0;
   int **dl_ch_magb1           = lte_ue_pdsch_vars->dl_ch_magb1;
   int **rxdataF_comp0         = lte_ue_pdsch_vars->rxdataF_comp0;
-  int **rxdataF_comp1         = lte_ue_pdsch_vars->rxdataF_comp1[0];
+  int **rxdataF_comp1         = lte_ue_pdsch_vars->rxdataF_comp1[round]; //?
   __m128i mmtmpD0,mmtmpD1,mmtmpD2,mmtmpD3,QAM_amp0_128,QAM_amp0_128b,QAM_amp1_128,QAM_amp1_128b;   
     
 

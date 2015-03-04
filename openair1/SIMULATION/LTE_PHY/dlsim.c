@@ -178,7 +178,7 @@ void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmi
     PHY_vars_UE->pdsch_config_dedicated->p_a  = dB0; // 4 = 0dB
     ((PHY_vars_UE->lte_frame_parms).pdsch_config_common).p_b = 0; 
   }
-  else {(lte_frame_parms->nb_antennas_tx_eNB>1) ? 1 : 0; // rho_a = rhob
+  else {// rho_a = rhob
     PHY_vars_eNB->pdsch_config_dedicated->p_a  = dB0; // 4 = 0dB
     ((PHY_vars_eNB->lte_frame_parms).pdsch_config_common).p_b = 1;
     PHY_vars_UE->pdsch_config_dedicated->p_a  = dB0; // 4 = 0dB
@@ -268,7 +268,7 @@ int main(int argc, char **argv) {
   unsigned int ret;
   unsigned int coded_bits_per_codeword=0,nsymb,dci_cnt,tbs=0;
  
-  unsigned int tx_lev=0,tx_lev_dB=0,trials,errs[4]={0,0,0,0},round_trials[4]={0,0,0,0},dci_errors=0,dlsch_active=0,num_layers;
+  unsigned int tx_lev=0,tx_lev_dB=0,trials,errs[4]={0,0,0,0},errs2[4]={0,0,0,0},round_trials[4]={0,0,0,0},dci_errors=0,dlsch_active=0,num_layers;
   int re_allocated;
   char fname[32],vname[32];
   FILE *bler_fd;
@@ -348,7 +348,7 @@ int main(int argc, char **argv) {
 
   LTE_DL_UE_HARQ_t *dlsch0_ue_harq;
   LTE_DL_eNB_HARQ_t *dlsch0_eNB_harq;
-
+  uint8_t Kmimo;
 
 
   opp_enabled=1; // to enable the time meas
@@ -891,31 +891,34 @@ int main(int argc, char **argv) {
     exit(-1);
   }
 
+  if ((transmission_mode == 3) || (transmission_mode==4)) 
+    Kmimo=2;
+  else
+    Kmimo=1;
+
   for (k=0;k<n_users;k++) {
     // Create transport channel structures for 2 transport blocks (MIMO)
     for (i=0;i<2;i++) {
-      PHY_vars_eNB->dlsch_eNB[k][i] = new_eNB_dlsch(1,8,N_RB_DL,0);
-      
+      PHY_vars_eNB->dlsch_eNB[k][i] = new_eNB_dlsch(Kmimo,8,N_RB_DL,0);
       if (!PHY_vars_eNB->dlsch_eNB[k][i]) {
 	printf("Can't get eNB dlsch structures\n");
 	exit(-1);
       }
-      
       PHY_vars_eNB->dlsch_eNB[k][i]->rnti = n_rnti+k;
     }
   }
-  // structure for SIC at UE
-  PHY_vars_UE->dlsch_eNB[0] = new_eNB_dlsch(1,8,N_RB_DL,0);
-
+  
   for (i=0;i<2;i++) {
-    PHY_vars_UE->dlsch_ue[0][i]  = new_ue_dlsch(1,8,MAX_TURBO_ITERATIONS,N_RB_DL,0);
+    PHY_vars_UE->dlsch_ue[0][i]  = new_ue_dlsch(Kmimo,8,MAX_TURBO_ITERATIONS,N_RB_DL,0);
     if (!PHY_vars_UE->dlsch_ue[0][i]) {
       printf("Can't get ue dlsch structures\n");
       exit(-1);
     }    
     PHY_vars_UE->dlsch_ue[0][i]->rnti   = n_rnti;
   }
-  
+  // structure for SIC at UE
+  PHY_vars_UE->dlsch_eNB[0] = new_eNB_dlsch(Kmimo,8,N_RB_DL,0);
+
   if (DLSCH_alloc_pdu2_1E[0].tpmi == 5) {
 
     PHY_vars_eNB->eNB_UE_stats[0].DL_pmi_single = (unsigned short)(taus()&0xffff);
@@ -1919,6 +1922,10 @@ int main(int argc, char **argv) {
       errs[1]=0;
       errs[2]=0;
       errs[3]=0;
+      errs2[0]=0;
+      errs2[1]=0;
+      errs2[2]=0;
+      errs2[3]=0;
       round_trials[0] = 0;
       round_trials[1] = 0;
       round_trials[2] = 0;
@@ -2373,25 +2380,25 @@ int main(int argc, char **argv) {
 	    }
 
 	    for (k=0;k<n_users;k++) {
-
+	      for (int cw=0; cw<Kmimo; cw++) {
 	      coded_bits_per_codeword = get_G(&PHY_vars_eNB->lte_frame_parms,
-					      PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->nb_rb,
-					      PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->rb_alloc,
-					      get_Qm(PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->mcs),
-					      PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->Nl,
+					      PHY_vars_eNB->dlsch_eNB[k][cw]->harq_processes[0]->nb_rb,
+					      PHY_vars_eNB->dlsch_eNB[k][cw]->harq_processes[0]->rb_alloc,
+					      get_Qm(PHY_vars_eNB->dlsch_eNB[k][cw]->harq_processes[0]->mcs),
+					      PHY_vars_eNB->dlsch_eNB[k][cw]->harq_processes[0]->Nl,
 					      num_pdcch_symbols,
 					      0,subframe);
 
 #ifdef TBS_FIX   // This is for MESH operation!!!
-	      tbs = (double)3*TBStable[get_I_TBS(PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->mcs)][PHY_vars_eNB->dlsch_eNB[k][0]->nb_rb-1]/4;
+	      tbs = (double)3*TBStable[get_I_TBS(PHY_vars_eNB->dlsch_eNB[k][cw]->harq_processes[0]->mcs)][PHY_vars_eNB->dlsch_eNB[k][cw]->nb_rb-1]/4;
 #else
-	      tbs = PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->TBS;
+	      tbs = PHY_vars_eNB->dlsch_eNB[k][cw]->harq_processes[0]->TBS;
 #endif
 	      rate = (double)tbs/(double)coded_bits_per_codeword;
 	      
 	      if ((SNR==snr0) && (trials==0) && (round==0))
-		printf("User %d: Rate = %f (%f bits/dim) (G %d, TBS %d, mod %d, pdcch_sym %d, ndi %d)\n",
-		       k,rate,rate*get_Qm(PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->mcs),
+		printf("User %d, cw %d: Rate = %f (%f bits/dim) (G %d, TBS %d, mod %d, pdcch_sym %d, ndi %d)\n",
+		       k,cw,rate,rate*get_Qm(PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->mcs),
 		       coded_bits_per_codeword,
 		       tbs,
 		       get_Qm(PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->mcs),
@@ -2415,16 +2422,17 @@ int main(int argc, char **argv) {
 
 
 	      start_meas(&PHY_vars_eNB->dlsch_encoding_stats);	      
-	      if (dlsch_encoding(input_buffer0[k],
+	      if (dlsch_encoding(((cw==0) ? input_buffer0[k] : input_buffer1[k]),
 				 &PHY_vars_eNB->lte_frame_parms,
 				 num_pdcch_symbols,
-				 PHY_vars_eNB->dlsch_eNB[k][0],
+				 PHY_vars_eNB->dlsch_eNB[k][cw],
 				 0,subframe,
 				 &PHY_vars_eNB->dlsch_rate_matching_stats,
 				 &PHY_vars_eNB->dlsch_turbo_encoding_stats,
 				 &PHY_vars_eNB->dlsch_interleaving_stats
 				 )<0)
 		exit(-1);
+	      /*
 	      if (transmission_mode == 3) {
 		if (dlsch_encoding(input_buffer1[k],
 				   &PHY_vars_eNB->lte_frame_parms,
@@ -2437,29 +2445,32 @@ int main(int argc, char **argv) {
 				   )<0)
 		  exit(-1);
 	      }
+	      */
 	      stop_meas(&PHY_vars_eNB->dlsch_encoding_stats);  
 
-	      PHY_vars_eNB->dlsch_eNB[k][0]->rnti = (common_flag==0) ? n_rnti+k : SI_RNTI;	  
+	      PHY_vars_eNB->dlsch_eNB[k][cw]->rnti = (common_flag==0) ? n_rnti+k : SI_RNTI;	  
 	      start_meas(&PHY_vars_eNB->dlsch_scrambling_stats);	      
 	      dlsch_scrambling(&PHY_vars_eNB->lte_frame_parms,
 			       0,
-			       PHY_vars_eNB->dlsch_eNB[k][0],
+			       PHY_vars_eNB->dlsch_eNB[k][cw],
 			       coded_bits_per_codeword,
 			       0,
 			       subframe<<1);
 	      stop_meas(&PHY_vars_eNB->dlsch_scrambling_stats);	      
+
 	      if (n_frames==1) {
-		for (s=0;s<PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->C;s++) {
-		  if (s<PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->Cminus)
-		    Kr = PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->Kminus;
+		for (s=0;s<PHY_vars_eNB->dlsch_eNB[k][cw]->harq_processes[0]->C;s++) {
+		  if (s<PHY_vars_eNB->dlsch_eNB[k][cw]->harq_processes[0]->Cminus)
+		    Kr = PHY_vars_eNB->dlsch_eNB[k][cw]->harq_processes[0]->Kminus;
 		  else
-		    Kr = PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->Kplus;
+		    Kr = PHY_vars_eNB->dlsch_eNB[k][cw]->harq_processes[0]->Kplus;
 	      
 		  Kr_bytes = Kr>>3;
 	      
 		  for (i=0;i<Kr_bytes;i++)
-		    printf("%d : (%x)\n",i,PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->c[s][i]);
+		    printf("%d : (%x)\n",i,PHY_vars_eNB->dlsch_eNB[k][cw]->harq_processes[0]->c[s][i]);
 		}
+	      }
 	      }
 	  
 	      start_meas(&PHY_vars_eNB->dlsch_modulation_stats);	      
@@ -3094,17 +3105,20 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 	    }
 	  }
 
-	  PHY_vars_UE->dlsch_ue[0][0]->rnti = (common_flag==0) ? n_rnti: SI_RNTI;
+	  for (int cw=Kmimo-1;cw>=0;cw--){
+	  PHY_vars_UE->dlsch_ue[0][cw]->rnti = (common_flag==0) ? n_rnti: SI_RNTI;
 	  coded_bits_per_codeword = get_G(&PHY_vars_eNB->lte_frame_parms,
-					  PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->nb_rb,
-					  PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->rb_alloc,
-					  get_Qm(PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->mcs),
-					  PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->Nl,
+					  PHY_vars_eNB->dlsch_eNB[0][cw]->harq_processes[0]->nb_rb,
+					  PHY_vars_eNB->dlsch_eNB[0][cw]->harq_processes[0]->rb_alloc,
+					  get_Qm(PHY_vars_eNB->dlsch_eNB[0][cw]->harq_processes[0]->mcs),
+					  PHY_vars_eNB->dlsch_eNB[0][cw]->harq_processes[0]->Nl,
 					  num_pdcch_symbols,
 					  0,subframe);
 
-	  PHY_vars_UE->dlsch_ue[0][0]->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->G = coded_bits_per_codeword;
+	  PHY_vars_UE->dlsch_ue[0][cw]->harq_processes[PHY_vars_UE->dlsch_ue[0][cw]->current_harq_pid]->G = coded_bits_per_codeword;
+	  
 
+	  /*
 	  // calculate uncoded BLER
 	  uncoded_ber=0;
 	  for (i=0;i<coded_bits_per_codeword;i++) 
@@ -3120,30 +3134,41 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 	  
 	  if (n_frames==1)
 	    write_output("uncoded_ber_bit.m","uncoded_ber_bit",uncoded_ber_bit,coded_bits_per_codeword,1,0);
-	  
+	  */
 
 	  start_meas(&PHY_vars_UE->dlsch_unscrambling_stats);	      
 	  dlsch_unscrambling(&PHY_vars_UE->lte_frame_parms,
 			     0,
-			     PHY_vars_UE->dlsch_ue[0][0],
+			     PHY_vars_UE->dlsch_ue[0][cw],
 			     coded_bits_per_codeword,
-			     PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->llr[0],
+			     PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->llr[cw],
 			     0,
 			     subframe<<1);
 	  stop_meas(&PHY_vars_UE->dlsch_unscrambling_stats);	      
 
 	  start_meas(&PHY_vars_UE->dlsch_decoding_stats);
 	  ret = dlsch_decoding(PHY_vars_UE,
-			       PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->llr[0],		 
+			       PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->llr[cw],		 
 			       &PHY_vars_UE->lte_frame_parms,
-			       PHY_vars_UE->dlsch_ue[0][0],
-			       PHY_vars_UE->dlsch_ue[0][0]->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid],
+			       PHY_vars_UE->dlsch_ue[0][cw],
+			       PHY_vars_UE->dlsch_ue[0][cw]->harq_processes[PHY_vars_UE->dlsch_ue[0][cw]->current_harq_pid],
 			       subframe,
-			       PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid,
+			       PHY_vars_UE->dlsch_ue[0][cw]->current_harq_pid,
 			       1,llr8_flag);
 	  stop_meas(&PHY_vars_UE->dlsch_decoding_stats); 
-	  
+
+	  if (cw==1) {
+	    if (ret <= PHY_vars_UE->dlsch_ue[0][cw]->max_turbo_iterations) {
+	    }
+	    else {
+	      errs2[round]++;
+	    }
+	  }
+	  }
+
+
 	  stop_meas(&PHY_vars_UE->phy_proc_rx);
+
 
 	  if (ret <= PHY_vars_UE->dlsch_ue[0][0]->max_turbo_iterations) {
 		
@@ -3154,9 +3179,10 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 
 	    PHY_vars_UE->total_TBS[eNB_id] =  PHY_vars_UE->total_TBS[eNB_id] + PHY_vars_UE->dlsch_ue[eNB_id][0]->harq_processes[PHY_vars_UE->dlsch_ue[eNB_id][0]->current_harq_pid]->TBS;
 	    TB0_active = 0;
-	    if (PHY_vars_UE->dlsch_ue[eNB_id][0]->harq_processes[PHY_vars_UE->dlsch_ue[eNB_id][0]->current_harq_pid]->mimo_mode == LARGE_CDD) {   //try to decode second stream
-	      for (round = 0 ; round < PHY_vars_UE->dlsch_ue[eNB_id][0]->harq_processes[PHY_vars_UE->dlsch_ue[eNB_id][0]->current_harq_pid]->round ; round++) {
-
+	    if (PHY_vars_UE->dlsch_ue[eNB_id][0]->harq_processes[PHY_vars_UE->dlsch_ue[eNB_id][0]->current_harq_pid]->mimo_mode == LARGE_CDD) {   //try to decode second stream using SIC
+	      /*
+		for (round = 0 ; round < PHY_vars_UE->dlsch_ue[eNB_id][0]->harq_processes[PHY_vars_UE->dlsch_ue[eNB_id][0]->current_harq_pid]->round ; round++) {
+		// re-encoding of first stream
 		dlsch0_ue_harq = PHY_vars_UE->dlsch_ue[eNB_id][0]->harq_processes[PHY_vars_UE->dlsch_ue[eNB_id][0]->current_harq_pid];
 		dlsch0_eNB_harq = PHY_vars_UE->dlsch_eNB[eNB_id]->harq_processes[PHY_vars_UE->dlsch_ue[eNB_id][0]->current_harq_pid];
 		dlsch0_eNB_harq->mimo_mode    = LARGE_CDD;
@@ -3181,8 +3207,17 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 			       &PHY_vars_UE->dlsch_rate_matching_stats,
 			       &PHY_vars_UE->dlsch_turbo_encoding_stats,
 			       &PHY_vars_UE->dlsch_interleaving_stats
-			       );		
+			       );	
+
+			       //scrambling
+
+		//modulation
+
+		//stripping (from matched filter output?)
+
+		//detection of second stream	
 	      }
+	      */
 	    }
 	  }	
 	  else {
@@ -3416,8 +3451,9 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 	     (double)tx_lev_dB+10*log10(PHY_vars_UE->lte_frame_parms.ofdm_symbol_size/(NB_RB*12)),
 	     sigma2_dB);
       
-      printf("Errors (%d/%d %d/%d %d/%d %d/%d), Pe = (%e,%e,%e,%e), dci_errors %d/%d, Pe = %e => effective rate %f  (%2.1f%%,%f, %f), normalized delay %f (%f)\n",
+      printf("Errors (%d(%d)/%d %d/%d %d/%d %d/%d), Pe = (%e,%e,%e,%e), dci_errors %d/%d, Pe = %e => effective rate %f  (%2.1f%%,%f, %f), normalized delay %f (%f)\n",
 	     errs[0],
+	     errs2[0],
 	     round_trials[0],
 	     errs[1],
 	     round_trials[0],

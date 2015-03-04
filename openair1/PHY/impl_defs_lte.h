@@ -577,15 +577,20 @@ typedef struct {
 } LTE_DL_FRAME_PARMS;
 
 typedef enum {
+  /// TM1
   SISO=0,
+  /// TM2
   ALAMOUTI=1,
+  /// TM3
   LARGE_CDD=2,
+  /// the next 6 entries are for TM5
   UNIFORM_PRECODING11=3,
   UNIFORM_PRECODING1m1=4,
   UNIFORM_PRECODING1j=5,
   UNIFORM_PRECODING1mj=6,
   PUSCH_PRECODING0=7,
   PUSCH_PRECODING1=8,
+  /// the next 3 entries are for TM4
   DUALSTREAM_UNIFORM_PRECODING1=9,
   DUALSTREAM_UNIFORM_PRECODINGj=10,
   DUALSTREAM_PUSCH_PRECODING=11,
@@ -791,8 +796,8 @@ typedef struct {
   /// - second index: ? [0..168*N_RB_DL[
   int32_t **rxdataF_comp0;
   /// \brief Received frequency-domain signal after extraction and channel compensation.
-  /// - first index: ? [0..7] (hard coded) FIXME! accessed via \c nb_antennas_rx
-  /// - second index: ? [0..7] (hard coded)
+  /// - first index: ? [0..7] (hard coded) accessed via \c round
+  /// - second index: ? [0..7] (hard coded) FIXME! accessed via \c nb_antennas_rx
   /// - third index: ? [0..168*N_RB_DL[
   int32_t **rxdataF_comp1[8];
   /// \brief Downlink channel estimates extracted in PRBS.
@@ -803,6 +808,10 @@ typedef struct {
   /// - first index: ? [0..7] (hard coded) FIXME! accessed via \c nb_antennas_rx
   /// - second index: ? [0..168*N_RB_DL[
   int32_t **dl_ch_rho_ext;
+  /// \brief Downlink cross-correlation of MIMO channel estimates (unquantized PMI) extracted in PRBS.
+  /// - first index: ? [0..7] (hard coded) FIXME! accessed via \c nb_antennas_rx
+  /// - second index: ? [0..168*N_RB_DL[
+  int32_t **dl_ch_rho2_ext;
   /// \brief Downlink PMIs extracted in PRBS and grouped in subbands.
   /// - first index: ressource block [0..N_RB_DL[
   uint8_t *pmi_ext;
@@ -844,6 +853,10 @@ typedef struct {
   /// - first index: ? [0..0] (hard coded)
   /// - second index: ? [0..]
   int16_t **llr128;
+  /// \brief Pointers to llr vectors (128-bit alignment).
+  /// - first index: ? [0..0] (hard coded)
+  /// - second index: ? [0..]
+  int16_t **llr128_2ndstream;
   //uint32_t *rb_alloc;
   //uint8_t Qm[2];
   //MIMO_mode_t mimo_mode;
