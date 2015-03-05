@@ -51,7 +51,10 @@ endif()
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo MinSizeRel)
 
 #
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse4.2 -std=gnu99 -Wall -Wstrict-prototypes -fno-strict-aliasing -rdynamic -funroll-loops -Wno-packed-bitfield-compat -DCMAKER")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse4.2 -std=gnu99 -Wall -Wstrict-prototypes -fno-strict-aliasing -rdynamic -funroll-loops -Wno-packed-bitfield-compat")
+# set a flag for changes in the source code
+# these changes are related to hardcoded path to include .h files
+add_definitions("-DCMAKER")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -DMALLOC_CHECK_=3")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -ggdb -DMALLOC_CHECK_=3 -O3")
 
@@ -443,22 +446,6 @@ include_directories("${OPENAIRCN_DIR}/GTPV1-U/nw-gtpv1u/include")
 # define where are the source files
 ##################################
 #add_subdirectory (${OPENAIR_DIR} .) 
-
-# Generated code need to declare explicit dependancy
-###############################################
-
-set (ITTI_H ${ITTI_DIR}/intertask_interface_types.h)
-add_custom_command (
-  OUTPUT ${OPENAIR_BIN_DIR}/messages.xml
-  COMMAND gccxml -fxml=${OPENAIR_BIN_DIR}/messages.xml ${ITTI_H} ${module_compiler_options}
-  #COMMAND rm ${ITTI_H}.tmp
-  )
-
-add_custom_command (
-  OUTPUT ${OPENAIR_BIN_DIR}/messages_xml.h
-  COMMAND sed -e 's/ *//'   -e 's/\"/\\\\\"/g' -e 's/^/\"/' -e 's/$$/\\\\n\"/' ${OPENAIR_BIN_DIR}/messages.xml  > ${OPENAIR_BIN_DIR}/messages_xml.h
-  DEPENDS ${OPENAIR_BIN_DIR}/messages.xml
-  )
 
 # define libraries
 #add_library(MathFunctions mysqrt.cxx)
@@ -1141,27 +1128,62 @@ target_link_libraries (${myExe}
 )
 endforeach(myExe)
 
+
+
+##################################################
+# Generated specific cases is not regular code
+###############################################
+
+##################""
+# itti symbolic debug print require to generate a specific include file
+########################################
+
+# retrieve the compiler options to send it to gccxml
+get_directory_property( DirDefs COMPILE_DEFINITIONS )
+foreach( d ${DirDefs} )
+    list(APPEND itti_compiler_options "-D${d}")
+endforeach()
+get_directory_property( DirDefs INCLUDE_DIRECTORIES )
+foreach( d ${DirDefs} )
+    list(APPEND itti_compiler_options "-I${d}")
+endforeach()
+
+set (ITTI_H ${ITTI_DIR}/intertask_interface_types.h)
+add_custom_command (
+  OUTPUT ${OPENAIR_BIN_DIR}/messages.xml
+  COMMAND gccxml ${itti_compiler_options} -fxml=${OPENAIR_BIN_DIR}/messages.xml ${ITTI_H} 
+  DEPENDS ${S1AP_OAI_generated} ${RRC_FULL_DIR}/asn1_constants.h
+  )
+
+add_custom_command (
+  OUTPUT ${OPENAIR_BIN_DIR}/messages_xml.h
+  COMMAND sed -e 's/ *//'   -e 's/\"/\\\\\"/g' -e 's/^/\"/' -e 's/$$/\\\\n\"/' ${OPENAIR_BIN_DIR}/messages.xml  > ${OPENAIR_BIN_DIR}/messages_xml.h
+  DEPENDS ${OPENAIR_BIN_DIR}/messages.xml ${RRC_FULL_DIR}/asn1_constants.h
+  )
+
+################
+# Kernel modules
+###############
 # Set compiler options for kernel modules
 # we need to get out cmake to use the regular Linux Kernel process
 # this is documented as https://www.kernel.org/doc/Documentation/kbuild/modules.txt
 ######################################
 
-# Common to all modules
-########################
+# retrieve the compiler options to send it to gccxml
 get_directory_property( DirDefs COMPILE_DEFINITIONS )
 foreach( d ${DirDefs} )
   if(NOT ${d} STREQUAL "USER_MODE")
-    set(module_compile_options "${module_compile_options} -D${d}")
+    list(APPEND itti_compiler_options "-I${d}")
   endif()
 endforeach()
 get_directory_property( DirDefs INCLUDE_DIRECTORIES )
 foreach( d ${DirDefs} )
-    set(module_compile_options "${module_compile_options} -I${d}")
+  set(module_cc_opt "${module_cc_opt} -I${d}")
 endforeach()
 
 EXECUTE_PROCESS(COMMAND uname -r
-                OUTPUT_VARIABLE os_release
-                OUTPUT_STRIP_TRAILING_WHITESPACE)
+  OUTPUT_VARIABLE os_release
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
 SET(module_build_path /lib/modules/${os_release}/build)
 message("Kernel build path = ${module_build_path}")
 
@@ -1186,9 +1208,9 @@ endfunction(make_driver name dir src)
 # nashmesh module 
 ################
 list(APPEND nasmesh_src device.c common.c ioctl.c classifier.c tool.c mesh.c)
-set(module_compile_options "${module_compile_options} -DNAS_NETLINK")
+set(module_cc_opt "${module_cc_opt} -DNAS_NETLINK")
 make_driver(nasmesh  ${OPENAIR2_DIR}/NAS/DRIVER/MESH ${nasmesh_src})
-
+  
 # Next module
 ####################
 
