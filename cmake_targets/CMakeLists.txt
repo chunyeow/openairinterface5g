@@ -450,8 +450,7 @@ include_directories("${OPENAIRCN_DIR}/GTPV1-U/nw-gtpv1u/include")
 set (ITTI_H ${ITTI_DIR}/intertask_interface_types.h)
 add_custom_command (
   OUTPUT ${OPENAIR_BIN_DIR}/messages.xml
-  COMMAND gccxml -fxml=${OPENAIR_BIN_DIR}/messages.xml ${ITTI_H} -I${ITTI_DIR}
-  COMMAND gcc -MM ${ITTI_H} | sed -e 's/.*://' -e 's/\\$$//' ${ITTI_H}.tmp  | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' > ${OPENAIR_BIN_DIR}/intertask_interface_types.d 
+  COMMAND gccxml -fxml=${OPENAIR_BIN_DIR}/messages.xml ${ITTI_H} ${module_compiler_options}
   #COMMAND rm ${ITTI_H}.tmp
   )
 
