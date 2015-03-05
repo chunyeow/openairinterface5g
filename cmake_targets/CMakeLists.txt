@@ -1142,6 +1142,58 @@ target_link_libraries (${myExe}
 )
 endforeach(myExe)
 
+# Set compiler options for kernel modules
+# we need to get out cmake to use the regular Linux Kernel process
+# this is documented as https://www.kernel.org/doc/Documentation/kbuild/modules.txt
+######################################
+
+# Common to all modules
+########################
+get_directory_property( DirDefs COMPILE_DEFINITIONS )
+foreach( d ${DirDefs} )
+  if(NOT ${d} STREQUAL "USER_MODE")
+    set(module_compile_options "${module_compile_options} -D${d}")
+  endif()
+endforeach()
+get_directory_property( DirDefs INCLUDE_DIRECTORIES )
+foreach( d ${DirDefs} )
+    set(module_compile_options "${module_compile_options} -I${d}")
+endforeach()
+
+EXECUTE_PROCESS(COMMAND uname -r
+                OUTPUT_VARIABLE os_release
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+SET(module_build_path /lib/modules/${os_release}/build)
+message("Kernel build path = ${module_build_path}")
+
+function(make_driver name dir)
+  file(MAKE_DIRECTORY ${OPENAIR_BIN_DIR}/${name})
+  foreach(f  IN  ITEMS ${ARGN})
+    list(APPEND src_path_list ${dir}/${f})
+    string(REGEX REPLACE "c *$" "o" obj ${f})
+    set(objs "${objs} ${obj}")
+  endforeach()
+  CONFIGURE_FILE(${OPENAIR_CMAKE}/Kbuild.cmake ${OPENAIR_BIN_DIR}/${name}/Kbuild)
+  add_custom_command(OUTPUT ${name}.ko
+    COMMAND make -C ${module_build_path} M=${OPENAIR_BIN_DIR}/${name}
+    WORKING_DIRECTORY ${OPENAIR_BIN_DIR}/${name}
+    COMMENT "building ${module}.ko"
+    VERBATIM
+    SOURCES  ${src_path_list}
+    )
+  add_custom_target(${name} DEPENDS ${name}.ko)
+endfunction(make_driver name dir src)
+
+# nashmesh module 
+################
+list(APPEND nasmesh_src device.c common.c ioctl.c classifier.c tool.c mesh.c)
+set(module_compile_options "${module_compile_options} -DNAS_NETLINK")
+make_driver(nasmesh  ${OPENAIR2_DIR}/NAS/DRIVER/MESH ${nasmesh_src})
+
+# Next module
+####################
+
+
 # add the install targets
 #install (TARGETS Tutorial DESTINATION bin)
 #install (FILES "${PROJECT_BIN_DIR}/TutorialConfig.h"        DESTINATION include)
