@@ -100,14 +100,10 @@ add_boolean_option(MSG_PRINT  False "print debug messages")
 add_boolean_option(DISABLE_XER_PRINT True "print XER Format")
 add_boolean_option(RRC_MSG_PRINT False "print RRC messages")
 add_boolean_option(PDCP_MSG_PRINT False "print PDCP messages")
-add_boolean_option(DEBUG_PHY False "for unitary tests with dlsim")
+add_boolean_option(TEST_OMG False "???")
+add_boolean_option(DEBUG_OMG False "???")
 
 add_boolean_option(XFORMS True "This adds the possibility to see the signal oscilloscope")
-if (${XFORMS})
-  include_directories ("/usr/include/X11")
-  set(XFORMS_SOURCE ${OPENAIR1_DIR}/PHY/TOOLS/lte_phy_scope.c)
-  set(option_lib_xforms "forms")
-endif (${XFORMS})
   
 # to be documented options
 ###################
@@ -124,7 +120,7 @@ add_boolean_option(LINK_PDCP_TO_GTPV1U True "????")
 add_boolean_option(USER_MODE True "????")
 add_boolean_option(LOG_NO_THREAD True "Disable thread for log, seems always set to true")
 add_boolean_option(ENABLE_NAS_UE_LOGGING True "????")
-add_boolean_option(ENABLE_USE_CPU_EXECUTION_TIME True "????")
+add_boolean_option(ENABLE_USE_CPU_EXECUTION_TIME True "Add data in vcd traces: disable it if perf issues")
 add_boolean_option(OPENAIR2 True "????")
 add_boolean_option(NO_RRM True "????")
 add_boolean_option(PUCCH True "????")
@@ -147,16 +143,28 @@ add_boolean_option(MU_RECEIVER False "????")
 add_boolean_option(RANDOM_BF False "????")
 add_boolean_option(PBS_SIM False "????")
 add_boolean_option(PERFECT_CE False "????")
+add_boolean_option(ENABLE_VCD_FIFO True "Seems legacy: always true now")
+
+add_boolean_option(OAI_NW_DRIVER_TYPE_ETHERNET False "????")
+add_boolean_option(OPENAIR_EMU False "specific to oaisim")
+add_boolean_option(OAI_EMU False "specific to oaisim")
+add_boolean_option(ENABLE_NEW_MULTICAST True "specific to oaisim")
+add_boolean_option(ENABLE_PGM_TRANSPORT True "specific to oaisim")
+add_boolean_option(MAC_CONTEXT False "specific to oaisim")
+add_boolean_option(PHY_ABSTRACTION False "specific to oaisim")
+add_boolean_option(ADDR_CONF False "specific to oaisim")
+add_boolean_option(LARGE_SCALE False "specific to oaisim: defines max eNB=2 and max UE=120")
+add_integer_option(RLC_STOP_ON_LOST_PDU False "Fatal assert in this case")
+add_integer_option(USE_3GPP_ADDR_AS_LINK_ADDR False "As per attribute name")
+
 
 add_boolean_option(EMOS False "????")
 if(${EMOS})
   add_definitions("-D_FILE_OFFSET_BITS=64")
-  add_library(gps)
+  set(EMOS_LIB gps)
 endif(${EMOS})
 
 add_integer_option(MAX_NUM_CCs 1 "????")
-add_integer_option(MAX_CONTEXT 1 "????")
-add_integer_option(PHY_CONTEXT 1 "????")
 
 add_boolean_option(ENABLE_ITTI True "ITTI is internal messaging, should remain enabled")
 set (ITTI_DIR ${OPENAIR_DIR}/common/utils/itti)
@@ -171,7 +179,7 @@ if (${ENABLE_ITTI})
     ${ITTI_DIR}/signals.c
     ${ITTI_DIR}/timer.c
     )
-  set(option_ITTI ITTI)
+  set(ITTI_LIB ITTI)
   set(EXMIMO_IOT)
 endif (${ENABLE_ITTI})
 
@@ -222,7 +230,7 @@ file(GLOB rrc_source ${RRC_FULL_DIR}/*.c)
 set(rrc_source  ${rrc_source} ${OPENAIR2_DIR}/RRC/LITE/MESSAGES/asn1_msg.c)
 file(GLOB rrc_h ${RRC_FULL_DIR}/*.h)
 set(rrc_h ${rrc_h} ${RRC_FULL_DIR}/asn1_constants.h)
-add_library(rrc_asn1 ${rrc_h} ${rrc_source})
+add_library(RRC_LIB ${rrc_h} ${rrc_source})
 include_directories ("${RRC_FULL_DIR}")
 
 # add the command to generate the source code
@@ -339,7 +347,6 @@ add_definitions("-D${RF_BOARD}=1")
 
 if (${RF_BOARD} STREQUAL EXMIMO)
   set(LOWLATENCY_KERNEL True)
-  set(ENABLE_VCD_FIFO True)
   set(DRIVER2013)
   include_directories ("${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB/")
   include_directories ("${OPENAIR_TARGETS}/ARCH/EXMIMO/DEFS/")
@@ -425,24 +432,6 @@ include_directories("${OPENAIRCN_DIR}/NAS")
 include_directories("${OPENAIRCN_DIR}/GTPV1-U/nw-gtpv1u/shared")
 include_directories("${OPENAIRCN_DIR}/GTPV1-U/nw-gtpv1u/include")
 
-# trial for modernisation of include directories to be done
-#include_directories("${ITTI_DIR}")
-#include_directories("${OPENAIR_DIR}/common/utils/collection/hashtable")
-#include_directories("${OPENAIR1_DIR}")
-#include_directories("${OPENAIR1_DIR}/PHY")
-#include_directories("${OPENAIR2_DIR}/")
-#include_directories("${OPENAIR2_DIR}/ENB_APP")
-#include_directories("${OPENAIR2_DIR}/COMMON")
-#include_directories("${OPENAIR2_DIR}/UTIL/LOG")
-#include_directories("${OPENAIR2_DIR}/UTIL/LISTS")
-#include_directories("${OPENAIR2_DIR}/UTIL/MEM")
-#include_directories("${OPENAIR2_DIR}/LAYER2/RLC")
-#include_directories("${OPENAIR2_DIR}/LAYER2/RLC/AM_v9.3.0")
-#include_directories("${OPENAIR2_DIR}/LAYER2/RLC/TM_v9.3.0")
-#include_directories("${OPENAIR2_DIR}/LAYER2/RLC/UM_v9.3.0")
-#include_directories("${OPENAIR3_DIR}")
-#include_directories("${OPENAIRCN_DIR}")
- 
 # define where are the source files
 ##################################
 #add_subdirectory (${OPENAIR_DIR} .) 
@@ -452,13 +441,11 @@ include_directories("${OPENAIRCN_DIR}/GTPV1-U/nw-gtpv1u/include")
 function(add_whole_dir dir lib_name)
   file(GLOB mylist ${dir})
   add_library(${lib_name} ${mylist})
-  set (EXTRA_LIBS ${EXTRA_LIBS} ${lib_name} PARENT_SCOPE)
 endfunction(add_whole_dir)
 
 function(add_whole_tree dir lib_name)
   file(GLOB_RECURSE mylist "${dir}/*.c")
   add_library(${lib_name} ${mylist})
-  set (EXTRA_LIBS ${EXTRA_LIBS} ${lib_name} PARENT_SCOPE)
 endfunction(add_whole_tree)
 
 # Utilities Library
@@ -532,7 +519,7 @@ add_library(SECU_CN ${SECU_CN_SRC})
 
 # Scheduler
 ################################"
-add_whole_dir(${OPENAIR1_DIR}/SCHED/*.c sched)
+add_whole_dir(${OPENAIR1_DIR}/SCHED/*.c SCHED_LIB)
 
 # Layer 1
 #############################
@@ -1074,20 +1061,79 @@ ${OPENAIR1_DIR}/SIMULATION/TOOLS/multipath_channel.c
 ${OPENAIR1_DIR}/SIMULATION/TOOLS/abstraction.c
 ${OPENAIR1_DIR}/SIMULATION/TOOLS/multipath_tv_channel.c
 ${OPENAIR1_DIR}/SIMULATION/RF/rf.c
+${OPENAIR1_DIR}/SIMULATION/RF/dac.c
+${OPENAIR1_DIR}/SIMULATION/RF/adc.c
 ${OPENAIR1_DIR}/USERSPACE_TOOLS/SCOPE/lte_scope.c
 )
 
-# System packages that are required
-# the modules definition for cmake, in ubuntu are in: /usr/share/cmake*/Modules/
-###################################
-find_package(LibXml2 REQUIRED)
-include_directories(${LIBXML2_INCLUDE_DIR})
+add_library(SIMU_ETH
+${OPENAIR1_DIR}/SIMULATION/ETH_TRANSPORT/netlink_init.c
+${OPENAIR1_DIR}/SIMULATION/ETH_TRANSPORT/multicast_link.c
+${OPENAIR1_DIR}/SIMULATION/ETH_TRANSPORT/socket.c
+${OPENAIR1_DIR}/SIMULATION/ETH_TRANSPORT/bypass_session_layer.c
+${OPENAIR1_DIR}/SIMULATION/ETH_TRANSPORT/emu_transport.c
+${OPENAIR1_DIR}/SIMULATION/ETH_TRANSPORT/pgm_link.c
+)
 
+# System packages that are required
+# We use either the cmake buildin, in ubuntu are in: /usr/share/cmake*/Modules/
+# or cmake provide a generic interface to pkg-config that widely used
+###################################
+include(FindPkgConfig)
+
+pkg_search_module(LIBXML2 libxml-2.0 REQUIRED)
+include_directories(${LIBXML2_INCLUDE_DIRS})
+
+pkg_search_module(OPENSSL openssl REQUIRED)
+include_directories(${OPENSSL_INCLUDE_DIRS})
+
+pkg_search_module(CONFIG libconfig REQUIRED)
+include_directories(${CONFIG_INCLUDE_DIRS})
+
+pkg_search_module(CRYPTO libcrypto REQUIRED)
+include_directories(${CRYPTO_INCLUDE_DIRS})
+
+#use native cmake method as this package is not in pkg-config
 if (${RF_BOARD} STREQUAL "USRP")
   find_package(Boost REQUIRED)
   include_directories(${LIBBOOST_INCLUDE_DIR})
   target_link_libraries (lte-softmodem ${LIBBOOST_LIBRARIES})
 endif (${RF_BOARD} STREQUAL "USRP")
+
+pkg_search_module(OPENPGM openpgm-5.1)
+if(NOT ${OPENPGM_FOUND})
+  message("PACKAGE openpgm-5.1 is required by binaries such as oaisim: will fail later if this target is built")
+else()
+  include_directories(${OPENPGM_INCLUDE_DIRS})
+endif()
+
+pkg_search_module(NETTLE nettle)
+if(NOT ${NETTLE_FOUND})
+  message("PACKAGE nettle not found: some targets will fail")
+else()
+  include_directories(${NETTLE_INCLUDE_DIRS})
+endif()
+
+pkg_search_module(XPM xpm)
+if(NOT ${XPM_FOUND})
+  message("PACKAGE xpm not found: some targets will fail")
+else()
+  include_directories(${XPM_INCLUDE_DIRS})
+endif()
+
+# Atlas is required by some packages, but not found in pkg-config
+if(EXISTS "/usr/include/atlas/cblas.h")
+  include_directories("/usr/include/atlas")
+  list(APPEND ATLAS_LIBRARIES lapack cblas atlas)
+else()
+  message("No Blas/Atlas libs found, some targets will fail")
+endif()
+
+if (${XFORMS})
+  include_directories ("/usr/include/X11")
+  set(XFORMS_SOURCE ${OPENAIR1_DIR}/PHY/TOOLS/lte_phy_scope.c)
+  set(XFORMS_LIBRARIES "forms")
+endif (${XFORMS})
 
 # add executables
 
@@ -1103,32 +1149,56 @@ ${OPENAIR_TARGETS}/RT/USER/lte-ue.c
 ${OPENAIR_TARGETS}/RT/USER/lte-softmodem.c
 ${OPENAIR1_DIR}/SIMULATION/TOOLS/taus.c
 ${OPENAIR_TARGETS}/SIMU/USER/init_lte.c
-${OPENAIR_TARGETS}/COMMON//create_tasks.c
+${OPENAIR_TARGETS}/COMMON/create_tasks.c
 ${OPENAIR1_DIR}/SIMULATION/ETH_TRANSPORT/netlink_init.c
 ${HW_SOURCE}
 ${RTAI_SOURCE}
 ${XFORMS_SOURCE}
 )
-
 target_link_libraries (lte-softmodem 
   -Wl,--start-group 
-  rrc_asn1 s1ap_asn1 GTPV1U SECU_CN SECU_OSA UTIL SCTP UDP sched PHY LFDS L2 RAL_LTE NAS ${option_ITTI}  
+  RRC_LIB s1ap_asn1 GTPV1U SECU_CN SECU_OSA UTIL SCTP UDP SCHED_LIB PHY LFDS L2 RAL_LTE NAS ${ITTI_LIB}  
   -Wl,--end-group )
 target_link_libraries (lte-softmodem ${LIBXML2_LIBRARIES})
-target_link_libraries (lte-softmodem pthread m config rt crypt crypto ssl nettle sctp ${option_USRP} ${option_lib_xforms} )
+target_link_libraries (lte-softmodem pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} sctp ${option_USRP} ${XFORMS_LIBRARIES} )
+
+add_executable(oaisim
+${rrc_h}
+${s1ap_h}
+${OPENAIR_BIN_DIR}/messages_xml.h
+${OPENAIR_TARGETS}/SIMU/USER/channel_sim.c
+${OPENAIR_TARGETS}/SIMU/USER/init_lte.c
+${OPENAIR_TARGETS}/SIMU/USER/oaisim_config.c
+${OPENAIR_TARGETS}/SIMU/USER/sinr_sim.c
+${OPENAIR_TARGETS}/SIMU/USER/cor_SF_sim.c
+${OPENAIR_TARGETS}/SIMU/USER/oaisim_functions.c
+${OPENAIR_TARGETS}/SIMU/USER/event_handler.c
+${OPENAIR_TARGETS}/SIMU/USER/oaisim.c
+${OPENAIR2_DIR}/RRC/NAS/nas_config.c
+${OPENAIR2_DIR}/UTIL/OMG/sumo.c
+${OPENAIR_TARGETS}/COMMON/create_tasks.c
+)
+target_include_directories(oaisim PUBLIC  ${OPENAIR_TARGETS}/SIMU/USER)
+target_link_libraries (oaisim
+  -Wl,--start-group 
+  RRC_LIB s1ap_asn1 GTPV1U SECU_CN UTIL SCTP UDP SCHED_LIB PHY LFDS L2 RAL_LTE NAS SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}
+  -Wl,--end-group )
+target_link_libraries (oaisim ${LIBXML2_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries (oaisim pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES}  ${NETTLE_LIBRARIES} sctp ${option_USRP} 
+  ${ATLAS_LIBRARIES} ${XFORMS_LIBRARIES} ${OPENPGM_LIBRARIES})
+#Force link with forms, regardless XFORMS option
+target_link_libraries (oaisim forms)
 
 foreach(myExe dlsim ulsim pbchsim scansim mbmssim pdcchsim pucchsim prachsim syncsim)
-add_executable(${myExe}
-  ${OPENAIR1_DIR}/SIMULATION/LTE_PHY/${myExe}.c
-  ${XFORMS_SOURCE} 
-  )
-target_link_libraries (${myExe}
-  -Wl,--start-group SIMU UTIL sched PHY LFDS  ${option_ITTI} -Wl,--end-group 
-  pthread m config rt blas ${option_lib_xforms}
-)
+  add_executable(${myExe}
+    ${OPENAIR1_DIR}/SIMULATION/LTE_PHY/${myExe}.c
+    ${XFORMS_SOURCE} 
+    )
+  target_link_libraries (${myExe}
+    -Wl,--start-group SIMU UTIL SCHED_LIB PHY LFDS  ${ITTI_LIB} -Wl,--end-group 
+    pthread m rt ${CONFIG_LIBRARIES} ${ATLAS_LIBRARIES} ${XFORMS_LIBRARIES}
+    )
 endforeach(myExe)
-
-
 
 ##################################################
 # Generated specific cases is not regular code
