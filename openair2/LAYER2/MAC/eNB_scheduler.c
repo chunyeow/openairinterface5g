@@ -406,9 +406,9 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
         switch (mac_xface->lte_frame_parms->tdd_config) {
         case 3:
         case 4:
-          //	  schedule_RA(module_idP,frameP,subframeP,3,nprb,nCCE);  // 3 = Msg3 subframeP, not
+          schedule_RA(module_idP,frameP,subframeP,3,nprb,nCCE);  // 3 = Msg3 subframeP, not
           schedule_ue_spec(module_idP,frameP,subframeP,nprb,nCCE,mbsfn_status);
-          fill_DLSCH_dci(module_idP,frameP,subframeP,RBalloc,0,mbsfn_status); //1,mbsfn_status);
+          fill_DLSCH_dci(module_idP,frameP,subframeP,RBalloc,1,mbsfn_status);
           break;
         case 5:
           schedule_ue_spec(module_idP,frameP,subframeP,nprb,nCCE,mbsfn_status);
