@@ -43,8 +43,6 @@ rlc_am_check_timer_reordering(
                 rlc_am_entity_t * const rlc_pP)
 //-----------------------------------------------------------------------------
 {
-    return ; // for debug
-
 
     if (rlc_pP->t_reordering.running) {
         if (
