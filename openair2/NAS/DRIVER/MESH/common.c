@@ -38,7 +38,7 @@
 //#include "nas_common.h"
 #include "local.h"
 #include "proto_extern.h"
-#ifndef NAS_NETLINK
+#ifndef RTAI
 #include "rtai_fifos.h"
 #endif
 
