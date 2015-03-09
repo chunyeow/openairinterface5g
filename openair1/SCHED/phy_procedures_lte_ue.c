@@ -1589,7 +1589,7 @@ void phy_procedures_emos_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t last_slot,uint8_
   
   if (last_slot==0) {
     emos_dump_UE.timestamp = rt_get_time_ns();
-    emos_dump_UE.frame_rx = phy_vars_ue->frame;
+    emos_dump_UE.frame_rx = phy_vars_ue->frame_rx;
     emos_dump_UE.UE_mode = phy_vars_ue->UE_mode[eNB_id];
     emos_dump_UE.mimo_mode = phy_vars_ue->transmission_mode[eNB_id];
     emos_dump_UE.freq_offset = phy_vars_ue->lte_ue_common_vars.freq_offset;
@@ -1623,11 +1623,11 @@ void phy_procedures_emos_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t last_slot,uint8_
 
     bytes = rtf_put(CHANSOUNDER_FIFO_MINOR, &emos_dump_UE, sizeof(fifo_dump_emos_UE));
     if (bytes!=sizeof(fifo_dump_emos_UE)) {
-      LOG_W(PHY,"[UE  %d] frame %d, slot %d, Problem writing EMOS data to FIFO\n",Mod_id,phy_vars_ue->frame, last_slot);
+      LOG_W(PHY,"[UE  %d] frame %d, slot %d, Problem writing EMOS data to FIFO\n",Mod_id,phy_vars_ue->frame_rx, last_slot);
     }
     else {
-      if (phy_vars_ue->frame%100==0) {
-	LOG_I(PHY,"[UE  %d] frame %d, slot %d, Writing %d bytes EMOS data to FIFO\n",Mod_id,phy_vars_ue->frame, last_slot, bytes);
+      if (phy_vars_ue->frame_rx%100==0) {
+	LOG_I(PHY,"[UE  %d] frame %d, slot %d, Writing %d bytes EMOS data to FIFO\n",Mod_id,phy_vars_ue->frame_rx, last_slot, bytes);
       }
     }
   }
@@ -3281,6 +3281,11 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
       }
     }
   }
+
+#ifdef EMOS
+    phy_procedures_emos_UE_RX(phy_vars_ue,slot_rx,eNB_id);
+#endif
+
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_OUT);
   stop_meas(&phy_vars_ue->phy_proc_rx);
   return (0);
@@ -3617,9 +3622,6 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
     if (phy_procedures_RN_UE_RX(slot_rx, slot_tx, r_type) != 0 )
 #endif 
       phy_procedures_UE_RX(phy_vars_ue,eNB_id,abstraction_flag,mode,r_type,phy_vars_rn);
-#ifdef EMOS
-    phy_procedures_emos_UE_RX(phy_vars_ue,slot_rx,eNB_id);
-#endif
   }
   if ((subframe_select(&phy_vars_ue->lte_frame_parms,subframe_tx)==SF_S) &&
       ((slot_tx&1)==1)) {

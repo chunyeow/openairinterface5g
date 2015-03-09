@@ -312,7 +312,7 @@ static void *UE_thread_synch(void *arg) {
     }  // mutex_lock      
 
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,1); 
-    printf("Sync_mode %d\n",sync_mode);
+    //printf("Sync_mode %d\n",sync_mode);
     switch (sync_mode) {
       case pss:
 	
@@ -640,7 +640,7 @@ static void *UE_thread_rx(void *arg) {
   UE->instance_cnt_rx=-1;
 
 #ifdef RTAI
-  task = rt_task_init_schmod(nam2num("UE Thread RX"), 0, 0, 0, SCHED_FIFO, 0xF);
+  task = rt_task_init_schmod(nam2num("UE RX Thread"), 0, 0, 0, SCHED_FIFO, 0xF);
   if (task==NULL) {
     LOG_E(PHY,"[SCHED][UE] Problem starting UE RX thread!!!!\n");
     return 0;
@@ -1343,13 +1343,13 @@ void *UE_thread(void *arg) {
 
 
       // wait until we can lock mutex_synch
-      printf("Locking mutex_synch (UE_thread)\n");
+      //printf("Locking mutex_synch (UE_thread)\n");
       if (pthread_mutex_lock(&UE->mutex_synch) != 0) {
 	LOG_E(PHY,"[SCHED][UE] error locking mutex for UE initial synch thread\n");
 	exit_fun("noting to add");
       }
       else {
-	printf("Before getting frame IC %d (UE_thread)\n",UE->instance_cnt_synch);
+	//printf("Before getting frame IC %d (UE_thread)\n",UE->instance_cnt_synch);
 	if (UE->instance_cnt_synch < 0) {
 
 	  wait_sync_cnt=0;

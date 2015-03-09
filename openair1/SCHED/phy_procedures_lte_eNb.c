@@ -369,7 +369,7 @@ int16_t get_target_ul_rx_power(module_id_t module_idP, uint8_t CC_id) {
 }
 
 #ifdef EMOS
-void phy_procedures_emos_eNB_TX(unsigned char next_slot, PHY_VARS_eNB *phy_vars_eNB) {
+void phy_procedures_emos_eNB_TX(unsigned char subframe, PHY_VARS_eNB *phy_vars_eNB) {
 
 }
 #endif
@@ -482,7 +482,7 @@ void phy_procedures_emos_eNB_RX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eN
 
   if (subframe==4) {
     emos_dump_eNB.timestamp = rt_get_time_ns();
-    emos_dump_eNB.frame_tx = phy_vars_eNB->proc[subframe].frame;
+    emos_dump_eNB.frame_tx = phy_vars_eNB->proc[subframe].frame_rx;
     emos_dump_eNB.rx_total_gain_dB = phy_vars_eNB->rx_total_gain_eNB_dB;
     emos_dump_eNB.mimo_mode = phy_vars_eNB->transmission_mode[0];
     memcpy(&emos_dump_eNB.PHY_measurements_eNB,
@@ -494,12 +494,12 @@ void phy_procedures_emos_eNB_RX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eN
     //bytes = rtf_put(CHANSOUNDER_FIFO_MINOR, "test", sizeof("test"));
     if (bytes!=sizeof(fifo_dump_emos_eNB)) {
       LOG_W(PHY,"[eNB %d] Frame %d, subframe %d, Problem writing EMOS data to FIFO (bytes=%d, size=%d)\n",
-            phy_vars_eNB->Mod_id,phy_vars_eNB->frame, subframe,bytes,sizeof(fifo_dump_emos_eNB));
+            phy_vars_eNB->Mod_id,phy_vars_eNB->proc[(subframe+1)%10].frame_rx, subframe,bytes,sizeof(fifo_dump_emos_eNB));
     }
     else {
       if (phy_vars_eNB->proc[(subframe+1)%10].frame_tx%100==0) {
         LOG_I(PHY,"[eNB %d] Frame %d (%d), subframe %d, Writing %d bytes EMOS data to FIFO\n",
-              phy_vars_eNB->Mod_id,phy_vars_eNB->proc[(subframe+1)%10]->frame_tx, ((fifo_dump_emos_eNB*)&emos_dump_eNB)->frame_tx, subframe, bytes);
+              phy_vars_eNB->Mod_id,phy_vars_eNB->proc[(subframe+1)%10].frame_rx, ((fifo_dump_emos_eNB*)&emos_dump_eNB)->frame_tx, subframe, bytes);
       }
     }
   }
@@ -2399,7 +2399,7 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 
      
 #ifdef EMOS
-  phy_procedures_emos_eNB_TX(next_slot, phy_vars_eNB);
+  phy_procedures_emos_eNB_TX(subframe, phy_vars_eNB);
 #endif
 
 #ifndef EXMIMO

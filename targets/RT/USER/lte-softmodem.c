@@ -65,6 +65,7 @@ static int hw_subframe;
 
 #ifdef EMOS
 #include <gps.h>
+struct gps_fix_t dummy_gps_data;
 #endif
 
 #include "PHY/types.h"
@@ -205,6 +206,7 @@ static pthread_t                forms_thread; //xforms
 #endif
 #ifdef EMOS
 static pthread_t                thread3; //emos
+static pthread_t                thread4; //GPS
 #endif
 
 openair0_device openair0;
@@ -555,6 +557,73 @@ static void *scope_thread(void *arg) {
 #ifdef EMOS
 #define NO_ESTIMATES_DISK 100 //No. of estimates that are aquired before dumped to disk
 
+void* gps_thread (void *arg)
+{
+
+  struct gps_data_t gps_data;
+  struct gps_data_t *gps_data_ptr = &gps_data;
+  struct sched_param sched_param;
+  int ret;
+
+  sched_param.sched_priority = sched_get_priority_min(SCHED_FIFO)+1; 
+  sched_setscheduler(0, SCHED_FIFO,&sched_param);
+  
+  printf("GPS thread has priority %d\n",sched_param.sched_priority);
+
+  memset(&dummy_gps_data,0,sizeof(struct gps_fix_t));
+  
+#if GPSD_API_MAJOR_VERSION>=5
+  ret = gps_open("127.0.0.1","2947",gps_data_ptr);
+  if (ret!=0)
+#else
+  gps_data_ptr = gps_open("127.0.0.1","2947");
+  if (gps_data_ptr == NULL) 
+#endif
+    {
+      printf("[EMOS] Could not open GPS\n");
+      pthread_exit((void*)arg);
+    }
+#if GPSD_API_MAJOR_VERSION>=4
+  else if (gps_stream(gps_data_ptr, WATCH_ENABLE,NULL) != 0)
+#else
+  else if (gps_query(gps_data_ptr, "w+x") != 0)
+#endif
+    {
+      printf("[EMOS] Error sending command to GPS\n");
+      pthread_exit((void*) arg);
+    }
+  else 
+    printf("[EMOS] Opened GPS, gps_data=%p\n", gps_data_ptr);
+  
+
+  while (!oai_exit)
+    {
+      printf("[EMOS] polling data from gps\n");
+#if GPSD_API_MAJOR_VERSION>=5
+      if (gps_waiting(gps_data_ptr,500)) {
+	if (gps_read(gps_data_ptr) <= 0) {
+#else
+      if (gps_waiting(gps_data_ptr)) {
+	if (gps_poll(gps_data_ptr) != 0) {
+#endif
+	  printf("[EMOS] problem polling data from gps\n");
+	}
+	else {
+	  memcpy(&dummy_gps_data,&(gps_data_ptr->fix),sizeof(struct gps_fix_t));
+	  printf("[EMOS] lat %g, lon %g\n",gps_data_ptr->fix.latitude,gps_data_ptr->fix.longitude);
+	}
+      } //gps_waiting
+      else {
+	printf("[EMOS] WARNING: No GPS data available, storing dummy packet\n");
+      }
+      //rt_sleep_ns(1000000000LL);
+      sleep(1);
+    } //oai_exit
+
+  pthread_exit((void*) arg);
+
+}
+
 void *emos_thread (void *arg)
 {
   char c;
@@ -567,13 +636,10 @@ void *emos_thread (void *arg)
   time_t starttime_tmp;
   struct tm starttime;
   
-  int channel_buffer_size;
+  int channel_buffer_size,ret;
   
   time_t timer;
   struct tm *now;
-
-  struct gps_data_t *gps_data = NULL;
-  struct gps_fix_t dummy_gps_data;
 
   struct sched_param sched_param;
   
@@ -585,27 +651,6 @@ void *emos_thread (void *arg)
   timer = time(NULL);
   now = localtime(&timer);
 
-  memset(&dummy_gps_data,1,sizeof(struct gps_fix_t));
-  
-  gps_data = gps_open("127.0.0.1","2947");
-  if (gps_data == NULL) 
-    {
-      printf("[EMOS] Could not open GPS\n");
-      //exit(-1);
-    }
-#if GPSD_API_MAJOR_VERSION>=4
-  else if (gps_stream(gps_data, WATCH_ENABLE,NULL) != 0)
-#else
-  else if (gps_query(gps_data, "w+x") != 0)
-#endif
-    {
-      //sprintf(tmptxt,"Error sending command to GPS, gps_data = %x", gps_data);
-      printf("[EMOS] Error sending command to GPS\n");
-      //exit(-1);
-    }
-  else 
-    printf("[EMOS] Opened GPS, gps_data=%p\n");
-  
   if (UE_flag==0)
     channel_buffer_size = sizeof(fifo_dump_emos_eNB);
   else
@@ -642,17 +687,26 @@ void *emos_thread (void *arg)
     }
 
 
-  printf("[EMOS] starting dump, channel_buffer_size=%d ...\n",channel_buffer_size);
+  printf("[EMOS] starting dump, channel_buffer_size=%d, fifo %d\n",channel_buffer_size,fifo);
   while (!oai_exit)
     {
+      /*
       bytes = rtf_read_timed(fifo, fifo2file_ptr, channel_buffer_size,100);
       if (bytes==0)
 	continue;
-
+      */
+      bytes = rtf_read_all_at_once(fifo, fifo2file_ptr, channel_buffer_size);
+      if (bytes<=0) {
+	usleep(100);
+	continue;
+      }
+      if (bytes != channel_buffer_size) {
+	printf("[EMOS] ERROR! Only got %d bytes instead of %d!\n",bytes,channel_buffer_size);
+      }
       /*
-	if (UE_flag==0)
+      if (UE_flag==0)
 	printf("eNB: count %d, frame %d, read: %d bytes from the fifo\n",counter, ((fifo_dump_emos_eNB*)fifo2file_ptr)->frame_tx,bytes);
-	else
+      else
 	printf("UE: count %d, frame %d, read: %d bytes from the fifo\n",counter, ((fifo_dump_emos_UE*)fifo2file_ptr)->frame_rx,bytes);
       */
 
@@ -679,30 +733,13 @@ void *emos_thread (void *arg)
               fprintf(stderr, "[EMOS] Error writing to dumpfile\n");
               exit(EXIT_FAILURE);
             }
-	  if (gps_data)
+
+	  if (fwrite(&dummy_gps_data, sizeof(char), sizeof(struct gps_fix_t), dumpfile_id) != sizeof(struct gps_fix_t))
 	    {
-	      if (gps_poll(gps_data) != 0) {
-		printf("[EMOS] problem polling data from gps\n");
-	      }
-	      else {
-		printf("[EMOS] lat %g, lon %g\n",gps_data->fix.latitude,gps_data->fix.longitude);
-	      }
-	      if (fwrite(&(gps_data->fix), sizeof(char), sizeof(struct gps_fix_t), dumpfile_id) != sizeof(struct gps_fix_t))
-		{
-		  printf("[EMOS] Error writing to dumpfile, stopping recording\n");
-		  exit(EXIT_FAILURE);
-		}
+	      printf("[EMOS] Error writing to dumpfile, stopping recording\n");
+	      exit(EXIT_FAILURE);
 	    }
-	  else
-	    {
-	      printf("[EMOS] WARNING: No GPS data available, storing dummy packet\n");
-	      if (fwrite(&(dummy_gps_data), sizeof(char), sizeof(struct gps_fix_t), dumpfile_id) != sizeof(struct gps_fix_t))
-		{
-		  printf("[EMOS] Error writing to dumpfile, stopping recording\n");
-		  exit(EXIT_FAILURE);
-		}
-	    } 
-        }
+	}
     }
   
   free(fifo2file_buffer);
@@ -2756,6 +2793,8 @@ int main(int argc, char **argv) {
 #ifdef EMOS
   ret = pthread_create(&thread3, NULL, emos_thread, NULL);
   printf("EMOS thread created, ret=%d\n",ret);
+  ret = pthread_create(&thread4, NULL, gps_thread, NULL);
+  printf("GPS thread created, ret=%d\n",ret);
 #endif
 
   rt_sleep_ns(10*FRAME_PERIOD);
@@ -2938,6 +2977,9 @@ int main(int argc, char **argv) {
   printf("waiting for EMOS thread\n");
   pthread_cancel(thread3);
   pthread_join(thread3,&status);
+  printf("waiting for GPS thread\n");
+  pthread_cancel(thread4);
+  pthread_join(thread4,&status);
 #endif
 
 #ifdef EMOS
