@@ -125,27 +125,27 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
 
 
   if (eNB_id > 2) {
-    msg("dlsch_demodulation.c: Illegal eNB_id %d\n",eNB_id);
+    LOG_W(PHY,"dlsch_demodulation.c: Illegal eNB_id %d\n",eNB_id);
     return(-1);
   }
     
   if (!lte_ue_common_vars) {
-    msg("dlsch_demodulation.c: Null lte_ue_common_vars\n");
+    LOG_W(PHY,"dlsch_demodulation.c: Null lte_ue_common_vars\n");
     return(-1);
   }
 
   if (!dlsch_ue[0]) {
-    msg("dlsch_demodulation.c: Null dlsch_ue pointer\n");
+    LOG_W(PHY,"dlsch_demodulation.c: Null dlsch_ue pointer\n");
     return(-1);
   }
 
   if (!lte_ue_pdsch_vars) {
-    msg("dlsch_demodulation.c: Null lte_ue_pdsch_vars pointer\n");
+    LOG_W(PHY,"dlsch_demodulation.c: Null lte_ue_pdsch_vars pointer\n");
     return(-1);
   }
     
   if (!frame_parms) {
-    msg("dlsch_demodulation.c: Null lte_frame_parms\n");
+    LOG_W(PHY,"dlsch_demodulation.c: Null lte_frame_parms\n");
     return(-1);
   }
   //  printf("rx_dlsch subframe %d symbol %d: eNB_id %d, eNB_id_i %d, dual_stream_flag %d\n",subframe,symbol,eNB_id,eNB_id_i,dual_stream_flag); 
@@ -244,7 +244,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
   
     //  printf("nb_rb = %d, eNB_id %d\n",nb_rb,eNB_id);
   if (nb_rb==0) {
-    msg("dlsch_demodulation.c: nb_rb=0\n");
+    LOG_W(PHY,"dlsch_demodulation.c: nb_rb=0\n");
     return(-1);
   }
   /*
@@ -262,7 +262,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
 			symbol,
 			nb_rb);
 #ifdef DEBUG_PHY
-    msg("[DLSCH] avg[0] %d\n",avg[0]);
+    LOG_D(PHY,"[DLSCH] avg[0] %d\n",avg[0]);
 #endif
       
     // the channel gain should be the effective gain of precoding + channel
@@ -299,8 +299,8 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
     */
 
 #ifdef DEBUG_PHY
-    msg("[DLSCH] log2_maxh = %d (%d,%d)\n",lte_ue_pdsch_vars[eNB_id]->log2_maxh,avg[0],avgs);
-    msg("[DLSCH] mimo_mode = %d\n", dlsch0_harq->mimo_mode);
+    LOG_D(PHY,"[DLSCH] log2_maxh = %d (%d,%d)\n",lte_ue_pdsch_vars[eNB_id]->log2_maxh,avg[0],avgs);
+    LOG_D(PHY,"[DLSCH] mimo_mode = %d\n", dlsch0_harq->mimo_mode);
 #endif
   }
   aatx = frame_parms->nb_antennas_tx_eNB;
@@ -368,7 +368,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
 				frame_parms, 
 				avg, symbol, nb_rb);
 	
-	//	msg("llr_offset = %d\n",offset_mumimo_llr_drange[dlsch0_harq->mcs][(dlsch1_harq->mcs>>1)-1]);
+	//	LOG_D(PHY,"llr_offset = %d\n",offset_mumimo_llr_drange[dlsch0_harq->mcs][(dlsch1_harq->mcs>>1)-1]);
 	avg[0] = log2_approx(avg[0]) - 13 + offset_mumimo_llr_drange[dlsch0_harq->mcs][(get_Qm(dlsch1_harq->mcs)>>1)-1];
 
 	lte_ue_pdsch_vars[eNB_id]->log2_maxh = cmax(avg[0],0);
@@ -424,7 +424,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
 	// effective channel of desired user is always stronger than interfering eff. channel
 	dlsch_channel_level_TM56(lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext, frame_parms, lte_ue_pdsch_vars[eNB_id]->pmi_ext,	avg, symbol, nb_rb);
 	
-	//    msg("llr_offset = %d\n",offset_mumimo_llr_drange[dlsch0_harq->mcs][(i_mod>>1)-1]);
+	//    LOG_D(PHY,"llr_offset = %d\n",offset_mumimo_llr_drange[dlsch0_harq->mcs][(i_mod>>1)-1]);
 	avg[0] = log2_approx(avg[0]) - 13 + offset_mumimo_llr_drange[dlsch0_harq->mcs][(i_mod>>1)-1];
 
 	lte_ue_pdsch_vars[eNB_id]->log2_maxh = cmax(avg[0],0);
@@ -579,7 +579,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
 	
   }
   else {
-    msg("dlsch_rx: Unknown MIMO mode\n");
+    LOG_W(PHY,"dlsch_rx: Unknown MIMO mode\n");
     return (-1);
   }
 
@@ -775,7 +775,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
     }
     break;
   default:
-    msg("rx_dlsch.c : Unknown mod_order!!!!\n");
+    LOG_W(PHY,"rx_dlsch.c : Unknown mod_order!!!!\n");
     return(-1);
     break;
   }
@@ -1901,7 +1901,7 @@ void dlsch_scale_channel(int **dl_ch_estimates_ext,
   // Determine scaling amplitude based the symbol
   ch_amp = ((pilots) ? (dlsch_ue[0]->sqrt_rho_b) : (dlsch_ue[0]->sqrt_rho_a));
 
-  //  msg("Scaling PDSCH Chest in OFDM symbol %d by %d\n",symbol_mod,ch_amp);
+  //  LOG_D(PHY,"Scaling PDSCH Chest in OFDM symbol %d by %d\n",symbol_mod,ch_amp);
 
   ch_amp128 = _mm_set1_epi16(ch_amp); // Q3.13
 
