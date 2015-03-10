@@ -66,7 +66,6 @@ if(SUBVERSION_FOUND)
   Subversion_WC_INFO(${OPENAIR_DIR} openair)
   set (FIRMWARE_VERSION "${openair_WC_REVISION} - ${openair_WC_LAST_CHANGED_DATE}")
   Subversion_WC_LOG(${OPENAIR_DIR} Project)
-  message("Last changed log is ${Project_LAST_CHANGED_LOG}")
 else()
   set (FIRMWARE_VERSION "No svn information")
 endif()
@@ -1310,7 +1309,7 @@ list(APPEND nasmesh_src device.c common.c ioctl.c classifier.c tool.c mesh.c)
 set(module_cc_opt "${module_cc_opt}")
 make_driver(nasmesh  ${OPENAIR2_DIR}/NAS/DRIVER/MESH ${nasmesh_src})
   
-# Variation of the same driver (logic????)
+# ???
 ####################
 list(APPEND oai_nw_drv_src device.c common.c ioctl.c classifier.c tool.c)
 if(OAI_NW_DRIVER_USE_NETLINK)
@@ -1318,6 +1317,14 @@ if(OAI_NW_DRIVER_USE_NETLINK)
 endif()
 make_driver(oai_nw_drv ${OPENAIR2_DIR}/NAS/DRIVER/LITE ${oai_nw_drv_src})
 
+# Exmimo board drivers
+#########################
+list(APPEND openair_rf_src module_main.c irq.c fileops.c exmimo_fw.c)
+make_driver(openair_rf ${OPENAIR_TARGETS}/ARCH/EXMIMO/DRIVER/eurecom ${openair_rf_src})
+
+add_executable(updatefw
+  ${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT/updatefw.c
+)
 
 # add the install targets
 #install (TARGETS Tutorial DESTINATION bin)
