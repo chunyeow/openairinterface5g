@@ -8,6 +8,6 @@ set(DEBUG_PHY False)
 set(MU_RECIEVER Flase)
 set(RANDOM_BF False)
 set(PBS_SIM False)
-set(PERFECT_CE False)
+set(PERFECT_CE True)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)

@@ -28,7 +28,7 @@
 
 cmake_minimum_required (VERSION 2.8)
 
-
+#############################################
 # Base directories, compatible with legacy OAI building
 ################################################
 set (OPENAIR_DIR     $ENV{OPENAIR_DIR})
@@ -42,16 +42,19 @@ set (OPENAIR_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY})
 
 project (OpenAirInterface)
 
+####################################################
 # compilation flags
-# added CMAKER conditional compilation to not bother legacy building system
 #############################################
 if(NOT CMAKE_BUILD_TYPE)
-set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
+  # added CMAKER conditional compilation to not bother legacy building system
+  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING 
+    "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo MinSizeRel)
 
 #
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse4.2 -std=gnu99 -Wall -Wstrict-prototypes -fno-strict-aliasing -rdynamic -funroll-loops -Wno-packed-bitfield-compat")
+set(CMAKE_C_FLAGS 
+  "${CMAKE_C_FLAGS} -msse4.2 -std=gnu99 -Wall -Wstrict-prototypes -fno-strict-aliasing -rdynamic -funroll-loops -Wno-packed-bitfield-compat")
 # set a flag for changes in the source code
 # these changes are related to hardcoded path to include .h files
 add_definitions("-DCMAKER")
@@ -98,75 +101,14 @@ endfunction(add_integer_option)
 #########################################
 add_boolean_option(MSG_PRINT  False "print debug messages")
 add_boolean_option(DISABLE_XER_PRINT True "print XER Format")
+add_boolean_option(XER_PRINT False "print XER Format")
 add_boolean_option(RRC_MSG_PRINT False "print RRC messages")
 add_boolean_option(PDCP_MSG_PRINT False "print PDCP messages")
 add_boolean_option(TEST_OMG False "???")
 add_boolean_option(DEBUG_OMG False "???")
+add_boolean_option(XFORMS False "This adds the possibility to see the signal oscilloscope")
 
-add_boolean_option(XFORMS True "This adds the possibility to see the signal oscilloscope")
-  
-# to be documented options
-###################
-#set(LOCALIZATION  False)
-add_boolean_option(LOCALIZATION  True "???")
-add_boolean_option(LINUX_LIST True "???")
-add_boolean_option(SPECTRA True "???")
-add_boolean_option(HARD_RT False "???")
-add_boolean_option(ENABLE_SECURITY True "???")
-add_boolean_option(SECU True "???")
-add_boolean_option(JUMBO_FRAME True "???")
-add_boolean_option(ENABLE_USE_MME True "???")
-add_boolean_option(LINK_PDCP_TO_GTPV1U True "????")
-add_boolean_option(USER_MODE True "????")
-add_boolean_option(LOG_NO_THREAD True "Disable thread for log, seems always set to true")
-add_boolean_option(ENABLE_NAS_UE_LOGGING True "????")
-add_boolean_option(ENABLE_USE_CPU_EXECUTION_TIME True "Add data in vcd traces: disable it if perf issues")
-add_boolean_option(OPENAIR2 True "????")
-add_boolean_option(NO_RRM True "????")
-add_boolean_option(PUCCH True "????")
-add_boolean_option(NEW_FFT True "????")
-add_boolean_option(PHYSIM True "????")
-add_boolean_option(PC_TARGET True "????")
-add_boolean_option(PC_DSP True "????")
-add_boolean_option(OPENAIR_LTE True "Seems legacy: keep it to true")
-add_boolean_option(ENABLE_FXP True "????")
-add_boolean_option(OPENAIR1 True "????")
-add_boolean_option(DRIVER2013 True "????")
-add_boolean_option(ENABLE_RAL True "????")
-add_boolean_option(MIH_C_MEDIEVAL_EXTENSIONS True "????")
-add_boolean_option(SMBV False "Rohde&Schwarz SMBV100A vector signal generator")
-add_boolean_option(UE_BUILD True "????")
-add_boolean_option(NAS_UE True "????")
-add_boolean_option(PHYSIM False "for L1 simulators (dlsim, ulsim, ...)")
-add_boolean_option(PHY_EMUL False "not clear: must remain False for dlsim")
-add_boolean_option(MU_RECEIVER False "????")
-add_boolean_option(RANDOM_BF False "????")
-add_boolean_option(PBS_SIM False "????")
-add_boolean_option(PERFECT_CE False "????")
-add_boolean_option(ENABLE_VCD_FIFO True "Seems legacy: always true now")
-
-add_boolean_option(OAI_NW_DRIVER_TYPE_ETHERNET False "????")
-add_boolean_option(OPENAIR_EMU False "specific to oaisim")
-add_boolean_option(OAI_EMU False "specific to oaisim")
-add_boolean_option(ENABLE_NEW_MULTICAST True "specific to oaisim")
-add_boolean_option(ENABLE_PGM_TRANSPORT True "specific to oaisim")
-add_boolean_option(MAC_CONTEXT False "specific to oaisim")
-add_boolean_option(PHY_ABSTRACTION False "specific to oaisim")
-add_boolean_option(ADDR_CONF False "specific to oaisim")
-add_boolean_option(LARGE_SCALE False "specific to oaisim: defines max eNB=2 and max UE=120")
-add_integer_option(RLC_STOP_ON_LOST_PDU False "Fatal assert in this case")
-add_integer_option(USE_3GPP_ADDR_AS_LINK_ADDR False "As per attribute name")
-
-
-add_boolean_option(EMOS False "????")
-if(${EMOS})
-  add_definitions("-D_FILE_OFFSET_BITS=64")
-  set(EMOS_LIB gps)
-endif(${EMOS})
-
-add_integer_option(MAX_NUM_CCs 1 "????")
-
-add_boolean_option(ENABLE_ITTI True "ITTI is internal messaging, should remain enabled")
+add_boolean_option(ENABLE_ITTI True "ITTI is internal messaging, should remain enabled for most targets")
 set (ITTI_DIR ${OPENAIR_DIR}/common/utils/itti)
 if (${ENABLE_ITTI})
   add_library(ITTI 
@@ -185,8 +127,9 @@ endif (${ENABLE_ITTI})
 
 add_boolean_option(RTAI False "Use RTAI")
 if (${RTAI})
-  set(ENABLE_RTAI_CLOCK)
-  set(CONFIG_RTAI_LXRT_INLINE)
+  set(LOWLATENCY False)
+  add_definitions("-DENABLE_RTAI_CLOCK")
+  add_definitions("-DCONFIG_RTAI_LXRT_INLINE")
   include_directories ("/usr/realtime/include")
   include_directories ("/usr/realtime/include/asm")
   set(RTAI_SOURCE sched_dlsch.c sched_rx_pdsch.c rt_wrapper.c vcd_signal_dumper.c log.c)
@@ -306,6 +249,7 @@ if (NOT ${USE_MME} STREQUAL "False")
     DEPENDS ${S1AP_ASN_FILES} 
     )
   add_library(s1ap_asn1 ${S1AP_OAI_SRC} ${S1AP_OAI_generated} ${S1AP_source})
+  set(S1AP_LIB s1ap_asn1)
   include_directories ("${S1AP_C_DIR}")
   include_directories ("${S1AP_DIR}")
 endif(NOT ${USE_MME} STREQUAL "False")
@@ -346,22 +290,92 @@ set_property(CACHE RF_BOARD PROPERTY STRINGS None EXMIMO USRP ETHERNET)
 add_definitions("-D${RF_BOARD}=1")
 
 if (${RF_BOARD} STREQUAL EXMIMO)
-  set(LOWLATENCY_KERNEL True)
   set(DRIVER2013)
   include_directories ("${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB/")
   include_directories ("${OPENAIR_TARGETS}/ARCH/EXMIMO/DEFS/")
   set(HW_SOURCE ${HW_SOURCE} 
     ${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.c 
     ${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB/gain_control.c)   
+
 elseif (${RF_BOARD} STREQUAL USRP)
   include_directories("/opt/include/uhd")
   LINK_DIRECTORIES("/opt/lib")
   set(option_USRP "uhd")
+
 elseif (${RF_BOARD} STREQUAL ETHERNET)
   include_directories ("${OPENAIR_TARGETS}/ARCH/ETHERNET/USERSPACE/LIB")
+
 endif (${RF_BOARD} STREQUAL EXMIMO)
  
 include_directories ("${OPENAIR_TARGETS}/ARCH/COMMON")
+
+####################
+# to be documented options
+###################
+add_boolean_option(ADDR_CONF False "specific to oaisim")
+add_boolean_option(ASSERT False "specific to oaisim: ???")
+add_boolean_option(DRIVER2013 True "????")
+add_boolean_option(ENABLE_FXP True "????")
+add_boolean_option(ENABLE_NAS_UE_LOGGING True "????")
+add_boolean_option(ENABLE_NEW_MULTICAST False "specific to oaisim")
+add_boolean_option(ENABLE_PDCP_NETLINK_FIFO False "????")
+add_boolean_option(ENABLE_PGM_TRANSPORT False "specific to oaisim")
+add_boolean_option(ENABLE_RAL False "????")
+add_boolean_option(ENABLE_SECURITY True "???")
+add_boolean_option(ENABLE_USE_CPU_EXECUTION_TIME True "Add data in vcd traces: disable it if perf issues")
+add_boolean_option(ENABLE_USE_MME True "???")
+add_boolean_option(ENABLE_VCD_FIFO True "Seems legacy: always true now")
+add_boolean_option(HARD_RT False "???")
+add_boolean_option(JUMBO_FRAME True "???")
+add_boolean_option(LARGE_SCALE False "specific to oaisim: defines max eNB=2 and max UE=120")
+add_boolean_option(LINK_PDCP_TO_GTPV1U True "????")
+add_boolean_option(LINUX_LIST False "???")
+add_boolean_option(LINUX True "???")
+add_boolean_option(LOCALIZATION  False "???")
+add_boolean_option(LOG_NO_THREAD True "Disable thread for log, seems always set to true")
+add_boolean_option(LOWLATENCY  True "Use the Linux scheduler SCHED_DEADLINE: kernel >= 3.14")
+add_boolean_option(MAC_CONTEXT True "specific to oaisim")
+add_integer_option(MAX_NUM_CCs 1 "????")
+add_boolean_option(MIH_C_MEDIEVAL_EXTENSIONS True "????")
+add_boolean_option(MU_RECEIVER False "????")
+add_boolean_option(NAS_ADDRESS_FIX False "specific to oaisim: for nasmesh driver")
+add_boolean_option(NAS_MME False "NAS_UE and NAS_MME are incompatible options")
+add_boolean_option(NAS_NETLINK True "???? Must be true to compile nasmesh driver without rtai")
+add_boolean_option(NAS_UE True "NAS_UE and NAS_MME are incompatible options")
+add_boolean_option(NEW_FFT True "????")
+add_boolean_option(NO_RRM True "????")
+add_boolean_option(OAI_EMU False "specific to oaisim")
+add_boolean_option(OAI_NW_DRIVER_TYPE_ETHERNET False "????")
+add_boolean_option(OAI_NW_DRIVER_USE_NETLINK False "????")
+add_boolean_option(OPENAIR1 True "????")
+add_boolean_option(OPENAIR2 True "????")
+add_boolean_option(OPENAIR_EMU False "specific to oaisim")
+add_boolean_option(OPENAIR_LTE True "Seems legacy: keep it to true")
+add_boolean_option(PBS_SIM False "????")
+add_boolean_option(PC_DSP True "????")
+add_boolean_option(PC_TARGET True "????")
+add_boolean_option(PERFECT_CE False "????")
+add_boolean_option(PHY_ABSTRACTION False "specific to oaisim")
+add_boolean_option(PHY_CONTEXT False "not clear: must remain False for dlsim")
+add_boolean_option(PHY_EMUL False "not clear: must remain False for dlsim")
+add_boolean_option(PHYSIM True "??? set in lte-softmodem, for L1 simulators (dlsim, ulsim, ...)?")
+add_boolean_option(PUCCH True "????")
+add_boolean_option(RANDOM_BF False "????")
+add_boolean_option(RLC_STOP_ON_LOST_PDU False "Fatal assert in this case")
+add_boolean_option(SECU False "???")
+add_boolean_option(SMBV False "Rohde&Schwarz SMBV100A vector signal generator")
+add_boolean_option(SPECTRA False "???")
+add_boolean_option(UE_BUILD False "????")
+add_boolean_option(USE_3GPP_ADDR_AS_LINK_ADDR False "As per attribute name")
+add_boolean_option(USER_MODE True "????")
+add_integer_option(PACKAGE_NAME "NotDefined" "As per attribute name")
+
+add_boolean_option(EMOS False "????")
+if(${EMOS})
+  add_definitions("-D_FILE_OFFSET_BITS=64")
+  set(EMOS_LIB gps)
+endif(${EMOS})
+
 
  # add the binary tree to the search path for include files
 #######################################################
@@ -489,10 +503,10 @@ set(UTIL_SRC
   ${OPENAIR2_DIR}/UTIL/OPT/probe.c
   ${OPENAIR2_DIR}/UTIL/OTG/otg_tx.c
   ${OPENAIR2_DIR}/UTIL/OTG/otg.c
-  ${OPENAIR2_DIR}/UTIL/OTG/otg_rx.c
   ${OPENAIR2_DIR}/UTIL/OTG/otg_kpi.c
-  ${OPENAIR2_DIR}/UTIL/OTG/otg_form.c
   ${OPENAIR2_DIR}/UTIL/OTG/otg_models.c
+  ${OPENAIR2_DIR}/UTIL/OTG/otg_form.c
+  ${OPENAIR2_DIR}/UTIL/OTG/otg_rx.c
   )
 add_library(UTIL ${UTIL_SRC})
 
@@ -687,11 +701,6 @@ set (ENB_APP_SRC
   ${OPENAIR2_DIR}/ENB_APP/enb_config.c
   )
 
-if (${ENABLE_RAL})
-  set(L2_SRC ${L2_SRC}
-    ${RRC_DIR}/rrc_UE_ral.c
-    ${RRC_DIR}/rrc_eNB_ral.c)
-endif(${ENABLE_RAL})
 
 if (NOT ${USE_MME} STREQUAL "False")
   set(L2_SRC ${L2_SRC}
@@ -708,38 +717,50 @@ add_library(L2
 ##########################
 
 set(RAL_LTE_DIR ${OPENAIR3_DIR}/RAL-LTE/)
-set(RAL_LTE_SRC
-  ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_header_codec.c
-  ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_msg_codec.c
-  ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_primitive_codec.c
-  ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_F1_basic_data_types_codec.c
-  ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_F2_general_data_types_codec.c
-  ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_F3_data_types_for_address_codec.c
-  ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_F4_data_types_for_links_codec.c
-  ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_F9_data_types_for_qos_codec.c
-  ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_F13_data_types_for_information_elements_codec.c
-  ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_L2_type_values_for_tlv_encoding.c
-  ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_Medieval_extensions.c
-  ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_bit_buffer.c
-  ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C.c
-  ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_action.c
-  ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_main.c
-  ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_mih_msg.c
-  ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_parameters.c
-  ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_process.c
-  ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_rrc_msg.c
-  ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_subscribe.c
-  ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_thresholds.c
-  ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_action.c
-  ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_main.c
-  ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_mih_msg.c
-  ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_parameters.c
-  ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_process.c
-  ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_rrc_msg.c
-  ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_subscribe.c
-  ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_thresholds.c
-  )
-add_library(RAL_LTE ${RAL_LTE_SRC})
+if (${ENABLE_RAL})
+  set(RAL_LTE_SRC
+    ${RRC_DIR}/rrc_UE_ral.c
+    ${RRC_DIR}/rrc_eNB_ral.c
+    ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_action.c
+    ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_main.c
+    ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_mih_msg.c
+    ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_parameters.c
+    ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_process.c
+    ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_rrc_msg.c
+    ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_subscribe.c
+    ${RAL_LTE_DIR}LTE_RAL_ENB/SRC/lteRALenb_thresholds.c
+    ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_action.c
+    ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_main.c
+    ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_mih_msg.c
+    ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_parameters.c
+    ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_process.c
+    ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_rrc_msg.c
+    ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_subscribe.c
+    ${RAL_LTE_DIR}LTE_RAL_UE/SRC/lteRALue_thresholds.c
+    )
+  add_library(RAL ${RAL_LTE_SRC})
+  set(RAL_LIB RAL)
+endif()
+
+if(MIH_C_MEDIEVAL_EXTENSIONS)
+  set(MIH_SRC
+    ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_header_codec.c
+    ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_msg_codec.c
+    ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_primitive_codec.c
+    ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_F1_basic_data_types_codec.c
+    ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_F2_general_data_types_codec.c
+    ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_F3_data_types_for_address_codec.c
+    ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_F4_data_types_for_links_codec.c
+    ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_F9_data_types_for_qos_codec.c
+    ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_F13_data_types_for_information_elements_codec.c
+    ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_L2_type_values_for_tlv_encoding.c
+    ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_Medieval_extensions.c
+    ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C_bit_buffer.c
+    ${RAL_LTE_DIR}INTERFACE-802.21/C/MIH_C.c
+    )
+  add_library(MIH ${MIH_SRC})
+  set(MIH_LIB MIH)
+endif()
 
 # CN libs
 ##########################
@@ -768,6 +789,8 @@ set(NAS_SRC ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/)
 set(libnas_api_OBJS
   ${NAS_SRC}api/mme/mme_api.c
   ${NAS_SRC}api/network/nas_message.c
+  ${NAS_SRC}api/network/as_message.c
+  ${NAS_SRC}api/network/network_api.c
   )
 
 set(libnas_emm_OBJS
@@ -1022,6 +1045,10 @@ set(libnas_OBJS
   ${libnas_api_OBJS}
   )
 add_library(NAS ${libnas_OBJS})
+if(NAS_UE)
+  set(NAS_LIB NAS)
+endif()
+
 include_directories(${NAS_SRC})
 include_directories(${NAS_SRC}/api/user)
 include_directories(${NAS_SRC}/esm)
@@ -1131,7 +1158,10 @@ endif()
 
 if (${XFORMS})
   include_directories ("/usr/include/X11")
-  set(XFORMS_SOURCE ${OPENAIR1_DIR}/PHY/TOOLS/lte_phy_scope.c)
+  set(XFORMS_SOURCE 
+    ${OPENAIR1_DIR}/PHY/TOOLS/lte_phy_scope.c
+    ${OPENAIR_TARGETS}/RT/USER/stats.c
+    )
   set(XFORMS_LIBRARIES "forms")
 endif (${XFORMS})
 
@@ -1144,7 +1174,6 @@ ${OPENAIR_BIN_DIR}/messages_xml.h
 ${OPENAIR_TARGETS}/RT/USER/sched_dlsch.c
 ${OPENAIR_TARGETS}/RT/USER/sched_rx_pdsch.c
 ${OPENAIR_TARGETS}/RT/USER/rt_wrapper.c
-${OPENAIR_TARGETS}/RT/USER/stats.c
 ${OPENAIR_TARGETS}/RT/USER/lte-ue.c
 ${OPENAIR_TARGETS}/RT/USER/lte-softmodem.c
 ${OPENAIR1_DIR}/SIMULATION/TOOLS/taus.c
@@ -1157,7 +1186,7 @@ ${XFORMS_SOURCE}
 )
 target_link_libraries (lte-softmodem 
   -Wl,--start-group 
-  RRC_LIB s1ap_asn1 GTPV1U SECU_CN SECU_OSA UTIL SCTP UDP SCHED_LIB PHY LFDS L2 RAL_LTE NAS ${ITTI_LIB}  
+  RRC_LIB ${S1AP_LIB} GTPV1U SECU_CN SECU_OSA UTIL SCTP UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} ${ITTI_LIB} ${MIH_LIB}
   -Wl,--end-group )
 target_link_libraries (lte-softmodem ${LIBXML2_LIBRARIES})
 target_link_libraries (lte-softmodem pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} sctp ${option_USRP} ${XFORMS_LIBRARIES} )
@@ -1175,13 +1204,14 @@ ${OPENAIR_TARGETS}/SIMU/USER/oaisim_functions.c
 ${OPENAIR_TARGETS}/SIMU/USER/event_handler.c
 ${OPENAIR_TARGETS}/SIMU/USER/oaisim.c
 ${OPENAIR2_DIR}/RRC/NAS/nas_config.c
+${OPENAIR2_DIR}/RRC/NAS/rb_config.c
 ${OPENAIR2_DIR}/UTIL/OMG/sumo.c
 ${OPENAIR_TARGETS}/COMMON/create_tasks.c
 )
 target_include_directories(oaisim PUBLIC  ${OPENAIR_TARGETS}/SIMU/USER)
 target_link_libraries (oaisim
   -Wl,--start-group 
-  RRC_LIB s1ap_asn1 GTPV1U SECU_CN UTIL SCTP UDP SCHED_LIB PHY LFDS L2 RAL_LTE NAS SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}
+  RRC_LIB ${S1AP_LIB} GTPV1U SECU_CN UTIL SCTP UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
   -Wl,--end-group )
 target_link_libraries (oaisim ${LIBXML2_LIBRARIES} ${LAPACK_LIBRARIES})
 target_link_libraries (oaisim pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES}  ${NETTLE_LIBRARIES} sctp ${option_USRP} 
@@ -1240,12 +1270,11 @@ add_custom_command (
 ######################################
 
 # retrieve the compiler options to send it to gccxml
-get_directory_property( DirDefs COMPILE_DEFINITIONS )
+get_directory_property(DirDefs COMPILE_DEFINITIONS )
 foreach( d ${DirDefs} )
-  if(NOT ${d} STREQUAL "USER_MODE")
-    list(APPEND itti_compiler_options "-I${d}")
-  endif()
+  set(module_cc_opt_tmp "${module_cc_opt_tmp} -D${d}")
 endforeach()
+string(REPLACE "-DUSER_MODE" "" module_cc_opt ${module_cc_opt_tmp})
 get_directory_property( DirDefs INCLUDE_DIRECTORIES )
 foreach( d ${DirDefs} )
   set(module_cc_opt "${module_cc_opt} -I${d}")
@@ -1278,11 +1307,16 @@ endfunction(make_driver name dir src)
 # nashmesh module 
 ################
 list(APPEND nasmesh_src device.c common.c ioctl.c classifier.c tool.c mesh.c)
-set(module_cc_opt "${module_cc_opt} -DNAS_NETLINK")
+set(module_cc_opt "${module_cc_opt}")
 make_driver(nasmesh  ${OPENAIR2_DIR}/NAS/DRIVER/MESH ${nasmesh_src})
   
-# Next module
+# Variation of the same driver (logic????)
 ####################
+list(APPEND oai_nw_drv_src device.c common.c ioctl.c classifier.c tool.c)
+if(OAI_NW_DRIVER_USE_NETLINK)
+  list(APPEND oai_nw_drv_src netlink.c)
+endif()
+make_driver(oai_nw_drv ${OPENAIR2_DIR}/NAS/DRIVER/LITE ${oai_nw_drv_src})
 
 
 # add the install targets

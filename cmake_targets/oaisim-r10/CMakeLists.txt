@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
+set (PACKAGE_NAME "oaisim")
 set(MAC_CONTEXT True)
 set(PHY_ABSTRACTION True)
 set(OPENAIR_EMU True)
 set(OAI_EMU True)
+set(NAS_ADDRESS_FIX true)
+set(XER_PRINT True)
 
 set(RF_BOARD None)
 set(XFORMS False)
