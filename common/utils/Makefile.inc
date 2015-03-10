@@ -11,7 +11,7 @@ CFLAGS += -Wall -g -ggdb -Wstrict-prototypes -fno-strict-aliasing  -rdynamic
 CFLAGS += $(call cc-option,-mpreferred-stack-boundary=4)
 
 #For performance, if some option doesn't exist in all gcc versions, use $(call cc-option,MY_OPTION)
-CFLAGS += -O3 -funroll-loops 
+CFLAGS += -O2 -funroll-loops 
 CFLAGS += -Wno-packed-bitfield-compat 
 
 # This is the minimum CPU faetures for OAI
