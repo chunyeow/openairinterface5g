@@ -129,8 +129,8 @@ rnti_t UE_RNTI(module_id_t mod_idP, int ue_idP) {
 
   if (rnti>0)
     return (rnti);
-  LOG_E(MAC,"[eNB %d] Couldn't find RNTI for UE %d\n",mod_idP,ue_idP);
-  mac_xface->macphy_exit("UE_RNTI: Couldn't find RNTI for UE");
+  LOG_W(MAC,"[eNB %d] Couldn't find RNTI for UE %d\n",mod_idP,ue_idP);
+  //mac_xface->macphy_exit("UE_RNTI: Couldn't find RNTI for UE");
   return(0);
 }
 
