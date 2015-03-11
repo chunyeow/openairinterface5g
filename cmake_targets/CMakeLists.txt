@@ -205,7 +205,6 @@ add_custom_command (
 # Same limitation as described in RRC: unknown generated file list
 # so we generate it at cmake time
 ##############
-add_list1_option(USE_MME "False" "MME version" False R8 R10)
 add_list1_option(S1AP_VERSION R10 "S1AP Asn.1 grammar version" R8 R9 R10)
 
 set(S1AP_DIR ${OPENAIRCN_DIR}/S1AP)
@@ -324,7 +323,7 @@ add_boolean_option(MIH_C_MEDIEVAL_EXTENSIONS True "????")
 add_boolean_option(MU_RECEIVER False "????")
 add_boolean_option(NAS_ADDRESS_FIX False "specific to oaisim: for nasmesh driver")
 add_boolean_option(NAS_MME False "NAS_UE and NAS_MME are incompatible options")
-add_boolean_option(NAS_NETLINK False "???? Must be true to compile nasmesh driver without rtai")
+add_boolean_option(NAS_NETLINK False "???? Must be True to compile nasmesh driver without rtai")
 add_boolean_option(NAS_UE True "NAS_UE and NAS_MME are incompatible options")
 add_boolean_option(NEW_FFT True "????")
 add_boolean_option(NO_RRM True "????")
@@ -352,6 +351,7 @@ add_boolean_option(SMBV False "Rohde&Schwarz SMBV100A vector signal generator")
 add_boolean_option(SPECTRA False "???")
 add_boolean_option(UE_BUILD True "????")
 add_boolean_option(USE_3GPP_ADDR_AS_LINK_ADDR False "As per attribute name")
+add_boolean_option(USE_MME False "this flag is used only one time in lte-softmodem.c")
 add_boolean_option(USER_MODE True "????")
 add_integer_option(PACKAGE_NAME "NotDefined" "As per attribute name")
 
@@ -1140,6 +1140,8 @@ if (${XFORMS})
   include_directories ("/usr/include/X11")
   set(XFORMS_SOURCE 
     ${OPENAIR1_DIR}/PHY/TOOLS/lte_phy_scope.c
+    )
+  set(XFORMS_SOURCE_SOFTMODEM
     ${OPENAIR_TARGETS}/RT/USER/stats.c
     )
   set(XFORMS_LIBRARIES "forms")
@@ -1163,6 +1165,7 @@ ${OPENAIR1_DIR}/SIMULATION/ETH_TRANSPORT/netlink_init.c
 ${HW_SOURCE}
 ${RTAI_SOURCE}
 ${XFORMS_SOURCE}
+${XFORMS_SOURCE_SOFTMODEM}
 )
 target_link_libraries (lte-softmodem 
   -Wl,--start-group 
@@ -1289,7 +1292,16 @@ endfunction(make_driver name dir src)
 # nashmesh module 
 ################
 list(APPEND nasmesh_src device.c common.c ioctl.c classifier.c tool.c mesh.c)
-set(module_cc_opt "${module_cc_opt}")
+# Actually nasty stuff to be FIXED: the hereafter flag is for RTAI compilation in the driver, 
+# but has different meaning in the other parts of the code
+# We should change the constant name to xxx_RTAI or likely
+if(NOT ${module_cc_opt} MATCHES "DRTAI")
+  set(module_cc_opt "${module_cc_opt} -DNAS_NETLINK")
+  list(APPEND nasmesh_src netlink.c)
+else()
+  string(REPLACE "-DNAS_NETLINK" "" tmp "${module_cc_opt}")
+  set(module_cc_opt ${tmp})
+endif()
 make_driver(nasmesh  ${OPENAIR2_DIR}/NAS/DRIVER/MESH ${nasmesh_src})
   
 # ???
