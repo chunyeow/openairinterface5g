@@ -99,6 +99,7 @@ endmacro(add_list2_option)
 #############################################
 
 add_list1_option(CMAKE_BUILD_TYPE "RelWithDebInfo" "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." Debug Release RelWithDebInfo MinSizeRel)
+set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 
 #
 set(CMAKE_C_FLAGS 
