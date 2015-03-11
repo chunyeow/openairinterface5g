@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 set(XFORMS 1 )
-set(RRC_ASN1_VERSION "Rel8")
+set(RRC_ASN1_VERSION "Rel10")
 set(ENABLE_VCD_FIFO False )
 set(RF_BOARD "EXMIMO")
 set(PACKAGE_NAME "lte-softmodem")

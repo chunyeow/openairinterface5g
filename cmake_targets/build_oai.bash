@@ -233,7 +233,7 @@ if [ "$TARGET" = "ALL" -o "$TARGET" = "SOFTMODEM" ] ; then
        make -j4 $f > $log 2>&1
        if [ -s $f ] ; then
 	   echo_success "$f compiled"
-           cp $f $OPENAIR_DIR/cmake_targets/tests/bin 
+           cp $f $OPENAIR_DIR/cmake_targets/bin 
        else
 	   echo_error "$f compilation failed"
        fi
