@@ -4,7 +4,7 @@ SRC = dump_size.c
 #CFLAGS = $(shell rtai-config --lxrt-cflags)
 #LDFLAGS = $(shell rtai-config --lxrt-ldflags) -lpthread -lm -lgps -lforms #-llxrt 
 
-CFLAGS += -m32 -I$(OPENAIR1_DIR) -I$(OPENAIR2_DIR)/RRC/LITE/MESSAGES	
+CFLAGS += -m32 -I$(OPENAIR1_DIR) -I$(OPENAIR2_DIR)/RRC/LITE/MESSAGES -I$(OPENAIR_HOME)/common/utils -I$(OPENAIR2_DIR) -I$(OPENAIR2_DIR)/COMMON
 
 CFLAGS += -DPHYSIM -DNODE_RG -DUSER_MODE -DPC_TARGET -DPC_DSP -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DPHY_CONTEXT=1
 
