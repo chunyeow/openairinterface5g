@@ -52,7 +52,7 @@ until [ -z "$1" ]
   do
   case "$1" in
        -c | --clean)
-            CLEAN=1
+            export CLEAN=1
             echo "Will re-compile ALL"
             shift;
             ;;
@@ -178,11 +178,6 @@ cecho "OPENAIR_TARGETS = $OPENAIR_TARGETS" $green
 
 dbin=$OPENAIR_HOME/cmake_targets/bin
 dlog=$OPENAIR_HOME/cmake_targets/log
-
-if [ "$CLEAN" == "1" ] ; then
-    rm -rf $OPENAIR_DIR/cmake_targets/*/build $dbin $dlog
-    echo_info "deleted all compilation results"
-fi
 mkdir -p $dbin $dlog
 
 if [ "$DISABLE_CHECK_INSTALLED_SOFTWARE" != "1" ] ; then
@@ -210,32 +205,32 @@ if [ "$TARGET" = "ALL" -o "$TARGET" = "SOFTMODEM" ] ; then
    echo "set(RF_BOARD \"${HW}\")" >>  $cmake_file
    echo 'set(PACKAGE_NAME "lte-softmodem")' >>  $cmake_file
    echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
-
-   if compilations lte_build_oai lte-softmodem lte-softmodem $dbin/lte-softmodem.$REL \
-        > $dlog/lte-softmodem.$REL.txt 2>&1 ; then
-      echo_success "lte-softmodem compiled"
-   else
-      echo_error "lte-softmodem compilation failed"
-   fi
+   compilations \
+       lte_build_oai lte-softmodem \
+       lte-softmodem $dbin/lte-softmodem.$REL \
+       $dlog/lte-softmodem.$REL.txt \
+       "lte-softmodem compiled" \
+       "lte-softmodem compilation failed"
 
    # nasmesh driver compilation
-   if compilations lte_build_oai nasmesh CMakeFiles/nasmesh/nasmesh.ko $dbin/nasmesk.ko \
-        > $dlog/nasmesh.txt 2>&1 ; then
-      echo_success "nasmesh driver compiled"
-   else
-      echo_error "nasmesh driver compilation failed"
-   fi
-   
+   compilations \
+       lte_build_oai nasmesh \
+       CMakeFiles/nasmesh/nasmesh.ko $dbin/nasmesh.ko \
+       $dlog/nasmesh.txt \
+       "nasmesh driver compiled" \
+       "nasmesh driver compilation failed"
+
    # lte unitary simulators compilation
    simlist="dlsim ulsim pucchsim prachsim pdcchsim pbchsim mbmssim"
    log=$dlog/lte-simulators.log
    cd $OPENAIR_DIR/cmake_targets/lte-simulators
+   [ "$CLEAN" = "1" ] && rm -rf build
    mkdir -p build
    cd build
    rm -f *sim
    cmake ..  > $log 2>&1
-   make -j4 $simlist > $log 2>&1
    for f in $simlist ; do
+       make -j4 $f > $log 2>&1
        if [ -s $f ] ; then
 	   echo_success "$f compiled"
            cp $f $OPENAIR_DIR/cmake_targets/tests/bin 
@@ -246,63 +241,66 @@ if [ "$TARGET" = "ALL" -o "$TARGET" = "SOFTMODEM" ] ; then
 
    # EXMIMO drivers & firmware loader
    if [ "$HW" = "EXMIMO" ] ; then
-     if compilations lte_build_oai openair_rf CMakeFiles/openair_rf/openair_rf.ko $dbin/openair_rf.ko \
-        > $dlog/openair_rf.txt 2>&1 ; then
-       echo_success "EXMIMO driver compiled"
-     else
-        echo_error "EXMIMO driver compilation failed"
-     fi
-     if  compilations lte_build_oai updatefw updatefw $dbin/updatefw \
-       > $dlog/updatefw.txt 2>&1 ; then
-       echo_success "EXMIMO firmware loader compiled"
-     else
-        echo_error "EXMIMO firmware loader compilation failed"
-     fi
+     compilations \
+        lte_build_oai openair_rf \
+        CMakeFiles/openair_rf/openair_rf.ko $dbin/openair_rf.ko \
+        $dlog/openair_rf.txt 2>&1 \
+	"EXMIMO driver compiled" \
+	"EXMIMO driver compilation failed"
+     compilations \
+       lte_build_oai updatefw \
+       updatefw $dbin/updatefw \
+       $dlog/updatefw.txt 2>&1 \
+       "EXMIMO firmware loader compiled" \
+       "EXMIMO firmware loader compilation failed"
    fi
 
-   # TBD: oasim compilation
+   # oasim compilation
    cmake_file=$DIR/oaisim_build_oai/CMakeLists.txt
    cp $DIR/oaisim_build_oai/CMakeLists.template $cmake_file
    echo "set(XFORMS $XFORMS )" >>  $cmake_file
    echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
    echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
-   echo "set(RF_BOARD \"${HW}\")" >>  $cmake_file
    echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
-
-   if compilations oaisim_build_oai oaisim oaisim $dbin/oaisim.$REL \
-        > $dlog/oaisim.$REL.txt 2>&1 ; then
-      echo_success "oaisim compiled"
-   else
-      echo_error "oaisim compilation failed"
-   fi
+   compilations \
+       oaisim_build_oai oaisim \
+       oaisim $dbin/oaisim.$REL \
+       $dlog/oaisim.$REL.txt 2>&1 \
+       "oaisim compiled" \
+       "oaisim compilation failed"
 
 fi
+
+# EPC compilation
+##################
+
+# Auto-tests 
+#####################
+if [ "$OAI_TEST" = "1" ]; then 
+    echo_info "10. Running OAI pre commit tests (pre-ci) ..."
+    updated=$(svn st -q $OPENAIR_DIR)
+    if [ "$updated" != "" ] ; then
+	echo_warning "some files are not in svn: $updated"
+    fi
+    mkdir -p $dbin.test
+    compilations \
+        test.0101 oaisim \
+        oaisim  $dbin.test/oaisim.r8 \
+        $dlog/oaisim.r8.test0101.txt \
+	"test 0101:oaisim passed" \
+        "test 0101:oaisim failed"
+    compilations test.0102 nasmesh \
+        CMakeFiles/nasmesh/nasmesh.ko $dbin/test/nasmesh.ko \
+        $dlog/nasmesh.test0102.txt \
+	"test 0102: nasmesh.ko  passed" \
+        "test 0102: nasmesk.ko failed"
+else 
+    echo_info "10. Bypassing the Tests ..."
+fi 
 exit 0
 
-build_epc(){
 
-    epc_compiled=1
 
-    echo_info "Note: this scripts tested only on Ubuntu 14.04x64"
-
-######################################
-# CHECK MISC SOFTWARES AND LIBS      #
-######################################
-    if [ $DISABLE_CHECK_INSTALLED_SOFTWARE -eq 0 ]; then 
-        echo_info "4. Checking the the required softwares/packages for EPC..."
-
-        check_install_epc_software  
-        check_install_asn1c
-        if [ $OAI_CLEAN -eq 1 ]; then
-            check_install_freediamter
-        else 
-            if [ ! -d /usr/local/etc/freeDiameter ]; then
-                check_install_freediamter
-            fi
-        fi
-    else
-        echo_info "4. Not checking the required softwares/packages for EPC"
-    fi
 
 ###########################################
 # configure and compile

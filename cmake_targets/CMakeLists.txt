@@ -42,15 +42,63 @@ set (OPENAIR_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY})
 
 project (OpenAirInterface)
 
+###########################################
+# macros to define options as there is numerous options in oai
+################################################
+macro(add_boolean_option name val helpstr)
+  if(DEFINED ${name})
+    set(value ${${name}})
+  else(DEFINED ${name})
+    set(value ${val})
+  endif()
+  set(${name} ${value} CACHE STRING "${helpstr}")
+  set_property(CACHE ${name} PROPERTY TYPE BOOL)
+  if (${value})
+    add_definitions("-D${name}")
+  endif (${value})
+endmacro(add_boolean_option)
+
+macro(add_integer_option name val helpstr)
+  if(DEFINED ${name})
+    set(value ${${name}})
+  else(DEFINED ${name})
+    set(value ${val})
+  endif()
+  set(${name} ${value} CACHE STRING "${helpstr}")
+  add_definitions("-D${name}=${value}")
+endmacro(add_integer_option)
+
+macro(add_list1_option name val helpstr)
+  if(DEFINED ${name})
+    set(value ${${name}})
+  else(DEFINED ${name})
+    set(value ${val})
+  endif()
+  set(${name} ${value} CACHE STRING "${helpstr}")
+  set_property(CACHE ${name} PROPERTY STRINGS ${ARGN})
+  if(NOT "${value}" STREQUAL "False")
+    add_definitions("-D${name}=${value}")
+  endif()
+endmacro(add_list1_option)
+
+macro(add_list2_option name val helpstr)
+  if(DEFINED ${name})
+    set(value ${${name}})
+  else(DEFINED ${name})
+    set(value ${val})
+  endif()
+  set(${name} ${value} CACHE STRING "${helpstr}")
+  set_property(CACHE ${name} PROPERTY STRINGS ${ARGN})
+  if(NOT "${value}" STREQUAL "False")
+    add_definitions("-D${value}=1")
+  endif()
+endmacro(add_list2_option)
+
 ####################################################
 # compilation flags
 #############################################
-if(NOT CMAKE_BUILD_TYPE)
-  # added CMAKER conditional compilation to not bother legacy building system
-  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING 
-    "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
-endif()
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo MinSizeRel)
+
+add_list1_option(CMAKE_BUILD_TYPE "RelWithDebInfo" "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." Debug Release RelWithDebInfo MinSizeRel)
 
 #
 set(CMAKE_C_FLAGS 
@@ -71,35 +119,12 @@ else()
 endif()
 add_definitions("-DFIRMWARE_VERSION=\"${FIRMWARE_VERSION}\"")
 
-# Define options for compilation
-################################################
-function(add_boolean_option name val helpstr)
-  if(DEFINED ${name})
-    set(value ${${name}})
-  else(DEFINED ${name})
-    set(value ${val})
-  endif()
-  set(${name} ${value} CACHE STRING "${helpstr}")
-  set_property(CACHE ${name} PROPERTY TYPE BOOL)
-  if (${value})
-    add_definitions("-D${name}")
-  endif (${value})
-endfunction(add_boolean_option)
 
-function(add_integer_option name val helpstr)
-  if(DEFINED ${name})
-    set(value ${${name}})
-  else(DEFINED ${name})
-    set(value ${val})
-  endif()
-  set(${name} ${value} CACHE STRING "${helpstr}")
-  add_definitions("-D${name}=${value}")
-endfunction(add_integer_option)
 
 # Debug related options
 #########################################
 add_boolean_option(MSG_PRINT  False "print debug messages")
-add_boolean_option(DISABLE_XER_PRINT True "print XER Format")
+add_boolean_option(DISABLE_XER_PRINT False "print XER Format")
 add_boolean_option(XER_PRINT False "print XER Format")
 add_boolean_option(RRC_MSG_PRINT False "print RRC messages")
 add_boolean_option(PDCP_MSG_PRINT False "print PDCP messages")
@@ -148,13 +173,7 @@ set(asn1_generated_dir ${OPENAIR_BIN_DIR})
 
 # RRC
 ######
-if (DEFINED RRC_ASN1_VERSION)
-  set(RRC_ASN1_VERSION ${RRC_ASN1_VERSION} CACHE STRING "ASN.1 version of RRC interface")
-else(DEFINED RRC_ASN1_VERSION)
-  set(RRC_ASN1_VERSION "Rel10" CACHE STRING "ASN.1 version of RRC interface")
-endif()
-
-set_property(CACHE RRC_ASN1_VERSION PROPERTY STRINGS "Rel8" "Rel10" "CBA")
+add_list2_option(RRC_ASN1_VERSION "Rel10" "ASN.1 version of RRC interface" "Rel8" "Rel10" "CBA")
 
 if (${RRC_ASN1_VERSION} STREQUAL "Rel8")
   set (RRC_GRAMMAR ${OPENAIR2_DIR}/RRC/LITE/MESSAGES/asn1c/ASN1_files/EUTRA-RRC-Definitions-86.asn)
@@ -167,7 +186,6 @@ if(NOT EXISTS ${asn1c_call})
   message( FATAL_ERROR "The script ${asn1c_call} must be present" )
 endif(NOT EXISTS ${asn1c_call})
 execute_process(COMMAND ${asn1c_call}  ${RRC_FULL_DIR} ${RRC_GRAMMAR})
-add_definitions("-D${RRC_ASN1_VERSION}")
 file(GLOB rrc_source ${RRC_FULL_DIR}/*.c)
 set(rrc_source  ${rrc_source} ${OPENAIR2_DIR}/RRC/LITE/MESSAGES/asn1_msg.c)
 file(GLOB rrc_h ${RRC_FULL_DIR}/*.h)
@@ -187,108 +205,74 @@ add_custom_command (
 # Same limitation as described in RRC: unknown generated file list
 # so we generate it at cmake time
 ##############
-if (DEFINED USE_MME)
-  set(USE_MME ${USE_MME} CACHE HELPSTRING "MME version")
-else (DEFINED USE_MME)
-  set(USE_MME "R10" CACHE HELPSTRING "MME version")
-endif (DEFINED USE_MME)
+add_list1_option(USE_MME "False" "MME version" False R8 R10)
+add_list1_option(S1AP_VERSION R10 "S1AP Asn.1 grammar version" R8 R9 R10)
 
-set_property(CACHE USE_MME PROPERTY STRINGS False R8 R10)
-
-if (NOT ${USE_MME} STREQUAL "False")
-  add_definitions("-DUSE_MME=${USE_MME}")
-  set(S1AP_DIR ${OPENAIRCN_DIR}/S1AP)
-  if (${USE_MME} STREQUAL "R10")
-    set (ASN1RELDIR R10.5)
-    add_definitions("-DUPDATE_RELEASE_9 -DUPDATE_RELEASE_10")
-  elseif (${USE_MME} STREQUAL "R9")
-    set (ASN1RELDIR R9.8)
-    add_definitions("-DUPDATE_RELEASE_9")
-  else(${USE_MME} STREQUAL "R8")
-    set (ASN1RELDIR R8.10)
-  endif(${USE_MME} STREQUAL "R10")
-  set(S1AP_ASN_DIR ${S1AP_DIR}/MESSAGES/ASN1/${ASN1RELDIR})
-  set(S1AP_ASN_FILES
-    ${S1AP_ASN_DIR}/S1AP-CommonDataTypes.asn 
-    ${S1AP_ASN_DIR}/S1AP-Constants.asn 
-    ${S1AP_ASN_DIR}/S1AP-IEs.asn 
-    ${S1AP_ASN_DIR}/S1AP-PDU.asn
-    )
-  set(S1AP_C_DIR ${asn1_generated_dir}/${ASN1RELDIR})
+set(S1AP_DIR ${OPENAIRCN_DIR}/S1AP)
+if (${S1AP_VERSION} STREQUAL "R10")
+  set (ASN1RELDIR R10.5)
+  add_definitions("-DUPDATE_RELEASE_9 -DUPDATE_RELEASE_10")
+elseif (${S1AP_VERSION} STREQUAL "R9")
+  set (ASN1RELDIR R9.8)
+  add_definitions("-DUPDATE_RELEASE_9")
+else(${S1AP_VERSION} STREQUAL "R8")
+  set (ASN1RELDIR R8.10)
+endif(${S1AP_VERSION} STREQUAL "R10")
+set(S1AP_ASN_DIR ${S1AP_DIR}/MESSAGES/ASN1/${ASN1RELDIR})
+set(S1AP_ASN_FILES
+  ${S1AP_ASN_DIR}/S1AP-CommonDataTypes.asn 
+  ${S1AP_ASN_DIR}/S1AP-Constants.asn 
+  ${S1AP_ASN_DIR}/S1AP-IEs.asn 
+  ${S1AP_ASN_DIR}/S1AP-PDU.asn
+  )
+set(S1AP_C_DIR ${asn1_generated_dir}/${ASN1RELDIR})
   
-  execute_process(COMMAND ${asn1c_call} ${S1AP_C_DIR} ${S1AP_ASN_FILES})
-  file(GLOB S1AP_source ${S1AP_C_DIR}/*.c)
-  set(S1AP_OAI_SRC
-    ${S1AP_DIR}/s1ap_common.c
-    ${S1AP_DIR}/s1ap_eNB.c
-    ${S1AP_DIR}/s1ap_eNB_context_management_procedures.c
-    ${S1AP_DIR}/s1ap_eNB_decoder.c
-    ${S1AP_DIR}/s1ap_eNB_encoder.c
-    ${S1AP_DIR}/s1ap_eNB_handlers.c
-    ${S1AP_DIR}/s1ap_eNB_itti_messaging.c
-    ${S1AP_DIR}/s1ap_eNB_management_procedures.c
-    ${S1AP_DIR}/s1ap_eNB_nas_procedures.c
-    ${S1AP_DIR}/s1ap_eNB_nnsf.c
-    ${S1AP_DIR}/s1ap_eNB_overload.c
-    ${S1AP_DIR}/s1ap_eNB_trace.c
-    ${S1AP_DIR}/s1ap_eNB_ue_context.c
-    )
-  set(S1AP_OAI_generated 
-    ${S1AP_C_DIR}/s1ap_decoder.c
-    ${S1AP_C_DIR}/s1ap_encoder.c
-    ${S1AP_C_DIR}/s1ap_xer_print.c
-    ${S1AP_C_DIR}/s1ap_ies_defs.h
-    )
-  file(GLOB s1ap_h ${S1AP_C_DIR}/*.h)
-  set(s1ap_h ${s1ap_h} ${S1AP_C_DIR}/s1ap_ies_defs.h)
-  add_custom_command (
-    OUTPUT ${S1AP_OAI_generated}
-    COMMAND ${asn1c_call} ${S1AP_C_DIR} ${S1AP_ASN_FILES}
-    COMMAND python ${S1AP_DIR}/MESSAGES/ASN1/asn1tostruct.py -f${S1AP_ASN_DIR}/S1AP-PDU-Contents.asn -o${S1AP_C_DIR}
-    DEPENDS ${S1AP_ASN_FILES} 
-    )
-  add_library(s1ap_asn1 ${S1AP_OAI_SRC} ${S1AP_OAI_generated} ${S1AP_source})
-  set(S1AP_LIB s1ap_asn1)
-  include_directories ("${S1AP_C_DIR}")
-  include_directories ("${S1AP_DIR}")
-endif(NOT ${USE_MME} STREQUAL "False")
+execute_process(COMMAND ${asn1c_call} ${S1AP_C_DIR} ${S1AP_ASN_FILES})
+file(GLOB S1AP_source ${S1AP_C_DIR}/*.c)
+set(S1AP_OAI_SRC
+  ${S1AP_DIR}/s1ap_common.c
+  ${S1AP_DIR}/s1ap_eNB.c
+  ${S1AP_DIR}/s1ap_eNB_context_management_procedures.c
+  ${S1AP_DIR}/s1ap_eNB_decoder.c
+  ${S1AP_DIR}/s1ap_eNB_encoder.c
+  ${S1AP_DIR}/s1ap_eNB_handlers.c
+  ${S1AP_DIR}/s1ap_eNB_itti_messaging.c
+  ${S1AP_DIR}/s1ap_eNB_management_procedures.c
+  ${S1AP_DIR}/s1ap_eNB_nas_procedures.c
+  ${S1AP_DIR}/s1ap_eNB_nnsf.c
+  ${S1AP_DIR}/s1ap_eNB_overload.c
+  ${S1AP_DIR}/s1ap_eNB_trace.c
+  ${S1AP_DIR}/s1ap_eNB_ue_context.c
+  )
+set(S1AP_OAI_generated 
+  ${S1AP_C_DIR}/s1ap_decoder.c
+  ${S1AP_C_DIR}/s1ap_encoder.c
+  ${S1AP_C_DIR}/s1ap_xer_print.c
+  ${S1AP_C_DIR}/s1ap_ies_defs.h
+  )
+file(GLOB s1ap_h ${S1AP_C_DIR}/*.h)
+set(s1ap_h ${s1ap_h} ${S1AP_C_DIR}/s1ap_ies_defs.h)
+add_custom_command (
+  OUTPUT ${S1AP_OAI_generated}
+  COMMAND ${asn1c_call} ${S1AP_C_DIR} ${S1AP_ASN_FILES}
+  COMMAND python ${S1AP_DIR}/MESSAGES/ASN1/asn1tostruct.py -f${S1AP_ASN_DIR}/S1AP-PDU-Contents.asn -o${S1AP_C_DIR}
+  DEPENDS ${S1AP_ASN_FILES} 
+  )
+add_library(s1ap_asn1 ${S1AP_OAI_SRC} ${S1AP_OAI_generated} ${S1AP_source})
+set(S1AP_LIB s1ap_asn1)
+include_directories ("${S1AP_C_DIR}")
+include_directories ("${S1AP_DIR}")
 
 
 # Hardware dependant options
 ###################################
-if(DEFINED NB_ANTENNAS_RX)
-  set(NB_ANTENNAS_RX ${NB_ANTENNAS_RX} CACHE HELPSTRING "Number of antennas in reception")
-else(DEFINED NB_ANTENNAS_RX)
-  set(NB_ANTENNAS_RX 2 CACHE HELPSTRING "Number of antennas in reception")
-endif(DEFINED NB_ANTENNAS_RX)
-set_property(CACHE NB_ANTENNAS_RX PROPERTY STRINGS 1 2 4)
-add_definitions("-DNB_ANTENNAS_RX=${NB_ANTENNAS_RX}")
+add_list1_option(NB_ANTENNAS_RX "2" "Number of antennas in reception" "1" "2" "4")
+add_list1_option(NB_ANTENNAS_TX "2" "Number of antennas in transmission" "1" "2" "4")
+add_list1_option(NB_ANTENNAS_TXRX "2" "Number of antennas in ????" "1" "2" "4")
 
-if(DEFINED NB_ANTENNAS_TX)
-  set(NB_ANTENNAS_TX ${NB_ANTENNAS_TX} CACHE HELPSTRING "Number of antennas in transmission")
-else(DEFINED NB_ANTENNAS_TX)
-  set(NB_ANTENNAS_TX 2 CACHE HELPSTRING "Number of antennas in transmission")
-endif(DEFINED NB_ANTENNAS_TX)
-set_property(CACHE NB_ANTENNAS_TX PROPERTY STRINGS 1 2 4)
-add_definitions("-DNB_ANTENNAS_TX=${NB_ANTENNAS_TX}")
+add_list2_option(RF_BOARD "EXMIMO" "RF head type" "False" "EXMIMO" "USRP" "ETHERNET")
 
-if(DEFINED NB_ANTENNAS_TXRX)
-  set(NB_ANTENNAS_TXRX ${NB_ANTENNAS_TXRX} CACHE HELPSTRING "Number of antennas in ????")
-else(DEFINED NB_ANTENNAS_TXRX)
-  set(NB_ANTENNAS_TXRX 2 CACHE HELPSTRING "Number of antennas in ????")
-endif(DEFINED NB_ANTENNAS_TXRX)
-set_property(CACHE NB_ANTENNAS_TXRX PROPERTY STRINGS 1 2 4)
-add_definitions("-DNB_ANTENNAS_TXRX=${NB_ANTENNAS_TXRX}")
-
-if(DEFINED RF_BOARD)
-  set(RF_BOARD ${RF_BOARD} CACHE HELPSTRING "RF head type")
-else(DEFINED RF_BOARD)
-  set(RF_BOARD EXMIMO CACHE HELPSTRING "RF head type")
-endif(DEFINED RF_BOARD)
-set_property(CACHE RF_BOARD PROPERTY STRINGS None EXMIMO USRP ETHERNET)
-add_definitions("-D${RF_BOARD}=1")
-
-if (${RF_BOARD} STREQUAL EXMIMO)
+if (${RF_BOARD} STREQUAL "EXMIMO")
   set(DRIVER2013)
   include_directories ("${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB/")
   include_directories ("${OPENAIR_TARGETS}/ARCH/EXMIMO/DEFS/")
@@ -296,15 +280,15 @@ if (${RF_BOARD} STREQUAL EXMIMO)
     ${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.c 
     ${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB/gain_control.c)   
 
-elseif (${RF_BOARD} STREQUAL USRP)
+elseif (${RF_BOARD} STREQUAL "USRP")
   include_directories("/opt/include/uhd")
   LINK_DIRECTORIES("/opt/lib")
   set(option_USRP "uhd")
 
-elseif (${RF_BOARD} STREQUAL ETHERNET)
+elseif (${RF_BOARD} STREQUAL "ETHERNET")
   include_directories ("${OPENAIR_TARGETS}/ARCH/ETHERNET/USERSPACE/LIB")
 
-endif (${RF_BOARD} STREQUAL EXMIMO)
+endif (${RF_BOARD} STREQUAL "EXMIMO")
  
 include_directories ("${OPENAIR_TARGETS}/ARCH/COMMON")
 
@@ -312,7 +296,7 @@ include_directories ("${OPENAIR_TARGETS}/ARCH/COMMON")
 # to be documented options
 ###################
 add_boolean_option(ADDR_CONF False "specific to oaisim")
-add_boolean_option(ASSERT False "specific to oaisim: ???")
+add_boolean_option(ASSERT True "???")
 add_boolean_option(DRIVER2013 True "????")
 add_boolean_option(ENABLE_FXP True "????")
 add_boolean_option(ENABLE_NAS_UE_LOGGING True "????")
@@ -324,6 +308,7 @@ add_boolean_option(ENABLE_SECURITY True "???")
 add_boolean_option(ENABLE_USE_CPU_EXECUTION_TIME True "Add data in vcd traces: disable it if perf issues")
 add_boolean_option(ENABLE_USE_MME True "???")
 add_boolean_option(ENABLE_VCD_FIFO True "Seems legacy: always true now")
+add_boolean_option(ENB_MODE True "???")
 add_boolean_option(HARD_RT False "???")
 add_boolean_option(JUMBO_FRAME True "???")
 add_boolean_option(LARGE_SCALE False "specific to oaisim: defines max eNB=2 and max UE=120")
@@ -339,11 +324,12 @@ add_boolean_option(MIH_C_MEDIEVAL_EXTENSIONS True "????")
 add_boolean_option(MU_RECEIVER False "????")
 add_boolean_option(NAS_ADDRESS_FIX False "specific to oaisim: for nasmesh driver")
 add_boolean_option(NAS_MME False "NAS_UE and NAS_MME are incompatible options")
-add_boolean_option(NAS_NETLINK True "???? Must be true to compile nasmesh driver without rtai")
+add_boolean_option(NAS_NETLINK False "???? Must be true to compile nasmesh driver without rtai")
 add_boolean_option(NAS_UE True "NAS_UE and NAS_MME are incompatible options")
 add_boolean_option(NEW_FFT True "????")
 add_boolean_option(NO_RRM True "????")
 add_boolean_option(OAI_EMU False "specific to oaisim")
+add_boolean_option(OAISIM False "specific to oaisim")
 add_boolean_option(OAI_NW_DRIVER_TYPE_ETHERNET False "????")
 add_boolean_option(OAI_NW_DRIVER_USE_NETLINK False "????")
 add_boolean_option(OPENAIR1 True "????")
@@ -355,16 +341,16 @@ add_boolean_option(PC_DSP True "????")
 add_boolean_option(PC_TARGET True "????")
 add_boolean_option(PERFECT_CE False "????")
 add_boolean_option(PHY_ABSTRACTION False "specific to oaisim")
-add_boolean_option(PHY_CONTEXT False "not clear: must remain False for dlsim")
+add_boolean_option(PHY_CONTEXT True "not clear: must remain False for dlsim")
 add_boolean_option(PHY_EMUL False "not clear: must remain False for dlsim")
-add_boolean_option(PHYSIM True "??? set in lte-softmodem, for L1 simulators (dlsim, ulsim, ...)?")
+add_boolean_option(PHYSIM True "??? set in lte-softmodem, for L1 simulators dlsim, ulsim, ...?")
 add_boolean_option(PUCCH True "????")
 add_boolean_option(RANDOM_BF False "????")
 add_boolean_option(RLC_STOP_ON_LOST_PDU False "Fatal assert in this case")
 add_boolean_option(SECU False "???")
 add_boolean_option(SMBV False "Rohde&Schwarz SMBV100A vector signal generator")
 add_boolean_option(SPECTRA False "???")
-add_boolean_option(UE_BUILD False "????")
+add_boolean_option(UE_BUILD True "????")
 add_boolean_option(USE_3GPP_ADDR_AS_LINK_ADDR False "As per attribute name")
 add_boolean_option(USER_MODE True "????")
 add_integer_option(PACKAGE_NAME "NotDefined" "As per attribute name")
@@ -700,12 +686,6 @@ set (ENB_APP_SRC
   ${OPENAIR2_DIR}/ENB_APP/enb_config.c
   )
 
-
-if (NOT ${USE_MME} STREQUAL "False")
-  set(L2_SRC ${L2_SRC}
-    ${RRC_DIR}/rrc_eNB_GTPV1U.c)
-endif(NOT ${USE_MME} STREQUAL "False")
-
 add_library(L2 
   ${L2_SRC} 
   ${MAC_SRC} 
@@ -765,6 +745,7 @@ endif()
 ##########################
 set(GTPV1U_SRC ${OPENAIRCN_DIR}/GTPV1-U)
 set (libgtpv1u_SRC
+  ${RRC_DIR}/rrc_eNB_GTPV1U.c
   ${GTPV1U_SRC}/nw-gtpv1u/src/NwGtpv1uTunnelEndPoint.c
   ${GTPV1U_SRC}/nw-gtpv1u/src/NwGtpv1uTrxn.c
   ${GTPV1U_SRC}/nw-gtpv1u/src/NwGtpv1uMsg.c
@@ -1206,6 +1187,8 @@ ${OPENAIR2_DIR}/RRC/NAS/nas_config.c
 ${OPENAIR2_DIR}/RRC/NAS/rb_config.c
 ${OPENAIR2_DIR}/UTIL/OMG/sumo.c
 ${OPENAIR_TARGETS}/COMMON/create_tasks.c
+${HW_SOURCE}
+${XFORMS_SOURCE}
 )
 target_include_directories(oaisim PUBLIC  ${OPENAIR_TARGETS}/SIMU/USER)
 target_link_libraries (oaisim
