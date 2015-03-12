@@ -72,4 +72,4 @@ set(USER_MODE True)
 set(XER_PRINT True)
 set(XFORMS False)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../CMakeLists.txt)

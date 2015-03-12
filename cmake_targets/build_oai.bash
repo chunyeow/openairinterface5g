@@ -278,22 +278,7 @@ fi
 #####################
 if [ "$OAI_TEST" = "1" ]; then 
     echo_info "10. Running OAI pre commit tests (pre-ci) ..."
-    updated=$(svn st -q $OPENAIR_DIR)
-    if [ "$updated" != "" ] ; then
-	echo_warning "some files are not in svn: $updated"
-    fi
-    mkdir -p $dbin.test
-    compilations \
-        test.0101 oaisim \
-        oaisim  $dbin.test/oaisim.r8 \
-        $dlog/oaisim.r8.test0101.txt \
-	"test 0101:oaisim passed" \
-        "test 0101:oaisim failed"
-    compilations test.0102 nasmesh \
-        CMakeFiles/nasmesh/nasmesh.ko $dbin/test/nasmesh.ko \
-        $dlog/nasmesh.test0102.txt \
-	"test 0102: nasmesh.ko  passed" \
-        "test 0102: nasmesk.ko failed"
+    $OPENAIR_DIR/cmake_targets/autotests/run_compilation_autotests.bash
 else 
     echo_info "10. Bypassing the Tests ..."
 fi 

@@ -169,7 +169,7 @@ endif (${RTAI})
 # (so creating new asn.1 objects instead of modifying the object attributes)
 # New C code source file, cmake must be re-run (instead of re-running make only) 
 #############
-set(asn1c_call "${OPENAIR_CMAKE}/generate_asn1.bash")
+set(asn1c_call "${OPENAIR_CMAKE}/tools/generate_asn1.bash")
 set(asn1_generated_dir ${OPENAIR_BIN_DIR})
 
 # RRC
@@ -1279,7 +1279,7 @@ function(make_driver name dir)
     string(REGEX REPLACE "c *$" "o" obj ${f})
     set(objs "${objs} ${obj}")
   endforeach()
-  CONFIGURE_FILE(${OPENAIR_CMAKE}/Kbuild.cmake ${OPENAIR_BIN_DIR}/${name}/Kbuild)
+  CONFIGURE_FILE(${OPENAIR_CMAKE}/tools/Kbuild.cmake ${OPENAIR_BIN_DIR}/${name}/Kbuild)
   add_custom_command(OUTPUT ${name}.ko
     COMMAND make -C ${module_build_path} M=${OPENAIR_BIN_DIR}/${name}
     WORKING_DIRECTORY ${OPENAIR_BIN_DIR}/${name}

@@ -10,4 +10,4 @@ set(RANDOM_BF False)
 set(PBS_SIM False)
 set(PERFECT_CE True)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../CMakeLists.txt)
