@@ -110,14 +110,21 @@ add_definitions("-DCMAKER")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -DMALLOC_CHECK_=3")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -ggdb -DMALLOC_CHECK_=3 -O3")
 
-find_package(Subversion)
-if(SUBVERSION_FOUND)
-  Subversion_WC_INFO(${OPENAIR_DIR} openair)
-  set (FIRMWARE_VERSION "${openair_WC_REVISION} - ${openair_WC_LAST_CHANGED_DATE}")
-  Subversion_WC_LOG(${OPENAIR_DIR} Project)
-else()
-  set (FIRMWARE_VERSION "No svn information")
-endif()
+# Below has been put in comment because does not work with
+# SVN authentication.
+#
+#find_package(Subversion)
+#if(SUBVERSION_FOUND)
+#  Subversion_WC_INFO(${OPENAIR_DIR} openair)
+#  set (FIRMWARE_VERSION "${openair_WC_REVISION} - ${openair_WC_LAST_CHANGED_DATE}")
+#  Subversion_WC_LOG(${OPENAIR_DIR} Project)
+#else()
+#  set (FIRMWARE_VERSION "No svn information")
+#endif()
+#add_definitions("-DFIRMWARE_VERSION=\"${FIRMWARE_VERSION}\"")
+
+# Below is a hard-coded info
+set (FIRMWARE_VERSION "No svn information")
 add_definitions("-DFIRMWARE_VERSION=\"${FIRMWARE_VERSION}\"")
 
 
@@ -331,7 +338,7 @@ add_boolean_option(NO_RRM True "????")
 add_boolean_option(OAI_EMU False "specific to oaisim")
 add_boolean_option(OAISIM False "specific to oaisim")
 add_boolean_option(OAI_NW_DRIVER_TYPE_ETHERNET False "????")
-add_boolean_option(OAI_NW_DRIVER_USE_NETLINK False "????")
+add_boolean_option(OAI_NW_DRIVER_USE_NETLINK True "????")
 add_boolean_option(OPENAIR1 True "????")
 add_boolean_option(OPENAIR2 True "????")
 add_boolean_option(OPENAIR_EMU False "specific to oaisim")
@@ -1298,10 +1305,14 @@ list(APPEND nasmesh_src device.c common.c ioctl.c classifier.c tool.c mesh.c)
 # We should change the constant name to xxx_RTAI or likely
 if(NOT ${module_cc_opt} MATCHES "DRTAI")
   set(module_cc_opt "${module_cc_opt} -DNAS_NETLINK")
-  list(APPEND nasmesh_src netlink.c)
 else()
   string(REPLACE "-DNAS_NETLINK" "" tmp "${module_cc_opt}")
   set(module_cc_opt ${tmp})
+endif()
+# legacy Makefile was using NAS_NETLINK flag, but other drivers the hereafter flag
+# so, this cmake use OAI_NW_DRIVER_USE_NETLINK everywhere
+if (OAI_NW_DRIVER_USE_NETLINK)
+  list(APPEND nasmesh_src netlink.c)
 endif()
 make_driver(nasmesh  ${OPENAIR2_DIR}/NAS/DRIVER/MESH ${nasmesh_src})
   
@@ -1321,6 +1332,14 @@ make_driver(openair_rf ${OPENAIR_TARGETS}/ARCH/EXMIMO/DRIVER/eurecom ${openair_r
 add_executable(updatefw
   ${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT/updatefw.c
 )
+
+# ue_ip: purpose ???
+###############
+list(APPEND ue_ip_src device.c common.c)
+if(OAI_NW_DRIVER_USE_NETLINK)
+  list(APPEND ue_ip_src netlink.c)
+endif()
+make_driver(ue_ip ${OPENAIR2_DIR}/NETWORK_DRIVER/UE_IP ${ue_ip_src})
 
 # add the install targets
 #install (TARGETS Tutorial DESTINATION bin)

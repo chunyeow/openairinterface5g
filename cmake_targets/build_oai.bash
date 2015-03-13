@@ -212,13 +212,15 @@ if [ "$TARGET" = "ALL" -o "$TARGET" = "SOFTMODEM" ] ; then
        "lte-softmodem compiled" \
        "lte-softmodem compilation failed"
 
-   # nasmesh driver compilation
+
+   # ue_ip driver compilation
    compilations \
-       lte_build_oai nasmesh \
-       CMakeFiles/nasmesh/nasmesh.ko $dbin/nasmesh.ko \
-       $dlog/nasmesh.txt \
-       "nasmesh driver compiled" \
-       "nasmesh driver compilation failed"
+       lte_build_oai ue_ip \
+       CMakeFiles/ue_ip/ue_ip.ko $dbin/ue_ip.ko \
+       $dlog/ue_ip.txt \
+       "ue_ip driver compiled" \
+       "ue_ip driver compilation failed"
+
 
    # lte unitary simulators compilation
    simlist="dlsim ulsim pucchsim prachsim pdcchsim pbchsim mbmssim"
@@ -269,10 +271,29 @@ if [ "$TARGET" = "ALL" -o "$TARGET" = "SOFTMODEM" ] ; then
        "oaisim compiled" \
        "oaisim compilation failed"
 
+   #oai_nw_drv
+   compilations \
+       oaisim_build_oai oai_nw_drv \
+       CMakeFiles/oai_nw_drv/oai_nw_drv.ko $dbin/oai_nw_drv.ko \
+       $dlog/oai_nw_drv.txt \
+       "oai_nw_drv driver compiled" \
+       "oai_nw_drv driver compilation failed"
+
+   # nasmesh driver compilation
+   compilations \
+       oaisim_build_oai nasmesh \
+       CMakeFiles/nasmesh/nasmesh.ko $dbin/nasmesh.ko \
+       $dlog/nasmesh.txt \
+       "nasmesh driver compiled" \
+       "nasmesh driver compilation failed"
 fi
 
 # EPC compilation
 ##################
+if [ "$TARGET" = "ALL" -o "$TARGET" = "SOFTMODEM" ] ; then
+    compile_epc
+
+fi
 
 # Auto-tests 
 #####################
