@@ -110,8 +110,9 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
     mbsfn_status[CC_id]=0;
   }
   // refresh UE list based on UEs dropped by PHY in previous subframe
-  for (i=UE_list->head;i>=0;i=UE_list->next[i]) {
+  for (i=UE_list->head;i>=0;i=i=next_i) {
     LOG_D(MAC,"UE %d: rnti %x (%p)\n",i,UE_RNTI(module_idP,i),mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i)));
+    next_i= UE_list->next[i];
     if (mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i))==NULL)
       mac_remove_ue(module_idP,i,frameP);
   }
