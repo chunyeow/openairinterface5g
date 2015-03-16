@@ -29,6 +29,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef CMAKER
+#include <platform_types.h> 
+#endif
 
 #if defined(ENB_MODE)
 # define display_backtrace()

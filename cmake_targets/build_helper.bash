@@ -33,6 +33,114 @@
 #######################################
 SUDO=sudo
 
+###############################
+## echo and  family
+###############################
+black='\E[30m'
+red='\E[31m'
+green='\E[32m'
+yellow='\E[33m'
+blue='\E[34m'
+magenta='\E[35m'
+cyan='\E[36m'
+white='\E[37m'
+reset_color='\E[00m'
+COLORIZE=1
+
+cecho()  {  
+    # Color-echo
+    # arg1 = message
+    # arg2 = color
+    local default_msg="No Message."
+    message=${1:-$default_msg}
+    color=${2:-$green}
+    [ "$COLORIZE" = "1" ] && message="$color$message$reset_color"
+    echo -e "$message"
+    return
+}
+
+echo_error()   { cecho "$*" $red          ;}
+echo_fatal()   { cecho "$*" $red; exit -1 ;}
+echo_warning() { cecho "$*" $yellow       ;}
+echo_success() { cecho "$*" $green        ;}
+echo_info()    { cecho "$*" $blue         ;}
+
+print_help() {
+echo_info '
+This program installs OpenAirInterface Software
+You should have ubuntu 14.xx, updated, and the Linux kernel >= 3.14
+Options
+-h
+   This help
+-c | --clean
+   Erase all files made by previous compilation, installation" 
+--clean-kernel
+   Erase previously installed features in kernel: iptables, drivers, ...
+-C | --config-file
+   The configuration file to install
+-I | --install-external-packages 
+   Installs required packages such as LibXML, asn1.1 compiler, freediameter, ...
+-g | --run-with-gdb
+   Add debugging symbols to compilation directives
+-eNB
+   Makes the eNB LTE softmodem
+-UE
+   Makes the UE softmodem
+-oaisim
+   Makes the oaisim simulator
+-unit_simulators
+   Makes the unitary tests Layer 1 simulators
+-EPC
+   Makes the EPC
+-r | --3gpp-release
+   default is Rel10, 
+   Rel8 limits the implementation to 3GPP Release 8 version
+-w | --hardware
+   EXMIMO (Default), USRP, None
+   Adds this RF board support (in external packages installation and in compilation)
+-s | --check
+   runs a set of auto-tests based on simulators and several compilation tests
+-V | --vcd
+   Adds a debgging facility to the binary files: GUI with major internal synchronization events
+-x | --xforms
+   Adds a software oscilloscope feature to the produced binaries
+Typical Options for a quick startup with a COTS UE and Eurecom RF board: build_oai.bash -I -g -eNB -EPC -x'
+}
+
+###########################
+# Cleaners
+###########################
+
+clean_kernel() {
+    $SUDO modprobe ip_tables
+    $SUDO modprobe x_tables
+    $SUDO iptables -P INPUT ACCEPT
+    $SUDO iptables -F INPUT
+    $SUDO iptables -P OUTPUT ACCEPT
+    $SUDO iptables -F OUTPUT
+    $SUDO iptables -P FORWARD ACCEPT
+    $SUDO iptables -F FORWARD
+    $SUDO iptables -t nat -F
+    $SUDO iptables -t mangle -F
+    $SUDO iptables -t filter -F
+    $SUDO iptables -t raw -F
+    echo_info "Flushed iptables"
+    $SUDO rmmod nasmesh > /dev/null 2>&1
+    $SUDO rmmod oai_nw_drv  > /dev/null 2>&1
+    $SUDO rmmod openair_rf > /dev/null 2>&1
+    $SUDO rmmod ue_ip > /dev/null 2>&1
+    echo_info "removed drivers from kernel"
+}
+
+clean_all_files() {
+ dir=$OPENAIR_DIR/cmake
+ rm -rf $dir/log $dir/bin $dir/autotests/bin $dir/autotests/log $dir/autotests/*/buid $dir/build_*/build
+}
+
+###################################
+# Compilers
+###################################
+
 compilations() {
   cd $OPENAIR_DIR/cmake_targets/$1
   {
@@ -132,6 +240,10 @@ run_compilation_autotests() {
         "test 0120: nasmesk.ko failed"
 }
 
+##########################################
+# X.509 certificates
+##########################################
+
 make_one_cert() {
     openssl genrsa -out $1.key.pem 1024
     openssl req -new -batch -out $1.csr.pem -key $1.key.pem -subj /CN=$1.eur/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
@@ -162,6 +274,10 @@ make_certs(){
     $SUDO make_one_cert user
 
 }
+
+############################################
+# External packages installers
+############################################
 
 install_nettle_from_source() {
     cd /tmp
@@ -311,7 +427,7 @@ check_install_asn1c(){
 compile_hss() {
     cd $OPENAIRCN_DIR/OPENAIRHSS
     
-    if [ "$1" -eq 1 ]; then
+    if [ "$CLEAN" = "1" ]; then
         echo_info "build a clean HSS"
         rm -rfv obj* m4 .autom4* configure
     fi
@@ -336,79 +452,6 @@ compile_hss() {
     return 1
 }
 
-
-compile_epc() {
-    cd $OPENAIRCN_DIR
-    if [ "$1" = 1 ]; then
-        echo_info "build a clean EPC"
-        bash_exec "rm -rf objs"
-    fi
-    OBJ_DIR=`find . -maxdepth 1 -type d -iname obj*`
-    if [ ! -n "$OBJ_DIR" ]; then
-        OBJ_DIR="objs"
-        bash_exec "mkdir -m 777 ./$OBJ_DIR"
-        echo_success "Created $OBJ_DIR directory"
-    else
-        OBJ_DIR=`basename $OBJ_DIR`
-    fi
-    if [ ! -f $OBJ_DIR/Makefile ]; then
-        if [ ! -n "m4" ]; then
-            mkdir -m 777 m4
-        fi
-        bash_exec "autoreconf -i -f"
-        echo_success "Invoking autogen"
-        bash_exec "libtoolize"        
-        bash_exec "./autogen.sh"
-        cd ./$OBJ_DIR
-        echo_success "Invoking configure"
-        if [ $DEBUG -ne 0 ]; then 
-            ../configure --enable-debug --enable-standalone-epc --enable-gtp1u-in-kernel LDFLAGS=-L/usr/local/lib
-        else
-            ../configure                --enable-standalone-epc --enable-gtp1u-in-kernel LDFLAGS=-L/usr/local/lib
-        fi
-    else
-        cd ./$OBJ_DIR
-    fi
-
-    #    pkill oai_epc
-    #    pkill tshark
-
-    if [ -f Makefile ]; then
-        echo_success "Compiling..."
-        make -j $NUM_CPU
-        if [ $? -ne 0 ]; then
-            echo_error "Build failed, exiting"
-            return 1
-        else 
-            cp -pf ./OAI_EPC/oai_epc  $OPENAIR_TARGETS/bin
-        fi
-    else
-        echo_error "Configure failed, exiting"
-        return 1
-    fi
-    
-    cd $OPENAIRCN_DIR/GTPV1-U/GTPUAH;
-    make
-    if [ $? -ne 0 ]; then
-        echo_error "Build GTPUAH module failed, exiting"
-        return 1
-    else 
-       	$SUDO cp -pfv ./Bin/libxt_*.so /lib/xtables
-        $SUDO cp -pfv ./Bin/*.ko $OPENAIR_TARGETS/bin
-    fi
-    
-    cd $OPENAIRCN_DIR/GTPV1-U/GTPURH;
-    make
-    if [ $? -ne 0 ]; then
-        echo_error "Build GTPURH module failed, exiting"
-        return 1
-    else 
-	$SUDO cp -pfv ./Bin/libxt_*.so /lib/xtables
-	$SUDO cp -pfv ./Bin/*.ko $OPENAIR_TARGETS/bin
-    fi
-    return 0
-}
-
 compile_nas_tools() {
 
     export NVRAM_DIR=$OPENAIR_TARGETS/bin
@@ -426,46 +469,10 @@ compile_nas_tools() {
     touch /tmp/nas_cleaned
 }
 
-# arg1 is RT
-# arg2 is HW 
-# arg3 is ENB_S1
-install_ltesoftmodem() {
-    # RT
-    if [ $1 = "RTAI" ]; then 
-        if [ ! -f /tmp/init_rt_done.tmp ]; then
-            echo_info "  8.1 Insert RTAI modules"
-            $SUDO insmod /usr/realtime/modules/rtai_hal.ko     > /dev/null 2>&1
-            $SUDO insmod /usr/realtime/modules/rtai_sched.ko   > /dev/null 2>&1
-            $SUDO insmod /usr/realtime/modules/rtai_sem.ko     > /dev/null 2>&1
-            $SUDO insmod /usr/realtime/modules/rtai_fifos.ko   > /dev/null 2>&1
-            $SUDO insmod /usr/realtime/modules/rtai_mbx.ko     > /dev/null 2>&1
-            $SUDO touch /tmp/init_rt_done.tmp
-            $SUDO chmod 666 /tmp/init_rt_done.tmp
-        else
-            echo_warning "  8.1 RTAI modules already inserted"
-        fi
-    fi
-    #HW
-    if [ $2 = "EXMIMO" ]; then 
-	echo_info "  8.2 [EXMIMO] creating RTAI fifos"
-	for i in `seq 0 64`; do 
-	    have_rtfX=`ls /dev/ |grep -c rtf$i`;
-	    if [ "$have_rtfX" -eq 0 ] ; then 
-		$SUDO mknod -m 666 /dev/rtf$i c 150 $i; 
-	    fi;
-	done
-	echo_info "  8.3 [EXMIMO] Build lte-softmodemdrivers"
-	cd $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom && make clean && make  # || exit 1
-	cd $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT && make clean && make  # || exit 1
-	
-	echo_info "  8.4 [EXMIMO] Setup RF card"
-	cd $OPENAIR_TARGETS/RT/USER
-	. ./init_exmimo2.sh
-    else 
-	if [ $2 = "USRP" ]; then
-	    echo_info "  8.2 [USRP] "
-	fi
-
+TDB() {
+    
+    if [ $2 = "USRP" ]; then
+	echo_info "  8.2 [USRP] "
     fi
     
     # ENB_S1
@@ -596,49 +603,3 @@ set_openair_env(){
 
 }
 
-
-###############################
-## echo and  family 
-###############################
-black='\E[30m'
-red='\E[31m'
-green='\E[32m'
-yellow='\E[33m'
-blue='\E[34m'
-magenta='\E[35m'
-cyan='\E[36m'
-white='\E[37m'
-reset_color='\E[00m'
-
-
-cecho()   # Color-echo
-# arg1 = message
-# arg2 = color
-{
-    local default_msg="No Message."
-    message=${1:-$default_msg}
-    color=${2:-$green}
-    if [ "$BUILD_FROM_MAKEFILE" = "" ]; then 
-	echo -e -n "$color$message$reset_color"
-	echo
-    else 
-	echo "$message"
-    fi
-    return
-}
-
-echo_error()   { cecho "$*" $red          ;}
-echo_fatal()   { cecho "$*" $red; exit -1 ;}
-echo_warning() { cecho "$*" $yellow       ;}
-echo_success() { cecho "$*" $green        ;}
-echo_info()    { cecho "$*" $blue         ;}
-
-bash_exec() {
-    output=$($1 2>&1)
-    result=$?
-    if [ $result -eq 0 ]; then
-        echo_success "$1"
-    else
-        echo_error "$1: $output"
-    fi
-}

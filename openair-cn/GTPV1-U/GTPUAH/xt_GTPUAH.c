@@ -438,7 +438,9 @@ __init gtpuah_tg_init(void) {
     pr_info("GTPUAH: Initializing module (KVersion: %d)\n", KVERSION);
     pr_info("GTPUAH: Copyright Polaris Networks 2010-2011\n");
     pr_info("GTPUAH: Modified by EURECOM Lionel GAUTHIER 2014\n");
+#ifndef CMAKER
     pr_info("GTPUAH: Compiled %s at time %s\n",__DATE__,__TIME__);
+#endif
 #if defined(WITH_IPV6)
     pr_info("GTPURH: IPv4/IPv6 enabled\n");
 #else

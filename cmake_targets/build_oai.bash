@@ -42,125 +42,98 @@ source $THIS_SCRIPT_PATH/build_helper.bash
 #EMULATION_MULTICAST_GROUP=1
 #EMULATION_DEV_ADDRESS=`ifconfig $EMULATION_DEV_INTERFACE | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}'`
 
-TARGET="ALL"
 XFORMS="False"
 VCD_TIMING="False"
 REL="Rel10"
 HW="EXMIMO"
 
 until [ -z "$1" ]
-  do
-  case "$1" in
-       -c | --clean)
-            export CLEAN=1
-            echo "Will re-compile ALL"
+do
+    case "$1" in
+	-c | --clean)
+	    CLEAN=1
+	    clean_all_files
+	    echo_info "Erased all previously producted files"
             shift;
             ;;
-       --clean-iptables)
-            CLEAN_IPTABLES=1;
+	--clean-kernel)
+	    clean_kernel
+	    echo_info "Erased iptables config and removed modules from kernel"
             shift;
             ;;
-       -C | --config-file)
+	-C | --config-file)
             CONFIG_FILE=$2
-            # may be relative path 
-            if [ -f $(dirname $(readlink -f $0))/$CONFIG_FILE ]; then
-                CONFIG_FILE=$(dirname $(readlink -f $0))/$CONFIG_FILE
-                echo "setting config file to: $CONFIG_FILE"
-                CONFIG_FILE_ACCESS_OK=1
-            else
-                # may be absolute path 
-                if [ -f $CONFIG_FILE ]; then
-                    echo "setting config file to: $CONFIG_FILE"
-                    CONFIG_FILE_ACCESS_OK=1
-                else
-                    echo "config file not found"
-                    exit 1
-                fi
-            fi
+	    echo_info "Will install the config file $CONFIG_FILE"
             shift 2;
             ;;
-       -D | --disable-check-installed-software)
-            DISABLE_CHECK_INSTALLED_SOFTWARE=1
-            echo "disable check installed software"
+	-I | --install-external-packages)
+            INSTALL_EXTERNAL
+            echo_info "Will install external packages"
             shift;
             ;;
-       -g | --run-with-gdb)
+	-g | --run-with-gdb)
             GDB=1
-            echo "Running with gdb"
+            echo_info "Will Compile with gdb symbols"
             shift;
             ;;
-       -K | --itti-dump-file)
-            ITTI_ANALYZER=1
-            ITTI_DUMP_FILE=$2
-            echo "setting ITTI dump file to: $ITTI_DUMP_FILE"
-            EXE_ARGUMENTS="$EXE_ARGUMENTS -K $ITTI_DUMP_FILE"
-            shift 2;
-            ;;
-       -l | --build-target) 
-            TARGET=$2
-            echo "setting top-level build target to: $2"
-            shift 2;
-            ;;
+	-eNB)
+	    eNB=1
+	    echo_info "Will compile eNB"
+	    shift;;
+	-UE)
+	    UE=1
+	    echo_info "Will compile UE"
+	    shift;;
+	-unit_simulators)
+            SIMUS=1
+	    echo_info "Will compile dlsim, ulsim, ..."
+	    shift;;
+	-oaisim)
+	    oaisim=1
+	    echo_info "Will compile oaisim and drivers nasmesh, ..."
+	    shift;;
+	-EPC)
+	    EPC=1
+	    echo_info "Will compile EPC"
+	    shift;;
        -h | --help)
             print_help
             exit 1
             ;;
        -r | --3gpp-release)
             REL=$2 
-            echo "setting release to: $REL"
+            echo_info "setting release to: $REL"
             shift 2 ;
             ;;
        -s | --check)
             OAI_TEST=1
-            echo "setting sanity check to: $OAI_TEST"
+            echo_info "Will run auto-tests"
             shift;
             ;;
        -V | --vcd)
-            echo "setting gtk-wave output"
+            echo_info "setting gtk-wave output"
             VCD_TIMING=1
             EXE_ARGUMENTS="$EXE_ARGUMENTS -V"
             shift ;
             ;;
        -w | --hardware)
             HW="$2" #"${i#*=}"
-            echo "setting hardware to: $HW"
+            echo_info "setting hardware to: $HW"
             shift 2 ;
             ;;
        -x | --xforms)
             XFORMS=1
             EXE_ARGUMENTS="$EXE_ARGUMENTS -d"
-            echo "setting xforms to: $XFORMS"
+            echo_info "Will generate the software oscilloscope features"
             shift;
             ;;
        *)   
-            echo "Unknown option $1"
+	    print_help
+            echo_fatal "Unknown option $1"
             break ;
             ;;
    esac
 done
-
-################################
-# cleanup first 
-################################
-echo_info "1. Cleaning ..."
-
-if [ "$CLEAN_IPTABLES" == "1" ] ; then
-    echo_info "Flushing iptables..."
-    $SUDO modprobe ip_tables
-    $SUDO modprobe x_tables
-    $SUDO iptables -P INPUT ACCEPT
-    $SUDO iptables -F INPUT
-    $SUDO iptables -P OUTPUT ACCEPT
-    $SUDO iptables -F OUTPUT
-    $SUDO iptables -P FORWARD ACCEPT
-    $SUDO iptables -F FORWARD
-    $SUDO iptables -t nat -F
-    $SUDO iptables -t mangle -F
-    $SUDO iptables -t filter -F
-    $SUDO iptables -t raw -F
-    echo_info "Flushed iptables"
-fi
-
 
 ############################################
 # setting and printing OAI envs, we should check here
@@ -170,59 +143,62 @@ echo_info "2. Setting the OAI PATHS ..."
 
 set_openair_env 
 cecho "OPENAIR_HOME    = $OPENAIR_HOME" $green
-cecho "OPENAIR1_DIR    = $OPENAIR1_DIR" $green
-cecho "OPENAIR2_DIR    = $OPENAIR2_DIR" $green
-cecho "OPENAIR3_DIR    = $OPENAIR3_DIR" $green
-cecho "OPENAIRCN_DIR   = $OPENAIRCN_DIR" $green
-cecho "OPENAIR_TARGETS = $OPENAIR_TARGETS" $green
 
 dbin=$OPENAIR_HOME/cmake_targets/bin
 dlog=$OPENAIR_HOME/cmake_targets/log
 mkdir -p $dbin $dlog
 
-if [ "$DISABLE_CHECK_INSTALLED_SOFTWARE" != "1" ] ; then
+if [ "$INSTALL_EXTERNAL" = "1" ] ; then
+   echo_info "Installing packages"
    check_install_oai_software
+   echo_info "Making X.509 certificates"
    make_certs
-   check_epc_s6a_certificate
-   check_hss_s6a_certificate
    if [ "$HW" == "USRP" ] ; then
+     echo_info "installing packages for USRP support"
      check_install_usrp_uhd_driver
    fi
 fi
 
 echo_info "3. building the compilation directives ..."
 
-if [ "$TARGET" = "ALL" -o "$TARGET" = "SOFTMODEM" ] ; then
-   DIR=$OPENAIR_HOME/cmake_targets
+DIR=$OPENAIR_HOME/cmake_targets
 
-   # LTE softmodem compilation
-   mkdir -p $DIR/lte_build_oai
-   cmake_file=$DIR/lte_build_oai/CMakeLists.txt
-   echo "cmake_minimum_required(VERSION 2.8)" > $cmake_file
-   echo "set(XFORMS $XFORMS )" >>  $cmake_file
-   echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
-   echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
-   echo "set(RF_BOARD \"${HW}\")" >>  $cmake_file
-   echo 'set(PACKAGE_NAME "lte-softmodem")' >>  $cmake_file
-   echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
-   compilations \
-       lte_build_oai lte-softmodem \
-       lte-softmodem $dbin/lte-softmodem.$REL \
-       $dlog/lte-softmodem.$REL.txt \
-       "lte-softmodem compiled" \
-       "lte-softmodem compilation failed"
+# Create the cmake directives for selected options
+mkdir -p $DIR/lte_build_oai
+cmake_file=$DIR/lte_build_oai/CMakeLists.txt
+echo "cmake_minimum_required(VERSION 2.8)" > $cmake_file
+echo "set(XFORMS $XFORMS )" >>  $cmake_file
+echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
+echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
+echo "set(RF_BOARD \"${HW}\")" >>  $cmake_file
+echo 'set(PACKAGE_NAME "\"lte-softmodem\"")' >>  $cmake_file
+echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
 
+if [ "$eNB" = "1" -o "UE" = "1" ] ; then
+    # LTE softmodem compilation
+    echo_info "Compiling LTE softmodem"
+    compilations \
+	lte_build_oai lte-softmodem \
+	lte-softmodem $dbin/lte-softmodem.$REL \
+	$dlog/lte-softmodem.$REL.txt \
+	"lte-softmodem compiled" \
+	"lte-softmodem compilation failed"
+fi
 
-   # ue_ip driver compilation
-   compilations \
-       lte_build_oai ue_ip \
-       CMakeFiles/ue_ip/ue_ip.ko $dbin/ue_ip.ko \
-       $dlog/ue_ip.txt \
-       "ue_ip driver compiled" \
-       "ue_ip driver compilation failed"
+if [ "$UE" = 1 ] ; then
+    # ue_ip driver compilation
+    echo_info "Compiling UE specific part"
+    compilations \
+	lte_build_oai ue_ip \
+	CMakeFiles/ue_ip/ue_ip.ko $dbin/ue_ip.ko \
+	$dlog/ue_ip.txt \
+	"ue_ip driver compiled" \
+	"ue_ip driver compilation failed"
+fi
 
-
+if [ "SIMUS" = "1" ] ; then
    # lte unitary simulators compilation
+   echo_info "Compiling unitary tests simulators"
    simlist="dlsim ulsim pucchsim prachsim pdcchsim pbchsim mbmssim"
    log=$dlog/lte-simulators.log
    cd $OPENAIR_DIR/cmake_targets/lte-simulators
@@ -240,60 +216,116 @@ if [ "$TARGET" = "ALL" -o "$TARGET" = "SOFTMODEM" ] ; then
 	   echo_error "$f compilation failed"
        fi
    done
+fi
 
-   # EXMIMO drivers & firmware loader
-   if [ "$HW" = "EXMIMO" ] ; then
-     compilations \
+# EXMIMO drivers & firmware loader
+if [ "$HW" = "EXMIMO" ] ; then
+    echo_info "Compiling Express MIMO 2 board drivers"
+    compilations \
         lte_build_oai openair_rf \
         CMakeFiles/openair_rf/openair_rf.ko $dbin/openair_rf.ko \
         $dlog/openair_rf.txt 2>&1 \
 	"EXMIMO driver compiled" \
 	"EXMIMO driver compilation failed"
-     compilations \
-       lte_build_oai updatefw \
-       updatefw $dbin/updatefw \
-       $dlog/updatefw.txt 2>&1 \
-       "EXMIMO firmware loader compiled" \
-       "EXMIMO firmware loader compilation failed"
-   fi
+    compilations \
+	lte_build_oai updatefw \
+	updatefw $dbin/updatefw \
+	$dlog/updatefw.txt 2>&1 \
+	"EXMIMO firmware loader compiled" \
+	"EXMIMO firmware loader compilation failed"
+fi
 
-   # oasim compilation
-   cmake_file=$DIR/oaisim_build_oai/CMakeLists.txt
-   cp $DIR/oaisim_build_oai/CMakeLists.template $cmake_file
-   echo "set(XFORMS $XFORMS )" >>  $cmake_file
-   echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
-   echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
-   echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
-   compilations \
-       oaisim_build_oai oaisim \
-       oaisim $dbin/oaisim.$REL \
-       $dlog/oaisim.$REL.txt 2>&1 \
-       "oaisim compiled" \
-       "oaisim compilation failed"
+if [ "$oaisim" = "1" ] ; then
+    # oasim compilation
+    echo_info "Compiling oaisim simulator"
+    cmake_file=$DIR/oaisim_build_oai/CMakeLists.txt
+    cp $DIR/oaisim_build_oai/CMakeLists.template $cmake_file
+    echo "set(XFORMS $XFORMS )" >>  $cmake_file
+    echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
+    echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
+    echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
+    compilations \
+	oaisim_build_oai oaisim \
+	oaisim $dbin/oaisim.$REL \
+	$dlog/oaisim.$REL.txt 2>&1 \
+	"oaisim compiled" \
+	"oaisim compilation failed"
 
-   #oai_nw_drv
-   compilations \
-       oaisim_build_oai oai_nw_drv \
-       CMakeFiles/oai_nw_drv/oai_nw_drv.ko $dbin/oai_nw_drv.ko \
-       $dlog/oai_nw_drv.txt \
-       "oai_nw_drv driver compiled" \
-       "oai_nw_drv driver compilation failed"
-
-   # nasmesh driver compilation
-   compilations \
-       oaisim_build_oai nasmesh \
-       CMakeFiles/nasmesh/nasmesh.ko $dbin/nasmesh.ko \
-       $dlog/nasmesh.txt \
-       "nasmesh driver compiled" \
-       "nasmesh driver compilation failed"
+    #oai_nw_drv
+    compilations \
+	oaisim_build_oai oai_nw_drv \
+	CMakeFiles/oai_nw_drv/oai_nw_drv.ko $dbin/oai_nw_drv.ko \
+	$dlog/oai_nw_drv.txt \
+	"oai_nw_drv driver compiled" \
+	"oai_nw_drv driver compilation failed"
+    
+    # nasmesh driver compilation
+    compilations \
+	oaisim_build_oai nasmesh \
+	CMakeFiles/nasmesh/nasmesh.ko $dbin/nasmesh.ko \
+	$dlog/nasmesh.txt \
+	"nasmesh driver compiled" \
+	"nasmesh driver compilation failed"
 fi
 
 # EPC compilation
 ##################
-if [ "$TARGET" = "ALL" -o "$TARGET" = "SOFTMODEM" ] ; then
-    compile_epc
-
+if [ "$EPC" = "1" ] ; then
+    echo_info "Compiling EPC"
+    cmake_file=$DIR/epc_build_oai/CMakeLists.txt
+    cp $DIR/epc_build_oai/CMakeLists.template $cmake_file
+    echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
+    echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
+    compilations \
+	epc_build_oai oai_epc \
+	oai_epc $dbin/oai_epc.$REL \
+	$dlog/oai_epc.$REL.txt \
+	"oai_epc compiled" \
+	"oai_epc compilation failed"
+    compilations \
+	epc_build_oai xt_GTPUAH_lib \
+	libxt_GTPUAH_lib.so $dbin \
+	$dlog/xt_GTPUAH.txt \
+	"library xt_GTPUAH compiled" \
+	"library xt_GTPUAH compilation failed"
+    compilations \
+	epc_build_oai xt_GTPURH_lib \
+	libxt_GTPURH_lib.so $dbin \
+	$dlog/xt_GTPURH.txt \
+	"library xt_GTPURH compiled" \
+	"library xt_GTPURH compilation failed"
+    compilations \
+	epc_build_oai xt_GTPURH \
+	CMakeFiles/xt_GTPURH/xt_GTPURH.ko $dbin \
+	$dlog/xt_GTPURH.txt \
+	"module xt_GTPURH driver compiled" \
+	"module xt_GTPURH driver compilation failed"
+    compilations \
+	epc_build_oai xt_GTPUAH \
+	CMakeFiles/xt_GTPUAH/xt_GTPUAH.ko $dbin \
+	$dlog/xt_GTPUAH.txt \
+	"module xt_GTPUAH driver compiled" \
+	"module xt_GTPUAH  compilation failed"
+    echo_info "Copying iptables libraries into system directory: /lib/xtables"
+    $SUDO ln -s $dbin/libxt_GTPURH_lib.so /lib/xtables/libxt_GTPURH.so
+    $SUDO ln -s $dbin/libxt_GTPUAH_lib.so /lib/xtables/libxt_GTPUAH.so
+    compile_hss
 fi
+
+# Install config file
+###################
+if [ "$CONFIG_FILE" != "" ] ; then
+    # may be relative path 
+    if [ -f $(dirname $(readlink -f $0))/$CONFIG_FILE ]; then
+        CONFIG_FILE=$(dirname $(readlink -f $0))/$CONFIG_FILE
+    fi
+    if [ -s $CONFIG_FILE ]; then
+            echo_info "Copy config file in $dbin"
+	    cp $CONFIG_FILE $dbin
+    else
+        echo_error "config file not found"        fi
+    fi
+fi 
 
 # Auto-tests 
 #####################
@@ -303,8 +335,8 @@ if [ "$OAI_TEST" = "1" ]; then
 else 
     echo_info "10. Bypassing the Tests ..."
 fi 
-exit 0
 
+exit 0
 
 
 
@@ -314,89 +346,14 @@ exit 0
 
     echo_info "5. configure and compile epc"
 
-    output=$(compile_epc $OAI_CLEAN  >> $OPENAIR_TARGETS/bin/install_log.txt  2>&1 )
-    epc_compiled=$?
-    if [ $epc_compiled -ne 0 ]; then
-        echo_error "EPC compilation failed : check the installation log file bin/install_log.txt" 
-        exit 1
-    fi
-    check_for_epc_executable
-    echo_info "finished epc target: check the installation log file bin/install_log.txt" 
-
     if [ $CONFIG_FILE_ACCESS_OK -eq 0 ]; then
         echo_error "You have to provide a EPC config file"
         exit 1
-    fi
-    
-    TEMP_FILE=`tempfile`
-    VARIABLES=" S6A_CONF\|\
-           HSS_HOSTNAME\|\
-           REALM"
-
-    VARIABLES=$(echo $VARIABLES | sed -e 's/\\r//g')
-    VARIABLES=$(echo $VARIABLES | tr -d ' ')
-    cat $CONFIG_FILE | grep -w "$VARIABLES"| tr -d " " | tr -d ";" > $TEMP_FILE
-    source $TEMP_FILE
-    rm -f $TEMP_FILE
-
-    if [ x"$REALM" == "x" ]; then
-        echo_error "Your config file do not contain a REALM for S6A configuration"
-        exit 1
-    fi
-    if [ x"$S6A_CONF" != "x./epc_s6a.conf" ]; then
-        echo_error "Your config file do not contain the good path for the S6A config file,"
-        echo_error "accordingly to what is done in this script, it should be set to epc_s6a.conf"
-        exit 1
-    fi
-
-    check_epc_s6a_certificate $REALM
-
-###########################################
-# install the binary in bin
-##########################################
-
-    echo_info "6. install the binary file"
-
-    if [ $epc_compiled -eq 0 ]; then 
-        echo_success "target epc built and installed in the bin directory"
-        echo "target epc built and installed in the bin directory"  >>  bin/${oai_build_date}
-        cp -f $CONFIG_FILE  $OPENAIR_TARGETS/bin
-        cp -f $OPENAIRCN_DIR/objs/UTILS/CONF/s6a.conf  $OPENAIR_TARGETS/bin/epc_s6a.conf
-    fi
-}
-
-build_hss(){
-    echo_info "Note: this script tested only for Ubuntu 12.04 x64 -> 14.04 x64"
-
-######################################
-# CHECK MISC SOFTWARES AND LIBS      #
-######################################
-    if [ $DISABLE_CHECK_INSTALLED_SOFTWARE -eq 0 ]; then 
-        echo_info "4. check the required packages for HSS"
-        check_install_hss_software
-        if [ $OAI_CLEAN -eq 1 ]; then
-            check_install_freediamter
-        else 
-            if [ ! -d /usr/local/etc/freeDiameter ]; then
-                check_install_freediamter
-            fi
-        fi
     else
-        echo_info "4. Not checking the required packages for HSS"
+	# Perform some coherency checks
+	# check  HSS_HOSTNAME REALM
     fi
     
-  
-######################################
-# compile HSS                        #
-######################################
-    echo_info "5. compile HSS"
-
-     # Bad behaviour of $OAI_CLEAN with ./.lock_oaibuild ...
-     compile_hss $CLEAN_HSS
-     hss_compiled=$?
-     check_for_hss_executable
-     echo_info "finished hss target" 
- 
 ######################################
 # Check certificates                 #
 ######################################
@@ -434,54 +391,7 @@ build_hss(){
 }
 
 
- 
 
-echo_info "3. set the top-level build target"
-case "$BUILD_LTE" in
-    'ENB')
-         echo_success "build LTE eNB"
-         build_enb
-         ;;
-    'EPC')
-         echo_success "build EPC(MME and xGW)"
-         build_epc
-         ;;
-    'HSS')
-        echo_success "build HSS"
-        build_hss 
-        ;;
-    'NONE')
-        ;;
-    *)
-        ;;
-esac
-
-# Additional operation 
-
-############################################
-# Generate doxygen documentation
-############################################
-
-if [ $DOXYGEN = 1 ]; then 
-    echo_info "9. Generate doxygen documentation ..."
-    doxygen $OPENAIR_TARGETS/DOCS/Doxyfile
-    echo_info "9.1 use your navigator to open $OPENAIR_TARGETS/DOCS/html/index.html "
-else 
-    echo_info "9. Bypassing doxygen documentation ..."
-fi 
-
-
-############################################
-# testing
-############################################
-    
-if [ $OAI_TEST -eq 1 ]; then 
-    echo_info "10. Running OAI pre commit tests (pre-ci) ..."
-    python $OPENAIR_TARGETS/TEST/OAI/test01.py -l 
-else 
-    echo_info "10. Bypassing the Tests ..."
-fi 
-    
 ############################################
 # run 
 ############################################

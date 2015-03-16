@@ -66,7 +66,7 @@ mme_app_send_s11_create_session_req(
 
   DevAssert(ue_context_pP != NULL);
 
-#if defined(DISABLE_STANDALONE_EPC)
+#if !defined(ENABLE_STANDALONE_EPC)
   to_task = TASK_S11;
 #else
   to_task = TASK_SPGW_APP;
@@ -664,7 +664,7 @@ mme_app_handle_initial_context_setup_rsp(
         return;
     }
 
-#if defined(DISABLE_STANDALONE_EPC)
+#if !defined(ENABLE_STANDALONE_EPC)
   to_task = TASK_S11;
 #else
   to_task = TASK_SPGW_APP;
