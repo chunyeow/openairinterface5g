@@ -54,84 +54,80 @@ do
 	    CLEAN=1
 	    clean_all_files
 	    echo_info "Erased all previously producted files"
-            shift;
-            ;;
+            shift;;
 	--clean-kernel)
 	    clean_kernel
 	    echo_info "Erased iptables config and removed modules from kernel"
-            shift;
-            ;;
+            shift;;
 	-C | --config-file)
             CONFIG_FILE=$2
 	    echo_info "Will install the config file $CONFIG_FILE"
-            shift 2;
-            ;;
+            shift 2;;
 	-I | --install-external-packages)
             INSTALL_EXTERNAL
             echo_info "Will install external packages"
-            shift;
-            ;;
+            shift;;
 	-g | --run-with-gdb)
             GDB=1
             echo_info "Will Compile with gdb symbols"
-            shift;
-            ;;
-	-eNB)
+            shift;;
+	--eNB)
 	    eNB=1
 	    echo_info "Will compile eNB"
 	    shift;;
-	-UE)
+	--UE)
 	    UE=1
 	    echo_info "Will compile UE"
 	    shift;;
-	-unit_simulators)
-            SIMUS=1
-	    echo_info "Will compile dlsim, ulsim, ..."
-	    shift;;
-	-oaisim)
-	    oaisim=1
-	    echo_info "Will compile oaisim and drivers nasmesh, ..."
-	    shift;;
-	-EPC)
+	--EPC)
 	    EPC=1
 	    echo_info "Will compile EPC"
 	    shift;;
-       -h | --help)
-            print_help
-            exit 1
-            ;;
        -r | --3gpp-release)
             REL=$2 
             echo_info "setting release to: $REL"
-            shift 2 ;
-            ;;
+            shift 2;;
+       -w | --hardware)
+            HW="$2" #"${i#*=}"
+            echo_info "setting hardware to: $HW"
+            shift 2;;
+	--oaisim)
+	    oaisim=1
+	    echo_info "Will compile oaisim and drivers nasmesh, ..."
+	    shift;;
+	--phy_simulators)
+            SIMUS_PHY=1
+	    echo_info "Will compile dlsim, ulsim, ..."
+	    shift;;
+	--core_simulators)
+	    SIMUS_CORE=1
+	    echo_info "Will compile security unitary tests"
+	    shift;;
        -s | --check)
             OAI_TEST=1
             echo_info "Will run auto-tests"
-            shift;
-            ;;
+            shift;;
        -V | --vcd)
             echo_info "setting gtk-wave output"
             VCD_TIMING=1
             EXE_ARGUMENTS="$EXE_ARGUMENTS -V"
-            shift ;
-            ;;
-       -w | --hardware)
-            HW="$2" #"${i#*=}"
-            echo_info "setting hardware to: $HW"
-            shift 2 ;
-            ;;
+            shift;;
        -x | --xforms)
             XFORMS=1
             EXE_ARGUMENTS="$EXE_ARGUMENTS -d"
             echo_info "Will generate the software oscilloscope features"
-            shift;
-            ;;
-       *)   
+            shift;;
+	--install-system-files)
+	    INSTALL_SYSTEM_FILES=1
+	    echo_info "Will copy OpenAirInterface files in Linux directories"
+	    shift;;
+        -h | --help)
+            print_help
+            exit 1;;
+	*)   
 	    print_help
             echo_fatal "Unknown option $1"
-            break ;
-            ;;
+            break;;
    esac
 done
 
@@ -163,8 +159,11 @@ echo_info "3. building the compilation directives ..."
 
 DIR=$OPENAIR_HOME/cmake_targets
 
-# Create the cmake directives for selected options
-mkdir -p $DIR/lte_build_oai
+# Create and configure the building directories
+#####################################"
+
+# For eNB, UE, ...
+mkdir -p $DIR/lte_build_oai/build
 cmake_file=$DIR/lte_build_oai/CMakeLists.txt
 echo "cmake_minimum_required(VERSION 2.8)" > $cmake_file
 echo "set(XFORMS $XFORMS )" >>  $cmake_file
@@ -173,16 +172,43 @@ echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
 echo "set(RF_BOARD \"${HW}\")" >>  $cmake_file
 echo 'set(PACKAGE_NAME "\"lte-softmodem\"")' >>  $cmake_file
 echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
+cd  $DIR/lte_build_oai/build
+cmake ..
+
+# For EPC
+cmake_file=$DIR/epc_build_oai/CMakeLists.txt
+cp $DIR/epc_build_oai/CMakeLists.template $cmake_file
+echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
+echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
+mkdir -p $DIR/epc_build_oai/build
+cd $DIR/epc_build_oai/build
+cmake ..
+
+# For oaisim
+cmake_file=$DIR/oaisim_build_oai/CMakeLists.txt
+cp $DIR/oaisim_build_oai/CMakeLists.template $cmake_file
+echo "set(XFORMS $XFORMS )" >>  $cmake_file
+echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
+echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
+echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
+mkdir -p $DIR/oaisim_build_oai/build
+cd $DIR/oaisim_build_oai/build
+cmake ..
+
+# For unitary test simulators
+cd $OPENAIR_DIR/cmake_targets/lte-simulators
+[ "$CLEAN" = "1" ] && rm -rf build
+mkdir -p build
+cd build
+rm -f *sim
+cmake ..
 
 if [ "$eNB" = "1" -o "UE" = "1" ] ; then
     # LTE softmodem compilation
     echo_info "Compiling LTE softmodem"
     compilations \
 	lte_build_oai lte-softmodem \
-	lte-softmodem $dbin/lte-softmodem.$REL \
-	$dlog/lte-softmodem.$REL.txt \
-	"lte-softmodem compiled" \
-	"lte-softmodem compilation failed"
+	lte-softmodem lte-softmodem.$REL 
 fi
 
 if [ "$UE" = 1 ] ; then
@@ -190,31 +216,35 @@ if [ "$UE" = 1 ] ; then
     echo_info "Compiling UE specific part"
     compilations \
 	lte_build_oai ue_ip \
-	CMakeFiles/ue_ip/ue_ip.ko $dbin/ue_ip.ko \
-	$dlog/ue_ip.txt \
-	"ue_ip driver compiled" \
-	"ue_ip driver compilation failed"
+	CMakeFiles/ue_ip/ue_ip.ko $dbin/ue_ip.ko
+    compilations \
+	lte_build_oai usim_data \
+	usim_data $dbin/usim_data.$REL
+    compilations \
+	lte_build_oai ue_data \
+	ue_data $dbin/ue_data.$REL
 fi
 
-if [ "SIMUS" = "1" ] ; then
+if [ "$SIMUS_PHY" = "1" ] ; then
    # lte unitary simulators compilation
    echo_info "Compiling unitary tests simulators"
    simlist="dlsim ulsim pucchsim prachsim pdcchsim pbchsim mbmssim"
-   log=$dlog/lte-simulators.log
-   cd $OPENAIR_DIR/cmake_targets/lte-simulators
-   [ "$CLEAN" = "1" ] && rm -rf build
-   mkdir -p build
-   cd build
-   rm -f *sim
-   cmake ..  > $log 2>&1
    for f in $simlist ; do
-       make -j4 $f > $log 2>&1
-       if [ -s $f ] ; then
-	   echo_success "$f compiled"
-           cp $f $OPENAIR_DIR/cmake_targets/bin 
-       else
-	   echo_error "$f compilation failed"
-       fi
+       compilations \
+	   lte-simulators $f \
+	   $f $dbin/$f.$REL
+   done
+fi
+
+# Core simulators 
+if [ "$SIMUS_CORE" = "1" ] ; then
+   # lte unitary simulators compilation
+   echo_info "Compiling unitary tests simulators"
+   simlist="secu_knas_encrypt_eia1 secu_kenb aes128_ctr_encrypt aes128_ctr_decrypt secu secu_knas_stream_int secu_knas_encrypt_eea2 secu_knas secu_knas_encrypt_eea1 kdf aes128_cmac_encrypt secu_knas_encrypt_eia2"
+   for f in $simlist ; do
+       compilations \
+	   lte-simulators test_$f \
+	   test_$f $dbin/test_$f.$REL
    done
 fi
 
@@ -223,93 +253,61 @@ if [ "$HW" = "EXMIMO" ] ; then
     echo_info "Compiling Express MIMO 2 board drivers"
     compilations \
         lte_build_oai openair_rf \
-        CMakeFiles/openair_rf/openair_rf.ko $dbin/openair_rf.ko \
-        $dlog/openair_rf.txt 2>&1 \
-	"EXMIMO driver compiled" \
-	"EXMIMO driver compilation failed"
+        CMakeFiles/openair_rf/openair_rf.ko $dbin/openair_rf.ko
     compilations \
 	lte_build_oai updatefw \
-	updatefw $dbin/updatefw \
-	$dlog/updatefw.txt 2>&1 \
-	"EXMIMO firmware loader compiled" \
-	"EXMIMO firmware loader compilation failed"
+	updatefw $dbin/updatefw 
 fi
 
 if [ "$oaisim" = "1" ] ; then
-    # oasim compilation
-    echo_info "Compiling oaisim simulator"
-    cmake_file=$DIR/oaisim_build_oai/CMakeLists.txt
-    cp $DIR/oaisim_build_oai/CMakeLists.template $cmake_file
-    echo "set(XFORMS $XFORMS )" >>  $cmake_file
-    echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
-    echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
-    echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
+    echo_info "Compiling oaisim"
     compilations \
 	oaisim_build_oai oaisim \
-	oaisim $dbin/oaisim.$REL \
-	$dlog/oaisim.$REL.txt 2>&1 \
-	"oaisim compiled" \
-	"oaisim compilation failed"
-
+	oaisim $dbin/oaisim.$REL
+    compilations \
+	oaisim_build_oai oaisim_mme \
+	oaisim_mme $dbin/oaisim_mme.$REL
     #oai_nw_drv
     compilations \
 	oaisim_build_oai oai_nw_drv \
-	CMakeFiles/oai_nw_drv/oai_nw_drv.ko $dbin/oai_nw_drv.ko \
-	$dlog/oai_nw_drv.txt \
-	"oai_nw_drv driver compiled" \
-	"oai_nw_drv driver compilation failed"
-    
+	CMakeFiles/oai_nw_drv/oai_nw_drv.ko $dbin/oai_nw_drv.ko
     # nasmesh driver compilation
     compilations \
 	oaisim_build_oai nasmesh \
-	CMakeFiles/nasmesh/nasmesh.ko $dbin/nasmesh.ko \
-	$dlog/nasmesh.txt \
-	"nasmesh driver compiled" \
-	"nasmesh driver compilation failed"
+	CMakeFiles/nasmesh/nasmesh.ko $dbin/nasmesh.ko
 fi
 
 # EPC compilation
 ##################
 if [ "$EPC" = "1" ] ; then
     echo_info "Compiling EPC"
-    cmake_file=$DIR/epc_build_oai/CMakeLists.txt
-    cp $DIR/epc_build_oai/CMakeLists.template $cmake_file
-    echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
-    echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
+
     compilations \
 	epc_build_oai oai_epc \
-	oai_epc $dbin/oai_epc.$REL \
-	$dlog/oai_epc.$REL.txt \
-	"oai_epc compiled" \
-	"oai_epc compilation failed"
+	oai_epc $dbin/oai_epc.$REL
+    compilations \
+	epc_build_oai oai_sgw \
+	oai_sgw $dbin/oai_sgw.$REL
     compilations \
 	epc_build_oai xt_GTPUAH_lib \
-	libxt_GTPUAH_lib.so $dbin \
-	$dlog/xt_GTPUAH.txt \
-	"library xt_GTPUAH compiled" \
-	"library xt_GTPUAH compilation failed"
+	libxt_GTPUAH_lib.so $dbin
     compilations \
 	epc_build_oai xt_GTPURH_lib \
-	libxt_GTPURH_lib.so $dbin \
-	$dlog/xt_GTPURH.txt \
-	"library xt_GTPURH compiled" \
-	"library xt_GTPURH compilation failed"
+	libxt_GTPURH_lib.so $dbin
     compilations \
 	epc_build_oai xt_GTPURH \
-	CMakeFiles/xt_GTPURH/xt_GTPURH.ko $dbin \
-	$dlog/xt_GTPURH.txt \
-	"module xt_GTPURH driver compiled" \
-	"module xt_GTPURH driver compilation failed"
+	CMakeFiles/xt_GTPURH/xt_GTPURH.ko $dbin
     compilations \
 	epc_build_oai xt_GTPUAH \
-	CMakeFiles/xt_GTPUAH/xt_GTPUAH.ko $dbin \
-	$dlog/xt_GTPUAH.txt \
-	"module xt_GTPUAH driver compiled" \
-	"module xt_GTPUAH  compilation failed"
+	CMakeFiles/xt_GTPUAH/xt_GTPUAH.ko $dbin
+
+    compile_hss
+fi
+
+if [ "$INSTALL_SYSTEM_FILES" = "1" ] ;then
     echo_info "Copying iptables libraries into system directory: /lib/xtables"
     $SUDO ln -s $dbin/libxt_GTPURH_lib.so /lib/xtables/libxt_GTPURH.so
     $SUDO ln -s $dbin/libxt_GTPUAH_lib.so /lib/xtables/libxt_GTPUAH.so
-    compile_hss
 fi
 
 # Install config file
@@ -403,7 +401,6 @@ if [ $RUN -ne 0 ]; then
         'ENB')
             if [ $TARGET == "SOFTMODEM" ]; then 
                 if [ $HW == "EXMIMO" ]; then 
-                    $SUDO chmod 777 $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
                     $SUDO $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
                 fi
                 echo "############# running ltesoftmodem #############"

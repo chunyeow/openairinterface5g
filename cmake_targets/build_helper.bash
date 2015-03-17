@@ -80,17 +80,14 @@ Options
    The configuration file to install
 -I | --install-external-packages 
    Installs required packages such as LibXML, asn1.1 compiler, freediameter, ...
+   This option will require root password
 -g | --run-with-gdb
    Add debugging symbols to compilation directives
--eNB
+--eNB
    Makes the eNB LTE softmodem
--UE
+--UE
    Makes the UE softmodem
--oaisim
-   Makes the oaisim simulator
--unit_simulators
-   Makes the unitary tests Layer 1 simulators
--EPC
+--EPC
    Makes the EPC
 -r | --3gpp-release
    default is Rel10, 
@@ -98,13 +95,22 @@ Options
 -w | --hardware
    EXMIMO (Default), USRP, None
    Adds this RF board support (in external packages installation and in compilation)
+--oaisim
+   Makes the oaisim simulator
+--phy_simulators
+   Makes the unitary tests Layer 1 simulators
+--core_simulators
+   Makes the core security features unitary simulators
 -s | --check
    runs a set of auto-tests based on simulators and several compilation tests
 -V | --vcd
    Adds a debgging facility to the binary files: GUI with major internal synchronization events
 -x | --xforms
    Adds a software oscilloscope feature to the produced binaries
-Typical Options for a quick startup with a COTS UE and Eurecom RF board: build_oai.bash -I -g -eNB -EPC -x'
+--install-system-files
+   Install OpenArInterface required files in Linux system 
+   (will ask root password)
+Typical Options for a quick startup with a COTS UE and Eurecom RF board: build_oai.bash -I -g -eNB -EPC -x --install-system-files'
 }
 
 ###########################
@@ -142,26 +148,38 @@ clean_all_files() {
 ###################################
 
 compilations() {
-  cd $OPENAIR_DIR/cmake_targets/$1
+  cd $OPENAIR_DIR/cmake_targets/$1/build
   {
-    [ "$CLEAN" = "1" ] && rm -rf build
-    mkdir -p build
-    cd build
     rm -f $3
-    cmake ..
     make -j4 $2
-  } > $5 2>&1
+  } > $dlog/$2.$REL.txt 2>&1
   if [ -s $3 ] ; then
-     cp $3 $4
-     echo_success "$6"
+     cp $3 $dbin/$2.$REL
+     echo_success "$2 compiled"
   else
-     echo_error "$7"
+     echo_error "$2 compilation failed"
   fi
 }
 
 run_tests() {
    $1 > $2 2>&1
    grep 
+}
+
+test_compile() {
+    mkdir -p $tdir/$1/build
+    cd $tdir/$1/build
+    {
+	cmake ..
+	rm -f $3
+	make -j4 $2
+    } > $tdir/log/$1.txt
+    if [ -s $3 ] ; then
+     cp $3 $tdir/bin/$3.$1
+     echo_success "$1 test compiled"
+  else
+     echo_error "$1 test compilation failed"
+  fi
 }
 
 run_compilation_autotests() {
@@ -173,71 +191,48 @@ run_compilation_autotests() {
     fi
     compilations \
         test.0101 oaisim \
-        oaisim  $tdir/bin/oaisim.r8 \
-        $tdir/log/test0101.txt \
-	"test 0101:oaisim Rel8 passed" \
-        "test 0101:oaisim Rel8 failed"
+        oaisim  $tdir/bin/oaisim.r8
 
     compilations \
         test.0102 oaisim \
-        oaisim  $tdir/bin/oaisim.r8.nas \
-        $tdir/log/test0102.oaisim.txt \
-	"test 0102:oaisim Rel8 nas passed" \
-        "test 0102:oaisim Rel8 nas failed"
+        oaisim  $tdir/bin/oaisim.r8.nas
+
     compilations \
         test.0103 oaisim \
-        oaisim  $tdir/bin/oaisim.r8.rf \
-        $tdir/log/test0103.txt \
-	"test 0103:oaisim rel8 rf passed" \
-        "test 0103:oaisim rel8 rf failed"
+        oaisim  $tdir/bin/oaisim.r8.rf
+
     compilations \
         test.0104 dlsim \
-        dlsim  $tdir/bin/dlsim \
-        $tdir/log/test0104.txt \
-	"test 0104:dlsim passed" \
-        "test 0104:dlsim failed"    
+        dlsim  $tdir/bin/dlsim
+
     compilations \
         test.0104 ulsim \
-        ulsim  $tdir/bin/ulsim \
-        $tdir/log/test0105.txt \
-	"test 0105: ulsim passed" \
-        "test 0105: ulsim failed"
+        ulsim  $tdir/bin/ulsim
+
     compilations \
         test.0106 oaisim \
-        oaisim  $tdir/bin/oaisim.r8.itti \
-        $tdir/log/test0106.txt \
-	"test 0103:oaisim rel8 itti passed" \
-        "test 0103:oaisim rel8 itti failed"
+        oaisim  $tdir/bin/oaisim.r8.itti
+
     compilations \
         test.0107 oaisim \
-        oaisim  $tdir/bin/oaisim.r10 \
-        $tdir/log/test0107.txt \
-	"test 0103:oaisim rel10 passed" \
-        "test 0103:oaisim rel10 failed"
+        oaisim  $tdir/bin/oaisim.r10
+
     compilations \
         test.0108 oaisim \
-        oaisim  $tdir/bin/oaisim.r10.itti \
-        $tdir/log/test0108.txt \
-	"test 0108:oaisim rel10 itti passed" \
-        "test 0108:oaisim rel10 itti failed"
+        oaisim  $tdir/bin/oaisim.r10.itti
+
     compilations \
         test.0114 oaisim \
-        oaisim  $tdir/bin/oaisim.r8.itti.ral \
-        $tdir/log/test0114.txt \
-	"test 0114:oaisim rel8 itti ral passed" \
-        "test 0114:oaisim rel8 itti ral failed"
+        oaisim  $tdir/bin/oaisim.r8.itti.ral
+
     compilations \
         test.0115 oaisim \
-        oaisim  $tdir/bin/oaisim.r10.itti.ral \
-        $tdir/log/test0115.txt \
-	"test 0114:oaisim rel10 itti ral passed" \
-        "test 0114:oaisim rel10 itti ral failed" 
+        oaisim  $tdir/bin/oaisim.r10.itti.ral
+
     compilations \
         test.0102 nasmesh \
-        CMakeFiles/nasmesh/nasmesh.ko $tdir/bin/nasmesh.ko \
-        $tdir/log/test0120.txt \
-	"test 0120: nasmesh.ko passed" \
-        "test 0120: nasmesk.ko failed"
+        CMakeFiles/nasmesh/nasmesh.ko $tdir/bin/nasmesh.ko
+
 }
 
 ##########################################
@@ -414,11 +409,17 @@ check_install_oai_software() {
         $SUDO apt-get install -y libgnutls-dev nettle-dev nettle-bin 
     fi
     install_freediameter_from_source
-    check_install_asn1c
+    install_asn1c_from_source
 }
 
-check_install_asn1c(){    
-    $SUDO $OPENAIR_TARGETS/SCRIPTS/install_asn1c_0.9.24.modified.bash
+install_asn1c_from_source(){
+    mkdir /tmp/asn1c-r1516
+    cd /tmp/asn1c-r1516
+    svn co https://github.com/vlm/asn1c/trunk  /tmp/asn1c-r1516 -r 1516
+    patch -p0 < $OPENAIRCN_DIR/S1AP/MESSAGES/ASN1/asn1cpatch.p0
+    ./configure
+    make
+    $SUDO make install
 }
 
 #################################################
@@ -429,17 +430,19 @@ compile_hss() {
     
     if [ "$CLEAN" = "1" ]; then
         echo_info "build a clean HSS"
-        rm -rfv obj* m4 .autom4* configure
+        rm -rf obj* m4 .autom4* configure
     fi
 
     echo_success "Invoking autogen"
     ./autogen.sh || return 1
     mkdir -p objs ; cd objs
     echo_success "Invoking configure"
-    ./configure || return 1
+    ../configure || return 1
     if [ -f Makefile ];  then
         echo_success "Compiling..."
         make -j4
+	# seems a bug in hss compilation: run make twice to work around
+	make -j4
         if [ $? -ne 0 ]; then
             echo_error "Build failed, exiting"
             return 1
@@ -452,62 +455,27 @@ compile_hss() {
     return 1
 }
 
-compile_nas_tools() {
-
-    export NVRAM_DIR=$OPENAIR_TARGETS/bin
-    
-    cd $NVRAM_DIR
-    
-    if [ ! -f /tmp/nas_cleaned ]; then
-        echo_success "make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS/tools veryveryclean"
-        make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS/tools veryveryclean
-    fi
-    echo_success "make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS/tools all"
-    make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS/tools all
-    rm .ue.nvram
-    rm .usim.nvram
-    touch /tmp/nas_cleaned
-}
 
 TDB() {
     
     if [ $2 = "USRP" ]; then
 	echo_info "  8.2 [USRP] "
     fi
-    
-    # ENB_S1
-    if [ $3 = 0 ]; then 
-        cd $OPENAIR2_DIR && make clean && make nasmesh_netlink.ko  #|| exit 1
-        cd $OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL && make clean && make  # || exit 1
-    fi
-    
-}
-
-# arg1 is ENB_S1 'boolean'
-install_oaisim() {
-    if [ $1 = 0 ]; then 
-	cd $OPENAIR2_DIR && make clean && make nasmesh_netlink.ko  #|| exit 1
-	cd $OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL && make clean && make  # || exit 1
-    else
-	compile_ue_ip_nw_driver
-	install_nas_tools
-    fi 
-}
-
+ 
 
 install_nas_tools() {
-    cd $OPENAIR_TARGETS/bin
+    cd $1
     if [ ! -f .ue.nvram ]; then
         echo_success "generate .ue_emm.nvram .ue.nvram"
-        $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data --gen
+        ./ue_data --gen
     fi
 
     if [ ! -f .usim.nvram ]; then
         echo_success "generate .usim.nvram"
-        $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data --gen
+        ./usim_data --gen
     fi
-    $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data --print
-    $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data --print
+    ./ue_data --print
+    ./usim_data --print
 }
 
 install_nasmesh(){
@@ -537,8 +505,6 @@ create_hss_database(){
         echo_fatal "Usage: $0 dbuser dbpass hssuser hsspass databasename"
         rv=1
     fi
-
-    set_openair_env
     
     # removed %
     #Q1="GRANT ALL PRIVILEGES ON *.* TO '$3'@'%' IDENTIFIED BY '$4' WITH GRANT OPTION;"
@@ -553,7 +519,6 @@ create_hss_database(){
 	echo_success "$3 permissions succeeded"
     fi
     
-    
     Q1="CREATE DATABASE IF NOT EXISTS ${BTICK}$5${BTICK};"
     SQL="${Q1}"
     $MYSQL -u $3 --password=$4 -e "$SQL"
@@ -563,7 +528,6 @@ create_hss_database(){
     else
 	echo_success "$5 creation succeeded"
     fi
-    
     
     # test if tables have been created
     mysql -u $3 --password=$4  -e "desc $5.users" > /dev/null 2>&1
@@ -577,7 +541,6 @@ create_hss_database(){
             echo_success "$5 tables creation succeeded"
         fi
     fi
-    
     return 0
 }
 
@@ -585,14 +548,12 @@ create_hss_database(){
 # set_openair_env
 ###############################
 set_openair_env(){
-
     fullpath=`readlink -f $BASH_SOURCE`
     [ -f "/.$fullpath" ] || fullpath=`readlink -f $PWD/$fullpath`
     openair_path=${fullpath%/cmake_targets/*}
     openair_path=${openair_path%/targets/*}
     openair_path=${openair_path%/openair-cn/*}
-    openair_path=${openair_path%/openair[123]/*}
-
+    openair_path=${openair_path%/openair[123]/*}    
     export OPENAIR_DIR=$openair_path
     export OPENAIR_HOME=$openair_path
     export OPENAIR1_DIR=$openair_path/openair1
@@ -600,6 +561,5 @@ set_openair_env(){
     export OPENAIR3_DIR=$openair_path/openair3
     export OPENAIRCN_DIR=$openair_path/openair-cn
     export OPENAIR_TARGETS=$openair_path/targets
-
 }
 

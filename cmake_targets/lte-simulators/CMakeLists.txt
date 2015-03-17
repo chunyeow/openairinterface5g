@@ -9,5 +9,6 @@ set(MU_RECIEVER Flase)
 set(RANDOM_BF False)
 set(PBS_SIM False)
 set(PERFECT_CE False)
+set(NAS_UE False)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)

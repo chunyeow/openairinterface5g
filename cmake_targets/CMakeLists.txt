@@ -115,7 +115,7 @@ set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 
 #
 set(CMAKE_C_FLAGS 
-  "${CMAKE_C_FLAGS} -msse4.2 -std=gnu99 -Wall -Wstrict-prototypes -fno-strict-aliasing -rdynamic -funroll-loops -Wno-packed-bitfield-compat -fPIC")
+  "${CMAKE_C_FLAGS} -msse4.2 -std=gnu99 -Wall -Wstrict-prototypes -fno-strict-aliasing -rdynamic -funroll-loops -Wno-packed-bitfield-compat -fPIC ")
 # add autotools definitions that were maybe used!
 set(CMAKE_C_FLAGS 
   "${CMAKE_C_FLAGS} -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_FCNTL_H=1 -DHAVE_ARPA_INET_H=1 -DHAVE_SYS_TIME_H=1 -DHAVE_SYS_SOCKET_H=1 -DHAVE_STRERROR=1 -DHAVE_SOCKET=1 -DHAVE_MEMSET=1 -DHAVE_GETTIMEOFDAY=1 -DHAVE_STDLIB_H=1 -DHAVE_MALLOC=1 -DHAVE_LIBSCTP"
@@ -172,6 +172,7 @@ if (${ENABLE_ITTI})
     ${ITTI_DIR}/timer.c
     )
   set(ITTI_LIB ITTI)
+  set(GTPU_need_ITTI ${OPENAIRCN_DIR}/GTPV1-U/gtpv1u_eNB.c)
   set(EXMIMO_IOT)
 endif (${ENABLE_ITTI})
 
@@ -357,6 +358,7 @@ add_boolean_option(ENABLE_USE_PCAP_FOR_SGI False "SGI option")
 add_boolean_option(ENABLE_USE_RAW_SOCKET_FOR_SGI False "As per name")
 add_boolean_option(ENABLE_VCD_FIFO True "Seems legacy: always true now")
 add_boolean_option(ENB_MODE True "???")
+add_boolean_option(EPC_BUILD False "???")
 add_boolean_option(HARD_RT False "???")
 add_boolean_option(JUMBO_FRAME True "???")
 add_boolean_option(LARGE_SCALE False "specific to oaisim: defines max eNB=2 and max UE=120")
@@ -430,9 +432,7 @@ if(ENB_MODE)
   include_directories("${OPENAIR2_DIR}/UTIL/LOG")
   include_directories("${OPENAIRCN_DIR}/COMMON")
   include_directories("${OPENAIRCN_DIR}/UTILS")
-message("openair2 first")
 else()
-message(openair-cn first)
   include_directories("${OPENAIRCN_DIR}/COMMON")
   include_directories("${OPENAIRCN_DIR}/UTILS")
   include_directories("${OPENAIR2_DIR}/COMMON")
@@ -453,7 +453,6 @@ include_directories("${OPENAIR3_DIR}/RAL-LTE/INTERFACE-802.21/INCLUDE")
 include_directories("${OPENAIR3_DIR}/RAL-LTE/LTE_RAL_ENB/INCLUDE")
 include_directories("${OPENAIR3_DIR}/RAL-LTE/LTE_RAL_UE/INCLUDE")
 include_directories("${OPENAIR_DIR}/common/utils")
-include_directories("${OPENAIR_DIR}/common/utils/collection/hashtable")
 include_directories("${OPENAIR_DIR}/common/utils/itti")
 include_directories("${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/api/network")
 include_directories("${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/include")
@@ -495,28 +494,13 @@ include_directories("${OPENAIRCN_DIR}/SGI")
 include_directories("${OPENAIRCN_DIR}/S6A")
 include_directories("${OPENAIR_DIR}")
 
-# define where are the source files
-##################################
-#add_subdirectory (${OPENAIR_DIR} .) 
-
-# define libraries
-#add_library(MathFunctions mysqrt.cxx)
-function(add_whole_dir dir lib_name)
-  file(GLOB mylist ${dir})
-  add_library(${lib_name} ${mylist})
-endfunction(add_whole_dir)
-
-function(add_whole_tree dir lib_name)
-  file(GLOB_RECURSE mylist "${dir}/*.c")
-  add_library(${lib_name} ${mylist})
-endfunction(add_whole_tree)
-
 # Utilities Library
 ################
 add_library(HASHTABLE
-  ${OPENAIR_DIR}/common/utils/collection/hashtable/hashtable.c
-  ${OPENAIR_DIR}/common/utils/collection/hashtable/obj_hashtable.c
+  ${OPENAIRCN_DIR}/UTILS/HASHTABLE/hashtable.c
+  ${OPENAIRCN_DIR}/UTILS/HASHTABLE/obj_hashtable.c
 )
+include_directories(${OPENAIRCN_DIR}/UTILS/HASHTABLE)
 
 set(UTIL_SRC 
   ${OPENAIR2_DIR}/UTIL/CLI/cli.c
@@ -585,7 +569,8 @@ add_library(SECU_CN ${SECU_CN_SRC})
 
 # Scheduler
 ################################"
-add_whole_dir(${OPENAIR1_DIR}/SCHED/*.c SCHED_LIB)
+file(GLOB SCHED_SRC ${OPENAIR1_DIR}/SCHED/*.c)
+add_library(SCHED_LIB ${SCHED_SRC})
 
 # Layer 1
 #############################
@@ -877,7 +862,6 @@ target_compile_definitions(xt_GTPURH_lib PRIVATE
 -DIPTVERSION=${IPTVERSION} -DIPTABLES_VERSION_STRING=${IPTABLES_VERSION_STRING}
 )
 
-
 set(SGI_DIR  ${OPENAIRCN_DIR}/SGI)
 set(SGI_SRC
   ${SGI_DIR}/sgi_task.c
@@ -898,7 +882,6 @@ if (ENABLE_USE_NETFILTER_FOR_SGI)
   set(SGI_option_lib ${SGI_option_lib} netfilter_queue nfnetlink)
 endif()
 add_library(SGI ${SGI_SRC})
-
 
 set(SCTP_SRC
   ${OPENAIRCN_DIR}/SCTP/sctp_common.c
@@ -928,6 +911,7 @@ add_library(S11
   ${S11_DIR}/s11_sgw_session_manager.c
   ${S11_DIR}/s11_sgw_bearer_manager.c
 )
+include_directories(${S11_DIR})
 
 set(S6A_DIR ${OPENAIRCN_DIR}/S6A)
 add_library(S6A
@@ -940,7 +924,6 @@ add_library(S6A
   ${S6A_DIR}/s6a_up_loc.c
   )
 
-
 set(SGW_DIR ${OPENAIRCN_DIR}/SGW-LITE)
 add_library (SGW
   ${SGW_DIR}/spgw_config.c
@@ -950,7 +933,6 @@ add_library (SGW
   ${SGW_DIR}/sgw_lite_context_manager.c
   ${SGW_DIR}/pgw_lite_paa.c
   )
-
 
 set(MME_DIR ${OPENAIRCN_DIR}/MME_APP)
 add_library(MME_APP
@@ -964,7 +946,6 @@ add_library(MME_APP
   ${MME_DIR}/s6a_2_nas_cause.c
   )
 
-
 set(NAS_SRC ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/)
 set(libnas_api_OBJS
   ${NAS_SRC}api/mme/mme_api.c
@@ -972,7 +953,6 @@ set(libnas_api_OBJS
   ${NAS_SRC}api/network/as_message.c
   ${NAS_SRC}api/network/network_api.c
   )
-
 
 set(libnas_emm_OBJS
   ${NAS_SRC}emm/Attach.c
@@ -1207,13 +1187,17 @@ set(libnas_usim_OBJS
   ${NAS_SRC}api/usim/usim_api.c
 )
 
-set(libnas_OBJS
+add_library(NAS_UE
   ${OPENAIRCN_DIR}/NAS/nas_ue_task.c
+)
+
+set(libnas_OBJS
+  
   ${OPENAIRCN_DIR}/NAS/nas_itti_messaging.c
-#  ${OPENAIRCN_DIR}/NAS/nas_main.c
   ${NAS_SRC}nas_parser.c
   ${NAS_SRC}nas_proc.c
   ${NAS_SRC}nas_user.c
+  ${NAS_SRC}nas_network.c
   ${libnas_utils_OBJS}
   ${libnas_user_OBJS}
   ${libnas_usim_OBJS}
@@ -1229,7 +1213,7 @@ set(libnas_OBJS
 add_library(NAS ${libnas_OBJS})
 
 if(NAS_UE)
-  set(NAS_LIB NAS)
+  set(NAS_LIB NAS NAS_UE)
 endif()
 
 include_directories(${NAS_SRC})
@@ -1350,6 +1334,9 @@ if (${XFORMS})
   set(XFORMS_LIBRARIES "forms")
 endif (${XFORMS})
 
+# Hack on a test of asn1c version (already dirty)
+add_definitions(-DASN1_MINIMUM_VERSION=924)
+
 #################################
 # add executables for operation
 #################################""
@@ -1369,7 +1356,7 @@ add_executable(lte-softmodem
   ${OPENAIR_TARGETS}/SIMU/USER/init_lte.c
   ${OPENAIR_TARGETS}/COMMON/create_tasks.c
   ${OPENAIR1_DIR}/SIMULATION/ETH_TRANSPORT/netlink_init.c
-  ${GTPV1U_DIR}/gtpv1u_eNB.c
+  ${GTPU_need_ITTI}
   ${HW_SOURCE}
   ${RTAI_SOURCE}
   ${XFORMS_SOURCE}
@@ -1390,10 +1377,11 @@ add_executable(oai_epc
   ${OPENAIRCN_DIR}/OAI_EPC/oai_epc.c
   ${GTPV1U_DIR}/gtpv1u_task.c
   ${OPENAIRCN_DIR}/SCTP/sctp_primitives_server.c
+  ${OPENAIRCN_DIR}/NAS/nas_main.c
   )
 target_link_libraries (oai_epc
   -Wl,--start-group 
-   S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA SGI S6A SGW MME_APP LFDS ${NAS_LIB} ${ITTI_LIB} CN_UTILS HASHTABLE
+   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA SGI S6A SGW MME_APP LFDS ${ITTI_LIB} CN_UTILS HASHTABLE
   -Wl,--end-group 
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
   )
@@ -1407,7 +1395,7 @@ add_executable(oai_sgw
   )
 target_link_libraries (oai_sgw
   -Wl,--start-group 
-  GTPV1U SECU_CN SECU_OSA SGI S6A SGW UTIL LFDS ${ITTI_LIB}
+  GTPV1U SECU_CN SECU_OSA SGI S6A SGW CN_UTILS LFDS ${ITTI_LIB}
   -Wl,--end-group  
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
   )
@@ -1417,14 +1405,14 @@ target_link_libraries (oai_sgw
 add_executable(usim_data  
   ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/tools/usim_data.c
   )
-target_link_libraries (usim_data nettle crypto m)
+target_link_libraries (usim_data ${NAS_LIB} UTIL ${ITTI_LIB} LFDS pthread rt nettle crypto m)
 
 # ???
 #####################
 add_executable(ue_data  
   ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/tools/ue_data.c
   )
-target_link_libraries (ue_data nettle crypto m)
+target_link_libraries (ue_data ${NAS_LIB} UTIL ${ITTI_LIB} LFDS pthread rt nettle crypto m)
 
 ###################################"
 # Addexecutables for tests
@@ -1433,28 +1421,29 @@ target_link_libraries (ue_data nettle crypto m)
 # A all in one network simulator
 ################
 add_executable(oaisim
-${rrc_h}
-${s1ap_h}
-${OPENAIR_BIN_DIR}/messages_xml.h
-${OPENAIR_TARGETS}/SIMU/USER/channel_sim.c
-${OPENAIR_TARGETS}/SIMU/USER/init_lte.c
-${OPENAIR_TARGETS}/SIMU/USER/oaisim_config.c
-${OPENAIR_TARGETS}/SIMU/USER/sinr_sim.c
-${OPENAIR_TARGETS}/SIMU/USER/cor_SF_sim.c
-${OPENAIR_TARGETS}/SIMU/USER/oaisim_functions.c
-${OPENAIR_TARGETS}/SIMU/USER/event_handler.c
-${OPENAIR_TARGETS}/SIMU/USER/oaisim.c
-${OPENAIR2_DIR}/RRC/NAS/nas_config.c
-${OPENAIR2_DIR}/RRC/NAS/rb_config.c
-${OPENAIR2_DIR}/UTIL/OMG/sumo.c
-${OPENAIR_TARGETS}/COMMON/create_tasks.c
-${HW_SOURCE}
-${XFORMS_SOURCE}
+  ${rrc_h}
+  ${s1ap_h}
+  ${OPENAIR_BIN_DIR}/messages_xml.h
+  ${OPENAIR_TARGETS}/SIMU/USER/channel_sim.c
+  ${OPENAIR_TARGETS}/SIMU/USER/init_lte.c
+  ${OPENAIR_TARGETS}/SIMU/USER/oaisim_config.c
+  ${OPENAIR_TARGETS}/SIMU/USER/sinr_sim.c
+  ${OPENAIR_TARGETS}/SIMU/USER/cor_SF_sim.c
+  ${OPENAIR_TARGETS}/SIMU/USER/oaisim_functions.c
+  ${OPENAIR_TARGETS}/SIMU/USER/event_handler.c
+  ${OPENAIR_TARGETS}/SIMU/USER/oaisim.c
+  ${OPENAIR2_DIR}/RRC/NAS/nas_config.c
+  ${OPENAIR2_DIR}/RRC/NAS/rb_config.c
+  ${OPENAIR2_DIR}/UTIL/OMG/sumo.c
+  ${GTPU_need_ITTI}
+  ${OPENAIR_TARGETS}/COMMON/create_tasks.c
+  ${HW_SOURCE}
+  ${XFORMS_SOURCE}
 )
 target_include_directories(oaisim PUBLIC  ${OPENAIR_TARGETS}/SIMU/USER)
 target_link_libraries (oaisim
   -Wl,--start-group 
-  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN UTIL SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
+  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
   -Wl,--end-group )
 target_link_libraries (oaisim ${LIBXML2_LIBRARIES} ${LAPACK_LIBRARIES})
 target_link_libraries (oaisim pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES}  ${NETTLE_LIBRARIES} sctp ${option_USRP} 
@@ -1495,7 +1484,7 @@ foreach(myExe s1ap
     ${OPENAIRCN_DIR}/TEST/test_${myExe}.c
     )
   target_link_libraries (test_${myExe}
-    -Wl,--start-group UTIL LFDS -Wl,--end-group  fdproto fdcore
+    -Wl,--start-group SECU_CN UTIL LFDS -Wl,--end-group m rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
     )
 endforeach(myExe)
 
@@ -1570,7 +1559,6 @@ EXECUTE_PROCESS(COMMAND uname -r
   OUTPUT_VARIABLE os_release
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 SET(module_build_path /lib/modules/${os_release}/build)
-message("Kernel build path = ${module_build_path}")
 
 function(make_driver name dir)
   file(MAKE_DIRECTORY ${OPENAIR_BIN_DIR}/${name})
