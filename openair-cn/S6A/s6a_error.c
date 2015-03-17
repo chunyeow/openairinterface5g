@@ -69,6 +69,7 @@ int s6a_parse_experimental_result(struct avp *avp, s6a_experimental_result_t *pt
     return 0;
 }
 
+#ifndef CMAKER
 inline char *experimental_retcode_2_string(uint32_t ret_code)
 {
     switch(ret_code) {
@@ -107,4 +108,4 @@ inline char *retcode_2_string(uint32_t ret_code)
     }
     return "DIAMETER_AVP_UNSUPPORTED";
 }
-
+#endif
