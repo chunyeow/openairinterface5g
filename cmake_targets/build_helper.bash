@@ -455,14 +455,6 @@ compile_hss() {
     return 1
 }
 
-
-TDB() {
-    
-    if [ $2 = "USRP" ]; then
-	echo_info "  8.2 [USRP] "
-    fi
- 
-
 install_nas_tools() {
     cd $1
     if [ ! -f .ue.nvram ]; then
@@ -474,16 +466,7 @@ install_nas_tools() {
         echo_success "generate .usim.nvram"
         ./usim_data --gen
     fi
-    ./ue_data --print
-    ./usim_data --print
-}
 
-install_nasmesh(){
-    echo_success "LOAD NASMESH IP DRIVER FOR UE AND eNB" 
-    (cd $OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL && make clean && make)
-    (cd $OPENAIR2_DIR && make clean && make nasmesh_netlink_address_fix.ko)
-    $SUDO rmmod nasmesh
-    $SUDO insmod $OPENAIR2_DIR/NAS/DRIVER/MESH/nasmesh.ko
 }
 
 ##################################
@@ -497,31 +480,26 @@ install_nasmesh(){
 # arg 5 is database name   (oai_db)
 create_hss_database(){
     EXPECTED_ARGS=5
-    E_BADARGS=65
-    MYSQL=`which mysql`
-    rv=0
     if [ $# -ne $EXPECTED_ARGS ]
     then
-        echo_fatal "Usage: $0 dbuser dbpass hssuser hsspass databasename"
-        rv=1
+        echo_error "Usage: $0 dbuser dbpass hssuser hsspass databasename"
+	return 1
     fi
     
-    # removed %
-    #Q1="GRANT ALL PRIVILEGES ON *.* TO '$3'@'%' IDENTIFIED BY '$4' WITH GRANT OPTION;"
     Q1="GRANT ALL PRIVILEGES ON *.* TO '$3'@'localhost' IDENTIFIED BY '$4' WITH GRANT OPTION;"
     Q2="FLUSH PRIVILEGES;"
-    SQL="${Q1}${Q2}"
-    $MYSQL -u $1 --password=$2 -e "$SQL"
+    mysql -u $1 --password=$2 -e "${Q1}${Q2}"
     if [ $? -ne 0 ]; then
-	echo_error "$3 permissions failed"
+	echo_error "$3 permissions creation failed"
+	echo_error "verify root password for mysql is linux: mysql -u root --password=linux"
+	echo_error "if not, reset it to "linux" with sudo dpkg-reconfigure mysql-server-5.5"
 	return 1
     else
-	echo_success "$3 permissions succeeded"
+	echo_success "$3 permissions creation succeeded"
     fi
     
-    Q1="CREATE DATABASE IF NOT EXISTS ${BTICK}$5${BTICK};"
-    SQL="${Q1}"
-    $MYSQL -u $3 --password=$4 -e "$SQL"
+    Q3="CREATE DATABASE IF NOT EXISTS $5;"
+    mysql -u $3 --password=$4 -e "${Q3}"
     if [ $? -ne 0 ]; then
 	echo_error "$5 creation failed"
 	return 1
@@ -529,17 +507,12 @@ create_hss_database(){
 	echo_success "$5 creation succeeded"
     fi
     
-    # test if tables have been created
-    mysql -u $3 --password=$4  -e "desc $5.users" > /dev/null 2>&1
-    
-    if [ $? -eq 1 ]; then 
-        $MYSQL -u $3 --password=$4 $5 < $OPENAIRCN_DIR/OPENAIRHSS/db/oai_db.sql
-        if [ $? -ne 0 ]; then
-            echo_error "$5 tables creation failed"
-            return 1
-        else
-            echo_success "$5 tables creation succeeded"
-        fi
+    mysql -u $3 --password=$4 $5 < $OPENAIRCN_DIR/OPENAIRHSS/db/oai_db.sql
+    if [ $? -ne 0 ]; then
+        echo_error "$5 tables creation failed"
+        return 1
+    else
+        echo_success "$5 tables creation succeeded"
     fi
     return 0
 }

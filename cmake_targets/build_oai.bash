@@ -35,6 +35,7 @@
 ################################
 # include helper functions
 ################################
+ORIGIN_PATH=$PWD
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/build_helper.bash
 
@@ -219,10 +220,10 @@ if [ "$UE" = 1 ] ; then
 	CMakeFiles/ue_ip/ue_ip.ko $dbin/ue_ip.ko
     compilations \
 	lte_build_oai usim_data \
-	usim_data $dbin/usim_data.$REL
+	usim_data $dbin/usim_data
     compilations \
 	lte_build_oai ue_data \
-	ue_data $dbin/ue_data.$REL
+	ue_data $dbin/ue_data
 fi
 
 if [ "$SIMUS_PHY" = "1" ] ; then
@@ -308,21 +309,26 @@ if [ "$INSTALL_SYSTEM_FILES" = "1" ] ;then
     echo_info "Copying iptables libraries into system directory: /lib/xtables"
     $SUDO ln -s $dbin/libxt_GTPURH_lib.so /lib/xtables/libxt_GTPURH.so
     $SUDO ln -s $dbin/libxt_GTPUAH_lib.so /lib/xtables/libxt_GTPUAH.so
+
 fi
 
 # Install config file
 ###################
 if [ "$CONFIG_FILE" != "" ] ; then
-    # may be relative path 
-    if [ -f $(dirname $(readlink -f $0))/$CONFIG_FILE ]; then
-        CONFIG_FILE=$(dirname $(readlink -f $0))/$CONFIG_FILE
-    fi
-    if [ -s $CONFIG_FILE ]; then
-            echo_info "Copy config file in $dbin"
-	    cp $CONFIG_FILE $dbin
-    else
-        echo_error "config file not found"        fi
-    fi
+
+    dconf=$DIR/conf
+    mkdir -p $dconf
+    cp $ORIGIN_PATH/$CONFIG_FILE $dconf || echo_fatal "config file $ORIGIN_PATH/$CONFIG_FILE not found"
+
+    # generate USIM data
+    install_nas_tools $dbin $dconf
+
+    # Do HSS 
+    # bash doesn't like space char around = char
+    sed -e 's/ *= */=/' $OPENAIRCN_DIR/OPENAIRHSS/conf/hss.local.conf > $dconf/hss.local.conf
+    source $dconf/hss.local.conf
+    create_hss_database root linux "$MYSQL_user" "$MYSQL_pass" "$MYSQL_db"
+
 fi 
 
 # Auto-tests 
@@ -342,32 +348,7 @@ exit 0
 # configure and compile
 ##########################################
 
-    echo_info "5. configure and compile epc"
 
-    if [ $CONFIG_FILE_ACCESS_OK -eq 0 ]; then
-        echo_error "You have to provide a EPC config file"
-        exit 1
-    else
-	# Perform some coherency checks
-	# check  HSS_HOSTNAME REALM
-    fi
-    
-######################################
-# Check certificates                 #
-######################################
-  
-    TEMP_FILE=`tempfile`
-    cat $OPENAIRCN_DIR/OPENAIRHSS/conf/hss_fd.conf | grep -w "Identity" | tr -d " " | tr -d ";" > $TEMP_FILE
-    cat $OPENAIRCN_DIR/OPENAIRHSS/conf/hss.conf    | grep -w "MYSQL_user" | tr -d " " | tr -d ";" >> $TEMP_FILE
-    cat $OPENAIRCN_DIR/OPENAIRHSS/conf/hss.conf    | grep -w "MYSQL_pass" | tr -d " " | tr -d ";" >> $TEMP_FILE
-    cat $OPENAIRCN_DIR/OPENAIRHSS/conf/hss.conf    | grep -w "MYSQL_db" | tr -d " " | tr -d ";" >> $TEMP_FILE
-    source $TEMP_FILE
-    rm -f  $TEMP_FILE
-
-    if [ x"$Identity" == "x" ]; then
-        echo_error "Your config file do not contain a host identity for S6A configuration"
-        exit 1
-    fi
     HSS_REALM=$(echo $Identity | sed 's/.*\.//')
     HSS_HOSTNAME=${Identity%.$HSS_REALM}
     NEW_HOSTNAME=`hostname -s`
@@ -495,5 +476,3 @@ else
     echo_info "11. No run requested, end of script"
     exit 0
 fi
-
-
