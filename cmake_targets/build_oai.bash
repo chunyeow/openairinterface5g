@@ -65,7 +65,7 @@ do
 	    echo_info "Will install the config file $CONFIG_FILE"
             shift 2;;
 	-I | --install-external-packages)
-            INSTALL_EXTERNAL
+            INSTALL_EXTERNAL=1
             echo_info "Will install external packages"
             shift;;
 	-g | --run-with-gdb)

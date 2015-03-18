@@ -189,47 +189,47 @@ run_compilation_autotests() {
     if [ "$updated" != "" ] ; then
 	echo_warning "some files are not in svn: $updated"
     fi
-    compilations \
+    test_compile \
         test.0101 oaisim \
         oaisim  $tdir/bin/oaisim.r8
 
-    compilations \
+    test_compile \
         test.0102 oaisim \
         oaisim  $tdir/bin/oaisim.r8.nas
 
-    compilations \
+    test_compile \
         test.0103 oaisim \
         oaisim  $tdir/bin/oaisim.r8.rf
 
-    compilations \
+    test_compile \
         test.0104 dlsim \
         dlsim  $tdir/bin/dlsim
 
-    compilations \
+    test_compile \
         test.0104 ulsim \
         ulsim  $tdir/bin/ulsim
 
-    compilations \
+    test_compile \
         test.0106 oaisim \
         oaisim  $tdir/bin/oaisim.r8.itti
 
-    compilations \
+    test_compile \
         test.0107 oaisim \
         oaisim  $tdir/bin/oaisim.r10
 
-    compilations \
+    test_compile \
         test.0108 oaisim \
         oaisim  $tdir/bin/oaisim.r10.itti
 
-    compilations \
+    test_compile \
         test.0114 oaisim \
         oaisim  $tdir/bin/oaisim.r8.itti.ral
 
-    compilations \
+    test_compile \
         test.0115 oaisim \
         oaisim  $tdir/bin/oaisim.r10.itti.ral
 
-    compilations \
+    test_compile \
         test.0102 nasmesh \
         CMakeFiles/nasmesh/nasmesh.ko $tdir/bin/nasmesh.ko
 
@@ -240,9 +240,9 @@ run_compilation_autotests() {
 ##########################################
 
 make_one_cert() {
-    openssl genrsa -out $1.key.pem 1024
-    openssl req -new -batch -out $1.csr.pem -key $1.key.pem -subj /CN=$1.eur/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
-    openssl ca -cert cacert.pem -keyfile cakey.pem -in $1.csr.pem -out $1.cert.pem -outdir . -batch
+    $SUDO openssl genrsa -out $1.key.pem 1024
+    $SUDO openssl req -new -batch -out $1.csr.pem -key $1.key.pem -subj /CN=$1.eur/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
+    $SUDO openssl ca -cert cacert.pem -keyfile cakey.pem -in $1.csr.pem -out $1.cert.pem -outdir . -batch
 }
 
 make_certs(){
@@ -256,17 +256,17 @@ make_certs(){
     cd /usr/local/etc/freeDiameter
     echo "creating the CA certificate"
     echo_warning "erase all existing certificates as long as the CA is regenerated"
-    $SUDO rm -f /usr/local/etc/freeDiameter/
+    $SUDO rm -f /usr/local/etc/freeDiameter/*.pem
 
     # CA self certificate
     $SUDO openssl req  -new -batch -x509 -days 3650 -nodes -newkey rsa:1024 -out cacert.pem -keyout cakey.pem -subj /CN=eur/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
     
     # generate hss certificate and sign it
-    $SUDO make_one_cert hss
-    $SUDO make_one_cert mme
+    make_one_cert hss
+    make_one_cert mme
 
     # legacy config is using a certificate named 'user'
-    $SUDO make_one_cert user
+    make_one_cert user
 
 }
 
@@ -277,6 +277,7 @@ make_certs(){
 install_nettle_from_source() {
     cd /tmp
     echo "Downloading nettle archive"
+    rm -rf /tmp/nettle-2.5.tar.gz* /tmp/nettle-2.5
     wget ftp://ftp.lysator.liu.se/pub/security/lsh/nettle-2.5.tar.gz 
     tar -xzf nettle-2.5.tar.gz
     cd nettle-2.5/
@@ -291,6 +292,7 @@ install_nettle_from_source() {
 install_gnutls_from_source(){
     cd /tmp 
     echo "Downloading gnutls archive"
+    rm -rf /tmp/gnutls-3.1.23.tar.xz* /tmp/gnutls-3.1.23
     wget ftp://ftp.gnutls.org/gcrypt/gnutls/v3.1/gnutls-3.1.23.tar.xz 
     tar -xzf gnutls-3.1.23.tar.xz
     cd gnutls-3.1.23/
@@ -304,8 +306,9 @@ install_gnutls_from_source(){
 install_freediameter_from_source() {
     cd /tmp
     echo "Downloading freeDiameter archive"
+    rm -rf /tmp/1.1.5.tar.gz* /tmp/freeDiameter-1.1.5
     wget http://www.freediameter.net/hg/freeDiameter/archive/1.1.5.tar.gz 
-    tar xf 1.1.5.tar.gz
+    tar xzf 1.1.5.tar.gz
     cd freeDiameter-1.1.5
     patch -p1 < $OPENAIRCN_DIR/S6A/freediameter/freediameter-1.1.5.patch 
     mkdir build
@@ -330,7 +333,7 @@ check_install_usrp_uhd_driver(){
 check_install_oai_software() {
     
     $SUDO apt-get update
-    $SUDO apt-get install -y 
+    $SUDO apt-get install -y \
         autoconf  \
 	automake  \
 	bison  \
@@ -357,7 +360,6 @@ check_install_oai_software() {
 	iptables-dev \
 	libatlas-base-dev \
 	libatlas-dev \
-	libblas \
 	libblas3gf \
 	libblas-dev \
 	libboost-all-dev \
@@ -413,8 +415,9 @@ check_install_oai_software() {
 }
 
 install_asn1c_from_source(){
-    mkdir /tmp/asn1c-r1516
+    mkdir -p /tmp/asn1c-r1516
     cd /tmp/asn1c-r1516
+    rm -rf /tmp/asn1c-r1516/*
     svn co https://github.com/vlm/asn1c/trunk  /tmp/asn1c-r1516 -r 1516
     patch -p0 < $OPENAIRCN_DIR/S1AP/MESSAGES/ASN1/asn1cpatch.p0
     ./configure
