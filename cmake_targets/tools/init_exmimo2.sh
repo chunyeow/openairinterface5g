@@ -24,7 +24,7 @@ load_module() {
   sudo insmod $1
 }
 
-load_module $OPENAIR_DIR/cmake_targets/bin/openair_rf.ko
+load_module $OPENAIR_DIR/targets/bin/openair_rf.ko
 sleep 1
 
 if [ ! -e /dev/openair0 ]; then 
@@ -36,7 +36,7 @@ DEVICE=`echo $PCI | awk -F\" '{print $(NF-1)}' | awk '{print $2}'`
 DEVICE_SWID=${DEVICE:2:2}
 if [ $DEVICE_SWID == '0a' ]; then
    echo "Using firware version 10"
-   $OPENAIR_DIR/cmake_targets/bin/updatefw -s 0x43fffff0 -b -f $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT/sdr_expressmimo2_v10
+   $OPENAIR_DIR/targets/bin/updatefw -s 0x43fffff0 -b -f $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT/sdr_expressmimo2_v10
 else
    echo 'No corresponding firmware found'
    return

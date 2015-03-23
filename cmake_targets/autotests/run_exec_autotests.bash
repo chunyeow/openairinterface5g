@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ -s $OPENAIR_DIR/cmake_targets/build_helper.bash ] ; then
-   source $OPENAIR_DIR/cmake_targets/build_helper.bash
+if [ -s $OPENAIR_DIR/cmake_targets/tools/build_helper.bash ] ; then
+   source $OPENAIR_DIR/cmake_targets/tools/build_helper.bash
 else
    echo "Error: no file in the file tree: is OPENAIR_DIR variable set?"
    exit 1

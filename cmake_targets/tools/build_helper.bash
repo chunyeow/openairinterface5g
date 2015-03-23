@@ -76,11 +76,11 @@ Options
    Erase all files made by previous compilation, installation" 
 --clean-kernel
    Erase previously installed features in kernel: iptables, drivers, ...
--C | --config-file
-   The configuration file to install
 -I | --install-external-packages 
    Installs required packages such as LibXML, asn1.1 compiler, freediameter, ...
    This option will require root password
+--install-optional-packages
+   Install useful but not mandatory packages such as valgrind
 -g | --run-with-gdb
    Add debugging symbols to compilation directives
 --eNB
@@ -140,7 +140,8 @@ clean_kernel() {
 
 clean_all_files() {
  dir=$OPENAIR_DIR/cmake
- rm -rf $dir/log $dir/bin $dir/autotests/bin $dir/autotests/log $dir/autotests/*/buid $dir/build_*/build
+ rm -rf $dir/log $OPENAIR_TARGETS/bin $dir/autotests/bin $dir/autotests/log $dir/autotests/*/buid $dir/build_*/build
+ rm -rf $dir/oaisim_build_oai/CMakeLists.txt $dir/epc_build_oai/CMakeLists.txt $dir/hss_build/BUILD
 }
 
 ###################################
@@ -154,121 +155,55 @@ compilations() {
     make -j4 $2
   } > $dlog/$2.$REL.txt 2>&1
   if [ -s $3 ] ; then
-     cp $3 $dbin/$2.$REL
+     cp $3 $dbin
      echo_success "$2 compiled"
   else
      echo_error "$2 compilation failed"
   fi
 }
 
-run_tests() {
-   $1 > $2 2>&1
-   grep 
-}
-
-test_compile() {
-    mkdir -p $tdir/$1/build
-    cd $tdir/$1/build
-    {
-	cmake ..
-	rm -f $3
-	make -j4 $2
-    } > $tdir/log/$1.txt
-    if [ -s $3 ] ; then
-     cp $3 $tdir/bin/$3.$1
-     echo_success "$1 test compiled"
-  else
-     echo_error "$1 test compilation failed"
-  fi
-}
-
-run_compilation_autotests() {
-    tdir=$OPENAIR_DIR/cmake_targets/autotests
-    mkdir -p $tdir/bin $tdir/log
-    updated=$(svn st -q $OPENAIR_DIR)
-    if [ "$updated" != "" ] ; then
-	echo_warning "some files are not in svn: $updated"
-    fi
-    test_compile \
-        test.0101 oaisim \
-        oaisim  $tdir/bin/oaisim.r8
-
-    test_compile \
-        test.0102 oaisim \
-        oaisim  $tdir/bin/oaisim.r8.nas
-
-    test_compile \
-        test.0103 oaisim \
-        oaisim  $tdir/bin/oaisim.r8.rf
-
-    test_compile \
-        test.0104 dlsim \
-        dlsim  $tdir/bin/dlsim
-
-    test_compile \
-        test.0104 ulsim \
-        ulsim  $tdir/bin/ulsim
-
-    test_compile \
-        test.0106 oaisim \
-        oaisim  $tdir/bin/oaisim.r8.itti
-
-    test_compile \
-        test.0107 oaisim \
-        oaisim  $tdir/bin/oaisim.r10
-
-    test_compile \
-        test.0108 oaisim \
-        oaisim  $tdir/bin/oaisim.r10.itti
-
-    test_compile \
-        test.0114 oaisim \
-        oaisim  $tdir/bin/oaisim.r8.itti.ral
-
-    test_compile \
-        test.0115 oaisim \
-        oaisim  $tdir/bin/oaisim.r10.itti.ral
-
-    test_compile \
-        test.0102 nasmesh \
-        CMakeFiles/nasmesh/nasmesh.ko $tdir/bin/nasmesh.ko
-
-}
 
 ##########################################
 # X.509 certificates
 ##########################################
 
 make_one_cert() {
-    $SUDO openssl genrsa -out $1.key.pem 1024
-    $SUDO openssl req -new -batch -out $1.csr.pem -key $1.key.pem -subj /CN=$1.eur/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
-    $SUDO openssl ca -cert cacert.pem -keyfile cakey.pem -in $1.csr.pem -out $1.cert.pem -outdir . -batch
+    fqdn=$1
+    name=$2
+    $SUDO openssl genrsa -out $name.key.pem 1024
+    $SUDO openssl req -new -batch -out $name.csr.pem -key $name.key.pem -subj /CN=$name.$fqdn/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
+    $SUDO openssl ca -cert cacert.pem -keyfile cakey.pem -in $name.csr.pem -out $name.cert.pem -outdir . -batch
 }
 
 make_certs(){
-
+    
+    fqdn=$1
+    certs_dir=/usr/local/etc/freeDiameter
     # certificates are stored in diameter config directory
-    if [ ! -d /usr/local/etc/freeDiameter ];  then
-        echo "Creating non existing directory: /usr/local/etc/freeDiameter/"
-        $SUDO mkdir -p /usr/local/etc/freeDiameter/ || echo_error "can't create: /usr/local/etc/freeDiameter/"
+    if [ ! -d $certs_dir ];  then
+        echo "Creating non existing directory: $certs_dir"
+        $SUDO mkdir -p $certs_dir || echo_error "can't create: $certs_dir"
     fi
 
-    cd /usr/local/etc/freeDiameter
+    cd $certs_dir
     echo "creating the CA certificate"
     echo_warning "erase all existing certificates as long as the CA is regenerated"
-    $SUDO rm -f /usr/local/etc/freeDiameter/*.pem
+    $SUDO rm -f $certs_dir/*.pem
+    $SUDO mkdir -p  $certs_dir/demoCA/
+    $SUDO sh -c "echo 01 > $certs_dir/demoCA/index.txt"
 
     # CA self certificate
-    $SUDO openssl req  -new -batch -x509 -days 3650 -nodes -newkey rsa:1024 -out cacert.pem -keyout cakey.pem -subj /CN=eur/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
+    $SUDO openssl req  -new -batch -x509 -days 3650 -nodes -newkey rsa:1024 -out cacert.pem -keyout cakey.pem -subj /CN=$fqdn/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
     
     # generate hss certificate and sign it
-    make_one_cert hss
-    make_one_cert mme
+    make_one_cert eur hss
+    make_one_cert eur mme
 
     # legacy config is using a certificate named 'user'
-    make_one_cert user
+    make_one_cert eur user
 
 }
+
 
 ############################################
 # External packages installers
@@ -316,18 +251,40 @@ install_freediameter_from_source() {
     cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ../ 
     echo "Compiling freeDiameter"
     make -j4
-    make test 
+    #make test 
     $SUDO make install 
     rm -rf /tmp/1.1.5.tar.gz /tmp/freeDiameter-1.1.5
 }
 
 check_install_usrp_uhd_driver(){
-    if [ ! -f /etc/apt/sources.list.d/ettus.list ] ; then 
-        $SUDO bash -c 'echo "deb http://files.ettus.com/binaries/uhd/repo/uhd/ubuntu/`lsb_release -cs` `lsb_release -cs` main" >> /etc/apt/sources.list.d/ettus.list'
+        v=$(lsb_release -cs)
+        $SUDO apt-add-repository "deb http://files.ettus.com/binaries/uhd/repo/uhd/ubuntu/$v $v main"
         $SUDO apt-get update
-     fi
-        $SUDO apt-get -y install  python libboost-all-dev libusb-1.0-0-dev
-        $SUDO apt-get -y install -t `lsb_release -cs` uhd
+        $SUDO apt-get -y install  python python-tk libboost-all-dev libusb-1.0-0-dev
+        $SUDO apt-get -y install -t `lsb_release -cs` uhd --force-yes
+}
+
+check_install_additional_tools (){
+    $SUDO apt-get update
+    $SUDO apt-get install -y \
+	check \
+	dialog \
+	dkms \
+	gawk \
+	libboost-all-dev \
+	libpthread-stubs0-dev \
+	openvpn \
+	phpmyadmin \
+	pkg-config \
+	python-dev  \
+	python-pexpect \
+	sshfs \
+	swig  \
+	tshark \
+	uml-utilities \
+	unzip  \
+	valgrind  \
+	vlan
 }
 
 check_install_oai_software() {
@@ -338,17 +295,11 @@ check_install_oai_software() {
 	automake  \
 	bison  \
 	build-essential \
-	check \
 	cmake \
 	cmake-curses-gui  \
-	dialog \
-	dkms \
 	doxygen \
 	ethtool \
 	flex  \
-	g++ \
-	gawk \
-	gcc \
 	gccxml \
 	gdb  \
 	graphviz \
@@ -362,19 +313,17 @@ check_install_oai_software() {
 	libatlas-dev \
 	libblas3gf \
 	libblas-dev \
-	libboost-all-dev \
 	libconfig8-dev \
 	libforms-bin \
 	libforms-dev \
 	libgcrypt11-dev \
 	libgmp-dev \
 	libgtk-3-dev \
-	libidn11-dev  \
 	libidn2-0-dev  \
+        libidn11-dev \
 	libmysqlclient-dev  \
 	libpgm-5.1 \
 	libpgm-dev \
-	libpthread-stubs0-dev \
 	libsctp1  \
 	libsctp-dev  \
 	libssl-dev  \
@@ -384,26 +333,13 @@ check_install_oai_software() {
 	libxml2 \
 	libxml2-dev  \
 	linux-headers-`uname -r` \
-	make \
 	mysql-client  \
 	mysql-server \
 	openssh-client \
 	openssh-server \
 	openssl \
-	openvpn \
-	phpmyadmin \
-	pkg-config \
 	python  \
-	python-dev  \
-	python-pexpect \
-	sshfs \
-	subversion \
-	swig  \
-	tshark \
-	uml-utilities \
-	unzip  \
-	valgrind  \
-	vlan
+	subversion
     if [ `lsb_release -rs` = '12.04' ] ; then
         install_nettle_from_source
 	install_gnutls_from_source
@@ -418,10 +354,10 @@ install_asn1c_from_source(){
     mkdir -p /tmp/asn1c-r1516
     cd /tmp/asn1c-r1516
     rm -rf /tmp/asn1c-r1516/*
-    svn co https://github.com/vlm/asn1c/trunk  /tmp/asn1c-r1516 -r 1516
-    patch -p0 < $OPENAIRCN_DIR/S1AP/MESSAGES/ASN1/asn1cpatch.p0
+    svn co https://github.com/vlm/asn1c/trunk  /tmp/asn1c-r1516 -r 1516 > /tmp/log_compile_asn1c
+    patch -p0 < $OPENAIRCN_DIR/S1AP/MESSAGES/ASN1/asn1cpatch.p0 >> /tmp/log_compile_asn1c
     ./configure
-    make
+    make > /tmp/log_compile_asn1c 2>&1
     $SUDO make install
 }
 
@@ -429,45 +365,36 @@ install_asn1c_from_source(){
 # 2. compile 
 ################################################
 compile_hss() {
-    cd $OPENAIRCN_DIR/OPENAIRHSS
-    
+    cd $OPENAIR_DIR/cmake_targets/hss_build
+    rm -f $OPENAIR_TARGETS/bin/openair-hss openair-hss
     if [ "$CLEAN" = "1" ]; then
-        echo_info "build a clean HSS"
-        rm -rf obj* m4 .autom4* configure
+        echo "Cleaning HSS"
+        rm -rf BUILD 
     fi
-
-    echo_success "Invoking autogen"
-    ./autogen.sh || return 1
-    mkdir -p objs ; cd objs
-    echo_success "Invoking configure"
-    ../configure || return 1
-    if [ -f Makefile ];  then
-        echo_success "Compiling..."
-        make -j4
-	# seems a bug in hss compilation: run make twice to work around
-	make -j4
-        if [ $? -ne 0 ]; then
-            echo_error "Build failed, exiting"
-            return 1
-        else 
-            return 0
-        fi
+    mkdir -p BUILD
+    cd ./BUILD
+    cmake  $SOFTMODEM_DIRECTIVES ..
+    make -j $NUM_CPU openair-hss > $dlog/hss.txt 2>&1
+    if [ -s openair-hss ] ; then
+	cp openair-hss $OPENAIR_TARGETS/bin
+	echo_success "hss compiled"
     else
-        echo_error "Configure failed, aborting"
+	echo_error "hss compilation failed"
     fi
-    return 1
+    return $?
 }
+
 
 install_nas_tools() {
     cd $1
     if [ ! -f .ue.nvram ]; then
         echo_success "generate .ue_emm.nvram .ue.nvram"
-        ./ue_data --gen
+        ./nvram --gen
     fi
 
     if [ ! -f .usim.nvram ]; then
         echo_success "generate .usim.nvram"
-        ./usim_data --gen
+        ./usim --gen
     fi
 
 }

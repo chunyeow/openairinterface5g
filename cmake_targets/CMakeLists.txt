@@ -23,7 +23,7 @@
 # OpenAirInterface Dev  : openair4g-devel@eurecom.fr
 #
 # Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
-# Author: laurent THOMAS
+# Author: laurent THOMAS, Lionel GAUTIER
 ###############################################################################
 
 cmake_minimum_required (VERSION 2.8)
@@ -45,6 +45,16 @@ project (OpenAirInterface)
 ###########################################
 # macros to define options as there is numerous options in oai
 ################################################
+macro(add_option name val helpstr)
+  if(DEFINED ${name})
+    set(value ${${name}})
+  else(DEFINED ${name})
+    set(value ${val})
+  endif()
+  set(${name} ${value} CACHE STRING "${helpstr}")
+  add_definitions("-D${name}=${value}")
+endmacro(add_option)
+
 macro(add_boolean_option name val helpstr)
   if(DEFINED ${name})
     set(value ${${name}})
@@ -204,7 +214,9 @@ add_list2_option(RRC_ASN1_VERSION "Rel10" "ASN.1 version of RRC interface" "Rel8
 
 if (${RRC_ASN1_VERSION} STREQUAL "Rel8")
   set (RRC_GRAMMAR ${OPENAIR2_DIR}/RRC/LITE/MESSAGES/asn1c/ASN1_files/EUTRA-RRC-Definitions-86.asn)
-elseif (${RRC_ASN1_VERSION} STREQUAL "Rel10")
+elseif (${RRC_ASN1_VERSION} STREQUAL "CBA")
+  set (RRC_GRAMMAR ${OPENAIR2_DIR}/RRC/LITE/MESSAGES/asn1c/ASN1_files/EUTRA-RRC-Definitions-a20-lola.asn)
+else()
   set (RRC_GRAMMAR ${OPENAIR2_DIR}/RRC/LITE/MESSAGES/asn1c/ASN1_files/EUTRA-RRC-Definitions-a20.asn)
 endif  (${RRC_ASN1_VERSION} STREQUAL "Rel8")
 
@@ -335,76 +347,159 @@ endif (${RF_BOARD} STREQUAL "EXMIMO")
  
 include_directories ("${OPENAIR_TARGETS}/ARCH/COMMON")
 
-####################
-# to be documented options
-###################
-add_boolean_option(ADDR_CONF False "specific to oaisim")
+
+##############################################################
+#    ???!!! TO BE DOCUMENTED OPTIONS !!!???
+##############################################################
 add_boolean_option(ASSERT True "???")
+add_boolean_option(ENABLE_SECURITY         True  "Enable LTE integrity and ciphering between RRC UE and eNB")
+add_boolean_option(ENABLE_USE_MME          True  "eNB connected to MME (INTERFACE S1-C), not standalone eNB")
+add_boolean_option(NO_RRM                  True  "DO WE HAVE A RADIO RESSOURCE MANAGER: NO")
+add_boolean_option(USER_MODE True "????")
+
+add_boolean_option(OAI_NW_DRIVER_TYPE_ETHERNET False "????")
 add_boolean_option(DISABLE_USE_NAS False "???")
-add_boolean_option(DRIVER2013 True "????")
-add_boolean_option(ENABLE_FXP True "????")
-add_boolean_option(ENABLE_NAS_UE_LOGGING True "????")
-add_boolean_option(ENABLE_NEW_MULTICAST False "specific to oaisim")
 add_boolean_option(ENABLE_PDCP_NETLINK_FIFO False "????")
-add_boolean_option(ENABLE_PGM_TRANSPORT False "specific to oaisim")
-add_boolean_option(ENABLE_RAL False "????")
-add_boolean_option(ENABLE_SECURITY True "???")
 add_boolean_option(ENABLE_STANDALONE_EPC True "Compile MME, SGW and PGW in a single executable")
-add_boolean_option(ENABLE_USE_CPU_EXECUTION_TIME True "Add data in vcd traces: disable it if perf issues")
 add_boolean_option(ENABLE_USE_GTPU_IN_KERNEL True "as per name")
-add_boolean_option(ENABLE_USE_MME True "???")
 add_boolean_option(ENABLE_USE_NETFILTER_FOR_SGI False "SGI option")
 add_boolean_option(ENABLE_USE_PCAP_FOR_SGI False "SGI option")
 add_boolean_option(ENABLE_USE_RAW_SOCKET_FOR_SGI False "As per name")
-add_boolean_option(ENABLE_VCD_FIFO True "Seems legacy: always true now")
-add_boolean_option(ENB_MODE True "???")
 add_boolean_option(EPC_BUILD False "???")
-add_boolean_option(HARD_RT False "???")
-add_boolean_option(JUMBO_FRAME True "???")
-add_boolean_option(LARGE_SCALE False "specific to oaisim: defines max eNB=2 and max UE=120")
-add_boolean_option(LINK_PDCP_TO_GTPV1U True "????")
-add_boolean_option(LINUX_LIST False "???")
-add_boolean_option(LINUX True "???")
-add_boolean_option(LOCALIZATION  False "???")
-add_boolean_option(LOG_NO_THREAD True "Disable thread for log, seems always set to true")
+add_boolean_option(LINK_PDCP_TO_GTPV1U False "????")
 add_boolean_option(LOWLATENCY  True "Use the Linux scheduler SCHED_DEADLINE: kernel >= 3.14")
-add_boolean_option(MAC_CONTEXT True "specific to oaisim")
-add_integer_option(MAX_NUM_CCs 1 "????")
-add_boolean_option(MIH_C_MEDIEVAL_EXTENSIONS True "????")
-add_boolean_option(MU_RECEIVER False "????")
 add_boolean_option(NAS_ADDRESS_FIX False "specific to oaisim: for nasmesh driver")
-add_boolean_option(NAS_MME False "NAS_UE and NAS_MME are incompatible options")
 add_boolean_option(NAS_NETLINK False "???? Must be True to compile nasmesh driver without rtai")
-add_boolean_option(NAS_UE True "NAS_UE and NAS_MME are incompatible options")
-add_boolean_option(NEW_FFT True "????")
-add_boolean_option(NO_RRM True "????")
-add_boolean_option(OAI_EMU False "specific to oaisim")
 add_boolean_option(OAISIM False "specific to oaisim")
-add_boolean_option(OAI_NW_DRIVER_TYPE_ETHERNET False "????")
 add_boolean_option(OAI_NW_DRIVER_USE_NETLINK True "????")
-add_boolean_option(OPENAIR1 True "????")
-add_boolean_option(OPENAIR2 True "????")
-add_boolean_option(OPENAIR_EMU False "specific to oaisim")
-add_boolean_option(OPENAIR_LTE True "Seems legacy: keep it to true")
-add_boolean_option(PBS_SIM False "????")
-add_boolean_option(PC_DSP True "????")
-add_boolean_option(PC_TARGET True "????")
-add_boolean_option(PERFECT_CE False "????")
-add_boolean_option(PHY_ABSTRACTION False "specific to oaisim")
-add_boolean_option(PHY_CONTEXT True "not clear: must remain False for dlsim")
-add_boolean_option(PHY_EMUL False "not clear: must remain False for dlsim")
-add_boolean_option(PHYSIM True "??? set in lte-softmodem, for L1 simulators dlsim, ulsim, ...?")
-add_boolean_option(PUCCH True "????")
-add_boolean_option(RANDOM_BF False "????")
-add_boolean_option(RLC_STOP_ON_LOST_PDU False "Fatal assert in this case")
-add_boolean_option(SECU False "???")
-add_boolean_option(SMBV False "Rohde&Schwarz SMBV100A vector signal generator")
-add_boolean_option(SPECTRA False "???")
-add_boolean_option(UE_BUILD True "????")
-add_boolean_option(USE_3GPP_ADDR_AS_LINK_ADDR False "As per attribute name")
+add_boolean_option(UE_BUILD False "????")
 add_boolean_option(USE_MME False "this flag is used only one time in lte-softmodem.c")
-add_boolean_option(USER_MODE True "????")
 add_list_string_option(PACKAGE_NAME "NotDefined" "As per attribute name")
+
+########################
+# Include order
+##########################
+add_boolean_option(ENB_MODE True "Swap the include directories between openair2 and openair-cn" )
+
+##########################
+# Emulation options
+##########################
+add_boolean_option(ENABLE_PGM_TRANSPORT    False "specific to oaisim, emulation through ethernet, reliable multicast")
+add_boolean_option(ADDR_CONF               False "specific to oaisim, IP autoconf of user-plane IP interface")
+add_boolean_option(OPENAIR_EMU             False "specific to oaisim")
+add_boolean_option(OAI_EMU             False "specific to oaisim")
+add_boolean_option(PHY_ABSTRACTION         False "specific to oaisim")
+
+##########################
+# SCHEDULING/REAL-TIME/PERF options
+##########################
+add_boolean_option(ENABLE_USE_CPU_EXECUTION_TIME True "Add data in vcd traces: disable it if perf issues")
+add_boolean_option(ENABLE_VCD_FIFO         True  "Seems legacy: always true now, time measurements of proc calls and var displays")
+add_boolean_option(HARD_RT                 False "???")
+add_boolean_option(LINUX                   False "used in weird memcpy() in pdcp.c ???")
+add_boolean_option(LINUX_LIST              False "used only in lists.c: either use OAI implementation of lists or Linux one (should be True, but it is False")
+add_boolean_option(LOG_NO_THREAD           True  "Disable thread for log, seems always set to true")
+add_boolean_option(OPENAIR_LTE             True "Seems legacy: keep it to true")
+
+##########################
+# PHY options
+##########################
+add_boolean_option(DRIVER2013              True "????")
+add_boolean_option(ENABLE_FXP              True "????")
+add_boolean_option(ENABLE_NEW_MULTICAST    False "specific to oaisim")
+add_boolean_option(LARGE_SCALE             False "specific to oaisim: defines max eNB=2 and max UE=120")
+add_boolean_option(LOCALIZATION            False "???")
+add_integer_option(MAX_NUM_CCs             1     "????")
+add_boolean_option(MU_RECEIVER             False "????")
+add_boolean_option(NEW_FFT                 True "????")
+add_boolean_option(OPENAIR1                True "????")
+add_boolean_option(PBS_SIM                 False "????")
+add_boolean_option(PC_DSP                  True "????")
+add_boolean_option(PC_TARGET               True "????")
+add_boolean_option(PERFECT_CE              False "????")
+add_boolean_option(PHYSIM                  True  "for L1 simulators (dlsim, ulsim, ...)")
+add_boolean_option(PHY_CONTEXT             True "not clear: must remain False for dlsim")
+add_boolean_option(PHY_EMUL                False "not clear: must remain False for dlsim")
+add_boolean_option(PUCCH                   True "????")
+add_boolean_option(RANDOM_BF               False "????")
+add_boolean_option(SMBV                    False "Rohde&Schwarz SMBV100A vector signal generator")
+
+##########################
+# 802.21 options
+##########################
+add_boolean_option(ENABLE_RAL              False "ENABLE 802.21 INTERFACE")
+add_boolean_option(USE_3GPP_ADDR_AS_LINK_ADDR False "As per attribute name")
+
+##########################
+# NAS LAYER OPTIONS
+##########################
+add_boolean_option(ENABLE_NAS_UE_LOGGING   True  "????")
+add_boolean_option(NAS_BUILT_IN_EPC        False "MME NAS layer not present in this executable")
+add_boolean_option(NAS_BUILT_IN_UE         True  "UE NAS layer present in this executable")
+add_boolean_option(NAS_UE                  True  "NAS UE INSTANCE (<> NAS_MME)")
+add_boolean_option(NAS_MME                 False "NAS_UE and NAS_MME are incompatible options")
+
+
+##########################
+# ACCESS STRATUM LAYER2 OPTIONS
+##########################
+add_boolean_option(MAC_CONTEXT             True  "specific to oaisim")
+add_boolean_option(JUMBO_FRAME             True  "ENABLE LARGE SDU in ACCESS STRATUM (larger than common MTU)")
+
+##########################
+# RLC LAYER OPTIONS
+##########################
+add_boolean_option(OPENAIR2                True  "Access Stratum layer 2 built in executable")
+add_boolean_option(TRACE_RLC_PAYLOAD       False "Fatal assert in this case")
+add_boolean_option(RLC_STOP_ON_LOST_PDU    False "Fatal assert in this case")
+
+add_boolean_option(TRACE_RLC_AM_BO         False "TRACE for RLC AM, TO BE CHANGED IN A MORE GENERAL FLAG")
+add_boolean_option(TRACE_RLC_AM_FREE_SDU   False "TRACE for RLC AM, TO BE CHANGED IN A MORE GENERAL FLAG")
+add_boolean_option(TRACE_RLC_AM_HOLE       False "TRACE for RLC AM, TO BE CHANGED IN A MORE GENERAL FLAG")
+add_boolean_option(TRACE_RLC_AM_PDU        False "TRACE for RLC AM, TO BE CHANGED IN A MORE GENERAL FLAG")
+add_boolean_option(TRACE_RLC_AM_RESEGMENT  False "TRACE for RLC AM, TO BE CHANGED IN A MORE GENERAL FLAG")
+add_boolean_option(TRACE_RLC_AM_RX         False "TRACE for RLC AM, TO BE CHANGED IN A MORE GENERAL FLAG")
+add_boolean_option(TRACE_RLC_AM_RX_DECODE  False "TRACE for RLC AM, TO BE CHANGED IN A MORE GENERAL FLAG")
+add_boolean_option(TRACE_RLC_AM_TX         False "TRACE for RLC AM, TO BE CHANGED IN A MORE GENERAL FLAG")
+add_boolean_option(TRACE_RLC_AM_TX_STATUS  False "TRACE for RLC AM, TO BE CHANGED IN A MORE GENERAL FLAG")
+add_boolean_option(TRACE_RLC_AM_STATUS_CREATION   False "TRACE for RLC AM, TO BE CHANGED IN A MORE GENERAL FLAG")
+
+add_boolean_option(STOP_ON_IP_TRAFFIC_OVERLOAD      False "")
+add_boolean_option(TRACE_RLC_UM_DAR        False "TRACE for RLC UM, TO BE CHANGED IN A MORE GENERAL FLAG")
+add_boolean_option(TRACE_RLC_UM_DISPLAY_ASCII_DATA  False "TRACE for RLC UM, TO BE CHANGED IN A MORE GENERAL FLAG")
+add_boolean_option(TRACE_RLC_UM_PDU        False "TRACE for RLC UM, TO BE CHANGED IN A MORE GENERAL FLAG")
+add_boolean_option(TRACE_RLC_UM_RX         False "TRACE for RLC UM, TO BE CHANGED IN A MORE GENERAL FLAG")
+add_boolean_option(TRACE_RLC_UM_SEGMENT    False "TRACE for RLC UM, TO BE CHANGED IN A MORE GENERAL FLAG")
+add_boolean_option(TRACE_RLC_UM_TX_STATUS  False "TRACE for RLC UM, TO BE CHANGED IN A MORE GENERAL FLAG")
+
+
+##########################
+# PDCP LAYER OPTIONS
+##########################
+add_boolean_option(PDCP_USE_NETLINK            False "For eNB, PDCP communicate with a NETLINK socket if connected to network driver, else could use a RT-FIFO")
+add_boolean_option(PDCP_USE_NETLINK_QUEUES     False "When PDCP_USE_NETLINK is true, incoming IP packets are stored in queues")
+add_boolean_option(LINK_ENB_PDCP_TO_IP_DRIVER  False "For eNB, PDCP communicate with a IP driver")
+add_boolean_option(LINK_ENB_PDCP_TO_GTPV1U     True  "For eNB, PDCP communicate with GTP-U protocol (eNB<->S-GW)")
+
+##########################
+# RRC LAYER OPTIONS
+##########################
+add_boolean_option(RRC_DEFAULT_RAB_IS_AM       False  "Otherwise it is UM, configure params are actually set in rrc_eNB.c:rrc_eNB_generate_defaultRRCConnectionReconfiguration(...)")
+
+
+##########################
+# S1AP LAYER OPTIONS
+##########################
+add_boolean_option(S1AP_LIMIT_STREAM_ID_TO_1   True  "FIXME: Despite Eurecom has implemented the spec concerning management of stream ids, there are always issues with other EPCs than EURECOM")
+
+##########################
+# PROJECTS (IST, FRENCH COLL., etc)
+# SPECIFIC OPTIONS
+##########################
+add_boolean_option(SPECTRA False "???")
+add_boolean_option(MIH_C_MEDIEVAL_EXTENSIONS True "EXTENSIONS TO MIH 802.21 IN CONTEXT OF IST PROJECT CALLED MEDIEVAL")
+
+
 
 add_boolean_option(EMOS False "????")
 if(${EMOS})
@@ -712,6 +807,7 @@ set(L2_SRC
   ${RRC_DIR}/rrc_UE.c
   ${RRC_DIR}/rrc_eNB.c
   ${RRC_DIR}/rrc_eNB_S1AP.c
+  ${RRC_DIR}/rrc_eNB_UE_context.c
   ${RRC_DIR}/rrc_common.c
   ${RRC_DIR}/L2_interface.c
   )
@@ -1291,7 +1387,6 @@ include_directories(${CRYPTO_INCLUDE_DIRS})
 if (${RF_BOARD} STREQUAL "USRP")
   find_package(Boost REQUIRED)
   include_directories(${LIBBOOST_INCLUDE_DIR})
-  target_link_libraries (lte-softmodem ${LIBBOOST_LIBRARIES})
 endif (${RF_BOARD} STREQUAL "USRP")
 
 pkg_search_module(OPENPGM openpgm-5.1)
@@ -1368,10 +1463,11 @@ target_link_libraries (lte-softmodem
   -Wl,--end-group )
 target_link_libraries (lte-softmodem ${LIBXML2_LIBRARIES})
 target_link_libraries (lte-softmodem pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} sctp ${option_USRP} ${XFORMS_LIBRARIES} )
+target_link_libraries (lte-softmodem ${LIBBOOST_LIBRARIES})
 
 # EPC is ??? nodes implementation in one process
 ################################
-add_executable(oai_epc
+add_executable(mme_gw
   ${OPENAIR_BIN_DIR}/messages_xml.h
   ${OPENAIRCN_DIR}/OAI_EPC/oai_epc_log.c 
   ${OPENAIRCN_DIR}/OAI_EPC/oai_epc.c
@@ -1379,12 +1475,34 @@ add_executable(oai_epc
   ${OPENAIRCN_DIR}/SCTP/sctp_primitives_server.c
   ${OPENAIRCN_DIR}/NAS/nas_main.c
   )
-target_link_libraries (oai_epc
+target_link_libraries (mme_gw
   -Wl,--start-group 
    NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA SGI S6A SGW MME_APP LFDS ${ITTI_LIB} CN_UTILS HASHTABLE
   -Wl,--end-group 
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
   )
+
+# Default parameters
+site_name(SITE_HSS_HOSTNAME)
+site_name(SITE_MME_HOSTNAME)
+add_option(MME_HOSTNAME      ${SITE_MME_HOSTNAME} "HSS Fully qualified domain name")
+add_option(HSS_HOSTNAME      ${SITE_HSS_HOSTNAME} "HSS Fully qualified domain name")
+add_option(HSS_IP            127.0.1.1            "HSS IP address, default is local")
+add_option(REALM             openair4G.eur     "Realm TODO: extract this default value from SITE_MME_FQDN")
+add_option(MME_FQDN          ${SITE_MME_HOSTNAME}.${REALM} "MME Fully qualified domain name")
+add_option(HSS_FQDN          ${SITE_HSS_HOSTNAME}.${REALM} "HSS Fully qualified domain name")
+add_option(TRANSPORT_option  No_SCTP     "No_TCP or No_SCTP")
+add_option(TRANSPORT_PREFER_TCP_option  Prefer_TCP "Prefer_TCP or null string ")
+
+configure_file(
+  ${OPENAIRCN_DIR}/UTILS/CONF/s6a.conf.in 
+  ${CMAKE_CURRENT_BINARY_DIR}/epc_s6a.conf)
+configure_file(
+  ${OPENAIR_TARGETS}/PROJECTS/GENERIC-LTE-EPC/CONF/epc.local.enb.conf.in 
+  ${CMAKE_CURRENT_BINARY_DIR}/epc.local.enb.conf)
+configure_file(
+  ${OPENAIR_TARGETS}/PROJECTS/GENERIC-LTE-EPC/CONF/epc.conf.in 
+  ${CMAKE_CURRENT_BINARY_DIR}/epc.conf)
 
 # oai_sgw is SGW  node implementation
 ################################
@@ -1402,17 +1520,17 @@ target_link_libraries (oai_sgw
 
 # USIM process 
 #################
-add_executable(usim_data  
+add_executable(usim
   ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/tools/usim_data.c
   )
-target_link_libraries (usim_data ${NAS_LIB} UTIL ${ITTI_LIB} LFDS pthread rt nettle crypto m)
+target_link_libraries (usim ${NAS_LIB} UTIL ${ITTI_LIB} LFDS pthread rt nettle crypto m)
 
 # ???
 #####################
-add_executable(ue_data  
+add_executable(nvram 
   ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/tools/ue_data.c
   )
-target_link_libraries (ue_data ${NAS_LIB} UTIL ${ITTI_LIB} LFDS pthread rt nettle crypto m)
+target_link_libraries (nvram ${NAS_LIB} UTIL ${ITTI_LIB} LFDS pthread rt nettle crypto m)
 
 ###################################"
 # Addexecutables for tests
@@ -1472,8 +1590,6 @@ foreach(myExe s1ap
     secu_kenb
     aes128_ctr_encrypt 
     aes128_ctr_decrypt 
-    secu 
-    secu_knas_stream_int 
     secu_knas_encrypt_eea2 
     secu_knas secu_knas_encrypt_eea1 
     kdf 
@@ -1497,12 +1613,16 @@ endforeach(myExe)
 #  ???
 ###########################
 add_executable(oaisim_mme
+  ${OPENAIR_BIN_DIR}/messages_xml.h
   ${OPENAIRCN_DIR}/OAISIM_MME/oai_mme_log.c
   ${OPENAIRCN_DIR}/OAISIM_MME/oaisim_mme.c
+  ${OPENAIRCN_DIR}/NAS/nas_main.c
 )
 target_link_libraries (oaisim_mme
-  ${ITTI_LIB} ${NAS_LIB} S1AP_LIB S1AP_ENB
-  S11 S6A UTILS UDP MME_APP SECU_CN LFDS fdproto fdcore
+  -Wl,--start-group 
+   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA SGI S6A S11 SGW MME_APP LFDS ${ITTI_LIB} CN_UTILS HASHTABLE
+  -Wl,--end-group 
+  pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
 )
 
 ##################################################
