@@ -64,6 +64,10 @@
 #include "PMCH-InfoList-r9.h"
 #endif
 
+#ifdef CMAKER
+typedef uint64_t hash_key_t;
+#define HASHTABLE_QUESTIONABLE_KEY_VALUE ((uint64_t)-1)
+#endif
 //-----------------------------------------------------------------------------
 #    ifdef RLC_MAC_C
 #        define private_rlc_mac(x) x
