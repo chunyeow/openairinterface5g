@@ -139,9 +139,14 @@ clean_kernel() {
 }
 
 clean_all_files() {
- dir=$OPENAIR_DIR/cmake
- rm -rf $dir/log $OPENAIR_TARGETS/bin $dir/autotests/bin $dir/autotests/log $dir/autotests/*/buid $dir/build_*/build
- rm -rf $dir/oaisim_build_oai/CMakeLists.txt $dir/epc_build_oai/CMakeLists.txt $dir/hss_build/BUILD
+ dir=$OPENAIR_DIR/cmake_targets
+ rm -rf $dir/log $OPENAIR_TARGETS/bin/* 
+ rm -rf $dir/lte_build_oai $dir/lte-simulators/build
+ rm -rf $dir/epc_build_oai/build $dir/epc_build_oai/CMakeLists.txt
+ rm -rf $dir/oaisim_build_oai/build $dir/oaisim_build_oai/CMakeLists.txt
+ rm -rf $dir/oaisim_mme_build_oai/build $dir/oaisim_mme_build_oai/CMakeLists.txt
+ rm -rf $dir/hss_build/BUILD
+ rm -rf $dir/autotests/bin $dir/autotests/log $dir/autotests/*/build 
 }
 
 ###################################

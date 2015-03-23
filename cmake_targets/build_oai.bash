@@ -212,8 +212,8 @@ echo "set(XFORMS $XFORMS )" >>  $cmake_file
 echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
 echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
 echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
-mkdir -p $DIR/oaisim_build_oai/build
-cd $DIR/oaisim_build_oai/build
+mkdir -p $DIR/oaisim_mme_build_oai/build
+cd $DIR/oaisim_mme_build_oai/build
 cmake ..
 
 # For unitary test simulators

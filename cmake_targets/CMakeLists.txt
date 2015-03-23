@@ -807,7 +807,7 @@ set(L2_SRC
   ${RRC_DIR}/rrc_UE.c
   ${RRC_DIR}/rrc_eNB.c
   ${RRC_DIR}/rrc_eNB_S1AP.c
-  ${RRC_DIR}/rrc_eNB_UE_context.c
+  #${RRC_DIR}/rrc_eNB_UE_context.c
   ${RRC_DIR}/rrc_common.c
   ${RRC_DIR}/L2_interface.c
   )
@@ -1495,13 +1495,13 @@ add_option(TRANSPORT_option  No_SCTP     "No_TCP or No_SCTP")
 add_option(TRANSPORT_PREFER_TCP_option  Prefer_TCP "Prefer_TCP or null string ")
 
 configure_file(
-  ${OPENAIRCN_DIR}/UTILS/CONF/s6a.conf.in 
+  ${OPENAIR_CMAKE}/tools/s6a.conf.in 
   ${CMAKE_CURRENT_BINARY_DIR}/epc_s6a.conf)
 configure_file(
-  ${OPENAIR_TARGETS}/PROJECTS/GENERIC-LTE-EPC/CONF/epc.local.enb.conf.in 
+  ${OPENAIR_CMAKE}/tools/epc.local.enb.conf.in 
   ${CMAKE_CURRENT_BINARY_DIR}/epc.local.enb.conf)
 configure_file(
-  ${OPENAIR_TARGETS}/PROJECTS/GENERIC-LTE-EPC/CONF/epc.conf.in 
+  ${OPENAIR_CMAKE}/tools/epc.conf.in 
   ${CMAKE_CURRENT_BINARY_DIR}/epc.conf)
 
 # oai_sgw is SGW  node implementation

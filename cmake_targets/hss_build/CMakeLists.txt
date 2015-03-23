@@ -286,13 +286,13 @@ ELSE( FD_SERVER_IP_BIND_LIST )
 ENDIF( FD_SERVER_IP_BIND_LIST )
 
 configure_file(
-  ${OPENAIRHSS_DIR}/conf/hss_fd.conf.in  
+  ${CMAKE_CURRENT_SOURCE_DIR}/hss_fd.conf.in  
   ${CMAKE_CURRENT_BINARY_DIR}/hss_fd.conf)
 configure_file(
-  ${OPENAIRHSS_DIR}/conf/hss.conf.in  
+  ${CMAKE_CURRENT_SOURCE_DIR}/hss.conf.in  
   ${CMAKE_CURRENT_BINARY_DIR}/hss.conf)
 configure_file(
-  ${OPENAIRHSS_DIR}/conf/acl.conf.in  
+  ${CMAKE_CURRENT_SOURCE_DIR}/acl.conf.in  
   ${CMAKE_CURRENT_BINARY_DIR}/acl.conf)
                 
 install (TARGETS openair-hss 
