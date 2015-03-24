@@ -269,13 +269,13 @@ site_name(SITE_HSS_FQDN)
 add_option(HSS_FQDN          ${SITE_HSS_FQDN} "HSS Fully qualified domain name")
 add_option(REALM             openair4G.eur    "HSS realm TODO: extract this default value from SITE_HSS_FQDN")
 add_option(MYSQL_server      "127.0.0.1"      "Database server IP address")
-add_option(MYSQL_admin       root             "Database admin login")
-add_option(MYSQL_admin_pass  linux            "Database admin password")
-add_option(MYSQL_user        hssadmin         "Database username login")
-add_option(MYSQL_pass        admin            "Database username password")
-add_option(MYSQL_db          oai_db           "Database name")
-add_option(TRANSPORT_option  No_SCTP          "No_TCP or No_SCTP, FreeDiameter config option")
-add_option(TRANSPORT_PREFER_TCP_option  Prefer_TCP "Prefer_TCP or null string, FreeDiameter config option")
+add_option(MYSQL_admin       "root"           "Database admin login")
+add_option(MYSQL_admin_pass  "linux"          "Database admin password")
+add_option(MYSQL_user        "hssadmin"       "Database username login")
+add_option(MYSQL_pass        "admin"          "Database username password")
+add_option(MYSQL_db          "oai_db"         "Database name")
+add_option(TRANSPORT_option  "#No_TCP"        "No_TCP or No_SCTP or comment string, FreeDiameter config option")
+add_option(TRANSPORT_PREFER_TCP_option  "#Prefer_TCP"   "Prefer_TCP or comment string, FreeDiameter config option")
 add_option(AppServThreads    2                "FreeDiameter AppServThreads config option")
 add_option(OPERATOR_key      "11111111111111111111111111111111" "LTE operator clear text key (hex bytes)")
 add_option(REMOTE_PEER_WHITELIST "*.${REALM}" "Remote peer whitlist (separeted by spaces), for freediameter acl.conf config file")
@@ -285,6 +285,15 @@ ELSE( FD_SERVER_IP_BIND_LIST )
     set(ListenOn          "#ListenOn=\"\"" "//FreeDiameter server IP bind addresses list")
 ENDIF( FD_SERVER_IP_BIND_LIST )
 
+IF( HSS_CONNECT_TO_MME )
+  add_option(ConnectPeer        "ConnectPeer"     "HSS connect to MME")
+  add_option(DIAMETER_PORT      "#Port = 3868"    "Diameter bind port")
+  add_option(DIAMETER_SEC_PORT  "#SecPort = 3869"    "Diameter bind sec port")
+ELSE( HSS_CONNECT_TO_MME )
+  add_option(ConnectPeer        "#ConnectPeer"    "HSS act as a server")
+  add_option(DIAMETER_PORT      "Port = 3868"     "Diameter bind port")
+  add_option(DIAMETER_SEC_PORT  "SecPort = 3869"     "Diameter bind sec port")
+ENDIF( HSS_CONNECT_TO_MME )
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/hss_fd.conf.in  
   ${CMAKE_CURRENT_BINARY_DIR}/hss_fd.conf)
@@ -295,6 +304,7 @@ configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/acl.conf.in  
   ${CMAKE_CURRENT_BINARY_DIR}/acl.conf)
                 
+
 install (TARGETS openair-hss 
   DESTINATION ${OPENAIR_TARGETS}/bin)
 

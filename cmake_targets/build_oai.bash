@@ -39,10 +39,6 @@ ORIGIN_PATH=$PWD
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/tools/build_helper.bash
 
-#EMULATION_DEV_INTERFACE="eth0"
-#EMULATION_MULTICAST_GROUP=1
-#EMULATION_DEV_ADDRESS=`ifconfig $EMULATION_DEV_INTERFACE | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}'`
-
 XFORMS="False"
 VCD_TIMING="False"
 REL="Rel10"
@@ -326,7 +322,17 @@ if [ "$EPC" = "1" ] ; then
 	epc_build_oai xt_GTPUAH \
 	CMakeFiles/xt_GTPUAH/xt_GTPUAH.ko $dbin
 
-    compile_hss
+  if [ "$INSTALL_SYSTEM_FILES" = "1" ] ;then
+    # Example HSS and EPC run on the same host
+    $OPENAIR_HOME/cmake_targets/tools/build_hss --clean --debug --install-hss-files --transport-tcp-only --transport-prefer-tcp --fqdn `hostname --fqdn` --connect-to-mme `hostname --fqdn`
+    # example HHS and EPC run on separate hosts (can use SCTP)
+    # $OPENAIR_HOME/cmake_targets/tools/build_hss --clean --debug --install-hss-files
+  else
+    # Example HSS and EPC run on the same host
+    $OPENAIR_HOME/cmake_targets/tools/build_hss --debug --transport-tcp-only --transport-prefer-tcp --fqdn `hostname --fqdn` --connect-to-mme `hostname --fqdn`
+    # example HHS and EPC run on separate hosts (can use SCTP)
+    # $OPENAIR_HOME/cmake_targets/tools/build_hss --debug 
+  fi
 fi
 
 if [ "$INSTALL_SYSTEM_FILES" = "1" ] ;then
@@ -343,18 +349,18 @@ if [ "$INSTALL_SYSTEM_FILES" = "1" ] ;then
     install_nas_tools $dbin $dconf
 
     # Do EPC
-    cp $DIR/epc_build_oai/epc.*.conf $dconf
-    $SUDO cp  $DIR/epc_build_oai/epc_s6a.conf  /usr/local/etc/freeDiameter
+    cp $DIR/epc_build_oai/build/epc.*.conf $dconf
+    $SUDO cp  $DIR/epc_build_oai/build/epc_s6a.conf  /usr/local/etc/freeDiameter
 
     # Do HSS 
     # bash doesn't like space char around = char
     cp $DIR/hss_build/hss.conf $dbin
     $SUDO cp  $DIR/hss_build/hss_fd.conf $DIR/hss_build/acl.conf /usr/local/etc/freeDiameter
     
-    sed -e 's/ *= */=/' $OPENAIRCN_DIR/OPENAIRHSS/conf/hss.conf > $dconf/hss.conf.nospace
+    sed -e 's/ *= */=/' $dbin/hss.conf > $dconf/hss.conf.nospace
     source $dconf/hss.conf.nospace
+    rm -f $dconf/hss.conf.nospace
     create_hss_database root linux "$MYSQL_user" "$MYSQL_pass" "$MYSQL_db"
-
 fi 
 
 # Auto-tests 

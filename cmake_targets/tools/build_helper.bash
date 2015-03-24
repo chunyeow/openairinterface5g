@@ -369,26 +369,6 @@ install_asn1c_from_source(){
 #################################################
 # 2. compile 
 ################################################
-compile_hss() {
-    cd $OPENAIR_DIR/cmake_targets/hss_build
-    rm -f $OPENAIR_TARGETS/bin/openair-hss openair-hss
-    if [ "$CLEAN" = "1" ]; then
-        echo "Cleaning HSS"
-        rm -rf BUILD 
-    fi
-    mkdir -p BUILD
-    cd ./BUILD
-    cmake  $SOFTMODEM_DIRECTIVES ..
-    make -j $NUM_CPU openair-hss > $dlog/hss.txt 2>&1
-    if [ -s openair-hss ] ; then
-	cp openair-hss $OPENAIR_TARGETS/bin
-	echo_success "hss compiled"
-    else
-	echo_error "hss compilation failed"
-    fi
-    return $?
-}
-
 
 install_nas_tools() {
     cd $1
@@ -408,48 +388,60 @@ install_nas_tools() {
 # create HSS DB
 ################################
 
-# arg 1 is mysql user      (root)
-# arg 2 is mysql password  (linux)
-# arg 3 is hss username    (hssadmin)
-# arg 4 is hss password    (admin)
-# arg 5 is database name   (oai_db)
+# arg 1 is mysql admin     (ex: root)
+# arg 2 is mysql password  (ex: linux)
+# arg 3 is hss username    (ex: hssadmin)
+# arg 4 is hss password    (ex: admin)
+# arg 5 is database name   (ex: oai_db)
 create_hss_database(){
-    EXPECTED_ARGS=5
-    if [ $# -ne $EXPECTED_ARGS ]
-    then
-        echo_error "Usage: $0 dbuser dbpass hssuser hsspass databasename"
-	return 1
-    fi
+  EXPECTED_ARGS=5
+  if [ $# -ne $EXPECTED_ARGS ]
+  then
+    echo_error "Usage: $0 dbadmin dbpass hssuser hsspass databasename"
+    return 1
+  fi
+  local mysql_admin=$1
+  local mysql_password=$2
+  local hss_username=$3
+  local hss_password=$4
+  local database_name=$5
     
-    Q1="GRANT ALL PRIVILEGES ON *.* TO '$3'@'localhost' IDENTIFIED BY '$4' WITH GRANT OPTION;"
-    Q2="FLUSH PRIVILEGES;"
-    mysql -u $1 --password=$2 -e "${Q1}${Q2}"
-    if [ $? -ne 0 ]; then
-	echo_error "$3 permissions creation failed"
-	echo_error "verify root password for mysql is linux: mysql -u root --password=linux"
-	echo_error "if not, reset it to "linux" with sudo dpkg-reconfigure mysql-server-5.5"
-	return 1
-    else
-	echo_success "$3 permissions creation succeeded"
-    fi
+  Q1="GRANT ALL PRIVILEGES ON *.* TO '$hss_username'@'localhost' IDENTIFIED BY '$hss_password' WITH GRANT OPTION;"
+  Q2="FLUSH PRIVILEGES;"
+  mysql -u $mysql_admin --password=$mysql_password -e "${Q1}${Q2}"
+  if [ $? -ne 0 ]; then
+    echo_error "HSS: $hss_username permissions creation failed"
+    echo_error "verify root password for mysql is linux: mysql -u root --password=linux"
+    echo_error "if not, reset it to "linux" with sudo dpkg-reconfigure mysql-server-5.5"
+    return 1
+  else
+    echo_success "HSS: $hss_username permissions creation succeeded"
+  fi
     
-    Q3="CREATE DATABASE IF NOT EXISTS $5;"
-    mysql -u $3 --password=$4 -e "${Q3}"
-    if [ $? -ne 0 ]; then
-	echo_error "$5 creation failed"
-	return 1
-    else
-	echo_success "$5 creation succeeded"
-    fi
+  Q3="CREATE DATABASE IF NOT EXISTS $database_name;"
+  mysql -u $hss_username --password=$hss_password -e "${Q3}"
+  if [ $? -ne 0 ]; then
+    echo_error "HSS: $database_name creation failed"
+    return 1
+  else
+    echo_success "HSS: $database_name creation succeeded"
+  fi
+
     
-    mysql -u $3 --password=$4 $5 < $OPENAIRCN_DIR/OPENAIRHSS/db/oai_db.sql
+  # test if tables have been created
+  mysql -u $hss_username --password=$hss_password  -e "desc $database_name.users" > /dev/null 2>&1
+  if [ $? -eq 1 ]; then 
+    mysql -u $hss_username --password=$hss_password $database_name < $OPENAIRCN_DIR/OPENAIRHSS/db/$database_name.sql
     if [ $? -ne 0 ]; then
-        echo_error "$5 tables creation failed"
-        return 1
+      echo_error "HSS: $database_name tables creation failed"
+      return 1
     else
-        echo_success "$5 tables creation succeeded"
+      echo_success "HSS: $database_name tables creation succeeded"
     fi
-    return 0
+  else
+      echo_success "HSS: $database_name tables already created, nothing done"
+  fi 
+  return 0
 }
 
 ################################
