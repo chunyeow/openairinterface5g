@@ -998,7 +998,7 @@ void run(int argc, char *argv[]) {
   if ((oai_emulation.info.ocm_enabled == 1) && (ethernet_flag == 0) && (ShaF != NULL))
     destroyMat(ShaF,map1, map2);
 
-  if ((oai_emulation.info.opt_enabled == 1) )
+  if (opt_enabled == 1 )
     terminate_opt();
 
   if (oai_emulation.info.cli_enabled)

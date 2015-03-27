@@ -123,6 +123,8 @@ what about the implementation
 
 #include "opt.h"
 
+int opt_enabled=0;
+
 #define PACKET_MAC_LTE_DEFAULT_UDP_PORT (9999)
 
 typedef uint8_t  guint8;
@@ -139,8 +141,8 @@ static unsigned char g_frameBuffer[1600];
 //static unsigned char g_fileBuffer[1600];
 static unsigned int g_frameOffset;
 
-static char in_ip[40];
-static char in_path[100];
+char in_ip[40];
+char in_path[100];
 static uint16_t in_port;
 FILE *file_fd = NULL;
 
@@ -501,7 +503,7 @@ int init_opt(char *path, char *ip, char *port, radio_type_t radio_type_p)
         strncpy( in_path, path, sizeof(in_path) );
         in_path[sizeof(in_path) - 1] = 0; // terminate string
     } else {
-        strcpy( in_path, "oai_opt.pcap" );
+        strcpy( in_path, "/tmp/oai_opt.pcap" );
     }
     if (ip != NULL) {
         strncpy( in_ip, ip, sizeof(in_ip) );
@@ -553,9 +555,13 @@ int init_opt(char *path, char *ip, char *port, radio_type_t radio_type_p)
             opt_type = OPT_NONE;
             break;
     }
-    LOG_D(OPT,"mode %s init ip %s port %u path %s\n",
-          (opt_type == OPT_WIRESHARK)? "wireshark" : "pcap", in_ip, in_port, in_path);
-
+    if ( opt_type == OPT_WIRESHARK )
+      LOG_G(OPT,"mode Wireshark: ip %s port %d\n", in_ip, in_port);
+    else if (opt_type == OPT_PCAP)
+      LOG_G(OPT,"mode PCAB : path is %s \n",in_path);
+    else
+      LOG_G(OPT,"Unsupported or unknown mode %d \n", opt_type);
+    
     //  mac_info = (mac_info*)malloc16(sizeof(mac_lte_info));
     // memset(mac_info, 0, sizeof(mac_lte_info)+pdu_buffer_size + 8);
     return (1);

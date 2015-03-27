@@ -991,16 +991,15 @@ void schedule_ue_spec(module_id_t   module_idP,
 	    UE_list->DLSCH_pdu[CC_id][0][UE_id].payload[0][offset+sdu_length_total+j] = (char)(taus()&0xff);
 	  //eNB_mac_inst[0].DLSCH_pdu[0][0].payload[0][offset+sdu_lengths[0]+j] = (char)(taus()&0xff);
 	  
-#if defined(USER_MODE) && defined(OAI_EMU)
 	  /* Tracing of PDU is done on UE side */
-	  if (oai_emulation.info.opt_enabled)
+	  if (opt_enabled == 1){
 	    trace_pdu(1, (uint8_t *)UE_list->DLSCH_pdu[CC_id][0][UE_id].payload[0],
 		      TBS, module_idP, 3, UE_RNTI(module_idP,UE_id),
 		      eNB->subframe,0,0);
-	  LOG_D(OPT,"[eNB %d][DLSCH] Frame %d  rnti %x  with size %d\n",
-		module_idP, frameP, UE_RNTI(module_idP,UE_id), TBS);
-#endif
-	  
+	    LOG_D(OPT,"[eNB %d][DLSCH] Frame %d  rnti %x  with size %d\n",
+		  module_idP, frameP, UE_RNTI(module_idP,UE_id), TBS);
+	  }
+	 	  
 	  aggregation = process_ue_cqi(module_idP,UE_id);
 	  nCCE[CC_id]-=(1<<aggregation); // adjust the remaining nCCE
 	  nCCE_used[CC_id]+=(1<<aggregation); // adjust the remaining nCCE

@@ -77,6 +77,8 @@ typedef enum radio_type_e {
 } radio_type_t;
 
 extern trace_mode_t opt_type;
+extern char in_ip[40];
+extern char in_path[100];
 
 /**
  * function def
@@ -90,6 +92,7 @@ int init_opt(char *path, char *ip, char *port, radio_type_t radio_type_p);
 
 void terminate_opt(void);
 
+extern int opt_enabled;
 //double *timing_analyzer(int index, int direction );
 
 #endif /* OPT_H_ */

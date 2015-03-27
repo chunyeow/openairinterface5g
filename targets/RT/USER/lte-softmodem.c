@@ -335,6 +335,9 @@ int16_t           pdcp_log_level     = LOG_INFO;
 int16_t           pdcp_log_verbosity = LOG_MED;
 int16_t           rrc_log_level      = LOG_INFO;
 int16_t           rrc_log_verbosity  = LOG_MED;
+int16_t           opt_log_level      = LOG_INFO;
+int16_t           opt_log_verbosity  = LOG_MED;
+
 # if defined(ENABLE_USE_MME)
 int16_t           gtpu_log_level     = LOG_DEBUG;
 int16_t           gtpu_log_verbosity = LOG_MED;
@@ -1802,7 +1805,7 @@ static void get_options (int argc, char **argv) {
     {"ue_rxgain",   required_argument,  NULL, LONG_OPTION_RXGAIN},
     {NULL, 0, NULL, 0}};
   
-  while ((c = getopt_long (argc, argv, "C:dK:g:F:G:qO:m:SUVRM:r:P:s:t:x:",long_options,NULL)) != -1) {
+  while ((c = getopt_long (argc, argv, "C:dK:g:F:G:qO:m:SUVRM:r:P:Ws:t:x:",long_options,NULL)) != -1) {
     switch (c) {
     case LONG_OPTION_ULSCH_MAX_CONSECUTIVE_ERRORS:
       ULSCH_max_consecutive_errors = atoi(optarg);
@@ -1884,23 +1887,35 @@ static void get_options (int argc, char **argv) {
       target_ul_mcs = atoi (optarg);
       break;
 #ifdef OPENAIR2
-    case 'P':
-#ifdef OPENAIR2
-      /* enable openair packet tracer (OPT)*/
-      if ((strcmp(optarg, "wireshark") == 0) || 
-	  (strcmp(optarg, "WIRESHARK") == 0)) {
-	opt_type = OPT_WIRESHARK;
-	printf("Enabling OPT for wireshark\n");
-      } else if ((strcmp(optarg, "pcap") == 0) ||
-		 (strcmp(optarg, "PCAP") == 0)){
-	opt_type = OPT_PCAP;
-	printf("Enabling OPT for pcap\n");
+    case 'W':
+      opt_enabled=1;
+      opt_type = OPT_WIRESHARK;
+      strncpy(in_ip, "127.0.0.1", sizeof(in_ip));
+      in_ip[sizeof(in_ip) - 1] = 0; // terminate string
+      printf("Enabling OPT for wireshark for local interface");
+      /*
+	if (optarg == NULL){
+	in_ip[0] =NULL;
+	printf("Enabling OPT for wireshark for local interface");
       } else {
-	opt_type = OPT_NONE;
-	printf("Unrecognized option for OPT module\n");
-	printf("Possible values are either wireshark or pcap\n");
+	strncpy(in_ip, optarg, sizeof(in_ip));
+	in_ip[sizeof(in_ip) - 1] = 0; // terminate string
+	printf("Enabling OPT for wireshark with %s \n",in_ip);
       }
-#endif
+      */
+      break;
+    case 'P':
+      opt_type = OPT_PCAP;
+      opt_enabled=1;
+      if (optarg == NULL){
+	strncpy(in_path, "/tmp/oai_opt.pcap", sizeof(in_path));
+	in_path[sizeof(in_path) - 1] = 0; // terminate string
+	printf("Enabling OPT for PCAP with the following path /tmp/oai_opt.pcap");
+      } else {
+	strncpy(in_path, optarg, sizeof(in_path));
+	in_path[sizeof(in_path) - 1] = 0; // terminate string
+	printf("Enabling OPT for PCAP  with the following file %s \n",in_path);
+      }
       break;  
 #endif
     case 'V':
@@ -2202,6 +2217,8 @@ int main(int argc, char **argv) {
       set_comp_log(HW,      hw_log_level, hw_log_verbosity, 1);
 #ifdef OPENAIR2
       set_comp_log(PHY,     phy_log_level,   phy_log_verbosity, 1);
+      if (opt_enabled == 1 ) 
+	set_comp_log(OPT,   opt_log_level,      opt_log_verbosity, 1);
 #else
       set_comp_log(PHY,     LOG_INFO,   LOG_HIGH, 1);
 #endif
@@ -2242,17 +2259,6 @@ int main(int argc, char **argv) {
   
   if (opp_enabled ==1)
     reset_opp_meas();
-#ifdef OPENAIR2
-  if (opt_type != OPT_NONE) {
-    radio_type_t radio_type;
-    if (frame_parms[0]->frame_type == FDD)
-      radio_type = RADIO_TYPE_FDD;
-    else 
-      radio_type = RADIO_TYPE_TDD;
-    if (init_opt(NULL, NULL, NULL, radio_type) == -1)
-      LOG_E(OPT,"failed to run OPT \n");
-  }
-#endif
   
 #if defined(ENABLE_ITTI)
   if (UE_flag == 1) {
@@ -2264,7 +2270,17 @@ int main(int argc, char **argv) {
 
   itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, itti_dump_file);
 #endif
-
+#ifdef OPENAIR2
+  if (opt_type != OPT_NONE) {
+    radio_type_t radio_type;
+    if (frame_parms[0]->frame_type == FDD)
+      radio_type = RADIO_TYPE_FDD;
+    else 
+      radio_type = RADIO_TYPE_TDD;
+    if (init_opt(in_path, in_ip, NULL, radio_type) == -1)
+      LOG_E(OPT,"failed to run OPT \n");
+  }
+#endif
 #ifdef NAS_NETLINK
   netlink_init();
 #endif
@@ -2991,7 +3007,7 @@ int main(int argc, char **argv) {
     vcd_signal_dumper_close();
 
 #ifdef OPENAIR2
-  if (opt_type != OPT_NONE)
+  if (opt_enabled == 1)
     terminate_opt();
 #endif
 

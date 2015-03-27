@@ -534,15 +534,14 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
       for (j=0;j<(TBS-sdu_length_total-offset);j++)
         eNB_mac_inst[module_idP].common_channels[CC_id].MCH_pdu.payload[offset+sdu_length_total+j] = (char)(taus()&0xff);
 
-#if defined(USER_MODE) && defined(OAI_EMU)
       /* Tracing of PDU is done on UE side */
-      if (oai_emulation.info.opt_enabled)
+      if (opt_enabled ==1 ){
         trace_pdu(1, (uint8_t *)eNB_mac_inst[module_idP].common_channels[CC_id].MCH_pdu.payload,
-            TBS, module_idP, 6, 0xffff,  // M_RNTI = 6 in wirehsark
-            eNB_mac_inst[module_idP].subframe,0,0);
-      LOG_D(OPT,"[eNB %d][MCH] Frame %d : MAC PDU with size %d\n",
-          module_idP, frameP, TBS);
-#endif
+		  TBS, module_idP, 6, 0xffff,  // M_RNTI = 6 in wirehsark
+		  eNB_mac_inst[module_idP].subframe,0,0);
+	LOG_D(OPT,"[eNB %d][MCH] Frame %d : MAC PDU with size %d\n",
+	      module_idP, frameP, TBS);
+      }
       /*
    for (j=0;j<sdu_length_total;j++)
       printf("%2x.",eNB_mac_inst[module_idP].MCH_pdu.payload[j+offset]);

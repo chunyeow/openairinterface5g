@@ -1168,7 +1168,7 @@ int ocg_config_emu(void){
   oai_emulation.info.opt_enabled = ( oai_emulation.emulation_config.packet_trace.enabled == 0) ? oai_emulation.info.opt_enabled :  oai_emulation.emulation_config.packet_trace.enabled;
   if (oai_emulation.info.opt_enabled == 1) {
     radio_type_t radio_type;
-
+    opt_enabled = 1;
     if (oai_emulation.info.frame_type[0] == FDD) {
         radio_type = RADIO_TYPE_FDD;
     } else {

@@ -1785,7 +1785,7 @@ oai_shutdown (void) {
         ShaF = 0;
     }
 
-    if ((oai_emulation.info.opt_enabled == 1))
+    if (opt_enabled == 1)
         terminate_opt ();
 
     if (oai_emulation.info.cli_enabled)

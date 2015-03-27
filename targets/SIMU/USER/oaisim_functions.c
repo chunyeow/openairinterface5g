@@ -527,7 +527,7 @@ void get_simulation_options(int argc, char *argv[]) {
 
       case 'P':
         oai_emulation.info.opt_enabled = 1;
-
+	opt_enabled = 1;
         if (strcmp(optarg, "wireshark") == 0) {
             opt_type = OPT_WIRESHARK;
             printf("Enabling OPT for wireshark\n");
@@ -539,6 +539,7 @@ void get_simulation_options(int argc, char *argv[]) {
             printf("Possible values are either wireshark or pcap\n");
             opt_type = OPT_NONE;
             oai_emulation.info.opt_enabled = 0;
+	    opt_enabled = 0;
         }
         oai_emulation.info.opt_mode = opt_type;
         break;
