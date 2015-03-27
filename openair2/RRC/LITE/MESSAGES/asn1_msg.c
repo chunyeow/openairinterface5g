@@ -2331,7 +2331,7 @@ OAI_UECapability_t *fill_ue_capability(char *UE_EUTRA_Capability_xer_fname) {
   if (!UE_EUTRA_Capability_xer_fname)  {
     Bandlist[0].bandEUTRA  = 3;  // UL 1710-1785, DL 1805-1880 FDD
     Bandlist[0].halfDuplex = 0;
-    Bandlist[1].bandEUTRA  = 5;  // UL 824-849 , DL 869-894 FDD
+    Bandlist[1].bandEUTRA  = 20;  // UL 824-849 , DL 869-894 FDD
     
     Bandlist[1].halfDuplex = 0;
     Bandlist[2].bandEUTRA  = 7;   // UL 2500-2570, DL 2620-2690 FDD
