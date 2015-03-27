@@ -1158,6 +1158,7 @@ print_help(){
     echo_success "-l | --build-target                     : Set the LTE build target: ENB,EPC,HSS,NONE (default ENB)"
     echo_success "-m | --build-from-makefile              : Enable build from the makefile (default disabled)"
     echo_success "-r | --3gpp-release                     : Set the release: REL8, REL10 (default REL8)"
+    echo_success "-p | --wireshark                        : enable wireshark interface for L2 pdus"
     echo_success "-R | --run                              : Run the executable built by this script"
     echo_success "-s | --check                            : Enable OAI testing and sanity check (default disabled)"
     echo_success "-t | --enb-build-target                 : Set the eNB build target: ALL, SOFTMODEM,OAISIM,UNISIM (default ALL)"

@@ -224,6 +224,11 @@ fi
             echo "setting xforms to: $XFORMS"
             shift;
             ;;
+       -p | --wireshark)
+	  WIRESHARK=1
+	  echo "enabling Wireshark interface to $WIRESHARK"
+          shift;
+          ;;
        -z | --defaults)
             echo "setting all parameters to: default"
             rm -rf ./.lock_oaibuild
@@ -737,6 +742,9 @@ if [ $RUN -ne 0 ]; then
                     $SUDO chmod 777 $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
                     $SUDO $OPENAIR_TARGETS/RT/USER/init_exmimo2.sh
                 fi
+		if [ $WIRESHARK -eq 1 ]; then 
+		    EXE_ARGUMENTS="$EXE_ARGUMENTS -W"
+		fi 
                 echo "############# running ltesoftmodem #############"
                 if [ $RUN_GDB -eq 0 ]; then 
                     $SUDO $OPENAIR_TARGETS/bin/lte-softmodem  `echo $EXE_ARGUMENTS`
@@ -770,7 +778,9 @@ if [ $RUN -ne 0 ]; then
                     insmod  $OPENAIR2_DIR/NETWORK_DRIVER/UE_IP/ue_ip.ko
                     
                 fi
-                
+                if [ $WIRESHARK -eq 1 ]; then 
+		    EXE_ARGUMENTS="$EXE_ARGUMENTS -P wireshark"
+		fi 
                 if [ $RUN_GDB -eq 0 ]; then 
                     $SUDO exec $OPENAIR_TARGETS/bin/oaisim  `echo $EXE_ARGUMENTS`
                 else
