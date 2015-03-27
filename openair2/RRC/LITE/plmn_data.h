@@ -1557,24 +1557,25 @@ Philippines
 515 	11   	PLDT via ACeS Philippines 		Inactive
 515 	18   	PLDT via Smarts Connectivity Unlimited Resources Enterprise 	Cure 	Operational
 515 	88   	Nextel 	Nextel 	Operational
+*/
 
-Poland
-260 	1   	Plus GSM (Polkomtel S.A.) 	Plus (Polkomtel) 	Operational
-260 	2   	ERA GSM (Polska Telefonia Cyfrowa Sp. Z.o.o.) 	T-Mobile 	Operational
-260 	3   	Orange 	Orange 	Operational
-260 	4   	Netia S.A 	Tele 2 (Netia) 	Inactive
-260 	5   	Polska Telefonia Komórkowa Centertel Sp. z o.o. 		Inactive
-260 	6   	Play (P4) 	Play (P4) 	Operational
-260 	7   	Netia S.A 	Netia (Using P4 Nw) 	Operational
-260 	8   	E-Telko Sp. z o.o. 		Inactive
-260 	9   	Telekomunikacja Kolejowa (GSM-R) 		Inactive
-260 	10   	Sferia S.A. 	Sferia (Using T-mobile) 	Operational
-260 	12   	Cyfrowy Polsat S.A. 	Cyfrowy Polsat 	Operational
-260 	14   	Sferia S.A 	Sferia (Using T-mobile) 	Operational
-260 	15   	CenterNet S.A. 	CenterNet (UMTS Data only) 	Operational
-260 	16   	Mobyland Sp. z o.o. 	Mobyland (UMTS) 	Operational
-260 	17   	Aero 2 Sp. z o.o. 	Aero2 (UMTS) 	Operational
-
+//Poland
+{260, 	1,   	"Plus GSM (Polkomtel S.A.)", 	"Plus (Polkomtel)"},// 	Operational
+{260, 	2,   	"ERA GSM (Polska Telefonia Cyfrowa Sp. Z.o.o.)", 	"T-Mobile"},// 	Operational
+{260, 	3,   	"Orange", 	"Orange"},// 	Operational
+{260, 	4,   	"Netia S.A", 	"Tele 2 (Netia)"},// 	Inactive
+{260, 	5,   	"Polska Telefonia Komórkowa", "Centertel Sp. z o.o."},// 		Inactive
+{260, 	6,   	"Play (P4) 	Play (P4)"},// 	Operational
+{260, 	7,   	"Netia S.A 	Netia (Using P4 Nw)"},// 	Operational
+{260, 	8,   	"E-Telko Sp. z o.o."},// 		Inactive
+{260, 	9,   	"Telekomunikacja Kolejowa (GSM-R)"},// 		Inactive
+{260, 	10,   	"Sferia S.A.", 	"Sferia (Using T-mobile)"},// 	Operational
+{260, 	12 ,  	"Cyfrowy Polsat S.A.", 	"Cyfrowy Polsat"},// 	Operational
+{260, 	14,   	"Sferia S.A", 	"Sferia (Using T-mobile)"},// 	Operational
+{260, 	15,   	"CenterNet S.A.", 	"CenterNet (UMTS Data only)"},// 	Operational
+{260, 	16,   	"Mobyland Sp. z o.o.", 	"Mobyland (UMTS)"},// 	Operational
+{260, 	17,   	"Aero 2 Sp. z o.o.", 	"Aero2 (UMTS)"},// 	Operational
+/*
 Portugal
 268 	1   	Vodafone Portugal 	Vodafone 	Operational
 268 	3   	Sonaecom – Serviços de Comunicações, S.A. 	Optimus 	Operational
