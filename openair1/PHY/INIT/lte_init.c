@@ -1090,11 +1090,11 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
       phy_init_lte_ue__PDSCH( ue_pdsch_vars_SI[eNB_id], frame_parms );
       phy_init_lte_ue__PDSCH( ue_pdsch_vars_ra[eNB_id], frame_parms );
       phy_init_lte_ue__PDSCH( ue_pdsch_vars_mch[eNB_id], frame_parms );
-      
-      ue_pdcch_vars[eNB_id]->llr   = (uint16_t*)malloc16_clear( 4*frame_parms->N_RB_DL*12*sizeof(uint16_t) );
-      ue_pdcch_vars[eNB_id]->llr16 = (uint16_t*)malloc16_clear( 2*4*frame_parms->N_RB_DL*12*sizeof(uint16_t) );
-      ue_pdcch_vars[eNB_id]->wbar  = (uint16_t*)malloc16_clear( 4*frame_parms->N_RB_DL*12*sizeof(uint16_t) );
-      ue_pdcch_vars[eNB_id]->e_rx  = (int8_t*)malloc16_clear( 4*2*frame_parms->N_RB_DL*12 );
+      // 100 PRBs * 12 REs/PRB * 4 PDCCH SYMBOLS * 2 LLRs/RE 
+      ue_pdcch_vars[eNB_id]->llr   = (uint16_t*)malloc16_clear( 2*4*100*12*sizeof(uint16_t) );
+      ue_pdcch_vars[eNB_id]->llr16 = (uint16_t*)malloc16_clear( 2*4*100*12*sizeof(uint16_t) );
+      ue_pdcch_vars[eNB_id]->wbar  = (uint16_t*)malloc16_clear( 2*4*100*12*sizeof(uint16_t) );
+      ue_pdcch_vars[eNB_id]->e_rx  = (int8_t*)malloc16_clear( 4*2*100*12 );
 
       ue_pdcch_vars[eNB_id]->rxdataF_comp        = (int32_t**)malloc16_clear( 8*sizeof(int32_t*) );
       ue_pdcch_vars[eNB_id]->dl_ch_rho_ext       = (int32_t**)malloc16_clear( 8*sizeof(int32_t*) );
@@ -1103,10 +1103,12 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
       ue_pdcch_vars[eNB_id]->dl_ch_estimates_ext = (int32_t**)malloc16_clear( 8*sizeof(int32_t*) );
 
       for (i=0; i<frame_parms->nb_antennas_rx; i++) {
-        ue_pdcch_vars[eNB_id]->rho[i] = (int32_t*)malloc16_clear( sizeof(int32_t)*(frame_parms->N_RB_DL*12*7*2) );
+        //ue_pdcch_vars[eNB_id]->rho[i] = (int32_t*)malloc16_clear( sizeof(int32_t)*(frame_parms->N_RB_DL*12*7*2) );
+        ue_pdcch_vars[eNB_id]->rho[i] = (int32_t*)malloc16_clear( sizeof(int32_t)*(100*12*4) );
         for (j=0; j<4;j++) {//frame_parms->nb_antennas_tx; j++)
           int idx = (j<<1)+i;
-          size_t num = 7*2*frame_parms->N_RB_DL*12;
+        //  size_t num = 7*2*frame_parms->N_RB_DL*12;
+	  size_t num = 4*100*12;  // 4 symbols, 100 PRBs, 12 REs per PRB
           ue_pdcch_vars[eNB_id]->rxdataF_comp[idx]        = (int32_t*)malloc16_clear( sizeof(int32_t) * num );
           ue_pdcch_vars[eNB_id]->dl_ch_rho_ext[idx]       = (int32_t*)malloc16_clear( sizeof(int32_t) * num );
           ue_pdcch_vars[eNB_id]->rxdataF_ext[idx]         = (int32_t*)malloc16_clear( sizeof(int32_t) * num );
