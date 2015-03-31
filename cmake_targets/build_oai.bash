@@ -161,76 +161,25 @@ echo_info "3. building the compilation directives ..."
 
 DIR=$OPENAIR_HOME/cmake_targets
 
-# Create and configure the building directories
-#####################################"
-
-# For eNB, UE, ...
-############
-mkdir -p $DIR/lte_build_oai/build
-cmake_file=$DIR/lte_build_oai/CMakeLists.txt
-echo "cmake_minimum_required(VERSION 2.8)" > $cmake_file
-echo "set(XFORMS $XFORMS )" >>  $cmake_file
-echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
-echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
-echo "set(RF_BOARD \"${HW}\")" >>  $cmake_file
-echo 'set(PACKAGE_NAME "\"lte-softmodem\"")' >>  $cmake_file
-echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
-cd  $DIR/lte_build_oai/build
-cmake ..
-
-# For EPC
-############
-cmake_file=$DIR/epc_build_oai/CMakeLists.txt
-cp $DIR/epc_build_oai/CMakeLists.template $cmake_file
-echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
-echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
-mkdir -p $DIR/epc_build_oai/build
-cd $DIR/epc_build_oai/build
-cmake ..
-
-# For oaisim
-############
-cmake_file=$DIR/oaisim_build_oai/CMakeLists.txt
-cp $DIR/oaisim_build_oai/CMakeLists.template $cmake_file
-echo "set(XFORMS $XFORMS )" >>  $cmake_file
-echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
-echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
-echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
-mkdir -p $DIR/oaisim_build_oai/build
-cd $DIR/oaisim_build_oai/build
-cmake ..
-
-# For oaisim_mme
-############
-cmake_file=$DIR/oaisim_mme_build_oai/CMakeLists.txt
-cp $DIR/oaisim_mme_build_oai/CMakeLists.template $cmake_file
-echo "set(XFORMS $XFORMS )" >>  $cmake_file
-echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
-echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
-echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
-mkdir -p $DIR/oaisim_mme_build_oai/build
-cd $DIR/oaisim_mme_build_oai/build
-cmake ..
-
-# For unitary test simulators
-###################
-cd $OPENAIR_DIR/cmake_targets/lte-simulators
-[ "$CLEAN" = "1" ] && rm -rf build
-mkdir -p build
-cd build
-rm -f *sim
-cmake ..
 
 if [ "$eNB" = "1" -o "UE" = "1" ] ; then
     # LTE softmodem compilation
+    mkdir -p $DIR/lte_build_oai/build
+    cmake_file=$DIR/lte_build_oai/CMakeLists.txt
+    echo "cmake_minimum_required(VERSION 2.8)" > $cmake_file
+    echo "set(XFORMS $XFORMS )" >>  $cmake_file
+    echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
+    echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
+    echo "set(RF_BOARD \"${HW}\")" >>  $cmake_file
+    echo 'set(PACKAGE_NAME "\"lte-softmodem\"")' >>  $cmake_file
+    echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
+    cd  $DIR/lte_build_oai/build
+    cmake ..
     echo_info "Compiling LTE softmodem"
     compilations \
 	lte_build_oai lte-softmodem \
 	lte-softmodem lte-softmodem.$REL 
-    # nasmesh driver compilation
-    compilations \
-	oaisim_build_oai nasmesh \
-	CMakeFiles/nasmesh/nasmesh.ko $dbin/nasmesh.ko
+
 fi
 
 if [ "$UE" = 1 ] ; then
@@ -245,6 +194,15 @@ if [ "$UE" = 1 ] ; then
     compilations \
 	lte_build_oai nvram \
 	nvram $dbin/nvram
+fi
+
+if [ "$SIMUS_PHY" = "1" -o "$SIMUS_CORE" = "1" ] ; then
+    cd $OPENAIR_DIR/cmake_targets/lte-simulators
+    [ "$CLEAN" = "1" ] && rm -rf build
+    mkdir -p build
+    cd build
+    rm -f *sim
+    cmake ..
 fi
 
 if [ "$SIMUS_PHY" = "1" ] ; then
@@ -273,7 +231,7 @@ fi
 
 # EXMIMO drivers & firmware loader
 ###############
-if [ "$HW" = "EXMIMO" ] ; then
+if [ "$HW" = "EXMIMO" -o "$UE$eNB" != "" ] ; then
     echo_info "Compiling Express MIMO 2 board drivers"
     compilations \
         lte_build_oai openair_rf \
@@ -285,42 +243,71 @@ fi
 
 if [ "$oaisim" = "1" ] ; then
     echo_info "Compiling oaisim"
+    cmake_file=$DIR/oaisim_build_oai/CMakeLists.txt
+    cp $DIR/oaisim_build_oai/CMakeLists.template $cmake_file
+    echo "set(XFORMS $XFORMS )" >>  $cmake_file
+    echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
+    echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
+    echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
+    mkdir -p $DIR/oaisim_build_oai/build
+    cd $DIR/oaisim_build_oai/build
+    cmake ..
     compilations \
 	oaisim_build_oai oaisim \
 	oaisim $dbin/oaisim.$REL
+
+    # nasmesh driver compilation
     compilations \
-	oaisim_mme_build_oai oaisim_mme \
-	oaisim_mme $dbin/oaisim_mme.$REL
+	oaisim_build_oai nasmesh \
+	CMakeFiles/nasmesh/nasmesh.ko $dbin/nasmesh.ko
     #oai_nw_drv
     compilations \
 	oaisim_build_oai oai_nw_drv \
 	CMakeFiles/oai_nw_drv/oai_nw_drv.ko $dbin/oai_nw_drv.ko
+    cmake_file=$DIR/oaisim_mme_build_oai/CMakeLists.txt
+    cp $DIR/oaisim_mme_build_oai/CMakeLists.template $cmake_file
+    echo "set(XFORMS $XFORMS )" >>  $cmake_file
+    echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
+    echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
+    echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
+    mkdir -p $DIR/oaisim_mme_build_oai/build
+    cd $DIR/oaisim_mme_build_oai/build
+    cmake ..
+    compilations \
+	oaisim_mme_build_oai oaisim_mme \
+	oaisim_mme $dbin/oaisim_mme.$REL
 fi
 
 # EPC compilation
 ##################
 if [ "$EPC" = "1" ] ; then
-    echo_info "Compiling EPC"
-
-    compilations \
-	epc_build_oai mme_gw \
-	mme_gw $dbin/mme_gw.$REL
+  echo_info "Compiling EPC"
+  cmake_file=$DIR/epc_build_oai/CMakeLists.txt
+  cp $DIR/epc_build_oai/CMakeLists.template $cmake_file
+  echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
+  echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
+  mkdir -p $DIR/epc_build_oai/build
+  cd $DIR/epc_build_oai/build
+  cmake ..
+  compilations \
+  epc_build_oai mme_gw \
+  mme_gw $dbin/mme_gw.$REL
 # Only integrated mme+sgw+pgw is operational today
 #    compilations \
-#	epc_build_oai oai_sgw \
-#	oai_sgw $dbin/oai_sgw.$REL
-    compilations \
-	epc_build_oai xt_GTPUAH_lib \
-	libxt_GTPUAH_lib.so $dbin
-    compilations \
-	epc_build_oai xt_GTPURH_lib \
-	libxt_GTPURH_lib.so $dbin
-    compilations \
-	epc_build_oai xt_GTPURH \
-	CMakeFiles/xt_GTPURH/xt_GTPURH.ko $dbin
-    compilations \
-	epc_build_oai xt_GTPUAH \
-	CMakeFiles/xt_GTPUAH/xt_GTPUAH.ko $dbin
+#  epc_build_oai oai_sgw \
+#  oai_sgw $dbin/oai_sgw.$REL
+  compilations \
+    epc_build_oai xt_GTPUAH_lib \
+    libxt_GTPUAH_lib.so $dbin
+  compilations \
+    epc_build_oai xt_GTPURH_lib \
+    libxt_GTPURH_lib.so $dbin
+  compilations \
+    epc_build_oai xt_GTPURH \
+    CMakeFiles/xt_GTPURH/xt_GTPURH.ko $dbin
+  compilations \
+    epc_build_oai xt_GTPUAH \
+    CMakeFiles/xt_GTPUAH/xt_GTPUAH.ko $dbin
 
   if [ "$INSTALL_SYSTEM_FILES" = "1" ] ;then
     # Example HSS and EPC run on the same host
@@ -338,30 +325,47 @@ fi
 if [ "$INSTALL_SYSTEM_FILES" = "1" ] ;then
 
     echo_info "Copying iptables libraries into system directory: /lib/xtables"
-    $SUDO ln -s $dbin/libxt_GTPURH_lib.so /lib/xtables/libxt_GTPURH.so
-    $SUDO ln -s $dbin/libxt_GTPUAH_lib.so /lib/xtables/libxt_GTPUAH.so
+    if [ -f  $dbin/libxt_GTPURH_lib.so ] ; then
+	$SUDO rm -f /lib/xtables/libxt_GTPURH.so /lib/xtables/libxt_GTPUAH.s
+	$SUDO ln -s $dbin/libxt_GTPURH_lib.so /lib/xtables/libxt_GTPURH.so
+	$SUDO ln -s $dbin/libxt_GTPUAH_lib.so /lib/xtables/libxt_GTPUAH.so
+    else
+	echo_warning "not installed GTP-U iptables: binaries not found"
+    fi
 
     dconf=$OPENAIR_TARGETS/bin
     mkdir -p $dconf
-    cp $ORIGIN_PATH/$CONFIG_FILE $dconf || echo_fatal "config file $ORIGIN_PATH/$CONFIG_FILE not found"
+#LG???    cp $ORIGIN_PATH/$CONFIG_FILE $dconf || echo_fatal "config file $ORIGIN_PATH/$CONFIG_FILE not found"
 
     # generate USIM data
-    install_nas_tools $dbin $dconf
+    if [ -f $dbin/nvram ]; then
+	install_nas_tools $dbin $dconf
+    else
+	echo_warning "not generated UE NAS files: binaries not found"
+    fi	
 
     # Do EPC
-    cp $DIR/epc_build_oai/build/epc.*.conf $dconf
-    $SUDO cp  $DIR/epc_build_oai/build/epc_s6a.conf  /usr/local/etc/freeDiameter
+    if [ -f $DIR/epc_build_oai/build/epc_s6a.conf ] ; then
+	cp $DIR/epc_build_oai/build/epc.*.conf $dconf
+	$SUDO cp  $DIR/epc_build_oai/build/epc_s6a.conf  /usr/local/etc/freeDiameter
+    else
+	echo_warning "not installed EPC config files: not found"
+    fi
 
     # Do HSS 
     # bash doesn't like space char around = char
-    cp $DIR/hss_build/hss.conf $dbin
-    $SUDO cp  $DIR/hss_build/hss_fd.conf $DIR/hss_build/acl.conf /usr/local/etc/freeDiameter
+    #cp $DIR/hss_build/hss.conf $dbin
+    #$SUDO cp  $DIR/hss_build/build/hss_fd.conf $DIR/hss_build/acl.conf /usr/local/etc/freeDiameter
     
-    sed -e 's/ *= */=/' $dbin/hss.conf > $dconf/hss.conf.nospace
-    source $dconf/hss.conf.nospace
-    rm -f $dconf/hss.conf.nospace
-    create_hss_database root linux "$MYSQL_user" "$MYSQL_pass" "$MYSQL_db"
-fi 
+    if [ -f $dbin/hss.conf ] ; then
+	sed -e 's/ *= */=/' $dbin/hss.conf > $dconf/hss.conf.nospace
+	source $dconf/hss.conf.nospace
+	rm -f $dconf/hss.conf.nospace
+	create_hss_database root linux "$MYSQL_user" "$MYSQL_pass" "$MYSQL_db"
+    else
+	echo_warning "not created HSS database: config not found"
+    fi
+fi
 
 # Auto-tests 
 #####################
