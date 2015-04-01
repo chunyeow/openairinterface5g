@@ -33,10 +33,14 @@ NB_ANTENNAS_TX = 2;
 MAX_CQI_BITS = 40;
 MAX_DCI_SIZE_BITS = 45;
 
-% EMOS_CHANNEL = 0;
+%EMOS_CHANNEL = 0;
 
 % enable this line to enable error checking
-get_dump_size
+if isunix
+  get_dump_size
+else
+  warning('Error checking of sizes only possible in Linux');
+end
 
 phy_measurements_struct = struct(...
     'rssi',                 uint32(0),...
@@ -80,7 +84,7 @@ phy_measurements_struct = struct(...
     'nb_antennas_rx',       uint8(0));
 
 
-phy_measurements_struct_a = cstruct(phy_measurements_struct,[],4);
+phy_measurements_struct_a = cstruct(phy_measurements_struct,[],align);
 if (exist('PHY_measurements_size','var') && (phy_measurements_struct_a.size ~= PHY_measurements_size))
     warning('PHY_measurements_size does not match');
 end
@@ -108,7 +112,7 @@ phy_measurements_eNb_struct = struct(...
     'subband_cqi_dB',       int32(zeros(N_RB_UL_EMOS,NB_ANTENNAS_RX,NUMBER_OF_UE_MAX)),...
     'subband_cqi_tot_dB',   int32(zeros(N_RB_UL_EMOS,NUMBER_OF_UE_MAX)));
 
-phy_measurements_eNb_struct_a = cstruct(phy_measurements_eNb_struct,[],4);
+phy_measurements_eNb_struct_a = cstruct(phy_measurements_eNb_struct,[],align);
 if (exist('PHY_measurements_eNb_size','var') && (phy_measurements_eNb_struct_a.size ~= PHY_measurements_eNb_size))
     warning('PHY_measurements_eNb_size does not match');
 end
@@ -121,7 +125,7 @@ uci_data_struct = struct(...
     'o_ACK',uint8(zeros(1,4)),...
     'O_ACK',uint8(0));
 
-uci_data_struct_a = cstruct(uci_data_struct,[],4);
+uci_data_struct_a = cstruct(uci_data_struct,[],align);
 if (exist('UCI_data_t_size','var') && (uci_data_struct_a.size ~= UCI_data_t_size))
     warning('UCI_data_t_size does not match');
 end
@@ -156,7 +160,7 @@ dci_alloc_struct = struct(...
 %     'rv2',logical(zeros(1,2)),...
 %     'padding',logical(zeros(1,6)));
 
-dci_alloc_struct_a = cstruct(dci_alloc_struct,[],4);
+dci_alloc_struct_a = cstruct(dci_alloc_struct,[],align);
 if (exist('DCI_alloc_t_size','var') && (dci_alloc_struct_a.size ~= DCI_alloc_t_size))
     warning('DCI_alloc_t_size does not match');
 end
@@ -204,7 +208,7 @@ eNb_UE_stats_struct = struct(...
 );
 
 
-eNb_UE_stats_struct_a = cstruct(eNb_UE_stats_struct,[],4);
+eNb_UE_stats_struct_a = cstruct(eNb_UE_stats_struct,[],align);
 if (exist('eNb_UE_stats_size','var') && (eNb_UE_stats_struct_a.size ~= eNb_UE_stats_size))
     warning('eNb_UE_stats_size does not match');
 end
@@ -245,7 +249,7 @@ if (EMOS_CHANNEL)
     fifo_dump_emos_struct_UE.channel=int16(zeros(2*NUMBER_OF_OFDM_CARRIERS_EMOS*N_PILOTS_DL_EMOS*N_SLOTS_DL_EMOS,NB_ANTENNAS_TX_EMOS,NB_ANTENNAS_RX_EMOS));
 end
 
-fifo_dump_emos_struct_UE_a = cstruct(fifo_dump_emos_struct_UE,[],4);
+fifo_dump_emos_struct_UE_a = cstruct(fifo_dump_emos_struct_UE,[],align);
 if (exist('fifo_dump_emos_UE_size','var') && (fifo_dump_emos_struct_UE_a.size ~= fifo_dump_emos_UE_size))
     warning('fifo_dump_emos_UE_size does not match');
 end
@@ -261,7 +265,7 @@ if (EMOS_CHANNEL)
   fifo_dump_emos_struct_eNb.channel = int16(zeros(2*N_RB_UL_EMOS*12*N_PILOTS_UL_EMOS*N_SUBFRAMES_UL_EMOS,NB_ANTENNAS_RX_EMOS));
 end
 
-fifo_dump_emos_struct_eNb_a = cstruct(fifo_dump_emos_struct_eNb,[],4);
+fifo_dump_emos_struct_eNb_a = cstruct(fifo_dump_emos_struct_eNb,[],align);
 if (exist('fifo_dump_emos_eNb_size','var') && (fifo_dump_emos_struct_eNb_a.size ~= fifo_dump_emos_eNb_size))
     warning('fifo_dump_emos_eNb_size does not match');
 end
@@ -284,7 +288,7 @@ gps_data_struct = struct(...
     'climb',double(0),...
     'epc',double(0));
 
-gps_data_struct_a = cstruct(gps_data_struct,[],4);
+gps_data_struct_a = cstruct(gps_data_struct,[],align);
 if (exist('gps_fix_t_size','var') && (gps_data_struct_a.size ~= gps_fix_t_size))
     warning('gps_data_struct_size does not match');
 end
@@ -304,7 +308,7 @@ min_estimates_struct = struct(...
     'dlsch_errors',uint32(0),...
     'mimo_mode',uint8(0),...
     'eNb_id',uint8(0));
-min_estimates_struct_a = cstruct(min_estimates_struct,[],4);
+min_estimates_struct_a = cstruct(min_estimates_struct,[],align);
 
 min_estimates_struct_eNb = struct(...
     'mcs',double(0),...
@@ -317,7 +321,7 @@ min_estimates_struct_eNb = struct(...
     'ulsch_errors',uint32(0),...
     'mimo_mode',uint8(0),...
     'eNb_id',uint8(0));
-min_estimates_struct_eNb_a = cstruct(min_estimates_struct,[],4);
+min_estimates_struct_eNb_a = cstruct(min_estimates_struct,[],align);
 
 
 

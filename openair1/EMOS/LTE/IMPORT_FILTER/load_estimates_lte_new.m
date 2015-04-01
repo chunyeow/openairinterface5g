@@ -1,9 +1,9 @@
-function [estimates, NFrames, gps_data, H] = load_estimates_lte_new(filename, NFrames_max, decimation, is_eNb, EMOS_CHANNEL)
+function [estimates, NFrames, gps_data, H] = load_estimates_lte_new(filename, NFrames_max, decimation, is_eNb, EMOS_CHANNEL, align)
 % 
 % EMOS Single User Import Filter
 %
 % [estimates, NFrames] = 
-%       load_estimates_lte(filename, NFrames_max, decimation, is_eNb, EMOS_CHANNEL)
+%       load_estimates_lte(filename, NFrames_max, decimation, is_eNb, EMOS_CHANNEL, align)
 %
 % Parameters:
 % filename          - filename(s) of the EMOS data file
@@ -11,8 +11,9 @@ function [estimates, NFrames, gps_data, H] = load_estimates_lte_new(filename, NF
 %                     maximum file contents
 % decimation        - read every 'decimation' frame
 % is_eNb            - if ~= 0 we load data from an eNb
-% EMOS_CHANNEL      - if the measurement contains the full channel
-%                     estimate, set this to 1
+% EMOS_CHANNEL      - if the measurement contains the full channel estimate, set this to 1
+% align             - alignment of the data structures. If data was recorded on a 64bit 
+%                     machine set this to 8, for 32bit use 4.
 %
 % Returns:
 % estimates         - A structure array containing timestamp, etc
@@ -26,6 +27,9 @@ function [estimates, NFrames, gps_data, H] = load_estimates_lte_new(filename, NF
 %   Date      Version   Comment
 %   20100317  0.1       Created based on load_estimates
 
+if nargin < 6
+  align=4;
+end
 if nargin < 5
     EMOS_CHANNEL = 0;
 end
@@ -41,20 +45,6 @@ end
 
 % Logfile structure: 
 %  - 100 entries of type fifo_dump_emos (defined in phy_procedures_emos.h)
-
-if exist('dump_size','file') && isunix
-    [dummy,result] = system('./dump_size');
-    eval(result);
-else
-    warning('File dump_size.c has to be compiled to enable error checking of sizes');
-    %PHY_measurements_size = 1120;
-    %UCI_data_t_size = 49;
-    %DCI_alloc_t_size = 16;
-    %eNb_UE_stats_size = 20;
-    %fifo_dump_emos_UE_size = 33492;
-    %fifo_dump_emos_eNb_size = 36980;
-    %gps_fix_t_size = 108;
-end
 
 struct_template_new;
 
@@ -87,7 +77,7 @@ for n=1:NFiles
     info_file = dir(filename{n});
     NFrames_file(n) = floor(info_file.bytes/CHANNEL_BUFFER_SIZE)*NO_ESTIMATES_DISK;
     if (mod(info_file.bytes,CHANNEL_BUFFER_SIZE) ~= 0)
-        warning('File size not a multiple of buffer size. File might be corrupt or is_eNb flag is wrong.');
+        warning('File size not a multiple of buffer size. File might be corrupt or is_eNb flag or alignment is wrong.');
     end
 end
 NFrames = min(sum(NFrames_file), NFrames_max);
