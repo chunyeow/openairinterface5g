@@ -86,8 +86,6 @@ do
             shift 2;;
        -w | --hardware)
             HW="$2" #"${i#*=}"
-            # Use OAI_USRP  as the key work USRP is used inside UHD driver
-            [ "$HW" == "USRP" ] && HW=OAI_USRP
             echo_info "setting hardware to: $HW"
             shift 2;;
 	--oaisim)
@@ -148,7 +146,7 @@ if [ "$INSTALL_EXTERNAL" = "1" ] ; then
    check_install_oai_software
    echo_info "Making X.509 certificates"
    make_certs eur
-   if [ "$HW" == "OAI_USRP" ] ; then
+   if [ "$HW" == "USRP" ] ; then
      echo_info "installing packages for USRP support"
      check_install_usrp_uhd_driver
    fi
