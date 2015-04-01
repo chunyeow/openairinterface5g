@@ -159,8 +159,8 @@ ELEMENT_ATTRIBUTES MatlabCStruct(const mxArray *pArray, int MemoryAlignment, int
   case mxUINT8_CLASS   : Attributes.ElementSize = sizeof(unsigned char); break;
   case mxINT16_CLASS   : Attributes.ElementSize = sizeof(short); break;
   case mxUINT16_CLASS  : Attributes.ElementSize = sizeof(unsigned short); break;
-  case mxINT32_CLASS   : Attributes.ElementSize = sizeof(long); break;
-  case mxUINT32_CLASS  : Attributes.ElementSize = sizeof(unsigned long); break;
+  case mxINT32_CLASS   : Attributes.ElementSize = sizeof(int); break;
+  case mxUINT32_CLASS  : Attributes.ElementSize = sizeof(unsigned int); break;
 //  case mxINT64_CLASS   : Attributes.ElementSize = sizeof(__int64); break;
   case mxINT64_CLASS   : Attributes.ElementSize = sizeof(INT64_T); break; // jaj 05/24/2004
   default: mexErrMsgTxt("Unknown MX class");
