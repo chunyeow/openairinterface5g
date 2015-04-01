@@ -119,9 +119,10 @@ endmacro(add_list_string_option)
 ####################################################
 # compilation flags
 #############################################
-
+if (CMAKE_BUILD_TYPE STREQUAL "")
+   set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+endif()
 add_list_string_option(CMAKE_BUILD_TYPE "RelWithDebInfo" "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." Debug Release RelWithDebInfo MinSizeRel)
-set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 
 #
 set(CMAKE_C_FLAGS 
@@ -133,8 +134,8 @@ set(CMAKE_C_FLAGS
 # set a flag for changes in the source code
 # these changes are related to hardcoded path to include .h files
 add_definitions(-DCMAKER)
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -DMALLOC_CHECK_=3")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -ggdb -DMALLOC_CHECK_=3 -O3")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -ggdb -DMALLOC_CHECK_=3")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS} -ggdb -DMALLOC_CHECK_=3 -O3")
 
 # Below has been put in comment because does not work with
 # SVN authentication.
@@ -324,7 +325,7 @@ add_list1_option(NB_ANTENNAS_RX "2" "Number of antennas in reception" "1" "2" "4
 add_list1_option(NB_ANTENNAS_TX "2" "Number of antennas in transmission" "1" "2" "4")
 add_list1_option(NB_ANTENNAS_TXRX "2" "Number of antennas in ????" "1" "2" "4")
 
-add_list2_option(RF_BOARD "EXMIMO" "RF head type" "False" "EXMIMO" "USRP" "ETHERNET")
+add_list2_option(RF_BOARD "EXMIMO" "RF head type" "False" "EXMIMO" "OAI_USRP" "ETHERNET" "CPRIGW")
 
 if (${RF_BOARD} STREQUAL "EXMIMO")
   set(DRIVER2013)
@@ -334,14 +335,24 @@ if (${RF_BOARD} STREQUAL "EXMIMO")
     ${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.c 
     ${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB/gain_control.c)   
 
-elseif (${RF_BOARD} STREQUAL "USRP")
+elseif (${RF_BOARD} STREQUAL "OAI_USRP")
+  include_directories("${OPENAIR_TARGETS}/ARCH/USRP/USERSPACE/LIB/")
   include_directories("/opt/include/uhd")
+  set(HW_SOURCE ${HW_SOURCE}
+    ${OPENAIR_TARGETS}/ARCH/USRP/USERSPACE/LIB/usrp_lib.cpp)
   LINK_DIRECTORIES("/opt/lib")
-  set(option_USRP "uhd")
+  set(option_HW_lib "uhd")
+  set(LOWLATENCY False)
 
 elseif (${RF_BOARD} STREQUAL "ETHERNET")
   include_directories ("${OPENAIR_TARGETS}/ARCH/ETHERNET/USERSPACE/LIB")
 
+elseif (${RF_BOARD} STREQUAL "CPRIGW")
+  set(HW_SOURCE ${HW_SOURCE}
+    ${OPENAIR_TARGETS}/ARCH/CPRIGW/USERSPACE/LIB/cprigw_lib.c
+    )
+  include_directories("${OPENAIR_TARGETS}/ARCH/CPRIGW/USERSPACE/LIB/")
+   set(option_HW_lib "-rdynamic dl")
 endif (${RF_BOARD} STREQUAL "EXMIMO")
  
 include_directories ("${OPENAIR_TARGETS}/ARCH/COMMON")
@@ -1384,10 +1395,10 @@ pkg_search_module(CRYPTO libcrypto REQUIRED)
 include_directories(${CRYPTO_INCLUDE_DIRS})
 
 #use native cmake method as this package is not in pkg-config
-if (${RF_BOARD} STREQUAL "USRP")
+if (${RF_BOARD} STREQUAL "OAI_USRP")
   find_package(Boost REQUIRED)
   include_directories(${LIBBOOST_INCLUDE_DIR})
-endif (${RF_BOARD} STREQUAL "USRP")
+endif (${RF_BOARD} STREQUAL "OAI_USRP")
 
 pkg_search_module(OPENPGM openpgm-5.1)
 if(NOT ${OPENPGM_FOUND})
@@ -1462,7 +1473,7 @@ target_link_libraries (lte-softmodem
   RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN SECU_OSA UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} ${ITTI_LIB} ${MIH_LIB}
   -Wl,--end-group )
 target_link_libraries (lte-softmodem ${LIBXML2_LIBRARIES})
-target_link_libraries (lte-softmodem pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} sctp ${option_USRP} ${XFORMS_LIBRARIES} )
+target_link_libraries (lte-softmodem pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} sctp ${option_HW_lib} ${XFORMS_LIBRARIES} )
 target_link_libraries (lte-softmodem ${LIBBOOST_LIBRARIES})
 
 # EPC is ??? nodes implementation in one process
@@ -1564,7 +1575,7 @@ target_link_libraries (oaisim
   RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
   -Wl,--end-group )
 target_link_libraries (oaisim ${LIBXML2_LIBRARIES} ${LAPACK_LIBRARIES})
-target_link_libraries (oaisim pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES}  ${NETTLE_LIBRARIES} sctp ${option_USRP} 
+target_link_libraries (oaisim pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES}  ${NETTLE_LIBRARIES} sctp ${option_HW_lib} 
   ${ATLAS_LIBRARIES} ${XFORMS_LIBRARIES} ${OPENPGM_LIBRARIES})
 #Force link with forms, regardless XFORMS option
 target_link_libraries (oaisim forms)
