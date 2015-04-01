@@ -325,7 +325,7 @@ add_list1_option(NB_ANTENNAS_RX "2" "Number of antennas in reception" "1" "2" "4
 add_list1_option(NB_ANTENNAS_TX "2" "Number of antennas in transmission" "1" "2" "4")
 add_list1_option(NB_ANTENNAS_TXRX "2" "Number of antennas in ????" "1" "2" "4")
 
-add_list2_option(RF_BOARD "EXMIMO" "RF head type" "False" "EXMIMO" "OAI_USRP" "ETHERNET" "CPRIGW")
+add_list2_option(RF_BOARD "EXMIMO" "RF head type" "False" "EXMIMO" "USRP" "ETHERNET" "CPRIGW")
 
 if (${RF_BOARD} STREQUAL "EXMIMO")
   set(DRIVER2013)
@@ -335,7 +335,7 @@ if (${RF_BOARD} STREQUAL "EXMIMO")
     ${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.c 
     ${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB/gain_control.c)   
 
-elseif (${RF_BOARD} STREQUAL "OAI_USRP")
+elseif (${RF_BOARD} STREQUAL "USRP")
   include_directories("${OPENAIR_TARGETS}/ARCH/USRP/USERSPACE/LIB/")
   include_directories("/opt/include/uhd")
   set(HW_SOURCE ${HW_SOURCE}
@@ -1395,10 +1395,10 @@ pkg_search_module(CRYPTO libcrypto REQUIRED)
 include_directories(${CRYPTO_INCLUDE_DIRS})
 
 #use native cmake method as this package is not in pkg-config
-if (${RF_BOARD} STREQUAL "OAI_USRP")
+if (${RF_BOARD} STREQUAL "USRP")
   find_package(Boost REQUIRED)
   include_directories(${LIBBOOST_INCLUDE_DIR})
-endif (${RF_BOARD} STREQUAL "OAI_USRP")
+endif (${RF_BOARD} STREQUAL "USRP")
 
 pkg_search_module(OPENPGM openpgm-5.1)
 if(NOT ${OPENPGM_FOUND})
