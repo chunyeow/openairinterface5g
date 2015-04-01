@@ -1769,7 +1769,7 @@ static void get_options (int argc, char **argv) {
   //  char                          line[1000];
   //  int                           l;
   int k,i;//,j,k;
-#ifdef USRP
+#if defined(USRP) || defined(OAI_USRP)
   int clock_src;
 #endif
   int CC_id;
@@ -1953,7 +1953,7 @@ static void get_options (int argc, char **argv) {
       }
       break;
     case 's':
-#ifdef USRP
+#if defined(USRP) || defined(OAI_USRP)
 
       clock_src = atoi(optarg);
       if (clock_src == 0) {

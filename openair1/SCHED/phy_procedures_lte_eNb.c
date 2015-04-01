@@ -2403,7 +2403,7 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 #endif
 
 #ifndef EXMIMO
-#ifndef USRP
+#if !(defined(USRP) || defined(OAI_USRP))
   if (abstraction_flag==0) {
     start_meas(&phy_vars_eNB->ofdm_mod_stats);
     do_OFDM_mod(phy_vars_eNB->lte_eNB_common_vars.txdataF[0],

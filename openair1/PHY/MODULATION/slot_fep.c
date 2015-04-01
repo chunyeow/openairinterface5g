@@ -130,7 +130,7 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
 	memcpy((void *)tmp_dft_in,
 	       (void *)&ue_common_vars->rxdata[aa][(rx_offset-nb_prefix_samples0) % frame_length_samples],
 	       frame_parms->ofdm_symbol_size*sizeof(int));
-#ifdef USRP
+#if defined(USRP) || defined(OAI_USRP)
 	rescale((int16_t *)tmp_dft_in,
 	        frame_parms->ofdm_symbol_size);
 #endif
@@ -139,7 +139,7 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
       }
       else {// use dft input from RX buffer directly 
 	start_meas(&phy_vars_ue->rx_dft_stats);
-#ifdef USRP
+#if defined(USRP) || defined(OAI_USRP)
 	rescale((int16_t *)&ue_common_vars->rxdata[aa][(rx_offset-nb_prefix_samples0) % frame_length_samples],
 		frame_parms->ofdm_symbol_size+nb_prefix_samples0);
 #endif
@@ -168,7 +168,7 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
 	memcpy((void *)tmp_dft_in,
 	       (void *)&ue_common_vars->rxdata[aa][(rx_offset) % frame_length_samples],
 	       frame_parms->ofdm_symbol_size*sizeof(int));
-#ifdef USRP
+#if defined(USRP) || defined(OAI_USRP)
 	rescale((int16_t *)tmp_dft_in,
 	        frame_parms->ofdm_symbol_size);
 #endif
@@ -176,7 +176,7 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
 	    (int16_t *)&ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*symbol],1);
       }
       else {// use dft input from RX buffer directly 
-#ifdef USRP
+#if defined(USRP) || defined(OAI_USRP)
 	rescale((int16_t *)&ue_common_vars->rxdata[aa][(rx_offset-nb_prefix_samples) % frame_length_samples],
 		frame_parms->ofdm_symbol_size+nb_prefix_samples);
 #endif

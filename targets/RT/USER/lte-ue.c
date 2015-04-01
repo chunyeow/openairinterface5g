@@ -257,7 +257,7 @@ static void *UE_thread_synch(void *arg) {
     
 	openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i];
 	openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i];
-#ifdef USRP
+#if defined(USRP) || defined(OAI_USRP)
 	openair0_cfg[card].rx_gain[i] = UE->rx_total_gain_dB-USRP_GAIN_OFFSET;  
 	switch(UE->lte_frame_parms.N_RB_DL) {
 	case 6:
@@ -280,7 +280,7 @@ static void *UE_thread_synch(void *arg) {
 	//openair0_config(&openair0_cfg[card],1);
 #endif
       }
-#ifdef USRP
+#if defined(USRP) || defined(OAI_USRP)
 #ifndef USRP_DEBUG
 	openair0_set_rx_frequencies(&openair0,&openair0_cfg[0]);
 	openair0_set_gains(&openair0,&openair0_cfg[0]);
@@ -336,7 +336,7 @@ static void *UE_thread_synch(void *arg) {
 	  
 	  openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i]+openair_daq_vars.freq_offset;
 	  openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i]+openair_daq_vars.freq_offset;
-#ifdef USRP
+#if defined(USRP) || defined(OAI_USRP)
 	  openair0_cfg[card].rx_gain[i] = UE->rx_total_gain_dB-USRP_GAIN_OFFSET;  // 65 calibrated for USRP B210 @ 2.6 GHz
 	  switch(UE->lte_frame_parms.N_RB_DL) {
 	  case 6:
@@ -360,7 +360,7 @@ static void *UE_thread_synch(void *arg) {
 	  //openair0_config(&openair0_cfg[card],1);	
 #endif
     }	
-#ifdef USRP
+#if defined(USRP) || defined(OAI_USRP)
 #ifndef USRP_DEBUG
       openair0_set_rx_frequencies(&openair0,&openair0_cfg[0]);
 	  //	openair0_set_gains(&openair0,&openair0_cfg[0]);
@@ -422,7 +422,7 @@ static void *UE_thread_synch(void *arg) {
 	    for (i=0; i<openair0_cfg[card].rx_num_channels; i++) {
 	      openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i]+openair_daq_vars.freq_offset;
 	      openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i]+openair_daq_vars.freq_offset;
-#ifdef USRP
+#if defined(USRP) || defined(OAI_USRP)
 	      openair0_cfg[card].rx_gain[i] = UE->rx_total_gain_dB-USRP_GAIN_OFFSET;  // 65 calibrated for USRP B210 @ 2.6 GHz
 
 	      switch(UE->lte_frame_parms.N_RB_DL) {
@@ -447,7 +447,7 @@ static void *UE_thread_synch(void *arg) {
 	      //rt_sleep_ns(FRAME_PERIOD);
 #endif
 	  }
-#ifdef USRP
+#if defined(USRP) || defined(OAI_USRP)
 #ifndef USRP_DEBUG
 	      openair0_set_frequencies(&openair0,&openair0_cfg[0]);
 	      //	    openair0_set_gains(&openair0,&openair0_cfg[0]);
@@ -1405,7 +1405,7 @@ void *UE_thread(void *arg) {
 		    }
 		    else {
 		    //	  LOG_I(PHY,"[initial_sync] trying carrier off %d Hz\n",openair_daq_vars.freq_offset);
-		    #ifndef USRP
+		    #if !(defined(USRP) || defined(OAI_USRP))
 		    for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
 		    for (i=0; i<openair0_cfg[rf_map[CC_id].card].rx_num_channels; i++) 
 		    openair0_cfg[rf_map[CC_id].card].rx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i]+openair_daq_vars.freq_offset;

@@ -122,7 +122,7 @@ extern int rx_sig_fifo;
 #endif
 
 
-#if defined(EXMIMO) || defined(USRP)
+#if defined(EXMIMO) || defined(USRP) || defined(OAI_USRP)
 extern uint32_t downlink_frequency[MAX_NUM_CCs][4];
 #endif
 
@@ -192,7 +192,7 @@ void dump_dlsch_SI(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe) {
   exit(-1);
 }
 
-#if defined(EXMIMO) || defined(USRP) 
+#if defined(EXMIMO) || defined(USRP)  || defined(OAI_USRP)
 unsigned int prach_gain_table[31] = {100,112,126,141,158,178,200,224,251,282,316,359,398,447,501,562,631,708,794,891,1000,1122,1258,1412,1585,1778,1995,2239,2512,2818,3162};
 
 unsigned int get_tx_amp(int power_dBm, int power_max_dBm) {
@@ -608,7 +608,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
   uint8_t ack_status=0;
   int8_t Po_PUCCH;
   int32_t ulsch_start=0;
-#if defined(EXMIMO) || defined(USRP)
+#if defined(EXMIMO) || defined(USRP) || defined(OAI_USRP)
   int overflow=0;
   int k,l;
 #endif
@@ -906,7 +906,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 
 	  LOG_D(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d, generating PUSCH, Po_PUSCH: %d dBm, amp %d\n",
 		Mod_id,harq_pid,frame_tx,subframe_tx,phy_vars_ue->tx_power_dBm,
-#if defined(EXMIMO) || defined(USRP)
+#if defined(EXMIMO) || defined(USRP) || defined(OAI_USRP)
 		get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm)
 #else
 		AMP
@@ -914,7 +914,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 		);    
 	  start_meas(&phy_vars_ue->ulsch_modulation_stats);	      	      	  
 	  ulsch_modulation(phy_vars_ue->lte_ue_common_vars.txdataF,
-#if defined(EXMIMO) || defined(USRP)                       
+#if defined(EXMIMO) || defined(USRP)  || defined(OAI_USRP)
                        get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm),
 #else
                        AMP,
@@ -924,7 +924,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
                        &phy_vars_ue->lte_frame_parms,
                        phy_vars_ue->ulsch_ue[eNB_id]);
 
-#if defined(EXMIMO) || defined(USRP)
+#if defined(EXMIMO) || defined(USRP) || defined(OAI_USRP)
 	  for (aa=0; aa<1/*frame_parms->nb_antennas_tx*/; aa++)
 	    generate_drs_pusch(phy_vars_ue,eNB_id,get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm),subframe_tx,first_rb,nb_rb,aa);
 #else
@@ -1012,7 +1012,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 		    frame_tx, subframe_tx,
 		    phy_vars_ue->scheduling_request_config[eNB_id].sr_PUCCH_ResourceIndex,
 		    Po_PUCCH,
-#if defined(EXMIMO) || defined(USRP)
+#if defined(EXMIMO) || defined(USRP) || defined(OAI_USRP)
 		    get_tx_amp(Po_PUCCH,phy_vars_ue->tx_power_max_dBm)
 #else
 			AMP
@@ -1026,7 +1026,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 		    frame_tx, subframe_tx,
 		    n1_pucch,pucch_ack_payload[0],pucch_ack_payload[1],SR_payload,
 		    Po_PUCCH,
-#if defined(EXMIMO) || defined(USRP)
+#if defined(EXMIMO) || defined(USRP) || defined(OAI_USRP)
 		    get_tx_amp(Po_PUCCH,phy_vars_ue->tx_power_max_dBm)
 #else
 			AMP
@@ -1045,7 +1045,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 			   0,  // n2_pucch
 			   1,  // shortened format
 			   pucch_ack_payload,
-#if defined(EXMIMO) || defined(USRP)
+#if defined(EXMIMO) || defined(USRP) || defined(OAI_USRP)
 			   get_tx_amp(Po_PUCCH,phy_vars_ue->tx_power_max_dBm),
 #else
 			   AMP,
@@ -1093,7 +1093,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 			   0,  // n2_pucch
 			   1,  // shortened format
 			   pucch_ack_payload,  // this is ignored anyway, we just need a pointer
-#if defined(EXMIMO) || defined(USRP)
+#if defined(EXMIMO) || defined(USRP) || defined(OAI_USRP)
 			   get_tx_amp(Po_PUCCH,phy_vars_ue->tx_power_max_dBm),
 #else
 			   AMP,
@@ -1169,7 +1169,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
       if (abstraction_flag == 0) {
 	nsymb = (frame_parms->Ncp == 0) ? 14 : 12;
 	
-#if defined(EXMIMO) || defined(USRP) //this is the EXPRESS MIMO case
+#if defined(EXMIMO) || defined(USRP) || defined(OAI_USRP)
 	ulsch_start = (phy_vars_ue->rx_offset+subframe_tx*frame_parms->samples_per_tti-
 		       openair_daq_vars.timing_advance-
 		       phy_vars_ue->timing_advance-
@@ -1191,7 +1191,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 	  for (aa=0; aa<frame_parms->nb_antennas_tx; aa++) {
 	    if (frame_parms->Ncp == 1) 
 	      PHY_ofdm_mod(&phy_vars_ue->lte_ue_common_vars.txdataF[aa][subframe_tx*nsymb*frame_parms->ofdm_symbol_size],
-#if defined(EXMIMO) || defined(USRP)
+#if defined(EXMIMO) || defined(USRP) || defined(OAI_USRP)
 			   dummy_tx_buffer, 
 #else
 			   &phy_vars_ue->lte_ue_common_vars.txdata[aa][ulsch_start],
@@ -1204,7 +1204,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 			   CYCLIC_PREFIX);
 	    else
 	      normal_prefix_mod(&phy_vars_ue->lte_ue_common_vars.txdataF[aa][subframe_tx*nsymb*frame_parms->ofdm_symbol_size],
-#if defined(EXMIMO) || defined(USRP)
+#if defined(EXMIMO) || defined(USRP) || defined(OAI_USRP)
 				dummy_tx_buffer, 
 #else
 				&phy_vars_ue->lte_ue_common_vars.txdata[aa][ulsch_start],
@@ -1225,7 +1225,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 	      }
 	    */
 #ifndef OFDMA_ULSCH
-#if defined(EXMIMO) || defined(USRP)
+#if defined(EXMIMO) || defined(USRP) || defined(OAI_USRP)
 	    apply_7_5_kHz(phy_vars_ue,dummy_tx_buffer,0);
 	    apply_7_5_kHz(phy_vars_ue,dummy_tx_buffer,1);
 #else
@@ -1240,7 +1240,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 	    */
 #endif
 	    
-#if defined(EXMIMO) || defined(USRP)
+#if defined(EXMIMO) || defined(USRP) || defined(OAI_USRP)
 	    overflow = ulsch_start - 9*frame_parms->samples_per_tti;
 	    //if ((slot_tx==4) && (aa==0)) printf("ulsch_start %d, overflow %d\n",ulsch_start,overflow);
 	    for (k=ulsch_start,l=0; k<cmin(frame_parms->samples_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME,ulsch_start+frame_parms->samples_per_tti); k++,l++)
@@ -1317,7 +1317,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 
 	    phy_vars_ue->tx_total_RE = 96;
 
-#if defined(EXMIMO) || defined(USRP)
+#if defined(EXMIMO) || defined(USRP) || defined(OAI_USRP)
 	    phy_vars_ue->lte_ue_prach_vars[eNB_id]->amp = get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm);
 #else
 	    phy_vars_ue->lte_ue_prach_vars[eNB_id]->amp = AMP;
@@ -1509,7 +1509,7 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
       gain_control_all(phy_vars_ue->PHY_measurements.rx_power_avg_dB[eNB_id],0);
 
 #else
-#ifndef USRP
+#if !(defined(USRP) || defined(OAI_USRP))
     phy_adjust_gain (phy_vars_ue,0);
 #endif
 #endif
@@ -3454,7 +3454,7 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_LTE,1);
 #if defined(EXMIMO)
-#ifndef USRP
+#if !(defined(USRP) || defined(OAI_USRP))
   vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[0].rxcnt_ptr[0]));
 #endif
 #endif

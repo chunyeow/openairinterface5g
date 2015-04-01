@@ -1,8 +1,11 @@
 ## MySQL mandatory options
-MYSQL_server = "127.0.0.1";
-MYSQL_user   = "hssadmin";
-MYSQL_pass   = "admin";
-MYSQL_db     = "oai_db";
+MYSQL_server = "@MYSQL_server@";
+MYSQL_user   = "@MYSQL_user@";
+MYSQL_pass   = "@MYSQL_pass@";
+MYSQL_db     = "@MYSQL_db@";
+
+## HSS options
+OPERATOR_key = "@OPERATOR_key@";
 
 ## Freediameter options
-FD_conf = "@AM_CONF_DIR@/hss_fd.conf";
+FD_conf = "@FREEDIAMETER_PATH@/../etc/freeDiameter/hss_fd.conf";
