@@ -14,8 +14,8 @@ N_PILOTS_DL_EMOS = 2;  % ofdm symbols with pilots per slot
 N_PILOTS_UL_EMOS = 2;  % ofdm symbols with pilots per subframe
 N_SLOTS_DL_EMOS = 2;     % we take slots 10,11
 N_SUBFRAMES_UL_EMOS = 1;     % we take subframes 3
-NB_ANTENNAS_TX_EMOS = 2;
-NB_ANTENNAS_RX_EMOS = 2;
+NB_ANTENNAS_TX_EMOS = 2; % antennas at eNB
+NB_ANTENNAS_RX_EMOS = 2; % antennas at UE
 
 
 MAX_DCI_PER_FRAME = 20;
@@ -27,20 +27,33 @@ NUMBER_OF_eNB_MAX = 3;
 NUMBER_OF_UE_MAX = 2;
 NUMBER_OF_SUBBANDS = 13;
 
-NB_ANTENNAS_RX = 2;
-NB_ANTENNAS_TX = 2;
+NB_ANTENNAS_RX = 2; % maximum number of antennas (for memory allocation only)
+%NB_ANTENNAS_TX = 2;
 
 MAX_CQI_BITS = 40;
 MAX_DCI_SIZE_BITS = 45;
 
-%EMOS_CHANNEL = 0;
-
 % enable this line to enable error checking
-if isunix
-  get_dump_size
-else
-  warning('Error checking of sizes only possible in Linux');
+if exist('check_errors','var') && (check_errors==1) 
+    if isunix
+        get_dump_size
+    else
+        warning('Error checking of sizes only possible in Linux');
+    end
 end
+
+if ~exist('align','var')
+    error('variable align must be specified');
+else
+    if ((align~=4) && (align~=8))
+        error('variable align must be either 4 or 8');
+    end
+end
+
+if ~exist('EMOS_CHANNEL','var')
+    error('variable EMOS_CHANNEL must be specified');
+end
+    
 
 phy_measurements_struct = struct(...
     'rssi',                 uint32(0),...
@@ -178,12 +191,10 @@ eNb_UE_stats_struct = struct(...
     'timing_advance_update',int32(0),...
     'UE_mode',uint32(0),...
     'sector',uint8(0),...
-
   'dlsch_l2_errors', uint32(zeros(1,8)),...
   'dlsch_trials', uint32(zeros(8,8)),...
   'dlsch_ACK', uint32(zeros(8,8)),...
   'dlsch_NAK', uint32(zeros(8,8)),...
-
   'ulsch_errors', uint32(zeros(1,8)),...
   'ulsch_consecutive_errors', uint32(0),...
   'ulsch_decoding_attempts', uint32(zeros(8,8)),...
@@ -193,19 +204,15 @@ eNb_UE_stats_struct = struct(...
   'ulsch_round_fer', uint32(zeros(8,8)),...
   'sr_received', uint32(0), ...
   'sr_total', uint32(0), ...
-
   'dlsch_sliding_cnt', uint32(0),...
   'dlsch_NAK_round0', uint32(0),...
   'dlsch_mcs_offset', int8(0),...
-
   'dlsch_mcs1', uint8(0),...
   'dlsch_mcs2', uint8(0),...
   'total_TBS_MAC', int32(0),...
   'total_TBS', int32(0),...
   'total_TBS_last', int32(0),...
-  'dlsch_bitrate', uint32(0)
-  %'total_transmitted_bits', uint32(0)
-);
+  'dlsch_bitrate', uint32(0));
 
 
 eNb_UE_stats_struct_a = cstruct(eNb_UE_stats_struct,[],align);
