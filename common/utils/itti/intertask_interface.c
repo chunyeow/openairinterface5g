@@ -1015,7 +1015,7 @@ void itti_wait_tasks_end(void) {
         if (ready_tasks > 0) {
             usleep (100 * 1000);
         }
-    } while ((ready_tasks > 0) && (retries--));
+    } while ((ready_tasks > 0) && (retries--)&& (!end) );
 
     printf("ready_tasks %d\n",ready_tasks);
 

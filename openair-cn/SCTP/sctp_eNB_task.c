@@ -199,6 +199,7 @@ sctp_handle_new_association_req(
                     &in);
             if (s > 0 ) {
                 if (((struct sockaddr_in*)ifa->ifa_addr)->sin_addr.s_addr == in.s_addr) {
+#if 0
                     memset(&ifr, 0, sizeof(ifr));
                     snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s",ifa->ifa_name);
                     if (setsockopt(sd, SOL_SOCKET, SO_BINDTODEVICE, (void *)&ifr, sizeof(ifr)) < 0) {
@@ -208,7 +209,22 @@ sctp_handle_new_association_req(
                         SCTP_DEBUG("Setsockopt SOL_SOCKET socket bound to : %s\n",
                                 ifa->ifa_name);
                     }
+#else
+		    struct sockaddr_in locaddr;
+		    locaddr.sin_family = AF_INET;
+		    locaddr.sin_port = htons(sctp_new_association_req_p->port);
+		    locaddr.sin_addr.s_addr = in.s_addr;
+
+                    if (sctp_bindx(sd, (struct sockaddr*)&locaddr, 1, SCTP_BINDX_ADD_ADDR) < 0) {
+                        SCTP_ERROR("sctp_bindx SCTP_BINDX_ADD_ADDR failed: %s\n",
+                                   strerror(errno));
+                    } else {
+                        SCTP_DEBUG("sctp_bindx SCTP_BINDX_ADD_ADDR socket bound to : %s\n",
+                                inet_ntoa(locaddr.sin_addr));
+                    }
+#endif
                     break;
+
                 }
             }
         } else if (sctp_new_association_req_p->local_address.ipv6 && family == AF_INET6) {
@@ -298,7 +314,7 @@ sctp_handle_new_association_req(
         }
 
         /* Connect to remote host and port */
-        if (sctp_connectx(sd, (struct sockaddr *)addr, used_address, &assoc_id) < 0)
+        if (sctp_connectx(sd, (struct sockaddr *)addr, 1, &assoc_id) < 0)
         {
             /* sctp_connectx on non-blocking socket return EINPROGRESS */
             if (errno != EINPROGRESS) {

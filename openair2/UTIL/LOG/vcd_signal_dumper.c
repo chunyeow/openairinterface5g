@@ -208,6 +208,7 @@ const char* eurecomFunctionsNames[] = {
     "macxface_ue_get_sr",
     
     "ue_send_mch_sdu",
+    "ue_synch",
 
     /*RLC signals   */
     "rlc_data_req",

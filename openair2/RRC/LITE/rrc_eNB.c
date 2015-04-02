@@ -560,7 +560,7 @@ rrc_eNB_free_UE_index(
 	eNB_rrc_inst[enb_mod_idP].Info.UE_list[ue_mod_idP]);
 
 #if defined(ENABLE_USE_MME)
-  rrc_eNB_send_S1AP_UE_CONTEXT_RELEASE_REQ(enb_mod_idP, ue_mod_idP, S1AP_CAUSE_RADIO_NETWORK, 0); // ue_mod_idP ??? or ???
+  rrc_eNB_send_S1AP_UE_CONTEXT_RELEASE_REQ(enb_mod_idP, ue_mod_idP, S1AP_CAUSE_RADIO_NETWORK, 21); // send cause 21: connection with ue lost 
   /* From 3GPP 36300v10 p129 : 19.2.2.2.2 S1 UE Context Release Request (eNB triggered)
    * If the E-UTRAN internal reason is a radio link failure detected in the eNB, the eNB shall wait a sufficient time before
    *  triggering the S1 UE Context Release Request procedure
@@ -570,6 +570,7 @@ rrc_eNB_free_UE_index(
 #endif
   eNB_rrc_inst[enb_mod_idP].Info.UE[ue_mod_idP].Status = RRC_IDLE;
   eNB_rrc_inst[enb_mod_idP].Info.UE_list[ue_mod_idP] = 0;
+eNB_rrc_inst[enb_mod_idP].Info.UE[ue_mod_idP].eNB_ue_s1ap_id = 0;
 
   ctxt.enb_module_id = enb_mod_idP;
   ctxt.ue_module_id  = ue_mod_idP;
@@ -3001,7 +3002,7 @@ int rrc_eNB_decode_ccch(
                     //CONFIG SRB2  (DCCHs, ONE per User)  //meas && lchan Cfg
                     //eNB_rrc_inst[enb_mod_idP].Info.Dtch_bd_config[ue_mod_idP].Status=NEED_RADIO_CONFIG;
                     //eNB_rrc_inst[enb_mod_idP].Info.Dtch_bd_config[ue_mod_idP].Next_eNBeck_frame=Rrc_xface->Frame_index+1;
-                    eNB_rrc_inst[ue_mod_id].Info.Nb_ue++;
+                    eNB_rrc_inst[enb_mod_idP].Info.Nb_ue++;
 
 #ifndef NO_RRM
                     send_msg(&S_rrc, msg_rrc_MR_attach_ind(enb_mod_idP, Mac_id));
@@ -3460,8 +3461,9 @@ void                               *rrc_enb_task(
               break;
 
             case GTPV1U_ENB_DELETE_TUNNEL_RESP:
-                LOG_I(RRC, "[eNB %d] Received message %s, not processed because procedure not synched\n",
-                    instance, msg_name_p);
+                 /* Nothing to do. Apparently everything is done in S1AP processing */
+                //LOG_I(RRC, "[eNB %d] Received message %s, not processed because procedure not synched\n",
+                    //instance, msg_name_p);
               break;
 
 #   endif

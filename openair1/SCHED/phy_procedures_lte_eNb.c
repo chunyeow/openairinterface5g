@@ -2402,8 +2402,7 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
   phy_procedures_emos_eNB_TX(subframe, phy_vars_eNB);
 #endif
 
-#ifndef EXMIMO
-#ifndef USRP
+#if !(defined(EXMIMO) || defined(USRP) || defined (CPRIGW))
   if (abstraction_flag==0) {
     start_meas(&phy_vars_eNB->ofdm_mod_stats);
     do_OFDM_mod(phy_vars_eNB->lte_eNB_common_vars.txdataF[0],
@@ -2416,7 +2415,6 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 		&phy_vars_eNB->lte_frame_parms);
     stop_meas(&phy_vars_eNB->ofdm_mod_stats);
   }
-#endif
 #endif
   
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_ENB_TX,0);

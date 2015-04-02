@@ -326,7 +326,7 @@ typedef struct {
 #if defined(CBMIMO1) || defined(EXMIMO)
 #define MAX_FRAME_NUMBER 0x400
 #define NUMBER_OF_eNB_MAX 1
-#define NUMBER_OF_UE_MAX 2
+#define NUMBER_OF_UE_MAX 16
 #define NUMBER_OF_CONNECTED_eNB_MAX 3
 #else
 #define MAX_FRAME_NUMBER 0xFFFF

@@ -211,6 +211,7 @@ get_free_mem_block (uint16_t sizeP)
     #endif
   } while (pool_selected++ < 12);
 
+  display_mem_load();
   mac_xface->macphy_exit("[MEM_MNGT][ERROR][FATAL] get_free_mem_block failed");
   return NULL;
 };
