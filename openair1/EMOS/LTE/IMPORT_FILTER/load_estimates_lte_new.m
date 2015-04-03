@@ -103,10 +103,10 @@ for n=1:NFiles
 
     while (~feof(fid) && (k <= min(sum(NFrames_file(1:n)),NFrames_max)))
 
-        if (is_eNb)
-            estimates_tmp = binread(fid,fifo_dump_emos_struct_eNb,1,4,'l'); 
+        if (is_eNb) 
+            estimates_tmp = binread(fid,fifo_dump_emos_struct_eNb,1,align,'l'); 
         else
-            estimates_tmp = binread(fid,fifo_dump_emos_struct_UE,1,4,'l'); 
+            estimates_tmp = binread(fid,fifo_dump_emos_struct_UE,1,align,'l');  
         end
 
         if (mod((k-1),decimation) == 0)
@@ -118,7 +118,7 @@ for n=1:NFiles
         
         %read GPS data
         if ((mod(k,NO_ESTIMATES_DISK)==0) && ~feof(fid))
-           gps_data(l) = binread(fid,gps_data_struct,1,4,'l');
+           gps_data(l) = binread(fid,gps_data_struct,1,align,'l');
            l=l+1;
         end
         k=k+1;
