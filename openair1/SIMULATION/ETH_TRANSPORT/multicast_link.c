@@ -168,7 +168,7 @@ multicast_link_init(void)
 
 //------------------------------------------------------------------------------
 void
-multicast_link_build_select_list ()
+multicast_link_build_select_list (void)
 {
 //------------------------------------------------------------------------------
     int             group;
@@ -218,7 +218,7 @@ multicast_link_read_data (int groupP)
 
 //------------------------------------------------------------------------------
 void
-multicast_link_read ()
+multicast_link_read (void)
 {
 //------------------------------------------------------------------------------
     int             group;        /* Current item in connectlist for for loops */

@@ -58,9 +58,9 @@ private_multicast_link (typedef struct multicast_group_t {
 
 extern const char *multicast_group_list[MULTICAST_LINK_NUM_GROUPS];
 
-private_multicast_link(void  multicast_link_init ());
+private_multicast_link(void  multicast_link_init (void));
 private_multicast_link(void  multicast_link_read_data (int groupP));
-private_multicast_link(void  multicast_link_read ());
+private_multicast_link(void  multicast_link_read (void));
 private_multicast_link(void *multicast_link_main_loop (void *param));
 
 public_multicast_link(int   multicast_link_write_sock (int groupP, char *dataP, uint32_t sizeP));

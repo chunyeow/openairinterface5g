@@ -246,5 +246,5 @@ hash (int *key, int len)
 int
 hash_table_resize ()
 {
-
+  return 0; // FIXME
 }
