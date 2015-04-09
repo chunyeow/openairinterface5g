@@ -1358,7 +1358,6 @@ static void* eNB_thread( void* arg )
   static int eNB_thread_status;
 
   unsigned char slot;
-  int frame=0;
 #ifdef EXMIMO
   slot=0;
   RTIME time_in;
@@ -1369,20 +1368,19 @@ static void* eNB_thread( void* arg )
   int ret;
   int first_run=1;
 #else
-  slot=1;
-  unsigned int rx_pos = 0;
-  unsigned int tx_pos;
+  // the USRP implementation operates on subframes, not slots
+  // one subframe consists of one even and one odd slot
+  slot = 1;
   int spp;
-  int tx_launched=0;
+  int tx_launched = 0;
 
   void *rxp[2]; // FIXME hard coded array size; indexed by lte_frame_parms.nb_antennas_rx
   void *txp[2]; // FIXME hard coded array size; indexed by lte_frame_parms.nb_antennas_tx
 
-  openair0_timestamp timestamp;
-
   int hw_subframe = 0; // 0..NUM_ENB_THREADS-1 => 0..9
   spp = openair0_cfg[0].samples_per_packet;
-  tx_pos = spp*tx_delay;
+  unsigned int rx_pos = 0;
+  unsigned int tx_pos = spp*tx_delay;
 #endif
 
   struct timespec trx_time0, trx_time1, trx_time2;
@@ -1451,6 +1449,7 @@ static void* eNB_thread( void* arg )
     pthread_cond_wait( &sync_cond, &sync_mutex );
   pthread_mutex_unlock(&sync_mutex);
 
+  int frame = 0;
   while (!oai_exit) {
     start_meas( &softmodem_stats_mt );
 
@@ -1545,6 +1544,7 @@ static void* eNB_thread( void* arg )
 
       start_meas( &softmodem_stats_hw );
 
+      openair0_timestamp timestamp;
       rxs = openair0.trx_read_func(&openair0,
                                    &timestamp,
                                    rxp,
@@ -1643,24 +1643,14 @@ static void* eNB_thread( void* arg )
     }
 
     timing_info.n_samples++;
-    /*
-  if ((timing_info.n_samples%2000)==0) {
-  LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d: diff=%llu, min=%llu, max=%llu, avg=%llu (n_samples %d)\n",
-  frame, PHY_vars_eNB_g[0]->frame, slot, hw_slot,time_diff,
-  timing_info.time_min,timing_info.time_max,timing_info.time_avg/timing_info.n_samples,timing_info.n_samples);
-  timing_info.n_samples = 0;
-  timing_info.time_avg = 0;
-  }
-      */
-    //}
 
     if ((slot&1) == 1) {
+      // odd slot
 #ifdef EXMIMO
       int sf = ((slot>>1)+1)%10;
 #else
       int sf = hw_subframe;
 #endif
-      //		    LOG_I(PHY,"[eNB] Multithread slot %d (IC %d)\n",slot,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt);
 
       for (int CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
 #ifdef EXMIMO 
@@ -1718,6 +1708,7 @@ static void* eNB_thread( void* arg )
     hw_subframe++;
     slot += 2;
     if (hw_subframe == NUM_ENB_THREADS) {
+      // the radio frame is complete, start over
       hw_subframe = 0;
       frame++;
       slot = 1;
@@ -1725,7 +1716,7 @@ static void* eNB_thread( void* arg )
 #endif     
 
 #if defined(ENABLE_ITTI)
-    itti_update_lte_time(frame, slot);
+    itti_update_lte_time( frame, slot );
 #endif
   }
 
