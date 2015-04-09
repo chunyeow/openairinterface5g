@@ -1049,7 +1049,7 @@ static int _at_response_encode_cgpaddr(char* buffer, const at_response_t* data)
 	    if (cgpaddr->PDP_addr_2[i] != NULL) {
 		/* IPv6 Link-local address prefixe */
 		offset += sprintf(buffer+offset,
-				  ",%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu",
+                  ",%u.%u.%u.%u.%u.%u.%u.%u",
 				  0xfe, 0x80, 0, 0, 0, 0, 0, 0);
 		/* IPv6 Link-local address */
 		offset += sprintf(buffer+offset,

@@ -108,7 +108,6 @@ int nas_stream_encrypt_eea1(nas_stream_cipher_t *stream_cipher, uint8_t *out)
     	stream_cipher->message[ceil_index - 1] = stream_cipher->message[ceil_index - 1] & (uint8_t)(0xFF << (8 - zero_bit));
     }
     free(KS);
-    *out = stream_cipher->message;
     memcpy(out, stream_cipher->message, n*4);
     if (zero_bit > 0) {
     	out[ceil_index - 1] = stream_cipher->message[ceil_index - 1];

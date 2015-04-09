@@ -81,7 +81,6 @@ void free_eNB_dlsch(LTE_eNB_DLSCH_t *dlsch) {
 	  msg("Freeing dlsch process %d b (%p)\n",i,dlsch->harq_processes[i]->b);
 #endif
 	}
-	if (dlsch->harq_processes[i]->c) {
 #ifdef DEBUG_DLSCH_FREE
 	  msg("Freeing dlsch process %d c (%p)\n",i,dlsch->harq_processes[i]->c);
 #endif
@@ -95,7 +94,6 @@ void free_eNB_dlsch(LTE_eNB_DLSCH_t *dlsch) {
 	      dlsch->harq_processes[i]->c[r] = NULL;
 	    }
 	  }
-	}
 	free16(dlsch->harq_processes[i],sizeof(LTE_DL_eNB_HARQ_t));
 	dlsch->harq_processes[i] = NULL;
       }

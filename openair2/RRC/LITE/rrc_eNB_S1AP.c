@@ -817,7 +817,7 @@ void rrc_eNB_send_S1AP_UE_CONTEXT_RELEASE_REQ (uint8_t mod_id, uint8_t ue_index,
   if (ue_index == UE_INDEX_INVALID) {
     LOG_W(RRC,
             "[eNB] In S1AP_UE_CONTEXT_RELEASE_COMMAND: invalid  UE\n");
-    return (-1);
+    return;
   } else {
       int      e_rab;
       int      mod_id = 0;
@@ -829,7 +829,7 @@ void rrc_eNB_send_S1AP_UE_CONTEXT_RELEASE_REQ (uint8_t mod_id, uint8_t ue_index,
       S1AP_UE_CONTEXT_RELEASE_REQ(msg_context_release_req_p).cause          = causeP;
       S1AP_UE_CONTEXT_RELEASE_REQ(msg_context_release_req_p).cause_value    = cause_valueP;
       itti_send_msg_to_task(TASK_S1AP, mod_id, msg_context_release_req_p);
-      return (0);
+      return;
   }
 }
 

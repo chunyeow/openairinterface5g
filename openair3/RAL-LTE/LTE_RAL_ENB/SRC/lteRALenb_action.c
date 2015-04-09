@@ -307,7 +307,7 @@ int eRAL_action_save_flow_id(ral_enb_instance_t instanceP, MIH_C_FLOW_ID_T* flow
  **    -1 if the list is full.                    **
  ***************************************************************************/
 int eRAL_action_set_channel_id (ral_enb_instance_t instanceP, MIH_C_FLOW_ID_T* flowId, int cnxid){
-    char addr[128];
+//    char addr[128];
     //char port[8];
     int f_ix;
 
@@ -763,12 +763,12 @@ MIH_C_LINK_AC_RESULT_T eRAL_action_link_activate_resources(ral_enb_instance_t in
         /* Map QoS */
         int mapping_result = eRAL_process_map_qos(instanceP, mt_ix, ch_ix);
         if (mapping_result) {
-            int rc;
+            int rc = -1;
 #ifdef RAL_DUMMY
             rc = eRAL_NAS_send_rb_establish_request(mt_ix, ch_ix);
 #endif
 #ifdef RAL_REALTIME
-            // LG rc = RAL_process_NAS_message(IO_OBJ_RB, IO_CMD_ADD, mt_ix, ch_ix);
+            // LG rc = RAL_process_NAS_message(IO_OBJ_RB, IO_CMD_ADD, mt_ix, ch_ix); // FIXME why is this commented?
 #endif
             if (rc < 0) {
                 /* Failed to send RB establishment request */
@@ -849,12 +849,12 @@ MIH_C_LINK_AC_RESULT_T eRAL_action_link_deactivate_resources(ral_enb_instance_t 
      * and go ahead in the request processing. */
     (void) eRAL_action_del_channel_id(instanceP, f_ix);
 
-    int rc;
+    int rc = -1;
 #ifdef RAL_DUMMY
     rc = eRAL_NAS_send_rb_release_request(mt_ix, ch_ix);
 #endif
 #ifdef RAL_REALTIME
-    // LG rc = RAL_process_NAS_message(IO_OBJ_RB, IO_CMD_DEL, mt_ix, ch_ix);
+    // LG rc = RAL_process_NAS_message(IO_OBJ_RB, IO_CMD_DEL, mt_ix, ch_ix); // FIXME why is this commented?
 #endif
 
     if (rc < 0) {

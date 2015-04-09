@@ -834,20 +834,22 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
 
 void pdcp_fifo_read_input_sdus_from_otg (const protocol_ctxt_t* const  ctxt_pP) {
   unsigned char       *otg_pkt=NULL;
-  module_id_t          src_id, module_id; // src for otg
+  module_id_t          src_id; // src for otg
   module_id_t          dst_id; // dst for otg
   rb_id_t              rb_id;
   signed long          pkt_size=0;
-  static unsigned int  pkt_cnt_enb=0, pkt_cnt_ue=0;
-  uint8_t              pdcp_mode, is_ue=0;
-  Packet_otg_elt_t    *otg_pkt_info=NULL;
-  int                  result;
   protocol_ctxt_t      ctxt;
 
   src_id = ctxt_pP->enb_module_id;
 
   // we need to add conditions to avoid transmitting data when the UE is not RRC connected.
 #if defined(USER_MODE) && defined(OAI_EMU)
+  module_id_t          module_id;
+  static unsigned int  pkt_cnt_enb=0, pkt_cnt_ue=0;
+  uint8_t              pdcp_mode, is_ue=0;
+  Packet_otg_elt_t    *otg_pkt_info=NULL;
+  int                  result;
+
   if (oai_emulation.info.otg_enabled ==1 ){
       module_id = (ctxt_pP->enb_flag == 1) ?  ctxt_pP->enb_module_id : ctxt_pP->ue_module_id+NB_eNB_INST;
       //rb_id    = (ctxt_pP->enb_flag == 1) ? ctxt_pP->enb_module_id * MAX_NUM_RB + DTCH : (NB_eNB_INST + UE_index -1 ) * MAX_NUM_RB + DTCH ;

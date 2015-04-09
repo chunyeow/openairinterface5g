@@ -145,7 +145,7 @@ char* eRAL_process_mt_addr_to_string(const unsigned char* ip_addr)
     int i, index = 0;
 
     for (i = 0; i < 16; i++) {
-        index += sprintf(&buffer[index], "%.2hX", ip_addr[i]);
+        index += sprintf(&buffer[index], "%.2hhX", ip_addr[i]);
         if (i % 2) buffer[index++] = ':';
     }
     buffer[--index] = '\0';

@@ -101,7 +101,7 @@ void eRAL_rx_rrc_ral_connection_establishment_indication(instance_t instanceP, M
 void eRAL_rx_rrc_ral_connection_reestablishment_indication(instance_t instanceP, MessageDef *msg_pP)
 //---------------------------------------------------------------------------------------------------------------------
 {
-  module_id_t           mod_id = instanceP;
+//  module_id_t           mod_id = instanceP;
 #warning "TO DO ral_rx_rrc_ral_connection_reestablishment_indication"
 }
 //---------------------------------------------------------------------------------------------------------------------
@@ -146,14 +146,14 @@ void eRAL_rx_rrc_ral_connection_reconfiguration_indication(instance_t instanceP,
 void eRAL_rx_rrc_ral_measurement_report_indication(instance_t instanceP, MessageDef *msg_pP)
 //---------------------------------------------------------------------------------------------------------------------
 {
-  module_id_t           mod_id = instanceP;
+//  module_id_t           mod_id = instanceP;
 
 }
 //---------------------------------------------------------------------------------------------------------------------
 void eRAL_rx_rrc_ral_connection_release_indication(instance_t instanceP, MessageDef *msg_pP)
 //---------------------------------------------------------------------------------------------------------------------
 {
-  module_id_t           mod_id = instanceP;
+//  module_id_t           mod_id = instanceP;
 
 }
 

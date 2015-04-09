@@ -2667,7 +2667,7 @@ void process_HARQ_feedback(uint8_t UE_id,
 	  
 	  // Clear NAK stats and adjust mcs offset
 	  // after measurement window timer expires
-	  if ((ue_stats->dlsch_sliding_cnt == dlsch->ra_window_size) ) {
+	  if (ue_stats->dlsch_sliding_cnt == dlsch->ra_window_size) {
 	    if ((ue_stats->dlsch_mcs_offset == 0) && (ue_stats->dlsch_NAK_round0 < 2))
 	      ue_stats->dlsch_mcs_offset = 1;
 	    if ((ue_stats->dlsch_mcs_offset == 1) && (ue_stats->dlsch_NAK_round0 > 2))

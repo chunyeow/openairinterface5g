@@ -798,7 +798,7 @@ rlc_am_mac_data_indication (
                 )
 {
 //-----------------------------------------------------------------------------
-    rlc_am_entity_t           *l_rlc_p = (rlc_am_entity_t *) rlc_pP;
+//    rlc_am_entity_t           *l_rlc_p = (rlc_am_entity_t *) rlc_pP;
     /*rlc_am_control_pdu_info_t control_pdu_info;
     int                       num_li;
     int16_t                     tb_size;*/

@@ -516,7 +516,7 @@ nwGtpv1uProcessGpdu( NwGtpv1uStackT *thiz,
     NwGtpv1uMsgHeaderT      *msgHdr            = NULL;
     NwGtpv1uTunnelEndPointT *pTunnelEndPoint   = NULL;
     NwGtpv1uTunnelEndPointT  tunnelEndPointKey;
-    NwU16T                   hdr_len           = 0;
+//    NwU16T                   hdr_len           = 0;
 
 #if defined(LOG_GTPU) && LOG_GTPU > 0
     NW_ENTER(thiz);

@@ -182,7 +182,7 @@ int OCG_main(char is_local_server[FILENAME_LENGTH_MAX]) {
 					strcat(output_dir, file_date);
 					strcat(output_dir, "/");
 					strcpy(dst_dir, output_dir);
-					oai_emulation.info.output_path = &dst_dir; // information for other modules within OAI
+					oai_emulation.info.output_path = dst_dir; // information for other modules within OAI
 				} else state = STATE_GENERATE_REPORT;
 				break;
 				

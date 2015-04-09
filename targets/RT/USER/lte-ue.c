@@ -210,8 +210,8 @@ static void *UE_thread_synch(void *arg) {
   sync_mode_t sync_mode = pss;
   int card;
   int ind;
-  int CC_id;
-  int k;
+//  int CC_id;
+//  int k;
   int found;
 
   UE->is_synchronized = 0;

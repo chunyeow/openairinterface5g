@@ -128,10 +128,12 @@ char g_sid[MAX_SID];
 int com_help (char * arg);
 int com_exit (char *arg);
 
-int prompt(char *arg),prompt_usage(void), info(char *arg);
+int prompt(char *arg);
+int prompt_usage(char *);
+int info(char *arg);
 
 int start(char *arg), set(char *arg);
-int start_usage(void), set_usage(void);
+int start_usage(char *), set_usage(void);
 
 /* Forward declarations. */
 char *stripwhite (char *string);

@@ -136,7 +136,7 @@ int start (char *arg) {
     return OK;
   
   if (valid_argument ("start", arg) == ERR){
-    start_usage();
+    start_usage("");
     return ERR;
   }
   
@@ -272,13 +272,13 @@ int process_argument(int optc, char* optv[]) {
 }
 
 
-int prompt_usage(void) {
+int prompt_usage(char *arg) {
   sprintf(buffer, "Usage: prompt [value]\n");
   send(cli_cfg->cfd, buffer, strlen(buffer), 0);
   
   return 0;
 }
-int start_usage(void) {
+int start_usage(char *arg) {
   sprintf(buffer, "Usage: start [enb|UE] [enb_index][0: stop, 1: start] \n");
   send(cli_cfg->cfd, buffer, strlen(buffer), 0);
   sprintf(buffer, "Example to start enb 0: start enb 0 1 \n");

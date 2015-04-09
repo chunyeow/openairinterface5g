@@ -35,7 +35,7 @@
 #include "security_types.h"
 #include "secu_defs.h"
 
-void kdf(uint8_t *key, uint16_t key_len, uint8_t *s, uint16_t s_len, uint8_t *out,
+void kdf(const uint8_t *key, uint16_t key_len, uint8_t *s, uint16_t s_len, uint8_t *out,
          uint16_t out_len)
 {
     struct hmac_sha256_ctx ctx;

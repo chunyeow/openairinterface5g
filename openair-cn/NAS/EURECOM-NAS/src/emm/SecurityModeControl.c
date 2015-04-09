@@ -863,8 +863,8 @@ static int _security_kenb(const OctetString *kasme, OctetString *kenb,
      * S = FC(0x11) || UL NAS Count || 0x00 0x04
      */
     UInt8_t  input[32];
-    UInt16_t length    = 4;
-    int      offset    = 0;
+//    UInt16_t length    = 4;
+//    int      offset    = 0;
 
     LOG_TRACE(INFO, "%s  with count= %d", __FUNCTION__, count);
     memset(input, 0, 32);

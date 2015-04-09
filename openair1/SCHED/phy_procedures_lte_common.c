@@ -555,7 +555,8 @@ unsigned int is_phich_subframe(LTE_DL_FRAME_PARMS *frame_parms,unsigned char sub
 double aggregate_eNB_UE_localization_stats(PHY_VARS_eNB *phy_vars_eNB, int8_t UE_id, frame_t frame, sub_frame_t subframe, int32_t UE_tx_power_dB){
     // parameters declaration
     int8_t Mod_id, CC_id;
-    int32_t harq_pid, avg_power, avg_rssi, median_power, median_rssi, median_subcarrier_rss, median_TA, median_TA_update, ref_timestamp_ms, current_timestamp_ms;
+//    int32_t harq_pid;
+    int32_t avg_power, avg_rssi, median_power, median_rssi, median_subcarrier_rss, median_TA, median_TA_update, ref_timestamp_ms, current_timestamp_ms;
     char cqis[100], sub_powers[2048];
     int len = 0, i;
     struct timeval ts;

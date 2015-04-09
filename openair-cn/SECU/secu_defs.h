@@ -42,7 +42,7 @@
 #define SECU_DIRECTION_UPLINK   0
 #define SECU_DIRECTION_DOWNLINK 1
 
-void kdf(uint8_t *key,
+void kdf(const uint8_t *key,
 		uint16_t key_len,
 		uint8_t *s,
 		uint16_t s_len,

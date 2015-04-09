@@ -640,7 +640,7 @@ gtpv1u_create_s1u_tunnel(
     hashtable_rc_t           hash_rc              = HASH_TABLE_KEY_NOT_EXISTS;
     int                      i;
     ebi_t                    eps_bearer_id        = 0;
-    int                      ipv4_addr            = 0;
+//    int                      ipv4_addr            = 0;
     int                      ip_offset            = 0;
     in_addr_t                in_addr;
     int                      addrs_length_in_bytes= 0;

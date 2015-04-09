@@ -68,7 +68,7 @@ rlc_am_rx_list_insert_pdu(
                     if (pdu_info_p->sn < pdu_info_cursor_p->sn) {
                         if (previous_cursor_p != NULL) {
                             pdu_info_previous_cursor_p = &((rlc_am_rx_pdu_management_t*)(previous_cursor_p->data))->pdu_info;
-                            if ((pdu_info_previous_cursor_p->sn == pdu_info_p->sn)) {
+                            if (pdu_info_previous_cursor_p->sn == pdu_info_p->sn) {
                                 if (pdu_info_p->rf != pdu_info_previous_cursor_p->rf) {
                                     LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d WRONG RF -> DROPPED (vr(mr) < vr(r) and sn >= vr(r))\n",
                                           ctxt_pP->frame,
@@ -121,7 +121,7 @@ rlc_am_rx_list_insert_pdu(
 
                                 if (previous_cursor_p != NULL) {
                                     pdu_info_previous_cursor_p = &((rlc_am_rx_pdu_management_t*)(previous_cursor_p->data))->pdu_info;
-                                    if ((pdu_info_previous_cursor_p->sn == pdu_info_cursor_p->sn)) {
+                                    if (pdu_info_previous_cursor_p->sn == pdu_info_cursor_p->sn) {
                                         if ((pdu_info_previous_cursor_p->so + pdu_info_previous_cursor_p->payload_size - 1) < pdu_info_p->so) {
 
                                             LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) < vr(r) and sn >= vr(r))\n",
@@ -265,7 +265,7 @@ rlc_am_rx_list_insert_pdu(
                     if (pdu_info_p->sn > pdu_info_cursor_p->sn) {
                         if (previous_cursor_p != NULL) {
                             pdu_info_previous_cursor_p = &((rlc_am_rx_pdu_management_t*)(previous_cursor_p->data))->pdu_info;
-                            if ((pdu_info_previous_cursor_p->sn == pdu_info_cursor_p->sn)) {
+                            if (pdu_info_previous_cursor_p->sn == pdu_info_cursor_p->sn) {
                                 if (pdu_info_p->rf != pdu_info_previous_cursor_p->rf) {
                                     LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d WRONG RF -> DROPPED (vr(mr) < vr(r) and sn >= vr(r))\n",
                                           ctxt_pP->frame,
@@ -316,7 +316,7 @@ rlc_am_rx_list_insert_pdu(
 
                                 if (previous_cursor_p != NULL) {
                                     pdu_info_previous_cursor_p = &((rlc_am_rx_pdu_management_t*)(previous_cursor_p->data))->pdu_info;
-                                    if ((pdu_info_previous_cursor_p->sn == pdu_info_cursor_p->sn)) {
+                                    if (pdu_info_previous_cursor_p->sn == pdu_info_cursor_p->sn) {
                                         if ((pdu_info_p->so + pdu_info_p->payload_size - 1) < pdu_info_previous_cursor_p->so) {
 
                                             LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) < vr(r) and sn < vr(r))\n",
@@ -462,7 +462,7 @@ rlc_am_rx_list_insert_pdu(
 
                     if (previous_cursor_p != NULL) {
                         pdu_info_previous_cursor_p = &((rlc_am_rx_pdu_management_t*)(previous_cursor_p->data))->pdu_info;
-                        if ((pdu_info_previous_cursor_p->sn == pdu_info_p->sn)) {
+                        if (pdu_info_previous_cursor_p->sn == pdu_info_p->sn) {
                             if (pdu_info_p->rf != pdu_info_previous_cursor_p->rf) {
                                 LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d WRONG RF -> DROPPED (vr(mr) > vr(r))\n",
                                       ctxt_pP->frame,
@@ -516,7 +516,7 @@ rlc_am_rx_list_insert_pdu(
 
                             if (previous_cursor_p != NULL) {
                                 pdu_info_previous_cursor_p = &((rlc_am_rx_pdu_management_t*)(previous_cursor_p->data))->pdu_info;
-                                if ((pdu_info_previous_cursor_p->sn == pdu_info_cursor_p->sn)) {
+                                if (pdu_info_previous_cursor_p->sn == pdu_info_cursor_p->sn) {
                                     if ((pdu_info_previous_cursor_p->so + pdu_info_previous_cursor_p->payload_size - 1) < pdu_info_p->so) {
 
                                         LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) > vr(r) and sn >= vr(r))\n",

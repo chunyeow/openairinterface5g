@@ -44,6 +44,7 @@
 #include "mobility_parser.h"
 #include "omg.h"
 #include <math.h>
+#include "assertions.h"
 
 extern hash_table_t **table;
 extern node_info **list_head;
@@ -264,4 +265,6 @@ get_next_data (hash_table_t * table, int vid, int flag)
     }
   else
     return links;
+
+  DevAssert(false); // FIXME return 0?
 }

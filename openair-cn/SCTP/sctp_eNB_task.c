@@ -125,7 +125,7 @@ sctp_handle_new_association_req(
                 const sctp_new_association_req_t * const sctp_new_association_req_p)
 {
     int                           sd;
-    int32_t                       assoc_id;
+    int32_t                       assoc_id = 0;
 
     struct sctp_event_subscribe   events;
 
@@ -279,14 +279,14 @@ sctp_handle_new_association_req(
                 &addr[address_index].sin_addr.s_addr) != 1)
             {
                 SCTP_ERROR("Failed to convert ipv6 address %*s to network type\n",
-                           strlen(sctp_new_association_req_p->remote_address.ipv6_address),
+                           (int)strlen(sctp_new_association_req_p->remote_address.ipv6_address),
                            sctp_new_association_req_p->remote_address.ipv6_address);
                 close(sd);
                 return;
             }
 
             SCTP_DEBUG("Converted ipv6 address %*s to network type\n",
-                       strlen(sctp_new_association_req_p->remote_address.ipv6_address),
+                       (int)strlen(sctp_new_association_req_p->remote_address.ipv6_address),
                        sctp_new_association_req_p->remote_address.ipv6_address);
 
             addr[address_index].sin_family = AF_INET6;
@@ -298,14 +298,14 @@ sctp_handle_new_association_req(
                 &addr[address_index].sin_addr.s_addr) != 1)
             {
                 SCTP_ERROR("Failed to convert ipv4 address %*s to network type\n",
-                           strlen(sctp_new_association_req_p->remote_address.ipv4_address),
+                           (int)strlen(sctp_new_association_req_p->remote_address.ipv4_address),
                            sctp_new_association_req_p->remote_address.ipv4_address);
                 close(sd);
                 return;
             }
 
             SCTP_DEBUG("Converted ipv4 address %*s to network type\n",
-                       strlen(sctp_new_association_req_p->remote_address.ipv4_address),
+                       (int)strlen(sctp_new_association_req_p->remote_address.ipv4_address),
                        sctp_new_association_req_p->remote_address.ipv4_address);
 
             addr[address_index].sin_family = AF_INET;
@@ -349,7 +349,7 @@ sctp_handle_new_association_req(
         addr6.sin6_port = htons(sctp_new_association_req_p->port);
 
         if (bind(sd, (struct sockaddr*)&addr6, sizeof(addr6)) < 0) {
-            SCTP_ERROR("Failed to bind the socket %d to address any (v4/v6): %s\n",
+            SCTP_ERROR("Failed to bind the socket to address any (v4/v6): %s\n",
                        strerror(errno));
             close(sd);
             return;
@@ -396,7 +396,7 @@ void sctp_send_data(
     }
 
     if (sctp_data_req_p->stream >= sctp_cnx->out_streams) {
-        SCTP_ERROR("Requested stream (%u) >= nb out streams\n",
+        SCTP_ERROR("Requested stream (%"PRIu16") >= nb out streams (%"PRIu16")\n",
                    sctp_data_req_p->stream, sctp_cnx->out_streams);
         return;
     }

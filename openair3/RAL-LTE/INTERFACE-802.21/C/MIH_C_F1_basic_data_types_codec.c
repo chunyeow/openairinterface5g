@@ -30,6 +30,7 @@
 #define MIH_C_INTERFACE
 #define MIH_C_F1_BASIC_DATA_TYPES_CODEC_C
 #include "MIH_C_F1_basic_data_types_codec.h"
+#include <inttypes.h>
 
 //-----------------------------------------------------------------------------
 unsigned int MIH_C_BITMAP82String(MIH_C_BITMAP8_T* dataP, char* bufP) {
@@ -72,21 +73,21 @@ void MIH_C_BITMAP32_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP32_T* dataP) {
 //-----------------------------------------------------------------------------
 void MIH_C_BITMAP64_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP64_T* dataP) {
 //-----------------------------------------------------------------------------
-    printf("[MIH_C] %s: %16X\n", __FUNCTION__, *dataP);
+    printf("[MIH_C] %s: %16"PRIX64"\n", __FUNCTION__, *dataP);
     BitBuffer_write32(bbP, (MIH_C_UNSIGNED_INT4_T)(*dataP>>32));
     BitBuffer_write32(bbP, (MIH_C_UNSIGNED_INT4_T)*dataP);
 }
 //-----------------------------------------------------------------------------
 void MIH_C_BITMAP128_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP128_T* dataP) {
 //-----------------------------------------------------------------------------
-    printf("[MIH_C] %s: %16X%16X\n", __FUNCTION__, dataP->val[0], dataP->val[1]);
+    printf("[MIH_C] %s: %16"PRIX64"%16"PRIX64"\n", __FUNCTION__, dataP->val[0], dataP->val[1]);
     MIH_C_BITMAP64_encode(bbP, &dataP->val[0]);
     MIH_C_BITMAP64_encode(bbP, &dataP->val[1]);
 }
 //-----------------------------------------------------------------------------
 void MIH_C_BITMAP256_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP256_T* dataP) {
 //-----------------------------------------------------------------------------
-    printf("[MIH_C] %s: %16X%16X%16X%16X\n", __FUNCTION__, dataP->val[0], dataP->val[1], dataP->val[2], dataP->val[3]);
+    printf("[MIH_C] %s: %16"PRIX64"%16"PRIX64"%16"PRIX64"%16"PRIX64"\n", __FUNCTION__, dataP->val[0], dataP->val[1], dataP->val[2], dataP->val[3]);
     MIH_C_BITMAP64_encode(bbP, &dataP->val[0]);
     MIH_C_BITMAP64_encode(bbP, &dataP->val[1]);
     MIH_C_BITMAP64_encode(bbP, &dataP->val[2]);
