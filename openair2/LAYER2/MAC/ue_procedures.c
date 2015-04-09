@@ -1480,7 +1480,7 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
       }
   }
   // UE has no valid phy config dedicated ||  no valid/released  SR
-  if ((UE_mac_inst[module_idP].physicalConfigDedicated == NULL)) {
+  if (UE_mac_inst[module_idP].physicalConfigDedicated == NULL) {
       // cancel all pending SRs
       UE_mac_inst[module_idP].scheduling_info.SR_pending=0;
       UE_mac_inst[module_idP].ul_active=0;

@@ -368,7 +368,7 @@ unsigned char SE2I_TBS(float SE,
 		       unsigned char symbPerRB) {
   unsigned char I_TBS= -1;
   int throughPutGoal = 0;
-  short diffOld = abs(TBStable[0][N_PRB-1] - throughPutGoal);
+  short diffOld = TBStable[0][N_PRB-1] - throughPutGoal; // always positive because of unsigned arithmetic
   short diffNew = diffOld;
   int i = 0;
   throughPutGoal = (int)(((SE*1024)*N_PRB*symbPerRB*12)/1024);
@@ -377,7 +377,7 @@ unsigned char SE2I_TBS(float SE,
 #endif
   I_TBS = 0;
   for (i = 0; i<TBStable_rowCnt; i++) {
-    diffNew = abs(TBStable[i][N_PRB-1] - throughPutGoal);
+    diffNew = TBStable[i][N_PRB-1] - throughPutGoal; // always positive because of unsigned arithmetic
     if (diffNew <= diffOld) {
       diffOld = diffNew;
       I_TBS = i;

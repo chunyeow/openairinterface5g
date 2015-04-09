@@ -177,7 +177,7 @@ float owd_const_application_v=owd_const_application()/2;
 	if (otg_info->rx_pkt_owd_history[src][dst][1] == 0) // first packet
 	  otg_info->rx_pkt_jitter[src][dst]=0;
 	else // for the consecutive packets
-	  otg_info->rx_pkt_jitter[src][dst]= abs(otg_info->rx_pkt_owd_history[src][dst][0] - otg_info->rx_pkt_owd_history[src][dst][1]);
+          otg_info->rx_pkt_jitter[src][dst] = fabsf(otg_info->rx_pkt_owd_history[src][dst][0] - otg_info->rx_pkt_owd_history[src][dst][1]);
 
 	LOG_D(OTG,"The packet jitter for the pair (src %d, dst %d)) at %d is %lf (current %lf, previous %lf) \n",
 	      src, dst, ctime, otg_info->rx_pkt_jitter[src][dst],
@@ -188,7 +188,7 @@ float owd_const_application_v=owd_const_application()/2;
 	if (otg_info->rx_pkt_owd_history_e2e[src][dst][1] == 0) // first packet
 	  otg_info->rx_pkt_jitter_e2e[src][dst]=0;
 	else // for the consecutive packets
-	  otg_info->rx_pkt_jitter_e2e[src][dst]= abs(otg_info->rx_pkt_owd_history_e2e[src][dst][0] - otg_info->rx_pkt_owd_history_e2e[src][dst][1]);
+          otg_info->rx_pkt_jitter_e2e[src][dst]= fabsf(otg_info->rx_pkt_owd_history_e2e[src][dst][0] - otg_info->rx_pkt_owd_history_e2e[src][dst][1]);
 	
 	LOG_D(OTG,"The packet jitter for the pair (src %d, dst %d)) at %d is %lf (current %lf, previous %lf) \n",
 	      src, dst, ctime, otg_info->rx_pkt_jitter_e2e[src][dst],

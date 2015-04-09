@@ -42,6 +42,7 @@
 #include "UTIL/MATH/oml.h"
 #include "otg_tx.h" 
 #include "otg_externs.h"
+#include "assertions.h"
 
 extern unsigned char NB_eNB_INST;
 extern unsigned char NB_UE_INST;
@@ -564,19 +565,22 @@ void header_size_gen_multicast(int src, int dst, int application){
 char *random_string(int size, ALPHABET_GEN mode, ALPHABET_TYPE data_type) {
   char *data=NULL;
   int i=0,start=0;
+
+  DevAssert( size < strlen(FIXED_STRING) );
+
   switch (mode){
   case REPEAT_STRING:
-    start = uniform_dist (0, abs(strlen(FIXED_STRING)- size - 1));
+    start = uniform_dist (0, strlen(FIXED_STRING) - size - 1);
     return str_sub (FIXED_STRING, start, start + size -1);
     break;
   case SUBSTRACT_STRING:
     //data=strndup(data_string + (strlen(data_string) - size), strlen(data_string));
     //data=strndup(data_string + (strlen(data_string) - size), size);	
     if (data_type == HEADER_ALPHABET){
-      start = uniform_dist (0, abs(strlen(HEADER_STRING)- size - 1));
+      start = uniform_dist (0, strlen(HEADER_STRING) - size - 1);
       return str_sub (HEADER_STRING, start, start + size -1);
     }else if (data_type == PAYLOAD_ALPHABET) {
-      start = uniform_dist (0, abs(strlen(PAYLOAD_STRING)- size - 1));
+      start = uniform_dist (0, strlen(PAYLOAD_STRING) - size - 1);
       return str_sub (PAYLOAD_STRING, start, start+size - 1 );
     }else 
       LOG_E(OTG, "unsupported alphabet data type \n");

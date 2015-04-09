@@ -343,7 +343,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
     // FDD normal UL/DLSCH
     schedule_SI(module_idP,frameP,nprb,nCCE);
     //schedule_RA(module_idP,frameP,subframeP,5,nprb,nCCE);
-    if ((mac_xface->lte_frame_parms->frame_type == FDD) ) {
+    if (mac_xface->lte_frame_parms->frame_type == FDD) {
         //      schedule_RA(module_idP,frameP,subframeP,1,nprb,nCCE);
         //      schedule_ulsch(module_idP,frameP,cooperation_flag,5,9,nCCE);
         fill_DLSCH_dci(module_idP,frameP,subframeP,RBalloc,0,mbsfn_status);

@@ -367,6 +367,7 @@ void compute_beta8(llr_t* alpha,llr_t* beta,llr_t *m_11,llr_t* m_10,unsigned sho
        loopval=(frame_length>>4)-L,rerun_flag++) {
 
     if (offset8_flag==0) {
+      DevMessage( "beta0-beta7 are used uninitialized. FIXME!" );
       beta_ptr[0] = _mm_insert_epi8(beta_ptr[0],beta0,15);
       beta_ptr[1] = _mm_insert_epi8(beta_ptr[1],beta1,15);
       beta_ptr[2] = _mm_insert_epi8(beta_ptr[2],beta2,15);

@@ -1090,7 +1090,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
         ReportConfig_A3->reportConfig.choice.reportConfigEUTRA.reportInterval = ReportInterval_ms120;
         ReportConfig_A3->reportConfig.choice.reportConfigEUTRA.reportAmount = ReportConfigEUTRA__reportAmount_infinity;
 
-        ReportConfig_A3->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.hysteresis = 0.5;
+        ReportConfig_A3->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.hysteresis = 0.5; // FIXME ...hysteresis is of type long!
         ReportConfig_A3->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.timeToTrigger =
             TimeToTrigger_ms40;
         ASN_SEQUENCE_ADD(&ReportConfig_list->list, ReportConfig_A3);
@@ -1202,12 +1202,11 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
             ASN_SEQUENCE_ADD(&dedicatedInfoNASList->list, dedicatedInfoNas);
         }
 
-        /* TODO parameters yet to process ... */
-        {
-            UE_info->e_rab[i].param.qos;
-            UE_info->e_rab[i].param.sgw_addr;
-            UE_info->e_rab[i].param.gtp_teid;
-        }
+        /* TODO parameters yet to process ...
+        UE_info->e_rab[i].param.qos;
+        UE_info->e_rab[i].param.sgw_addr;
+        UE_info->e_rab[i].param.gtp_teid;
+        */
 
         /* TODO should test if e RAB are Ok before! */
         eNB_rrc_inst[enb_mod_idP].Info.UE[ue_mod_idP].e_rab[i].status = E_RAB_STATUS_DONE;

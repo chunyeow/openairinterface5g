@@ -176,12 +176,13 @@ get_free_mem_block (uint16_t sizeP)
   int             pool_selected;
   int             size;
 
-  if (sizeP > MEM_MNGT_MB12_BLOCK_SIZE) {
-    msg ("[MEM_MNGT][ERROR][FATAL] size requested %d out of bounds\n", sizeP);
-    display_mem_load ();
-    mac_xface->macphy_exit("[MEM_MNGT][ERROR][FATAL] get_free_mem_block size requested out of bounds");
-    return NULL;
-  }
+// next block commented, because sizeP > MEM_MNGT_MB12_BLOCK_SIZE can never be true.
+//  if (sizeP > MEM_MNGT_MB12_BLOCK_SIZE) {
+//    msg ("[MEM_MNGT][ERROR][FATAL] size requested %d out of bounds\n", sizeP);
+//    display_mem_load ();
+//    mac_xface->macphy_exit("[MEM_MNGT][ERROR][FATAL] get_free_mem_block size requested out of bounds");
+//    return NULL;
+//  }
   size = sizeP >> 6;
   pool_selected = 0;
 

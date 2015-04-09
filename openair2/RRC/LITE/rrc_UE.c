@@ -320,7 +320,7 @@ void rrc_ue_generate_RRCConnectionRequest(module_id_t ue_mod_idP, frame_t frameP
 mui_t rrc_mui=0;
 
 /* NAS Attach request with IMSI */
-static const char const nas_attach_req_imsi[] =
+static const char nas_attach_req_imsi[] =
     {
         0x07, 0x41,
         /* EPS Mobile identity = IMSI */
@@ -335,7 +335,7 @@ static const char const nas_attach_req_imsi[] =
     };
 
 /* NAS Attach request with GUTI */
-static const char const nas_attach_req_guti[] =
+static const char nas_attach_req_guti[] =
     {
         0x07, 0x41,
         /* EPS Mobile identity = GUTI */
@@ -1201,7 +1201,7 @@ void rrc_ue_process_securityModeCommand(uint8_t ue_mod_idP, frame_t frameP,Secur
       if (securityModeCommand->criticalExtensions.choice.c1.present == SecurityModeCommand__criticalExtensions__c1_PR_securityModeCommand_r8) {
 
           ul_dcch_msg.message.choice.c1.choice.securityModeComplete.rrc_TransactionIdentifier = securityModeCommand->rrc_TransactionIdentifier;
-          ul_dcch_msg.message.choice.c1.choice.securityModeComplete.criticalExtensions.present = SecurityModeCommand__criticalExtensions_PR_c1;
+          ul_dcch_msg.message.choice.c1.choice.securityModeComplete.criticalExtensions.present = SecurityModeCommand__criticalExtensions_PR_c1; // FIXME wrong enum types
           ul_dcch_msg.message.choice.c1.choice.securityModeComplete.criticalExtensions.choice.securityModeComplete_r8.nonCriticalExtension =NULL;
 
           LOG_I(RRC,"[UE %d] Frame %d: Receiving from SRB1 (DL-DCCH), encoding securityModeComplete (eNB %d)\n",
@@ -1882,8 +1882,6 @@ decode_BCCH_DLSCH_Message(
       //memset(&bcch_message,0,sizeof(BCCH_DL_SCH_Message_t));
       
       LOG_D(RRC,"[UE %d] Decoding DL_BCCH_DLSCH_Message\n",ue_mod_idP);
-      int i;
-      
 
       dec_rval = uper_decode_complete(NULL,
           &asn_DEF_BCCH_DL_SCH_Message,

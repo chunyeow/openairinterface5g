@@ -2125,7 +2125,6 @@ int main( int argc, char **argv )
 #endif
 
   PHY_VARS_UE *UE[MAX_NUM_CCs];
-  int UE_id = 0;
 
   mode = normal_txrx;
   memset(&openair0_cfg[0],0,sizeof(openair0_config_t)*MAX_CARDS);
@@ -2736,6 +2735,8 @@ int main( int argc, char **argv )
 #endif
 
 #ifdef XFORMS
+  int UE_id;
+
   if (do_forms==1) {
     fl_initialize (&argc, argv, NULL, 0, 0);
 
@@ -2949,6 +2950,8 @@ int main( int argc, char **argv )
             printf( "The thread was killed. No status available.\n");
         }
     }
+#else
+    UNUSED(result);
 #endif // DEBUG_THREADS
 #endif // RTAI
 

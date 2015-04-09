@@ -58,12 +58,10 @@ void free_ue_dlsch(LTE_UE_DLSCH_t *dlsch) {
 	  free16(dlsch->harq_processes[i]->b,MAX_DLSCH_PAYLOAD_BYTES);
 	  dlsch->harq_processes[i]->b = NULL;
 	}
-	if (dlsch->harq_processes[i]->c) {
-	  for (r=0;r<MAX_NUM_DLSCH_SEGMENTS;r++) {
-	    free16(dlsch->harq_processes[i]->c[r],((r==0)?8:0) + 3+768);
-	    dlsch->harq_processes[i]->c[r] = NULL;
-	  }
-	}
+        for (r=0;r<MAX_NUM_DLSCH_SEGMENTS;r++) {
+          free16(dlsch->harq_processes[i]->c[r],((r==0)?8:0) + 3+768);
+          dlsch->harq_processes[i]->c[r] = NULL;
+        }
 	for (r=0;r<MAX_NUM_DLSCH_SEGMENTS;r++)
 	  if (dlsch->harq_processes[i]->d[r]) {
 	    free16(dlsch->harq_processes[i]->d[r],((3*8*6144)+12+96)*sizeof(short));

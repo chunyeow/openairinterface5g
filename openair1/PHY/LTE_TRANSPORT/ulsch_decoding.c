@@ -77,12 +77,10 @@ void free_eNB_ulsch(LTE_eNB_ULSCH_t *ulsch) {
 	  free16(ulsch->harq_processes[i]->b,MAX_ULSCH_PAYLOAD_BYTES);
 	  ulsch->harq_processes[i]->b = NULL;
 	}
-	if (ulsch->harq_processes[i]->c) {
-	  for (r=0;r<MAX_NUM_ULSCH_SEGMENTS;r++) {
-	    free16(ulsch->harq_processes[i]->c[r],((r==0)?8:0) + 768);
-	    ulsch->harq_processes[i]->c[r] = NULL;
-	  }
-	}
+        for (r=0;r<MAX_NUM_ULSCH_SEGMENTS;r++) {
+          free16(ulsch->harq_processes[i]->c[r],((r==0)?8:0) + 768);
+          ulsch->harq_processes[i]->c[r] = NULL;
+        }
 	for (r=0;r<MAX_NUM_ULSCH_SEGMENTS;r++)
 	  if (ulsch->harq_processes[i]->d[r]) {
 	    free16(ulsch->harq_processes[i]->d[r],((3*8*6144)+12+96)*sizeof(short));

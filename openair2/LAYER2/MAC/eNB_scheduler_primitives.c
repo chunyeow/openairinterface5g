@@ -240,7 +240,7 @@ int add_new_ue(module_id_t mod_idP, int cc_idP, rnti_t rntiP,int harq_pidP) {
       UE_list->UE_template[cc_idP][UE_id].oldNDI_UL[j] = (j==harq_pidP)?0:1; // 1st transmission is with Msg3;
     }
     eNB_ulsch_info[mod_idP][cc_idP][UE_id].status = S_UL_WAITING;
-    eNB_dlsch_info[mod_idP][cc_idP][UE_id].status = S_UL_WAITING;
+    eNB_dlsch_info[mod_idP][cc_idP][UE_id].status = S_DL_WAITING;
     LOG_D(MAC,"[eNB %d] Add UE_id %d on Primary CC_id %d: rnti %x\n",mod_idP,UE_id,cc_idP,rntiP);
     dump_ue_list(UE_list,0);
     return(UE_id);
@@ -726,13 +726,13 @@ uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc) {
             nb_rb--;
 	    break;
           case 25:
-            if ((check == mac_xface->lte_frame_parms->N_RBG-1))
+            if (check == mac_xface->lte_frame_parms->N_RBG-1)
               nb_rb--;
             else
               nb_rb-=2;
             break;
           case 50:
-            if ((check == mac_xface->lte_frame_parms->N_RBG-1))
+            if (check == mac_xface->lte_frame_parms->N_RBG-1)
               nb_rb-=2;
             else
               nb_rb-=3;
