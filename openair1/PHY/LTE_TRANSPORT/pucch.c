@@ -149,11 +149,6 @@ void generate_pucch(mod_sym_t **txdataF,
     return;
   }
 
-  if (NRB2 > 2047) {
-    msg("[PHY] generate_pucch: Illegal NRB2 %d (should be 0...2047)\n",NRB2);
-    return;
-  }
-
   if (Ncs1_div_deltaPUCCH_Shift > 7) {
     msg("[PHY] generate_pucch: Illegal Ncs1_div_deltaPUCCH_Shift %d (should be 0...7)\n",Ncs1_div_deltaPUCCH_Shift);
     return;
@@ -473,11 +468,6 @@ int32_t rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 
   if ((deltaPUCCH_Shift==0) || (deltaPUCCH_Shift>3)) {
     LOG_E(PHY,"[eNB] rx_pucch: Illegal deltaPUCCH_shift %d (should be 1,2,3)\n",deltaPUCCH_Shift);
-    return(-1);
-  }
-
-  if (NRB2 > 2047) {
-    LOG_E(PHY,"[eNB] rx_pucch: Illegal NRB2 %d (should be 0...2047)\n",NRB2);
     return(-1);
   }
 

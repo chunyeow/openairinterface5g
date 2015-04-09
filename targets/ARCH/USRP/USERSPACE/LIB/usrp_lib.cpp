@@ -112,6 +112,8 @@ static int trx_usrp_start(openair0_device *device)
   s->rx_count = 0;
   s->tx_count = 0;
   s->rx_timestamp = 0;
+
+  return 0;
 }
 
 static void trx_usrp_end(openair0_device *device)
