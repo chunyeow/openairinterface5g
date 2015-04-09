@@ -1518,9 +1518,9 @@ void fill_ue_band_info(void) {
 int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg, openair0_rf_map rf_map[MAX_NUM_CCs])
 {
 
-#ifndef EXMIMO
-  uint16_t N_TA_offset = 0;
-#endif
+//#ifndef EXMIMO
+//  uint16_t N_TA_offset = 0;
+//#endif
 
   int i, CC_id;
   LTE_DL_FRAME_PARMS *frame_parms;
@@ -1534,16 +1534,16 @@ int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg,
     }
 
 
-#ifndef EXMIMO
-    if (frame_parms->frame_type == TDD) {
-      if (frame_parms->N_RB_DL == 100)
-	N_TA_offset = 624;
-      else if (frame_parms->N_RB_DL == 50)
-	N_TA_offset = 624/2;
-      else if (frame_parms->N_RB_DL == 25)
-	N_TA_offset = 624/4;
-    }
-#endif
+//#ifndef EXMIMO
+//    if (frame_parms->frame_type == TDD) {
+//      if (frame_parms->N_RB_DL == 100)
+//	N_TA_offset = 624;
+//      else if (frame_parms->N_RB_DL == 50)
+//	N_TA_offset = 624/2;
+//      else if (frame_parms->N_RB_DL == 25)
+//	N_TA_offset = 624/4;
+//    }
+//#endif
    
 #ifdef EXMIMO
     openair0_cfg[CC_id].tx_num_channels = 0;
@@ -1586,25 +1586,26 @@ int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg,
   
 #else
     // replace RX signal buffers with mmaped HW versions
-    rxdata = (int32_t**)malloc16(frame_parms->nb_antennas_rx*sizeof(int32_t*));
-    txdata = (int32_t**)malloc16(frame_parms->nb_antennas_tx*sizeof(int32_t*));
-    for (i=0;i<frame_parms->nb_antennas_rx;i++) {
-      printf("Mapping UE CC_id %d, rx_ant %d, freq %u on card %d, chain %d\n",CC_id,i,downlink_frequency[CC_id][i],rf_map[CC_id].card,rf_map[CC_id].chain+i);
-      free(phy_vars_ue[CC_id]->lte_ue_common_vars.rxdata[i]);
-      rxdata[i] = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
-      phy_vars_ue[CC_id]->lte_ue_common_vars.rxdata[i] = rxdata[i]-N_TA_offset; // N_TA offset for TDD
+    rxdata = (int32_t**)malloc16( frame_parms->nb_antennas_rx*sizeof(int32_t*) );
+    txdata = (int32_t**)malloc16( frame_parms->nb_antennas_tx*sizeof(int32_t*) );
+    for (i=0; i<frame_parms->nb_antennas_rx; i++) {
+      printf( "Mapping UE CC_id %d, rx_ant %d, freq %u on card %d, chain %d\n", CC_id, i, downlink_frequency[CC_id][i], rf_map[CC_id].card, rf_map[CC_id].chain+i );
+      free( phy_vars_ue[CC_id]->lte_ue_common_vars.rxdata[i] );
+      rxdata[i] = (int32_t*)malloc16_clear( samples_per_frame*sizeof(int32_t) );
+      phy_vars_ue[CC_id]->lte_ue_common_vars.rxdata[i] = rxdata[i]; // what about the "-N_TA_offset" ? // N_TA offset for TDD
     }
-    for (i=0;i<frame_parms->nb_antennas_tx;i++) {
-      printf("Mapping UE CC_id %d, tx_ant %d, freq %u on card %d, chain %d\n",CC_id,i,downlink_frequency[CC_id][i],rf_map[CC_id].card,rf_map[CC_id].chain+i);
-      free(phy_vars_ue[CC_id]->lte_ue_common_vars.txdata[i]);
-      txdata[i] = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
+    for (i=0; i<frame_parms->nb_antennas_tx; i++) {
+      printf( "Mapping UE CC_id %d, tx_ant %d, freq %u on card %d, chain %d\n", CC_id, i, downlink_frequency[CC_id][i], rf_map[CC_id].card, rf_map[CC_id].chain+i );
+      free( phy_vars_ue[CC_id]->lte_ue_common_vars.txdata[i] );
+      txdata[i] = (int32_t*)malloc16_clear( samples_per_frame*sizeof(int32_t) );
       phy_vars_ue[CC_id]->lte_ue_common_vars.txdata[i] = txdata[i];
-      memset(txdata[i], 0, samples_per_frame*sizeof(int32_t));
     }
-    
+    // rxdata[x] points now to the same memory region as phy_vars_ue[CC_id]->lte_ue_common_vars.rxdata[x]
+    // txdata[x] points now to the same memory region as phy_vars_ue[CC_id]->lte_ue_common_vars.txdata[x]
+    // be careful when releasing memory!
+    // because no "release_ue_buffers"-function is available, at least rxdata and txdata memory will leak (only some bytes)
 #endif
     
   }
-  return(0);
-
+  return 0;
 }
