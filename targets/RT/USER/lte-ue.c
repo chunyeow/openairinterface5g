@@ -273,7 +273,7 @@ static void *UE_thread_synch(void *arg) {
 	  printf("Unknown number of RBs %d\n",UE->lte_frame_parms.N_RB_DL);
 	  break;
 	}
-	printf("UE synch: setting RX gain (%d,%d) to %d\n",card,i,openair0_cfg[card].rx_gain[i]);
+	printf("UE synch: setting RX gain (%d,%d) to %f\n",card,i,openair0_cfg[card].rx_gain[i]);
 #endif
       }
 #ifdef EXMIMO
@@ -352,7 +352,7 @@ static void *UE_thread_synch(void *arg) {
 	    printf("Unknown number of RBs %d\n",UE->lte_frame_parms.N_RB_DL);
 	    break;
 	  }
-	  printf("UE synch: setting RX gain (%d,%d) to %d\n",card,i,openair0_cfg[card].rx_gain[i]);
+	  printf("UE synch: setting RX gain (%d,%d) to %f\n",card,i,openair0_cfg[card].rx_gain[i]);
 #endif
 	
       }
@@ -412,7 +412,7 @@ static void *UE_thread_synch(void *arg) {
 	if (abs(openair_daq_vars.freq_offset) > 7500) {
 	  LOG_I(PHY,"[initial_sync] No cell synchronization found, abandoning\n");
 	  mac_xface->macphy_exit("No cell synchronization found, abandoning");
-          return; // not reached
+          return 0; // not reached
 	}
 	  LOG_I(PHY,"[initial_sync] trying carrier off %d Hz, rxgain %d (DL %u, UL %u)\n",openair_daq_vars.freq_offset,
 		UE->rx_total_gain_dB,
