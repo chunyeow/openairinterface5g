@@ -186,9 +186,11 @@ typedef struct {
   int frame_tx;
   /// frame to act upon for reception 
   int frame_rx;
-  /// instance count for tx processing thread
+  /// \brief Instance count for tx processing thread.
+  /// \internal This variable is protected by \ref mutex_tx.
   int instance_cnt_tx;
-  /// instance count for rx processing thread
+  /// \brief Instance count for rx processing thread.
+  /// \internal This variable is protected by \ref mutex_rx.
   int instance_cnt_rx;
   /// pthread structure for tx processing thread
   pthread_t pthread_tx;
@@ -204,12 +206,16 @@ typedef struct {
   pthread_mutex_t mutex_rx;
 } eNB_proc_t;
 
-/// Top-level PHY Data Structure for eNB 
+//! \brief Number of eNB TX and RX threads.
+//! This number must be equal to the number of LTE subframes (10). Each thread is responsible for a single subframe.
+#define NUM_ENB_THREADS 10
+
+/// Top-level PHY Data Structure for eNB
 typedef struct PHY_VARS_eNB_s{
   /// Module ID indicator for this instance
   module_id_t          Mod_id;
   uint8_t              CC_id;
-  eNB_proc_t           proc[10];
+  eNB_proc_t           proc[NUM_ENB_THREADS];
   uint8_t              local_flag;
   uint32_t             rx_total_gain_eNB_dB;
   LTE_DL_FRAME_PARMS   lte_frame_parms;
