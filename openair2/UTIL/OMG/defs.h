@@ -78,7 +78,7 @@ typedef struct mobility_struct mobility_struct; /*!< The typedef that reflects a
 struct node_struct {
 	int id; /*!< The identifier of the node in question */
         int gid;  /*!< given id of node used for trace mobility */
-	int type; /*!< The node's type, it is one of types enumarated in #node_types */
+        node_types type; /*!< The node's type, it is one of types enumarated in #node_types */
 	int mobile;  /*!< The node status: static or mobile  */
 	double x_pos; /*!< The X coordinate of the current location of the node */
 	double y_pos; /*!< The Y coordinate of the current location of the node */

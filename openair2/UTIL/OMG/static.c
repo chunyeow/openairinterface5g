@@ -131,8 +131,8 @@ place_static_node (node_struct * node)
   node->mob->journey_time = 0.0;
 
   LOG_I (OMG,
-	 "[STATIC] Initial position of node ID: %d type(%d):  (X = %.2f, Y = %.2f) speed = 0.0\n",
-	 node->id, node->type, node->x_pos, node->y_pos);
+         "[STATIC] Initial position of node ID: %d type(%d: %s):  (X = %.2f, Y = %.2f) speed = 0.0\n",
+         node->id, node->type, (node->type==eNB)?"eNB":(node->type==UE)?"UE":"Relay", node->x_pos, node->y_pos);
   node_vector_end[node->type] =
     (node_list *) add_entry (node, node_vector_end[node->type]);
 
