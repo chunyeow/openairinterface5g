@@ -991,7 +991,7 @@ void itti_wait_tasks_end(void) {
         ready_tasks = 0;
 
         task_id = TASK_FIRST;
-        for (thread_id = THREAD_FIRST; thread_id < itti_desc.task_max; thread_id++) {
+        for (thread_id = THREAD_FIRST; thread_id < itti_desc.thread_max; thread_id++) {
             /* Skip tasks which are not running */
             if (itti_desc.threads[thread_id].task_state == TASK_STATE_READY) {
                 while (thread_id != TASK_GET_THREAD_ID(task_id))
