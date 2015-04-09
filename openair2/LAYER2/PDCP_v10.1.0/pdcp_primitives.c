@@ -57,7 +57,7 @@ uint8_t pdcp_get_dc_filed(unsigned char* pdu_buffer)
     return 0;
 
   dc = (uint8_t)pdu_buffer[0] & 0xF0; // Reset D/C field
-  dc >>= 8;
+  dc >>= 8; // FIXME this is broken!!! returns 0 all the time
   
   return dc;
 }
