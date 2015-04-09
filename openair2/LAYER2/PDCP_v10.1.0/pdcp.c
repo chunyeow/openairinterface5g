@@ -945,6 +945,7 @@ boolean_t pdcp_remove_UE(const protocol_ctxt_t* const  ctxt_pP) {
   // check and remove SRBs first
 
   for (srb_id=0;srb_id<2;srb_id++) {
+    AssertFatal( srb_id-1 > 0, "Array index below zero (hard coded). FIXME!" );
     pdcp_p = &pdcp_array_srb_eNB[ctxt_pP->enb_module_id][ctxt_pP->ue_module_id][srb_id-1];
     if (pdcp_p->instanciated_instance == TRUE) {
       pdcp_p->instanciated_instance = FALSE;
