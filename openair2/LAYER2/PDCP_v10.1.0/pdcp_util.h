@@ -61,7 +61,7 @@ void util_print_hex_octets(comp_name_t component, unsigned char* data, unsigned 
 void util_flush_hex_octets(comp_name_t component, unsigned char* data, unsigned long size);
 
 /*
- * Prints binary representation of given octet prepending 
+ * Prints binary representation of given octet prepending
  * passed log message
  *
  * @param Octet as an unsigned character

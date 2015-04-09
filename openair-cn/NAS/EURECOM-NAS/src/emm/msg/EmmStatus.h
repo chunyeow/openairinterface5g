@@ -55,11 +55,11 @@
  */
 
 typedef struct emm_status_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator    protocoldiscriminator:4;
-    SecurityHeaderType       securityheadertype:4;
-    MessageType              messagetype;
-    EmmCause                 emmcause;
+  /* Mandatory fields */
+  ProtocolDiscriminator    protocoldiscriminator:4;
+  SecurityHeaderType       securityheadertype:4;
+  MessageType              messagetype;
+  EmmCause                 emmcause;
 } emm_status_msg;
 
 int decode_emm_status(emm_status_msg *emmstatus, uint8_t *buffer, uint32_t len);

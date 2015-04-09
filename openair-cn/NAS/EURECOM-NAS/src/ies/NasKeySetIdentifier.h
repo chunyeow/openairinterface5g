@@ -41,9 +41,9 @@
 typedef struct NasKeySetIdentifier_tag {
 #define NAS_KEY_SET_IDENTIFIER_NATIVE 0
 #define NAS_KEY_SET_IDENTIFIER_MAPPED 1
-    uint8_t  tsc:1;
+  uint8_t  tsc:1;
 #define NAS_KEY_SET_IDENTIFIER_NOT_AVAILABLE 0b111
-    uint8_t  naskeysetidentifier:3;
+  uint8_t  naskeysetidentifier:3;
 } NasKeySetIdentifier;
 
 int encode_nas_key_set_identifier(NasKeySetIdentifier *naskeysetidentifier, uint8_t iei, uint8_t *buffer, uint32_t len);

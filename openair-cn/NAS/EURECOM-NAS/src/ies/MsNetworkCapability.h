@@ -39,7 +39,7 @@
 #define MS_NETWORK_CAPABILITY_MAXIMUM_LENGTH 10
 
 typedef struct MsNetworkCapability_tag {
-    OctetString msnetworkcapabilityvalue;
+  OctetString msnetworkcapabilityvalue;
 } MsNetworkCapability;
 
 int encode_ms_network_capability(MsNetworkCapability *msnetworkcapability, uint8_t iei, uint8_t *buffer, uint32_t len);

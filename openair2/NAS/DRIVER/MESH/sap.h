@@ -50,18 +50,18 @@
 
 //FIFO indexes in control blocks
 
-#define NAS_DC_INPUT_SAPI	  0
-#define NAS_DC_OUTPUT_SAPI	1
-#define NAS_SAPI_CX_MAX	    2
+#define NAS_DC_INPUT_SAPI   0
+#define NAS_DC_OUTPUT_SAPI  1
+#define NAS_SAPI_CX_MAX     2
 
-#define NAS_GC_SAPI 		    0
-#define NAS_NT_SAPI 		    1
+#define NAS_GC_SAPI         0
+#define NAS_NT_SAPI         1
 
-#define NAS_RAB_INPUT_SAPI	    2
-#define NAS_RAB_OUTPUT_SAPI	    3
+#define NAS_RAB_INPUT_SAPI      2
+#define NAS_RAB_OUTPUT_SAPI     3
 
 
-#define NAS_SAPI_MAX		   4
+#define NAS_SAPI_MAX       4
 
 
 

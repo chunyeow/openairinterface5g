@@ -26,68 +26,80 @@
 
 //-----------------------------------------------------------------------------
 /* Generic function to encode RRC messages */
-void encode_message (int *Message_Id, int UE_Id, int Message_Type){
-//-----------------------------------------------------------------------------
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC][FSM-PROC]encode message %d for UE %d\n", Message_Type, UE_Id);
-  #endif
+void encode_message (int *Message_Id, int UE_Id, int Message_Type)
+{
+  //-----------------------------------------------------------------------------
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC][FSM-PROC]encode message %d for UE %d\n", Message_Type, UE_Id);
+#endif
+
   if (protocol_bs->rrc.Mobile_List[UE_Id].rg_msg_infos.msg_length) {
-    #ifdef DEBUG_RRC_STATE
-     msg ("\n\n[RRC_MSG] There is already one message pending %d\n", protocol_bs->rrc.Mobile_List[UE_Id].rg_msg_infos.msg_Id);
-    #endif
+#ifdef DEBUG_RRC_STATE
+    msg ("\n\n[RRC_MSG] There is already one message pending %d\n", protocol_bs->rrc.Mobile_List[UE_Id].rg_msg_infos.msg_Id);
+#endif
   } else {
     switch (Message_Type) {
-      case RRC_CONN_SETUP:
-        rrc_rg_msg_connsetup (UE_Id, Message_Id);
-        protocol_bs->rrc.Mobile_List[UE_Id].conn_complete_timer = 1;
-        break;
-      case RRC_CONN_REJECT:
-        rrc_rg_msg_connreject (UE_Id, Message_Id);
-        break;
-      case RRC_CONN_RELEASE: // not in 1st step
-        break;
-      case RB_SETUP:
-        rrc_rg_msg_rbsetup (UE_Id, Message_Id);
-        break;
-      case RB_RELEASE:
-        rrc_rg_msg_rbrelease (UE_Id, Message_Id);
-        break;
-      case CELL_UPDATE_CONFIRM:
-        rrc_rg_msg_cellupdatecnfccch (UE_Id, Message_Id);
-        break;
-      case UE_CAPABILITY_INFO_CONF:
-        rrc_rg_msg_ueCapInfoCnf(UE_Id, Message_Id);
-        break;
-      default:
-        msg ("\n\n[RRC_MSG] unknown message type %d\n", Message_Type);
-        break;
+    case RRC_CONN_SETUP:
+      rrc_rg_msg_connsetup (UE_Id, Message_Id);
+      protocol_bs->rrc.Mobile_List[UE_Id].conn_complete_timer = 1;
+      break;
+
+    case RRC_CONN_REJECT:
+      rrc_rg_msg_connreject (UE_Id, Message_Id);
+      break;
+
+    case RRC_CONN_RELEASE: // not in 1st step
+      break;
+
+    case RB_SETUP:
+      rrc_rg_msg_rbsetup (UE_Id, Message_Id);
+      break;
+
+    case RB_RELEASE:
+      rrc_rg_msg_rbrelease (UE_Id, Message_Id);
+      break;
+
+    case CELL_UPDATE_CONFIRM:
+      rrc_rg_msg_cellupdatecnfccch (UE_Id, Message_Id);
+      break;
+
+    case UE_CAPABILITY_INFO_CONF:
+      rrc_rg_msg_ueCapInfoCnf(UE_Id, Message_Id);
+      break;
+
+    default:
+      msg ("\n\n[RRC_MSG] unknown message type %d\n", Message_Type);
+      break;
     }
   }
 }
 
 //-------------------------------------------------------------------
-int Current_State (int UE_Id){
-//-------------------------------------------------------------------
+int Current_State (int UE_Id)
+{
+  //-------------------------------------------------------------------
   int curr_state;
   curr_state = protocol_bs->rrc.Mobile_List[UE_Id].state;
 
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC_RG][FSM-PROC]returning state %d for mobile %d. \n", curr_state, UE_Id);
-  #endif
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC_RG][FSM-PROC]returning state %d for mobile %d. \n", curr_state, UE_Id);
+#endif
   // rrc_mt_list_print(UE_Id);
   return curr_state;
 }
 
 //-------------------------------------------------------------------
-int INTEGER_COMBINE (int Id1, int Id2){
-//-------------------------------------------------------------------
+int INTEGER_COMBINE (int Id1, int Id2)
+{
+  //-------------------------------------------------------------------
   // signals an error in the automata. Combination should never occur.
   return 999;
 }
 
 //-------------------------------------------------------------------
-int BOOLEAN_COMBINE (int Id1, int Id2){
-//-------------------------------------------------------------------
+int BOOLEAN_COMBINE (int Id1, int Id2)
+{
+  //-------------------------------------------------------------------
   // signals an error in the automata. Combination should never occur.
   return FALSE;
 }
@@ -96,12 +108,13 @@ int BOOLEAN_COMBINE (int Id1, int Id2){
 /* Management of Mobile Nodes
  */
 //-------------------------------------------------------------------
-void create_Mobile (int UE_Id){
-//-------------------------------------------------------------------
+void create_Mobile (int UE_Id)
+{
+  //-------------------------------------------------------------------
   // rrm_simulate_download_configuration(); /*      Added, 1/10/02 by DN      */
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC_RG][FSM-PROC]creating Mobile %d with state Conn_Received. \n", UE_Id);
-  #endif
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC_RG][FSM-PROC]creating Mobile %d with state Conn_Received. \n", UE_Id);
+#endif
   protocol_bs->rrc.Mobile_List[UE_Id].mt_id = UE_Id;
   protocol_bs->rrc.Mobile_List[UE_Id].state = Conn_Received;
   //this is an implementation choice and agreement with NAS
@@ -120,29 +133,32 @@ void create_Mobile (int UE_Id){
 }
 
 //-------------------------------------------------------------------
-void update_Mobile (int UE_Id, int new_state){
-//-------------------------------------------------------------------
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC_RG][FSM-PROC]updating Mobile %d to new state %d .\n", UE_Id, new_state);
-  #endif
+void update_Mobile (int UE_Id, int new_state)
+{
+  //-------------------------------------------------------------------
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC_RG][FSM-PROC]updating Mobile %d to new state %d .\n", UE_Id, new_state);
+#endif
   protocol_bs->rrc.Mobile_List[UE_Id].mt_id = UE_Id;
   protocol_bs->rrc.Mobile_List[UE_Id].state = new_state;
   protocol_bs->rrc.protocol_state[UE_Id] = new_state;
 }
 
 //-------------------------------------------------------------------
-void delete_Mobile (int UE_Id){
-//-------------------------------------------------------------------
+void delete_Mobile (int UE_Id)
+{
+  //-------------------------------------------------------------------
   int j;
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC_RG][FSM-PROC]deleting Mobile %d .\n", UE_Id);
-  #endif
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC_RG][FSM-PROC]deleting Mobile %d .\n", UE_Id);
+#endif
   protocol_bs->rrc.Mobile_List[UE_Id].mt_id = 999;
   protocol_bs->rrc.Mobile_List[UE_Id].local_connection_ref = 999;
   protocol_bs->rrc.Mobile_List[UE_Id].u_rnti = 999;
   protocol_bs->rrc.Mobile_List[UE_Id].state = RRC_CELL_IDLE;
   protocol_bs->rrc.protocol_state[UE_Id] = RRC_CELL_IDLE;
   strcpy (protocol_bs->rrc.Mobile_List[UE_Id].IMEI, "01231234564569");
+
   for (j = 4; j < maxRB; j++) {
     protocol_bs->rrc.Mobile_List[UE_Id].rg_established_rbs[j].rb_identity = 99;
     protocol_bs->rrc.Mobile_List[UE_Id].rg_established_rbs[j].rb_started = RB_STOPPED;
@@ -150,6 +166,7 @@ void delete_Mobile (int UE_Id){
     protocol_bs->rrc.Mobile_List[UE_Id].rg_established_rbs[j].dscp_code = 0;
     protocol_bs->rrc.Mobile_List[UE_Id].rg_established_rbs[j].sap_id = 3;
   }
+
   protocol_bs->rrc.Mobile_List[UE_Id].num_rb = 0;
   protocol_bs->rrc.Mobile_List[UE_Id].establishment_cause = 0;
   protocol_bs->rrc.Mobile_List[UE_Id].prot_error_indicator = FALSE;
@@ -160,12 +177,13 @@ void delete_Mobile (int UE_Id){
  */
 //-------------------------------------------------------------------
 //void proc_RB_List (int *Message_Id, int rb_id){
-void proc_RB_List(int *Message_Id, int rb_id, int UE_Id){
-//-------------------------------------------------------------------
-  #ifdef DEBUG_RRC_STATE
+void proc_RB_List(int *Message_Id, int rb_id, int UE_Id)
+{
+  //-------------------------------------------------------------------
+#ifdef DEBUG_RRC_STATE
   //  msg ("[RRC_RG][FSM-PROC]proc_RB_List(), %d .\n", rb_id);
-   msg("[RRC_RG][FSM-PROC]proc_RB_List(), %d , UE_Id = %d.\n",  rb_id, UE_Id);
-  #endif
+  msg("[RRC_RG][FSM-PROC]proc_RB_List(), %d , UE_Id = %d.\n",  rb_id, UE_Id);
+#endif
   protocol_bs->rrc.Mobile_List[UE_Id].rg_established_rbs[rb_id].rb_identity = protocol_bs->rrc.Mobile_List[UE_Id].requested_rbId;
   protocol_bs->rrc.Mobile_List[UE_Id].rg_established_rbs[rb_id].qos_class = protocol_bs->rrc.Mobile_List[UE_Id].requested_QoSclass;
   protocol_bs->rrc.Mobile_List[UE_Id].rg_established_rbs[rb_id].dscp_code = protocol_bs->rrc.Mobile_List[UE_Id].requested_dscp;
@@ -175,92 +193,104 @@ void proc_RB_List(int *Message_Id, int rb_id, int UE_Id){
 }
 
 //-------------------------------------------------------------------
-void release_DCH_Resources (int UE_Id){
-//-------------------------------------------------------------------
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC_RG][FSM-PROC]releasing DCH resources for Mobile %d .\n", UE_Id);
-  #endif
+void release_DCH_Resources (int UE_Id)
+{
+  //-------------------------------------------------------------------
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC_RG][FSM-PROC]releasing DCH resources for Mobile %d .\n", UE_Id);
+#endif
   //rrc_rg_connection_mac_release(UE_Id);
   //rrc_rg_connection_srb_release(UE_Id);
   //rrc_rg_connection_rb_release(UE_Id);
-  #ifndef BYPASS_L1
+#ifndef BYPASS_L1
   //rrc_rg_connection_L1_release(UE_Id);
-  #endif
+#endif
   cmac_config_req (UE_Id, 0);
   crb_config_req (0);
-  #ifndef BYPASS_L1
+#ifndef BYPASS_L1
   CPHY_config_req (rrm_config, 0, 0);
-  #endif
+#endif
 }
 
 //-------------------------------------------------------------------
-void restore_former_config (int UE_Id){
-//-------------------------------------------------------------------
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC_RG][FSM-PROC]NI--restoring former Radio configuration for Mobile %d.\n", UE_Id);
-  #endif
+void restore_former_config (int UE_Id)
+{
+  //-------------------------------------------------------------------
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC_RG][FSM-PROC]NI--restoring former Radio configuration for Mobile %d.\n", UE_Id);
+#endif
 }
 
 //-------------------------------------------------------------------
-void rg_clear_transaction (int UE_Id, int Message_Type){
-//-------------------------------------------------------------------
+void rg_clear_transaction (int UE_Id, int Message_Type)
+{
+  //-------------------------------------------------------------------
   int i;
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC_RG][FSM-PROC]clearing transaction ID for message %d and Mobile %d.\n", Message_Type, UE_Id);
-  #endif
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC_RG][FSM-PROC]clearing transaction ID for message %d and Mobile %d.\n", Message_Type, UE_Id);
+#endif
   protocol_bs->rrc.Mobile_List[UE_Id].xmit_trans[0].transaction_Id = 0;
   //save valid configuration for ms
   memcpy (&(protocol_bs->rrc.saved_configuration.mt_config[UE_Id]), &(rrm_config)->mt_config[UE_Id], sizeof (MT_CONFIG));
   //save valid configuration for bs
   memcpy (&(protocol_bs->rrc.saved_configuration.rg_config), &(rrm_config->rg_config), sizeof (RG_CONFIG));
+
   //clean commands in configuration
   for (i = 0; i < JRRM_MAX_COMMANDS_PER_TRANSACTION; i++) {
     (&(rrm_config->rg_config))->rrm_commands[i].rrm_action = 0;
   }
+
   for (i = 0; i < JRRM_MAX_COMMANDS_PER_TRANSACTION; i++) {
     (&(rrm_config)->mt_config[UE_Id])->rrm_commands[i].rrm_action = 0;
   }
+
   switch (Message_Type) {
-    case RRC_CONN_SETUP:
-      break;
-    case RB_SETUP:
-    case RB_RELEASE:
-      //protocol_bs->rrc.Mobile_List[UE_Id].requested_rbId = 0;
-      //protocol_bs->rrc.Mobile_List[UE_Id].requested_QoSclass = 0;
-      //protocol_bs->rrc.Mobile_List[UE_Id].requested_dscp = 0;
-      break;
-    default:
-      break;
+  case RRC_CONN_SETUP:
+    break;
+
+  case RB_SETUP:
+  case RB_RELEASE:
+    //protocol_bs->rrc.Mobile_List[UE_Id].requested_rbId = 0;
+    //protocol_bs->rrc.Mobile_List[UE_Id].requested_QoSclass = 0;
+    //protocol_bs->rrc.Mobile_List[UE_Id].requested_dscp = 0;
+    break;
+
+  default:
+    break;
   }
+
   // transaction is closed. Clear rrc_UE_updating Id with out of range value
   protocol_bs->rrc.rrc_UE_updating = maxUsers;
 }
 
 //-------------------------------------------------------------------
-void clear_rbsetup_variables(int UE_Id){
-//-------------------------------------------------------------------
+void clear_rbsetup_variables(int UE_Id)
+{
+  //-------------------------------------------------------------------
   int new_cctrch;
   int rb_id;
   int qos_class;
 
   //Temp - Store cctrch
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC_RG][FSM-PROC] clear_rbsetup_variables - Store cctrch %d.\n", new_cctrch);
-  #endif
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC_RG][FSM-PROC] clear_rbsetup_variables - Store cctrch %d.\n", new_cctrch);
+#endif
   // commented for OpenAir
   //new_cctrch = rrm_get_ue_cctrch_index_ul (UE_Id, protocol_bs->rrc.Mobile_List[UE_Id].requested_rbId);
   new_cctrch = 0;
   rrc_rg_CPHY_Synch_rx (new_cctrch);
 
-  #ifdef DEBUG_RRC_STATE
-   msg("[RRC_RG][FSM-PROC] clearing variables after RB setup completion for Mobile %d.\n", UE_Id);
-  #endif
+#ifdef DEBUG_RRC_STATE
+  msg("[RRC_RG][FSM-PROC] clearing variables after RB setup completion for Mobile %d.\n", UE_Id);
+#endif
   rb_id = protocol_bs->rrc.Mobile_List[UE_Id].requested_rbId;
   protocol_bs->rrc.Mobile_List[UE_Id].rg_established_rbs[rb_id].rb_started = RB_STARTED;
   qos_class = protocol_bs->rrc.Mobile_List[UE_Id].requested_QoSclass;
+
   if (qos_class == 7 || qos_class == 8 || qos_class == 9) {
     protocol_bs->rrc.Mobile_List[UE_Id].established_background = TRUE;
   }
+
   protocol_bs->rrc.Mobile_List[UE_Id].requested_rbId = 0;
   protocol_bs->rrc.Mobile_List[UE_Id].requested_QoSclass = 0;
   protocol_bs->rrc.Mobile_List[UE_Id].requested_dscp = 0;
@@ -271,55 +301,62 @@ void clear_rbsetup_variables(int UE_Id){
 }
 
 //-------------------------------------------------------------------
-void clear_rbrelease_variables(int UE_Id){
-//-------------------------------------------------------------------
-  #ifdef DEBUG_RRC_STATE
-   msg("[RRC_RG][FSM-PROC] clearing variables after RB release completion for Mobile %d.\n", UE_Id);
-  #endif
+void clear_rbrelease_variables(int UE_Id)
+{
+  //-------------------------------------------------------------------
+#ifdef DEBUG_RRC_STATE
+  msg("[RRC_RG][FSM-PROC] clearing variables after RB release completion for Mobile %d.\n", UE_Id);
+#endif
 }
 
 //-------------------------------------------------------------------
-void rg_update_UE_numrb(int UE_Id, int Action){
-//-------------------------------------------------------------------
-  #ifdef DEBUG_RRC_STATE
-   msg("[RRC_RG][FSM-PROC] rg_update_UE_numrb (action %d) for Mobile %d.\n", Action, UE_Id);
-  #endif
-  switch (Action){
-    case E_ADD_RB:
-      ++protocol_bs->rrc.Mobile_List[UE_Id].num_rb;
-      break;
-    case E_REL_RB:
-      --protocol_bs->rrc.Mobile_List[UE_Id].num_rb; //Temp
-      break;
-    default:
-      break;
+void rg_update_UE_numrb(int UE_Id, int Action)
+{
+  //-------------------------------------------------------------------
+#ifdef DEBUG_RRC_STATE
+  msg("[RRC_RG][FSM-PROC] rg_update_UE_numrb (action %d) for Mobile %d.\n", Action, UE_Id);
+#endif
+
+  switch (Action) {
+  case E_ADD_RB:
+    ++protocol_bs->rrc.Mobile_List[UE_Id].num_rb;
+    break;
+
+  case E_REL_RB:
+    --protocol_bs->rrc.Mobile_List[UE_Id].num_rb; //Temp
+    break;
+
+  default:
+    break;
   }
 }
 
 //-------------------------------------------------------------------
 /* See comments in rrc_constant.h
    TEMP - This should be part of the Esterel FSM  */
-void rrc_rg_temp_checkConnection(int UE_Id){
-//-------------------------------------------------------------------
- if (protocol_bs->rrc.Mobile_List[UE_Id].conn_complete_timer < RG_CONN_TIMEOUT)
+void rrc_rg_temp_checkConnection(int UE_Id)
+{
+  //-------------------------------------------------------------------
+  if (protocol_bs->rrc.Mobile_List[UE_Id].conn_complete_timer < RG_CONN_TIMEOUT)
     protocol_bs->rrc.Mobile_List[UE_Id].conn_complete_timer ++;
- else if (protocol_bs->rrc.Mobile_List[UE_Id].conn_complete_timer == RG_CONN_TIMEOUT){
+  else if (protocol_bs->rrc.Mobile_List[UE_Id].conn_complete_timer == RG_CONN_TIMEOUT) {
     msg("\n[RRC_RG][XXFSM-PROCXX] ERROR - Timeout expired before receiving CONN_SETUP_COMPLETE \n");
     msg("\t Calling FSM to clean MT resources\n\n");
     protocol_bs->rrc.Mobile_List[UE_Id].conn_complete_timer =0;
     rrc_rg_fsm_control(UE_Id, RG_CRLC_STATUS);
- }
+  }
 }
 
 //-----------------------------------------------------------------------------
 // TEMP - This should be part of the Esterel FSM
-void rrc_RG_UE_Cap_Info_rx(int UE_Id){
-//-----------------------------------------------------------------------------
+void rrc_RG_UE_Cap_Info_rx(int UE_Id)
+{
+  //-----------------------------------------------------------------------------
   int msgId;
   //Send the message UE Capability Confirm.
-  #ifdef DEBUG_RRC_STATE
-    msg("[RRC_RG][XXFSM-PROCXX] UE Capability Received from UE.\n");
-  #endif
+#ifdef DEBUG_RRC_STATE
+  msg("[RRC_RG][XXFSM-PROCXX] UE Capability Received from UE.\n");
+#endif
   encode_message(&msgId, UE_Id, UE_CAPABILITY_INFO_CONF);
   RRC_RG_O_O_SEND_DCCH_AM(msgId);
 }

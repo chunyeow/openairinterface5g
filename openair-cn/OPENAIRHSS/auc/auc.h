@@ -53,11 +53,11 @@ typedef mpz_t sqn_t;
 typedef uint8_t u8;
 
 typedef struct {
-    uint8_t rand[16];
-    uint8_t rand_new;
-    uint8_t xres[8];
-    uint8_t autn[16];
-    uint8_t kasme[32];
+  uint8_t rand[16];
+  uint8_t rand_new;
+  uint8_t xres[8];
+  uint8_t autn[16];
+  uint8_t kasme[32];
 } auc_vector_t;
 
 void RijndaelKeySchedule(u8 key[16]);
@@ -105,9 +105,11 @@ static inline void print_buffer(const char *prefix, uint8_t *buffer, int length)
   int i;
 
   fprintf(stdout, "%s", prefix);
+
   for (i = 0; i < length; i++) {
-      fprintf(stdout, "%02x.", buffer[i]);
+    fprintf(stdout, "%02x.", buffer[i]);
   }
+
   fprintf(stdout, "\n");
 }
 

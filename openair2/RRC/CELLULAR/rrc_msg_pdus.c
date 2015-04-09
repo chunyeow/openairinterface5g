@@ -35,12 +35,14 @@ u8 new_conf[] = "666666666677777777770000000000888888888899999999991212121212121
 /*  RRCConnectionRequest                                      */
 /**************************************************************/
 #ifdef NODE_MT
-int rrc_PEREnc_RRCConnectionRequest (RRCConnectionRequest * pvalue){
+int rrc_PEREnc_RRCConnectionRequest (RRCConnectionRequest * pvalue)
+{
   int status = P_SUCCESS;
   int i;
 
   /* encode initialUE_Identity = IMEI */
   pvalue->imei.numDigits = 14;  // limited version of IMEI is used
+
   for (i = 0; i < pvalue->imei.numDigits; i++)
     pvalue->imei.digit[i] = protocol_ms->rrc.IMEI[i];
 
@@ -58,12 +60,14 @@ int rrc_PEREnc_RRCConnectionRequest (RRCConnectionRequest * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_RG
-int rrc_PERDec_RRCConnectionRequest (int UE_Id, RRCConnectionRequest * pvalue){
+int rrc_PERDec_RRCConnectionRequest (int UE_Id, RRCConnectionRequest * pvalue)
+{
   int status = P_SUCCESS;
 
   /* decode initial UE_Identity = IMEI */
   if (pvalue->imei.numDigits > 15)
     return P_OUTOFBOUNDS;
+
   memcpy (protocol_bs->rrc.Mobile_List[UE_Id].IMEI, pvalue->imei.digit, 14);
 
   /* decode establishmentCause */
@@ -86,7 +90,8 @@ int rrc_PERDec_RRCConnectionRequest (int UE_Id, RRCConnectionRequest * pvalue){
 /*  RRCConnectionSetup                                        */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_RRCConnectionSetup (int UE_Id, RRCConnectionSetup * pvalue){
+int rrc_PEREnc_RRCConnectionSetup (int UE_Id, RRCConnectionSetup * pvalue)
+{
   int status = P_SUCCESS;
   int i;
   char *pwrite;
@@ -96,6 +101,7 @@ int rrc_PEREnc_RRCConnectionSetup (int UE_Id, RRCConnectionSetup * pvalue){
 
   /* encode initialUE_Identity = IMEI */
   pvalue->imei.numDigits = 14;  // limited version of IMEI is used
+
   for (i = 0; i < pvalue->imei.numDigits; i++)
     pvalue->imei.digit[i] = protocol_bs->rrc.Mobile_List[UE_Id].IMEI[i];
 
@@ -146,7 +152,8 @@ int rrc_PEREnc_RRCConnectionSetup (int UE_Id, RRCConnectionSetup * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_RRCConnectionSetup (RRCConnectionSetup * pvalue){
+int rrc_PERDec_RRCConnectionSetup (RRCConnectionSetup * pvalue)
+{
   int status = P_SUCCESS;
   int buff_length;
   char *buff_ptr;
@@ -155,12 +162,15 @@ int rrc_PERDec_RRCConnectionSetup (RRCConnectionSetup * pvalue){
   /* decode initial UE_Identity = IMEI */
   if (pvalue->imei.numDigits > 15)
     return P_OUTOFBOUNDS;
+
   //   if (status = (strncmp((char *)protocol_ms->rrc.IMEI, (char *)pvalue->imei.digit,14)))
   status = memcmp ((char *) protocol_ms->rrc.IMEI, (char *) pvalue->imei.digit, 14);
+
   if (status) {
     msg ("\n[RRC_MSG] IMEI : --%s--, Received : --%s--, status %d\n", (char *) protocol_ms->rrc.IMEI, (char *) pvalue->imei.digit, status);
     return P_INVVALUE;          // ignore message
   }
+
   /* decode rrc_TransactionIdentifier */
   protocol_ms->rrc.rcved_trans.msg_type = DL_CCCH_rrcConnectionSetup;
   protocol_ms->rrc.rcved_trans.transaction_Id = pvalue->rrc_TransactionIdentifier;
@@ -177,17 +187,20 @@ int rrc_PERDec_RRCConnectionSetup (RRCConnectionSetup * pvalue){
 
   /* decode rrc_stateIndicator */
   switch (pvalue->rrc_StateIndicator) {
-      case cell_DCH:
-        protocol_ms->rrc.next_state = CELL_DCH;
-        break;
-      case cell_FACH:
-        protocol_ms->rrc.next_state = CELL_FACH;
-        break;
-      case cell_PCH:
-        protocol_ms->rrc.next_state = CELL_PCH;
-        break;
-      default:                 //ura_PCH not supported
-        return P_INVVALUE;
+  case cell_DCH:
+    protocol_ms->rrc.next_state = CELL_DCH;
+    break;
+
+  case cell_FACH:
+    protocol_ms->rrc.next_state = CELL_FACH;
+    break;
+
+  case cell_PCH:
+    protocol_ms->rrc.next_state = CELL_PCH;
+    break;
+
+  default:                 //ura_PCH not supported
+    return P_INVVALUE;
   }
 
   /* decode qos class and dscp code */
@@ -229,7 +242,8 @@ int rrc_PERDec_RRCConnectionSetup (RRCConnectionSetup * pvalue){
 /*  RRCConnectionSetupComplete                                */
 /**************************************************************/
 #ifdef NODE_MT
-int rrc_PEREnc_RRCConnectionSetupComplete (RRCConnectionSetupComplete * pvalue){
+int rrc_PEREnc_RRCConnectionSetupComplete (RRCConnectionSetupComplete * pvalue)
+{
   int status = P_SUCCESS;
 
   /* encode rrc_TransactionIdentifier */
@@ -243,7 +257,8 @@ int rrc_PEREnc_RRCConnectionSetupComplete (RRCConnectionSetupComplete * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_RG
-int rrc_PERDec_RRCConnectionSetupComplete (int UE_Id, RRCConnectionSetupComplete * pvalue){
+int rrc_PERDec_RRCConnectionSetupComplete (int UE_Id, RRCConnectionSetupComplete * pvalue)
+{
   int status = P_SUCCESS;
 
   /* decode rrc_TransactionIdentifier */
@@ -268,12 +283,14 @@ int rrc_PERDec_RRCConnectionSetupComplete (int UE_Id, RRCConnectionSetupComplete
 /*  RRCConnectionReject                                       */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_RRCConnectionReject (int UE_Id, RRCConnectionReject * pvalue){
+int rrc_PEREnc_RRCConnectionReject (int UE_Id, RRCConnectionReject * pvalue)
+{
   int status = P_SUCCESS;
   int i;
 
   /* encode initialUE_Identity = IMEI */
   pvalue->imei.numDigits = 14;  // limited version of IMEI is used
+
   for (i = 0; i < pvalue->imei.numDigits; i++)
     pvalue->imei.digit[i] = protocol_bs->rrc.Mobile_List[UE_Id].IMEI[i];
 
@@ -288,14 +305,17 @@ int rrc_PEREnc_RRCConnectionReject (int UE_Id, RRCConnectionReject * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_RRCConnectionReject (RRCConnectionReject * pvalue){
+int rrc_PERDec_RRCConnectionReject (RRCConnectionReject * pvalue)
+{
   int status = P_SUCCESS;
 
   /* decode initial UE_Identity = IMEI */
   if (pvalue->imei.numDigits > 15)
     return P_OUTOFBOUNDS;
+
   //   if (status = (strncmp((char *)protocol_ms->rrc.IMEI, (char *)pvalue->imei.digit,14)))
   status = memcmp ((char *) protocol_ms->rrc.IMEI, (char *) pvalue->imei.digit, 14);
+
   if (status) {
     msg ("\n[RRC_MSG] IMEI : --%s--, Received : --%s--, status %d\n", (char *) protocol_ms->rrc.IMEI, (char *) pvalue->imei.digit, status);
     return P_INVVALUE;          // ignore message
@@ -316,7 +336,8 @@ int rrc_PERDec_RRCConnectionReject (RRCConnectionReject * pvalue){
 /*  RRCConnectionRelease_UL                                   */
 /**************************************************************/
 #ifdef NODE_MT
-int rrc_PEREnc_RRCConnectionRelease_UL (RRCConnectionRelease_UL * pvalue){
+int rrc_PEREnc_RRCConnectionRelease_UL (RRCConnectionRelease_UL * pvalue)
+{
   int   status = P_SUCCESS;
 
   /* encode u_RNTI */
@@ -330,7 +351,8 @@ int rrc_PEREnc_RRCConnectionRelease_UL (RRCConnectionRelease_UL * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_RG
-int rrc_PERDec_RRCConnectionRelease_UL (int UE_Id, RRCConnectionRelease_UL * pvalue){
+int rrc_PERDec_RRCConnectionRelease_UL (int UE_Id, RRCConnectionRelease_UL * pvalue)
+{
   int   status = P_SUCCESS;
 
 
@@ -352,7 +374,8 @@ int rrc_PERDec_RRCConnectionRelease_UL (int UE_Id, RRCConnectionRelease_UL * pva
 /*  InitialDirectTransfer                                     */
 /**************************************************************/
 #ifdef NODE_MT
-int rrc_PEREnc_InitialDirectTransfer (InitialDirectTransfer * pvalue){
+int rrc_PEREnc_InitialDirectTransfer (InitialDirectTransfer * pvalue)
+{
   int status = P_SUCCESS;
   char *pwrite;
   int data_length;
@@ -380,9 +403,10 @@ int rrc_PEREnc_InitialDirectTransfer (InitialDirectTransfer * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_RG
-int rrc_PERDec_InitialDirectTransfer (int UE_Id, InitialDirectTransfer * pvalue){
+int rrc_PERDec_InitialDirectTransfer (int UE_Id, InitialDirectTransfer * pvalue)
+{
   int status = P_SUCCESS;
-//  char *buff_ptr;
+  //  char *buff_ptr;
   u8 *buff_ptr;
 
   // TODO: Remplacer buffers par nas_Message
@@ -409,7 +433,8 @@ int rrc_PERDec_InitialDirectTransfer (int UE_Id, InitialDirectTransfer * pvalue)
 /*  UplinkDirectTransfer                                      */
 /**************************************************************/
 #ifdef NODE_MT
-int rrc_PEREnc_UplinkDirectTransfer (UplinkDirectTransfer * pvalue){
+int rrc_PEREnc_UplinkDirectTransfer (UplinkDirectTransfer * pvalue)
+{
   int status = P_SUCCESS;
   char *pwrite;
   int data_length;
@@ -438,7 +463,8 @@ int rrc_PEREnc_UplinkDirectTransfer (UplinkDirectTransfer * pvalue){
 //-----------------------------------------------------------------------------
 #ifdef NODE_RG
 
-int rrc_PERDec_UplinkDirectTransfer (int UE_Id, UplinkDirectTransfer * pvalue){
+int rrc_PERDec_UplinkDirectTransfer (int UE_Id, UplinkDirectTransfer * pvalue)
+{
   int status = P_SUCCESS;
   u8 *buff_ptr;
 
@@ -465,7 +491,8 @@ int rrc_PERDec_UplinkDirectTransfer (int UE_Id, UplinkDirectTransfer * pvalue){
 /*  DownlinkDirectTransfer                                    */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_DownlinkDirectTransfer (int UE_Id, DownlinkDirectTransfer * pvalue){
+int rrc_PEREnc_DownlinkDirectTransfer (int UE_Id, DownlinkDirectTransfer * pvalue)
+{
   int status = P_SUCCESS;
   char *pwrite;
   int data_length;
@@ -494,7 +521,8 @@ int rrc_PEREnc_DownlinkDirectTransfer (int UE_Id, DownlinkDirectTransfer * pvalu
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_DownlinkDirectTransfer (DownlinkDirectTransfer * pvalue){
+int rrc_PERDec_DownlinkDirectTransfer (DownlinkDirectTransfer * pvalue)
+{
   int status = P_SUCCESS;
   char *buff_ptr;
 
@@ -523,7 +551,8 @@ int rrc_PERDec_DownlinkDirectTransfer (DownlinkDirectTransfer * pvalue){
 /*  RadioBearerSetup                                          */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_RadioBearerSetup (int UE_Id, RadioBearerSetup * pvalue){
+int rrc_PEREnc_RadioBearerSetup (int UE_Id, RadioBearerSetup * pvalue)
+{
   int status = P_SUCCESS;
   char *pwrite;
   int buff_length;
@@ -580,7 +609,8 @@ int rrc_PEREnc_RadioBearerSetup (int UE_Id, RadioBearerSetup * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int  rrc_PERDec_RadioBearerSetup (RadioBearerSetup * pvalue){
+int  rrc_PERDec_RadioBearerSetup (RadioBearerSetup * pvalue)
+{
   int status = P_SUCCESS;
   int buff_length;
   int rb_id = 0;
@@ -608,22 +638,26 @@ int  rrc_PERDec_RadioBearerSetup (RadioBearerSetup * pvalue){
 
   /* decode rrc_stateIndicator */
   switch (pvalue->rrc_StateIndicator) {
-      case cell_DCH:
-        protocol_ms->rrc.next_state = CELL_DCH;
-        break;
-      case cell_FACH:
-        protocol_ms->rrc.next_state = CELL_FACH;
-        break;
-      case cell_PCH:
-        protocol_ms->rrc.next_state = CELL_PCH;
-        break;
-      default:                 //ura_PCH not supported
-        return P_INVVALUE;
+  case cell_DCH:
+    protocol_ms->rrc.next_state = CELL_DCH;
+    break;
+
+  case cell_FACH:
+    protocol_ms->rrc.next_state = CELL_FACH;
+    break;
+
+  case cell_PCH:
+    protocol_ms->rrc.next_state = CELL_PCH;
+    break;
+
+  default:                 //ura_PCH not supported
+    return P_INVVALUE;
   }
 
   /* decode qos class and dscp code */
   if (pvalue->rab_InformationSetupList.numrabs > 1)
     msg ("\n[RRC_MSG] Number of rabs to setup not supported\n");
+
   protocol_ms->rrc.requested_rbId = pvalue->rab_InformationSetupList.rbinfo[0].rb_identity;
   protocol_ms->rrc.requested_QoSclass = pvalue->rab_InformationSetupList.rbinfo[0].qos_class;
   protocol_ms->rrc.requested_dscp = pvalue->rab_InformationSetupList.rbinfo[0].ip_dscp_code;
@@ -662,7 +696,8 @@ int  rrc_PERDec_RadioBearerSetup (RadioBearerSetup * pvalue){
 /*  RadioBearerRelease                                        */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_RadioBearerRelease (int UE_Id, RadioBearerRelease * pvalue){
+int rrc_PEREnc_RadioBearerRelease (int UE_Id, RadioBearerRelease * pvalue)
+{
   int status = P_SUCCESS;
 
   char *pwrite;
@@ -719,7 +754,8 @@ int rrc_PEREnc_RadioBearerRelease (int UE_Id, RadioBearerRelease * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_RadioBearerRelease (RadioBearerRelease * pvalue){
+int rrc_PERDec_RadioBearerRelease (RadioBearerRelease * pvalue)
+{
   int status = P_SUCCESS;
   int buff_length;
   char *buff_ptr;
@@ -743,22 +779,26 @@ int rrc_PERDec_RadioBearerRelease (RadioBearerRelease * pvalue){
 
   /* decode rrc_stateIndicator */
   switch (pvalue->rrc_StateIndicator) {
-      case cell_DCH:
-        protocol_ms->rrc.next_state = CELL_DCH;
-        break;
-      case cell_FACH:
-        protocol_ms->rrc.next_state = CELL_FACH;
-        break;
-      case cell_PCH:
-        protocol_ms->rrc.next_state = CELL_PCH;
-        break;
-      default:                 //ura_PCH not supported
-        return P_INVVALUE;
+  case cell_DCH:
+    protocol_ms->rrc.next_state = CELL_DCH;
+    break;
+
+  case cell_FACH:
+    protocol_ms->rrc.next_state = CELL_FACH;
+    break;
+
+  case cell_PCH:
+    protocol_ms->rrc.next_state = CELL_PCH;
+    break;
+
+  default:                 //ura_PCH not supported
+    return P_INVVALUE;
   }
 
   /* decode rb_InformationReleaseList  */
   if (pvalue->rb_InformationReleaseList.numrabs > 1)
     msg ("\n[RRC_MSG] Number of rabs to release not supported.\n");
+
   protocol_ms->rrc.requested_rbId = pvalue->rb_InformationReleaseList.rbid[0];
 #ifdef DEBUG_RRC_STATE
   msg ("\n[RRC_MSG] Number of Radio Bearers : %d \n", pvalue->rb_InformationReleaseList.numrabs);
@@ -789,7 +829,8 @@ int rrc_PERDec_RadioBearerRelease (RadioBearerRelease * pvalue){
 /**************************************************************/
 
 #ifdef NODE_MT
-int rrc_PEREnc_RadioBearerSetupComplete (RadioBearerSetupComplete * pvalue){
+int rrc_PEREnc_RadioBearerSetupComplete (RadioBearerSetupComplete * pvalue)
+{
   int status = P_SUCCESS;
 
   /* encode rrc_TransactionIdentifier */
@@ -800,7 +841,8 @@ int rrc_PEREnc_RadioBearerSetupComplete (RadioBearerSetupComplete * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_RG
-int rrc_PERDec_RadioBearerSetupComplete (int UE_Id, RadioBearerSetupComplete * pvalue){
+int rrc_PERDec_RadioBearerSetupComplete (int UE_Id, RadioBearerSetupComplete * pvalue)
+{
   int status = P_SUCCESS;
 
   /* decode rrc_TransactionIdentifier */
@@ -820,7 +862,8 @@ int rrc_PERDec_RadioBearerSetupComplete (int UE_Id, RadioBearerSetupComplete * p
 /*  RadioBearerSetupFailure                                   */
 /**************************************************************/
 #ifdef NODE_MT
-int rrc_PEREnc_RadioBearerSetupFailure (RadioBearerSetupFailure * pvalue){
+int rrc_PEREnc_RadioBearerSetupFailure (RadioBearerSetupFailure * pvalue)
+{
   int status = P_SUCCESS;
 
   /* encode rrc_TransactionIdentifier */
@@ -835,12 +878,14 @@ int rrc_PEREnc_RadioBearerSetupFailure (RadioBearerSetupFailure * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_RG
-int  rrc_PERDec_RadioBearerSetupFailure (int UE_Id, RadioBearerSetupFailure * pvalue){
+int  rrc_PERDec_RadioBearerSetupFailure (int UE_Id, RadioBearerSetupFailure * pvalue)
+{
   int status = P_SUCCESS;
 
   /* decode rrc_TransactionIdentifier */
   if (pvalue->rrc_TransactionIdentifier != protocol_bs->rrc.Mobile_List[UE_Id].xmit_trans[0].transaction_Id)
     return P_INVVALUE;
+
   //     {
   //       msg("\n[RRC_MSG] Transaction Id : --%d--, Received : --%d--, status %d\n",
 
@@ -862,7 +907,8 @@ int  rrc_PERDec_RadioBearerSetupFailure (int UE_Id, RadioBearerSetupFailure * pv
 /*  RadioBearerReleaseComplete                                */
 /**************************************************************/
 #ifdef NODE_MT
-int rrc_PEREnc_RadioBearerReleaseComplete (RadioBearerReleaseComplete * pvalue){
+int rrc_PEREnc_RadioBearerReleaseComplete (RadioBearerReleaseComplete * pvalue)
+{
   int status = P_SUCCESS;
 
   /* encode rrc_TransactionIdentifier */
@@ -873,12 +919,14 @@ int rrc_PEREnc_RadioBearerReleaseComplete (RadioBearerReleaseComplete * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_RG
-int rrc_PERDec_RadioBearerReleaseComplete (int UE_Id, RadioBearerReleaseComplete * pvalue){
+int rrc_PERDec_RadioBearerReleaseComplete (int UE_Id, RadioBearerReleaseComplete * pvalue)
+{
   int status = P_SUCCESS;
 
   /* decode rrc_TransactionIdentifier */
   if (pvalue->rrc_TransactionIdentifier != protocol_bs->rrc.Mobile_List[UE_Id].xmit_trans[0].transaction_Id)
     return P_INVVALUE;
+
   //     {
   //       msg("\n[RRC_MSG] Transaction Id : --%d--, Received : --%d--, status %d\n",
   //                 protocol_bs->rrc.Mobile_List[UE_Id].xmit_trans[0].transaction_Id,
@@ -895,7 +943,8 @@ int rrc_PERDec_RadioBearerReleaseComplete (int UE_Id, RadioBearerReleaseComplete
 /*  RadioBearerReleaseFailure                                 */
 /**************************************************************/
 #ifdef NODE_MT
-int rrc_PEREnc_RadioBearerReleaseFailure (RadioBearerReleaseFailure * pvalue){
+int rrc_PEREnc_RadioBearerReleaseFailure (RadioBearerReleaseFailure * pvalue)
+{
   int status = P_SUCCESS;
 
   /* encode rrc_TransactionIdentifier */
@@ -910,12 +959,14 @@ int rrc_PEREnc_RadioBearerReleaseFailure (RadioBearerReleaseFailure * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_RG
-int rrc_PERDec_RadioBearerReleaseFailure (int UE_Id, RadioBearerReleaseFailure * pvalue){
+int rrc_PERDec_RadioBearerReleaseFailure (int UE_Id, RadioBearerReleaseFailure * pvalue)
+{
   int status = P_SUCCESS;
 
   /* decode rrc_TransactionIdentifier */
   if (pvalue->rrc_TransactionIdentifier != protocol_bs->rrc.Mobile_List[UE_Id].xmit_trans[0].transaction_Id)
     return P_INVVALUE;
+
   //     {
   //       msg("\n[RRC_MSG] Transaction Id : --%d--, Received : --%d--, status %d\n",
   //                 protocol_bs->rrc.Mobile_List[UE_Id].xmit_trans[0].transaction_Id,
@@ -936,7 +987,8 @@ int rrc_PERDec_RadioBearerReleaseFailure (int UE_Id, RadioBearerReleaseFailure *
 /*  CellUpdate                                                */
 /**************************************************************/
 #ifdef NODE_MT
-int rrc_PEREnc_CellUpdate (CellUpdate * pvalue){
+int rrc_PEREnc_CellUpdate (CellUpdate * pvalue)
+{
   int status = P_SUCCESS;
 
 
@@ -962,7 +1014,8 @@ int rrc_PEREnc_CellUpdate (CellUpdate * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_RG
-int rrc_PERDec_CellUpdate (int *pUE_Id, CellUpdate * pvalue){
+int rrc_PERDec_CellUpdate (int *pUE_Id, CellUpdate * pvalue)
+{
   int status = P_SUCCESS;
   int i, UE_Id;
 
@@ -1007,7 +1060,8 @@ int rrc_PERDec_CellUpdate (int *pUE_Id, CellUpdate * pvalue){
 /*  CellUpdateConfirm_CCCH                                    */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_CellUpdateConfirm_CCCH (int UE_Id, CellUpdateConfirm_CCCH * pvalue){
+int rrc_PEREnc_CellUpdateConfirm_CCCH (int UE_Id, CellUpdateConfirm_CCCH * pvalue)
+{
   int status = P_SUCCESS;
 
   char *pwrite;
@@ -1071,7 +1125,8 @@ int rrc_PEREnc_CellUpdateConfirm_CCCH (int UE_Id, CellUpdateConfirm_CCCH * pvalu
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_CellUpdateConfirm_CCCH (CellUpdateConfirm_CCCH * pvalue){
+int rrc_PERDec_CellUpdateConfirm_CCCH (CellUpdateConfirm_CCCH * pvalue)
+{
   int status = P_SUCCESS;
   int buff_length;
   char *buff_ptr;
@@ -1081,6 +1136,7 @@ int rrc_PERDec_CellUpdateConfirm_CCCH (CellUpdateConfirm_CCCH * pvalue){
     msg ("\n[RRC_MSG] u-RNTI : --%d--, Received : --%d--, status: Invalid u-rnti \n", protocol_ms->rrc.u_rnti, pvalue->u_RNTI);
     return P_INVVALUE;          // ignore message
   }
+
   /* decode rrc_TransactionIdentifier */
   protocol_ms->rrc.rcved_trans.msg_type = DL_CCCH_cellUpdateConfirm;
   protocol_ms->rrc.rcved_trans.transaction_Id = pvalue->rrc_TransactionIdentifier;
@@ -1095,19 +1151,21 @@ int rrc_PERDec_CellUpdateConfirm_CCCH (CellUpdateConfirm_CCCH * pvalue){
 
   /* decode rrc_stateIndicator */
   switch (pvalue->rrc_StateIndicator) {
-      case cell_DCH:
-        protocol_ms->rrc.next_state = CELL_DCH;
-        break;
+  case cell_DCH:
+    protocol_ms->rrc.next_state = CELL_DCH;
+    break;
 
-      case cell_FACH:
+  case cell_FACH:
 
-        protocol_ms->rrc.next_state = CELL_FACH;
-        break;
-      case cell_PCH:
-        protocol_ms->rrc.next_state = CELL_PCH;
-        break;
-      default:                 //ura_PCH not supported
-        return P_INVVALUE;
+    protocol_ms->rrc.next_state = CELL_FACH;
+    break;
+
+  case cell_PCH:
+    protocol_ms->rrc.next_state = CELL_PCH;
+    break;
+
+  default:                 //ura_PCH not supported
+    return P_INVVALUE;
   }
 
   /* decode rlc_Re_establishIndicatorRb2_3or4 */
@@ -1115,15 +1173,15 @@ int rrc_PERDec_CellUpdateConfirm_CCCH (CellUpdateConfirm_CCCH * pvalue){
   /* decode rlc_Re_establishIndicatorRb5orAbove */
   protocol_ms->rrc.rlc_Re_establishIndicatorRb5orAbove = pvalue->rlc_Re_establishIndicatorRb5orAbove;
 
-//  /* decode ue_Configuration */
-//  buff_ptr = (char *) (&(pvalue->ue_Configuration.numoctets));
-//
-//  buff_ptr += 2;
-//  //   rrc_uncompress_buffer(buff_ptr,(u16)pvalue->ue_Configuration.numoctets, buff_ptr, &buff_length);
-//#ifdef DEBUG_RRC_STATE
-//  msg ("\n[RRC_MSG] New Configuration : \n");
-//  rrc_print_buffer (buff_ptr, buff_length);
-//#endif
+  //  /* decode ue_Configuration */
+  //  buff_ptr = (char *) (&(pvalue->ue_Configuration.numoctets));
+  //
+  //  buff_ptr += 2;
+  //  //   rrc_uncompress_buffer(buff_ptr,(u16)pvalue->ue_Configuration.numoctets, buff_ptr, &buff_length);
+  //#ifdef DEBUG_RRC_STATE
+  //  msg ("\n[RRC_MSG] New Configuration : \n");
+  //  rrc_print_buffer (buff_ptr, buff_length);
+  //#endif
 
   /* decode ue_Configuration */
   //
@@ -1148,7 +1206,8 @@ int rrc_PERDec_CellUpdateConfirm_CCCH (CellUpdateConfirm_CCCH * pvalue){
 /*  PagingType2                                               */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_PagingType2 (int UE_Id, PagingType2 * pvalue){
+int rrc_PEREnc_PagingType2 (int UE_Id, PagingType2 * pvalue)
+{
   int status = P_SUCCESS;
   char *pwrite;
   int i;
@@ -1182,7 +1241,8 @@ int rrc_PEREnc_PagingType2 (int UE_Id, PagingType2 * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_PagingType2 (PagingType2 * pvalue){
+int rrc_PERDec_PagingType2 (PagingType2 * pvalue)
+{
   int status = P_SUCCESS;
   char *buff_ptr;
 
@@ -1194,12 +1254,15 @@ int rrc_PERDec_PagingType2 (PagingType2 * pvalue){
   /* decode IMEI */
   if (pvalue->imei.numDigits > 15)
     return P_OUTOFBOUNDS;
+
   //   if (status = (strncmp((char *)protocol_ms->rrc.IMEI, (char *)pvalue->imei.digit,14)))
   status = memcmp ((char *) protocol_ms->rrc.IMEI, (char *) pvalue->imei.digit, 14);
+
   if (status) {
     msg ("\n[RRC_MSG] IMEI : --%s--, Received : --%s--, status %d\n", (char *) protocol_ms->rrc.IMEI, (char *) pvalue->imei.digit, status);
     return P_INVVALUE;          // ignore message
   }
+
   // TODO: Remplacer buffers par paging_Message + verifier qu'ils sont vides
   /* decode paging_Message */
   buff_ptr = (char *) (&(pvalue->paging_Message.numoctets));
@@ -1222,7 +1285,8 @@ int rrc_PERDec_PagingType2 (PagingType2 * pvalue){
 /*  MeasurementControl                                        */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_MeasurementControl (int UE_Id, MeasurementControl * pvalue){
+int rrc_PEREnc_MeasurementControl (int UE_Id, MeasurementControl * pvalue)
+{
   int status = P_SUCCESS;
   MeasurementType *pCommand = NULL;
   char *pwrite;
@@ -1238,62 +1302,71 @@ int rrc_PEREnc_MeasurementControl (int UE_Id, MeasurementControl * pvalue){
   pvalue->measurementCommand.cmdType = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.command;
 
   switch (pvalue->measurementCommand.cmdType) {
-      case MC_setup:
-        pCommand = &(pvalue->measurementCommand.command.setup);
-        break;
-      case MC_modify:
-        pCommand = &(pvalue->measurementCommand.command.modify);
-        break;
-      default:
-        // MC_delete : nothing to encode
-        pCommand = NULL;
+  case MC_setup:
+    pCommand = &(pvalue->measurementCommand.command.setup);
+    break;
+
+  case MC_modify:
+    pCommand = &(pvalue->measurementCommand.command.modify);
+    break;
+
+  default:
+    // MC_delete : nothing to encode
+    pCommand = NULL;
   }
 
   if (pCommand != NULL) {
     pCommand->measType = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.type;
+
     switch (pCommand->measType) {
-        case MT_intraFrequencyMeasurement:
-          pCommand->type.intraFrequencyMeasurement.intraFreqMeasQuantity.filterCoefficient = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.if_coeff;
-          pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.cellIdentity_reportingIndicator = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.if_cellIdentity_ri;
-          pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.timeslotISCP_reportingIndicator = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.if_timeslotISCP_ri;
-          pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.primaryCCPCH_RSCP_reportingIndicator = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.if_BCH_RSCP_ri;
-          pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.pathloss_reportingIndicator = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.if_pathloss_ri;
-          pCommand->type.intraFrequencyMeasurement.measurementValidity = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.if_validity;
-          pCommand->type.intraFrequencyMeasurement.reportCriteria.criteriaType =        // must be periodical
-            protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.criteria_type;
-          pCommand->type.intraFrequencyMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_amount;
-          pCommand->type.intraFrequencyMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_interval;
-          break;
-        case MT_trafficVolumeMeasurement:
-          pCommand->type.trafficVolumeMeasurement.trafficVolumeReportingQuantity.rlc_RB_BufferPayload = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.tv_payload_ri;
-          pCommand->type.trafficVolumeMeasurement.trafficVolumeReportingQuantity.rlc_RB_BufferPayloadAverage = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.tv_average_ri;
-          pCommand->type.trafficVolumeMeasurement.trafficVolumeReportingQuantity.rlc_RB_BufferPayloadVariance = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.tv_variance_ri;
-          pCommand->type.trafficVolumeMeasurement.measurementValidity = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.tv_validity;
-          pCommand->type.trafficVolumeMeasurement.reportCriteria.criteriaType = // must be periodical
-            protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.criteria_type;
-          pCommand->type.trafficVolumeMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_amount;
-          pCommand->type.trafficVolumeMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_interval;
-          break;
-        case MT_qualityMeasurement:
-          pCommand->type.qualityMeasurement.qualityReportingQuantity.dl_TransChBLER = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.q_dl_trch_bler_ri;
-          for (i = 0; i < MAXMEASTFCS; i++)
-            pCommand->type.qualityMeasurement.qualityReportingQuantity.sir_TFCS_List.tfcs[i] = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.q_sir_TFCSid[i];
-          pCommand->type.qualityMeasurement.reportCriteria.criteriaType =       // must be periodical
-            protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.criteria_type;
-          pCommand->type.qualityMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_amount;
-          pCommand->type.qualityMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_interval;
-          break;
-        case MT_ue_InternalMeasurement:
-          pCommand->type.ue_InternalMeasurement.ue_InternalMeasQuantity.measurementQuantity = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.int_quantity;
-          pCommand->type.ue_InternalMeasurement.ue_InternalMeasQuantity.filterCoefficient = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.int_coeff;
-          pCommand->type.ue_InternalMeasurement.ue_InternalReportingQuantity.ue_TransmittedPower = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.int_rep_ue_TransmittedPower;
-          pCommand->type.ue_InternalMeasurement.ue_InternalReportingQuantity.appliedTA = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.int_rep_appliedTA;
-          pCommand->type.ue_InternalMeasurement.reportCriteria.criteriaType = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.criteria_type;
-          pCommand->type.ue_InternalMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_amount;
-          pCommand->type.ue_InternalMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_interval;
-          break;
-        default:
-          msg ("\n[RRC_MSG] invalid Measure Command Type selected\n");
+    case MT_intraFrequencyMeasurement:
+      pCommand->type.intraFrequencyMeasurement.intraFreqMeasQuantity.filterCoefficient = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.if_coeff;
+      pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.cellIdentity_reportingIndicator = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.if_cellIdentity_ri;
+      pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.timeslotISCP_reportingIndicator = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.if_timeslotISCP_ri;
+      pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.primaryCCPCH_RSCP_reportingIndicator = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.if_BCH_RSCP_ri;
+      pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.pathloss_reportingIndicator = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.if_pathloss_ri;
+      pCommand->type.intraFrequencyMeasurement.measurementValidity = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.if_validity;
+      pCommand->type.intraFrequencyMeasurement.reportCriteria.criteriaType =        // must be periodical
+        protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.criteria_type;
+      pCommand->type.intraFrequencyMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_amount;
+      pCommand->type.intraFrequencyMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_interval;
+      break;
+
+    case MT_trafficVolumeMeasurement:
+      pCommand->type.trafficVolumeMeasurement.trafficVolumeReportingQuantity.rlc_RB_BufferPayload = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.tv_payload_ri;
+      pCommand->type.trafficVolumeMeasurement.trafficVolumeReportingQuantity.rlc_RB_BufferPayloadAverage = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.tv_average_ri;
+      pCommand->type.trafficVolumeMeasurement.trafficVolumeReportingQuantity.rlc_RB_BufferPayloadVariance = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.tv_variance_ri;
+      pCommand->type.trafficVolumeMeasurement.measurementValidity = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.tv_validity;
+      pCommand->type.trafficVolumeMeasurement.reportCriteria.criteriaType = // must be periodical
+        protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.criteria_type;
+      pCommand->type.trafficVolumeMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_amount;
+      pCommand->type.trafficVolumeMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_interval;
+      break;
+
+    case MT_qualityMeasurement:
+      pCommand->type.qualityMeasurement.qualityReportingQuantity.dl_TransChBLER = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.q_dl_trch_bler_ri;
+
+      for (i = 0; i < MAXMEASTFCS; i++)
+        pCommand->type.qualityMeasurement.qualityReportingQuantity.sir_TFCS_List.tfcs[i] = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.q_sir_TFCSid[i];
+
+      pCommand->type.qualityMeasurement.reportCriteria.criteriaType =       // must be periodical
+        protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.criteria_type;
+      pCommand->type.qualityMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_amount;
+      pCommand->type.qualityMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_interval;
+      break;
+
+    case MT_ue_InternalMeasurement:
+      pCommand->type.ue_InternalMeasurement.ue_InternalMeasQuantity.measurementQuantity = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.int_quantity;
+      pCommand->type.ue_InternalMeasurement.ue_InternalMeasQuantity.filterCoefficient = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.int_coeff;
+      pCommand->type.ue_InternalMeasurement.ue_InternalReportingQuantity.ue_TransmittedPower = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.int_rep_ue_TransmittedPower;
+      pCommand->type.ue_InternalMeasurement.ue_InternalReportingQuantity.appliedTA = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.int_rep_appliedTA;
+      pCommand->type.ue_InternalMeasurement.reportCriteria.criteriaType = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.criteria_type;
+      pCommand->type.ue_InternalMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_amount;
+      pCommand->type.ue_InternalMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval = protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_cmd.rep_interval;
+      break;
+
+    default:
+      msg ("\n[RRC_MSG] invalid Measure Command Type selected\n");
     }
   }                             //endif
 
@@ -1312,7 +1385,8 @@ int rrc_PEREnc_MeasurementControl (int UE_Id, MeasurementControl * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_MeasurementControl (MeasurementControl * pvalue){
+int rrc_PERDec_MeasurementControl (MeasurementControl * pvalue)
+{
   int status = P_SUCCESS;
   int m_id, i;
   MeasurementType *pCommand = NULL;
@@ -1327,60 +1401,70 @@ int rrc_PERDec_MeasurementControl (MeasurementControl * pvalue){
   protocol_ms->rrc.rrc_ue_meas_to_activate = m_id;
   /* decode  measurementCommand */
   protocol_ms->rrc.ue_meas_cmd[m_id].command = pvalue->measurementCommand.cmdType;
+
   switch (pvalue->measurementCommand.cmdType) {
-      case MC_setup:
-        pCommand = &(pvalue->measurementCommand.command.setup);
-        break;
-      case MC_modify:
-        pCommand = &(pvalue->measurementCommand.command.modify);
-        break;
-      default:
-        // MC_release : nothing to encode
-        pCommand = NULL;
+  case MC_setup:
+    pCommand = &(pvalue->measurementCommand.command.setup);
+    break;
+
+  case MC_modify:
+    pCommand = &(pvalue->measurementCommand.command.modify);
+    break;
+
+  default:
+    // MC_release : nothing to encode
+    pCommand = NULL;
   }
 
   if (pCommand != NULL) {
     protocol_ms->rrc.ue_meas_cmd[m_id].type = pCommand->measType;
+
     switch (pCommand->measType) {
-        case MT_intraFrequencyMeasurement:
-          protocol_ms->rrc.ue_meas_cmd[m_id].if_coeff = pCommand->type.intraFrequencyMeasurement.intraFreqMeasQuantity.filterCoefficient;
-          protocol_ms->rrc.ue_meas_cmd[m_id].if_cellIdentity_ri = pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.cellIdentity_reportingIndicator;
-          protocol_ms->rrc.ue_meas_cmd[m_id].if_timeslotISCP_ri = pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.timeslotISCP_reportingIndicator;
-          protocol_ms->rrc.ue_meas_cmd[m_id].if_BCH_RSCP_ri = pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.primaryCCPCH_RSCP_reportingIndicator;
-          protocol_ms->rrc.ue_meas_cmd[m_id].if_pathloss_ri = pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.pathloss_reportingIndicator;
-          protocol_ms->rrc.ue_meas_cmd[m_id].if_validity = pCommand->type.intraFrequencyMeasurement.measurementValidity;
-          protocol_ms->rrc.ue_meas_cmd[m_id].criteria_type = pCommand->type.intraFrequencyMeasurement.reportCriteria.criteriaType;      // must be periodical
-          protocol_ms->rrc.ue_meas_cmd[m_id].rep_amount = pCommand->type.intraFrequencyMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount;
-          protocol_ms->rrc.ue_meas_cmd[m_id].rep_interval = pCommand->type.intraFrequencyMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval;
-          break;
-        case MT_trafficVolumeMeasurement:
-          protocol_ms->rrc.ue_meas_cmd[m_id].tv_payload_ri = pCommand->type.trafficVolumeMeasurement.trafficVolumeReportingQuantity.rlc_RB_BufferPayload;
-          protocol_ms->rrc.ue_meas_cmd[m_id].tv_average_ri = pCommand->type.trafficVolumeMeasurement.trafficVolumeReportingQuantity.rlc_RB_BufferPayloadAverage;
-          protocol_ms->rrc.ue_meas_cmd[m_id].tv_variance_ri = pCommand->type.trafficVolumeMeasurement.trafficVolumeReportingQuantity.rlc_RB_BufferPayloadVariance;
-          protocol_ms->rrc.ue_meas_cmd[m_id].tv_validity = pCommand->type.trafficVolumeMeasurement.measurementValidity;
-          protocol_ms->rrc.ue_meas_cmd[m_id].criteria_type = pCommand->type.trafficVolumeMeasurement.reportCriteria.criteriaType;       // must be periodical
-          protocol_ms->rrc.ue_meas_cmd[m_id].rep_amount = pCommand->type.trafficVolumeMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount;
-          protocol_ms->rrc.ue_meas_cmd[m_id].rep_interval = pCommand->type.trafficVolumeMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval;
-          break;
-        case MT_qualityMeasurement:
-          protocol_ms->rrc.ue_meas_cmd[m_id].q_dl_trch_bler_ri = pCommand->type.qualityMeasurement.qualityReportingQuantity.dl_TransChBLER;
-          for (i = 0; i < MAXMEASTFCS; i++)
-            protocol_ms->rrc.ue_meas_cmd[m_id].q_sir_TFCSid[i] = pCommand->type.qualityMeasurement.qualityReportingQuantity.sir_TFCS_List.tfcs[i];
-          protocol_ms->rrc.ue_meas_cmd[m_id].criteria_type = pCommand->type.qualityMeasurement.reportCriteria.criteriaType;     // must be periodical
-          protocol_ms->rrc.ue_meas_cmd[m_id].rep_amount = pCommand->type.qualityMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount;
-          protocol_ms->rrc.ue_meas_cmd[m_id].rep_interval = pCommand->type.qualityMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval;
-          break;
-        case MT_ue_InternalMeasurement:
-          protocol_ms->rrc.ue_meas_cmd[m_id].int_quantity = pCommand->type.ue_InternalMeasurement.ue_InternalMeasQuantity.measurementQuantity;
-          protocol_ms->rrc.ue_meas_cmd[m_id].int_coeff = pCommand->type.ue_InternalMeasurement.ue_InternalMeasQuantity.filterCoefficient;
-          protocol_ms->rrc.ue_meas_cmd[m_id].int_rep_ue_TransmittedPower = pCommand->type.ue_InternalMeasurement.ue_InternalReportingQuantity.ue_TransmittedPower;
-          protocol_ms->rrc.ue_meas_cmd[m_id].int_rep_appliedTA = pCommand->type.ue_InternalMeasurement.ue_InternalReportingQuantity.appliedTA;
-          protocol_ms->rrc.ue_meas_cmd[m_id].criteria_type = pCommand->type.ue_InternalMeasurement.reportCriteria.criteriaType;
-          protocol_ms->rrc.ue_meas_cmd[m_id].rep_amount = pCommand->type.ue_InternalMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount;
-          protocol_ms->rrc.ue_meas_cmd[m_id].rep_interval = pCommand->type.ue_InternalMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval;
-          break;
-        default:
-          msg ("\n[RRC_MSG] invalid Measure Command Type selected : %d\n", pCommand->measType);
+    case MT_intraFrequencyMeasurement:
+      protocol_ms->rrc.ue_meas_cmd[m_id].if_coeff = pCommand->type.intraFrequencyMeasurement.intraFreqMeasQuantity.filterCoefficient;
+      protocol_ms->rrc.ue_meas_cmd[m_id].if_cellIdentity_ri = pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.cellIdentity_reportingIndicator;
+      protocol_ms->rrc.ue_meas_cmd[m_id].if_timeslotISCP_ri = pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.timeslotISCP_reportingIndicator;
+      protocol_ms->rrc.ue_meas_cmd[m_id].if_BCH_RSCP_ri = pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.primaryCCPCH_RSCP_reportingIndicator;
+      protocol_ms->rrc.ue_meas_cmd[m_id].if_pathloss_ri = pCommand->type.intraFrequencyMeasurement.intraFreqReportingQuantity.pathloss_reportingIndicator;
+      protocol_ms->rrc.ue_meas_cmd[m_id].if_validity = pCommand->type.intraFrequencyMeasurement.measurementValidity;
+      protocol_ms->rrc.ue_meas_cmd[m_id].criteria_type = pCommand->type.intraFrequencyMeasurement.reportCriteria.criteriaType;      // must be periodical
+      protocol_ms->rrc.ue_meas_cmd[m_id].rep_amount = pCommand->type.intraFrequencyMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount;
+      protocol_ms->rrc.ue_meas_cmd[m_id].rep_interval = pCommand->type.intraFrequencyMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval;
+      break;
+
+    case MT_trafficVolumeMeasurement:
+      protocol_ms->rrc.ue_meas_cmd[m_id].tv_payload_ri = pCommand->type.trafficVolumeMeasurement.trafficVolumeReportingQuantity.rlc_RB_BufferPayload;
+      protocol_ms->rrc.ue_meas_cmd[m_id].tv_average_ri = pCommand->type.trafficVolumeMeasurement.trafficVolumeReportingQuantity.rlc_RB_BufferPayloadAverage;
+      protocol_ms->rrc.ue_meas_cmd[m_id].tv_variance_ri = pCommand->type.trafficVolumeMeasurement.trafficVolumeReportingQuantity.rlc_RB_BufferPayloadVariance;
+      protocol_ms->rrc.ue_meas_cmd[m_id].tv_validity = pCommand->type.trafficVolumeMeasurement.measurementValidity;
+      protocol_ms->rrc.ue_meas_cmd[m_id].criteria_type = pCommand->type.trafficVolumeMeasurement.reportCriteria.criteriaType;       // must be periodical
+      protocol_ms->rrc.ue_meas_cmd[m_id].rep_amount = pCommand->type.trafficVolumeMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount;
+      protocol_ms->rrc.ue_meas_cmd[m_id].rep_interval = pCommand->type.trafficVolumeMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval;
+      break;
+
+    case MT_qualityMeasurement:
+      protocol_ms->rrc.ue_meas_cmd[m_id].q_dl_trch_bler_ri = pCommand->type.qualityMeasurement.qualityReportingQuantity.dl_TransChBLER;
+
+      for (i = 0; i < MAXMEASTFCS; i++)
+        protocol_ms->rrc.ue_meas_cmd[m_id].q_sir_TFCSid[i] = pCommand->type.qualityMeasurement.qualityReportingQuantity.sir_TFCS_List.tfcs[i];
+
+      protocol_ms->rrc.ue_meas_cmd[m_id].criteria_type = pCommand->type.qualityMeasurement.reportCriteria.criteriaType;     // must be periodical
+      protocol_ms->rrc.ue_meas_cmd[m_id].rep_amount = pCommand->type.qualityMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount;
+      protocol_ms->rrc.ue_meas_cmd[m_id].rep_interval = pCommand->type.qualityMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval;
+      break;
+
+    case MT_ue_InternalMeasurement:
+      protocol_ms->rrc.ue_meas_cmd[m_id].int_quantity = pCommand->type.ue_InternalMeasurement.ue_InternalMeasQuantity.measurementQuantity;
+      protocol_ms->rrc.ue_meas_cmd[m_id].int_coeff = pCommand->type.ue_InternalMeasurement.ue_InternalMeasQuantity.filterCoefficient;
+      protocol_ms->rrc.ue_meas_cmd[m_id].int_rep_ue_TransmittedPower = pCommand->type.ue_InternalMeasurement.ue_InternalReportingQuantity.ue_TransmittedPower;
+      protocol_ms->rrc.ue_meas_cmd[m_id].int_rep_appliedTA = pCommand->type.ue_InternalMeasurement.ue_InternalReportingQuantity.appliedTA;
+      protocol_ms->rrc.ue_meas_cmd[m_id].criteria_type = pCommand->type.ue_InternalMeasurement.reportCriteria.criteriaType;
+      protocol_ms->rrc.ue_meas_cmd[m_id].rep_amount = pCommand->type.ue_InternalMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingAmount;
+      protocol_ms->rrc.ue_meas_cmd[m_id].rep_interval = pCommand->type.ue_InternalMeasurement.reportCriteria.criteriaDef.periodicalReportingCriteria.reportingInterval;
+      break;
+
+    default:
+      msg ("\n[RRC_MSG] invalid Measure Command Type selected : %d\n", pCommand->measType);
     }
   }                             //endif
 
@@ -1396,7 +1480,8 @@ int rrc_PERDec_MeasurementControl (MeasurementControl * pvalue){
 /*  MeasurementReport                                         */
 /**************************************************************/
 #ifdef NODE_MT
-int rrc_PEREnc_MeasurementReport (MeasurementReport * pvalue){
+int rrc_PEREnc_MeasurementReport (MeasurementReport * pvalue)
+{
   int status = P_SUCCESS;
   int i, j, nCells = 0;
   int m_id;
@@ -1409,53 +1494,69 @@ int rrc_PEREnc_MeasurementReport (MeasurementReport * pvalue){
   pvalue->measuredResults.measResult = protocol_ms->rrc.ue_meas_rep[m_id].meas_results_type;
 
   switch (pvalue->measuredResults.measResult) {
-      case MR_intraFreqMeasuredResultsList:
-        pvalue->measuredResults.result.intraFreqMeasuredResultsList.numCells = protocol_ms->rrc.ue_meas_rep[m_id].if_num_cells;
-        nCells = protocol_ms->rrc.ue_meas_rep[m_id].if_num_cells;
-        for (i = 0; i < nCells; i++) {
-          pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].cellIdentity = protocol_ms->rrc.ue_meas_rep[m_id].if_cell_id[i];
-          pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.cellParametersID = protocol_ms->rrc.ue_meas_rep[m_id].if_cell_parms_id[i];
-          pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.primaryCCPCH_RSCP = protocol_ms->rrc.ue_meas_rep[m_id].if_BCH_RSCP[i];
-          pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.pathloss = protocol_ms->rrc.ue_meas_rep[m_id].if_pathloss[i];
-          pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.timeslotISCP_List.numSlots = 14;
-          for (j = 0; j < 14; j++) {
-            pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.timeslotISCP_List.iscp[j] = protocol_ms->rrc.ue_meas_rep[m_id].if_slot_iscp[i][j];
-          }
-        }
-        break;
-      case MR_trafficVolumeMeasuredResultsList:
-        pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.numRB = protocol_ms->rrc.ue_meas_rep[m_id].tv_num_rbs;
-        for (i = 0; i < protocol_ms->rrc.ue_meas_rep[m_id].tv_num_rbs; i++) {
-          pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].rb_Identity = protocol_ms->rrc.ue_meas_rep[m_id].tv_rbid[i];
-          pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].rlc_BuffersPayload = protocol_ms->rrc.ue_meas_rep[m_id].tv_rb_payload[i];
-          pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].averageRLC_BufferPayload = protocol_ms->rrc.ue_meas_rep[m_id].tv_rb_average[i];
-          pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].varianceOfRLC_BufferPayload = protocol_ms->rrc.ue_meas_rep[m_id].tv_rb_variance[i];
-        }
-        break;
-      case MR_qualityMeasuredResults:
-        pvalue->measuredResults.result.qualityMeasuredResults.blerMeasurementResultsList.numTrCH = protocol_ms->rrc.ue_meas_rep[m_id].q_num_TrCH;
-        for (i = 0; i < protocol_ms->rrc.ue_meas_rep[m_id].q_num_TrCH; i++) {
-          pvalue->measuredResults.result.qualityMeasuredResults.blerMeasurementResultsList.measTrCH[i].transportChannelIdentity = protocol_ms->rrc.ue_meas_rep[m_id].q_dl_TrCH_id[i];
-          pvalue->measuredResults.result.qualityMeasuredResults.blerMeasurementResultsList.measTrCH[i].dl_TransportChannelBLER = protocol_ms->rrc.ue_meas_rep[m_id].q_dl_TrCH_BLER[i];
-        }
-        pvalue->measuredResults.result.qualityMeasuredResults.sir_MeasurementList.numTFCS = protocol_ms->rrc.ue_meas_rep[m_id].q_num_tfcs;
-        for (i = 0; i < protocol_ms->rrc.ue_meas_rep[m_id].q_num_tfcs; i++) {
-          pvalue->measuredResults.result.qualityMeasuredResults.sir_MeasurementList.sirMeas[i].tfcs_ID = protocol_ms->rrc.ue_meas_rep[m_id].q_tfcs_id[i];
-          pvalue->measuredResults.result.qualityMeasuredResults.sir_MeasurementList.sirMeas[i].sir_TimeslotList.numSIR = 14;
-          for (j = 0; j < 14; j++) {
-            pvalue->measuredResults.result.qualityMeasuredResults.sir_MeasurementList.sirMeas[i].sir_TimeslotList.sir[j] = protocol_ms->rrc.ue_meas_rep[m_id].q_sir[i][j];
-          }
-        }
-        break;
-      case MR_ue_InternalMeasuredResults:
-        pvalue->measuredResults.result.ue_InternalMeasuredResults.ue_TransmittedPowerTDD_List.numSlots = 14;
-        for (j = 0; j < 14; j++) {
-          pvalue->measuredResults.result.ue_InternalMeasuredResults.ue_TransmittedPowerTDD_List.xmitPower[j] = protocol_ms->rrc.ue_meas_rep[m_id].int_xmit_power[j];
-        }
-        pvalue->measuredResults.result.ue_InternalMeasuredResults.appliedTA = protocol_ms->rrc.ue_meas_rep[m_id].int_timing_advance;
-        break;
-      default:
-        msg ("\n[RRC_MSG] invalid Measure Report Type selected %d\n", pvalue->measuredResults.measResult);
+  case MR_intraFreqMeasuredResultsList:
+    pvalue->measuredResults.result.intraFreqMeasuredResultsList.numCells = protocol_ms->rrc.ue_meas_rep[m_id].if_num_cells;
+    nCells = protocol_ms->rrc.ue_meas_rep[m_id].if_num_cells;
+
+    for (i = 0; i < nCells; i++) {
+      pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].cellIdentity = protocol_ms->rrc.ue_meas_rep[m_id].if_cell_id[i];
+      pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.cellParametersID = protocol_ms->rrc.ue_meas_rep[m_id].if_cell_parms_id[i];
+      pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.primaryCCPCH_RSCP = protocol_ms->rrc.ue_meas_rep[m_id].if_BCH_RSCP[i];
+      pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.pathloss = protocol_ms->rrc.ue_meas_rep[m_id].if_pathloss[i];
+      pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.timeslotISCP_List.numSlots = 14;
+
+      for (j = 0; j < 14; j++) {
+        pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.timeslotISCP_List.iscp[j] = protocol_ms->rrc.ue_meas_rep[m_id].if_slot_iscp[i][j];
+      }
+    }
+
+    break;
+
+  case MR_trafficVolumeMeasuredResultsList:
+    pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.numRB = protocol_ms->rrc.ue_meas_rep[m_id].tv_num_rbs;
+
+    for (i = 0; i < protocol_ms->rrc.ue_meas_rep[m_id].tv_num_rbs; i++) {
+      pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].rb_Identity = protocol_ms->rrc.ue_meas_rep[m_id].tv_rbid[i];
+      pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].rlc_BuffersPayload = protocol_ms->rrc.ue_meas_rep[m_id].tv_rb_payload[i];
+      pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].averageRLC_BufferPayload = protocol_ms->rrc.ue_meas_rep[m_id].tv_rb_average[i];
+      pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].varianceOfRLC_BufferPayload = protocol_ms->rrc.ue_meas_rep[m_id].tv_rb_variance[i];
+    }
+
+    break;
+
+  case MR_qualityMeasuredResults:
+    pvalue->measuredResults.result.qualityMeasuredResults.blerMeasurementResultsList.numTrCH = protocol_ms->rrc.ue_meas_rep[m_id].q_num_TrCH;
+
+    for (i = 0; i < protocol_ms->rrc.ue_meas_rep[m_id].q_num_TrCH; i++) {
+      pvalue->measuredResults.result.qualityMeasuredResults.blerMeasurementResultsList.measTrCH[i].transportChannelIdentity = protocol_ms->rrc.ue_meas_rep[m_id].q_dl_TrCH_id[i];
+      pvalue->measuredResults.result.qualityMeasuredResults.blerMeasurementResultsList.measTrCH[i].dl_TransportChannelBLER = protocol_ms->rrc.ue_meas_rep[m_id].q_dl_TrCH_BLER[i];
+    }
+
+    pvalue->measuredResults.result.qualityMeasuredResults.sir_MeasurementList.numTFCS = protocol_ms->rrc.ue_meas_rep[m_id].q_num_tfcs;
+
+    for (i = 0; i < protocol_ms->rrc.ue_meas_rep[m_id].q_num_tfcs; i++) {
+      pvalue->measuredResults.result.qualityMeasuredResults.sir_MeasurementList.sirMeas[i].tfcs_ID = protocol_ms->rrc.ue_meas_rep[m_id].q_tfcs_id[i];
+      pvalue->measuredResults.result.qualityMeasuredResults.sir_MeasurementList.sirMeas[i].sir_TimeslotList.numSIR = 14;
+
+      for (j = 0; j < 14; j++) {
+        pvalue->measuredResults.result.qualityMeasuredResults.sir_MeasurementList.sirMeas[i].sir_TimeslotList.sir[j] = protocol_ms->rrc.ue_meas_rep[m_id].q_sir[i][j];
+      }
+    }
+
+    break;
+
+  case MR_ue_InternalMeasuredResults:
+    pvalue->measuredResults.result.ue_InternalMeasuredResults.ue_TransmittedPowerTDD_List.numSlots = 14;
+
+    for (j = 0; j < 14; j++) {
+      pvalue->measuredResults.result.ue_InternalMeasuredResults.ue_TransmittedPowerTDD_List.xmitPower[j] = protocol_ms->rrc.ue_meas_rep[m_id].int_xmit_power[j];
+    }
+
+    pvalue->measuredResults.result.ue_InternalMeasuredResults.appliedTA = protocol_ms->rrc.ue_meas_rep[m_id].int_timing_advance;
+    break;
+
+  default:
+    msg ("\n[RRC_MSG] invalid Measure Report Type selected %d\n", pvalue->measuredResults.measResult);
   }
 
 
@@ -1482,52 +1583,67 @@ int rrc_PERDec_MeasurementReport (int UE_Id, MeasurementReport * pvalue)
   protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].meas_results_type = pvalue->measuredResults.measResult;
 
   switch (pvalue->measuredResults.measResult) {
-      case MR_intraFreqMeasuredResultsList:
-        protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].if_num_cells = pvalue->measuredResults.result.intraFreqMeasuredResultsList.numCells;
-        nCells = pvalue->measuredResults.result.intraFreqMeasuredResultsList.numCells;
-        for (i = 0; i < nCells; i++) {
-          protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].if_cell_id[i] = pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].cellIdentity;
-          protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].if_cell_parms_id[i] = pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.cellParametersID;
-          protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].if_BCH_RSCP[i] = pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.primaryCCPCH_RSCP;
-          protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].if_pathloss[i] = pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.pathloss;
-          for (j = 0; j < 14; j++) {
-            protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].if_slot_iscp[i][j] =
-              pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.timeslotISCP_List.iscp[j];
-          }
-        }
-        break;
-      case MR_trafficVolumeMeasuredResultsList:
-        protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].tv_num_rbs = pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.numRB;
-        for (i = 0; i < protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].tv_num_rbs; i++) {
-          protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].tv_rbid[i] = pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].rb_Identity;
-          protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].tv_rb_payload[i] = pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].rlc_BuffersPayload;
-          protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].tv_rb_average[i] = pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].averageRLC_BufferPayload;
-          protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].tv_rb_variance[i] = pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].varianceOfRLC_BufferPayload;
-        }
-        break;
-      case MR_qualityMeasuredResults:
-        protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_num_TrCH = pvalue->measuredResults.result.qualityMeasuredResults.blerMeasurementResultsList.numTrCH;
-        for (i = 0; i < protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_num_TrCH; i++) {
-          protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_dl_TrCH_id[i] = pvalue->measuredResults.result.qualityMeasuredResults.blerMeasurementResultsList.measTrCH[i].transportChannelIdentity;
-          protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_dl_TrCH_BLER[i] =
-            pvalue->measuredResults.result.qualityMeasuredResults.blerMeasurementResultsList.measTrCH[i].dl_TransportChannelBLER;
-        }
-        protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_num_tfcs = pvalue->measuredResults.result.qualityMeasuredResults.sir_MeasurementList.numTFCS;
-        for (i = 0; i < protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_num_tfcs; i++) {
-          protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_tfcs_id[i] = pvalue->measuredResults.result.qualityMeasuredResults.sir_MeasurementList.sirMeas[i].tfcs_ID;
-          for (j = 0; j < 14; j++) {
-            protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_sir[i][j] = pvalue->measuredResults.result.qualityMeasuredResults.sir_MeasurementList.sirMeas[i].sir_TimeslotList.sir[j];
-          }
-        }
-        break;
-      case MR_ue_InternalMeasuredResults:
-        for (j = 0; j < 14; j++) {
-          protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].int_xmit_power[j] = pvalue->measuredResults.result.ue_InternalMeasuredResults.ue_TransmittedPowerTDD_List.xmitPower[j];
-        }
-        protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].int_timing_advance = pvalue->measuredResults.result.ue_InternalMeasuredResults.appliedTA;
-        break;
-      default:
-        msg ("\n[RRC_MSG] invalid Measure Report Type selected\n");
+  case MR_intraFreqMeasuredResultsList:
+    protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].if_num_cells = pvalue->measuredResults.result.intraFreqMeasuredResultsList.numCells;
+    nCells = pvalue->measuredResults.result.intraFreqMeasuredResultsList.numCells;
+
+    for (i = 0; i < nCells; i++) {
+      protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].if_cell_id[i] = pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].cellIdentity;
+      protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].if_cell_parms_id[i] = pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.cellParametersID;
+      protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].if_BCH_RSCP[i] = pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.primaryCCPCH_RSCP;
+      protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].if_pathloss[i] = pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.pathloss;
+
+      for (j = 0; j < 14; j++) {
+        protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].if_slot_iscp[i][j] =
+          pvalue->measuredResults.result.intraFreqMeasuredResultsList.cellMeas[i].modeSpecificInfo.timeslotISCP_List.iscp[j];
+      }
+    }
+
+    break;
+
+  case MR_trafficVolumeMeasuredResultsList:
+    protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].tv_num_rbs = pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.numRB;
+
+    for (i = 0; i < protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].tv_num_rbs; i++) {
+      protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].tv_rbid[i] = pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].rb_Identity;
+      protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].tv_rb_payload[i] = pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].rlc_BuffersPayload;
+      protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].tv_rb_average[i] = pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].averageRLC_BufferPayload;
+      protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].tv_rb_variance[i] = pvalue->measuredResults.result.trafficVolumeMeasuredResultsList.RBMeas[i].varianceOfRLC_BufferPayload;
+    }
+
+    break;
+
+  case MR_qualityMeasuredResults:
+    protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_num_TrCH = pvalue->measuredResults.result.qualityMeasuredResults.blerMeasurementResultsList.numTrCH;
+
+    for (i = 0; i < protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_num_TrCH; i++) {
+      protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_dl_TrCH_id[i] = pvalue->measuredResults.result.qualityMeasuredResults.blerMeasurementResultsList.measTrCH[i].transportChannelIdentity;
+      protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_dl_TrCH_BLER[i] =
+        pvalue->measuredResults.result.qualityMeasuredResults.blerMeasurementResultsList.measTrCH[i].dl_TransportChannelBLER;
+    }
+
+    protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_num_tfcs = pvalue->measuredResults.result.qualityMeasuredResults.sir_MeasurementList.numTFCS;
+
+    for (i = 0; i < protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_num_tfcs; i++) {
+      protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_tfcs_id[i] = pvalue->measuredResults.result.qualityMeasuredResults.sir_MeasurementList.sirMeas[i].tfcs_ID;
+
+      for (j = 0; j < 14; j++) {
+        protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].q_sir[i][j] = pvalue->measuredResults.result.qualityMeasuredResults.sir_MeasurementList.sirMeas[i].sir_TimeslotList.sir[j];
+      }
+    }
+
+    break;
+
+  case MR_ue_InternalMeasuredResults:
+    for (j = 0; j < 14; j++) {
+      protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].int_xmit_power[j] = pvalue->measuredResults.result.ue_InternalMeasuredResults.ue_TransmittedPowerTDD_List.xmitPower[j];
+    }
+
+    protocol_bs->rrc.Mobile_List[UE_Id].rg_meas_rep[m_id].int_timing_advance = pvalue->measuredResults.result.ue_InternalMeasuredResults.appliedTA;
+    break;
+
+  default:
+    msg ("\n[RRC_MSG] invalid Measure Report Type selected\n");
   }
 
 
@@ -1547,7 +1663,7 @@ int rrc_PERDec_MeasurementReport (int UE_Id, MeasurementReport * pvalue)
 //   pvalue->uplinkPhysicalChannelControl_IE.uplinkPhysicalChannelControl.prach_ConstantValue = 6;
 //   pvalue->uplinkPhysicalChannelControl_IE.uplinkPhysicalChannelControl.pusch_ConstantValue = 0;
 //   pvalue->uplinkPhysicalChannelControl_IE.ccTrCH_PowerControlInfo.ul_DPCH_PowerControlInfo.ul_TargetSIR = 10;
-// 
+//
 //   ////#ifdef DEBUG_RRC_STATE
 //   msg ("\n\n\n\n\n\n\n\n\n\n[RRC_MSG] Creating ULPCH Outer-Loop Power Control Information  frame = %d\n", frame);
 //   msg ("[RRC_MSG] timingAdvance=%d,alpha=%d,prach_Cnst=%d,pusch_cnst=%d\n",
@@ -1558,7 +1674,7 @@ int rrc_PERDec_MeasurementReport (int UE_Id, MeasurementReport * pvalue)
 //   msg ("[RRC_MSG] TFCS Identity (CCTrCH index) = %d, Target SIR = %d\n",
 //        pvalue->uplinkPhysicalChannelControl_IE.ccTrCH_PowerControlInfo.tfcs_Identity, pvalue->uplinkPhysicalChannelControl_IE.ccTrCH_PowerControlInfo.ul_DPCH_PowerControlInfo.ul_TargetSIR);
 //   // #endif DEBUG_RRC_STATE
-// 
+//
 //   return status;
 // }
 // #endif
@@ -1566,7 +1682,7 @@ int rrc_PERDec_MeasurementReport (int UE_Id, MeasurementReport * pvalue)
 // #ifdef NODE_MT
 // int rrc_PERDec_ULPCHControl (ULPCHControl * pvalue){
 //   int status = P_SUCCESS;
-// 
+//
 // #ifdef DEBUG_RRC_STATE
 //   msg ("[RRC_MSG] Received ULPCH Outer-Loop Power Control Information\n");
 //   msg ("[RRC_MSG] timingAdvance=%d,alpha=%d,prach_Cnst=%d,pusch_cnst=%d    dpch_ConstantValue =%d \n",
@@ -1580,10 +1696,10 @@ int rrc_PERDec_MeasurementReport (int UE_Id, MeasurementReport * pvalue)
 // #endif
 //   /* DEBUG_RRC_STATE */
 //   // rrm_config->outer_loop_vars.= pvalue->uplinkPhysicalChannelControl_IE.uplinkPhysicalChannelControl.timingAdvance;
-// 
+//
 //   rrm_config->outer_loop_vars.alpha = pvalue->uplinkPhysicalChannelControl_IE.uplinkPhysicalChannelControl.alpha;
 //   rrm_config->outer_loop_vars.PRACH_CNST = pvalue->uplinkPhysicalChannelControl_IE.uplinkPhysicalChannelControl.prach_ConstantValue;
-// 
+//
 //   rrm_config->outer_loop_vars.DPCH_CNST = pvalue->uplinkPhysicalChannelControl_IE.uplinkPhysicalChannelControl.dpch_ConstantValue;
 //   rrm_config->outer_loop_vars.SIR_Target[0] = pvalue->uplinkPhysicalChannelControl_IE.ccTrCH_PowerControlInfo.ul_DPCH_PowerControlInfo.ul_TargetSIR;
 //   rrc_ue_tick = 0;
@@ -1597,35 +1713,38 @@ int rrc_PERDec_MeasurementReport (int UE_Id, MeasurementReport * pvalue)
 /* UECapabilityInformation                                    */
 /**************************************************************/
 #ifdef NODE_MT
-int rrc_PEREnc_UECapabilityInformation (UECapabilityInformation* pvalue){
-	int status = P_SUCCESS;
-	/* encode rrc_TransactionIdentifier */
-	pvalue->rrc_TransactionIdentifier = protocol_ms->rrc.accepted_trans[0].transaction_Id;
+int rrc_PEREnc_UECapabilityInformation (UECapabilityInformation* pvalue)
+{
+  int status = P_SUCCESS;
+  /* encode rrc_TransactionIdentifier */
+  pvalue->rrc_TransactionIdentifier = protocol_ms->rrc.accepted_trans[0].transaction_Id;
 
-	/* encode Access Stratum Release Indicator */
-	pvalue->accessStratumReleaseIndicator = ACCESS_STRATUM_RELEASE_INDICATOR_DEFAULT;
+  /* encode Access Stratum Release Indicator */
+  pvalue->accessStratumReleaseIndicator = ACCESS_STRATUM_RELEASE_INDICATOR_DEFAULT;
 
-	/* encode Eurecom Kernel Release Indicator */
-	pvalue->eurecomKernelReleaseIndicator = EURECOM_KERNEL_RELEASE_INDICATOR_DEFAULT;
-	return status;
+  /* encode Eurecom Kernel Release Indicator */
+  pvalue->eurecomKernelReleaseIndicator = EURECOM_KERNEL_RELEASE_INDICATOR_DEFAULT;
+  return status;
 }
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_RG
-int rrc_PERDec_UECapabilityInformation (int UE_Id, UECapabilityInformation* pvalue){
-	int status = P_SUCCESS;
-	/* decode rrc_TransactionIdentifier */
-	//In fact, this check is not needed in certain cases because the rrc_TransactionIdentifier IE is OPTIONAL
-	if (pvalue->rrc_TransactionIdentifier != protocol_bs->rrc.Mobile_List[UE_Id].xmit_trans[0].transaction_Id)
-	{
-		msg("\n[RRC_MSG] Transaction Id : --%d--, Received : --%d--, status %d\n",
-			protocol_bs->rrc.Mobile_List[UE_Id].xmit_trans[0].transaction_Id,
-			pvalue->rrc_TransactionIdentifier,status);
-		//return P_INVVALUE; // TEMP ignore error until transactions completely implemented
-	}
-	protocol_bs->rrc.Mobile_List[UE_Id].ind_accessStratumRelease = pvalue->accessStratumReleaseIndicator;
+int rrc_PERDec_UECapabilityInformation (int UE_Id, UECapabilityInformation* pvalue)
+{
+  int status = P_SUCCESS;
+
+  /* decode rrc_TransactionIdentifier */
+  //In fact, this check is not needed in certain cases because the rrc_TransactionIdentifier IE is OPTIONAL
+  if (pvalue->rrc_TransactionIdentifier != protocol_bs->rrc.Mobile_List[UE_Id].xmit_trans[0].transaction_Id) {
+    msg("\n[RRC_MSG] Transaction Id : --%d--, Received : --%d--, status %d\n",
+        protocol_bs->rrc.Mobile_List[UE_Id].xmit_trans[0].transaction_Id,
+        pvalue->rrc_TransactionIdentifier,status);
+    //return P_INVVALUE; // TEMP ignore error until transactions completely implemented
+  }
+
+  protocol_bs->rrc.Mobile_List[UE_Id].ind_accessStratumRelease = pvalue->accessStratumReleaseIndicator;
   protocol_bs->rrc.Mobile_List[UE_Id].ind_eurecomKernelRelease = pvalue->eurecomKernelReleaseIndicator;
-	return status;
+  return status;
 }
 #endif
 
@@ -1633,26 +1752,28 @@ int rrc_PERDec_UECapabilityInformation (int UE_Id, UECapabilityInformation* pval
 /* UECapabilityInformationConfirm                             */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_UECapabilityInformationConfirm(int UE_Id, UECapabilityInformationConfirm * pvalue){
-	int status = P_SUCCESS;
-	/* encode rrc_TransactionIdentifier */
-	pvalue->rrc_TransactionIdentifier = protocol_bs->rrc.Mobile_List[UE_Id].xmit_trans[0].transaction_Id;
-	/* encode the message */
-	/* Nothing */
-	return status;
+int rrc_PEREnc_UECapabilityInformationConfirm(int UE_Id, UECapabilityInformationConfirm * pvalue)
+{
+  int status = P_SUCCESS;
+  /* encode rrc_TransactionIdentifier */
+  pvalue->rrc_TransactionIdentifier = protocol_bs->rrc.Mobile_List[UE_Id].xmit_trans[0].transaction_Id;
+  /* encode the message */
+  /* Nothing */
+  return status;
 }
 #endif
 
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_UECapabilityInformationConfirm(UECapabilityInformationConfirm* pvalue){
-	int status = P_SUCCESS;
-	/* decode rrc_TransactionIdentifier */
-	protocol_ms->rrc.rcved_trans.msg_type= DL_DCCH_ueCapabilityInformationConfirm;
-	protocol_ms->rrc.rcved_trans.transaction_Id= pvalue->rrc_TransactionIdentifier;
-	/* decode the message */
-	/* Nothing */
-	return status;
+int rrc_PERDec_UECapabilityInformationConfirm(UECapabilityInformationConfirm* pvalue)
+{
+  int status = P_SUCCESS;
+  /* decode rrc_TransactionIdentifier */
+  protocol_ms->rrc.rcved_trans.msg_type= DL_DCCH_ueCapabilityInformationConfirm;
+  protocol_ms->rrc.rcved_trans.transaction_Id= pvalue->rrc_TransactionIdentifier;
+  /* decode the message */
+  /* Nothing */
+  return status;
 }
 #endif
 

@@ -55,11 +55,11 @@
  */
 
 typedef struct tracking_area_update_reject_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                   protocoldiscriminator:4;
-    SecurityHeaderType                      securityheadertype:4;
-    MessageType                             messagetype;
-    EmmCause                                emmcause;
+  /* Mandatory fields */
+  ProtocolDiscriminator                   protocoldiscriminator:4;
+  SecurityHeaderType                      securityheadertype:4;
+  MessageType                             messagetype;
+  EmmCause                                emmcause;
 } tracking_area_update_reject_msg;
 
 int decode_tracking_area_update_reject(tracking_area_update_reject_msg *trackingareaupdatereject, uint8_t *buffer, uint32_t len);

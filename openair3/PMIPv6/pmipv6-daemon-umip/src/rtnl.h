@@ -28,65 +28,65 @@
 #define IP6_RULE_PRIO_MIP6_BLOCK_HOA 1004
 #define IP6_RULE_PRIO_MIP6_FWD       1005
 
-static inline int rtnl_route_open(struct rtnl_handle *rth, 
-				  unsigned subscriptions)
+static inline int rtnl_route_open(struct rtnl_handle *rth,
+                                  unsigned subscriptions)
 {
-	return rtnl_open_byproto(rth, subscriptions, NETLINK_ROUTE);
+  return rtnl_open_byproto(rth, subscriptions, NETLINK_ROUTE);
 }
 
 static inline int rtnl_xfrm_open(struct rtnl_handle *rth,
-				 unsigned subscriptions)
+                                 unsigned subscriptions)
 {
-	return rtnl_open_byproto(rth, subscriptions, NETLINK_XFRM);
+  return rtnl_open_byproto(rth, subscriptions, NETLINK_XFRM);
 }
 
 int rtnl_do(int proto, struct nlmsghdr *sn, struct nlmsghdr *rn);
 
 static inline int rtnl_route_do(struct nlmsghdr *sn, struct nlmsghdr *rn)
 {
-	return rtnl_do(NETLINK_ROUTE, sn, rn);
+  return rtnl_do(NETLINK_ROUTE, sn, rn);
 }
 
 static inline int rtnl_xfrm_do(struct nlmsghdr *sn, struct nlmsghdr *rn)
 {
-	return rtnl_do(NETLINK_XFRM, sn, rn);
+  return rtnl_do(NETLINK_XFRM, sn, rn);
 }
 
 int addr_do(const struct in6_addr *addr, int plen, int ifindex, void *arg,
-	    int (*do_callback)(struct ifaddrmsg *ifa, 
-			       struct rtattr *rta_tb[], void *arg));
+            int (*do_callback)(struct ifaddrmsg *ifa,
+                               struct rtattr *rta_tb[], void *arg));
 
 int addr_del(const struct in6_addr *addr, uint8_t plen, int ifindex);
 
-int addr_add(const struct in6_addr *addr, uint8_t plen, 
-	     uint8_t flags, uint8_t scope, int ifindex, 
-	     uint32_t prefered, uint32_t valid);
+int addr_add(const struct in6_addr *addr, uint8_t plen,
+             uint8_t flags, uint8_t scope, int ifindex,
+             uint32_t prefered, uint32_t valid);
 
 struct nd_opt_prefix_info;
 
 int prefix_add(int ifindex, const struct nd_opt_prefix_info *pinfo);
 
 int route_add(int oif, uint8_t table, uint8_t proto,
-	      unsigned flags, uint32_t metric,
-	      const struct in6_addr *src, int src_plen,
-	      const struct in6_addr *dst, int dst_plen, 
-	      const struct in6_addr *gateway);
+              unsigned flags, uint32_t metric,
+              const struct in6_addr *src, int src_plen,
+              const struct in6_addr *dst, int dst_plen,
+              const struct in6_addr *gateway);
 
 
 int route_del(int oif, uint8_t table, uint32_t metric,
-	      const struct in6_addr *src, int src_plen,
-	      const struct in6_addr *dst, int dst_plen, 
-	      const struct in6_addr *gateway);
+              const struct in6_addr *src, int src_plen,
+              const struct in6_addr *dst, int dst_plen,
+              const struct in6_addr *gateway);
 
 int rule_add(const char *iface, uint8_t table,
-	     uint32_t priority, uint8_t action,
-	     const struct in6_addr *src, int src_plen,
-	     const struct in6_addr *dst, int dst_plen, int flags);
+             uint32_t priority, uint8_t action,
+             const struct in6_addr *src, int src_plen,
+             const struct in6_addr *dst, int dst_plen, int flags);
 
 int rule_del(const char *iface, uint8_t table,
-	     uint32_t priority, uint8_t action,
-	     const struct in6_addr *src, int src_plen,
-	     const struct in6_addr *dst, int dst_plen,int flags);
+             uint32_t priority, uint8_t action,
+             const struct in6_addr *src, int src_plen,
+             const struct in6_addr *dst, int dst_plen,int flags);
 
 int rtnl_iterate(int proto, int type, rtnl_filter_t func, void *extarg);
 
@@ -101,7 +101,7 @@ int rtnl_iterate(int proto, int type, rtnl_filter_t func, void *extarg);
 
 static inline int routes_iterate(rtnl_filter_t func, void *extarg)
 {
-	return rtnl_iterate(NETLINK_ROUTE, RTM_GETROUTE, func, extarg);
+  return rtnl_iterate(NETLINK_ROUTE, RTM_GETROUTE, func, extarg);
 }
 
 /**
@@ -114,7 +114,7 @@ static inline int routes_iterate(rtnl_filter_t func, void *extarg)
  **/
 static inline int addrs_iterate(rtnl_filter_t func, void *extarg)
 {
-	return rtnl_iterate(NETLINK_ROUTE, RTM_GETADDR, func, extarg);
+  return rtnl_iterate(NETLINK_ROUTE, RTM_GETADDR, func, extarg);
 }
 
 /**
@@ -127,7 +127,7 @@ static inline int addrs_iterate(rtnl_filter_t func, void *extarg)
  **/
 static inline int inet6_ifaces_iterate(rtnl_filter_t func, void *extarg)
 {
-	return rtnl_iterate(NETLINK_ROUTE, RTM_GETLINK, func, extarg);
+  return rtnl_iterate(NETLINK_ROUTE, RTM_GETLINK, func, extarg);
 }
 
 #endif

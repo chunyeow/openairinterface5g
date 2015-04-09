@@ -55,11 +55,11 @@
  */
 
 typedef struct authentication_response_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator             protocoldiscriminator:4;
-    SecurityHeaderType                securityheadertype:4;
-    MessageType                       messagetype;
-    AuthenticationResponseParameter   authenticationresponseparameter;
+  /* Mandatory fields */
+  ProtocolDiscriminator             protocoldiscriminator:4;
+  SecurityHeaderType                securityheadertype:4;
+  MessageType                       messagetype;
+  AuthenticationResponseParameter   authenticationresponseparameter;
 } authentication_response_msg;
 
 int decode_authentication_response(authentication_response_msg *authenticationresponse, uint8_t *buffer, uint32_t len);

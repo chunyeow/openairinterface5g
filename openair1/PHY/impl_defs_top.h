@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -41,10 +41,10 @@
 #ifndef __PHY_IMPLEMENTATION_DEFS_H__
 #define __PHY_IMPLEMENTATION_DEFS_H__
 
-/** @defgroup _ref_implementation_ OpenAirInterface LTE Implementation 
+/** @defgroup _ref_implementation_ OpenAirInterface LTE Implementation
  * @{
  * @defgroup _physical_layer_ref_implementation_ Physical Layer Reference Implementation
- * @ingroup _ref_implementation_  
+ * @ingroup _ref_implementation_
  * @{
 
 
@@ -99,7 +99,7 @@
 
 
 /**@addtogroup _PHY_STRUCTURES_
- * @{ 
+ * @{
 */
 #define NUMBER_OF_OFDM_CARRIERS (frame_parms->ofdm_symbol_size)
 #define NUMBER_OF_SYMBOLS_PER_FRAME (frame_parms->symbols_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME)
@@ -171,13 +171,13 @@
 
 
 #ifdef EXMIMO
-#define TARGET_RX_POWER 55		// Target digital power for the AGC
-#define TARGET_RX_POWER_MAX 55		// Maximum digital power, such that signal does not saturate (value found by simulation)
-#define TARGET_RX_POWER_MIN 50		// Minimum digital power, anything below will be discarded (value found by simulation)
+#define TARGET_RX_POWER 55    // Target digital power for the AGC
+#define TARGET_RX_POWER_MAX 55    // Maximum digital power, such that signal does not saturate (value found by simulation)
+#define TARGET_RX_POWER_MIN 50    // Minimum digital power, anything below will be discarded (value found by simulation)
 #else
-#define TARGET_RX_POWER 50		// Target digital power for the AGC
-#define TARGET_RX_POWER_MAX 65		// Maximum digital power, such that signal does not saturate (value found by simulation)
-#define TARGET_RX_POWER_MIN 35		// Minimum digital power, anything below will be discarded (value found by simulation)
+#define TARGET_RX_POWER 50    // Target digital power for the AGC
+#define TARGET_RX_POWER_MAX 65    // Maximum digital power, such that signal does not saturate (value found by simulation)
+#define TARGET_RX_POWER_MIN 35    // Minimum digital power, anything below will be discarded (value found by simulation)
 #endif
 
 //the min and max gains have to match the calibrated gain table
@@ -234,7 +234,7 @@
 //#define CHBCH_RSSI_MIN -75
 
 #ifdef BIT8_TX
-#define AMP 128 
+#define AMP 128
 #else
 #define AMP 512//1024 //4096
 #define AMP_BPSK 724
@@ -246,7 +246,7 @@
 
 #ifndef OPENAIR_LTE
 ///
-/// PHY-MAC Interface Defs 
+/// PHY-MAC Interface Defs
 ///
 
 /// Maximum number of parallel streams per slot
@@ -265,7 +265,7 @@
 #define MAX_TB_SIZE_BYTES 128
 
 /// Size of SACCH PDU in Bytes
-#define SACCH_SIZE_BYTES (sizeof(UL_SACCH_PDU)+4) 
+#define SACCH_SIZE_BYTES (sizeof(UL_SACCH_PDU)+4)
 /// Size of SACCH PDU in Bytes
 #define SACCH_SIZE_BITS  (SACCH_SIZE_BYTES<<3)
 
@@ -281,14 +281,14 @@
 
 /*
 enum STATUS_RX {STATUS_RX_OFF,
-		STATUS_RX_ON,
-		STATUS_RX_SYNCING,
-		STATUS_RX_CANNOT_SYNC,
-		STATUS_RX_DATA_PROBLEM,
-		STATUS_RX_LOST_SYNC,
-		STATUS_RX_ABORT,
-		STATUS_RX_TOO_LATE,
-		STATUS_RX_CLOCK_STOPPED};
+    STATUS_RX_ON,
+    STATUS_RX_SYNCING,
+    STATUS_RX_CANNOT_SYNC,
+    STATUS_RX_DATA_PROBLEM,
+    STATUS_RX_LOST_SYNC,
+    STATUS_RX_ABORT,
+    STATUS_RX_TOO_LATE,
+    STATUS_RX_CLOCK_STOPPED};
 
 enum STATUS_TX {
   STATUS_TX_OFF,
@@ -308,7 +308,7 @@ enum MODE {
 typedef struct {
   /// RAW TX sample buffer
   char *TX_DMA_BUFFER[2];
-} TX_VARS ;  
+} TX_VARS ;
 
 /// Data structure for reception.
 typedef struct {
@@ -334,18 +334,17 @@ typedef struct {
 #define NUMBER_OF_eNB_MAX 2
 #define NUMBER_OF_UE_MAX 120
 #define NUMBER_OF_CONNECTED_eNB_MAX 1 // to save some memory
-#else 
+#else
 #define NUMBER_OF_eNB_MAX 7
 #define NUMBER_OF_UE_MAX 16
 #define NUMBER_OF_CONNECTED_eNB_MAX 3
-#endif 
+#endif
 #endif
 
 #define NUMBER_OF_RN_MAX 3
 typedef enum {no_relay=1,unicast_relay_type1,unicast_relay_type2, multicast_relay} relaying_type_t;
 
-typedef struct
-{
+typedef struct {
   //unsigned int   rx_power[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];     //! estimated received signal power (linear)
   //unsigned short rx_power_dB[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];  //! estimated received signal power (dB)
   //unsigned short rx_avg_power_dB[NUMBER_OF_CONNECTED_eNB_MAX];              //! estimated avg received signal power (dB)
@@ -360,32 +359,32 @@ typedef struct
   float rsrq_filtered[7];
   // common measurements
   //! estimated noise power (linear)
-  unsigned int   n0_power[NB_ANTENNAS_RX];                        
+  unsigned int   n0_power[NB_ANTENNAS_RX];
   //! estimated noise power (dB)
-  unsigned short n0_power_dB[NB_ANTENNAS_RX];                     
+  unsigned short n0_power_dB[NB_ANTENNAS_RX];
   //! total estimated noise power (linear)
-  unsigned int   n0_power_tot;                                    
+  unsigned int   n0_power_tot;
   //! total estimated noise power (dB)
-  unsigned short n0_power_tot_dB;     
+  unsigned short n0_power_tot_dB;
   //! average estimated noise power (linear)
-  unsigned int   n0_power_avg;     
+  unsigned int   n0_power_avg;
   //! average estimated noise power (dB)
-  unsigned short n0_power_avg_dB;     
-  //! total estimated noise power (dBm)                            
+  unsigned short n0_power_avg_dB;
+  //! total estimated noise power (dBm)
   short n0_power_tot_dBm;
 
   // UE measurements
   //! estimated received spatial signal power (linear)
-  int            rx_spatial_power[NUMBER_OF_CONNECTED_eNB_MAX][2][2];       
-  //! estimated received spatial signal power (dB) 
-  unsigned short rx_spatial_power_dB[NUMBER_OF_CONNECTED_eNB_MAX][2][2];    
+  int            rx_spatial_power[NUMBER_OF_CONNECTED_eNB_MAX][2][2];
+  //! estimated received spatial signal power (dB)
+  unsigned short rx_spatial_power_dB[NUMBER_OF_CONNECTED_eNB_MAX][2][2];
 
   /// estimated received signal power (sum over all TX antennas)
-  //int            wideband_cqi[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];                     
-  int            rx_power[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];                     
+  //int            wideband_cqi[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];
+  int            rx_power[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];
   /// estimated received signal power (sum over all TX antennas)
-  //int            wideband_cqi_dB[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];                  
-  unsigned short rx_power_dB[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];                  
+  //int            wideband_cqi_dB[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];
+  unsigned short rx_power_dB[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];
 
   /// estimated received signal power (sum over all TX/RX antennas)
   int            rx_power_tot[NUMBER_OF_CONNECTED_eNB_MAX]; //NEW
@@ -393,102 +392,101 @@ typedef struct
   unsigned short rx_power_tot_dB[NUMBER_OF_CONNECTED_eNB_MAX]; //NEW
 
   //! estimated received signal power (sum of all TX/RX antennas, time average)
-  int            rx_power_avg[NUMBER_OF_CONNECTED_eNB_MAX];                                 
+  int            rx_power_avg[NUMBER_OF_CONNECTED_eNB_MAX];
   //! estimated received signal power (sum of all TX/RX antennas, time average, in dB)
-  unsigned short rx_power_avg_dB[NUMBER_OF_CONNECTED_eNB_MAX];                                 
+  unsigned short rx_power_avg_dB[NUMBER_OF_CONNECTED_eNB_MAX];
 
   /// SINR (sum of all TX/RX antennas, in dB)
-  int            wideband_cqi_tot[NUMBER_OF_CONNECTED_eNB_MAX];                                 
+  int            wideband_cqi_tot[NUMBER_OF_CONNECTED_eNB_MAX];
   /// SINR (sum of all TX/RX antennas, time average, in dB)
-  int            wideband_cqi_avg[NUMBER_OF_CONNECTED_eNB_MAX];                                 
+  int            wideband_cqi_avg[NUMBER_OF_CONNECTED_eNB_MAX];
 
   //! estimated rssi (dBm)
-  short          rx_rssi_dBm[NUMBER_OF_CONNECTED_eNB_MAX];                  
+  short          rx_rssi_dBm[NUMBER_OF_CONNECTED_eNB_MAX];
   //! estimated correlation (wideband linear) between spatial channels (computed in dlsch_demodulation)
-  int            rx_correlation[NUMBER_OF_CONNECTED_eNB_MAX][2];            
+  int            rx_correlation[NUMBER_OF_CONNECTED_eNB_MAX][2];
   //! estimated correlation (wideband dB) between spatial channels (computed in dlsch_demodulation)
-  int            rx_correlation_dB[NUMBER_OF_CONNECTED_eNB_MAX][2];         
+  int            rx_correlation_dB[NUMBER_OF_CONNECTED_eNB_MAX][2];
 
   /// Wideband CQI (sum of all RX antennas, in dB, for precoded transmission modes (3,4,5,6), up to 4 spatial streams)
-  int            precoded_cqi_dB[NUMBER_OF_CONNECTED_eNB_MAX+1][4];                               
+  int            precoded_cqi_dB[NUMBER_OF_CONNECTED_eNB_MAX+1][4];
   /// Subband CQI per RX antenna (= SINR)
-  int            subband_cqi[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX][NUMBER_OF_SUBBANDS_MAX];  
+  int            subband_cqi[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX][NUMBER_OF_SUBBANDS_MAX];
   /// Total Subband CQI  (= SINR)
-  int            subband_cqi_tot[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS_MAX];              
+  int            subband_cqi_tot[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS_MAX];
   /// Subband CQI in dB (= SINR dB)
   int            subband_cqi_dB[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX][NUMBER_OF_SUBBANDS_MAX];
-  /// Total Subband CQI   
-  int            subband_cqi_tot_dB[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS_MAX];           
+  /// Total Subband CQI
+  int            subband_cqi_tot_dB[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS_MAX];
   /// Wideband PMI for each RX antenna
-  int            wideband_pmi_re[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];                  
+  int            wideband_pmi_re[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];
   /// Wideband PMI for each RX antenna
-  int            wideband_pmi_im[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];                  
+  int            wideband_pmi_im[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];
   ///Subband PMI for each RX antenna
-  int            subband_pmi_re[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS_MAX][NB_ANTENNAS_RX]; 
+  int            subband_pmi_re[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS_MAX][NB_ANTENNAS_RX];
   ///Subband PMI for each RX antenna
   int            subband_pmi_im[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS_MAX][NB_ANTENNAS_RX];
-  /// chosen RX antennas (1=Rx antenna 1, 2=Rx antenna 2, 3=both Rx antennas) 
-  unsigned char           selected_rx_antennas[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS_MAX];         
+  /// chosen RX antennas (1=Rx antenna 1, 2=Rx antenna 2, 3=both Rx antennas)
+  unsigned char           selected_rx_antennas[NUMBER_OF_CONNECTED_eNB_MAX][NUMBER_OF_SUBBANDS_MAX];
   /// Wideband Rank indication
-  unsigned char  rank[NUMBER_OF_CONNECTED_eNB_MAX];   
-  /// Number of RX Antennas                                            
-  unsigned char  nb_antennas_rx;                                           
+  unsigned char  rank[NUMBER_OF_CONNECTED_eNB_MAX];
+  /// Number of RX Antennas
+  unsigned char  nb_antennas_rx;
   /// DLSCH error counter
   // short          dlsch_errors;
-                                                    
+
 } PHY_MEASUREMENTS;
 
-typedef struct
-{
+typedef struct {
   //unsigned int   rx_power[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];     //! estimated received signal power (linear)
   //unsigned short rx_power_dB[NUMBER_OF_CONNECTED_eNB_MAX][NB_ANTENNAS_RX];  //! estimated received signal power (dB)
   //unsigned short rx_avg_power_dB[NUMBER_OF_CONNECTED_eNB_MAX];              //! estimated avg received signal power (dB)
 
   // common measurements
   //! estimated noise power (linear)
-  unsigned int   n0_power[NB_ANTENNAS_RX];                        
+  unsigned int   n0_power[NB_ANTENNAS_RX];
   //! estimated noise power (dB)
-  unsigned short n0_power_dB[NB_ANTENNAS_RX];                     
+  unsigned short n0_power_dB[NB_ANTENNAS_RX];
   //! total estimated noise power (linear)
-  unsigned int   n0_power_tot;                                    
+  unsigned int   n0_power_tot;
   //! estimated avg noise power (dB)
-  unsigned short n0_power_tot_dB;                                 
+  unsigned short n0_power_tot_dB;
   //! estimated avg noise power (dB)
-  short n0_power_tot_dBm;                                         
+  short n0_power_tot_dBm;
   //! estimated avg noise power per RB per RX ant (lin)
-  unsigned short n0_subband_power[NB_ANTENNAS_RX][25];            
+  unsigned short n0_subband_power[NB_ANTENNAS_RX][25];
   //! estimated avg noise power per RB per RX ant (dB)
-  unsigned short n0_subband_power_dB[NB_ANTENNAS_RX][25];        
-  //! estimated avg noise power per RB (dB)         
-  short n0_subband_power_tot_dB[25];                             
+  unsigned short n0_subband_power_dB[NB_ANTENNAS_RX][25];
+  //! estimated avg noise power per RB (dB)
+  short n0_subband_power_tot_dB[25];
   //! estimated avg noise power per RB (dBm)
-  short n0_subband_power_tot_dBm[25];                            
+  short n0_subband_power_tot_dBm[25];
   // eNB measurements (per user)
   //! estimated received spatial signal power (linear)
-  unsigned int   rx_spatial_power[NUMBER_OF_UE_MAX][2][2];       
-  //! estimated received spatial signal power (dB) 
-  unsigned short rx_spatial_power_dB[NUMBER_OF_UE_MAX][2][2];    
+  unsigned int   rx_spatial_power[NUMBER_OF_UE_MAX][2][2];
+  //! estimated received spatial signal power (dB)
+  unsigned short rx_spatial_power_dB[NUMBER_OF_UE_MAX][2][2];
   //! estimated rssi (dBm)
-  short          rx_rssi_dBm[NUMBER_OF_UE_MAX];                  
+  short          rx_rssi_dBm[NUMBER_OF_UE_MAX];
   //! estimated correlation (wideband linear) between spatial channels (computed in dlsch_demodulation)
-  int            rx_correlation[NUMBER_OF_UE_MAX][2];            
+  int            rx_correlation[NUMBER_OF_UE_MAX][2];
   //! estimated correlation (wideband dB) between spatial channels (computed in dlsch_demodulation)
-  int            rx_correlation_dB[NUMBER_OF_UE_MAX][2];         
+  int            rx_correlation_dB[NUMBER_OF_UE_MAX][2];
 
   /// Wideband CQI (= SINR)
-  int            wideband_cqi[NUMBER_OF_UE_MAX][NB_ANTENNAS_RX];                     
+  int            wideband_cqi[NUMBER_OF_UE_MAX][NB_ANTENNAS_RX];
   /// Wideband CQI in dB (= SINR dB)
-  int            wideband_cqi_dB[NUMBER_OF_UE_MAX][NB_ANTENNAS_RX];                  
+  int            wideband_cqi_dB[NUMBER_OF_UE_MAX][NB_ANTENNAS_RX];
   /// Wideband CQI (sum of all RX antennas, in dB)
-  char           wideband_cqi_tot[NUMBER_OF_UE_MAX];                 
-  /// Subband CQI per RX antenna and RB (= SINR)                
-  int            subband_cqi[NUMBER_OF_UE_MAX][NB_ANTENNAS_RX][25];  
+  char           wideband_cqi_tot[NUMBER_OF_UE_MAX];
+  /// Subband CQI per RX antenna and RB (= SINR)
+  int            subband_cqi[NUMBER_OF_UE_MAX][NB_ANTENNAS_RX][25];
   /// Total Subband CQI and RB (= SINR)
-  int            subband_cqi_tot[NUMBER_OF_UE_MAX][25];              
+  int            subband_cqi_tot[NUMBER_OF_UE_MAX][25];
   /// Subband CQI in dB and RB (= SINR dB)
   int            subband_cqi_dB[NUMBER_OF_UE_MAX][NB_ANTENNAS_RX][25];
-  /// Total Subband CQI and RB  
-  int            subband_cqi_tot_dB[NUMBER_OF_UE_MAX][25];           
+  /// Total Subband CQI and RB
+  int            subband_cqi_tot_dB[NUMBER_OF_UE_MAX][25];
 
 } PHY_MEASUREMENTS_eNB;
 

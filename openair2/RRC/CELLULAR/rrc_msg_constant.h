@@ -105,7 +105,7 @@
 #define MAXMEASRBS    8
 #define MAXMEASTRCH   16
 #define MAXMEASTFCS   8
-#define MAXCH	        16   //cf L1
+#define MAXCH         16   //cf L1
 #define NUMSPARE      1    // number of additional measures in BS
 
 /*  MeasurementCommand_r4  */
@@ -152,8 +152,8 @@
 #define EURECOM_KERNEL_RELEASE_INDICATOR_REL_26 26
 
 /* Present ie of the message UECapabilityInformationConfirm */
-#define	UE_CAPABILITY_INFORMATION_CONFIRM_PR_NOTHING 0
-#define	UE_CAPABILITY_INFORMATION_CONFIRM_PR_R3 1
+#define UE_CAPABILITY_INFORMATION_CONFIRM_PR_NOTHING 0
+#define UE_CAPABILITY_INFORMATION_CONFIRM_PR_R3 1
 #define UE_CAPABILITY_INFORMATION_CONFIRM_PR_LATER_THAN_R3 2
 
 #endif

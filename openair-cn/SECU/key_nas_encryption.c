@@ -44,7 +44,7 @@
  */
 
 /*int derive_key_nas(algorithm_type_dist_t nas_alg_type, uint8_t nas_enc_alg_id,
-		           const uint8_t kasme[32], uint8_t** knas)
+               const uint8_t kasme[32], uint8_t** knas)
 {
     uint8_t s[7];
     uint8_t knas_temp[32];

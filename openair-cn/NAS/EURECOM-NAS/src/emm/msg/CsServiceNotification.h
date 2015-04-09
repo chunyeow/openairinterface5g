@@ -63,10 +63,10 @@
 # define CS_SERVICE_NOTIFICATION_LCS_CLIENT_IDENTITY_PRESENT (1<<3)
 
 typedef enum cs_service_notification_iei_tag {
-    CS_SERVICE_NOTIFICATION_CLI_IEI                  = 0x60, /* 0x60 = 96 */
-    CS_SERVICE_NOTIFICATION_SS_CODE_IEI              = 0x61, /* 0x61 = 97 */
-    CS_SERVICE_NOTIFICATION_LCS_INDICATOR_IEI        = 0x62, /* 0x62 = 98 */
-    CS_SERVICE_NOTIFICATION_LCS_CLIENT_IDENTITY_IEI  = 0x63, /* 0x63 = 99 */
+  CS_SERVICE_NOTIFICATION_CLI_IEI                  = 0x60, /* 0x60 = 96 */
+  CS_SERVICE_NOTIFICATION_SS_CODE_IEI              = 0x61, /* 0x61 = 97 */
+  CS_SERVICE_NOTIFICATION_LCS_INDICATOR_IEI        = 0x62, /* 0x62 = 98 */
+  CS_SERVICE_NOTIFICATION_LCS_CLIENT_IDENTITY_IEI  = 0x63, /* 0x63 = 99 */
 } cs_service_notification_iei;
 
 /*
@@ -77,17 +77,17 @@ typedef enum cs_service_notification_iei_tag {
  */
 
 typedef struct cs_service_notification_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                protocoldiscriminator:4;
-    SecurityHeaderType                   securityheadertype:4;
-    MessageType                          messagetype;
-    PagingIdentity                       pagingidentity;
-    /* Optional fields */
-    uint32_t                             presencemask;
-    Cli                                  cli;
-    SsCode                               sscode;
-    LcsIndicator                         lcsindicator;
-    LcsClientIdentity                    lcsclientidentity;
+  /* Mandatory fields */
+  ProtocolDiscriminator                protocoldiscriminator:4;
+  SecurityHeaderType                   securityheadertype:4;
+  MessageType                          messagetype;
+  PagingIdentity                       pagingidentity;
+  /* Optional fields */
+  uint32_t                             presencemask;
+  Cli                                  cli;
+  SsCode                               sscode;
+  LcsIndicator                         lcsindicator;
+  LcsClientIdentity                    lcsclientidentity;
 } cs_service_notification_msg;
 
 int decode_cs_service_notification(cs_service_notification_msg *csservicenotification, uint8_t *buffer, uint32_t len);

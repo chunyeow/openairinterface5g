@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-    included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+    included in this distribution in the file called "COPYING". If not,
     see <http://www.gnu.org/licenses/>.
 
    Contact Information
    OpenAirInterface Admin: openair_admin@eurecom.fr
    OpenAirInterface Tech : openair_tech@eurecom.fr
    OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
    Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -43,17 +43,19 @@
 #ifndef RTAI
 
 struct timespec interval, next, now, res;
-clockid_t clock_id = CLOCK_MONOTONIC; //other options are CLOCK_MONOTONIC, CLOCK_REALTIME, CLOCK_PROCESS_CPUTIME_ID, CLOCK_THREAD_CPUTIME_ID 
-RTIME rt_get_time_ns (void) {
+clockid_t clock_id = CLOCK_MONOTONIC; //other options are CLOCK_MONOTONIC, CLOCK_REALTIME, CLOCK_PROCESS_CPUTIME_ID, CLOCK_THREAD_CPUTIME_ID
+RTIME rt_get_time_ns (void)
+{
   clock_gettime(clock_id, &now);
-  return(now.tv_sec*1e9+now.tv_nsec); 
+  return(now.tv_sec*1e9+now.tv_nsec);
 }
 
-int rt_sleep_ns (RTIME x) {
+int rt_sleep_ns (RTIME x)
+{
   int ret;
   clock_gettime(clock_id, &now);
-  interval.tv_sec = x/((RTIME)1000000000); 
-  interval.tv_nsec = x%((RTIME)1000000000); 
+  interval.tv_sec = x/((RTIME)1000000000);
+  interval.tv_nsec = x%((RTIME)1000000000);
   //rt_printk("sleeping for %d sec and %d ns\n",interval.tv_sec,interval.tv_nsec);
   next = now;
   next.tv_sec += interval.tv_sec;
@@ -78,7 +80,8 @@ int rt_sleep_ns (RTIME x) {
   return(ret);
 }
 
-void check_clock(void) {
+void check_clock(void)
+{
   if (clock_getres(clock_id, &res)) {
     printf("clock_getres failed");
   } else {
@@ -88,7 +91,8 @@ void check_clock(void) {
 
 #else
 
-int rt_sleep_ns(RTIME x) {
+int rt_sleep_ns(RTIME x)
+{
   rt_sleep(nano2count(x));
   return(0);
 }

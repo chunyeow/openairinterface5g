@@ -1,21 +1,21 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+      Eurecom OpenAirInterface 3
+      Copyright(c) 2012 Eurecom
 
-Source		user_simulator.c
+Source    user_simulator.c
 
-Version		0.1
+Version   0.1
 
-Date		2012/10/09
+Date    2012/10/09
 
-Product		User simulator
+Product   User simulator
 
-Subsystem	User simulator main process
+Subsystem User simulator main process
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Implements the user simulator running at the user application
-		layer for NAS testing purpose.
+Description Implements the user simulator running at the user application
+    layer for NAS testing purpose.
 
 *****************************************************************************/
 
@@ -25,13 +25,13 @@ Description	Implements the user simulator running at the user application
 #include "util/socket.h"
 #include "util/device.h"
 
-#include <stdio.h>	// printf, perror
-#include <errno.h>	// errno
-#include <netdb.h>	// gai_strerror
-#include <ctype.h>	// isspace
-#include <stdlib.h>	// exit
-#include <signal.h>	// sigaction
-#include <string.h>	// memset
+#include <stdio.h>  // printf, perror
+#include <errno.h>  // errno
+#include <netdb.h>  // gai_strerror
+#include <ctype.h>  // isspace
+#include <stdlib.h> // exit
+#include <signal.h> // sigaction
+#include <string.h> // memset
 #include <pthread.h>
 #include <poll.h>
 
@@ -60,20 +60,20 @@ static char _user_simulator_recv_buffer [USER_SIMULATOR_BUFFER_SIZE];
  * NAS sublayer (see src/api/user/user_api.c)
  */
 static struct {
-    void* endpoint;
-    void*   (*open) (int, const char*, const char*);
-    int	    (*getfd)(const void*);
-    ssize_t (*recv) (void*, char*, size_t);
-    ssize_t (*send) (const void*, const char*, size_t);
-    void    (*close)(void*);
+  void* endpoint;
+  void*   (*open) (int, const char*, const char*);
+  int     (*getfd)(const void*);
+  ssize_t (*recv) (void*, char*, size_t);
+  ssize_t (*send) (const void*, const char*, size_t);
+  void    (*close)(void*);
 } _user_simulator_id;
 //static socket_id_t * _user_simulator_sid;
 
-#define USER_OPEN(a, b, c)	_user_simulator_id.open(a, b, c)
-#define USER_GETFD()		_user_simulator_id.getfd(_user_simulator_id.endpoint)
-#define USER_RECV(a, b)		_user_simulator_id.recv(_user_simulator_id.endpoint, a, b)
-#define USER_SEND(a, b)		_user_simulator_id.send(_user_simulator_id.endpoint, a, b)
-#define USER_CLOSE()		_user_simulator_id.close(_user_simulator_id.endpoint)
+#define USER_OPEN(a, b, c)  _user_simulator_id.open(a, b, c)
+#define USER_GETFD()    _user_simulator_id.getfd(_user_simulator_id.endpoint)
+#define USER_RECV(a, b)   _user_simulator_id.recv(_user_simulator_id.endpoint, a, b)
+#define USER_SEND(a, b)   _user_simulator_id.send(_user_simulator_id.endpoint, a, b)
+#define USER_CLOSE()    _user_simulator_id.close(_user_simulator_id.endpoint)
 
 static int _set_signal_handler(int signal, void (handler)(int));
 static void _signal_handler(int signal_number);
@@ -86,143 +86,152 @@ static void* _receive_thread(void* arg);
 /****************************************************************************/
 int main (int argc, const char* argv[])
 {
-    /*
-     * Get the command line options
-     */
-    if ( user_parser_get_options(argc, argv) != RETURNok )
-    {
-	user_parser_print_usage();
-	exit(EXIT_FAILURE);
-    }
-    const char* host = user_parser_get_host();
-    const char* port = user_parser_get_port();
-    const char* devpath = user_parser_get_devpath();
-    const char* devattr = user_parser_get_devattr();
+  /*
+   * Get the command line options
+   */
+  if ( user_parser_get_options(argc, argv) != RETURNok ) {
+    user_parser_print_usage();
+    exit(EXIT_FAILURE);
+  }
 
-    printf("%s -host %s -port %s -dev %s -params %s\n",
-	   argv[0], host, port, devpath, devattr);
+  const char* host = user_parser_get_host();
+  const char* port = user_parser_get_port();
+  const char* devpath = user_parser_get_devpath();
+  const char* devattr = user_parser_get_devattr();
 
-    /*
-     * Initialize the communication channel to the NAS sublayer
-     */
-    if (devpath)
-    {
-	/* Initialize device handlers */
-	_user_simulator_id.open  = device_open;
-	_user_simulator_id.getfd = device_get_fd;
-	_user_simulator_id.recv  = device_read;
-	_user_simulator_id.send  = device_write;
-	_user_simulator_id.close = device_close;
+  printf("%s -host %s -port %s -dev %s -params %s\n",
+         argv[0], host, port, devpath, devattr);
 
-	/* Initialize communication channel */
-	_user_simulator_id.endpoint = USER_OPEN(DEVICE, devpath, devattr);
-	if (_user_simulator_id.endpoint == NULL) {
-	    perror("ERROR\t: Failed to open connection endpoint");
-	    exit(EXIT_FAILURE);
-	}
+  /*
+   * Initialize the communication channel to the NAS sublayer
+   */
+  if (devpath) {
+    /* Initialize device handlers */
+    _user_simulator_id.open  = device_open;
+    _user_simulator_id.getfd = device_get_fd;
+    _user_simulator_id.recv  = device_read;
+    _user_simulator_id.send  = device_write;
+    _user_simulator_id.close = device_close;
 
-	printf("INFO\t: The User Simulator is now connected to %s (%d)\n",
-	       devpath, USER_GETFD());
-    }
-    else
-    {
-	/* Initialize network socket handlers */
-	_user_simulator_id.open  = socket_udp_open;
-	_user_simulator_id.getfd = socket_get_fd;
-	_user_simulator_id.recv  = socket_recv;
-	_user_simulator_id.send  = socket_send;
-	_user_simulator_id.close = socket_close;
+    /* Initialize communication channel */
+    _user_simulator_id.endpoint = USER_OPEN(DEVICE, devpath, devattr);
 
-	/* Initialize communication channel */
-	_user_simulator_id.endpoint = USER_OPEN(SOCKET_CLIENT, host, port);
-	if (_user_simulator_id.endpoint == NULL) {
-	    const char* error = ( (errno < 0) ?
-				  gai_strerror(errno) : strerror(errno) );
-	    printf("ERROR\t: Failed to open connection endpoint: %s\n", error);
-	    exit(EXIT_FAILURE);
-	}
-
-	printf("INFO\t: The User Simulator is now connected to %s/%s (%d)\n",
-	       host, port, USER_GETFD());
+    if (_user_simulator_id.endpoint == NULL) {
+      perror("ERROR\t: Failed to open connection endpoint");
+      exit(EXIT_FAILURE);
     }
 
+    printf("INFO\t: The User Simulator is now connected to %s (%d)\n",
+           devpath, USER_GETFD());
+  } else {
+    /* Initialize network socket handlers */
+    _user_simulator_id.open  = socket_udp_open;
+    _user_simulator_id.getfd = socket_get_fd;
+    _user_simulator_id.recv  = socket_recv;
+    _user_simulator_id.send  = socket_send;
+    _user_simulator_id.close = socket_close;
 
-    /*
-     * Set up signal handler
-     */
-   (void) _set_signal_handler(SIGINT, _signal_handler);
-   (void) _set_signal_handler(SIGTERM, _signal_handler);
+    /* Initialize communication channel */
+    _user_simulator_id.endpoint = USER_OPEN(SOCKET_CLIENT, host, port);
 
-   /*
-    * Create the receiving thread
-    */
-    pthread_attr_t attr;
-    pthread_t thread_id;
-    pthread_attr_init(&attr);
-    pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    int rc = pthread_create (&thread_id, &attr, _receive_thread, NULL);
-    if (rc != 0) {
-	perror("ERROR\t: pthread_create() failed");
-	USER_CLOSE();
-	exit(EXIT_FAILURE);
+    if (_user_simulator_id.endpoint == NULL) {
+      const char* error = ( (errno < 0) ?
+                            gai_strerror(errno) : strerror(errno) );
+      printf("ERROR\t: Failed to open connection endpoint: %s\n", error);
+      exit(EXIT_FAILURE);
     }
- 
-    /*
-     * User simulator main loop
-     */
-    while (TRUE)
-    {
-	char c;
-	int len;
 
-	/* Get the AT command */
-	printf("AT command (q to quit) > ");
-	c = getchar();
-	if (c == 'q') break;
-	if (c == '\n') continue;
+    printf("INFO\t: The User Simulator is now connected to %s/%s (%d)\n",
+           host, port, USER_GETFD());
+  }
 
-	len = 0;
-	while ( (len < USER_SIMULATOR_BUFFER_SIZE - 1) && (c != '\n') ) {
-	    if (!isspace(c)) {
-		_user_simulator_send_buffer[len++] = c;
-	    }
-	    c = getchar();
-	}
-	_user_simulator_send_buffer[len++] = '\r';
-	_user_simulator_send_buffer[len] = '\0';
 
-	/* Send the AT command to the NAS sublayer */
-	int sbytes = USER_SEND(_user_simulator_send_buffer, len);
-	if (sbytes == RETURNerror) {
-	    perror("ERROR\t: Failed to send data to the NAS sublayer");
-	    break;
-	}
+  /*
+   * Set up signal handler
+   */
+  (void) _set_signal_handler(SIGINT, _signal_handler);
+  (void) _set_signal_handler(SIGTERM, _signal_handler);
+
+  /*
+   * Create the receiving thread
+   */
+  pthread_attr_t attr;
+  pthread_t thread_id;
+  pthread_attr_init(&attr);
+  pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+  int rc = pthread_create (&thread_id, &attr, _receive_thread, NULL);
+
+  if (rc != 0) {
+    perror("ERROR\t: pthread_create() failed");
+    USER_CLOSE();
+    exit(EXIT_FAILURE);
+  }
+
+  /*
+   * User simulator main loop
+   */
+  while (TRUE) {
+    char c;
+    int len;
+
+    /* Get the AT command */
+    printf("AT command (q to quit) > ");
+    c = getchar();
+
+    if (c == 'q') break;
+
+    if (c == '\n') continue;
+
+    len = 0;
+
+    while ( (len < USER_SIMULATOR_BUFFER_SIZE - 1) && (c != '\n') ) {
+      if (!isspace(c)) {
+        _user_simulator_send_buffer[len++] = c;
+      }
+
+      c = getchar();
+    }
+
+    _user_simulator_send_buffer[len++] = '\r';
+    _user_simulator_send_buffer[len] = '\0';
+
+    /* Send the AT command to the NAS sublayer */
+    int sbytes = USER_SEND(_user_simulator_send_buffer, len);
+
+    if (sbytes == RETURNerror) {
+      perror("ERROR\t: Failed to send data to the NAS sublayer");
+      break;
+    }
 
 #if 0
-	/* Send the AT command one byte at a time (serial port simulation) */
-	const char* pbuffer = _user_simulator_send_buffer;
-	while (*pbuffer) {
-	    int sbytes = USER_SEND(pbuffer++, 1);
-	    if (sbytes == RETURNerror) {
-		perror("ERROR\t: Failed to send data to the NAS sublayer");
-		break;
-	    }
-	    (void)poll(0, 0, 10);
-	}
+    /* Send the AT command one byte at a time (serial port simulation) */
+    const char* pbuffer = _user_simulator_send_buffer;
+
+    while (*pbuffer) {
+      int sbytes = USER_SEND(pbuffer++, 1);
+
+      if (sbytes == RETURNerror) {
+        perror("ERROR\t: Failed to send data to the NAS sublayer");
+        break;
+      }
+
+      (void)poll(0, 0, 10);
+    }
+
 #endif
 
-	(void)poll(0, 0, 100);
-   }
+    (void)poll(0, 0, 100);
+  }
 
-    /*
-     * Termination cleanup
-     */
-    printf("INFO\t: Closing user endpoint descriptor %d\n", USER_GETFD());
-    USER_CLOSE();
+  /*
+   * Termination cleanup
+   */
+  printf("INFO\t: Closing user endpoint descriptor %d\n", USER_GETFD());
+  USER_CLOSE();
 
-    printf("INFO\t: User simulator exited\n");
-    exit(EXIT_SUCCESS);
+  printf("INFO\t: User simulator exited\n");
+  exit(EXIT_SUCCESS);
 }
 
 /****************************************************************************/
@@ -234,32 +243,33 @@ int main (int argc, const char* argv[])
  */
 static int _set_signal_handler(int signal, void (handler)(int))
 {
-    struct sigaction act;
+  struct sigaction act;
 
-    /* Initialize signal set */
-    (void) memset (&act, 0, sizeof (act));
-    (void) sigfillset (&act.sa_mask);
-    (void) sigdelset (&act.sa_mask, SIGHUP);
-    (void) sigdelset (&act.sa_mask, SIGINT);
-    (void) sigdelset (&act.sa_mask, SIGTERM);
-    (void) sigdelset (&act.sa_mask, SIGILL);
-    (void) sigdelset (&act.sa_mask, SIGTRAP);
-    (void) sigdelset (&act.sa_mask, SIGIOT);
+  /* Initialize signal set */
+  (void) memset (&act, 0, sizeof (act));
+  (void) sigfillset (&act.sa_mask);
+  (void) sigdelset (&act.sa_mask, SIGHUP);
+  (void) sigdelset (&act.sa_mask, SIGINT);
+  (void) sigdelset (&act.sa_mask, SIGTERM);
+  (void) sigdelset (&act.sa_mask, SIGILL);
+  (void) sigdelset (&act.sa_mask, SIGTRAP);
+  (void) sigdelset (&act.sa_mask, SIGIOT);
 #ifndef LINUX
-    (void) sigdelset (&act.sa_mask, SIGEMT);
+  (void) sigdelset (&act.sa_mask, SIGEMT);
 #endif
-    (void) sigdelset (&act.sa_mask, SIGFPE);
-    (void) sigdelset (&act.sa_mask, SIGBUS);
-    (void) sigdelset (&act.sa_mask, SIGSEGV);
-    (void) sigdelset (&act.sa_mask, SIGSYS);
+  (void) sigdelset (&act.sa_mask, SIGFPE);
+  (void) sigdelset (&act.sa_mask, SIGBUS);
+  (void) sigdelset (&act.sa_mask, SIGSEGV);
+  (void) sigdelset (&act.sa_mask, SIGSYS);
 
-    /* Initialize signal handler */
-    act.sa_handler = handler;
-    if ( sigaction (signal, &act, 0) < 0 ) {
-	return RETURNerror;
-    }
+  /* Initialize signal handler */
+  act.sa_handler = handler;
 
-    return RETURNok;
+  if ( sigaction (signal, &act, 0) < 0 ) {
+    return RETURNerror;
+  }
+
+  return RETURNok;
 }
 
 /*
@@ -267,11 +277,11 @@ static int _set_signal_handler(int signal, void (handler)(int))
  */
 static void _signal_handler(int signal_number)
 {
-    printf("\nWARNING\t: Signal %d received\n", signal_number);
-    printf("INFO\t: Closing user socket %d\n", USER_GETFD());
-    USER_CLOSE();
-    printf("INFO\t: User simulator exited\n");
-    exit(EXIT_SUCCESS);
+  printf("\nWARNING\t: Signal %d received\n", signal_number);
+  printf("INFO\t: Closing user socket %d\n", USER_GETFD());
+  USER_CLOSE();
+  printf("INFO\t: User simulator exited\n");
+  exit(EXIT_SUCCESS);
 }
 
 /*
@@ -279,23 +289,24 @@ static void _signal_handler(int signal_number)
  */
 static void* _receive_thread(void* arg)
 {
-    while (TRUE)
-    {
-	/* Receive AT response from the NAS sublayer */
-	int rbytes = USER_RECV(_user_simulator_recv_buffer,
-			       USER_SIMULATOR_BUFFER_SIZE);
-	if (rbytes != 0) {
-	    if (rbytes == RETURNerror) {
-		perror("ERROR\t: Failed to receive data from the NAS sublayer");
-		break;
-	    }
-	    _user_simulator_recv_buffer[rbytes] = '\0';
+  while (TRUE) {
+    /* Receive AT response from the NAS sublayer */
+    int rbytes = USER_RECV(_user_simulator_recv_buffer,
+                           USER_SIMULATOR_BUFFER_SIZE);
 
-	    /* Display AT response */
-	    printf("%s\n", _user_simulator_recv_buffer);
-	}
+    if (rbytes != 0) {
+      if (rbytes == RETURNerror) {
+        perror("ERROR\t: Failed to receive data from the NAS sublayer");
+        break;
+      }
+
+      _user_simulator_recv_buffer[rbytes] = '\0';
+
+      /* Display AT response */
+      printf("%s\n", _user_simulator_recv_buffer);
     }
+  }
 
-    return (NULL);
+  return (NULL);
 }
 

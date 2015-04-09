@@ -55,5 +55,5 @@ unsigned int next_block(int current_bn, omg_global_param omg_param);
 
 unsigned int selected_blockn(int block_n,int type,int div);
 
-#endif 
+#endif
 

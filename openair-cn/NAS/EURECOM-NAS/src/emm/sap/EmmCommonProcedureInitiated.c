@@ -90,88 +90,95 @@ Description Implements the EPS Mobility Management procedures executed
  ***************************************************************************/
 int EmmCommonProcedureInitiated(const emm_reg_t *evt)
 {
-    int rc = RETURNerror;
+  int rc = RETURNerror;
 
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    assert(emm_fsm_get_status(evt->ueid,
-                              evt->ctx) == EMM_COMMON_PROCEDURE_INITIATED);
+  assert(emm_fsm_get_status(evt->ueid,
+                            evt->ctx) == EMM_COMMON_PROCEDURE_INITIATED);
 
-    switch (evt->primitive) {
-        case _EMMREG_PROC_ABORT:
-            /*
-             * The EMM procedure that initiated EMM common procedure aborted
-             */
-            rc = emm_proc_common_abort(evt->ueid);
-            break;
+  switch (evt->primitive) {
+  case _EMMREG_PROC_ABORT:
+    /*
+     * The EMM procedure that initiated EMM common procedure aborted
+     */
+    rc = emm_proc_common_abort(evt->ueid);
+    break;
 
-        case _EMMREG_COMMON_PROC_CNF:
-            /*
-             * An EMM common procedure successfully completed;
-             */
-            if (evt->u.common.is_attached) {
-                rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_REGISTERED);
-            } else {
-                rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_DEREGISTERED);
-            }
-            if (rc != RETURNerror) {
-                rc = emm_proc_common_success(evt->ueid);
-            }
-            break;
+  case _EMMREG_COMMON_PROC_CNF:
 
-        case _EMMREG_COMMON_PROC_REJ:
-            /*
-             * An EMM common procedure failed;
-             * enter state EMM-DEREGISTERED.
-             */
-            rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_DEREGISTERED);
-            if (rc != RETURNerror) {
-                rc = emm_proc_common_reject(evt->ueid);
-            }
-            break;
-
-        case _EMMREG_ATTACH_CNF:
-            /*
-             * Attach procedure successful and default EPS bearer
-             * context activated;
-             * enter state EMM-REGISTERED.
-             */
-            rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_REGISTERED);
-            break;
-
-        case _EMMREG_ATTACH_REJ:
-            /*
-             * Attach procedure failed;
-             * enter state EMM-DEREGISTERED.
-             */
-            rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_DEREGISTERED);
-            break;
-
-        case _EMMREG_LOWERLAYER_SUCCESS:
-            /*
-             * Data successfully delivered to the network
-             */
-            rc = RETURNok;
-            break;
-
-        case _EMMREG_LOWERLAYER_FAILURE:
-            /*
-             * Transmission failure occurred before the EMM common
-             * procedure being completed
-             */
-            rc = emm_proc_common_failure(evt->ueid);
-            if (rc != RETURNerror) {
-                rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_DEREGISTERED);
-            }
-            break;
-
-        default:
-            LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
-                      evt->primitive);
-            break;
+    /*
+     * An EMM common procedure successfully completed;
+     */
+    if (evt->u.common.is_attached) {
+      rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_REGISTERED);
+    } else {
+      rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_DEREGISTERED);
     }
 
-    LOG_FUNC_RETURN (rc);
+    if (rc != RETURNerror) {
+      rc = emm_proc_common_success(evt->ueid);
+    }
+
+    break;
+
+  case _EMMREG_COMMON_PROC_REJ:
+    /*
+     * An EMM common procedure failed;
+     * enter state EMM-DEREGISTERED.
+     */
+    rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_DEREGISTERED);
+
+    if (rc != RETURNerror) {
+      rc = emm_proc_common_reject(evt->ueid);
+    }
+
+    break;
+
+  case _EMMREG_ATTACH_CNF:
+    /*
+     * Attach procedure successful and default EPS bearer
+     * context activated;
+     * enter state EMM-REGISTERED.
+     */
+    rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_REGISTERED);
+    break;
+
+  case _EMMREG_ATTACH_REJ:
+    /*
+     * Attach procedure failed;
+     * enter state EMM-DEREGISTERED.
+     */
+    rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_DEREGISTERED);
+    break;
+
+  case _EMMREG_LOWERLAYER_SUCCESS:
+    /*
+     * Data successfully delivered to the network
+     */
+    rc = RETURNok;
+    break;
+
+  case _EMMREG_LOWERLAYER_FAILURE:
+    /*
+     * Transmission failure occurred before the EMM common
+     * procedure being completed
+     */
+    rc = emm_proc_common_failure(evt->ueid);
+
+    if (rc != RETURNerror) {
+      rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_DEREGISTERED);
+    }
+
+    break;
+
+  default:
+    LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
+              evt->primitive);
+    break;
+  }
+
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************/

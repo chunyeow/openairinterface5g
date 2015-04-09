@@ -28,20 +28,20 @@
  *******************************************************************************/
 /*****************************************************************************
 
-Source		network_api.h
+Source    network_api.h
 
-Version		0.1
+Version   0.1
 
-Date		2012/03/01
+Date    2012/03/01
 
-Product		NAS stack
+Product   NAS stack
 
-Subsystem	Application Programming Interface
+Subsystem Application Programming Interface
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Implements the API used by the NAS layer to send/receive
-		message to/from the network layer
+Description Implements the API used by the NAS layer to send/receive
+    message to/from the network layer
 
 *****************************************************************************/
 #ifndef __NETWORK_API_H__

@@ -58,11 +58,11 @@ Description Defines functions used to handle EPS bearer contexts.
 #ifdef NAS_UE
 /* Traffic flow template operation */
 typedef enum {
-    ESM_EBR_CONTEXT_TFT_CREATE,
-    ESM_EBR_CONTEXT_TFT_DELETE,
-    ESM_EBR_CONTEXT_TFT_ADD_PACKET,
-    ESM_EBR_CONTEXT_TFT_REPLACE_PACKET,
-    ESM_EBR_CONTEXT_TFT_DELETE_PACKET,
+  ESM_EBR_CONTEXT_TFT_CREATE,
+  ESM_EBR_CONTEXT_TFT_DELETE,
+  ESM_EBR_CONTEXT_TFT_ADD_PACKET,
+  ESM_EBR_CONTEXT_TFT_REPLACE_PACKET,
+  ESM_EBR_CONTEXT_TFT_DELETE_PACKET,
 } esm_ebr_context_tft_t;
 #endif
 

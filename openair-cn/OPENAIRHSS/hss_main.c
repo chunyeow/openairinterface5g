@@ -37,26 +37,26 @@
 
 int main(int argc, char *argv[])
 {
-    hss_config_t hss_config;
+  hss_config_t hss_config;
 
-    memset(&hss_config, 0, sizeof(hss_config_t));
+  memset(&hss_config, 0, sizeof(hss_config_t));
 
-    if (config_init(argc, argv, &hss_config) != 0) {
-        return -1;
-    }
+  if (config_init(argc, argv, &hss_config) != 0) {
+    return -1;
+  }
 
-    if (hss_mysql_connect(&hss_config) != 0) {
-        return -1;
-    }
+  if (hss_mysql_connect(&hss_config) != 0) {
+    return -1;
+  }
 
-    random_init();
+  random_init();
 
-    s6a_init(&hss_config);
+  s6a_init(&hss_config);
 
-    while(1) {
-        /* TODO: handle signals here */
-        sleep(1);
-    }
+  while(1) {
+    /* TODO: handle signals here */
+    sleep(1);
+  }
 
-    return 0;
+  return 0;
 }

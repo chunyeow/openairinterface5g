@@ -9,24 +9,24 @@ struct ha_interface;
 
 #ifdef ENABLE_VT
 int mpd_poll_mpa(const struct in6_addr *ha,
-		 const struct in6_addr *hoa,
-		 struct timespec *delay,
-		 struct timespec *lastsent);
+                 const struct in6_addr *hoa,
+                 struct timespec *delay,
+                 struct timespec *lastsent);
 
 void mpd_plist_iterate(struct ha_interface *iface,
-		       int (* func)(int, void *, void *), void *arg);
+                       int (* func)(int, void *, void *), void *arg);
 #endif
 
 int mpd_prefix_check(struct in6_addr *dst,
-		     struct in6_addr *src,
-		     struct timespec *lft,
-		     int *ifindex,
-		     int dad);
+                     struct in6_addr *src,
+                     struct timespec *lft,
+                     int *ifindex,
+                     int dad);
 
 void mpd_handle_mpa_flags(struct ha_interface *iface, uint8_t ra_flags);
 
 int mpd_handle_pinfo(struct ha_interface *iface,
-		     struct nd_opt_prefix_info *pinfo);
+                     struct nd_opt_prefix_info *pinfo);
 
 void mpd_del_expired_pinfos(struct ha_interface *i);
 

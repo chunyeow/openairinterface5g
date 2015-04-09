@@ -3,10 +3,10 @@
                           -------------------
     begin               : Jun 9, 2005
     copyright           : (C) 2005, 2010 by Eurecom
-    created by          : Huu-Nghia.Nguyen@eurecom.fr	
+    created by          : Huu-Nghia.Nguyen@eurecom.fr
     modified by         : Michelle.Wetterwald@eurecom.fr
     description         : This file defines all the MBMS functions
-    which are accessible from outside 
+    which are accessible from outside
  **************************************************************************/
 #ifndef _RRC_PROTO_MBMS_H_
 #define _RRC_PROTO_MBMS_H_

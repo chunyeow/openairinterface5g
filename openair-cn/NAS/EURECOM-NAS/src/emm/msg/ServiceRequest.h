@@ -57,11 +57,11 @@
  */
 
 typedef struct service_request_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator     protocoldiscriminator:4;
-    SecurityHeaderType        securityheadertype:4;
-    KsiAndSequenceNumber      ksiandsequencenumber;
-    ShortMac                  messageauthenticationcode;
+  /* Mandatory fields */
+  ProtocolDiscriminator     protocoldiscriminator:4;
+  SecurityHeaderType        securityheadertype:4;
+  KsiAndSequenceNumber      ksiandsequencenumber;
+  ShortMac                  messageauthenticationcode;
 } service_request_msg;
 
 int decode_service_request(service_request_msg *servicerequest, uint8_t *buffer, uint32_t len);

@@ -33,40 +33,52 @@
 
 char *experimental_retcode_2_string(int ret_code)
 {
-    switch(ret_code) {
-        /* Experimental-Result-Codes */
-        case DIAMETER_ERROR_USER_UNKNOWN:
-            return "DIAMETER_ERROR_USER_UNKNOWN";
-        case DIAMETER_ERROR_ROAMING_NOT_ALLOWED:
-            return "DIAMETER_ERROR_ROAMING_NOT_ALLOWED";
-        case DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION:
-            return "DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION";
-        case DIAMETER_ERROR_RAT_NOT_ALLOWED:
-            return "DIAMETER_ERROR_RAT_NOT_ALLOWED";
-        case DIAMETER_ERROR_EQUIPMENT_UNKNOWN:
-            return "DIAMETER_ERROR_EQUIPMENT_UNKNOWN";
-        case DIAMETER_ERROR_UNKOWN_SERVING_NODE:
-            return "DIAMETER_ERROR_UNKOWN_SERVING_NODE";
-        case DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE:
-            return "DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE";
-        default:
-            break;
-    }
-    return "DIAMETER_AVP_UNSUPPORTED";
+  switch(ret_code) {
+    /* Experimental-Result-Codes */
+  case DIAMETER_ERROR_USER_UNKNOWN:
+    return "DIAMETER_ERROR_USER_UNKNOWN";
+
+  case DIAMETER_ERROR_ROAMING_NOT_ALLOWED:
+    return "DIAMETER_ERROR_ROAMING_NOT_ALLOWED";
+
+  case DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION:
+    return "DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION";
+
+  case DIAMETER_ERROR_RAT_NOT_ALLOWED:
+    return "DIAMETER_ERROR_RAT_NOT_ALLOWED";
+
+  case DIAMETER_ERROR_EQUIPMENT_UNKNOWN:
+    return "DIAMETER_ERROR_EQUIPMENT_UNKNOWN";
+
+  case DIAMETER_ERROR_UNKOWN_SERVING_NODE:
+    return "DIAMETER_ERROR_UNKOWN_SERVING_NODE";
+
+  case DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE:
+    return "DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE";
+
+  default:
+    break;
+  }
+
+  return "DIAMETER_AVP_UNSUPPORTED";
 }
 
 char *retcode_2_string(int ret_code)
 {
-    switch(ret_code) {
-        case ER_DIAMETER_SUCCESS:
-            return "DIAMETER_SUCCESS";
-        case ER_DIAMETER_MISSING_AVP:
-            return "DIAMETER_MISSING_AVP";
-        case ER_DIAMETER_INVALID_AVP_VALUE:
-            return "DIAMETER_INVALID_AVP_VALUE";
-        default:
-            break;
-    }
-    return "DIAMETER_AVP_UNSUPPORTED";
+  switch(ret_code) {
+  case ER_DIAMETER_SUCCESS:
+    return "DIAMETER_SUCCESS";
+
+  case ER_DIAMETER_MISSING_AVP:
+    return "DIAMETER_MISSING_AVP";
+
+  case ER_DIAMETER_INVALID_AVP_VALUE:
+    return "DIAMETER_INVALID_AVP_VALUE";
+
+  default:
+    break;
+  }
+
+  return "DIAMETER_AVP_UNSUPPORTED";
 }
 

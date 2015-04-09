@@ -4,17 +4,17 @@
  * Authors: OPENAIR3 <openair_tech@eurecom.fr>
  *
  * Copyright 2010-2011 EURECOM (Sophia-Antipolis, FRANCE)
- * 
- * Proxy Mobile IPv6 (or PMIPv6, or PMIP) is a network-based mobility 
- * management protocol standardized by IETF. It is a protocol for building 
- * a common and access technology independent of mobile core networks, 
- * accommodating various access technologies such as WiMAX, 3GPP, 3GPP2 
- * and WLAN based access architectures. Proxy Mobile IPv6 is the only 
+ *
+ * Proxy Mobile IPv6 (or PMIPv6, or PMIP) is a network-based mobility
+ * management protocol standardized by IETF. It is a protocol for building
+ * a common and access technology independent of mobile core networks,
+ * accommodating various access technologies such as WiMAX, 3GPP, 3GPP2
+ * and WLAN based access architectures. Proxy Mobile IPv6 is the only
  * network-based mobility management protocol standardized by IETF.
- * 
+ *
  * PMIP Proxy Mobile IPv6 for Linux has been built above MIPL free software;
  * which it involves that it is under the same terms of GNU General Public
- * License version 2. See MIPL terms condition if you need more details. 
+ * License version 2. See MIPL terms condition if you need more details.
  */
 /*! \file pmip_mag_proc.h
 * \brief
@@ -64,9 +64,9 @@
 #        define IPV6_ADDR_LINKLOCAL 0x0020U
 #    endif
 //-----------------------------------------------------------------------------
-#	include <netinet/ip6.h>
-#	include "pmip_cache.h"
-#	include "pmip_msgs.h"
+# include <netinet/ip6.h>
+# include "pmip_cache.h"
+# include "pmip_msgs.h"
 
 //-VARS----------------------------------------------------------------------------
 /*! \var int  g_ingress_iif
@@ -75,7 +75,7 @@
 protected_pmip_mag_proc(int   g_ingress_iif;)
 //-PROTOTYPES----------------------------------------------------------------------------
 /*! \fn int mag_setup_route(struct in6_addr *pmip6_addr, int downlink)
-* \brief	Set a route on a MAG for reaching a mobile node.
+* \brief  Set a route on a MAG for reaching a mobile node.
 * \param[in]  pmip6_addr Mobile node destination address
 * \param[in]  downlink Outgoing downlink interface id
 * \return   Returns zero on success, negative otherwise.

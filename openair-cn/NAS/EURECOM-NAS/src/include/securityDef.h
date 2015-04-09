@@ -88,16 +88,16 @@ Description Contains global security definitions
  * EPS authentication vector
  */
 typedef struct {
-    /* ASME security key                */
-    uint8_t kasme[AUTH_KASME_SIZE];
-    /* Random challenge parameter           */
-    uint8_t rand[AUTH_RAND_SIZE];
-    /* Authentication token parameter       */
-    uint8_t autn[AUTH_AUTN_SIZE];
-    /* Expected Authentication response parameter   */
+  /* ASME security key                */
+  uint8_t kasme[AUTH_KASME_SIZE];
+  /* Random challenge parameter           */
+  uint8_t rand[AUTH_RAND_SIZE];
+  /* Authentication token parameter       */
+  uint8_t autn[AUTH_AUTN_SIZE];
+  /* Expected Authentication response parameter   */
 #define AUTH_XRES_SIZE  AUTH_RES_SIZE
-    uint8_t xres_size;
-    uint8_t xres[AUTH_XRES_SIZE];
+  uint8_t xres_size;
+  uint8_t xres[AUTH_XRES_SIZE];
 } auth_vector_t;
 
 /****************************************************************************/

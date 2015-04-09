@@ -37,9 +37,9 @@ extern int error_count;
 extern int break_on_error;
 
 extern void fail (const char *format, ...)
-  __attribute__ ((format (printf, 1, 2)));
+__attribute__ ((format (printf, 1, 2)));
 extern void success (const char *format, ...)
-  __attribute__ ((format (printf, 1, 2)));
+__attribute__ ((format (printf, 1, 2)));
 
 extern void escapeprint (const char *str, size_t len);
 extern void hexprint (const void *str, size_t len);

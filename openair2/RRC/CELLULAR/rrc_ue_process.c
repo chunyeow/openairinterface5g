@@ -24,64 +24,78 @@
 
 //-----------------------------------------------------------------------------
 /* Generic function to encode RRC messages */
-void  encode_message (int *Message_Id, int Message_Type){
-//-----------------------------------------------------------------------------
-  #ifdef DEBUG_RRC_STATE
+void  encode_message (int *Message_Id, int Message_Type)
+{
+  //-----------------------------------------------------------------------------
+#ifdef DEBUG_RRC_STATE
   msg ("[RRC][FSM-PROC]encode message %d \n", Message_Type);
-  #endif
+#endif
+
   if (protocol_ms->rrc.ue_msg_infos.msg_length) {
-  #ifdef DEBUG_RRC_STATE
-   msg ("\n\n[RRC_MSG] There is already one message pending %d\n", protocol_ms->rrc.ue_msg_infos.msg_Id);
-  #endif
+#ifdef DEBUG_RRC_STATE
+    msg ("\n\n[RRC_MSG] There is already one message pending %d\n", protocol_ms->rrc.ue_msg_infos.msg_Id);
+#endif
   } else {
     switch (Message_Type) {
-      case RRC_CONN_REQ:
-        rrc_ue_msg_connreq (Message_Id);
-        break;
-      case RRC_CONN_SETUP_COMPLETE:
-        rrc_ue_msg_connsucompl (Message_Id);
-        break;
-      case RRC_CONN_RELEASE:
-        rrc_ue_msg_connrelUL (Message_Id);
-        break;
-      case RB_SETUP_COMPLETE:
-        rrc_ue_config_LTE_default_drb(protocol_ms->rrc.mod_id);  //TEMP OpenAir
-        rrc_ue_config_LTE_srb2(protocol_ms->rrc.mod_id);
-        rrc_ue_msg_rbsetupcompl (Message_Id);
-        break;
-      case RB_SETUP_FAILURE:
-        rrc_ue_msg_rbsetupfail (Message_Id);
-        break;
-      case RB_RELEASE_COMPLETE:
-        rrc_ue_config_LTE_default_drb(protocol_ms->rrc.mod_id);   //TEMP OpenAir
-        rrc_ue_msg_rbreleasecompl (Message_Id);
-        break;
-      case RB_RELEASE_FAILURE:
-        rrc_ue_msg_rbreleasefail (Message_Id);
-        break;
-      case CELL_UPDATE:
-        rrc_ue_msg_cellUpdate (Message_Id);
-        break;
-       case UE_CAPABILITY_INFO:
-        rrc_ue_msg_ueCapInfo(Message_Id);
-        break;
-      default:
-        msg ("\n\n[RRC_MSG] unknown message type %d\n", Message_Type);
+    case RRC_CONN_REQ:
+      rrc_ue_msg_connreq (Message_Id);
+      break;
+
+    case RRC_CONN_SETUP_COMPLETE:
+      rrc_ue_msg_connsucompl (Message_Id);
+      break;
+
+    case RRC_CONN_RELEASE:
+      rrc_ue_msg_connrelUL (Message_Id);
+      break;
+
+    case RB_SETUP_COMPLETE:
+      rrc_ue_config_LTE_default_drb(protocol_ms->rrc.mod_id);  //TEMP OpenAir
+      rrc_ue_config_LTE_srb2(protocol_ms->rrc.mod_id);
+      rrc_ue_msg_rbsetupcompl (Message_Id);
+      break;
+
+    case RB_SETUP_FAILURE:
+      rrc_ue_msg_rbsetupfail (Message_Id);
+      break;
+
+    case RB_RELEASE_COMPLETE:
+      rrc_ue_config_LTE_default_drb(protocol_ms->rrc.mod_id);   //TEMP OpenAir
+      rrc_ue_msg_rbreleasecompl (Message_Id);
+      break;
+
+    case RB_RELEASE_FAILURE:
+      rrc_ue_msg_rbreleasefail (Message_Id);
+      break;
+
+    case CELL_UPDATE:
+      rrc_ue_msg_cellUpdate (Message_Id);
+      break;
+
+    case UE_CAPABILITY_INFO:
+      rrc_ue_msg_ueCapInfo(Message_Id);
+      break;
+
+    default:
+      msg ("\n\n[RRC_MSG] unknown message type %d\n", Message_Type);
     }
+
     protocol_ms->rrc.last_message_sent = Message_Type;
   }
 }
 
 //-----------------------------------------------------------------------------
-int INTEGER_COMBINE (int Id1, int Id2){
-//-----------------------------------------------------------------------------
+int INTEGER_COMBINE (int Id1, int Id2)
+{
+  //-----------------------------------------------------------------------------
   // signals an error in the automata. Combination should never occur.
   return 999;
 }
 
 //-----------------------------------------------------------------------------
-int BOOLEAN_COMBINE (int Id1, int Id2){
-//-----------------------------------------------------------------------------
+int BOOLEAN_COMBINE (int Id1, int Id2)
+{
+  //-----------------------------------------------------------------------------
   // signals an error in the automata. Combination should never occur.
   return FALSE;
 }
@@ -89,36 +103,40 @@ int BOOLEAN_COMBINE (int Id1, int Id2){
 /* Selection of channels during RRC Connection SetUp
  */
 //-----------------------------------------------------------------------------
-void Select_PRACH (void){
-//-----------------------------------------------------------------------------
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC][FSM-PROC]Select_RACH() -- not implemented\n");
-  #endif
+void Select_PRACH (void)
+{
+  //-----------------------------------------------------------------------------
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC][FSM-PROC]Select_RACH() -- not implemented\n");
+#endif
 }
 
 //-----------------------------------------------------------------------------
-void Select_Secondary_CCPCH (void){
-//-----------------------------------------------------------------------------
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC][FSM-PROC]Select_Secondary_CCPCH()  -- not implemented \n");
-  #endif
+void Select_Secondary_CCPCH (void)
+{
+  //-----------------------------------------------------------------------------
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC][FSM-PROC]Select_Secondary_CCPCH()  -- not implemented \n");
+#endif
 }
 
 /* Record of current RRC state
  */
 //-----------------------------------------------------------------------------
-void Set_State (int new_state, int forward){
-//-----------------------------------------------------------------------------
+void Set_State (int new_state, int forward)
+{
+  //-----------------------------------------------------------------------------
   //protocol_state = new_state;
   protocol_ms->rrc.protocol_state = new_state;
-  #ifdef DEBUG_RRC_STATE
+#ifdef DEBUG_RRC_STATE
   // msg("[RRC][FSM-PROC]New state = %d , forward = %d \n",protocol_state, forward);
-   msg ("[RRC][FSM-PROC]New state = %d \n", protocol_ms->rrc.protocol_state);
-  #endif
-  if (!forward){
-  #ifdef DEBUG_RRC_STATE
+  msg ("[RRC][FSM-PROC]New state = %d \n", protocol_ms->rrc.protocol_state);
+#endif
+
+  if (!forward) {
+#ifdef DEBUG_RRC_STATE
     msg ("[RRC][FSM-PROC] Set_State - State forwarded to RB FSM \n");
-  #endif
+#endif
     rrc_rb_ue_new_state (new_state);
   }
 }
@@ -126,21 +144,23 @@ void Set_State (int new_state, int forward){
 /* release resources in RLC, MAC, PHY (no reply)
  */
 //-----------------------------------------------------------------------------
-void release_radio_resources (void){
-//-----------------------------------------------------------------------------
+void release_radio_resources (void)
+{
+  //-----------------------------------------------------------------------------
   rrc_release_all_ressources = 1;
 }
 
 /* clear RRC variables: TRANSACTIONS, ESTABLISHED_RBs...
  */
 //-----------------------------------------------------------------------------
-void clear_variables_rel (void){
-//-----------------------------------------------------------------------------
+void clear_variables_rel (void)
+{
+  //-----------------------------------------------------------------------------
   int i;
 
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC][FSM-PROC]clear_variables_release()- CLEAN RRC variables\n");
-  #endif
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC][FSM-PROC]clear_variables_release()- CLEAN RRC variables\n");
+#endif
   protocol_ms->rrc.ue_wait_establish_req = 0;
   protocol_ms->rrc.u_rnti = 0;
   protocol_ms->rrc.c_rnti = 0;
@@ -155,94 +175,106 @@ void clear_variables_rel (void){
   protocol_ms->rrc.num_rb = 0;
 
   // Clear measurement control blocks
-  for (i=0;i<MAXMEASTYPES;i++){
-   memset (&(protocol_ms->rrc.ue_meas_cmd[i]), 0, sizeof(struct rrc_ue_meas_cmd));
-   memset (&(protocol_ms->rrc.ue_meas_rep[i]), 0, sizeof(struct rrc_ue_meas_rep));
+  for (i=0; i<MAXMEASTYPES; i++) {
+    memset (&(protocol_ms->rrc.ue_meas_cmd[i]), 0, sizeof(struct rrc_ue_meas_cmd));
+    memset (&(protocol_ms->rrc.ue_meas_rep[i]), 0, sizeof(struct rrc_ue_meas_rep));
   }
 }
 
 //-----------------------------------------------------------------------------
-void ue_clear_transaction (int Message_Type){
-//-----------------------------------------------------------------------------
-// TODO with proc_IE_transaction
-//  int  rb_id = 0;
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC][FSM-PROC]UE clear_transaction()\n");
-  #endif
+void ue_clear_transaction (int Message_Type)
+{
+  //-----------------------------------------------------------------------------
+  // TODO with proc_IE_transaction
+  //  int  rb_id = 0;
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC][FSM-PROC]UE clear_transaction()\n");
+#endif
   protocol_ms->rrc.accepted_trans[0].transaction_Id = 0;
   //save valid configuration for ms
   memcpy (&(protocol_ms->rrc.saved_configuration.mt_config), &(rrm_config)->mt_config, sizeof (MT_CONFIG));
+
   switch (Message_Type) {
-      case RRC_CONN_SETUP:
-        protocol_ms->rrc.idata_xfer = TRUE;
-        break;
-      case RB_SETUP:
-        protocol_ms->rrc.ue_established_rbs[protocol_ms->rrc.requested_rbId].rb_started = RB_STARTED;
-        // Temp - Esterel to be corrected. must be last procedure, after NAS
-        //          protocol_ms->rrc.requested_rbId = 0;
-        //          protocol_ms->rrc.requested_QoSclass = 0;
-        //          protocol_ms->rrc.requested_dscp = 0;
-      case RB_RELEASE:
-        // Temp - Esterel to be corrected. must be last procedure, after NAS
-        //          protocol_ms->rrc.requested_rbId = 0;
-        protocol_ms->rrc.ue_established_rbs[protocol_ms->rrc.requested_rbId].qos_class = 0;
-        protocol_ms->rrc.ue_established_rbs[protocol_ms->rrc.requested_rbId].dscp_code = 0;
-        protocol_ms->rrc.ue_established_rbs[protocol_ms->rrc.requested_rbId].rb_started = RB_STOPPED;
-        break;
-      default:
-        msg ("[RRC][FSM-PROC]UE clear_transaction()- unknown message type\n");
+  case RRC_CONN_SETUP:
+    protocol_ms->rrc.idata_xfer = TRUE;
+    break;
+
+  case RB_SETUP:
+    protocol_ms->rrc.ue_established_rbs[protocol_ms->rrc.requested_rbId].rb_started = RB_STARTED;
+
+    // Temp - Esterel to be corrected. must be last procedure, after NAS
+    //          protocol_ms->rrc.requested_rbId = 0;
+    //          protocol_ms->rrc.requested_QoSclass = 0;
+    //          protocol_ms->rrc.requested_dscp = 0;
+  case RB_RELEASE:
+    // Temp - Esterel to be corrected. must be last procedure, after NAS
+    //          protocol_ms->rrc.requested_rbId = 0;
+    protocol_ms->rrc.ue_established_rbs[protocol_ms->rrc.requested_rbId].qos_class = 0;
+    protocol_ms->rrc.ue_established_rbs[protocol_ms->rrc.requested_rbId].dscp_code = 0;
+    protocol_ms->rrc.ue_established_rbs[protocol_ms->rrc.requested_rbId].rb_started = RB_STOPPED;
+    break;
+
+  default:
+    msg ("[RRC][FSM-PROC]UE clear_transaction()- unknown message type\n");
   }
 }
 
 /* function prototypes for the RRC Radio Bearer Establishment and Release procedures, UE side */
 
-void proc_IE_activ_Time (void){
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC][RB-PROC] NI--proc_IE_activ_Time()\n");
-  #endif
+void proc_IE_activ_Time (void)
+{
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC][RB-PROC] NI--proc_IE_activ_Time()\n");
+#endif
 }
 
-void proc_IE_RNTIs (void){
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC][RB-PROC] NI--proc_IE_RNTIs()\n");
-  #endif
+void proc_IE_RNTIs (void)
+{
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC][RB-PROC] NI--proc_IE_RNTIs()\n");
+#endif
 }
 
-void proc_IE_transaction (void){
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC][RB-PROC] NI--proc_IE_transaction()\n");
-  #endif
+void proc_IE_transaction (void)
+{
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC][RB-PROC] NI--proc_IE_transaction()\n");
+#endif
 }
 
-void proc_IE_configuration (void){
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC][RB-PROC] NI--proc_IE_configuration()\n");
-  #endif
+void proc_IE_configuration (void)
+{
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC][RB-PROC] NI--proc_IE_configuration()\n");
+#endif
 }
 
-void clear_C_RNTI (void){
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC][RB-PROC] NI--clear_C_RNTI()\n");
-  #endif
+void clear_C_RNTI (void)
+{
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC][RB-PROC] NI--clear_C_RNTI()\n");
+#endif
 }
 
 //-----------------------------------------------------------------------------
-void set_RRC_Transaction_ID (void){
-//-----------------------------------------------------------------------------
+void set_RRC_Transaction_ID (void)
+{
+  //-----------------------------------------------------------------------------
   int i;
   // clean up commands in config -- Temp
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC][RB-PROC]set_RRC_Transaction_ID()\n");
-  #endif
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC][RB-PROC]set_RRC_Transaction_ID()\n");
+#endif
   // TEMP Commented for openAir
-/*  for (i = 0; i < JRRM_MAX_COMMANDS_PER_TRANSACTION; i++) {
-    (&rrm_config->mt_config)->rrm_commands[i].rrm_action = 0;
-  }*/
+  /*  for (i = 0; i < JRRM_MAX_COMMANDS_PER_TRANSACTION; i++) {
+      (&rrm_config->mt_config)->rrm_commands[i].rrm_action = 0;
+    }*/
 }
 
 //-----------------------------------------------------------------------------
-void rrc_ue_t300_timeout (void){
-//-----------------------------------------------------------------------------
+void rrc_ue_t300_timeout (void)
+{
+  //-----------------------------------------------------------------------------
   msg ("[RRC] TIME OUT RRC_CONNECTION REQUEST frame %d\n", protocol_ms->rrc.current_SFN);
 
   protocol_ms->rrc.rrc_ue_t300_target = 0;

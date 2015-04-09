@@ -38,7 +38,7 @@
 #include <net/ethernet.h>
 #include <netinet/in.h>
 #include <pthread.h>
- #include <stdio.h>
+#include <stdio.h>
 
 #ifdef ENABLE_USE_NETFILTER_FOR_SGI
 #warning "ENABLE_USE_NETFILTER_FOR_SGI"
@@ -85,7 +85,7 @@
     while(0)
 #endif
 #ifndef SGI_IF_WARNING
- # define SGI_IF_WARNING(x, args...) do { fprintf(stderr, "[SGI_IF][W]"x, ##args); } \
+# define SGI_IF_WARNING(x, args...) do { fprintf(stderr, "[SGI_IF][W]"x, ##args); } \
      while(0)
 #endif
 
@@ -123,47 +123,46 @@
         (uint8_t)(addr[5])
 #ifdef VLAN8021Q
 typedef struct vlan_tag_s {
-    uint16_t       vlan_tpid;              /* ETH_P_8021Q */
-    uint16_t       vlan_tci;               /* VLAN TCI */
+  uint16_t       vlan_tpid;              /* ETH_P_8021Q */
+  uint16_t       vlan_tci;               /* VLAN TCI */
 } vlan_tag_t __attribute__ ((__packed__));
 
-typedef struct ether_header_8021q_s
-{
-  u_int8_t  ether_dhost[ETH_ALEN];	/* destination eth addr	*/
-  u_int8_t  ether_shost[ETH_ALEN];	/* source ether addr	*/
+typedef struct ether_header_8021q_s {
+  u_int8_t  ether_dhost[ETH_ALEN];  /* destination eth addr */
+  u_int8_t  ether_shost[ETH_ALEN];  /* source ether addr  */
   vlan_tag_t ether_vlan8021q;
-  u_int16_t ether_type;		        /* packet type ID field	*/
+  u_int16_t ether_type;           /* packet type ID field */
 } ether_header_8021q_t __attribute__ ((__packed__));
 #endif
 
 typedef struct arphdr_s {
-	__be16		ar_hrd;		/* format of hardware address	*/
-	__be16		ar_pro;		/* format of protocol address	*/
-	unsigned char	ar_hln;		/* length of hardware address	*/
-	unsigned char	ar_pln;		/* length of protocol address	*/
-	__be16		ar_op;		/* ARP opcode (command)		*/
-	 /*
-	  *	 Ethernet looks like this : This bit is variable sized however...
-	  */
-	unsigned char		ar_sha[ETH_ALEN];	/* sender hardware address	*/
-	unsigned char		ar_sip[4];		/* sender IP address		*/
-	unsigned char		ar_tha[ETH_ALEN];	/* target hardware address	*/
-	unsigned char		ar_tip[4];		/* target IP address		*/
+  __be16    ar_hrd;   /* format of hardware address */
+  __be16    ar_pro;   /* format of protocol address */
+  unsigned char ar_hln;   /* length of hardware address */
+  unsigned char ar_pln;   /* length of protocol address */
+  __be16    ar_op;    /* ARP opcode (command)   */
+  /*
+   *  Ethernet looks like this : This bit is variable sized however...
+   */
+  unsigned char   ar_sha[ETH_ALEN]; /* sender hardware address  */
+  unsigned char   ar_sip[4];    /* sender IP address    */
+  unsigned char   ar_tha[ETH_ALEN]; /* target hardware address  */
+  unsigned char   ar_tip[4];    /* target IP address    */
 
-}arphdr_t;
+} arphdr_t;
 
 typedef struct sgi_teid_mapping_s {
-	int                        is_outgoing_ipv4_packet_seen;
-	int                        is_outgoing_ipv6_packet_seen;
-	Teid_t                     enb_S1U_teid;        ///< dest tunnel identifier
-	qci_t                      qci;
-	ebi_t                      eps_bearer_id;       ///< EPS bearer identifier
-    char                       hw_addrlen;
+  int                        is_outgoing_ipv4_packet_seen;
+  int                        is_outgoing_ipv6_packet_seen;
+  Teid_t                     enb_S1U_teid;        ///< dest tunnel identifier
+  qci_t                      qci;
+  ebi_t                      eps_bearer_id;       ///< EPS bearer identifier
+  char                       hw_addrlen;
 #ifdef SGI_UE_ETHER_TRAFFIC
-    char                       ue_mac_addr[8];
+  char                       ue_mac_addr[8];
 #endif
-    struct in6_addr            in6_addr_captured[MAX_DEFINED_IPV6_ADDRESSES_PER_UE];
-    struct in_addr             in_add_captured;
+  struct in6_addr            in6_addr_captured[MAX_DEFINED_IPV6_ADDRESSES_PER_UE];
+  struct in_addr             in_add_captured;
 } sgi_teid_mapping_t;
 
 
@@ -171,12 +170,12 @@ typedef struct sgi_teid_mapping_s {
 // may be usefull for netfilter that does not capture MAC address
 // if not set on certain hook points (table,path).
 typedef struct sgi_addr_mapping_s {
-	int                        is_outgoing_packet_seen;
-	ebi_t                      eps_bearer_id;       ///< EPS default bearer identifier, (really ?)
-	Teid_t                     enb_S1U_teid;        ///< dest tunnel identifier, for default bearer
-	Teid_t                     sgw_S1U_teid;        ///< dest tunnel identifier, for default bearer
+  int                        is_outgoing_packet_seen;
+  ebi_t                      eps_bearer_id;       ///< EPS default bearer identifier, (really ?)
+  Teid_t                     enb_S1U_teid;        ///< dest tunnel identifier, for default bearer
+  Teid_t                     sgw_S1U_teid;        ///< dest tunnel identifier, for default bearer
 #ifdef SGI_UE_ETHER_TRAFFIC
-    char                       ue_mac_addr[ETH_ALEN];
+  char                       ue_mac_addr[ETH_ALEN];
 #endif
 } sgi_addr_mapping_t;
 
@@ -184,51 +183,51 @@ typedef struct sgi_addr_mapping_s {
 
 
 typedef struct sgi_data_s {
-    int                 sd[SGI_MAX_EPS_BEARERS_PER_USER];
-    unsigned int        if_index[SGI_MAX_EPS_BEARERS_PER_USER];
-    int                 sd6;
-    char               *interface_name;
-    int                 interface_name_len;
-    int                 interface_index;
+  int                 sd[SGI_MAX_EPS_BEARERS_PER_USER];
+  unsigned int        if_index[SGI_MAX_EPS_BEARERS_PER_USER];
+  int                 sd6;
+  char               *interface_name;
+  int                 interface_name_len;
+  int                 interface_index;
 #ifndef SGI_UE_ETHER_TRAFFIC
-    char                interface_hw_address[ETH_ALEN];
+  char                interface_hw_address[ETH_ALEN];
 #ifdef VLAN8021Q
-    struct ether_header_8021q_s eh;
+  struct ether_header_8021q_s eh;
 #else
-    struct ether_header eh;
+  struct ether_header eh;
 #endif
 #endif
-    uint32_t            ipv4_addr;
-    hash_table_t       *teid_mapping;
-    hash_table_t       *addr_v4_mapping;
-    obj_hash_table_t   *addr_v6_mapping;
-    pthread_t           capture_on_sgi_if_thread;
-    pthread_mutex_t     thread_started_mutex;
-    int                 thread_started;
+  uint32_t            ipv4_addr;
+  hash_table_t       *teid_mapping;
+  hash_table_t       *addr_v4_mapping;
+  obj_hash_table_t   *addr_v6_mapping;
+  pthread_t           capture_on_sgi_if_thread;
+  pthread_mutex_t     thread_started_mutex;
+  int                 thread_started;
 
-    void               *sock_mmap_ring;
-    struct iovec       *malloc_ring;
+  void               *sock_mmap_ring;
+  struct iovec       *malloc_ring;
 
-    int                 hw_address_of_router_captured;
-    uint32_t            local_addr_v4_4_hw_address_router_capture;
-    uint32_t            ipv4_addr_of_router;
-    char                hss_associated;
+  int                 hw_address_of_router_captured;
+  uint32_t            local_addr_v4_4_hw_address_router_capture;
+  uint32_t            ipv4_addr_of_router;
+  char                hss_associated;
 
 
 #ifdef ENABLE_USE_PCAP_FOR_SGI
-    //brief PCAP descriptor for capturing packets on SGI interface.
-    pcap_t * pcap_descr;
+  //brief PCAP descriptor for capturing packets on SGI interface.
+  pcap_t * pcap_descr;
 #endif
 #define SGI_BUFFER_RECV_LEN 3000
-    unsigned char recv_buffer[sizeof(struct ether_header) + SGI_BUFFER_RECV_LEN][SGI_MAX_EPS_BEARERS_PER_USER];
+  unsigned char recv_buffer[sizeof(struct ether_header) + SGI_BUFFER_RECV_LEN][SGI_MAX_EPS_BEARERS_PER_USER];
 
 } sgi_data_t;
 
 
 typedef struct sgi_read_thread_args_s {
-    sgi_data_t     *sgi_data;
-    int            socket_index;
-}sgi_read_thread_args_t;
+  sgi_data_t     *sgi_data;
+  int            socket_index;
+} sgi_read_thread_args_t;
 //-----------------------------------------------------------------------------
 
 #include "mme_config.h"

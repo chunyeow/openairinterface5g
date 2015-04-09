@@ -48,8 +48,8 @@ extern "C" {
 /** @defgroup _parse_filename Parse Filename
  *  @ingroup _fn
  *  @brief Parse the filename to get user_name and file_date
- * @{*/ 
-	int parse_filename(char filename[FILENAME_LENGTH_MAX]);
+ * @{*/
+int parse_filename(char filename[FILENAME_LENGTH_MAX]);
 /* @}*/
 
 #ifdef __cplusplus

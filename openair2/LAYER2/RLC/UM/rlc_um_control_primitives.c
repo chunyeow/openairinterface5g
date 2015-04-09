@@ -43,7 +43,7 @@
 #        include <rtai_posix.h>
 #        include <rtai_fifos.h>
 #    else
-      /* RTLINUX */
+/* RTLINUX */
 #        include <rtl.h>
 #        include <time.h>
 #        include <rtl_sched.h>
@@ -83,7 +83,7 @@
 void
 config_req_rlc_um (struct rlc_um_entity *rlcP, UM * config_umP, void *upper_layerP, void *(*data_indP) (void *, struct mem_block * sduP), uint8_t rb_idP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   struct mem_block *mb;
 
   mb = get_free_mem_block (sizeof (struct crlc_primitive));
@@ -109,43 +109,47 @@ config_req_rlc_um (struct rlc_um_entity *rlcP, UM * config_umP, void *upper_laye
 void
 send_rlc_um_control_primitive (struct rlc_um_entity *rlcP, struct mem_block *cprimitiveP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   switch (((struct crlc_primitive *) cprimitiveP->data)->type) {
 
-      case CRLC_CONFIG_REQ:
+  case CRLC_CONFIG_REQ:
 
-        switch (((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.um_parameters.e_r) {
+    switch (((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.um_parameters.e_r) {
 
-            case RLC_E_R_ESTABLISHMENT:
-              if (rlc_um_fsm_notify_event (rlcP, RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
-                rlc_um_set_configured_parameters (rlcP, cprimitiveP);   // the order of the calling of procedures...
-                rlc_um_reset_state_variables (rlcP);    // ...must not ...
-              }
-              break;
+    case RLC_E_R_ESTABLISHMENT:
+      if (rlc_um_fsm_notify_event (rlcP, RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
+        rlc_um_set_configured_parameters (rlcP, cprimitiveP);   // the order of the calling of procedures...
+        rlc_um_reset_state_variables (rlcP);    // ...must not ...
+      }
 
-            case RLC_E_R_MODIFICATION:
-              msg ("[RLC_UM][ERROR] send_rlc_um_control_primitive(CRLC_CONFIG_REQ) RLC_AM_E_R_MODIFICATION not handled\n");
-              break;
+      break;
 
-            case RLC_E_R_RELEASE:
-              if (rlc_um_fsm_notify_event (rlcP, RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_NULL_STATE_EVENT)) {
-                rlc_um_free_all_resources (rlcP);
-              }
-              break;
+    case RLC_E_R_MODIFICATION:
+      msg ("[RLC_UM][ERROR] send_rlc_um_control_primitive(CRLC_CONFIG_REQ) RLC_AM_E_R_MODIFICATION not handled\n");
+      break;
 
-            default:
-              msg ("[RLC_UM][ERROR] send_rlc_um_control_primitive(CRLC_CONFIG_REQ) unknown parameter E_R\n");
-        }
-        break;
+    case RLC_E_R_RELEASE:
+      if (rlc_um_fsm_notify_event (rlcP, RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_NULL_STATE_EVENT)) {
+        rlc_um_free_all_resources (rlcP);
+      }
 
-      case CRLC_RESUME_REQ:
-        msg ("[RLC_UM][ERROR] send_rlc_um_control_primitive(CRLC_RESUME_REQ) cprimitive not handled\n");
-        break;
+      break;
 
-      default:
-        msg ("[RLC_UM %p][ERROR] send_rlc_um_control_primitive(UNKNOWN CPRIMITIVE)\n", rlcP);
+    default:
+      msg ("[RLC_UM][ERROR] send_rlc_um_control_primitive(CRLC_CONFIG_REQ) unknown parameter E_R\n");
+    }
+
+    break;
+
+  case CRLC_RESUME_REQ:
+    msg ("[RLC_UM][ERROR] send_rlc_um_control_primitive(CRLC_RESUME_REQ) cprimitive not handled\n");
+    break;
+
+  default:
+    msg ("[RLC_UM %p][ERROR] send_rlc_um_control_primitive(UNKNOWN CPRIMITIVE)\n", rlcP);
   }
+
   free_mem_block (cprimitiveP);
 }
 
@@ -153,7 +157,7 @@ send_rlc_um_control_primitive (struct rlc_um_entity *rlcP, struct mem_block *cpr
 void
 init_rlc_um (struct rlc_um_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 #ifndef NO_THREAD_SAFE
   pthread_mutexattr_t attr;
   int             error_code;
@@ -171,9 +175,11 @@ init_rlc_um (struct rlc_um_entity *rlcP)
 #    else
   pthread_mutexattr_settype (&attr, PTHREAD_MUTEX_NORMAL);
 #    endif
+
   if ((error_code = pthread_mutex_init (&rlcP->mutex_input_buffer, &attr))) {
     msg ("[RLC_UM %p][ERROR] init mutex input buffer %d\n", rlcP, error_code);
   }
+
 #    ifndef USER_MODE
   //pthread_mutexattr_setprotocol(&rlcP->mutex_input_buffer, PTHREAD_PRIO_INHERIT);
 #    endif
@@ -202,7 +208,7 @@ init_rlc_um (struct rlc_um_entity *rlcP)
 void
 rlc_um_reset_state_variables (struct rlc_um_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   // TX SIDE
   rlcP->buffer_occupancy = 0;
   rlcP->nb_sdu = 0;
@@ -223,7 +229,7 @@ rlc_um_reset_state_variables (struct rlc_um_entity *rlcP)
 void
 rlc_um_free_all_resources (struct rlc_um_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   int             index;
 
   // TX SIDE
@@ -235,11 +241,14 @@ rlc_um_free_all_resources (struct rlc_um_entity *rlcP)
         free_mem_block (rlcP->input_sdus[index]);
       }
     }
+
     free_mem_block (rlcP->input_sdus_alloc);
     rlcP->input_sdus_alloc = NULL;
   }
+
   // RX SIDE
   free_up (&rlcP->pdus_from_mac_layer);
+
   if ((rlcP->output_sdu_in_construction)) {
     free_mem_block (rlcP->output_sdu_in_construction);
   }
@@ -249,7 +258,7 @@ rlc_um_free_all_resources (struct rlc_um_entity *rlcP)
 void
 rlc_um_set_configured_parameters (struct rlc_um_entity *rlcP, struct mem_block *cprimitiveP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   // timers
   rlcP->timer_discard_init = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.um_parameters.timer_discard;
 
@@ -272,6 +281,7 @@ rlc_um_set_configured_parameters (struct rlc_um_entity *rlcP, struct mem_block *
   rlcP->first_pdu = 1;
 
 #ifdef DEBUG_LOAD_CONFIG
+
   if (rlcP->sdu_discard_mode == RLC_SDU_DISCARD_TIMER_BASED_NO_EXPLICIT) {
     msg ("[RLC UM][RB %d] SDU_DISCARD_TIMER_BASED_NO_EXPLICIT time out %d\n", rlcP->rb_id, rlcP->timer_discard_init);
   } else if (rlcP->sdu_discard_mode == RLC_SDU_DISCARD_NOT_CONFIGURED) {
@@ -279,6 +289,7 @@ rlc_um_set_configured_parameters (struct rlc_um_entity *rlcP, struct mem_block *
   } else {
     msg ("[RLC UM][RB %d][ERROR] sdu discard mode not configured\n", rlcP->rb_id);
   }
+
 #endif
 
 }

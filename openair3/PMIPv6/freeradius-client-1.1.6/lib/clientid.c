@@ -14,10 +14,10 @@
 #include <freeradius-client.h>
 
 struct map2id_s {
-	char *name;
-	uint32_t id;
+  char *name;
+  uint32_t id;
 
-	struct map2id_s *next;
+  struct map2id_s *next;
 };
 
 /*
@@ -32,64 +32,63 @@ struct map2id_s {
 
 int rc_read_mapfile(rc_handle *rh, char *filename)
 {
-	char buffer[1024];
-	FILE *mapfd;
-	char *c, *name, *id, *q;
-	struct map2id_s *p;
-	int lnr = 0;
+  char buffer[1024];
+  FILE *mapfd;
+  char *c, *name, *id, *q;
+  struct map2id_s *p;
+  int lnr = 0;
 
-        if ((mapfd = fopen(filename,"r")) == NULL)
-        {
-		rc_log(LOG_ERR,"rc_read_mapfile: can't read %s: %s", filename, strerror(errno));
-		return -1;
-	}
+  if ((mapfd = fopen(filename,"r")) == NULL) {
+    rc_log(LOG_ERR,"rc_read_mapfile: can't read %s: %s", filename, strerror(errno));
+    return -1;
+  }
 
 #define SKIP(p) while(*p && isspace(*p)) p++;
 
-        while (fgets(buffer, sizeof(buffer), mapfd) != NULL)
-        {
-        	lnr++;
+  while (fgets(buffer, sizeof(buffer), mapfd) != NULL) {
+    lnr++;
 
-		q = buffer;
+    q = buffer;
 
-                SKIP(q);
+    SKIP(q);
 
-                if ((*q == '\n') || (*q == '#') || (*q == '\0'))
-			continue;
+    if ((*q == '\n') || (*q == '#') || (*q == '\0'))
+      continue;
 
-		if (( c = strchr(q, ' ')) || (c = strchr(q,'\t'))) {
+    if (( c = strchr(q, ' ')) || (c = strchr(q,'\t'))) {
 
-			*c = '\0'; c++;
-			SKIP(c);
+      *c = '\0';
+      c++;
+      SKIP(c);
 
-			name = q;
-			id = c;
+      name = q;
+      id = c;
 
-			if ((p = (struct map2id_s *)malloc(sizeof(*p))) == NULL) {
-				rc_log(LOG_CRIT,"rc_read_mapfile: out of memory");
-				fclose(mapfd);
-				return -1;
-			}
+      if ((p = (struct map2id_s *)malloc(sizeof(*p))) == NULL) {
+        rc_log(LOG_CRIT,"rc_read_mapfile: out of memory");
+        fclose(mapfd);
+        return -1;
+      }
 
-			p->name = strdup(name);
-			p->id = atoi(id);
-			p->next = rh->map2id_list;
-			rh->map2id_list = p;
+      p->name = strdup(name);
+      p->id = atoi(id);
+      p->next = rh->map2id_list;
+      rh->map2id_list = p;
 
-		} else {
+    } else {
 
-			rc_log(LOG_ERR, "rc_read_mapfile: malformed line in %s, line %d", filename, lnr);
-			fclose(mapfd);
-			return -1;
+      rc_log(LOG_ERR, "rc_read_mapfile: malformed line in %s, line %d", filename, lnr);
+      fclose(mapfd);
+      return -1;
 
-		}
-	}
+    }
+  }
 
 #undef SKIP
 
-	fclose(mapfd);
+  fclose(mapfd);
 
-	return 0;
+  return 0;
 }
 
 /*
@@ -104,21 +103,22 @@ int rc_read_mapfile(rc_handle *rh, char *filename)
 
 uint32_t rc_map2id(rc_handle *rh, char *name)
 {
-	struct map2id_s *p;
-	char ttyname[PATH_MAX];
+  struct map2id_s *p;
+  char ttyname[PATH_MAX];
 
-	*ttyname = '\0';
-	if (*name != '/')
-		strcpy(ttyname, "/dev/");
+  *ttyname = '\0';
 
-	strncat(ttyname, name, sizeof(ttyname)-strlen(ttyname)-1);
+  if (*name != '/')
+    strcpy(ttyname, "/dev/");
 
-	for(p = rh->map2id_list; p; p = p->next)
-		if (!strcmp(ttyname, p->name)) return p->id;
+  strncat(ttyname, name, sizeof(ttyname)-strlen(ttyname)-1);
 
-	rc_log(LOG_WARNING,"rc_map2id: can't find tty %s in map database", ttyname);
+  for(p = rh->map2id_list; p; p = p->next)
+    if (!strcmp(ttyname, p->name)) return p->id;
 
-	return 0;
+  rc_log(LOG_WARNING,"rc_map2id: can't find tty %s in map database", ttyname);
+
+  return 0;
 }
 
 /*
@@ -132,15 +132,16 @@ uint32_t rc_map2id(rc_handle *rh, char *name)
 void
 rc_map2id_free(rc_handle *rh)
 {
-	struct map2id_s *p, *np;
+  struct map2id_s *p, *np;
 
-	if (rh->map2id_list == NULL)
-		return;
+  if (rh->map2id_list == NULL)
+    return;
 
-	for(p = rh->map2id_list; p != NULL; p = np) {
-		np = p->next;
-		free(p->name);
-		free(p);
-	}
-	rh->map2id_list = NULL;
+  for(p = rh->map2id_list; p != NULL; p = np) {
+    np = p->next;
+    free(p->name);
+    free(p);
+  }
+
+  rh->map2id_list = NULL;
 }

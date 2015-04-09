@@ -1,20 +1,20 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+      Eurecom OpenAirInterface 3
+      Copyright(c) 2012 Eurecom
 
-Source		network_parser.h
+Source    network_parser.h
 
-Version		0.1
+Version   0.1
 
-Date		2012/11/05
+Date    2012/11/05
 
-Product		Network simulator
+Product   Network simulator
 
-Subsystem	Command line parser
+Subsystem Command line parser
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Command line parser of the Network Simulator process
+Description Command line parser of the Network Simulator process
 
 *****************************************************************************/
 
@@ -26,11 +26,11 @@ Description	Command line parser of the Network Simulator process
 /****************************************************************************/
 
 /* The default remote hostname the Network Simulator must connect to */
-#define NETWORK_PARSER_DEFAULT_REMOTE_HOSTNAME		"localhost"
+#define NETWORK_PARSER_DEFAULT_REMOTE_HOSTNAME    "localhost"
 
 /* The default port number used for the internet service delivered by the
  * remote hostname */
-#define NETWORK_PARSER_DEFAULT_REMOTE_PORT_NUMBER	"12000"
+#define NETWORK_PARSER_DEFAULT_REMOTE_PORT_NUMBER "12000"
 
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/

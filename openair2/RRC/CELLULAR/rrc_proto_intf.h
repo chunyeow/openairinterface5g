@@ -13,14 +13,14 @@
 //PHY
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-  // functions in L1C/L1C_rrc_control.c
+// functions in L1C/L1C_rrc_control.c
 int  rrc_ue_DL_CPHY_TrCH_config_req (int ccTrCh, int activationTime);
 int  rrc_ue_UL_CPHY_TrCH_config_req (int ccTrCh, int activationTime);
 
 int  rrc_ue_CPHY_TrCH_release_req (int configId);
 int  rrc_ue_CPHY_OutOfSync_Config_req (int configId);        // ???
 void rrc_ue_CPHY_Measurement_req (int power_threshold, int meas_type);
-  // functions in AS/L3/RRC/rrc_L1_control.c
+// functions in AS/L3/RRC/rrc_L1_control.c
 void rrc_ue_CPHY_Synch_rx (int CCTrCH);
 void rrc_ue_CPHY_Out_Synch_rx (int CCTrCH);
 // removed 25/11 MW
@@ -28,12 +28,12 @@ void rrc_ue_CPHY_Out_Synch_rx (int CCTrCH);
 void rrc_ue_CPHY_Measurement_rx (void);
 #endif
 #ifdef NODE_RG
-  // functions in L1C/L1C_rrc_control.c
+// functions in L1C/L1C_rrc_control.c
 int  rrc_rg_CPHY_TrCH_config_req (int configId, int activationTime);
 int  rrc_rg_CPHY_TrCH_release_req (int configId);
 int  rrc_rg_CPHY_OutOfSync_Config_req (int configId);        // ???
 void rrc_rg_CPHY_Measurement_req (int power_threshold, int meas_type);
-  // functions in AS/L3/RRC/rrc_L1_control.c
+// functions in AS/L3/RRC/rrc_L1_control.c
 void rrc_rg_CPHY_Synch_rx (int CCTrCH);
 void rrc_rg_CPHY_Out_Synch_rx (int CCTrCH);
 // removed 25/11 MW
@@ -91,7 +91,7 @@ void rrc_ue_config_LTE_default_drb (unsigned char Mod_id);
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_RG
-void rrc_rg_get_common_config_SIB (int *config_length, char* *config_ptr);
+void rrc_rg_get_common_config_SIB (int *config_length, char**config_ptr);
 void rrc_rg_init_mac (unsigned char Mod_id);
 void rrc_rg_config_LTE_srb1 (unsigned char Mod_id);
 void rrc_rg_rcve_ccch(u8 Mod_id, char *Sdu, u16 Sdu_len);
@@ -131,13 +131,13 @@ extern void *rrc_srb_confirm (u32 muiP, u8 rb_idP, u8 statusP);
 //RRM
 //-----------------------------------------------------------------------------
 #ifdef NODE_RG
-  // function  in AS/L3/RRM
+// function  in AS/L3/RRM
 //void rrm_config_change_request (struct rrc_rrm_request config_request);
 
-  // function  in AS/L3/RRC
+// function  in AS/L3/RRC
 void rrc_config_indication (int transaction_Id, int return_code);
 
-  // function  in AS/L3/RRM
+// function  in AS/L3/RRM
 // void rrc_rrm_measure_request (struct rrc_rrm_measure_ctl rrm_control);
 
 // Measure report
@@ -163,22 +163,22 @@ void RRC_RG_O_O_NAS_RB_Failure (int UE_Id);
 
 //ASN1 messages
 /*uint8_t do_RRCConnectionSetup(uint8_t *buffer,
-			      uint8_t transmission_mode,
-			      uint8_t UE_id,
-			      uint8_t Transaction_id,
-			      LTE_DL_FRAME_PARMS *frame_parms,
-			      struct SRB_ToAddMod **SRB1_config,
-			      struct SRB_ToAddMod **SRB2_config,
-			      struct PhysicalConfigDedicated  **physicalConfigDedicated);*/
+            uint8_t transmission_mode,
+            uint8_t UE_id,
+            uint8_t Transaction_id,
+            LTE_DL_FRAME_PARMS *frame_parms,
+            struct SRB_ToAddMod **SRB1_config,
+            struct SRB_ToAddMod **SRB2_config,
+            struct PhysicalConfigDedicated  **physicalConfigDedicated);*/
 //uint8_t do_SIB2_cell(uint8_t Mod_id, uint8_t *buffer, SystemInformation_t *systemInformation, SystemInformationBlockType2_t **sib2);
 uint8_t do_SIB2_cell(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
-                  BCCH_DL_SCH_Message_t *bcch_message, SystemInformationBlockType2_t **sib2);
+                     BCCH_DL_SCH_Message_t *bcch_message, SystemInformationBlockType2_t **sib2);
 
 uint8_t do_SIB1_TDD_config_cell (LTE_DL_FRAME_PARMS *frame_parms,TDD_Config_t *tdd_Config);
 uint8_t do_RRCConnReconf_defaultCELL(uint8_t Mod_id, uint8_t *buffer, uint8_t UE_id, uint8_t Transaction_id,
-                                      struct SRB_ToAddMod **SRB2_config,
-                                      struct DRB_ToAddMod **DRB_config,
-                                      struct PhysicalConfigDedicated  **physicalConfigDedicated) ;
+                                     struct SRB_ToAddMod **SRB2_config,
+                                     struct DRB_ToAddMod **DRB_config,
+                                     struct PhysicalConfigDedicated  **physicalConfigDedicated) ;
 //
 
 #endif

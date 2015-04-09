@@ -7,7 +7,7 @@
  *----------------------------------------------------------------------------*/
 
 
-/** 
+/**
  * @file NwMiniUdpEntity.h
  * @brief This file contains example of a minimalistic ULP entity.
 */
@@ -19,13 +19,12 @@
 
 #ifndef NW_ASSERT
 #define NW_ASSERT assert
-#endif 
+#endif
 
 #ifndef __NW_MINI_UDP_ENTITY_H__
 #define __NW_MINI_UDP_ENTITY_H__
 
-typedef struct
-{
+typedef struct {
   NwU32T        hSocket;
   NwEventT      ev;
   NwGtpv1uStackHandleT hGtpv1uStack;
@@ -40,10 +39,10 @@ NwGtpv1uRcT nwMiniUdpInit(NwMiniUdpEntityT* thiz, NwGtpv1uStackHandleT hGtpv1uSt
 NwGtpv1uRcT nwMiniUdpDestroy(NwMiniUdpEntityT* thiz);
 
 NwGtpv1uRcT nwMiniUdpDataReq(NwGtpv1uUdpHandleT udpHandle,
-    NwU8T* dataBuf,
-    NwU32T dataSize,
-    NwU32T peerAddr,
-    NwU32T peerPort);
+                             NwU8T* dataBuf,
+                             NwU32T dataSize,
+                             NwU32T peerAddr,
+                             NwU32T peerPort);
 
 #ifdef __cplusplus
 }

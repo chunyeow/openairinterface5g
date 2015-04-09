@@ -48,9 +48,9 @@ extern "C" {
 /** @defgroup _detect_file Detect File
  *  @ingroup _fn
  *  @brief Detect new XML configuration file in USER_XML_FOLDER
- * @{*/ 
-  //int detect_file(int argc, char *argv[], char folder[DIR_LENGTH_MAX]);
-  int detect_file(char folder[DIR_LENGTH_MAX], char is_local_server[FILENAME_LENGTH_MAX]);
+ * @{*/
+//int detect_file(int argc, char *argv[], char folder[DIR_LENGTH_MAX]);
+int detect_file(char folder[DIR_LENGTH_MAX], char is_local_server[FILENAME_LENGTH_MAX]);
 /* @}*/
 
 #ifdef __cplusplus

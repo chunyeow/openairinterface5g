@@ -28,11 +28,11 @@
 *******************************************************************************/
 
 /*! \file steadystaterwp.h
-* \brief random waypoint mobility generator 
+* \brief random waypoint mobility generator
 * \date 2014
 * \version 0.1
 * \company Eurecom
-* \email: 
+* \email:
 * \note
 * \warning
 */
@@ -59,7 +59,7 @@ void update_steadystaterwp_nodes (double cur_time);
 
 void get_steadystaterwp_positions_updated (double cur_time);
 
-#endif 
+#endif
 
 
 

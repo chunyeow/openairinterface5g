@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -76,35 +76,46 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray  *prhs[] )
   if (nrhs < 1)
     mexErrMsgTxt("Not enough input arguments.");
 
-  if (nrhs >= 3)
-  {
-    for (ii=2; ii<nrhs; ii++)
-    {
+  if (nrhs >= 3) {
+    for (ii=2; ii<nrhs; ii++) {
       // Double = alignment specifier
-      if (mxIsDouble(prhs[ii]))
-      {
+      if (mxIsDouble(prhs[ii])) {
         if (mxGetNumberOfElements(prhs[ii]) != 1)
           mexErrMsgTxt("Alignment specifier must be single element (1, 2, 4, or 8)");
+
         Alignment = (int)*mxGetPr(prhs[ii]);
+
         if (Alignment != 1 && Alignment != 2 && Alignment != 4 && Alignment != 8)
           mexWarnMsgTxt("Alignment specifier normally has of value of 1, 2, 4, or 8");
-      }
-      else if (mxIsChar(prhs[ii]))
-      {
+      } else if (mxIsChar(prhs[ii])) {
         char ch;
+
         if (mxGetNumberOfElements(prhs[ii]) != 1)
           mexErrMsgTxt("Byte-ordering specifier must be single element ('n','l','b' or 'r')");
+
         ch = *(char *)mxGetData(prhs[ii]);
-        switch(ch)
-        {
-        case 'n': SwapFlag = 0; break; // Native byte ordering requested
-        case 'b': SwapFlag = LittleEndian; break; // Big Endian data
-        case 'l': SwapFlag = !LittleEndian; break; // Big Endian data
-        case 'r': SwapFlag = 1; break; // Reverse byte ordering
-        default: mexErrMsgTxt("Byte-ordering specifier must be one if 'n','l','b' or 'r'");
+
+        switch(ch) {
+        case 'n':
+          SwapFlag = 0;
+          break; // Native byte ordering requested
+
+        case 'b':
+          SwapFlag = LittleEndian;
+          break; // Big Endian data
+
+        case 'l':
+          SwapFlag = !LittleEndian;
+          break; // Big Endian data
+
+        case 'r':
+          SwapFlag = 1;
+          break; // Reverse byte ordering
+
+        default:
+          mexErrMsgTxt("Byte-ordering specifier must be one if 'n','l','b' or 'r'");
         }
-      }
-      else
+      } else
         mexErrMsgTxt("Optional Arguments must be either Aligmnent Specifier (1,2,4,8), or Byte-orderin Specifier ('n','l','b','r')");
 
     }
@@ -113,32 +124,31 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray  *prhs[] )
   Attributes = MatlabCStruct(prhs[0], Alignment, 0, (unsigned char *)-1, NULL, SwapFlag);
   ByteCount = Attributes.ElementCount*Attributes.StorageSize;
 
-  if (nrhs >= 2 && !mxIsEmpty(prhs[1]))
-  {
+  if (nrhs >= 2 && !mxIsEmpty(prhs[1])) {
     mxClassID ClassID;
     ClassID = mxGetClassID(prhs[1]);
+
     if (ClassID != mxUINT8_CLASS && ClassID != mxINT8_CLASS)
       mexErrMsgTxt("Byte data vector must be of type INT8 or UINT8");
-    if (ByteCount != mxGetNumberOfElements(prhs[1]))
-    {
+
+    if (ByteCount != mxGetNumberOfElements(prhs[1])) {
       char msg[100];
       sprintf(msg, "Number of elements in Byte data vector (%d) does not match structure size (%d)",
-        mxGetNumberOfElements(prhs[1]), ByteCount);
+              mxGetNumberOfElements(prhs[1]), ByteCount);
       mexErrMsgTxt(msg);
     }
+
     plhs[0] = mxDuplicateArray(prhs[0]);
     MatlabCStruct(plhs[0], Alignment, 0, NULL, mxGetData(prhs[1]), SwapFlag);
-  }
-  else
-  // Create output structure for Attributes
+  } else
+    // Create output structure for Attributes
   {
     const char *FieldNames[] = {"size","align"}; // jaj 05/24/2004 added const
     plhs[0] = mxCreateStructMatrix(1, 1, 2, &FieldNames[0]);// jaj 05/24/2004 slightly altered
     mxSetField(plhs[0], 0, "size", mxCreateDoubleScalar(ByteCount));
     mxSetField(plhs[0], 0, "align", mxCreateDoubleScalar(Attributes.Alignment));
 
-    if (nlhs >= 2)
-    {
+    if (nlhs >= 2) {
       // Extract C Data from array
       plhs[1] = mxCreateNumericMatrix(1, ByteCount, mxUINT8_CLASS, mxREAL);
       MatlabCStruct(prhs[0], Alignment, 0, mxGetData(plhs[1]), NULL, SwapFlag);

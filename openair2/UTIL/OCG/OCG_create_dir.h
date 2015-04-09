@@ -48,8 +48,8 @@ extern "C" {
 /** @defgroup _create_dir Create Dir
  *  @ingroup _fn
  *  @brief Create directory in OUTPUT_DIR for current emulation
- * @{*/ 
-	int create_dir(char output_dir[DIR_LENGTH_MAX], char user_name[FILENAME_LENGTH_MAX / 2], char file_date[FILENAME_LENGTH_MAX / 2]);
+ * @{*/
+int create_dir(char output_dir[DIR_LENGTH_MAX], char user_name[FILENAME_LENGTH_MAX / 2], char file_date[FILENAME_LENGTH_MAX / 2]);
 /* @}*/
 
 #ifdef __cplusplus

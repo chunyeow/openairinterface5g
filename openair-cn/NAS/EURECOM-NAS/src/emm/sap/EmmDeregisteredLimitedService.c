@@ -93,69 +93,71 @@ Description Implements the EPS Mobility Management procedures executed
  ***************************************************************************/
 int EmmDeregisteredLimitedService(const emm_reg_t *evt)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc = RETURNerror;
+  int rc = RETURNerror;
 
-    assert(emm_fsm_get_status() == EMM_DEREGISTERED_LIMITED_SERVICE);
+  assert(emm_fsm_get_status() == EMM_DEREGISTERED_LIMITED_SERVICE);
 
-    switch (evt->primitive) {
-        case _EMMREG_REGISTER_REQ:
-            /*
-             * The user manually re-selected a PLMN to register to
-             */
-            rc = emm_fsm_set_status(EMM_DEREGISTERED_PLMN_SEARCH);
-            if (rc != RETURNerror) {
-                /* Process the network registration request */
-                rc = emm_fsm_process(evt);
-            }
-            break;
+  switch (evt->primitive) {
+  case _EMMREG_REGISTER_REQ:
+    /*
+     * The user manually re-selected a PLMN to register to
+     */
+    rc = emm_fsm_set_status(EMM_DEREGISTERED_PLMN_SEARCH);
 
-        case _EMMREG_ATTACH_INIT:
-            /*
-             * Initiate attach procedure for emergency bearer services
-             */
-            rc = emm_proc_attach(EMM_ATTACH_TYPE_EMERGENCY);
-            break;
-
-        case _EMMREG_ATTACH_REQ:
-            /*
-             * An attach for bearer emergency services has been requested
-             * (Attach Request message successfully delivered to the network);
-             * enter state EMM-REGISTERED-INITIATED
-             */
-            rc = emm_fsm_set_status(EMM_REGISTERED_INITIATED);
-            break;
-
-        case _EMMREG_LOWERLAYER_SUCCESS:
-            /*
-             * Initial NAS message has been successfully delivered
-             * to the network
-             */
-            rc = emm_proc_lowerlayer_success();
-            break;
-
-        case _EMMREG_LOWERLAYER_FAILURE:
-            /*
-             * Initial NAS message failed to be delivered to the network
-             */
-            rc = emm_proc_lowerlayer_failure(TRUE);
-            break;
-
-        case _EMMREG_LOWERLAYER_RELEASE:
-            /*
-             * NAS signalling connection has been released
-             */
-            rc = emm_proc_lowerlayer_release();
-            break;
-
-        default:
-            LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
-                      evt->primitive);
-            break;
+    if (rc != RETURNerror) {
+      /* Process the network registration request */
+      rc = emm_fsm_process(evt);
     }
 
-    LOG_FUNC_RETURN (rc);
+    break;
+
+  case _EMMREG_ATTACH_INIT:
+    /*
+     * Initiate attach procedure for emergency bearer services
+     */
+    rc = emm_proc_attach(EMM_ATTACH_TYPE_EMERGENCY);
+    break;
+
+  case _EMMREG_ATTACH_REQ:
+    /*
+     * An attach for bearer emergency services has been requested
+     * (Attach Request message successfully delivered to the network);
+     * enter state EMM-REGISTERED-INITIATED
+     */
+    rc = emm_fsm_set_status(EMM_REGISTERED_INITIATED);
+    break;
+
+  case _EMMREG_LOWERLAYER_SUCCESS:
+    /*
+     * Initial NAS message has been successfully delivered
+     * to the network
+     */
+    rc = emm_proc_lowerlayer_success();
+    break;
+
+  case _EMMREG_LOWERLAYER_FAILURE:
+    /*
+     * Initial NAS message failed to be delivered to the network
+     */
+    rc = emm_proc_lowerlayer_failure(TRUE);
+    break;
+
+  case _EMMREG_LOWERLAYER_RELEASE:
+    /*
+     * NAS signalling connection has been released
+     */
+    rc = emm_proc_lowerlayer_release();
+    break;
+
+  default:
+    LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
+              evt->primitive);
+    break;
+  }
+
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************/

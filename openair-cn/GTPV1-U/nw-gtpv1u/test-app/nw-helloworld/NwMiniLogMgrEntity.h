@@ -6,7 +6,7 @@
  *                                                                            *
  *----------------------------------------------------------------------------*/
 
-/** 
+/**
  * @file hello-world.c
  * @brief This file contains example of a minimalistic log manager entity.
 */
@@ -18,7 +18,7 @@
 
 #ifndef NW_ASSERT
 #define NW_ASSERT assert
-#endif 
+#endif
 
 #ifndef __NW_MINI_LOG_MGR_H__
 #define __NW_MINI_LOG_MGR_H__
@@ -36,8 +36,7 @@ extern NwU32T g_log_level;
     }                                                                   \
   } while(0)
 
-typedef struct
-{
+typedef struct {
   NwU8T  logLevel;
 } NwMiniLogMgrT;
 
@@ -46,12 +45,12 @@ extern "C" {
 #endif
 
 NwGtpv1uRcT nwMiniLogMgrLogRequest (NwGtpv1uLogMgrHandleT logMgrHandle,
-    NwU32T logLevel,
-    NwCharT* file,
-    NwU32T line,
-    NwCharT* logStr);
+                                    NwU32T logLevel,
+                                    NwCharT* file,
+                                    NwU32T line,
+                                    NwCharT* logStr);
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 }
 #endif
 

@@ -30,7 +30,8 @@
 /*  MIB_ValueTag                                              */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_MIB_ValueTag (PERParms * pParms, MIB_ValueTag value){
+int rrc_PEREnc_MIB_ValueTag (PERParms * pParms, MIB_ValueTag value)
+{
   int status = P_SUCCESS;
   status = rrc_PEREnc_ConstrInteger (pParms, value, 0, 7);
 #ifdef DEBUG_RRC_BROADCAST_DETAILS
@@ -41,7 +42,8 @@ int rrc_PEREnc_MIB_ValueTag (PERParms * pParms, MIB_ValueTag value){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_MIB_ValueTag (PERParms * pParms, MIB_ValueTag * pvalue){
+int rrc_PERDec_MIB_ValueTag (PERParms * pParms, MIB_ValueTag * pvalue)
+{
   int status = P_SUCCESS;
   status = rrc_PERDec_ConstrInteger (pParms, pvalue, 0, 7);
 #ifdef DEBUG_RRC_BROADCAST_DETAILS
@@ -55,7 +57,8 @@ int rrc_PERDec_MIB_ValueTag (PERParms * pParms, MIB_ValueTag * pvalue){
 /*  SIB_Type                                                  */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_SIB_Type (PERParms * pParms, SIB_Type value){
+int rrc_PEREnc_SIB_Type (PERParms * pParms, SIB_Type value)
+{
   int status = P_SUCCESS;
 
   status = rrc_PEREnc_ConsUnsigned (pParms, (unsigned int) value, 0, 31);
@@ -64,7 +67,8 @@ int rrc_PEREnc_SIB_Type (PERParms * pParms, SIB_Type value){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_SIB_Type (PERParms * pParms, SIB_Type * pvalue){
+int rrc_PERDec_SIB_Type (PERParms * pParms, SIB_Type * pvalue)
+{
   int status = P_SUCCESS;
   status = rrc_PERDec_ConsUnsigned (pParms, (unsigned int *) pvalue, 0, 31);
   return status;
@@ -75,7 +79,8 @@ int rrc_PERDec_SIB_Type (PERParms * pParms, SIB_Type * pvalue){
 /*  SegCount                                                  */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_SegCount (PERParms * pParms, SegCount value){
+int rrc_PEREnc_SegCount (PERParms * pParms, SegCount value)
+{
   int status = P_SUCCESS;
 
   status = rrc_PEREnc_ConstrInteger (pParms, value, 1, 16);
@@ -84,7 +89,8 @@ int rrc_PEREnc_SegCount (PERParms * pParms, SegCount value){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_SegCount (PERParms * pParms, SegCount * pvalue){
+int rrc_PERDec_SegCount (PERParms * pParms, SegCount * pvalue)
+{
   int status = P_SUCCESS;
 
   status = rrc_PERDec_ConstrInteger (pParms, pvalue, 1, 16);
@@ -96,7 +102,8 @@ int rrc_PERDec_SegCount (PERParms * pParms, SegCount * pvalue){
 /*  SegmentIndex                                              */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_SegmentIndex (PERParms * pParms, SegmentIndex value){
+int rrc_PEREnc_SegmentIndex (PERParms * pParms, SegmentIndex value)
+{
   int status = P_SUCCESS;
 
   status = rrc_PEREnc_ConstrInteger (pParms, value, 1, 15);
@@ -105,7 +112,8 @@ int rrc_PEREnc_SegmentIndex (PERParms * pParms, SegmentIndex value){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_SegmentIndex (PERParms * pParms, SegmentIndex * pvalue){
+int rrc_PERDec_SegmentIndex (PERParms * pParms, SegmentIndex * pvalue)
+{
   int status = P_SUCCESS;
 
   status = rrc_PERDec_ConstrInteger (pParms, pvalue, 1, 15);
@@ -118,7 +126,8 @@ int rrc_PERDec_SegmentIndex (PERParms * pParms, SegmentIndex * pvalue){
 /**************************************************************/
 // size constraint lower= 222 upper= 222
 #ifdef NODE_RG
-int rrc_PEREnc_SIB_Data_fixed (PERParms * pParms, SIB_Data_fixed value){
+int rrc_PEREnc_SIB_Data_fixed (PERParms * pParms, SIB_Data_fixed value)
+{
   int status = P_SUCCESS;
 
   // 1st step, encode with octets
@@ -132,13 +141,14 @@ int rrc_PEREnc_SIB_Data_fixed (PERParms * pParms, SIB_Data_fixed value){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_SIB_Data_fixed (PERParms * pParms, SIB_Data_fixed * pvalue){
+int rrc_PERDec_SIB_Data_fixed (PERParms * pParms, SIB_Data_fixed * pvalue)
+{
   int status = P_SUCCESS;
 
-//   status = rrc_PERDec_BitString (pParms,
-//                        &pvalue->numbits,
-//                        pvalue->data,
-//                        sizeof(pvalue->data));
+  //   status = rrc_PERDec_BitString (pParms,
+  //                        &pvalue->numbits,
+  //                        pvalue->data,
+  //                        sizeof(pvalue->data));
   return status;
 }
 #endif
@@ -146,17 +156,20 @@ int rrc_PERDec_SIB_Data_fixed (PERParms * pParms, SIB_Data_fixed * pvalue){
 /**************************************************************/
 /*  CompleteSIB_sib_Data_fixed                                */
 /**************************************************************/
-   // size constraint lower= 226 upper= 226  -- 24*8=224
+// size constraint lower= 226 upper= 226  -- 24*8=224
 #ifdef NODE_RG
-int rrc_PEREnc_CompleteSIB_sib_Data_fixed (PERParms * pParms, CompleteSIB_sib_Data_fixed value){
+int rrc_PEREnc_CompleteSIB_sib_Data_fixed (PERParms * pParms, CompleteSIB_sib_Data_fixed value)
+{
   // size constraint lower= 226 upper= 226  -- 24*8=224
   int status = P_SUCCESS;
   int  max = LSIBcompl;      //cf structure definition
   int  length;
- //
+  //
   status = rrc_PEREnc_BitString (pParms, value.numbits, value.data);
+
   if (status != P_SUCCESS)
     return status;
+
   // add padding bits - 1st step = maxsize - length of segment.
 
   length = max - rrc_get_per_length (pParms->data);
@@ -167,10 +180,11 @@ int rrc_PEREnc_CompleteSIB_sib_Data_fixed (PERParms * pParms, CompleteSIB_sib_Da
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_CompleteSIB_sib_Data_fixed (PERParms * pParms, CompleteSIB_sib_Data_fixed * pvalue){
+int rrc_PERDec_CompleteSIB_sib_Data_fixed (PERParms * pParms, CompleteSIB_sib_Data_fixed * pvalue)
+{
   int status = P_SUCCESS;
 
-//   status = rrc_PERDec_BitString (pParms, &pvalue->numbits, pvalue->data, sizeof(pvalue->data));
+  //   status = rrc_PERDec_BitString (pParms, &pvalue->numbits, pvalue->data, sizeof(pvalue->data));
   return status;
 }
 #endif
@@ -179,7 +193,8 @@ int rrc_PERDec_CompleteSIB_sib_Data_fixed (PERParms * pParms, CompleteSIB_sib_Da
 /*  SFN_Prime                                                 */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_SFN_Prime (PERParms * pParms, SFN_Prime value){
+int rrc_PEREnc_SFN_Prime (PERParms * pParms, SFN_Prime value)
+{
   int status = P_SUCCESS;
 
   status = rrc_PEREnc_ConstrInteger (pParms, value, 0, 2047);
@@ -189,7 +204,8 @@ int rrc_PEREnc_SFN_Prime (PERParms * pParms, SFN_Prime value){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_SFN_Prime (PERParms * pParms, SFN_Prime * pvalue){
+int rrc_PERDec_SFN_Prime (PERParms * pParms, SFN_Prime * pvalue)
+{
   int status = P_SUCCESS;
   status = rrc_PERDec_ConstrInteger (pParms, pvalue, 0, 2047);
   return status;
@@ -200,42 +216,50 @@ int rrc_PERDec_SFN_Prime (PERParms * pParms, SFN_Prime * pvalue){
 /*  MCC                                                       */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_MCC (PERParms * pParms, RCELL_MCC * pvalue){
+int rrc_PEREnc_MCC (PERParms * pParms, RCELL_MCC * pvalue)
+{
   //size constraints =  3, 3
   int status = P_SUCCESS;
   int  i;
   /* encode length determinant */
   status = rrc_PEREnc_Length (pParms, pvalue->numDigits);
+
   if (status < 0)
     return status;
 
   /* encode elements */
   for (i = 0; i < pvalue->numDigits; i++) {
     status = rrc_PEREnc_Digit (pParms, pvalue->elem[i]);
+
     if (status != P_SUCCESS)
       return status;
   }
+
   return status;
 }
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_MCC (PERParms * pParms, RCELL_MCC * pvalue){
+int rrc_PERDec_MCC (PERParms * pParms, RCELL_MCC * pvalue)
+{
   //size constraints =  3, 3
   int status = P_SUCCESS;
   int  i;
 
   /* decode length determinant */
   status = rrc_PERDec_Length (pParms, &pvalue->numDigits);
+
   if (status != P_SUCCESS)
     return status;
 
   /* decode elements */
   for (i = 0; i < pvalue->numDigits; i++) {
     status = rrc_PERDec_Digit (pParms, &pvalue->elem[i]);
+
     if (status != P_SUCCESS)
       return status;
   }
+
   return status;
 }
 #endif
@@ -244,7 +268,8 @@ int rrc_PERDec_MCC (PERParms * pParms, RCELL_MCC * pvalue){
 /*  MNC                                                       */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_MNC (PERParms * pParms, MNC * pvalue){
+int rrc_PEREnc_MNC (PERParms * pParms, MNC * pvalue)
+{
   int status = P_SUCCESS;
 
   status = rrc_PEREnc_ConsUnsigned (pParms, *pvalue, 1, 65000);
@@ -254,7 +279,8 @@ int rrc_PEREnc_MNC (PERParms * pParms, MNC * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_MNC (PERParms * pParms, MNC * pvalue){
+int rrc_PERDec_MNC (PERParms * pParms, MNC * pvalue)
+{
   int status = P_SUCCESS;
 
   status = rrc_PERDec_ConsUnsigned (pParms, pvalue, 1, 65000);
@@ -268,11 +294,13 @@ int rrc_PERDec_MNC (PERParms * pParms, MNC * pvalue){
 /*  PLMN_Identity                                             */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_PLMN_Identity (PERParms * pParms, RCELL_PLMN_Identity * pvalue){
+int rrc_PEREnc_PLMN_Identity (PERParms * pParms, RCELL_PLMN_Identity * pvalue)
+{
   int status = P_SUCCESS;
 
   /* encode mcc */
   status = rrc_PEREnc_MCC (pParms, &pvalue->mcc);
+
   if (status != P_SUCCESS)
     return status;
 
@@ -284,11 +312,13 @@ int rrc_PEREnc_PLMN_Identity (PERParms * pParms, RCELL_PLMN_Identity * pvalue){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_PLMN_Identity (PERParms * pParms, RCELL_PLMN_Identity * pvalue){
+int rrc_PERDec_PLMN_Identity (PERParms * pParms, RCELL_PLMN_Identity * pvalue)
+{
   int status = P_SUCCESS;
 
   /* decode mcc */
   status = rrc_PERDec_MCC (pParms, &pvalue->mcc);
+
   if (status != P_SUCCESS)
     return status;
 
@@ -303,7 +333,8 @@ int rrc_PERDec_PLMN_Identity (PERParms * pParms, RCELL_PLMN_Identity * pvalue){
 /*  PLMN_ValueTag                                             */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_PLMN_ValueTag (PERParms * pParms, PLMN_ValueTag value){
+int rrc_PEREnc_PLMN_ValueTag (PERParms * pParms, PLMN_ValueTag value)
+{
   int status = P_SUCCESS;
   status = rrc_PEREnc_ConstrInteger (pParms, value, 0, 255);
 
@@ -312,7 +343,8 @@ int rrc_PEREnc_PLMN_ValueTag (PERParms * pParms, PLMN_ValueTag value){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_PLMN_ValueTag (PERParms * pParms, PLMN_ValueTag * pvalue){
+int rrc_PERDec_PLMN_ValueTag (PERParms * pParms, PLMN_ValueTag * pvalue)
+{
   int status = P_SUCCESS;
   status = rrc_PERDec_ConstrInteger (pParms, pvalue, 0, 255);
 
@@ -324,7 +356,8 @@ int rrc_PERDec_PLMN_ValueTag (PERParms * pParms, PLMN_ValueTag * pvalue){
 /*  CellValueTag                                              */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_CellValueTag (PERParms * pParms, CellValueTag value){
+int rrc_PEREnc_CellValueTag (PERParms * pParms, CellValueTag value)
+{
   int status = P_SUCCESS;
   status = rrc_PEREnc_ConstrInteger (pParms, value, 0, 3);
 
@@ -333,7 +366,8 @@ int rrc_PEREnc_CellValueTag (PERParms * pParms, CellValueTag value){
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_CellValueTag (PERParms * pParms, CellValueTag * pvalue){
+int rrc_PERDec_CellValueTag (PERParms * pParms, CellValueTag * pvalue)
+{
   int status = P_SUCCESS;
   status = rrc_PERDec_ConstrInteger (pParms, pvalue, 0, 3);
 
@@ -345,59 +379,79 @@ int rrc_PERDec_CellValueTag (PERParms * pParms, CellValueTag * pvalue){
 /*  SIBSb_TypeAndTag                                          */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_SIBSb_TypeAndTag (PERParms * pParms, SIBSb_TypeAndTag * pvalue){
+int rrc_PEREnc_SIBSb_TypeAndTag (PERParms * pParms, SIBSb_TypeAndTag * pvalue)
+{
   int status = P_SUCCESS;
 
   /* Encode choice index value */
   status = rrc_PEREnc_ConsUnsigned (pParms, pvalue->type - 1, 0, 31);
+
   if (status != P_SUCCESS)
     return status;
 
   /* Encode root element data value */
   switch (pvalue->type) {
-        /* sysInfoType1 */
-      case 1:
-        status = rrc_PEREnc_PLMN_ValueTag (pParms, pvalue->type_tag.sysInfoType1);
-        if (status != P_SUCCESS)
-          return status;
-        break;
-        /* sysInfoType2 */
-      case 2:
-        status = rrc_PEREnc_CellValueTag (pParms, pvalue->type_tag.sysInfoType2);
-        if (status != P_SUCCESS)
-          return status;
-        break;
-        /* sysInfoType5 */
-      case 5:
-        status = rrc_PEREnc_CellValueTag (pParms, pvalue->type_tag.sysInfoType5);
-        if (status != P_SUCCESS)
-          return status;
-        break;
-        /* sysInfoType11 */
-      case 11:
-        status = rrc_PEREnc_CellValueTag (pParms, pvalue->type_tag.sysInfoType11);
-        if (status != P_SUCCESS)
-          return status;
-        break;
-        /* sysInfoType14 */
-      case 18:
-        /* NULL */
-        break;
-        /* sysInfoType18 */
-      case 28:
-        status = rrc_PEREnc_CellValueTag (pParms, pvalue->type_tag.sysInfoType18);
-        if (status != P_SUCCESS)
-          return status;
-        break;
-      default:
-        return P_INVVALUE;
+    /* sysInfoType1 */
+  case 1:
+    status = rrc_PEREnc_PLMN_ValueTag (pParms, pvalue->type_tag.sysInfoType1);
+
+    if (status != P_SUCCESS)
+      return status;
+
+    break;
+
+    /* sysInfoType2 */
+  case 2:
+    status = rrc_PEREnc_CellValueTag (pParms, pvalue->type_tag.sysInfoType2);
+
+    if (status != P_SUCCESS)
+      return status;
+
+    break;
+
+    /* sysInfoType5 */
+  case 5:
+    status = rrc_PEREnc_CellValueTag (pParms, pvalue->type_tag.sysInfoType5);
+
+    if (status != P_SUCCESS)
+      return status;
+
+    break;
+
+    /* sysInfoType11 */
+  case 11:
+    status = rrc_PEREnc_CellValueTag (pParms, pvalue->type_tag.sysInfoType11);
+
+    if (status != P_SUCCESS)
+      return status;
+
+    break;
+
+    /* sysInfoType14 */
+  case 18:
+    /* NULL */
+    break;
+
+    /* sysInfoType18 */
+  case 28:
+    status = rrc_PEREnc_CellValueTag (pParms, pvalue->type_tag.sysInfoType18);
+
+    if (status != P_SUCCESS)
+      return status;
+
+    break;
+
+  default:
+    return P_INVVALUE;
   }
+
   return status;
 }
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_SIBSb_TypeAndTag (PERParms * pParms, SIBSb_TypeAndTag * pvalue){
+int rrc_PERDec_SIBSb_TypeAndTag (PERParms * pParms, SIBSb_TypeAndTag * pvalue)
+{
   int status = P_SUCCESS;
   unsigned int    sib_type;
 
@@ -407,43 +461,60 @@ int rrc_PERDec_SIBSb_TypeAndTag (PERParms * pParms, SIBSb_TypeAndTag * pvalue){
   pvalue->type = sib_type + 1;
 
   switch (sib_type) {
-        /* sysInfoType1 */
-      case 0:
-        status = rrc_PERDec_PLMN_ValueTag (pParms, &pvalue->type_tag.sysInfoType1);
-        if (status != P_SUCCESS)
-          return status;
-        break;
-        /* sysInfoType2 */
-      case 1:
-        status = rrc_PERDec_CellValueTag (pParms, &pvalue->type_tag.sysInfoType2);
-        if (status != P_SUCCESS)
-          return status;
-        break;
-        /* sysInfoType5 */
-      case 4:
-        status = rrc_PERDec_CellValueTag (pParms, &pvalue->type_tag.sysInfoType5);
-        if (status != P_SUCCESS)
-          return status;
-        break;
-        /* sysInfoType11 */
-      case 10:
-        status = rrc_PERDec_CellValueTag (pParms, &pvalue->type_tag.sysInfoType11);
-        if (status != P_SUCCESS)
-          return status;
-        break;
-        /* sysInfoType14 */
-      case 17:
-        /* NULL */
-        break;
-        /* sysInfoType18 */
-      case 27:
-        status = rrc_PERDec_CellValueTag (pParms, &pvalue->type_tag.sysInfoType18);
-        if (status != P_SUCCESS)
-          return status;
-        break;
-      default:
-        return P_INVVALUE;
+    /* sysInfoType1 */
+  case 0:
+    status = rrc_PERDec_PLMN_ValueTag (pParms, &pvalue->type_tag.sysInfoType1);
+
+    if (status != P_SUCCESS)
+      return status;
+
+    break;
+
+    /* sysInfoType2 */
+  case 1:
+    status = rrc_PERDec_CellValueTag (pParms, &pvalue->type_tag.sysInfoType2);
+
+    if (status != P_SUCCESS)
+      return status;
+
+    break;
+
+    /* sysInfoType5 */
+  case 4:
+    status = rrc_PERDec_CellValueTag (pParms, &pvalue->type_tag.sysInfoType5);
+
+    if (status != P_SUCCESS)
+      return status;
+
+    break;
+
+    /* sysInfoType11 */
+  case 10:
+    status = rrc_PERDec_CellValueTag (pParms, &pvalue->type_tag.sysInfoType11);
+
+    if (status != P_SUCCESS)
+      return status;
+
+    break;
+
+    /* sysInfoType14 */
+  case 17:
+    /* NULL */
+    break;
+
+    /* sysInfoType18 */
+  case 27:
+    status = rrc_PERDec_CellValueTag (pParms, &pvalue->type_tag.sysInfoType18);
+
+    if (status != P_SUCCESS)
+      return status;
+
+    break;
+
+  default:
+    return P_INVVALUE;
   }
+
   return status;
 }
 #endif
@@ -452,12 +523,14 @@ int rrc_PERDec_SIBSb_TypeAndTag (PERParms * pParms, SIBSb_TypeAndTag * pvalue){
 /*  Scheduling_sib_Pos                                        */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_Scheduling_sib_Pos (PERParms * pParms, Scheduling_sib_Pos * pvalue){
+int rrc_PEREnc_Scheduling_sib_Pos (PERParms * pParms, Scheduling_sib_Pos * pvalue)
+{
   int status = P_SUCCESS;
   int  max_position; //3->4095
 
   /* encode repetition period */
   status = rrc_PEREnc_ConsUnsigned (pParms, pvalue->sib_Rep, 0, 11);
+
   if (status != P_SUCCESS)
     return status;
 
@@ -470,12 +543,14 @@ int rrc_PEREnc_Scheduling_sib_Pos (PERParms * pParms, Scheduling_sib_Pos * pvalu
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_Scheduling_sib_Pos (PERParms * pParms, Scheduling_sib_Pos * pvalue){
+int rrc_PERDec_Scheduling_sib_Pos (PERParms * pParms, Scheduling_sib_Pos * pvalue)
+{
   int status = P_SUCCESS;
   int  max_position;
 
   /* decode repetition period */
   status = rrc_PERDec_ConsUnsigned (pParms, &pvalue->sib_Rep, 0, 11);
+
   if (status != P_SUCCESS)
     return status;
 
@@ -491,44 +566,50 @@ int rrc_PERDec_Scheduling_sib_Pos (PERParms * pParms, Scheduling_sib_Pos * pvalu
 /*  SchedulingInformation                                     */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_SchedulingInformation (PERParms * pParms, SchedulingInformation * pvalue){
+int rrc_PEREnc_SchedulingInformation (PERParms * pParms, SchedulingInformation * pvalue)
+{
   int status = P_SUCCESS;
 
   /* encode segCount */
   status = rrc_PEREnc_SegCount (pParms, pvalue->segCount);
+
   if (status != P_SUCCESS)
     return status;
 
   /* encode sib_Pos */
   status = rrc_PEREnc_Scheduling_sib_Pos (pParms, &pvalue->scheduling_sib_rep);
+
   if (status != P_SUCCESS)
     return status;
 
-//   /* encode sib_PosOffsetInfo */
-//      status = rrc_PEREnc_SibOFF_List (pParms, &pvalue->sib_PosOffsetInfo);
-//      if (status != P_SUCCESS) return status;
+  //   /* encode sib_PosOffsetInfo */
+  //      status = rrc_PEREnc_SibOFF_List (pParms, &pvalue->sib_PosOffsetInfo);
+  //      if (status != P_SUCCESS) return status;
 
   return status;
 }
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_SchedulingInformation (PERParms * pParms, SchedulingInformation * pvalue){
+int rrc_PERDec_SchedulingInformation (PERParms * pParms, SchedulingInformation * pvalue)
+{
   int status = P_SUCCESS;
 
   /* decode segCount */
   status = rrc_PERDec_SegCount (pParms, &pvalue->segCount);
+
   if (status != P_SUCCESS)
     return status;
 
   /* decode sib_Pos */
   status = rrc_PERDec_Scheduling_sib_Pos (pParms, &pvalue->scheduling_sib_rep);
+
   if (status != P_SUCCESS)
     return status;
 
-//   /* decode sib_PosOffsetInfo */
-//      status = rrc_PERDec_SibOFF_List (pParms, &pvalue->sib_PosOffsetInfo);
-//      if (status != P_SUCCESS) return status;
+  //   /* decode sib_PosOffsetInfo */
+  //      status = rrc_PERDec_SibOFF_List (pParms, &pvalue->sib_PosOffsetInfo);
+  //      if (status != P_SUCCESS) return status;
 
   return status;
 }
@@ -538,11 +619,13 @@ int rrc_PERDec_SchedulingInformation (PERParms * pParms, SchedulingInformation *
 /*  SchedulingInformationSIBSb                                */
 /**************************************************************/
 #ifdef NODE_RG
-int rrc_PEREnc_SchedulingInformationSIBSb (PERParms * pParms, SchedulingInformationSIBSb * pvalue){
+int rrc_PEREnc_SchedulingInformationSIBSb (PERParms * pParms, SchedulingInformationSIBSb * pvalue)
+{
   int status = P_SUCCESS;
 
   /* encode sibSb_Type */
   status = rrc_PEREnc_SIBSb_TypeAndTag (pParms, &pvalue->sibSb_Type);
+
   if (status != P_SUCCESS)
     return status;
 
@@ -554,11 +637,13 @@ int rrc_PEREnc_SchedulingInformationSIBSb (PERParms * pParms, SchedulingInformat
 #endif
 //-----------------------------------------------------------------------------
 #ifdef NODE_MT
-int rrc_PERDec_SchedulingInformationSIBSb (PERParms * pParms, SchedulingInformationSIBSb * pvalue){
+int rrc_PERDec_SchedulingInformationSIBSb (PERParms * pParms, SchedulingInformationSIBSb * pvalue)
+{
   int status = P_SUCCESS;
 
   /* decode sibSb_Type */
   status = rrc_PERDec_SIBSb_TypeAndTag (pParms, &pvalue->sibSb_Type);
+
   if (status != P_SUCCESS)
     return status;
 
@@ -582,6 +667,7 @@ rrc_PEREnc_SIBSb_ReferenceList (PERParms * pParms, SIBSb_ReferenceList * pvalue)
 
   /* encode length determinant */
   status = rrc_PEREnc_Length (pParms, pvalue->numSIB);
+
   if (status < 0)
     return status;
 
@@ -589,9 +675,11 @@ rrc_PEREnc_SIBSb_ReferenceList (PERParms * pParms, SIBSb_ReferenceList * pvalue)
   for (i = 0; i < pvalue->numSIB; i++) {
     if (protocol_bs->rrc.rg_bch_blocks.currMIB.sibSb_ReferenceList.sib_ref[i].scheduling.segCount > 0)
       status = rrc_PEREnc_SchedulingInformationSIBSb (pParms, &pvalue->sib_ref[i]);
+
     if (status != P_SUCCESS)
       return status;
   }
+
   return status;
 }
 #endif
@@ -606,6 +694,7 @@ rrc_PERDec_SIBSb_ReferenceList (PERParms * pParms, SIBSb_ReferenceList * pvalue)
 
   /* decode length determinant */
   status = rrc_PERDec_Length (pParms, &pvalue->numSIB);
+
   if (status != P_SUCCESS)
     return status;
 
@@ -613,12 +702,16 @@ rrc_PERDec_SIBSb_ReferenceList (PERParms * pParms, SIBSb_ReferenceList * pvalue)
   for (i = 0; i < pvalue->numSIB; i++) {
     if (pParms->buff_size == 0)
       break;                    // No more SIBs
+
     sib_t = (int) *(((char *) pParms->buffer) + pParms->buff_index) + 1;
+
     if (protocol_ms->rrc.ue_bch_blocks.currMIB.sibSb_ReferenceList.sib_ref[i].sibSb_Type.type == sib_t)
       status = rrc_PERDec_SchedulingInformationSIBSb (pParms, &pvalue->sib_ref[i]);
+
     if (status != P_SUCCESS)
       return status;
   }
+
   return status;
 }
 #endif
@@ -632,13 +725,16 @@ int
 rrc_PEREnc_NAS_SystemInformation (PERParms * pParms, NAS_SystemInformation value)
 {
   int status = P_SUCCESS;
+
   if (value.numocts >= 0 && value.numocts <= maxSIB1NAS) {
     status = rrc_PEREnc_VarOctetString (pParms, value.numocts, value.data);
+
     if (status != P_SUCCESS)
       return status;
   } else {
     status = P_OUTOFBOUNDS;
   }
+
   return status;
 }
 #endif
@@ -664,13 +760,16 @@ int
 rrc_PEREnc_UE_TimersAndConstants (PERParms * pParms, RCELL_UE_TimersAndConstants value)
 {
   int status = P_SUCCESS;
+
   if (value.numocts >= 0 && value.numocts <= 8) {
     status = rrc_PEREnc_VarOctetString (pParms, value.numocts, value.data);
+
     if (status != P_SUCCESS)
       return status;
   } else {
     status = P_OUTOFBOUNDS;
   }
+
   return status;
 }
 #endif
@@ -725,13 +824,16 @@ int
 rrc_PEREnc_PRACH_SCCPCH_SIList (PERParms * pParms, PRACH_SCCPCH_SIList value)
 {
   int status = P_SUCCESS;
+
   if (value.numocts >= 0 && value.numocts <= (maxBlock - 8)) {
     status = rrc_PEREnc_VarOctetString (pParms, value.numocts, value.data);
+
     if (status != P_SUCCESS)
       return status;
   } else {
     status = P_OUTOFBOUNDS;
   }
+
   return status;
 }
 #endif
@@ -841,26 +943,29 @@ rrc_PEREnc_OpenLoopPowerControl_TDD (PERParms * pParms, OpenLoopPowerControl_TDD
 
   /* encode primaryCCPCH_TX_Power */
   status = rrc_PEREnc_PrimaryCCPCH_TX_Power (pParms, pvalue->primaryCCPCH_TX_Power);
+
   if (status != P_SUCCESS)
     return status;
 
   /* encode alpha */
   status = rrc_PEREnc_Alpha (pParms, pvalue->alpha);
+
   if (status != P_SUCCESS)
     return status;
 
   /* encode prach_ConstantValue */
   status = rrc_PEREnc_ConstantValueTdd (pParms, pvalue->prach_ConstantValue);
+
   if (status != P_SUCCESS)
     return status;
 
   /* encode dpch_ConstantValue */
   status = rrc_PEREnc_ConstantValueTdd (pParms, pvalue->dpch_ConstantValue);
-//   if (status != P_SUCCESS) return status;
-//
-//   /* encode pusch_ConstantValue */
-//   status = rrc_PEREnc_ConstantValueTdd (pParms, pvalue->pusch_ConstantValue);
-//   if (status != P_SUCCESS) return status;
+  //   if (status != P_SUCCESS) return status;
+  //
+  //   /* encode pusch_ConstantValue */
+  //   status = rrc_PEREnc_ConstantValueTdd (pParms, pvalue->pusch_ConstantValue);
+  //   if (status != P_SUCCESS) return status;
 
   return status;
 }
@@ -874,26 +979,29 @@ rrc_PERDec_OpenLoopPowerControl_TDD (PERParms * pParms, OpenLoopPowerControl_TDD
 
   /* decode primaryCCPCH_TX_Power */
   status = rrc_PERDec_PrimaryCCPCH_TX_Power (pParms, &pvalue->primaryCCPCH_TX_Power);
+
   if (status != P_SUCCESS)
     return status;
 
   /* decode alpha */
   status = rrc_PERDec_Alpha (pParms, &pvalue->alpha);
+
   if (status != P_SUCCESS)
     return status;
 
   /* decode prach_ConstantValue */
   status = rrc_PERDec_ConstantValueTdd (pParms, &pvalue->prach_ConstantValue);
+
   if (status != P_SUCCESS)
     return status;
 
   /* decode dpch_ConstantValue */
   status = rrc_PERDec_ConstantValueTdd (pParms, &pvalue->dpch_ConstantValue);
-//   if (status != P_SUCCESS) return status;
-//
-//   /* decode pusch_ConstantValue */
-//   status = rrc_PERDec_ConstantValueTdd (pParms, &pvalue->pusch_ConstantValue);
-//   if (status != P_SUCCESS) return status;
+  //   if (status != P_SUCCESS) return status;
+  //
+  //   /* decode pusch_ConstantValue */
+  //   status = rrc_PERDec_ConstantValueTdd (pParms, &pvalue->pusch_ConstantValue);
+  //   if (status != P_SUCCESS) return status;
 
   return status;
 }
@@ -966,6 +1074,7 @@ rrc_PEREnc_IndividualTS_Interference (PERParms * pParms, IndividualTS_Interferen
 
   /* encode timeslot */
   status = rrc_PEREnc_TimeslotNumber (pParms, pvalue->timeslot);
+
   if (status != P_SUCCESS)
     return status;
 
@@ -984,6 +1093,7 @@ rrc_PERDec_IndividualTS_Interference (PERParms * pParms, IndividualTS_Interferen
 
   /* decode timeslot */
   status = rrc_PERDec_TimeslotNumber (pParms, &pvalue->timeslot);
+
   if (status != P_SUCCESS)
     return status;
 
@@ -1007,15 +1117,18 @@ rrc_PEREnc_IndividualTS_InterferenceList (PERParms * pParms, IndividualTS_Interf
 
   /* encode length determinant */
   status = rrc_PEREnc_Length (pParms, pvalue->numSlots);
+
   if (status < 0)
     return status;
 
   /* encode valued data */
   for (i = 0; i < pvalue->numSlots; i++) {
     status = rrc_PEREnc_IndividualTS_Interference (pParms, &pvalue->data[i]);
+
     if (status != P_SUCCESS)
       return status;
   }
+
   return status;
 }
 #endif
@@ -1030,15 +1143,18 @@ rrc_PERDec_IndividualTS_InterferenceList (PERParms * pParms, IndividualTS_Interf
 
   /* decode length determinant */
   status = rrc_PERDec_Length (pParms, (int *) &pvalue->numSlots);
+
   if (status != P_SUCCESS)
     return status;
 
   /* decode valued data */
   for (i = 0; i < pvalue->numSlots; i++) {
     status = rrc_PERDec_IndividualTS_Interference (pParms, &pvalue->data[i]);
+
     if (status != P_SUCCESS)
       return status;
   }
+
   return status;
 }
 #endif
@@ -1080,13 +1196,16 @@ int
 rrc_PEREnc_IdentitiesOfNeighbourCells (PERParms * pParms, IdentitiesOfNeighbourCells value)
 {
   int status = P_SUCCESS;
+
   if (value.numocts >= 0 && value.numocts <= maxSIBNAS) {
     status = rrc_PEREnc_VarOctetString (pParms, value.numocts, value.data);
+
     if (status != P_SUCCESS)
       return status;
   } else {
     status = P_OUTOFBOUNDS;
   }
+
   return status;
 }
 #endif

@@ -82,29 +82,31 @@ Description Defines the EPS Session Management procedure call manager,
  ***************************************************************************/
 void esm_main_initialize(esm_indication_callback_t cb)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int i;
+  int i;
 
-    /* Total number of active EPS bearer contexts */
-    _esm_data.n_ebrs = 0;
-    /* List of active PDN connections */
-    _esm_data.n_pdns = 0;
-    for (i = 0; i < ESM_DATA_PDN_MAX + 1; i++) {
-        _esm_data.pdn[i].pid = -1;
-        _esm_data.pdn[i].is_active = FALSE;
-        _esm_data.pdn[i].data = NULL;
-    }
-    /* Emergency bearer services indicator */
-    _esm_data.emergency = FALSE;
+  /* Total number of active EPS bearer contexts */
+  _esm_data.n_ebrs = 0;
+  /* List of active PDN connections */
+  _esm_data.n_pdns = 0;
 
-    /* Initialize the procedure transaction identity manager */
-    esm_pt_initialize();
+  for (i = 0; i < ESM_DATA_PDN_MAX + 1; i++) {
+    _esm_data.pdn[i].pid = -1;
+    _esm_data.pdn[i].is_active = FALSE;
+    _esm_data.pdn[i].data = NULL;
+  }
 
-    /* Initialize the EPS bearer context manager */
-    esm_ebr_initialize(cb);
+  /* Emergency bearer services indicator */
+  _esm_data.emergency = FALSE;
 
-    LOG_FUNC_OUT;
+  /* Initialize the procedure transaction identity manager */
+  esm_pt_initialize();
+
+  /* Initialize the EPS bearer context manager */
+  esm_ebr_initialize(cb);
+
+  LOG_FUNC_OUT;
 }
 #endif
 #ifdef NAS_MME
@@ -124,25 +126,28 @@ void esm_main_initialize(esm_indication_callback_t cb)
  ***************************************************************************/
 void esm_main_initialize(void)
 {
-    int i;
+  int i;
 
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Retreive MME supported configuration data */
-    if (mme_api_get_esm_config(&_esm_data.conf) != RETURNok) {
-        LOG_TRACE(ERROR, "ESM-MAIN  - Failed to get MME configuration data");
-    }
+  /* Retreive MME supported configuration data */
+  if (mme_api_get_esm_config(&_esm_data.conf) != RETURNok) {
+    LOG_TRACE(ERROR, "ESM-MAIN  - Failed to get MME configuration data");
+  }
+
 # if !defined(EPC_BUILD)
-    /* Initialize ESM contexts */
-    for (i = 0; i < ESM_DATA_NB_UE_MAX; i++) {
-        _esm_data.ctx[i] = NULL;
-    }
+
+  /* Initialize ESM contexts */
+  for (i = 0; i < ESM_DATA_NB_UE_MAX; i++) {
+    _esm_data.ctx[i] = NULL;
+  }
+
 # endif
 
-    /* Initialize the EPS bearer context manager */
-    esm_ebr_initialize();
+  /* Initialize the EPS bearer context manager */
+  esm_ebr_initialize();
 
-    LOG_FUNC_OUT;
+  LOG_FUNC_OUT;
 }
 #endif
 
@@ -162,43 +167,48 @@ void esm_main_initialize(void)
  ***************************************************************************/
 void esm_main_cleanup(void)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
 #ifdef NAS_UE
-    {
-        int i;
-        int pid;
-        int bid;
+  {
+    int i;
+    int pid;
+    int bid;
 
-        /* De-activate EPS bearers and clean up PDN connections */
-        for (pid = 0; pid < ESM_DATA_PDN_MAX; pid++) {
-            if (_esm_data.pdn[pid].data) {
-                esm_pdn_t *pdn = _esm_data.pdn[pid].data;
-                if (pdn->apn.length > 0) {
-                    free(pdn->apn.value);
-                }
-                /* Release EPS bearer contexts */
-                for (bid = 0; bid < pdn->n_bearers; bid++) {
-                    if (pdn->bearer[bid]) {
-                        LOG_TRACE(WARNING, "ESM-MAIN  - Release EPS bearer "
-                                  "context (ebi=%d)", pdn->bearer[bid]->ebi);
-                        /* Delete the TFT */
-                        for (i = 0; i < pdn->bearer[bid]->tft.n_pkfs; i++) {
-                            if (pdn->bearer[bid]->tft.pkf[i]) {
-                                free(pdn->bearer[bid]->tft.pkf[i]);
-                            }
-                        }
-                        free(pdn->bearer[bid]);
-                    }
-                }
-                /* Release the PDN connection */
-                free(_esm_data.pdn[pid].data);
-            }
+    /* De-activate EPS bearers and clean up PDN connections */
+    for (pid = 0; pid < ESM_DATA_PDN_MAX; pid++) {
+      if (_esm_data.pdn[pid].data) {
+        esm_pdn_t *pdn = _esm_data.pdn[pid].data;
+
+        if (pdn->apn.length > 0) {
+          free(pdn->apn.value);
         }
+
+        /* Release EPS bearer contexts */
+        for (bid = 0; bid < pdn->n_bearers; bid++) {
+          if (pdn->bearer[bid]) {
+            LOG_TRACE(WARNING, "ESM-MAIN  - Release EPS bearer "
+                      "context (ebi=%d)", pdn->bearer[bid]->ebi);
+
+            /* Delete the TFT */
+            for (i = 0; i < pdn->bearer[bid]->tft.n_pkfs; i++) {
+              if (pdn->bearer[bid]->tft.pkf[i]) {
+                free(pdn->bearer[bid]->tft.pkf[i]);
+              }
+            }
+
+            free(pdn->bearer[bid]);
+          }
+        }
+
+        /* Release the PDN connection */
+        free(_esm_data.pdn[pid].data);
+      }
     }
+  }
 #endif
 
-    LOG_FUNC_OUT;
+  LOG_FUNC_OUT;
 }
 
 #ifdef NAS_UE
@@ -220,9 +230,9 @@ void esm_main_cleanup(void)
  ***************************************************************************/
 int esm_main_get_nb_pdns_max(void)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    LOG_FUNC_RETURN (ESM_DATA_PDN_MAX);
+  LOG_FUNC_RETURN (ESM_DATA_PDN_MAX);
 }
 
 /****************************************************************************
@@ -241,9 +251,9 @@ int esm_main_get_nb_pdns_max(void)
  ***************************************************************************/
 int esm_main_get_nb_pdns(void)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    LOG_FUNC_RETURN (_esm_data.n_pdns);
+  LOG_FUNC_RETURN (_esm_data.n_pdns);
 }
 
 /****************************************************************************
@@ -264,9 +274,9 @@ int esm_main_get_nb_pdns(void)
  ***************************************************************************/
 int esm_main_has_emergency(void)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    LOG_FUNC_RETURN (_esm_data.emergency);
+  LOG_FUNC_RETURN (_esm_data.emergency);
 }
 
 /****************************************************************************
@@ -289,29 +299,30 @@ int esm_main_has_emergency(void)
  ***************************************************************************/
 int esm_main_get_pdn_status(int cid, int *state)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    unsigned int pid = cid - 1;
+  unsigned int pid = cid - 1;
 
-    if (pid >= ESM_DATA_PDN_MAX) {
-        return (FALSE);
-    } else if (pid != _esm_data.pdn[pid].pid) {
-        LOG_TRACE(WARNING, "ESM-MAIN  - PDN connection %d is not defined", cid);
-        return (FALSE);
-    } else if (_esm_data.pdn[pid].data == NULL) {
-        LOG_TRACE(ERROR, "ESM-MAIN  - PDN connection %d has not been allocated",
-                  cid);
-        return (FALSE);
-    }
+  if (pid >= ESM_DATA_PDN_MAX) {
+    return (FALSE);
+  } else if (pid != _esm_data.pdn[pid].pid) {
+    LOG_TRACE(WARNING, "ESM-MAIN  - PDN connection %d is not defined", cid);
+    return (FALSE);
+  } else if (_esm_data.pdn[pid].data == NULL) {
+    LOG_TRACE(ERROR, "ESM-MAIN  - PDN connection %d has not been allocated",
+              cid);
+    return (FALSE);
+  }
 
-    if (_esm_data.pdn[pid].data->bearer[0] != NULL) {
-        /* The status of a PDN connection is the status of the default EPS bearer
-         * that has been assigned to this PDN connection at activation time */
-        int ebi = _esm_data.pdn[pid].data->bearer[0]->ebi;
-        *state = (esm_ebr_get_status(ebi) == ESM_EBR_ACTIVE);
-    }
-    /* The PDN connection has not been activated yet */
-    LOG_FUNC_RETURN (TRUE);
+  if (_esm_data.pdn[pid].data->bearer[0] != NULL) {
+    /* The status of a PDN connection is the status of the default EPS bearer
+     * that has been assigned to this PDN connection at activation time */
+    int ebi = _esm_data.pdn[pid].data->bearer[0]->ebi;
+    *state = (esm_ebr_get_status(ebi) == ESM_EBR_ACTIVE);
+  }
+
+  /* The PDN connection has not been activated yet */
+  LOG_FUNC_RETURN (TRUE);
 }
 
 /****************************************************************************
@@ -334,35 +345,37 @@ int esm_main_get_pdn_status(int cid, int *state)
 int esm_main_get_pdn(int cid, int *type, const char **apn,
                      int *is_emergency, int *is_active)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    unsigned int pid = cid - 1;
+  unsigned int pid = cid - 1;
 
-    if (pid >= ESM_DATA_PDN_MAX) {
-        return (RETURNerror);
-    } else if (pid != _esm_data.pdn[pid].pid) {
-        LOG_TRACE(WARNING, "ESM-MAIN  - PDN connection %d is not defined", cid);
-        return (RETURNerror);
-    } else if (_esm_data.pdn[pid].data == NULL) {
-        LOG_TRACE(ERROR, "ESM-MAIN  - PDN connection %d has not been allocated",
-                  cid);
-        return (RETURNerror);
-    }
+  if (pid >= ESM_DATA_PDN_MAX) {
+    return (RETURNerror);
+  } else if (pid != _esm_data.pdn[pid].pid) {
+    LOG_TRACE(WARNING, "ESM-MAIN  - PDN connection %d is not defined", cid);
+    return (RETURNerror);
+  } else if (_esm_data.pdn[pid].data == NULL) {
+    LOG_TRACE(ERROR, "ESM-MAIN  - PDN connection %d has not been allocated",
+              cid);
+    return (RETURNerror);
+  }
 
-    /* Get the PDN type */
-    *type = _esm_data.pdn[pid].data->type;
-    /* Get the Access Point Name */
-    if (_esm_data.pdn[pid].data->apn.length > 0) {
-        *apn = (char *)(_esm_data.pdn[pid].data->apn.value);
-    } else {
-        *apn = NULL;
-    }
-    /* Get the emergency bearer services indicator */
-    *is_emergency = _esm_data.pdn[pid].data->is_emergency;
-    /* Get the active PDN connection indicator */
-    *is_active = _esm_data.pdn[pid].is_active;
+  /* Get the PDN type */
+  *type = _esm_data.pdn[pid].data->type;
 
-    LOG_FUNC_RETURN (RETURNok);
+  /* Get the Access Point Name */
+  if (_esm_data.pdn[pid].data->apn.length > 0) {
+    *apn = (char *)(_esm_data.pdn[pid].data->apn.value);
+  } else {
+    *apn = NULL;
+  }
+
+  /* Get the emergency bearer services indicator */
+  *is_emergency = _esm_data.pdn[pid].data->is_emergency;
+  /* Get the active PDN connection indicator */
+  *is_active = _esm_data.pdn[pid].is_active;
+
+  LOG_FUNC_RETURN (RETURNok);
 }
 
 /****************************************************************************
@@ -383,37 +396,37 @@ int esm_main_get_pdn(int cid, int *type, const char **apn,
  ***************************************************************************/
 int esm_main_get_pdn_addr(int cid, const char **ipv4addr, const char **ipv6addr)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    unsigned int pid = cid - 1;
+  unsigned int pid = cid - 1;
 
-    if (pid >= ESM_DATA_PDN_MAX) {
-        return (RETURNerror);
-    } else if (pid != _esm_data.pdn[pid].pid) {
-        LOG_TRACE(WARNING, "ESM-MAIN  - PDN connection %d is not defined", cid);
-        return (RETURNerror);
-    } else if (_esm_data.pdn[pid].data == NULL) {
-        LOG_TRACE(ERROR, "ESM-MAIN  - PDN connection %d has not been allocated",
-                  cid);
-        return (RETURNerror);
-    } else if (!_esm_data.pdn[pid].is_active) {
-        /* No any IP address has been assigned to this PDN connection */
-        return (RETURNok);
-    }
+  if (pid >= ESM_DATA_PDN_MAX) {
+    return (RETURNerror);
+  } else if (pid != _esm_data.pdn[pid].pid) {
+    LOG_TRACE(WARNING, "ESM-MAIN  - PDN connection %d is not defined", cid);
+    return (RETURNerror);
+  } else if (_esm_data.pdn[pid].data == NULL) {
+    LOG_TRACE(ERROR, "ESM-MAIN  - PDN connection %d has not been allocated",
+              cid);
+    return (RETURNerror);
+  } else if (!_esm_data.pdn[pid].is_active) {
+    /* No any IP address has been assigned to this PDN connection */
+    return (RETURNok);
+  }
 
-    if (_esm_data.pdn[pid].data->type == NET_PDN_TYPE_IPV4) {
-        /* Get IPv4 address */
-        *ipv4addr = _esm_data.pdn[pid].data->ip_addr;
-    } else if (_esm_data.pdn[pid].data->type == NET_PDN_TYPE_IPV6) {
-        /* Get IPv6 address */
-        *ipv6addr = _esm_data.pdn[pid].data->ip_addr;
-    } else {
-        /* IPv4v6 dual-stack terminal */
-        *ipv4addr = _esm_data.pdn[pid].data->ip_addr;
-        *ipv6addr = _esm_data.pdn[pid].data->ip_addr+ESM_DATA_IPV4_ADDRESS_SIZE;
-    }
+  if (_esm_data.pdn[pid].data->type == NET_PDN_TYPE_IPV4) {
+    /* Get IPv4 address */
+    *ipv4addr = _esm_data.pdn[pid].data->ip_addr;
+  } else if (_esm_data.pdn[pid].data->type == NET_PDN_TYPE_IPV6) {
+    /* Get IPv6 address */
+    *ipv6addr = _esm_data.pdn[pid].data->ip_addr;
+  } else {
+    /* IPv4v6 dual-stack terminal */
+    *ipv4addr = _esm_data.pdn[pid].data->ip_addr;
+    *ipv6addr = _esm_data.pdn[pid].data->ip_addr+ESM_DATA_IPV4_ADDRESS_SIZE;
+  }
 
-    LOG_FUNC_RETURN (RETURNok);
+  LOG_FUNC_RETURN (RETURNok);
 }
 
 #endif // NAS_UE

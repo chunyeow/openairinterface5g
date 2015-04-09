@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                             n w - g t p v 2 u                              * 
+ *                             n w - g t p v 2 u                              *
  *    G P R S   T u n n e l i n g    P r o t o c o l   v 2 u    S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -37,8 +37,8 @@
 #include <stdio.h>
 #include "NwLog.h"
 
-/** 
- * @file NwGtpv1uLog.h 
+/**
+ * @file NwGtpv1uLog.h
  * @brief This header contains logging related definitions.
 */
 

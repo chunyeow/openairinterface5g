@@ -262,9 +262,9 @@ struct x2ap_message_s;
 /** \brief Function callback prototype.
  **/
 typedef int (*x2ap_message_decoded_callback)(
-    uint32_t assocId,
-    uint32_t stream,
-    struct x2ap_message_s *message);
+  uint32_t assocId,
+  uint32_t stream,
+  struct x2ap_message_s *message);
 
 /** \brief Encode a successfull outcome message
  \param buffer pointer to buffer in which data will be encoded
@@ -276,12 +276,12 @@ typedef int (*x2ap_message_decoded_callback)(
  @returns size in bytes encded on success or 0 on failure
  **/
 ssize_t x2ap_generate_successfull_outcome(
-    uint8_t               **buffer,
-    uint32_t               *length,
-    X2ap_ProcedureCode_t         procedureCode,
-    X2ap_Criticality_t           criticality,
-    asn_TYPE_descriptor_t  *td,
-    void                   *sptr);
+  uint8_t               **buffer,
+  uint32_t               *length,
+  X2ap_ProcedureCode_t         procedureCode,
+  X2ap_Criticality_t           criticality,
+  asn_TYPE_descriptor_t  *td,
+  void                   *sptr);
 
 /** \brief Encode an initiating message
  \param buffer pointer to buffer in which data will be encoded
@@ -293,12 +293,12 @@ ssize_t x2ap_generate_successfull_outcome(
  @returns size in bytes encded on success or 0 on failure
  **/
 ssize_t x2ap_generate_initiating_message(
-    uint8_t               **buffer,
-    uint32_t               *length,
-    X2ap_ProcedureCode_t    procedureCode,
-    X2ap_Criticality_t      criticality,
-    asn_TYPE_descriptor_t  *td,
-    void                   *sptr);
+  uint8_t               **buffer,
+  uint32_t               *length,
+  X2ap_ProcedureCode_t    procedureCode,
+  X2ap_Criticality_t      criticality,
+  asn_TYPE_descriptor_t  *td,
+  void                   *sptr);
 
 /** \brief Encode an unsuccessfull outcome message
  \param buffer pointer to buffer in which data will be encoded
@@ -310,12 +310,12 @@ ssize_t x2ap_generate_initiating_message(
  @returns size in bytes encded on success or 0 on failure
  **/
 ssize_t x2ap_generate_unsuccessfull_outcome(
-    uint8_t               **buffer,
-    uint32_t               *length,
-    X2ap_ProcedureCode_t         procedureCode,
-    X2ap_Criticality_t           criticality,
-    asn_TYPE_descriptor_t  *td,
-    void                   *sptr);
+  uint8_t               **buffer,
+  uint32_t               *length,
+  X2ap_ProcedureCode_t         procedureCode,
+  X2ap_Criticality_t           criticality,
+  asn_TYPE_descriptor_t  *td,
+  void                   *sptr);
 
 /** \brief Generate a new IE
  \param id Protocol ie id of the IE
@@ -325,10 +325,10 @@ ssize_t x2ap_generate_unsuccessfull_outcome(
  @returns a pointer to the newly created IE structure or NULL in case of failure
  **/
 X2ap_IE_t *x2ap_new_ie(
-    X2ap_ProtocolIE_ID_t   id,
-    X2ap_Criticality_t     criticality,
-    asn_TYPE_descriptor_t *type,
-    void                  *sptr);
+  X2ap_ProtocolIE_ID_t   id,
+  X2ap_Criticality_t     criticality,
+  asn_TYPE_descriptor_t *type,
+  void                  *sptr);
 
 /** \brief Handle criticality
  \param criticality Criticality of the IE

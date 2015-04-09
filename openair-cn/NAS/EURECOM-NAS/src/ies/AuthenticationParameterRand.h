@@ -39,7 +39,7 @@
 #define AUTHENTICATION_PARAMETER_RAND_MAXIMUM_LENGTH 16
 
 typedef struct AuthenticationParameterRand_tag {
-    OctetString rand;
+  OctetString rand;
 } AuthenticationParameterRand;
 
 int encode_authentication_parameter_rand(AuthenticationParameterRand *authenticationparameterrand, uint8_t iei, uint8_t *buffer, uint32_t len);

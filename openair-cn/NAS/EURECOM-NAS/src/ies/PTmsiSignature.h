@@ -39,7 +39,7 @@
 #define P_TMSI_SIGNATURE_MAXIMUM_LENGTH 4
 
 typedef struct PTmsiSignature_tag {
-    OctetString ptmsisignaturevalue;
+  OctetString ptmsisignaturevalue;
 } PTmsiSignature;
 
 int encode_p_tmsi_signature(PTmsiSignature *ptmsisignature, uint8_t iei, uint8_t *buffer, uint32_t len);

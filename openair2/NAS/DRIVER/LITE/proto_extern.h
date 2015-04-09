@@ -82,9 +82,9 @@ int oai_nw_drv_find_inst(struct net_device *dev);
 @param rb_id Radio Bearer Id
  */
 void oai_nw_drv_common_class_wireless2ip(unsigned short dlen,
-            void *pdcp_sdu,
-            int inst,
-            OaiNwDrvRadioBearerId_t rb_id);
+    void *pdcp_sdu,
+    int inst,
+    OaiNwDrvRadioBearerId_t rb_id);
 
 /**
 \fn void oai_nw_drv_common_ip2wireless(struct sk_buff *skb, int inst)

@@ -36,7 +36,7 @@
 
 */
 
- 
+
 #ifndef __LAYER2_MAC_DEFS_H__
 #define __LAYER2_MAC_DEFS_H__
 
@@ -76,9 +76,9 @@
  * @{
  */
 
-#define BCCH_PAYLOAD_SIZE_MAX 128  
+#define BCCH_PAYLOAD_SIZE_MAX 128
 #define CCCH_PAYLOAD_SIZE_MAX 128
- 
+
 #define SCH_PAYLOAD_SIZE_MAX 4096
 /// Logical channel ids from 36-311 (Note BCCH is not specified in 36-311, uses the same as first DRB)
 #define BCCH 3  // SI 
@@ -93,7 +93,7 @@
 
 #ifdef Rel10
 
-// Mask for identifying subframe for MBMS 
+// Mask for identifying subframe for MBMS
 #define MBSFN_TDD_SF3 0x80// for TDD
 #define MBSFN_TDD_SF4 0x40
 #define MBSFN_TDD_SF7 0x20
@@ -208,7 +208,7 @@ typedef struct {
   uint8_t L_LSB:8;
   uint8_t padding;
 } __attribute__((__packed__))SCH_SUBHEADER_LONG;
- 
+
 typedef struct {
   uint8_t LCID:5;
   uint8_t E:1;
@@ -263,7 +263,7 @@ typedef struct {
 } __attribute__((__packed__))MCCH_PDU;
 #endif
 
-typedef struct{
+typedef struct {
   uint8_t stop_sf_MSB:3; // octet 1 LSB
   uint8_t lcid:5;        // octet 2 MSB
   uint8_t stop_sf_LSB:8;
@@ -307,7 +307,7 @@ typedef struct {
   uint8_t sync_area;
   uint8_t msi_active;
   uint8_t mcch_active;
-  uint8_t mtch_active;  
+  uint8_t mtch_active;
 } __attribute__ ((__packed__)) MCH_PDU;
 
 /*! \brief Uplink SCH PDU Structure
@@ -322,23 +322,23 @@ typedef struct {
 typedef enum {
   S_UL_NONE =0,
   S_UL_WAITING,
-  S_UL_SCHEDULED, 
-  S_UL_BUFFERED,  
+  S_UL_SCHEDULED,
+  S_UL_BUFFERED,
   S_UL_NUM_STATUS
 } UE_ULSCH_STATUS;
 
 typedef enum {
   S_DL_NONE =0,
   S_DL_WAITING,
-  S_DL_SCHEDULED, 
-  S_DL_BUFFERED,  
+  S_DL_SCHEDULED,
+  S_DL_BUFFERED,
   S_DL_NUM_STATUS
 } UE_DLSCH_STATUS;
 
 typedef enum {
   CBA_ES=0, // equal share of RB among groups w
   CBA_ES_S,  // equal share of RB among groups with small allocation
-  CBA_PF, // proportional fair (kind of) 
+  CBA_PF, // proportional fair (kind of)
   CBA_PF_S,  // proportional fair (kind of) with small RB allocation
   CBA_RS // random allocation
 } CBA_POLICY;
@@ -346,7 +346,7 @@ typedef enum {
 
 // temp struct for sched
 typedef struct {
-  
+
   rnti_t rnti;
   uint16_t subframe;
   uint16_t serving_num;
@@ -354,31 +354,31 @@ typedef struct {
 } eNB_ULSCH_INFO;
 // temp struct for sched
 typedef struct {
-  
+
   rnti_t rnti;
   uint16_t weight;
   uint16_t subframe;
   uint16_t serving_num;
   UE_DLSCH_STATUS status;
 } eNB_DLSCH_INFO;
-typedef struct{
+typedef struct {
   /// BW
   uint16_t num_dlactive_UEs;
   ///  available number of PRBs for a give SF
   uint16_t available_prbs;
   /// total number of PRB available for the user plane
   uint32_t total_available_prbs;
-  /// aggregation 
-  /// total avilable nccc : num control channel element 
+  /// aggregation
+  /// total avilable nccc : num control channel element
   uint16_t available_ncces;
-  // only for a new transmission, should be extended for retransmission  
-  // current dlsch  bit rate for all transport channels 
+  // only for a new transmission, should be extended for retransmission
+  // current dlsch  bit rate for all transport channels
   uint32_t dlsch_bitrate;
   //
   uint32_t dlsch_bytes_tx;
   //
   uint32_t dlsch_pdus_tx;
- //
+  //
   uint32_t total_dlsch_bitrate;
   //
   uint32_t total_dlsch_bytes_tx;
@@ -392,49 +392,49 @@ typedef struct{
   //
   uint64_t ulsch_pdus_rx;
   // here for RX
-}eNB_STATS;
+} eNB_STATS;
 
-typedef struct{
+typedef struct {
 
   /// CRNTI of UE
   rnti_t crnti; ///user id (rnti) of connected UEs
-  // rrc status 
+  // rrc status
   uint8_t rrc_status;
   /// harq pid
   uint8_t harq_pid;
-  /// harq rounf 
+  /// harq rounf
   uint8_t harq_round;
-  /// DL Wideband CQI index (2 TBs) 
+  /// DL Wideband CQI index (2 TBs)
   uint8_t dl_cqi;
   /// total available number of PRBs for a new transmission
   uint16_t rbs_used;
   /// total available number of PRBs for a retransmission
   uint16_t rbs_used_retx;
-  /// total nccc used for a new transmission: num control channel element 
+  /// total nccc used for a new transmission: num control channel element
   uint16_t ncce_used;
-  /// total avilable nccc for a retransmission: num control channel element 
+  /// total avilable nccc for a retransmission: num control channel element
   uint16_t ncce_used_retx;
- 
-  // mcs1 before the rate adaptaion 
-  uint8_t dlsch_mcs1;
-  /// Target mcs2 after rate-adaptation 
-  uint8_t dlsch_mcs2;
-  //  current TBS with mcs2 
-  uint32_t TBS;
-  //  total TBS with mcs2 
-  //  uint32_t total_TBS;
- //  total rb used for a new transmission 
-  uint32_t total_rbs_used;
- //  total rb used for retransmission 
-  uint32_t total_rbs_used_retx;
- 
-  /// preassigned mcs after rate adaptation  
-  uint8_t ulsch_mcs1;
-  /// adjusted mcs 
-  uint8_t ulsch_mcs2;
- 
 
-  /// TX 
+  // mcs1 before the rate adaptaion
+  uint8_t dlsch_mcs1;
+  /// Target mcs2 after rate-adaptation
+  uint8_t dlsch_mcs2;
+  //  current TBS with mcs2
+  uint32_t TBS;
+  //  total TBS with mcs2
+  //  uint32_t total_TBS;
+  //  total rb used for a new transmission
+  uint32_t total_rbs_used;
+  //  total rb used for retransmission
+  uint32_t total_rbs_used_retx;
+
+  /// preassigned mcs after rate adaptation
+  uint8_t ulsch_mcs1;
+  /// adjusted mcs
+  uint8_t ulsch_mcs2;
+
+
+  /// TX
   /// Num pkt
   uint32_t num_pdu_tx[NB_RB_MAX];
   /// num bytes
@@ -443,57 +443,57 @@ typedef struct{
   uint32_t num_retransmission;
   /// instantaneous tx throughput for each TTI
   //  uint32_t tti_throughput[NB_RB_MAX];
- 
-  /// overall 
+
+  /// overall
   //
-  uint32_t  dlsch_bitrate; 
-  //total 
-  uint32_t  total_dlsch_bitrate; 
-  /// headers+ CE +  padding bytes for a MAC PDU 
+  uint32_t  dlsch_bitrate;
+  //total
+  uint32_t  total_dlsch_bitrate;
+  /// headers+ CE +  padding bytes for a MAC PDU
   uint64_t overhead_bytes;
- /// headers+ CE +  padding bytes for a MAC PDU 
+  /// headers+ CE +  padding bytes for a MAC PDU
   uint64_t total_overhead_bytes;
- /// headers+ CE +  padding bytes for a MAC PDU 
+  /// headers+ CE +  padding bytes for a MAC PDU
   uint64_t avg_overhead_bytes;
-  // MAC multiplexed payload 
+  // MAC multiplexed payload
   uint64_t total_sdu_bytes;
   // total MAC pdu bytes
   uint64_t total_pdu_bytes;
-  
+
   // total num pdu
   uint32_t total_num_pdus;
   //
   //  uint32_t avg_pdu_size;
- 
-  /// RX 
+
+  /// RX
   /// estimated average pdu inter-departure time
   uint32_t avg_pdu_idt;
   /// estimated average pdu size
   uint32_t avg_pdu_ps;
-  /// 
+  ///
   uint32_t aggregated_pdu_size;
   uint32_t aggregated_pdu_arrival;
-  
-  /// num rx pdu 
+
+  /// num rx pdu
   uint32_t num_pdu_rx[NB_RB_MAX];
-  /// num bytes rx 
+  /// num bytes rx
   uint32_t num_bytes_rx[NB_RB_MAX];
- /// instantaneous rx throughput for each TTI
+  /// instantaneous rx throughput for each TTI
   //  uint32_t tti_goodput[NB_RB_MAX];
-  /// errors 
-  uint32_t num_errors_rx; 
-  /// overall 
+  /// errors
+  uint32_t num_errors_rx;
+  /// overall
 
   // total MAC pdu bytes
   uint64_t total_pdu_bytes_rx;
   // total num pdu
   uint32_t total_num_pdus_rx;
-  // num of error pdus 
+  // num of error pdus
   uint32_t total_num_errors_rx;
 
-}eNB_UE_STATS;
- 
-typedef struct{
+} eNB_UE_STATS;
+
+typedef struct {
   /// C-RNTI of UE
   rnti_t rnti;
   /// NDI from last scheduling
@@ -509,11 +509,11 @@ typedef struct{
 
   /// DCI format for DLSCH
   uint16_t DLSCH_dci_fmt;
-  
+
   /// Current Aggregation Level for DCI
   uint8_t DCI_aggregation_min;
 
-  /// 
+  ///
   uint8_t DLSCH_dci_size_bits;
 
   /// DCI buffer for DLSCH
@@ -524,16 +524,16 @@ typedef struct{
 
   /// Number of Allocated RBs for UL after scheduling (prior to frequency allocation)
   uint16_t nb_rb_ul[8]; // num_max_harq
-  
+
   /// Number of Allocated RBs by the ulsch preprocessor
   uint8_t pre_allocated_nb_rb_ul;
 
   /// index of Allocated RBs by the ulsch preprocessor
   int8_t pre_allocated_rb_table_index_ul;
-  
+
   /// total allocated RBs
   int8_t total_allocated_rbs;
-  
+
   /// pre-assigned MCS by the ulsch preprocessor
   uint8_t pre_assigned_mcs_ul;
 
@@ -552,7 +552,7 @@ typedef struct{
   /// UL Scheduling Request Received
   uint8_t ul_SR;
 
-  //Resource Block indication for each sub-band in MU-MIMO 
+  //Resource Block indication for each sub-band in MU-MIMO
   uint8_t rballoc_subband[8][50];
 
   // Logical channel info for link with RLC
@@ -574,20 +574,20 @@ typedef struct{
   uint32_t dl_pdus_total;
 
   uint32_t dl_pdus_in_buffer[MAX_NUM_LCID];
-  
+
   uint32_t dl_buffer_head_sdu_creation_time[MAX_NUM_LCID];
 
   uint32_t  dl_buffer_head_sdu_creation_time_max;
-  
+
   uint8_t    dl_buffer_head_sdu_is_segmented[MAX_NUM_LCID];
 
   uint32_t dl_buffer_head_sdu_remaining_size_to_send[MAX_NUM_LCID];
 
   // uplink info
   uint32_t ul_total_buffer;
-  
+
   uint32_t ul_buffer_creation_time[MAX_NUM_LCGID];
-  
+
   uint32_t ul_buffer_creation_time_max;
 
   uint32_t ul_buffer_info[MAX_NUM_LCGID];
@@ -600,32 +600,32 @@ typedef struct{
 #endif
 } UE_TEMPLATE;
 
-typedef struct{
+typedef struct {
   //UL transmission bandwidth in RBs
   uint8_t ul_bandwidth[MAX_NUM_LCID];
   //DL transmission bandwidth in RBs
   uint8_t dl_bandwidth[MAX_NUM_LCID];
-  
+
   //To do GBR bearer
   uint8_t min_ul_bandwidth[MAX_NUM_LCID];
-  
+
   uint8_t min_dl_bandwidth[MAX_NUM_LCID];
-  
+
   //aggregated bit rate of non-gbr bearer per UE
-  uint64_t	ue_AggregatedMaximumBitrateDL;
+  uint64_t  ue_AggregatedMaximumBitrateDL;
   //aggregated bit rate of non-gbr bearer per UE
-  uint64_t	ue_AggregatedMaximumBitrateUL;
+  uint64_t  ue_AggregatedMaximumBitrateUL;
   //CQI scheduling interval in subframes.
   uint16_t cqiSchedInterval;
   //Contention resolution timer used during random access
   uint8_t mac_ContentionResolutionTimer;
-  
+
   uint16_t max_allowed_rbs[MAX_NUM_LCID];
-  
+
   uint8_t max_mcs[MAX_NUM_LCID];
-  
+
   uint16_t priority[MAX_NUM_LCID];
-  
+
 } UE_sched_ctrl;
 
 typedef struct {
@@ -639,9 +639,9 @@ typedef struct {
   uint8_t RA_alloc_pdu1[(MAX_DCI_SIZE_BITS>>3)+1];
   /// DCI format for RA-Response (should be 1A)
   uint8_t RA_dci_fmt1;
-  /// Size of DCI for Msg4/ContRes (bytes)  
+  /// Size of DCI for Msg4/ContRes (bytes)
   uint8_t RA_dci_size_bytes2;
-  /// Size of DCI for Msg4/ContRes (bits)  
+  /// Size of DCI for Msg4/ContRes (bits)
   uint8_t RA_dci_size_bits2;
   /// Actual DCI to transmit for Msg4/ContRes
   uint8_t RA_alloc_pdu2[(MAX_DCI_SIZE_BITS>>3)+1];
@@ -654,7 +654,7 @@ typedef struct {
   /// Subframe where Msg3 is to be sent
   uint8_t Msg3_subframe;
   /// Flag to indicate the eNB should generate Msg4 upon reception of SDU from RRC.  This is triggered by first ULSCH reception at eNB for new user.
-    uint8_t generate_Msg4;
+  uint8_t generate_Msg4;
   /// Flag to indicate the eNB should generate the DCI for Msg4, after getting the SDU from RRC.
   uint8_t generate_Msg4_dci;
   /// Flag to indicate that eNB is waiting for ACK that UE has received Msg3.
@@ -665,28 +665,28 @@ typedef struct {
   uint16_t RA_rnti;
   /// Received preamble_index
   uint8_t preamble_index;
-  /// Received UE Contention Resolution Identifier 
+  /// Received UE Contention Resolution Identifier
   uint8_t cont_res_id[6];
   /// Timing offset indicated by PHY
   int16_t timing_offset;
-  /// Timeout for RRC connection 
+  /// Timeout for RRC connection
   int16_t RRC_timer;
 } RA_TEMPLATE;
 
 
 ///subband bitmap coniguration (for ALU icic algo purpose), in test phase
 
-typedef struct{
-	uint8_t sbmap[NUMBER_OF_SUBBANDS_MAX]; //13 = number of SB MAX for 100 PRB
-	uint8_t periodicity;
-	uint8_t first_subframe;
-	uint8_t sb_size;
-	uint8_t nb_active_sb;
+typedef struct {
+  uint8_t sbmap[NUMBER_OF_SUBBANDS_MAX]; //13 = number of SB MAX for 100 PRB
+  uint8_t periodicity;
+  uint8_t first_subframe;
+  uint8_t sb_size;
+  uint8_t nb_active_sb;
 
-}SBMAP_CONF;
+} SBMAP_CONF;
 
 //end ALU's algo
-typedef struct{
+typedef struct {
   DLSCH_PDU DLSCH_pdu[MAX_NUM_CCs][2][NUMBER_OF_UE_MAX];
   /// DCI template and MAC connection parameters for UEs
   UE_TEMPLATE UE_template[MAX_NUM_CCs][NUMBER_OF_UE_MAX];
@@ -696,12 +696,12 @@ typedef struct{
   int numactiveCCs[NUMBER_OF_UE_MAX];
   int ordered_ULCCids[MAX_NUM_CCs][NUMBER_OF_UE_MAX];
   int numactiveULCCs[NUMBER_OF_UE_MAX];
-  /// eNB to UE statistics 
+  /// eNB to UE statistics
   eNB_UE_STATS eNB_UE_stats[MAX_NUM_CCs][NUMBER_OF_UE_MAX];
   UE_sched_ctrl UE_sched_ctrl[NUMBER_OF_UE_MAX];
 
   int next[NUMBER_OF_UE_MAX];
-  int head; 
+  int head;
   int next_ul[NUMBER_OF_UE_MAX];
   int head_ul;
   int avail;
@@ -709,7 +709,7 @@ typedef struct{
   boolean_t active[NUMBER_OF_UE_MAX];
 } UE_list_t;
 
-typedef struct{
+typedef struct {
   /// Outgoing DCI for PHY generated by eNB scheduler
   DCI_PDU DCI_pdu;
   /// Outgoing BCCH pdu for PHY
@@ -723,9 +723,9 @@ typedef struct{
   uint8_t bcch_active;
   /// MBSFN SubframeConfig
   struct MBSFN_SubframeConfig *mbsfn_SubframeConfig[8];
-  /// number of subframe allocation pattern available for MBSFN sync area 
+  /// number of subframe allocation pattern available for MBSFN sync area
   uint8_t num_sf_allocation_pattern;
-#ifdef Rel10 
+#ifdef Rel10
   /// MBMS Flag
   uint8_t MBMS_flag;
   /// Outgoing MCCH pdu for PHY
@@ -736,7 +736,7 @@ typedef struct{
   uint8_t mcch_active;
   /// MTCH active flag
   uint8_t mtch_active;
-  /// number of active MBSFN area 
+  /// number of active MBSFN area
   uint8_t num_active_mbsfn_area;
   /// MBSFN Area Info
   struct  MBSFN_AreaInfo_r9 *mbsfn_AreaInfo[MAX_MBSFN_AREA];
@@ -748,14 +748,14 @@ typedef struct{
   MCH_PDU MCH_pdu;
 #endif
 #ifdef CBA
-  uint8_t num_active_cba_groups; 
+  uint8_t num_active_cba_groups;
   uint16_t cba_rnti[NUM_MAX_CBA_GROUP];
   uint8_t group_mcs[NUM_MAX_CBA_GROUP];
-#endif 
-}COMMON_channels_t;
+#endif
+} COMMON_channels_t;
 
-typedef struct{
-  /// 
+typedef struct {
+  ///
   uint16_t Node_id;
   /// frame counter
   frame_t frame;
@@ -766,10 +766,10 @@ typedef struct{
   UE_list_t UE_list;
   ///subband bitmap configuration
   SBMAP_CONF sbmap_conf;
-  
-  ///  active flag for Other lcid 
+
+  ///  active flag for Other lcid
   //  uint8_t lcid_active[NB_RB_MAX];
-  // eNB stats 
+  // eNB stats
   eNB_STATS eNB_stats[MAX_NUM_CCs];
   // MAC function execution peformance profiler
   time_stats_t eNB_scheduler;
@@ -777,12 +777,12 @@ typedef struct{
   time_stats_t schedule_ra;
   time_stats_t schedule_ulsch;
   time_stats_t fill_DLSCH_dci;
-  time_stats_t schedule_dlsch_preprocessor; 
+  time_stats_t schedule_dlsch_preprocessor;
   time_stats_t schedule_dlsch; // include rlc_data_req + MAC header + preprocessor
   time_stats_t schedule_mch;
   time_stats_t rx_ulsch_sdu; // include rlc_data_ind
-  
-}eNB_MAC_INST;
+
+} eNB_MAC_INST;
 
 typedef struct {
   /// buffer status for each lcgid
@@ -799,11 +799,11 @@ typedef struct {
   uint8_t  LCGID[MAX_NUM_LCID];
   /// retxBSR-Timer, default value is sf2560
   uint16_t retxBSR_Timer;
-  /// retxBSR_SF, number of subframe before triggering a regular BSR 
+  /// retxBSR_SF, number of subframe before triggering a regular BSR
   int16_t retxBSR_SF;
   /// periodicBSR-Timer, default to infinity
   uint16_t periodicBSR_Timer;
-  /// periodicBSR_SF, number of subframe before triggering a periodic BSR 
+  /// periodicBSR_SF, number of subframe before triggering a periodic BSR
   int16_t periodicBSR_SF;
   /// default value is 0: not configured
   uint16_t sr_ProhibitTimer;
@@ -813,7 +813,7 @@ typedef struct {
   uint16_t maxHARQ_Tx;
   /// default value is false
   uint16_t ttiBundling;
-  /// default value is release 
+  /// default value is release
   struct DRX_Config *drx_config;
   /// default value is release
   struct MAC_MainConfig__phr_Config *phr_config;
@@ -821,13 +821,13 @@ typedef struct {
   uint16_t periodicPHR_Timer;
   ///timer before triggering a prohibit PHR
   uint16_t prohibitPHR_Timer;
-  ///DL Pathloss change value 
+  ///DL Pathloss change value
   uint16_t PathlossChange;
   ///number of subframe before triggering a periodic PHR
   int16_t periodicPHR_SF;
   ///number of subframe before triggering a prohibit PHR
   int16_t prohibitPHR_SF;
-  ///DL Pathloss Change in db 
+  ///DL Pathloss Change in db
   uint16_t PathlossChange_db;
   //Bj bucket usage per  lcid
   int16_t Bj[MAX_NUM_LCID];
@@ -835,7 +835,7 @@ typedef struct {
   int16_t bucket_size[MAX_NUM_LCID];
 } UE_SCHEDULING_INFO;
 
-typedef struct{
+typedef struct {
   uint16_t Node_id;
   /// frame counter
   frame_t     frame;
@@ -847,16 +847,16 @@ typedef struct{
   rnti_t crnti_before_ho; ///user id (rnti) of connected UEs
   /// uplink active flag
   uint8_t ul_active;
-  /// pointer to RRC PHY configuration 
+  /// pointer to RRC PHY configuration
   RadioResourceConfigCommonSIB_t *radioResourceConfigCommon;
   /// pointer to RACH_ConfigDedicated (NULL when not active, i.e. upon HO completion or T304 expiry)
-  struct RACH_ConfigDedicated	*rach_ConfigDedicated;
-  /// pointer to RRC PHY configuration 
+  struct RACH_ConfigDedicated *rach_ConfigDedicated;
+  /// pointer to RRC PHY configuration
   struct PhysicalConfigDedicated *physicalConfigDedicated;
-#ifdef Rel10 
- /// pointer to RRC PHY configuration SCEll
-  struct PhysicalConfigDedicatedSCell_r10	*physicalConfigDedicatedSCell_r10;
-#endif 
+#ifdef Rel10
+  /// pointer to RRC PHY configuration SCEll
+  struct PhysicalConfigDedicatedSCell_r10 *physicalConfigDedicatedSCell_r10;
+#endif
   /// pointer to TDD Configuration (NULL for FDD)
   TDD_Config_t *tdd_Config;
   /// Number of adjacent cells to measure
@@ -869,7 +869,7 @@ typedef struct{
   MeasGapConfig_t  *measGapConfig;
   /// Pointers to LogicalChannelConfig indexed by LogicalChannelIdentity. Note NULL means LCHAN is inactive.
   LogicalChannelConfig_t *logicalChannelConfig[MAX_NUM_LCID];
-  /// Scheduling Information 
+  /// Scheduling Information
   UE_SCHEDULING_INFO scheduling_info;
   /// Outgoing CCCH pdu for PHY
   CCCH_PDU CCCH_pdu;
@@ -908,7 +908,7 @@ typedef struct{
   uint8_t RA_contention_resolution_timer_active;
   /// Random-access Contention Resolution Timer count value
   uint8_t RA_contention_resolution_cnt;
-  /// power headroom reporitng reconfigured 
+  /// power headroom reporitng reconfigured
   uint8_t PHR_reconfigured;
   /// power headroom state as configured by the higher layers
   uint8_t PHR_state;
@@ -918,10 +918,10 @@ typedef struct{
   uint8_t power_backoff_db[NUMBER_OF_eNB_MAX];
   /// MBSFN_Subframe Configuration
   struct MBSFN_SubframeConfig *mbsfn_SubframeConfig[8];
-  /// number of subframe allocation pattern available for MBSFN sync area 
+  /// number of subframe allocation pattern available for MBSFN sync area
   uint8_t num_sf_allocation_pattern;
 #ifdef Rel10
- /// number of active MBSFN area 
+  /// number of active MBSFN area
   uint8_t num_active_mbsfn_area;
   /// MBSFN Area Info
   struct  MBSFN_AreaInfo_r9 *mbsfn_AreaInfo[MAX_MBSFN_AREA];
@@ -932,19 +932,19 @@ typedef struct{
   /// MSI status
   uint8_t msi_status;// could be an array if there are >1 MCH in one MBSFN area
 #endif
-//#ifdef CBA
+  //#ifdef CBA
   uint16_t cba_rnti[NUM_MAX_CBA_GROUP];
   uint8_t cba_last_access[NUM_MAX_CBA_GROUP];
-//#endif
-  
-  time_stats_t ue_scheduler; // total 
+  //#endif
+
+  time_stats_t ue_scheduler; // total
   time_stats_t tx_ulsch_sdu;  // inlcude rlc_data_req + mac header gen
   time_stats_t rx_dlsch_sdu ; // include mac_rrc_data_ind or mac_rlc_status_ind+mac_rlc_data_ind and  mac header parser
-  time_stats_t ue_query_mch; 
-  time_stats_t rx_mch_sdu; 
+  time_stats_t ue_query_mch;
+  time_stats_t rx_mch_sdu;
   time_stats_t rx_si; // include mac_rrc_data_ind
-    
-}UE_MAC_INST;
+
+} UE_MAC_INST;
 
 typedef struct {
   uint16_t cell_ids[6];
@@ -953,7 +953,7 @@ typedef struct {
 
 #include "proto.h"
 /*@}*/
-#endif /*__LAYER2_MAC_DEFS_H__ */ 
+#endif /*__LAYER2_MAC_DEFS_H__ */
 
 
 

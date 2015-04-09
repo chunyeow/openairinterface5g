@@ -72,7 +72,7 @@
 // COMMON TRCH
 //---------------------------
 #        define PREFERED_RLC_BLOCK_SIZE 336
-                                                                                                                                        //(43 bytes)
+//(43 bytes)
 
 
 #        define JRRM_MAX_TTI                       2

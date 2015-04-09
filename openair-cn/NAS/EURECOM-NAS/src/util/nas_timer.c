@@ -77,16 +77,16 @@ Description Timer utilities
  */
 typedef struct {
 #if defined(ENABLE_ITTI)
-    long timer_id;          /* Timer id returned by the timer API from ITTI */
+  long timer_id;          /* Timer id returned by the timer API from ITTI */
 #else
-    pthread_t pid;          /* Thread identifier of the callback    */
+  pthread_t pid;          /* Thread identifier of the callback    */
 #endif
 
-    struct timeval itv;     /* Initial interval timer value         */
-    struct timeval tv;      /* Interval timer value                 */
+  struct timeval itv;     /* Initial interval timer value         */
+  struct timeval tv;      /* Interval timer value                 */
 
-    nas_timer_callback_t cb;    /* Callback executed at timer expiration */
-    void *args;                 /* Callback argument parameters          */
+  nas_timer_callback_t cb;    /* Callback executed at timer expiration */
+  void *args;                 /* Callback argument parameters          */
 } nas_timer_entry_t;
 
 /* Structure of a timer queue - list of active interval timer entries
@@ -96,10 +96,10 @@ typedef struct {
  * entry is removed from the queue and freed.
  */
 typedef struct _nas_timer_queue_t {
-    int id;         /* Identifier of the current timer entry */
-    nas_timer_entry_t *entry;   /* The current timer entry       */
-    struct _nas_timer_queue_t *prev;/* The previous timer entry in the queue */
-    struct _nas_timer_queue_t *next;/* The next timer entry in the queue     */
+  int id;         /* Identifier of the current timer entry */
+  nas_timer_entry_t *entry;   /* The current timer entry       */
+  struct _nas_timer_queue_t *prev;/* The previous timer entry in the queue */
+  struct _nas_timer_queue_t *next;/* The next timer entry in the queue     */
 } timer_queue_t;
 
 /* Structure of a timer database
@@ -108,13 +108,13 @@ typedef struct _nas_timer_queue_t {
  * startup and to maintain an ordered queue of active timer entries.
  */
 typedef struct {
-    int timer_id;   /* Identifier of the first available timer entry */
+  int timer_id;   /* Identifier of the first available timer entry */
 #define TIMER_DATABASE_SIZE 256
-    timer_queue_t tq[TIMER_DATABASE_SIZE];
-    timer_queue_t *head;/* Pointer to the first timer entry to be fired  */
+  timer_queue_t tq[TIMER_DATABASE_SIZE];
+  timer_queue_t *head;/* Pointer to the first timer entry to be fired  */
 
 #if !defined(ENABLE_ITTI)
-    pthread_mutex_t mutex;
+  pthread_mutex_t mutex;
 #endif
 } nas_timer_database_t;
 
@@ -122,11 +122,11 @@ typedef struct {
  * The timer database
  */
 static nas_timer_database_t _nas_timer_db = {
-    0,
-    {},
-    NULL
+  0,
+  {},
+  NULL
 #if !defined(ENABLE_ITTI)
-    , PTHREAD_MUTEX_INITIALIZER
+  , PTHREAD_MUTEX_INITIALIZER
 #endif
 };
 
@@ -155,7 +155,7 @@ static void _nas_timer_db_init(void);
 static int _nas_timer_db_get_id(void);
 static int _nas_timer_db_is_active(int id);
 static nas_timer_entry_t *_nas_timer_db_create_entry(long sec,
-        nas_timer_callback_t cb, void *args);
+    nas_timer_callback_t cb, void *args);
 static void _nas_timer_db_delete_entry(int id);
 
 static void _nas_timer_db_insert_entry(int id, nas_timer_entry_t *te);
@@ -195,35 +195,37 @@ static int _nas_timer_sub(const struct timeval *a, const struct timeval *b,
  ***************************************************************************/
 int nas_timer_init(void)
 {
-    /* Initialize the timer database */
-    _nas_timer_db_init();
+  /* Initialize the timer database */
+  _nas_timer_db_init();
 
 #if !defined(ENABLE_ITTI)
-    /* Setup the timer database handler */
-    struct sigaction act;
+  /* Setup the timer database handler */
+  struct sigaction act;
 
-    (void) memset (&act, 0, sizeof (act));
-    (void) sigfillset (&act.sa_mask);
-    (void) sigdelset (&act.sa_mask, SIGHUP);
-    (void) sigdelset (&act.sa_mask, SIGINT);
-    (void) sigdelset (&act.sa_mask, SIGTERM);
-    (void) sigdelset (&act.sa_mask, SIGILL);
-    (void) sigdelset (&act.sa_mask, SIGTRAP);
-    (void) sigdelset (&act.sa_mask, SIGIOT);
+  (void) memset (&act, 0, sizeof (act));
+  (void) sigfillset (&act.sa_mask);
+  (void) sigdelset (&act.sa_mask, SIGHUP);
+  (void) sigdelset (&act.sa_mask, SIGINT);
+  (void) sigdelset (&act.sa_mask, SIGTERM);
+  (void) sigdelset (&act.sa_mask, SIGILL);
+  (void) sigdelset (&act.sa_mask, SIGTRAP);
+  (void) sigdelset (&act.sa_mask, SIGIOT);
 # ifndef LINUX
-    (void) sigdelset (&act.sa_mask, SIGEMT);
+  (void) sigdelset (&act.sa_mask, SIGEMT);
 # endif
-    (void) sigdelset (&act.sa_mask, SIGFPE);
-    (void) sigdelset (&act.sa_mask, SIGBUS);
-    (void) sigdelset (&act.sa_mask, SIGSEGV);
-    (void) sigdelset (&act.sa_mask, SIGSYS);
+  (void) sigdelset (&act.sa_mask, SIGFPE);
+  (void) sigdelset (&act.sa_mask, SIGBUS);
+  (void) sigdelset (&act.sa_mask, SIGSEGV);
+  (void) sigdelset (&act.sa_mask, SIGSYS);
 
-    act.sa_handler = _nas_timer_handler;
-    if ( sigaction (SIGALRM, &act, 0) < 0 ) {
-        return (RETURNerror);
-    }
+  act.sa_handler = _nas_timer_handler;
+
+  if ( sigaction (SIGALRM, &act, 0) < 0 ) {
+    return (RETURNerror);
+  }
+
 #endif
-    return (RETURNok);
+  return (RETURNok);
 }
 
 /****************************************************************************
@@ -246,47 +248,50 @@ int nas_timer_init(void)
  ***************************************************************************/
 int nas_timer_start(long sec, nas_timer_callback_t cb, void *args)
 {
-    int id;
-    nas_timer_entry_t *te;
+  int id;
+  nas_timer_entry_t *te;
 #if defined(ENABLE_ITTI)
-    int ret;
-    long timer_id;
+  int ret;
+  long timer_id;
 #endif
 
-    /* Do not start null timer */
-    if (sec == 0) {
-        return (NAS_TIMER_INACTIVE_ID);
-    }
+  /* Do not start null timer */
+  if (sec == 0) {
+    return (NAS_TIMER_INACTIVE_ID);
+  }
 
-    /* Get an identifier for the new timer entry */
-    id = _nas_timer_db_get_id();
-    if (id < 0) {
-        /* No available timer entry found */
-        return (NAS_TIMER_INACTIVE_ID);
-    }
+  /* Get an identifier for the new timer entry */
+  id = _nas_timer_db_get_id();
 
-    /* Create a new timer entry */
-    te = _nas_timer_db_create_entry(sec, cb, args);
-    if (te == NULL) {
-        return (NAS_TIMER_INACTIVE_ID);
-    }
+  if (id < 0) {
+    /* No available timer entry found */
+    return (NAS_TIMER_INACTIVE_ID);
+  }
 
-    /* Insert the new entry into the timer queue */
-    _nas_timer_db_insert_entry(id, te);
+  /* Create a new timer entry */
+  te = _nas_timer_db_create_entry(sec, cb, args);
+
+  if (te == NULL) {
+    return (NAS_TIMER_INACTIVE_ID);
+  }
+
+  /* Insert the new entry into the timer queue */
+  _nas_timer_db_insert_entry(id, te);
 #if defined(ENABLE_ITTI)
 # if defined(EPC_BUILD)
-    ret = timer_setup(sec, 0, TASK_NAS_MME, INSTANCE_DEFAULT, TIMER_PERIODIC, args, &timer_id);
+  ret = timer_setup(sec, 0, TASK_NAS_MME, INSTANCE_DEFAULT, TIMER_PERIODIC, args, &timer_id);
 # else
-    ret = timer_setup(sec, 0, TASK_NAS_UE, INSTANCE_DEFAULT, TIMER_PERIODIC, args, &timer_id);
+  ret = timer_setup(sec, 0, TASK_NAS_UE, INSTANCE_DEFAULT, TIMER_PERIODIC, args, &timer_id);
 # endif
-    if (ret == -1) {
-        return NAS_TIMER_INACTIVE_ID;
-    }
 
-    te->timer_id = timer_id;
+  if (ret == -1) {
+    return NAS_TIMER_INACTIVE_ID;
+  }
+
+  te->timer_id = timer_id;
 #endif
 
-    return (id);
+  return (id);
 }
 
 /****************************************************************************
@@ -306,21 +311,22 @@ int nas_timer_start(long sec, nas_timer_callback_t cb, void *args)
  ***************************************************************************/
 int nas_timer_stop(int id)
 {
-    /* Check if the timer entry is active */
-    if (_nas_timer_db_is_active(id)) {
-        nas_timer_entry_t *entry;
-        /* Remove the entry from the timer queue */
-        entry = _nas_timer_db_remove_entry(id);
+  /* Check if the timer entry is active */
+  if (_nas_timer_db_is_active(id)) {
+    nas_timer_entry_t *entry;
+    /* Remove the entry from the timer queue */
+    entry = _nas_timer_db_remove_entry(id);
 #if defined(ENABLE_ITTI)
-        timer_remove(entry->timer_id);
+    timer_remove(entry->timer_id);
 #else
-        (void)entry;
+    (void)entry;
 #endif
-        /* Delete the timer entry */
-        _nas_timer_db_delete_entry(id);
-        return (NAS_TIMER_INACTIVE_ID);
-    }
-    return (id);
+    /* Delete the timer entry */
+    _nas_timer_db_delete_entry(id);
+    return (NAS_TIMER_INACTIVE_ID);
+  }
+
+  return (id);
 }
 
 /****************************************************************************
@@ -344,17 +350,18 @@ int nas_timer_stop(int id)
  ***************************************************************************/
 int nas_timer_restart(int id)
 {
-    /* Check if the timer entry is active */
-    if (_nas_timer_db_is_active(id)) {
-        /* Remove the entry from the timer queue */
-        nas_timer_entry_t *te = _nas_timer_db_remove_entry(id);
-        /* Initialize its interval timer value */
-        te->tv = te->itv;
-        /* Insert again the entry into the timer queue */
-        _nas_timer_db_insert_entry(id, te);
-        return (id);
-    }
-    return (NAS_TIMER_INACTIVE_ID);
+  /* Check if the timer entry is active */
+  if (_nas_timer_db_is_active(id)) {
+    /* Remove the entry from the timer queue */
+    nas_timer_entry_t *te = _nas_timer_db_remove_entry(id);
+    /* Initialize its interval timer value */
+    te->tv = te->itv;
+    /* Insert again the entry into the timer queue */
+    _nas_timer_db_insert_entry(id, te);
+    return (id);
+  }
+
+  return (NAS_TIMER_INACTIVE_ID);
 }
 
 /****************************************************************************/
@@ -383,37 +390,38 @@ int nas_timer_restart(int id)
 #if defined(ENABLE_ITTI)
 void nas_timer_handle_signal_expiry(long timer_id, void *arg_p)
 {
-    /* Get the timer entry for which the system timer expired */
-    nas_timer_entry_t *te = _nas_timer_db.head->entry;
+  /* Get the timer entry for which the system timer expired */
+  nas_timer_entry_t *te = _nas_timer_db.head->entry;
 
-    te->cb(te->args);
+  te->cb(te->args);
 }
 #else
 static void _nas_timer_handler(int signal)
 {
-    /* At least one timer has been started */
-    assert( (_nas_timer_db.head != NULL) && (_nas_timer_db.head->entry != NULL) );
+  /* At least one timer has been started */
+  assert( (_nas_timer_db.head != NULL) && (_nas_timer_db.head->entry != NULL) );
 
-    /* Get the timer entry for which the system timer expired */
-    nas_timer_entry_t *te = _nas_timer_db.head->entry;
+  /* Get the timer entry for which the system timer expired */
+  nas_timer_entry_t *te = _nas_timer_db.head->entry;
 
-    /* Execute the callback function */
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-    int rc = pthread_create (&te->pid, &attr, te->cb, te->args);
-    pthread_attr_destroy(&attr);
+  /* Execute the callback function */
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+  int rc = pthread_create (&te->pid, &attr, te->cb, te->args);
+  pthread_attr_destroy(&attr);
 
-    /* Wait for the thread to terminate before releasing the timer entry */
-    if (rc == 0) {
-        void *result = NULL;
-        (void) pthread_join(te->pid, &result);
-        /* TODO: Check returned result ??? */
-        if (result) {
-            free(result);
-        }
+  /* Wait for the thread to terminate before releasing the timer entry */
+  if (rc == 0) {
+    void *result = NULL;
+    (void) pthread_join(te->pid, &result);
+
+    /* TODO: Check returned result ??? */
+    if (result) {
+      free(result);
     }
+  }
 }
 #endif
 
@@ -438,10 +446,11 @@ static void _nas_timer_handler(int signal)
  ***************************************************************************/
 static void _nas_timer_db_init(void)
 {
-    int i;
-    for (i = 0; i < TIMER_DATABASE_SIZE; i++) {
-        _nas_timer_db.tq[i].id = NAS_TIMER_INACTIVE_ID;
-    }
+  int i;
+
+  for (i = 0; i < TIMER_DATABASE_SIZE; i++) {
+    _nas_timer_db.tq[i].id = NAS_TIMER_INACTIVE_ID;
+  }
 }
 
 /****************************************************************************
@@ -463,23 +472,26 @@ static void _nas_timer_db_init(void)
  ***************************************************************************/
 static int _nas_timer_db_get_id(void)
 {
-    int i;
-    /* Search from the current timer entry to the last timer entry */
-    for (i = _nas_timer_db.timer_id; i < TIMER_DATABASE_SIZE; i++) {
-        if (_nas_timer_db.tq[i].id < 0 ) {
-            _nas_timer_db.timer_id = i+1;
-            return i;
-        }
+  int i;
+
+  /* Search from the current timer entry to the last timer entry */
+  for (i = _nas_timer_db.timer_id; i < TIMER_DATABASE_SIZE; i++) {
+    if (_nas_timer_db.tq[i].id < 0 ) {
+      _nas_timer_db.timer_id = i+1;
+      return i;
     }
-    /* Search from the first timer entry to the current timer entry */
-    for (i = 0; i < _nas_timer_db.timer_id; i++) {
-        if (_nas_timer_db.tq[i].id < 0 ) {
-            _nas_timer_db.timer_id = i+1;
-            return i;
-        }
+  }
+
+  /* Search from the first timer entry to the current timer entry */
+  for (i = 0; i < _nas_timer_db.timer_id; i++) {
+    if (_nas_timer_db.tq[i].id < 0 ) {
+      _nas_timer_db.timer_id = i+1;
+      return i;
     }
-    /* No available timer entry found */
-    return (-1);
+  }
+
+  /* No available timer entry found */
+  return (-1);
 }
 
 /****************************************************************************
@@ -500,8 +512,8 @@ static int _nas_timer_db_get_id(void)
  ***************************************************************************/
 static int _nas_timer_db_is_active(int id)
 {
-    return ( (id != NAS_TIMER_INACTIVE_ID) &&
-             (_nas_timer_db.tq[id].id != NAS_TIMER_INACTIVE_ID) );
+  return ( (id != NAS_TIMER_INACTIVE_ID) &&
+           (_nas_timer_db.tq[id].id != NAS_TIMER_INACTIVE_ID) );
 }
 
 /****************************************************************************
@@ -522,18 +534,20 @@ static int _nas_timer_db_is_active(int id)
  **                                                                        **
  ***************************************************************************/
 static nas_timer_entry_t *_nas_timer_db_create_entry(
-    long sec, nas_timer_callback_t cb,
-    void *args)
+  long sec, nas_timer_callback_t cb,
+  void *args)
 {
-    nas_timer_entry_t *te = (nas_timer_entry_t *)malloc(sizeof(nas_timer_entry_t));
-    if (te != NULL) {
-        te->itv.tv_sec = sec;
-        te->itv.tv_usec = 0;
-        te->tv = te->itv;
-        te->cb = cb;
-        te->args = args;
-    }
-    return (te);
+  nas_timer_entry_t *te = (nas_timer_entry_t *)malloc(sizeof(nas_timer_entry_t));
+
+  if (te != NULL) {
+    te->itv.tv_sec = sec;
+    te->itv.tv_usec = 0;
+    te->tv = te->itv;
+    te->cb = cb;
+    te->args = args;
+  }
+
+  return (te);
 }
 
 /****************************************************************************
@@ -553,13 +567,13 @@ static nas_timer_entry_t *_nas_timer_db_create_entry(
  ***************************************************************************/
 static void _nas_timer_db_delete_entry(int id)
 {
-    /* The identifier of the timer is valid within the timer queue */
-    assert(_nas_timer_db.tq[id].id == id);
+  /* The identifier of the timer is valid within the timer queue */
+  assert(_nas_timer_db.tq[id].id == id);
 
-    /* Delete the timer entry from the queue */
-    _nas_timer_db.tq[id].id = NAS_TIMER_INACTIVE_ID;
-    free(_nas_timer_db.tq[id].entry);
-    _nas_timer_db.tq[id].entry = NULL;
+  /* Delete the timer entry from the queue */
+  _nas_timer_db.tq[id].id = NAS_TIMER_INACTIVE_ID;
+  free(_nas_timer_db.tq[id].entry);
+  _nas_timer_db.tq[id].entry = NULL;
 }
 
 /****************************************************************************
@@ -582,75 +596,83 @@ static void _nas_timer_db_delete_entry(int id)
  ***************************************************************************/
 static void _nas_timer_db_insert_entry(int id, nas_timer_entry_t *te)
 {
-    struct itimerval it;
-    struct timespec  ts;
-    struct timeval   current_time;
-    int restart;
+  struct itimerval it;
+  struct timespec  ts;
+  struct timeval   current_time;
+  int restart;
 
-    /* Enqueue the new timer entry */
-    _nas_timer_db.tq[id].id = id;
-    _nas_timer_db.tq[id].entry = te;
+  /* Enqueue the new timer entry */
+  _nas_timer_db.tq[id].id = id;
+  _nas_timer_db.tq[id].entry = te;
 
-    /* Save its interval timer value */
-    it.it_interval.tv_sec = it.it_interval.tv_usec = 0;
-    it.it_value = te->tv;
+  /* Save its interval timer value */
+  it.it_interval.tv_sec = it.it_interval.tv_usec = 0;
+  it.it_value = te->tv;
 
-    /* Update its interval timer value */
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    current_time.tv_sec = ts.tv_sec;
-    current_time.tv_usec = ts.tv_nsec/1000;
-    /* tv = tv + time() */
-    _nas_timer_add(&te->tv, &current_time, &te->tv);
+  /* Update its interval timer value */
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  current_time.tv_sec = ts.tv_sec;
+  current_time.tv_usec = ts.tv_nsec/1000;
+  /* tv = tv + time() */
+  _nas_timer_add(&te->tv, &current_time, &te->tv);
 
-    /* Insert the new timer entry into the list of active entries */
-    nas_timer_lock_db();
-    restart = _nas_timer_db_insert(&_nas_timer_db.tq[id]);
-    nas_timer_unlock_db();
+  /* Insert the new timer entry into the list of active entries */
+  nas_timer_lock_db();
+  restart = _nas_timer_db_insert(&_nas_timer_db.tq[id]);
+  nas_timer_unlock_db();
 
 #if !defined(ENABLE_ITTI)
-    if (restart) {
-        /* The new entry is the first entry of the list;
-         * restart the system timer */
-        setitimer(ITIMER_REAL, &it, 0);
-    }
+
+  if (restart) {
+    /* The new entry is the first entry of the list;
+     * restart the system timer */
+    setitimer(ITIMER_REAL, &it, 0);
+  }
+
 #else
-    (void)(restart);
+  (void)(restart);
 #endif
 }
 
 static int _nas_timer_db_insert(timer_queue_t *entry)
 {
-    timer_queue_t *prev, *next; /* previous and next entry in the list  */
-    /*
-     * Search the list of timer entries for the first entry with an interval
-     * timer value greater than the interval timer value of the new timer entry
-     */
-    for (prev = NULL, next = _nas_timer_db.head; next != NULL; next = next->next) {
-        if (_nas_timer_cmp(&next->entry->tv, &entry->entry->tv) > 0) {
-            break;
-        }
-        prev = next;
+  timer_queue_t *prev, *next; /* previous and next entry in the list  */
+
+  /*
+   * Search the list of timer entries for the first entry with an interval
+   * timer value greater than the interval timer value of the new timer entry
+   */
+  for (prev = NULL, next = _nas_timer_db.head; next != NULL; next = next->next) {
+    if (_nas_timer_cmp(&next->entry->tv, &entry->entry->tv) > 0) {
+      break;
     }
-    /* Insert the new entry in the list of active timer entries */
-    /* prev <-- entry --> next */
-    entry->prev = prev;
-    entry->next = next;
-    /* Update the pointer from the previous entry */
-    if (entry->next != NULL) {
-        /* prev <-- entry <--> next */
-        entry->next->prev = entry;
-    }
-    /* Update the pointer from the next entry */
-    if (entry->prev != NULL) {
-        /* prev <--> entry <--> next */
-        entry->prev->next = entry;
-    } else {
-        /* The new entry is the first entry of the list */
-        _nas_timer_db.head = entry;
-        return TRUE;
-    }
-    /* The new entry is NOT the first entry of the list */
-    return FALSE;
+
+    prev = next;
+  }
+
+  /* Insert the new entry in the list of active timer entries */
+  /* prev <-- entry --> next */
+  entry->prev = prev;
+  entry->next = next;
+
+  /* Update the pointer from the previous entry */
+  if (entry->next != NULL) {
+    /* prev <-- entry <--> next */
+    entry->next->prev = entry;
+  }
+
+  /* Update the pointer from the next entry */
+  if (entry->prev != NULL) {
+    /* prev <--> entry <--> next */
+    entry->prev->next = entry;
+  } else {
+    /* The new entry is the first entry of the list */
+    _nas_timer_db.head = entry;
+    return TRUE;
+  }
+
+  /* The new entry is NOT the first entry of the list */
+  return FALSE;
 }
 
 /****************************************************************************
@@ -672,86 +694,92 @@ static int _nas_timer_db_insert(timer_queue_t *entry)
  ***************************************************************************/
 static nas_timer_entry_t *_nas_timer_db_remove_entry(int id)
 {
-    int restart;
+  int restart;
 
-    /* The identifier of the timer is valid within the timer queue */
-    assert(_nas_timer_db.tq[id].id == id);
+  /* The identifier of the timer is valid within the timer queue */
+  assert(_nas_timer_db.tq[id].id == id);
 
-    /* Remove the timer entry from the list of active entries */
-    nas_timer_lock_db();
-    restart = _nas_timer_db_remove(&_nas_timer_db.tq[id]);
-    nas_timer_unlock_db();
+  /* Remove the timer entry from the list of active entries */
+  nas_timer_lock_db();
+  restart = _nas_timer_db_remove(&_nas_timer_db.tq[id]);
+  nas_timer_unlock_db();
 
-    if (restart) {
-        int rc;
-        /* The entry was the first entry of the list;
-         * the system timer needs to be restarted */
-        struct itimerval it;
-        struct timeval tv;
-        struct timespec ts;
+  if (restart) {
+    int rc;
+    /* The entry was the first entry of the list;
+     * the system timer needs to be restarted */
+    struct itimerval it;
+    struct timeval tv;
+    struct timespec ts;
 
-        it.it_interval.tv_sec = it.it_interval.tv_usec = 0;
+    it.it_interval.tv_sec = it.it_interval.tv_usec = 0;
 
-        clock_gettime(CLOCK_MONOTONIC, &ts);
+    clock_gettime(CLOCK_MONOTONIC, &ts);
 
-        tv.tv_sec = ts.tv_sec;
-        tv.tv_usec = ts.tv_nsec/1000;
-        /* tv = tv - time() */
-        rc = _nas_timer_sub(&_nas_timer_db.head->entry->tv, &tv, &it.it_value);
+    tv.tv_sec = ts.tv_sec;
+    tv.tv_usec = ts.tv_nsec/1000;
+    /* tv = tv - time() */
+    rc = _nas_timer_sub(&_nas_timer_db.head->entry->tv, &tv, &it.it_value);
 
 #if defined(ENABLE_ITTI)
-        timer_remove(_nas_timer_db.head->entry->timer_id);
-        (void) (rc);
+    timer_remove(_nas_timer_db.head->entry->timer_id);
+    (void) (rc);
 #else
-        if (rc < 0) {
-            /* The system timer should have already expired */
-            _nas_timer_handler(SIGALRM);
-        } else {
-            /* Restart the system timer */
-            setitimer(ITIMER_REAL, &it, 0);
-        }
-#endif
+
+    if (rc < 0) {
+      /* The system timer should have already expired */
+      _nas_timer_handler(SIGALRM);
+    } else {
+      /* Restart the system timer */
+      setitimer(ITIMER_REAL, &it, 0);
     }
 
-    /* Return a pointer to the removed entry */
-    return (_nas_timer_db.tq[id].entry);
+#endif
+  }
+
+  /* Return a pointer to the removed entry */
+  return (_nas_timer_db.tq[id].entry);
 }
 
 static int _nas_timer_db_remove(timer_queue_t *entry)
 {
-    /* Update the pointer from the previous entry */
+  /* Update the pointer from the previous entry */
+  /* prev ---> entry ---> next */
+  /* prev <--- entry <--- next */
+  if (entry->next != NULL) {
     /* prev ---> entry ---> next */
-    /* prev <--- entry <--- next */
-    if (entry->next != NULL) {
-        /* prev ---> entry ---> next */
-        /* prev <-------------- next */
-        entry->next->prev = entry->prev;
+    /* prev <-------------- next */
+    entry->next->prev = entry->prev;
+  }
+
+  /* Update the pointer from the next entry */
+  if (entry->prev != NULL) {
+    /* prev --------------> next */
+    /* prev <-------------- next */
+    entry->prev->next = entry->next;
+  } else {
+    /* The entry was the first entry of the list */
+    _nas_timer_db.head = entry->next;
+
+    if (_nas_timer_db.head != NULL) {
+      /* Other timers are scheduled to expire */
+      return TRUE;
     }
-    /* Update the pointer from the next entry */
-    if (entry->prev != NULL) {
-        /* prev --------------> next */
-        /* prev <-------------- next */
-        entry->prev->next = entry->next;
-    } else {
-        /* The entry was the first entry of the list */
-        _nas_timer_db.head = entry->next;
-        if (_nas_timer_db.head != NULL) {
-            /* Other timers are scheduled to expire */
-            return TRUE;
-        }
+
 #if !defined(ENABLE_ITTI)
-        {
-            /* No more timer is scheduled to expire; stop the system timer */
-            struct itimerval it;
-            it.it_interval.tv_sec = it.it_interval.tv_usec = 0;
-            it.it_value.tv_sec = it.it_value.tv_usec = 0;
-            setitimer(ITIMER_REAL, &it, 0);
-            return FALSE;
-        }
-#endif
+    {
+      /* No more timer is scheduled to expire; stop the system timer */
+      struct itimerval it;
+      it.it_interval.tv_sec = it.it_interval.tv_usec = 0;
+      it.it_value.tv_sec = it.it_value.tv_usec = 0;
+      setitimer(ITIMER_REAL, &it, 0);
+      return FALSE;
     }
-    /* The entry was NOT the first entry of the list */
-    return FALSE;
+#endif
+  }
+
+  /* The entry was NOT the first entry of the list */
+  return FALSE;
 }
 
 /*
@@ -776,16 +804,17 @@ static int _nas_timer_db_remove(timer_queue_t *entry)
  ***************************************************************************/
 static int _nas_timer_cmp(const struct timeval *a, const struct timeval *b)
 {
-    if (a->tv_sec < b->tv_sec) {
-        return -1;
-    } else if (a->tv_sec > b->tv_sec) {
-        return 1;
-    } else if (a->tv_usec < b->tv_usec) {
-        return -1;
-    } else if (a->tv_usec > b->tv_usec) {
-        return 1;
-    }
-    return 0;
+  if (a->tv_sec < b->tv_sec) {
+    return -1;
+  } else if (a->tv_sec > b->tv_sec) {
+    return 1;
+  } else if (a->tv_usec < b->tv_usec) {
+    return -1;
+  } else if (a->tv_usec > b->tv_usec) {
+    return 1;
+  }
+
+  return 0;
 }
 
 /****************************************************************************
@@ -806,12 +835,13 @@ static int _nas_timer_cmp(const struct timeval *a, const struct timeval *b)
 static void _nas_timer_add(const struct timeval *a, const struct timeval *b,
                            struct timeval *result)
 {
-    result->tv_sec = a->tv_sec + b->tv_sec;
-    result->tv_usec = a->tv_usec + b->tv_usec;
-    if (result->tv_usec > 1000000) {
-        result->tv_sec++;
-        result->tv_usec -= 1000000;
-    }
+  result->tv_sec = a->tv_sec + b->tv_sec;
+  result->tv_usec = a->tv_usec + b->tv_usec;
+
+  if (result->tv_usec > 1000000) {
+    result->tv_sec++;
+    result->tv_usec -= 1000000;
+  }
 }
 
 /****************************************************************************
@@ -832,15 +862,18 @@ static void _nas_timer_add(const struct timeval *a, const struct timeval *b,
 static int _nas_timer_sub(const struct timeval *a, const struct timeval *b,
                           struct timeval *result)
 {
-    if (_nas_timer_cmp(a,b) > 0 ) {
-        result->tv_sec = a->tv_sec - b->tv_sec;
-        result->tv_usec = a->tv_usec - b->tv_usec;
-        if (result->tv_usec < 0) {
-            result->tv_sec--;
-            result->tv_usec += 1000000;
-        }
-        return 0;
+  if (_nas_timer_cmp(a,b) > 0 ) {
+    result->tv_sec = a->tv_sec - b->tv_sec;
+    result->tv_usec = a->tv_usec - b->tv_usec;
+
+    if (result->tv_usec < 0) {
+      result->tv_sec--;
+      result->tv_usec += 1000000;
     }
-    return -1;
+
+    return 0;
+  }
+
+  return -1;
 }
 

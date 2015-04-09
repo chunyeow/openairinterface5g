@@ -199,8 +199,8 @@ void rallte_NAS_measures_polling(void){
             //
             mRAL_send_link_going_down_indication(&transaction_id, &link_identifier, &time_interval, &going_down_reason_code);
 
-        } else 
-           if ((ralpriv->link_to_be_detected == MIH_C_BOOLEAN_TRUE) && 
+        } else
+           if ((ralpriv->link_to_be_detected == MIH_C_BOOLEAN_TRUE) &&
                   ((ralpriv->mih_subscribe_req_event_list && (MIH_C_BIT_LINK_DETECTED + MIH_C_BIT_LINK_UP))>0)&&
                   (ralpriv->curr_signal_level > PREDEFINED_LINK_DETECTED_INDICATION_SIG_STRENGTH)) {
               transaction_id = MIH_C_get_new_transaction_id();

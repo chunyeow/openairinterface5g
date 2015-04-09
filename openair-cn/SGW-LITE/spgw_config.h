@@ -82,24 +82,24 @@
         } while (0);
 
 typedef struct sgw_config_s {
-    struct {
-        char     *sgw_interface_name_for_S1u_S12_S4_up;
-        uint32_t  sgw_ipv4_address_for_S1u_S12_S4_up;
-        int       sgw_ip_netmask_for_S1u_S12_S4_up;
+  struct {
+    char     *sgw_interface_name_for_S1u_S12_S4_up;
+    uint32_t  sgw_ipv4_address_for_S1u_S12_S4_up;
+    int       sgw_ip_netmask_for_S1u_S12_S4_up;
 
-        char     *sgw_interface_name_for_S5_S8_up;
-        uint32_t  sgw_ipv4_address_for_S5_S8_up;
-        int       sgw_ip_netmask_for_S5_S8_up;
+    char     *sgw_interface_name_for_S5_S8_up;
+    uint32_t  sgw_ipv4_address_for_S5_S8_up;
+    int       sgw_ip_netmask_for_S5_S8_up;
 
-        char     *sgw_interface_name_for_S11;
-        uint32_t  sgw_ipv4_address_for_S11;
-        int       sgw_ip_netmask_for_S11;
-    } ipv4;
-    int sgw_interface_mtu_for_S1u_S12_S4_up;
-    int sgw_udp_port_for_S1u_S12_S4_up;
+    char     *sgw_interface_name_for_S11;
+    uint32_t  sgw_ipv4_address_for_S11;
+    int       sgw_ip_netmask_for_S11;
+  } ipv4;
+  int sgw_interface_mtu_for_S1u_S12_S4_up;
+  int sgw_udp_port_for_S1u_S12_S4_up;
 
-    uint8_t       sgw_drop_uplink_traffic;
-    uint8_t       sgw_drop_downlink_traffic;
+  uint8_t       sgw_drop_uplink_traffic;
+  uint8_t       sgw_drop_downlink_traffic;
 } sgw_config_t;
 
 // may be more
@@ -107,41 +107,41 @@ typedef struct sgw_config_s {
 
 
 typedef struct pgw_lite_conf_ipv4_list_elm_s {
-    STAILQ_ENTRY(pgw_lite_conf_ipv4_list_elm_s) ipv4_entries;
-    struct in_addr  addr;
+  STAILQ_ENTRY(pgw_lite_conf_ipv4_list_elm_s) ipv4_entries;
+  struct in_addr  addr;
 } pgw_lite_conf_ipv4_list_elm_t;
 
 
 typedef struct pgw_lite_conf_ipv6_list_elm_s {
-    STAILQ_ENTRY(pgw_lite_conf_ipv6_list_elm_s) ipv6_entries;
-    struct in6_addr addr;
-    int             prefix_len;
+  STAILQ_ENTRY(pgw_lite_conf_ipv6_list_elm_s) ipv6_entries;
+  struct in6_addr addr;
+  int             prefix_len;
 } pgw_lite_conf_ipv6_list_elm_t;
 
 
 typedef struct pgw_config_s {
-    struct {
-        char     *pgw_interface_name_for_S5_S8;
-        uint32_t  pgw_ipv4_address_for_S5_S8;
-        int       pgw_ip_netmask_for_S5_S8;
+  struct {
+    char     *pgw_interface_name_for_S5_S8;
+    uint32_t  pgw_ipv4_address_for_S5_S8;
+    int       pgw_ip_netmask_for_S5_S8;
 
-        char     *pgw_interface_name_for_SGI;
-        uint32_t  pgw_ipv4_address_for_SGI;
-        int       pgw_ip_netmask_for_SGI;
+    char     *pgw_interface_name_for_SGI;
+    uint32_t  pgw_ipv4_address_for_SGI;
+    int       pgw_ip_netmask_for_SGI;
 
-        uint32_t  default_dns_v4;    // NBO
-        uint32_t  default_dns_sec_v4;// NBO
-    } ipv4;
-    uint8_t   pgw_masquerade_SGI;
+    uint32_t  default_dns_v4;    // NBO
+    uint32_t  default_dns_sec_v4;// NBO
+  } ipv4;
+  uint8_t   pgw_masquerade_SGI;
 
-    STAILQ_HEAD(pgw_lite_ipv4_pool_head_s,      pgw_lite_conf_ipv4_list_elm_s) pgw_lite_ipv4_pool_list;
-    STAILQ_HEAD(pgw_lite_ipv6_pool_head_s,      pgw_lite_conf_ipv6_list_elm_s) pgw_lite_ipv6_pool_list;
+  STAILQ_HEAD(pgw_lite_ipv4_pool_head_s,      pgw_lite_conf_ipv4_list_elm_s) pgw_lite_ipv4_pool_list;
+  STAILQ_HEAD(pgw_lite_ipv6_pool_head_s,      pgw_lite_conf_ipv6_list_elm_s) pgw_lite_ipv6_pool_list;
 } pgw_config_t;
 
 typedef struct spgw_config_s {
-    sgw_config_t sgw_config;
-    pgw_config_t pgw_config;
-}spgw_config_t;
+  sgw_config_t sgw_config;
+  pgw_config_t pgw_config;
+} spgw_config_t;
 
 #ifndef SGW_LITE
 extern spgw_config_t spgw_config;

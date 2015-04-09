@@ -27,19 +27,19 @@
 
  *******************************************************************************/
 /*****************************************************************************
-Source		socket.h
+Source    socket.h
 
-Version		0.1
+Version   0.1
 
-Date		2012/02/28
+Date    2012/02/28
 
-Product		NAS stack
+Product   NAS stack
 
-Subsystem	Utilities
+Subsystem Utilities
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Implements TCP socket handlers
+Description Implements TCP socket handlers
 
 *****************************************************************************/
 #ifndef __SOCKET_H__
@@ -56,8 +56,8 @@ Description	Implements TCP socket handlers
 /****************************************************************************/
 
 /* Type of the connection endpoint */
-#define SOCKET_CLIENT	1
-#define SOCKET_SERVER	2
+#define SOCKET_CLIENT 1
+#define SOCKET_SERVER 2
 
 /* Hidden structure that handles the connection endpoint data */
 typedef struct socket_id_s socket_id_t;

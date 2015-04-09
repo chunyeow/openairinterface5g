@@ -56,7 +56,7 @@ void            rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_n
 void
 rlc_am_schedule_procedure (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   mem_block_t      *pdu_status;
   struct rlc_am_discard_procedure *procedure;
 
@@ -65,15 +65,15 @@ rlc_am_schedule_procedure (struct rlc_am_entity *rlcP)
     // launch remaining procedures (only 1 procedure running)
     procedure = (struct rlc_am_discard_procedure *) ((rlcP->discard_procedures.head)->data);
 
-/*     sn_mrw_length = procedure->last_pdu_sn;
+    /*     sn_mrw_length = procedure->last_pdu_sn;
 
-   if (rlc_am_comp_sn(rlcP, rlcP->vt_s, sn_mrw_length, rlcP->vt_s) > 0) {
-#ifdef DEBUG_RLC_AM_DISCARD
-      msg("[RLC_AM %p][DISCARD] SCHEDULE PROCEDURE %p UPDATE VT(S) %04X -> %04X\n", rlcP, rlcP->discard_procedures.head, rlcP->vt_s, sn_mrw_length);
-#endif
-      rlcP->vt_s = sn_mrw_length;
-    }
-*/
+       if (rlc_am_comp_sn(rlcP, rlcP->vt_s, sn_mrw_length, rlcP->vt_s) > 0) {
+    #ifdef DEBUG_RLC_AM_DISCARD
+          msg("[RLC_AM %p][DISCARD] SCHEDULE PROCEDURE %p UPDATE VT(S) %04X -> %04X\n", rlcP, rlcP->discard_procedures.head, rlcP->vt_s, sn_mrw_length);
+    #endif
+          rlcP->vt_s = sn_mrw_length;
+        }
+    */
 #ifdef DEBUG_RLC_AM_DISCARD
     msg ("[RLC_AM][RB %d] DISCARD  SCHEDULE PROCEDURE %p vt_s 0x%04X vt_a 0x%04X\n", rlcP->rb_id, rlcP->discard_procedures.head, rlcP->vt_s, rlcP->vt_a);
 #endif
@@ -89,7 +89,7 @@ rlc_am_schedule_procedure (struct rlc_am_entity *rlcP)
 void
 rlc_am_process_sdu_discarded (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   // We assume that the list sdu_discarded contains sdu(s)
   /*  From 3GPP TS 25.322 V4.3.0 (2001-12)
      The Sender shall initiate the SDU discard with explicit signalling procedure if one of the
@@ -108,6 +108,7 @@ rlc_am_process_sdu_discarded (struct rlc_am_entity *rlcP)
   } else {                      // RLC_AM_SEND_MRW_OFF
     rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_not_configured (rlcP);
   }
+
   rlc_am_schedule_procedure (rlcP);
 }
 
@@ -115,7 +116,7 @@ rlc_am_process_sdu_discarded (struct rlc_am_entity *rlcP)
 void
 rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_configured (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   /* From 3GPP TS 25.322 V5.0.0 (2002-03)
      The Sender shall:
      - if "Send MRW" is configured:
@@ -151,6 +152,7 @@ rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_configured (struc
 #ifdef DEBUG_RLC_AM_DISCARD
   uint16_t             sn_mrw_length;
 #endif
+
   while (rlcP->sdu_discarded.head) {
 
     // alloc a discard procedure
@@ -163,6 +165,7 @@ rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_configured (struc
     // assign sdu discarded to discard procedure
     // sdu headers are registered in discard procedure
     last_sn_mrw_length = -1;
+
     while ((rlcP->sdu_discarded.head) && (count_sdu_discarded < 15)) {  // max 15 sdu discarded per procedure
       sdu_discarded = list2_remove_head (&rlcP->sdu_discarded);
 
@@ -180,6 +183,7 @@ rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_configured (struc
         free_mem_block (sdu_discarded);
       }
     }
+
     ((struct rlc_am_discard_procedure *) (mb_discard_procedure->data))->length = count_sdu_discarded;
 
     //((struct rlc_am_discard_procedure*)(mb_discard_procedure->data))->nlength =  ((struct rlc_am_sdu_discard_management*)((mem_block_t*)(sdu_header_copy_copy->data))->data)->li_index_for_discard;
@@ -198,6 +202,7 @@ rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_configured (struc
 #endif
       ((struct rlc_am_discard_procedure *) (mb_discard_procedure->data))->nlength = last_sdu_discarded_mngt->li_index_for_discard + 1;  // +1 since numerotation begins at 1
     }
+
 #ifdef DEBUG_RLC_AM_DISCARD
     msg ("[RLC_AM][RB %d] DISCARD  SET  SN_MRW_LENGTH 0x%04X NLENGTH = %d \n", rlcP->rb_id, last_sdu_discarded_mngt->last_pdu_sn,
          ((struct rlc_am_discard_procedure *) (mb_discard_procedure->data))->nlength);
@@ -207,6 +212,7 @@ rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_configured (struc
 
     // make status pdu
     le = get_free_mem_block (rlcP->pdu_size + sizeof (struct rlc_am_tx_control_pdu_allocation) + GUARD_CRC_LIH_SIZE);
+
     if (le == NULL) {
       // be carefull : lost resources in mb_discard : TO DO
       msg ("[RLC_AM][RB %d] FATAL ERROR : OUT OF MEMORY\n", rlcP->rb_id);
@@ -225,6 +231,7 @@ rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_configured (struc
 
       // fill fields SN_MRWi
       sdu_discarded = (((struct rlc_am_discard_procedure *) (mb_discard_procedure->data))->sdu_list.head);      // reuse of var sdu_discarded
+
       while ((count_sdu_discarded)) {
         count_sdu_discarded -= 1;
 
@@ -253,10 +260,12 @@ rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_configured (struc
         p8 = p8 + 1;
         *p8 = (RLC_AM_SUFI_NO_MORE << 4);
       }
+
       ((struct rlc_am_discard_procedure *) (mb_discard_procedure->data))->control_pdu = le;
       list2_add_tail (mb_discard_procedure, &rlcP->discard_procedures);
     }
   }
+
 #ifdef DEBUG_RLC_AM_DISCARD
   msg ("[RLC_AM][RB %d] DISCARD  QUEUED NEW PROCEDURE SEND_MRW IS CONFIGURED SN_MRW_length = 0x%04X length %d nlength %d\n",
        rlcP->rb_id, sn_mrw_length, ((struct rlc_am_discard_procedure *) (mb_discard_procedure->data))->length, ((struct rlc_am_discard_procedure *) (mb_discard_procedure->data))->nlength);
@@ -268,7 +277,7 @@ rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_configured (struc
 void
 rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_not_configured (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   /* From 3GPP TS 25.322 V5.0.0 (2002-03)
      The Sender shall:
      - if "Send MRW" is NOT configured:
@@ -304,6 +313,7 @@ rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_not_configured (s
 #ifdef DEBUG_RLC_AM_DISCARD
   uint16_t             sn_mrw_length;
 #endif
+
   while (rlcP->sdu_discarded.head) {
 
     // alloc a discard procedure
@@ -316,9 +326,11 @@ rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_not_configured (s
     // assign sdu discarded to discard procedure
     // sdu headers are registered in discard procedure
     last_sn_mrw_length = -1;
+
     while ((rlcP->sdu_discarded.head) && (count_sdu_discarded < 15)) {  // max 15 sdu discarded per procedure
 
       sdu_discarded = list2_remove_head (&rlcP->sdu_discarded);
+
       // this test is done to avoid signalling n times the same SN_MRW_length if a pdu contains n sdu
       // so it can save some discard procedures.
       if (last_sn_mrw_length != ((struct rlc_am_tx_sdu_management *) (sdu_discarded->data))->last_pdu_sn) {
@@ -332,6 +344,7 @@ rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_not_configured (s
         free_mem_block (sdu_discarded);
       }
     }
+
     ((struct rlc_am_discard_procedure *) (mb_discard_procedure->data))->length = count_sdu_discarded;
 
 
@@ -345,6 +358,7 @@ rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_not_configured (s
     } else {
       ((struct rlc_am_discard_procedure *) (mb_discard_procedure->data))->nlength = last_sdu_discarded_mngt->li_index_for_discard;
     }
+
 #ifdef DEBUG_RLC_AM_DISCARD
     sn_mrw_length = last_sdu_discarded_mngt->last_pdu_sn;
 #endif

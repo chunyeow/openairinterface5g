@@ -320,7 +320,7 @@ RRC_RB_UE_I_I_RADIO_BEARER_SETUP (void)
 static void
 Point_0 (void)
 {
-/*#0 */
+  /*#0 */
   printf("\n Inside Esterel FSM  Point_0 \n\n");
   _boolean (&Var__ThisIsTheEnd__114, 1);
   CLEAR_SIGNAL (_SigPre_0, __Sig_sc_in_RB_Management_DOT_CELL_DCH_97);
@@ -333,15 +333,18 @@ Point_0 (void)
 static void
 Point_1 (void)
 {
-/*#1 AutoPauseOn */
+  /*#1 AutoPauseOn */
   printf("\n Inside Esterel FSM  Point_1 \n\n");
+
   if ((IS_SIGNAL (_Sig, __In_I_CPHY_OUT_OF_SYNCH_76) || IS_SIGNAL (_Sig, __In_I_CRLC_STATUS_77))) {
     encode_message (&Var_msg_113, CELL_UPDATE);
     EMIT (_Sig, __Out_O_SEND_CCCH_92);
+
     if (!(IS_GUARD (7)))
       _integer (&Out_O_SEND_CCCH_92, Var_msg_113);
     else
       _integer (&Out_O_SEND_CCCH_92, INTEGER_COMBINE (Out_O_SEND_CCCH_92, Var_msg_113));
+
     SET_GUARD (7);
     RRC_RB_UE_O_O_SEND_CCCH (Out_O_SEND_CCCH_92);
     _On[0] &= ~0x2;             /* Off: #1 */
@@ -352,14 +355,17 @@ Point_1 (void)
 static void
 Point_2 (void)
 {
-/*#2 AutoPauseOn */
+  /*#2 AutoPauseOn */
   printf("\n Inside Esterel FSM  Point_2 \n\n");
+
   if (IS_SIGNAL (_Sig, __In_I_CELL_UPDATE_CONFIRM_72)) {
     EMIT (_Sig, __Out_O_CELL_Update_Proc_96);
+
     if (!(IS_GUARD (3))) {
       RRC_RB_UE_O_O_CELL_Update_Proc ();
       SET_GUARD (3);
     }
+
     _On[0] &= ~0x4;             /* Off: #2 */
     _Pause[0] |= 0x2;           /* PauseOn: #1 */
   }
@@ -368,13 +374,15 @@ Point_2 (void)
 static void
 Point_3 (void)
 {
-/*#3 AutoPauseOn */
+  /*#3 AutoPauseOn */
   printf("\n Inside Esterel FSM  Point_3 \n\n");
+
   if ((IS_SIGNAL (_Sig, __In_I_Go_CELL_DCH_82) || IS_SIGNAL (_Sig, __In_I_Go_CELL_FACH_83))) {
     _integer (&Var_next_state_108, 1);
     CLEAR_SIGNAL (_Sig, __Sig_sc_go_36_CELL_DCH_109);
     _On[0] &= ~0x8;             /* Off: #3 */
     _Pause[0] |= 0x200812;      /* PauseOn: #1 #4 #11 #21 */
+
     if (IS_SIGNAL (_Sig, __In_I_Go_CELL_FACH_83)) {
       SET_GUARD (0);
     } else {
@@ -385,6 +393,7 @@ Point_3 (void)
         _Pause[0] |= 0x100000;  /* PauseOn: #20 */
       }
     }
+
     if (IS_GUARD (0)) {
       if (IS_SIGNAL (_Sig, __Sig_sc_go_36_CELL_DCH_109)) {
         EMIT (_SigPre_0, __Sig_sc_in_RB_Management_DOT_CELL_DCH_97);
@@ -399,38 +408,47 @@ Point_3 (void)
 static void
 Point_4 (void)
 {
-/*#4 AutoPauseOn */
+  /*#4 AutoPauseOn */
   printf("\n Inside Esterel FSM  Point_4 \n\n");
+
   if (IS_SIGNAL (_Sig, __In_I_RADIO_BEARER_SETUP_70)) {
     printf ("\n\n Inside ESTEREL 1 \n");
+
     if (!(IS_GUARD (0)))
       _boolean (&Sig_ORDERED_RECONFIGURATION_102, 1);
     else
       _boolean (&Sig_ORDERED_RECONFIGURATION_102, BOOLEAN_COMBINE (Sig_ORDERED_RECONFIGURATION_102, 1));
+
     SET_GUARD (0);
     _On[0] &= ~0x10;            /* Off: #4 */
+
     if (_eq_boolean (In_I_Prot_Error_73, 0)) {
-     printf ("\n\n Inside ESTEREL 2 \n");
-     proc_IE_activ_Time ();
+      printf ("\n\n Inside ESTEREL 2 \n");
+      proc_IE_activ_Time ();
       proc_IE_RNTIs ();
       proc_IE_transaction ();
       proc_IE_configuration ();
       EMIT (_Sig, __Out_O_CPHY_RL_SETUP_Req_87);
+
       if (!(IS_GUARD (12))) {
         RRC_RB_UE_O_O_CPHY_RL_SETUP_Req ();
         SET_GUARD (12);
       }
+
       EMIT (_Sig, __Out_O_CMAC_CONFIG_Req_89);
+
       if (!(IS_GUARD (10))) {
         RRC_RB_UE_O_O_CMAC_CONFIG_Req ();
         SET_GUARD (10);
       }
+
       _Pause[0] |= 0x20;        /* PauseOn: #5 */
     } else {
       if (!(IS_GUARD (0)))
         _boolean (&Sig_INVALID_CONFIGURATION_103, 1);
       else
         _boolean (&Sig_INVALID_CONFIGURATION_103, BOOLEAN_COMBINE (Sig_INVALID_CONFIGURATION_103, 1));
+
       SET_GUARD (0);
       EMIT (_Sig, __Sig_sc_go_45_RBSU_Failure_112);
       _On[0] |= 0x100;          /* On: #8 */
@@ -442,9 +460,11 @@ static void
 Point_5 (void)
 {
   printf("\n Inside Esterel FSM  Point_5 \n\n");
-/*#5 AutoPauseOn */
+
+  /*#5 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_CPHY_SYNCH_IND_74)) {
     _On[0] &= ~0x20;            /* Off: #5 */
+
     if (IS_SIGNAL (_SigPre_1, __Sig_sc_in_RB_Management_DOT_CELL_DCH_97)) {
       _Pause[0] |= 0x40;        /* PauseOn: #6 */
     } else {
@@ -452,18 +472,23 @@ Point_5 (void)
       clear_C_RNTI ();
       _Pause[0] |= 0x40;        /* PauseOn: #6 */
     }
+
     EMIT (_Sig, __Out_O_CRLC_CONFIG_Req_90);
+
     if (!(IS_GUARD (9))) {
       RRC_RB_UE_O_O_CRLC_CONFIG_Req ();
       SET_GUARD (9);
     }
+
     set_RRC_Transaction_ID ();
     encode_message (&Var_msg_111, RB_SETUP_COMPLETE);
     EMIT (_Sig, __Out_O_SEND_DCCH_AM_91);
+
     if (!(IS_GUARD (8)))
       _integer (&Out_O_SEND_DCCH_AM_91, Var_msg_111);
     else
       _integer (&Out_O_SEND_DCCH_AM_91, INTEGER_COMBINE (Out_O_SEND_DCCH_AM_91, Var_msg_111));
+
     SET_GUARD (8);
     _On[0] |= 0x4000;           /* On: #14 */
   } else {
@@ -479,7 +504,8 @@ static void
 Point_6 (void)
 {
   printf("\n Inside Esterel FSM  Point_6 \n\n");
-/*#6 AutoPauseOn */
+
+  /*#6 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_RLC_Success_78)) {
     ue_clear_transaction (RB_SETUP);
     EMIT (_Sig, __Sig_RB_Establish_Success_98);
@@ -492,12 +518,14 @@ static void
 Point_7 (void)
 {
   printf("\n Inside Esterel FSM  Point_7 \n\n");
-/*#7 AutoPauseOn */
+
+  /*#7 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __Sig_RB_Establish_Success_98)) {
     if (!(IS_GUARD (0)))
       _boolean (&Sig_ORDERED_RECONFIGURATION_102, 0);
     else
       _boolean (&Sig_ORDERED_RECONFIGURATION_102, BOOLEAN_COMBINE (Sig_ORDERED_RECONFIGURATION_102, 0));
+
     SET_GUARD (0);
     EMIT (_Sig, __Out_O_NAS_RB_ESTABLISH_Ind_85);
     _integer (&Out_O_NAS_RB_ESTABLISH_Ind_85, In_I_Radio_Bearer_ID_79);
@@ -511,15 +539,18 @@ static void
 Point_8 (void)
 {
   printf("\n Inside Esterel FSM  Point_8 \n\n");
-/*#8 */
+
+  /*#8 */
   if (IS_SIGNAL (_Sig, __Sig_sc_go_45_RBSU_Failure_112)) {
     set_RRC_Transaction_ID ();
     encode_message (&Var_msg_111, RB_SETUP_FAILURE);
     EMIT (_Sig, __Out_O_SEND_DCCH_AM_91);
+
     if (!(IS_GUARD (8)))
       _integer (&Out_O_SEND_DCCH_AM_91, Var_msg_111);
     else
       _integer (&Out_O_SEND_DCCH_AM_91, INTEGER_COMBINE (Out_O_SEND_DCCH_AM_91, Var_msg_111));
+
     SET_GUARD (8);
     _On[0] |= 0x4000;           /* On: #14 */
     _Pause[0] |= 0x200;         /* PauseOn: #9 */
@@ -532,17 +563,21 @@ static void
 Point_9 (void)
 {
   printf("\n Inside Esterel FSM  Point_9 \n\n");
-/*#9 AutoPauseOn */
+
+  /*#9 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_RLC_Success_78)) {
     if (!(IS_GUARD (0)))
       _boolean (&Sig_INVALID_CONFIGURATION_103, 0);
     else
       _boolean (&Sig_INVALID_CONFIGURATION_103, BOOLEAN_COMBINE (Sig_INVALID_CONFIGURATION_103, 0));
+
     SET_GUARD (0);
+
     if (!(IS_GUARD (0)))
       _boolean (&Sig_ORDERED_RECONFIGURATION_102, 0);
     else
       _boolean (&Sig_ORDERED_RECONFIGURATION_102, BOOLEAN_COMBINE (Sig_ORDERED_RECONFIGURATION_102, 0));
+
     SET_GUARD (0);
     _On[0] &= ~0x200;           /* Off: #9 */
     _Pause[0] |= 0x10;          /* PauseOn: #4 */
@@ -553,12 +588,14 @@ static void
 Point_10 (void)
 {
   printf("\n Inside Esterel FSM  Point_10 \n\n");
-/*#10 AutoPauseOn */
+
+  /*#10 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_RLC_Success_78)) {
     if (!(IS_GUARD (0)))
       _boolean (&Sig_ORDERED_RECONFIGURATION_102, 0);
     else
       _boolean (&Sig_ORDERED_RECONFIGURATION_102, BOOLEAN_COMBINE (Sig_ORDERED_RECONFIGURATION_102, 0));
+
     SET_GUARD (0);
     ue_clear_transaction (RB_RELEASE);
     _On[0] &= ~0x400;           /* Off: #10 */
@@ -570,14 +607,17 @@ static void
 Point_11 (void)
 {
   printf("\n Inside Esterel FSM  Point_11 \n\n");
-/*#11 AutoPauseOn */
+
+  /*#11 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_RADIO_BEARER_RELEASE_71)) {
     if (!(IS_GUARD (0)))
       _boolean (&Sig_ORDERED_RECONFIGURATION_102, 1);
     else
       _boolean (&Sig_ORDERED_RECONFIGURATION_102, BOOLEAN_COMBINE (Sig_ORDERED_RECONFIGURATION_102, 1));
+
     SET_GUARD (0);
     _On[0] &= ~0x800;           /* Off: #11 */
+
     if (_eq_boolean (In_I_Prot_Error_73, 0)) {
       _On[0] |= 0x1000;         /* On: #12 */
     } else {
@@ -590,49 +630,60 @@ static void
 Point_12 (void)
 {
   printf("\n Inside Esterel FSM  Point_12 \n\n");
-/*#12 */
+  /*#12 */
   _integer (&Var_next_state_108, In_I_IE_RRC_State_80);
   proc_IE_activ_Time ();
   proc_IE_RNTIs ();
   proc_IE_transaction ();
   proc_IE_configuration ();
   EMIT (_Sig, __Out_O_CRLC_CONFIG_Req_90);
+
   if (!(IS_GUARD (9))) {
     RRC_RB_UE_O_O_CRLC_CONFIG_Req ();
     SET_GUARD (9);
   }
+
   EMIT (_Sig, __Out_O_CMAC_CONFIG_Req_89);
+
   if (!(IS_GUARD (10))) {
     RRC_RB_UE_O_O_CMAC_CONFIG_Req ();
     SET_GUARD (10);
   }
+
   EMIT (_Sig, __Out_O_CPHY_RL_RELEASE_Req_88);
+
   if (!(IS_GUARD (11))) {
     RRC_RB_UE_O_O_CPHY_RL_RELEASE_Req ();
     SET_GUARD (11);
   }
+
   if (_eq_integer (Var_next_state_108, CELL_FACH)) {
     EMIT (_Sig, __Sig_Go_CELL_FACH_105);
     Select_Secondary_CCPCH ();
     Select_PRACH ();
     EMIT (_Sig, __Out_O_startT305_93);
+
     if (!(IS_GUARD (6))) {
       RRC_RB_UE_O_O_startT305 ();
       SET_GUARD (6);
     }
+
     _Pause[0] |= 0x400;         /* PauseOn: #10 */
   } else {
     _Pause[0] |= 0x400;         /* PauseOn: #10 */
   }
+
   EMIT (_Sig, __Out_O_NAS_RB_RELEASE_Ind_86);
   _integer (&Out_O_NAS_RB_RELEASE_Ind_86, In_I_Radio_Bearer_ID_79);
   set_RRC_Transaction_ID ();
   encode_message (&Var_msg_107, RB_RELEASE_COMPLETE);
   EMIT (_Sig, __Out_O_SEND_DCCH_AM_91);
+
   if (!(IS_GUARD (8)))
     _integer (&Out_O_SEND_DCCH_AM_91, Var_msg_107);
   else
     _integer (&Out_O_SEND_DCCH_AM_91, INTEGER_COMBINE (Out_O_SEND_DCCH_AM_91, Var_msg_107));
+
   SET_GUARD (8);
   RRC_RB_UE_O_O_NAS_RB_RELEASE_Ind (Out_O_NAS_RB_RELEASE_Ind_86);
   _On[0] |= 0x4000;             /* On: #14 */
@@ -642,19 +693,23 @@ static void
 Point_13 (void)
 {
   printf("\n Inside Esterel FSM  Point_13 \n\n");
-/*#13 */
+
+  /*#13 */
   if (!(IS_GUARD (0)))
     _boolean (&Sig_INVALID_CONFIGURATION_103, 1);
   else
     _boolean (&Sig_INVALID_CONFIGURATION_103, BOOLEAN_COMBINE (Sig_INVALID_CONFIGURATION_103, 1));
+
   SET_GUARD (0);
   set_RRC_Transaction_ID ();
   encode_message (&Var_msg_107, RB_RELEASE_FAILURE);
   EMIT (_Sig, __Out_O_SEND_DCCH_AM_91);
+
   if (!(IS_GUARD (8)))
     _integer (&Out_O_SEND_DCCH_AM_91, Var_msg_107);
   else
     _integer (&Out_O_SEND_DCCH_AM_91, INTEGER_COMBINE (Out_O_SEND_DCCH_AM_91, Var_msg_107));
+
   SET_GUARD (8);
   _On[0] |= 0x4000;             /* On: #14 */
   _Pause[0] |= 0x8000;          /* PauseOn: #15 */
@@ -663,7 +718,7 @@ Point_13 (void)
 static void
 Point_14 (void)
 {
-/*#14 */
+  /*#14 */
   RRC_RB_UE_O_O_SEND_DCCH_AM (Out_O_SEND_DCCH_AM_91);
 }
 
@@ -671,17 +726,21 @@ static void
 Point_15 (void)
 {
   printf("\n Inside Esterel FSM  Point_15 \n\n");
-/*#15 AutoPauseOn */
+
+  /*#15 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_RLC_Success_78)) {
     if (!(IS_GUARD (0)))
       _boolean (&Sig_INVALID_CONFIGURATION_103, 0);
     else
       _boolean (&Sig_INVALID_CONFIGURATION_103, BOOLEAN_COMBINE (Sig_INVALID_CONFIGURATION_103, 0));
+
     SET_GUARD (0);
+
     if (!(IS_GUARD (0)))
       _boolean (&Sig_ORDERED_RECONFIGURATION_102, 0);
     else
       _boolean (&Sig_ORDERED_RECONFIGURATION_102, BOOLEAN_COMBINE (Sig_ORDERED_RECONFIGURATION_102, 0));
+
     SET_GUARD (0);
     _On[0] &= ~0x8000;          /* Off: #15 */
     _Pause[0] |= 0x800;         /* PauseOn: #11 */
@@ -692,13 +751,16 @@ static void
 Point_16 (void)
 {
   printf("\n Inside Esterel FSM  Point_16 \n\n");
-/*#16 AutoPauseOn */
+
+  /*#16 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __Sig_Go_CELL_DCH_104)) {
     EMIT (_Sig, __Out_O_New_State_CELL_DCH_94);
+
     if (!(IS_GUARD (5))) {
       RRC_RB_UE_O_O_New_State_CELL_DCH ();
       SET_GUARD (5);
     }
+
     EMIT (_Sig, __Sig_sc_go_36_CELL_DCH_109);
     _On[0] |= 0x80000;          /* On: #19 */
     _On[0] &= ~0x10000;         /* Off: #16 */
@@ -721,7 +783,7 @@ static void
 Point_17 (void)
 {
   printf("\n Inside Esterel FSM  Point_17 \n\n");
-/*#17 AutoPauseOn */
+  /*#17 AutoPauseOn */
   EMIT (_SigPre_0, __Sig_sc_in_RB_Management_DOT_CELL_DCH_97);
 }
 
@@ -729,13 +791,16 @@ static void
 Point_18 (void)
 {
   printf("\n Inside Esterel FSM  Point_18 \n\n");
-/*#18 AutoPauseOn */
+
+  /*#18 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __Sig_Go_CELL_FACH_105)) {
     EMIT (_Sig, __Out_O_New_State_CELL_FACH_95);
+
     if (!(IS_GUARD (4))) {
       RRC_RB_UE_O_O_New_State_CELL_FACH ();
       SET_GUARD (4);
     }
+
     _On[0] |= 0x80000;          /* On: #19 */
     _On[0] &= ~0x40000;         /* Off: #18 */
     _Pause[0] &= ~0x20000;
@@ -762,7 +827,8 @@ static void
 Point_19 (void)
 {
   printf("\n Inside Esterel FSM  Point_19 \n\n");
-/*#19 */
+
+  /*#19 */
   if (IS_SIGNAL (_Sig, __Sig_sc_go_42_CELL_PCH_110)) {
   } else {
     if (IS_SIGNAL (_Sig, __Sig_sc_go_36_CELL_DCH_109)) {
@@ -778,7 +844,8 @@ static void
 Point_20 (void)
 {
   printf("\n Inside Esterel FSM  Point_20 \n\n");
-/*#20 AutoPauseOn */
+
+  /*#20 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_Go_CELL_FACH_83)) {
     SET_GUARD (1);
     _On[0] &= ~0x100000;        /* Off: #20 */
@@ -789,6 +856,7 @@ Point_20 (void)
       _On[0] &= ~0x100000;      /* Off: #20 */
     }
   }
+
   if (IS_GUARD (1)) {
     if (IS_SIGNAL (_Sig, __Sig_sc_go_36_CELL_DCH_109)) {
       EMIT (_SigPre_0, __Sig_sc_in_RB_Management_DOT_CELL_DCH_97);
@@ -803,15 +871,18 @@ static void
 Point_21 (void)
 {
   printf("\n Inside Esterel FSM  Point_21 \n\n");
-/*#21 AutoPauseOn */
+
+  /*#21 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_Go_Idle_81)) {
     _On[0] &= ~0x200000;        /* Off: #21 */
     _Pause[0] &= ~0x179ef6;
     _On[0] &= ~0x178ef6;        /* PauseOff: #1 #2 #4 #5 #6 #7 #9 #10 #11 #12 #15 #16 #17 #18 #20 */
+
     if ((IS_SIGNAL (_Sig, __In_I_Go_CELL_DCH_82) || IS_SIGNAL (_Sig, __In_I_Go_CELL_FACH_83))) {
       _integer (&Var_next_state_108, 1);
       CLEAR_SIGNAL (_Sig, __Sig_sc_go_36_CELL_DCH_109);
       _Pause[0] |= 0x200812;    /* PauseOn: #1 #4 #11 #21 */
+
       if (IS_SIGNAL (_Sig, __In_I_Go_CELL_FACH_83)) {
         SET_GUARD (2);
       } else {
@@ -822,6 +893,7 @@ Point_21 (void)
           _Pause[0] |= 0x100000;        /* PauseOn: #20 */
         }
       }
+
       if (IS_GUARD (2)) {
         if (IS_SIGNAL (_Sig, __Sig_sc_go_36_CELL_DCH_109)) {
           EMIT (_SigPre_0, __Sig_sc_in_RB_Management_DOT_CELL_DCH_97);
@@ -843,74 +915,97 @@ RRC_RB_UE (void)
   unsigned int   *Points;
 
   Points = _On;
+
   if (*Points) {
     if (*Points & 0x1) {
       Point_0 ();
     }
+
     if (*Points & 0x2) {
       Point_1 ();
     }
+
     if (*Points & 0x4) {
       Point_2 ();
     }
+
     if (*Points & 0x8) {
       Point_3 ();
     }
+
     if (*Points & 0x10) {
       Point_4 ();
     }
+
     if (*Points & 0x20) {
       Point_5 ();
     }
+
     if (*Points & 0x40) {
       Point_6 ();
     }
+
     if (*Points & 0x80) {
       Point_7 ();
     }
+
     if (*Points & 0x100) {
       Point_8 ();
     }
+
     if (*Points & 0x200) {
       Point_9 ();
     }
+
     if (*Points & 0x400) {
       Point_10 ();
     }
+
     if (*Points & 0x800) {
       Point_11 ();
     }
+
     if (*Points & 0x1000) {
       Point_12 ();
     }
+
     if (*Points & 0x2000) {
       Point_13 ();
     }
+
     if (*Points & 0x4000) {
       Point_14 ();
     }
+
     if (*Points & 0x8000) {
       Point_15 ();
     }
+
     if (*Points & 0x10000) {
       Point_16 ();
     }
+
     if (*Points & 0x20000) {
       Point_17 ();
     }
+
     if (*Points & 0x40000) {
       Point_18 ();
     }
+
     if (*Points & 0x80000) {
       Point_19 ();
     }
+
     if (*Points & 0x100000) {
       Point_20 ();
     }
+
     if (*Points & 0x200000) {
       Point_21 ();
     }
   }
+
   Points++;
   {
     int             j;
@@ -919,14 +1014,19 @@ RRC_RB_UE (void)
     _tmp = _SigPre_1;
     _SigPre_1 = _SigPre_0;
     _SigPre_0 = _tmp;
+
     for (j = 0; j < SIGNAL_WITH_PRE_VECTOR_SIZE; j++)
       _SigPre_0[j] = 0;
+
     for (j = 0; j < SIGNAL_VECTOR_SIZE; j++)
       _Sig[j] = 0;
+
     _On[0] = _Pause[0] | (_On[0] & 0x378efe);
+
     /* AutoPauseOn: #1 #2 #3 #4 #5 #6 #7 #9 #10 #11 #15 #16 #17 #18 #20 #21 */
     for (j = 0; j < HALT_POINT_VECTOR_SIZE; j++)
       _Pause[j] = 0;
+
     for (j = 0; j < GUARD_VECTOR_SIZE; j++)
       _Guard[j] = 0;
   }
@@ -940,16 +1040,22 @@ RRC_RB_UE_reset (void)
 
   for (j = 0; j < SIGNAL_VECTOR_SIZE; j++)
     _Sig[j] = 0;
+
   for (i = 0; i < GLOBALMAXPRELEVEL; i++)
     for (j = 0; j < SIGNAL_WITH_PRE_VECTOR_SIZE; j++)
       _SigPreTab[i][j] = 0;
+
   _boolean (&In_I_Prot_Error_73, 0);
+
   for (i = 0; i < HALT_POINT_VECTOR_SIZE; i++)
     _On[i] = 0;
+
   for (i = 0; i < HALT_POINT_VECTOR_SIZE; i++)
     _Pause[i] = 0;
+
   for (i = 0; i < GUARD_VECTOR_SIZE; i++)
     _Guard[i] = 0;
+
   BIT_SET (_On, 0);
   return 1;
 }

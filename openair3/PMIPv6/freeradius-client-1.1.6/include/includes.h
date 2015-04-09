@@ -25,7 +25,7 @@
 #   pragma alloca
 #  else
 #   ifndef alloca /* predefined by HP cc +Olibcalls */
-     char *alloca ();
+char *alloca ();
 #   endif
 #  endif
 # endif

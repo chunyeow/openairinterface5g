@@ -38,35 +38,35 @@
 void kdf(const uint8_t *key, uint16_t key_len, uint8_t *s, uint16_t s_len, uint8_t *out,
          uint16_t out_len)
 {
-    struct hmac_sha256_ctx ctx;
+  struct hmac_sha256_ctx ctx;
 
-    memset(&ctx, 0, sizeof(ctx));
+  memset(&ctx, 0, sizeof(ctx));
 
-    hmac_sha256_set_key(&ctx, key_len, key);
-    hmac_sha256_update(&ctx, s_len, s);
-    hmac_sha256_digest(&ctx, out_len, out);
+  hmac_sha256_set_key(&ctx, key_len, key);
+  hmac_sha256_update(&ctx, s_len, s);
+  hmac_sha256_digest(&ctx, out_len, out);
 }
 
 #ifndef NAS_UE
 int derive_keNB(const uint8_t kasme[32], const uint32_t nas_count, uint8_t *keNB)
 {
-    uint8_t s[7];
+  uint8_t s[7];
 
-    // FC
-    s[0] = FC_KENB;
-    // P0 = Uplink NAS count
-    s[1] = (nas_count & 0xff000000) >> 24;
-    s[2] = (nas_count & 0x00ff0000) >> 16;
-    s[3] = (nas_count & 0x0000ff00) >> 8;
-    s[4] = (nas_count & 0x000000ff);
+  // FC
+  s[0] = FC_KENB;
+  // P0 = Uplink NAS count
+  s[1] = (nas_count & 0xff000000) >> 24;
+  s[2] = (nas_count & 0x00ff0000) >> 16;
+  s[3] = (nas_count & 0x0000ff00) >> 8;
+  s[4] = (nas_count & 0x000000ff);
 
-    // Length of NAS count
-    s[5] = 0x00;
-    s[6] = 0x04;
+  // Length of NAS count
+  s[5] = 0x00;
+  s[6] = 0x04;
 
-    kdf(kasme, 32, s, 7, keNB, 32);
+  kdf(kasme, 32, s, 7, keNB, 32);
 
-    return 0;
+  return 0;
 }
 #endif
 

@@ -40,11 +40,11 @@ struct rrc_rg_srb_drb_asn1{
 };
 */
 
-struct rrc_srb_drb_asn1{
-/*  struct SRB_ToAddMod             *SRB1_config;
-  struct SRB_ToAddMod             *SRB2_config;
-  struct DRB_ToAddMod             *DRB1_config;
-  struct DRB_ToAddMod             *DRB2_config;*/
+struct rrc_srb_drb_asn1 {
+  /*  struct SRB_ToAddMod             *SRB1_config;
+    struct SRB_ToAddMod             *SRB2_config;
+    struct DRB_ToAddMod             *DRB1_config;
+    struct DRB_ToAddMod             *DRB2_config;*/
   int DRB1_active;
   int DRB2_active;
   SRB_ToAddModList_t   *SRB_configList[NUMBER_OF_UE_MAX];

@@ -34,7 +34,7 @@
 #include <linux/kernel.h>
 #endif //USER_MODE
 
- 
+
 #ifdef USER_MODE
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,9 +61,9 @@
 #define bigmalloc16(x) (bigphys_malloc(x))
 
 #define malloc16(x) (bigphys_malloc(x))
-#define free16(y,x) 
+#define free16(y,x)
 
-#define bigfree(y,x) 
+#define bigfree(y,x)
 
 #else // BIGPHYSAREA
 

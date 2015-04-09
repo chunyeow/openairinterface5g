@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -62,41 +62,41 @@ typedef unsigned long message_number_t;
 #define MESSAGE_NUMBER_SIZE (sizeof(unsigned long))
 
 typedef enum message_priorities_e {
-    MESSAGE_PRIORITY_MAX       = 100,
-    MESSAGE_PRIORITY_MAX_LEAST = 85,
-    MESSAGE_PRIORITY_MED_PLUS  = 70,
-    MESSAGE_PRIORITY_MED       = 55,
-    MESSAGE_PRIORITY_MED_LEAST = 40,
-    MESSAGE_PRIORITY_MIN_PLUS  = 25,
-    MESSAGE_PRIORITY_MIN       = 10,
+  MESSAGE_PRIORITY_MAX       = 100,
+  MESSAGE_PRIORITY_MAX_LEAST = 85,
+  MESSAGE_PRIORITY_MED_PLUS  = 70,
+  MESSAGE_PRIORITY_MED       = 55,
+  MESSAGE_PRIORITY_MED_LEAST = 40,
+  MESSAGE_PRIORITY_MIN_PLUS  = 25,
+  MESSAGE_PRIORITY_MIN       = 10,
 } message_priorities_t;
 
 typedef struct message_info_s {
-    task_id_t id;
-    message_priorities_t priority;
-    /* Message payload size */
-    MessageHeaderSize size;
-    /* Printable name */
-    const char * const name;
+  task_id_t id;
+  message_priorities_t priority;
+  /* Message payload size */
+  MessageHeaderSize size;
+  /* Printable name */
+  const char * const name;
 } message_info_t;
 
 typedef enum task_priorities_e {
-    TASK_PRIORITY_MAX       = 100,
-    TASK_PRIORITY_MAX_LEAST = 85,
-    TASK_PRIORITY_MED_PLUS  = 70,
-    TASK_PRIORITY_MED       = 55,
-    TASK_PRIORITY_MED_LEAST = 40,
-    TASK_PRIORITY_MIN_PLUS  = 25,
-    TASK_PRIORITY_MIN       = 10,
+  TASK_PRIORITY_MAX       = 100,
+  TASK_PRIORITY_MAX_LEAST = 85,
+  TASK_PRIORITY_MED_PLUS  = 70,
+  TASK_PRIORITY_MED       = 55,
+  TASK_PRIORITY_MED_LEAST = 40,
+  TASK_PRIORITY_MIN_PLUS  = 25,
+  TASK_PRIORITY_MIN       = 10,
 } task_priorities_t;
 
 typedef struct task_info_s {
-    thread_id_t thread;
-    task_id_t   parent_task;
-    task_priorities_t priority;
-    unsigned int queue_size;
-    /* Printable name */
-    const char * const name;
+  thread_id_t thread;
+  task_id_t   parent_task;
+  task_priorities_t priority;
+  unsigned int queue_size;
+  /* Printable name */
+  const char * const name;
 } task_info_t;
 
 /** \brief Update the itti LTE time reference for messages
@@ -205,8 +205,8 @@ const char *itti_get_task_name(task_id_t task_id);
  * @returns NULL in case of failure or newly allocated mesage ref
  **/
 MessageDef *itti_alloc_new_message(
-    task_id_t         origin_task_id,
-    MessagesIds       message_id);
+  task_id_t         origin_task_id,
+  MessagesIds       message_id);
 
 /** \brief Alloc and memset(0) a new itti message.
  * \param origin_task_id Task ID of the sending task
@@ -215,9 +215,9 @@ MessageDef *itti_alloc_new_message(
  * @returns NULL in case of failure or newly allocated mesage ref
  **/
 MessageDef *itti_alloc_new_message_sized(
-    task_id_t         origin_task_id,
-    MessagesIds       message_id,
-    MessageHeaderSize size);
+  task_id_t         origin_task_id,
+  MessagesIds       message_id,
+  MessageHeaderSize size);
 
 /** \brief handle signals and wait for all threads to join when the process complete.
  * This function should be called from the main thread after having created all ITTI tasks.

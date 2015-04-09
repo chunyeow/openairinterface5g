@@ -46,9 +46,9 @@ static uint32_t g_gtpv1u_teid = 0;
 uint32_t gtpv1u_new_teid(void)
 {
 #ifdef GTPV1U_LINEAR_TEID_ALLOCATION
-    g_gtpv1u_teid = g_gtpv1u_teid + 1;
-    return g_gtpv1u_teid;
+  g_gtpv1u_teid = g_gtpv1u_teid + 1;
+  return g_gtpv1u_teid;
 #else
-    return random() + random() % (RAND_MAX - 1) + 1;
+  return random() + random() % (RAND_MAX - 1) + 1;
 #endif
 }

@@ -14,11 +14,11 @@
 
 static hash_size_t def_hashfunc(const void *keyP, int key_sizeP)
 {
-    hash_size_t hash=0;
+  hash_size_t hash=0;
 
-    while(key_sizeP) hash^=((unsigned char*)keyP)[key_sizeP --];
+  while(key_sizeP) hash^=((unsigned char*)keyP)[key_sizeP --];
 
-    return hash;
+  return hash;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------
@@ -30,27 +30,27 @@ static hash_size_t def_hashfunc(const void *keyP, int key_sizeP)
  */
 obj_hash_table_t *obj_hashtable_create(hash_size_t sizeP, hash_size_t (*hashfuncP)(const void*, int ), void (*freekeyfuncP)(void*), void (*freedatafuncP)(void*))
 {
-    obj_hash_table_t *hashtbl;
+  obj_hash_table_t *hashtbl;
 
-    if(!(hashtbl=malloc(sizeof(obj_hash_table_t)))) return NULL;
+  if(!(hashtbl=malloc(sizeof(obj_hash_table_t)))) return NULL;
 
-    if(!(hashtbl->nodes=calloc(sizeP, sizeof(obj_hash_node_t*)))) {
-        free(hashtbl);
-        return NULL;
-    }
+  if(!(hashtbl->nodes=calloc(sizeP, sizeof(obj_hash_node_t*)))) {
+    free(hashtbl);
+    return NULL;
+  }
 
-    hashtbl->size=sizeP;
+  hashtbl->size=sizeP;
 
-    if(hashfuncP) hashtbl->hashfunc=hashfuncP;
-    else hashtbl->hashfunc=def_hashfunc;
+  if(hashfuncP) hashtbl->hashfunc=hashfuncP;
+  else hashtbl->hashfunc=def_hashfunc;
 
-    if(freekeyfuncP) hashtbl->freekeyfunc=freekeyfuncP;
-    else hashtbl->freekeyfunc=free;
+  if(freekeyfuncP) hashtbl->freekeyfunc=freekeyfuncP;
+  else hashtbl->freekeyfunc=free;
 
-    if(freedatafuncP) hashtbl->freedatafunc=freedatafuncP;
-    else hashtbl->freedatafunc=free;
+  if(freedatafuncP) hashtbl->freedatafunc=freedatafuncP;
+  else hashtbl->freedatafunc=free;
 
-    return hashtbl;
+  return hashtbl;
 }
 //-------------------------------------------------------------------------------------------------------------------------------
 /*
@@ -59,46 +59,52 @@ obj_hash_table_t *obj_hashtable_create(hash_size_t sizeP, hash_size_t (*hashfunc
  */
 hashtable_rc_t obj_hashtable_destroy(obj_hash_table_t *hashtblP)
 {
-    hash_size_t n;
-    obj_hash_node_t *node, *oldnode;
+  hash_size_t n;
+  obj_hash_node_t *node, *oldnode;
 
-    for(n=0; n<hashtblP->size; ++n) {
-        node=hashtblP->nodes[n];
-        while(node) {
-            oldnode=node;
-            node=node->next;
-            hashtblP->freekeyfunc(oldnode->key);
-            hashtblP->freedatafunc(oldnode->data);
-            free(oldnode);
-        }
+  for(n=0; n<hashtblP->size; ++n) {
+    node=hashtblP->nodes[n];
+
+    while(node) {
+      oldnode=node;
+      node=node->next;
+      hashtblP->freekeyfunc(oldnode->key);
+      hashtblP->freedatafunc(oldnode->data);
+      free(oldnode);
     }
-    free(hashtblP->nodes);
-    free(hashtblP);
-    return HASH_TABLE_OK;
+  }
+
+  free(hashtblP->nodes);
+  free(hashtblP);
+  return HASH_TABLE_OK;
 }
 //-------------------------------------------------------------------------------------------------------------------------------
 hashtable_rc_t obj_hashtable_is_key_exists (obj_hash_table_t *hashtblP, void* keyP, int key_sizeP)
 //-------------------------------------------------------------------------------------------------------------------------------
 {
-    obj_hash_node_t *node;
-    hash_size_t      hash;
+  obj_hash_node_t *node;
+  hash_size_t      hash;
 
-    if (hashtblP == NULL) {
-        return HASH_TABLE_BAD_PARAMETER_HASHTABLE;
+  if (hashtblP == NULL) {
+    return HASH_TABLE_BAD_PARAMETER_HASHTABLE;
+  }
+
+  hash=hashtblP->hashfunc(keyP, key_sizeP)%hashtblP->size;
+  node=hashtblP->nodes[hash];
+
+  while(node) {
+    if(node->key == keyP) {
+      return HASH_TABLE_OK;
+    } else if (node->key_size == key_sizeP) {
+      if (memcmp(node->key, keyP, key_sizeP) == 0) {
+        return HASH_TABLE_OK;
+      }
     }
-    hash=hashtblP->hashfunc(keyP, key_sizeP)%hashtblP->size;
-    node=hashtblP->nodes[hash];
-    while(node) {
-        if(node->key == keyP) {
-            return HASH_TABLE_OK;
-        } else if (node->key_size == key_sizeP) {
-            if (memcmp(node->key, keyP, key_sizeP) == 0) {
-                return HASH_TABLE_OK;
-            }
-        }
-        node=node->next;
-    }
-    return HASH_TABLE_KEY_NOT_EXISTS;
+
+    node=node->next;
+  }
+
+  return HASH_TABLE_KEY_NOT_EXISTS;
 }
 //-------------------------------------------------------------------------------------------------------------------------------
 /*
@@ -107,35 +113,43 @@ hashtable_rc_t obj_hashtable_is_key_exists (obj_hash_table_t *hashtblP, void* ke
  */
 hashtable_rc_t obj_hashtable_insert(obj_hash_table_t *hashtblP, void* keyP, int key_sizeP, void *dataP)
 {
-    obj_hash_node_t *node;
-    hash_size_t      hash;
+  obj_hash_node_t *node;
+  hash_size_t      hash;
 
-    if (hashtblP == NULL) {
-        return HASH_TABLE_BAD_PARAMETER_HASHTABLE;
+  if (hashtblP == NULL) {
+    return HASH_TABLE_BAD_PARAMETER_HASHTABLE;
+  }
+
+  hash=hashtblP->hashfunc(keyP, key_sizeP)%hashtblP->size;
+  node=hashtblP->nodes[hash];
+
+  while(node) {
+    if(node->key == keyP) {
+      if (node->data) {
+        hashtblP->freedatafunc(node->data);
+      }
+
+      node->data=dataP;
+      // waste of memory here (keyP is lost) we should free it now
+      return HASH_TABLE_INSERT_OVERWRITTEN_DATA;
     }
-    hash=hashtblP->hashfunc(keyP, key_sizeP)%hashtblP->size;
-    node=hashtblP->nodes[hash];
-    while(node) {
-        if(node->key == keyP) {
-            if (node->data) {
-                hashtblP->freedatafunc(node->data);
-            }
-            node->data=dataP;
-            // waste of memory here (keyP is lost) we should free it now
-            return HASH_TABLE_INSERT_OVERWRITTEN_DATA;
-        }
-        node=node->next;
-    }
-    if(!(node=malloc(sizeof(obj_hash_node_t)))) return -1;
-    node->key=keyP;
-    node->data=dataP;
-    if (hashtblP->nodes[hash]) {
-        node->next=hashtblP->nodes[hash];
-    } else {
-        node->next = NULL;
-    }
-    hashtblP->nodes[hash]=node;
-    return HASH_TABLE_OK;
+
+    node=node->next;
+  }
+
+  if(!(node=malloc(sizeof(obj_hash_node_t)))) return -1;
+
+  node->key=keyP;
+  node->data=dataP;
+
+  if (hashtblP->nodes[hash]) {
+    node->next=hashtblP->nodes[hash];
+  } else {
+    node->next = NULL;
+  }
+
+  hashtblP->nodes[hash]=node;
+  return HASH_TABLE_OK;
 }
 //-------------------------------------------------------------------------------------------------------------------------------
 /*
@@ -144,31 +158,35 @@ hashtable_rc_t obj_hashtable_insert(obj_hash_table_t *hashtblP, void* keyP, int 
  */
 hashtable_rc_t obj_hashtable_remove(obj_hash_table_t *hashtblP, const void* keyP, int key_sizeP)
 {
-    obj_hash_node_t *node, *prevnode=NULL;
-    hash_size_t      hash;
+  obj_hash_node_t *node, *prevnode=NULL;
+  hash_size_t      hash;
 
-    if (hashtblP == NULL) {
-        return HASH_TABLE_BAD_PARAMETER_HASHTABLE;
+  if (hashtblP == NULL) {
+    return HASH_TABLE_BAD_PARAMETER_HASHTABLE;
+  }
+
+  hash=hashtblP->hashfunc(keyP, key_sizeP)%hashtblP->size;
+  node=hashtblP->nodes[hash];
+
+  while(node) {
+    if ((node->key == keyP) || ((node->key_size == key_sizeP) && (memcmp(node->key, keyP, key_sizeP) == 0))) {
+      if(prevnode) {
+        prevnode->next=node->next;
+      } else {
+        hashtblP->nodes[hash]=node->next;
+      }
+
+      hashtblP->freekeyfunc(node->key);
+      hashtblP->freedatafunc(node->data);
+      free(node);
+      return HASH_TABLE_OK;
     }
 
-    hash=hashtblP->hashfunc(keyP, key_sizeP)%hashtblP->size;
-    node=hashtblP->nodes[hash];
-    while(node) {
-        if ((node->key == keyP) || ((node->key_size == key_sizeP) && (memcmp(node->key, keyP, key_sizeP) == 0))){
-            if(prevnode) {
-                prevnode->next=node->next;
-            } else {
-                hashtblP->nodes[hash]=node->next;
-            }
-            hashtblP->freekeyfunc(node->key);
-            hashtblP->freedatafunc(node->data);
-            free(node);
-            return HASH_TABLE_OK;
-        }
-        prevnode=node;
-        node=node->next;
-    }
-    return HASH_TABLE_KEY_NOT_EXISTS;
+    prevnode=node;
+    node=node->next;
+  }
+
+  return HASH_TABLE_KEY_NOT_EXISTS;
 }
 //-------------------------------------------------------------------------------------------------------------------------------
 /*
@@ -177,29 +195,33 @@ hashtable_rc_t obj_hashtable_remove(obj_hash_table_t *hashtblP, const void* keyP
  */
 hashtable_rc_t obj_hashtable_get(obj_hash_table_t *hashtblP, const void* keyP, int key_sizeP, void** dataP)
 {
-    obj_hash_node_t *node;
-    hash_size_t      hash;
+  obj_hash_node_t *node;
+  hash_size_t      hash;
 
-    if (hashtblP == NULL) {
-        *dataP = NULL;
-        return HASH_TABLE_BAD_PARAMETER_HASHTABLE;
-    }
-    hash=hashtblP->hashfunc(keyP, key_sizeP)%hashtblP->size;
-    node=hashtblP->nodes[hash];
-    while(node) {
-        if(node->key == keyP) {
-            *dataP = node->data;
-            return HASH_TABLE_OK;
-        } else if (node->key_size == key_sizeP) {
-            if (memcmp(node->key, keyP, key_sizeP) == 0) {
-                *dataP = node->data;
-                return HASH_TABLE_OK;
-            }
-        }
-        node=node->next;
-    }
+  if (hashtblP == NULL) {
     *dataP = NULL;
-    return HASH_TABLE_KEY_NOT_EXISTS;
+    return HASH_TABLE_BAD_PARAMETER_HASHTABLE;
+  }
+
+  hash=hashtblP->hashfunc(keyP, key_sizeP)%hashtblP->size;
+  node=hashtblP->nodes[hash];
+
+  while(node) {
+    if(node->key == keyP) {
+      *dataP = node->data;
+      return HASH_TABLE_OK;
+    } else if (node->key_size == key_sizeP) {
+      if (memcmp(node->key, keyP, key_sizeP) == 0) {
+        *dataP = node->data;
+        return HASH_TABLE_OK;
+      }
+    }
+
+    node=node->next;
+  }
+
+  *dataP = NULL;
+  return HASH_TABLE_KEY_NOT_EXISTS;
 }
 //-------------------------------------------------------------------------------------------------------------------------------
 /*
@@ -207,22 +229,25 @@ hashtable_rc_t obj_hashtable_get(obj_hash_table_t *hashtblP, const void* keyP, i
  */
 hashtable_rc_t obj_hashtable_get_keys(obj_hash_table_t *hashtblP, void ** keysP, unsigned int *sizeP)
 {
-    size_t                 n     = 0;
-    obj_hash_node_t       *node  = NULL;
-    obj_hash_node_t       *next  = NULL;
+  size_t                 n     = 0;
+  obj_hash_node_t       *node  = NULL;
+  obj_hash_node_t       *next  = NULL;
 
-    *sizeP = 0;
-    keysP = calloc(hashtblP->num_elements, sizeof(void *));
-    if (keysP) {
-        for(n=0; n<hashtblP->size; ++n) {
-            for(node=hashtblP->nodes[n]; node; node=next) {
-                keysP[*sizeP++] = node->key;
-                next = node->next;
-            }
-        }
-        return HASH_TABLE_OK;
+  *sizeP = 0;
+  keysP = calloc(hashtblP->num_elements, sizeof(void *));
+
+  if (keysP) {
+    for(n=0; n<hashtblP->size; ++n) {
+      for(node=hashtblP->nodes[n]; node; node=next) {
+        keysP[*sizeP++] = node->key;
+        next = node->next;
+      }
     }
-    return HASH_TABLE_SYSTEM_ERROR;
+
+    return HASH_TABLE_OK;
+  }
+
+  return HASH_TABLE_SYSTEM_ERROR;
 }
 //-------------------------------------------------------------------------------------------------------------------------------
 /*
@@ -237,32 +262,32 @@ hashtable_rc_t obj_hashtable_get_keys(obj_hash_table_t *hashtblP, void ** keysP,
  */
 hashtable_rc_t obj_hashtable_resize(obj_hash_table_t *hashtblP, hash_size_t sizeP)
 {
-    obj_hash_table_t       newtbl;
-    hash_size_t        n;
-    obj_hash_node_t       *node,*next;
+  obj_hash_table_t       newtbl;
+  hash_size_t        n;
+  obj_hash_node_t       *node,*next;
 
-    if (hashtblP == NULL) {
-        return HASH_TABLE_BAD_PARAMETER_HASHTABLE;
+  if (hashtblP == NULL) {
+    return HASH_TABLE_BAD_PARAMETER_HASHTABLE;
+  }
+
+  newtbl.size     = sizeP;
+  newtbl.hashfunc = hashtblP->hashfunc;
+
+  if(!(newtbl.nodes=calloc(sizeP, sizeof(obj_hash_node_t*)))) return HASH_TABLE_SYSTEM_ERROR;
+
+  for(n=0; n<hashtblP->size; ++n) {
+    for(node=hashtblP->nodes[n]; node; node=next) {
+      next = node->next;
+      obj_hashtable_insert(&newtbl, node->key, node->key_size, node->data);
+      obj_hashtable_remove(hashtblP, node->key, node->key_size);
     }
+  }
 
-    newtbl.size     = sizeP;
-    newtbl.hashfunc = hashtblP->hashfunc;
+  free(hashtblP->nodes);
+  hashtblP->size=newtbl.size;
+  hashtblP->nodes=newtbl.nodes;
 
-    if(!(newtbl.nodes=calloc(sizeP, sizeof(obj_hash_node_t*)))) return HASH_TABLE_SYSTEM_ERROR;
-
-    for(n=0; n<hashtblP->size; ++n) {
-        for(node=hashtblP->nodes[n]; node; node=next) {
-            next = node->next;
-            obj_hashtable_insert(&newtbl, node->key, node->key_size, node->data);
-            obj_hashtable_remove(hashtblP, node->key, node->key_size);
-        }
-    }
-
-    free(hashtblP->nodes);
-    hashtblP->size=newtbl.size;
-    hashtblP->nodes=newtbl.nodes;
-
-    return HASH_TABLE_OK;
+  return HASH_TABLE_OK;
 }
 
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -65,6 +65,7 @@ loadFPGA2 (unsigned int daq_fd, const char *fname)
     perror ("fstat");
     exit (1);
   }
+
   fpga_size = statbuf.st_size;
 
   printf ("Allocating %d bytes for FPGA config\n", fpga_size);
@@ -76,6 +77,7 @@ loadFPGA2 (unsigned int daq_fd, const char *fname)
   }
 
   map = mmap (0, fpga_size, PROT_READ, MAP_PRIVATE, bitf, 0);
+
   if (map == (caddr_t) - 1) {
     perror ("mmap failed");
     exit (-1);
@@ -88,9 +90,11 @@ loadFPGA2 (unsigned int daq_fd, const char *fname)
 
     if (map[j++] == '\n')
       i--;
+
     line[j - 1] = map[j - 1];
 
   }
+
   line[j] = 0;
   puts (line);
 
@@ -106,18 +110,21 @@ loadFPGA2 (unsigned int daq_fd, const char *fname)
 
   while (j < fpga_size) {       /* size must be 1751840 for XCV300 */
     switch (map[j++]) {         /* The bit */
-        case '0':
-          fpga_buf[pos++] = 0;
-          break;
-        case '1':
-          fpga_buf[pos++] = 1;
-          break;
-        case '\n':
-        case '\r':
-          continue;
-        default:
-          printf ("Error in file format");
-          return -1;
+    case '0':
+      fpga_buf[pos++] = 0;
+      break;
+
+    case '1':
+      fpga_buf[pos++] = 1;
+      break;
+
+    case '\n':
+    case '\r':
+      continue;
+
+    default:
+      printf ("Error in file format");
+      return -1;
     }
   }
 
@@ -132,11 +139,14 @@ loadFPGA2 (unsigned int daq_fd, const char *fname)
   if (ioctl (daq_fd, DAQ_FPGA_RESET, 0) == -1) {
     perror ("ioctl");
   }
+
   usleep (100000);
   printf ("FPGA PROGRAMMING\n");
+
   if (ioctl (daq_fd, DAQ_FPGA_PROGRAM, fpga_buf) == -1) {
     perror ("ioctl");
   }
+
   free (fpga_buf);
   return 0;
 }
@@ -146,6 +156,7 @@ resetFPGA2 (unsigned int daq_fd)
 {
 
   printf ("Resetting FPGA, ioctl=%x\n", DAQ_FPGA_RESET);
+
   if (ioctl (daq_fd, DAQ_FPGA_RESET) == -1)
     perror ("ioctl");
 

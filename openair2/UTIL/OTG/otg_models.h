@@ -28,7 +28,7 @@
 *******************************************************************************/
 
 /*! \file otg_models.h
-* \brief Data structure and functions for OTG 
+* \brief Data structure and functions for OTG
 * \author M. Laner and navid nikaein
 * \date 2013
 * \version 1.0
@@ -39,7 +39,7 @@
 */
 
 #ifndef __OTG_MODELS_H__
-#	define __OTG_MODELS_H__
+# define __OTG_MODELS_H__
 
 
 

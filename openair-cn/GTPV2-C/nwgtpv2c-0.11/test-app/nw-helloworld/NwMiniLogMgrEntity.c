@@ -6,7 +6,7 @@
  *                                                                            *
  *----------------------------------------------------------------------------*/
 
-/** 
+/**
  * @file hello-world.c
  * @brief This file contains example of a minimalistic log manager entity.
 */
@@ -21,7 +21,7 @@
 
 #include "NwMiniLogMgrEntity.h"
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -52,18 +52,20 @@ NwRcT nwMiniLogMgrSetLogLevel(NwMiniLogMgrT* thiz, NwU32T logLevel)
 }
 
 NwRcT nwMiniLogMgrLogRequest (NwGtpv2cLogMgrHandleT hLogMgr,
-    NwU32T logLevel,
-    NwCharT* file,
-    NwU32T line,
-    NwCharT* logStr)
+                              NwU32T logLevel,
+                              NwCharT* file,
+                              NwU32T line,
+                              NwCharT* logStr)
 {
   NwMiniLogMgrT* thiz = (NwMiniLogMgrT*) hLogMgr;
+
   if(thiz->logLevel >= logLevel)
     printf("NWGTPV2C-STK  %s - %s <%s,%u>\n", gLogLevelStr[logLevel], logStr, basename(file), line);
+
   return NW_OK;
 }
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 }
 #endif
 

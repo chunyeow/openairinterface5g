@@ -101,74 +101,74 @@
 
 
 typedef struct mme_config_s {
-    /* Reader/writer lock for this configuration */
-    pthread_rwlock_t rw_lock;
+  /* Reader/writer lock for this configuration */
+  pthread_rwlock_t rw_lock;
 
-    uint8_t verbosity_level;
+  uint8_t verbosity_level;
 
-    char *config_file;
-    char *realm;
-    int   realm_length;
+  char *config_file;
+  char *realm;
+  int   realm_length;
 
-    uint32_t max_eNBs;
-    uint32_t max_ues;
+  uint32_t max_eNBs;
+  uint32_t max_ues;
 
-    uint8_t relative_capacity;
+  uint8_t relative_capacity;
 
-    uint32_t mme_statistic_timer;
+  uint32_t mme_statistic_timer;
 
-    uint8_t emergency_attach_supported;
-    uint8_t unauthenticated_imsi_supported;
+  uint8_t emergency_attach_supported;
+  uint8_t unauthenticated_imsi_supported;
 
-    struct {
-        uint16_t  nb_mme_gid;
-        uint16_t *mme_gid;
+  struct {
+    uint16_t  nb_mme_gid;
+    uint16_t *mme_gid;
 
-        uint16_t  nb_mmec;
-        uint8_t  *mmec;
+    uint16_t  nb_mmec;
+    uint8_t  *mmec;
 
-        uint8_t   nb_plmns;
-        uint16_t *plmn_mcc;
-        uint16_t *plmn_mnc;
-        uint16_t *plmn_mnc_len;
-        uint16_t *plmn_tac;
-    } gummei;
+    uint8_t   nb_plmns;
+    uint16_t *plmn_mcc;
+    uint16_t *plmn_mnc;
+    uint16_t *plmn_mnc_len;
+    uint16_t *plmn_tac;
+  } gummei;
 
-    struct {
-        uint16_t in_streams;
-        uint16_t out_streams;
-    } sctp_config;
-    struct {
-        uint16_t port_number;
-    } gtpv1u_config;
-    struct {
-        uint16_t port_number;
-        uint8_t  outcome_drop_timer_sec;
-    } s1ap_config;
-    struct {
-        uint32_t  sgw_ip_address_for_S1u_S12_S4_up;
+  struct {
+    uint16_t in_streams;
+    uint16_t out_streams;
+  } sctp_config;
+  struct {
+    uint16_t port_number;
+  } gtpv1u_config;
+  struct {
+    uint16_t port_number;
+    uint8_t  outcome_drop_timer_sec;
+  } s1ap_config;
+  struct {
+    uint32_t  sgw_ip_address_for_S1u_S12_S4_up;
 
-        char     *mme_interface_name_for_S1_MME;
-        uint32_t  mme_ip_address_for_S1_MME;
+    char     *mme_interface_name_for_S1_MME;
+    uint32_t  mme_ip_address_for_S1_MME;
 
-        char     *mme_interface_name_for_S11;
-        uint32_t  mme_ip_address_for_S11;
+    char     *mme_interface_name_for_S11;
+    uint32_t  mme_ip_address_for_S11;
 
-        uint32_t  sgw_ip_address_for_S11;
-    } ipv4;
-    struct {
-        char *conf_file;
-        char *hss_host_name;
-    } s6a_config;
-    struct {
-        uint32_t  queue_size;
-        char     *log_file;
-    } itti_config;
+    uint32_t  sgw_ip_address_for_S11;
+  } ipv4;
+  struct {
+    char *conf_file;
+    char *hss_host_name;
+  } s6a_config;
+  struct {
+    uint32_t  queue_size;
+    char     *log_file;
+  } itti_config;
 
-    struct {
-        uint8_t prefered_integrity_algorithm[8];
-        uint8_t prefered_ciphering_algorithm[8];
-    } nas_config;
+  struct {
+    uint8_t prefered_integrity_algorithm[8];
+    uint8_t prefered_ciphering_algorithm[8];
+  } nas_config;
 
 
 
@@ -177,11 +177,11 @@ typedef struct mme_config_s {
 extern mme_config_t mme_config;
 
 int mme_config_find_mnc_length(const char mcc_digit1P,
-        const char mcc_digit2P,
-        const char mcc_digit3P,
-        const char mnc_digit1P,
-        const char mnc_digit2P,
-        const char mnc_digit3P);
+                               const char mcc_digit2P,
+                               const char mcc_digit3P,
+                               const char mnc_digit1P,
+                               const char mnc_digit2P,
+                               const char mnc_digit3P);
 int config_parse_opt_line(int argc, char *argv[], mme_config_t *mme_config);
 
 #define config_read_lock(mMEcONFIG)  pthread_rwlock_rdlock(&(mMEcONFIG)->rw_lock)

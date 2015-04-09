@@ -39,7 +39,7 @@
 #define AUTHENTICATION_PARAMETER_AUTN_MAXIMUM_LENGTH 17
 
 typedef struct AuthenticationParameterAutn_tag {
-    OctetString autn;
+  OctetString autn;
 } AuthenticationParameterAutn;
 
 int encode_authentication_parameter_autn(AuthenticationParameterAutn *authenticationparameterautn, uint8_t iei, uint8_t *buffer, uint32_t len);

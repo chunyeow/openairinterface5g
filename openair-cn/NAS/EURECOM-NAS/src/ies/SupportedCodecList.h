@@ -39,9 +39,9 @@
 #define SUPPORTED_CODEC_LIST_MAXIMUM_LENGTH 5
 
 typedef struct SupportedCodecList_tag {
-    uint8_t  systemidentification;
-    uint8_t  lengthofbitmap;
-    uint16_t codecbitmap;
+  uint8_t  systemidentification;
+  uint8_t  lengthofbitmap;
+  uint16_t codecbitmap;
 } SupportedCodecList;
 
 int encode_supported_codec_list(SupportedCodecList *supportedcodeclist, uint8_t iei, uint8_t *buffer, uint32_t len);

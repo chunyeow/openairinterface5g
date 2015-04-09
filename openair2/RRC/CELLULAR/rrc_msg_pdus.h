@@ -26,27 +26,27 @@ typedef struct RRCConnectionRequest {
 /*  RRCConnectionSetup                                        */
 /**************************************************************/
 typedef struct RRCConnectionSetup {
-// InitialUE_Identity  initialUE_Identity;
+  // InitialUE_Identity  initialUE_Identity;
   IMEI            imei;
   RRC_TransactionIdentifier rrc_TransactionIdentifier;
   ActivationTime  activationTime;
   U_RNTI          new_U_RNTI;
-// C_RNTI  new_c_RNTI;
+  // C_RNTI  new_c_RNTI;
   RRC_StateIndicator rrc_StateIndicator;
-// UTRAN_DRX_CycleLengthCoefficient  utran_DRX_CycleLengthCoeff;
-// CapabilityUpdateRequirement_r4  capabilityUpdateRequirement;
-// SRB_InformationSetupList2  srb_InformationSetupList;
-// UL_CommonTransChInfo  ul_CommonTransChInfo;
-// UL_AddReconfTransChInfoList  ul_AddReconfTransChInfoList;
-// DL_CommonTransChInfo_r4  dl_CommonTransChInfo;
-// DL_AddReconfTransChInfoList  dl_AddReconfTransChInfoList;
-// FrequencyInfo  frequencyInfo;
-// MaxAllowedUL_TX_Power  maxAllowedUL_TX_Power;
-// UL_ChannelRequirement_r4  ul_ChannelRequirement;
-// DL_CommonInformation_r4  dl_CommonInformation;
-// DL_InformationPerRL_List_r4  dl_InformationPerRL_List;
-//   QOS_Classes  qos_Classes;
-//   IP_DSCP_Codes  ip_dscp_Codes;
+  // UTRAN_DRX_CycleLengthCoefficient  utran_DRX_CycleLengthCoeff;
+  // CapabilityUpdateRequirement_r4  capabilityUpdateRequirement;
+  // SRB_InformationSetupList2  srb_InformationSetupList;
+  // UL_CommonTransChInfo  ul_CommonTransChInfo;
+  // UL_AddReconfTransChInfoList  ul_AddReconfTransChInfoList;
+  // DL_CommonTransChInfo_r4  dl_CommonTransChInfo;
+  // DL_AddReconfTransChInfoList  dl_AddReconfTransChInfoList;
+  // FrequencyInfo  frequencyInfo;
+  // MaxAllowedUL_TX_Power  maxAllowedUL_TX_Power;
+  // UL_ChannelRequirement_r4  ul_ChannelRequirement;
+  // DL_CommonInformation_r4  dl_CommonInformation;
+  // DL_InformationPerRL_List_r4  dl_InformationPerRL_List;
+  //   QOS_Classes  qos_Classes;
+  //   IP_DSCP_Codes  ip_dscp_Codes;
   UE_Configuration ue_Configuration;
 } RRCConnectionSetup;
 
@@ -62,7 +62,7 @@ typedef struct RRCConnectionSetupComplete {
 /*  RRCConnectionReject                                       */
 /**************************************************************/
 typedef struct RRCConnectionReject {
-//   InitialUE_Identity  initialUE_Identity;
+  //   InitialUE_Identity  initialUE_Identity;
   IMEI            imei;
   RRC_TransactionIdentifier rrc_TransactionIdentifier;
   WaitTime        waitTime;
@@ -109,26 +109,26 @@ typedef struct RadioBearerSetup {
   //CipheringModeInfo  cipheringModeInfo;
   ActivationTime  activationTime;
   U_RNTI          new_U_RNTI;
-//   C_RNTI  new_C_RNTI;
+  //   C_RNTI  new_C_RNTI;
   RRC_StateIndicator rrc_StateIndicator;
-//   CN_InformationInfo  cn_InformationInfo;
-//   SRB_InformationSetupList  srb_InformationSetupList;
+  //   CN_InformationInfo  cn_InformationInfo;
+  //   SRB_InformationSetupList  srb_InformationSetupList;
   RAB_InformationSetupList rab_InformationSetupList;
-//   RB_InformationAffectedList  rb_InformationAffectedList;
-//   DL_CounterSynchronisationInfo  dl_CounterSynchronisationInfo;
-//   UL_CommonTransChInfo  ul_CommonTransChInfo;
-//   UL_DeletedTransChInfoList  ul_deletedTransChInfoList;
-//   UL_AddReconfTransChInfoList  ul_AddReconfTransChInfoList;
-//   DL_CommonTransChInfo  dl_CommonTransChInfo;
-//   DL_DeletedTransChInfoList  dl_DeletedTransChInfoList;
-//   DL_AddReconfTransChInfoList  dl_AddReconfTransChInfoList;
-//   FrequencyInfo  frequencyInfo;
-//   MaxAllowedUL_TX_Power  maxAllowedUL_TX_Power;
-//   UL_ChannelRequirement  ul_ChannelRequirement;
-//   DL_CommonInformation  dl_CommonInformation;
-//   DL_InformationPerRL_List  dl_InformationPerRL_List;
-//   QOS_Classes  qos_Classes;
-//   IP_DSCP_Codes  ip_dscp_Codes;
+  //   RB_InformationAffectedList  rb_InformationAffectedList;
+  //   DL_CounterSynchronisationInfo  dl_CounterSynchronisationInfo;
+  //   UL_CommonTransChInfo  ul_CommonTransChInfo;
+  //   UL_DeletedTransChInfoList  ul_deletedTransChInfoList;
+  //   UL_AddReconfTransChInfoList  ul_AddReconfTransChInfoList;
+  //   DL_CommonTransChInfo  dl_CommonTransChInfo;
+  //   DL_DeletedTransChInfoList  dl_DeletedTransChInfoList;
+  //   DL_AddReconfTransChInfoList  dl_AddReconfTransChInfoList;
+  //   FrequencyInfo  frequencyInfo;
+  //   MaxAllowedUL_TX_Power  maxAllowedUL_TX_Power;
+  //   UL_ChannelRequirement  ul_ChannelRequirement;
+  //   DL_CommonInformation  dl_CommonInformation;
+  //   DL_InformationPerRL_List  dl_InformationPerRL_List;
+  //   QOS_Classes  qos_Classes;
+  //   IP_DSCP_Codes  ip_dscp_Codes;
   UE_Configuration ue_Configuration;
 } RadioBearerSetup;
 
@@ -141,25 +141,25 @@ typedef struct RadioBearerRelease {
   //CipheringModeInfo  cipheringModeInfo;
   ActivationTime  activationTime;
   U_RNTI          new_U_RNTI;
-//   C_RNTI  new_C_RNTI;
+  //   C_RNTI  new_C_RNTI;
   RRC_StateIndicator rrc_StateIndicator;
-//   CN_InformationInfo  cn_InformationInfo;
-//   CN_DomainIdentity  signallingConnectionRelIndication;
-//   RAB_InformationReconfigList  rab_InformationReconfigList;
+  //   CN_InformationInfo  cn_InformationInfo;
+  //   CN_DomainIdentity  signallingConnectionRelIndication;
+  //   RAB_InformationReconfigList  rab_InformationReconfigList;
   RB_InformationReleaseList rb_InformationReleaseList;
-//   RB_InformationAffectedList  rb_InformationAffectedList;
-//   DL_CounterSynchronisationInfo  dl_CounterSynchronisationInfo;
-//   UL_CommonTransChInfo  ul_CommonTransChInfo;
-//   UL_DeletedTransChInfoList  ul_deletedTransChInfoList;
-//   UL_AddReconfTransChInfoList  ul_AddReconfTransChInfoList;
-//   DL_CommonTransChInfo  dl_CommonTransChInfo;
-//   DL_DeletedTransChInfoList  dl_DeletedTransChInfoList;
-//   DL_AddReconfTransChInfo2List  dl_AddReconfTransChInfoList;
-//   FrequencyInfo  frequencyInfo;
-//   MaxAllowedUL_TX_Power  maxAllowedUL_TX_Power;
-//   UL_ChannelRequirement  ul_ChannelRequirement;
-//   DL_CommonInformation  dl_CommonInformation;
-//   DL_InformationPerRL_List  dl_InformationPerRL_List;
+  //   RB_InformationAffectedList  rb_InformationAffectedList;
+  //   DL_CounterSynchronisationInfo  dl_CounterSynchronisationInfo;
+  //   UL_CommonTransChInfo  ul_CommonTransChInfo;
+  //   UL_DeletedTransChInfoList  ul_deletedTransChInfoList;
+  //   UL_AddReconfTransChInfoList  ul_AddReconfTransChInfoList;
+  //   DL_CommonTransChInfo  dl_CommonTransChInfo;
+  //   DL_DeletedTransChInfoList  dl_DeletedTransChInfoList;
+  //   DL_AddReconfTransChInfo2List  dl_AddReconfTransChInfoList;
+  //   FrequencyInfo  frequencyInfo;
+  //   MaxAllowedUL_TX_Power  maxAllowedUL_TX_Power;
+  //   UL_ChannelRequirement  ul_ChannelRequirement;
+  //   DL_CommonInformation  dl_CommonInformation;
+  //   DL_InformationPerRL_List  dl_InformationPerRL_List;
   UE_Configuration ue_Configuration;
 } RadioBearerRelease;
 
@@ -227,26 +227,26 @@ typedef struct CellUpdateConfirm_CCCH {
   //CipheringModeInfo  cipheringModeInfo;
   ActivationTime  activationTime;
   U_RNTI          new_U_RNTI;
-//   C_RNTI  new_C_RNTI;
+  //   C_RNTI  new_C_RNTI;
   RRC_StateIndicator rrc_StateIndicator;
   u8              rlc_Re_establishIndicatorRb2_3or4;
   u8              rlc_Re_establishIndicatorRb5orAbove;
-//   CN_InformationInfo  cn_InformationInfo;
-//   RB_InformationReleaseList  rb_InformationReleaseList;
-//   RB_InformationReconfigList  rb_InformationReconfigList;
-//   RB_InformationAffectedList  rb_InformationAffectedList;
-//   DL_CounterSynchronisationInfo  dl_CounterSynchronisationInfo;
-//   UL_CommonTransChInfo  ul_CommonTransChInfo;
-//   UL_DeletedTransChInfoList  ul_deletedTransChInfoList;
-//   UL_AddReconfTransChInfoList  ul_AddReconfTransChInfoList;
-//   DL_CommonTransChInfo  dl_CommonTransChInfo;
-//   DL_DeletedTransChInfoList  dl_DeletedTransChInfoList;
-//   DL_AddReconfTransChInfoList  dl_AddReconfTransChInfoList;
-//   FrequencyInfo  frequencyInfo;
-//   MaxAllowedUL_TX_Power  maxAllowedUL_TX_Power;
-//   UL_ChannelRequirement  ul_ChannelRequirement;
-//   DL_CommonInformation  dl_CommonInformation;
-//   DL_InformationPerRL_List  dl_InformationPerRL_List;
+  //   CN_InformationInfo  cn_InformationInfo;
+  //   RB_InformationReleaseList  rb_InformationReleaseList;
+  //   RB_InformationReconfigList  rb_InformationReconfigList;
+  //   RB_InformationAffectedList  rb_InformationAffectedList;
+  //   DL_CounterSynchronisationInfo  dl_CounterSynchronisationInfo;
+  //   UL_CommonTransChInfo  ul_CommonTransChInfo;
+  //   UL_DeletedTransChInfoList  ul_deletedTransChInfoList;
+  //   UL_AddReconfTransChInfoList  ul_AddReconfTransChInfoList;
+  //   DL_CommonTransChInfo  dl_CommonTransChInfo;
+  //   DL_DeletedTransChInfoList  dl_DeletedTransChInfoList;
+  //   DL_AddReconfTransChInfoList  dl_AddReconfTransChInfoList;
+  //   FrequencyInfo  frequencyInfo;
+  //   MaxAllowedUL_TX_Power  maxAllowedUL_TX_Power;
+  //   UL_ChannelRequirement  ul_ChannelRequirement;
+  //   DL_CommonInformation  dl_CommonInformation;
+  //   DL_InformationPerRL_List  dl_InformationPerRL_List;
   UE_Configuration ue_Configuration;
 } CellUpdateConfirm_CCCH;
 
@@ -257,7 +257,7 @@ typedef struct PagingType2 {
   RRC_TransactionIdentifier rrc_TransactionIdentifier;
   //PagingCause  pagingCause;
   IMEI            imei;
-//   NAS_Message  nas_Message;  EXAMPLE
+  //   NAS_Message  nas_Message;  EXAMPLE
   PAGING_Message  paging_Message;
 } PagingType2;
 
@@ -278,9 +278,9 @@ typedef struct MeasurementControl {
 typedef struct MeasurementReport {
   MeasurementIdentity measurementIdentity;
   MeasuredResults measuredResults;
-//   MeasuredResultsOnRACH  measuredResultsOnRACH;  FFS
-//   MeasuredResultsList  additionalMeasuredResults; FFS
-//   EventResults  eventResults; FFS
+  //   MeasuredResultsOnRACH  measuredResultsOnRACH;  FFS
+  //   MeasuredResultsList  additionalMeasuredResults; FFS
+  //   EventResults  eventResults; FFS
 } MeasurementReport;
 
 // /**************************************************************/
@@ -290,7 +290,7 @@ typedef struct MeasurementReport {
 //   RRC_TransactionIdentifier rrc_TransactionIdentifier;
 //   UplinkPhysicalChannelControl_IE uplinkPhysicalChannelControl_IE;
 // } ULPCHControl;
-// 
+//
 // typedef struct KeepAlive {
 //   int             dummy;
 // } KeepAlive;
@@ -301,7 +301,7 @@ typedef struct MeasurementReport {
 typedef struct UECapabilityInformation {
   RRC_TransactionIdentifier      rrc_TransactionIdentifier;
   AccessStratumReleaseIndicator  accessStratumReleaseIndicator;
-//An adaptation for Eurecom TD-CDMA
+  //An adaptation for Eurecom TD-CDMA
   EurecomKernelReleaseIndicator  eurecomKernelReleaseIndicator;
 } UECapabilityInformation;
 

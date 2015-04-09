@@ -31,13 +31,13 @@ NwU32T g_log_level = NW_LOG_LEVEL_INFO;
 
 NwGtpv1uRcT nwMiniLogMgrInit(NwMiniLogMgrT *thiz, NwU32T logLevel )
 {
-    thiz->logLevel = logLevel;
-    return NW_GTPV1U_OK;
+  thiz->logLevel = logLevel;
+  return NW_GTPV1U_OK;
 }
 
 NwGtpv1uRcT nwMiniLogMgrSetLogLevel(NwMiniLogMgrT *thiz, NwU32T logLevel)
 {
-    thiz->logLevel = logLevel;
+  thiz->logLevel = logLevel;
 }
 
 NwGtpv1uRcT nwMiniLogMgrLogRequest (NwGtpv1uLogMgrHandleT hLogMgr,
@@ -46,12 +46,14 @@ NwGtpv1uRcT nwMiniLogMgrLogRequest (NwGtpv1uLogMgrHandleT hLogMgr,
                                     NwU32T line,
                                     NwCharT *logStr)
 {
-    NwMiniLogMgrT *thiz = (NwMiniLogMgrT *) hLogMgr;
-    if(thiz->logLevel >= logLevel) {
-        printf("NWGTPv2U-STK  %s - %s <%s,%u>\n", gLogLevelStr[logLevel], logStr,
-               basename(file), line);
-    }
-    return NW_GTPV1U_OK;
+  NwMiniLogMgrT *thiz = (NwMiniLogMgrT *) hLogMgr;
+
+  if(thiz->logLevel >= logLevel) {
+    printf("NWGTPv2U-STK  %s - %s <%s,%u>\n", gLogLevelStr[logLevel], logStr,
+           basename(file), line);
+  }
+
+  return NW_GTPV1U_OK;
 }
 
 #ifdef __cplusplus

@@ -115,23 +115,23 @@
 * \param[out] stat_timer_reordering_timed_out      Number of times the timer "reordering" has timed-out.
 */
 public_rlc_um(void     rlc_um_stat_req     (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP,
-                        unsigned int* stat_tx_pdcp_sdu,
-                        unsigned int* stat_tx_pdcp_bytes,
-                        unsigned int* stat_tx_pdcp_sdu_discarded,
-                        unsigned int* stat_tx_pdcp_bytes_discarded,
-                        unsigned int* stat_tx_data_pdu,
-                        unsigned int* stat_tx_data_bytes,
-                        unsigned int* stat_rx_pdcp_sdu,
-                        unsigned int* stat_rx_pdcp_bytes,
-                        unsigned int* stat_rx_data_pdus_duplicate,
-                        unsigned int* stat_rx_data_bytes_duplicate,
-                        unsigned int* stat_rx_data_pdu,
-                        unsigned int* stat_rx_data_bytes,
-                        unsigned int* stat_rx_data_pdu_dropped,
-                        unsigned int* stat_rx_data_bytes_dropped,
-                        unsigned int* stat_rx_data_pdu_out_of_window,
-                        unsigned int* stat_rx_data_bytes_out_of_window,
-                        unsigned int* stat_timer_reordering_timed_out);)
+              unsigned int* stat_tx_pdcp_sdu,
+              unsigned int* stat_tx_pdcp_bytes,
+              unsigned int* stat_tx_pdcp_sdu_discarded,
+              unsigned int* stat_tx_pdcp_bytes_discarded,
+              unsigned int* stat_tx_data_pdu,
+              unsigned int* stat_tx_data_bytes,
+              unsigned int* stat_rx_pdcp_sdu,
+              unsigned int* stat_rx_pdcp_bytes,
+              unsigned int* stat_rx_data_pdus_duplicate,
+              unsigned int* stat_rx_data_bytes_duplicate,
+              unsigned int* stat_rx_data_pdu,
+              unsigned int* stat_rx_data_bytes,
+              unsigned int* stat_rx_data_pdu_dropped,
+              unsigned int* stat_rx_data_bytes_dropped,
+              unsigned int* stat_rx_data_pdu_out_of_window,
+              unsigned int* stat_rx_data_bytes_out_of_window,
+              unsigned int* stat_timer_reordering_timed_out);)
 
 /*! \fn void     rlc_um_get_pdus (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP)
 * \brief    Request the segmentation of SDUs based on status previously sent by MAC.

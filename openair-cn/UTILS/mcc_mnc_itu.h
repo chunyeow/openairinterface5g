@@ -48,14 +48,14 @@ Description Defines the MCC/MNC list delivered by the ITU
 
 
 typedef struct mcc_mnc_list_s {
-    uint16_t mcc;
-    char     mnc[4];
+  uint16_t mcc;
+  char     mnc[4];
 } mcc_mnc_list_t;
 
 int find_mnc_length(const char mcc_digit1P,
-        const char mcc_digit2P,
-        const char mcc_digit3P,
-        const char mnc_digit1P,
-        const char mnc_digit2P,
-        const char mnc_digit3P);
+                    const char mcc_digit2P,
+                    const char mcc_digit3P,
+                    const char mnc_digit1P,
+                    const char mnc_digit2P,
+                    const char mnc_digit3P);
 #endif

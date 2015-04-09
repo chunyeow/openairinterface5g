@@ -59,16 +59,16 @@ Description Defines the EMMESM Service Access Point that provides
  * EMMESM-SAP primitives
  */
 typedef enum {
-    _EMMESM_START = 100,
+  _EMMESM_START = 100,
 #ifdef NAS_UE
-    _EMMESM_ESTABLISH_REQ,
-    _EMMESM_ESTABLISH_CNF,
-    _EMMESM_ESTABLISH_REJ,
+  _EMMESM_ESTABLISH_REQ,
+  _EMMESM_ESTABLISH_CNF,
+  _EMMESM_ESTABLISH_REJ,
 #endif
-    _EMMESM_RELEASE_IND,
-    _EMMESM_UNITDATA_REQ,
-    _EMMESM_UNITDATA_IND,
-    _EMMESM_END
+  _EMMESM_RELEASE_IND,
+  _EMMESM_UNITDATA_REQ,
+  _EMMESM_UNITDATA_IND,
+  _EMMESM_END
 } emm_esm_primitive_t;
 
 /****************************************************************************/
@@ -80,9 +80,9 @@ typedef enum {
  * ---------------------------------------------
  */
 typedef struct {
-    int is_emergency;   /* Indicates whether the PDN connection is established
+  int is_emergency;   /* Indicates whether the PDN connection is established
              * for emergency bearer services only       */
-    int is_attached;    /* Indicates whether the UE remains attached to the
+  int is_attached;    /* Indicates whether the UE remains attached to the
              * network                  */
 } emm_esm_establish_t;
 
@@ -91,7 +91,7 @@ typedef struct {
  * ----------------------------------
  */
 typedef struct {
-    OctetString msg;        /* ESM message to be transfered     */
+  OctetString msg;        /* ESM message to be transfered     */
 } emm_esm_data_t;
 
 /*
@@ -100,16 +100,16 @@ typedef struct {
  * ---------------------------------
  */
 typedef struct {
-    emm_esm_primitive_t primitive;
-    unsigned int ueid;
+  emm_esm_primitive_t primitive;
+  unsigned int ueid;
 #if defined(NAS_MME)
-    emm_data_context_t *ctx;
+  emm_data_context_t *ctx;
 #endif
-    union {
-        emm_esm_establish_t establish;
-        emm_esm_data_t data;
-    } u;
-    /* TODO: complete emm_esm_t structure definition */
+  union {
+    emm_esm_establish_t establish;
+    emm_esm_data_t data;
+  } u;
+  /* TODO: complete emm_esm_t structure definition */
 } emm_esm_t;
 
 /****************************************************************************/

@@ -27,19 +27,19 @@
 
  *******************************************************************************/
 /*****************************************************************************
-Source		network.h
+Source    network.h
 
-Version		0.1
+Version   0.1
 
-Date		2013/03/26
+Date    2013/03/26
 
-Product		USIM data generator
+Product   USIM data generator
 
-Subsystem	PLMN network operators
+Subsystem PLMN network operators
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Defines a list of PLMN network operators
+Description Defines a list of PLMN network operators
 
 *****************************************************************************/
 #ifndef __NETWORK_H__
@@ -52,15 +52,15 @@ Description	Defines a list of PLMN network operators
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
 
-#define SFR_PLMN_1	{0,2,0x0f,8,0,1}	// 20810
-#define SFR_PLMN_2	{0,2,0x0f,8,1,1}	// 20811
-#define SFR_PLMN_3	{0,2,0x0f,8,3,1}	// 20813
+#define SFR_PLMN_1  {0,2,0x0f,8,0,1}  // 20810
+#define SFR_PLMN_2  {0,2,0x0f,8,1,1}  // 20811
+#define SFR_PLMN_3  {0,2,0x0f,8,3,1}  // 20813
 #define TM_PLMN_1   {1,3,0,0,8,2}       // 310280
 #define FCT_PLMN_1  {1,3,8,0,2,0}       // 310028
-#define VDF_PLMN_1	{2,2,0x0f,2,0,1}	// 22210
-#define VDF_PLMN_2	{1,2,0x0f,4,0x0f,1}	// 2141
-#define VDF_PLMN_3	{1,2,0x0f,4,0x0f,6}	// 2146
-#define VDF_PLMN_4	{6,2,0x0f,2,0x0f,2}	// 2622
+#define VDF_PLMN_1  {2,2,0x0f,2,0,1}  // 22210
+#define VDF_PLMN_2  {1,2,0x0f,4,0x0f,1} // 2141
+#define VDF_PLMN_3  {1,2,0x0f,4,0x0f,6} // 2146
+#define VDF_PLMN_4  {6,2,0x0f,2,0x0f,2} // 2622
 #define VDF_PLMN_5  {6,2,0x0f,2,0x0f,4} // 2624
 
 /****************************************************************************/
@@ -71,28 +71,28 @@ Description	Defines a list of PLMN network operators
  * PLMN network operator record index
  */
 enum {
-    SFR1=0,
-    SFR2,
-    SFR3,
-    TM1,
-    FCT1,
-    VDF1,
-    VDF2,
-    VDF3,
-    VDF4,
-    VDF5,
+  SFR1=0,
+  SFR2,
+  SFR3,
+  TM1,
+  FCT1,
+  VDF1,
+  VDF2,
+  VDF3,
+  VDF4,
+  VDF5,
 };
 
 /*
  * PLMN network operator record
  */
 typedef struct {
-    unsigned int num;
-    plmn_t plmn;
-    char fullname[NET_FORMAT_LONG_SIZE + 1];
-    char shortname[NET_FORMAT_SHORT_SIZE + 1];
-    tac_t tac_start;
-    tac_t tac_end;
+  unsigned int num;
+  plmn_t plmn;
+  char fullname[NET_FORMAT_LONG_SIZE + 1];
+  char shortname[NET_FORMAT_SHORT_SIZE + 1];
+  tac_t tac_start;
+  tac_t tac_end;
 } network_record_t;
 
 
@@ -104,16 +104,16 @@ typedef struct {
  * The list of PLMN network operator records
  */
 network_record_t network_records[] = {
-    {20810, SFR_PLMN_1, "SFR France",      "SFR",       0x0001, 0xfffd},
-    {20811, SFR_PLMN_2, "SFR France",      "SFR",       0x0001, 0xfffd},
-    {20813, SFR_PLMN_3, "SFR France",      "SFR",       0x0001, 0xfffd},
-    {310280,TM_PLMN_1,  "T-Mobile USA",    "T-Mobile",  0x0001, 0xfffd},
-    {310028,FCT_PLMN_1, "FICTITIOUS USA",  "FICTITIO",  0x0001, 0xfffd},
-    {22210, VDF_PLMN_1, "Vodafone Italia", "VODAFONE",  0x0001, 0xfffd},
-    {2141,  VDF_PLMN_2, "Vodafone Spain",  "VODAFONE",  0x0001, 0xfffd},
-    {2146,  VDF_PLMN_3, "Vodafone Spain",  "VODAFONE",  0x0001, 0xfffd},
-    {2622,  VDF_PLMN_4, "Vodafone Germ",   "VODAFONE",  0x0001, 0xfffd},
-    {2624,  VDF_PLMN_5, "Vodafone Germ",   "VODAFONE",  0x0001, 0xfffd},
+  {20810, SFR_PLMN_1, "SFR France",      "SFR",       0x0001, 0xfffd},
+  {20811, SFR_PLMN_2, "SFR France",      "SFR",       0x0001, 0xfffd},
+  {20813, SFR_PLMN_3, "SFR France",      "SFR",       0x0001, 0xfffd},
+  {310280,TM_PLMN_1,  "T-Mobile USA",    "T-Mobile",  0x0001, 0xfffd},
+  {310028,FCT_PLMN_1, "FICTITIOUS USA",  "FICTITIO",  0x0001, 0xfffd},
+  {22210, VDF_PLMN_1, "Vodafone Italia", "VODAFONE",  0x0001, 0xfffd},
+  {2141,  VDF_PLMN_2, "Vodafone Spain",  "VODAFONE",  0x0001, 0xfffd},
+  {2146,  VDF_PLMN_3, "Vodafone Spain",  "VODAFONE",  0x0001, 0xfffd},
+  {2622,  VDF_PLMN_4, "Vodafone Germ",   "VODAFONE",  0x0001, 0xfffd},
+  {2624,  VDF_PLMN_5, "Vodafone Germ",   "VODAFONE",  0x0001, 0xfffd},
 };
 
 /****************************************************************************/

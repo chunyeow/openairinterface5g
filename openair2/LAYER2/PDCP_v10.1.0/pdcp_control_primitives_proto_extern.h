@@ -27,7 +27,7 @@
 
  *******************************************************************************/
 /***************************************************************************
-                          	pdcp_control_primitives_proto_extern.h
+                            pdcp_control_primitives_proto_extern.h
                              -------------------
     begin                : Mon Dec 10 2001
     email                : Lionel.Gauthier@eurecom.fr

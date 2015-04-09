@@ -68,26 +68,26 @@
 
 int main(int argc, char *argv[])
 {
-    /* Parse the command line for options and set the mme_config accordingly. */
-    CHECK_INIT_RETURN(config_parse_opt_line(argc, argv, &mme_config) < 0);
+  /* Parse the command line for options and set the mme_config accordingly. */
+  CHECK_INIT_RETURN(config_parse_opt_line(argc, argv, &mme_config) < 0);
 
-    /* Calling each layer init function */
-    CHECK_INIT_RETURN(log_init(&mme_config, oai_epc_log_specific));
-    CHECK_INIT_RETURN(itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX,
-                                tasks_info, messages_info, messages_definition_xml,
-                                mme_config.itti_config.log_file));
+  /* Calling each layer init function */
+  CHECK_INIT_RETURN(log_init(&mme_config, oai_epc_log_specific));
+  CHECK_INIT_RETURN(itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX,
+                              tasks_info, messages_info, messages_definition_xml,
+                              mme_config.itti_config.log_file));
 
-    CHECK_INIT_RETURN(nas_init(&mme_config));
-    CHECK_INIT_RETURN(sctp_init(&mme_config));
-    CHECK_INIT_RETURN(udp_init(&mme_config));
-    CHECK_INIT_RETURN(gtpv1u_init(&mme_config));
-    CHECK_INIT_RETURN(s1ap_mme_init(&mme_config));
-    CHECK_INIT_RETURN(mme_app_init(&mme_config));
-    CHECK_INIT_RETURN(s6a_init(&mme_config));
-    CHECK_INIT_RETURN(sgw_lite_init(mme_config.config_file));
-    CHECK_INIT_RETURN(sgi_init(&spgw_config.pgw_config));
-    /* Handle signals here */
-    itti_wait_tasks_end();
+  CHECK_INIT_RETURN(nas_init(&mme_config));
+  CHECK_INIT_RETURN(sctp_init(&mme_config));
+  CHECK_INIT_RETURN(udp_init(&mme_config));
+  CHECK_INIT_RETURN(gtpv1u_init(&mme_config));
+  CHECK_INIT_RETURN(s1ap_mme_init(&mme_config));
+  CHECK_INIT_RETURN(mme_app_init(&mme_config));
+  CHECK_INIT_RETURN(s6a_init(&mme_config));
+  CHECK_INIT_RETURN(sgw_lite_init(mme_config.config_file));
+  CHECK_INIT_RETURN(sgi_init(&spgw_config.pgw_config));
+  /* Handle signals here */
+  itti_wait_tasks_end();
 
-    return 0;
+  return 0;
 }

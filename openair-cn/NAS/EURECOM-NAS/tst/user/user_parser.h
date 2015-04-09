@@ -1,20 +1,20 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+      Eurecom OpenAirInterface 3
+      Copyright(c) 2012 Eurecom
 
-Source		user_parser.h
+Source    user_parser.h
 
-Version		0.1
+Version   0.1
 
-Date		2012/10/09
+Date    2012/10/09
 
-Product		User simulator
+Product   User simulator
 
-Subsystem	Command line parser
+Subsystem Command line parser
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Command line parser of the user simulator process
+Description Command line parser of the user simulator process
 
 *****************************************************************************/
 
@@ -26,11 +26,11 @@ Description	Command line parser of the user simulator process
 /****************************************************************************/
 
 /* The default remote hostname the User Simulator must connect to */
-#define USER_PARSER_DEFAULT_REMOTE_HOSTNAME	"localhost"
+#define USER_PARSER_DEFAULT_REMOTE_HOSTNAME "localhost"
 
 /* The default port number used for the internet service delivered by the
  * remote hostname */
-#define USER_PARSER_DEFAULT_REMOTE_PORT_NUMBER	"10000"
+#define USER_PARSER_DEFAULT_REMOTE_PORT_NUMBER  "10000"
 
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/

@@ -6,7 +6,7 @@
  *                                                                            *
  *----------------------------------------------------------------------------*/
 
-/** 
+/**
  * @file NwMiniTmrMgrEntity.c
  * @brief This file ontains example of a minimalistic timer manager entity.
 */
@@ -20,7 +20,7 @@
 
 #ifndef NW_ASSERT
 #define NW_ASSERT assert
-#endif 
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,11 +55,11 @@ NW_TMR_CALLBACK(nwGtpv2cNodeHandleStackTimerTimeout)
  *--------------------------------------------------------------------------*/
 
 NwRcT nwTimerStart( NwGtpv2cTimerMgrHandleT tmrMgrHandle,
-    NwU32T timeoutSec,
-    NwU32T timeoutUsec,
-    NwU32T tmrType,
-    void*  timeoutArg,
-    NwGtpv2cTimerHandleT* hTmr)
+                    NwU32T timeoutSec,
+                    NwU32T timeoutUsec,
+                    NwU32T tmrType,
+                    void*  timeoutArg,
+                    NwGtpv2cTimerHandleT* hTmr)
 {
   NwRcT rc = NW_OK;
   NwGtpv2cNodeTmrT *pTmr;
@@ -85,7 +85,7 @@ NwRcT nwTimerStart( NwGtpv2cTimerMgrHandleT tmrMgrHandle,
 }
 
 NwRcT nwTimerStop( NwGtpv2cTimerMgrHandleT tmrMgrHandle,
-    NwGtpv2cTimerHandleT hTmr)
+                   NwGtpv2cTimerHandleT hTmr)
 {
   evtimer_del(&(((NwGtpv2cNodeTmrT*)hTmr)->ev));
   free((void*)hTmr);

@@ -62,7 +62,7 @@ typedef struct Job_List_s {
   int        nb_elements;
 } Job_List_t;
 
-typedef struct Event_List_s{
+typedef struct Event_List_s {
   Event_elt_t *head;
   Event_elt_t *tail;
   int          nb_elements;

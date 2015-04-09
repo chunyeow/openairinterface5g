@@ -7,7 +7,7 @@
  *----------------------------------------------------------------------------*/
 
 
-/** 
+/**
  * @file NwMiniUdpEntity.c
  * @brief This file contains example of a minimalistic ULP entity.
 */
@@ -27,7 +27,7 @@
 
 #ifndef NW_ASSERT
 #define NW_ASSERT assert
-#endif 
+#endif
 
 #define MAX_UDP_PAYLOAD_LEN             (4096)
 
@@ -55,19 +55,17 @@ void NW_EVT_CALLBACK(nwUdpDataIndicationCallbackData)
   peerLen = sizeof(peer);
 
   bytesRead = recvfrom(fd, udpBuf, MAX_UDP_PAYLOAD_LEN , 0, (struct sockaddr *) &peer,(socklen_t*) &peerLen);
-  if(bytesRead)
-  {
+
+  if(bytesRead) {
     NwU32T peerIp = (peer.sin_addr.s_addr);
     NW_LOG(NW_LOG_LEVEL_DEBG, "Received UDP message of size %u from peer %u.%u.%u.%u:%u", bytesRead,
-        (peerIp & 0x000000ff),
-        (peerIp & 0x0000ff00) >> 8,
-        (peerIp & 0x00ff0000) >> 16,
-        (peerIp & 0xff000000) >> 24,
-        ntohs(peer.sin_port));
+           (peerIp & 0x000000ff),
+           (peerIp & 0x0000ff00) >> 8,
+           (peerIp & 0x00ff0000) >> 16,
+           (peerIp & 0xff000000) >> 24,
+           ntohs(peer.sin_port));
     rc = nwGtpv2cProcessUdpReq(thiz->hGtpv2cStack, udpBuf, bytesRead, ntohs(peer.sin_port), ntohl(peer.sin_addr.s_addr));
-  }
-  else
-  {
+  } else {
     NW_LOG(NW_LOG_LEVEL_ERRO, "%s", strerror(errno));
   }
 }
@@ -84,8 +82,7 @@ NwRcT nwGtpv2cUdpInit(NwGtpv2cNodeUdpT* thiz, NwGtpv2cStackHandleT hGtpv2cStack,
 
   sd = socket(AF_INET, SOCK_DGRAM, 0);
 
-  if (sd < 0)
-  {
+  if (sd < 0) {
     NW_LOG(NW_LOG_LEVEL_ERRO, "%s", strerror(errno));
     NW_ASSERT(0);
   }
@@ -95,8 +92,7 @@ NwRcT nwGtpv2cUdpInit(NwGtpv2cNodeUdpT* thiz, NwGtpv2cStackHandleT hGtpv2cStack,
   addr.sin_addr.s_addr  = inet_addr(ipv4Addr);
   memset(addr.sin_zero, '\0', sizeof (addr.sin_zero));
 
-  if(bind(sd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-  {
+  if(bind(sd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
     NW_LOG(NW_LOG_LEVEL_ERRO, "%s", strerror(errno));
     NW_ASSERT(0);
   }
@@ -115,21 +111,21 @@ NwRcT nwGtpv2cUdpDestroy(NwGtpv2cNodeUdpT* thiz)
 }
 
 NwRcT nwGtpv2cUdpDataReq(NwGtpv2cUdpHandleT udpHandle,
-    NwU8T* dataBuf,
-    NwU32T dataSize,
-    NwU32T peerIp,
-    NwU32T peerPort)
+                         NwU8T* dataBuf,
+                         NwU32T dataSize,
+                         NwU32T peerIp,
+                         NwU32T peerPort)
 {
   struct sockaddr_in peerAddr;
   NwS32T bytesSent;
   NwGtpv2cNodeUdpT* thiz = (NwGtpv2cNodeUdpT*) udpHandle;
 
   NW_LOG(NW_LOG_LEVEL_DEBG, "Sending buf of size %u for on handle %x to peer %u.%u.%u.%u:%u", dataSize, udpHandle,
-      (peerIp & 0xff000000) >> 24,
-      (peerIp & 0x00ff0000) >> 16,
-      (peerIp & 0x0000ff00) >> 8,
-      (peerIp & 0x000000ff),
-      peerPort);
+         (peerIp & 0xff000000) >> 24,
+         (peerIp & 0x00ff0000) >> 16,
+         (peerIp & 0x0000ff00) >> 8,
+         (peerIp & 0x000000ff),
+         peerPort);
 
   peerAddr.sin_family       = AF_INET;
   peerAddr.sin_port         = htons(peerPort);
@@ -138,11 +134,11 @@ NwRcT nwGtpv2cUdpDataReq(NwGtpv2cUdpHandleT udpHandle,
 
   bytesSent = sendto (thiz->hSocket, dataBuf, dataSize, 0, (struct sockaddr *) &peerAddr, sizeof(peerAddr));
 
-  if(bytesSent < 0)
-  {
+  if(bytesSent < 0) {
     NW_LOG(NW_LOG_LEVEL_ERRO, "%s", strerror(errno));
     NW_ASSERT(0);
   }
+
   return NW_OK;
 }
 

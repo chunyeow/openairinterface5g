@@ -83,15 +83,15 @@ typedef boolean_t             srb_flag_t;
 #define  SRB_FLAG_YES         TRUE
 
 typedef enum link_direction_e {
-    UNKNOWN_DIR          = 0,
-    DIR_UPLINK           = 1,
-    DIR_DOWNLINK         = 2
+  UNKNOWN_DIR          = 0,
+  DIR_UPLINK           = 1,
+  DIR_DOWNLINK         = 2
 } link_direction_t;
 
 typedef enum rb_type_e {
-    UNKNOWN_RADIO_BEARER        = 0,
-    SIGNALLING_RADIO_BEARER     = 1,
-    RADIO_ACCESS_BEARER         = 2
+  UNKNOWN_RADIO_BEARER        = 0,
+  SIGNALLING_RADIO_BEARER     = 1,
+  RADIO_ACCESS_BEARER         = 2
 } rb_type_t;
 
 //-----------------------------------------------------------------------------
@@ -129,24 +129,24 @@ typedef uint32_t           pdcp_hfn_t;
 typedef int16_t            pdcp_hfn_offset_t;
 
 typedef enum pdcp_transmission_mode_e {
-   PDCP_TRANSMISSION_MODE_UNKNOWN     = 0,
-   PDCP_TRANSMISSION_MODE_CONTROL     = 1,
-   PDCP_TRANSMISSION_MODE_DATA        = 2,
-   PDCP_TRANSMISSION_MODE_TRANSPARENT = 3
+  PDCP_TRANSMISSION_MODE_UNKNOWN     = 0,
+  PDCP_TRANSMISSION_MODE_CONTROL     = 1,
+  PDCP_TRANSMISSION_MODE_DATA        = 2,
+  PDCP_TRANSMISSION_MODE_TRANSPARENT = 3
 } pdcp_transmission_mode_t;
 //-----------------------------------------------------------------------------
 // IP DRIVER / PDCP TYPES
 //-----------------------------------------------------------------------------
 typedef uint16_t           tcp_udp_port_t;
 typedef enum  ip_traffic_type_e {
-       TRAFFIC_IPVX_TYPE_UNKNOWN    =  0,
-       TRAFFIC_IPV6_TYPE_UNICAST    =  1,
-       TRAFFIC_IPV6_TYPE_MULTICAST  =  2,
-       TRAFFIC_IPV6_TYPE_UNKNOWN    =  3,
-       TRAFFIC_IPV4_TYPE_UNICAST    =  5,
-       TRAFFIC_IPV4_TYPE_MULTICAST  =  6,
-       TRAFFIC_IPV4_TYPE_BROADCAST  =  7,
-       TRAFFIC_IPV4_TYPE_UNKNOWN    =  8
+  TRAFFIC_IPVX_TYPE_UNKNOWN    =  0,
+  TRAFFIC_IPV6_TYPE_UNICAST    =  1,
+  TRAFFIC_IPV6_TYPE_MULTICAST  =  2,
+  TRAFFIC_IPV6_TYPE_UNKNOWN    =  3,
+  TRAFFIC_IPV4_TYPE_UNICAST    =  5,
+  TRAFFIC_IPV4_TYPE_MULTICAST  =  6,
+  TRAFFIC_IPV4_TYPE_BROADCAST  =  7,
+  TRAFFIC_IPV4_TYPE_UNKNOWN    =  8
 } ip_traffic_type_t;
 
 //-----------------------------------------------------------------------------
@@ -156,13 +156,13 @@ typedef uint32_t           mbms_session_id_t;
 typedef uint16_t           mbms_service_id_t;
 typedef uint16_t           rnti_t;
 typedef enum config_action_e {
-    CONFIG_ACTION_NULL              = 0,
-    CONFIG_ACTION_ADD               = 1,
-    CONFIG_ACTION_REMOVE            = 2,
-    CONFIG_ACTION_MODIFY            = 3,
-    CONFIG_ACTION_SET_SECURITY_MODE = 4,
-    CONFIG_ACTION_MBMS_ADD          = 10,
-    CONFIG_ACTION_MBMS_MODIFY       = 11
+  CONFIG_ACTION_NULL              = 0,
+  CONFIG_ACTION_ADD               = 1,
+  CONFIG_ACTION_REMOVE            = 2,
+  CONFIG_ACTION_MODIFY            = 3,
+  CONFIG_ACTION_SET_SECURITY_MODE = 4,
+  CONFIG_ACTION_MBMS_ADD          = 10,
+  CONFIG_ACTION_MBMS_MODIFY       = 11
 } config_action_t;
 
 //-----------------------------------------------------------------------------
@@ -177,10 +177,10 @@ typedef uint8_t            ebi_t;  // eps bearer id
 //
 //-----------------------------------------------------------------------------
 typedef struct protocol_ctxt_s {
-    module_id_t enb_module_id; /*!< \brief  Virtualized enb module identifier, Not used if eNB_flagP = 0. */
-    module_id_t ue_module_id;  /*!< \brief  Virtualized ue module identifier */
-    frame_t     frame;         /*!< \brief  LTE Frame number.*/
-    eNB_flag_t  enb_flag;      /*!< \brief  Flag to indicate eNB (1) or UE (0) */
+  module_id_t enb_module_id; /*!< \brief  Virtualized enb module identifier, Not used if eNB_flagP = 0. */
+  module_id_t ue_module_id;  /*!< \brief  Virtualized ue module identifier */
+  frame_t     frame;         /*!< \brief  LTE Frame number.*/
+  eNB_flag_t  enb_flag;      /*!< \brief  Flag to indicate eNB (1) or UE (0) */
 } protocol_ctxt_t;
 #define PROTOCOL_CTXT_FMT "[FRAME %05u][%s][MOD %02u/%02u]"
 #define PROTOCOL_CTXT_ARGS(CTXT_Pp) \

@@ -83,13 +83,13 @@ Description Defines the EMM Service Access Points at which the EPS
  ***************************************************************************/
 void emm_sap_initialize(void)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    emm_reg_initialize();
-    emm_esm_initialize();
-    emm_as_initialize();
+  emm_reg_initialize();
+  emm_esm_initialize();
+  emm_as_initialize();
 
-    LOG_FUNC_OUT;
+  LOG_FUNC_OUT;
 }
 
 /****************************************************************************
@@ -108,42 +108,44 @@ void emm_sap_initialize(void)
  ***************************************************************************/
 int emm_sap_send(emm_sap_t *msg)
 {
-    int rc = RETURNerror;
+  int rc = RETURNerror;
 
-    emm_primitive_t primitive = msg->primitive;
+  emm_primitive_t primitive = msg->primitive;
 
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Check the EMM-SAP primitive */
-    if ( (primitive > EMMREG_PRIMITIVE_MIN) &&
-            (primitive < EMMREG_PRIMITIVE_MAX) ) {
-        /* Forward to the EMMREG-SAP */
-        msg->u.emm_reg.primitive = primitive;
-        rc = emm_reg_send(&msg->u.emm_reg);
-    } else if ( (primitive > EMMESM_PRIMITIVE_MIN) &&
-                (primitive < EMMESM_PRIMITIVE_MAX) ) {
-        /* Forward to the EMMESM-SAP */
-        msg->u.emm_esm.primitive = primitive;
-        rc = emm_esm_send(&msg->u.emm_esm);
-    } else if ( (primitive > EMMAS_PRIMITIVE_MIN) &&
-                (primitive < EMMAS_PRIMITIVE_MAX) ) {
-        /* Forward to the EMMAS-SAP */
-        msg->u.emm_as.primitive = primitive;
-        rc = emm_as_send(&msg->u.emm_as);
-    }
+  /* Check the EMM-SAP primitive */
+  if ( (primitive > EMMREG_PRIMITIVE_MIN) &&
+       (primitive < EMMREG_PRIMITIVE_MAX) ) {
+    /* Forward to the EMMREG-SAP */
+    msg->u.emm_reg.primitive = primitive;
+    rc = emm_reg_send(&msg->u.emm_reg);
+  } else if ( (primitive > EMMESM_PRIMITIVE_MIN) &&
+              (primitive < EMMESM_PRIMITIVE_MAX) ) {
+    /* Forward to the EMMESM-SAP */
+    msg->u.emm_esm.primitive = primitive;
+    rc = emm_esm_send(&msg->u.emm_esm);
+  } else if ( (primitive > EMMAS_PRIMITIVE_MIN) &&
+              (primitive < EMMAS_PRIMITIVE_MAX) ) {
+    /* Forward to the EMMAS-SAP */
+    msg->u.emm_as.primitive = primitive;
+    rc = emm_as_send(&msg->u.emm_as);
+  }
+
 #if defined(EPC_BUILD)
-    else if ( (primitive > EMMCN_PRIMITIVE_MIN) &&
-              (primitive < EMMCN_PRIMITIVE_MAX) ) {
-        /* Forward to the EMMCN-SAP */
-        msg->u.emm_cn.primitive = primitive;
-        rc = emm_cn_send(&msg->u.emm_cn);
-    }
-#endif
-    else {
-        LOG_TRACE(WARNING, "EMM-SAP -   Out of range primitive (%d)", primitive);
-    }
+  else if ( (primitive > EMMCN_PRIMITIVE_MIN) &&
+            (primitive < EMMCN_PRIMITIVE_MAX) ) {
+    /* Forward to the EMMCN-SAP */
+    msg->u.emm_cn.primitive = primitive;
+    rc = emm_cn_send(&msg->u.emm_cn);
+  }
 
-    LOG_FUNC_RETURN (rc);
+#endif
+  else {
+    LOG_TRACE(WARNING, "EMM-SAP -   Out of range primitive (%d)", primitive);
+  }
+
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************/

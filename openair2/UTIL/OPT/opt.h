@@ -32,7 +32,7 @@ Authors:  Navid NIKAIEN
 Company: EURECOM
 Emails:
 *This file include all defined structures & function headers of this module
-This header file must be included */ 
+This header file must be included */
 /**
  * Include bloc
  * */
@@ -64,16 +64,16 @@ This header file must be included */
 #endif
 
 typedef enum trace_mode_e {
-    OPT_WIRESHARK,
-    OPT_PCAP,
-    OPT_TSHARK,
-    OPT_NONE
+  OPT_WIRESHARK,
+  OPT_PCAP,
+  OPT_TSHARK,
+  OPT_NONE
 } trace_mode_t;
 
 typedef enum radio_type_e {
-    RADIO_TYPE_FDD = 1,
-    RADIO_TYPE_TDD = 2,
-    RADIO_TYPE_MAX
+  RADIO_TYPE_FDD = 1,
+  RADIO_TYPE_TDD = 2,
+  RADIO_TYPE_MAX
 } radio_type_t;
 
 extern trace_mode_t opt_type;

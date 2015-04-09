@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06410 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -30,20 +30,20 @@
 /*!
 *******************************************************************************
 
-\file    	msg_mngt.h
+\file     msg_mngt.h
 
-\brief   	Fichier d'entete contenant les declarations des types, des defines ,
-			et des fonctions relatives a la gestion de l'envoi et la reception 
-			de message.
+\brief    Fichier d'entete contenant les declarations des types, des defines ,
+      et des fonctions relatives a la gestion de l'envoi et la reception
+      de message.
 
-\author  	BURLOT Pascal
+\author   BURLOT Pascal
 
-\date    	17/07/08
- 
+\date     17/07/08
+
 \par     Historique:
-			$Author$  $Date$  $Revision$
-			$Id$
-			$Log$
+      $Author$  $Date$  $Revision$
+      $Id$
+      $Log$
 
 *******************************************************************************
 */
@@ -57,26 +57,26 @@ extern "C" {
 
 /*!
 *******************************************************************************
-\brief File des messages reçus ou a envoyer	
-*/	
+\brief File des messages reçus ou a envoyer
+*/
 typedef struct msg_file_s {
-    //mod_lor_10_01_25
-    int s_type                  ; /// socket type: 0 -> unix; 1 -> internet
-	sock_rrm_t 			*s		; ///< socket origine ou destinataire si unix
-	sock_rrm_int_t      *s_int  ; ///< socket origine ou destinataire si internet
-	
-	msg_t    			*msg	; ///< data of message 
-	struct msg_file_s 	*next	; ///< next message of file
+  //mod_lor_10_01_25
+  int s_type                  ; /// socket type: 0 -> unix; 1 -> internet
+  sock_rrm_t      *s    ; ///< socket origine ou destinataire si unix
+  sock_rrm_int_t      *s_int  ; ///< socket origine ou destinataire si internet
+
+  msg_t         *msg  ; ///< data of message
+  struct msg_file_s   *next ; ///< next message of file
 } file_msg_t ;
 
 /*!
 *******************************************************************************
-\brief Entete de la file des messages reçus ou a envoyer		
+\brief Entete de la file des messages reçus ou a envoyer
 */
-typedef struct { 
-	int 			     id 	; ///< id
-	pthread_mutex_t      mutex  ; ///< Mutex associee
-	file_msg_t          *file   ; ///< point d'entree sur la file des messages
+typedef struct {
+  int            id   ; ///< id
+  pthread_mutex_t      mutex  ; ///< Mutex associee
+  file_msg_t          *file   ; ///< point d'entree sur la file des messages
 } file_head_t ;
 
 /*

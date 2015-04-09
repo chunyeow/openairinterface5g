@@ -63,14 +63,14 @@ extern "C" {
 #    endif
 
 /** @defgroup _cli_if Interfaces of CLI
- * @{*/ 
+ * @{*/
 
 
-  public_cli_if( void cli_init (void); )
-  public_cli_if( int cli_server_init(cli_handler_t handler); )
-  public_cli_if(void cli_server_cleanup(void);)
-  public_cli_if(void cli_server_recv(const void * data, socklen_t len);)
-/* @}*/ 
+public_cli_if( void cli_init (void); )
+public_cli_if( int cli_server_init(cli_handler_t handler); )
+public_cli_if(void cli_server_cleanup(void);)
+public_cli_if(void cli_server_recv(const void * data, socklen_t len);)
+/* @}*/
 
 #ifdef __cplusplus
 }

@@ -28,21 +28,21 @@
  *******************************************************************************/
 /*****************************************************************************
 
-Source		user_indication.h
+Source    user_indication.h
 
-Version		0.1
+Version   0.1
 
-Date		2012/10/25
+Date    2012/10/25
 
-Product		NAS stack
+Product   NAS stack
 
-Subsystem	Application Programming Interface
+Subsystem Application Programming Interface
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Defines functions which allow the user application to register
-		procedures to be executed upon receiving asynchronous notifi-
-		cation.
+Description Defines functions which allow the user application to register
+    procedures to be executed upon receiving asynchronous notifi-
+    cation.
 
 *****************************************************************************/
 #ifndef __USER_IND_H__
@@ -59,11 +59,11 @@ Description	Defines functions which allow the user application to register
  * Type of notification that may be asynchronously received by the user
  */
 typedef enum {
-    USER_IND_REG = 0,	/* Registration notification	*/
-    USER_IND_LOC,	/* Location notification	*/
-    USER_IND_PLMN,	/* Network notification		*/
-    USER_IND_PDN,	/* PDN connection notification	*/
-    USER_IND_MAX
+  USER_IND_REG = 0, /* Registration notification  */
+  USER_IND_LOC, /* Location notification  */
+  USER_IND_PLMN,  /* Network notification   */
+  USER_IND_PDN, /* PDN connection notification  */
+  USER_IND_MAX
 } user_ind_t;
 
 /*
@@ -71,7 +71,7 @@ typedef enum {
  * UE's network registration status in GERAN/UTRAN/E-UTRAN
  */
 typedef struct {
-    Stat_t status;	/* network registration status	*/
+  Stat_t status;  /* network registration status  */
 } user_ind_reg_t;
 
 /*
@@ -79,10 +79,10 @@ typedef struct {
  * network serving cell in GERAN/UTRAN/E-UTRAN
  */
 typedef struct {
-    Stat_t status;	/* network registration status	*/
-    tac_t tac;		/* Location/Tracking area code	*/
-    ci_t ci;		/* GERAN/UTRAN/E-UTRAN cell ID	*/
-    AcT_t AcT;		/* Supported Access Technology	*/
+  Stat_t status;  /* network registration status  */
+  tac_t tac;    /* Location/Tracking area code  */
+  ci_t ci;    /* GERAN/UTRAN/E-UTRAN cell ID  */
+  AcT_t AcT;    /* Supported Access Technology  */
 } user_ind_loc_t;
 
 /*
@@ -90,19 +90,19 @@ typedef struct {
  * has activated or desactivated a PDN connection
  */
 typedef struct {
-    UInt8_t cid;		/* PDN connection identifier	*/
-    network_pdn_state_t status;	/* PDN connection status	*/
+  UInt8_t cid;    /* PDN connection identifier  */
+  network_pdn_state_t status; /* PDN connection status  */
 } user_ind_pdn_t;
 
 /*
  * Structure of asynchronous notification received by the user
  */
 typedef struct {
-    union {
-	user_ind_reg_t reg;	/* Registration notification	*/
-	user_ind_loc_t loc;	/* Location notification	*/
-	user_ind_pdn_t pdn;	/* PDN connection notification	*/
-    } notification;
+  union {
+    user_ind_reg_t reg; /* Registration notification  */
+    user_ind_loc_t loc; /* Location notification  */
+    user_ind_pdn_t pdn; /* PDN connection notification  */
+  } notification;
 } user_indication_t;
 
 /*

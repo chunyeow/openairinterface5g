@@ -8,13 +8,12 @@
 #include <linux/if_addr.h>
 #include <linux/neighbour.h>
 
-struct rtnl_handle
-{
-	int			fd;
-	struct sockaddr_nl	local;
-	struct sockaddr_nl	peer;
-	__u32			seq;
-	__u32			dump;
+struct rtnl_handle {
+  int     fd;
+  struct sockaddr_nl  local;
+  struct sockaddr_nl  peer;
+  __u32     seq;
+  __u32     dump;
 };
 
 extern int rtnl_open(struct rtnl_handle *rth, unsigned subscriptions);
@@ -24,15 +23,15 @@ extern int rtnl_wilddump_request(struct rtnl_handle *rth, int fam, int type);
 extern int rtnl_dump_request(struct rtnl_handle *rth, int type, void *req, int len);
 
 typedef int (*rtnl_filter_t)(const struct sockaddr_nl *,
-			     struct nlmsghdr *n, void *);
+                             struct nlmsghdr *n, void *);
 extern int rtnl_dump_filter(struct rtnl_handle *rth, rtnl_filter_t filter,
-			    void *arg1,
-			    rtnl_filter_t junk,
-			    void *arg2);
+                            void *arg1,
+                            rtnl_filter_t junk,
+                            void *arg2);
 extern int rtnl_talk(struct rtnl_handle *rtnl, struct nlmsghdr *n, pid_t peer,
-		     unsigned groups, struct nlmsghdr *answer,
-		     rtnl_filter_t junk,
-		     void *jarg);
+                     unsigned groups, struct nlmsghdr *answer,
+                     rtnl_filter_t junk,
+                     void *jarg);
 
 extern int addattr32(struct nlmsghdr *n, int maxlen, int type, __u32 data);
 extern int addattr_l(struct nlmsghdr *n, int maxlen, int type, const void *data, int alen);
@@ -44,41 +43,41 @@ extern int parse_rtattr(struct rtattr *tb[], int max, struct rtattr *rta, int le
 extern int parse_rtattr_byindex(struct rtattr *tb[], int max, struct rtattr *rta, int len);
 
 #define parse_rtattr_nested(tb, max, rta) \
-	(parse_rtattr((tb), (max), RTA_DATA(rta), RTA_PAYLOAD(rta)))
+  (parse_rtattr((tb), (max), RTA_DATA(rta), RTA_PAYLOAD(rta)))
 
 extern int rtnl_listen(struct rtnl_handle *, rtnl_filter_t handler,
-		       void *jarg);
+                       void *jarg);
 
 #define NLMSG_TAIL(nmsg) \
-	((struct rtattr *) (((void *) (nmsg)) + NLMSG_ALIGN((nmsg)->nlmsg_len)))
+  ((struct rtattr *) (((void *) (nmsg)) + NLMSG_ALIGN((nmsg)->nlmsg_len)))
 
 #ifndef IFA_RTA
 #define IFA_RTA(r) \
-	((struct rtattr*)(((char*)(r)) + NLMSG_ALIGN(sizeof(struct ifaddrmsg))))
+  ((struct rtattr*)(((char*)(r)) + NLMSG_ALIGN(sizeof(struct ifaddrmsg))))
 #endif
 #ifndef IFA_PAYLOAD
-#define IFA_PAYLOAD(n)	NLMSG_PAYLOAD(n,sizeof(struct ifaddrmsg))
+#define IFA_PAYLOAD(n)  NLMSG_PAYLOAD(n,sizeof(struct ifaddrmsg))
 #endif
 
 #ifndef IFLA_RTA
 #define IFLA_RTA(r) \
-	((struct rtattr*)(((char*)(r)) + NLMSG_ALIGN(sizeof(struct ifinfomsg))))
+  ((struct rtattr*)(((char*)(r)) + NLMSG_ALIGN(sizeof(struct ifinfomsg))))
 #endif
 #ifndef IFLA_PAYLOAD
-#define IFLA_PAYLOAD(n)	NLMSG_PAYLOAD(n,sizeof(struct ifinfomsg))
+#define IFLA_PAYLOAD(n) NLMSG_PAYLOAD(n,sizeof(struct ifinfomsg))
 #endif
 
 #ifndef NDA_RTA
 #define NDA_RTA(r) \
-	((struct rtattr*)(((char*)(r)) + NLMSG_ALIGN(sizeof(struct ndmsg))))
+  ((struct rtattr*)(((char*)(r)) + NLMSG_ALIGN(sizeof(struct ndmsg))))
 #endif
 #ifndef NDA_PAYLOAD
-#define NDA_PAYLOAD(n)	NLMSG_PAYLOAD(n,sizeof(struct ndmsg))
+#define NDA_PAYLOAD(n)  NLMSG_PAYLOAD(n,sizeof(struct ndmsg))
 #endif
 
 #ifndef NDTA_RTA
 #define NDTA_RTA(r) \
-	((struct rtattr*)(((char*)(r)) + NLMSG_ALIGN(sizeof(struct ndtmsg))))
+  ((struct rtattr*)(((char*)(r)) + NLMSG_ALIGN(sizeof(struct ndtmsg))))
 #endif
 #ifndef NDTA_PAYLOAD
 #define NDTA_PAYLOAD(n) NLMSG_PAYLOAD(n,sizeof(struct ndtmsg))

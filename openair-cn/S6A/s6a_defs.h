@@ -84,46 +84,46 @@
     (x == DIAMETER_ERROR_UNKOWN_SERVING_NODE))
 
 typedef struct {
-    struct dict_object *dataobj_s6a_vendor;     /* s6a vendor object */
-    struct dict_object *dataobj_s6a_app;        /* s6a application object */
+  struct dict_object *dataobj_s6a_vendor;     /* s6a vendor object */
+  struct dict_object *dataobj_s6a_app;        /* s6a application object */
 
-    /* Commands */
-    struct dict_object *dataobj_s6a_air; /* s6a authentication request */
-    struct dict_object *dataobj_s6a_aia; /* s6a authentication answer */
-    struct dict_object *dataobj_s6a_ulr; /* s6a update location request */
-    struct dict_object *dataobj_s6a_ula; /* s6a update location asnwer */
-    struct dict_object *dataobj_s6a_pur; /* s6a purge ue request */
-    struct dict_object *dataobj_s6a_pua; /* s6a purge ue answer */
-    struct dict_object *dataobj_s6a_clr; /* s6a Cancel Location req */
-    struct dict_object *dataobj_s6a_cla; /* s6a Cancel Location ans */
+  /* Commands */
+  struct dict_object *dataobj_s6a_air; /* s6a authentication request */
+  struct dict_object *dataobj_s6a_aia; /* s6a authentication answer */
+  struct dict_object *dataobj_s6a_ulr; /* s6a update location request */
+  struct dict_object *dataobj_s6a_ula; /* s6a update location asnwer */
+  struct dict_object *dataobj_s6a_pur; /* s6a purge ue request */
+  struct dict_object *dataobj_s6a_pua; /* s6a purge ue answer */
+  struct dict_object *dataobj_s6a_clr; /* s6a Cancel Location req */
+  struct dict_object *dataobj_s6a_cla; /* s6a Cancel Location ans */
 
-    /* Some standard basic AVPs */
-    struct dict_object *dataobj_s6a_destination_host;
-    struct dict_object *dataobj_s6a_destination_realm;
-    struct dict_object *dataobj_s6a_user_name;
-    struct dict_object *dataobj_s6a_session_id;
-    struct dict_object *dataobj_s6a_auth_session_state;
-    struct dict_object *dataobj_s6a_result_code;
-    struct dict_object *dataobj_s6a_experimental_result;
+  /* Some standard basic AVPs */
+  struct dict_object *dataobj_s6a_destination_host;
+  struct dict_object *dataobj_s6a_destination_realm;
+  struct dict_object *dataobj_s6a_user_name;
+  struct dict_object *dataobj_s6a_session_id;
+  struct dict_object *dataobj_s6a_auth_session_state;
+  struct dict_object *dataobj_s6a_result_code;
+  struct dict_object *dataobj_s6a_experimental_result;
 
-    /* S6A specific AVPs */
-    struct dict_object *dataobj_s6a_visited_plmn_id;
-    struct dict_object *dataobj_s6a_rat_type;
-    struct dict_object *dataobj_s6a_ulr_flags;
-    struct dict_object *dataobj_s6a_ula_flags;
-    struct dict_object *dataobj_s6a_subscription_data;
-    struct dict_object *dataobj_s6a_req_eutran_auth_info;
-    struct dict_object *dataobj_s6a_number_of_requested_vectors;
-    struct dict_object *dataobj_s6a_immediate_response_pref;
-    struct dict_object *dataobj_s6a_authentication_info;
-    struct dict_object *dataobj_s6a_re_synchronization_info;
-    struct dict_object *dataobj_s6a_ue_srvcc_cap;
+  /* S6A specific AVPs */
+  struct dict_object *dataobj_s6a_visited_plmn_id;
+  struct dict_object *dataobj_s6a_rat_type;
+  struct dict_object *dataobj_s6a_ulr_flags;
+  struct dict_object *dataobj_s6a_ula_flags;
+  struct dict_object *dataobj_s6a_subscription_data;
+  struct dict_object *dataobj_s6a_req_eutran_auth_info;
+  struct dict_object *dataobj_s6a_number_of_requested_vectors;
+  struct dict_object *dataobj_s6a_immediate_response_pref;
+  struct dict_object *dataobj_s6a_authentication_info;
+  struct dict_object *dataobj_s6a_re_synchronization_info;
+  struct dict_object *dataobj_s6a_ue_srvcc_cap;
 
-    /* Handlers */
-    struct disp_hdl *aia_hdl;   /* Authentication Information Answer Handle */
-    struct disp_hdl *ula_hdl;   /* Update Location Answer Handle */
-    struct disp_hdl *pua_hdl;   /* Purge UE Answer Handle */
-    struct disp_hdl *clr_hdl;   /* Cancel Location Request Handle */
+  /* Handlers */
+  struct disp_hdl *aia_hdl;   /* Authentication Information Answer Handle */
+  struct disp_hdl *ula_hdl;   /* Update Location Answer Handle */
+  struct disp_hdl *pua_hdl;   /* Purge UE Answer Handle */
+  struct disp_hdl *clr_hdl;   /* Cancel Location Request Handle */
 } s6a_fd_cnf_t;
 
 extern s6a_fd_cnf_t s6a_fd_cnf;
@@ -201,41 +201,53 @@ inline char *retcode_2_string(uint32_t ret_code);
 #else
 inline char *experimental_retcode_2_string(uint32_t ret_code)
 {
-    switch(ret_code) {
-        /* Experimental-Result-Codes */
-        case DIAMETER_ERROR_USER_UNKNOWN:
-            return "DIAMETER_ERROR_USER_UNKNOWN";
-        case DIAMETER_ERROR_ROAMING_NOT_ALLOWED:
-            return "DIAMETER_ERROR_ROAMING_NOT_ALLOWED";
-        case DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION:
-            return "DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION";
-        case DIAMETER_ERROR_RAT_NOT_ALLOWED:
-            return "DIAMETER_ERROR_RAT_NOT_ALLOWED";
-        case DIAMETER_ERROR_EQUIPMENT_UNKNOWN:
-            return "DIAMETER_ERROR_EQUIPMENT_UNKNOWN";
-        case DIAMETER_ERROR_UNKOWN_SERVING_NODE:
-            return "DIAMETER_ERROR_UNKOWN_SERVING_NODE";
-        case DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE:
-            return "DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE";
-        default:
-            break;
-    }
-    return "DIAMETER_AVP_UNSUPPORTED";
+  switch(ret_code) {
+    /* Experimental-Result-Codes */
+  case DIAMETER_ERROR_USER_UNKNOWN:
+    return "DIAMETER_ERROR_USER_UNKNOWN";
+
+  case DIAMETER_ERROR_ROAMING_NOT_ALLOWED:
+    return "DIAMETER_ERROR_ROAMING_NOT_ALLOWED";
+
+  case DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION:
+    return "DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION";
+
+  case DIAMETER_ERROR_RAT_NOT_ALLOWED:
+    return "DIAMETER_ERROR_RAT_NOT_ALLOWED";
+
+  case DIAMETER_ERROR_EQUIPMENT_UNKNOWN:
+    return "DIAMETER_ERROR_EQUIPMENT_UNKNOWN";
+
+  case DIAMETER_ERROR_UNKOWN_SERVING_NODE:
+    return "DIAMETER_ERROR_UNKOWN_SERVING_NODE";
+
+  case DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE:
+    return "DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE";
+
+  default:
+    break;
+  }
+
+  return "DIAMETER_AVP_UNSUPPORTED";
 }
 
 inline char *retcode_2_string(uint32_t ret_code)
 {
-    switch(ret_code) {
-        case ER_DIAMETER_SUCCESS:
-            return "DIAMETER_SUCCESS";
-        case ER_DIAMETER_MISSING_AVP:
-            return "DIAMETER_MISSING_AVP";
-        case ER_DIAMETER_INVALID_AVP_VALUE:
-            return "DIAMETER_INVALID_AVP_VALUE";
-        default:
-            break;
-    }
-    return "DIAMETER_AVP_UNSUPPORTED";
+  switch(ret_code) {
+  case ER_DIAMETER_SUCCESS:
+    return "DIAMETER_SUCCESS";
+
+  case ER_DIAMETER_MISSING_AVP:
+    return "DIAMETER_MISSING_AVP";
+
+  case ER_DIAMETER_INVALID_AVP_VALUE:
+    return "DIAMETER_INVALID_AVP_VALUE";
+
+  default:
+    break;
+  }
+
+  return "DIAMETER_AVP_UNSUPPORTED";
 }
 #endif
 

@@ -83,19 +83,19 @@ void nas_network_initialize(mme_config_t *mme_config_p)
 void nas_network_initialize(void)
 #endif
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
 #ifdef NAS_MME
-    /* Initialize the internal NAS processing data */
+  /* Initialize the internal NAS processing data */
 # if defined(EPC_BUILD)
-    nas_timer_init();
-    nas_proc_initialize(mme_config_p);
+  nas_timer_init();
+  nas_proc_initialize(mme_config_p);
 # else
-    nas_proc_initialize();
+  nas_proc_initialize();
 # endif
 #endif
 
-    LOG_FUNC_OUT;
+  LOG_FUNC_OUT;
 }
 
 /****************************************************************************
@@ -114,11 +114,11 @@ void nas_network_initialize(void)
  ***************************************************************************/
 void nas_network_cleanup(void)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    nas_proc_cleanup();
+  nas_proc_cleanup();
 
-    LOG_FUNC_OUT;
+  LOG_FUNC_OUT;
 }
 
 /****************************************************************************
@@ -141,130 +141,138 @@ void nas_network_cleanup(void)
  ***************************************************************************/
 int nas_network_process_data(int msg_id, const void *data)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    const as_message_t *msg = (as_message_t *)(data);
-    int rc = RETURNok;
+  const as_message_t *msg = (as_message_t *)(data);
+  int rc = RETURNok;
 
-    /* Sanity check */
-    if (msg_id != msg->msgID) {
-        LOG_TRACE(ERROR, "NET-MAIN  - Message identifier 0x%x to process "
-                  "is different from that of the network data (0x%x)",
-                  msg_id, msg->msgID);
-        LOG_FUNC_RETURN (RETURNerror);
+  /* Sanity check */
+  if (msg_id != msg->msgID) {
+    LOG_TRACE(ERROR, "NET-MAIN  - Message identifier 0x%x to process "
+              "is different from that of the network data (0x%x)",
+              msg_id, msg->msgID);
+    LOG_FUNC_RETURN (RETURNerror);
+  }
+
+  switch (msg_id) {
+#ifdef NAS_UE
+
+  case AS_BROADCAST_INFO_IND:
+    break;
+
+  case AS_CELL_INFO_CNF: {
+    /* Received cell information confirm */
+    const cell_info_cnf_t *info = &msg->msg.cell_info_cnf;
+    int cell_found = (info->errCode == AS_SUCCESS);
+    rc = nas_proc_cell_info(cell_found, info->tac,
+                            info->cellID, info->rat,
+                            info->rsrp, info->rsrq);
+    break;
+  }
+
+  case AS_CELL_INFO_IND:
+    break;
+
+  case AS_PAGING_IND:
+    break;
+
+  case AS_NAS_ESTABLISH_CNF: {
+    /* Received NAS signalling connection establishment confirm */
+    const nas_establish_cnf_t *confirm = &msg->msg.nas_establish_cnf;
+
+    if ( (confirm->errCode == AS_SUCCESS) ||
+         (confirm->errCode == AS_TERMINATED_NAS) ) {
+      rc = nas_proc_establish_cnf(confirm->nasMsg.data,
+                                  confirm->nasMsg.length);
+    } else {
+      LOG_TRACE(WARNING, "NET-MAIN  - "
+                "Initial NAS message not delivered");
+      rc = nas_proc_establish_rej();
     }
 
-    switch (msg_id) {
-#ifdef NAS_UE
-        case AS_BROADCAST_INFO_IND:
-            break;
+    break;
+  }
 
-        case AS_CELL_INFO_CNF: {
-            /* Received cell information confirm */
-            const cell_info_cnf_t *info = &msg->msg.cell_info_cnf;
-            int cell_found = (info->errCode == AS_SUCCESS);
-            rc = nas_proc_cell_info(cell_found, info->tac,
-                                    info->cellID, info->rat,
-                                    info->rsrp, info->rsrq);
-            break;
-        }
+  case AS_NAS_RELEASE_IND:
+    /* Received NAS signalling connection releaase indication */
+    rc = nas_proc_release_ind(msg->msg.nas_release_ind.cause);
+    break;
 
-        case AS_CELL_INFO_IND:
-            break;
+  case AS_UL_INFO_TRANSFER_CNF:
 
-        case AS_PAGING_IND:
-            break;
+    /* Received uplink data transfer confirm */
+    if (msg->msg.ul_info_transfer_cnf.errCode != AS_SUCCESS) {
+      LOG_TRACE(WARNING, "NET-MAIN  - "
+                "Uplink NAS message not delivered");
+      rc = nas_proc_ul_transfer_rej();
+    } else {
+      rc = nas_proc_ul_transfer_cnf();
+    }
 
-        case AS_NAS_ESTABLISH_CNF: {
-            /* Received NAS signalling connection establishment confirm */
-            const nas_establish_cnf_t *confirm = &msg->msg.nas_establish_cnf;
-            if ( (confirm->errCode == AS_SUCCESS) ||
-                    (confirm->errCode == AS_TERMINATED_NAS) ) {
-                rc = nas_proc_establish_cnf(confirm->nasMsg.data,
-                                            confirm->nasMsg.length);
-            } else {
-                LOG_TRACE(WARNING, "NET-MAIN  - "
-                          "Initial NAS message not delivered");
-                rc = nas_proc_establish_rej();
-            }
-            break;
-        }
+    break;
 
-        case AS_NAS_RELEASE_IND:
-            /* Received NAS signalling connection releaase indication */
-            rc = nas_proc_release_ind(msg->msg.nas_release_ind.cause);
-            break;
+  case AS_DL_INFO_TRANSFER_IND: {
+    const dl_info_transfer_ind_t *info = &msg->msg.dl_info_transfer_ind;
+    /* Received downlink data transfer indication */
+    rc = nas_proc_dl_transfer_ind(info->nasMsg.data,
+                                  info->nasMsg.length);
+    break;
+  }
 
-        case AS_UL_INFO_TRANSFER_CNF:
-            /* Received uplink data transfer confirm */
-            if (msg->msg.ul_info_transfer_cnf.errCode != AS_SUCCESS) {
-                LOG_TRACE(WARNING, "NET-MAIN  - "
-                          "Uplink NAS message not delivered");
-                rc = nas_proc_ul_transfer_rej();
-            } else {
-                rc = nas_proc_ul_transfer_cnf();
-            }
-            break;
+  case AS_RAB_ESTABLISH_IND:
+    break;
 
-        case AS_DL_INFO_TRANSFER_IND: {
-            const dl_info_transfer_ind_t *info = &msg->msg.dl_info_transfer_ind;
-            /* Received downlink data transfer indication */
-            rc = nas_proc_dl_transfer_ind(info->nasMsg.data,
-                                          info->nasMsg.length);
-            break;
-        }
-
-        case AS_RAB_ESTABLISH_IND:
-            break;
-
-        case AS_RAB_RELEASE_IND:
-            break;
+  case AS_RAB_RELEASE_IND:
+    break;
 #endif
 #ifdef NAS_MME
-        case AS_NAS_ESTABLISH_IND: {
-            /* Received NAS signalling connection establishment indication */
-            const nas_establish_ind_t *indication = &msg->msg.nas_establish_ind;
-            rc = nas_proc_establish_ind(indication->UEid,
-                                        indication->tac,
-                                        indication->initialNasMsg.data,
-                                        indication->initialNasMsg.length);
-            break;
-        }
 
-        case AS_DL_INFO_TRANSFER_CNF: {
-            const dl_info_transfer_cnf_t *info = &msg->msg.dl_info_transfer_cnf;
-            /* Received downlink data transfer confirm */
-            if (info->errCode != AS_SUCCESS) {
-                LOG_TRACE(WARNING, "NET-MAIN  - "
-                          "Downlink NAS message not delivered");
-                rc = nas_proc_dl_transfer_rej(info->UEid);
-            } else {
-                rc = nas_proc_dl_transfer_cnf(info->UEid);
-            }
-            break;
-        }
+  case AS_NAS_ESTABLISH_IND: {
+    /* Received NAS signalling connection establishment indication */
+    const nas_establish_ind_t *indication = &msg->msg.nas_establish_ind;
+    rc = nas_proc_establish_ind(indication->UEid,
+                                indication->tac,
+                                indication->initialNasMsg.data,
+                                indication->initialNasMsg.length);
+    break;
+  }
 
-        case AS_UL_INFO_TRANSFER_IND: {
-            const ul_info_transfer_ind_t *info = &msg->msg.ul_info_transfer_ind;
-            /* Received uplink data transfer indication */
-            rc = nas_proc_ul_transfer_ind(info->UEid,
-                                          info->nasMsg.data,
-                                          info->nasMsg.length);
-            break;
-        }
+  case AS_DL_INFO_TRANSFER_CNF: {
+    const dl_info_transfer_cnf_t *info = &msg->msg.dl_info_transfer_cnf;
 
-        case AS_RAB_ESTABLISH_CNF:
-            break;
-#endif
-
-        default:
-            LOG_TRACE(ERROR, "NET-MAIN  - Unexpected AS message type: 0x%x",
-                      msg_id);
-            rc = RETURNerror;
-            break;
+    /* Received downlink data transfer confirm */
+    if (info->errCode != AS_SUCCESS) {
+      LOG_TRACE(WARNING, "NET-MAIN  - "
+                "Downlink NAS message not delivered");
+      rc = nas_proc_dl_transfer_rej(info->UEid);
+    } else {
+      rc = nas_proc_dl_transfer_cnf(info->UEid);
     }
 
-    LOG_FUNC_RETURN (rc);
+    break;
+  }
+
+  case AS_UL_INFO_TRANSFER_IND: {
+    const ul_info_transfer_ind_t *info = &msg->msg.ul_info_transfer_ind;
+    /* Received uplink data transfer indication */
+    rc = nas_proc_ul_transfer_ind(info->UEid,
+                                  info->nasMsg.data,
+                                  info->nasMsg.length);
+    break;
+  }
+
+  case AS_RAB_ESTABLISH_CNF:
+    break;
+#endif
+
+  default:
+    LOG_TRACE(ERROR, "NET-MAIN  - Unexpected AS message type: 0x%x",
+              msg_id);
+    rc = RETURNerror;
+    break;
+  }
+
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************/

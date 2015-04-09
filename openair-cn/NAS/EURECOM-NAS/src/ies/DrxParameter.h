@@ -39,10 +39,10 @@
 #define DRX_PARAMETER_MAXIMUM_LENGTH 3
 
 typedef struct DrxParameter_tag {
-    uint8_t  splitpgcyclecode;
-    uint8_t  cnspecificdrxcyclelengthcoefficientanddrxvaluefors1mode:4;
-    uint8_t  splitonccch:1;
-    uint8_t  nondrxtimer:3;
+  uint8_t  splitpgcyclecode;
+  uint8_t  cnspecificdrxcyclelengthcoefficientanddrxvaluefors1mode:4;
+  uint8_t  splitonccch:1;
+  uint8_t  nondrxtimer:3;
 } DrxParameter;
 
 int encode_drx_parameter(DrxParameter *drxparameter, uint8_t iei, uint8_t *buffer, uint32_t len);

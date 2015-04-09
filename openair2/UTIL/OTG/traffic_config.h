@@ -27,10 +27,10 @@
 
 *******************************************************************************/
 
- 
+
 //IDT DISTRIBUTION PARAMETERS
 #define IDT_DIST GAUSSIAN
-#define IDT_MIN 2 
+#define IDT_MIN 2
 #define IDT_MAX 10
 #define IDT_STD_DEV 1
 #define IDT_LAMBDA 3
@@ -40,7 +40,7 @@
 #define IP_V IPV4
 
 //DATA PACKET SIZE DISTRIBUTION PARAMETERS
-#define PKTS_SIZE_DIST POISSON   
+#define PKTS_SIZE_DIST POISSON
 #define PKTS_SIZE_MIN 17
 #define PKTS_SIZE_MAX 1500
 #define PKTS_SIZE_STD_DEV 30

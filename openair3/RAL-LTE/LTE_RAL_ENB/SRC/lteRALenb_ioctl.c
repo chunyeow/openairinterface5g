@@ -173,7 +173,7 @@ void RAL_NASupdatetMTlist(uint8_t *msgrep, int num_mts){
           #endif
 
       }
-	  //check enter sleep mode
+    //check enter sleep mode
       if ((g_enb_ral_obj[instanceP].mt[mt_ix].nas_state==NAS_CX_DCH)&&(list[mt_ix].state == NAS_CX_RELEASING)){
          DEBUG ("\n\n");
          DEBUG (" MOBILE TERMINAL %d is entering sleep mode. Send LinkDown.\n\n",mt_ix);
@@ -184,7 +184,7 @@ void RAL_NASupdatetMTlist(uint8_t *msgrep, int num_mts){
          MIH_C_3GPP_ADDR_set(&(new_ar._union._3gpp_addr), (u_int8_t*)&(g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
          eRALlte_send_link_down_indication(&transaction_id, &g_enb_ral_obj[instanceP].mt[mt_ix].ltid, &new_ar, &reason_code);
       }
- 	  // check leave sleep mode
+    // check leave sleep mode
       if ((g_enb_ral_obj[instanceP].mt[mt_ix].nas_state==NAS_CX_RELEASING)&&(list[mt_ix].state == NAS_CX_DCH)){
          DEBUG ("\n\n");
          DEBUG (" MOBILE TERMINAL %d WAS IN SLEEP MODE AND IS NOW ACTIVATED.\n\n",mt_ix);
@@ -363,7 +363,7 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
           default:
           ERR ("RAL_process_NAS_message : invalid ioctl command %d\n",ioctl_cmd);
         rc= -1;
-      } //end switch ioctl_cmd 
+      } //end switch ioctl_cmd
       break;
 
       case IO_OBJ_RB:
@@ -561,7 +561,7 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
             default:
             ERR ("RAL_process_NAS_message : invalid ioctl command %d\n",ioctl_cmd);
             rc= -1;
-         } //end switch ioctl_cmd 
+         } //end switch ioctl_cmd
       break;
       case IO_OBJ_MEAS:
          switch (ioctl_cmd){
@@ -597,7 +597,7 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
             case IO_CMD_LIST:
               {
                 struct nas_msg_enb_measure_retrieve *msgrep;
-				int ix;
+        int ix;
                 //
                 gifr.type=NAS_MSG_ENB_MEAS_RETRIEVE;
                 memset (g_enb_ral_obj[instanceP].buffer,0,800);
@@ -630,7 +630,7 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
             default:
             ERR ("RAL_process_NAS_message : invalid ioctl command %d\n",ioctl_cmd);
             rc= -1;
-         } //end switch ioctl_cmd 
+         } //end switch ioctl_cmd
       break;
 
       case IO_OBJ_MC:
@@ -711,12 +711,12 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
             default:
             ERR ("RAL_process_NAS_message : invalid ioctl command %d\n",ioctl_cmd);
             rc= -1;
-         } //end switch ioctl_cmd 
+         } //end switch ioctl_cmd
       break;
       default:
         ERR ("RAL_process_NAS_message : invalid ioctl object %d\n",ioctl_obj);
         rc= -1;
-  } //end switch ioctl_obj 
+  } //end switch ioctl_obj
   //rc=0;
  return rc;
 }

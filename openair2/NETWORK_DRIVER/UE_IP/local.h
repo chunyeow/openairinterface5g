@@ -32,7 +32,7 @@
     email                : navid.nikaein@eurecom.fr
                           lionel.gauthier@eurecom.fr,
                            knopp@eurecom.fr
-			
+
  ***************************************************************************/
 
 #ifndef UE_IP_LOCAL_H
@@ -82,12 +82,12 @@ typedef struct ue_ip_priv_s {
 typedef struct ipversion_s {
 #if defined(__LITTLE_ENDIAN_BITFIELD)
   uint8_t    reserved:4,
-          version:4;
+             version:4;
 #else
   uint8_t    version:4,
-          reserved:4;
+             reserved:4;
 #endif
-}ipversion_t;
+} ipversion_t;
 
 
 typedef struct pdcp_data_req_header_s {

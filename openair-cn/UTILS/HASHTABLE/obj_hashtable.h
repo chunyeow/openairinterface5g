@@ -10,19 +10,19 @@ typedef size_t hash_size_t;
 
 
 typedef struct obj_hash_node_s {
-    int                 key_size;
-    void               *key;
-    void               *data;
-    struct obj_hash_node_s *next;
+  int                 key_size;
+  void               *key;
+  void               *data;
+  struct obj_hash_node_s *next;
 } obj_hash_node_t;
 
 typedef struct obj_hash_table_s {
-    hash_size_t         size;
-    hash_size_t         num_elements;
-    struct obj_hash_node_s **nodes;
-    hash_size_t       (*hashfunc)(const void*, int);
-    void              (*freekeyfunc)(void*);
-    void              (*freedatafunc)(void*);
+  hash_size_t         size;
+  hash_size_t         num_elements;
+  struct obj_hash_node_s **nodes;
+  hash_size_t       (*hashfunc)(const void*, int);
+  void              (*freekeyfunc)(void*);
+  void              (*freedatafunc)(void*);
 } obj_hash_table_t;
 
 obj_hash_table_t   *obj_hashtable_create  (hash_size_t   size, hash_size_t (*hashfunc)(const void*, int ), void (*freekeyfunc)(void*), void (*freedatafunc)(void*));

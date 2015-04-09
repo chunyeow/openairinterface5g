@@ -2,7 +2,7 @@
                           rrc_proto_fsm.h  -
                           -------------------
     copyright            : (C) 2001, 2010 by Eurecom
-    created by           : Lionel.Gauthier@eurecom.fr	
+    created by           : Lionel.Gauthier@eurecom.fr
     modified by          : Michelle.Wetterwald@eurecom.fr
  **************************************************************************
   prototypes for RRC FSM
@@ -103,7 +103,7 @@ void RRC_UE_O_O_SEND_DCCH_AM (int msgId);
 void RRC_UE_O_O_SEND_DCCH_UM (int msgId);
 
 /* External FUNCTIONS Definition*/
- // For Connection Model
+// For Connection Model
 extern void     RRC_UE_I_I_WaitTimerExpired (void);
 extern void     RRC_UE_I_I_T308_TimeOut (void);
 extern void     RRC_UE_I_I_T300_TimeOut (void);
@@ -129,7 +129,7 @@ extern void     RRC_UE_I_UE_ID_MSG (int);
 extern void     RRC_UE_reset (void);
 extern void     RRC_UE (void);
 
- // For RB Control Model
+// For RB Control Model
 extern void     RRC_RB_UE_I_I_RADIO_BEARER_SETUP (void);
 extern void     RRC_RB_UE_I_I_RADIO_BEARER_RELEASE (void);
 extern void     RRC_RB_UE_I_I_CELL_UPDATE_CONFIRM (void);

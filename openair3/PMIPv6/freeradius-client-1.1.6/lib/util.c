@@ -22,7 +22,7 @@
 #include <includes.h>
 #include <freeradius-client.h>
 
-#define	RC_BUFSIZ	1024
+#define RC_BUFSIZ 1024
 
 /*
  * Function: rc_str2tm
@@ -31,31 +31,28 @@
  *
  */
 
-static const char * months[] =
-		{
-			"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-			"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-		};
+static const char * months[] = {
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+};
 
 void rc_str2tm (char *valstr, struct tm *tm)
 {
-	int             i;
+  int             i;
 
-	/* Get the month */
-	for (i = 0; i < 12; i++)
-	{
-		if (strncmp (months[i], valstr, 3) == 0)
-		{
-			tm->tm_mon = i;
-			i = 13;
-		}
-	}
+  /* Get the month */
+  for (i = 0; i < 12; i++) {
+    if (strncmp (months[i], valstr, 3) == 0) {
+      tm->tm_mon = i;
+      i = 13;
+    }
+  }
 
-	/* Get the Day */
-	tm->tm_mday = atoi (&valstr[4]);
+  /* Get the Day */
+  tm->tm_mday = atoi (&valstr[4]);
 
-	/* Now the year */
-	tm->tm_year = atoi (&valstr[7]) - 1900;
+  /* Now the year */
+  tm->tm_year = atoi (&valstr[7]) - 1900;
 }
 
 /*
@@ -68,34 +65,39 @@ void rc_str2tm (char *valstr, struct tm *tm)
 char *rc_getifname(rc_handle *rh, char *tty)
 {
 #if defined(BSD4_4) || defined(linux)
-	int		fd;
+  int   fd;
 
-	if ((fd = open(tty, O_RDWR|O_NDELAY)) < 0) {
-		rc_log(LOG_ERR, "rc_getifname: can't open %s: %s", tty, strerror(errno));
-		return NULL;
-	}
+  if ((fd = open(tty, O_RDWR|O_NDELAY)) < 0) {
+    rc_log(LOG_ERR, "rc_getifname: can't open %s: %s", tty, strerror(errno));
+    return NULL;
+  }
+
 #endif
 
 #ifdef BSD4_4
-	strcpy(rh->ifname,ttyname(fd));
-	if (strlen(rh->ifname) < 1) {
-		rc_log(LOG_ERR, "rc_getifname: can't get attached interface of %s: %s", tty, strerror(errno));
-		close(fd);
-		return NULL;
-	}
+  strcpy(rh->ifname,ttyname(fd));
+
+  if (strlen(rh->ifname) < 1) {
+    rc_log(LOG_ERR, "rc_getifname: can't get attached interface of %s: %s", tty, strerror(errno));
+    close(fd);
+    return NULL;
+  }
+
 #elif linux
-	if (ioctl(fd, SIOCGIFNAME, rh->ifname) < 0) {
-		rc_log(LOG_ERR, "rc_getifname: can't ioctl %s: %s", tty, strerror(errno));
-		close(fd);
-		return NULL;
-	}
+
+  if (ioctl(fd, SIOCGIFNAME, rh->ifname) < 0) {
+    rc_log(LOG_ERR, "rc_getifname: can't ioctl %s: %s", tty, strerror(errno));
+    close(fd);
+    return NULL;
+  }
+
 #else
-	return NULL;
+  return NULL;
 #endif
 
 #if defined(BSD4_4) || defined(linux)
-	close(fd);
-	return rh->ifname;
+  close(fd);
+  return rh->ifname;
 #endif
 }
 
@@ -108,119 +110,118 @@ char *rc_getifname(rc_handle *rh, char *tty)
 #ifndef _MSC_VER
 char *rc_getstr (rc_handle *rh, char *prompt, int do_echo)
 {
-	int             in, out;
-	char           *p;
-	struct termios  term_old, term_new;
-	int		is_term, flags, old_flags;
-	char		c;
-	int		flushed = 0;
-	sigset_t        newset;
-	sigset_t        oldset;
+  int             in, out;
+  char           *p;
+  struct termios  term_old, term_new;
+  int   is_term, flags, old_flags;
+  char    c;
+  int   flushed = 0;
+  sigset_t        newset;
+  sigset_t        oldset;
 
-	in = fileno(stdin);
-	out = fileno(stdout);
+  in = fileno(stdin);
+  out = fileno(stdout);
 
-	(void) sigemptyset (&newset);
-	(void) sigaddset (&newset, SIGINT);
-	(void) sigaddset (&newset, SIGTSTP);
-	(void) sigaddset (&newset, SIGQUIT);
+  (void) sigemptyset (&newset);
+  (void) sigaddset (&newset, SIGINT);
+  (void) sigaddset (&newset, SIGTSTP);
+  (void) sigaddset (&newset, SIGQUIT);
 
-	(void) sigprocmask (SIG_BLOCK, &newset, &oldset);
+  (void) sigprocmask (SIG_BLOCK, &newset, &oldset);
 
-	if ((is_term = isatty(in)))
-	{
+  if ((is_term = isatty(in))) {
 
-		(void) tcgetattr (in, &term_old);
-		term_new = term_old;
-		if (do_echo)
-			term_new.c_lflag |= ECHO;
-		else
-			term_new.c_lflag &= ~ECHO;
+    (void) tcgetattr (in, &term_old);
+    term_new = term_old;
 
-		if (tcsetattr (in, TCSAFLUSH, &term_new) == 0)
-			flushed = 1;
+    if (do_echo)
+      term_new.c_lflag |= ECHO;
+    else
+      term_new.c_lflag &= ~ECHO;
 
-	}
-	else
-	{
-		is_term = 0;
-		if ((flags = fcntl(in, F_GETFL, 0)) >= 0) {
-			old_flags = flags;
-			flags |= O_NONBLOCK;
+    if (tcsetattr (in, TCSAFLUSH, &term_new) == 0)
+      flushed = 1;
 
-			fcntl(in, F_SETFL, flags);
+  } else {
+    is_term = 0;
 
-			while (read(in, &c, 1) > 0)
-				/* nothing */;
+    if ((flags = fcntl(in, F_GETFL, 0)) >= 0) {
+      old_flags = flags;
+      flags |= O_NONBLOCK;
 
-			fcntl(in, F_SETFL, old_flags);
+      fcntl(in, F_SETFL, flags);
 
-			flushed = 1;
-		}
-	}
+      while (read(in, &c, 1) > 0)
+        /* nothing */;
 
-	write(out, prompt, strlen(prompt));
+      fcntl(in, F_SETFL, old_flags);
 
-	/* well, this looks ugly, but it handles the following end of line
-	   markers: \r \r\0 \r\n \n \n\r, at least at a second pass */
+      flushed = 1;
+    }
+  }
 
-	p = rh->buf;
-	for (;;)
-	{
-		if (read(in, &c, 1) <= 0)
-			return NULL;
+  write(out, prompt, strlen(prompt));
 
-		if (!flushed && ((c == '\0') || (c == '\r') || (c == '\n'))) {
-			flushed = 1;
-			continue;
-		}
+  /* well, this looks ugly, but it handles the following end of line
+     markers: \r \r\0 \r\n \n \n\r, at least at a second pass */
 
-		if ((c == '\r') || (c == '\n'))
-			break;
+  p = rh->buf;
 
-		flushed = 1;
+  for (;;) {
+    if (read(in, &c, 1) <= 0)
+      return NULL;
 
-		if (p < rh->buf + GETSTR_LENGTH)
-		{
-			if (do_echo && !is_term)
-				write(out, &c, 1);
-			*p++ = c;
-		}
-	}
+    if (!flushed && ((c == '\0') || (c == '\r') || (c == '\n'))) {
+      flushed = 1;
+      continue;
+    }
 
-	*p = '\0';
+    if ((c == '\r') || (c == '\n'))
+      break;
 
-	if (!do_echo || !is_term) write(out, "\r\n", 2);
+    flushed = 1;
 
-	if (is_term)
-		tcsetattr (in, TCSAFLUSH, &term_old);
-	else {
-		if ((flags = fcntl(in, F_GETFL, 0)) >= 0) {
-			old_flags = flags;
-			flags |= O_NONBLOCK;
+    if (p < rh->buf + GETSTR_LENGTH) {
+      if (do_echo && !is_term)
+        write(out, &c, 1);
 
-			fcntl(in, F_SETFL, flags);
+      *p++ = c;
+    }
+  }
 
-			while (read(in, &c, 1) > 0)
-				/* nothing */;
+  *p = '\0';
 
-			fcntl(in, F_SETFL, old_flags);
-		}
-	}
+  if (!do_echo || !is_term) write(out, "\r\n", 2);
 
-	(void) sigprocmask (SIG_SETMASK, &oldset, NULL);
+  if (is_term)
+    tcsetattr (in, TCSAFLUSH, &term_old);
+  else {
+    if ((flags = fcntl(in, F_GETFL, 0)) >= 0) {
+      old_flags = flags;
+      flags |= O_NONBLOCK;
 
-	return rh->buf;
+      fcntl(in, F_SETFL, flags);
+
+      while (read(in, &c, 1) > 0)
+        /* nothing */;
+
+      fcntl(in, F_SETFL, old_flags);
+    }
+  }
+
+  (void) sigprocmask (SIG_SETMASK, &oldset, NULL);
+
+  return rh->buf;
 }
 #endif
 void rc_mdelay(int msecs)
 {
-	struct timeval tv;
+  struct timeval tv;
 
-	tv.tv_sec = (int) msecs / 1000;
-	tv.tv_usec = (msecs % 1000) * 1000;
+  tv.tv_sec = (int) msecs / 1000;
+  tv.tv_usec = (msecs % 1000) * 1000;
 
-	select(0, NULL, NULL, NULL, &tv);
+  select(0, NULL, NULL, NULL, &tv);
 }
 
 /*
@@ -249,15 +250,17 @@ rc_mksid (rc_handle *rh)
 rc_handle *
 rc_new(void)
 {
-	rc_handle *rh;
+  rc_handle *rh;
 
-	rh = malloc(sizeof(*rh));
-	if (rh == NULL) {
-                rc_log(LOG_CRIT, "rc_new: out of memory");
-                return NULL;
-        }
-	memset(rh, 0, sizeof(*rh));
-	return rh;
+  rh = malloc(sizeof(*rh));
+
+  if (rh == NULL) {
+    rc_log(LOG_CRIT, "rc_new: out of memory");
+    return NULL;
+  }
+
+  memset(rh, 0, sizeof(*rh));
+  return rh;
 }
 
 /*
@@ -271,14 +274,17 @@ void
 rc_destroy(rc_handle *rh)
 {
 
-	rc_map2id_free(rh);
-	rc_dict_free(rh);
-	rc_config_free(rh);
-	if (rh->this_host_bind_ipaddr != NULL)
-		free(rh->this_host_bind_ipaddr);
-	if (rh->ppbuf != NULL)
-		free(rh->ppbuf);
-	free(rh);
+  rc_map2id_free(rh);
+  rc_dict_free(rh);
+  rc_config_free(rh);
+
+  if (rh->this_host_bind_ipaddr != NULL)
+    free(rh->this_host_bind_ipaddr);
+
+  if (rh->ppbuf != NULL)
+    free(rh->ppbuf);
+
+  free(rh);
 }
 
 /*
@@ -291,42 +297,45 @@ rc_destroy(rc_handle *rh)
 char *
 rc_fgetln(FILE *fp, size_t *len)
 {
-	static char *buf = NULL;
-	static size_t bufsiz = 0;
-	char *ptr;
+  static char *buf = NULL;
+  static size_t bufsiz = 0;
+  char *ptr;
 
-	if (buf == NULL) {
-		bufsiz = RC_BUFSIZ;
-		if ((buf = malloc(bufsiz)) == NULL)
-			return NULL;
-	}
+  if (buf == NULL) {
+    bufsiz = RC_BUFSIZ;
 
-	if (fgets(buf, (int)bufsiz, fp) == NULL)
-		return NULL;
-	*len = 0;
+    if ((buf = malloc(bufsiz)) == NULL)
+      return NULL;
+  }
 
-	while ((ptr = strchr(&buf[*len], '\n')) == NULL) {
-		size_t nbufsiz = bufsiz + RC_BUFSIZ;
-		char *nbuf = realloc(buf, nbufsiz);
+  if (fgets(buf, (int)bufsiz, fp) == NULL)
+    return NULL;
 
-		if (nbuf == NULL) {
-			int oerrno = errno;
-			free(buf);
-			errno = oerrno;
-			buf = NULL;
-			return NULL;
-		} else
-			buf = nbuf;
+  *len = 0;
 
-		*len = bufsiz;
-		if (fgets(&buf[bufsiz], RC_BUFSIZ, fp) == NULL)
-			return buf;
+  while ((ptr = strchr(&buf[*len], '\n')) == NULL) {
+    size_t nbufsiz = bufsiz + RC_BUFSIZ;
+    char *nbuf = realloc(buf, nbufsiz);
 
-		bufsiz = nbufsiz;
-	}
+    if (nbuf == NULL) {
+      int oerrno = errno;
+      free(buf);
+      errno = oerrno;
+      buf = NULL;
+      return NULL;
+    } else
+      buf = nbuf;
 
-	*len = (ptr - buf) + 1;
-	return buf;
+    *len = bufsiz;
+
+    if (fgets(&buf[bufsiz], RC_BUFSIZ, fp) == NULL)
+      return buf;
+
+    bufsiz = nbufsiz;
+  }
+
+  *len = (ptr - buf) + 1;
+  return buf;
 }
 
 /*
@@ -340,10 +349,10 @@ rc_fgetln(FILE *fp, size_t *len)
 double
 rc_getctime(void)
 {
-    struct timeval timev;
+  struct timeval timev;
 
-    if (gettimeofday(&timev, NULL) == -1)
-        return -1;
+  if (gettimeofday(&timev, NULL) == -1)
+    return -1;
 
-    return timev.tv_sec + ((double)timev.tv_usec) / 1000000.0;
+  return timev.tv_sec + ((double)timev.tv_usec) / 1000000.0;
 }

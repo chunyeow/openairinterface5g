@@ -122,14 +122,14 @@ void *_emm_service_t3417_handler(void *);
  ***************************************************************************/
 void *_emm_service_t3417_handler(void *args)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    LOG_TRACE(WARNING, "EMM-PROC  - T3417 timer expired");
+  LOG_TRACE(WARNING, "EMM-PROC  - T3417 timer expired");
 
-    /* Stop timer T3417 */
-    T3417.id = nas_timer_stop(T3417.id);
+  /* Stop timer T3417 */
+  T3417.id = nas_timer_stop(T3417.id);
 
-    LOG_FUNC_RETURN(NULL);
+  LOG_FUNC_RETURN(NULL);
 }
 
 #endif // NAS_UE

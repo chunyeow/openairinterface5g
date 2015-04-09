@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                              n w - g t p v 2 c                             * 
+ *                              n w - g t p v 2 c                             *
  *    G P R S   T u n n e l i n g    P r o t o c o l   v 2 c    S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -34,10 +34,10 @@
 /**
  * @file NwGtpv2cTrxn.h
  * @author Amit Chawre
- * @brief 
+ * @brief
  *
  * This header file contains required definitions and functions
- * prototypes used by gtpv2c transactions. 
+ * prototypes used by gtpv2c transactions.
  *
  **/
 
@@ -49,24 +49,24 @@
 extern "C" {
 #endif
 
-/** 
+/**
  * Constructotr
  */
 NwGtpv2cTrxnT*
-nwGtpv2cTrxnNew( NW_IN  NwGtpv2cStackT* pStack);  
+nwGtpv2cTrxnNew( NW_IN  NwGtpv2cStackT* pStack);
 
-/** 
+/**
  * Overloaded Constructotr
  */
 NwGtpv2cTrxnT*
-nwGtpv2cTrxnWithSeqNumNew( NW_IN  NwGtpv2cStackT* pStack,  
-                        NW_IN  NwU32T seqNum);
+nwGtpv2cTrxnWithSeqNumNew( NW_IN  NwGtpv2cStackT* pStack,
+                           NW_IN  NwU32T seqNum);
 
 /**
- * Another overloaded constructor. Create transaction as outstanding 
+ * Another overloaded constructor. Create transaction as outstanding
  * RX transaction for detecting duplicated requests.
  *
- * @param[in] thiz : Pointer to stack. 
+ * @param[in] thiz : Pointer to stack.
  * @param[in] teidLocal : Trxn teid.
  * @param[in] peerIp : Peer Ip address.
  * @param[in] peerPort : Peer Ip port.
@@ -76,10 +76,10 @@ nwGtpv2cTrxnWithSeqNumNew( NW_IN  NwGtpv2cStackT* pStack,
 
 NwGtpv2cTrxnT*
 nwGtpv2cTrxnOutstandingRxNew( NW_IN  NwGtpv2cStackT* pStack,
-                         NW_IN  NwU32T teidLocal,
-                         NW_IN  NwU32T peerIp,
-                         NW_IN  NwU32T peerPort,
-                         NW_IN  NwU32T seqNum);
+                              NW_IN  NwU32T teidLocal,
+                              NW_IN  NwU32T peerIp,
+                              NW_IN  NwU32T peerPort,
+                              NW_IN  NwU32T seqNum);
 
 NwRcT
 nwGtpv2cTrxnDelete( NW_INOUT NwGtpv2cTrxnT **ppTrxn);
@@ -96,7 +96,7 @@ nwGtpv2cTrxnStartDulpicateRequestWaitTimer(NwGtpv2cTrxnT* thiz);
 
 /**
  * Start timer to wait for rsp of a req message
- * 
+ *
  * @param[in] thiz : Pointer to transaction
  * @param[in] timeoutCallbackFunc : Timeout handler callback function.
  * @return NW_OK on success.

@@ -33,19 +33,19 @@ extern "C" {
 static void
 NW_TMR_CALLBACK(nwMiniTmrMgrHandleTimeout)
 {
-    NwGtpv1uRcT rc;
-    NwMiniTmrMgrEntityT *pTmr = (NwMiniTmrMgrEntityT *) arg;
+  NwGtpv1uRcT rc;
+  NwMiniTmrMgrEntityT *pTmr = (NwMiniTmrMgrEntityT *) arg;
 
-    /*---------------------------------------------------------------------------
-     *  Send Timeout Request to GTPv1u Stack Instance
-     *--------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------
+   *  Send Timeout Request to GTPv1u Stack Instance
+   *--------------------------------------------------------------------------*/
 
-    rc = nwGtpv1uProcessTimeout(pTmr->timeoutArg);
-    NW_ASSERT( rc == NW_GTPV1U_OK );
+  rc = nwGtpv1uProcessTimeout(pTmr->timeoutArg);
+  NW_ASSERT( rc == NW_GTPV1U_OK );
 
-    free(pTmr);
+  free(pTmr);
 
-    return;
+  return;
 }
 
 /*---------------------------------------------------------------------------
@@ -59,41 +59,41 @@ NwGtpv1uRcT nwTimerStart( NwGtpv1uTimerMgrHandleT tmrMgrHandle,
                           void  *timeoutArg,
                           NwGtpv1uTimerHandleT *hTmr)
 {
-    NwGtpv1uRcT rc = NW_GTPV1U_OK;
-    NwMiniTmrMgrEntityT *pTmr;
-    struct timeval tv;
+  NwGtpv1uRcT rc = NW_GTPV1U_OK;
+  NwMiniTmrMgrEntityT *pTmr;
+  struct timeval tv;
 
-    NW_LOG(NW_LOG_LEVEL_INFO,
-           "Received start timer request from stack with timer type %u, arg %x, for %u sec and %u usec",
-           tmrType, timeoutArg, timeoutSec, timeoutUsec);
+  NW_LOG(NW_LOG_LEVEL_INFO,
+         "Received start timer request from stack with timer type %u, arg %x, for %u sec and %u usec",
+         tmrType, timeoutArg, timeoutSec, timeoutUsec);
 
-    pTmr = (NwMiniTmrMgrEntityT *) malloc (sizeof(NwMiniTmrMgrEntityT));
+  pTmr = (NwMiniTmrMgrEntityT *) malloc (sizeof(NwMiniTmrMgrEntityT));
 
-    /* set the timevalues*/
-    timerclear(&tv);
-    tv.tv_sec     = timeoutSec;
-    tv.tv_usec    = timeoutUsec;
+  /* set the timevalues*/
+  timerclear(&tv);
+  tv.tv_sec     = timeoutSec;
+  tv.tv_usec    = timeoutUsec;
 
-    pTmr->timeoutArg = timeoutArg;
-    evtimer_set(&pTmr->ev, nwMiniTmrMgrHandleTimeout, pTmr);
+  pTmr->timeoutArg = timeoutArg;
+  evtimer_set(&pTmr->ev, nwMiniTmrMgrHandleTimeout, pTmr);
 
-    /*add event*/
+  /*add event*/
 
-    event_add(&(pTmr->ev), &tv);
+  event_add(&(pTmr->ev), &tv);
 
-    *hTmr = (NwGtpv1uTimerHandleT)pTmr;
+  *hTmr = (NwGtpv1uTimerHandleT)pTmr;
 
-    return rc;
+  return rc;
 }
 
 NwGtpv1uRcT nwTimerStop( NwGtpv1uTimerMgrHandleT tmrMgrHandle,
                          NwGtpv1uTimerHandleT hTmr)
 {
-    NW_LOG(NW_LOG_LEVEL_INFO,
-           "Received stop timer request from stack for timer handle %u", hTmr);
-    evtimer_del(&(((NwMiniTmrMgrEntityT *)hTmr)->ev));
-    free((void *)hTmr);
-    return NW_GTPV1U_OK;
+  NW_LOG(NW_LOG_LEVEL_INFO,
+         "Received stop timer request from stack for timer handle %u", hTmr);
+  evtimer_del(&(((NwMiniTmrMgrEntityT *)hTmr)->ev));
+  free((void *)hTmr);
+  return NW_GTPV1U_OK;
 }
 
 #ifdef __cplusplus

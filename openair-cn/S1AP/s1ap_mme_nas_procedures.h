@@ -52,7 +52,7 @@ int s1ap_mme_handle_initial_ue_message(uint32_t assocId, uint32_t stream,
  * @returns -1 on failure, 0 otherwise
  **/
 int s1ap_mme_handle_uplink_nas_transport(uint32_t assocId, uint32_t stream,
-                                         struct s1ap_message_s *message);
+    struct s1ap_message_s *message);
 
 /** \brief Handle a NAS non delivery indication message from eNB
  * \param assocId lower layer assoc id (SCTP)
@@ -70,5 +70,5 @@ void s1ap_handle_conn_est_cnf(const mme_app_connection_establishment_cnf_t * con
 #endif
 
 int s1ap_generate_downlink_nas_transport(const uint32_t ue_id, void * const data,
-                                         const uint32_t size);
+    const uint32_t size);
 #endif /* S1AP_MME_NAS_PROCEDURES_H_ */

@@ -54,7 +54,7 @@
 # define AUTHENTICATION_FAILURE_AUTHENTICATION_FAILURE_PARAMETER_PRESENT (1<<0)
 
 typedef enum authentication_failure_iei_tag {
-    AUTHENTICATION_FAILURE_AUTHENTICATION_FAILURE_PARAMETER_IEI  = 0x30, /* 0x30 = 48 */
+  AUTHENTICATION_FAILURE_AUTHENTICATION_FAILURE_PARAMETER_IEI  = 0x30, /* 0x30 = 48 */
 } authentication_failure_iei;
 
 /*
@@ -65,14 +65,14 @@ typedef enum authentication_failure_iei_tag {
  */
 
 typedef struct authentication_failure_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator            protocoldiscriminator:4;
-    SecurityHeaderType               securityheadertype:4;
-    MessageType                      messagetype;
-    EmmCause                         emmcause;
-    /* Optional fields */
-    uint32_t                         presencemask;
-    AuthenticationFailureParameter   authenticationfailureparameter;
+  /* Mandatory fields */
+  ProtocolDiscriminator            protocoldiscriminator:4;
+  SecurityHeaderType               securityheadertype:4;
+  MessageType                      messagetype;
+  EmmCause                         emmcause;
+  /* Optional fields */
+  uint32_t                         presencemask;
+  AuthenticationFailureParameter   authenticationfailureparameter;
 } authentication_failure_msg;
 
 int decode_authentication_failure(authentication_failure_msg *authenticationfailure, uint8_t *buffer, uint32_t len);

@@ -48,8 +48,8 @@ extern "C" {
 /** @defgroup _call_emu Call Emu
  *  @ingroup _fn
  *  @brief Call the emulator
- * @{*/ 
-	int call_emu(char dst_dir[DIR_LENGTH_MAX]);
+ * @{*/
+int call_emu(char dst_dir[DIR_LENGTH_MAX]);
 /* @}*/
 
 #ifdef __cplusplus

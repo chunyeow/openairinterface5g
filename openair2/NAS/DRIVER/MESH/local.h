@@ -71,8 +71,7 @@
 #include "rrc_nas_primitives.h"
 #include "COMMON/platform_types.h"
 
-struct rb_entity
-{
+struct rb_entity {
   nasRadioBearerId_t rab_id;
   nasSapId_t sapi;
   nasQoSTrafficClass_t qos;
@@ -82,19 +81,19 @@ struct rb_entity
   struct rb_entity *next;
 };
 
-struct cx_entity{
+struct cx_entity {
   int sap[NAS_SAPI_CX_MAX];
-  uint8_t state; 			// state of the connection
-  nasLocalConnectionRef_t lcr;	// Local connection reference
-  nasCellID_t cellid;		// cell identification
-  uint32_t countimer;			// timeout's counter
-  uint8_t retry;			// number of retransmission
+  uint8_t state;      // state of the connection
+  nasLocalConnectionRef_t lcr;  // Local connection reference
+  nasCellID_t cellid;   // cell identification
+  uint32_t countimer;     // timeout's counter
+  uint8_t retry;      // number of retransmission
   struct classifier_entity *sclassifier[NAS_DSCP_MAX]; // send classifier;
   struct classifier_entity *fclassifier[NAS_DSCP_MAX]; // send classifier;
   uint16_t nsclassifier;
   uint16_t nfclassifier;
-  uint32_t iid6[2]; 			// IPv6  interface identification
-  uint8_t iid4; 			// IPv4 interface identification
+  uint32_t iid6[2];       // IPv6  interface identification
+  uint8_t iid4;       // IPv4 interface identification
   struct rb_entity *rb;
   uint16_t num_rb;
   int lastRRCprimitive;
@@ -104,33 +103,32 @@ struct cx_entity{
   int meas_cell_id[MAX_MEASURE_NB];
   int meas_level[MAX_MEASURE_NB];
   int provider_id[MAX_MEASURE_NB];
-  
+
 };
 
-struct classifier_entity
-{
+struct classifier_entity {
   uint32_t classref;
   struct classifier_entity *next;
   uint8_t version;
-  union{
+  union {
     struct in6_addr ipv6;
     uint32_t ipv4;
   } saddr; // IP source address
   uint8_t splen; // prefix length
-  union{
+  union {
     struct in6_addr ipv6;
     uint32_t ipv4;
     unsigned int mpls_label;
   } daddr; // IP destination address
   uint8_t dplen; // prefix length
-  uint8_t protocol; 	// high layer protocol type
+  uint8_t protocol;   // high layer protocol type
   unsigned char protocol_message_type;
-  uint16_t sport; 	// source port
-  uint16_t dport; 	// destination port
+  uint16_t sport;   // source port
+  uint16_t dport;   // destination port
   struct rb_entity *rb;      //pointer to rb_entity for sending function or receiving in case of forwarding rule
   struct rb_entity *rb_rx;   //pointer to rb_entity for receiving (in case of forwarding rule)
   nasRadioBearerId_t rab_id;            // RAB identification for sending
-  nasRadioBearerId_t rab_id_rx; 	// RAB identification for receiving (in case of forwarding rule)
+  nasRadioBearerId_t rab_id_rx;   // RAB identification for receiving (in case of forwarding rule)
   void (*fct)(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc,int inst);
 };
 
@@ -138,8 +136,7 @@ struct classifier_entity
 
 //#define NAS_RETRY_LIMIT_DEFAULT 5
 
-struct nas_priv
-{
+struct nas_priv {
   int irq;
   struct timer_list timer;
   spinlock_t lock;
@@ -159,11 +156,11 @@ struct nas_priv
 
 struct ipversion {
 #if defined(__LITTLE_ENDIAN_BITFIELD)
-         uint8_t    reserved:4,
-                 version:4;
+  uint8_t    reserved:4,
+             version:4;
 #else
-         uint8_t    version:4,
-                 reserved:4;
+  uint8_t    version:4,
+             reserved:4;
 #endif
 };
 

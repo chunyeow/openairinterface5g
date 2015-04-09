@@ -46,12 +46,12 @@
 #        include "rlc_def.h"
 
 typedef struct rlc_um_timer_s {
-    uint32_t  frame_time_out;/*!< \brief When set, indicate the frame number the timer will time-out. */
-    uint32_t  frame_start;   /*!< \brief indicate the frame number the timer has been started. */
-    uint32_t  time_out;      /*!< \brief Configured timer duration in frames. */
-    uint32_t  running:1;     /*!< \brief The timer is running. */
-    uint32_t  timed_out:1;   /*!< \brief The timer has timed-out. */
-    uint32_t  dummy:30;      /*!< \brief Bits not used. */
+  uint32_t  frame_time_out;/*!< \brief When set, indicate the frame number the timer will time-out. */
+  uint32_t  frame_start;   /*!< \brief indicate the frame number the timer has been started. */
+  uint32_t  time_out;      /*!< \brief Configured timer duration in frames. */
+  uint32_t  running:1;     /*!< \brief The timer is running. */
+  uint32_t  timed_out:1;   /*!< \brief The timer has timed-out. */
+  uint32_t  dummy:30;      /*!< \brief Bits not used. */
 } rlc_um_timer_t ;
 
 
@@ -71,10 +71,13 @@ typedef struct rlc_um_entity_s {
   //-----------------------------
   // PROTOCOL VARIABLES
   //-----------------------------
-  rlc_usn_t            vt_us; /*!< \brief This state variable holds the value of the SN to be assigned for the next newly generated UMD PDU. It is initially set to 0, and is updated whenever the UM RLC entity delivers an UMD PDU with SN = VT(US). */
-  rlc_usn_t            vr_ur; /*!< \brief UM receive state variable. This state variable holds the value of the SN of the earliest UMD PDU that is still considered for reordering. It is initially set to 0. */
+  rlc_usn_t
+  vt_us; /*!< \brief This state variable holds the value of the SN to be assigned for the next newly generated UMD PDU. It is initially set to 0, and is updated whenever the UM RLC entity delivers an UMD PDU with SN = VT(US). */
+  rlc_usn_t
+  vr_ur; /*!< \brief UM receive state variable. This state variable holds the value of the SN of the earliest UMD PDU that is still considered for reordering. It is initially set to 0. */
   rlc_usn_t            vr_ux; /*!< \brief UM t-Reordering state variable. This state variable holds the value of the SN following the SN of the UMD PDU which triggered t-Reordering. */
-  rlc_usn_t            vr_uh; /*!< \brief UM highest received state variable. This state variable holds the value of the SN following the SN of the UMD PDU with the highest SN among received UMD PDUs, and it serves as the higher edge of the reordering window. It is initially set to 0. */
+  rlc_usn_t
+  vr_uh; /*!< \brief UM highest received state variable. This state variable holds the value of the SN following the SN of the UMD PDU with the highest SN among received UMD PDUs, and it serves as the higher edge of the reordering window. It is initially set to 0. */
   //-----------------------------
   // TIMERS
   //-----------------------------
@@ -140,6 +143,6 @@ typedef struct rlc_um_entity_s {
   unsigned int stat_rx_data_pdu_out_of_window;           /*!< \brief Number of data PDUs received out of the receive window. */
   unsigned int stat_rx_data_bytes_out_of_window;         /*!< \brief Number of data bytes received out of the receive window. */
   unsigned int stat_timer_reordering_timed_out;
-}rlc_um_entity_t;
+} rlc_um_entity_t;
 /** @} */
 #    endif

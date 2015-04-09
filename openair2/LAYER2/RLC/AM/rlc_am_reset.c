@@ -70,7 +70,7 @@ void            process_reset (mem_block_t * pduP, struct rlc_am_reset_header *c
 void
 rlc_am_reset_time_out (struct rlc_am_entity *rlcP, mem_block_t * not_usedP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   /* from 3GPP TS 25.322 V5.0.0 (2002-03)
      If Timer_RST expires before the reset procedure is terminated, the Sender shall:
      - if VT(RST)<MaxRST-1:
@@ -89,6 +89,7 @@ rlc_am_reset_time_out (struct rlc_am_entity *rlcP, mem_block_t * not_usedP)
   msg ("[RLC_AM][RB %d]  RESET TIME OUT VT(RST) = %d  frame %d\n", rlcP->rb_id, rlcP->vt_rst, Mac_rlc_xface->frame);
   msg ("\n******************************************************************\n");
 #endif
+
   if (rlcP->protocol_state & RLC_RESET_PENDING_STATE) {
     if (rlcP->vt_rst < rlcP->max_rst - 1) {
       send_reset_pdu (rlcP);
@@ -115,7 +116,7 @@ rlc_am_reset_time_out (struct rlc_am_entity *rlcP, mem_block_t * not_usedP)
 void
 send_reset_pdu (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   mem_block_t      *pdu;
   struct rlc_am_reset_header *header;
 
@@ -136,6 +137,7 @@ send_reset_pdu (struct rlc_am_entity *rlcP)
 
     rlcP->vt_rst += 1;
     pdu = get_free_mem_block (rlcP->pdu_size + sizeof (struct rlc_am_tx_control_pdu_allocation) + GUARD_CRC_LIH_SIZE);
+
     if ((pdu)) {
       ((struct rlc_am_tx_control_pdu_management *) (pdu->data))->rlc_tb_type = RLC_AM_RESET_PDU_TYPE;
       header = (struct rlc_am_reset_header *) (&pdu->data[sizeof (struct rlc_am_tx_control_pdu_allocation)]);
@@ -165,7 +167,7 @@ send_reset_pdu (struct rlc_am_entity *rlcP)
 void
 send_reset_ack_pdu (uint8_t rsnP, struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   mem_block_t      *pdu;
   struct rlc_am_reset_header *header;
 
@@ -188,10 +190,12 @@ send_reset_ack_pdu (uint8_t rsnP, struct rlc_am_entity *rlcP)
 
     list_add_head (pdu, &rlcP->control);
   }
+
 #ifdef DEBUG_RESET
   else {
     msg ("[RLC_AM][RB %d] SEND RESET ACK OUT OF MEMORY ERROR\n", rlcP->rb_id);
   }
+
 #endif
 }
 
@@ -199,7 +203,7 @@ send_reset_ack_pdu (uint8_t rsnP, struct rlc_am_entity *rlcP)
 void
 process_reset_ack (mem_block_t * pduP, struct rlc_am_reset_header *controlP, struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   /* from 3GPP TS 25.322 V5.0.0 (2002-03)
      Upon reception of a RESET ACK PDU, the Sender shall:
@@ -240,20 +244,24 @@ process_reset_ack (mem_block_t * pduP, struct rlc_am_reset_header *controlP, str
       umts_stop_all_timers (&rlcP->rlc_am_timer_list);
       rlcP->timer_rst = NULL;
     }
+
 #ifdef DEBUG_RESET
     else {
       msg ("\n******************************************************************\n");
       msg ("[RLC_AM][RB %d] RX RESET ACK WRONG RSN %d != %d frame %d\n", rlcP->rb_id, (controlP->byte1 & RLC_AM_RESET_SEQUENCE_NUMBER_MASK) >> 3, rlcP->reset_sequence_number, Mac_rlc_xface->frame);
-     msg ("\n******************************************************************\n");
+      msg ("\n******************************************************************\n");
     }
+
 #endif
   }
+
 #ifdef DEBUG_RESET
   else {
     msg ("\n******************************************************************\n");
     msg ("[RLC_AM][RB %d] RX RESET ACK NOT EXPECTED frame %d\n", rlcP->rb_id, Mac_rlc_xface->frame);
     msg ("\n******************************************************************\n");
   }
+
 #endif
   msg("RLC AM RESET EXIT\n");
 }
@@ -262,49 +270,49 @@ process_reset_ack (mem_block_t * pduP, struct rlc_am_reset_header *controlP, str
 void
 process_reset (mem_block_t * pduP, struct rlc_am_reset_header *controlP, struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   uint8_t              rsn;
   uint8_t              saved_vt_rst;
 
-/* From 25.322 V5.0.0 (2002-03)
-   Reception of the RESET PDU by the Receiver
-     Upon reception of a RESET PDU the Receiver shall:
-     - if the RSN value in the RESET PDU is the same as the RSN value in the last received RESET PDU:
-       - only submit a RESET ACK PDU to the lower layer with the contents set exactly as in the last transmitted
-         RESET ACK PDU (i.e., in this case the RLC entity is not reset).
+  /* From 25.322 V5.0.0 (2002-03)
+     Reception of the RESET PDU by the Receiver
+       Upon reception of a RESET PDU the Receiver shall:
+       - if the RSN value in the RESET PDU is the same as the RSN value in the last received RESET PDU:
+         - only submit a RESET ACK PDU to the lower layer with the contents set exactly as in the last transmitted
+           RESET ACK PDU (i.e., in this case the RLC entity is not reset).
 
-     - if the RESET PDU is the first RESET PDU received since the entity was (re-)established or the RSN value is
-     different from the RSN value in the last received RESET PDU:
-       - submit a RESET ACK PDU to the lower layer with the content set as specified in subclause 11.4.3.1;
-       - reset the state variables described in subclause 9.4 except VT(RST) to their initial values;
-       - stop all the timers described in subclause 9.5 except Timer_RST;
-       - reset configurable parameters to their configured values;
-       - discard all RLC PDUs in the receiving side of the AM RLC entity;
-       - discard all RLC SDUs that were transmitted before the reset in the transmitting side of the AM RLC entity;
-       - set the HFN (DL HFN when the RESET PDU is received in UE or UL HFN when the RESET PDU is
-       received in UTRAN) equal to the HFNI field in the received RESET PDU;
-       - increase with one the UL HFN and DL HFN, and the updated HFN values shall be used for the first
-       transmitted and received AMD PDUs after the reset procedure.
-       NOTE: If the TFC selection exchange has been initiated by sending the RLC Entity Info parameter to MAC, the
-       RLC entity may delay the RLC SDUs discard in the transmitting side of the AM RLC entity until the end
-       of the next TTI.
+       - if the RESET PDU is the first RESET PDU received since the entity was (re-)established or the RSN value is
+       different from the RSN value in the last received RESET PDU:
+         - submit a RESET ACK PDU to the lower layer with the content set as specified in subclause 11.4.3.1;
+         - reset the state variables described in subclause 9.4 except VT(RST) to their initial values;
+         - stop all the timers described in subclause 9.5 except Timer_RST;
+         - reset configurable parameters to their configured values;
+         - discard all RLC PDUs in the receiving side of the AM RLC entity;
+         - discard all RLC SDUs that were transmitted before the reset in the transmitting side of the AM RLC entity;
+         - set the HFN (DL HFN when the RESET PDU is received in UE or UL HFN when the RESET PDU is
+         received in UTRAN) equal to the HFNI field in the received RESET PDU;
+         - increase with one the UL HFN and DL HFN, and the updated HFN values shall be used for the first
+         transmitted and received AMD PDUs after the reset procedure.
+         NOTE: If the TFC selection exchange has been initiated by sending the RLC Entity Info parameter to MAC, the
+         RLC entity may delay the RLC SDUs discard in the transmitting side of the AM RLC entity until the end
+         of the next TTI.
 
-   Reception of the RESET PDU by the Sender
-     Upon reception of a RESET PDU, the Sender shall:
-       - submit a RESET ACK PDU to the lower layer with the content set as specified in subclause 11.4.3.1;
-       - reset the state variables described in subclause 9.4 except VT(RST) to their initial values;
-       - stop all the timers described in subclause 9.5 except Timer_RST;
-       - reset configurable parameters to their configured values;
-       - discard all RLC PDUs in the receiving side of the AM RLC entity;
-       - discard all RLC SDUs that were transmitted before the reset in the transmitting side of the AM RLC entity;
-       - set the HFN (DL HFN when the RESET PDU is received in UE or UL HFN when the RESET PDU is received
-       in UTRAN) equal to the HFNI field in the received RESET PDU;
-       - increase with one the UL HFN and DL HFN, and the updated HFN values shall be used for the first transmitted
-       and received AMD PDUs after the reset procedure.
-       NOTE: If the TFC selection exchange has been initiated by sending the RLC Entity Info parameter to MAC, the
-       RLC entity may delay the RLC SDUs discard in the transmitting side until the end of the next TTI.
+     Reception of the RESET PDU by the Sender
+       Upon reception of a RESET PDU, the Sender shall:
+         - submit a RESET ACK PDU to the lower layer with the content set as specified in subclause 11.4.3.1;
+         - reset the state variables described in subclause 9.4 except VT(RST) to their initial values;
+         - stop all the timers described in subclause 9.5 except Timer_RST;
+         - reset configurable parameters to their configured values;
+         - discard all RLC PDUs in the receiving side of the AM RLC entity;
+         - discard all RLC SDUs that were transmitted before the reset in the transmitting side of the AM RLC entity;
+         - set the HFN (DL HFN when the RESET PDU is received in UE or UL HFN when the RESET PDU is received
+         in UTRAN) equal to the HFNI field in the received RESET PDU;
+         - increase with one the UL HFN and DL HFN, and the updated HFN values shall be used for the first transmitted
+         and received AMD PDUs after the reset procedure.
+         NOTE: If the TFC selection exchange has been initiated by sending the RLC Entity Info parameter to MAC, the
+         RLC entity may delay the RLC SDUs discard in the transmitting side until the end of the next TTI.
 
-*/
+  */
   rsn = (controlP->byte1 & RLC_AM_RESET_SEQUENCE_NUMBER_MASK) >> 3;
 
   if ((rlcP->protocol_state & RLC_RESET_PENDING_STATE)) {
@@ -320,6 +328,7 @@ process_reset (mem_block_t * pduP, struct rlc_am_reset_header *controlP, struct 
     rlcP->vt_rst = saved_vt_rst;
     rlcP->last_received_rsn = rsn;
     send_reset_ack_pdu (rsn, rlcP);
+
     // NOT IN SPECS, BUT IF SENDER RECEIVE A RESET, IT DISCARDS ALL CONTROL PDU IN ITS BUFFER
     // SO IF THE RESET PDU WAS STILL IN THE RLC BUFFERS...IT IS DROPPED AND THE RESET TIMER CAN NOT
     // BE STARTED (BY SUCCESSFULL TX ACK OF MAC LAYER), SO REARM THE TIMER AND SCHEDULE A NEW RESET
@@ -337,15 +346,17 @@ process_reset (mem_block_t * pduP, struct rlc_am_reset_header *controlP, struct 
     msg ("[RLC_AM][RB %d] RX RESET RSN %d frame %d\n", rlcP->rb_id, rsn, Mac_rlc_xface->frame);
     msg ("\n******************************************************************\n");
 #endif
+
     if (rlcP->last_received_rsn == rsn) {       //last_received_rsn initialized to -1 when RLC start
 #ifdef DEBUG_RESET
       msg ("\n******************************************************************\n");
       msg ("[RLC_AM][RB %d] RX RESET RSN %d SAME RSN RECEIVED LAST RESET, SEND RESET ACK frame %d \n", rlcP->rb_id, rsn, Mac_rlc_xface->frame);
-     msg ("\n******************************************************************\n");
+      msg ("\n******************************************************************\n");
 #endif
       send_reset_ack_pdu (rsn, rlcP);   // rsn start to zero
       return;
     }
+
     rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_RESET_EVENT);
     saved_vt_rst = rlcP->vt_rst;
     reset_rlc_am (rlcP);
@@ -361,7 +372,7 @@ process_reset (mem_block_t * pduP, struct rlc_am_reset_header *controlP, struct 
 void
 reset_rlc_am (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   int             index;
 
   for (index = 0; index < rlcP->size_input_sdus_buffer; index++) {
@@ -373,10 +384,12 @@ reset_rlc_am (struct rlc_am_entity *rlcP)
 #endif
         rlc_data_conf (0, rlcP->rb_id, ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[index]->data))->mui, RLC_TX_CONFIRM_FAILURE, rlcP->data_plane);
       }
+
       free_mem_block (rlcP->input_sdus[index]);
       rlcP->input_sdus[index] = NULL;
     }
   }
+
   rlc_am_reset_state_variables (rlcP);
   rlc_am_discard_all_pdus (rlcP);
 #ifdef DEBUG_RESET

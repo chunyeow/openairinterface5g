@@ -53,9 +53,9 @@ int recv_callback(uint32_t  assocId,
                   uint32_t  length)
 {
 
-    free(buffer);
+  free(buffer);
 
-    return 0;
+  return 0;
 }
 
 int sctp_connected(void     *args,
@@ -64,23 +64,24 @@ int sctp_connected(void     *args,
                    uint32_t  outstreams)
 {
 
-    return 0;
+  return 0;
 }
 
 int main(int argc, char *argv[])
 {
-    asn_enc_rval_t retVal;
+  asn_enc_rval_t retVal;
 
-    int i;
+  int i;
 
-    for (i = 0; i < nb_eNB; i++) {
-        sctp_connect_to_remote_host(ip_addr, 36412, NULL, sctp_connected, recv_callback);
-    }
-    while (1) {
-        sleep(1);
-    }
+  for (i = 0; i < nb_eNB; i++) {
+    sctp_connect_to_remote_host(ip_addr, 36412, NULL, sctp_connected, recv_callback);
+  }
 
-    sctp_terminate();
+  while (1) {
+    sleep(1);
+  }
 
-    return(0);
+  sctp_terminate();
+
+  return(0);
 }

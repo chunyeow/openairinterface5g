@@ -23,8 +23,9 @@
 //-----------------------------------------------------------------------------
 
 /* Initialization
-	input parm: User Equipment Id*/
-void rrc_rb_ue_init (void){
+  input parm: User Equipment Id*/
+void rrc_rb_ue_init (void)
+{
   // execute reset
   RRC_RB_UE_reset ();
   RRC_RB_UE ();
@@ -39,31 +40,37 @@ void rrc_rb_ue_init (void){
 
 /* Input trigger functions - to be called by RRC_RB_UE_fsm_control() only */
 
-void rrc_rb_ue_new_state (int newState){
+void rrc_rb_ue_new_state (int newState)
+{
   // force state transition in the RRC_RB_UE fsm
   switch (newState) {
-      case CELL_FACH:
-        RRC_RB_UE_I_I_Go_CELL_FACH ();
-        break;
-      case CELL_DCH:
-        RRC_RB_UE_I_I_Go_CELL_DCH ();
-        break;
-      case RRC_CELL_IDLE:
-        RRC_RB_UE_I_I_Go_Idle ();
-        break;
-      default:
+  case CELL_FACH:
+    RRC_RB_UE_I_I_Go_CELL_FACH ();
+    break;
+
+  case CELL_DCH:
+    RRC_RB_UE_I_I_Go_CELL_DCH ();
+    break;
+
+  case RRC_CELL_IDLE:
+    RRC_RB_UE_I_I_Go_Idle ();
+    break;
+
+  default:
 #ifdef DEBUG_RRC_STATE
-        msg ("[RRC_RB][FSM] Invalid State for transition\n");
+    msg ("[RRC_RB][FSM] Invalid State for transition\n");
 #endif
-        break;
+    break;
   }
+
   RRC_RB_UE ();
 #ifdef DEBUG_RRC_STATE
   msg ("[RRC_RB][FSM] Transition to state %d\n", newState);
 #endif
 }
 
-void rrc_rb_ue_RB_Setup_rx (int rb_id, int next_state, int prot_error){
+void rrc_rb_ue_RB_Setup_rx (int rb_id, int next_state, int prot_error)
+{
   // send input signal RRC_Conn_Setup
 #ifdef DEBUG_RRC_STATE
   msg ("[RRC_RB][FSM-IN] RB Setup Received, rb_id %d , next_state %d ,  protocol error %d.\n", rb_id, next_state, prot_error);
@@ -75,7 +82,8 @@ void rrc_rb_ue_RB_Setup_rx (int rb_id, int next_state, int prot_error){
   RRC_RB_UE ();
 }
 
-void rrc_rb_ue_RB_Release_rx (int rb_id, int next_state, int prot_error){
+void rrc_rb_ue_RB_Release_rx (int rb_id, int next_state, int prot_error)
+{
 #ifdef DEBUG_RRC_STATE
   msg ("[RRC_RB][FSM-IN] RB Release Received, rb_id %d , next_state %d , protocol error %d.\n", rb_id, next_state, prot_error);
 #endif
@@ -86,7 +94,8 @@ void rrc_rb_ue_RB_Release_rx (int rb_id, int next_state, int prot_error){
   RRC_RB_UE ();
 }
 
-void rrc_rb_ue_Cell_Update_cnf_rx (void){
+void rrc_rb_ue_Cell_Update_cnf_rx (void)
+{
 #ifdef DEBUG_RRC_STATE
   msg ("[RRC_RB][FSM-IN] Cell Update Confirm Received.\n");
 #endif
@@ -94,7 +103,8 @@ void rrc_rb_ue_Cell_Update_cnf_rx (void){
   RRC_RB_UE ();
 }
 
-void rrc_rb_ue_PHY_Setup_rx (void){
+void rrc_rb_ue_PHY_Setup_rx (void)
+{
   // simulate PHY_Synch received (DCH established)
 #ifdef DEBUG_RRC_STATE
   msg ("[RRC_RB][FSM-IN] PHY_Synch_Success Received \n");
@@ -103,7 +113,8 @@ void rrc_rb_ue_PHY_Setup_rx (void){
   RRC_RB_UE ();
 }
 
-void rrc_rb_ue_CPHY_Synch_Failure_rx (void){
+void rrc_rb_ue_CPHY_Synch_Failure_rx (void)
+{
   // simulate PHY_Failure received (DCH failed to established)
 #ifdef DEBUG_RRC_STATE
   msg ("[RRC_RB][FSM-IN] PHY_Synch_Failure Received \n");
@@ -112,7 +123,8 @@ void rrc_rb_ue_CPHY_Synch_Failure_rx (void){
   RRC_RB_UE ();
 }
 
-void rrc_rb_ue_CPHY_Out_of_Synch_rx (void){
+void rrc_rb_ue_CPHY_Out_of_Synch_rx (void)
+{
   // simulate Out of Synch received (DCH failure)
 #ifdef DEBUG_RRC_STATE
   msg ("[RRC_RB][FSM-IN] PHY_Out_Of_Synch Received \n");
@@ -121,7 +133,8 @@ void rrc_rb_ue_CPHY_Out_of_Synch_rx (void){
   RRC_RB_UE ();
 }
 
-void rrc_rb_ue_CRLC_Status_rx (void){
+void rrc_rb_ue_CRLC_Status_rx (void)
+{
   // simulate RLC_Status_Ind received (unrecoverable errors on RLC)
 #ifdef DEBUG_RRC_STATE
   msg ("[RRC_RB][FSM-IN] RLC_Status_Ind Received \n");
@@ -130,7 +143,8 @@ void rrc_rb_ue_CRLC_Status_rx (void){
   RRC_RB_UE ();
 }
 
-void rrc_rb_ue_RLC_Data_Confirm_rx (void){
+void rrc_rb_ue_RLC_Data_Confirm_rx (void)
+{
   // simulate (to be removed?) RLC_Data_Confirm received
 #ifdef DEBUG_RRC_STATE
   msg ("[RRC_RB][FSM-IN] RLC_Data_Confirm Received\n");

@@ -51,11 +51,11 @@ typedef uint32_t SequenceNumber_t;
 typedef struct {
 #define GTP_IP_ADDR_v4  0x0
 #define GTP_IP_ADDR_v6  0x1
-    unsigned present:1;
-    union {
-        uint8_t v4[4];
-        uint8_t v6[16];
-    } address;
+  unsigned present:1;
+  union {
+    uint8_t v4[4];
+    uint8_t v6[16];
+  } address;
 } gtp_ip_address_t;
 
 /* 3GPP TS 29.274 Figure 8.12 */
@@ -92,11 +92,11 @@ typedef uint32_t indication_flags_t;
 #define SGW_CI_FLAG (1U << 0)
 
 typedef struct {
-    pdn_type_t pdn_type;
-    uint8_t ipv4_address[4];
-    uint8_t ipv6_address[16];
-    /* Note in rel.8 the ipv6 prefix length has a fixed value of /64 */
-    uint8_t ipv6_prefix_length;
+  pdn_type_t pdn_type;
+  uint8_t ipv4_address[4];
+  uint8_t ipv6_address[16];
+  /* Note in rel.8 the ipv6 prefix length has a fixed value of /64 */
+  uint8_t ipv6_prefix_length;
 } PAA_t;
 
 #define IMSI(imsi) \
@@ -117,63 +117,63 @@ typedef struct {
         (imsi)->digit[14]
 
 typedef struct {
-    uint8_t digit[IMSI_DIGITS_MAX+1]; // +1 for '\0` macro sprintf changed in snprintf
-    uint8_t length;
+  uint8_t digit[IMSI_DIGITS_MAX+1]; // +1 for '\0` macro sprintf changed in snprintf
+  uint8_t length;
 } Imsi_t;
 
 typedef struct {
-    uint8_t digit[MSISDN_LENGTH];
-    uint8_t length;
+  uint8_t digit[MSISDN_LENGTH];
+  uint8_t length;
 } Msisdn_t;
 
 #define MEI_IMEI    0x0
 #define MEI_IMEISV  0x1
 
 typedef struct {
-    uint8_t present;
-    union {
-        unsigned imei:15;
-        unsigned imeisv:16;
-    } choice;
+  uint8_t present;
+  union {
+    unsigned imei:15;
+    unsigned imeisv:16;
+  } choice;
 } Mei_t;
 
 typedef struct {
-    uint8_t  mcc[3];
-    uint8_t  mnc[3];
-    uint16_t lac;
-    uint16_t ci;
+  uint8_t  mcc[3];
+  uint8_t  mnc[3];
+  uint16_t lac;
+  uint16_t ci;
 } Cgi_t;
 
 typedef struct {
-    uint8_t  mcc[3];
-    uint8_t  mnc[3];
-    uint16_t lac;
-    uint16_t sac;
+  uint8_t  mcc[3];
+  uint8_t  mnc[3];
+  uint16_t lac;
+  uint16_t sac;
 } Sai_t;
 
 typedef struct {
-    uint8_t  mcc[3];
-    uint8_t  mnc[3];
-    uint16_t lac;
-    uint16_t rac;
+  uint8_t  mcc[3];
+  uint8_t  mnc[3];
+  uint16_t lac;
+  uint16_t rac;
 } Rai_t;
 
 typedef struct {
-    uint8_t  mcc[3];
-    uint8_t  mnc[3];
-    uint16_t tac;
+  uint8_t  mcc[3];
+  uint8_t  mnc[3];
+  uint16_t tac;
 } Tai_t;
 
 typedef struct {
-    uint8_t  mcc[3];
-    uint8_t  mnc[3];
-    uint32_t eci;
+  uint8_t  mcc[3];
+  uint8_t  mnc[3];
+  uint32_t eci;
 } Ecgi_t;
 
 typedef struct {
-    uint8_t  mcc[3];
-    uint8_t  mnc[3];
-    uint16_t lac;
+  uint8_t  mcc[3];
+  uint8_t  mnc[3];
+  uint16_t lac;
 } Lai_t;
 
 #define ULI_CGI  0x01
@@ -184,20 +184,20 @@ typedef struct {
 #define ULI_LAI  0x20
 
 typedef struct {
-    uint8_t present;
-    struct {
-        Cgi_t  cgi;
-        Sai_t  sai;
-        Rai_t  rai;
-        Tai_t  tai;
-        Ecgi_t ecgi;
-        Lai_t  lai;
-    } s;
+  uint8_t present;
+  struct {
+    Cgi_t  cgi;
+    Sai_t  sai;
+    Rai_t  rai;
+    Tai_t  tai;
+    Ecgi_t ecgi;
+    Lai_t  lai;
+  } s;
 } Uli_t;
 
 typedef struct {
-    uint8_t mcc[3];
-    uint8_t mnc[3];
+  uint8_t mcc[3];
+  uint8_t mnc[3];
 } ServingNetwork_t;
 /*
 typedef enum RatType_e {
@@ -211,34 +211,34 @@ typedef enum RatType_e {
 
 /* WARNING: not complete... */
 typedef enum InterfaceType_e {
-    S1_U_ENODEB_GTP_U = 0,
-    S1_U_SGW_GTP_U    = 1,
-    S12_RNC_GTP_U     = 2,
-    S12_SGW_GTP_U     = 3,
-    S5_S8_SGW_GTP_U   = 4,
-    S5_S8_PGW_GTP_U   = 5,
-    S5_S8_SGW_GTP_C   = 6,
-    S5_S8_PGW_GTP_C   = 7,
-    S11_MME_GTP_C     = 10,
-    S11_SGW_GTP_C     = 11,
+  S1_U_ENODEB_GTP_U = 0,
+  S1_U_SGW_GTP_U    = 1,
+  S12_RNC_GTP_U     = 2,
+  S12_SGW_GTP_U     = 3,
+  S5_S8_SGW_GTP_U   = 4,
+  S5_S8_PGW_GTP_U   = 5,
+  S5_S8_SGW_GTP_C   = 6,
+  S5_S8_PGW_GTP_C   = 7,
+  S11_MME_GTP_C     = 10,
+  S11_SGW_GTP_C     = 11,
 } InterfaceType_t;
 
 typedef struct {
-    unsigned        ipv4:1;
-    unsigned        ipv6:1;
-    InterfaceType_t interface_type;
-    Teid_t          teid; ///< TEID or GRE Key
-    uint32_t        ipv4_address;
-    uint8_t         ipv6_address[16];
+  unsigned        ipv4:1;
+  unsigned        ipv6:1;
+  InterfaceType_t interface_type;
+  Teid_t          teid; ///< TEID or GRE Key
+  uint32_t        ipv4_address;
+  uint8_t         ipv6_address[16];
 } FTeid_t;
 /*
- *     	        typedef struct {
-    	            pdn_type_t pdn_type;
-    	            union {
-    	                uint8_t ipv4_address[4];
-    	                uint8_t ipv6_address[16];
-    	            } address;
-    	        } ip_address_t;
+ *              typedef struct {
+                  pdn_type_t pdn_type;
+                  union {
+                      uint8_t ipv4_address[4];
+                      uint8_t ipv6_address[16];
+                  } address;
+              } ip_address_t;
 
  */
 #define FTEID_T_2_IP_ADDRESS_T(fte_p,ip_p) \
@@ -261,109 +261,109 @@ do { \
 } while (0)
 
 typedef enum {
-    TARGET_ID_RNC_ID       = 0,
-    TARGET_ID_MACRO_ENB_ID = 1,
-    TARGET_ID_CELL_ID      = 2,
-    TARGET_ID_HOME_ENB_ID  = 3
-    /* Other values are spare */
+  TARGET_ID_RNC_ID       = 0,
+  TARGET_ID_MACRO_ENB_ID = 1,
+  TARGET_ID_CELL_ID      = 2,
+  TARGET_ID_HOME_ENB_ID  = 3
+                           /* Other values are spare */
 } target_type_t;
 
 typedef struct {
-    uint16_t lac;
-    uint8_t  rac;
+  uint16_t lac;
+  uint8_t  rac;
 
-    /* Length of RNC Id can be 2 bytes if length of element is 8
-     * or 4 bytes long if length is 10.
-     */
-    uint32_t rnc_id;
+  /* Length of RNC Id can be 2 bytes if length of element is 8
+   * or 4 bytes long if length is 10.
+   */
+  uint32_t rnc_id;
 } rnc_id_t;
 
 typedef struct {
-    unsigned enb_id:20;
-    uint16_t tac;
+  unsigned enb_id:20;
+  uint16_t tac;
 } macro_enb_id_t;
 
 typedef struct {
-    unsigned enb_id:28;
-    uint16_t tac;
+  unsigned enb_id:28;
+  uint16_t tac;
 } home_enb_id_t;
 
 typedef struct {
-    /* Common part */
-    uint8_t target_type;
+  /* Common part */
+  uint8_t target_type;
 
-    uint8_t  mcc[3];
-    uint8_t  mnc[3];
-    union {
-        rnc_id_t       rnc_id;
-        macro_enb_id_t macro_enb_id;
-        home_enb_id_t  home_enb_id;
-    } target_id;
+  uint8_t  mcc[3];
+  uint8_t  mnc[3];
+  union {
+    rnc_id_t       rnc_id;
+    macro_enb_id_t macro_enb_id;
+    home_enb_id_t  home_enb_id;
+  } target_id;
 } target_identification_t;
 
 typedef enum SelectionMode_e {
-    MS_O_N_P_APN_S_V    = 0,    ///< MS or network provided APN, subscribed verified
-    MS_P_APN_S_N_V      = 1,    ///< MS provided APN, subscription not verified
-    N_P_APN_S_N_V       = 2,    ///< Network provided APN, subscription not verified
+  MS_O_N_P_APN_S_V    = 0,    ///< MS or network provided APN, subscribed verified
+  MS_P_APN_S_N_V      = 1,    ///< MS provided APN, subscription not verified
+  N_P_APN_S_N_V       = 2,    ///< Network provided APN, subscription not verified
 } SelectionMode_t;
 
 typedef struct {
-    uint32_t uplink_ambr;
-    uint32_t downlink_ambr;
+  uint32_t uplink_ambr;
+  uint32_t downlink_ambr;
 } AMBR_t;
 
 typedef enum node_id_type_e {
-    GLOBAL_UNICAST_IPv4 = 0,
-    GLOBAL_UNICAST_IPv6 = 1,
-    TYPE_EXOTIC         = 2, ///< (MCC * 1000 + MNC) << 12 + Integer value assigned to MME by operator
+  GLOBAL_UNICAST_IPv4 = 0,
+  GLOBAL_UNICAST_IPv6 = 1,
+  TYPE_EXOTIC         = 2, ///< (MCC * 1000 + MNC) << 12 + Integer value assigned to MME by operator
 } node_id_type_t;
 
 typedef struct {
-    node_id_type_t node_id_type;
-    uint16_t       csid;          ///< Connection Set Identifier
-    union {
-        uint32_t   unicast_ipv4;
-        uint8_t    unicast_ipv6[16];
-        struct {
-            uint16_t mcc;
-            uint16_t mnc;
-            uint16_t operator_specific_id;
-        } exotic;
-    } node_id;
+  node_id_type_t node_id_type;
+  uint16_t       csid;          ///< Connection Set Identifier
+  union {
+    uint32_t   unicast_ipv4;
+    uint8_t    unicast_ipv6[16];
+    struct {
+      uint16_t mcc;
+      uint16_t mnc;
+      uint16_t operator_specific_id;
+    } exotic;
+  } node_id;
 } FQ_CSID_t;
 
 typedef struct {
-    uint8_t  time_zone;
-    unsigned daylight_saving_time:2;
+  uint8_t  time_zone;
+  unsigned daylight_saving_time:2;
 } UETimeZone_t;
 
 typedef enum AccessMode_e {
-    CLOSED_MODE = 0,
-    HYBRID_MODE = 1,
+  CLOSED_MODE = 0,
+  HYBRID_MODE = 1,
 } AccessMode_t;
 
 typedef struct {
-    uint8_t  mcc[3];
-    uint8_t  mnc[3];
-    uint32_t csg_id;
-    AccessMode_t access_mode;
-    unsigned lcsg:1;
-    unsigned cmi:1;
+  uint8_t  mcc[3];
+  uint8_t  mnc[3];
+  uint32_t csg_id;
+  AccessMode_t access_mode;
+  unsigned lcsg:1;
+  unsigned cmi:1;
 } UCI_t;
 
 typedef struct {
-    /* PPC (Prohibit Payload Compression):
-     * This flag is used to determine whether an SGSN should attempt to
-     * compress the payload of user data when the users asks for it 
-     * to be compressed (PPC = 0), or not (PPC = 1).
-     */
-    unsigned ppc:1;
+  /* PPC (Prohibit Payload Compression):
+   * This flag is used to determine whether an SGSN should attempt to
+   * compress the payload of user data when the users asks for it
+   * to be compressed (PPC = 0), or not (PPC = 1).
+   */
+  unsigned ppc:1;
 
-    /* VB (Voice Bearer):
-     * This flag is used to indicate a voice bearer when doing PS-to-CS 
-     * SRVCC handover.
-     */
-    unsigned vb:1;
+  /* VB (Voice Bearer):
+   * This flag is used to indicate a voice bearer when doing PS-to-CS
+   * SRVCC handover.
+   */
+  unsigned vb:1;
 } bearer_flags_t;
 
 #define PRE_EMPTION_CAPABILITY_ENABLED  (0x0)
@@ -372,203 +372,203 @@ typedef struct {
 #define PRE_EMPTION_VULNERABILITY_DISABLED (0x1)
 
 typedef struct {
-    /* PCI (Pre-emption Capability)
-     * The following values are defined:
-     * - PRE-EMPTION_CAPABILITY_ENABLED (0)
-     *    This value indicates that the service data flow or bearer is allowed
-     *    to get resources that were already assigned to another service data
-     *    flow or bearer with a lower priority level.
-     * - PRE-EMPTION_CAPABILITY_DISABLED (1)
-     *    This value indicates that the service data flow or bearer is not
-     *    allowed to get resources that were already assigned to another service
-     *    data flow or bearer with a lower priority level.
-     * Default value: PRE-EMPTION_CAPABILITY_DISABLED
-     */
-    unsigned pci:1;
-    /* PL (Priority Level): defined in 3GPP TS.29.212 #5.3.45
-     * Values 1 to 15 are defined, with value 1 as the highest level of priority.
-     * Values 1 to 8 should only be assigned for services that are authorized to
-     * receive prioritized treatment within an operator domain. Values 9 to 15
-     * may be assigned to resources that are authorized by the home network and
-     * thus applicable when a UE is roaming.
-     */
-    unsigned pl:4;
-    /* PVI (Pre-emption Vulnerability): defined in 3GPP TS.29.212 #5.3.47
-     * Defines whether a service data flow can lose the resources assigned to it
-     * in order to admit a service data flow with higher priority level.
-     * The following values are defined:
-     * - PRE-EMPTION_VULNERABILITY_ENABLED (0)
-     *   This value indicates that the resources assigned to the service data
-     *   flow or bearer can be pre-empted and allocated to a service data flow
-     *   or bearer with a higher priority level.
-     * - PRE-EMPTION_VULNERABILITY_DISABLED (1)
-     *   This value indicates that the resources assigned to the service data
-     *   flow or bearer shall not be pre-empted and allocated to a service data
-     *   flow or bearer with a higher priority level.
-     * Default value: EMPTION_VULNERABILITY_ENABLED
-     */
-    unsigned pvi:1;
-    uint8_t  qci;
-    ambr_t   gbr;           ///< Guaranteed bit rate
-    ambr_t   mbr;           ///< Maximum bit rate
+  /* PCI (Pre-emption Capability)
+   * The following values are defined:
+   * - PRE-EMPTION_CAPABILITY_ENABLED (0)
+   *    This value indicates that the service data flow or bearer is allowed
+   *    to get resources that were already assigned to another service data
+   *    flow or bearer with a lower priority level.
+   * - PRE-EMPTION_CAPABILITY_DISABLED (1)
+   *    This value indicates that the service data flow or bearer is not
+   *    allowed to get resources that were already assigned to another service
+   *    data flow or bearer with a lower priority level.
+   * Default value: PRE-EMPTION_CAPABILITY_DISABLED
+   */
+  unsigned pci:1;
+  /* PL (Priority Level): defined in 3GPP TS.29.212 #5.3.45
+   * Values 1 to 15 are defined, with value 1 as the highest level of priority.
+   * Values 1 to 8 should only be assigned for services that are authorized to
+   * receive prioritized treatment within an operator domain. Values 9 to 15
+   * may be assigned to resources that are authorized by the home network and
+   * thus applicable when a UE is roaming.
+   */
+  unsigned pl:4;
+  /* PVI (Pre-emption Vulnerability): defined in 3GPP TS.29.212 #5.3.47
+   * Defines whether a service data flow can lose the resources assigned to it
+   * in order to admit a service data flow with higher priority level.
+   * The following values are defined:
+   * - PRE-EMPTION_VULNERABILITY_ENABLED (0)
+   *   This value indicates that the resources assigned to the service data
+   *   flow or bearer can be pre-empted and allocated to a service data flow
+   *   or bearer with a higher priority level.
+   * - PRE-EMPTION_VULNERABILITY_DISABLED (1)
+   *   This value indicates that the resources assigned to the service data
+   *   flow or bearer shall not be pre-empted and allocated to a service data
+   *   flow or bearer with a higher priority level.
+   * Default value: EMPTION_VULNERABILITY_ENABLED
+   */
+  unsigned pvi:1;
+  uint8_t  qci;
+  ambr_t   gbr;           ///< Guaranteed bit rate
+  ambr_t   mbr;           ///< Maximum bit rate
 } BearerQOS_t;
 
 /* TFT operation Code */
 typedef enum {
-    /* 0 = spare */
+  /* 0 = spare */
 
-    CREATE_NEW_TFT                          = 0x1,
-    DELETE_EXISTING_TFT                     = 0x2,
-    ADD_PACKET_FILTERS_TO_EXISTING_TFT      = 0x3,
-    REPLACE_PACKET_FILTERS_IN_EXISTING_TFT  = 0x4,
-    DELETE_PACKET_FILTERS_FROM_EXISTING_TFT = 0x5,
-    NO_TFT_OPERATION                        = 0x6,
+  CREATE_NEW_TFT                          = 0x1,
+  DELETE_EXISTING_TFT                     = 0x2,
+  ADD_PACKET_FILTERS_TO_EXISTING_TFT      = 0x3,
+  REPLACE_PACKET_FILTERS_IN_EXISTING_TFT  = 0x4,
+  DELETE_PACKET_FILTERS_FROM_EXISTING_TFT = 0x5,
+  NO_TFT_OPERATION                        = 0x6,
 
-    TFT_OPERATION_CODE_MAX
+  TFT_OPERATION_CODE_MAX
 
-    /* Other Values Reserved */
+  /* Other Values Reserved */
 } tft_operation_code_t;
 
 /* Defined in 3GPP TS 24.008 Table 10.5.162 */
 typedef enum {
-    PACKET_FILTER_PRE_REL_7         = 0,
-    PACKET_FILTER_DIRECTION_DL_ONLY = 1,
-    PACKET_FILTER_DIRECTION_UL_ONLY = 2,
-    PACKET_FILTER_BIDIRECTIONAL     = 3,
+  PACKET_FILTER_PRE_REL_7         = 0,
+  PACKET_FILTER_DIRECTION_DL_ONLY = 1,
+  PACKET_FILTER_DIRECTION_UL_ONLY = 2,
+  PACKET_FILTER_BIDIRECTIONAL     = 3,
 } packet_filter_direction_t;
 
 /* The Traffic Flow Template is specified in 3GPP TS 24.008 #10.5.6.12
  */
 typedef struct {
-    /* The TFT operation code "No TFT operation" shall be used 
-     * if a parameters list is included but no packet filter 
-     * list is included in the traffic flow template information
-     * element.
-     */
-    tft_operation_code_t tft_operation_code;
+  /* The TFT operation code "No TFT operation" shall be used
+   * if a parameters list is included but no packet filter
+   * list is included in the traffic flow template information
+   * element.
+   */
+  tft_operation_code_t tft_operation_code;
 
-    /* The E bit indicates if a parameters list is included 
-     * in the TFT IE and it is encoded as follows:
-     * - 0 parameters list is not included
-     * - 1 parameters list is included
-     */
-    unsigned             e_bit:1;
+  /* The E bit indicates if a parameters list is included
+   * in the TFT IE and it is encoded as follows:
+   * - 0 parameters list is not included
+   * - 1 parameters list is included
+   */
+  unsigned             e_bit:1;
 
-    /* For the "delete existing TFT" operation and for the "no TFT
-     * operation", the number of packet filters shall be coded
-     * as 0. For all other operations, the number of packet filters
-     * shall be greater than 0 and less than or equal to 15.
-     */
-    uint8_t              number_of_packet_filters;
+  /* For the "delete existing TFT" operation and for the "no TFT
+   * operation", the number of packet filters shall be coded
+   * as 0. For all other operations, the number of packet filters
+   * shall be greater than 0 and less than or equal to 15.
+   */
+  uint8_t              number_of_packet_filters;
 
-    /* TODO: add packet filter list as defined in 3GPP TS 29.274 Table 10.5.162 */
+  /* TODO: add packet filter list as defined in 3GPP TS 29.274 Table 10.5.162 */
 } tft_t;
 
 /* Cause as defined in 3GPP TS 29.274 #8.4 */
 typedef enum SGWCause_e {
-    /* Request / Initial message */
-    LOCAL_DETACH                    = 2,
-    COMPLETE_DETACH                 = 3,
-    RAT_CHANGE_3GPP_TO_NON_3GPP     = 4,  ///< RAT changed from 3GPP to Non-3GPP
-    ISR_DEACTIVATION                = 5,
-    ERROR_IND_FROM_RNC_ENB_SGSN     = 6,
-    IMSI_DETACH_ONLY                = 7,
-    /* Acceptance in a Response/Triggered message */
-    REQUEST_ACCEPTED                = 16,
-    REQUEST_ACCEPTED_PARTIALLY      = 17,
-    NEW_PDN_TYPE_NW_PREF            = 18, ///< New PDN type due to network preference
-    NEW_PDN_TYPE_SAB_ONLY           = 19, ///< New PDN type due to single address bearer only
-    /* Rejection in a Response triggered message. */
-    CONTEXT_NOT_FOUND               = 64,
-    INVALID_MESSAGE_FORMAT          = 65,
-    INVALID_LENGTH                  = 67,
-    SERVICE_NOT_SUPPORTED           = 68,
-    MANDATORY_IE_INCORRECT          = 69,
-    MANDATORY_IE_MISSING            = 70,
-    SYSTEM_FAILURE                  = 72,
-    NO_RESOURCES_AVAILABLE          = 73,
-    SEMANTIC_ERROR_IN_TFT           = 74,
-    SYNTACTIC_ERROR_IN_TFT          = 75,
-    SEMANTIC_ERRORS_IN_PF           = 76,
-    SYNTACTIC_ERRORS_IN_PF          = 77,
-    MISSING_OR_UNKNOWN_APN          = 78,
-    GRE_KEY_NOT_FOUND               = 80,
-    RELOCATION_FAILURE              = 81,
-    DENIED_IN_RAT                   = 82,
-    UE_NOT_RESPONDING               = 87,
-    UE_REFUSES                      = 88,
-    SERVICE_DENIED                  = 89,
-    UNABLE_TO_PAGE_UE               = 90,
-    NO_MEMORY_AVAILABLE             = 91,
-    REQUEST_REJECTED                = 94,
-    DATA_FORWARDING_NOT_SUPPORTED   = 106,
-    INVALID_REPLY_FROM_REMOTE_PEER  = 107,
-    FALLBACK_TO_GTPV1               = 108,
-    INVALID_PEER                    = 109,
-    TEMP_REJECT_HO_IN_PROGRESS      = 110, ///< Temporarily rejected due to handover procedure in progress
-    REJECTED_FOR_PMIPv6_REASON      = 112, ///< Request rejected for a PMIPv6 reason (see 3GPP TS 29.275 [26]).
-    M_PDN_APN_NOT_ALLOWED           = 116, ///< Multiple PDN connections for a given APN not allowed.
-    SGW_CAUSE_MAX
+  /* Request / Initial message */
+  LOCAL_DETACH                    = 2,
+  COMPLETE_DETACH                 = 3,
+  RAT_CHANGE_3GPP_TO_NON_3GPP     = 4,  ///< RAT changed from 3GPP to Non-3GPP
+  ISR_DEACTIVATION                = 5,
+  ERROR_IND_FROM_RNC_ENB_SGSN     = 6,
+  IMSI_DETACH_ONLY                = 7,
+  /* Acceptance in a Response/Triggered message */
+  REQUEST_ACCEPTED                = 16,
+  REQUEST_ACCEPTED_PARTIALLY      = 17,
+  NEW_PDN_TYPE_NW_PREF            = 18, ///< New PDN type due to network preference
+  NEW_PDN_TYPE_SAB_ONLY           = 19, ///< New PDN type due to single address bearer only
+  /* Rejection in a Response triggered message. */
+  CONTEXT_NOT_FOUND               = 64,
+  INVALID_MESSAGE_FORMAT          = 65,
+  INVALID_LENGTH                  = 67,
+  SERVICE_NOT_SUPPORTED           = 68,
+  MANDATORY_IE_INCORRECT          = 69,
+  MANDATORY_IE_MISSING            = 70,
+  SYSTEM_FAILURE                  = 72,
+  NO_RESOURCES_AVAILABLE          = 73,
+  SEMANTIC_ERROR_IN_TFT           = 74,
+  SYNTACTIC_ERROR_IN_TFT          = 75,
+  SEMANTIC_ERRORS_IN_PF           = 76,
+  SYNTACTIC_ERRORS_IN_PF          = 77,
+  MISSING_OR_UNKNOWN_APN          = 78,
+  GRE_KEY_NOT_FOUND               = 80,
+  RELOCATION_FAILURE              = 81,
+  DENIED_IN_RAT                   = 82,
+  UE_NOT_RESPONDING               = 87,
+  UE_REFUSES                      = 88,
+  SERVICE_DENIED                  = 89,
+  UNABLE_TO_PAGE_UE               = 90,
+  NO_MEMORY_AVAILABLE             = 91,
+  REQUEST_REJECTED                = 94,
+  DATA_FORWARDING_NOT_SUPPORTED   = 106,
+  INVALID_REPLY_FROM_REMOTE_PEER  = 107,
+  FALLBACK_TO_GTPV1               = 108,
+  INVALID_PEER                    = 109,
+  TEMP_REJECT_HO_IN_PROGRESS      = 110, ///< Temporarily rejected due to handover procedure in progress
+  REJECTED_FOR_PMIPv6_REASON      = 112, ///< Request rejected for a PMIPv6 reason (see 3GPP TS 29.275 [26]).
+  M_PDN_APN_NOT_ALLOWED           = 116, ///< Multiple PDN connections for a given APN not allowed.
+  SGW_CAUSE_MAX
 } SGWCause_t;
 
 typedef struct {
-    uint8_t  cause_value;
-    uint8_t  pce:1;
-    uint8_t  bce:1;
-    uint8_t  cs:1;
+  uint8_t  cause_value;
+  uint8_t  pce:1;
+  uint8_t  bce:1;
+  uint8_t  cs:1;
 
-    uint8_t  offending_ie_type;
-    uint16_t offending_ie_length;
-    uint8_t  offending_ie_instance;
+  uint8_t  offending_ie_type;
+  uint16_t offending_ie_length;
+  uint8_t  offending_ie_instance;
 } gtp_cause_t;
 
 typedef struct {
-    uint8_t     eps_bearer_id;    ///< EPS Bearer ID
-    BearerQOS_t bearer_level_qos;
-    tft_t       tft;              ///< Bearer TFT
+  uint8_t     eps_bearer_id;    ///< EPS Bearer ID
+  BearerQOS_t bearer_level_qos;
+  tft_t       tft;              ///< Bearer TFT
 } bearer_to_create_t;
 
 typedef struct {
-    uint8_t      eps_bearer_id;       ///< EPS Bearer ID
-    SGWCause_t   cause;
+  uint8_t      eps_bearer_id;       ///< EPS Bearer ID
+  SGWCause_t   cause;
 
-    /* This parameter is used on S11 interface only */
-    FTeid_t      s1u_sgw_fteid;       ///< S1-U SGW F-TEID
+  /* This parameter is used on S11 interface only */
+  FTeid_t      s1u_sgw_fteid;       ///< S1-U SGW F-TEID
 
-    /* This parameter is used on S4 interface only */
-    FTeid_t      s4u_sgw_fteid;       ///< S4-U SGW F-TEID
+  /* This parameter is used on S4 interface only */
+  FTeid_t      s4u_sgw_fteid;       ///< S4-U SGW F-TEID
 
-    /* This parameter is used on S11 and S5/S8 interface only for a 
-     * GTP-based S5/S8 interface and during:
-     * - E-UTRAN Inintial attch
-     * - PDP Context Activation
-     * - UE requested PDN connectivity 
-     */
-    FTeid_t      s5_s8_u_pgw_fteid;   ///< S4-U SGW F-TEID
+  /* This parameter is used on S11 and S5/S8 interface only for a
+   * GTP-based S5/S8 interface and during:
+   * - E-UTRAN Inintial attch
+   * - PDP Context Activation
+   * - UE requested PDN connectivity
+   */
+  FTeid_t      s5_s8_u_pgw_fteid;   ///< S4-U SGW F-TEID
 
-    /* This parameter is used on S4 interface only and when S12 interface is used */
-    FTeid_t      s12_sgw_fteid;       ///< S12 SGW F-TEID
+  /* This parameter is used on S4 interface only and when S12 interface is used */
+  FTeid_t      s12_sgw_fteid;       ///< S12 SGW F-TEID
 
-    /* This parameter is received only if the QoS parameters have been modified */
-    BearerQOS_t *bearer_level_qos;
+  /* This parameter is received only if the QoS parameters have been modified */
+  BearerQOS_t *bearer_level_qos;
 
-    tft_t        tft;                 ///< Bearer TFT
+  tft_t        tft;                 ///< Bearer TFT
 } bearer_context_created_t;
 
 typedef struct {
-    uint8_t    eps_bearer_id;   ///< EPS Bearer ID
-    SGWCause_t cause;
-    FTeid_t    s1u_sgw_fteid;   ///< Sender F-TEID for user plane
+  uint8_t    eps_bearer_id;   ///< EPS Bearer ID
+  SGWCause_t cause;
+  FTeid_t    s1u_sgw_fteid;   ///< Sender F-TEID for user plane
 } bearer_context_modified_t;
 
 typedef struct {
-    uint8_t    eps_bearer_id;   ///< EPS bearer ID
-    SGWCause_t cause;
+  uint8_t    eps_bearer_id;   ///< EPS bearer ID
+  SGWCause_t cause;
 } bearer_for_removal_t;
 
 typedef struct {
-    uint8_t eps_bearer_id;      ///< EPS Bearer ID
-    FTeid_t s1_eNB_fteid;       ///< S1 eNodeB F-TEID
+  uint8_t eps_bearer_id;      ///< EPS Bearer ID
+  FTeid_t s1_eNB_fteid;       ///< S1 eNodeB F-TEID
 } bearer_context_to_modify_t;
 
 #endif  /* SGW_LITE_IE_DEFS_H_ */

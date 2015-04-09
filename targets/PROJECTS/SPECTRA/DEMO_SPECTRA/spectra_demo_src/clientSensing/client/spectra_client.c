@@ -33,18 +33,19 @@
  * @param id messsage identificatior
  * @return example message
  */
-SpectraMessage createTestMessageClient(int id, int type, int nSamples) {
-	SpectraMessage msg;
+SpectraMessage createTestMessageClient(int id, int type, int nSamples)
+{
+  SpectraMessage msg;
 
-	msg.type = type;
-	msg.function = EnergyDetection;
-	msg.messageID = id;
-	msg.numberOfparameters = 1;
+  msg.type = type;
+  msg.function = EnergyDetection;
+  msg.messageID = id;
+  msg.numberOfparameters = 1;
 
-	msg.parameters = malloc(msg.numberOfparameters * sizeof(uint32_t));
-	msg.parameters[0] = nSamples;
+  msg.parameters = malloc(msg.numberOfparameters * sizeof(uint32_t));
+  msg.parameters[0] = nSamples;
 
-	return msg;
+  return msg;
 }
 
 /**
@@ -52,43 +53,45 @@ SpectraMessage createTestMessageClient(int id, int type, int nSamples) {
  *
  * @return - the socket descriptor
  */
-int createsSocket(int argc, char *argv[]) {
-	int sock;
-	struct sockaddr_in server;
-	//Create socket
+int createsSocket(int argc, char *argv[])
+{
+  int sock;
+  struct sockaddr_in server;
+  //Create socket
 
-	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (sock == -1) {
-		printf("Could not create socket");
-		return -1;
-	}
+  sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
-	puts("Socket created");
+  if (sock == -1) {
+    printf("Could not create socket");
+    return -1;
+  }
 
-	// treats the parameters
-	if (argc >= 2)
-		server.sin_addr.s_addr = inet_addr(argv[1]);
-	else
-		server.sin_addr.s_addr = inet_addr(SERVER_ADDRESS);
+  puts("Socket created");
 
-	server.sin_family = AF_INET;
+  // treats the parameters
+  if (argc >= 2)
+    server.sin_addr.s_addr = inet_addr(argv[1]);
+  else
+    server.sin_addr.s_addr = inet_addr(SERVER_ADDRESS);
 
-	if (argc >= 3)
-		server.sin_port = htons(atoi(argv[2]));
-	else
-		server.sin_port = htons(CONNECTION_PORT);
+  server.sin_family = AF_INET;
 
-	printf("Target address: %s,  port %d : addr\n", inet_ntoa(server.sin_addr),
-			server.sin_port);
+  if (argc >= 3)
+    server.sin_port = htons(atoi(argv[2]));
+  else
+    server.sin_port = htons(CONNECTION_PORT);
 
-	//Connect to remote server
-	if (connect(sock, (struct sockaddr *) &server, sizeof(server)) < 0) {
-		perror("connect failed. Error");
-		return -2;
-	}
+  printf("Target address: %s,  port %d : addr\n", inet_ntoa(server.sin_addr),
+         server.sin_port);
 
-	puts("Connected\n");
-	return sock;
+  //Connect to remote server
+  if (connect(sock, (struct sockaddr *) &server, sizeof(server)) < 0) {
+    perror("connect failed. Error");
+    return -2;
+  }
+
+  puts("Connected\n");
+  return sock;
 }
 
 /**
@@ -98,43 +101,45 @@ int createsSocket(int argc, char *argv[]) {
  * @param argv
  * @return
  */
-int main(int argc, char *argv[]) {
-	char server_reply[MAX_PACKET_SIZE];
-	int nSamples = 10;
+int main(int argc, char *argv[])
+{
+  char server_reply[MAX_PACKET_SIZE];
+  int nSamples = 10;
 
-	int sock = createsSocket(argc, argv), id;
+  int sock = createsSocket(argc, argv), id;
 
-	if (argc >= 4)
-		nSamples = atoi(argv[3]);
+  if (argc >= 4)
+    nSamples = atoi(argv[3]);
 
-	if (sock < 0)
-		return sock;
+  if (sock < 0)
+    return sock;
 
-	int type = Classifying;
-	// Just for test purposes send 2 packets to the server, changing only the packet id
-	for (id = 33; id < 36; ++id) {
-		printf("-->\nSending message ID : %d\n", id);
+  int type = Classifying;
 
-		if (id == 35)
-			type = EndProcessing;
+  // Just for test purposes send 2 packets to the server, changing only the packet id
+  for (id = 33; id < 36; ++id) {
+    printf("-->\nSending message ID : %d\n", id);
 
-		SpectraMessage message = createTestMessageClient(id, type, nSamples);
+    if (id == 35)
+      type = EndProcessing;
 
-		//Send some data
-		if (sendClientSpectraPacket(sock, message) != 0) {
-			return 1;
-		}
+    SpectraMessage message = createTestMessageClient(id, type, nSamples);
 
-		//Receive a reply from the server
-		if (recv(sock, server_reply, MAX_PACKET_SIZE, 0) < 0) {
-			puts("recv failed");
-			break;
-		}
+    //Send some data
+    if (sendClientSpectraPacket(sock, message) != 0) {
+      return 1;
+    }
 
-		printf("<--\nServer reply :\n");
-		printReturnValueMessage(assembleMessage(&server_reply));
-	}
+    //Receive a reply from the server
+    if (recv(sock, server_reply, MAX_PACKET_SIZE, 0) < 0) {
+      puts("recv failed");
+      break;
+    }
 
-	close(sock);
-	return 0;
+    printf("<--\nServer reply :\n");
+    printReturnValueMessage(assembleMessage(&server_reply));
+  }
+
+  close(sock);
+  return 0;
 }

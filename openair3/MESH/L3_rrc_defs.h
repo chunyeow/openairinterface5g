@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,20 +14,20 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06410 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
 
-/** @addtogroup _mesh_layer3_ 
+/** @addtogroup _mesh_layer3_
   * @{ This page describes the interface between the RRC and RRM/RRCI modules for OpenAirInterface Mesh.
   */
 
@@ -53,7 +53,7 @@
 //mod_lor_10_05_05++
 /*!
 *******************************************************************************
-\brief Id of different CRRM entities in case of multiple entities on same machine       
+\brief Id of different CRRM entities in case of multiple entities on same machine
   */
 #define BTS_ID -1
 #define FC_ID -1
@@ -63,10 +63,10 @@
 #define FIRST_MR_ID 8 //mod_lor_11_02_18: if cluster on more than 1 pc, this is the ID of first MR
 //mod_lor_10_05_05--
 
-/*! 
+/*!
  *******************************************************************************
  \brief Parameters about channels:
- * 
+ *
 */
 #define NB_OF_SENSORS 3 //!< Number of units that can perform sensing (if scen2_centr it includes secondary users of both clusters)
 #define CH_NEEDED_FOR_SN 1 //!< Number of channels needed by secondary network//mod_lor_10_05_17
@@ -136,32 +136,32 @@ typedef struct {
 
 /*!
 *******************************************************************************
-\brief Structure of sensing information database        
+\brief Structure of sensing information database
 */
-typedef struct  Sens_ch_s { 
-    unsigned int        Start_f    ; ///< frequence initial du canal //mod_lor_10_03_17: intxflot
-    unsigned int        Final_f    ; ///< frequence final du canal   //mod_lor_10_03_17: intxflot
-    unsigned int        Ch_id      ; ///< ID du canal
-    //mod_eure_lor++
-    char I0[MAX_NUM_SB] ;
-    char mu0[MAX_NUM_SB];
-    char mu1[MAX_NUM_SB];
-    
-    //float               meas       ; ///< Sensing results 
-    unsigned int        is_free  [MAX_NUM_SB]  ; ///< Decision about the channel //mod_lor_10_05_28 ->char instead of int
-    //mod_eure_lor--
-    struct  Sens_ch_s   *next      ; ///< pointeur sur le prochain canal 
+typedef struct  Sens_ch_s {
+  unsigned int        Start_f    ; ///< frequence initial du canal //mod_lor_10_03_17: intxflot
+  unsigned int        Final_f    ; ///< frequence final du canal   //mod_lor_10_03_17: intxflot
+  unsigned int        Ch_id      ; ///< ID du canal
+  //mod_eure_lor++
+  char I0[MAX_NUM_SB] ;
+  char mu0[MAX_NUM_SB];
+  char mu1[MAX_NUM_SB];
+
+  //float               meas       ; ///< Sensing results
+  unsigned int        is_free  [MAX_NUM_SB]  ; ///< Decision about the channel //mod_lor_10_05_28 ->char instead of int
+  //mod_eure_lor--
+  struct  Sens_ch_s   *next      ; ///< pointeur sur le prochain canal
 } Sens_ch_t ;
 
 /*!
 *******************************************************************************
-\brief Structure that describes the channels        
+\brief Structure that describes the channels
 */
-typedef struct { 
-    unsigned int        Start_f    ; ///< frequence initial du canal //mod_lor_10_03_17: intxflot
-    unsigned int        Final_f    ; ///< frequence final du canal   //mod_lor_10_03_17: intxflot
-    unsigned int        Ch_id      ; ///< ID du canal               //mod_lor_10_03_17: intxflot
-    QOS_CLASS_T         QoS        ; ///< Max QoS possible on the channel
+typedef struct {
+  unsigned int        Start_f    ; ///< frequence initial du canal //mod_lor_10_03_17: intxflot
+  unsigned int        Final_f    ; ///< frequence final du canal   //mod_lor_10_03_17: intxflot
+  unsigned int        Ch_id      ; ///< ID du canal               //mod_lor_10_03_17: intxflot
+  QOS_CLASS_T         QoS        ; ///< Max QoS possible on the channel
 } CHANNEL_T ;
 
 /*!\brief cooperation type between CHs
@@ -170,16 +170,16 @@ typedef enum {
   NO_COOP     = 0, //!< No cooperation
   AMPL_FORW   = 1, //!< amplify and forward collaboration
   DECO_FORW   = 2, //!< decode and forward collaboration
-}COOPERATION_T;
+} COOPERATION_T;
 /*!
 *******************************************************************************
-\brief Structure that describes the channels        
+\brief Structure that describes the channels
 */
-typedef struct { 
-    //float               Start_f    ; ///< frequence initial du canal
-    //float               Final_f    ; ///< frequence final du canal
-    int                 Ch_id      ; ///< ID du canal
-    //QOS_CLASS_T         QoS        ; ///< Max QoS possible on the channel
+typedef struct {
+  //float               Start_f    ; ///< frequence initial du canal
+  //float               Final_f    ; ///< frequence final du canal
+  int                 Ch_id      ; ///< ID du canal
+  //QOS_CLASS_T         QoS        ; ///< Max QoS possible on the channel
 } MAC_INFO_T ;
 
 
@@ -203,17 +203,17 @@ typedef enum {
 
 /*!
 *******************************************************************************
-\brief Entete de la file des messages reçus ou a envoyer		
+\brief Entete de la file des messages reçus ou a envoyer
 */
-typedef struct channels_db_s { 
-	double               info_time ; ///< information age 
-	unsigned int         is_free   ; ///< channel availability   //mod_lor_10_05_28 ->char instead of int
-	unsigned int         priority  ; ///< channel priority
-	unsigned int         is_ass    ; ///< channel used by secondary network
-	L2_ID                source_id ; ///< SU using channel (source)
-    L2_ID                dest_id   ; ///< SU using channel (dest)
-	CHANNEL_T            channel   ; ///< channel description
-	struct channels_db_s *next     ; ///< next node pointer
+typedef struct channels_db_s {
+  double               info_time ; ///< information age
+  unsigned int         is_free   ; ///< channel availability   //mod_lor_10_05_28 ->char instead of int
+  unsigned int         priority  ; ///< channel priority
+  unsigned int         is_ass    ; ///< channel used by secondary network
+  L2_ID                source_id ; ///< SU using channel (source)
+  L2_ID                dest_id   ; ///< SU using channel (dest)
+  CHANNEL_T            channel   ; ///< channel description
+  struct channels_db_s *next     ; ///< next node pointer
 } CHANNELS_DB_T ;
 
 #endif //__L3_RRC_DEFS_H__

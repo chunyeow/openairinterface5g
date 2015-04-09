@@ -62,22 +62,22 @@ Description NAS command line parser
  */
 enum {
 #ifdef NAS_UE
-    NAS_PARSER_UE_ID,           /* User Equipement Identifier   */
+  NAS_PARSER_UE_ID,           /* User Equipement Identifier   */
 #endif // NAS_UE
-    NAS_PARSER_TRACE_LEVEL,     /* Logging trace level      */
+  NAS_PARSER_TRACE_LEVEL,     /* Logging trace level      */
 #ifdef NAS_UE
-    NAS_PARSER_USER_HOST,       /* User app layer's hostname    */
+  NAS_PARSER_USER_HOST,       /* User app layer's hostname    */
 #endif // NAS_UE
-    NAS_PARSER_NETWORK_HOST,        /* Network layer's hostname */
+  NAS_PARSER_NETWORK_HOST,        /* Network layer's hostname */
 #ifdef NAS_UE
-    NAS_PARSER_USER_PORT,       /* User app layer's port number */
+  NAS_PARSER_USER_PORT,       /* User app layer's port number */
 #endif // NAS_UE
-    NAS_PARSER_NETWORK_PORT,        /* Network layer's port number  */
+  NAS_PARSER_NETWORK_PORT,        /* Network layer's port number  */
 #ifdef NAS_UE
-    NAS_PARSER_DEVICE_PATH,     /* Device pathname      */
-    NAS_PARSER_DEVICE_ATTR,     /* Device attribute parameters  */
+  NAS_PARSER_DEVICE_PATH,     /* Device pathname      */
+  NAS_PARSER_DEVICE_ATTR,     /* Device attribute parameters  */
 #endif // NAS_UE
-    NAS_PARSER_NB_OPTIONS
+  NAS_PARSER_NB_OPTIONS
 };
 
 /* -----------------------------------------------------
@@ -90,44 +90,44 @@ enum {
  *  the usage displayed by the usage function and a default value.
  */
 static parser_command_line_t nasParserCommandLine = {
-    "NASprocess",           /* Command name         */
-    NAS_PARSER_NB_OPTIONS,      /* Number of options        */
-    {                 /* Command line options     */
+  "NASprocess",           /* Command name         */
+  NAS_PARSER_NB_OPTIONS,      /* Number of options        */
+  {                 /* Command line options     */
 #ifdef NAS_UE
-        {
-            "-ueid", "<ueid>", "UE identifier\t\t\t",
-            NAS_PARSER_DEFAULT_UE_ID
-        },
+    {
+      "-ueid", "<ueid>", "UE identifier\t\t\t",
+      NAS_PARSER_DEFAULT_UE_ID
+    },
 #endif // NAS_UE
-        {
-            "-trace", "<mask>", "Logging trace level\t\t",
-            NAS_PARSER_DEFAULT_TRACE_LEVEL
-        },
+    {
+      "-trace", "<mask>", "Logging trace level\t\t",
+      NAS_PARSER_DEFAULT_TRACE_LEVEL
+    },
 #ifdef NAS_UE
-        {
-            "-uhost", "<uhost>", "User app layer's hostname\t",
-            NAS_PARSER_DEFAULT_USER_HOSTNAME
-        },
+    {
+      "-uhost", "<uhost>", "User app layer's hostname\t",
+      NAS_PARSER_DEFAULT_USER_HOSTNAME
+    },
 #endif // NAS_UE
-        {
-            "-nhost", "<nhost>", "Network layer's hostname\t",
-            NAS_PARSER_DEFAULT_NETWORK_HOSTNAME
-        },
+    {
+      "-nhost", "<nhost>", "Network layer's hostname\t",
+      NAS_PARSER_DEFAULT_NETWORK_HOSTNAME
+    },
 #ifdef NAS_UE
-        {
-            "-uport", "<uport>", "User app layer's port number\t",
-            NAS_PARSER_DEFAULT_USER_PORT_NUMBER
-        },
+    {
+      "-uport", "<uport>", "User app layer's port number\t",
+      NAS_PARSER_DEFAULT_USER_PORT_NUMBER
+    },
 #endif // NAS_UE
-        {
-            "-nport", "<nport>", "Network layer's port number\t",
-            NAS_PARSER_DEFAULT_NETWORK_PORT_NUMBER
-        },
+    {
+      "-nport", "<nport>", "Network layer's port number\t",
+      NAS_PARSER_DEFAULT_NETWORK_PORT_NUMBER
+    },
 #ifdef NAS_UE
-        {"-dev", "<devpath>", "Device pathname\t\t", "NULL"},
-        {"-params", "<params>", "Device attribute parameters", "NULL"},
+    {"-dev", "<devpath>", "Device pathname\t\t", "NULL"},
+    {"-params", "<params>", "Device attribute parameters", "NULL"},
 #endif // NAS_UE
-    }
+  }
 };
 
 /*
@@ -156,8 +156,8 @@ static int atohex(const char *a_char);
  ***************************************************************************/
 void nas_parser_print_usage(const char *version)
 {
-    parser_print_usage(&nasParserCommandLine);
-    fprintf(stderr, "Version: %s\n", version);
+  parser_print_usage(&nasParserCommandLine);
+  fprintf(stderr, "Version: %s\n", version);
 }
 
 /****************************************************************************
@@ -176,7 +176,7 @@ void nas_parser_print_usage(const char *version)
  ***************************************************************************/
 int nas_parser_get_options(int argc, const char **argv)
 {
-    return parser_get_options(argc, argv, &nasParserCommandLine);
+  return parser_get_options(argc, argv, &nasParserCommandLine);
 }
 
 /****************************************************************************
@@ -195,7 +195,7 @@ int nas_parser_get_options(int argc, const char **argv)
  ***************************************************************************/
 int nas_parser_get_nb_options(void)
 {
-    return nasParserCommandLine.nb_options;
+  return nasParserCommandLine.nb_options;
 }
 
 /****************************************************************************
@@ -213,7 +213,7 @@ int nas_parser_get_nb_options(void)
  ***************************************************************************/
 int nas_parser_get_trace_level(void)
 {
-    return atohex( nasParserCommandLine.options[NAS_PARSER_TRACE_LEVEL].pvalue );
+  return atohex( nasParserCommandLine.options[NAS_PARSER_TRACE_LEVEL].pvalue );
 }
 
 /****************************************************************************
@@ -231,7 +231,7 @@ int nas_parser_get_trace_level(void)
  ***************************************************************************/
 const char *nas_parser_get_network_host(void)
 {
-    return nasParserCommandLine.options[NAS_PARSER_NETWORK_HOST].pvalue;
+  return nasParserCommandLine.options[NAS_PARSER_NETWORK_HOST].pvalue;
 }
 
 /****************************************************************************
@@ -249,7 +249,7 @@ const char *nas_parser_get_network_host(void)
  ***************************************************************************/
 const char *nas_parser_get_network_port(void)
 {
-    return nasParserCommandLine.options[NAS_PARSER_NETWORK_PORT].pvalue;
+  return nasParserCommandLine.options[NAS_PARSER_NETWORK_PORT].pvalue;
 }
 
 #ifdef NAS_UE
@@ -268,7 +268,7 @@ const char *nas_parser_get_network_port(void)
  ***************************************************************************/
 int nas_parser_get_ueid(void)
 {
-    return atoi( nasParserCommandLine.options[NAS_PARSER_UE_ID].pvalue );
+  return atoi( nasParserCommandLine.options[NAS_PARSER_UE_ID].pvalue );
 }
 
 /****************************************************************************
@@ -286,7 +286,7 @@ int nas_parser_get_ueid(void)
  ***************************************************************************/
 const char *nas_parser_get_user_host(void)
 {
-    return nasParserCommandLine.options[NAS_PARSER_USER_HOST].pvalue;
+  return nasParserCommandLine.options[NAS_PARSER_USER_HOST].pvalue;
 }
 
 /****************************************************************************
@@ -305,7 +305,7 @@ const char *nas_parser_get_user_host(void)
  ***************************************************************************/
 const char *nas_parser_get_user_port(void)
 {
-    return nasParserCommandLine.options[NAS_PARSER_USER_PORT].pvalue;
+  return nasParserCommandLine.options[NAS_PARSER_USER_PORT].pvalue;
 }
 
 /****************************************************************************
@@ -323,7 +323,7 @@ const char *nas_parser_get_user_port(void)
  ***************************************************************************/
 const char *nas_parser_get_device_path(void)
 {
-    return nasParserCommandLine.options[NAS_PARSER_DEVICE_PATH].pvalue;
+  return nasParserCommandLine.options[NAS_PARSER_DEVICE_PATH].pvalue;
 }
 
 /****************************************************************************
@@ -341,7 +341,7 @@ const char *nas_parser_get_device_path(void)
  ***************************************************************************/
 const char *nas_parser_get_device_params(void)
 {
-    return nasParserCommandLine.options[NAS_PARSER_DEVICE_ATTR].pvalue;
+  return nasParserCommandLine.options[NAS_PARSER_DEVICE_ATTR].pvalue;
 }
 #endif // NAS_UE
 
@@ -351,18 +351,19 @@ const char *nas_parser_get_device_params(void)
 
 static int atohex(const char *a_char)
 {
-    int result;
+  int result;
 
-    for (result=0; a_char; a_char++) {
-        if (*a_char >= '0' && *a_char <= '9') {
-            result = (result << 4) + (*a_char - '0');
-        } else if (*a_char >= 'A' && *a_char <= 'F') {
-            result = (result << 4) + (*a_char - 'A' + 10);
-        } else if (*a_char >= 'a' && *a_char <= 'f') {
-            result = (result << 4) + (*a_char - 'a' + 10);
-        } else {
-            break;
-        }
+  for (result=0; a_char; a_char++) {
+    if (*a_char >= '0' && *a_char <= '9') {
+      result = (result << 4) + (*a_char - '0');
+    } else if (*a_char >= 'A' && *a_char <= 'F') {
+      result = (result << 4) + (*a_char - 'A' + 10);
+    } else if (*a_char >= 'a' && *a_char <= 'f') {
+      result = (result << 4) + (*a_char - 'a' + 10);
+    } else {
+      break;
     }
-    return result;
+  }
+
+  return result;
 }

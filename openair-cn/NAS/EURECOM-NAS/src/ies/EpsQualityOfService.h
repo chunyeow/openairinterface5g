@@ -37,18 +37,18 @@
 #define EPS_QUALITY_OF_SERVICE_MAXIMUM_LENGTH 10
 
 typedef struct {
-    uint8_t maxBitRateForUL;
-    uint8_t maxBitRateForDL;
-    uint8_t guarBitRateForUL;
-    uint8_t guarBitRateForDL;
+  uint8_t maxBitRateForUL;
+  uint8_t maxBitRateForDL;
+  uint8_t guarBitRateForUL;
+  uint8_t guarBitRateForDL;
 } EpsQoSBitRates;
 
 typedef struct {
-    uint8_t bitRatesPresent:1;
-    uint8_t bitRatesExtPresent:1;
-    uint8_t qci;
-    EpsQoSBitRates bitRates;
-    EpsQoSBitRates bitRatesExt;
+  uint8_t bitRatesPresent:1;
+  uint8_t bitRatesExtPresent:1;
+  uint8_t qci;
+  EpsQoSBitRates bitRates;
+  EpsQoSBitRates bitRatesExt;
 } EpsQualityOfService;
 
 //typedef uint8_t EpsQualityOfService;

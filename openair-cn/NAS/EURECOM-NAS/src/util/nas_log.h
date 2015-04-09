@@ -27,19 +27,19 @@
 
  *******************************************************************************/
 /*****************************************************************************
-Source		nas_log.h
+Source    nas_log.h
 
-Version		0.1
+Version   0.1
 
-Date		2012/02/28
+Date    2012/02/28
 
-Product		NAS stack
+Product   NAS stack
 
-Subsystem	Utilities
+Subsystem Utilities
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Usefull logging functions
+Description Usefull logging functions
 
 *****************************************************************************/
 #ifndef __NAS_LOG_H__
@@ -57,38 +57,37 @@ Description	Usefull logging functions
 /* -----------------------
  * Logging severity levels
  * -----------------------
- *	OFF	: Disables logging trace utilities.
- *	DEBUG	: Only used for debug purpose. Should be removed from the code.
- *	INFO	: Informational trace
- *	WARNING	: The program displays the warning message and doesn't stop.
- *	ERROR	: The program displays the error message and usually exits or
- *		  runs appropriate procedure.
- *	FUNC	: Prints trace when entering/leaving to/from function. Usefull
- *		  to display the function's calling tree information at runtime.
- *	ON	: Enables logging traces excepted FUNC.
- *	ALL	: Turns on ALL logging traces.
+ *  OFF : Disables logging trace utilities.
+ *  DEBUG : Only used for debug purpose. Should be removed from the code.
+ *  INFO  : Informational trace
+ *  WARNING : The program displays the warning message and doesn't stop.
+ *  ERROR : The program displays the error message and usually exits or
+ *      runs appropriate procedure.
+ *  FUNC  : Prints trace when entering/leaving to/from function. Usefull
+ *      to display the function's calling tree information at runtime.
+ *  ON  : Enables logging traces excepted FUNC.
+ *  ALL : Turns on ALL logging traces.
  */
-#define NAS_LOG_OFF	0x00	/* No trace				*/
-#define NAS_LOG_DEBUG	0x01	/* Debug trace				*/
-#define NAS_LOG_INFO	0x02	/* Informational trace			*/
-#define NAS_LOG_WARNING	0x04	/* Warning trace			*/
-#define NAS_LOG_ERROR	0x08	/* Error trace				*/
-#define NAS_LOG_FUNC	0x10	/* Entering/Leaving function trace	*/
-#define NAS_LOG_HEX	0x20	/* Dump trace				*/
+#define NAS_LOG_OFF 0x00  /* No trace       */
+#define NAS_LOG_DEBUG 0x01  /* Debug trace        */
+#define NAS_LOG_INFO  0x02  /* Informational trace      */
+#define NAS_LOG_WARNING 0x04  /* Warning trace      */
+#define NAS_LOG_ERROR 0x08  /* Error trace        */
+#define NAS_LOG_FUNC  0x10  /* Entering/Leaving function trace  */
+#define NAS_LOG_HEX 0x20  /* Dump trace       */
 
-#define NAS_LOG_ON	0x0F	/* All traces excepted FUNC and HEX	*/
-#define NAS_LOG_ALL	0xFF	/* All traces				*/
+#define NAS_LOG_ON  0x0F  /* All traces excepted FUNC and HEX */
+#define NAS_LOG_ALL 0xFF  /* All traces       */
 
 /* Logging severity type */
-typedef enum
-{
-    DEBUG,
-    INFO,
-    WARNING,
-    ERROR,
-    FUNC_IN,
-    FUNC_OUT,
-    LOG_SEVERITY_MAX
+typedef enum {
+  DEBUG,
+  INFO,
+  WARNING,
+  ERROR,
+  FUNC_IN,
+  FUNC_OUT,
+  LOG_SEVERITY_MAX
 } log_severity_t;
 
 /****************************************************************************/

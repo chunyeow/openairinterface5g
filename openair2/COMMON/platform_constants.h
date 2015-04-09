@@ -46,9 +46,9 @@
 #    define __PLATFORM_CONSTANTS_H__
 
 #ifdef JUMBO_FRAME
-       #define NL_MAX_PAYLOAD 18000  /* this should cover the max mtu size*/
+#define NL_MAX_PAYLOAD 18000  /* this should cover the max mtu size*/
 #else
-       #define NL_MAX_PAYLOAD 9000  /* this should cover the max mtu size*/
+#define NL_MAX_PAYLOAD 9000  /* this should cover the max mtu size*/
 #endif
 
 #ifdef USER_MODE

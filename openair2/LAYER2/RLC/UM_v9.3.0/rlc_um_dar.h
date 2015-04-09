@@ -72,11 +72,11 @@
 * \return     0 if no error was encountered during the parsing of the PDU, else -1;
 */
 protected_rlc_um_dar(  signed int rlc_um_get_pdu_infos(
-                const protocol_ctxt_t* const ctxt_pP,
-                rlc_um_pdu_sn_10_t  * const header_pP,
-                const sdu_size_t            total_sizeP,
-                rlc_um_pdu_info_t   * const pdu_info_pP,
-                const uint8_t               sn_lengthP));
+                         const protocol_ctxt_t* const ctxt_pP,
+                         rlc_um_pdu_sn_10_t  * const header_pP,
+                         const sdu_size_t            total_sizeP,
+                         rlc_um_pdu_info_t   * const pdu_info_pP,
+                         const uint8_t               sn_lengthP));
 
 /*! \fn int rlc_um_read_length_indicators(unsigned char**data_ppP, rlc_um_e_li_t* e_li_pP, unsigned int* li_array_pP, unsigned int *num_li_pP, sdu_size_t *data_size_pP)
 * \brief    Reset protocol variables and state variables to initial values.
@@ -184,6 +184,7 @@ protected_rlc_um_dar(signed int rlc_um_in_reordering_window(const protocol_ctxt_
 * \param[in]  pdu_pP     Pointer on the header of the UM PDU.
 * \param[in]  tb_sizeP   Size of the UM PDU.
 */
-protected_rlc_um_dar(void rlc_um_receive_process_dar (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP, mem_block_t * pdu_mem_pP,rlc_um_pdu_sn_10_t * const pdu_pP, const sdu_size_t tb_sizeP));
+protected_rlc_um_dar(void rlc_um_receive_process_dar (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP, mem_block_t * pdu_mem_pP,rlc_um_pdu_sn_10_t * const pdu_pP,
+                     const sdu_size_t tb_sizeP));
 /** @} */
 #    endif

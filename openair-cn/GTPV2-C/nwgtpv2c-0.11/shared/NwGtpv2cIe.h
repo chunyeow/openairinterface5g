@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                              n w - g t p v 2 c                             * 
+ *                              n w - g t p v 2 c                             *
  *    G P R S   T u n n e l i n g    P r o t o c o l   v 2 c    S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -31,7 +31,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.          *
  *----------------------------------------------------------------------------*/
 
-/** 
+/**
  * @file NwGtpv2cIe.h
  * @brief This header file contains Information Element definitions for GTPv2c
  * as per 3GPP TS 29274-930.
@@ -130,14 +130,14 @@
  *   G T P V 2 C      C A U S E      V A L U E     D E F I N I T I O N S    *
  *--------------------------------------------------------------------------*/
 
-#define NW_GTPV2C_CAUSE_REQUEST_ACCEPTED                                (16) 
-#define NW_GTPV2C_CAUSE_INVALID_LENGTH                                  (67) 
-#define NW_GTPV2C_CAUSE_MANDATORY_IE_INCORRECT                          (69) 
-#define NW_GTPV2C_CAUSE_MANDATORY_IE_MISSING                            (70) 
-#define NW_GTPV2C_CAUSE_SYSTEM_FAILURE                                  (72) 
-#define NW_GTPV2C_CAUSE_REQUEST_REJECTED                                (94) 
-#define NW_GTPV2C_CAUSE_REMOTE_PEER_NOT_RESPONDING                      (100) 
-#define NW_GTPV2C_CAUSE_CONDITIONAL_IE_MISSING                          (103) 
+#define NW_GTPV2C_CAUSE_REQUEST_ACCEPTED                                (16)
+#define NW_GTPV2C_CAUSE_INVALID_LENGTH                                  (67)
+#define NW_GTPV2C_CAUSE_MANDATORY_IE_INCORRECT                          (69)
+#define NW_GTPV2C_CAUSE_MANDATORY_IE_MISSING                            (70)
+#define NW_GTPV2C_CAUSE_SYSTEM_FAILURE                                  (72)
+#define NW_GTPV2C_CAUSE_REQUEST_REJECTED                                (94)
+#define NW_GTPV2C_CAUSE_REMOTE_PEER_NOT_RESPONDING                      (100)
+#define NW_GTPV2C_CAUSE_CONDITIONAL_IE_MISSING                          (103)
 
 #define NW_GTPV2C_IE_INSTANCE_ZERO                                      (0)
 #define NW_GTPV2C_IE_INSTANCE_ONE                                       (1)

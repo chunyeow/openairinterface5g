@@ -2,7 +2,7 @@
                           rrc_nas_sap.h  -
                           -------------------
     copyright            : (C) 2001, 2010 by Eurecom
-    created by	         : Lionel.Gauthier@eurecom.fr	
+    created by           : Lionel.Gauthier@eurecom.fr
     modified by          : Michelle.Wetterwald@eurecom.fr
  **************************************************************************
   Definition of RRC FIFOs and SAPs to interface NAS

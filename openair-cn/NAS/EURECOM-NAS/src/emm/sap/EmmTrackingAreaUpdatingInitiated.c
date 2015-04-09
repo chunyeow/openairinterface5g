@@ -86,13 +86,13 @@ Description Implements the EPS Mobility Management procedures executed
  ***************************************************************************/
 int EmmTrackingAreaUpdatingInitiated(const emm_reg_t *evt)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    assert(emm_fsm_get_status() == EMM_TRACKING_AREA_UPDATING_INITIATED);
+  assert(emm_fsm_get_status() == EMM_TRACKING_AREA_UPDATING_INITIATED);
 
-    /* TODO */
+  /* TODO */
 
-    LOG_FUNC_RETURN (RETURNok);
+  LOG_FUNC_RETURN (RETURNok);
 }
 
 /****************************************************************************/

@@ -84,23 +84,23 @@ typedef int     MIB_ValueTag;
 
 /**************************************************************/
 //   PLMN_Type
-  /*  Digit   */
+/*  Digit   */
 //typedef int  Digit;  already defined
 
-  /*  MCC   */
+/*  MCC   */
 typedef struct RCELL_MCC {
   unsigned int    numDigits;
   Digit           elem[3];
 } RCELL_MCC;
 
-  /*  MNC  */
+/*  MNC  */
 //typedef struct MNC {
 //   unsigned int numDigits;
 //   Digit elem[3];
 //} MNC;
 typedef unsigned int MNC;
 
-  /*  PLMN_Identity */
+/*  PLMN_Identity */
 typedef struct RCELL_PLMN_Identity {
   RCELL_MCC       mcc;
   MNC             mnc;
@@ -180,7 +180,7 @@ typedef struct SchedulingInformationSIBSb {
   SchedulingInformation scheduling;
 } SchedulingInformationSIBSb;
 
-  /*  SIBSb_ReferenceList  */
+/*  SIBSb_ReferenceList  */
 typedef struct SIBSb_ReferenceList {
   unsigned int    numSIB;
   SchedulingInformationSIBSb sib_ref[supportedSIBs];
@@ -189,13 +189,13 @@ typedef struct SIBSb_ReferenceList {
 /**************************************************************/
 /*  SysInfoType1  Information elements                        */
 /**************************************************************/
-    /*  NAS_SystemInformation */
+/*  NAS_SystemInformation */
 typedef struct NAS_SystemInformation {
   unsigned int    numocts;
   unsigned char   data[maxSIB1NAS];
 } NAS_SystemInformation;
 
-    /*  UE_TimersAndConstants */
+/*  UE_TimersAndConstants */
 typedef struct RCELL_UE_TimersAndConstants {
   unsigned int    numocts;
   unsigned char   data[8];
@@ -204,7 +204,7 @@ typedef struct RCELL_UE_TimersAndConstants {
 /**************************************************************/
 /*  SysInfoType2  Information elements                        */
 /**************************************************************/
-   /*  IP_Address   */
+/*  IP_Address   */
 //typedef struct SRNC_Identity {
 typedef struct IP_Address {
   unsigned char   data[16];
@@ -213,7 +213,7 @@ typedef struct IP_Address {
 /**************************************************************/
 /*  SysInfoType5  Information elements                        */
 /**************************************************************/
-   /*  PRACH_SCCPCH_SIList   */
+/*  PRACH_SCCPCH_SIList   */
 typedef struct PRACH_SCCPCH_SIList {
   unsigned int    numocts;
   unsigned char   data[maxBlock - 8];
@@ -232,7 +232,7 @@ typedef struct OpenLoopPowerControl_TDD {
   Alpha           alpha;
   ConstantValueTdd prach_ConstantValue;
   ConstantValueTdd dpch_ConstantValue;
-//   ConstantValueTdd  pusch_ConstantValue;
+  //   ConstantValueTdd  pusch_ConstantValue;
 } OpenLoopPowerControl_TDD;
 
 /**************************************************************/
@@ -265,13 +265,13 @@ typedef unsigned int ExpirationTimeFactor;
 /**************************************************************/
 /*  SysInfoType18  Information elements                       */
 /**************************************************************/
-    /*  IdentitiesOfNeighbourCells */
+/*  IdentitiesOfNeighbourCells */
 typedef struct IdentitiesOfNeighbourCells {
   unsigned int    numocts;
   unsigned char   data[maxSIBNAS];
 } IdentitiesOfNeighbourCells;
 
-    /*  CodeGroupsOfNeighbourCells */
+/*  CodeGroupsOfNeighbourCells */
 typedef struct CodeGroupsOfNeighbourCells {
   unsigned char   data[maxCells];
 } CodeGroupsOfNeighbourCells;

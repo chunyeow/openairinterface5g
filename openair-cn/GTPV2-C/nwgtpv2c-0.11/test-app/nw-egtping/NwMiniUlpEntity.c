@@ -6,7 +6,7 @@
  *                                                                            *
  *----------------------------------------------------------------------------*/
 
-/** 
+/**
  * @file NwMiniUlpEntity.c
  * @brief This file contains example of a minimalistic ULP entity.
 */
@@ -25,7 +25,7 @@
 
 #ifndef NW_ASSERT
 #define NW_ASSERT assert
-#endif 
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,8 +55,7 @@ nwGtpv2cUlpDestroy(NwGtpv2cNodeUlpT* thiz)
   return NW_OK;
 }
 
-typedef struct NwGtpv2cPeerS
-{
+typedef struct NwGtpv2cPeerS {
   NwU32T ipv4Addr;
   NwU32T pingCount;
   NwU32T pingInterval;
@@ -74,8 +73,7 @@ nwGtpv2cUlpCreatePeerContext(NwGtpv2cNodeUlpT* thiz, NwU32T peerIp)
   NwGtpv2cUlpApiT       ulpReq;
   NwGtpv2cPeerT         *pPeer = (NwGtpv2cPeerT*) malloc(sizeof(NwGtpv2cPeerT));
 
-  if(pPeer)
-  {
+  if(pPeer) {
     pPeer->ipv4Addr = peerIp;
 
     /*
@@ -93,6 +91,7 @@ nwGtpv2cUlpCreatePeerContext(NwGtpv2cNodeUlpT* thiz, NwU32T peerIp)
     NW_ASSERT(NW_OK == rc);
     pPeer->hTunnel = ulpReq.apiInfo.createLocalTunnelInfo.hTunnel;
   }
+
   return pPeer;
 
 }
@@ -114,11 +113,11 @@ nwGtpv2cUlpSendEchoRequestToPeer(NwGtpv2cNodeUlpT* thiz, NwGtpv2cPeerT *pPeer)
   ulpReq.apiInfo.initialReqInfo.hUlpTunnel      = (NwGtpv2cUlpTunnelHandleT)pPeer;
 
   rc = nwGtpv2cMsgNew( thiz->hGtpv2cStack,
-      NW_FALSE,
-      NW_GTP_ECHO_REQ,
-      0,
-      0,
-      &(ulpReq.hMsg));
+                       NW_FALSE,
+                       NW_GTP_ECHO_REQ,
+                       0,
+                       0,
+                       &(ulpReq.hMsg));
 
   NW_ASSERT(NW_OK == rc);
 
@@ -161,9 +160,9 @@ nwGtpv2cUlpPing(NwGtpv2cNodeUlpT* thiz,
   return rc;
 }
 
-NwRcT 
-nwGtpv2cUlpProcessStackReqCallback (NwGtpv2cUlpHandleT hUlp, 
-                       NwGtpv2cUlpApiT *pUlpApi)
+NwRcT
+nwGtpv2cUlpProcessStackReqCallback (NwGtpv2cUlpHandleT hUlp,
+                                    NwGtpv2cUlpApiT *pUlpApi)
 {
   NwRcT                 rc;
   NwU32T                seqNum;
@@ -176,43 +175,42 @@ nwGtpv2cUlpProcessStackReqCallback (NwGtpv2cUlpHandleT hUlp,
 
   thiz = (NwGtpv2cNodeUlpT*) hUlp;
 
-  switch(pUlpApi->apiType)
-  {
-    case NW_GTPV2C_ULP_API_TRIGGERED_RSP_IND:
-      {
-        pPeer = (NwGtpv2cPeerT*)pUlpApi->apiInfo.triggeredRspIndInfo.hUlpTrxn;
+  switch(pUlpApi->apiType) {
+  case NW_GTPV2C_ULP_API_TRIGGERED_RSP_IND: {
+    pPeer = (NwGtpv2cPeerT*)pUlpApi->apiInfo.triggeredRspIndInfo.hUlpTrxn;
 
-        if(pUlpApi->apiInfo.triggeredRspIndInfo.msgType == NW_GTP_ECHO_RSP)
-        {
-          seqNum = nwGtpv2cMsgGetSeqNumber(pUlpApi->hMsg);
-          len = nwGtpv2cMsgGetLength(pUlpApi->hMsg);
+    if(pUlpApi->apiInfo.triggeredRspIndInfo.msgType == NW_GTP_ECHO_RSP) {
+      seqNum = nwGtpv2cMsgGetSeqNumber(pUlpApi->hMsg);
+      len = nwGtpv2cMsgGetLength(pUlpApi->hMsg);
 
-          NW_ASSERT(gettimeofday(&tv, NULL) == 0);
-          recvTimeStamp = (tv.tv_sec * 1000000) + tv.tv_usec;
+      NW_ASSERT(gettimeofday(&tv, NULL) == 0);
+      recvTimeStamp = (tv.tv_sec * 1000000) + tv.tv_usec;
 
-          NW_LOG(NW_LOG_LEVEL_NOTI, "%u bytes of response from "NW_IPV4_ADDR": gtp_seq=%u time=%2.2f ms", len, NW_IPV4_ADDR_FORMAT(pPeer->ipv4Addr), seqNum, (float) (recvTimeStamp - pPeer->sendTimeStamp) / 1000 );
-          if(pPeer->pingCount)
-          {
-            sleep(pPeer->pingInterval);
-            rc = nwGtpv2cUlpSendEchoRequestToPeer(thiz, pPeer);
-            if(pPeer->pingCount != 0xffffffff) pPeer->pingCount--;
-          }
-        }
+      NW_LOG(NW_LOG_LEVEL_NOTI, "%u bytes of response from "NW_IPV4_ADDR": gtp_seq=%u time=%2.2f ms", len, NW_IPV4_ADDR_FORMAT(pPeer->ipv4Addr), seqNum,
+             (float) (recvTimeStamp - pPeer->sendTimeStamp) / 1000 );
 
-      }
-      break;
-
-    case NW_GTPV2C_ULP_API_RSP_FAILURE_IND:
-      {
-        pPeer = (NwGtpv2cPeerT*)pUlpApi->apiInfo.rspFailureInfo.hUlpTrxn;
-        NW_LOG(NW_LOG_LEVEL_DEBG, "No response from "NW_IPV4_ADDR" (2123)!", NW_IPV4_ADDR_FORMAT(pPeer->ipv4Addr));
+      if(pPeer->pingCount) {
+        sleep(pPeer->pingInterval);
         rc = nwGtpv2cUlpSendEchoRequestToPeer(thiz, pPeer);
-      }
-      break;
 
-    default:
-      NW_LOG(NW_LOG_LEVEL_WARN, "Received undefined UlpApi from gtpv2c stack!");
+        if(pPeer->pingCount != 0xffffffff) pPeer->pingCount--;
+      }
+    }
+
   }
+  break;
+
+  case NW_GTPV2C_ULP_API_RSP_FAILURE_IND: {
+    pPeer = (NwGtpv2cPeerT*)pUlpApi->apiInfo.rspFailureInfo.hUlpTrxn;
+    NW_LOG(NW_LOG_LEVEL_DEBG, "No response from "NW_IPV4_ADDR" (2123)!", NW_IPV4_ADDR_FORMAT(pPeer->ipv4Addr));
+    rc = nwGtpv2cUlpSendEchoRequestToPeer(thiz, pPeer);
+  }
+  break;
+
+  default:
+    NW_LOG(NW_LOG_LEVEL_WARN, "Received undefined UlpApi from gtpv2c stack!");
+  }
+
   return NW_OK;
 }
 

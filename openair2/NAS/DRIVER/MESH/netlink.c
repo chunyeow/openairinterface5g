@@ -67,12 +67,12 @@ static DEFINE_MUTEX(nasmesh_mutex);
 
 static inline void nasmesh_lock(void)
 {
-	mutex_lock(&nasmesh_mutex);
+  mutex_lock(&nasmesh_mutex);
 }
 
 static inline void nasmesh_unlock(void)
 {
-	mutex_unlock(&nasmesh_mutex);
+  mutex_unlock(&nasmesh_mutex);
 }
 
 // This can also be implemented using thread to get the data from PDCP without blocking.
@@ -84,16 +84,17 @@ static void nas_nl_data_ready (struct sk_buff *skb)
   //nasmesh_unlock();
 
   struct nlmsghdr *nlh = NULL;
-  int j;  
+  int j;
+
   if (skb) {
-    
+
 #ifdef NETLINK_DEBUG
     printk("[NAS][NETLINK] Received socket from PDCP\n");
 #endif //NETLINK_DEBUG
     nlh = (struct nlmsghdr *)skb->data;
-  
+
     nas_COMMON_QOS_receive(nlh);
-    
+
     //kfree_skb(skb); // not required,
   }
 
@@ -111,20 +112,20 @@ int nas_netlink_init()
   oai_netlink_cfg.bind     = NULL;
 
   nas_nl_sk = netlink_kernel_create(
-      &init_net,
-      NAS_NETLINK_ID,
+                &init_net,
+                NAS_NETLINK_ID,
 # if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
-      THIS_MODULE,
+                THIS_MODULE,
 # endif
-      &oai_netlink_cfg);
+                &oai_netlink_cfg);
 #else /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0) */
   nas_nl_sk = netlink_kernel_create(
-                    &init_net,
-                    NAS_NETLINK_ID,
-                    0, 
-                    nas_nl_data_ready,
-                    &nasmesh_mutex, // NULL
-                    THIS_MODULE);
+                &init_net,
+                NAS_NETLINK_ID,
+                0,
+                nas_nl_data_ready,
+                &nasmesh_mutex, // NULL
+                THIS_MODULE);
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0) */
 
   if (nas_nl_sk == NULL) {
@@ -133,32 +134,34 @@ int nas_netlink_init()
     return(-1);
   }
 
-  
+
 
   return(0);
-  
+
 }
 
 
-void nas_netlink_release(void) {  
+void nas_netlink_release(void)
+{
 
   exit_netlink_thread=1;
   printk("[NAS][NETLINK] Releasing netlink socket\n");
- 
-  if(nas_nl_sk){
+
+  if(nas_nl_sk) {
     netlink_kernel_release(nas_nl_sk); //or skb->sk
-    
+
   }
-  
- //  printk("[NAS][NETLINK] Removing netlink_rx_thread\n");
- //kthread_stop(netlink_rx_thread);
+
+  //  printk("[NAS][NETLINK] Removing netlink_rx_thread\n");
+  //kthread_stop(netlink_rx_thread);
 
 }
 
 
 
 
-int nas_netlink_send(unsigned char *data,unsigned int len) {
+int nas_netlink_send(unsigned char *data,unsigned int len)
+{
 
 
   struct sk_buff *nl_skb = alloc_skb(NLMSG_SPACE(len),GFP_ATOMIC);
@@ -180,40 +183,38 @@ int nas_netlink_send(unsigned char *data,unsigned int len) {
 #else
   NETLINK_CB(nl_skb).pid = 0;
 #endif
-  
- #ifdef NETLINK_DEBUG
+
+#ifdef NETLINK_DEBUG
   printk("[NAS][NETLINK] In nas_netlink_send, nl_skb %p, nl_sk %x, nlh %p, nlh->nlmsg_len %d (NAS_NETLINK_ID %d)\n",
-	 nl_skb,nas_nl_sk,nlh,nlh->nlmsg_len,
-	 NAS_NETLINK_ID);
+         nl_skb,nas_nl_sk,nlh,nlh->nlmsg_len,
+         NAS_NETLINK_ID);
 #endif //DEBUG_NETLINK
 
   if (nas_nl_sk) {
 
     //  nasmesh_lock();
-    
+
     status = netlink_unicast(nas_nl_sk, nl_skb, NL_DEST_PID, MSG_DONTWAIT);
     // mutex_unlock(&nasmesh_mutex);
 
     if (status < 0) {
-	printk("[NAS][NETLINK] SEND status is %d\n",status);
-	return(0);
-    }
-    else {
+      printk("[NAS][NETLINK] SEND status is %d\n",status);
+      return(0);
+    } else {
 #ifdef NETLINK_DEBUG
       printk("[NAS][NETLINK] SEND status is %d\n",status);
 #endif
       return len;
     }
-  }
-  else {
+  } else {
     printk("[NAS][SEND] socket is NULL\n");
     return(0);
   }
 
   /*
-    nlmsg_failure:	// Used by NLMSG_PUT
+    nlmsg_failure:  // Used by NLMSG_PUT
   if (nl_skb)
     kfree_skb(nl_skb);
-*/
+  */
 
 }

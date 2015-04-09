@@ -138,12 +138,12 @@ struct rlc_um_entity {
   uint32_t             rx_pdus;
   uint32_t             rx_pdus_in_error;
   uint8_t              first_pdu;
-  
+
   unsigned int tx_pdcp_sdu;
   unsigned int tx_pdcp_sdu_discarded;
   unsigned int tx_data_pdu;
   unsigned int rx_sdu;
-  unsigned int rx_error_pdu;  
+  unsigned int rx_error_pdu;
   unsigned int rx_data_pdu;
   unsigned int rx_data_pdu_out_of_window;
 };

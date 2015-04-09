@@ -30,8 +30,8 @@
 #define ENUM_STRING_H_
 
 typedef struct {
-    int   enum_value;
-    char *enum_value_name;
+  int   enum_value;
+  char *enum_value_name;
 } enum_to_string_t;
 
 extern enum_to_string_t network_access_mode_to_string[NAM_MAX];

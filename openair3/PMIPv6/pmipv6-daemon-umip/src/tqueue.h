@@ -10,10 +10,10 @@
 #include "util.h"
 
 struct tq_elem {
-	struct list_head list;
-	struct timespec expires;       	/* expire time for task */
-	pthread_t thread;		/* who queued this task */
-	void (*task)(struct tq_elem *);	/* pointer to task      */
+  struct list_head list;
+  struct timespec expires;        /* expire time for task */
+  pthread_t thread;   /* who queued this task */
+  void (*task)(struct tq_elem *); /* pointer to task      */
 };
 
 #define tq_data(ptr, type, member) \
@@ -34,19 +34,19 @@ int task_interrupted(void);
 
 /* Add task task(tqi) to be triggered at expires */
 int add_task_abs(const struct timespec *expires,
-		 struct tq_elem *tqi, void (*task)(struct tq_elem *));
+                 struct tq_elem *tqi, void (*task)(struct tq_elem *));
 
 /* Add task to be triggered after expires_in */
 static inline int add_task_rel(const struct timespec *expires_in,
-			       struct tq_elem *tqi,
-			       void (*task)(struct tq_elem *))
+                               struct tq_elem *tqi,
+                               void (*task)(struct tq_elem *))
 {
-       struct timespec expire;
+  struct timespec expire;
 
-       clock_gettime(CLOCK_REALTIME, &expire);
-       tsadd(expire, *expires_in, expire);
+  clock_gettime(CLOCK_REALTIME, &expire);
+  tsadd(expire, *expires_in, expire);
 
-       return add_task_abs(&expire, tqi, task);
+  return add_task_abs(&expire, tqi, task);
 }
 
 /* Delete task from list */

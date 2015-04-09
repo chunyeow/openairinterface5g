@@ -1,21 +1,21 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+      Eurecom OpenAirInterface 3
+      Copyright(c) 2012 Eurecom
 
-Source		nas_data.h
+Source    nas_data.h
 
-Version		0.1
+Version   0.1
 
-Date		2013/04/11
+Date    2013/04/11
 
-Product		Access-Stratum sublayer simulator
+Product   Access-Stratum sublayer simulator
 
-Subsystem	Non-Access-Stratum data
+Subsystem Non-Access-Stratum data
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Defines constants and functions used by the AS simulator
-		process.
+Description Defines constants and functions used by the AS simulator
+    process.
 
 *****************************************************************************/
 

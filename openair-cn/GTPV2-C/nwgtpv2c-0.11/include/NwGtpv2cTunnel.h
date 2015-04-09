@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                              n w - g t p v 2 c                             * 
+ *                              n w - g t p v 2 c                             *
  *    G P R S   T u n n e l i n g    P r o t o c o l   v 2 c    S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -50,8 +50,7 @@ extern "C" {
 
 struct NwGtpv2cStack;
 
-typedef struct NwGtpv2cTunnel
-{
+typedef struct NwGtpv2cTunnel {
   NwU32T                        teid;
   NwU32T                        ipv4AddrRemote;
   NwGtpv2cUlpTunnelHandleT      hUlpTunnel;

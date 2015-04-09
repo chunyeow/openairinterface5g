@@ -66,20 +66,20 @@ Description Implements the API used by the NAS layer running in the MME
 
 /* Features supported by the MME */
 typedef enum mme_api_feature_s {
-    MME_API_NO_FEATURE_SUPPORTED    = 0,
-    MME_API_EMERGENCY_ATTACH        = (1<<0),
-    MME_API_UNAUTHENTICATED_IMSI    = (1<<1),
-    MME_API_IPV4                    = (1<<2),
-    MME_API_IPV6                    = (1<<3),
-    MME_API_SINGLE_ADDR_BEARERS     = (1<<4),
+  MME_API_NO_FEATURE_SUPPORTED    = 0,
+  MME_API_EMERGENCY_ATTACH        = (1<<0),
+  MME_API_UNAUTHENTICATED_IMSI    = (1<<1),
+  MME_API_IPV4                    = (1<<2),
+  MME_API_IPV6                    = (1<<3),
+  MME_API_SINGLE_ADDR_BEARERS     = (1<<4),
 } mme_api_feature_t;
 
 /* Network IP version capability */
 typedef enum mme_api_ip_version_e {
-    MME_API_IPV4_ADDR,
-    MME_API_IPV6_ADDR,
-    MME_API_IPV4V6_ADDR,
-    MME_API_ADDR_MAX
+  MME_API_IPV4_ADDR,
+  MME_API_IPV6_ADDR,
+  MME_API_IPV4V6_ADDR,
+  MME_API_ADDR_MAX
 } mme_api_ip_version_t;
 
 /*
@@ -87,10 +87,10 @@ typedef enum mme_api_ip_version_e {
  * ------------------------------------------
  */
 typedef struct mme_api_emm_config_s {
-    mme_api_feature_t features; /* Supported features           */
-    gummei_t          gummei;   /* EPS Globally Unique MME Identity */
-    uint8_t           prefered_integrity_algorithm[8];// choice in NAS_SECURITY_ALGORITHMS_EIA0, etc
-    uint8_t           prefered_ciphering_algorithm[8];// choice in NAS_SECURITY_ALGORITHMS_EEA0, etc
+  mme_api_feature_t features; /* Supported features           */
+  gummei_t          gummei;   /* EPS Globally Unique MME Identity */
+  uint8_t           prefered_integrity_algorithm[8];// choice in NAS_SECURITY_ALGORITHMS_EIA0, etc
+  uint8_t           prefered_ciphering_algorithm[8];// choice in NAS_SECURITY_ALGORITHMS_EEA0, etc
 } mme_api_emm_config_t;
 
 /*
@@ -98,7 +98,7 @@ typedef struct mme_api_emm_config_s {
  * -----------------------------------------
  */
 typedef struct mme_api_esm_config_s {
-    mme_api_feature_t features; /* Supported features           */
+  mme_api_feature_t features; /* Supported features           */
 } mme_api_esm_config_t;
 
 /****************************************************************************/
@@ -110,9 +110,9 @@ typedef struct mme_api_qos_s {
 #define MME_API_UPLINK      0
 #define MME_API_DOWNLINK    1
 #define MME_API_DIRECTION   2
-    int gbr[MME_API_DIRECTION]; /* Guaranteed Bit Rate          */
-    int mbr[MME_API_DIRECTION]; /* Maximum Bit Rate         */
-    int qci;            /* QoS Class Identifier         */
+  int gbr[MME_API_DIRECTION]; /* Guaranteed Bit Rate          */
+  int mbr[MME_API_DIRECTION]; /* Maximum Bit Rate         */
+  int qci;            /* QoS Class Identifier         */
 } mme_api_qos_t;
 
 /* Traffic Flow Template */

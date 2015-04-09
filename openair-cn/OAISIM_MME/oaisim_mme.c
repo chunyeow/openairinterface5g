@@ -62,27 +62,27 @@
 
 int main(int argc, char *argv[])
 {
-    /* Parse the command line for options and set the mme_config accordingly. */
-    CHECK_INIT_RETURN(config_parse_opt_line(argc, argv, &mme_config));
+  /* Parse the command line for options and set the mme_config accordingly. */
+  CHECK_INIT_RETURN(config_parse_opt_line(argc, argv, &mme_config));
 
-    /* Calling each layer init function */
-    CHECK_INIT_RETURN(log_init(&mme_config, oai_mme_log_specific));
-    CHECK_INIT_RETURN(itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, NULL));
+  /* Calling each layer init function */
+  CHECK_INIT_RETURN(log_init(&mme_config, oai_mme_log_specific));
+  CHECK_INIT_RETURN(itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, NULL));
 
-    CHECK_INIT_RETURN(nas_init(&mme_config));
-    CHECK_INIT_RETURN(sctp_init(&mme_config));
-    CHECK_INIT_RETURN(udp_init(&mme_config));
-    CHECK_INIT_RETURN(s11_mme_init(&mme_config));
-    CHECK_INIT_RETURN(s1ap_mme_init(&mme_config));
-//     if (sgi_init(&mme_config) < 0) return -1;
-//     if (gtpv1u_init(&mme_config) < 0) return -1;
-    CHECK_INIT_RETURN(mme_app_init(&mme_config));
+  CHECK_INIT_RETURN(nas_init(&mme_config));
+  CHECK_INIT_RETURN(sctp_init(&mme_config));
+  CHECK_INIT_RETURN(udp_init(&mme_config));
+  CHECK_INIT_RETURN(s11_mme_init(&mme_config));
+  CHECK_INIT_RETURN(s1ap_mme_init(&mme_config));
+  //     if (sgi_init(&mme_config) < 0) return -1;
+  //     if (gtpv1u_init(&mme_config) < 0) return -1;
+  CHECK_INIT_RETURN(mme_app_init(&mme_config));
 
-    CHECK_INIT_RETURN(s6a_init(&mme_config));
-//     if (sgw_lite_init(&mme_config) < 0) return -1;
+  CHECK_INIT_RETURN(s6a_init(&mme_config));
+  //     if (sgw_lite_init(&mme_config) < 0) return -1;
 
-    /* Handle signals here */
-    itti_wait_tasks_end();
+  /* Handle signals here */
+  itti_wait_tasks_end();
 
-    return 0;
+  return 0;
 }

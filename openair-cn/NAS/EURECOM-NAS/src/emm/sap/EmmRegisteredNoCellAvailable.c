@@ -85,13 +85,13 @@ Description Implements the EPS Mobility Management procedures executed
  ***************************************************************************/
 int EmmRegisteredNoCellAvailable(const emm_reg_t *evt)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    assert(emm_fsm_get_status() == EMM_REGISTERED_NO_CELL_AVAILABLE);
+  assert(emm_fsm_get_status() == EMM_REGISTERED_NO_CELL_AVAILABLE);
 
-    /* TODO */
+  /* TODO */
 
-    LOG_FUNC_RETURN (RETURNok);
+  LOG_FUNC_RETURN (RETURNok);
 }
 
 /****************************************************************************/

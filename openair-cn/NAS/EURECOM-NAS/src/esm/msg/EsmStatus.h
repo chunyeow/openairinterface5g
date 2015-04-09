@@ -56,12 +56,12 @@
  */
 
 typedef struct esm_status_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator        protocoldiscriminator:4;
-    EpsBearerIdentity            epsbeareridentity:4;
-    ProcedureTransactionIdentity proceduretransactionidentity;
-    MessageType                  messagetype;
-    EsmCause                     esmcause;
+  /* Mandatory fields */
+  ProtocolDiscriminator        protocoldiscriminator:4;
+  EpsBearerIdentity            epsbeareridentity:4;
+  ProcedureTransactionIdentity proceduretransactionidentity;
+  MessageType                  messagetype;
+  EsmCause                     esmcause;
 } esm_status_msg;
 
 int decode_esm_status(esm_status_msg *esmstatus, uint8_t *buffer, uint32_t len);

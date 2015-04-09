@@ -10,14 +10,17 @@
 
 socklen_t inet6_rth_space(int type, int segments)
 {
-	if (type == IPV6_RTHDR_TYPE_0) {
-		if (segments > 128)
-			return 0;
-		return 8 + segments * sizeof(struct in6_addr);
-	} else if (type == IPV6_RTHDR_TYPE_2) {
-		if (segments != 1)
-			return 0;
-		return 8 + sizeof(struct in6_addr);
-	}
-	return 0;
+  if (type == IPV6_RTHDR_TYPE_0) {
+    if (segments > 128)
+      return 0;
+
+    return 8 + segments * sizeof(struct in6_addr);
+  } else if (type == IPV6_RTHDR_TYPE_2) {
+    if (segments != 1)
+      return 0;
+
+    return 8 + sizeof(struct in6_addr);
+  }
+
+  return 0;
 }

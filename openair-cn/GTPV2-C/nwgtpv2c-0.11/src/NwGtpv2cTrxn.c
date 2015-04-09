@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                              n w - g t p v 2 c                             * 
+ *                              n w - g t p v 2 c                             *
  *    G P R S   T u n n e l i n g    P r o t o c o l   v 2 c    S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -69,11 +69,11 @@ nwGtpv2cTrxnSendMsgRetransmission(NwGtpv2cTrxnT* thiz)
 
   NW_ASSERT(thiz->pMsg);
 
-  rc = thiz->pStack->udp.udpDataReqCallback(thiz->pStack->udp.hUdp, 
-      thiz->pMsg->msgBuf, 
-      thiz->pMsg->msgLen, 
-      thiz->peerIp,
-      thiz->peerPort);
+  rc = thiz->pStack->udp.udpDataReqCallback(thiz->pStack->udp.hUdp,
+       thiz->pMsg->msgBuf,
+       thiz->pMsg->msgLen,
+       thiz->peerIp,
+       thiz->peerPort);
 
   thiz->maxRetries--;
 
@@ -97,15 +97,12 @@ nwGtpv2cTrxnPeerRspWaitTimeout(void* arg)
 
   thiz->hRspTmr = 0;
 
-  if(thiz->maxRetries)
-  {
+  if(thiz->maxRetries) {
     rc = nwGtpv2cTrxnSendMsgRetransmission(thiz);
     NW_ASSERT(NW_OK == rc);
 
     rc = nwGtpv2cStartTimer(thiz->pStack, thiz->t3Timer, 0, NW_GTPV2C_TMR_TYPE_ONE_SHOT, nwGtpv2cTrxnPeerRspWaitTimeout, thiz, &thiz->hRspTmr);
-  }
-  else
-  {
+  } else {
     NwGtpv2cUlpApiT ulpApi;
 
     ulpApi.hMsg                              = 0;
@@ -121,6 +118,7 @@ nwGtpv2cTrxnPeerRspWaitTimeout(void* arg)
 
     rc = pStack->ulp.ulpReqCallback(pStack->ulp.hUlp, &ulpApi);
   }
+
   return rc;
 }
 
@@ -152,7 +150,7 @@ nwGtpv2cTrxnDuplicateRequestWaitTimeout(void* arg)
 
 /**
  * Start timer to wait for rsp of a req message
- * 
+ *
  * @param[in] thiz : Pointer to transaction
  * @param[in] timeoutCallbackFunc : Timeout handler callback function.
  * @return NW_OK on success.
@@ -210,27 +208,23 @@ nwGtpv2cTrxnStopPeerRspTimer(NwGtpv2cTrxnT* thiz)
 /**
  * Constructor
  *
- * @param[in] thiz : Pointer to stack  
+ * @param[in] thiz : Pointer to stack
  * @param[out] ppTrxn : Pointer to pointer to Trxn object.
  * @return NW_OK on success.
  */
 NwGtpv2cTrxnT*
-nwGtpv2cTrxnNew( NW_IN  NwGtpv2cStackT* thiz) 
+nwGtpv2cTrxnNew( NW_IN  NwGtpv2cStackT* thiz)
 {
   NwGtpv2cTrxnT *pTrxn;
 
-  if(gpGtpv2cTrxnPool)
-  {
+  if(gpGtpv2cTrxnPool) {
     pTrxn = gpGtpv2cTrxnPool;
     gpGtpv2cTrxnPool = gpGtpv2cTrxnPool->next;
-  }
-  else
-  {
+  } else {
     NW_GTPV2C_MALLOC(thiz, sizeof(NwGtpv2cTrxnT), pTrxn, NwGtpv2cTrxnT*);
   }
 
-  if (pTrxn)
-  {
+  if (pTrxn) {
     pTrxn->pStack       = thiz;
     pTrxn->pMsg         = NULL;
     pTrxn->maxRetries   = 2;
@@ -239,6 +233,7 @@ nwGtpv2cTrxnNew( NW_IN  NwGtpv2cStackT* thiz)
 
     /* Increment sequence number */
     thiz->seqNum++;
+
     if(thiz->seqNum == 0x800000)
       thiz->seqNum = 0;
 
@@ -252,28 +247,24 @@ nwGtpv2cTrxnNew( NW_IN  NwGtpv2cStackT* thiz)
 /**
  * Overloaded Constructor
  *
- * @param[in] thiz : Pointer to stack. 
- * @param[in] seqNum : Sequence number for this transaction. 
+ * @param[in] thiz : Pointer to stack.
+ * @param[in] seqNum : Sequence number for this transaction.
  * @return Pointer to Trxn object.
  */
 NwGtpv2cTrxnT*
-nwGtpv2cTrxnWithSeqNumNew( NW_IN  NwGtpv2cStackT* thiz,  
-                        NW_IN  NwU32T seqNum)
+nwGtpv2cTrxnWithSeqNumNew( NW_IN  NwGtpv2cStackT* thiz,
+                           NW_IN  NwU32T seqNum)
 {
   NwGtpv2cTrxnT *pTrxn;
 
-  if(gpGtpv2cTrxnPool)
-  {
+  if(gpGtpv2cTrxnPool) {
     pTrxn = gpGtpv2cTrxnPool;
     gpGtpv2cTrxnPool = gpGtpv2cTrxnPool->next;
-  }
-  else
-  {
+  } else {
     NW_GTPV2C_MALLOC(thiz, sizeof(NwGtpv2cTrxnT), pTrxn, NwGtpv2cTrxnT*);
   }
 
-  if (pTrxn)
-  {
+  if (pTrxn) {
     pTrxn->pStack       = thiz;
     pTrxn->pMsg         = NULL;
     pTrxn->maxRetries   = 2;
@@ -288,10 +279,10 @@ nwGtpv2cTrxnWithSeqNumNew( NW_IN  NwGtpv2cStackT* thiz,
 }
 
 /**
- * Another overloaded constructor. Create transaction as outstanding 
+ * Another overloaded constructor. Create transaction as outstanding
  * RX transaction for detecting duplicated requests.
  *
- * @param[in] thiz : Pointer to stack. 
+ * @param[in] thiz : Pointer to stack.
  * @param[in] teidLocal : Trxn teid.
  * @param[in] peerIp : Peer Ip address.
  * @param[in] peerPort : Peer Ip port.
@@ -301,26 +292,22 @@ nwGtpv2cTrxnWithSeqNumNew( NW_IN  NwGtpv2cStackT* thiz,
 
 NwGtpv2cTrxnT*
 nwGtpv2cTrxnOutstandingRxNew( NW_IN  NwGtpv2cStackT* thiz,
-                         NW_IN  NwU32T teidLocal,
-                         NW_IN  NwU32T peerIp,
-                         NW_IN  NwU32T peerPort,
-                         NW_IN  NwU32T seqNum)
+                              NW_IN  NwU32T teidLocal,
+                              NW_IN  NwU32T peerIp,
+                              NW_IN  NwU32T peerPort,
+                              NW_IN  NwU32T seqNum)
 {
   NwRcT rc;
   NwGtpv2cTrxnT *pTrxn, *pCollision;
 
-  if(gpGtpv2cTrxnPool)
-  {
+  if(gpGtpv2cTrxnPool) {
     pTrxn = gpGtpv2cTrxnPool;
     gpGtpv2cTrxnPool = gpGtpv2cTrxnPool->next;
-  }
-  else
-  {
+  } else {
     NW_GTPV2C_MALLOC(thiz, sizeof(NwGtpv2cTrxnT), pTrxn, NwGtpv2cTrxnT*);
   }
 
-  if (pTrxn)
-  {
+  if (pTrxn) {
     pTrxn->pStack       = thiz;
     pTrxn->maxRetries   = 2;
     pTrxn->t3Timer      = 2;
@@ -332,18 +319,17 @@ nwGtpv2cTrxnOutstandingRxNew( NW_IN  NwGtpv2cStackT* thiz,
 
     pCollision = RB_INSERT(NwGtpv2cOutstandingRxSeqNumTrxnMap, &(thiz->outstandingRxSeqNumMap), pTrxn);
 
-    if(pCollision)
-    {
+    if(pCollision) {
       NW_LOG(thiz, NW_LOG_LEVEL_WARN, "Duplicate request message received for seq num 0x%x!",
              (NwU32T) seqNum);
+
       /* Case of duplicate request message from peer. Retransmit response. */
-      if(pCollision->pMsg)
-      {
-        rc = pCollision->pStack->udp.udpDataReqCallback(pCollision->pStack->udp.hUdp, 
-            pCollision->pMsg->msgBuf, 
-            pCollision->pMsg->msgLen, 
-            pCollision->peerIp,
-            pCollision->peerPort);
+      if(pCollision->pMsg) {
+        rc = pCollision->pStack->udp.udpDataReqCallback(pCollision->pStack->udp.hUdp,
+             pCollision->pMsg->msgBuf,
+             pCollision->pMsg->msgLen,
+             pCollision->peerIp,
+             pCollision->peerPort);
       }
 
       rc = nwGtpv2cTrxnDelete(&pTrxn);
@@ -374,14 +360,12 @@ nwGtpv2cTrxnDelete( NW_INOUT NwGtpv2cTrxnT **pthiz)
 
   pStack = thiz->pStack;
 
-  if(thiz->hRspTmr)
-  {
+  if(thiz->hRspTmr) {
     rc = nwGtpv2cTrxnStopPeerRspTimer(thiz);
     NW_ASSERT(NW_OK == rc);
   }
 
-  if(thiz->pMsg)
-  {
+  if(thiz->pMsg) {
     rc = nwGtpv2cMsgDelete((NwGtpv2cStackHandleT)pStack, (NwGtpv2cMsgHandleT)thiz->pMsg);
     NW_ASSERT(NW_OK == rc);
   }
@@ -400,6 +384,6 @@ nwGtpv2cTrxnDelete( NW_INOUT NwGtpv2cTrxnT **pthiz)
 #endif
 
 /*--------------------------------------------------------------------------*
- *                          E N D   O F   F I L E                           * 
+ *                          E N D   O F   F I L E                           *
  *--------------------------------------------------------------------------*/
 

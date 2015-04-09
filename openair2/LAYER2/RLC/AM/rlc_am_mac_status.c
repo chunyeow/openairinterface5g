@@ -47,7 +47,7 @@
 void
 rlc_am_status_report_from_mac (void *rlcP, uint16_t eventP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   struct rlc_am_entity *rlc = (struct rlc_am_entity *) rlcP;
 
@@ -60,6 +60,7 @@ rlc_am_status_report_from_mac (void *rlcP, uint16_t eventP)
 #endif
     return;
   }
+
   //----------------------------------------
   // DISCARD
   //----------------------------------------
@@ -67,13 +68,16 @@ rlc_am_status_report_from_mac (void *rlcP, uint16_t eventP)
 #ifdef DEBUG_RLC_AM_MAC_STATUS
     msg ("[RLC_AM %p][MAC_STATUS]  EVENT RLC_AM_MRW_STATUS_PDU_TYPE\n", rlcP);
 #endif
+
     // rearm the timer
     if (!(rlc->timer_mrw) && (rlc->discard_procedures.head)) {
       rlc->timer_mrw = umts_add_timer_list_up (&rlc->rlc_am_timer_list, rlc_am_discard_notify_mrw_ack_time_out, rlc,
-                                               rlc->discard_procedures.head, (uint32_t) rlc->timer_mrw_init, *rlc->frame_tick_milliseconds);
+                       rlc->discard_procedures.head, (uint32_t) rlc->timer_mrw_init, *rlc->frame_tick_milliseconds);
     }
+
     return;
   }
+
   //----------------------------------------
   // RESET
   //----------------------------------------
@@ -86,6 +90,7 @@ rlc_am_status_report_from_mac (void *rlcP, uint16_t eventP)
 
     return;
   }
+
   //----------------------------------------
   // RESET ACK
   //----------------------------------------

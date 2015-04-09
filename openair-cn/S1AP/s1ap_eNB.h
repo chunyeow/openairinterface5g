@@ -39,8 +39,8 @@
 #define S1AP_ENB_H_
 
 typedef struct s1ap_eNB_config_s {
-    // MME related params
-    unsigned char mme_enabled;          ///< MME enabled ?
+  // MME related params
+  unsigned char mme_enabled;          ///< MME enabled ?
 } s1ap_eNB_config_t;
 
 #if defined(OAI_EMU)

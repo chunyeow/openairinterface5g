@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06410 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -32,17 +32,17 @@
 
 \file       graph_int.h
 
-\brief      Fichier d'entête 
+\brief      Fichier d'entête
 
-            Il contient les declarations de type, des defines relatif aux 
-            fonctions d'emulation  des interfaces du RRM (Radio Resource 
+            Il contient les declarations de type, des defines relatif aux
+            fonctions d'emulation  des interfaces du RRM (Radio Resource
             Management ).
 
 \author     IACOBELLI Lorenzo
 
 \date       20/04/10
 
-   
+
 \par     Historique:
             $Author$  $Date$  $Revision$
             $Id$

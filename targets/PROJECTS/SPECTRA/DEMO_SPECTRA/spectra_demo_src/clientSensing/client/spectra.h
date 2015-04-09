@@ -42,10 +42,10 @@
  * or an answer to a previously requested score
  */
 typedef enum {
-	Sense,       //!< Sense
-	Classifying, //!< Classifying
-	ScoreResponse, //!< ScoreResponse
-        EndProcessing
+  Sense,       //!< Sense
+  Classifying, //!< Classifying
+  ScoreResponse, //!< ScoreResponse
+  EndProcessing
 } messageType;
 
 /**
@@ -55,44 +55,44 @@ typedef enum {
 //! An enum.
 /*! More detailed enum description. */
 typedef enum {
-	EnergyDetection,   //!< EnergyDetection
-	WelchPeriodograms  //!< WelchPeriodograms
+  EnergyDetection,   //!< EnergyDetection
+  WelchPeriodograms  //!< WelchPeriodograms
 } functionToBePerformed;
 
 /**
  * Definition of the spectra control packets
  */
 typedef struct {
-	uint16_t messageID;                //!<  Operation ID, used to identify an request and its answer
-	messageType type :4;                //!<  16 different types of message possible
-	functionToBePerformed function :4;  //!<  Embb function to be performed 16 possible different functions
-	unsigned char numberOfparameters;  //!<  up to 255 parameters per message
-	uint32_t * parameters;             //!<  variable number of parameters, depending
-}__attribute__((packed)) SpectraMessage;
+  uint16_t messageID;                //!<  Operation ID, used to identify an request and its answer
+  messageType type :4;                //!<  16 different types of message possible
+  functionToBePerformed function :4;  //!<  Embb function to be performed 16 possible different functions
+  unsigned char numberOfparameters;  //!<  up to 255 parameters per message
+  uint32_t * parameters;             //!<  variable number of parameters, depending
+} __attribute__((packed)) SpectraMessage;
 
 /**
  * \typedef SpectraMsgHelper
  * Helper structure to handle control packets
  */
 typedef struct {
-	uint16_t messageID;                //!<  Operation ID
-	unsigned char type_function;       //!<  Assembled type and function for easier treatment
-	unsigned char numberOfparameters;  //!<  Number of parameters
-	uint32_t parameters[256];          //!<  Parameters in sequence
-}__attribute__((packed)) SpectraMsgHelper;
+  uint16_t messageID;                //!<  Operation ID
+  unsigned char type_function;       //!<  Assembled type and function for easier treatment
+  unsigned char numberOfparameters;  //!<  Number of parameters
+  uint32_t parameters[256];          //!<  Parameters in sequence
+} __attribute__((packed)) SpectraMsgHelper;
 
 /**
  * Helper union structure to make easier to pack and unpack messages
  */
 union uSpectraPackets {
-	SpectraMessage spectraMsg;                       //!<  spectraMsg
-	SpectraMsgHelper spectraMsgHelper;               //!<  spectraMsgHelper
-	unsigned char spectraMsgStream[MAX_PACKET_SIZE]; //!<  spectraMsgStream
+  SpectraMessage spectraMsg;                       //!<  spectraMsg
+  SpectraMsgHelper spectraMsgHelper;               //!<  spectraMsgHelper
+  unsigned char spectraMsgStream[MAX_PACKET_SIZE]; //!<  spectraMsgStream
 };
 
 union FuncPtr {
-	void (*fp)();  // function pointer
-	unsigned char c[1]; // address of the pointer as a vector of chars
+  void (*fp)();  // function pointer
+  unsigned char c[1]; // address of the pointer as a vector of chars
 };
 
 
@@ -104,20 +104,22 @@ union FuncPtr {
  * @return error status 0 if OK, 1 if something went wrong
  */
 int returnSpectraPacket(SpectraMsgHelper msg,
-		int		desc,
-		struct sockaddr	remote) {
+                        int   desc,
+                        struct sockaddr remote)
+{
 
-	int i;
-	// returns the response value to the OpenAirInterface
-	if ((i = sendto(desc,&msg, PACKET_ALIGNEMENT_BYTES + (msg.numberOfparameters * sizeof(uint32_t)),
-			0, &remote, sizeof(remote)))<0) {
-	  printf("Send failed (%i - %s)\n", i, strerror(errno));
-		return -1;
-	}
+  int i;
 
-//	// to avoid memory leaking
-//	free(msg.parameters);
-	return 0;
+  // returns the response value to the OpenAirInterface
+  if ((i = sendto(desc,&msg, PACKET_ALIGNEMENT_BYTES + (msg.numberOfparameters * sizeof(uint32_t)),
+                  0, &remote, sizeof(remote)))<0) {
+    printf("Send failed (%i - %s)\n", i, strerror(errno));
+    return -1;
+  }
+
+  //  // to avoid memory leaking
+  //  free(msg.parameters);
+  return 0;
 }
 
 /**
@@ -127,12 +129,12 @@ int returnSpectraPacket(SpectraMsgHelper msg,
  */
 int isBigEndian(void)
 {
-    union {
-        uint32_t i;
-        char c[4];
-    } e = { 0x01000000 };
+  union {
+    uint32_t i;
+    char c[4];
+  } e = { 0x01000000 };
 
-    return e.c[0];
+  return e.c[0];
 }
 
 /**
@@ -143,19 +145,17 @@ int isBigEndian(void)
  */
 uint64_t htonll(uint64_t value)
 {
-    // Check the endianness
-    if (!isBigEndian())
-    {
-        uint32_t high_part = htonl((uint32_t)(value >> 32));
-        uint32_t low_part = htonl((uint32_t)(value & 0xFFFFFFFFULL));
-        value = low_part & 0xffffffffULL;
-	value = (value<<32) | high_part;
-	value = (uint64_t)(((uint64_t)low_part) << 32) | high_part;
-         return (uint64_t)(((uint64_t)low_part) << 32) | high_part;
-   } else
-    {
-        return value;
-    }
+  // Check the endianness
+  if (!isBigEndian()) {
+    uint32_t high_part = htonl((uint32_t)(value >> 32));
+    uint32_t low_part = htonl((uint32_t)(value & 0xFFFFFFFFULL));
+    value = low_part & 0xffffffffULL;
+    value = (value<<32) | high_part;
+    value = (uint64_t)(((uint64_t)low_part) << 32) | high_part;
+    return (uint64_t)(((uint64_t)low_part) << 32) | high_part;
+  } else {
+    return value;
+  }
 }
 
 /**
@@ -167,17 +167,15 @@ uint64_t htonll(uint64_t value)
 uint64_t ntohll(uint64_t value)
 {
 
-    // Check the endianness
-    if (!isBigEndian())
-    {
-        uint32_t high_part = ntohl((uint32_t)(value >> 32));
-        uint32_t low_part = ntohl((uint32_t)(value & 0xFFFFFFFFULL));
+  // Check the endianness
+  if (!isBigEndian()) {
+    uint32_t high_part = ntohl((uint32_t)(value >> 32));
+    uint32_t low_part = ntohl((uint32_t)(value & 0xFFFFFFFFULL));
 
-        return (uint64_t)(((uint64_t)low_part) << 32) | high_part;
-    } else
-    {
-        return value;
-    }
+    return (uint64_t)(((uint64_t)low_part) << 32) | high_part;
+  } else {
+    return value;
+  }
 }
 
 #endif /* SPECTRA_H_ */

@@ -27,19 +27,19 @@
 
  *******************************************************************************/
 /*****************************************************************************
-Source		memory.h
+Source    memory.h
 
-Version		0.1
+Version   0.1
 
-Date		2012/10/09
+Date    2012/10/09
 
-Product		NAS stack
+Product   NAS stack
 
-Subsystem	Utilities
+Subsystem Utilities
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Memory access utilities
+Description Memory access utilities
 
 *****************************************************************************/
 #ifndef __MEMORY_H__

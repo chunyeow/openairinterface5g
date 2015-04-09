@@ -92,65 +92,69 @@ Description Implements the EPS Mobility Management procedures executed
  ***************************************************************************/
 int EmmDeregisteredPlmnSearch(const emm_reg_t *evt)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc = RETURNerror;
+  int rc = RETURNerror;
 
-    assert(emm_fsm_get_status() == EMM_DEREGISTERED_PLMN_SEARCH);
+  assert(emm_fsm_get_status() == EMM_DEREGISTERED_PLMN_SEARCH);
 
-    switch (evt->primitive) {
-        case _EMMREG_NO_CELL:
-            /*
-             * No suitable cell of the selected PLMN has been found to camp on
-             */
-            rc = emm_proc_registration_notify(NET_REG_STATE_DENIED);
-            if (rc != RETURNok) {
-                LOG_TRACE(WARNING, "EMM-FSM   - "
-                          "Failed to notify registration update");
-            }
-            rc = emm_fsm_set_status(EMM_DEREGISTERED_NO_CELL_AVAILABLE);
-            break;
+  switch (evt->primitive) {
+  case _EMMREG_NO_CELL:
+    /*
+     * No suitable cell of the selected PLMN has been found to camp on
+     */
+    rc = emm_proc_registration_notify(NET_REG_STATE_DENIED);
 
-        case _EMMREG_REGISTER_REQ:
-            /*
-             * The UE has been switched on and is currently searching an
-             * operator to register to. The particular PLMN to be contacted
-             * may be selected either automatically or manually.
-             * Or the user manually re-selected a PLMN to register to.
-             */
-            rc = emm_proc_registration_notify(NET_REG_STATE_ON);
-            if (rc != RETURNok) {
-                LOG_TRACE(WARNING, "EMM-FSM   - "
-                          "Failed to notify registration update");
-            }
-            /*
-             * Perform network selection procedure
-             */
-            rc = emm_proc_plmn_selection(evt->u.regist.index);
-            break;
-
-        case _EMMREG_REGISTER_REJ:
-            /*
-             * The selected cell is known not to be able to provide normal
-             * service
-             */
-            rc = emm_fsm_set_status(EMM_DEREGISTERED_LIMITED_SERVICE);
-            break;
-
-        case _EMMREG_REGISTER_CNF:
-            /*
-             * A suitable cell of the selected PLMN has been found to camp on
-             */
-            rc = emm_fsm_set_status(EMM_DEREGISTERED_NORMAL_SERVICE);
-            break;
-
-        default:
-            LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
-                      evt->primitive);
-            break;
+    if (rc != RETURNok) {
+      LOG_TRACE(WARNING, "EMM-FSM   - "
+                "Failed to notify registration update");
     }
 
-    LOG_FUNC_RETURN (rc);
+    rc = emm_fsm_set_status(EMM_DEREGISTERED_NO_CELL_AVAILABLE);
+    break;
+
+  case _EMMREG_REGISTER_REQ:
+    /*
+     * The UE has been switched on and is currently searching an
+     * operator to register to. The particular PLMN to be contacted
+     * may be selected either automatically or manually.
+     * Or the user manually re-selected a PLMN to register to.
+     */
+    rc = emm_proc_registration_notify(NET_REG_STATE_ON);
+
+    if (rc != RETURNok) {
+      LOG_TRACE(WARNING, "EMM-FSM   - "
+                "Failed to notify registration update");
+    }
+
+    /*
+     * Perform network selection procedure
+     */
+    rc = emm_proc_plmn_selection(evt->u.regist.index);
+    break;
+
+  case _EMMREG_REGISTER_REJ:
+    /*
+     * The selected cell is known not to be able to provide normal
+     * service
+     */
+    rc = emm_fsm_set_status(EMM_DEREGISTERED_LIMITED_SERVICE);
+    break;
+
+  case _EMMREG_REGISTER_CNF:
+    /*
+     * A suitable cell of the selected PLMN has been found to camp on
+     */
+    rc = emm_fsm_set_status(EMM_DEREGISTERED_NORMAL_SERVICE);
+    break;
+
+  default:
+    LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
+              evt->primitive);
+    break;
+  }
+
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************/

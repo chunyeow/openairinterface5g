@@ -7,7 +7,7 @@
 #include <time.h>
 #include "mipv6.h"
 
-const struct timespec initial_bindack_timeout_ts = 
+const struct timespec initial_bindack_timeout_ts =
 { INITIAL_BINDACK_TIMEOUT, 0 };
 const struct timespec initial_dhaad_timeout_ts =
 { INITIAL_DHAAD_TIMEOUT, 0 };
@@ -27,9 +27,9 @@ const struct timespec prefix_adv_timeout_ts =
 const char loopback_dev_name[] = "lo";
 
 #define IN6ADDR_ALL_NODES_MC_INIT \
-	{ { { 0xff,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0x1 } } }
+  { { { 0xff,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0x1 } } }
 #define IN6ADDR_ALL_ROUTERS_MC_INIT \
-	{ { { 0xff,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0x2 } } }
+  { { { 0xff,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0x2 } } }
 
 const struct in6_addr in6addr_all_nodes_mc = IN6ADDR_ALL_NODES_MC_INIT;
 const struct in6_addr in6addr_all_routers_mc = IN6ADDR_ALL_ROUTERS_MC_INIT;

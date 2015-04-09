@@ -131,13 +131,13 @@ int esm_recv_pdn_disconnect_reject(int pti, int ebi,
  * ---------------------------------------
  */
 int esm_recv_activate_default_eps_bearer_context_request(int pti, int ebi,
-        const activate_default_eps_bearer_context_request_msg *msg);
+    const activate_default_eps_bearer_context_request_msg *msg);
 
 int esm_recv_activate_dedicated_eps_bearer_context_request(int pti, int ebi,
-        const activate_dedicated_eps_bearer_context_request_msg *msg);
+    const activate_dedicated_eps_bearer_context_request_msg *msg);
 
 int esm_recv_deactivate_eps_bearer_context_request(int pti, int ebi,
-        const deactivate_eps_bearer_context_request_msg *msg);
+    const deactivate_eps_bearer_context_request_msg *msg);
 #endif
 
 /*
@@ -162,19 +162,19 @@ int esm_recv_pdn_disconnect_request(emm_data_context_t *ctx, int pti, int ebi,
  * ---------------------------------------
  */
 int esm_recv_activate_default_eps_bearer_context_accept(emm_data_context_t *ctx,
-        int pti, int ebi, const activate_default_eps_bearer_context_accept_msg *msg);
+    int pti, int ebi, const activate_default_eps_bearer_context_accept_msg *msg);
 
 int esm_recv_activate_default_eps_bearer_context_reject(emm_data_context_t *ctx,
-        int pti, int ebi, const activate_default_eps_bearer_context_reject_msg *msg);
+    int pti, int ebi, const activate_default_eps_bearer_context_reject_msg *msg);
 
 int esm_recv_activate_dedicated_eps_bearer_context_accept(emm_data_context_t *ctx,
-        int pti, int ebi, const activate_dedicated_eps_bearer_context_accept_msg *msg);
+    int pti, int ebi, const activate_dedicated_eps_bearer_context_accept_msg *msg);
 
 int esm_recv_activate_dedicated_eps_bearer_context_reject(emm_data_context_t *ctx,
-        int pti, int ebi, const activate_dedicated_eps_bearer_context_reject_msg *msg);
+    int pti, int ebi, const activate_dedicated_eps_bearer_context_reject_msg *msg);
 
 int esm_recv_deactivate_eps_bearer_context_accept(emm_data_context_t *ctx, int pti,
-        int ebi, const deactivate_eps_bearer_context_accept_msg *msg);
+    int ebi, const deactivate_eps_bearer_context_accept_msg *msg);
 #endif
 
 #endif /* __ESM_RECV_H__*/

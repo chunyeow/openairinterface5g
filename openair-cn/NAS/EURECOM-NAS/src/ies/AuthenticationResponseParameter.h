@@ -39,7 +39,7 @@
 #define AUTHENTICATION_RESPONSE_PARAMETER_MAXIMUM_LENGTH 18
 
 typedef struct AuthenticationResponseParameter_tag {
-    OctetString res;
+  OctetString res;
 } AuthenticationResponseParameter;
 
 int encode_authentication_response_parameter(AuthenticationResponseParameter *authenticationresponseparameter, uint8_t iei, uint8_t *buffer, uint32_t len);

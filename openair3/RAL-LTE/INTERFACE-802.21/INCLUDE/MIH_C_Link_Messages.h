@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -80,256 +80,235 @@
 /*! \struct  MIH_C_Message_Link_Register_indication
 * \brief Structure defining the message Link_Register.indication, ODTONE specific.
 */
-typedef struct MIH_C_Message_Link_Register_indication
-{
-    MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Register_indication_t      primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Register_indication_t;
+typedef struct MIH_C_Message_Link_Register_indication {
+  MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Register_indication_t      primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Register_indication_t;
 
 #endif
 
 /*! \struct  MIH_C_Message_Link_Detected_indication
 * \brief Structure defining the message Link_Detected.indication
 */
-typedef struct MIH_C_Message_Link_Detected_indication
-{
-    MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Detected_indication_t      primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Detected_indication_t;
+typedef struct MIH_C_Message_Link_Detected_indication {
+  MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Detected_indication_t      primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Detected_indication_t;
 
 
 /*! \struct  MIH_C_Message_Link_Up_indication
 * \brief Structure defining the message Link_Up.indication.
 */
-typedef struct MIH_C_Message_Link_Up_indication
-{
-    MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Up_indication_t            primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Up_indication_t;
+typedef struct MIH_C_Message_Link_Up_indication {
+  MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Up_indication_t            primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Up_indication_t;
 
 
 
 /*! \struct  MIH_C_Message_Link_Down_indication
 * \brief Structure defining the message Link_Down.indication.
 */
-typedef struct MIH_C_Message_Link_Down_indication
-{
-    MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Down_indication_t          primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Down_indication_t;
+typedef struct MIH_C_Message_Link_Down_indication {
+  MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Down_indication_t          primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Down_indication_t;
 
 
 /*! \struct  MIH_C_Message_Link_Parameters_Report_indication
 * \brief Structure defining the message Link_Parameters_Report.indication.
 */
-typedef struct MIH_C_Message_Link_Parameters_Report_indication
-{
-    MIH_C_HEADER_T                              header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                             source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                             destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Parameters_Report_indication_t   primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Parameters_Report_indication_t;
+typedef struct MIH_C_Message_Link_Parameters_Report_indication {
+  MIH_C_HEADER_T                              header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                             source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                             destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Parameters_Report_indication_t   primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Parameters_Report_indication_t;
 
 
 /*! \struct  MIH_C_Message_Link_Going_Down_indication
 * \brief Structure defining the message Link_Going_Down.indication.
 */
-typedef struct MIH_C_Message_Link_Going_Down_indication
-{
-    MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Going_Down_indication_t    primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Going_Down_indication_t;
+typedef struct MIH_C_Message_Link_Going_Down_indication {
+  MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Going_Down_indication_t    primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Going_Down_indication_t;
 
 
 
 /*! \struct  MIH_C_Message_Link_Handover_Imminent_indication
 * \brief Structure defining the message Link_Handover_Imminent.indication.
 */
-typedef struct MIH_C_Message_Link_Handover_Imminent_indication
-{
-    MIH_C_HEADER_T                            header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                           source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                           destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Handover_Imminent_indication_t primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Handover_Imminent_indication_t;
+typedef struct MIH_C_Message_Link_Handover_Imminent_indication {
+  MIH_C_HEADER_T                            header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                           source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                           destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Handover_Imminent_indication_t primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Handover_Imminent_indication_t;
 
 
 /*! \struct  MIH_C_Message_Link_Handover_Complete_indication
 * \brief Structure defining the message Link_Handover_Complete.indication.
 */
-typedef struct MIH_C_Message_Link_Handover_Complete_indication
-{
-    MIH_C_HEADER_T                             header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                            source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                            destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Handover_Complete_indication_t  primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Handover_Complete_indication_t;
+typedef struct MIH_C_Message_Link_Handover_Complete_indication {
+  MIH_C_HEADER_T                             header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                            source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                            destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Handover_Complete_indication_t  primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Handover_Complete_indication_t;
 
 
 /*! \struct  MIH_C_Message_Link_PDU_Transmit_Status_indication
 * \brief Structure defining the message Link_PDU_Transmit_Status.indication.
 */
-typedef struct MIH_C_Message_Link_PDU_Transmit_Status_indication
-{
-    MIH_C_HEADER_T                              header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                             source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                             destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_PDU_Transmit_Status_indication_t primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_PDU_Transmit_Status_indication_t;
+typedef struct MIH_C_Message_Link_PDU_Transmit_Status_indication {
+  MIH_C_HEADER_T                              header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                             source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                             destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_PDU_Transmit_Status_indication_t primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_PDU_Transmit_Status_indication_t;
 
 
 /*! \struct  MIH_C_Message_Link_Capability_Discover_request
 * \brief Structure defining the message Link_Capability_Discover.request.
 */
-typedef struct MIH_C_Message_Link_Capability_Discover_request
-{
-    MIH_C_HEADER_T                           header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                          source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                          destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Capability_Discover_request_t primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Capability_Discover_request_t;
+typedef struct MIH_C_Message_Link_Capability_Discover_request {
+  MIH_C_HEADER_T                           header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                          source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                          destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Capability_Discover_request_t primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Capability_Discover_request_t;
 
 
 /*! \struct  MIH_C_Message_Link_Capability_Discover_confirm
 * \brief Structure defining the message Link_Capability_Discover.confirm.
 */
-typedef struct MIH_C_Message_Link_Capability_Discover_confirm
-{
-    MIH_C_HEADER_T                           header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                          source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                          destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Capability_Discover_confirm_t primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Capability_Discover_confirm_t;
+typedef struct MIH_C_Message_Link_Capability_Discover_confirm {
+  MIH_C_HEADER_T                           header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                          source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                          destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Capability_Discover_confirm_t primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Capability_Discover_confirm_t;
 
 
 /*! \struct  MIH_C_Message_Link_Event_Subscribe_request
 * \brief Structure defining the message Link_Event_Subscribe.request.
 */
-typedef struct MIH_C_Message_Link_Event_Subscribe_request
-{
-    MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Event_Subscribe_request_t  primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Event_Subscribe_request_t;
+typedef struct MIH_C_Message_Link_Event_Subscribe_request {
+  MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Event_Subscribe_request_t  primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Event_Subscribe_request_t;
 
 
 /*! \struct  MIH_C_Message_Link_Event_Subscribe_confirm
 * \brief Structure defining the message Link_Event_Subscribe.confirm.
 */
-typedef struct MIH_C_Message_Link_Event_Subscribe_confirm
-{
-    MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Event_Subscribe_confirm_t  primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Event_Subscribe_confirm_t;
+typedef struct MIH_C_Message_Link_Event_Subscribe_confirm {
+  MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Event_Subscribe_confirm_t  primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Event_Subscribe_confirm_t;
 
 
 /*! \struct  MIH_C_Message_Link_Event_Unsubscribe_request
 * \brief Structure defining the message Link_Event_Unsubscribe.request.
 */
-typedef struct MIH_C_Message_Link_Event_Unsubscribe_request
-{
-    MIH_C_HEADER_T                         header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                        source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                        destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Event_Unsubscribe_request_t primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Event_Unsubscribe_request_t;
+typedef struct MIH_C_Message_Link_Event_Unsubscribe_request {
+  MIH_C_HEADER_T                         header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                        source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                        destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Event_Unsubscribe_request_t primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Event_Unsubscribe_request_t;
 
 
 /*! \struct  MIH_C_Message_Link_Event_Unsubscribe_confirm
 * \brief Structure defining the message Link_Event_Unsubscribe.confirm.
 */
-typedef struct MIH_C_Message_Link_Event_Unsubscribe_confirm
-{
-    MIH_C_HEADER_T                         header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                        source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                        destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Event_Unsubscribe_confirm_t primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Event_Unsubscribe_confirm_t;
+typedef struct MIH_C_Message_Link_Event_Unsubscribe_confirm {
+  MIH_C_HEADER_T                         header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                        source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                        destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Event_Unsubscribe_confirm_t primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Event_Unsubscribe_confirm_t;
 
 
 /*! \struct  MIH_C_Message_Link_Get_Parameters_request
 * \brief Structure defining the message Link_Get_Parameters.request.
 */
-typedef struct MIH_C_Message_Link_Get_Parameters_request
-{
-    MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Get_Parameters_request_t   primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Get_Parameters_request_t;
+typedef struct MIH_C_Message_Link_Get_Parameters_request {
+  MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Get_Parameters_request_t   primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Get_Parameters_request_t;
 
 
 /*! \struct  MIH_C_Message_Link_Get_Parameters_confirm
 * \brief Structure defining the message Link_Get_Parameters.confirm.
 */
-typedef struct MIH_C_Message_Link_Get_Parameters_confirm
-{
-    MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Get_Parameters_confirm_t   primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Get_Parameters_confirm_t;
+typedef struct MIH_C_Message_Link_Get_Parameters_confirm {
+  MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Get_Parameters_confirm_t   primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Get_Parameters_confirm_t;
 
 
 /*! \struct  MIH_C_Message_Link_Configure_Thresholds_request
 * \brief Structure defining the message Link_Configure_Thresholds.request.
 */
-typedef struct MIH_C_Message_Link_Configure_Thresholds_request
-{
-    MIH_C_HEADER_T                            header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                           source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                           destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Configure_Thresholds_request_t primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Configure_Thresholds_request_t;
+typedef struct MIH_C_Message_Link_Configure_Thresholds_request {
+  MIH_C_HEADER_T                            header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                           source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                           destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Configure_Thresholds_request_t primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Configure_Thresholds_request_t;
 
 
 /*! \struct  MIH_C_Message_Link_Configure_Thresholds_confirm
 * \brief Structure defining the message Link_Configure_Thresholds.confirm.
 */
-typedef struct MIH_C_Message_Link_Configure_Thresholds_confirm
-{
-    MIH_C_HEADER_T                             header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                            source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                            destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Configure_Thresholds_confirm_t  primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Configure_Thresholds_confirm_t;
+typedef struct MIH_C_Message_Link_Configure_Thresholds_confirm {
+  MIH_C_HEADER_T                             header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                            source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                            destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Configure_Thresholds_confirm_t  primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Configure_Thresholds_confirm_t;
 
 
 /*! \struct  MIH_C_Message_Link_Action_request
 * \brief Structure defining the message Link_Action.request.
 */
-typedef struct MIH_C_Message_Link_Action_request
-{
-    MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Action_request_t           primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Action_request_t;
+typedef struct MIH_C_Message_Link_Action_request {
+  MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Action_request_t           primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Action_request_t;
 
 
 /*! \struct  MIH_C_Message_Link_Action_confirm
 * \brief Structure defining the message Link_Action.confirm.
 */
-typedef struct MIH_C_Message_Link_Action_confirm
-{
-    MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
-    MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
-    MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
-    MIH_C_Link_Action_confirm_t           primitive;      /*!< \brief  Primitive. */
-}__attribute__((__packed__))MIH_C_Message_Link_Action_confirm_t;
+typedef struct MIH_C_Message_Link_Action_confirm {
+  MIH_C_HEADER_T                        header;         /*!< \brief  Header of the message. */
+  MIH_C_MIHF_ID_T                       source;         /*!< \brief  Source of the message. */
+  MIH_C_MIHF_ID_T                       destination;    /*!< \brief  Destination of the message. */
+  MIH_C_Link_Action_confirm_t           primitive;      /*!< \brief  Primitive. */
+} __attribute__((__packed__))MIH_C_Message_Link_Action_confirm_t;
 
 
 #endif

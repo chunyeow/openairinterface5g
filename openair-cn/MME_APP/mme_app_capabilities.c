@@ -51,7 +51,7 @@
 
 int
 mme_app_handle_s1ap_ue_capabilities_ind(
-        const s1ap_ue_cap_ind_t  const * s1ap_ue_cap_ind_pP)
+  const s1ap_ue_cap_ind_t  const * s1ap_ue_cap_ind_pP)
 {
   DevAssert(s1ap_ue_cap_ind_pP != NULL);
   //unsigned eNB_ue_s1ap_id:24;

@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -35,9 +35,9 @@
 #define SIGTIMER SIGRTMIN
 
 typedef enum timer_type_s {
-    TIMER_PERIODIC,
-    TIMER_ONE_SHOT,
-    TIMER_TYPE_MAX,
+  TIMER_PERIODIC,
+  TIMER_ONE_SHOT,
+  TIMER_TYPE_MAX,
 } timer_type_t;
 
 int timer_handle_signal(siginfo_t *info);
@@ -52,13 +52,13 @@ int timer_handle_signal(siginfo_t *info);
  *  @returns -1 on failure, 0 otherwise
  **/
 int timer_setup(
-    uint32_t      interval_sec,
-    uint32_t      interval_us,
-    task_id_t     task_id,
-    int32_t       instance,
-    timer_type_t  type,
-    void         *timer_arg,
-    long         *timer_id);
+  uint32_t      interval_sec,
+  uint32_t      interval_us,
+  task_id_t     task_id,
+  int32_t       instance,
+  timer_type_t  type,
+  void         *timer_arg,
+  long         *timer_id);
 
 /** \brief Remove the timer from list
  *  \param timer_id unique timer id

@@ -51,7 +51,7 @@
 # define SECURITY_MODE_COMPLETE_IMEISV_PRESENT (1<<0)
 
 typedef enum security_mode_complete_iei_tag {
-    SECURITY_MODE_COMPLETE_IMEISV_IEI  = 0x23, /* 0x23 = 35 */
+  SECURITY_MODE_COMPLETE_IMEISV_IEI  = 0x23, /* 0x23 = 35 */
 } security_mode_complete_iei;
 
 /*
@@ -62,13 +62,13 @@ typedef enum security_mode_complete_iei_tag {
  */
 
 typedef struct security_mode_complete_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator               protocoldiscriminator:4;
-    SecurityHeaderType                  securityheadertype:4;
-    MessageType                         messagetype;
-    /* Optional fields */
-    uint32_t                            presencemask;
-    MobileIdentity                      imeisv;
+  /* Mandatory fields */
+  ProtocolDiscriminator               protocoldiscriminator:4;
+  SecurityHeaderType                  securityheadertype:4;
+  MessageType                         messagetype;
+  /* Optional fields */
+  uint32_t                            presencemask;
+  MobileIdentity                      imeisv;
 } security_mode_complete_msg;
 
 int decode_security_mode_complete(security_mode_complete_msg *securitymodecomplete, uint8_t *buffer, uint32_t len);

@@ -143,8 +143,8 @@ int emm_recv_detach_request(unsigned int ueid, const detach_request_msg *msg,
                             int *emm_cause);
 
 int emm_recv_tracking_area_update_request(unsigned int  ueid,
-                                          const tracking_area_update_request_msg *msg,
-                                          int *emm_cause);
+    const tracking_area_update_request_msg *msg,
+    int *emm_cause);
 
 int emm_recv_identity_response(unsigned int ueid, identity_response_msg *msg,
                                int *emm_cause);

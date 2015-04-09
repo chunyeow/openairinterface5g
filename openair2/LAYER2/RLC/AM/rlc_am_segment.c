@@ -52,15 +52,17 @@ mem_block_t      *rlc_am_segment_7  (struct rlc_am_entity *rlcP);
 inline void
 rlc_am_encode_pdu_15 (struct rlc_am_pdu_header *rlc_headerP, struct rlc_am_tx_data_pdu_management *pdu_mngtP, uint16_t * li_arrayP, uint8_t nb_liP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   uint8_t              li_index;
 
 #ifdef DEBUG_RLC_AM_SEGMENT
   int             index;
   msg ("[RLC_AM] SEGMENT_15 PDU SET LIs: ");
+
   for (index = 0; index < nb_liP; index++) {
     msg ("%04X ", li_arrayP[index]);
   }
+
   msg ("\n");
 #endif
   rlc_headerP->byte1 = RLC_DC_DATA_PDU;
@@ -72,6 +74,7 @@ rlc_am_encode_pdu_15 (struct rlc_am_pdu_header *rlc_headerP, struct rlc_am_tx_da
   if (nb_liP) {
     rlc_headerP->byte2 |= RLC_E_NEXT_FIELD_IS_LI_E;
     li_index = 0;
+
     // COPY LI
     while (li_index < nb_liP) {
       rlc_headerP->li_data_7[li_index] = li_arrayP[li_index >> 1] >> 8;
@@ -79,6 +82,7 @@ rlc_am_encode_pdu_15 (struct rlc_am_pdu_header *rlc_headerP, struct rlc_am_tx_da
       rlc_headerP->li_data_7[li_index] = li_arrayP[li_index >> 1] | RLC_E_NEXT_FIELD_IS_LI_E;
       li_index += 1;
     }
+
     rlc_headerP->li_data_7[li_index - 1] = rlc_headerP->li_data_7[li_index - 1] ^ (uint8_t) RLC_E_NEXT_FIELD_IS_LI_E;
   }
 }
@@ -87,15 +91,17 @@ rlc_am_encode_pdu_15 (struct rlc_am_pdu_header *rlc_headerP, struct rlc_am_tx_da
 inline void
 rlc_am_encode_pdu_7 (struct rlc_am_pdu_header *rlc_headerP, struct rlc_am_tx_data_pdu_management *pdu_mngtP, uint16_t * li_arrayP, uint8_t nb_liP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   uint8_t              li_index;
 
 #ifdef DEBUG_RLC_AM_SEGMENT
   int             index;
   msg ("[RLC_AM] SEGMENT_7 PDU %p SET LIs: ", pdu_mngtP);
+
   for (index = 0; index < nb_liP; index++) {
     msg ("%04X ", li_arrayP[index]);
   }
+
   msg ("\n");
 #endif
 
@@ -107,11 +113,13 @@ rlc_am_encode_pdu_7 (struct rlc_am_pdu_header *rlc_headerP, struct rlc_am_tx_dat
   if (nb_liP) {
     rlc_headerP->byte2 |= RLC_E_NEXT_FIELD_IS_LI_E;
     li_index = 0;
+
     // COPY LI
     while (li_index < nb_liP) {
       rlc_headerP->li_data_7[li_index] = (uint8_t) (li_arrayP[li_index]) | RLC_E_NEXT_FIELD_IS_LI_E;
       li_index += 1;
     }
+
     rlc_headerP->li_data_7[li_index - 1] = rlc_headerP->li_data_7[li_index - 1] ^ (uint8_t) RLC_E_NEXT_FIELD_IS_LI_E;
   }
 }
@@ -120,7 +128,7 @@ rlc_am_encode_pdu_7 (struct rlc_am_pdu_header *rlc_headerP, struct rlc_am_tx_dat
 inline void
 rlc_am_fill_pdu (mem_block_t * pduP, list_t * segmented_sdusP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   mem_block_t      *sdu;
   uint8_t             *data_sdu;
   uint8_t             *data_pdu;
@@ -144,13 +152,16 @@ rlc_am_fill_pdu (mem_block_t * pduP, list_t * segmented_sdusP)
 #endif
 
   continue_fill = 1;
+
   while ((continue_fill)) {
     // fill the pdu with data of sdu
     if (sdu == NULL) {
       sdu = list_remove_head (segmented_sdusP);
+
       if (sdu == NULL) {
         return;                 // case pdu only 2 LIs : exactly_filled or one_byte_short + paddind
       }
+
       sdu_mngt = (struct rlc_am_tx_sdu_management *) (sdu->data);
       data_sdu = &sdu->data[sizeof (struct rlc_am_tx_sdu_management) + sdu_mngt->sdu_segmented_size];
       sdu_available_size = sdu_mngt->sdu_size - sdu_mngt->sdu_remaining_size - sdu_mngt->sdu_segmented_size;
@@ -159,6 +170,7 @@ rlc_am_fill_pdu (mem_block_t * pduP, list_t * segmented_sdusP)
            sdu, sdu_available_size, sdu_mngt->sdu_size, sdu_mngt->sdu_remaining_size, sdu_mngt->sdu_segmented_size);
 #endif
     }
+
     // copy the whole remaining data of the sdu in the remaining area of the pdu
     if (pdu_remaining_size >= sdu_available_size) {
       memcpy (data_pdu, data_sdu, sdu_available_size);
@@ -179,6 +191,7 @@ rlc_am_fill_pdu (mem_block_t * pduP, list_t * segmented_sdusP)
         continue_fill = 0;
       } else {
       }
+
       // copy some data of the sdu in the whole remaining area of the pdu
     } else {
       memcpy (data_pdu, data_sdu, pdu_remaining_size);
@@ -193,6 +206,7 @@ rlc_am_fill_pdu (mem_block_t * pduP, list_t * segmented_sdusP)
       pdu_remaining_size = 0;
     }
   }
+
   list_free (segmented_sdusP);
 }
 
@@ -200,7 +214,7 @@ rlc_am_fill_pdu (mem_block_t * pduP, list_t * segmented_sdusP)
 mem_block_t      *
 rlc_am_segment_15 (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   list_t         segmented_sdus;       // the copying of sdu data is done after identification of all LIs to put in pdu
 
@@ -219,6 +233,7 @@ rlc_am_segment_15 (struct rlc_am_entity *rlcP)
   while ((rlcP->input_sdus[rlcP->current_sdu_index]) && (continue_segment)) {
 
     sdu_mngt = ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[rlcP->current_sdu_index]->data));
+
     if (!(sdu_mngt->segmented)) {
       // pdu management
       if (!(pdu)) {
@@ -228,6 +243,7 @@ rlc_am_segment_15 (struct rlc_am_entity *rlcP)
 #endif
           return NULL;
         }
+
         li_index = 0;
         pdu_remaining_size = rlcP->pdu_size - 2;        // 2= size of header, minimum
         pdu_mngt = (struct rlc_am_tx_data_pdu_management *) (pdu->data);
@@ -236,6 +252,7 @@ rlc_am_segment_15 (struct rlc_am_entity *rlcP)
         pdu_mngt->first_byte = &pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)];
         rlc_header = (struct rlc_am_pdu_header *) (pdu_mngt->first_byte);
       }
+
       if (sdu_mngt->sdu_remaining_size > 0) {   // think RLC_LI_LAST_PDU_ONE_BYTE_SHORT, RLC_LI_LAST_PDU_EXACTLY_FILLED
 
         if ((pdu_remaining_size - sdu_mngt->sdu_remaining_size) < 0) {
@@ -338,6 +355,7 @@ rlc_am_segment_15 (struct rlc_am_entity *rlcP)
             }
           }
         }
+
         // management of previous pdu
         // In the case where 15-bit "Length Indicators" are used for the previous PDU and
         // the last segmentof an RLC SDU is one octet short of exactly filling the PDU:
@@ -389,6 +407,7 @@ rlc_am_segment_15 (struct rlc_am_entity *rlcP)
       list_add_tail_eurecom (rlcP->input_sdus[rlcP->current_sdu_index], &segmented_sdus);
     }
   }
+
   if ((pdu)) {
     if ((continue_segment > 0)) {       // means pdu not totaly filled
       if (pdu_remaining_size >= 2) {
@@ -402,6 +421,7 @@ rlc_am_segment_15 (struct rlc_am_entity *rlcP)
 
       rlc_am_encode_pdu_15 (rlc_header, pdu_mngt, rlcP->li, li_index);
     }
+
     rlc_am_fill_pdu (pdu, &segmented_sdus);
   } else {
     // patch for max dat discard : avoid waiting sdu pointed by current_sdu_index <> NULL
@@ -411,6 +431,7 @@ rlc_am_segment_15 (struct rlc_am_entity *rlcP)
       rlcP->nb_sdu -= 1;
     }
   }
+
   return pdu;
 }
 
@@ -418,7 +439,7 @@ rlc_am_segment_15 (struct rlc_am_entity *rlcP)
 mem_block_t      *
 rlc_am_segment_7 (struct rlc_am_entity * rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   list_t          segmented_sdus;       // the copying of sdu data is done after identification of all LIs to put in pdu
 
@@ -434,6 +455,7 @@ rlc_am_segment_7 (struct rlc_am_entity * rlcP)
 
   while ((rlcP->input_sdus[rlcP->current_sdu_index]) && (continue_segment)) {
     sdu_mngt = ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[rlcP->current_sdu_index]->data));
+
     if (!(sdu_mngt->segmented)) {
 
 #ifdef DEBUG_RLC_AM_SEGMENT
@@ -448,6 +470,7 @@ rlc_am_segment_7 (struct rlc_am_entity * rlcP)
 #endif
           return NULL;
         }
+
         li_index = 0;
         pdu_remaining_size = rlcP->pdu_size - 2;        // 2= size of header, minimum
         pdu_mngt = (struct rlc_am_tx_data_pdu_management *) (pdu->data);
@@ -459,13 +482,15 @@ rlc_am_segment_7 (struct rlc_am_entity * rlcP)
         if ((rlcP->li_exactly_filled_to_add_in_next_pdu)) {
           pdu_remaining_size -= 1;
         }
+
 #ifdef DEBUG_RLC_AM_SEGMENT
         msg ("[RLC_AM][RB %d][SEGMENT7] CONSTRUCT NEW PDU %p %p\n", rlcP->rb_id, pdu, pdu_mngt);
 #endif
       }
 
       if (sdu_mngt->sdu_remaining_size > 0) {
-	msg("sdu_mngt->sdu_remaining_size %d\n",sdu_mngt->sdu_remaining_size);
+        msg("sdu_mngt->sdu_remaining_size %d\n",sdu_mngt->sdu_remaining_size);
+
         if ((pdu_remaining_size - sdu_mngt->sdu_remaining_size) < 0) {
           pdu_mngt->data_size += pdu_remaining_size;
           rlcP->buffer_occupancy -= pdu_remaining_size;
@@ -522,11 +547,13 @@ rlc_am_segment_7 (struct rlc_am_entity * rlcP)
                    rlcP->current_sdu_index, (rlcP->current_sdu_index + 1) % rlcP->size_input_sdus_buffer, pdu, pdu_mngt, pdu_remaining_size);
 #endif
               rlcP->current_sdu_index = (rlcP->current_sdu_index + 1) % rlcP->size_input_sdus_buffer;
+
               // case where Li length exactly ends the pdu
               if (pdu_remaining_size == 0) {
                 continue_segment = 0;
                 rlc_am_encode_pdu_7 (rlc_header, pdu_mngt, rlcP->li, li_index);
               }
+
               /*
                  } else { // else:if (!last_sdu)
                  } // the while loop continue with the same pdu  */
@@ -559,6 +586,7 @@ rlc_am_segment_7 (struct rlc_am_entity * rlcP)
             }
           }
         }
+
         // management of previous pdu
         // In the case where 15-bit "Length Indicators" are used for the previous PDU and the
         // last segment of an RLC SDU is one octet short of exactly filling the PDU:
@@ -598,10 +626,12 @@ rlc_am_segment_7 (struct rlc_am_entity * rlcP)
         rlcP->current_sdu_index = (rlcP->current_sdu_index + 1) % rlcP->size_input_sdus_buffer;
       }
     }
+
     if (sdu_mngt->sdu_remaining_size > 0) {
       list_add_tail_eurecom (rlcP->input_sdus[rlcP->current_sdu_index], &segmented_sdus);
     }
   }
+
   if ((pdu)) {
     if ((continue_segment > 0)) {       // means pdu not totaly filled
       if (pdu_remaining_size >= 1) {
@@ -610,8 +640,10 @@ rlc_am_segment_7 (struct rlc_am_entity * rlcP)
       } else {
         rlcP->li_exactly_filled_to_add_in_next_pdu = 1;
       }
+
       rlc_am_encode_pdu_7 (rlc_header, pdu_mngt, rlcP->li, li_index);
     }
+
     rlc_am_fill_pdu (pdu, &segmented_sdus);
   } else {
     // patch for max dat discard : avoid waiting sdu pointed by current_sdu_index <> NULL
@@ -621,5 +653,6 @@ rlc_am_segment_7 (struct rlc_am_entity * rlcP)
       rlcP->nb_sdu -= 1;
     }
   }
+
   return pdu;
 }

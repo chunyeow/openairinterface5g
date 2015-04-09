@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -63,19 +63,17 @@
 #include <messages_types.h>
 
 /* This enum defines messages ids. Each one is unique. */
-typedef enum
-{
+typedef enum {
 #define MESSAGE_DEF(iD, pRIO, sTRUCT, fIELDnAME) iD,
 #include <messages_def.h>
 #undef MESSAGE_DEF
 
-    MESSAGES_ID_MAX,
+  MESSAGES_ID_MAX,
 } MessagesIds;
 
 //! Thread id of each task
-typedef enum
-{
-    THREAD_NULL = 0,
+typedef enum {
+  THREAD_NULL = 0,
 
 #define TASK_DEF(tHREADiD, pRIO, qUEUEsIZE)             THREAD_##tHREADiD,
 #define SUB_TASK_DEF(tHREADiD, sUBtASKiD, qUEUEsIZE)
@@ -83,13 +81,12 @@ typedef enum
 #undef SUB_TASK_DEF
 #undef TASK_DEF
 
-    THREAD_MAX,
-    THREAD_FIRST = 1,
+  THREAD_MAX,
+  THREAD_FIRST = 1,
 } thread_id_t;
 
 //! Sub-tasks id, to defined offset form thread id
-typedef enum
-{
+typedef enum {
 #define TASK_DEF(tHREADiD, pRIO, qUEUEsIZE)             tHREADiD##_THREAD = THREAD_##tHREADiD,
 #define SUB_TASK_DEF(tHREADiD, sUBtASKiD, qUEUEsIZE)    sUBtASKiD##_THREAD = THREAD_##tHREADiD,
 #include <tasks_def.h>
@@ -98,9 +95,8 @@ typedef enum
 } task_thread_id_t;
 
 //! Tasks id of each task
-typedef enum
-{
-    TASK_UNKNOWN = 0,
+typedef enum {
+  TASK_UNKNOWN = 0,
 
 #define TASK_DEF(tHREADiD, pRIO, qUEUEsIZE)             tHREADiD,
 #define SUB_TASK_DEF(tHREADiD, sUBtASKiD, qUEUEsIZE)    sUBtASKiD,
@@ -108,12 +104,11 @@ typedef enum
 #undef SUB_TASK_DEF
 #undef TASK_DEF
 
-    TASK_MAX,
-    TASK_FIRST = 1,
+  TASK_MAX,
+  TASK_FIRST = 1,
 } task_id_t;
 
-typedef union msg_s
-{
+typedef union msg_s {
 #define MESSAGE_DEF(iD, pRIO, sTRUCT, fIELDnAME) sTRUCT fIELDnAME;
 #include <messages_def.h>
 #undef MESSAGE_DEF
@@ -121,26 +116,24 @@ typedef union msg_s
 
 typedef uint16_t MessageHeaderSize;
 
-typedef struct itti_lte_time_s
-{
-    uint32_t frame;
-    uint8_t slot;
+typedef struct itti_lte_time_s {
+  uint32_t frame;
+  uint8_t slot;
 } itti_lte_time_t;
 
 /** @struct MessageHeader
  *  @brief Message Header structure for inter-task communication.
  */
-typedef struct MessageHeader_s
-{
-        MessagesIds messageId;          /**< Unique message id as referenced in enum MessagesIds */
+typedef struct MessageHeader_s {
+  MessagesIds messageId;          /**< Unique message id as referenced in enum MessagesIds */
 
-        task_id_t  originTaskId;        /**< ID of the sender task */
-        task_id_t  destinationTaskId;   /**< ID of the destination task */
-        instance_t instance;            /**< Task instance for virtualization */
+  task_id_t  originTaskId;        /**< ID of the sender task */
+  task_id_t  destinationTaskId;   /**< ID of the destination task */
+  instance_t instance;            /**< Task instance for virtualization */
 
-        MessageHeaderSize ittiMsgSize;         /**< Message size (not including header size) */
+  MessageHeaderSize ittiMsgSize;         /**< Message size (not including header size) */
 
-        itti_lte_time_t lte_time;       /**< Reference LTE time */
+  itti_lte_time_t lte_time;       /**< Reference LTE time */
 } MessageHeader;
 
 /** @struct MessageDef
@@ -148,10 +141,9 @@ typedef struct MessageHeader_s
  *  \internal
  *  The attached attribute \c __packed__ is neccessary, because the memory allocation code expects \ref ittiMsg directly following \ref ittiMsgHeader.
  */
-typedef struct __attribute__ ((__packed__)) MessageDef_s
-{
-        MessageHeader ittiMsgHeader; /**< Message header */
-        msg_t         ittiMsg; /**< Union of payloads as defined in x_messages_def.h headers */
+typedef struct __attribute__ ((__packed__)) MessageDef_s {
+  MessageHeader ittiMsgHeader; /**< Message header */
+  msg_t         ittiMsg; /**< Union of payloads as defined in x_messages_def.h headers */
 } MessageDef;
 
 #endif /* INTERTASK_INTERFACE_TYPES_H_ */

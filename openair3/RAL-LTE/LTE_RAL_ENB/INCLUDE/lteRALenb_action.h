@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -77,19 +77,19 @@
  */
 /* Structure of the destination data flow */
 typedef struct Data_flow {
-    unsigned char addr[16]; // IP address
-    unsigned int l2id[2]; // L2 identifier
-    unsigned int  port;  // IP port identifier
-    int proto;   // IP protocol
-    int cnxid;   // Data flow identifier
-}data_flow_t;
+  unsigned char addr[16]; // IP address
+  unsigned int l2id[2]; // L2 identifier
+  unsigned int  port;  // IP port identifier
+  int proto;   // IP protocol
+  int cnxid;   // Data flow identifier
+} data_flow_t;
 
 #define ACTION_MAX_FLOW  ((RAL_MAX_MT)*(RAL_MAX_RB))
 
 typedef struct eRAL_action_DataFlowList {
-    int          n_flows;
-    data_flow_t  flow [ACTION_MAX_FLOW];
-    int          flow_id [ACTION_MAX_FLOW];  //added TEMP MW 23/05/13
+  int          n_flows;
+  data_flow_t  flow [ACTION_MAX_FLOW];
+  int          flow_id [ACTION_MAX_FLOW];  //added TEMP MW 23/05/13
 } eRAL_action_DataFlowList_t;
 
 private_lteralenb_action(eRAL_action_DataFlowList_t g_flows = {};)

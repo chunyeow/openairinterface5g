@@ -27,19 +27,19 @@
 
  *******************************************************************************/
 /*****************************************************************************
-Source		parser.h
+Source    parser.h
 
-Version		0.1
+Version   0.1
 
-Date		2012/02/27
+Date    2012/02/27
 
-Product		NAS stack
+Product   NAS stack
 
-Subsystem	Utilities
+Subsystem Utilities
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Usefull command line parser
+Description Usefull command line parser
 
 *****************************************************************************/
 #ifndef __PARSER_H__
@@ -56,31 +56,29 @@ Description	Usefull command line parser
 /* -----------
  * Option type
  * -----------
- *	An option is defined with a name, an argument following the option's
- *	name, the usage message and a value
+ *  An option is defined with a name, an argument following the option's
+ *  name, the usage message and a value
  */
-typedef struct
-{
-    const char* name;			/* Option name			   */
-    const char* argument;		/* Argument following the option   */
-    const char* usage;			/* Option and Argument usage	   */
-#define PARSER_OPTION_VALUE_SIZE	32
-    char value[PARSER_OPTION_VALUE_SIZE];	/* Option value		   */
-    char* pvalue;
+typedef struct {
+  const char* name;     /* Option name         */
+  const char* argument;   /* Argument following the option   */
+  const char* usage;      /* Option and Argument usage     */
+#define PARSER_OPTION_VALUE_SIZE  32
+  char value[PARSER_OPTION_VALUE_SIZE]; /* Option value      */
+  char* pvalue;
 } parser_option_t;
 
 /* -----------------
  * Command line type
  * -----------------
- *	An command line is defined with a name, the number of options and the
- *	list of command's options
+ *  An command line is defined with a name, the number of options and the
+ *  list of command's options
  */
-typedef struct
-{
-#define PARSER_COMMAND_NAME_SIZE	32
-    char name[PARSER_COMMAND_NAME_SIZE];	/* Command name		   */
-    const int nb_options;			/* Number of options	   */
-    parser_option_t options[];			/* Command line options	   */
+typedef struct {
+#define PARSER_COMMAND_NAME_SIZE  32
+  char name[PARSER_COMMAND_NAME_SIZE];  /* Command name      */
+  const int nb_options;     /* Number of options     */
+  parser_option_t options[];      /* Command line options    */
 } parser_command_line_t;
 
 /****************************************************************************/
@@ -93,6 +91,6 @@ typedef struct
 
 void parser_print_usage(const parser_command_line_t* commamd_line);
 int  parser_get_options(int argc, const char** argv,
-			parser_command_line_t* commamd_line);
+                        parser_command_line_t* commamd_line);
 
 #endif /* __PARSER_H__*/

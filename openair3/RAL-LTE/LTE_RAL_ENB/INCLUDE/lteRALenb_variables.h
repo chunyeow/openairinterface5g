@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -118,23 +118,23 @@ extern const u_int8_t DefaultPLMN[DEFAULT_PLMN_SIZE];
 /*Destination addresses
  */
 enum {
-    ADDR_MT1 = 0,
-    ADDR_MT2,
-    ADDR_MBMS,
-    ADDR_MT3,
-    ADDR_MAX
+  ADDR_MT1 = 0,
+  ADDR_MT2,
+  ADDR_MBMS,
+  ADDR_MT3,
+  ADDR_MAX
 };
 
 #ifdef DEFINE_GLOBAL_CONSTANTS  // Modified MW 23/05/13
 const char DestIpv6Addr[ADDR_MAX][16] = { // DUMMY
-    // MT1 - 2001:660:382:14:335:600:8014:9150
-    {0x20,0x01,0x06,0x60,0x03,0x82,0x00,0x14,0x03,0x35,0x06,0x00,0x80,0x14,0x91,0x50},
-    // MT2 - 2001:660:382:14:335:600:8014:9151
-    {0x20,0x01,0x06,0x60,0x03,0x82,0x00,0x14,0x03,0x35,0x06,0x00,0x80,0x14,0x91,0x51},
-    // Multicast - FF3E:20:2001:DB8::43
-    {0xFF,0x3E,0x00,0x20,0x20,0x01,0x0D,0xB8,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x43},
-    // MT3 - 2001:660:382:14:335:600:8014:9153
-    {0x20,0x01,0x06,0x60,0x03,0x82,0x00,0x14,0x03,0x35,0x06,0x00,0x80,0x14,0x91,0x53}
+  // MT1 - 2001:660:382:14:335:600:8014:9150
+  {0x20,0x01,0x06,0x60,0x03,0x82,0x00,0x14,0x03,0x35,0x06,0x00,0x80,0x14,0x91,0x50},
+  // MT2 - 2001:660:382:14:335:600:8014:9151
+  {0x20,0x01,0x06,0x60,0x03,0x82,0x00,0x14,0x03,0x35,0x06,0x00,0x80,0x14,0x91,0x51},
+  // Multicast - FF3E:20:2001:DB8::43
+  {0xFF,0x3E,0x00,0x20,0x20,0x01,0x0D,0xB8,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x43},
+  // MT3 - 2001:660:382:14:335:600:8014:9153
+  {0x20,0x01,0x06,0x60,0x03,0x82,0x00,0x14,0x03,0x35,0x06,0x00,0x80,0x14,0x91,0x53}
 };
 #else
 extern const char DestIpv6Addr[ADDR_MAX][16];

@@ -38,7 +38,7 @@
 #    ifdef RTAI
 #        include <rtai.h>
 #    else
-      /* RTLINUX */
+/* RTLINUX */
 #        include <rtl.h>
 #    endif
 
@@ -62,7 +62,7 @@
 void
 rlc_um_reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_um_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   int             sdu_max_size;
 
 #ifdef DEBUG_RLC_UM_DISPLAY_ASCII_DATA
@@ -78,16 +78,20 @@ rlc_um_reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_um_entity *rlcP)
   } else {
     sdu_max_size = RLC_SDU_MAX_SIZE_CONTROL_PLANE;
   }
+
   if (rlcP->output_sdu_in_construction == NULL) {
     rlcP->output_sdu_in_construction = get_free_mem_block (sdu_max_size + sizeof (struct rlc_indication));
     rlcP->output_sdu_size_to_write = 0;
   }
+
   if ((rlcP->output_sdu_in_construction)) {
 #ifdef DEBUG_RLC_UM_DISPLAY_ASCII_DATA
     msg ("[RLC_UM][RB %d][REASSEMBLY] DATA :", rlcP->rb_id);
+
     for (index = 0; index < lengthP; index++) {
       msg ("%02X-", srcP[index]);
     }
+
     msg ("\n");
 #endif
 
@@ -103,13 +107,14 @@ rlc_um_reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_um_entity *rlcP)
 void
 rlc_um_send_sdu (struct rlc_um_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   if ((rlcP->output_sdu_in_construction)) {
 
 #ifdef DEBUG_RLC_UM_SEND_SDU
     msg ("[RLC_UM][RB %d][SEND_SDU] %d bytes \n", rlcP->rb_id, rlcP->output_sdu_size_to_write);
 #endif
+
     if (rlcP->output_sdu_size_to_write > 0) {
 #ifdef DEBUG_RLC_STATS
       rlcP->rx_sdus += 1;
@@ -128,6 +133,7 @@ rlc_um_send_sdu (struct rlc_um_entity *rlcP)
 #endif
       free_mem_block (rlcP->output_sdu_in_construction);
     }
+
     rlcP->output_sdu_in_construction = NULL;
     rlcP->output_sdu_size_to_write = 0;
   }

@@ -55,11 +55,11 @@
  */
 
 typedef struct identity_request_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator          protocoldiscriminator:4;
-    SecurityHeaderType             securityheadertype:4;
-    MessageType                    messagetype;
-    IdentityType2                  identitytype;
+  /* Mandatory fields */
+  ProtocolDiscriminator          protocoldiscriminator:4;
+  SecurityHeaderType             securityheadertype:4;
+  MessageType                    messagetype;
+  IdentityType2                  identitytype;
 } identity_request_msg;
 
 int decode_identity_request(identity_request_msg *identityrequest, uint8_t *buffer, uint32_t len);

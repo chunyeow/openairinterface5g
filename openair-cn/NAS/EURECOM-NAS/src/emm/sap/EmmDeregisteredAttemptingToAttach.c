@@ -89,52 +89,55 @@ Description Implements the EPS Mobility Management procedures executed
  ***************************************************************************/
 int EmmDeregisteredAttemptingToAttach(const emm_reg_t *evt)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc = RETURNerror;
+  int rc = RETURNerror;
 
-    assert(emm_fsm_get_status() == EMM_DEREGISTERED_ATTEMPTING_TO_ATTACH);
+  assert(emm_fsm_get_status() == EMM_DEREGISTERED_ATTEMPTING_TO_ATTACH);
 
-    switch (evt->primitive) {
-        case _EMMREG_ATTACH_INIT:
-            /*
-             * Attach procedure has to be restarted (timers T3402 or T3411
-             * expired)
-             */
+  switch (evt->primitive) {
+  case _EMMREG_ATTACH_INIT:
 
-            /* Move to the corresponding initial EMM state */
-            if (evt->u.attach.is_emergency) {
-                rc = emm_fsm_set_status(EMM_DEREGISTERED_LIMITED_SERVICE);
-            } else {
-                rc = emm_fsm_set_status(EMM_DEREGISTERED_NORMAL_SERVICE);
-            }
-            if (rc != RETURNerror) {
-                /* Restart the attach procedure */
-                rc = emm_proc_attach_restart();
-            }
-            break;
+    /*
+     * Attach procedure has to be restarted (timers T3402 or T3411
+     * expired)
+     */
 
-        case _EMMREG_LOWERLAYER_SUCCESS:
-            /*
-             * Data successfully delivered to the network
-             */
-            rc = emm_proc_lowerlayer_success();
-            break;
-
-        case _EMMREG_LOWERLAYER_FAILURE:
-            /*
-             * Data failed to be delivered to the network
-             */
-            rc = emm_proc_lowerlayer_failure(FALSE);
-            break;
-
-        default:
-            LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
-                      evt->primitive);
-            break;
+    /* Move to the corresponding initial EMM state */
+    if (evt->u.attach.is_emergency) {
+      rc = emm_fsm_set_status(EMM_DEREGISTERED_LIMITED_SERVICE);
+    } else {
+      rc = emm_fsm_set_status(EMM_DEREGISTERED_NORMAL_SERVICE);
     }
 
-    LOG_FUNC_RETURN (rc);
+    if (rc != RETURNerror) {
+      /* Restart the attach procedure */
+      rc = emm_proc_attach_restart();
+    }
+
+    break;
+
+  case _EMMREG_LOWERLAYER_SUCCESS:
+    /*
+     * Data successfully delivered to the network
+     */
+    rc = emm_proc_lowerlayer_success();
+    break;
+
+  case _EMMREG_LOWERLAYER_FAILURE:
+    /*
+     * Data failed to be delivered to the network
+     */
+    rc = emm_proc_lowerlayer_failure(FALSE);
+    break;
+
+  default:
+    LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
+              evt->primitive);
+    break;
+  }
+
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************/

@@ -22,7 +22,7 @@
 
 /* Constants below have no explicit names in the spec. */
 
-#define MAX_BINDING_LIFETIME     (0xffff << 2) /* seconds */  
+#define MAX_BINDING_LIFETIME     (0xffff << 2) /* seconds */
 
 /* Maximum time for a binding to be unused for CN to still send a BRR
  * before the binding expires */

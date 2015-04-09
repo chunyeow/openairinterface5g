@@ -92,8 +92,8 @@ do {                                                            \
 
 /* RES amd XRES can have a variable length of 4-16 octets */
 typedef struct {
-    uint8_t size;
-    uint8_t data[XRES_LENGTH_MAX];
+  uint8_t size;
+  uint8_t data[XRES_LENGTH_MAX];
 } res_t;
 
 #define FORMAT_128BITS "%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x"
@@ -116,14 +116,14 @@ bUFFER[24], bUFFER[25], bUFFER[26], bUFFER[27], bUFFER[28], bUFFER[29], bUFFER[3
 
 /* Holds an E-UTRAN authentication vector */
 typedef struct eutran_vector_s {
-    uint8_t rand[RAND_LENGTH_OCTETS];
-    res_t   xres;
-    uint8_t autn[AUTN_LENGTH_OCTETS];
-    uint8_t kasme[KASME_LENGTH_OCTETS];
+  uint8_t rand[RAND_LENGTH_OCTETS];
+  res_t   xres;
+  uint8_t autn[AUTN_LENGTH_OCTETS];
+  uint8_t kasme[KASME_LENGTH_OCTETS];
 
-    /* one UE can have multiple vectors so use STAILQ lists for easy management */
+  /* one UE can have multiple vectors so use STAILQ lists for easy management */
 #if 0
-    STAILQ_ENTRY(eutran_vector_s) entries;
+  STAILQ_ENTRY(eutran_vector_s) entries;
 #endif
 } eutran_vector_t;
 
@@ -143,12 +143,12 @@ typedef struct eutran_vector_s {
 #define FC_KASME_TO_CK  (0x16)
 
 typedef enum {
-    NAS_ENC_ALG = 0x01,
-    NAS_INT_ALG = 0x02,
-    RRC_ENC_ALG = 0x03,
-    RRC_INT_ALG = 0x04,
-    UP_ENC_ALG  = 0x05,
-    UP_INT_ALG  = 0x06
+  NAS_ENC_ALG = 0x01,
+  NAS_INT_ALG = 0x02,
+  RRC_ENC_ALG = 0x03,
+  RRC_INT_ALG = 0x04,
+  UP_ENC_ALG  = 0x05,
+  UP_INT_ALG  = 0x06
 } algorithm_type_dist_t;
 
 #endif /* SECURITY_TYPES_H_ */

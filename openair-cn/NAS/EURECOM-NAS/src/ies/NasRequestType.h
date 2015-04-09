@@ -38,10 +38,10 @@
 #define REQUEST_TYPE_MINIMUM_LENGTH 1
 #define REQUEST_TYPE_MAXIMUM_LENGTH 1
 
-#define REQUEST_TYPE_INITIAL_REQUEST	0b001
-#define REQUEST_TYPE_HANDOVER		0b010
-#define REQUEST_TYPE_UNUSED		0b011
-#define REQUEST_TYPE_EMERGENCY		0b100
+#define REQUEST_TYPE_INITIAL_REQUEST  0b001
+#define REQUEST_TYPE_HANDOVER   0b010
+#define REQUEST_TYPE_UNUSED   0b011
+#define REQUEST_TYPE_EMERGENCY    0b100
 typedef uint8_t RequestType;
 
 int encode_request_type(RequestType *requesttype, uint8_t iei, uint8_t *buffer, uint32_t len);

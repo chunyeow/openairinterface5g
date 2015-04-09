@@ -84,13 +84,13 @@ Description Implements the EPS Mobility Management procedures executed
  ***************************************************************************/
 int EmmRegisteredPlmnSearch(const emm_reg_t *evt)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    assert(emm_fsm_get_status() == EMM_REGISTERED_PLMN_SEARCH);
+  assert(emm_fsm_get_status() == EMM_REGISTERED_PLMN_SEARCH);
 
-    /* TODO */
+  /* TODO */
 
-    LOG_FUNC_RETURN (RETURNok);
+  LOG_FUNC_RETURN (RETURNok);
 }
 
 #if 0
@@ -111,13 +111,13 @@ int EmmRegisteredPlmnSearch(const emm_reg_t *evt)
  ***************************************************************************/
 int EmmRegisteredPlmnSearch_xxx(const emm_reg_t *evt)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    assert(emm_fsm_get_status() == EMM_REGISTERED_PLMN_SEARCH);
+  assert(emm_fsm_get_status() == EMM_REGISTERED_PLMN_SEARCH);
 
-    /* TODO */
+  /* TODO */
 
-    LOG_FUNC_RETURN (RETURNok);
+  LOG_FUNC_RETURN (RETURNok);
 }
 #endif
 

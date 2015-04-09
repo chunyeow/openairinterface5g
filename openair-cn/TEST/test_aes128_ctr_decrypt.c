@@ -41,40 +41,39 @@
 
 static
 void test_uncipher_ctr(const struct nettle_cipher *cipher, const uint8_t *key,
-    unsigned key_length, const uint8_t *cipheredtext,
-    unsigned length, const uint8_t *cleartext, const uint8_t *ictr)
+                       unsigned key_length, const uint8_t *cipheredtext,
+                       unsigned length, const uint8_t *cleartext, const uint8_t *ictr)
 {
-    void *ctx = malloc(cipher->context_size);
-    uint8_t *data = malloc(length);
-    uint8_t *ctr = malloc(cipher->block_size);
+  void *ctx = malloc(cipher->context_size);
+  uint8_t *data = malloc(length);
+  uint8_t *ctr = malloc(cipher->block_size);
 
-    cipher->set_encrypt_key(ctx, key_length, key);
-    memcpy(ctr, ictr, cipher->block_size);
+  cipher->set_encrypt_key(ctx, key_length, key);
+  memcpy(ctr, ictr, cipher->block_size);
 
-    ctr_crypt(ctx, cipher->encrypt,
-        cipher->block_size, ctr,
-        length, data, cipheredtext);
+  ctr_crypt(ctx, cipher->encrypt,
+            cipher->block_size, ctr,
+            length, data, cipheredtext);
 
-    if (compare_buffer(data, length, cleartext, length) != 0)
-    {
-        fail("Fail: test_uncipher_ctr\n");
-    }
+  if (compare_buffer(data, length, cleartext, length) != 0) {
+    fail("Fail: test_uncipher_ctr\n");
+  }
 
-    free(ctx);
-    free(data);
-    free(ctr);
+  free(ctx);
+  free(data);
+  free(ctr);
 }
 
 void doit (void)
 {
-    /* From NIST spec 800-38a on AES modes,
-     *
-     * http://csrc.nist.gov/CryptoToolkit/modes/800-38_Series_Publications/SP800-38A.pdf
-     *
-     * F.5  CTR Example Vectors
-     */
-    /* F.5.1  CTR-AES128.Encrypt */
-    test_uncipher_ctr(&nettle_aes128,
+  /* From NIST spec 800-38a on AES modes,
+   *
+   * http://csrc.nist.gov/CryptoToolkit/modes/800-38_Series_Publications/SP800-38A.pdf
+   *
+   * F.5  CTR Example Vectors
+   */
+  /* F.5.1  CTR-AES128.Encrypt */
+  test_uncipher_ctr(&nettle_aes128,
                     HL("2b7e151628aed2a6abf7158809cf4f3c"),
                     HL("6bc1bee22e409f96e93d7e117393172a"
                        "ae2d8a571e03ac9c9eb76fac45af8e51"

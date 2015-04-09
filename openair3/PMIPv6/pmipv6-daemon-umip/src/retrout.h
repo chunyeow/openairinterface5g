@@ -17,8 +17,8 @@ void mn_rr_delete_co(struct in6_addr *coa);
 void mn_rr_delete_bule(struct bulentry *bule);
 
 int mn_rr_error_check(const struct in6_addr *peer,
-		      const struct in6_addr *own,
-		      struct in6_addr *hoa);
+                      const struct in6_addr *own,
+                      struct in6_addr *hoa);
 
 void rrl_dump(FILE *os);
 

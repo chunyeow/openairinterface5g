@@ -48,10 +48,10 @@ extern "C" {
 /** @defgroup _config_mobi Config Mobigen
  *  @ingroup _fn
  *  @brief Generate configuration XML for mobigen
- * @{*/ 
-	int config_mobi(char mobigen_filename[FILENAME_LENGTH_MAX], char filename[FILENAME_LENGTH_MAX]);
- /* @}*/
- 
+ * @{*/
+int config_mobi(char mobigen_filename[FILENAME_LENGTH_MAX], char filename[FILENAME_LENGTH_MAX]);
+/* @}*/
+
 #ifdef __cplusplus
 }
 #endif

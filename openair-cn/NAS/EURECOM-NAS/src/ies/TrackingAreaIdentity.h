@@ -39,13 +39,13 @@
 #define TRACKING_AREA_IDENTITY_MAXIMUM_LENGTH 6
 
 typedef struct TrackingAreaIdentity_tag {
-    uint8_t  mccdigit2:4;
-    uint8_t  mccdigit1:4;
-    uint8_t  mncdigit3:4;
-    uint8_t  mccdigit3:4;
-    uint8_t  mncdigit2:4;
-    uint8_t  mncdigit1:4;
-    uint16_t tac;
+  uint8_t  mccdigit2:4;
+  uint8_t  mccdigit1:4;
+  uint8_t  mncdigit3:4;
+  uint8_t  mccdigit3:4;
+  uint8_t  mncdigit2:4;
+  uint8_t  mncdigit1:4;
+  uint16_t tac;
 } TrackingAreaIdentity;
 
 int encode_tracking_area_identity(TrackingAreaIdentity *trackingareaidentity, uint8_t iei, uint8_t *buffer, uint32_t len);

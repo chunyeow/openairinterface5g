@@ -47,11 +47,11 @@
 #endif
 
 typedef struct {
-    /* UE contexts + some statistics variables */
-    mme_ue_context_t mme_ue_contexts;
+  /* UE contexts + some statistics variables */
+  mme_ue_context_t mme_ue_contexts;
 
-    long statistic_timer_id;
-    uint32_t statistic_timer_period;
+  long statistic_timer_id;
+  uint32_t statistic_timer_period;
 } mme_app_desc_t;
 
 extern mme_app_desc_t mme_app_desc;

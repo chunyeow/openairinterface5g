@@ -1,21 +1,21 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+      Eurecom OpenAirInterface 3
+      Copyright(c) 2012 Eurecom
 
-Source		as_data.h
+Source    as_data.h
 
-Version		0.1
+Version   0.1
 
-Date		2013/04/11
+Date    2013/04/11
 
-Product		Access-Stratum sublayer simulator
+Product   Access-Stratum sublayer simulator
 
-Subsystem	Access-Stratum data
+Subsystem Access-Stratum data
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Defines constants and functions used by the AS simulator
-		process.
+Description Defines constants and functions used by the AS simulator
+    process.
 
 *****************************************************************************/
 
@@ -29,10 +29,10 @@ Description	Defines constants and functions used by the AS simulator
 /*
  * Constansts used for MSCGEN (Message Sequence Chart Generator)
  */
-#define MSCGEN(args...)	fprintf(stderr, ##args);
-#define _ue_id		"UE"
-#define _mme_id		"MME"
-#define _as_id		"AS"
+#define MSCGEN(args...) fprintf(stderr, ##args);
+#define _ue_id    "UE"
+#define _mme_id   "MME"
+#define _as_id    "AS"
 
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/

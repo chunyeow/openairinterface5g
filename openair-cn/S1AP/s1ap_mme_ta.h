@@ -31,12 +31,12 @@
 #define S1AP_MME_TA_H_
 
 enum {
-    TA_LIST_UNKNOWN_TAC = -2,
-    TA_LIST_UNKNOWN_PLMN = -1,
-    TA_LIST_RET_OK = 0,
-    TA_LIST_NO_MATCH = 0x1,
-    TA_LIST_AT_LEAST_ONE_MATCH = 0x2,
-    TA_LIST_COMPLETE_MATCH = 0x3,
+  TA_LIST_UNKNOWN_TAC = -2,
+  TA_LIST_UNKNOWN_PLMN = -1,
+  TA_LIST_RET_OK = 0,
+  TA_LIST_NO_MATCH = 0x1,
+  TA_LIST_AT_LEAST_ONE_MATCH = 0x2,
+  TA_LIST_COMPLETE_MATCH = 0x3,
 };
 
 int s1ap_mme_compare_ta_lists(S1ap_SupportedTAs_t *ta_list);

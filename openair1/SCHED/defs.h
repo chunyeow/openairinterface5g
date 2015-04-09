@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -39,9 +39,10 @@
 
 
 enum THREAD_INDEX { OPENAIR_THREAD_INDEX = 0,
-		    TOP_LEVEL_SCHEDULER_THREAD_INDEX,
+                    TOP_LEVEL_SCHEDULER_THREAD_INDEX,
                     DLC_SCHED_THREAD_INDEX,
-                    openair_SCHED_NB_THREADS}; // do not modify this line
+                    openair_SCHED_NB_THREADS
+                  }; // do not modify this line
 
 
 #define OPENAIR_THREAD_PRIORITY        255
@@ -51,10 +52,11 @@ enum THREAD_INDEX { OPENAIR_THREAD_INDEX = 0,
 //#define DLC_THREAD_STACK_SIZE        4096 //DLC stack size
 
 enum openair_SCHED_STATUS {
-      openair_SCHED_STOPPED=1,
-      openair_SCHED_STARTING,
-      openair_SCHED_STARTED,
-      openair_SCHED_STOPPING};
+  openair_SCHED_STOPPED=1,
+  openair_SCHED_STARTING,
+  openair_SCHED_STARTED,
+  openair_SCHED_STOPPING
+};
 
 enum openair_ERROR {
   // HARDWARE CAUSES
@@ -69,14 +71,15 @@ enum openair_ERROR {
 };
 
 enum openair_SYNCH_STATUS {
-      openair_NOT_SYNCHED=1,
+  openair_NOT_SYNCHED=1,
 #ifdef OPENAIR_LTE
-      openair_SYNCHED,
+  openair_SYNCHED,
 #else
-      openair_SYNCHED_TO_CHSCH,
-      openair_SYNCHED_TO_MRSCH,
+  openair_SYNCHED_TO_CHSCH,
+  openair_SYNCHED_TO_MRSCH,
 #endif
-      openair_SCHED_EXIT};
+  openair_SCHED_EXIT
+};
 
 
 #define DAQ_AGC_ON 1
@@ -136,8 +139,8 @@ int32_t openair_sched_init(void);
 void openair_sched_cleanup(void);
 void openair_sched_exit(char *);
 void openair1_restart(void);
-int32_t init_dlsch_threads(void); 
-void cleanup_dlsch_threads(void); 
+int32_t init_dlsch_threads(void);
+void cleanup_dlsch_threads(void);
 #endif //USER_MODE
 
 #ifdef OPENAIR_LTE
@@ -168,16 +171,16 @@ void phy_procedures_eNB_lte(uint8_t subframe,PHY_VARS_eNB **phy_vars_eNB,uint8_t
 */
 void phy_procedures_UE_lte(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstraction_flag,runmode_t mode,relaying_type_t r_type,PHY_VARS_RN *phy_vars_rn);
 
-#ifdef Rel10  
+#ifdef Rel10
 /*!
-  \brief Top-level entry routine for relay node procedures when acting as eNB. This proc will make us of the existing eNB procs. 
+  \brief Top-level entry routine for relay node procedures when acting as eNB. This proc will make us of the existing eNB procs.
   @param last_slot Index of last slot (0-19)
   @param next_slot Index of next_slot (0-19)
   @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
 int phy_procedures_RN_eNB_TX(unsigned char last_slot, unsigned char next_slot, relaying_type_t r_type);
 /*!
-  \brief Top-level entry routine for relay node procedures actinf as UE. This proc will make us of the existing UE procs. 
+  \brief Top-level entry routine for relay node procedures actinf as UE. This proc will make us of the existing UE procs.
   @param last_slot Index of last slot (0-19)
   @param next_slot Index of next_slot (0-19)
   @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
@@ -186,7 +189,7 @@ int phy_procedures_RN_UE_RX(unsigned char last_slot, unsigned char next_slot, re
 #endif
 
 /*!
-  \brief Scheduling for UE TX procedures in normal subframes.  
+  \brief Scheduling for UE TX procedures in normal subframes.
   @param phy_vars_ue Pointer to UE variables on which to act
   @param eNB_id Local id of eNB on which to act
   @param abstraction_flag Indicator of PHY abstraction
@@ -195,7 +198,7 @@ int phy_procedures_RN_UE_RX(unsigned char last_slot, unsigned char next_slot, re
 */
 void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstraction_flag,runmode_t mode,relaying_type_t r_type);
 /*!
-  \brief Scheduling for UE RX procedures in normal subframes.  
+  \brief Scheduling for UE RX procedures in normal subframes.
   @param last_slot Index of last slot (0-19)
   @param phy_vars_ue Pointer to UE variables on which to act
   @param eNB_id Local id of eNB on which to act
@@ -207,7 +210,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstraction_flag,runmode_t mode,relaying_type_t r_type,PHY_VARS_RN *phy_vars_rn);
 
 /*!
-  \brief Scheduling for UE TX procedures in TDD S-subframes.  
+  \brief Scheduling for UE TX procedures in TDD S-subframes.
   @param phy_vars_ue Pointer to UE variables on which to act
   @param eNB_id Local id of eNB on which to act
   @param abstraction_flag Indicator of PHY abstraction
@@ -216,7 +219,7 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
 void phy_procedures_UE_S_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstraction_flag,relaying_type_t r_type);
 
 /*!
-  \brief Scheduling for UE RX procedures in TDD S-subframes.  
+  \brief Scheduling for UE RX procedures in TDD S-subframes.
   @param last_slot Index of last slot (0-19)
   @param phy_vars_ue Pointer to UE variables on which to act
   @param eNB_id Local id of eNB on which to act
@@ -226,7 +229,7 @@ void phy_procedures_UE_S_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abst
 void phy_procedures_UE_S_RX(uint8_t last_slot,PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstraction_flag, relaying_type_t r_type);
 
 /*!
-  \brief Scheduling for eNB TX procedures in normal subframes.  
+  \brief Scheduling for eNB TX procedures in normal subframes.
   @param next_slot Index of next slot (0-19)
   @param phy_vars_eNB Pointer to eNB variables on which to act
   @param abstraction_flag Indicator of PHY abstraction
@@ -236,7 +239,7 @@ void phy_procedures_UE_S_RX(uint8_t last_slot,PHY_VARS_UE *phy_vars_ue,uint8_t e
 void phy_procedures_eNB_TX(uint8_t next_slot,PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag,relaying_type_t r_type,PHY_VARS_RN *phy_vars_rn);
 
 /*!
-  \brief Scheduling for eNB RX procedures in normal subframes.  
+  \brief Scheduling for eNB RX procedures in normal subframes.
   @param last_slot Index of last slot (0-19)
   @param phy_vars_eNB Pointer to eNB variables on which to act
   @param abstraction_flag Indicator of PHY abstraction
@@ -245,7 +248,7 @@ void phy_procedures_eNB_TX(uint8_t next_slot,PHY_VARS_eNB *phy_vars_eNB,uint8_t 
 void phy_procedures_eNB_RX(uint8_t last_slot,PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag,relaying_type_t r_type);
 
 /*!
-  \brief Scheduling for eNB TX procedures in TDD S-subframes.  
+  \brief Scheduling for eNB TX procedures in TDD S-subframes.
   @param next_slot Index of next slot (0-19)
   @param phy_vars_eNB Pointer to eNB variables on which to act
   @param abstraction_flag Indicator of PHY abstraction
@@ -254,7 +257,7 @@ void phy_procedures_eNB_RX(uint8_t last_slot,PHY_VARS_eNB *phy_vars_eNB,uint8_t 
 void phy_procedures_eNB_S_TX(uint8_t next_slot,PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag,relaying_type_t r_type);
 
 /*!
-  \brief Scheduling for eNB RX procedures in TDD S-subframes.  
+  \brief Scheduling for eNB RX procedures in TDD S-subframes.
   @param last_slot Index of next slot (0-19)
   @param phy_vars_eNB Pointer to eNB variables on which to act
   @param abstraction_flag Indicator of PHY abstraction
@@ -266,7 +269,7 @@ void phy_procedures_eNB_S_RX(uint8_t last_slot,PHY_VARS_eNB *phy_vars_eNB,uint8_
   \brief Function to compute subframe type as a function of Frame type and TDD Configuration (implements Table 4.2.2 from 36.211, p.11 from version 8.6) and subframe index.
   @param frame_parms Pointer to DL frame parameter descriptor
   @param subframe Subframe index
-  @returns Subframe type (DL,UL,S) 
+  @returns Subframe type (DL,UL,S)
 */
 lte_subframe_t subframe_select(LTE_DL_FRAME_PARMS *frame_parms,uint8_t subframe);
 
@@ -275,7 +278,7 @@ lte_subframe_t subframe_select(LTE_DL_FRAME_PARMS *frame_parms,uint8_t subframe)
   @param Mod_id Index of eNB
   @param CC_id Component Carrier Index
   @param subframe Subframe index
-  @returns Subframe type (DL,UL,S) 
+  @returns Subframe type (DL,UL,S)
 */
 lte_subframe_t get_subframe_direction(uint8_t Mod_id, uint8_t CC_id,uint8_t subframe);
 
@@ -290,30 +293,30 @@ uint32_t is_phich_subframe(LTE_DL_FRAME_PARMS *frame_parms,uint8_t subframe);
 /*!
   \brief Function to compute timing of Msg3 transmission on UL-SCH (first UE transmission in RA procedure). This implements the timing in paragraph a) from Section 6.1.1 in 36.213 (p. 17 in version 8.6).  Used by eNB upon transmission of random-access response (RA_RNTI) to program corresponding ULSCH reception procedure.  Used by UE upon reception of random-access response (RA_RNTI) to program corresponding ULSCH transmission procedure.  This does not support the UL_delay field in RAR (always assumed to be 0).
   @param frame_parms Pointer to DL frame parameter descriptor
-  @param current_subframe Index of subframe where RA_RNTI was received 
+  @param current_subframe Index of subframe where RA_RNTI was received
   @param current_frame Index of frame where RA_RNTI was received
   @param frame Frame index where Msg3 is to be transmitted (n+6 mod 10 for FDD, different for TDD)
   @param subframe subframe index where Msg3 is to be transmitted (n, n+1 or n+2)
 */
 void get_Msg3_alloc(LTE_DL_FRAME_PARMS *frame_parms,
-		    uint8_t current_subframe, 
-		    uint32_t current_frame,
-		    uint32_t *frame,
-		    uint8_t *subframe);
+                    uint8_t current_subframe,
+                    uint32_t current_frame,
+                    uint32_t *frame,
+                    uint8_t *subframe);
 
 /*!
-  \brief Function to compute timing of Msg3 retransmission on UL-SCH (first UE transmission in RA procedure). 
+  \brief Function to compute timing of Msg3 retransmission on UL-SCH (first UE transmission in RA procedure).
   @param frame_parms Pointer to DL frame parameter descriptor
-  @param current_subframe Index of subframe where RA_RNTI was received 
+  @param current_subframe Index of subframe where RA_RNTI was received
   @param current_frame Index of frame where RA_RNTI was received
   @param frame Frame index where Msg3 is to be transmitted (n+6 mod 10 for FDD, different for TDD)
   @param subframe subframe index where Msg3 is to be transmitted (n, n+1 or n+2)
 */
 void get_Msg3_alloc_ret(LTE_DL_FRAME_PARMS *frame_parms,
-			uint8_t current_subframe, 
-			uint32_t current_frame,
-			uint32_t *frame,
-			uint8_t *subframe);
+                        uint8_t current_subframe,
+                        uint32_t current_frame,
+                        uint32_t *frame,
+                        uint8_t *subframe);
 
 /* \brief Get ULSCH harq_pid for Msg3 from RAR subframe.  This returns n+k mod 10 (k>6) and corresponds to the rule in Section 6.1.1 from 36.213
    @param frame_parms Pointer to DL Frame Parameters
@@ -432,7 +435,7 @@ unsigned int get_tx_amp(int gain_dBm, int gain_max_dBm);
 
 void phy_reset_ue(module_id_t Mod_id,uint8_t CC_id,uint8_t eNB_index);
 
-/** \brief This function retrives the resource (n1_pucch) corresponding to a PDSCH transmission in 
+/** \brief This function retrives the resource (n1_pucch) corresponding to a PDSCH transmission in
 subframe n-4 which is acknowledged in subframe n (for FDD) according to n1_pucch = Ncce + N1_pucch.  For
 TDD, this routine computes the complex procedure described in Section 10.1 of 36.213 (through tables 10.1-1,10.1-2)
 @param phy_vars_ue Pointer to UE variables
@@ -443,12 +446,12 @@ TDD, this routine computes the complex procedure described in Section 10.1 of 36
 @returns n1_pucch
 */
 uint16_t get_n1_pucch(PHY_VARS_UE *phy_vars_ue,
-		 uint8_t eNB_id,
-		 uint8_t sched_subframe,
-		 uint8_t *b,
-		 uint8_t SR);
+                      uint8_t eNB_id,
+                      uint8_t sched_subframe,
+                      uint8_t *b,
+                      uint8_t SR);
 
-/** \brief This function retrives the resource (n1_pucch) corresponding to a PDSCH transmission in 
+/** \brief This function retrives the resource (n1_pucch) corresponding to a PDSCH transmission in
 subframe n-4 which is acknowledged in subframe n (for FDD) according to n1_pucch = Ncce + N1_pucch.  For
 TDD, this routine computes the procedure described in Section 10.1 of 36.213 (through tables 10.1-1,10.1-2)
 @param phy_vars_eNB Pointer to UE variables
@@ -461,12 +464,12 @@ TDD, this routine computes the procedure described in Section 10.1 of 36.213 (th
 @param n1_pucch3 Pointer to n1_pucch3
 */
 void get_n1_pucch_eNB(PHY_VARS_eNB *phy_vars_eNB,
-		      uint8_t UE_id,
-		      uint8_t subframe,
-		      int16_t *n1_pucch0,
-		      int16_t *n1_pucch1,
-		      int16_t *n1_pucch2,
-		      int16_t *n1_pucch3);
+                      uint8_t UE_id,
+                      uint8_t subframe,
+                      int16_t *n1_pucch0,
+                      int16_t *n1_pucch1,
+                      int16_t *n1_pucch2,
+                      int16_t *n1_pucch3);
 
 
 /*!
@@ -479,13 +482,13 @@ void get_n1_pucch_eNB(PHY_VARS_eNB *phy_vars_eNB,
   @param pucch_sel Selection of n1_pucch0 or n1_pucch1 (TDD specific)
   @param SR_payload Indication of SR presence (TDD specific)
 */
-void process_HARQ_feedback(uint8_t UE_id, 
-			   uint8_t subframe, 
-			   PHY_VARS_eNB *phy_vars_eNB,
-			   uint8_t pusch_flag, 
-			   uint8_t *pucch_payload, 
-			   uint8_t pucch_sel,
-			   uint8_t SR_payload);
+void process_HARQ_feedback(uint8_t UE_id,
+                           uint8_t subframe,
+                           PHY_VARS_eNB *phy_vars_eNB,
+                           uint8_t pusch_flag,
+                           uint8_t *pucch_payload,
+                           uint8_t pucch_sel,
+                           uint8_t SR_payload);
 
 /*!
   \brief This function retrieves the PHY UE mode. It is used as a helper function for the UE MAC.
@@ -493,7 +496,7 @@ void process_HARQ_feedback(uint8_t UE_id,
   @param CC_id Component Carrier Index
   @param eNB_index ID of eNB
   @returns UE mode
-*/ 
+*/
 UE_MODE_t get_ue_mode(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index);
 
 /** \brief This function implements the power control mechanism for PUCCH from 36.213.

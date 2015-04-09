@@ -33,7 +33,7 @@
     email                : navid.nikaein@eurecom.fr
                            lionel.gauthier@eurecom.fr
                            knopp@eurecom.fr
-		
+
 ***************************************************************************/
 
 #ifndef _NAS_PROTO_H
@@ -87,11 +87,11 @@ int find_inst(struct net_device *dev);
 @param rclass RX Classifier entity
 @param rb_id Radio Bearer Id
  */
-void nas_COMMON_receive(unsigned short dlen, 
-			void *pdcp_sdu,
-			int inst,
-			struct classifier_entity *rclass,
-			nasRadioBearerId_t rb_id);
+void nas_COMMON_receive(unsigned short dlen,
+                        void *pdcp_sdu,
+                        int inst,
+                        struct classifier_entity *rclass,
+                        nasRadioBearerId_t rb_id);
 
 /**
 \fn void nas_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc,int inst)
@@ -184,12 +184,12 @@ void nas_COMMON_QOS_receive(struct nlmsghdr *nlh);
 #endif //NAS_NETLINK
 //nasmesh.c
 
-/** 
+/**
   \brief Initialize an interface for a particular instance ID.
 */
 void nas_mesh_init(int inst   //!< Instance ID
 
-);
+                  );
 
 void nas_mesh_timer(unsigned long data,struct nas_priv *gpriv);
 
@@ -206,74 +206,74 @@ int nas_CTL_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd);
 
 // classifier.c
 
-/** 
+/**
   \brief Send a socket received from IP to classifier for a particular instance ID.
 */
 void nas_CLASS_send(struct sk_buff *skb,    //!< Pointer to socket buffer
-		    int inst                //!< Instance ID  
-		    );
-/** 
+                    int inst                //!< Instance ID
+                   );
+/**
   \brief
 */
 struct classifier_entity *nas_CLASS_add_sclassifier(struct cx_entity *cx, unsigned char dscp, unsigned short classref);
 
-/** 
+/**
   \brief Send a socket received from IP to classifier for a particular instance ID.
 */
-struct classifier_entity *nas_CLASS_add_fclassifier(struct cx_entity *cx, 
-						    unsigned char dscp, 
-						    unsigned short classref
-						    );
+struct classifier_entity *nas_CLASS_add_fclassifier(struct cx_entity *cx,
+    unsigned char dscp,
+    unsigned short classref
+                                                   );
 
-/** 
+/**
   \brief Send a socket received from IP to classifier for a particular instance ID.
 */
-struct classifier_entity *nas_CLASS_add_rclassifier(unsigned char dscp, 
-						    unsigned short classref,
-						    struct nas_priv*
-						    );
+struct classifier_entity *nas_CLASS_add_rclassifier(unsigned char dscp,
+    unsigned short classref,
+    struct nas_priv*
+                                                   );
 
-/** 
-  \brief 
+/**
+  \brief
 */
-void nas_CLASS_del_sclassifier(struct cx_entity *cx, 
-			       unsigned char dscp, 
-			       unsigned short classref
-			       );
+void nas_CLASS_del_sclassifier(struct cx_entity *cx,
+                               unsigned char dscp,
+                               unsigned short classref
+                              );
 
-/** 
-  \brief 
+/**
+  \brief
 */
-void nas_CLASS_del_fclassifier(struct cx_entity *cx, 
-			       unsigned char dscp, 
-			       unsigned short classref
-			       );
+void nas_CLASS_del_fclassifier(struct cx_entity *cx,
+                               unsigned char dscp,
+                               unsigned short classref
+                              );
 
-/** 
-  \brief 
+/**
+  \brief
 */
-void nas_CLASS_del_rclassifier(unsigned char dscp, 
-			       unsigned short classref,
-			       struct nas_priv*
-			       );
+void nas_CLASS_del_rclassifier(unsigned char dscp,
+                               unsigned short classref,
+                               struct nas_priv*
+                              );
 
-/** 
-  \brief 
+/**
+  \brief
 */
 void nas_CLASS_flush_sclassifier(struct cx_entity *cx
-				 );
+                                );
 
-/** 
-  \brief 
+/**
+  \brief
 */
 void nas_CLASS_flush_fclassifier(struct cx_entity *cx
-				 );
+                                );
 
-/** 
-  \brief 
+/**
+  \brief
 */
 void nas_CLASS_flush_rclassifier(struct nas_priv *gpriv
-				 );
+                                );
 
 
 // nas_tool.c

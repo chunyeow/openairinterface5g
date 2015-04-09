@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -81,25 +81,26 @@ short *dlsch_llr,*dlsch_comp;
 
 int length,offset;
 float avg=1;
-int sach_flag; 
+int sach_flag;
 
 unsigned char nb_ant_tx, nb_ant_rx;
 
 
-void lte_scope_idle_callback(void) {
+void lte_scope_idle_callback(void)
+{
 
   int i,j,ind,k,s;
 
   float Re,Im;
   float mag_sig[NB_ANTENNAS_RX*NB_ANTENNAS_TX*NUMBER_OF_OFDM_CARRIERS*NUMBER_OF_OFDM_SYMBOLS_PER_SLOT],
-    sig_time[NB_ANTENNAS_RX*NB_ANTENNAS_TX*NUMBER_OF_OFDM_CARRIERS*NUMBER_OF_OFDM_SYMBOLS_PER_SLOT],
-    sig2[FRAME_LENGTH_COMPLEX_SAMPLES],
-    time2[FRAME_LENGTH_COMPLEX_SAMPLES],
-    I[25*12*12], Q[25*12*12],
-    //llr[8*(3*8*6144+12)],
-    //llr_time[8*(3*8*6144+12)];
-    llr[25*12*4*7],
-    llr_time[25*12*4*7];
+        sig_time[NB_ANTENNAS_RX*NB_ANTENNAS_TX*NUMBER_OF_OFDM_CARRIERS*NUMBER_OF_OFDM_SYMBOLS_PER_SLOT],
+        sig2[FRAME_LENGTH_COMPLEX_SAMPLES],
+        time2[FRAME_LENGTH_COMPLEX_SAMPLES],
+        I[25*12*12], Q[25*12*12],
+        //llr[8*(3*8*6144+12)],
+        //llr_time[8*(3*8*6144+12)];
+        llr[25*12*4*7],
+        llr_time[25*12*4*7];
 
   /*
     mag_h[NB_ANTENNAS_RX*NUMBER_OF_OFDM_CARRIERS*NUMBER_OF_OFDM_SYMBOLS_PER_SLOT*8],
@@ -110,25 +111,27 @@ void lte_scope_idle_callback(void) {
     scat_sig_im2[NUMBER_OF_OFDM_CARRIERS*NUMBER_OF_OFDM_SYMBOLS_PER_SLOT*8];
   */
   float cum_avg;
-  
+
   // Channel frequency response
   cum_avg = 0;
   ind = 0;
-  for (j=0; j<4; j++) { 
-  for (i=0;i<nb_ant_rx;i++) {
-    //for (j=0; j<1; j++) { 
-    //for (i=0;i<1;i++) {
-      
+
+  for (j=0; j<4; j++) {
+    for (i=0; i<nb_ant_rx; i++) {
+      //for (j=0; j<1; j++) {
+      //for (i=0;i<1;i++) {
+
       //for (k=0;k<frame_parms->symbols_per_tti*NUMBER_OF_OFDM_CARRIERS;k++){
-      for (k=0;k<NUMBER_OF_OFDM_CARRIERS;k++){
-	sig_time[ind] = (float)ind;
-	Re = (float)(channel_f[(j<<1)+i][2*k]);
-	Im = (float)(channel_f[(j<<1)+i][2*k+1]);
-	//mag_sig[ind] = (short) rand(); 
-	mag_sig[ind] = (short)10*log10(1.0+((double)Re*Re + (double)Im*Im)); 
-	cum_avg += (short)sqrt((double)Re*Re + (double)Im*Im) ;
-	ind++;
+      for (k=0; k<NUMBER_OF_OFDM_CARRIERS; k++) {
+        sig_time[ind] = (float)ind;
+        Re = (float)(channel_f[(j<<1)+i][2*k]);
+        Im = (float)(channel_f[(j<<1)+i][2*k+1]);
+        //mag_sig[ind] = (short) rand();
+        mag_sig[ind] = (short)10*log10(1.0+((double)Re*Re + (double)Im*Im));
+        cum_avg += (short)sqrt((double)Re*Re + (double)Im*Im) ;
+        ind++;
       }
+
       //      ind+=NUMBER_OF_OFDM_CARRIERS/4; // spacing for visualization
     }
   }
@@ -153,19 +156,19 @@ void lte_scope_idle_callback(void) {
   ind = 0;
   for (k=0;k<1;k++){
     for (j=0;j<1;j++) {
-      
+
       for (i=0;i<frame_parms->ofdm_symbol_size;i++){
-	sig_time[ind] = (float)ind;
-	Re = (float)(channel[k+2*j][2*i]);
-	Im = (float)(channel[k+2*j][2*i+1]);
-	//mag_sig[ind] = (short) rand(); 
-	mag_sig[ind] = (short)10*log10(1.0+((double)Re*Re + (double)Im*Im)); 
-	cum_avg += (short)sqrt((double)Re*Re + (double)Im*Im) ;
-	ind++;
+  sig_time[ind] = (float)ind;
+  Re = (float)(channel[k+2*j][2*i]);
+  Im = (float)(channel[k+2*j][2*i+1]);
+  //mag_sig[ind] = (short) rand();
+  mag_sig[ind] = (short)10*log10(1.0+((double)Re*Re + (double)Im*Im));
+  cum_avg += (short)sqrt((double)Re*Re + (double)Im*Im) ;
+  ind++;
       }
     }
   }
-  
+
   //fl_set_xyplot_ybounds(form->channel_t_im,10,90);
   fl_set_xyplot_data(form->channel_t_im,sig_time,mag_sig,ind,"","","");
   */
@@ -175,12 +178,12 @@ void lte_scope_idle_callback(void) {
     //for (i=0; i<NUMBER_OF_OFDM_CARRIERS*frame_parms->symbols_per_tti/2; i++)  {
     sig2[i] = 10*log10(1.0+(double) ((rx_sig[0][2*i])*(rx_sig[0][2*i])+(rx_sig[0][2*i+1])*(rx_sig[0][2*i+1])));
     time2[i] = (float) i;
-  } 
+  }
 
   //fl_set_xyplot_ybounds(form->channel_t_re,10,90);
   //fl_set_xyplot_data(form->channel_t_re,&time2[512*12*9],&sig2[512*12*9],512*12,"","","");
   fl_set_xyplot_data(form->channel_t_re,time2,sig2,FRAME_LENGTH_COMPLEX_SAMPLES,"","","");
-  
+
 
   // channel_t_im = rx_sig[1]
   if (nb_ant_rx>1) {
@@ -197,7 +200,8 @@ void lte_scope_idle_callback(void) {
 
   // PBCH LLR
   j=0;
-  for(i=0;i<1920;i++) {
+
+  for(i=0; i<1920; i++) {
     llr[j] = (float) pbch_llr[i];
     llr_time[j] = (float) j;
     /*
@@ -214,7 +218,8 @@ void lte_scope_idle_callback(void) {
 
   // PBCH I/Q
   j=0;
-  for(i=0;i<12*12;i++) {
+
+  for(i=0; i<12*12; i++) {
     I[j] = pbch_comp[2*i];
     Q[j] = pbch_comp[2*i+1];
     j++;
@@ -232,7 +237,8 @@ void lte_scope_idle_callback(void) {
 
   // PDCCH I/Q
   j=0;
-  for(i=0;i<12*25*3;i++) {
+
+  for(i=0; i<12*25*3; i++) {
     I[j] = pdcch_comp[2*i];
     Q[j] = pdcch_comp[2*i+1];
     j++;
@@ -249,7 +255,7 @@ void lte_scope_idle_callback(void) {
   //fl_set_xyplot_ybounds(form->scatter_plot,-100,100);
 
   // DLSCH LLR
-  for(i=0;i<12*12*7*2;i++) {
+  for(i=0; i<12*12*7*2; i++) {
     llr[i] = (float) dlsch_llr[i];
     llr_time[i] = (float) i;
   }
@@ -260,12 +266,14 @@ void lte_scope_idle_callback(void) {
 
   // DLSCH I/Q
   j=0;
-  for (s=2;s<12;s++) {
-    for(i=0;i<12*12;i++) {
+
+  for (s=2; s<12; s++) {
+    for(i=0; i<12*12; i++) {
       I[j] = dlsch_comp[(2*25*12*s)+2*i];
       Q[j] = dlsch_comp[(2*25*12*s)+2*i+1];
       j++;
     }
+
     if (s==2)
       s=3;
     else if (s==5)
@@ -281,9 +289,10 @@ void lte_scope_idle_callback(void) {
   usleep(500000);
 }
 //-----------------------------------------------------------------------------
-do_scope(){
+do_scope()
+{
 
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   char ch;
 
   fl_set_idle_callback(lte_scope_idle_callback, NULL);
@@ -294,8 +303,9 @@ do_scope(){
 }
 
 //-----------------------------------------------------------------------------
-int main(int argc, char *argv[]) {
-//-----------------------------------------------------------------------------
+int main(int argc, char *argv[])
+{
+  //-----------------------------------------------------------------------------
 
   int openair_fd,i,j;
   unsigned int mem_base;
@@ -314,6 +324,7 @@ int main(int argc, char *argv[]) {
   PHY_vars_UE = malloc(sizeof(PHY_VARS_UE));
 
   printf("Opening /dev/openair0\n");
+
   if ((openair_fd = open("/dev/openair0", O_RDONLY)) <0) {
     fprintf(stderr,"Error %d opening /dev/openair0\n",openair_fd);
     exit(-1);
@@ -348,116 +359,116 @@ int main(int argc, char *argv[]) {
   nb_ant_tx = PHY_vars_UE->lte_frame_parms.nb_antennas_tx;
   nb_ant_rx = PHY_vars_UE->lte_frame_parms.nb_antennas_rx;
   printf("(TX, RX) ANTENNAS = %d, %d\n",nb_ant_tx,nb_ant_rx);
-  
+
   mem_base = (unsigned int) mmap(0,
-				 BIGPHYS_NUMPAGES*4096,
-				 PROT_READ,
-				 MAP_PRIVATE,
-				 openair_fd,
-				 0);
+                                 BIGPHYS_NUMPAGES*4096,
+                                 PROT_READ,
+                                 MAP_PRIVATE,
+                                 openair_fd,
+                                 0);
 
   if (mem_base != -1)
     msg("MEM base= %x\n",mem_base);
   else
     msg("Could not map physical memory\n");
 
-  //  txdata0 = (int *)(mem_base + PHY_vars_UE->lte_ue_common_vars.txdataF) - 
-  for (i=0;i<nb_ant_rx;i++) {
-    for (j=0; j<4; j++) { 
+  //  txdata0 = (int *)(mem_base + PHY_vars_UE->lte_ue_common_vars.txdataF) -
+  for (i=0; i<nb_ant_rx; i++) {
+    for (j=0; j<4; j++) {
 
-      channel_f[(j<<1)+i] = (short*)(mem_base + 
-				     (unsigned int)PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0] + 
-				     8*sizeof(int*) + 
-				     (j+i*4)*(frame_parms->symbols_per_tti*sizeof(int)*frame_parms->ofdm_symbol_size) - 
-				     bigphys_top);
+      channel_f[(j<<1)+i] = (short*)(mem_base +
+                                     (unsigned int)PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0] +
+                                     8*sizeof(int*) +
+                                     (j+i*4)*(frame_parms->symbols_per_tti*sizeof(int)*frame_parms->ofdm_symbol_size) -
+                                     bigphys_top);
 
-      channel[(j<<1)+i] = (short*)(mem_base + 
-				   (unsigned int)PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates_time + 
-				   8*sizeof(int*) + 
-				   (j+i*4)*(frame_parms->symbols_per_tti*sizeof(int)*frame_parms->ofdm_symbol_size) - 
-				   bigphys_top);
+      channel[(j<<1)+i] = (short*)(mem_base +
+                                   (unsigned int)PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates_time +
+                                   8*sizeof(int*) +
+                                   (j+i*4)*(frame_parms->symbols_per_tti*sizeof(int)*frame_parms->ofdm_symbol_size) -
+                                   bigphys_top);
     }
 
     // fix this for visualizing more than 1 antenna!!!
-    rx_sig_ptr = (short **)(mem_base + 
-			    (unsigned int)PHY_vars_UE->lte_ue_common_vars.rxdata -
-			    bigphys_top);
-    rx_sig[i] = (short *)(mem_base + 
-			  (unsigned int)rx_sig_ptr[i] -
-			  bigphys_top); 
+    rx_sig_ptr = (short **)(mem_base +
+                            (unsigned int)PHY_vars_UE->lte_ue_common_vars.rxdata -
+                            bigphys_top);
+    rx_sig[i] = (short *)(mem_base +
+                          (unsigned int)rx_sig_ptr[i] -
+                          bigphys_top);
 
-    rx_sig_f_ptr = (short **)(mem_base + 
-			    (unsigned int)PHY_vars_UE->lte_ue_common_vars.rxdataF -
-			    bigphys_top);
-    rx_sig_f[i] = (short *)(mem_base + 
-			  (unsigned int)rx_sig_f_ptr[i] -
-			  bigphys_top); 
+    rx_sig_f_ptr = (short **)(mem_base +
+                              (unsigned int)PHY_vars_UE->lte_ue_common_vars.rxdataF -
+                              bigphys_top);
+    rx_sig_f[i] = (short *)(mem_base +
+                            (unsigned int)rx_sig_f_ptr[i] -
+                            bigphys_top);
   }
 
-  sync_corr = (int*)(mem_base + 
-		     (unsigned int)PHY_vars_UE->lte_ue_common_vars.sync_corr - 
-		     bigphys_top);
+  sync_corr = (int*)(mem_base +
+                     (unsigned int)PHY_vars_UE->lte_ue_common_vars.sync_corr -
+                     bigphys_top);
   printf("sync_corr = %p\n", sync_corr);
 
   // only if UE
-  lte_ue_pbch = (LTE_UE_PBCH *) (mem_base + 
-				 (unsigned int)PHY_vars_UE->lte_ue_pbch_vars[0] - 
-				 bigphys_top);
+  lte_ue_pbch = (LTE_UE_PBCH *) (mem_base +
+                                 (unsigned int)PHY_vars_UE->lte_ue_pbch_vars[0] -
+                                 bigphys_top);
 
   printf("lte_ue_pbch (kernel) = %p\n",PHY_vars_UE->lte_ue_pbch_vars[0]);
   printf("lte_ue_pbch (local)= %p\n",lte_ue_pbch);
 
-  pbch_comp = (short*)(mem_base + 
-		       (unsigned int)lte_ue_pbch->rxdataF_comp + 
-		       8*sizeof(int*) +
-		       8*sizeof(short*) -// because there is dl_ch_estimates_ext allocated in between
-		       bigphys_top);
+  pbch_comp = (short*)(mem_base +
+                       (unsigned int)lte_ue_pbch->rxdataF_comp +
+                       8*sizeof(int*) +
+                       8*sizeof(short*) -// because there is dl_ch_estimates_ext allocated in between
+                       bigphys_top);
 
 
-  pbch_llr = (char*) (mem_base + 
-		       (unsigned int)lte_ue_pbch->llr - 
-		       bigphys_top);
-  
+  pbch_llr = (char*) (mem_base +
+                      (unsigned int)lte_ue_pbch->llr -
+                      bigphys_top);
+
   printf("pbch_comp = %p\n",pbch_comp);
   printf("pbch_llr= %p\n",pbch_llr);
 
-  lte_ue_pdcch = (LTE_UE_PDCCH *) (mem_base + 
-				   (unsigned int)PHY_vars_UE->lte_ue_pdcch_vars[0] - 
-				   bigphys_top);
+  lte_ue_pdcch = (LTE_UE_PDCCH *) (mem_base +
+                                   (unsigned int)PHY_vars_UE->lte_ue_pdcch_vars[0] -
+                                   bigphys_top);
 
   printf("lte_ue_pdcch (kernel) = %p\n",PHY_vars_UE->lte_ue_pdcch_vars[0]);
   printf("lte_ue_pdcch (local)= %p\n",lte_ue_pdcch);
 
-  pdcch_comp = (short*)(mem_base + 
-			(unsigned int)lte_ue_pdcch->rxdataF_comp + 
-			8*sizeof(int*) -
-			bigphys_top);
+  pdcch_comp = (short*)(mem_base +
+                        (unsigned int)lte_ue_pdcch->rxdataF_comp +
+                        8*sizeof(int*) -
+                        bigphys_top);
 
   printf("pdcch_comp = %p\n",pdcch_comp);
 
 
-  lte_ue_dlsch = (LTE_UE_DLSCH *) (mem_base + 
-				   (unsigned int)PHY_vars_UE->lte_ue_dlsch_vars[0] - 
-				   bigphys_top);
+  lte_ue_dlsch = (LTE_UE_DLSCH *) (mem_base +
+                                   (unsigned int)PHY_vars_UE->lte_ue_dlsch_vars[0] -
+                                   bigphys_top);
 
   printf("lte_ue_dlsch (kernel)= %p\n",PHY_vars_UE->lte_ue_dlsch_vars[0]);
   printf("lte_ue_dlsch (local) = %p\n",lte_ue_dlsch);
 
-  dlsch_comp = (short*)(mem_base + 
-			(unsigned int)lte_ue_dlsch->rxdataF_comp + 
-			8*sizeof(int*) - 
-			bigphys_top);
-  
-  dlsch_llr = (short*) (mem_base + 
-			(unsigned int)lte_ue_dlsch->llr[0] - 
-			bigphys_top);
+  dlsch_comp = (short*)(mem_base +
+                        (unsigned int)lte_ue_dlsch->rxdataF_comp +
+                        8*sizeof(int*) -
+                        bigphys_top);
+
+  dlsch_llr = (short*) (mem_base +
+                        (unsigned int)lte_ue_dlsch->llr[0] -
+                        bigphys_top);
 
   printf("dlsch_comp = %p\n",dlsch_comp);
   printf("dlsch_llr = %p\n",dlsch_llr);
-  
+
   sprintf(title, "LTE SCOPE"),
 
-  fl_initialize(&argc, argv, title, 0, 0);    /* SIGSCOPE */
+          fl_initialize(&argc, argv, title, 0, 0);    /* SIGSCOPE */
   form = create_form_lte_scope();                 /* SIGSCOPE */
   fl_show_form(form->lte_scope,FL_PLACE_HOTSPOT,FL_FULLBORDER,title);   /* SIGSCOPE */
 

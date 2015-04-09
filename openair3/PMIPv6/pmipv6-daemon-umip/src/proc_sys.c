@@ -2,7 +2,7 @@
  * $Id: proc_sys.c 1.9 06/04/25 13:24:14+03:00 anttit@tcs.hut.fi $
  *
  * This file is part of the MIPL Mobile IPv6 for Linux.
- * 
+ *
  * Author: Ville Nuorvala <vnuorval@tcs.hut.fi>
  *
  * Copyright 2003-2005 Go-Core Project
@@ -33,30 +33,34 @@
 
 int set_iface_proc_entry(const char *tmpl, const char *if_name, int val)
 {
-	FILE *fp;
-	char path[64+IF_NAMESIZE];
-	int ret = -1;
+  FILE *fp;
+  char path[64+IF_NAMESIZE];
+  int ret = -1;
 
-	sprintf(path, tmpl, if_name);
-	fp = fopen(path, "w");
-	if (!fp)
-		return ret;
-	ret = fprintf(fp, "%d", val);
-	fclose(fp);
-	return ret;
+  sprintf(path, tmpl, if_name);
+  fp = fopen(path, "w");
+
+  if (!fp)
+    return ret;
+
+  ret = fprintf(fp, "%d", val);
+  fclose(fp);
+  return ret;
 }
 
 int get_iface_proc_entry(const char *tmpl, const char *if_name, int *val)
 {
-	FILE *fp;
-	char path[64+IF_NAMESIZE];
-	int ret = -1;
+  FILE *fp;
+  char path[64+IF_NAMESIZE];
+  int ret = -1;
 
-	sprintf(path, tmpl, if_name);
-	fp = fopen(path, "r");
-	if (!fp)
-		return ret;
-	ret = fscanf(fp, "%d", val);
-	fclose(fp);
-	return ret;
+  sprintf(path, tmpl, if_name);
+  fp = fopen(path, "r");
+
+  if (!fp)
+    return ret;
+
+  ret = fscanf(fp, "%d", val);
+  fclose(fp);
+  return ret;
 }

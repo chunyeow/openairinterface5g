@@ -13,12 +13,12 @@ extern void ia_receiver_on_off( FL_OBJECT *, long );
 /* Forms and Objects */
 
 typedef struct {
-    FL_FORM   * lte_scope;
-    void      * vdata;
-    char      * cdata;
-    long        ldata;
-    FL_OBJECT * channel_t_re[4];
-    FL_OBJECT * channel_t_im[4];
+  FL_FORM   * lte_scope;
+  void      * vdata;
+  char      * cdata;
+  long        ldata;
+  FL_OBJECT * channel_t_re[4];
+  FL_OBJECT * channel_t_im[4];
   /*
     FL_OBJECT * scatter_plot;
     FL_OBJECT * channel_f;

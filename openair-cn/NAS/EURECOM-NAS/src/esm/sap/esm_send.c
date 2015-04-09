@@ -97,21 +97,21 @@ Description Defines functions executed at the ESM Service Access
  ***************************************************************************/
 int esm_send_status(int pti, int ebi, esm_status_msg *msg, int esm_cause)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Mandatory - ESM message header */
-    msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
-    msg->epsbeareridentity = ebi;
-    msg->messagetype = ESM_STATUS;
-    msg->proceduretransactionidentity = pti;
+  /* Mandatory - ESM message header */
+  msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
+  msg->epsbeareridentity = ebi;
+  msg->messagetype = ESM_STATUS;
+  msg->proceduretransactionidentity = pti;
 
-    /* Mandatory - ESM cause code */
-    msg->esmcause = esm_cause;
+  /* Mandatory - ESM cause code */
+  msg->esmcause = esm_cause;
 
-    LOG_TRACE(WARNING, "ESM-SAP   - Send ESM Status message (pti=%d, ebi=%d)",
-              msg->proceduretransactionidentity, msg->epsbeareridentity);
+  LOG_TRACE(WARNING, "ESM-SAP   - Send ESM Status message (pti=%d, ebi=%d)",
+            msg->proceduretransactionidentity, msg->epsbeareridentity);
 
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_FUNC_RETURN(RETURNok);
 }
 
 /*
@@ -146,47 +146,49 @@ int esm_send_pdn_connectivity_request(int pti, int is_emergency, int pdn_type,
                                       const char *apn,
                                       pdn_connectivity_request_msg *msg)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Mandatory - ESM message header */
-    msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
-    msg->epsbeareridentity = EPS_BEARER_IDENTITY_UNASSIGNED;
-    msg->messagetype = PDN_CONNECTIVITY_REQUEST;
-    msg->proceduretransactionidentity = pti;
+  /* Mandatory - ESM message header */
+  msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
+  msg->epsbeareridentity = EPS_BEARER_IDENTITY_UNASSIGNED;
+  msg->messagetype = PDN_CONNECTIVITY_REQUEST;
+  msg->proceduretransactionidentity = pti;
 
-    /* Mandatory - PDN connectivity request type */
-    if (is_emergency) {
-        msg->requesttype = REQUEST_TYPE_EMERGENCY;
-    } else {
-        msg->requesttype = REQUEST_TYPE_INITIAL_REQUEST;
+  /* Mandatory - PDN connectivity request type */
+  if (is_emergency) {
+    msg->requesttype = REQUEST_TYPE_EMERGENCY;
+  } else {
+    msg->requesttype = REQUEST_TYPE_INITIAL_REQUEST;
+  }
+
+  /* Mandatory - PDN type */
+  if (pdn_type == NET_PDN_TYPE_IPV4) {
+    msg->pdntype = PDN_TYPE_IPV4;
+  } else if (pdn_type == NET_PDN_TYPE_IPV6) {
+    msg->pdntype = PDN_TYPE_IPV6;
+  } else if (pdn_type == NET_PDN_TYPE_IPV4V6) {
+    msg->pdntype = PDN_TYPE_IPV4V6;
+  }
+
+  /* Optional - Access Point Name */
+  msg->presencemask = 0;
+
+  if (apn) {
+    size_t len = strlen(apn);
+
+    if (len > 0) {
+      msg->presencemask |=
+        PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT;
+      msg->accesspointname.accesspointnamevalue.length = len;
+      msg->accesspointname.accesspointnamevalue.value = (uint8_t *)apn;
     }
+  }
 
-    /* Mandatory - PDN type */
-    if (pdn_type == NET_PDN_TYPE_IPV4) {
-        msg->pdntype = PDN_TYPE_IPV4;
-    } else if (pdn_type == NET_PDN_TYPE_IPV6) {
-        msg->pdntype = PDN_TYPE_IPV6;
-    } else if (pdn_type == NET_PDN_TYPE_IPV4V6) {
-        msg->pdntype = PDN_TYPE_IPV4V6;
-    }
+  LOG_TRACE(INFO, "ESM-SAP   - Send PDN Connectivity Request message "
+            "(pti=%d, ebi=%d)",
+            msg->proceduretransactionidentity, msg->epsbeareridentity);
 
-    /* Optional - Access Point Name */
-    msg->presencemask = 0;
-    if (apn) {
-        size_t len = strlen(apn);
-        if (len > 0) {
-            msg->presencemask |=
-                PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT;
-            msg->accesspointname.accesspointnamevalue.length = len;
-            msg->accesspointname.accesspointnamevalue.value = (uint8_t *)apn;
-        }
-    }
-
-    LOG_TRACE(INFO, "ESM-SAP   - Send PDN Connectivity Request message "
-              "(pti=%d, ebi=%d)",
-              msg->proceduretransactionidentity, msg->epsbeareridentity);
-
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_FUNC_RETURN(RETURNok);
 }
 
 /****************************************************************************
@@ -212,24 +214,24 @@ int esm_send_pdn_connectivity_request(int pti, int is_emergency, int pdn_type,
 int esm_send_pdn_disconnect_request(int pti, int ebi,
                                     pdn_disconnect_request_msg *msg)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Mandatory - ESM message header */
-    msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
-    msg->epsbeareridentity = EPS_BEARER_IDENTITY_UNASSIGNED;
-    msg->messagetype = PDN_DISCONNECT_REQUEST;
-    msg->proceduretransactionidentity = pti;
+  /* Mandatory - ESM message header */
+  msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
+  msg->epsbeareridentity = EPS_BEARER_IDENTITY_UNASSIGNED;
+  msg->messagetype = PDN_DISCONNECT_REQUEST;
+  msg->proceduretransactionidentity = pti;
 
-    /* Mandatory - Linked EPS bearer identity */
-    msg->linkedepsbeareridentity = ebi;
-    /* Optional IEs  */
-    msg->presencemask = 0;
+  /* Mandatory - Linked EPS bearer identity */
+  msg->linkedepsbeareridentity = ebi;
+  /* Optional IEs  */
+  msg->presencemask = 0;
 
-    LOG_TRACE(INFO, "ESM-SAP   - Send PDN Disconnect Request message "
-              "(pti=%d, ebi=%d)",
-              msg->proceduretransactionidentity, msg->epsbeareridentity);
+  LOG_TRACE(INFO, "ESM-SAP   - Send PDN Disconnect Request message "
+            "(pti=%d, ebi=%d)",
+            msg->proceduretransactionidentity, msg->epsbeareridentity);
 
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_FUNC_RETURN(RETURNok);
 }
 
 /****************************************************************************
@@ -251,24 +253,24 @@ int esm_send_pdn_disconnect_request(int pti, int ebi,
  **                                                                        **
  ***************************************************************************/
 int esm_send_activate_default_eps_bearer_context_accept(int ebi,
-        activate_default_eps_bearer_context_accept_msg *msg)
+    activate_default_eps_bearer_context_accept_msg *msg)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Mandatory - ESM message header */
-    msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
-    msg->epsbeareridentity = ebi;
-    msg->messagetype = ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT;
-    msg->proceduretransactionidentity = PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
-    /* Mandatory IEs */
-    /* Optional IEs  */
-    msg->presencemask = 0;
+  /* Mandatory - ESM message header */
+  msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
+  msg->epsbeareridentity = ebi;
+  msg->messagetype = ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT;
+  msg->proceduretransactionidentity = PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+  /* Mandatory IEs */
+  /* Optional IEs  */
+  msg->presencemask = 0;
 
-    LOG_TRACE(INFO, "ESM-SAP   - Send Activate Default EPS Bearer Context "
-              "Accept message (pti=%d, ebi=%d)",
-              msg->proceduretransactionidentity, msg->epsbeareridentity);
+  LOG_TRACE(INFO, "ESM-SAP   - Send Activate Default EPS Bearer Context "
+            "Accept message (pti=%d, ebi=%d)",
+            msg->proceduretransactionidentity, msg->epsbeareridentity);
 
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_FUNC_RETURN(RETURNok);
 }
 
 /****************************************************************************
@@ -291,25 +293,25 @@ int esm_send_activate_default_eps_bearer_context_accept(int ebi,
  **                                                                        **
  ***************************************************************************/
 int esm_send_activate_default_eps_bearer_context_reject(int ebi,
-        activate_default_eps_bearer_context_reject_msg *msg, int esm_cause)
+    activate_default_eps_bearer_context_reject_msg *msg, int esm_cause)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Mandatory - ESM message header */
-    msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
-    msg->epsbeareridentity = ebi;
-    msg->messagetype = ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT;
-    msg->proceduretransactionidentity = PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
-    /* Mandatory - ESM cause code */
-    msg->esmcause = esm_cause;
-    /* Optional IEs  */
-    msg->presencemask = 0;
+  /* Mandatory - ESM message header */
+  msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
+  msg->epsbeareridentity = ebi;
+  msg->messagetype = ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT;
+  msg->proceduretransactionidentity = PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+  /* Mandatory - ESM cause code */
+  msg->esmcause = esm_cause;
+  /* Optional IEs  */
+  msg->presencemask = 0;
 
-    LOG_TRACE(INFO, "ESM-SAP   - Send Activate Default EPS Bearer Context "
-              "Reject message (pti=%d, ebi=%d)",
-              msg->proceduretransactionidentity, msg->epsbeareridentity);
+  LOG_TRACE(INFO, "ESM-SAP   - Send Activate Default EPS Bearer Context "
+            "Reject message (pti=%d, ebi=%d)",
+            msg->proceduretransactionidentity, msg->epsbeareridentity);
 
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_FUNC_RETURN(RETURNok);
 }
 
 /****************************************************************************
@@ -334,24 +336,24 @@ int esm_send_activate_default_eps_bearer_context_reject(int ebi,
  **                                                                        **
  ***************************************************************************/
 int esm_send_activate_dedicated_eps_bearer_context_accept(int ebi,
-        activate_dedicated_eps_bearer_context_accept_msg *msg)
+    activate_dedicated_eps_bearer_context_accept_msg *msg)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Mandatory - ESM message header */
-    msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
-    msg->epsbeareridentity = ebi;
-    msg->messagetype = ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT;
-    msg->proceduretransactionidentity = PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
-    /* Mandatory IEs */
-    /* Optional IEs  */
-    msg->presencemask = 0;
+  /* Mandatory - ESM message header */
+  msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
+  msg->epsbeareridentity = ebi;
+  msg->messagetype = ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT;
+  msg->proceduretransactionidentity = PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+  /* Mandatory IEs */
+  /* Optional IEs  */
+  msg->presencemask = 0;
 
-    LOG_TRACE(INFO, "ESM-SAP   - Send Activate Dedicated EPS Bearer Context "
-              "Accept message (pti=%d, ebi=%d)",
-              msg->proceduretransactionidentity, msg->epsbeareridentity);
+  LOG_TRACE(INFO, "ESM-SAP   - Send Activate Dedicated EPS Bearer Context "
+            "Accept message (pti=%d, ebi=%d)",
+            msg->proceduretransactionidentity, msg->epsbeareridentity);
 
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_FUNC_RETURN(RETURNok);
 }
 
 /****************************************************************************
@@ -375,25 +377,25 @@ int esm_send_activate_dedicated_eps_bearer_context_accept(int ebi,
  **                                                                        **
  ***************************************************************************/
 int esm_send_activate_dedicated_eps_bearer_context_reject(int ebi,
-        activate_dedicated_eps_bearer_context_reject_msg *msg, int esm_cause)
+    activate_dedicated_eps_bearer_context_reject_msg *msg, int esm_cause)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Mandatory - ESM message header */
-    msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
-    msg->epsbeareridentity = ebi;
-    msg->messagetype = ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT;
-    msg->proceduretransactionidentity = PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
-    /* Mandatory - ESM cause code */
-    msg->esmcause = esm_cause;
-    /* Optional IEs  */
-    msg->presencemask = 0;
+  /* Mandatory - ESM message header */
+  msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
+  msg->epsbeareridentity = ebi;
+  msg->messagetype = ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT;
+  msg->proceduretransactionidentity = PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+  /* Mandatory - ESM cause code */
+  msg->esmcause = esm_cause;
+  /* Optional IEs  */
+  msg->presencemask = 0;
 
-    LOG_TRACE(INFO, "ESM-SAP   - Send Activate Dedicated EPS Bearer Context "
-              "Reject message (pti=%d, ebi=%d)",
-              msg->proceduretransactionidentity, msg->epsbeareridentity);
+  LOG_TRACE(INFO, "ESM-SAP   - Send Activate Dedicated EPS Bearer Context "
+            "Reject message (pti=%d, ebi=%d)",
+            msg->proceduretransactionidentity, msg->epsbeareridentity);
 
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_FUNC_RETURN(RETURNok);
 }
 
 /****************************************************************************
@@ -415,24 +417,24 @@ int esm_send_activate_dedicated_eps_bearer_context_reject(int ebi,
  **                                                                        **
  ***************************************************************************/
 int esm_send_deactivate_eps_bearer_context_accept(int ebi,
-        deactivate_eps_bearer_context_accept_msg *msg)
+    deactivate_eps_bearer_context_accept_msg *msg)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Mandatory - ESM message header */
-    msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
-    msg->epsbeareridentity = ebi;
-    msg->messagetype = DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT;
-    msg->proceduretransactionidentity = PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
-    /* Mandatory IEs */
-    /* Optional IEs  */
-    msg->presencemask = 0;
+  /* Mandatory - ESM message header */
+  msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
+  msg->epsbeareridentity = ebi;
+  msg->messagetype = DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT;
+  msg->proceduretransactionidentity = PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+  /* Mandatory IEs */
+  /* Optional IEs  */
+  msg->presencemask = 0;
 
-    LOG_TRACE(INFO, "ESM-SAP   - Send Deactivate EPS Bearer Context Accept"
-              " message (pti=%d, ebi=%d)",
-              msg->proceduretransactionidentity, msg->epsbeareridentity);
+  LOG_TRACE(INFO, "ESM-SAP   - Send Deactivate EPS Bearer Context Accept"
+            " message (pti=%d, ebi=%d)",
+            msg->proceduretransactionidentity, msg->epsbeareridentity);
 
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_FUNC_RETURN(RETURNok);
 }
 #endif // NAS_UE
 
@@ -464,24 +466,24 @@ int esm_send_deactivate_eps_bearer_context_accept(int ebi,
 int esm_send_pdn_connectivity_reject(int pti, pdn_connectivity_reject_msg *msg,
                                      int esm_cause)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Mandatory - ESM message header */
-    msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
-    msg->epsbeareridentity = EPS_BEARER_IDENTITY_UNASSIGNED;
-    msg->messagetype = PDN_CONNECTIVITY_REJECT;
-    msg->proceduretransactionidentity = pti;
+  /* Mandatory - ESM message header */
+  msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
+  msg->epsbeareridentity = EPS_BEARER_IDENTITY_UNASSIGNED;
+  msg->messagetype = PDN_CONNECTIVITY_REJECT;
+  msg->proceduretransactionidentity = pti;
 
-    /* Mandatory - ESM cause code */
-    msg->esmcause = esm_cause;
-    /* Optional IEs  */
-    msg->presencemask = 0;
+  /* Mandatory - ESM cause code */
+  msg->esmcause = esm_cause;
+  /* Optional IEs  */
+  msg->presencemask = 0;
 
-    LOG_TRACE(INFO, "ESM-SAP   - Send PDN Connectivity Reject message "
-              "(pti=%d, ebi=%d)",
-              msg->proceduretransactionidentity, msg->epsbeareridentity);
+  LOG_TRACE(INFO, "ESM-SAP   - Send PDN Connectivity Reject message "
+            "(pti=%d, ebi=%d)",
+            msg->proceduretransactionidentity, msg->epsbeareridentity);
 
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_FUNC_RETURN(RETURNok);
 }
 
 /****************************************************************************
@@ -505,24 +507,24 @@ int esm_send_pdn_connectivity_reject(int pti, pdn_connectivity_reject_msg *msg,
 int esm_send_pdn_disconnect_reject(int pti, pdn_disconnect_reject_msg *msg,
                                    int esm_cause)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Mandatory - ESM message header */
-    msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
-    msg->epsbeareridentity = EPS_BEARER_IDENTITY_UNASSIGNED;
-    msg->messagetype = PDN_DISCONNECT_REJECT;
-    msg->proceduretransactionidentity = pti;
+  /* Mandatory - ESM message header */
+  msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
+  msg->epsbeareridentity = EPS_BEARER_IDENTITY_UNASSIGNED;
+  msg->messagetype = PDN_DISCONNECT_REJECT;
+  msg->proceduretransactionidentity = pti;
 
-    /* Mandatory - ESM cause code */
-    msg->esmcause = esm_cause;
-    /* Optional IEs  */
-    msg->presencemask = 0;
+  /* Mandatory - ESM cause code */
+  msg->esmcause = esm_cause;
+  /* Optional IEs  */
+  msg->presencemask = 0;
 
-    LOG_TRACE(INFO, "ESM-SAP   - Send PDN Disconnect Reject message "
-              "(pti=%d, ebi=%d)",
-              msg->proceduretransactionidentity, msg->epsbeareridentity);
+  LOG_TRACE(INFO, "ESM-SAP   - Send PDN Disconnect Reject message "
+            "(pti=%d, ebi=%d)",
+            msg->proceduretransactionidentity, msg->epsbeareridentity);
 
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_FUNC_RETURN(RETURNok);
 }
 
 /****************************************************************************
@@ -550,83 +552,86 @@ int esm_send_pdn_disconnect_reject(int pti, pdn_disconnect_reject_msg *msg,
  **                                                                        **
  ***************************************************************************/
 int esm_send_activate_default_eps_bearer_context_request(int pti,
-        int ebi,
-        activate_default_eps_bearer_context_request_msg *msg,
-        const OctetString *apn,
-        int pdn_type,
-        const OctetString *pdn_addr,
-        const EpsQualityOfService *qos,
-        int esm_cause)
+    int ebi,
+    activate_default_eps_bearer_context_request_msg *msg,
+    const OctetString *apn,
+    int pdn_type,
+    const OctetString *pdn_addr,
+    const EpsQualityOfService *qos,
+    int esm_cause)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Mandatory - ESM message header */
-    msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
-    msg->epsbeareridentity = ebi;
-    msg->messagetype = ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST;
-    msg->proceduretransactionidentity = pti;
+  /* Mandatory - ESM message header */
+  msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
+  msg->epsbeareridentity = ebi;
+  msg->messagetype = ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST;
+  msg->proceduretransactionidentity = pti;
 
-    /* Mandatory - EPS QoS */
-    msg->epsqos = *qos;
-    LOG_TRACE(INFO, "ESM-SAP   - epsqos  qci:  %u", qos->qci);
-    if (qos->bitRatesPresent) {
-        LOG_TRACE(INFO, "ESM-SAP   - epsqos  maxBitRateForUL:  %u", qos->bitRates.maxBitRateForUL);
-        LOG_TRACE(INFO, "ESM-SAP   - epsqos  maxBitRateForDL:  %u", qos->bitRates.maxBitRateForDL);
-        LOG_TRACE(INFO, "ESM-SAP   - epsqos  guarBitRateForUL: %u", qos->bitRates.guarBitRateForUL);
-        LOG_TRACE(INFO, "ESM-SAP   - epsqos  guarBitRateForDL: %u", qos->bitRates.guarBitRateForDL);
-    } else {
-        LOG_TRACE(INFO, "ESM-SAP   - epsqos  no bit rates defined");
-    }
-    if (qos->bitRatesExtPresent) {
-        LOG_TRACE(INFO, "ESM-SAP   - epsqos  maxBitRateForUL  Ext: %u", qos->bitRatesExt.maxBitRateForUL);
-        LOG_TRACE(INFO, "ESM-SAP   - epsqos  maxBitRateForDL  Ext: %u", qos->bitRatesExt.maxBitRateForDL);
-        LOG_TRACE(INFO, "ESM-SAP   - epsqos  guarBitRateForUL Ext: %u", qos->bitRatesExt.guarBitRateForUL);
-        LOG_TRACE(INFO, "ESM-SAP   - epsqos  guarBitRateForDL Ext: %u", qos->bitRatesExt.guarBitRateForDL);
-    } else {
-        LOG_TRACE(INFO, "ESM-SAP   - epsqos  no bit rates ext defined");
-    }
+  /* Mandatory - EPS QoS */
+  msg->epsqos = *qos;
+  LOG_TRACE(INFO, "ESM-SAP   - epsqos  qci:  %u", qos->qci);
+
+  if (qos->bitRatesPresent) {
+    LOG_TRACE(INFO, "ESM-SAP   - epsqos  maxBitRateForUL:  %u", qos->bitRates.maxBitRateForUL);
+    LOG_TRACE(INFO, "ESM-SAP   - epsqos  maxBitRateForDL:  %u", qos->bitRates.maxBitRateForDL);
+    LOG_TRACE(INFO, "ESM-SAP   - epsqos  guarBitRateForUL: %u", qos->bitRates.guarBitRateForUL);
+    LOG_TRACE(INFO, "ESM-SAP   - epsqos  guarBitRateForDL: %u", qos->bitRates.guarBitRateForDL);
+  } else {
+    LOG_TRACE(INFO, "ESM-SAP   - epsqos  no bit rates defined");
+  }
+
+  if (qos->bitRatesExtPresent) {
+    LOG_TRACE(INFO, "ESM-SAP   - epsqos  maxBitRateForUL  Ext: %u", qos->bitRatesExt.maxBitRateForUL);
+    LOG_TRACE(INFO, "ESM-SAP   - epsqos  maxBitRateForDL  Ext: %u", qos->bitRatesExt.maxBitRateForDL);
+    LOG_TRACE(INFO, "ESM-SAP   - epsqos  guarBitRateForUL Ext: %u", qos->bitRatesExt.guarBitRateForUL);
+    LOG_TRACE(INFO, "ESM-SAP   - epsqos  guarBitRateForDL Ext: %u", qos->bitRatesExt.guarBitRateForDL);
+  } else {
+    LOG_TRACE(INFO, "ESM-SAP   - epsqos  no bit rates ext defined");
+  }
 
 
-    if ((apn == NULL) || ((apn  != NULL) && (apn->value == NULL))) {
-        LOG_TRACE(WARNING, "ESM-SAP   - apn is NULL!");
-    }
+  if ((apn == NULL) || ((apn  != NULL) && (apn->value == NULL))) {
+    LOG_TRACE(WARNING, "ESM-SAP   - apn is NULL!");
+  }
 
-    LOG_TRACE(INFO, "ESM-SAP   - apn is %s", apn->value);
+  LOG_TRACE(INFO, "ESM-SAP   - apn is %s", apn->value);
 
-    /* Mandatory - Access Point Name */
-    msg->accesspointname.accesspointnamevalue = *apn;
+  /* Mandatory - Access Point Name */
+  msg->accesspointname.accesspointnamevalue = *apn;
 
-    /* Mandatory - PDN address */
-    LOG_TRACE(INFO, "ESM-SAP   - pdn_type is %u", pdn_type);
-    msg->pdnaddress.pdntypevalue = pdn_type;
-    LOG_TRACE(INFO, "ESM-SAP   - pdn_addr is %u", dump_octet_string(pdn_addr));
-    msg->pdnaddress.pdnaddressinformation = *pdn_addr;
+  /* Mandatory - PDN address */
+  LOG_TRACE(INFO, "ESM-SAP   - pdn_type is %u", pdn_type);
+  msg->pdnaddress.pdntypevalue = pdn_type;
+  LOG_TRACE(INFO, "ESM-SAP   - pdn_addr is %u", dump_octet_string(pdn_addr));
+  msg->pdnaddress.pdnaddressinformation = *pdn_addr;
 
-    /* Optional - ESM cause code */
-    msg->presencemask = 0;
-    if (esm_cause != ESM_CAUSE_SUCCESS) {
-        msg->presencemask |=
-            ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
-        msg->esmcause = esm_cause;
-    }
+  /* Optional - ESM cause code */
+  msg->presencemask = 0;
+
+  if (esm_cause != ESM_CAUSE_SUCCESS) {
+    msg->presencemask |=
+      ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
+    msg->esmcause = esm_cause;
+  }
 
 #warning "TEST LG FORCE APN-AMBR"
-    LOG_TRACE(INFO, "ESM-SAP   - FORCE APN-AMBR");
-    msg->presencemask |=
-            ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_APNAMBR_PRESENT;
-    msg->apnambr.apnambrfordownlink             = 0xfe; // (8640kbps)
-    msg->apnambr.apnambrforuplink               = 0xfe; // (8640kbps)
-    msg->apnambr.apnambrfordownlink_extended    = 0xde; // (200Mbps)
-    msg->apnambr.apnambrforuplink_extended      = 0x9e; // (100Mbps)
-    msg->apnambr.apnambrfordownlink_extended2   = 0;
-    msg->apnambr.apnambrforuplink_extended2     = 0;
-    msg->apnambr.extensions                     = 0 | APN_AGGREGATE_MAXIMUM_BIT_RATE_MAXIMUM_EXTENSION_PRESENT;
+  LOG_TRACE(INFO, "ESM-SAP   - FORCE APN-AMBR");
+  msg->presencemask |=
+    ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_APNAMBR_PRESENT;
+  msg->apnambr.apnambrfordownlink             = 0xfe; // (8640kbps)
+  msg->apnambr.apnambrforuplink               = 0xfe; // (8640kbps)
+  msg->apnambr.apnambrfordownlink_extended    = 0xde; // (200Mbps)
+  msg->apnambr.apnambrforuplink_extended      = 0x9e; // (100Mbps)
+  msg->apnambr.apnambrfordownlink_extended2   = 0;
+  msg->apnambr.apnambrforuplink_extended2     = 0;
+  msg->apnambr.extensions                     = 0 | APN_AGGREGATE_MAXIMUM_BIT_RATE_MAXIMUM_EXTENSION_PRESENT;
 
-    LOG_TRACE(INFO, "ESM-SAP   - Send Activate Default EPS Bearer Context "
-              "Request message (pti=%d, ebi=%d)",
-              msg->proceduretransactionidentity, msg->epsbeareridentity);
+  LOG_TRACE(INFO, "ESM-SAP   - Send Activate Default EPS Bearer Context "
+            "Request message (pti=%d, ebi=%d)",
+            msg->proceduretransactionidentity, msg->epsbeareridentity);
 
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_FUNC_RETURN(RETURNok);
 }
 
 /****************************************************************************
@@ -657,38 +662,39 @@ int esm_send_activate_default_eps_bearer_context_request(int pti,
  **                                                                        **
  ***************************************************************************/
 int esm_send_activate_dedicated_eps_bearer_context_request(int pti, int ebi,
-        activate_dedicated_eps_bearer_context_request_msg *msg,
-        int linked_ebi, const EpsQualityOfService *qos,
-        PacketFilters *pkfs, int n_pkfs)
+    activate_dedicated_eps_bearer_context_request_msg *msg,
+    int linked_ebi, const EpsQualityOfService *qos,
+    PacketFilters *pkfs, int n_pkfs)
 {
-    int i;
-    LOG_FUNC_IN;
+  int i;
+  LOG_FUNC_IN;
 
-    /* Mandatory - ESM message header */
-    msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
-    msg->epsbeareridentity = ebi;
-    msg->messagetype = ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST;
-    msg->proceduretransactionidentity = pti;
+  /* Mandatory - ESM message header */
+  msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
+  msg->epsbeareridentity = ebi;
+  msg->messagetype = ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST;
+  msg->proceduretransactionidentity = pti;
 
-    /* Mandatory - EPS QoS */
-    msg->epsqos = *qos;
+  /* Mandatory - EPS QoS */
+  msg->epsqos = *qos;
 
-    /* Mandatory - traffic flow template */
-    msg->tft.tftoperationcode = TRAFFIC_FLOW_TEMPLATE_OPCODE_CREATE;
-    msg->tft.ebit = TRAFFIC_FLOW_TEMPLATE_PARAMETER_LIST_IS_NOT_INCLUDED;
-    msg->tft.numberofpacketfilters = n_pkfs;
-    for (i = 0; i < msg->tft.numberofpacketfilters; i++) {
-        msg->tft.packetfilterlist.createtft[i] = (*pkfs)[i];
-    }
+  /* Mandatory - traffic flow template */
+  msg->tft.tftoperationcode = TRAFFIC_FLOW_TEMPLATE_OPCODE_CREATE;
+  msg->tft.ebit = TRAFFIC_FLOW_TEMPLATE_PARAMETER_LIST_IS_NOT_INCLUDED;
+  msg->tft.numberofpacketfilters = n_pkfs;
 
-    /* Optional */
-    msg->presencemask = 0;
+  for (i = 0; i < msg->tft.numberofpacketfilters; i++) {
+    msg->tft.packetfilterlist.createtft[i] = (*pkfs)[i];
+  }
 
-    LOG_TRACE(INFO, "ESM-SAP   - Send Activate Dedicated EPS Bearer Context "
-              "Request message (pti=%d, ebi=%d)",
-              msg->proceduretransactionidentity, msg->epsbeareridentity);
+  /* Optional */
+  msg->presencemask = 0;
 
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_TRACE(INFO, "ESM-SAP   - Send Activate Dedicated EPS Bearer Context "
+            "Request message (pti=%d, ebi=%d)",
+            msg->proceduretransactionidentity, msg->epsbeareridentity);
+
+  LOG_FUNC_RETURN(RETURNok);
 }
 
 /****************************************************************************
@@ -712,27 +718,27 @@ int esm_send_activate_dedicated_eps_bearer_context_request(int pti, int ebi,
  **                                                                        **
  ***************************************************************************/
 int esm_send_deactivate_eps_bearer_context_request(int pti, int ebi,
-        deactivate_eps_bearer_context_request_msg *msg,
-        int esm_cause)
+    deactivate_eps_bearer_context_request_msg *msg,
+    int esm_cause)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Mandatory - ESM message header */
-    msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
-    msg->epsbeareridentity = ebi;
-    msg->messagetype = DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST;
-    msg->proceduretransactionidentity = pti;
+  /* Mandatory - ESM message header */
+  msg->protocoldiscriminator = EPS_SESSION_MANAGEMENT_MESSAGE;
+  msg->epsbeareridentity = ebi;
+  msg->messagetype = DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST;
+  msg->proceduretransactionidentity = pti;
 
-    /* Mandatory - ESM cause code */
-    msg->esmcause = esm_cause;
-    /* Optional IEs  */
-    msg->presencemask = 0;
+  /* Mandatory - ESM cause code */
+  msg->esmcause = esm_cause;
+  /* Optional IEs  */
+  msg->presencemask = 0;
 
-    LOG_TRACE(INFO, "ESM-SAP   - Send Deactivate EPS Bearer Context Request "
-              "message (pti=%d, ebi=%d)",
-              msg->proceduretransactionidentity, msg->epsbeareridentity);
+  LOG_TRACE(INFO, "ESM-SAP   - Send Deactivate EPS Bearer Context Request "
+            "message (pti=%d, ebi=%d)",
+            msg->proceduretransactionidentity, msg->epsbeareridentity);
 
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_FUNC_RETURN(RETURNok);
 }
 #endif // NAS_MME
 

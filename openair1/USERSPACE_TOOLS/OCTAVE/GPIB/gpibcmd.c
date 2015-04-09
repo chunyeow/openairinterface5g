@@ -6,7 +6,7 @@
 //Compile like this
 //gcc gpibcmd.c -o test -lgpib
 
- 
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,15 +33,15 @@ void check_args(int argc)
 int main(int argc, char *argv[])
 {
   check_args(argc);
-  unsigned short addlist[2] = {atoi(argv[1]), NOADDR}; // list to enable inst 
+  unsigned short addlist[2] = {atoi(argv[1]), NOADDR}; // list to enable inst
   //Reset Card 0 (i.e:gpib0)
   SendIFC(0);
 
   // ENABLE all on GPIB bus
   EnableRemote(0, addlist);
+
   // If error, Bye!
-  if (ibsta & ERR)
-  {
+  if (ibsta & ERR) {
     printf("Instrument enable failed!\n");
     exit(1);
   }

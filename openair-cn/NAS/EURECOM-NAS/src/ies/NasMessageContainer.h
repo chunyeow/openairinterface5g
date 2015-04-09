@@ -39,7 +39,7 @@
 #define NAS_MESSAGE_CONTAINER_MAXIMUM_LENGTH 253
 
 typedef struct NasMessageContainer_tag {
-    OctetString nasmessagecontainercontents;
+  OctetString nasmessagecontainercontents;
 } NasMessageContainer;
 
 int encode_nas_message_container(NasMessageContainer *nasmessagecontainer, uint8_t iei, uint8_t *buffer, uint32_t len);

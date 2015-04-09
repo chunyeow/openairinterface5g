@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -34,7 +34,7 @@
 #define  _FEMTO_UTILS
 
 /*! \file SIMULATION/LTE_FEMTO/femtoUtils.h
-* \brief Defines structure and function  headers 
+* \brief Defines structure and function  headers
 * \author L. Garcia
 * \date 2012
 * \version 0.1
@@ -45,119 +45,119 @@
 
 ///Top-level data Structure for general options of simulation and other global variables
 typedef struct {
-	
-    double snr_init;
-    double snr_max;
-    double snr_step;
-    int nframes;
-    int interf_count[8];
-    int fixed_channel_flag;
-    int fixed_data_set;
-    int extended_prefix_flag;
-    
-    ///Frame type (0 FDD, 1 TDD).
-    uint8_t frame_type;				
-    ///Transmission mode (1 for the moment)
-    uint8_t transmission_mode;		
-    ///Number of Transmit antennas in node.  
-    uint8_t n_tx;
-    ///Number of Receive antennas in node. 
-    uint8_t n_rx;
-    ///Number of interference to simulate
-    int nInterf;
-    ///Array with interference  level in dB 
-    double *dbInterf;
-    double *probabilityInterf;
-    char interfLevels[150];
-    char interfProbability[150];
-    
-    uint16_t Nid_cell;
-    uint16_t tdd_config;
-    uint8_t oversampling;
-    SCM_t channel_model;  
-    SCM_t channel_modeli;   
-    int awgn_flag;
-    int awgn_flagi;
-    int nsymb;
-    int num_layers;
-    uint16_t n_rnti;
-    ///Modulation and code scheme
-    uint8_t mcs,mcs2;				    
+
+  double snr_init;
+  double snr_max;
+  double snr_step;
+  int nframes;
+  int interf_count[8];
+  int fixed_channel_flag;
+  int fixed_data_set;
+  int extended_prefix_flag;
+
+  ///Frame type (0 FDD, 1 TDD).
+  uint8_t frame_type;
+  ///Transmission mode (1 for the moment)
+  uint8_t transmission_mode;
+  ///Number of Transmit antennas in node.
+  uint8_t n_tx;
+  ///Number of Receive antennas in node.
+  uint8_t n_rx;
+  ///Number of interference to simulate
+  int nInterf;
+  ///Array with interference  level in dB
+  double *dbInterf;
+  double *probabilityInterf;
+  char interfLevels[150];
+  char interfProbability[150];
+
+  uint16_t Nid_cell;
+  uint16_t tdd_config;
+  uint8_t oversampling;
+  SCM_t channel_model;
+  SCM_t channel_modeli;
+  int awgn_flag;
+  int awgn_flagi;
+  int nsymb;
+  int num_layers;
+  uint16_t n_rnti;
+  ///Modulation and code scheme
+  uint8_t mcs,mcs2;
 
 
-    uint8_t pilot1,pilot2,pilot3;
-    ///Pointer  to the output file SNRvsBLER
-    FILE *outputFile;
-    ///Pointer  to the output file errors and trials for each SNR 
-    FILE *outputBler;
-    FILE *outputBer;
-    FILE *outputTrougput;    
-    
-    uint8_t num_rounds;
-    uint8_t fix_rounds;
-    uint8_t subframe;
- //   int eNB_id;
-    ///	Amplitude of QPSK symbols
-    int16_t amp;			
-    ///1- Analysis  of errors on DCI, 0- No analysis of errors in DCI
-    uint8_t dci_flag;		    
-    int testNumber;
-    char folderName[50];
-    char parameters[300];
-    
-    int SIZE_TXDATAF;
-	int SIZE_TXDATA;
-	int SIZE_RXDATA;
-	int SIZE_RXDATAF;
-	
-	uint16_t interCellId;
-	int n_adj_cells;
-	uint8_t dual_stream_UE;
-	
-	int perfect_ce;
-	int common_flag;
-	int TPC;
-	uint8_t N_RB_DL;
-	int rballocset;
-	uint32_t DLSCH_RB_ALLOC;
-	
-	PA_t p_a;
-	uint8_t 	 p_b;	
-	int8_t d_offset;
-	int ratio;
-	uint32_t nprb1, nprb2;
-	int prob_flag;
-	int search_prb2;
-	
-	char power[50];
+  uint8_t pilot1,pilot2,pilot3;
+  ///Pointer  to the output file SNRvsBLER
+  FILE *outputFile;
+  ///Pointer  to the output file errors and trials for each SNR
+  FILE *outputBler;
+  FILE *outputBer;
+  FILE *outputTrougput;
+
+  uint8_t num_rounds;
+  uint8_t fix_rounds;
+  uint8_t subframe;
+  //   int eNB_id;
+  /// Amplitude of QPSK symbols
+  int16_t amp;
+  ///1- Analysis  of errors on DCI, 0- No analysis of errors in DCI
+  uint8_t dci_flag;
+  int testNumber;
+  char folderName[50];
+  char parameters[300];
+
+  int SIZE_TXDATAF;
+  int SIZE_TXDATA;
+  int SIZE_RXDATA;
+  int SIZE_RXDATAF;
+
+  uint16_t interCellId;
+  int n_adj_cells;
+  uint8_t dual_stream_UE;
+
+  int perfect_ce;
+  int common_flag;
+  int TPC;
+  uint8_t N_RB_DL;
+  int rballocset;
+  uint32_t DLSCH_RB_ALLOC;
+
+  PA_t p_a;
+  uint8_t    p_b;
+  int8_t d_offset;
+  int ratio;
+  uint32_t nprb1, nprb2;
+  int prob_flag;
+  int search_prb2;
+
+  char power[50];
 
 } options_t;
 
 /// Store signal data
 typedef struct {
-    double **s_re;
-    double **s_im;
-    double **r_re;
-    double **r_im;
-    double ***is_re;
-    double ***is_im;
-    double ***ir_re;
-    double ***ir_im;
+  double **s_re;
+  double **s_im;
+  double **r_re;
+  double **r_im;
+  double ***is_re;
+  double ***is_im;
+  double ***ir_re;
+  double ***ir_im;
 } data_t;
 
 /// Parses the command line options and assigns values ​​to  pilots, num_symbols, etc.  modified by the options selected
 void _parseOptions(options_t *opts, int argc, char ** argv);
 void _printOptions(options_t *opts);
-/// Interference Levels are recivend in form  num,num,num this function parse the string and fill dbInterf array 
+/// Interference Levels are recivend in form  num,num,num this function parse the string and fill dbInterf array
 void _parseInterferenceLevels(options_t *opts, char *interfLevels,int nInterf);
 void _parseInterferenceProbability(options_t *opts, char *interfLevels,int nInterf);
 
 
 void _parsePower(options_t *opts);
-/// Allocate memory  for signal data arrays 
+/// Allocate memory  for signal data arrays
 void _allocData(options_t opts,data_t *data, uint8_t n_tx,uint8_t n_rx,int Frame_length_complex_samples);
 
-void copyDataFixed(data_t *origin,data_t *destination,options_t  *opts, int Frame_length_complex_samples);	
+void copyDataFixed(data_t *origin,data_t *destination,options_t  *opts, int Frame_length_complex_samples);
 /// Generate output dir with the prefix specified in testNumber
 void _makeOutputDir(options_t *opts);
 
@@ -183,7 +183,7 @@ uint32_t  _allocRBs(options_t *opts, int ind);
 void _freeMemory(data_t data,options_t opts);
 void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC_t *dci_alloc_rx,uint32_t *NB_RB2,LTE_DL_FRAME_PARMS  *frame_parms,uint8_t num_pdcch_symbols);
 void _printResults(uint32_t *errs,uint32_t *round_trials,uint32_t dci_errors,double rate);
-void _printFileResults(double SNR, double rate1,double rate2	, double rate,uint32_t  *errs,uint32_t  *round_trials,uint32_t dci_errors,options_t opts,double BER);
+void _printFileResults(double SNR, double rate1,double rate2  , double rate,uint32_t  *errs,uint32_t  *round_trials,uint32_t dci_errors,options_t opts,double BER);
 void _initErrsRoundsTrials(uint32_t **errs,uint32_t **trials,int allocFlag,options_t opts);
 void _fillData(options_t opts,data_t data,int numSubFrames);
 void _applyNoise(options_t *opts,data_t data,double sigma2,double iqim,int numSubFrames);

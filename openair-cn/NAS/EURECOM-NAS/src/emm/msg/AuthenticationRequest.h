@@ -61,13 +61,13 @@
  */
 
 typedef struct authentication_request_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator            protocoldiscriminator:4;
-    SecurityHeaderType               securityheadertype:4;
-    MessageType                      messagetype;
-    NasKeySetIdentifier              naskeysetidentifierasme;
-    AuthenticationParameterRand      authenticationparameterrand;
-    AuthenticationParameterAutn      authenticationparameterautn;
+  /* Mandatory fields */
+  ProtocolDiscriminator            protocoldiscriminator:4;
+  SecurityHeaderType               securityheadertype:4;
+  MessageType                      messagetype;
+  NasKeySetIdentifier              naskeysetidentifierasme;
+  AuthenticationParameterRand      authenticationparameterrand;
+  AuthenticationParameterAutn      authenticationparameterautn;
 } authentication_request_msg;
 
 int decode_authentication_request(authentication_request_msg *authenticationrequest, uint8_t *buffer, uint32_t len);

@@ -30,19 +30,19 @@
 #define HSS_CONFIG_H_
 
 typedef struct hss_config_s {
-    char *mysql_server;
-    char *mysql_user;
-    char *mysql_password;
-    char *mysql_database;
+  char *mysql_server;
+  char *mysql_user;
+  char *mysql_password;
+  char *mysql_database;
 
 
-    char *operator_key;
+  char *operator_key;
 
-    /* The freediameter configuration file */
-    char *freediameter_config;
+  /* The freediameter configuration file */
+  char *freediameter_config;
 
-    /* THe HSS global configuration file */
-    char *config;
+  /* THe HSS global configuration file */
+  char *config;
 } hss_config_t;
 
 int config_init(int argc, char *argv[], hss_config_t *hss_config_p);

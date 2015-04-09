@@ -60,7 +60,7 @@ uint8_t             *retransmission_buffer_management_mrw_ack (struct rlc_am_ent
 void
 rlc_am_received_sufi_ack_check_discard_procedures (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   mem_block_t      *mb_proc;
   mem_block_t      *tmp_proc;
   struct rlc_am_discard_procedure *procedure;
@@ -91,6 +91,7 @@ rlc_am_received_sufi_ack_check_discard_procedures (struct rlc_am_entity *rlcP)
 
   while ((mb_proc)) {
     procedure = (struct rlc_am_discard_procedure *) (mb_proc->data);
+
     if (rlc_am_comp_sn (rlcP, rlcP->vt_a, rlcP->vt_a, procedure->last_pdu_sn) > 0) {
 #ifdef DEBUG_RLC_AM_DISCARD
       msg ("[RLC_AM][RB %d] DISCARD  TRANSMIT  NEW VT(A) 0x%04X REMOVE PROCEDURE SN_MRWlength 0x%04X\n", rlcP->rb_id, rlcP->vt_a, procedure->last_pdu_sn);
@@ -99,6 +100,7 @@ rlc_am_received_sufi_ack_check_discard_procedures (struct rlc_am_entity *rlcP)
 
       tmp_proc = mb_proc->next;
       list2_remove_element (mb_proc, &rlcP->discard_procedures);
+
       // if procedure is running, free timer resources
       if ((procedure->running) && (rlcP->timer_mrw)) {
         if (rlcP->timer_mrw == list2_remove_element (rlcP->timer_mrw, &rlcP->rlc_am_timer_list)) {
@@ -113,6 +115,7 @@ rlc_am_received_sufi_ack_check_discard_procedures (struct rlc_am_entity *rlcP)
 #endif
         }
       }
+
       rlc_am_free_discard_procedure (mb_proc);
 
       mb_proc = tmp_proc;
@@ -121,6 +124,7 @@ rlc_am_received_sufi_ack_check_discard_procedures (struct rlc_am_entity *rlcP)
       mb_proc = mb_proc->next;
     }
   }
+
   // may be other discard procedures to run
   rlc_am_schedule_procedure (rlcP);
 }
@@ -129,16 +133,18 @@ rlc_am_received_sufi_ack_check_discard_procedures (struct rlc_am_entity *rlcP)
 void
 rlc_am_free_discard_procedure (mem_block_t * mb_current_procedureP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   // be carefull : the timer is not free here, it should be done before
   struct rlc_am_discard_procedure *procedure;
 
   if (mb_current_procedureP) {
     procedure = (struct rlc_am_discard_procedure *) (mb_current_procedureP->data);
     list_free (&procedure->sdu_list);
+
     if (procedure->control_pdu) {
       free_mem_block (procedure->control_pdu);
     }
+
     free_mem_block (mb_current_procedureP);
   }
 }
@@ -147,7 +153,7 @@ rlc_am_free_discard_procedure (mem_block_t * mb_current_procedureP)
 inline void
 rlc_am_discard_free_receiver_buffer (struct rlc_am_entity *rlcP, uint16_t sn_mrw_iP, uint8_t nlengthP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   uint16_t             working_sn;
   uint16_t             working_sn_index;     // index in buffer
 
@@ -158,6 +164,7 @@ rlc_am_discard_free_receiver_buffer (struct rlc_am_entity *rlcP, uint16_t sn_mrw
 #ifdef DEBUG_RLC_AM_DISCARD
   display_receiver_buffer (rlcP);
 #endif
+
   while (working_sn != sn_mrw_iP) {
 
 #ifdef DEBUG_RLC_AM_DISCARD
@@ -177,6 +184,7 @@ rlc_am_discard_free_receiver_buffer (struct rlc_am_entity *rlcP, uint16_t sn_mrw
 
   // erase previous sdu in construction
   rlcP->output_sdu_size_to_write = 0;
+
   if ((nlengthP)) {
     rlcP->discard_reassembly_after_li = nlengthP;       // will be used by process_receiver_buffer
   } else {
@@ -193,7 +201,7 @@ rlc_am_discard_free_receiver_buffer (struct rlc_am_entity *rlcP, uint16_t sn_mrw
 uint8_t             *
 retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, uint8_t * byte1P, uint8_t * byte_alignedP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   mem_block_t      *mb;
   uint8_t             *p8;
   uint16_t             sn_mrw_i[15];
@@ -269,6 +277,7 @@ retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, uint8_t * byte
       nlength = (*p8 & 0xF0) >> 4;
       *byte_alignedP = 1;
     }
+
     sn_mrw_i_index += 1;
   } else {
     // get all sn_mrw_i
@@ -282,9 +291,11 @@ retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, uint8_t * byte
         sn_mrw_i[sn_mrw_i_index] += (*p8++);
         *byte_alignedP = 1;
       }
+
       sn_mrw_i_index += 1;
     }
   }
+
   // get nlength
   if (*byte_alignedP) {
     nlength = (*p8 & 0xF0) >> 4;
@@ -293,11 +304,14 @@ retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, uint8_t * byte
     nlength = *p8++ & 0x0F;
     *byte_alignedP = 1;
   }
+
 #ifdef DEBUG_RLC_AM_DISCARD
   msg ("[RLC_AM][RB %d] DISCARD  RECEIVER RECEIVED MRW LENGTH %d ", rlcP->rb_id, mrw_length);
+
   for (i = 0; i < sn_mrw_i_index; i++) {
     msg ("sn_mrw%d 0x%04X ", i + 1, sn_mrw_i[i]);
   }
+
   msg ("Nlength %d\n", nlength);
 #endif
 
@@ -318,10 +332,12 @@ retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, uint8_t * byte
     msg ("[RLC_AM][RB %d] DISCARD  RECEIVER ERROR received OBSOLETE/CORRUPTED MRW command  VR(R) 0x%04X VR(H) 0x%04X VR(MR) 0x%04X SN_MRWlength 0x%04X\n",
          rlcP->rb_id, rlcP->vr_r, rlcP->vr_h, rlcP->vr_mr, sn_mrw_i[sn_mrw_i_index - 1]);
 #endif
+
     // send status pdu mrw_ack
     if ((mb = rlc_am_create_status_pdu_mrw_ack (rlcP, 0, rlcP->vr_r))) {
       list_add_tail_eurecom (mb, &rlcP->control);
     }
+
     return p8;
 
   } else {
@@ -339,6 +355,7 @@ retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, uint8_t * byte
 #ifdef DEBUG_RLC_AM_DISCARD
     display_receiver_buffer (rlcP);
 #endif
+
     while (working_sn != new_vr_r) {
 
 #ifdef DEBUG_RLC_AM_DISCARD
@@ -349,6 +366,7 @@ retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, uint8_t * byte
       working_sn = (working_sn + 1) & SN_12BITS_MASK;
       working_sn_index = working_sn % rlcP->recomputed_configured_rx_window_size;
     }
+
     // From 3GPP TS 25.322 V5.0.0 (2002-03) page 35
     // NLENGTH is used together with SN_MRWLENGTH to indicate the end of the last SDU to be discarded in the receiver.
     // NLENGTH indicates which LI in the PDU with sequence number SN_MRWLENGTH corresponds to the last SDU to be discarded in the receiver.
@@ -365,12 +383,14 @@ retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, uint8_t * byte
 #ifdef DEBUG_RLC_AM_DISCARD
       msg ("[RLC_AM][RB %d] DISCARD  RECEIVER... VR(R) : 0x%04X -> 0x%04X  (VR(H)=0x%04X)\n", rlcP->rb_id, rlcP->vr_r, new_vr_r, rlcP->vr_h);
 #endif
+
       if (rlc_am_comp_sn (rlcP, rlcP->vr_r, new_vr_r, rlcP->vr_h) > 0) {
 #ifdef DEBUG_RLC_AM_DISCARD
         msg ("[RLC_AM][RB %d] DISCARD  RECEIVER... VR(H) : 0x%04X -> 0x%04X\n", rlcP->rb_id, rlcP->vr_h, new_vr_r);
 #endif
         rlcP->vr_h = new_vr_r;
       }
+
       rlcP->vr_r = new_vr_r;
       rlcP->ack.vr_r_modified = 1;      // for status generation
       rlcP->vr_mr = (rlcP->vr_r + rlcP->configured_rx_window_size - 1) & SN_12BITS_MASK;
@@ -386,6 +406,7 @@ retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, uint8_t * byte
     } else {
       process_receiver_buffer_15 (rlcP);
     }
+
     /* From 3GPP 25.322 V5.0.0 (2002-03)
        The Receiver shall:
        -        set the SN_ACK field in the MRW_ACK SUFI to the new value of VR(R), updated after reception
@@ -403,6 +424,7 @@ retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, uint8_t * byte
     } else {
       mb = rlc_am_create_status_pdu_mrw_ack (rlcP, 0, rlcP->vr_r);
     }
+
     /*   SEND STATUS PDU MRW ACK   */
     if (mb) {
       list_add_tail_eurecom (mb, &rlcP->control);
@@ -416,7 +438,7 @@ retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, uint8_t * byte
 uint8_t             *
 retransmission_buffer_management_mrw_ack (struct rlc_am_entity * rlcP, uint8_t * byte1P, uint8_t * byte_alignedP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   mem_block_t      *mb;
   mem_block_t      *mb_current_procedure;
   struct rlc_am_tx_data_pdu_management *rlc_header;
@@ -460,6 +482,7 @@ retransmission_buffer_management_mrw_ack (struct rlc_am_entity * rlcP, uint8_t *
 #ifdef DEBUG_RLC_AM_DISCARD
     msg ("[RLC_AM][RB %d] DISCARD  TRANSMIT ... procedure->last_pdu_sn 0x%04X procedure->nlength 0x%04X \n", rlcP->rb_id, procedure->last_pdu_sn, procedure->nlength);
 #endif
+
     /* From 3GPP TS 25.322 V5.0.0
        The Sender shall discard the received MRW_ACK SUFI if one of the following cases occurs:
 
@@ -483,34 +506,35 @@ retransmission_buffer_management_mrw_ack (struct rlc_am_entity * rlcP, uint8_t *
            rlcP->rb_id, rlcP->vt_a, rlcP->vt_s, procedure->last_pdu_sn, n, sn_ack);
 #endif
     } else if (
-                /* From 3GPP 25.322 V5.0.0 (2002-03)
-                   The Sender shall terminate the SDU discard with explicit signalling procedure if one of the
-                   following criteria is fulfilled:
+      /* From 3GPP 25.322 V5.0.0 (2002-03)
+         The Sender shall terminate the SDU discard with explicit signalling procedure if one of the
+         following criteria is fulfilled:
 
-                   -      a STATUS PDU/piggybacked STATUS PDU containing an MRW_ACK SUFI is received, and the SN_ACK      : DONE HERE
-                   field in the received MRW_ACK SUFI > the SN_MRWLENGTH field in the transmitted MRW_SUFI,
-                   and the N field in the received MRW_ACK SUFI is set equal to "0000";
+         -      a STATUS PDU/piggybacked STATUS PDU containing an MRW_ACK SUFI is received, and the SN_ACK      : DONE HERE
+         field in the received MRW_ACK SUFI > the SN_MRWLENGTH field in the transmitted MRW_SUFI,
+         and the N field in the received MRW_ACK SUFI is set equal to "0000";
 
-                   -      a STATUS PDU/piggybacked STATUS PDU containing an MRW_ACK SUFI is received, and the SN_ACK      : DONE HERE
-                   field in the received MRW_ACK SUFI = the SN_MRWLENGTH field in the transmitted MRW_SUFI,
-                   and the N field in the received MRW_ACK SUFI is set equal to the NLENGTH field in the
-                   transmitted MRW SUFI;
+         -      a STATUS PDU/piggybacked STATUS PDU containing an MRW_ACK SUFI is received, and the SN_ACK      : DONE HERE
+         field in the received MRW_ACK SUFI = the SN_MRWLENGTH field in the transmitted MRW_SUFI,
+         and the N field in the received MRW_ACK SUFI is set equal to the NLENGTH field in the
+         transmitted MRW SUFI;
 
-                   -      a STATUS PDU/piggybacked STATUS PDU containing an ACK SUFI is received, and the LSN field       : DONE in rlc_am_received_sufi_ack_check_discard_procedures(...)
-                   in the received ACK SUFI > the SN_MRWLENGTH field in the transmitted MRW SUFI.
+         -      a STATUS PDU/piggybacked STATUS PDU containing an ACK SUFI is received, and the LSN field       : DONE in rlc_am_received_sufi_ack_check_discard_procedures(...)
+         in the received ACK SUFI > the SN_MRWLENGTH field in the transmitted MRW SUFI.
 
-                   Upon termination of the SDU discard with explicit signalling procedure, the Sender shall:
-                   -      stop the timer Timer_MRW;
-                   -      update VT(A) and VT(MS) according to the received STATUS PDU/piggybacked STATUS PDU;
-                   The Sender shall not confirm to upper layers the SDUs that are requested to be discarded.
-                 */
-                (rlc_am_comp_sn (rlcP, rlcP->vt_a, sn_ack, procedure->last_pdu_sn) > 0) || ((sn_ack == procedure->last_pdu_sn) && (n == procedure->nlength))
-      ) {
+         Upon termination of the SDU discard with explicit signalling procedure, the Sender shall:
+         -      stop the timer Timer_MRW;
+         -      update VT(A) and VT(MS) according to the received STATUS PDU/piggybacked STATUS PDU;
+         The Sender shall not confirm to upper layers the SDUs that are requested to be discarded.
+       */
+      (rlc_am_comp_sn (rlcP, rlcP->vt_a, sn_ack, procedure->last_pdu_sn) > 0) || ((sn_ack == procedure->last_pdu_sn) && (n == procedure->nlength))
+    ) {
 #ifdef DEBUG_RLC_AM_DISCARD
       msg ("[RLC_AM][RB %d] DISCARD PROCEDURE %p TERMINATED\n", rlcP->rb_id, mb_current_procedure);
 #endif
 
       rlcP->vt_mrw = 0;
+
       // remove timer
       if ((rlcP->timer_mrw)) {
         if (rlcP->timer_mrw == list2_remove_element (rlcP->timer_mrw, &rlcP->rlc_am_timer_list)) {
@@ -520,16 +544,21 @@ retransmission_buffer_management_mrw_ack (struct rlc_am_entity * rlcP, uint8_t *
           free_mem_block (rlcP->timer_mrw);
           rlcP->timer_mrw = NULL;
         }
+
 #ifdef DEBUG_RLC_AM_DISCARD
         else {
-          msg ("[RLC_AM][RB %d] DISCARD  TRANSMIT  ERROR TERMINATION PROCEDURE : TIMER MRW IS WRONG\n", rlcP->rb_id);   // in fact : no, the lists are not protected against an element that is not inside the list
+          msg ("[RLC_AM][RB %d] DISCARD  TRANSMIT  ERROR TERMINATION PROCEDURE : TIMER MRW IS WRONG\n",
+               rlcP->rb_id);   // in fact : no, the lists are not protected against an element that is not inside the list
         }
+
 #endif
       }
+
 #ifdef DEBUG_RLC_AM_DISCARD
       else {
         msg ("[RLC_AM][RB %d] DISCARD  TRANSMIT  ERROR TERMINATION PROCEDURE : NO TIMER MRW WAS FOUND\n", rlcP->rb_id);
       }
+
 #endif
 
       mb_current_procedure = list2_remove_head (&rlcP->discard_procedures);
@@ -541,9 +570,11 @@ retransmission_buffer_management_mrw_ack (struct rlc_am_entity * rlcP, uint8_t *
         while (rlcP->vt_a != sn_ack) {
 
           index = rlcP->vt_a % rlcP->recomputed_configured_tx_window_size;
+
           if ((mb = rlcP->retransmission_buffer[index])) {
 
             rlc_header = (struct rlc_am_tx_data_pdu_management *) (mb->data);
+
             if (rlc_header->nb_sdu > 0) {
 
 #ifdef DEBUG_RLC_AM_DISCARD
@@ -557,26 +588,32 @@ retransmission_buffer_management_mrw_ack (struct rlc_am_entity * rlcP, uint8_t *
 #ifdef DEBUG_RLC_AM_DISCARD
               msg ("[RLC_AM][RB %d] DISCARD  TRANSMIT  CASE 2 MRW_ACK FREE REMAINING RETRANS PDU 0x%04X\n", rlcP->rb_id, rlcP->vt_a);
 #endif
+
               // if this pdu has been retransmitted, remove its size from buffer occupancy
               if (rlc_header->vt_dat > 0) {
                 rlcP->buffer_occupancy_retransmission_buffer -= 1;
               }
+
               free_mem_block (mb);
               rlcP->retransmission_buffer[index] = NULL;
             }
           }
+
           rlcP->vt_a = (rlcP->vt_a + 1) & SN_12BITS_MASK;
         }
+
 #ifdef DEBUG_RLC_AM_DISCARD
         msg ("[RLC_AM][RB %d] DISCARD  TRANSMIT  MRW_ACK  VT(A) UPDATED 0x%04X  VT(S) 0x%04X\n", rlcP->rb_id, rlcP->vt_a, rlcP->vt_s);
 #endif
       }
+
       rlc_am_free_discard_procedure (mb_current_procedure);
       rlc_am_schedule_procedure (rlcP);
     } else {
       msg ("[RLC_AM][RB %d] DISCARD  TRANSMIT ERROR RX MRW_ACK CASE NOT TAKEN IN ACCOUNT : NO ACTION !\n", rlcP->rb_id);
     }
   }
+
 #ifdef DEBUG_RLC_AM_DISCARD
   //display_mem_load();
   //display_retransmission_buffer(rlcP);

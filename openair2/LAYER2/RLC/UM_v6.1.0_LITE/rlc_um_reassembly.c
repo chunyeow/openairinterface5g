@@ -56,7 +56,7 @@ void            rlc_um_send_sdu (struct rlc_um_entity *rlcP);
 inline void
 rlc_um_clear_rx_sdu (struct rlc_um_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   rlcP->output_sdu_size_to_write = 0;
 }
 
@@ -64,7 +64,7 @@ rlc_um_clear_rx_sdu (struct rlc_um_entity *rlcP)
 void
 rlc_um_reassembly (uint8_t * srcP, int32_t lengthP, struct rlc_um_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   int             sdu_max_size;
 #ifdef DEBUG_RLC_UM_DISPLAY_ASCII_DATA
   int             index;
@@ -79,20 +79,25 @@ rlc_um_reassembly (uint8_t * srcP, int32_t lengthP, struct rlc_um_entity *rlcP)
   } else {
     sdu_max_size = RLC_SDU_MAX_SIZE_CONTROL_PLANE;
   }
+
   if (rlcP->output_sdu_in_construction == NULL) {
     //    msg("[RLC_UM_LITE] Getting mem_block ...\n");
     rlcP->output_sdu_in_construction = get_free_mem_block (sdu_max_size);
     rlcP->output_sdu_size_to_write = 0;
   }
+
   if ((rlcP->output_sdu_in_construction)) {
 
 #ifdef DEBUG_RLC_UM_DISPLAY_ASCII_DATA
     msg ("[RLC_UM_LITE][RB %d][REASSEMBLY] DATA :", rlcP->rb_id);
+
     for (index = 0; index < lengthP; index++) {
       msg ("%02X.", srcP[index]);
     }
+
     msg ("\n");
 #endif
+
     // check if no overflow in size
     if ((rlcP->output_sdu_size_to_write + lengthP) <= sdu_max_size) {
       memcpy (&rlcP->output_sdu_in_construction->data[rlcP->output_sdu_size_to_write], srcP, lengthP);
@@ -111,7 +116,7 @@ rlc_um_reassembly (uint8_t * srcP, int32_t lengthP, struct rlc_um_entity *rlcP)
 inline void
 rlc_um_send_sdu_minus_1_byte (struct rlc_um_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   rlcP->output_sdu_size_to_write -= 1;
   rlc_um_send_sdu (rlcP);
 }
@@ -120,24 +125,25 @@ rlc_um_send_sdu_minus_1_byte (struct rlc_um_entity *rlcP)
 void
 rlc_um_send_sdu (struct rlc_um_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
-/*#ifndef USER_MODE
-  unsigned long int rlc_um_time_us;
-  int min, sec, usec;
-#endif*/
+  //-----------------------------------------------------------------------------
+  /*#ifndef USER_MODE
+    unsigned long int rlc_um_time_us;
+    int min, sec, usec;
+  #endif*/
 
   if ((rlcP->output_sdu_in_construction)) {
 #ifdef DEBUG_RLC_UM_SEND_SDU
     msg ("[RLC_UM_LITE][MOD %d][RB %d][SEND_SDU] %d bytes frame %d\n", rlcP->module_id, rlcP->rb_id, rlcP->output_sdu_size_to_write, Mac_rlc_xface->frame);
-/*#ifndef USER_MODE
-  rlc_um_time_us = (unsigned long int)(rt_get_time_ns ()/(RTIME)1000);
-  sec = (rlc_um_time_us/ 1000000);
-  min = (sec / 60) % 60;
-  sec = sec % 60;
-  usec =  rlc_um_time_us % 1000000;
-  msg ("[RLC_UM_LITE][RB  %d] at time %2d:%2d.%6d\n", rlcP->rb_id, min, sec , usec);
-#endif*/
+    /*#ifndef USER_MODE
+      rlc_um_time_us = (unsigned long int)(rt_get_time_ns ()/(RTIME)1000);
+      sec = (rlc_um_time_us/ 1000000);
+      min = (sec / 60) % 60;
+      sec = sec % 60;
+      usec =  rlc_um_time_us % 1000000;
+      msg ("[RLC_UM_LITE][RB  %d] at time %2d:%2d.%6d\n", rlcP->rb_id, min, sec , usec);
+    #endif*/
 #endif
+
     if (rlcP->output_sdu_size_to_write > 0) {
 #ifdef DEBUG_RLC_STATS
       rlcP->rx_sdus += 1;
@@ -156,6 +162,7 @@ rlc_um_send_sdu (struct rlc_um_entity *rlcP)
       msg("[RLC_UM_LITE] Freeing mem_block ...\n");
       free_mem_block (rlcP->output_sdu_in_construction);
     }
+
     rlcP->output_sdu_in_construction = NULL;
     rlcP->output_sdu_size_to_write = 0;
   }

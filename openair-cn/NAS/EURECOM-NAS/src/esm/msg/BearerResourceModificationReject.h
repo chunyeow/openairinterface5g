@@ -55,7 +55,7 @@
 # define BEARER_RESOURCE_MODIFICATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<0)
 
 typedef enum bearer_resource_modification_reject_iei_tag {
-    BEARER_RESOURCE_MODIFICATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
+  BEARER_RESOURCE_MODIFICATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
 } bearer_resource_modification_reject_iei;
 
 /*
@@ -66,15 +66,15 @@ typedef enum bearer_resource_modification_reject_iei_tag {
  */
 
 typedef struct bearer_resource_modification_reject_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                           protocoldiscriminator:4;
-    EpsBearerIdentity                               epsbeareridentity:4;
-    ProcedureTransactionIdentity                    proceduretransactionidentity;
-    MessageType                                     messagetype;
-    EsmCause                                        esmcause;
-    /* Optional fields */
-    uint32_t                                        presencemask;
-    ProtocolConfigurationOptions                    protocolconfigurationoptions;
+  /* Mandatory fields */
+  ProtocolDiscriminator                           protocoldiscriminator:4;
+  EpsBearerIdentity                               epsbeareridentity:4;
+  ProcedureTransactionIdentity                    proceduretransactionidentity;
+  MessageType                                     messagetype;
+  EsmCause                                        esmcause;
+  /* Optional fields */
+  uint32_t                                        presencemask;
+  ProtocolConfigurationOptions                    protocolconfigurationoptions;
 } bearer_resource_modification_reject_msg;
 
 int decode_bearer_resource_modification_reject(bearer_resource_modification_reject_msg *bearerresourcemodificationreject, uint8_t *buffer, uint32_t len);

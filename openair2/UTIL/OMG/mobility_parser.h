@@ -50,7 +50,7 @@
  * @param need mobility file to be given
  */
 
-void parse_data (char *trace_file, int node_type);	// mobility file need to be given here, add in omg_param_list, get it from there
+void parse_data (char *trace_file, int node_type);  // mobility file need to be given here, add in omg_param_list, get it from there
 
 /**
  * function builds a linked list which holds vehicle id and its mapping pointer to

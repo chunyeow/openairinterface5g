@@ -34,8 +34,9 @@ void rrc_print_buffer (char *buffer, int length);
 
 
 //-----------------------------------------------------------------------------
-void rrc_new_per_parms (PERParms * pParms, ENCODEDBLOCK * pBuffer){
-//-----------------------------------------------------------------------------
+void rrc_new_per_parms (PERParms * pParms, ENCODEDBLOCK * pBuffer)
+{
+  //-----------------------------------------------------------------------------
   pParms->buffer = pBuffer;
   pParms->buff_index = 1;       //start +1 = placeholder for buffer total length
   pParms->buff_size = 1;        // idem
@@ -44,8 +45,9 @@ void rrc_new_per_parms (PERParms * pParms, ENCODEDBLOCK * pBuffer){
 }
 
 //-----------------------------------------------------------------------------
-void rrc_set_per_length (PERParms * pParms){
-//-----------------------------------------------------------------------------
+void rrc_set_per_length (PERParms * pParms)
+{
+  //-----------------------------------------------------------------------------
   char *pwrite;
 
   pwrite = ((char *) pParms->buffer);
@@ -53,8 +55,9 @@ void rrc_set_per_length (PERParms * pParms){
 }
 
 //-----------------------------------------------------------------------------
-int rrc_get_per_length (ENCODEDBLOCK * pBlock){
-//-----------------------------------------------------------------------------
+int rrc_get_per_length (ENCODEDBLOCK * pBlock)
+{
+  //-----------------------------------------------------------------------------
   u8 length;
 
   length = *((char *) pBlock);
@@ -62,8 +65,9 @@ int rrc_get_per_length (ENCODEDBLOCK * pBlock){
 }
 
 //-----------------------------------------------------------------------------
-void rrc_print_per_parms (PERParms * pParms){
-//-----------------------------------------------------------------------------
+void rrc_print_per_parms (PERParms * pParms)
+{
+  //-----------------------------------------------------------------------------
 #ifdef DEBUG_RRC_BROADCAST
   msg ("[RRC_BCH] PER Control block values \t- index : %d\t- size : %d\t- error info : %d", pParms->buff_index, pParms->buff_size, pParms->errInfo);
   rrc_print_buffer ((char *) pParms->buffer, pParms->buff_size);
@@ -71,8 +75,9 @@ void rrc_print_per_parms (PERParms * pParms){
 }
 
 //-----------------------------------------------------------------------------
-int rrc_PEREnc_padding (PERParms * pParms, int length){
-//-----------------------------------------------------------------------------
+int rrc_PEREnc_padding (PERParms * pParms, int length)
+{
+  //-----------------------------------------------------------------------------
   int  status = P_SUCCESS;
   char *pwrite;
   int  i;
@@ -83,6 +88,7 @@ int rrc_PEREnc_padding (PERParms * pParms, int length){
     *pwrite = 0;
     pwrite++;
   }
+
   pParms->buff_index += length;
   pParms->buff_size += length;
   return status;
@@ -92,8 +98,9 @@ int rrc_PEREnc_padding (PERParms * pParms, int length){
 /*  Constrained Integer                                       */
 /**************************************************************/
 //-----------------------------------------------------------------------------
-int rrc_PEREnc_ConstrInteger (PERParms * pParms, int pvalue, int lower, int upper){
-//-----------------------------------------------------------------------------
+int rrc_PEREnc_ConstrInteger (PERParms * pParms, int pvalue, int lower, int upper)
+{
+  //-----------------------------------------------------------------------------
   int status = P_SUCCESS;
   unsigned char *pwrite = NULL;
   unsigned short int *pshort = NULL;
@@ -102,14 +109,14 @@ int rrc_PEREnc_ConstrInteger (PERParms * pParms, int pvalue, int lower, int uppe
 
   if (pvalue >= lower && pvalue <= upper) {
     if ((lower >= -128) && (upper <= 127)) {
-//                *pwrite = (unsigned char)pvalue;
+      //                *pwrite = (unsigned char)pvalue;
       *pwrite = (char) pvalue;
       pParms->buff_index += 1;
       pParms->buff_size += 1;
     } else {
       if ((lower >= -32768) && (upper <= 32767)) {
-//          pshort = (unsigned short int *)pwrite;
-//                *pshort = (unsigned short int)pvalue;
+        //          pshort = (unsigned short int *)pwrite;
+        //                *pshort = (unsigned short int)pvalue;
         pshort = (unsigned short int *) pwrite;
         *pshort = (short int) pvalue;
         pParms->buff_index += 2;
@@ -124,15 +131,17 @@ int rrc_PEREnc_ConstrInteger (PERParms * pParms, int pvalue, int lower, int uppe
   } else {
     status = P_OUTOFBOUNDS;
   }
+
   return status;
 }
 
 //-----------------------------------------------------------------------------
-int rrc_PERDec_ConstrInteger (PERParms * pParms, int *pvalue, int lower, int upper){
-//-----------------------------------------------------------------------------
+int rrc_PERDec_ConstrInteger (PERParms * pParms, int *pvalue, int lower, int upper)
+{
+  //-----------------------------------------------------------------------------
   int status = P_SUCCESS;
-//   unsigned char * pRead;
-//   unsigned short int * pshort;
+  //   unsigned char * pRead;
+  //   unsigned short int * pshort;
   char *pRead = NULL;
   short int *pshort = NULL;
 
@@ -140,8 +149,10 @@ int rrc_PERDec_ConstrInteger (PERParms * pParms, int *pvalue, int lower, int upp
   short int value_read_2 = 0;
 
   pRead = ((char *) pParms->buffer) + pParms->buff_index;
+
   if ((lower >= -128) && (upper <= 127)) {
     value_read_1 = *(pRead);
+
     if (value_read_1 >= lower && value_read_1 <= upper) {
       *pvalue = value_read_1;
       pParms->buff_index += 1;
@@ -152,8 +163,9 @@ int rrc_PERDec_ConstrInteger (PERParms * pParms, int *pvalue, int lower, int upp
   } else {
     if ((lower >= -32768) && (upper <= 32767)) {
       pshort = (short int *) pRead;
-//       pshort = (unsigned short int *)pRead;
+      //       pshort = (unsigned short int *)pRead;
       value_read_2 = *(pshort);
+
       if (value_read_2 >= lower && value_read_2 <= upper) {
         *pvalue = value_read_2;
         pParms->buff_index += 2;
@@ -167,11 +179,13 @@ int rrc_PERDec_ConstrInteger (PERParms * pParms, int *pvalue, int lower, int upp
 #endif
       status = P_MISCLERROR;
     }
+
 #ifdef DEBUG_RRC_BROADCAST
     //      msg("[RRC_BCH] Value read : %d\n", *pvalue);
 #endif
 
   }
+
   return status;
 }
 
@@ -179,8 +193,9 @@ int rrc_PERDec_ConstrInteger (PERParms * pParms, int *pvalue, int lower, int upp
 /*  Constrained Unsigned Integer                              */
 /**************************************************************/
 //-----------------------------------------------------------------------------
-int rrc_PEREnc_ConsUnsigned (PERParms * pParms, unsigned int pvalue, unsigned int lower, unsigned int upper){
-//-----------------------------------------------------------------------------
+int rrc_PEREnc_ConsUnsigned (PERParms * pParms, unsigned int pvalue, unsigned int lower, unsigned int upper)
+{
+  //-----------------------------------------------------------------------------
   int status = P_SUCCESS;
   unsigned char  *pwrite;
   unsigned short int *pshort;
@@ -208,12 +223,14 @@ int rrc_PEREnc_ConsUnsigned (PERParms * pParms, unsigned int pvalue, unsigned in
   } else {
     status = P_OUTOFBOUNDS;
   }
+
   return status;
 }
 
 //-----------------------------------------------------------------------------
-int rrc_PERDec_ConsUnsigned (PERParms * pParms, unsigned int *pvalue, unsigned int lower, unsigned int upper){
-//-----------------------------------------------------------------------------
+int rrc_PERDec_ConsUnsigned (PERParms * pParms, unsigned int *pvalue, unsigned int lower, unsigned int upper)
+{
+  //-----------------------------------------------------------------------------
   int status = P_SUCCESS;
   unsigned char  *pRead;
   unsigned short int *pshort;
@@ -222,8 +239,10 @@ int rrc_PERDec_ConsUnsigned (PERParms * pParms, unsigned int *pvalue, unsigned i
   short int value_read_2 = 0;
 
   pRead = ((unsigned char *) pParms->buffer) + pParms->buff_index;
+
   if (upper <= 255) {
     value_read_1 = *(pRead);
+
     if (value_read_1 >= lower && value_read_1 <= upper) {
       *pvalue = value_read_1;
       pParms->buff_index += 1;
@@ -235,6 +254,7 @@ int rrc_PERDec_ConsUnsigned (PERParms * pParms, unsigned int *pvalue, unsigned i
     if (upper <= 65535) {
       pshort = (unsigned short int *) pRead;
       value_read_2 = *(pshort);
+
       if (value_read_2 >= lower && value_read_2 <= upper) {
         *pvalue = value_read_2;
         pParms->buff_index += 2;
@@ -249,6 +269,7 @@ int rrc_PERDec_ConsUnsigned (PERParms * pParms, unsigned int *pvalue, unsigned i
       status = P_MISCLERROR;
     }
   }
+
   return status;
 }
 
@@ -257,13 +278,15 @@ int rrc_PERDec_ConsUnsigned (PERParms * pParms, unsigned int *pvalue, unsigned i
 /**************************************************************/
 // working on octets in 1st step - 3rd parameter not used , FFS
 //-----------------------------------------------------------------------------
-int rrc_PEREnc_BitString (PERParms * pParms, unsigned int numbits, unsigned char *data){
-//-----------------------------------------------------------------------------
+int rrc_PEREnc_BitString (PERParms * pParms, unsigned int numbits, unsigned char *data)
+{
+  //-----------------------------------------------------------------------------
   int             status = P_SUCCESS;
   unsigned int    length;
   int             i;
   char           *pwrite;
   char           *psource;
+
   if (numbits == 0) {           //data buffer empty. Get encoded values from pParms
     length = rrc_get_per_length (pParms->data);
     pwrite = ((char *) pParms->buffer) + pParms->buff_index;
@@ -274,6 +297,7 @@ int rrc_PEREnc_BitString (PERParms * pParms, unsigned int numbits, unsigned char
       pwrite++;
       psource++;
     }
+
     pParms->buff_index += length;
     pParms->buff_size += length;
   } else {
@@ -283,12 +307,14 @@ int rrc_PEREnc_BitString (PERParms * pParms, unsigned int numbits, unsigned char
     status = P_MISCLERROR;
     pParms->errInfo = P_MISCLERROR;
   }
+
   return status;
 }
 
 //-----------------------------------------------------------------------------
-int rrc_PERDec_BitString (PERParms * pParms, unsigned int *numbits_p, char *buffer, unsigned int bufsiz){
-//-----------------------------------------------------------------------------
+int rrc_PERDec_BitString (PERParms * pParms, unsigned int *numbits_p, char *buffer, unsigned int bufsiz)
+{
+  //-----------------------------------------------------------------------------
   int status = P_SUCCESS;
   return status;
 }
@@ -297,8 +323,9 @@ int rrc_PERDec_BitString (PERParms * pParms, unsigned int *numbits_p, char *buff
 /*  Octet string                                                */
 /**************************************************************/
 //-----------------------------------------------------------------------------
-int rrc_PEREnc_OctetString (PERParms * pParms, unsigned int numocts, char *data){
-//-----------------------------------------------------------------------------
+int rrc_PEREnc_OctetString (PERParms * pParms, unsigned int numocts, char *data)
+{
+  //-----------------------------------------------------------------------------
   int status = P_SUCCESS;
   char *pwrite;
 
@@ -312,8 +339,9 @@ int rrc_PEREnc_OctetString (PERParms * pParms, unsigned int numocts, char *data)
 }
 
 //-----------------------------------------------------------------------------
-int rrc_PERDec_OctetString (PERParms * pParms, unsigned int *numocts_p, char *data, unsigned int bufsize){
-//-----------------------------------------------------------------------------
+int rrc_PERDec_OctetString (PERParms * pParms, unsigned int *numocts_p, char *data, unsigned int bufsize)
+{
+  //-----------------------------------------------------------------------------
   int status = P_SUCCESS;
   //int i;
   char *pwrite;
@@ -338,8 +366,9 @@ int rrc_PERDec_OctetString (PERParms * pParms, unsigned int *numocts_p, char *da
 /*  Var Octet String - same as string, but with length        */
 /**************************************************************/
 //-----------------------------------------------------------------------------
-int rrc_PEREnc_VarOctetString (PERParms * pParms, unsigned int numocts, unsigned char *data){
-//-----------------------------------------------------------------------------
+int rrc_PEREnc_VarOctetString (PERParms * pParms, unsigned int numocts, unsigned char *data)
+{
+  //-----------------------------------------------------------------------------
   int status = P_SUCCESS;
   char *pwrite;
 
@@ -356,8 +385,9 @@ int rrc_PEREnc_VarOctetString (PERParms * pParms, unsigned int numocts, unsigned
 }
 
 //-----------------------------------------------------------------------------
-int rrc_PERDec_VarOctetString (PERParms * pParms, unsigned int *numocts_p, unsigned char *data){
-//-----------------------------------------------------------------------------
+int rrc_PERDec_VarOctetString (PERParms * pParms, unsigned int *numocts_p, unsigned char *data)
+{
+  //-----------------------------------------------------------------------------
   int status = P_SUCCESS;
   char *psource;
   unsigned int numocts;
@@ -367,7 +397,7 @@ int rrc_PERDec_VarOctetString (PERParms * pParms, unsigned int *numocts_p, unsig
 
   read_value = *psource;
   numocts = (unsigned int)read_value;
-//  (u8) numocts = *((u8 *)psource);
+  //  (u8) numocts = *((u8 *)psource);
   *numocts_p = numocts;
   psource += 1;
 
@@ -382,11 +412,13 @@ int rrc_PERDec_VarOctetString (PERParms * pParms, unsigned int *numocts_p, unsig
 /*  Digit                                                     */
 /**************************************************************/
 //-----------------------------------------------------------------------------
-int rrc_PEREnc_Digit (PERParms * pParms, Digit value){
-//-----------------------------------------------------------------------------
+int rrc_PEREnc_Digit (PERParms * pParms, Digit value)
+{
+  //-----------------------------------------------------------------------------
   int  status = P_SUCCESS;
   // status = rrc_PEREnc_ConstrInteger (pParms, value, 0, 9);
   char *pwrite;
+
   if (value >= 0 && value <= 9) {
     pwrite = ((char *) pParms->buffer) + pParms->buff_index;
     *pwrite = (char) value;
@@ -395,12 +427,14 @@ int rrc_PEREnc_Digit (PERParms * pParms, Digit value){
   } else {
     status = P_INVDIGIT;
   }
+
   return (status);
 }
 
 //-----------------------------------------------------------------------------
-int rrc_PERDec_Digit (PERParms * pParms, Digit * pvalue){
-//-----------------------------------------------------------------------------
+int rrc_PERDec_Digit (PERParms * pParms, Digit * pvalue)
+{
+  //-----------------------------------------------------------------------------
   int status = P_SUCCESS;
   //status = rrc_PERDec_ConstrInteger (pParms, pvalue, 0, 9);
   char  *pRead;
@@ -408,13 +442,13 @@ int rrc_PERDec_Digit (PERParms * pParms, Digit * pvalue){
 
   pRead = ((char *) pParms->buffer) + pParms->buff_index;
   value_read = *(pRead);
-//   if (value_read>=0 && value_read<=9){
+  //   if (value_read>=0 && value_read<=9){
   *pvalue = value_read;
   pParms->buff_index += 1;
   pParms->buff_size -= 1;
-//   }else{
-//   status = P_INVDIGIT;
-//   }
+  //   }else{
+  //   status = P_INVDIGIT;
+  //   }
   return (status);
 }
 
@@ -422,10 +456,12 @@ int rrc_PERDec_Digit (PERParms * pParms, Digit * pvalue){
 /*  Length                                                    */
 /**************************************************************/
 //-----------------------------------------------------------------------------
-int rrc_PEREnc_Length (PERParms * pParms, unsigned int value){
-//-----------------------------------------------------------------------------
+int rrc_PEREnc_Length (PERParms * pParms, unsigned int value)
+{
+  //-----------------------------------------------------------------------------
   int status = P_SUCCESS;
   char *pwrite;
+
   if (value <= 255) {
     pwrite = ((char *) pParms->buffer) + pParms->buff_index;
     *pwrite = (char) value;
@@ -437,12 +473,14 @@ int rrc_PEREnc_Length (PERParms * pParms, unsigned int value){
 #endif
     status = P_OUTOFBOUNDS;
   }
+
   return status;
 }
 
 //-----------------------------------------------------------------------------
-int rrc_PERDec_Length (PERParms * pParms, unsigned int *pvalue){
-//-----------------------------------------------------------------------------
+int rrc_PERDec_Length (PERParms * pParms, unsigned int *pvalue)
+{
+  //-----------------------------------------------------------------------------
   int status = P_SUCCESS;
   char *pRead;
 

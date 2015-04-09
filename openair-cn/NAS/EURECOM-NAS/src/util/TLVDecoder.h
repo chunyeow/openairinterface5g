@@ -29,27 +29,27 @@
 #ifndef TLV_DECODER_H_
 #define TLV_DECODER_H_
 
-#include <arpa/inet.h>	// ntohl, ntohs
+#include <arpa/inet.h>  // ntohl, ntohs
 #include "nas_log.h"
 
 #ifndef NAS_DEBUG
 # define NAS_DEBUG 1
 #endif
 
-#define DECODE_U8(bUFFER, vALUE, sIZE)		\
-    vALUE = *(uint8_t*)(bUFFER);		\
+#define DECODE_U8(bUFFER, vALUE, sIZE)    \
+    vALUE = *(uint8_t*)(bUFFER);    \
     sIZE += sizeof(uint8_t)
 
-#define DECODE_U16(bUFFER, vALUE, sIZE)		\
-    vALUE = ntohs(*(uint16_t*)(bUFFER));	\
+#define DECODE_U16(bUFFER, vALUE, sIZE)   \
+    vALUE = ntohs(*(uint16_t*)(bUFFER));  \
     sIZE += sizeof(uint16_t)
 
-#define DECODE_U24(bUFFER, vALUE, sIZE)		\
-    vALUE = ntohl(*(uint32_t*)(bUFFER)) >> 8;	\
+#define DECODE_U24(bUFFER, vALUE, sIZE)   \
+    vALUE = ntohl(*(uint32_t*)(bUFFER)) >> 8; \
     sIZE += sizeof(uint8_t) + sizeof(uint16_t)
 
-#define DECODE_U32(bUFFER, vALUE, sIZE)		\
-    vALUE = ntohl(*(uint32_t*)(bUFFER));	\
+#define DECODE_U32(bUFFER, vALUE, sIZE)   \
+    vALUE = ntohl(*(uint32_t*)(bUFFER));  \
     sIZE += sizeof(uint32_t)
 
 #if (BYTE_ORDER == LITTLE_ENDIAN)
@@ -62,42 +62,42 @@
     sIZE += sizeof(uint16_t)
 #endif
 
-#define IES_DECODE_U8(bUFFER, dECODED, vALUE)	\
+#define IES_DECODE_U8(bUFFER, dECODED, vALUE) \
     DECODE_U8(bUFFER + dECODED, vALUE, dECODED)
 
-#define IES_DECODE_U16(bUFFER, dECODED, vALUE)	\
+#define IES_DECODE_U16(bUFFER, dECODED, vALUE)  \
     DECODE_U16(bUFFER + dECODED, vALUE, dECODED)
 
-#define IES_DECODE_U24(bUFFER, dECODED, vALUE)	\
+#define IES_DECODE_U24(bUFFER, dECODED, vALUE)  \
     DECODE_U24(bUFFER + dECODED, vALUE, dECODED)
 
-#define IES_DECODE_U32(bUFFER, dECODED, vALUE)	\
+#define IES_DECODE_U32(bUFFER, dECODED, vALUE)  \
     DECODE_U32(bUFFER + dECODED, vALUE, dECODED)
 
 typedef enum {
-    TLV_DECODE_ERROR_OK                     =  0,
-    TLV_DECODE_UNEXPECTED_IEI               = -1,
-    TLV_DECODE_MANDATORY_FIELD_NOT_PRESENT  = -2,
-    TLV_DECODE_VALUE_DOESNT_MATCH           = -3,
+  TLV_DECODE_ERROR_OK                     =  0,
+  TLV_DECODE_UNEXPECTED_IEI               = -1,
+  TLV_DECODE_MANDATORY_FIELD_NOT_PRESENT  = -2,
+  TLV_DECODE_VALUE_DOESNT_MATCH           = -3,
 
-    /* Fatal errors - received message should not be processed */
-    TLV_DECODE_WRONG_MESSAGE_TYPE           = -10,
-    TLV_DECODE_PROTOCOL_NOT_SUPPORTED       = -11,
-    TLV_DECODE_BUFFER_TOO_SHORT             = -12,
-    TLV_DECODE_BUFFER_NULL                  = -13,
-    TLV_DECODE_MAC_MISMATCH                 = -14,
+  /* Fatal errors - received message should not be processed */
+  TLV_DECODE_WRONG_MESSAGE_TYPE           = -10,
+  TLV_DECODE_PROTOCOL_NOT_SUPPORTED       = -11,
+  TLV_DECODE_BUFFER_TOO_SHORT             = -12,
+  TLV_DECODE_BUFFER_NULL                  = -13,
+  TLV_DECODE_MAC_MISMATCH                 = -14,
 } tlv_decoder_error_code;
 
 /* Defines error code limit below which received message should be discarded
  * because it cannot be further processed */
-#define TLV_DECODE_FATAL_ERROR	(TLV_DECODE_VALUE_DOESNT_MATCH)
+#define TLV_DECODE_FATAL_ERROR  (TLV_DECODE_VALUE_DOESNT_MATCH)
 
 extern int errorCodeDecoder;
 
 void tlv_decode_perror(void);
 
 #define CHECK_PDU_POINTER_AND_LENGTH_DECODER(bUFFER, mINIMUMlENGTH, lENGTH)    \
-	if (bUFFER == NULL)                                                    \
+  if (bUFFER == NULL)                                                    \
         {                                                                      \
                 printf("(%s:%d) Got NULL pointer for the payload\n",           \
                 __FILE__, __LINE__);                                           \

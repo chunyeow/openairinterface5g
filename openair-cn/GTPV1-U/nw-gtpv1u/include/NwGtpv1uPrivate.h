@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                             n w - g t p v 2 u                              * 
- *                             n w - g t p v 2 u                              * 
+ *                             n w - g t p v 2 u                              *
+ *                             n w - g t p v 2 u                              *
  *    G P R S    T u n n e l i n g    P r o t o c o l   v 2 u   S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -44,9 +44,9 @@
 #include "NwGtpv1uMsg.h"
 
 
-/** 
+/**
  * @file NwGtpv1uPrivate.h
- * @brief This header file contains nw-gtpv1u private definitions not to be 
+ * @brief This header file contains nw-gtpv1u private definitions not to be
  * exposed to user application.
 */
 
@@ -78,8 +78,7 @@ extern "C" {
  * gtpv1u stack class definition
  */
 
-typedef struct NwGtpv1uStack
-{
+typedef struct NwGtpv1uStack {
   NwU32T                        id;
   NwU32T                        seq;
   NwGtpv1uUlpEntityT            ulp;
@@ -92,14 +91,13 @@ typedef struct NwGtpv1uStack
   RB_HEAD( NwGtpv1uOutstandingRxSeqNumTrxnMap, NwGtpv1uTrxn) outstandingRxSeqNumMap;
   RB_HEAD(NwGtpv1uTunnelEndPointTMap, NwGtpv1uTunnelEndPoint) sessionMap;
   RB_HEAD(NwGtpv1uTunnelEndPointIdentifierMap, NwGtpv1uTunnelEndPoint) teidMap;
-} NwGtpv1uStackT; 
+} NwGtpv1uStackT;
 
 /**
  * GTP Tunnel End Point class definition
  */
 
-typedef struct NwGtpv1uTunnelEndPoint
-{
+typedef struct NwGtpv1uTunnelEndPoint {
   NwU32T                        teid;                                   /**< Gtpu Tunnel End Point Identifier   */
   NwU32T                        peerAddr;                               /**< Peer IP address for the session    */
   NwGtpv1uStackT*               pStack;                                 /**< Pointer to the parent stack        */
@@ -110,15 +108,14 @@ typedef struct NwGtpv1uTunnelEndPoint
 
 
 /*--------------------------------------------------------------------------*
- * Timeout Info Type Definition  
+ * Timeout Info Type Definition
  *--------------------------------------------------------------------------*/
 
 /**
- * gtpv1u timeout info 
+ * gtpv1u timeout info
  */
 
-typedef struct NwGtpv1uTimeoutInfo
-{
+typedef struct NwGtpv1uTimeoutInfo {
   NwGtpv1uStackHandleT hStack;
   void* timeoutArg;
   NwGtpv1uRcT (*timeoutCallbackFunc)(void*);
@@ -129,7 +126,7 @@ typedef struct NwGtpv1uTimeoutInfo
  *
  * @param[in] thiz Pointer to stack instance
  * @param[in] timeoutArg Arg to timeout function.
- * @param[out] phTmr Pointer to timer handle. 
+ * @param[out] phTmr Pointer to timer handle.
  * @return NW_GTPV1U_OK on success.
  */
 
@@ -140,7 +137,7 @@ nwGtpStartTrxnPeerRspTimer(NwGtpv1uStackT* thiz, NwGtpv1uTimeoutInfoT* timeoutIn
  * Stop a transaction response timer
  *
  * @param[in] thiz Pointer to stack instance
- * @param[out] phTmr Pointer to timer handle. 
+ * @param[out] phTmr Pointer to timer handle.
  * @return NW_GTPV1U_OK on success.
  */
 
@@ -153,8 +150,7 @@ nwGtpStopTrxnPeerRspTimer(NwGtpv1uStackT* thiz, NwGtpv1uTimerHandleT* phTmr);
 /**
  * NwGtpv1uMsgT holds gtpv1u messages to/from the peer.
  */
-typedef struct NwGtpv1uMsg
-{
+typedef struct NwGtpv1uMsg {
   NwU8T         version;
   NwU8T         protocolType;
   NwU8T         extHdrFlag;
@@ -164,7 +160,7 @@ typedef struct NwGtpv1uMsg
   NwU16T        msgLen;
   NwU32T        teid;
   NwU16T        seqNum;
-  NwU8T         npduNum;    
+  NwU8T         npduNum;
   NwU8T         nextExtHdrType;
   NwU8T*        msgBuf;
   NwU32T        msgBufLen;
@@ -174,15 +170,14 @@ typedef struct NwGtpv1uMsg
 
 
 /*--------------------------------------------------------------------------*
- * R6/R4 Transaction Context Type Definition  
+ * R6/R4 Transaction Context Type Definition
  *--------------------------------------------------------------------------*/
 
 /**
  * Transaction structure
  */
 
-typedef struct NwGtpv1uTrxn
-{
+typedef struct NwGtpv1uTrxn {
   NwU32T                        seqNum;
   NwU32T                        peerIp;
   NwU32T                        peerPort;
@@ -206,8 +201,7 @@ typedef struct NwGtpv1uTrxn
 
 #pragma pack(1)
 
-typedef struct NwGtpv1uMsgHeader 
-{
+typedef struct NwGtpv1uMsgHeader {
   NwU8T PN:1;
   NwU8T S:1;
   NwU8T E:1;

@@ -94,47 +94,50 @@ Description Implements the EPS Mobility Management procedures executed
  ***************************************************************************/
 int EmmDeregisteredNoCellAvailable(const emm_reg_t *evt)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc = RETURNerror;
+  int rc = RETURNerror;
 
-    assert(emm_fsm_get_status() == EMM_DEREGISTERED_NO_CELL_AVAILABLE);
+  assert(emm_fsm_get_status() == EMM_DEREGISTERED_NO_CELL_AVAILABLE);
 
-    switch (evt->primitive) {
-            /* TODO: network re-selection is not allowed when in No Cell
-             * Available substate. The AS should search for a suitable cell
-             * and notify the NAS when such a cell is found (TS 24.008 section
-             * 4.2.4.1.2) */
-        case _EMMREG_REGISTER_REQ:
-            /*
-             * The user manually re-selected a PLMN to register to
-             */
-            rc = emm_fsm_set_status(EMM_DEREGISTERED_PLMN_SEARCH);
+  switch (evt->primitive) {
+    /* TODO: network re-selection is not allowed when in No Cell
+     * Available substate. The AS should search for a suitable cell
+     * and notify the NAS when such a cell is found (TS 24.008 section
+     * 4.2.4.1.2) */
+  case _EMMREG_REGISTER_REQ:
+    /*
+     * The user manually re-selected a PLMN to register to
+     */
+    rc = emm_fsm_set_status(EMM_DEREGISTERED_PLMN_SEARCH);
 
-            if (rc != RETURNerror) {
-                /*
-                 * Notify EMM that the MT is currently searching an operator
-                 * to register to
-                 */
-                rc = emm_proc_registration_notify(NET_REG_STATE_ON);
-                if (rc != RETURNok) {
-                    LOG_TRACE(WARNING, "EMM-FSM   - "
-                              "Failed to notify registration update");
-                }
-                /*
-                 * Perform network re-selection procedure
-                 */
-                rc = emm_proc_plmn_selection(evt->u.regist.index);
-            }
-            break;
+    if (rc != RETURNerror) {
+      /*
+       * Notify EMM that the MT is currently searching an operator
+       * to register to
+       */
+      rc = emm_proc_registration_notify(NET_REG_STATE_ON);
 
-        default:
-            LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
-                      evt->primitive);
-            break;
+      if (rc != RETURNok) {
+        LOG_TRACE(WARNING, "EMM-FSM   - "
+                  "Failed to notify registration update");
+      }
+
+      /*
+       * Perform network re-selection procedure
+       */
+      rc = emm_proc_plmn_selection(evt->u.regist.index);
     }
 
-    LOG_FUNC_RETURN (rc);
+    break;
+
+  default:
+    LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
+              evt->primitive);
+    break;
+  }
+
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************/

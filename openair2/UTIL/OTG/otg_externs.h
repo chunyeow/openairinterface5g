@@ -28,7 +28,7 @@
 *******************************************************************************/
 
 /*! \file otg_externs.h
-* \brief extern parameters  
+* \brief extern parameters
 * \author n. nikaein A. Hafsaoui
 * \date 2012
 * \version 1.0

@@ -123,17 +123,17 @@ int esm_send_pdn_disconnect_request(int pti, int ebi,
  * ---------------------------------------
  */
 int esm_send_activate_default_eps_bearer_context_accept(int ebi,
-        activate_default_eps_bearer_context_accept_msg *msg);
+    activate_default_eps_bearer_context_accept_msg *msg);
 int esm_send_activate_default_eps_bearer_context_reject(int ebi,
-        activate_default_eps_bearer_context_reject_msg *msg, int esm_cause);
+    activate_default_eps_bearer_context_reject_msg *msg, int esm_cause);
 
 int esm_send_activate_dedicated_eps_bearer_context_accept(int ebi,
-        activate_dedicated_eps_bearer_context_accept_msg *msg);
+    activate_dedicated_eps_bearer_context_accept_msg *msg);
 int esm_send_activate_dedicated_eps_bearer_context_reject(int ebi,
-        activate_dedicated_eps_bearer_context_reject_msg *msg, int esm_cause);
+    activate_dedicated_eps_bearer_context_reject_msg *msg, int esm_cause);
 
 int esm_send_deactivate_eps_bearer_context_accept(int ebi,
-        deactivate_eps_bearer_context_accept_msg *msg);
+    deactivate_eps_bearer_context_accept_msg *msg);
 
 #endif
 
@@ -158,16 +158,16 @@ int esm_send_pdn_disconnect_reject(int pti, pdn_disconnect_reject_msg *msg,
  * ---------------------------------------
  */
 int esm_send_activate_default_eps_bearer_context_request(int pti, int ebi,
-        activate_default_eps_bearer_context_request_msg *msg, const OctetString *apn,
-        int pdn_type, const OctetString *pdn_addr, const EpsQualityOfService *qos,
-        int esm_cause);
+    activate_default_eps_bearer_context_request_msg *msg, const OctetString *apn,
+    int pdn_type, const OctetString *pdn_addr, const EpsQualityOfService *qos,
+    int esm_cause);
 
 int esm_send_activate_dedicated_eps_bearer_context_request(int pti, int ebi,
-        activate_dedicated_eps_bearer_context_request_msg *msg, int linked_ebi,
-        const EpsQualityOfService *qos, PacketFilters *pkfs, int n_pkfs);
+    activate_dedicated_eps_bearer_context_request_msg *msg, int linked_ebi,
+    const EpsQualityOfService *qos, PacketFilters *pkfs, int n_pkfs);
 
 int esm_send_deactivate_eps_bearer_context_request(int pti, int ebi,
-        deactivate_eps_bearer_context_request_msg *msg, int esm_cause);
+    deactivate_eps_bearer_context_request_msg *msg, int esm_cause);
 
 #endif
 

@@ -98,59 +98,59 @@ Description Defines the ESM status procedure executed by the Non-Access
  ***************************************************************************/
 int esm_proc_status_ind(
 #ifdef NAS_MME
-    emm_data_context_t *ctx,
+  emm_data_context_t *ctx,
 #endif
-    int pti, int ebi, int *esm_cause)
+  int pti, int ebi, int *esm_cause)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc;
+  int rc;
 
-    LOG_TRACE(INFO,"ESM-PROC  - ESM status procedure requested (cause=%d)",
-              *esm_cause);
+  LOG_TRACE(INFO,"ESM-PROC  - ESM status procedure requested (cause=%d)",
+            *esm_cause);
 
-    LOG_TRACE(DEBUG, "ESM-PROC  - To be implemented");
+  LOG_TRACE(DEBUG, "ESM-PROC  - To be implemented");
 
-    switch (*esm_cause) {
-        case ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY:
-            /*
-             * Abort any ongoing ESM procedure related to the received EPS
-             * bearer identity, stop any related timer, and deactivate the
-             * corresponding EPS bearer context locally
-             */
-            /* TODO */
-            rc = RETURNok;
-            break;
+  switch (*esm_cause) {
+  case ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY:
+    /*
+     * Abort any ongoing ESM procedure related to the received EPS
+     * bearer identity, stop any related timer, and deactivate the
+     * corresponding EPS bearer context locally
+     */
+    /* TODO */
+    rc = RETURNok;
+    break;
 
-        case ESM_CAUSE_INVALID_PTI_VALUE:
-            /*
-             * Abort any ongoing ESM procedure related to the received PTI
-             * value and stop any related timer
-             */
-            /* TODO */
-            rc = RETURNok;
-            break;
+  case ESM_CAUSE_INVALID_PTI_VALUE:
+    /*
+     * Abort any ongoing ESM procedure related to the received PTI
+     * value and stop any related timer
+     */
+    /* TODO */
+    rc = RETURNok;
+    break;
 
-        case ESM_CAUSE_MESSAGE_TYPE_NOT_IMPLEMENTED:
-            /*
-             * Abort any ongoing ESM procedure related to the PTI or
-             * EPS bearer identity and stop any related timer
-             */
-            /* TODO */
-            rc = RETURNok;
-            break;
+  case ESM_CAUSE_MESSAGE_TYPE_NOT_IMPLEMENTED:
+    /*
+     * Abort any ongoing ESM procedure related to the PTI or
+     * EPS bearer identity and stop any related timer
+     */
+    /* TODO */
+    rc = RETURNok;
+    break;
 
-        default:
-            /*
-             * No state transition and no specific action shall be taken;
-             * local actions are possible
-             */
-            /* TODO */
-            rc = RETURNok;
-            break;
-    }
+  default:
+    /*
+     * No state transition and no specific action shall be taken;
+     * local actions are possible
+     */
+    /* TODO */
+    rc = RETURNok;
+    break;
+  }
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************
@@ -178,29 +178,29 @@ int esm_proc_status(int is_standalone,
                     int ebi, OctetString *msg,
                     int ue_triggered)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc;
-    emm_sap_t emm_sap;
+  int rc;
+  emm_sap_t emm_sap;
 
-    LOG_TRACE(INFO,"ESM-PROC  - ESM status procedure requested");
+  LOG_TRACE(INFO,"ESM-PROC  - ESM status procedure requested");
 
-    /*
-     * Notity EMM that ESM PDU has to be forwarded to lower layers
-     */
-    emm_sap.primitive = EMMESM_UNITDATA_REQ;
+  /*
+   * Notity EMM that ESM PDU has to be forwarded to lower layers
+   */
+  emm_sap.primitive = EMMESM_UNITDATA_REQ;
 #ifdef NAS_UE
-    emm_sap.u.emm_esm.ueid = 0;
+  emm_sap.u.emm_esm.ueid = 0;
 #endif
 #ifdef NAS_MME
-    emm_sap.u.emm_esm.ueid = ctx->ueid;
-    emm_sap.u.emm_esm.ctx  = ctx;
+  emm_sap.u.emm_esm.ueid = ctx->ueid;
+  emm_sap.u.emm_esm.ctx  = ctx;
 #endif
-    emm_sap.u.emm_esm.u.data.msg.length = msg->length;
-    emm_sap.u.emm_esm.u.data.msg.value = msg->value;
-    rc = emm_sap_send(&emm_sap);
+  emm_sap.u.emm_esm.u.data.msg.length = msg->length;
+  emm_sap.u.emm_esm.u.data.msg.value = msg->value;
+  rc = emm_sap_send(&emm_sap);
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************/

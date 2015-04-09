@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -71,13 +71,13 @@
 #include "MIH_C.h"
 //-----------------------------------------------------------------------------
 typedef struct MIH_C_F1_Generic_List {
-    u_int16_t length;
-    u_int8_t  val[2];
-}MIH_C_F1_Generic_List_t;
+  u_int16_t length;
+  u_int8_t  val[2];
+} MIH_C_F1_Generic_List_t;
 //-----------------------------------------------------------------------------
 typedef struct MIH_C_F1_Generic_Octet {
-    u_int8_t  val[2];
-}MIH_C_F1_Generic_Octet_t;
+  u_int8_t  val[2];
+} MIH_C_F1_Generic_Octet_t;
 //-----------------------------------------------------------------------------
 public_F1_codec( void MIH_C_BITMAP8_encode      (Bit_Buffer_t* bbP, MIH_C_BITMAP8_T* dataP);)
 public_F1_codec( void MIH_C_BITMAP16_encode     (Bit_Buffer_t* bbP, MIH_C_BITMAP16_T* dataP);)

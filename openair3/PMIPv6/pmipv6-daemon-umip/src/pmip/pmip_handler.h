@@ -4,17 +4,17 @@
  * Authors: OPENAIR3 <openair_tech@eurecom.fr>
  *
  * Copyright 2010-2011 EURECOM (Sophia-Antipolis, FRANCE)
- * 
- * Proxy Mobile IPv6 (or PMIPv6, or PMIP) is a network-based mobility 
- * management protocol standardized by IETF. It is a protocol for building 
- * a common and access technology independent of mobile core networks, 
- * accommodating various access technologies such as WiMAX, 3GPP, 3GPP2 
- * and WLAN based access architectures. Proxy Mobile IPv6 is the only 
+ *
+ * Proxy Mobile IPv6 (or PMIPv6, or PMIP) is a network-based mobility
+ * management protocol standardized by IETF. It is a protocol for building
+ * a common and access technology independent of mobile core networks,
+ * accommodating various access technologies such as WiMAX, 3GPP, 3GPP2
+ * and WLAN based access architectures. Proxy Mobile IPv6 is the only
  * network-based mobility management protocol standardized by IETF.
- * 
+ *
  * PMIP Proxy Mobile IPv6 for Linux has been built above MIPL free software;
  * which it involves that it is under the same terms of GNU General Public
- * License version 2. See MIPL terms condition if you need more details. 
+ * License version 2. See MIPL terms condition if you need more details.
  */
 /*! \file pmip_handler.h
 * \brief
@@ -78,7 +78,7 @@ protected_pmip_handler(struct in6_addr  *CONVERT_ID2ADDR(struct in6_addr *result
 * \brief   Computes the address of the mobile node corresponding to the supplied binding cache entry, store it in the binding cache entry and return it.
 * \param[in]  bce A binding cache entry
 * \return   The address of the mobile node.
-* \note		The returned address is returned using CONVERT_ID2ADDR function.
+* \note   The returned address is returned using CONVERT_ID2ADDR function.
 */
 protected_pmip_handler(struct in6_addr  *get_mn_addr(pmip_entry_t * bce);)
 /*! \fn struct in6_addr  *solicited_mcast(struct in6_addr *id)

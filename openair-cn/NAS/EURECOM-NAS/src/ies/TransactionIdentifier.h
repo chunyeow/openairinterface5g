@@ -39,7 +39,7 @@
 #define TRANSACTION_IDENTIFIER_MAXIMUM_LENGTH 1
 
 typedef struct {
-    uint8_t field;
+  uint8_t field;
 } TransactionIdentifier;
 
 int encode_transaction_identifier(TransactionIdentifier *transactionidentifier, uint8_t iei, uint8_t *buffer, uint32_t len);

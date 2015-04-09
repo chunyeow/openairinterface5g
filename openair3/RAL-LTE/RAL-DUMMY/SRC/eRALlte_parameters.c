@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -45,27 +45,27 @@
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 eRALlte_get_parameters_request()                          **
+ ** Name:  eRALlte_get_parameters_request()                          **
  **                                                                        **
  ** Description: Processes the Link_Get_Parameters.request message and     **
- **		 sends a LinK_Get_Parameters.confirm message to the MIHF.  **
+ **    sends a LinK_Get_Parameters.confirm message to the MIHF.  **
  **                                                                        **
- ** Inputs:	 msgP:		Pointer to the received message            **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  msgP:    Pointer to the received message            **
+ **      Others:  None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	None                                       **
- ** 	 	 Others:	None                                       **
+ ** Outputs:   None                                                      **
+ **    Return:  None                                       **
+ **      Others:  None                                       **
  **                                                                        **
  ***************************************************************************/
 void eRALlte_get_parameters_request(MIH_C_Message_Link_Get_Parameters_request_t* msgP)
 {
-    MIH_C_STATUS_T status = MIH_C_STATUS_REJECTED;
+  MIH_C_STATUS_T status = MIH_C_STATUS_REJECTED;
 
-    /* Get parameters link command is not supported at the network side */
-    DEBUG(" Get Parameters request is not supported by the network\n");
-    eRALlte_send_get_parameters_confirm(&msgP->header.transaction_id,
-					&status, NULL, NULL, NULL);
+  /* Get parameters link command is not supported at the network side */
+  DEBUG(" Get Parameters request is not supported by the network\n");
+  eRALlte_send_get_parameters_confirm(&msgP->header.transaction_id,
+                                      &status, NULL, NULL, NULL);
 }
 
 /****************************************************************************/

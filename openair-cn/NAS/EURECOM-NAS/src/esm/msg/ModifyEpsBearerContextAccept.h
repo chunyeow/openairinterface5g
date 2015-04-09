@@ -52,7 +52,7 @@
 # define MODIFY_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<0)
 
 typedef enum modify_eps_bearer_context_accept_iei_tag {
-    MODIFY_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
+  MODIFY_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
 } modify_eps_bearer_context_accept_iei;
 
 /*
@@ -63,14 +63,14 @@ typedef enum modify_eps_bearer_context_accept_iei_tag {
  */
 
 typedef struct modify_eps_bearer_context_accept_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                       protocoldiscriminator:4;
-    EpsBearerIdentity                           epsbeareridentity:4;
-    ProcedureTransactionIdentity                proceduretransactionidentity;
-    MessageType                                 messagetype;
-    /* Optional fields */
-    uint32_t                                    presencemask;
-    ProtocolConfigurationOptions                protocolconfigurationoptions;
+  /* Mandatory fields */
+  ProtocolDiscriminator                       protocoldiscriminator:4;
+  EpsBearerIdentity                           epsbeareridentity:4;
+  ProcedureTransactionIdentity                proceduretransactionidentity;
+  MessageType                                 messagetype;
+  /* Optional fields */
+  uint32_t                                    presencemask;
+  ProtocolConfigurationOptions                protocolconfigurationoptions;
 } modify_eps_bearer_context_accept_msg;
 
 int decode_modify_eps_bearer_context_accept(modify_eps_bearer_context_accept_msg *modifyepsbearercontextaccept, uint8_t *buffer, uint32_t len);

@@ -137,292 +137,292 @@ struct rlc_am_entity {
   // STATE VARIABLES
   //-----------------------------
   uint16_t             vt_s;         // send state variable
-  // This state variable contains the "Sequence Number" of the next AMD PDU to 
-  // be transmitted for the first time (i.e. excluding retransmitted PDUs). It 
-  // shall be updated after the aforementioned AMD PDU is transmitted or after 
-  // transmission of a MRW SUFI which includes SN_MRWLENGTH >VT(S) 
-  // (see subclause 11.6). 
+  // This state variable contains the "Sequence Number" of the next AMD PDU to
+  // be transmitted for the first time (i.e. excluding retransmitted PDUs). It
+  // shall be updated after the aforementioned AMD PDU is transmitted or after
+  // transmission of a MRW SUFI which includes SN_MRWLENGTH >VT(S)
+  // (see subclause 11.6).
   // The initial value of this variable is 0
-  
-  
+
+
   uint16_t             vt_a;         // Acknowledge state variable
-  // This state variable contains the "Sequence Number" following the "Sequence 
-  // Number" of the last in-sequence acknowledged AMD PDU. This forms the lower 
+  // This state variable contains the "Sequence Number" following the "Sequence
+  // Number" of the last in-sequence acknowledged AMD PDU. This forms the lower
   // edge of the transmission window of acceptable acknowledgements. VT(A) shall
-  // be updated based on the receipt of a STATUS PDU including an ACK (see 
+  // be updated based on the receipt of a STATUS PDU including an ACK (see
   // subclause 9.2.2.11.2) and/or an MRW_ACK SUFI (see subclause 11.6).
-  // The initial value of this variable is 0. For the purpose of initialising 
+  // The initial value of this variable is 0. For the purpose of initialising
   // the protocol, this value shall be assumed to be the first "Sequence Number"
   // following the last in-sequence acknowledged AMD PDU.
-	
-  
+
+
   uint16_t             vt_ms;        // Maximum send state variable
-  // This state variable contains the "Sequence Number" of the first AMD PDU 
-  // that can be rejected by the peer Receiver, VT(MS) = VT(A) + VT(WS). 
-  // This value represents the upper edge of the transmission window. The 
-  // transmitter shall not transmit AMD PDUs with "Sequence Number" >= VT(MS) 
-  // unless VT(S) >= VT(MS). In that case, the AMD PDU with 
-  // "Sequence Number" = VT(S) - 1 can also be transmitted. VT(MS) shall be 
+  // This state variable contains the "Sequence Number" of the first AMD PDU
+  // that can be rejected by the peer Receiver, VT(MS) = VT(A) + VT(WS).
+  // This value represents the upper edge of the transmission window. The
+  // transmitter shall not transmit AMD PDUs with "Sequence Number" >= VT(MS)
+  // unless VT(S) >= VT(MS). In that case, the AMD PDU with
+  // "Sequence Number" = VT(S) - 1 can also be transmitted. VT(MS) shall be
   // updated when VT(A) or VT(WS) is updated.
   // The initial value of this variable is Configured_Tx_Window_size.
-  
-  
+
+
   uint16_t             vt_pdu;
-  // This state variable is used when the "poll every Poll_PDU PDU" polling 
-  // trigger is configured. It shall be incremented by 1 for each AMD PDU that 
-  // is transmitted including both new and retransmitted AMD PDUs. When it 
-  // becomes equal to the value Poll_PDU, a new poll shall be transmitted and 
+  // This state variable is used when the "poll every Poll_PDU PDU" polling
+  // trigger is configured. It shall be incremented by 1 for each AMD PDU that
+  // is transmitted including both new and retransmitted AMD PDUs. When it
+  // becomes equal to the value Poll_PDU, a new poll shall be transmitted and
   // the state variable shall be set to zero.
   // The initial value of this variable is 0.
-  
-  
+
+
   uint16_t             vt_sdu;
-  // This state variable is used when the "poll every Poll_SDU SDU" polling 
-  // trigger is configured. It shall be incremented by 1 for a given SDU when 
-  // the AMD PDU carrying the first segment of this SDU is scheduled to be 
+  // This state variable is used when the "poll every Poll_SDU SDU" polling
+  // trigger is configured. It shall be incremented by 1 for a given SDU when
+  // the AMD PDU carrying the first segment of this SDU is scheduled to be
   // transmitted for the first time. When it becomes equal to the value Poll_SDU
-  // a new poll shall be transmitted and the state variable shall be set to 
-  // zero. The "Polling bit" shall be set to "1" in the first transmission of 
-  // the AMD PDU that contains the last segment of an RLC SDU (indicated either 
-  // by the "Length Indicator" indicating the end of the SDU or by the special 
+  // a new poll shall be transmitted and the state variable shall be set to
+  // zero. The "Polling bit" shall be set to "1" in the first transmission of
+  // the AMD PDU that contains the last segment of an RLC SDU (indicated either
+  // by the "Length Indicator" indicating the end of the SDU or by the special
   // value of the HE field).
   // The initial value of this variable is 0.
-	
-	
+
+
   uint16_t             vt_rst;       // Reset state variable
-  // This state variable is used to count the number of times a RESET PDU is 
-  // scheduled to be transmitted before the reset procedure is completed. 
-  // VT(RST) shall be incremented by 1 according to subclauses 11.4.2 and 
-  // 11.4.5.1. VT(RST) shall only be reset upon the reception of a RESET ACK 
-  // PDU ( i.e. VT(RST) shall not be reset when an RLC reset initiated by the 
+  // This state variable is used to count the number of times a RESET PDU is
+  // scheduled to be transmitted before the reset procedure is completed.
+  // VT(RST) shall be incremented by 1 according to subclauses 11.4.2 and
+  // 11.4.5.1. VT(RST) shall only be reset upon the reception of a RESET ACK
+  // PDU ( i.e. VT(RST) shall not be reset when an RLC reset initiated by the
   // peer RLC entity occurs) unless otherwise specified in subclause 9.7.7.
   // The initial value of this variable is 0.
-	
-	
+
+
   uint16_t             vt_mrw;       // MRW command send state variable
-  // This state variable is used to count the number of times a MRW command is 
-  // transmitted. VT(MRW) is incremented by 1 each time a timer Timer_MRW 
-  // expires. VT(MRW) shall be reset when the SDU discard with explicit 
-  // signalling procedure is terminated. 
-  // The initial value of this variable is 0. 
-  
-  
+  // This state variable is used to count the number of times a MRW command is
+  // transmitted. VT(MRW) is incremented by 1 each time a timer Timer_MRW
+  // expires. VT(MRW) shall be reset when the SDU discard with explicit
+  // signalling procedure is terminated.
+  // The initial value of this variable is 0.
+
+
   uint16_t             vt_ws;        // transmitter window size state variable
-  // This state variable contains the size that shall be used for the 
-  // transmission window. VT(WS) shall be set equal to the WSN field when the 
+  // This state variable contains the size that shall be used for the
+  // transmission window. VT(WS) shall be set equal to the WSN field when the
   // transmitter receives a STATUS PDU including a WINDOW SUFI.
   // The initial value of this variable is Configured_Tx_Window_size.
-	
-	
+
+
   uint16_t             vr_r;         // Receive state variable
-  // This state variable contains the "Sequence Number" following that of the 
-  // last in-sequence AMD PDU received. It shall be updated upon the receipt of 
+  // This state variable contains the "Sequence Number" following that of the
+  // last in-sequence AMD PDU received. It shall be updated upon the receipt of
   // the AMD PDU with "Sequence Number" equal to VR(R).
-  // The initial value of this variable is 0. For the purpose of initialising 
+  // The initial value of this variable is 0. For the purpose of initialising
   // the protocol, this value shall be assumed to be the first "Sequence Number"
   // following the last in-sequence received AMD PDU.
-	
-	
+
+
   uint16_t             vr_h;         // Highest expected state variable
-  // This state variable contains the "Sequence Number" following the highest 
-  // "Sequence Number" of any AMD PDU received or identified to be missing.. 
-  // When a AMD PDU is received with "Sequence Number" x or a POLL SUFI is 
-  // received with POLL_SN=x such that VR(H)<=x<VR(MR), this state variable 
+  // This state variable contains the "Sequence Number" following the highest
+  // "Sequence Number" of any AMD PDU received or identified to be missing..
+  // When a AMD PDU is received with "Sequence Number" x or a POLL SUFI is
+  // received with POLL_SN=x such that VR(H)<=x<VR(MR), this state variable
   // shall be set equal to x+1.
   // The initial value of this variable is 0.
-	
-	
+
+
   uint16_t             vr_mr;        // Maximum acceptable Receive state variable
-  // This state variable contains the "Sequence Number" of the first AMD PDU 
-  // that shall be rejected by the Receiver, 
+  // This state variable contains the "Sequence Number" of the first AMD PDU
+  // that shall be rejected by the Receiver,
   // VR(MR) = VR(R) + Configured_Rx_Window_Size..
-  
+
 
   //-----------------------------
   // TIMERS
   //-----------------------------
   list2_t         rlc_am_timer_list;
-  
+
   signed int        timer_poll;
   signed int        timer_poll_init;
-  //This timer shall only be used when so configured by upper layers. The value 
-  // of the timer is signalled by upper layers. In the UE this timer shall be 
-  // started (or restarted) when the successful or unsuccessful transmission of 
-  // a poll is indicated by lower layer. In UTRAN it should be started when a 
-  // poll is submitted to lower layer. If x is the value of the state variable 
-  // VT(S) after the poll was submitted to lower layer, the timer shall be 
+  //This timer shall only be used when so configured by upper layers. The value
+  // of the timer is signalled by upper layers. In the UE this timer shall be
+  // started (or restarted) when the successful or unsuccessful transmission of
+  // a poll is indicated by lower layer. In UTRAN it should be started when a
+  // poll is submitted to lower layer. If x is the value of the state variable
+  // VT(S) after the poll was submitted to lower layer, the timer shall be
   // stopped upon receiving:
-  // -	positive acknowledgements for all the AMD PDUs with "Sequence Number" 
+  // -  positive acknowledgements for all the AMD PDUs with "Sequence Number"
   //    up to and including x - 1; or
-  // -	a negative acknowledgement for the AMD PDU with 
+  // -  a negative acknowledgement for the AMD PDU with
   //    "Sequence Number" = x - 1.
-  // If the timer expires and no STATUS PDU fulfilling the criteria above has 
+  // If the timer expires and no STATUS PDU fulfilling the criteria above has
   // been received:
-  // -	the Receiver shall be polled once more;
-  // -	the timer shall be restarted; and
-  // -	the new value of VT(S) shall be saved.
-  // If a new poll is sent when the timer is active, the timer shall be 
+  // -  the Receiver shall be polled once more;
+  // -  the timer shall be restarted; and
+  // -  the new value of VT(S) shall be saved.
+  // If a new poll is sent when the timer is active, the timer shall be
   // restarted at the time specified above, and the value of VT(S) shall be saved.
 
   signed int        timer_poll_prohibit;
   signed int        timer_poll_prohibit_init;
-  // This timer shall only be used when so configured by upper layers. It is 
-  // used to prohibit transmission of polls within a certain period. The value 
+  // This timer shall only be used when so configured by upper layers. It is
+  // used to prohibit transmission of polls within a certain period. The value
   // of the timer is signalled by upper layers.
   // In the UE this timer shall be started (or restarted) when the successful or
-  // unsuccessful transmission of a poll is indicated by lower layer. In UTRAN 
+  // unsuccessful transmission of a poll is indicated by lower layer. In UTRAN
   // it should be started when a poll is submitted to lower layer.
-  // From the time a poll is triggered until the timer expires, polling is 
-  // prohibited. If another poll is triggered while polling is prohibited, its 
-  // transmission shall be delayed until the timer expires 
-  // (see subclause 9.7.1). Only one poll shall be transmitted when 
-  // Timer_Poll_Prohibit expires even if several polls were triggered in the 
+  // From the time a poll is triggered until the timer expires, polling is
+  // prohibited. If another poll is triggered while polling is prohibited, its
+  // transmission shall be delayed until the timer expires
+  // (see subclause 9.7.1). Only one poll shall be transmitted when
+  // Timer_Poll_Prohibit expires even if several polls were triggered in the
   // meantime. This timer shall not be affected by the reception of STATUS PDUs.
-  // When Timer_Poll_Prohibit is not configured by upper layers, polling is 
+  // When Timer_Poll_Prohibit is not configured by upper layers, polling is
   // never prohibited.
-  
-  
+
+
   signed int        timer_discard;
   signed int        timer_discard_init;
-  // This timer shall be used when timer-based SDU discard is configured by 
-  // upper layers. The value of the timer is signalled by upper layers. In the 
-  // transmitter, a new timer is started upon reception of an SDU from upper 
+  // This timer shall be used when timer-based SDU discard is configured by
+  // upper layers. The value of the timer is signalled by upper layers. In the
+  // transmitter, a new timer is started upon reception of an SDU from upper
   // layer.
-  // ...In AM, if a timer expires before the corresponding SDU is acknowledged, 
+  // ...In AM, if a timer expires before the corresponding SDU is acknowledged,
   // "SDU discard with explicit signalling" specified in subclause 11.6 shall be
   // initiated.
-  
-  
+
+
   signed int        timer_poll_periodic;
   signed int        timer_poll_periodic_init;
-  // This timer shall only be used when "timer based polling" is configured by 
-  // upper layers. The value of the timer is signalled by upper layers. The 
-  // timer shall be started when the RLC entity is created. When the timer 
+  // This timer shall only be used when "timer based polling" is configured by
+  // upper layers. The value of the timer is signalled by upper layers. The
+  // timer shall be started when the RLC entity is created. When the timer
   // expires, the RLC entity shall:
-  // -	restart the timer;
-  // -	if AMD PDUs are available for transmission or retransmission (not yet 
+  // -  restart the timer;
+  // -  if AMD PDUs are available for transmission or retransmission (not yet
   //    acknowledged):
-  //     -	trigger a poll.
+  //     -  trigger a poll.
 
 
   signed int        timer_status_prohibit;
   signed int        timer_status_prohibit_init;
-  // This timer shall only be used when so configured by upper layers. It is 
-  // meant to prohibit the Receiver from sending consecutive acknowledgement 
-  // status reports. A status report is an acknowledgement status report if it 
-  // contains any of the SUFIs LIST, BITMAP, RLIST or ACK. The value of the 
+  // This timer shall only be used when so configured by upper layers. It is
+  // meant to prohibit the Receiver from sending consecutive acknowledgement
+  // status reports. A status report is an acknowledgement status report if it
+  // contains any of the SUFIs LIST, BITMAP, RLIST or ACK. The value of the
   // timer is signalled by upper layers.
-  // In the UE, this timer shall be started (or restarted) when the successful 
-  // or unsuccessful transmission of the last STATUS PDU of an acknowledgement 
-  // status report is indicated by lower layer. In UTRAN it should be started 
-  // when the last STATUS PDU of an acknowledgement status report is submitted 
+  // In the UE, this timer shall be started (or restarted) when the successful
+  // or unsuccessful transmission of the last STATUS PDU of an acknowledgement
+  // status report is indicated by lower layer. In UTRAN it should be started
+  // when the last STATUS PDU of an acknowledgement status report is submitted
   // to lower layer.
-  //   From the time an acknowledgement status report is triggered until the 
-  // Timer_Status_Prohibit timer expires, acknowledgement is prohibited. If 
-  // another such status report is triggered while acknowledgement is 
-  // prohibited, its transmission shall be delayed until the timer expires 
-  // (see subclause 9.7.2). The status report may be updated during this time. 
+  //   From the time an acknowledgement status report is triggered until the
+  // Timer_Status_Prohibit timer expires, acknowledgement is prohibited. If
+  // another such status report is triggered while acknowledgement is
+  // prohibited, its transmission shall be delayed until the timer expires
+  // (see subclause 9.7.2). The status report may be updated during this time.
   // The transmission of SUFIs MRW, MRW_ACK, WINDOW or NO_MORE is not restricted.
-  // When Timer_Status_Prohibit is not configured by upper layers, 
+  // When Timer_Status_Prohibit is not configured by upper layers,
   // acknowledgment is not prohibited.
-  
-  
+
+
   signed int        timer_status_periodic;
   signed int        timer_status_periodic_init;
-  // This timer shall only be used when timer based status reporting is 
+  // This timer shall only be used when timer based status reporting is
   // configured by upper layers.
-  // This timer shall be started when the RLC entity is created. When the timer 
-  // expires the transmission of a status report shall be triggered and the 
-  // timer shall be restarted. This timer can be blocked by upper layers. The 
-  // timer shall be restarted when upper layers indicate that it is no longer 
+  // This timer shall be started when the RLC entity is created. When the timer
+  // expires the transmission of a status report shall be triggered and the
+  // timer shall be restarted. This timer can be blocked by upper layers. The
+  // timer shall be restarted when upper layers indicate that it is no longer
   // blocked.
-  
-  
+
+
   signed int        timer_rst;
   signed int        timer_rst_init;
-  // This timer is meant to handle the loss of a RESET PDU by the peer entity, 
+  // This timer is meant to handle the loss of a RESET PDU by the peer entity,
   // or the loss of a RESET ACK PDU from the peer entity. The value of the timer
   // is signalled by upper layers.
   // In the UE this timer shall be started (or restarted) when the successful or
-  // unsuccessful transmission of a RESET PDU is indicated by lower layer. In 
+  // unsuccessful transmission of a RESET PDU is indicated by lower layer. In
   // UTRAN it should be started when a RESET PDU is submitted to lower layer.
-  // Timer_RST shall only be stopped upon reception of a RESET ACK PDU (with 
-  // same RSN as RESET PDU), i.e. this timer shall not be stopped when an RLC 
-  // reset initiated by the peer RLC entity occurs. If this timer expires, the 
+  // Timer_RST shall only be stopped upon reception of a RESET ACK PDU (with
+  // same RSN as RESET PDU), i.e. this timer shall not be stopped when an RLC
+  // reset initiated by the peer RLC entity occurs. If this timer expires, the
   // RESET PDU shall be retransmitted.
-  
-  
+
+
   signed int        timer_mrw;
   signed int        timer_mrw_init;
-  // This timer is used to trigger the retransmission of a status report 
-  // containing an MRW SUFI field. The value of the timer is signalled by upper 
+  // This timer is used to trigger the retransmission of a status report
+  // containing an MRW SUFI field. The value of the timer is signalled by upper
   // layers.
   // In the UE this timer shall be started (or restarted) when the successful or
-  // unsuccessful transmission of a STATUS PDU containing the MRW SUFI is 
-  // indicated by lower layer. In UTRAN, it should be started when a STATUS PDU 
+  // unsuccessful transmission of a STATUS PDU containing the MRW SUFI is
+  // indicated by lower layer. In UTRAN, it should be started when a STATUS PDU
   // containing the MRW SUFI is submitted to lower layer.
-  // Each time the timer expires the MRW SUFI is retransmitted. It shall be 
-  // stopped when one of the termination criteria for the SDU discard with 
-  // explicit signalling procedure is fulfilled (see subclause 11.6.4). 
-  
+  // Each time the timer expires the MRW SUFI is retransmitted. It shall be
+  // stopped when one of the termination criteria for the SDU discard with
+  // explicit signalling procedure is fulfilled (see subclause 11.6.4).
+
 
   //-----------------------------
   // PROTOCOL PARAMETERS
   //-----------------------------
-  uint16_t             max_dat;  
+  uint16_t             max_dat;
   // The maximum number of transmissions of an AMD PDU is equal to MaxDAT – 1.
-  // This protocol parameter represents the upper limit for state variable 
-  // VT(DAT). When VT(DAT) equals the value MaxDAT, either RLC RESET procedure 
-  // or SDU discard procedure shall be initiated according to the configuration 
+  // This protocol parameter represents the upper limit for state variable
+  // VT(DAT). When VT(DAT) equals the value MaxDAT, either RLC RESET procedure
+  // or SDU discard procedure shall be initiated according to the configuration
   // by upper layers.
-  
-  uint16_t             poll_pdu;  
-  // This protocol parameter indicates how often the transmitter shall poll the 
-  // Receiver in the case where "polling every Poll_PDU PDU" is configured by 
+
+  uint16_t             poll_pdu;
+  // This protocol parameter indicates how often the transmitter shall poll the
+  // Receiver in the case where "polling every Poll_PDU PDU" is configured by
   // upper layers. It represents the upper limit for the state variable VT(PDU).
-  // When VT(PDU) equals the value Poll_PDU a poll shall be transmitted to the 
+  // When VT(PDU) equals the value Poll_PDU a poll shall be transmitted to the
   // peer entity.
-  
-  uint16_t             poll_sdu;  
-  // This protocol parameter indicates how often the transmitter shall poll the 
-  // Receiver in the case where "polling every Poll_SDU SDU" is configured by 
-  // upper layers. It represents the upper limit for state variable VT(SDU). 
-  // When VT(SDU) equals the value Poll_SDU a poll shall be transmitted to the 
+
+  uint16_t             poll_sdu;
+  // This protocol parameter indicates how often the transmitter shall poll the
+  // Receiver in the case where "polling every Poll_SDU SDU" is configured by
+  // upper layers. It represents the upper limit for state variable VT(SDU).
+  // When VT(SDU) equals the value Poll_SDU a poll shall be transmitted to the
   // peer entity.
-  
-  
-  uint16_t             poll_window;  
-  // This protocol parameter indicates when the transmitter shall poll the 
-  // Receiver in the case where "window-based polling" is configured by upper 
-  // layers. A poll is triggered for each AMD PDU when J >= Poll_Window, where 
+
+
+  uint16_t             poll_window;
+  // This protocol parameter indicates when the transmitter shall poll the
+  // Receiver in the case where "window-based polling" is configured by upper
+  // layers. A poll is triggered for each AMD PDU when J >= Poll_Window, where
   // J is the transmission window percentage.(see formula of J in spec document)
-  
-  
-  uint16_t             max_rst;  
-  // The maximum number of transmissions of a RESET PDU is equal to MaxRST – 1. 
-  // This protocol parameter represents the upper limit for state variable 
+
+
+  uint16_t             max_rst;
+  // The maximum number of transmissions of a RESET PDU is equal to MaxRST – 1.
+  // This protocol parameter represents the upper limit for state variable
   // VT(RST). When VT(RST) equals the value MaxRST, unrecoverable error shall be
   // indicated to upper layers.
-  
-  
+
+
   uint16_t             configured_tx_window_size;
-  // This protocol parameter indicates both the maximum allowed transmission 
+  // This protocol parameter indicates both the maximum allowed transmission
   // window size and the value for the state variable VT(WS).
-  
-  
+
+
   //uint16_t             configured_rx_window_size;
   // This protocol parameter indicates the reception window size. This parameter
   // is applicable both for RLC UM and AM. This parameter is only configured for
   // RLC-UM in case out-of-sequence reception is supported.
-  
-  
+
+
   uint16_t             max_mrw;
-  // The maximum number of transmissions of an MRW command is equal to MaxMRW. 
-  // This protocol parameter represents the upper limit for state variable 
-  // VT(MRW). When VT(MRW) equals the value MaxMRW, the RLC RESET procedure 
+  // The maximum number of transmissions of an MRW command is equal to MaxMRW.
+  // This protocol parameter represents the upper limit for state variable
+  // VT(MRW). When VT(MRW) equals the value MaxMRW, the RLC RESET procedure
   // shall be initiated.
-            
-      
+
+
   uint16_t             first_li_in_next_pdu; // indicates :
   // value = 000000000000000 that the previous PDU was exactly
   // with the last segment of an RLC SDU and there is no LI that
@@ -518,14 +518,14 @@ struct rlc_am_entity {
   unsigned int stat_tx_pdcp_sdu_discarded;
   unsigned int stat_tx_retransmit_pdu_unblock;
   unsigned int stat_tx_retransmit_pdu_by_status;
-  unsigned int stat_tx_retransmit_pdu;  
-  unsigned int stat_tx_data_pdu;  
-  unsigned int stat_tx_control_pdu;  
-  
-  unsigned int stat_rx_sdu;  
-  unsigned int stat_rx_error_pdu;  
-  unsigned int stat_rx_data_pdu;  
-  unsigned int stat_rx_data_pdu_out_of_window;  
-  unsigned int stat_rx_control_pdu;  
+  unsigned int stat_tx_retransmit_pdu;
+  unsigned int stat_tx_data_pdu;
+  unsigned int stat_tx_control_pdu;
+
+  unsigned int stat_rx_sdu;
+  unsigned int stat_rx_error_pdu;
+  unsigned int stat_rx_data_pdu;
+  unsigned int stat_rx_data_pdu_out_of_window;
+  unsigned int stat_rx_control_pdu;
 };
 #    endif

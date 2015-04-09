@@ -39,7 +39,7 @@
 #define ESM_MESSAGE_CONTAINER_MAXIMUM_LENGTH 65538 // [IEI]+[length]+[length]+[ESM msg]
 
 typedef struct EsmMessageContainer_tag {
-    OctetString esmmessagecontainercontents;
+  OctetString esmmessagecontainercontents;
 } EsmMessageContainer;
 
 int encode_esm_message_container(EsmMessageContainer *esmmessagecontainer, uint8_t iei, uint8_t *buffer, uint32_t len);

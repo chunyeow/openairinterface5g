@@ -104,9 +104,9 @@ typedef u16 nasMBMSStatus_t;   // UE notification status
 typedef u16 nasNumConnUEs_t; // number of UEs that are connected
 typedef u32 nasENbMeasure_t; // type definition to hold measures
 typedef struct nasENbMeasures {
-        nasENbMeasure_t rlcBufferOccupancy;
-        nasENbMeasure_t scheduledPRB;
-        nasENbMeasure_t totalDataVolume;
+  nasENbMeasure_t rlcBufferOccupancy;
+  nasENbMeasure_t scheduledPRB;
+  nasENbMeasure_t totalDataVolume;
 } nasENbMeasures_t;
 
 
@@ -115,165 +115,165 @@ typedef struct nasENbMeasures {
 //----------------------------------------------------------
 // -- SAP-GC
 struct NASInfoBroadcastReq {
- nasPeriod_t period;  // 0 = one-shot, otherwise in  x 10 ms
- nasBroadcastCategory_t category;
- nasDataLength_t nasDataLength;
+  nasPeriod_t period;  // 0 = one-shot, otherwise in  x 10 ms
+  nasBroadcastCategory_t category;
+  nasDataLength_t nasDataLength;
 };
 
 struct NASMBMSBearerEstablishReq {
- nasMBMSServiceId_t   mbms_serviceId;
- nasMBMSSessionId_t   mbms_sessionId ;
- nasQoSTrafficClass_t mbms_QoSclass;
- nasSapId_t           mbms_sapId;
- nasRadioBearerId_t   mbms_rbId;
- nasMBMSDuration_t    mbms_duration;
+  nasMBMSServiceId_t   mbms_serviceId;
+  nasMBMSSessionId_t   mbms_sessionId ;
+  nasQoSTrafficClass_t mbms_QoSclass;
+  nasSapId_t           mbms_sapId;
+  nasRadioBearerId_t   mbms_rbId;
+  nasMBMSDuration_t    mbms_duration;
 };
 
 struct NASMBMSBearerReleaseReq {
- nasMBMSServiceId_t   mbms_serviceId;
- nasMBMSSessionId_t   mbms_sessionId ;
- nasRadioBearerId_t   mbms_rbId;
+  nasMBMSServiceId_t   mbms_serviceId;
+  nasMBMSSessionId_t   mbms_sessionId ;
+  nasRadioBearerId_t   mbms_rbId;
 };
 
 
 struct NASInfoBroadcastInd {
- nasDataLength_t nasDataLength;
+  nasDataLength_t nasDataLength;
 };
 
 struct nas_ue_gc_element {
- u16  type;
- u16 length;
- union {
-   struct NASInfoBroadcastInd broadcast_ind;
- } nasUEGCPrimitive;
+  u16  type;
+  u16 length;
+  union {
+    struct NASInfoBroadcastInd broadcast_ind;
+  } nasUEGCPrimitive;
 };
 
 struct nas_rg_gc_element {
- u16  type;
- u16 length;
- union {
-   struct NASInfoBroadcastReq        broadcast_req;
-   struct NASMBMSBearerEstablishReq  mbms_establish_req;
-   struct NASMBMSBearerReleaseReq    mbms_release_req;
- } nasRGGCPrimitive;
+  u16  type;
+  u16 length;
+  union {
+    struct NASInfoBroadcastReq        broadcast_req;
+    struct NASMBMSBearerEstablishReq  mbms_establish_req;
+    struct NASMBMSBearerReleaseReq    mbms_release_req;
+  } nasRGGCPrimitive;
 };
 
 // -- SAP-DC
 struct NASConnEstablishReq {
- nasLocalConnectionRef_t  localConnectionRef;   //provided by NAS
- nasCellID_t cellId;
+  nasLocalConnectionRef_t  localConnectionRef;   //provided by NAS
+  nasCellID_t cellId;
 };
 
 struct NASConnEstablishInd {
- nasLocalConnectionRef_t  localConnectionRef;
- nasIMEI_t InterfaceIMEI;
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasIMEI_t InterfaceIMEI;
 };
 
 struct NASConnEstablishConf {
- nasLocalConnectionRef_t localConnectionRef;
- nasConnectionStatus_t    status;     // can be : Accepted, Failure
- nasNumRBsInList_t num_RBs;        // actual number of RBs in the list
- nasRBList_t RB_List;
+  nasLocalConnectionRef_t localConnectionRef;
+  nasConnectionStatus_t    status;     // can be : Accepted, Failure
+  nasNumRBsInList_t num_RBs;        // actual number of RBs in the list
+  nasRBList_t RB_List;
 };
 
 struct NASConnEstablishResp {
- nasLocalConnectionRef_t  localConnectionRef;
- nasIMEI_t InterfaceIMEI;
- nasConnectionStatus_t    status;     // can be : Terminated, Aborted , Already_Connected
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasIMEI_t InterfaceIMEI;
+  nasConnectionStatus_t    status;     // can be : Terminated, Aborted , Already_Connected
 };
 
 struct NASConnReleaseReq {
- nasLocalConnectionRef_t  localConnectionRef;
- nasReleaseCause_t releaseCause;
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasReleaseCause_t releaseCause;
 };
 
 struct NASConnReleaseInd {
- nasLocalConnectionRef_t  localConnectionRef;
- nasReleaseCause_t releaseCause;
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasReleaseCause_t releaseCause;
 };
 
 struct NASConnLossInd {
- nasLocalConnectionRef_t  localConnectionRef;
+  nasLocalConnectionRef_t  localConnectionRef;
 };
 
 struct NASDataReq {
- nasLocalConnectionRef_t  localConnectionRef;
- nasSignalingPriority_t priority;
- nasDataLength_t nasDataLength;
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasSignalingPriority_t priority;
+  nasDataLength_t nasDataLength;
 };
 
 struct NASDataInd {
- nasLocalConnectionRef_t  localConnectionRef;
- nasSignalingPriority_t priority;
- nasDataLength_t nasDataLength;
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasSignalingPriority_t priority;
+  nasDataLength_t nasDataLength;
 };
 
 struct NASrbEstablishReq {
- nasLocalConnectionRef_t  localConnectionRef;
- nasRadioBearerId_t rbId;
- nasQoSTrafficClass_t  QoSclass;
- nasIPdscp_t dscp;
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasRadioBearerId_t rbId;
+  nasQoSTrafficClass_t  QoSclass;
+  nasIPdscp_t dscp;
 };
 
 struct NASrbEstablishInd {
- nasLocalConnectionRef_t  localConnectionRef;
- nasRadioBearerId_t rbId;
- nasQoSTrafficClass_t  QoSclass;
- nasIPdscp_t dscp;
- nasSapId_t  sapId;
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasRadioBearerId_t rbId;
+  nasQoSTrafficClass_t  QoSclass;
+  nasIPdscp_t dscp;
+  nasSapId_t  sapId;
 };
 
 struct NASrbEstablishConf {
- nasLocalConnectionRef_t  localConnectionRef;
- nasRadioBearerId_t  rbId;
- nasSapId_t  sapId;
- nasRBEstablishStatus_t status;     // can be : Accepted, Failure
- nasRBEstablishStatus_t fail_code;  // gives more details on failure cause
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasRadioBearerId_t  rbId;
+  nasSapId_t  sapId;
+  nasRBEstablishStatus_t status;     // can be : Accepted, Failure
+  nasRBEstablishStatus_t fail_code;  // gives more details on failure cause
 };
 
 struct NASrbReleaseReq {
- nasLocalConnectionRef_t  localConnectionRef;
- nasRadioBearerId_t rbId;
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasRadioBearerId_t rbId;
 };
 
 struct NASrbReleaseInd {
- nasLocalConnectionRef_t  localConnectionRef;
- nasRadioBearerId_t rbId;
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasRadioBearerId_t rbId;
 };
 
 struct NASMeasureReq {
- nasLocalConnectionRef_t  localConnectionRef;
+  nasLocalConnectionRef_t  localConnectionRef;
 };
 
 struct NASMeasureInd {
- nasLocalConnectionRef_t  localConnectionRef;
- nasNumRGsMeas_t nb_rg;
- nasMeasures_t measures[MAX_MEASURE_NB];
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasNumRGsMeas_t nb_rg;
+  nasMeasures_t measures[MAX_MEASURE_NB];
 };
 
 struct NASMBMSUENotifyReq {
- nasLocalConnectionRef_t  localConnectionRef;
- nasMBMSService_t joined_services[MAX_MBMS_SERVICES];
- nasMBMSService_t left_services[MAX_MBMS_SERVICES];
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasMBMSService_t joined_services[MAX_MBMS_SERVICES];
+  nasMBMSService_t left_services[MAX_MBMS_SERVICES];
 };
 
 struct NASMBMSUENotifyInd {
- nasLocalConnectionRef_t  localConnectionRef;
- nasMBMSService_t joined_services[MAX_MBMS_SERVICES];
- nasMBMSService_t left_services[MAX_MBMS_SERVICES];
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasMBMSService_t joined_services[MAX_MBMS_SERVICES];
+  nasMBMSService_t left_services[MAX_MBMS_SERVICES];
 };
 
-struct NASMBMSUENotifyCnf{
- nasLocalConnectionRef_t  localConnectionRef;
- nasMBMSStatus_t mbmsStatus;
+struct NASMBMSUENotifyCnf {
+  nasLocalConnectionRef_t  localConnectionRef;
+  nasMBMSStatus_t mbmsStatus;
 };
 
 
 // Temp - In the DC-SAP as there is no upwards GC-SAP in the RG (to be added)
 struct NASMBMSBearerEstablishConf {
- nasRadioBearerId_t  rbId;
- nasSapId_t  sapId;
- nasRBEstablishStatus_t status;     // can be : Accepted, Failure
+  nasRadioBearerId_t  rbId;
+  nasSapId_t  sapId;
+  nasRBEstablishStatus_t status;     // can be : Accepted, Failure
 };
 
 //Added for Medieval demo 3 - MW
@@ -283,83 +283,83 @@ struct NASENbMeasureReq {
 };
 
 struct NASEnbMeasureInd {
- nasCellID_t cell_id;
- nasNumConnUEs_t num_UEs;
- nasENbMeasures_t measures[MAX_MEASURE_UE];
- nasENbMeasure_t totalNumPRBs;
+  nasCellID_t cell_id;
+  nasNumConnUEs_t num_UEs;
+  nasENbMeasures_t measures[MAX_MEASURE_UE];
+  nasENbMeasure_t totalNumPRBs;
 };
 
 /*****
  * UE Primitives
  *****/
 struct nas_ue_dc_element {
- u16  type;
- u16 length;
- union {
-   struct NASConnEstablishReq conn_establish_req;
-   struct NASConnEstablishResp conn_establish_resp;
-//    struct NASConnReleaseInd conn_release_ind;
-   struct NASConnReleaseReq conn_release_req;
-   struct NASConnLossInd conn_loss_ind;
-   struct NASDataReq data_transfer_req;
-   struct NASDataInd data_transfer_ind;
-   struct NASrbEstablishInd rb_establish_ind;
-   struct NASrbReleaseInd rb_release_ind;
-   struct NASMeasureInd measurement_ind;
-   struct NASMeasureReq measurement_req;
-   struct NASMBMSUENotifyInd mbms_ue_notify_ind;
- } nasUEDCPrimitive;
+  u16  type;
+  u16 length;
+  union {
+    struct NASConnEstablishReq conn_establish_req;
+    struct NASConnEstablishResp conn_establish_resp;
+    //    struct NASConnReleaseInd conn_release_ind;
+    struct NASConnReleaseReq conn_release_req;
+    struct NASConnLossInd conn_loss_ind;
+    struct NASDataReq data_transfer_req;
+    struct NASDataInd data_transfer_ind;
+    struct NASrbEstablishInd rb_establish_ind;
+    struct NASrbReleaseInd rb_release_ind;
+    struct NASMeasureInd measurement_ind;
+    struct NASMeasureReq measurement_req;
+    struct NASMBMSUENotifyInd mbms_ue_notify_ind;
+  } nasUEDCPrimitive;
 };
 
 /*****
  * RG Primitives
  *****/
 struct nas_rg_dc_element {
- u16  type;
- u16 length;
- union {
-   struct NASConnEstablishInd conn_establish_ind;
-   struct NASConnEstablishConf conn_establish_conf;
-   struct NASConnReleaseInd conn_release_ind;
-//    struct NASConnReleaseReq conn_release_req;
-   struct NASConnLossInd conn_loss_ind;
-   struct NASDataReq data_transfer_req;
-   struct NASDataInd data_transfer_ind;
-   struct NASrbEstablishReq rb_establish_req;
-   struct NASrbEstablishConf rb_establish_conf;
-   struct NASrbReleaseReq rb_release_req;
-   struct NASMBMSUENotifyReq mbms_ue_notify_req;
-   struct NASMBMSUENotifyCnf mbms_ue_notify_cnf;
-   struct NASMBMSBearerEstablishConf mbms_establish_cnf;  //TEMP - should be in GC-SAP upwards
-   struct NASENbMeasureReq eNBmeasurement_req;
-   struct NASEnbMeasureInd eNBmeasurement_ind;
- } nasRGDCPrimitive;
+  u16  type;
+  u16 length;
+  union {
+    struct NASConnEstablishInd conn_establish_ind;
+    struct NASConnEstablishConf conn_establish_conf;
+    struct NASConnReleaseInd conn_release_ind;
+    //    struct NASConnReleaseReq conn_release_req;
+    struct NASConnLossInd conn_loss_ind;
+    struct NASDataReq data_transfer_req;
+    struct NASDataInd data_transfer_ind;
+    struct NASrbEstablishReq rb_establish_req;
+    struct NASrbEstablishConf rb_establish_conf;
+    struct NASrbReleaseReq rb_release_req;
+    struct NASMBMSUENotifyReq mbms_ue_notify_req;
+    struct NASMBMSUENotifyCnf mbms_ue_notify_cnf;
+    struct NASMBMSBearerEstablishConf mbms_establish_cnf;  //TEMP - should be in GC-SAP upwards
+    struct NASENbMeasureReq eNBmeasurement_req;
+    struct NASEnbMeasureInd eNBmeasurement_ind;
+  } nasRGDCPrimitive;
 };
 
 // -- SAP-NT
 struct NASPagingReq {
- nasPagingUEId_t UeId;
- nasDataLength_t nasDataLength;
+  nasPagingUEId_t UeId;
+  nasDataLength_t nasDataLength;
 };
 
 struct NASNotificationInd {
- nasDataLength_t nasDataLength;
+  nasDataLength_t nasDataLength;
 };
 
 struct nas_ue_nt_element {
- u16  type;
- u16 length;
- union {
-   struct NASNotificationInd notification_ind;
- } nasUENTPrimitive;
+  u16  type;
+  u16 length;
+  union {
+    struct NASNotificationInd notification_ind;
+  } nasUENTPrimitive;
 };
 
 struct nas_rg_nt_element {
- u16  type;
- u16 length;
- union {
-   struct NASPagingReq paging_req;
- } nasRGNTPrimitive;
+  u16  type;
+  u16 length;
+  union {
+    struct NASPagingReq paging_req;
+  } nasRGNTPrimitive;
 };
 
 #endif

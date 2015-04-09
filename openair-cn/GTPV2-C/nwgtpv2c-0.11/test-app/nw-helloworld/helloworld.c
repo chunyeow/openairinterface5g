@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                              n w - g t p v 2 c                             * 
+ *                              n w - g t p v 2 c                             *
  *    G P R S   T u n n e l i n g    P r o t o c o l   v 2 c    S t a c k     *
  *                                                                            *
  *           M I N I M A L I S T I C     D E M O N S T R A T I O N            *
@@ -10,7 +10,7 @@
  *----------------------------------------------------------------------------*/
 
 
-/** 
+/**
  * @file hello-world.c
  * @brief This is a test program demostrating usage of nw-gtpv2c library.
 */
@@ -28,18 +28,18 @@
 
 #ifndef NW_ASSERT
 #define NW_ASSERT assert
-#endif 
+#endif
 
 static
 NwCharT* gLogLevelStr[] = {"EMER", "ALER", "CRIT",  "ERRO", "WARN", "NOTI", "INFO", "DEBG"};
 
 /*---------------------------------------------------------------------------
- *                T H E      M A I N      F U N C T I O N 
+ *                T H E      M A I N      F U N C T I O N
  *--------------------------------------------------------------------------*/
 
 int main(int argc, char* argv[])
 {
-  NwRcT                         rc; 
+  NwRcT                         rc;
   NwU32T                        logLevel;
   NwU8T*                        logLevelStr;
 
@@ -54,20 +54,16 @@ int main(int argc, char* argv[])
   NwGtpv2cTimerMgrEntityT       tmrMgr;
   NwGtpv2cLogMgrEntityT         logMgr;
 
-  if(argc != 3)
-  {
+  if(argc != 3) {
     printf("Usage: %s <local-ip> <peer-ip>\n", argv[0]);
     exit(0);
   }
 
   logLevelStr = getenv ("NW_LOG_LEVEL");
 
-  if(logLevelStr == NULL)
-  {
+  if(logLevelStr == NULL) {
     logLevel = NW_LOG_LEVEL_INFO;
-  }
-  else
-  {
+  } else {
     if(strncmp(logLevelStr, "EMER",4) == 0)
       logLevel = NW_LOG_LEVEL_EMER;
     else if(strncmp(logLevelStr, "ALER",4) == 0)
@@ -93,7 +89,7 @@ int main(int argc, char* argv[])
   NW_EVT_INIT();
 
   /*---------------------------------------------------------------------------
-   *  Initialize Log Manager 
+   *  Initialize Log Manager
    *--------------------------------------------------------------------------*/
   nwMiniLogMgrInit(nwMiniLogMgrGetInstance(), logLevel);
 
@@ -102,17 +98,17 @@ int main(int argc, char* argv[])
    *--------------------------------------------------------------------------*/
   rc = nwGtpv2cInitialize(&hGtpv2cStack);
 
-  if(rc != NW_OK)
-  {
+  if(rc != NW_OK) {
     NW_LOG(NW_LOG_LEVEL_ERRO, "Failed to create gtpv2c stack instance. Error '%u' occured", rc);
     exit(1);
   }
+
   NW_LOG(NW_LOG_LEVEL_INFO, "Gtpv2c Stack Handle '%X' Creation Successful!", hGtpv2cStack);
 
   rc = nwGtpv2cSetLogLevel(hGtpv2cStack, logLevel);
 
   /*---------------------------------------------------------------------------
-   * Set up Ulp Entity 
+   * Set up Ulp Entity
    *--------------------------------------------------------------------------*/
   rc = nwGtpv2cUlpInit(&ulpObj, hGtpv2cStack, argv[2]);
   NW_ASSERT(NW_OK == rc);
@@ -124,7 +120,7 @@ int main(int argc, char* argv[])
   NW_ASSERT(NW_OK == rc);
 
   /*---------------------------------------------------------------------------
-   * Set up Udp Entity 
+   * Set up Udp Entity
    *--------------------------------------------------------------------------*/
   rc = nwGtpv2cUdpInit(&udpObj, hGtpv2cStack, (argv[1]));
   NW_ASSERT(NW_OK == rc);
@@ -136,7 +132,7 @@ int main(int argc, char* argv[])
   NW_ASSERT(NW_OK == rc);
 
   /*---------------------------------------------------------------------------
-   * Set up Log Entity 
+   * Set up Log Entity
    *--------------------------------------------------------------------------*/
   tmrMgr.tmrMgrHandle = 0;
   tmrMgr.tmrStartCallback = nwTimerStart;
@@ -146,7 +142,7 @@ int main(int argc, char* argv[])
   NW_ASSERT(NW_OK == rc);
 
   /*---------------------------------------------------------------------------
-   * Set up Log Entity 
+   * Set up Log Entity
    *--------------------------------------------------------------------------*/
   logMgr.logMgrHandle   = (NwGtpv2cLogMgrHandleT) nwMiniLogMgrGetInstance();
   logMgr.logReqCallback  = nwMiniLogMgrLogRequest;
@@ -162,7 +158,7 @@ int main(int argc, char* argv[])
   NW_ASSERT(NW_OK == rc);
 
   /*---------------------------------------------------------------------------
-   * Event loop 
+   * Event loop
    *--------------------------------------------------------------------------*/
 
   NW_EVT_LOOP();
@@ -172,12 +168,10 @@ int main(int argc, char* argv[])
    *  Destroy Gtpv2c Stack Instance
    *--------------------------------------------------------------------------*/
   rc = nwGtpv2cFinalize(hGtpv2cStack);
-  if(rc != NW_OK)
-  {
+
+  if(rc != NW_OK) {
     NW_LOG(NW_LOG_LEVEL_ERRO, "Failed to finalize gtpv2c stack instance. Error '%u' occured", rc);
-  }
-  else
-  {
+  } else {
     NW_LOG(NW_LOG_LEVEL_INFO, "Gtpv2c Stack Handle '%X' Finalize Successful!", hGtpv2cStack);
   }
 

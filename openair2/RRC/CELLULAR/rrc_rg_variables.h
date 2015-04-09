@@ -109,9 +109,9 @@ struct Mobile_Node {
   mem_block_t  *dl_nas_message_ptr;
   u16 paging_message_lgth;
   mem_block_t  *paging_message_ptr;
-//     int  rb_id;
-//     u8  qos_classes[MAXURAB];
-//     u8  dscp_codes[MAXURAB];
+  //     int  rb_id;
+  //     u8  qos_classes[MAXURAB];
+  //     u8  dscp_codes[MAXURAB];
   struct rrc_rg_rb_information rg_established_rbs[maxRB];
   u16 num_rb;
   int established_background;
@@ -120,16 +120,16 @@ struct Mobile_Node {
   u16 requested_QoSclass;
   u16 requested_dscp;
   u16 requested_sapid;
-// u8  rbsetup_status;
-// Control blocks for measures
+  // u8  rbsetup_status;
+  // Control blocks for measures
   int rrc_rg_last_measurement;
   struct rrc_rg_mt_meas_cmd rg_meas_cmd;
   struct rrc_rg_mt_meas_rep rg_meas_rep[MAXMEASTYPES];
-// UE Capability Information
+  // UE Capability Information
   u8 ind_accessStratumRelease;
   u8 ind_eurecomKernelRelease; //An adaptation for Eurecom TD-CDMA
-// List of services for MBMS
-  o3 act_serviceIdentity [maxMBMSServices]; /** OctetString(3), @see MBMS_ServiceIdentity */	
+  // List of services for MBMS
+  o3 act_serviceIdentity [maxMBMSServices]; /** OctetString(3), @see MBMS_ServiceIdentity */
   u8 act_numService;
 };
 
@@ -174,7 +174,7 @@ struct rrc_rg_bs_meas_rep {
   u16 int_spare[NUMSPARE];
 };
 
-  //BS Measures
+//BS Measures
 struct rrc_rg_meas_blocks {
   struct rrc_rg_bs_meas_cmd bs_meas_cmd[2 * maxUsers + 1];
   struct rrc_rg_bs_meas_rep bs_meas_rep[2 * maxUsers + 1];

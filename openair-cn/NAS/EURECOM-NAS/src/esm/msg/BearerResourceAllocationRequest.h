@@ -59,7 +59,7 @@
 # define BEARER_RESOURCE_ALLOCATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<0)
 
 typedef enum bearer_resource_allocation_request_iei_tag {
-    BEARER_RESOURCE_ALLOCATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
+  BEARER_RESOURCE_ALLOCATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
 } bearer_resource_allocation_request_iei;
 
 /*
@@ -70,17 +70,17 @@ typedef enum bearer_resource_allocation_request_iei_tag {
  */
 
 typedef struct bearer_resource_allocation_request_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                          protocoldiscriminator:4;
-    EpsBearerIdentity                              epsbeareridentity:4;
-    ProcedureTransactionIdentity                   proceduretransactionidentity;
-    MessageType                                    messagetype;
-    LinkedEpsBearerIdentity                        linkedepsbeareridentity;
-    TrafficFlowAggregateDescription                trafficflowaggregate;
-    EpsQualityOfService                            requiredtrafficflowqos;
-    /* Optional fields */
-    uint32_t                                       presencemask;
-    ProtocolConfigurationOptions                   protocolconfigurationoptions;
+  /* Mandatory fields */
+  ProtocolDiscriminator                          protocoldiscriminator:4;
+  EpsBearerIdentity                              epsbeareridentity:4;
+  ProcedureTransactionIdentity                   proceduretransactionidentity;
+  MessageType                                    messagetype;
+  LinkedEpsBearerIdentity                        linkedepsbeareridentity;
+  TrafficFlowAggregateDescription                trafficflowaggregate;
+  EpsQualityOfService                            requiredtrafficflowqos;
+  /* Optional fields */
+  uint32_t                                       presencemask;
+  ProtocolConfigurationOptions                   protocolconfigurationoptions;
 } bearer_resource_allocation_request_msg;
 
 int decode_bearer_resource_allocation_request(bearer_resource_allocation_request_msg *bearerresourceallocationrequest, uint8_t *buffer, uint32_t len);

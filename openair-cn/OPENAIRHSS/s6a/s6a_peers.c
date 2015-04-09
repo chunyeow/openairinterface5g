@@ -43,33 +43,33 @@
 
 int s6a_peer_validate(struct peer_info *info, int *auth, int (**cb2)(struct peer_info *))
 {
-    mysql_mme_identity_t mme_identity;
+  mysql_mme_identity_t mme_identity;
 
-    if (info == NULL) {
-        return EINVAL;
-    }
+  if (info == NULL) {
+    return EINVAL;
+  }
 
-    memset(&mme_identity, 0, sizeof(mysql_mme_identity_t));
+  memset(&mme_identity, 0, sizeof(mysql_mme_identity_t));
 
-    /* We received a new connection. Check the database for allowed equipments
-     * on EPC
-     */
+  /* We received a new connection. Check the database for allowed equipments
+   * on EPC
+   */
 
-    memcpy(mme_identity.mme_host, info->pi_diamid, info->pi_diamidlen);
+  memcpy(mme_identity.mme_host, info->pi_diamid, info->pi_diamidlen);
 
-    if (hss_mysql_check_epc_equipment(&mme_identity) != 0) {
-        /* The MME has not been found in list of known peers -> reject it */
-        *auth = -1;
-        fprintf(stdout, "Rejecting %s: either db has no knowledge of this peer "
-        "or sql query failed\n", info->pi_diamid);
-    } else {
-        *auth = 1;
+  if (hss_mysql_check_epc_equipment(&mme_identity) != 0) {
+    /* The MME has not been found in list of known peers -> reject it */
+    *auth = -1;
+    fprintf(stdout, "Rejecting %s: either db has no knowledge of this peer "
+            "or sql query failed\n", info->pi_diamid);
+  } else {
+    *auth = 1;
 
-        /* For now we don't use security */
-        info->config.pic_flags.sec = PI_SEC_NONE;
-        info->config.pic_flags.persist = PI_PRST_NONE;
-        fprintf(stdout, "Accepting %s peer\n", info->pi_diamid);
-    }
+    /* For now we don't use security */
+    info->config.pic_flags.sec = PI_SEC_NONE;
+    info->config.pic_flags.persist = PI_PRST_NONE;
+    fprintf(stdout, "Accepting %s peer\n", info->pi_diamid);
+  }
 
-    return 0;
+  return 0;
 }

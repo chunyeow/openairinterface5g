@@ -12,7 +12,7 @@ struct ip6_mh;
 struct in6_addr_bundle;
 
 extern void cn_recv_bu(const struct ip6_mh *mh, ssize_t len,
-		       const struct in6_addr_bundle *in, int iif);
+                       const struct in6_addr_bundle *in, int iif);
 
 extern void cn_init(void);
 extern void cn_cleanup(void);

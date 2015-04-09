@@ -55,7 +55,7 @@
 # define DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<0)
 
 typedef enum deactivate_eps_bearer_context_request_iei_tag {
-    DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
+  DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
 } deactivate_eps_bearer_context_request_iei;
 
 /*
@@ -66,15 +66,15 @@ typedef enum deactivate_eps_bearer_context_request_iei_tag {
  */
 
 typedef struct deactivate_eps_bearer_context_request_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                            protocoldiscriminator:4;
-    EpsBearerIdentity                                epsbeareridentity:4;
-    ProcedureTransactionIdentity                     proceduretransactionidentity;
-    MessageType                                      messagetype;
-    EsmCause                                         esmcause;
-    /* Optional fields */
-    uint32_t                                         presencemask;
-    ProtocolConfigurationOptions                     protocolconfigurationoptions;
+  /* Mandatory fields */
+  ProtocolDiscriminator                            protocoldiscriminator:4;
+  EpsBearerIdentity                                epsbeareridentity:4;
+  ProcedureTransactionIdentity                     proceduretransactionidentity;
+  MessageType                                      messagetype;
+  EsmCause                                         esmcause;
+  /* Optional fields */
+  uint32_t                                         presencemask;
+  ProtocolConfigurationOptions                     protocolconfigurationoptions;
 } deactivate_eps_bearer_context_request_msg;
 
 int decode_deactivate_eps_bearer_context_request(deactivate_eps_bearer_context_request_msg *deactivateepsbearercontextrequest, uint8_t *buffer, uint32_t len);

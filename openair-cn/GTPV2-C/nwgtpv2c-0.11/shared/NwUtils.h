@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                              n w - g t p v 2 c                             * 
+ *                              n w - g t p v 2 c                             *
  *    G P R S   T u n n e l i n g    P r o t o c o l   v 2 c    S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -37,13 +37,13 @@
 #define __NW_UTILS_H__
 
 
-/** 
- * @file NwUtils.h 
+/**
+ * @file NwUtils.h
  * @brief This header file contains utility macro and function definitions.
 */
 
 #define NW_ASSERT                                       assert                  /**< Assertion */
-        
+
 #define NW_CHK_NULL_PTR(_ptr)                           NW_ASSERT(_ptr != NULL) /**< Null pointer check */
 
 #define NW_HTONS(x)                                     ( ( ((x) & 0xff00) >> 8 ) | ( ((x) & 0x00ff) << 8 ) )
@@ -56,7 +56,7 @@
     ( ( ((NwU64T)x) & 0x0000ff0000000000ULL ) >> 24 ) | ( ( ((NwU64T)x) & 0x000000ff00000000ULL ) >> 8  ) |       \
     ( ( ((NwU64T)x) & 0x000000000000ff00ULL ) << 40 ) | ( ( ((NwU64T)x) & 0x00000000000000ffULL ) << 56 ) |       \
     ( ( ((NwU64T)x) & 0x0000000000ff0000ULL ) << 24 ) | ( ( ((NwU64T)x) & 0x00000000ff000000ULL ) << 8  )         \
-    ) 
+    )
 
 
 #define NW_NTOHS                NW_HTONS

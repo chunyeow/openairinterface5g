@@ -60,31 +60,31 @@ Description Defines the ESM Service Access Point that provides EPS
  * ---------------------------------
  */
 typedef enum {
-    ESM_START = 0,
-    /* Procedures related to EPS bearer contexts (initiated by the network) */
-    ESM_DEFAULT_EPS_BEARER_CONTEXT_ACTIVATE_REQ,
-    ESM_DEFAULT_EPS_BEARER_CONTEXT_ACTIVATE_CNF,
-    ESM_DEFAULT_EPS_BEARER_CONTEXT_ACTIVATE_REJ,
-    ESM_DEDICATED_EPS_BEARER_CONTEXT_ACTIVATE_REQ,
-    ESM_DEDICATED_EPS_BEARER_CONTEXT_ACTIVATE_CNF,
-    ESM_DEDICATED_EPS_BEARER_CONTEXT_ACTIVATE_REJ,
-    ESM_EPS_BEARER_CONTEXT_MODIFY_REQ,
-    ESM_EPS_BEARER_CONTEXT_MODIFY_CNF,
-    ESM_EPS_BEARER_CONTEXT_MODIFY_REJ,
-    ESM_EPS_BEARER_CONTEXT_DEACTIVATE_REQ,
-    ESM_EPS_BEARER_CONTEXT_DEACTIVATE_CNF,
-    /* Transaction related procedures (initiated by the UE) */
-    ESM_PDN_CONNECTIVITY_REQ,
-    ESM_PDN_CONNECTIVITY_REJ,
-    ESM_PDN_DISCONNECT_REQ,
-    ESM_PDN_DISCONNECT_REJ,
-    ESM_BEARER_RESOURCE_ALLOCATE_REQ,
-    ESM_BEARER_RESOURCE_ALLOCATE_REJ,
-    ESM_BEARER_RESOURCE_MODIFY_REQ,
-    ESM_BEARER_RESOURCE_MODIFY_REJ,
-    /* ESM data indication ("raw" ESM message) */
-    ESM_UNITDATA_IND,
-    ESM_END
+  ESM_START = 0,
+  /* Procedures related to EPS bearer contexts (initiated by the network) */
+  ESM_DEFAULT_EPS_BEARER_CONTEXT_ACTIVATE_REQ,
+  ESM_DEFAULT_EPS_BEARER_CONTEXT_ACTIVATE_CNF,
+  ESM_DEFAULT_EPS_BEARER_CONTEXT_ACTIVATE_REJ,
+  ESM_DEDICATED_EPS_BEARER_CONTEXT_ACTIVATE_REQ,
+  ESM_DEDICATED_EPS_BEARER_CONTEXT_ACTIVATE_CNF,
+  ESM_DEDICATED_EPS_BEARER_CONTEXT_ACTIVATE_REJ,
+  ESM_EPS_BEARER_CONTEXT_MODIFY_REQ,
+  ESM_EPS_BEARER_CONTEXT_MODIFY_CNF,
+  ESM_EPS_BEARER_CONTEXT_MODIFY_REJ,
+  ESM_EPS_BEARER_CONTEXT_DEACTIVATE_REQ,
+  ESM_EPS_BEARER_CONTEXT_DEACTIVATE_CNF,
+  /* Transaction related procedures (initiated by the UE) */
+  ESM_PDN_CONNECTIVITY_REQ,
+  ESM_PDN_CONNECTIVITY_REJ,
+  ESM_PDN_DISCONNECT_REQ,
+  ESM_PDN_DISCONNECT_REJ,
+  ESM_BEARER_RESOURCE_ALLOCATE_REQ,
+  ESM_BEARER_RESOURCE_ALLOCATE_REJ,
+  ESM_BEARER_RESOURCE_MODIFY_REQ,
+  ESM_BEARER_RESOURCE_MODIFY_REJ,
+  /* ESM data indication ("raw" ESM message) */
+  ESM_UNITDATA_IND,
+  ESM_END
 } esm_primitive_t;
 
 /****************************************************************************/
@@ -95,10 +95,10 @@ typedef enum {
  * Error code returned upon processing ESM-SAP primitive
  */
 typedef enum {
-    ESM_SAP_SUCCESS = 1, /* ESM-SAP primitive succeed           */
-    ESM_SAP_DISCARDED,   /* ESM-SAP primitive failed, the caller should
+  ESM_SAP_SUCCESS = 1, /* ESM-SAP primitive succeed           */
+  ESM_SAP_DISCARDED,   /* ESM-SAP primitive failed, the caller should
               * ignore the error                */
-    ESM_SAP_FAILED   /* ESM-SAP primitive failed, the caller should
+  ESM_SAP_FAILED   /* ESM-SAP primitive failed, the caller should
               * take specific action and state transition may
               * occurs                  */
 } esm_sap_error_t;
@@ -115,12 +115,12 @@ typedef struct {
  * --------------------------------------------
  */
 typedef struct {
-    int cid;        /* PDN connection local identifier      */
-    int is_defined; /* Indicates whether a PDN context has been defined
+  int cid;        /* PDN connection local identifier      */
+  int is_defined; /* Indicates whether a PDN context has been defined
              * for the specified APN            */
-    int pdn_type;   /* PDN address type (IPv4, IPv6, IPv4v6)    */
-    const char *apn;    /* PDN's Access Point Name          */
-    int is_emergency;   /* Indicates whether the PDN context has been
+  int pdn_type;   /* PDN address type (IPv4, IPv6, IPv4v6)    */
+  const char *apn;    /* PDN's Access Point Name          */
+  int is_emergency;   /* Indicates whether the PDN context has been
              * defined to establish connection for emergency
              * bearer services              */
 } esm_pdn_connectivity_t;
@@ -130,7 +130,7 @@ typedef struct {
  * ------------------------------------------
  */
 typedef struct {
-    int cid;        /* PDN connection local identifier      */
+  int cid;        /* PDN connection local identifier      */
 } esm_pdn_disconnect_t;
 
 /*
@@ -139,7 +139,7 @@ typedef struct {
  */
 typedef struct {
 #define ESM_SAP_ALL_EBI     0xff
-    unsigned int ebi;   /* EPS bearer identity of the EPS bearer context
+  unsigned int ebi;   /* EPS bearer identity of the EPS bearer context
              * to be deactivated                */
 } esm_eps_bearer_context_deactivate_t;
 
@@ -149,25 +149,25 @@ typedef struct {
  * ------------------------------
  */
 typedef union {
-    esm_pdn_connectivity_t pdn_connect;
-    esm_pdn_disconnect_t pdn_disconnect;
-    esm_eps_bearer_context_deactivate_t eps_bearer_context_deactivate;
+  esm_pdn_connectivity_t pdn_connect;
+  esm_pdn_disconnect_t pdn_disconnect;
+  esm_eps_bearer_context_deactivate_t eps_bearer_context_deactivate;
 } esm_sap_data_t;
 
 typedef struct {
-    esm_primitive_t primitive;  /* ESM-SAP primitive to process     */
-    int is_standalone;      /* Indicates whether the ESM message handled
+  esm_primitive_t primitive;  /* ESM-SAP primitive to process     */
+  int is_standalone;      /* Indicates whether the ESM message handled
                  * within this primitive has to be sent/received
                  * standalone or together within an EMM related
                  * message              */
 #if defined(NAS_MME)
-    emm_data_context_t *ctx;   /* UE context                       */
+  emm_data_context_t *ctx;   /* UE context                       */
 #endif
-    unsigned int ueid;         /* Local UE identifier              */
-    esm_sap_error_t err;       /* ESM-SAP error code               */
-    const OctetString *recv;   /* Encoded ESM message received     */
-    OctetString send;          /* Encoded ESM message to be sent   */
-    esm_sap_data_t data;       /* ESM message data parameters      */
+  unsigned int ueid;         /* Local UE identifier              */
+  esm_sap_error_t err;       /* ESM-SAP error code               */
+  const OctetString *recv;   /* Encoded ESM message received     */
+  OctetString send;          /* Encoded ESM message to be sent   */
+  esm_sap_data_t data;       /* ESM message data parameters      */
 } esm_sap_t;
 
 /****************************************************************************/

@@ -62,9 +62,9 @@
 # define PDN_CONNECTIVITY_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<2)
 
 typedef enum pdn_connectivity_request_iei_tag {
-    PDN_CONNECTIVITY_REQUEST_ESM_INFORMATION_TRANSFER_FLAG_IEI   = 0xD0, /* 0xD0 = 208 */
-    PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_IEI               = 0x28, /* 0x28 = 40 */
-    PDN_CONNECTIVITY_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
+  PDN_CONNECTIVITY_REQUEST_ESM_INFORMATION_TRANSFER_FLAG_IEI   = 0xD0, /* 0xD0 = 208 */
+  PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_IEI               = 0x28, /* 0x28 = 40 */
+  PDN_CONNECTIVITY_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
 } pdn_connectivity_request_iei;
 
 /*
@@ -75,18 +75,18 @@ typedef enum pdn_connectivity_request_iei_tag {
  */
 
 typedef struct pdn_connectivity_request_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                 protocoldiscriminator:4;
-    EpsBearerIdentity                     epsbeareridentity:4;
-    ProcedureTransactionIdentity          proceduretransactionidentity;
-    MessageType                           messagetype;
-    RequestType                           requesttype;
-    PdnType                               pdntype;
-    /* Optional fields */
-    uint32_t                              presencemask;
-    EsmInformationTransferFlag            esminformationtransferflag;
-    AccessPointName                       accesspointname;
-    ProtocolConfigurationOptions          protocolconfigurationoptions;
+  /* Mandatory fields */
+  ProtocolDiscriminator                 protocoldiscriminator:4;
+  EpsBearerIdentity                     epsbeareridentity:4;
+  ProcedureTransactionIdentity          proceduretransactionidentity;
+  MessageType                           messagetype;
+  RequestType                           requesttype;
+  PdnType                               pdntype;
+  /* Optional fields */
+  uint32_t                              presencemask;
+  EsmInformationTransferFlag            esminformationtransferflag;
+  AccessPointName                       accesspointname;
+  ProtocolConfigurationOptions          protocolconfigurationoptions;
 } pdn_connectivity_request_msg;
 
 int decode_pdn_connectivity_request(pdn_connectivity_request_msg *pdnconnectivityrequest, uint8_t *buffer, uint32_t len);

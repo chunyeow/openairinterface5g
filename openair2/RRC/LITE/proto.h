@@ -29,7 +29,7 @@
 /*! \file proto.h
  * \brief RRC functions prototypes for eNB and UE
  * \author Navid Nikaein and Raymond Knopp
- * \date 2010 - 2014 
+ * \date 2010 - 2014
  * \email navid.nikaein@eurecom.fr
  * \version 1.0
  * @ingroup _rrc
@@ -70,27 +70,27 @@ int rrc_ue_decode_ccch(module_id_t module_idP, frame_t frameP, SRB_INFO *Srb_inf
     \param eNB_index Index of corresponding CH/eNB*/
 void rrc_ue_decode_dcch(module_id_t module_idP, frame_t frameP, uint8_t Srb_id, uint8_t* buffer_pP,uint8_t eNB_index);
 
-/** \brief Generate/Encodes RRCConnnectionRequest message at UE 
+/** \brief Generate/Encodes RRCConnnectionRequest message at UE
     \param module_idP Instance ID of UE
     \param frame Frame index
     \param Srb_id Index of Srb (1,2)
     \param eNB_index Index of corresponding eNB/CH*/
 void rrc_ue_generate_RRCConnectionRequest(module_id_t module_idP, frame_t frameP, uint8_t eNB_index);
 
-/** \brief Generates/Encodes RRCConnnectionSetupComplete message at UE 
+/** \brief Generates/Encodes RRCConnnectionSetupComplete message at UE
     \param module_idP Instance ID of UE
     \param frame Frame index
     \param eNB_index Index of corresponding eNB/CH*/
 void rrc_ue_generate_RRCConnectionSetupComplete(module_id_t module_idP,frame_t frameP,uint8_t eNB_index, uint8_t Transaction_id);
 
-/** \brief process the received rrcConnectionReconfiguration message at UE 
+/** \brief process the received rrcConnectionReconfiguration message at UE
     \param module_idP Instance ID of UE
     \param frame Frame index
     \param *rrcConnectionReconfiguration pointer to the sturcture
     \param eNB_index Index of corresponding eNB/CH*/
 void rrc_ue_process_rrcConnectionReconfiguration(module_id_t module_idP, frame_t frameP,RRCConnectionReconfiguration_t *rrcConnectionReconfiguration,uint8_t eNB_index);
 
-/** \brief Generates/Encodes RRCConnectionReconfigurationComplete  message at UE 
+/** \brief Generates/Encodes RRCConnectionReconfigurationComplete  message at UE
     \param module_idP Instance ID of UE
     \param frame Frame index
     \param eNB_index Index of corresponding eNB/CH*/
@@ -139,7 +139,7 @@ void rrc_ue_process_measConfig(module_id_t module_idP,frame_t frameP, uint8_t eN
     \param eNB_index Index of corresponding CH/eNB
     \param radioResourceConfigDedicated Pointer to RadioResourceConfigDedicated IE from configuration*/
 void rrc_ue_process_radioResourceConfigDedicated(module_id_t module_idP,frame_t frameP, uint8_t eNB_index,
-						 RadioResourceConfigDedicated_t *radioResourceConfigDedicated);
+    RadioResourceConfigDedicated_t *radioResourceConfigDedicated);
 
 // eNB/CH RRC Procedures
 
@@ -180,9 +180,10 @@ void rrc_eNB_process_RRCConnectionSetupComplete(module_id_t module_idP, frame_t 
    \param module_idP Instance ID for eNB/CH
    \param ue_module_idP Index of UE transmitting the messages
    \param rrcConnectionReconfigurationComplete Pointer to RRCConnectionReconfigurationComplete message*/
-void rrc_eNB_process_RRCConnectionReconfigurationComplete(module_id_t module_idP,frame_t frameP,module_id_t ue_module_idP,RRCConnectionReconfigurationComplete_r8_IEs_t *rrcConnectionReconfigurationComplete);
+void rrc_eNB_process_RRCConnectionReconfigurationComplete(module_id_t module_idP,frame_t frameP,module_id_t ue_module_idP,
+    RRCConnectionReconfigurationComplete_r8_IEs_t *rrcConnectionReconfigurationComplete);
 
-/**\brief Generate the RRCConnectionRelease 
+/**\brief Generate the RRCConnectionRelease
    \param module_idP Instance ID for eNB
    \param frame Frame index
    \param ue_module_idP Index of UE receiving the message*/
@@ -212,15 +213,15 @@ int8_t mac_rrc_lite_data_ind( module_id_t module_idP,  frame_t frameP, rb_id_t S
 void mac_sync_ind( module_id_t Mod_instP, uint8_t status);
 
 uint8_t rrc_lite_data_req(module_id_t enb_mod_idP,
-                     module_id_t      ue_mod_idP,
-                     frame_t          frameP,
-                     eNB_flag_t       eNB_flagP,
-                     rb_id_t          rb_idP,
-                     mui_t            muiP,
-                     confirm_t        confirmP,
-                     sdu_size_t       sdu_sizeP,
-                     uint8_t         *Buffer_pP,
-                     pdcp_transmission_mode_t   modeP);
+                          module_id_t      ue_mod_idP,
+                          frame_t          frameP,
+                          eNB_flag_t       eNB_flagP,
+                          rb_id_t          rb_idP,
+                          mui_t            muiP,
+                          confirm_t        confirmP,
+                          sdu_size_t       sdu_sizeP,
+                          uint8_t         *Buffer_pP,
+                          pdcp_transmission_mode_t   modeP);
 
 void rrc_lite_data_ind(module_id_t eNB_id, module_id_t UE_id, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t Rb_id, sdu_size_t sdu_size,uint8_t *buffer_pP);
 
@@ -257,8 +258,8 @@ void rrc_eNB_generate_HandoverPreparationInformation (uint8_t module_idP, frame_
 void check_handovers(uint8_t module_idP, frame_t frameP);
 
 uint8_t check_trigger_meas_event(uint8_t module_idP,frame_t frameP, uint8_t eNB_index, uint8_t ue_cnx_index, uint8_t meas_index,
-			    Q_OffsetRange_t ofn, Q_OffsetRange_t ocn, Hysteresis_t hys, 
-			    Q_OffsetRange_t ofs, Q_OffsetRange_t ocs, long a3_offset, TimeToTrigger_t ttt);
+                                 Q_OffsetRange_t ofn, Q_OffsetRange_t ocn, Hysteresis_t hys,
+                                 Q_OffsetRange_t ofs, Q_OffsetRange_t ocs, long a3_offset, TimeToTrigger_t ttt);
 
 //void rrc_ue_process_ueCapabilityEnquiry(uint8_t module_idP,uint32_t frame,UECapabilityEnquiry_t *UECapabilityEnquiry,uint8_t eNB_index);
 //void rrc_ue_process_securityModeCommand(uint8_t module_idP,uint32_t frame,SecurityModeCommand_t *securityModeCommand,uint8_t eNB_index);

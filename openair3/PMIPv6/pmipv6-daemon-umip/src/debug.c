@@ -2,7 +2,7 @@
  * $Id: debug.c 1.23 06/05/07 21:52:42+03:00 anttit@tcs.hut.fi $
  *
  * This file is part of the MIPL Mobile IPv6 for Linux.
- * 
+ *
  * Author: Antti Tuominen <anttit@tcs.hut.fi>
  *
  * Copyright 2003-2005 Go-Core Project
@@ -38,99 +38,109 @@ static FILE *sdbg;
 
 static const char *dbg_strdate(char *str)
 {
-	struct timespec ts;
-	time_t t;
-	int ret;
+  struct timespec ts;
+  time_t t;
+  int ret;
 
-	memset(&ts, 0, sizeof(ts));
+  memset(&ts, 0, sizeof(ts));
 
-	ret = clock_gettime(CLOCK_REALTIME, &ts);
-	if (ret != 0)
-		sprintf(str, "(clock_gettime error=%d)", errno);
-	else {
-		t = (time_t)ts.tv_sec; /* XXX: fix it! */
-		if (t == 0) {
-			strcpy(str, "(undefined)");
-		} else {
-			char buf[1024];
-			sprintf(str, "%.19s",
-				(ctime_r(&t, buf) ? buf : "(ctime_r error)"));
-		}
-	}
+  ret = clock_gettime(CLOCK_REALTIME, &ts);
 
-	return str;
+  if (ret != 0)
+    sprintf(str, "(clock_gettime error=%d)", errno);
+  else {
+    t = (time_t)ts.tv_sec; /* XXX: fix it! */
+
+    if (t == 0) {
+      strcpy(str, "(undefined)");
+    } else {
+      char buf[1024];
+      sprintf(str, "%.19s",
+              (ctime_r(&t, buf) ? buf : "(ctime_r error)"));
+    }
+  }
+
+  return str;
 }
 
 void dbgprint(const char *fname, const char *fmt, ...)
 {
-        char s[1024];
-        char stime[1024];
-        va_list args;
- 
-        va_start(args, fmt);
-        vsprintf(s, fmt, args);
-        va_end(args);
+  char s[1024];
+  char stime[1024];
+  va_list args;
 
-	memset(stime, '\0', sizeof(stime));
-	fprintf(sdbg, "%s ", dbg_strdate(stime));
+  va_start(args, fmt);
+  vsprintf(s, fmt, args);
+  va_end(args);
 
-	if (fname)
-		fprintf(sdbg, "%s: ", fname);
-	fprintf(sdbg, "%s", s);
-	fflush(sdbg);
+  memset(stime, '\0', sizeof(stime));
+  fprintf(sdbg, "%s ", dbg_strdate(stime));
+
+  if (fname)
+    fprintf(sdbg, "%s: ", fname);
+
+  fprintf(sdbg, "%s", s);
+  fflush(sdbg);
 }
 
-void debug_print_buffer(const void *data, int len, const char *fname, 
-			const char *fmt, ...)
-{ 
-	int i; 
-	char s[1024];
-        va_list args;
- 
-        va_start(args, fmt);
-        vsprintf(s, fmt, args);
-        fprintf(sdbg, "%s: %s", fname, s);
-        va_end(args);
-	for (i = 0; i < len; i++) { 
-		if (i % 16 == 0) fprintf(sdbg, "\n%04x: ", i);
-		fprintf(sdbg, "%02x ", ((unsigned char *)data)[i]);
-	} 
-	fprintf(sdbg, "\n\n");
-	fflush(sdbg);
+void debug_print_buffer(const void *data, int len, const char *fname,
+                        const char *fmt, ...)
+{
+  int i;
+  char s[1024];
+  va_list args;
+
+  va_start(args, fmt);
+  vsprintf(s, fmt, args);
+  fprintf(sdbg, "%s: %s", fname, s);
+  va_end(args);
+
+  for (i = 0; i < len; i++) {
+    if (i % 16 == 0) fprintf(sdbg, "\n%04x: ", i);
+
+    fprintf(sdbg, "%02x ", ((unsigned char *)data)[i]);
+  }
+
+  fprintf(sdbg, "\n\n");
+  fflush(sdbg);
 }
 
 void debug_print_func(void *arg, void (*func)(void *arg, void *stream))
 {
-	func(arg, sdbg);
-	fflush(sdbg);
+  func(arg, sdbg);
+  fflush(sdbg);
 }
 
 int debug_open(const char *path)
 {
-	FILE *fp;
+  FILE *fp;
 
-	if (!path)
-		return -EINVAL;
-	if (sdbg && sdbg != stderr)
-		return -EALREADY;
+  if (!path)
+    return -EINVAL;
 
-	fp = fopen(path, "a");
-	if (!fp)
-		return -errno;
-	sdbg = fp;
+  if (sdbg && sdbg != stderr)
+    return -EALREADY;
 
-	return 0;
+  fp = fopen(path, "a");
+
+  if (!fp)
+    return -errno;
+
+  sdbg = fp;
+
+  return 0;
 }
 
 void debug_close(void)
 {
-	if (sdbg && sdbg != stderr)
-		fclose(sdbg);
-	debug_init();
+  if (sdbg && sdbg != stderr)
+    fclose(sdbg);
+
+  debug_init();
 }
 
 void debug_init(void)
 {
-	sdbg = stderr;
+  sdbg = stderr;
 }
 

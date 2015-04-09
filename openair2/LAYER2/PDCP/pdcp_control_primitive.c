@@ -5,8 +5,8 @@
     copyright            : (C) 2001 by EURECOM
     email                : Lionel.Gauthier@eurecom.fr
                              -------------------
-		description
-		This file contains the functions used for configuration of pdcp
+    description
+    This file contains the functions used for configuration of pdcp
 
  ***************************************************************************/
 #include "rtos_header.h"
@@ -21,7 +21,7 @@
 void
 configure_pdcp_req (struct pdcp_entity *pdcpP, void *rlcP, uint8_t rlc_sap_typeP, uint8_t header_compression_typeP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   mem_block      *mb;
 
   mb = get_free_mem_block (sizeof (struct cpdcp_primitive));

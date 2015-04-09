@@ -54,7 +54,7 @@
 
 int
 mme_app_send_s6a_update_location_req(
-    struct ue_context_s * const ue_context_pP)
+  struct ue_context_s * const ue_context_pP)
 {
   struct ue_context_s       *ue_context_p = NULL;
   uint64_t                   imsi         = 0;
@@ -67,14 +67,15 @@ mme_app_send_s6a_update_location_req(
   MME_APP_DEBUG("Handling imsi %"IMSI_FORMAT"\n", imsi);
 
   if ((ue_context_p = mme_ue_context_exists_imsi(&mme_app_desc.mme_ue_contexts,
-                    imsi)) == NULL) {
-      MME_APP_ERROR("That's embarrassing as we don't know this IMSI\n");
-      return -1;
+                      imsi)) == NULL) {
+    MME_APP_ERROR("That's embarrassing as we don't know this IMSI\n");
+    return -1;
   }
 
   message_p = itti_alloc_new_message(TASK_MME_APP, S6A_UPDATE_LOCATION_REQ);
+
   if (message_p == NULL) {
-      return -1;
+    return -1;
   }
 
   s6a_ulr_p = &message_p->ittiMsg.s6a_update_location_req;
@@ -95,61 +96,61 @@ mme_app_send_s6a_update_location_req(
 
 int
 mme_app_handle_s6a_update_location_ans(
-        const s6a_update_location_ans_t * const ula_pP)
+  const s6a_update_location_ans_t * const ula_pP)
 {
-    uint64_t                    imsi              = 0;
-    struct ue_context_s        *ue_context_p      = NULL;
+  uint64_t                    imsi              = 0;
+  struct ue_context_s        *ue_context_p      = NULL;
 
-    DevAssert(ula_pP != NULL);
+  DevAssert(ula_pP != NULL);
 
-    if (ula_pP->result.present == S6A_RESULT_BASE) {
-        if (ula_pP->result.choice.base != DIAMETER_SUCCESS) {
-            /* The update location procedure has failed. Notify the NAS layer
-             * and don't initiate the bearer creation on S-GW side.
-             */
-        	MME_APP_DEBUG("ULR/ULA procedure returned non success (ULA.result.choice.base=%d)\n", ula_pP->result.choice.base);
-        	DevMessage("ULR/ULA procedure returned non success\n");
-        }
-    } else {
-        /* The update location procedure has failed. Notify the NAS layer
-         * and don't initiate the bearer creation on S-GW side.
-         */
-    	MME_APP_DEBUG("ULR/ULA procedure returned non success (ULA.result.present=%d)\n", ula_pP->result.present);
-        DevMessage("ULR/ULA procedure returned non success\n");
+  if (ula_pP->result.present == S6A_RESULT_BASE) {
+    if (ula_pP->result.choice.base != DIAMETER_SUCCESS) {
+      /* The update location procedure has failed. Notify the NAS layer
+       * and don't initiate the bearer creation on S-GW side.
+       */
+      MME_APP_DEBUG("ULR/ULA procedure returned non success (ULA.result.choice.base=%d)\n", ula_pP->result.choice.base);
+      DevMessage("ULR/ULA procedure returned non success\n");
     }
+  } else {
+    /* The update location procedure has failed. Notify the NAS layer
+     * and don't initiate the bearer creation on S-GW side.
+     */
+    MME_APP_DEBUG("ULR/ULA procedure returned non success (ULA.result.present=%d)\n", ula_pP->result.present);
+    DevMessage("ULR/ULA procedure returned non success\n");
+  }
 
-    MME_APP_STRING_TO_IMSI((char *)ula_pP->imsi, &imsi);
+  MME_APP_STRING_TO_IMSI((char *)ula_pP->imsi, &imsi);
 
-    MME_APP_DEBUG("%s Handling imsi %"IMSI_FORMAT"\n", __FUNCTION__, imsi);
+  MME_APP_DEBUG("%s Handling imsi %"IMSI_FORMAT"\n", __FUNCTION__, imsi);
 
-    if ((ue_context_p = mme_ue_context_exists_imsi(&mme_app_desc.mme_ue_contexts, imsi)) == NULL) {
-        MME_APP_ERROR("That's embarrassing as we don't know this IMSI\n");
-        return -1;
-    }
+  if ((ue_context_p = mme_ue_context_exists_imsi(&mme_app_desc.mme_ue_contexts, imsi)) == NULL) {
+    MME_APP_ERROR("That's embarrassing as we don't know this IMSI\n");
+    return -1;
+  }
 
-    ue_context_p->subscription_known = SUBSCRIPTION_KNOWN;
+  ue_context_p->subscription_known = SUBSCRIPTION_KNOWN;
 
-    ue_context_p->sub_status = ula_pP->subscription_data.subscriber_status;
-    ue_context_p->access_restriction_data = ula_pP->subscription_data.access_restriction;
+  ue_context_p->sub_status = ula_pP->subscription_data.subscriber_status;
+  ue_context_p->access_restriction_data = ula_pP->subscription_data.access_restriction;
 
-    /* Copy the subscribed ambr to the sgw create session request message */
-    memcpy(&ue_context_p->subscribed_ambr, &ula_pP->subscription_data.subscribed_ambr,
-           sizeof(ambr_t));
-    memcpy(
-            ue_context_p->msisdn,
-            ula_pP->subscription_data.msisdn,
-            ula_pP->subscription_data.msisdn_length);
-    ue_context_p->msisdn_length = ula_pP->subscription_data.msisdn_length;
-    AssertFatal(ula_pP->subscription_data.msisdn_length != 0, "MSISDN LENGTH IS 0");
-    AssertFatal(ula_pP->subscription_data.msisdn_length <= MSISDN_LENGTH, "MSISDN LENGTH is too high %u", MSISDN_LENGTH);
-    ue_context_p->msisdn[ue_context_p->msisdn_length] = '\0';
+  /* Copy the subscribed ambr to the sgw create session request message */
+  memcpy(&ue_context_p->subscribed_ambr, &ula_pP->subscription_data.subscribed_ambr,
+         sizeof(ambr_t));
+  memcpy(
+    ue_context_p->msisdn,
+    ula_pP->subscription_data.msisdn,
+    ula_pP->subscription_data.msisdn_length);
+  ue_context_p->msisdn_length = ula_pP->subscription_data.msisdn_length;
+  AssertFatal(ula_pP->subscription_data.msisdn_length != 0, "MSISDN LENGTH IS 0");
+  AssertFatal(ula_pP->subscription_data.msisdn_length <= MSISDN_LENGTH, "MSISDN LENGTH is too high %u", MSISDN_LENGTH);
+  ue_context_p->msisdn[ue_context_p->msisdn_length] = '\0';
 
-    ue_context_p->rau_tau_timer = ula_pP->subscription_data.rau_tau_timer;
-    ue_context_p->access_mode   = ula_pP->subscription_data.access_mode;
+  ue_context_p->rau_tau_timer = ula_pP->subscription_data.rau_tau_timer;
+  ue_context_p->access_mode   = ula_pP->subscription_data.access_mode;
 
-    memcpy(&ue_context_p->apn_profile, &ula_pP->subscription_data.apn_config_profile,
-           sizeof(apn_config_profile_t));
+  memcpy(&ue_context_p->apn_profile, &ula_pP->subscription_data.apn_config_profile,
+         sizeof(apn_config_profile_t));
 
-    return mme_app_send_s11_create_session_req(ue_context_p);
+  return mme_app_send_s11_create_session_req(ue_context_p);
 }
 

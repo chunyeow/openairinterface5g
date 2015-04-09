@@ -39,8 +39,8 @@
 #define KSI_AND_SEQUENCE_NUMBER_MAXIMUM_LENGTH 2
 
 typedef struct KsiAndSequenceNumber_tag {
-    uint8_t  ksi:3;
-    uint8_t  sequencenumber:5;
+  uint8_t  ksi:3;
+  uint8_t  sequencenumber:5;
 } KsiAndSequenceNumber;
 
 int encode_ksi_and_sequence_number(KsiAndSequenceNumber *ksiandsequencenumber, uint8_t iei, uint8_t *buffer, uint32_t len);

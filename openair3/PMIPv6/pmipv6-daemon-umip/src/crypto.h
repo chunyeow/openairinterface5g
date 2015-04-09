@@ -7,15 +7,15 @@
 #define SHA_BLOCKSIZE 64
 
 typedef struct {
-    uint32_t h0,h1,h2,h3,h4;
-    uint32_t nblocks;
-    uint8_t buf[SHA_BLOCKSIZE];
-    int count;
+  uint32_t h0,h1,h2,h3,h4;
+  uint32_t nblocks;
+  uint8_t buf[SHA_BLOCKSIZE];
+  int count;
 } SHA1_CTX;
 
 typedef struct {
-        SHA1_CTX ictx;
-        uint8_t pad[SHA_BLOCKSIZE];
+  SHA1_CTX ictx;
+  uint8_t pad[SHA_BLOCKSIZE];
 } HMAC_SHA1_CTX;
 
 void SHA1_init(SHA1_CTX *ctx);

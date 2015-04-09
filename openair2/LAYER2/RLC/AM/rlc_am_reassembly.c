@@ -54,7 +54,7 @@
 void
 reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   int             sdu_max_size_allowed;
 #ifdef DEBUG_RLC_AM_DISPLAY_ASCII_DATA
   int             index;
@@ -73,16 +73,20 @@ reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_am_entity *rlcP)
     rlcP->output_sdu_in_construction = get_free_mem_block (sdu_max_size_allowed);
     rlcP->output_sdu_size_to_write = 0;
   }
+
 #ifdef DEBUG_REASSEMBLY
   msg ("[RLC_AM][RB %d][REASSEMBLY] reassembly()  %d bytes sdu_max_size allowed %d\n", rlcP->rb_id, lengthP, sdu_max_size_allowed);
 #endif
+
   if ((rlcP->output_sdu_in_construction)) {
 #ifdef DEBUG_RLC_AM_DISPLAY_ASCII_DATA
     msg ("[RLC_AM][RB %d][REASSEMBLY] DATA :", rlcP->rb_id);
+
     for (index = 0; index < lengthP; index++) {
       //msg ("%c", srcP[index]);
       msg ("%02X.", srcP[index]);
     }
+
     msg ("\n");
 #endif
 
@@ -99,10 +103,12 @@ reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_am_entity *rlcP)
     }
 
   }
+
 #ifdef DEBUG_REASSEMBLY
   else {
     msg ("[RLC_AM %p][REASSEMBLY] ERROR  OUTPUT SDU IS NULL\n", rlcP);
   }
+
 #endif
 }
 
@@ -110,7 +116,7 @@ reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_am_entity *rlcP)
 void
 send_sdu (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   if ((rlcP->output_sdu_in_construction) && (rlcP->output_sdu_size_to_write)) {
 
 #ifdef DEBUG_RLC_AM_SEND_SDU

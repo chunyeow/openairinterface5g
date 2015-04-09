@@ -11,7 +11,7 @@
 #include "rrc_platform_types.h"
 
 #if defined(FALSE) && (FALSE != 0)
-#error FALSE was defined elsewhere with a none zero value  !!! 
+#error FALSE was defined elsewhere with a none zero value  !!!
 #endif
 
 /********************************/
@@ -77,9 +77,9 @@ typedef  u8 mbms_bool; /* mbms_bool used in RRC MBMS */
 #define ms8000  8000
 #define ms10000 10000
 #define ms12000 12000
-#define ms16000 16000   
+#define ms16000 16000
 
-//Values of Access Probability Factor. use these constants instead of enumertion in TS25.331    
+//Values of Access Probability Factor. use these constants instead of enumertion in TS25.331
 #define apf0 0
 #define apf32 32
 #define apf64 64

@@ -116,37 +116,37 @@ Description Defines internal private data handled by EPS Mobility
  */
 /* Type of security context */
 typedef enum {
-    EMM_KSI_NOT_AVAILABLE = 0,
-    EMM_KSI_NATIVE,
-    EMM_KSI_MAPPED
+  EMM_KSI_NOT_AVAILABLE = 0,
+  EMM_KSI_NATIVE,
+  EMM_KSI_MAPPED
 } emm_ksi_t;
 
 /* EPS NAS security context structure */
 typedef struct {
-    emm_ksi_t type;     /* Type of security context        */
-    int eksi;           /* NAS key set identifier for E-UTRAN      */
-    OctetString kasme;      /* ASME security key (native context)      */
-    //OctetString ksgsn;    /* SGSN security key (mapped context)      */
-    OctetString knas_enc;   /* NAS cyphering key               */
-    OctetString knas_int;   /* NAS integrity key               */
-    struct {
-        UInt32_t spare:8;
-        UInt32_t overflow:16;
-        UInt32_t seq_num:8;
-    } dl_count, ul_count;   /* Downlink and uplink count parameters    */
-    struct {
-        UInt8_t eps_encryption;   /* algorithm used for ciphering            */
-        UInt8_t eps_integrity;    /* algorithm used for integrity protection */
-        UInt8_t umts_encryption;  /* algorithm used for ciphering            */
-        UInt8_t umts_integrity;   /* algorithm used for integrity protection */
-        UInt8_t gprs_encryption;  /* algorithm used for ciphering            */
-        UInt8_t umts_present:1;
-        UInt8_t gprs_present:1;
-    } capability;       /* UE network capability           */
-    struct {
-        UInt8_t encryption:4;   /* algorithm used for ciphering           */
-        UInt8_t integrity:4;    /* algorithm used for integrity protection */
-    } selected_algorithms;       /* MME selected algorithms                */
+  emm_ksi_t type;     /* Type of security context        */
+  int eksi;           /* NAS key set identifier for E-UTRAN      */
+  OctetString kasme;      /* ASME security key (native context)      */
+  //OctetString ksgsn;    /* SGSN security key (mapped context)      */
+  OctetString knas_enc;   /* NAS cyphering key               */
+  OctetString knas_int;   /* NAS integrity key               */
+  struct {
+    UInt32_t spare:8;
+    UInt32_t overflow:16;
+    UInt32_t seq_num:8;
+  } dl_count, ul_count;   /* Downlink and uplink count parameters    */
+  struct {
+    UInt8_t eps_encryption;   /* algorithm used for ciphering            */
+    UInt8_t eps_integrity;    /* algorithm used for integrity protection */
+    UInt8_t umts_encryption;  /* algorithm used for ciphering            */
+    UInt8_t umts_integrity;   /* algorithm used for integrity protection */
+    UInt8_t gprs_encryption;  /* algorithm used for ciphering            */
+    UInt8_t umts_present:1;
+    UInt8_t gprs_present:1;
+  } capability;       /* UE network capability           */
+  struct {
+    UInt8_t encryption:4;   /* algorithm used for ciphering           */
+    UInt8_t integrity:4;    /* algorithm used for integrity protection */
+  } selected_algorithms;       /* MME selected algorithms                */
 } emm_security_context_t;
 
 /*
@@ -172,9 +172,9 @@ typedef struct {
  *  (because of roaming or subscription restrictions).
  */
 typedef enum {
-    EU1_UPDATED,
-    EU2_NOT_UPDATED,
-    EU3_ROAMING_NOT_ALLOWED
+  EU1_UPDATED,
+  EU2_NOT_UPDATED,
+  EU3_ROAMING_NOT_ALLOWED
 } emm_eps_update_t;
 
 /*
@@ -186,8 +186,8 @@ typedef enum {
  *        and the MME (RRC connection and S1_MME connection).
  */
 typedef enum {
-    ECM_IDLE,
-    ECM_CONNECTED
+  ECM_IDLE,
+  ECM_CONNECTED
 } emm_ecm_state_t;
 
 /*
@@ -206,11 +206,11 @@ typedef enum {
  *   The maximum number of possible entries in the stored list is 16.
  */
 typedef struct {
-    imsi_t imsi;
-    plmn_t rplmn;   /* The registered PLMN  */
-    /* List of equivalent PLMNs         */
+  imsi_t imsi;
+  plmn_t rplmn;   /* The registered PLMN  */
+  /* List of equivalent PLMNs         */
 #define EMM_DATA_EPLMN_MAX  16
-    PLMN_LIST_T(EMM_DATA_EPLMN_MAX) eplmn;
+  PLMN_LIST_T(EMM_DATA_EPLMN_MAX) eplmn;
 } emm_nvdata_t;
 
 /*
@@ -218,128 +218,128 @@ typedef struct {
  * -------------------------
  */
 typedef struct {
-    int                 usim_is_valid;  /* Indication of USIM data validity   */
+  int                 usim_is_valid;  /* Indication of USIM data validity   */
 
-    imei_t             *imei;   /* IMEI read from the UE's non-volatile memory*/
-    const imsi_t       *imsi; /* The valid IMSI read from the USIM            */
-    GUTI_t             *guti;   /* The valid GUTI read from the USIM          */
-    tai_t              *tai;    /* Last visited registered Tracking Area Id   */
+  imei_t             *imei;   /* IMEI read from the UE's non-volatile memory*/
+  const imsi_t       *imsi; /* The valid IMSI read from the USIM            */
+  GUTI_t             *guti;   /* The valid GUTI read from the USIM          */
+  tai_t              *tai;    /* Last visited registered Tracking Area Id   */
 
-    emm_eps_update_t    status;    /* The current EPS update status           */
-    emm_ecm_state_t     ecm_status; /* The EPS Connection Management status   */
-    int                 is_attached;    /* Network attachment indicator       */
-    int                 is_emergency;   /* Emergency bearer services indicator*/
+  emm_eps_update_t    status;    /* The current EPS update status           */
+  emm_ecm_state_t     ecm_status; /* The EPS Connection Management status   */
+  int                 is_attached;    /* Network attachment indicator       */
+  int                 is_emergency;   /* Emergency bearer services indicator*/
 
-    /* Tracking Areas list the UE is registered to
-     * Contains the list of TAIs that identify the tracking areas that
-     * the UE can enter without performing a tracking area updating
-     * procedure. The TAIs in a TAI list assigned by an MME to a UE
-     * pertain to the same MME area.
-     */
+  /* Tracking Areas list the UE is registered to
+   * Contains the list of TAIs that identify the tracking areas that
+   * the UE can enter without performing a tracking area updating
+   * procedure. The TAIs in a TAI list assigned by an MME to a UE
+   * pertain to the same MME area.
+   */
 #define EMM_DATA_TAI_MAX        16
-    TAI_LIST_T(EMM_DATA_TAI_MAX) ltai;
+  TAI_LIST_T(EMM_DATA_TAI_MAX) ltai;
 
-    int                 plmn_mode;  /* Network selection operating mode       */
-    int                 plmn_index; /* Manually selected PLMN                 */
-    int                 plmn_rat; /* Manually selected Radio Access Technology*/
+  int                 plmn_mode;  /* Network selection operating mode       */
+  int                 plmn_index; /* Manually selected PLMN                 */
+  int                 plmn_rat; /* Manually selected Radio Access Technology*/
 
-    plmn_t              splmn;      /* The currently selected PLMN            */
-    int                 is_rplmn;   /* splmn is the registered PLMN           */
-    int                 is_eplmn; /* splmn is in the list of equivalent PLMNs */
-    Stat_t              stat;    /* Current network registration status       */
-    tac_t               tac;   /* Tracking area code                          */
-    ci_t                ci;    /* GERAN/UTRAN/E-UTRAN serving cell identifier */
-    AcT_t               rat; /* Radio Access Technology of the serving cell   */
+  plmn_t              splmn;      /* The currently selected PLMN            */
+  int                 is_rplmn;   /* splmn is the registered PLMN           */
+  int                 is_eplmn; /* splmn is in the list of equivalent PLMNs */
+  Stat_t              stat;    /* Current network registration status       */
+  tac_t               tac;   /* Tracking area code                          */
+  ci_t                ci;    /* GERAN/UTRAN/E-UTRAN serving cell identifier */
+  AcT_t               rat; /* Radio Access Technology of the serving cell   */
 
-    /* An octet string representation of operators present in the network */
-    struct {
+  /* An octet string representation of operators present in the network */
+  struct {
 #define EMM_DATA_BUFFER_SIZE    2048
-        char buffer[EMM_DATA_BUFFER_SIZE+1];
-    } plist;
+    char buffer[EMM_DATA_BUFFER_SIZE+1];
+  } plist;
 
-    /*
-     * Data used for PLMN selection procedure
-     * --------------------------------------
-     */
-    plmn_t hplmn;       /* The Home PLMN derived from the IMSI  */
-    /* List of Forbidden PLMNs
-    * Contains the list of PLMN identities for which a Location
-    * Registration has been rejected with EMM cause code #11 (PLMN
-    * not allowed). A PLMN is removed from this list if, after a
-    * subsequent manual selection of that PLMN, there is a successful
-    * Location Request.                */
+  /*
+   * Data used for PLMN selection procedure
+   * --------------------------------------
+   */
+  plmn_t hplmn;       /* The Home PLMN derived from the IMSI  */
+  /* List of Forbidden PLMNs
+  * Contains the list of PLMN identities for which a Location
+  * Registration has been rejected with EMM cause code #11 (PLMN
+  * not allowed). A PLMN is removed from this list if, after a
+  * subsequent manual selection of that PLMN, there is a successful
+  * Location Request.                */
 #define EMM_DATA_FPLMN_MAX  4
-    PLMN_LIST_T(EMM_DATA_FPLMN_MAX) fplmn;
-    /* List of Forbidden PLMNs for GPRS service
-    * Contains the list of PLMN identities for which an Attach Request
-    * has been rejected with EMM cause code #14 (GPRS/EPS services not
-    * allowed in this PLMN). A PLMN is removed from this list if, after
-    * a subsequent manual selection of that PLMN, there is a successful
-    * GPRS attach or EPS attach.           */
+  PLMN_LIST_T(EMM_DATA_FPLMN_MAX) fplmn;
+  /* List of Forbidden PLMNs for GPRS service
+  * Contains the list of PLMN identities for which an Attach Request
+  * has been rejected with EMM cause code #14 (GPRS/EPS services not
+  * allowed in this PLMN). A PLMN is removed from this list if, after
+  * a subsequent manual selection of that PLMN, there is a successful
+  * GPRS attach or EPS attach.           */
 #define EMM_DATA_FPLMN_GPRS_MAX 4
-    PLMN_LIST_T(EMM_DATA_FPLMN_GPRS_MAX) fplmn_gprs;
-    /* List of Equivalent HPLMNs            */
+  PLMN_LIST_T(EMM_DATA_FPLMN_GPRS_MAX) fplmn_gprs;
+  /* List of Equivalent HPLMNs            */
 #define EMM_DATA_EHPLMN_MAX 4
-    PLMN_LIST_T(EMM_DATA_EHPLMN_MAX) ehplmn;
-    /* List of user controlled PLMNs        */
+  PLMN_LIST_T(EMM_DATA_EHPLMN_MAX) ehplmn;
+  /* List of user controlled PLMNs        */
 #define EMM_DATA_PLMN_MAX   4
-    PLMN_LIST_T(EMM_DATA_PLMN_MAX) plmn;
-    UInt16_t userAcT[EMM_DATA_PLMN_MAX];
-    /* List of operator controlled PLMNs        */
+  PLMN_LIST_T(EMM_DATA_PLMN_MAX) plmn;
+  UInt16_t userAcT[EMM_DATA_PLMN_MAX];
+  /* List of operator controlled PLMNs        */
 #define EMM_DATA_OPLMN_MAX  4
-    PLMN_LIST_T(EMM_DATA_OPLMN_MAX) oplmn;
-    UInt16_t operAcT[EMM_DATA_OPLMN_MAX];
-    /* List of operator network name records    */
+  PLMN_LIST_T(EMM_DATA_OPLMN_MAX) oplmn;
+  UInt16_t operAcT[EMM_DATA_OPLMN_MAX];
+  /* List of operator network name records    */
 #define EMM_DATA_OPNN_MAX   16
-    UInt8_t n_opnns;
-    struct {
-        const plmn_t *plmn;
-        const char *fullname;
-        const char *shortname;
-    } opnn[EMM_DATA_OPNN_MAX];
+  UInt8_t n_opnns;
+  struct {
+    const plmn_t *plmn;
+    const char *fullname;
+    const char *shortname;
+  } opnn[EMM_DATA_OPNN_MAX];
 
-    /*
-     * Data used for roaming service
-     * -----------------------------
-     */
-    /* List of Forbidden Tracking Areas
-    * Contains the list of TAIs for which an attach request has been
-    * rejected with EMM cause code #12 (tracking area not allowed).
-    */
+  /*
+   * Data used for roaming service
+   * -----------------------------
+   */
+  /* List of Forbidden Tracking Areas
+  * Contains the list of TAIs for which an attach request has been
+  * rejected with EMM cause code #12 (tracking area not allowed).
+  */
 #define EMM_DATA_FTAI_MAX       40
-    TAI_LIST_T(EMM_DATA_FTAI_MAX) ftai;
-    /* List of Forbidden Tracking Areas for roaming
-    * Contains the list of TAIs for which an attach request has been
-    * rejected with EMM cause code #13 (roaming not allowed in this
-    * tracking area).
-    */
+  TAI_LIST_T(EMM_DATA_FTAI_MAX) ftai;
+  /* List of Forbidden Tracking Areas for roaming
+  * Contains the list of TAIs for which an attach request has been
+  * rejected with EMM cause code #13 (roaming not allowed in this
+  * tracking area).
+  */
 #define EMM_DATA_FTAI_ROAMING_MAX   40
-    TAI_LIST_T(EMM_DATA_FTAI_ROAMING_MAX) ftai_roaming;
+  TAI_LIST_T(EMM_DATA_FTAI_ROAMING_MAX) ftai_roaming;
 
-    /*
-     * NAS configuration parameters
-     * ----------------------------
-     * see "Non Access Stratum Configuration" in USIM API header file
-     */
-    Byte_t NAS_SignallingPriority;
-    Byte_t NMO_I_Behaviour;
-    Byte_t AttachWithImsi;
-    Byte_t MinimumPeriodicSearchTimer;
-    Byte_t ExtendedAccessBarring;
-    Byte_t Timer_T3245_Behaviour;
+  /*
+   * NAS configuration parameters
+   * ----------------------------
+   * see "Non Access Stratum Configuration" in USIM API header file
+   */
+  Byte_t NAS_SignallingPriority;
+  Byte_t NMO_I_Behaviour;
+  Byte_t AttachWithImsi;
+  Byte_t MinimumPeriodicSearchTimer;
+  Byte_t ExtendedAccessBarring;
+  Byte_t Timer_T3245_Behaviour;
 
-    /*
-     * EMM data stored in the UE's memory
-     * ----------------------------------
-     */
-    emm_nvdata_t nvdata;
+  /*
+   * EMM data stored in the UE's memory
+   * ----------------------------------
+   */
+  emm_nvdata_t nvdata;
 
-    /*
-     * EPS NAS security context
-     * ------------------------
-     */
-    emm_security_context_t *security;    /* current security context     */
-    emm_security_context_t *non_current; /* non-current security context */
+  /*
+   * EPS NAS security context
+   * ------------------------
+   */
+  emm_security_context_t *security;    /* current security context     */
+  emm_security_context_t *non_current; /* non-current security context */
 
 } emm_data_t;
 
@@ -357,42 +357,42 @@ typedef struct {
  */
 typedef struct emm_data_context_s {
 #if defined(EPC_BUILD)
-    RB_ENTRY(emm_data_context_s) entries;
+  RB_ENTRY(emm_data_context_s) entries;
 #endif
 
-    unsigned int ueid;        /* UE identifier                                   */
-    int          is_dynamic;  /* Dynamically allocated context indicator         */
-    int          is_attached; /* Attachment indicator                            */
-    int          is_emergency;/* Emergency bearer services indicator             */
+  unsigned int ueid;        /* UE identifier                                   */
+  int          is_dynamic;  /* Dynamically allocated context indicator         */
+  int          is_attached; /* Attachment indicator                            */
+  int          is_emergency;/* Emergency bearer services indicator             */
 
-    imsi_t      *imsi;        /* The IMSI provided by the UE or the MME          */
-    imei_t      *imei;        /* The IMEI provided by the UE                     */
-    int          guti_is_new; /* New GUTI indicator                              */
-    GUTI_t      *guti;        /* The GUTI assigned to the UE                     */
-    GUTI_t      *old_guti;    /* The old GUTI                                    */
-    int          n_tacs;      /* Number of consecutive tracking areas the UE is
+  imsi_t      *imsi;        /* The IMSI provided by the UE or the MME          */
+  imei_t      *imei;        /* The IMEI provided by the UE                     */
+  int          guti_is_new; /* New GUTI indicator                              */
+  GUTI_t      *guti;        /* The GUTI assigned to the UE                     */
+  GUTI_t      *old_guti;    /* The old GUTI                                    */
+  int          n_tacs;      /* Number of consecutive tracking areas the UE is
                                * registered to                                   */
-    tac_t       tac;          /* Code of the first tracking area the UE is
+  tac_t       tac;          /* Code of the first tracking area the UE is
                                * registered to                                   */
 
-    int         ksi;          /* Security key set identifier provided by the UE  */
-    int         eea;          /* EPS encryption algorithms supported by the UE   */
-    int         eia;          /* EPS integrity algorithms supported by the UE    */
-    int         ucs2;         /* UCS2 Alphabet*/
-    int         uea;          /* UMTS encryption algorithms supported by the UE  */
-    int         uia;          /* UMTS integrity algorithms supported by the UE   */
-    int         gea;          /* GPRS encryption algorithms supported by the UE  */
-    int         umts_present; /* For encoding ue network capabilities (variable size)*/
-    int         gprs_present; /* For encoding ue network capabilities (variable size)*/
+  int         ksi;          /* Security key set identifier provided by the UE  */
+  int         eea;          /* EPS encryption algorithms supported by the UE   */
+  int         eia;          /* EPS integrity algorithms supported by the UE    */
+  int         ucs2;         /* UCS2 Alphabet*/
+  int         uea;          /* UMTS encryption algorithms supported by the UE  */
+  int         uia;          /* UMTS integrity algorithms supported by the UE   */
+  int         gea;          /* GPRS encryption algorithms supported by the UE  */
+  int         umts_present; /* For encoding ue network capabilities (variable size)*/
+  int         gprs_present; /* For encoding ue network capabilities (variable size)*/
 
-    auth_vector_t vector;/* EPS authentication vector                            */
-    emm_security_context_t *security;    /* Current EPS NAS security context     */
-    OctetString esm_msg;      /* ESM message contained within the initial request*/
-    int         emm_cause;    /* EMM failure cause code                          */
+  auth_vector_t vector;/* EPS authentication vector                            */
+  emm_security_context_t *security;    /* Current EPS NAS security context     */
+  OctetString esm_msg;      /* ESM message contained within the initial request*/
+  int         emm_cause;    /* EMM failure cause code                          */
 
-    emm_fsm_state_t    _emm_fsm_status;
+  emm_fsm_state_t    _emm_fsm_status;
 
-    esm_data_context_t esm_data_ctx;
+  esm_data_context_t esm_data_ctx;
 } emm_data_context_t;
 
 /*
@@ -400,29 +400,29 @@ typedef struct emm_data_context_s {
  * -------------------------
  */
 typedef struct {
-    /*
-     * MME configuration
-     * -----------------
-     */
-    mme_api_emm_config_t conf;
-    /*
-     * EMM contexts
-     * ------------
-     */
+  /*
+   * MME configuration
+   * -----------------
+   */
+  mme_api_emm_config_t conf;
+  /*
+   * EMM contexts
+   * ------------
+   */
 # if defined(EPC_BUILD)
-    /* Use a tree for ue data context within MME */
-    RB_HEAD(emm_data_context_map, emm_data_context_s) ctx_map;
+  /* Use a tree for ue data context within MME */
+  RB_HEAD(emm_data_context_map, emm_data_context_s) ctx_map;
 # else
 #   define EMM_DATA_NB_UE_MAX   (MME_API_NB_UE_MAX + 1)
-    emm_data_context_t *ctx [EMM_DATA_NB_UE_MAX];
+  emm_data_context_t *ctx [EMM_DATA_NB_UE_MAX];
 # endif
 } emm_data_t;
 
 struct emm_data_context_s *emm_data_context_get(
-    emm_data_t *_emm_data, unsigned int _ueid);
+  emm_data_t *_emm_data, unsigned int _ueid);
 
 struct emm_data_context_s *emm_data_context_remove(
-    emm_data_t *_emm_data, struct emm_data_context_s *elm);
+  emm_data_t *_emm_data, struct emm_data_context_s *elm);
 
 void emm_data_context_add(emm_data_t *emm_data, struct emm_data_context_s *elm);
 

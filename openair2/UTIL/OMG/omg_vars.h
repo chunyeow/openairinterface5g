@@ -29,8 +29,8 @@
 
 /**
  * \file omg_vars.h
- * \brief Global variables 
- * 
+ * \brief Global variables
+ *
  */
 
 #ifndef __OMG_VARS_H__

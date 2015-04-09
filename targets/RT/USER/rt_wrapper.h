@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-    included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+    included in this distribution in the file called "COPYING". If not,
     see <http://www.gnu.org/licenses/>.
 
    Contact Information
    OpenAirInterface Admin: openair_admin@eurecom.fr
    OpenAirInterface Tech : openair_tech@eurecom.fr
    OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
    Address      : Eurecom, Compus SophiaTech 450, route des chappes, 06451 Biot, France.
 
  *******************************************************************************/
@@ -64,31 +64,31 @@ void check_clock(void);
 
 #define gettid() syscall(__NR_gettid)
 
-#define SCHED_DEADLINE	6
+#define SCHED_DEADLINE  6
 
- /* XXX use the proper syscall numbers */
+/* XXX use the proper syscall numbers */
 #ifdef __x86_64__
- #define __NR_sched_setattr		314 
- #define __NR_sched_getattr		315
+#define __NR_sched_setattr   314
+#define __NR_sched_getattr   315
 #endif
 
 #ifdef __i386__
- #define __NR_sched_setattr		351
- #define __NR_sched_getattr		352
+#define __NR_sched_setattr   351
+#define __NR_sched_getattr   352
 #endif
 
 struct sched_attr {
   __u32 size;
-  
+
   __u32 sched_policy;
   __u64 sched_flags;
-  
+
   /* SCHED_NORMAL, SCHED_BATCH */
   __s32 sched_nice;
-  
+
   /* SCHED_FIFO, SCHED_RR */
   __u32 sched_priority;
-  
+
   /* SCHED_DEADLINE (nsec) */
   __u64 sched_runtime;
   __u64 sched_deadline;
@@ -99,7 +99,7 @@ int sched_setattr(pid_t pid, const struct sched_attr *attr, unsigned int flags);
 
 int sched_getattr(pid_t pid,struct sched_attr *attr,unsigned int size, unsigned int flags);
 
-#endif 
+#endif
 
 #else
 #include <rtai_hal.h>

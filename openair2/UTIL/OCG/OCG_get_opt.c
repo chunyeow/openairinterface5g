@@ -51,24 +51,27 @@
 
 char filename[FILENAME_LENGTH_MAX];
 
-int get_opt(int argc, char *argv[]) {
-	char opts;
+int get_opt(int argc, char *argv[])
+{
+  char opts;
 
-	while((opts = getopt(argc, argv, "f:h")) != -1) {
+  while((opts = getopt(argc, argv, "f:h")) != -1) {
 
-		switch (opts) {
-			case 'f' :
-				strcpy(filename, optarg);
-				LOG_D(OCG, "User specified configuration file is \"%s\"\n", filename);
-				return MODULE_OK;
-			case 'h' : 
-				LOG_I(OCG, "OCG command :	OCG -f \"filename.xml\"\n");
-				return GET_HELP;
-			default : 
-				LOG_E(OCG, "OCG command :	OCG -f \"filename.xml\"\n");
-				return GET_HELP;
-		}
-	}
+    switch (opts) {
+    case 'f' :
+      strcpy(filename, optarg);
+      LOG_D(OCG, "User specified configuration file is \"%s\"\n", filename);
+      return MODULE_OK;
 
-	return NO_FILE;
+    case 'h' :
+      LOG_I(OCG, "OCG command :	OCG -f \"filename.xml\"\n");
+      return GET_HELP;
+
+    default :
+      LOG_E(OCG, "OCG command :	OCG -f \"filename.xml\"\n");
+      return GET_HELP;
+    }
+  }
+
+  return NO_FILE;
 }

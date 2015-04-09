@@ -48,8 +48,8 @@ extern "C" {
 /** @defgroup _save_XML Save XML
  *  @ingroup _fn
  *  @brief Save the XML configuration file in dst_dir
- * @{*/ 
-	int save_XML(int demo_or_user, char src_file[FILENAME_LENGTH_MAX + DIR_LENGTH_MAX], char dst_dir[DIR_LENGTH_MAX], char filename[FILENAME_LENGTH_MAX]);
+ * @{*/
+int save_XML(int demo_or_user, char src_file[FILENAME_LENGTH_MAX + DIR_LENGTH_MAX], char dst_dir[DIR_LENGTH_MAX], char filename[FILENAME_LENGTH_MAX]);
 /* @}*/
 
 #ifdef __cplusplus

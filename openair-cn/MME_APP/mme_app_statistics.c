@@ -39,17 +39,17 @@
 int
 mme_app_statistics_display(void)
 {
-    fprintf(stdout, "================== Statistics ==================\n");
-    fprintf(stdout, "        |   Global   | Since last display |\n");
-    fprintf(stdout, "UE      | %10u |     %10u     |\n",
-            mme_app_desc.mme_ue_contexts.nb_ue_managed,
-            mme_app_desc.mme_ue_contexts.nb_ue_since_last_stat);
-    fprintf(stdout, "Bearers | %10u |     %10u     |\n",
-            mme_app_desc.mme_ue_contexts.nb_bearers_managed,
-            mme_app_desc.mme_ue_contexts.nb_bearers_since_last_stat);
+  fprintf(stdout, "================== Statistics ==================\n");
+  fprintf(stdout, "        |   Global   | Since last display |\n");
+  fprintf(stdout, "UE      | %10u |     %10u     |\n",
+          mme_app_desc.mme_ue_contexts.nb_ue_managed,
+          mme_app_desc.mme_ue_contexts.nb_ue_since_last_stat);
+  fprintf(stdout, "Bearers | %10u |     %10u     |\n",
+          mme_app_desc.mme_ue_contexts.nb_bearers_managed,
+          mme_app_desc.mme_ue_contexts.nb_bearers_since_last_stat);
 
-    mme_app_desc.mme_ue_contexts.nb_ue_since_last_stat = 0;
-    mme_app_desc.mme_ue_contexts.nb_bearers_since_last_stat = 0;
+  mme_app_desc.mme_ue_contexts.nb_ue_since_last_stat = 0;
+  mme_app_desc.mme_ue_contexts.nb_bearers_since_last_stat = 0;
 
-    return 0;
+  return 0;
 }

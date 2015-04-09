@@ -4,17 +4,17 @@
  * Authors: OPENAIR3 <openair_tech@eurecom.fr>
  *
  * Copyright 2010-2011 EURECOM (Sophia-Antipolis, FRANCE)
- * 
- * Proxy Mobile IPv6 (or PMIPv6, or PMIP) is a network-based mobility 
- * management protocol standardized by IETF. It is a protocol for building 
- * a common and access technology independent of mobile core networks, 
- * accommodating various access technologies such as WiMAX, 3GPP, 3GPP2 
- * and WLAN based access architectures. Proxy Mobile IPv6 is the only 
+ *
+ * Proxy Mobile IPv6 (or PMIPv6, or PMIP) is a network-based mobility
+ * management protocol standardized by IETF. It is a protocol for building
+ * a common and access technology independent of mobile core networks,
+ * accommodating various access technologies such as WiMAX, 3GPP, 3GPP2
+ * and WLAN based access architectures. Proxy Mobile IPv6 is the only
  * network-based mobility management protocol standardized by IETF.
- * 
+ *
  * PMIP Proxy Mobile IPv6 for Linux has been built above MIPL free software;
  * which it involves that it is under the same terms of GNU General Public
- * License version 2. See MIPL terms condition if you need more details. 
+ * License version 2. See MIPL terms condition if you need more details.
  */
 /*! \file pmip_tunnel.h
 * \brief
@@ -35,34 +35,34 @@
 #ifndef __PMIP_TUNNEL_H__
 #    define __PMIP_TUNNEL_H__
 //-----------------------------------------------------------------------------
-#	ifdef PMIP_TUNNEL_C
-#		define private_pmip_tunnel(x) x
-#		define protected_pmip_tunnel(x) x
-#		define public_pmip_tunnel(x) x
-#	else
-#		ifdef PMIP
-#			define private_pmip_tunnel(x)
-#			define protected_pmip_tunnel(x) extern x
-#			define public_pmip_tunnel(x) extern x
-#		else
-#			define private_pmip_tunnel(x)
-#			define protected_pmip_tunnel(x)
-#			define public_pmip_tunnel(x) extern x
-#		endif
-#	endif
+# ifdef PMIP_TUNNEL_C
+#   define private_pmip_tunnel(x) x
+#   define protected_pmip_tunnel(x) x
+#   define public_pmip_tunnel(x) x
+# else
+#   ifdef PMIP
+#     define private_pmip_tunnel(x)
+#     define protected_pmip_tunnel(x) extern x
+#     define public_pmip_tunnel(x) extern x
+#   else
+#     define private_pmip_tunnel(x)
+#     define protected_pmip_tunnel(x)
+#     define public_pmip_tunnel(x) extern x
+#   endif
+# endif
 //-----------------------------------------------------------------------------
 #   include "tqueue.h"
 #   include "pmip_consts.h"
 //-----------------------------------------------------------------------------
-#	include <netinet/ip6.h>
+# include <netinet/ip6.h>
 //-----------------------------------------------------------------------------
 /*! \struct  mnid_hnp_t
 * \brief Data structure to store the association of a network prefix and a mobile interface identifier.
 */typedef struct tunnel_timer {
-    struct timespec         lifetime;   /*!< \brief Delay for the tunnel before being deleted */
-    struct tq_elem          tqe;        /*!< \brief Timer queue entry for expire*/
-    int                     tunnel;     /*!< \brief Tunnel id*/
-    struct in6_addr         remote;     /*!< \brief Remote Address of the tunnel*/
+  struct timespec         lifetime;   /*!< \brief Delay for the tunnel before being deleted */
+  struct tq_elem          tqe;        /*!< \brief Timer queue entry for expire*/
+  int                     tunnel;     /*!< \brief Tunnel id*/
+  struct in6_addr         remote;     /*!< \brief Remote Address of the tunnel*/
 } __attribute__((__packed__))tunnel_timer_t;
 //-----------------------------------------------------------------------------
 /*! \var tunnel_timer_t g_tunnel_timer_table

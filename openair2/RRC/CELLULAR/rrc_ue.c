@@ -403,7 +403,7 @@ RRC_UE_I_UE_ID_MSG (integer value)
 static void
 Point_0 (void)
 {
-/*#0 */
+  /*#0 */
   _boolean (&Var__ThisIsTheEnd__157, 1);
   CLEAR_SIGNAL (_SigPre_0, __Sig_sc_in_Connection_Management_DOT_Connected_DOT_CELL_DCH_118);
   CLEAR_SIGNAL (_SigPre_1, __Sig_sc_in_Connection_Management_DOT_Connected_DOT_CELL_DCH_118);
@@ -417,15 +417,17 @@ Point_0 (void)
 static void
 Point_1 (void)
 {
-/*#1 AutoPauseOn */
+  /*#1 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_NAS_CONN_RELEASE_REQ_98)) {
     if ((IS_SIGNAL (_SigPre_1, __Sig_sc_in_Connection_Management_DOT_Connected_DOT_CELL_FACH_119) || IS_SIGNAL (_SigPre_1, __Sig_sc_in_Connection_Management_DOT_Connected_DOT_CELL_DCH_118))) {
       encode_message (&Var_msg_150, RRC_CONN_RELEASE);
       EMIT (_Sig, __Out_O_SEND_DCCH_AM_107);
+
       if (!(IS_GUARD (9)))
         _integer (&Out_O_SEND_DCCH_AM_107, Var_msg_150);
       else
         _integer (&Out_O_SEND_DCCH_AM_107, INTEGER_COMBINE (Out_O_SEND_DCCH_AM_107, Var_msg_150));
+
       SET_GUARD (9);
       _On[0] |= 0x100000;       /* On: #20 */
       _On[0] &= ~0x2;           /* Off: #1 */
@@ -437,16 +439,18 @@ Point_1 (void)
 static void
 Point_2 (void)
 {
-/*#2 AutoPauseOn */
+  /*#2 AutoPauseOn */
   if ((IS_SIGNAL (_Sig, __In_I_RLC_Success_93) || IS_SIGNAL (_Sig, __In_I_RLC_Failure_92))) {
     release_radio_resources ();
     clear_variables_rel ();
     EMIT (_Sig, __Sig_Go_Idle_120);
     EMIT (_Sig, __Out_O_UpdateSI_852_115);
+
     if (!(IS_GUARD (1))) {
       RRC_UE_O_O_UpdateSI_852 ();
       SET_GUARD (1);
     }
+
     EMIT (_Sig, __Sig_Conn_Setup_End_136);
     _On[0] |= 0x1000000;        /* On: #24 */
     _On[0] &= ~0x4;             /* Off: #2 */
@@ -456,14 +460,14 @@ Point_2 (void)
 static void
 Point_3 (void)
 {
-/*#3 AutoPauseOn */
+  /*#3 AutoPauseOn */
   EMIT (_Sig, __Sig_sc_in_Connection_Management_DOT_Idle_117);
 }
 
 static void
 Point_4 (void)
 {
-/*#4 AutoPauseOn */
+  /*#4 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_NAS_CONN_ESTABLISHMENT_REQ_97)) {
     _On[0] |= 0x10000000;       /* On: #28 */
     _On[0] &= ~0x10;            /* Off: #4 */
@@ -473,7 +477,7 @@ Point_4 (void)
 static void
 Point_5 (void)
 {
-/*#5 AutoPauseOn */
+  /*#5 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_WaitTimerExpired_101)) {
     EMIT (_Sig, __Sig_inc_V300_131);
     _On[0] |= 0x10000;          /* On: #16 */
@@ -484,13 +488,15 @@ Point_5 (void)
 static void
 Point_6 (void)
 {
-/*#6 */
+  /*#6 */
   if (IS_SIGNAL (_Sig, __In_I_RRC_CONNECTION_REJECT_95)) {
     EMIT (_Sig, __Out_O_stopT300_113);
+
     if (!(IS_GUARD (3))) {
       RRC_UE_O_O_stopT300 ();
       SET_GUARD (3);
     }
+
     if (((In_I_Wait_Time_86 > 0) && (Sig_V300_132[Sig_V300_132_Pre1] <= N300))) {
       if (IS_SIGNAL (_Sig, __In_I_IE_Freq_Info_85)) {
         EMIT (_Sig, __Sig_sc_go_18_ConnSU_fail2_145);
@@ -508,16 +514,21 @@ Point_6 (void)
   } else {
     if (IS_SIGNAL (_Sig, __In_I_RRC_CONNECTION_SETUP_94)) {
       EMIT (_Sig, __Out_O_stopT300_113);
+
       if (!(IS_GUARD (3))) {
         RRC_UE_O_O_stopT300 ();
         SET_GUARD (3);
       }
+
       _Pause[0] |= 0x80;        /* PauseOn: #7 */
+
       if (_eq_integer (In_I_IE_RRC_State_84, CELL_FACH)) {
         Select_PRACH ();
         Select_Secondary_CCPCH ();
       }
+
       EMIT (_Sig, __Out_O_PHY_SYNCH_104);
+
       if (!(IS_GUARD (12))) {
         RRC_UE_O_O_PHY_SYNCH ();
         SET_GUARD (12);
@@ -531,9 +542,10 @@ Point_6 (void)
 static void
 Point_7 (void)
 {
-/*#7 AutoPauseOn */
+  /*#7 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_CPHY_SYNCH_Failure_89)) {
     _On[0] &= ~0x80;            /* Off: #7 */
+
     if ((Sig_V300_132[Sig_V300_132_Pre1] <= N300)) {
       EMIT (_Sig, __Sig_inc_V300_131);
       _On[0] |= 0x10000;        /* On: #16 */
@@ -545,18 +557,23 @@ Point_7 (void)
     if (IS_SIGNAL (_Sig, __In_I_CPHY_SYNCH_IND_90)) {
       _On[0] &= ~0x80;          /* Off: #7 */
       _Pause[0] |= 0x8000;      /* PauseOn: #15 */
+
       if (_eq_integer (In_I_IE_RRC_State_84, CELL_FACH)) {
         EMIT (_Sig, __Sig_Go_state_CELL_FACH_122);
       }
+
       if (_eq_integer (In_I_IE_RRC_State_84, CELL_DCH)) {
         EMIT (_Sig, __Sig_Go_state_CELL_DCH_121);
       }
+
       encode_message (&Var_msg_143, RRC_CONN_SETUP_COMPLETE);
       EMIT (_Sig, __Out_O_SEND_DCCH_AM_107);
+
       if (!(IS_GUARD (9)))
         _integer (&Out_O_SEND_DCCH_AM_107, Var_msg_143);
       else
         _integer (&Out_O_SEND_DCCH_AM_107, INTEGER_COMBINE (Out_O_SEND_DCCH_AM_107, Var_msg_143));
+
       SET_GUARD (9);
       _On[0] |= 0x100000;       /* On: #20 */
     }
@@ -566,7 +583,7 @@ Point_7 (void)
 static void
 Point_8 (void)
 {
-/*#8 AutoPauseOn */
+  /*#8 AutoPauseOn */
   if ((IS_SIGNAL (_Sig, __Sig_Go_state_CELL_DCH_121) || IS_SIGNAL (_Sig, __Sig_Go_state_CELL_FACH_122))) {
     CLEAR_SIGNAL (_Sig, __Sig_sc_go_5_CELL_DCH_138);
     _On[0] |= 0x200;            /* On: #9 */
@@ -580,7 +597,7 @@ Point_8 (void)
 static void
 Point_9 (void)
 {
-/*#9 AutoPauseOn */
+  /*#9 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __Sig_Go_state_CELL_FACH_122)) {
     SET_GUARD (0);
     _On[0] &= ~0x200;           /* Off: #9 */
@@ -591,10 +608,12 @@ Point_9 (void)
       _On[0] &= ~0x200;         /* Off: #9 */
     }
   }
+
   if (IS_GUARD (0)) {
     if (IS_SIGNAL (_Sig, __Sig_sc_go_5_CELL_DCH_138)) {
       EMIT (_SigPre_0, __Sig_sc_in_Connection_Management_DOT_Connected_DOT_CELL_DCH_118);
       _Pause[0] |= 0xc00;       /* PauseOn: #10 #11 */
+
       if (IS_SIGNAL (_Sig, __In_I_Go_CELL_DCH_102)) {
         Set_State (CELL_DCH, 1);
       } else {
@@ -603,6 +622,7 @@ Point_9 (void)
     } else {
       EMIT (_SigPre_0, __Sig_sc_in_Connection_Management_DOT_Connected_DOT_CELL_FACH_119);
       _Pause[0] |= 0x3000;      /* PauseOn: #12 #13 */
+
       if (IS_SIGNAL (_Sig, __In_I_Go_CELL_FACH_103)) {
         Set_State (CELL_FACH, 1);
       } else {
@@ -615,14 +635,14 @@ Point_9 (void)
 static void
 Point_10 (void)
 {
-/*#10 AutoPauseOn */
+  /*#10 AutoPauseOn */
   EMIT (_SigPre_0, __Sig_sc_in_Connection_Management_DOT_Connected_DOT_CELL_DCH_118);
 }
 
 static void
 Point_11 (void)
 {
-/*#11 AutoPauseOn */
+  /*#11 AutoPauseOn */
   if ((IS_SIGNAL (_Sig, __Sig_Go_state_CELL_FACH_122) || IS_SIGNAL (_Sig, __In_I_Go_CELL_FACH_103))) {
     _On[0] |= 0x4000;           /* On: #14 */
     _On[0] &= ~0x800;           /* Off: #11 */
@@ -634,14 +654,14 @@ Point_11 (void)
 static void
 Point_12 (void)
 {
-/*#12 AutoPauseOn */
+  /*#12 AutoPauseOn */
   EMIT (_SigPre_0, __Sig_sc_in_Connection_Management_DOT_Connected_DOT_CELL_FACH_119);
 }
 
 static void
 Point_13 (void)
 {
-/*#13 AutoPauseOn */
+  /*#13 AutoPauseOn */
   if ((IS_SIGNAL (_Sig, __Sig_Go_state_CELL_DCH_121) || IS_SIGNAL (_Sig, __In_I_Go_CELL_DCH_102))) {
     EMIT (_Sig, __Sig_sc_go_5_CELL_DCH_138);
     _On[0] |= 0x4000;           /* On: #14 */
@@ -654,10 +674,11 @@ Point_13 (void)
 static void
 Point_14 (void)
 {
-/*#14 */
+  /*#14 */
   if (IS_SIGNAL (_Sig, __Sig_sc_go_5_CELL_DCH_138)) {
     EMIT (_SigPre_0, __Sig_sc_in_Connection_Management_DOT_Connected_DOT_CELL_DCH_118);
     _Pause[0] |= 0xc00;         /* PauseOn: #10 #11 */
+
     if (IS_SIGNAL (_Sig, __In_I_Go_CELL_DCH_102)) {
       Set_State (CELL_DCH, 1);
     } else {
@@ -666,6 +687,7 @@ Point_14 (void)
   } else {
     EMIT (_SigPre_0, __Sig_sc_in_Connection_Management_DOT_Connected_DOT_CELL_FACH_119);
     _Pause[0] |= 0x3000;        /* PauseOn: #12 #13 */
+
     if (IS_SIGNAL (_Sig, __In_I_Go_CELL_FACH_103)) {
       Set_State (CELL_FACH, 1);
     } else {
@@ -677,7 +699,7 @@ Point_14 (void)
 static void
 Point_15 (void)
 {
-/*#15 AutoPauseOn */
+  /*#15 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_RLC_Failure_92)) {
     EMIT (_Sig, __Sig_Go_Idle_120);
     EMIT (_Sig, __Sig_sc_go_18_ConnSU_fail2_145);
@@ -686,10 +708,12 @@ Point_15 (void)
   } else {
     if (IS_SIGNAL (_Sig, __In_I_RLC_Success_93)) {
       EMIT (_Sig, __Out_O_NAS_CONN_ESTAB_RESP_109);
+
       if (!(IS_GUARD (7)))
         _integer (&Out_O_NAS_CONN_ESTAB_RESP_109, SUCCESS);
       else
         _integer (&Out_O_NAS_CONN_ESTAB_RESP_109, INTEGER_COMBINE (Out_O_NAS_CONN_ESTAB_RESP_109, SUCCESS));
+
       SET_GUARD (7);
       ue_clear_transaction (RRC_CONN_SETUP);
       EMIT (_Sig, __Sig_Conn_Setup_End_136);
@@ -702,19 +726,23 @@ Point_15 (void)
 static void
 Point_16 (void)
 {
-/*#16 */
+  /*#16 */
   if (IS_SIGNAL (_Sig, __Sig_sc_go_18_ConnSU_fail2_145)) {
     EMIT (_Sig, __Sig_Conn_Setup_End_136);
     EMIT (_Sig, __Out_O_UpdateSI_852_115);
+
     if (!(IS_GUARD (1))) {
       RRC_UE_O_O_UpdateSI_852 ();
       SET_GUARD (1);
     }
+
     EMIT (_Sig, __Out_O_NAS_CONN_ESTAB_RESP_109);
+
     if (!(IS_GUARD (7)))
       _integer (&Out_O_NAS_CONN_ESTAB_RESP_109, FAILURE);
     else
       _integer (&Out_O_NAS_CONN_ESTAB_RESP_109, INTEGER_COMBINE (Out_O_NAS_CONN_ESTAB_RESP_109, FAILURE));
+
     SET_GUARD (7);
     _On[1] |= 0x200;            /* On: #41 */
   } else {
@@ -725,7 +753,7 @@ Point_16 (void)
 static void
 Point_17 (void)
 {
-/*#17 */
+  /*#17 */
   if (IS_SIGNAL (_Sig, __In_I_T308_TimeOut_100)) {
     if ((Sig_V308_135[Sig_V308_135_Pre1] > Sig_max_value_154)) {
       EMIT (_Sig, __Sig_Conn_Rel_Compl_Stop_128);
@@ -742,7 +770,7 @@ Point_17 (void)
 static void
 Point_18 (void)
 {
-/*#18 AutoPauseOn */
+  /*#18 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __Sig_Conn_Rel_Compl_Repeat_129)) {
     EMIT (_Sig, __Sig_sc_go_41_ConnRel_send_146);
     _On[0] |= 0x400000;         /* On: #22 */
@@ -759,9 +787,10 @@ Point_18 (void)
 static void
 Point_19 (void)
 {
-/*#19 AutoPauseOn */
+  /*#19 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_RRC_CONNECTION_RELEASE_96)) {
     _On[0] &= ~0x80000;         /* Off: #19 */
+
     if (IS_SIGNAL (_SigPre_1, __Sig_sc_in_Connection_Management_DOT_Connected_DOT_CELL_FACH_119)) {
       if (IS_SIGNAL (_Sig, __In_I_rcved_on_CCCH_88)) {
         EMIT (_Sig, __Sig_sc_go_40_ConnRel_proc_148);
@@ -770,10 +799,12 @@ Point_19 (void)
         if (IS_SIGNAL (_Sig, __In_I_rcved_on_DCCH_87)) {
           encode_message (&Var_msg_147, RRC_CONN_REL_COMPLETE);
           EMIT (_Sig, __Out_O_SEND_DCCH_AM_107);
+
           if (!(IS_GUARD (9)))
             _integer (&Out_O_SEND_DCCH_AM_107, Var_msg_147);
           else
             _integer (&Out_O_SEND_DCCH_AM_107, INTEGER_COMBINE (Out_O_SEND_DCCH_AM_107, Var_msg_147));
+
           SET_GUARD (9);
           _On[0] |= 0x100000;   /* On: #20 */
           _Pause[0] |= 0x200000;        /* PauseOn: #21 */
@@ -798,14 +829,14 @@ Point_19 (void)
 static void
 Point_20 (void)
 {
-/*#20 */
+  /*#20 */
   RRC_UE_O_O_SEND_DCCH_AM (Out_O_SEND_DCCH_AM_107);
 }
 
 static void
 Point_21 (void)
 {
-/*#21 AutoPauseOn */
+  /*#21 AutoPauseOn */
   if ((IS_SIGNAL (_Sig, __In_I_RLC_Success_93) || IS_SIGNAL (_Sig, __In_I_RLC_Failure_92))) {
     EMIT (_Sig, __Sig_sc_go_40_ConnRel_proc_148);
     _On[0] |= 0x400000;         /* On: #22 */
@@ -816,21 +847,25 @@ Point_21 (void)
 static void
 Point_22 (void)
 {
-/*#22 */
+  /*#22 */
   if (IS_SIGNAL (_Sig, __Sig_sc_go_40_ConnRel_proc_148)) {
     release_radio_resources ();
     EMIT (_Sig, __Out_O_NAS_CONN_RELEASE_IND_110);
+
     if (!(IS_GUARD (6))) {
       RRC_UE_O_O_NAS_CONN_RELEASE_IND ();
       SET_GUARD (6);
     }
+
     clear_variables_rel ();
     EMIT (_Sig, __Sig_Go_Idle_120);
     EMIT (_Sig, __Out_O_UpdateSI_852_115);
+
     if (!(IS_GUARD (1))) {
       RRC_UE_O_O_UpdateSI_852 ();
       SET_GUARD (1);
     }
+
     EMIT (_Sig, __Sig_Conn_Setup_End_136);
     _On[0] |= 0x4000000;        /* On: #26 */
   } else {
@@ -841,20 +876,24 @@ Point_22 (void)
 static void
 Point_23 (void)
 {
-/*#23 AutoPauseOn */
+  /*#23 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __In_I_CPHY_CONNECTION_LOSS_91)) {
     release_radio_resources ();
     EMIT (_Sig, __Out_O_NAS_CONN_LOSS_IND_111);
+
     if (!(IS_GUARD (5))) {
       RRC_UE_O_O_NAS_CONN_LOSS_IND ();
       SET_GUARD (5);
     }
+
     clear_variables_rel ();
     EMIT (_Sig, __Out_O_UpdateSI_852_115);
+
     if (!(IS_GUARD (1))) {
       RRC_UE_O_O_UpdateSI_852 ();
       SET_GUARD (1);
     }
+
     EMIT (_Sig, __Sig_Conn_Setup_End_136);
     EMIT (_Sig, __Sig_Go_Idle_120);
     _On[0] |= 0x2000000;        /* On: #25 */
@@ -865,7 +904,7 @@ Point_23 (void)
 static void
 Point_24 (void)
 {
-/*#24 AutoPauseOn */
+  /*#24 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __Sig_Conn_Setup_End_136)) {
     _On[0] &= ~0x1000000;       /* Off: #24 */
     _Pause[0] |= 0x2;           /* PauseOn: #1 */
@@ -875,7 +914,7 @@ Point_24 (void)
 static void
 Point_25 (void)
 {
-/*#25 AutoPauseOn */
+  /*#25 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __Sig_Conn_Setup_End_136)) {
     _On[0] &= ~0x2000000;       /* Off: #25 */
     _Pause[0] |= 0x800000;      /* PauseOn: #23 */
@@ -885,7 +924,7 @@ Point_25 (void)
 static void
 Point_26 (void)
 {
-/*#26 AutoPauseOn */
+  /*#26 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __Sig_Conn_Setup_End_136)) {
     _On[0] |= 0x40000000;       /* On: #30 */
     _On[0] &= ~0x4000000;       /* Off: #26 */
@@ -895,7 +934,7 @@ Point_26 (void)
 static void
 Point_27 (void)
 {
-/*#27 AutoPauseOn */
+  /*#27 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __Sig_Go_Idle_120)) {
     Set_State (IDLE, 0);
     EMIT (_Sig, __Sig_sc_in_Connection_Management_DOT_Idle_117);
@@ -909,13 +948,15 @@ Point_27 (void)
 static void
 Point_28 (void)
 {
-/*#28 AutoPauseOn */
+  /*#28 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __Sig_sc_in_Connection_Management_DOT_Idle_117)) {
     EMIT (_Sig, __Out_O_Setup_FACHRACH_105);
+
     if (!(IS_GUARD (11))) {
       RRC_UE_O_O_Setup_FACHRACH ();
       SET_GUARD (11);
     }
+
     encode_message (&Var_msg_142, RRC_CONN_REQ);
     EMIT (_Sig, __Sig_Waiting_Connection_124);
     EMIT (_Sig, __Sig_start_T300_130);
@@ -926,10 +967,12 @@ Point_28 (void)
   } else {
     if ((!IS_SIGNAL (_Sig, __Sig_sc_in_Connection_Management_DOT_Idle_117))) {
       EMIT (_Sig, __Out_O_NAS_CONN_ESTAB_RESP_109);
+
       if (!(IS_GUARD (7)))
         _integer (&Out_O_NAS_CONN_ESTAB_RESP_109, ALREADY_C);
       else
         _integer (&Out_O_NAS_CONN_ESTAB_RESP_109, INTEGER_COMBINE (Out_O_NAS_CONN_ESTAB_RESP_109, ALREADY_C));
+
       SET_GUARD (7);
       _On[1] |= 0x600;          /* On: #41 #42 */
       _On[0] &= ~0x10000000;    /* Off: #28 */
@@ -940,7 +983,7 @@ Point_28 (void)
 static void
 Point_29 (void)
 {
-/*#29 AutoPauseOn */
+  /*#29 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __Sig_Waiting_Connection_124)) {
     _On[1] |= 0x100;            /* On: #40 */
     _On[0] &= ~0x20000000;      /* Off: #29 */
@@ -951,19 +994,23 @@ Point_29 (void)
 static void
 Point_30 (void)
 {
-/*#30 */
+  /*#30 */
   if (IS_SIGNAL (_Sig, __Sig_sc_go_41_ConnRel_send_146)) {
     EMIT (_Sig, __Out_O_SEND_DCCH_UM_108);
+
     if (!(IS_GUARD (8)))
       _integer (&Out_O_SEND_DCCH_UM_108, Var_msg_147);
     else
       _integer (&Out_O_SEND_DCCH_UM_108, INTEGER_COMBINE (Out_O_SEND_DCCH_UM_108, Var_msg_147));
+
     SET_GUARD (8);
     EMIT (_Sig, __Out_O_startT308_114);
+
     if (!(IS_GUARD (2))) {
       RRC_UE_O_O_startT308 ();
       SET_GUARD (2);
     }
+
     RRC_UE_O_O_SEND_DCCH_UM (Out_O_SEND_DCCH_UM_108);
     _Pause[0] |= 0x40000;       /* PauseOn: #18 */
   } else {
@@ -974,7 +1021,7 @@ Point_30 (void)
 static void
 Point_31 (void)
 {
-/*#31 */
+  /*#31 */
   if (IS_SIGNAL (_Sig, __Sig_Conn_Setup_End_136)) {
     _On[1] |= 0x4;              /* On: #34 */
   } else {
@@ -985,7 +1032,7 @@ Point_31 (void)
 static void
 Point_32 (void)
 {
-/*#32 */
+  /*#32 */
   Sig_V308_135_Pre0 = Sig_V308_135_Pre1 ^ 1;
   _integer (&Sig_V308_135[Sig_V308_135_Pre0], (Sig_V308_135[Sig_V308_135_Pre1] + 1));
   EMIT (_Sig, __Sig_sc_go_14_Timer_started_156);
@@ -995,7 +1042,7 @@ Point_32 (void)
 static void
 Point_33 (void)
 {
-/*#33 AutoPauseOn */
+  /*#33 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __Sig_start_T308_133)) {
     Sig_V308_135_Pre0 = Sig_V308_135_Pre1 ^ 1;
     _integer (&Sig_V308_135[Sig_V308_135_Pre0], 1);
@@ -1009,7 +1056,7 @@ Point_33 (void)
 static void
 Point_34 (void)
 {
-/*#34 */
+  /*#34 */
   if (IS_SIGNAL (_Sig, __Sig_sc_go_14_Timer_started_156)) {
     _Pause[0] |= 0x20000;       /* PauseOn: #17 */
   } else {
@@ -1020,9 +1067,10 @@ Point_34 (void)
 static void
 Point_35 (void)
 {
-/*#35 AutoPauseOn */
+  /*#35 AutoPauseOn */
   if ((IS_SIGNAL (_Sig, __In_I_T300_TimeOut_99) || IS_SIGNAL (_Sig, __Sig_inc_V300_131))) {
     _On[1] &= ~0x8;             /* Off: #35 */
+
     if ((Sig_V300_132[Sig_V300_132_Pre1] > Sig_max_value_151)) {
       EMIT (_Sig, __Sig_Conn_Request_Stop_126);
       _On[1] |= 0x20;           /* On: #37 */
@@ -1044,7 +1092,7 @@ Point_35 (void)
 static void
 Point_36 (void)
 {
-/*#36 AutoPauseOn */
+  /*#36 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __Sig_start_T300_130)) {
     Sig_V300_132_Pre0 = Sig_V300_132_Pre1 ^ 1;
     _integer (&Sig_V300_132[Sig_V300_132_Pre0], 1);
@@ -1058,7 +1106,7 @@ Point_36 (void)
 static void
 Point_37 (void)
 {
-/*#37 */
+  /*#37 */
   if (IS_SIGNAL (_Sig, __Sig_sc_go_14_Timer_started_153)) {
     _Pause[1] |= 0x8;           /* PauseOn: #35 */
   } else {
@@ -1069,7 +1117,7 @@ Point_37 (void)
 static void
 Point_38 (void)
 {
-/*#38 AutoPauseOn */
+  /*#38 AutoPauseOn */
   if (IS_SIGNAL (_Sig, __Sig_Conn_Request_Repeat_127)) {
     EMIT (_Sig, __Sig_sc_go_24_ConnReq_sent_141);
     _On[1] |= 0x400;            /* On: #42 */
@@ -1090,13 +1138,15 @@ Point_38 (void)
 static void
 Point_39 (void)
 {
-/*#39 */
+  /*#39 */
   if (IS_SIGNAL (_Sig, __Sig_Conn_Request_Stop_126)) {
     EMIT (_Sig, __Out_O_NAS_CONN_ESTAB_RESP_109);
+
     if (!(IS_GUARD (7)))
       _integer (&Out_O_NAS_CONN_ESTAB_RESP_109, FAILURE);
     else
       _integer (&Out_O_NAS_CONN_ESTAB_RESP_109, INTEGER_COMBINE (Out_O_NAS_CONN_ESTAB_RESP_109, FAILURE));
+
     SET_GUARD (7);
     _On[1] |= 0x200;            /* On: #41 */
   } else {
@@ -1107,7 +1157,7 @@ Point_39 (void)
 static void
 Point_40 (void)
 {
-/*#40 AutoPauseOn */
+  /*#40 AutoPauseOn */
   if ((IS_SIGNAL (_Sig, __Sig_Conn_Setup_End_136) || IS_SIGNAL (_Sig, __Sig_Conn_Request_Stop_126))) {
     _On[1] &= ~0x100;           /* Off: #40 */
     _Pause[0] |= 0x20000000;    /* PauseOn: #29 */
@@ -1119,26 +1169,30 @@ Point_40 (void)
 static void
 Point_41 (void)
 {
-/*#41 */
+  /*#41 */
   RRC_UE_O_O_NAS_CONN_ESTAB_RESP (Out_O_NAS_CONN_ESTAB_RESP_109);
 }
 
 static void
 Point_42 (void)
 {
-/*#42 */
+  /*#42 */
   if (IS_SIGNAL (_Sig, __Sig_sc_go_24_ConnReq_sent_141)) {
     EMIT (_Sig, __Out_O_SEND_CCCH_106);
+
     if (!(IS_GUARD (10)))
       _integer (&Out_O_SEND_CCCH_106, Var_msg_142);
     else
       _integer (&Out_O_SEND_CCCH_106, INTEGER_COMBINE (Out_O_SEND_CCCH_106, Var_msg_142));
+
     SET_GUARD (10);
     EMIT (_Sig, __Out_O_startT300_112);
+
     if (!(IS_GUARD (4))) {
       RRC_UE_O_O_startT300 ();
       SET_GUARD (4);
     }
+
     RRC_UE_O_O_SEND_CCCH (Out_O_SEND_CCCH_106);
     _Pause[1] |= 0x40;          /* PauseOn: #38 */
   } else {
@@ -1153,140 +1207,185 @@ RRC_UE (void)
   unsigned int   *Points;
 
   Points = _On;
+
   if (*Points) {
     if (*Points & 0x1) {
       Point_0 ();
     }
+
     if (*Points & 0x2) {
       Point_1 ();
     }
+
     if (*Points & 0x4) {
       Point_2 ();
     }
+
     if (*Points & 0x8) {
       Point_3 ();
     }
+
     if (*Points & 0x10) {
       Point_4 ();
     }
+
     if (*Points & 0x20) {
       Point_5 ();
     }
+
     if (*Points & 0x40) {
       Point_6 ();
     }
+
     if (*Points & 0x80) {
       Point_7 ();
     }
+
     if (*Points & 0x100) {
       Point_8 ();
     }
+
     if (*Points & 0x200) {
       Point_9 ();
     }
+
     if (*Points & 0x400) {
       Point_10 ();
     }
+
     if (*Points & 0x800) {
       Point_11 ();
     }
+
     if (*Points & 0x1000) {
       Point_12 ();
     }
+
     if (*Points & 0x2000) {
       Point_13 ();
     }
+
     if (*Points & 0x4000) {
       Point_14 ();
     }
+
     if (*Points & 0x8000) {
       Point_15 ();
     }
+
     if (*Points & 0x10000) {
       Point_16 ();
     }
+
     if (*Points & 0x20000) {
       Point_17 ();
     }
+
     if (*Points & 0x40000) {
       Point_18 ();
     }
+
     if (*Points & 0x80000) {
       Point_19 ();
     }
+
     if (*Points & 0x100000) {
       Point_20 ();
     }
+
     if (*Points & 0x200000) {
       Point_21 ();
     }
+
     if (*Points & 0x400000) {
       Point_22 ();
     }
+
     if (*Points & 0x800000) {
       Point_23 ();
     }
+
     if (*Points & 0x1000000) {
       Point_24 ();
     }
+
     if (*Points & 0x2000000) {
       Point_25 ();
     }
+
     if (*Points & 0x4000000) {
       Point_26 ();
     }
+
     if (*Points & 0x8000000) {
       Point_27 ();
     }
+
     if (*Points & 0x10000000) {
       Point_28 ();
     }
+
     if (*Points & 0x20000000) {
       Point_29 ();
     }
+
     if (*Points & 0x40000000) {
       Point_30 ();
     }
+
     if (*Points & 0x80000000) {
       Point_31 ();
     }
   }
+
   Points++;
+
   if (*Points) {
     if (*Points & 0x1) {
       Point_32 ();
     }
+
     if (*Points & 0x2) {
       Point_33 ();
     }
+
     if (*Points & 0x4) {
       Point_34 ();
     }
+
     if (*Points & 0x8) {
       Point_35 ();
     }
+
     if (*Points & 0x10) {
       Point_36 ();
     }
+
     if (*Points & 0x20) {
       Point_37 ();
     }
+
     if (*Points & 0x40) {
       Point_38 ();
     }
+
     if (*Points & 0x80) {
       Point_39 ();
     }
+
     if (*Points & 0x100) {
       Point_40 ();
     }
+
     if (*Points & 0x200) {
       Point_41 ();
     }
+
     if (*Points & 0x400) {
       Point_42 ();
     }
   }
+
   Points++;
   {
     int             j;
@@ -1295,17 +1394,22 @@ RRC_UE (void)
     _tmp = _SigPre_1;
     _SigPre_1 = _SigPre_0;
     _SigPre_0 = _tmp;
+
     for (j = 0; j < SIGNAL_WITH_PRE_VECTOR_SIZE; j++)
       _SigPre_0[j] = 0;
+
     for (j = 0; j < SIGNAL_VECTOR_SIZE; j++)
       _Sig[j] = 0;
+
     Sig_V308_135_Pre1 = Sig_V308_135_Pre0;
     Sig_V300_132_Pre1 = Sig_V300_132_Pre0;
     _On[0] = _Pause[0] | (_On[0] & 0x3facbfbe);
     _On[1] = _Pause[1] | (_On[1] & 0x15a);
+
     /* AutoPauseOn: #1 #2 #3 #4 #5 #7 #8 #9 #10 #11 #12 #13 #15 #18 #19 #21 #23 #24 #25 #26 #27 #28 #29 #33 #35 #36 #38 #40 */
     for (j = 0; j < HALT_POINT_VECTOR_SIZE; j++)
       _Pause[j] = 0;
+
     for (j = 0; j < GUARD_VECTOR_SIZE; j++)
       _Guard[j] = 0;
   }
@@ -1319,16 +1423,22 @@ RRC_UE_reset (void)
 
   for (j = 0; j < SIGNAL_VECTOR_SIZE; j++)
     _Sig[j] = 0;
+
   for (i = 0; i < GLOBALMAXPRELEVEL; i++)
     for (j = 0; j < SIGNAL_WITH_PRE_VECTOR_SIZE; j++)
       _SigPreTab[i][j] = 0;
+
   _integer (&In_UE_ID_INIT_83, 33);
+
   for (i = 0; i < HALT_POINT_VECTOR_SIZE; i++)
     _On[i] = 0;
+
   for (i = 0; i < HALT_POINT_VECTOR_SIZE; i++)
     _Pause[i] = 0;
+
   for (i = 0; i < GUARD_VECTOR_SIZE; i++)
     _Guard[i] = 0;
+
   BIT_SET (_On, 0);
   return 1;
 }

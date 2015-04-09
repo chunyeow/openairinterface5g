@@ -13,7 +13,7 @@
 // rrc_L2_interfaces.c
 s8 rrc_L2_data_req_rx (unsigned char Mod_id, unsigned short Srb_id, unsigned char Nb_tb,char *Buffer,u8 CH_index);
 //void rrc_L2_mac_data_ind_rx (void);
-// s8 mac_rrc_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, s8 *Sdu,u16 Sdu_len,u8 eNB_flag, u8 eNB_index ); 
+// s8 mac_rrc_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, s8 *Sdu,u16 Sdu_len,u8 eNB_flag, u8 eNB_index );
 s8 rrc_L2_mac_data_ind_rx (u8 Mod_id, u16 Srb_id, char *Sdu, u16 Sdu_len, u8 eNB_index);
 
 

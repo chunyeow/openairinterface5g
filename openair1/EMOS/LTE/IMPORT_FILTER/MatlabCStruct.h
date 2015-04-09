@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -33,8 +33,7 @@
 //--------------------------------------------------------------
 // ELEMENT_ATTRIBUTES
 //--------------------------------------------------------------
-typedef struct
-{
+typedef struct {
   int ElementSize; // Number of bytes required for storage of a single element in a Matlab array
   int ElementCount; // Number of elements in array
   int StorageSize; // Number of bytes required for storage of a single element in a C Structure
@@ -45,8 +44,8 @@ extern int MatlabCStruct_DebugFlag;
 
 // Function prototypes
 ELEMENT_ATTRIBUTES MatlabCStruct(const mxArray *pArray, int MemoryAlignment, int NestLevel,
-                                     unsigned char *pDataDest, unsigned char *pDataSource,
-                                     int SwapFlag);
+                                 unsigned char *pDataDest, unsigned char *pDataSource,
+                                 int SwapFlag);
 char *ClassIDText(const mxArray *pArray);
 void SwapBytes(char *p0, int size, int count);
 #define SWAP(x) SwapBytes(&(x), sizeof(x))

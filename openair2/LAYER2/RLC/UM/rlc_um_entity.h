@@ -74,8 +74,8 @@ struct rlc_um_entity {
   // piggybacked STATUS PDU.
   // value = 111111111111111 The rest of the RLC PDU is padding. The padding
   // length can be zero.
-  uint8_t              vt_us;        // This state variable contains the "Sequence Number" 
-  // of the next UMD PDU to be transmitted. It shall be 
+  uint8_t              vt_us;        // This state variable contains the "Sequence Number"
+  // of the next UMD PDU to be transmitted. It shall be
   // incremented by 1 each time a UMD PDU is transmitted.
   // The initial value of this variable is 0.
   //-----------------------------
@@ -125,8 +125,8 @@ struct rlc_um_entity {
   //-----------------------------
   // protocol variables
   //-----------------------------
-  uint8_t              vr_us;        // This state variable contains the "Sequence Number" 
-  // following that of the last UMD PDU received. When a UMD PDU 
+  uint8_t              vr_us;        // This state variable contains the "Sequence Number"
+  // following that of the last UMD PDU received. When a UMD PDU
   // with "Sequence Number" equal to x is received, the state
   // variable shall set equal to x + 1.
   // The initial value of this variable is 0

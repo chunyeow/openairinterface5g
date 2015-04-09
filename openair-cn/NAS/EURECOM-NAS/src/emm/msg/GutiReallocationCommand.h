@@ -54,7 +54,7 @@
 # define GUTI_REALLOCATION_COMMAND_TAI_LIST_PRESENT (1<<0)
 
 typedef enum guti_reallocation_command_iei_tag {
-    GUTI_REALLOCATION_COMMAND_TAI_LIST_IEI  = 0x54, /* 0x54 = 84 */
+  GUTI_REALLOCATION_COMMAND_TAI_LIST_IEI  = 0x54, /* 0x54 = 84 */
 } guti_reallocation_command_iei;
 
 /*
@@ -65,14 +65,14 @@ typedef enum guti_reallocation_command_iei_tag {
  */
 
 typedef struct guti_reallocation_command_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                  protocoldiscriminator:4;
-    SecurityHeaderType                     securityheadertype:4;
-    MessageType                            messagetype;
-    EpsMobileIdentity                      guti;
-    /* Optional fields */
-    uint32_t                               presencemask;
-    TrackingAreaIdentityList               tailist;
+  /* Mandatory fields */
+  ProtocolDiscriminator                  protocoldiscriminator:4;
+  SecurityHeaderType                     securityheadertype:4;
+  MessageType                            messagetype;
+  EpsMobileIdentity                      guti;
+  /* Optional fields */
+  uint32_t                               presencemask;
+  TrackingAreaIdentityList               tailist;
 } guti_reallocation_command_msg;
 
 int decode_guti_reallocation_command(guti_reallocation_command_msg *gutireallocationcommand, uint8_t *buffer, uint32_t len);

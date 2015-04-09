@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -38,7 +38,7 @@ int s_ord_fir_UE = 9;
 double r_coeffs_UE[8] = {0.0050, -0.0303, 0.0163, 0.5090, 0.5090, 0.0163, -0.0303, 0.0050};
 int r_ord_fir_UE = 8;/*
 
-double s_coeffs_eNB[2] = {1, 0}; 
+double s_coeffs_eNB[2] = {1, 0};
 int s_ord_fir_eNB = 2;
 
 double r_coeffs_eNB[2] = {1, 0};

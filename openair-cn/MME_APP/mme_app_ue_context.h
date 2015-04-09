@@ -51,9 +51,9 @@
 #define MME_APP_UE_CONTEXT_H_
 
 typedef enum {
-    ECM_IDLE,
-    ECM_CONNECTED,
-    ECM_DEREGISTERED,
+  ECM_IDLE,
+  ECM_CONNECTED,
+  ECM_DEREGISTERED,
 } mm_state_t;
 
 typedef uint64_t mme_app_imsi_t;
@@ -68,25 +68,25 @@ typedef uint64_t mme_app_imsi_t;
  *  @brief Parameters that should be kept for an eps bearer.
  */
 typedef struct bearer_context_s {
-    /* S-GW Tunnel Endpoint for User-Plane */
-    Teid_t       s_gw_teid;
+  /* S-GW Tunnel Endpoint for User-Plane */
+  Teid_t       s_gw_teid;
 
-    /* S-GW IP address for User-Plane */
-    ip_address_t s_gw_address;
+  /* S-GW IP address for User-Plane */
+  ip_address_t s_gw_address;
 
-    /* P-GW Tunnel Endpoint for User-Plane */
-    Teid_t       p_gw_teid;
+  /* P-GW Tunnel Endpoint for User-Plane */
+  Teid_t       p_gw_teid;
 
-    /* P-GW IP address for User-Plane */
-    ip_address_t p_gw_address;
+  /* P-GW IP address for User-Plane */
+  ip_address_t p_gw_address;
 
-    /* QoS for this bearer */
-    qci_t                   qci;
-    priority_level_t        prio_level;
-    pre_emp_vulnerability_t pre_emp_vulnerability;
-    pre_emp_capability_t    pre_emp_capability;
+  /* QoS for this bearer */
+  qci_t                   qci;
+  priority_level_t        prio_level;
+  pre_emp_vulnerability_t pre_emp_vulnerability;
+  pre_emp_capability_t    pre_emp_capability;
 
-    /* TODO: add TFT */
+  /* TODO: add TFT */
 } bearer_context_t;
 
 /** @struct ue_context_t
@@ -94,106 +94,106 @@ typedef struct bearer_context_s {
  * according to 3GPP TS.23.401 #5.7.2
  */
 typedef struct ue_context_s {
-    /* Tree entry */
-    RB_ENTRY(ue_context_s) rb_entry;
+  /* Tree entry */
+  RB_ENTRY(ue_context_s) rb_entry;
 
-    /* Basic identifier for ue. IMSI is encoded on maximum of 15 digits of 4 bits,
-     * so usage of an unsigned integer on 64 bits is necessary.
-     */
-    mme_app_imsi_t         imsi;                        // set by nas_auth_param_req_t
+  /* Basic identifier for ue. IMSI is encoded on maximum of 15 digits of 4 bits,
+   * so usage of an unsigned integer on 64 bits is necessary.
+   */
+  mme_app_imsi_t         imsi;                        // set by nas_auth_param_req_t
 #define IMSI_UNAUTHENTICATED  (0x0)
 #define IMSI_AUTHENTICATED    (0x1)
-    /* Indicator to show the IMSI authentication state */
-    unsigned               imsi_auth:1;                 // set by nas_auth_resp_t
+  /* Indicator to show the IMSI authentication state */
+  unsigned               imsi_auth:1;                 // set by nas_auth_resp_t
 
-    unsigned               eNB_ue_s1ap_id:24;
-    uint32_t               mme_ue_s1ap_id;
+  unsigned               eNB_ue_s1ap_id:24;
+  uint32_t               mme_ue_s1ap_id;
 
-    /* ue_id is equal to mme_ue_s1ap_id */
-    uint32_t               ue_id;                       // set by nas_auth_param_req_t
+  /* ue_id is equal to mme_ue_s1ap_id */
+  uint32_t               ue_id;                       // set by nas_auth_param_req_t
 
-    uint8_t                nb_of_vectors;               // updated by S6A AUTHENTICATION ANSWER
-    /* List of authentication vectors for E-UTRAN */
-    eutran_vector_t       *vector_list;                 // updated by S6A AUTHENTICATION ANSWER
-    // pointer in vector_list
-    eutran_vector_t       *vector_in_use;               // updated by S6A AUTHENTICATION ANSWER
+  uint8_t                nb_of_vectors;               // updated by S6A AUTHENTICATION ANSWER
+  /* List of authentication vectors for E-UTRAN */
+  eutran_vector_t       *vector_list;                 // updated by S6A AUTHENTICATION ANSWER
+  // pointer in vector_list
+  eutran_vector_t       *vector_in_use;               // updated by S6A AUTHENTICATION ANSWER
 
 #define SUBSCRIPTION_UNKNOWN    0x0
 #define SUBSCRIPTION_KNOWN      0x1
-    unsigned               subscription_known:1;        // set by S6A UPDATE LOCATION ANSWER
-    uint8_t                msisdn[MSISDN_LENGTH+1];     // set by S6A UPDATE LOCATION ANSWER
-    uint8_t                msisdn_length;               // set by S6A UPDATE LOCATION ANSWER
+  unsigned               subscription_known:1;        // set by S6A UPDATE LOCATION ANSWER
+  uint8_t                msisdn[MSISDN_LENGTH+1];     // set by S6A UPDATE LOCATION ANSWER
+  uint8_t                msisdn_length;               // set by S6A UPDATE LOCATION ANSWER
 
-    mm_state_t             mm_state;                    // not set/read
-    /* Globally Unique Temporary Identity */
-    GUTI_t                 guti;                        // guti.gummei.plmn set by nas_auth_param_req_t
-                                                        // read by S6A UPDATE LOCATION REQUEST
-    me_identity_t          me_identity;                 // not set/read except read by display utility
+  mm_state_t             mm_state;                    // not set/read
+  /* Globally Unique Temporary Identity */
+  GUTI_t                 guti;                        // guti.gummei.plmn set by nas_auth_param_req_t
+  // read by S6A UPDATE LOCATION REQUEST
+  me_identity_t          me_identity;                 // not set/read except read by display utility
 
-    /* TODO: Add TAI list */
+  /* TODO: Add TAI list */
 
-    /* Last known cell identity */
-    cgi_t                  e_utran_cgi;                 // set by nas_attach_req_t
-                                                        // read for S11 CREATE_SESSION_REQUEST
-    /* Time when the cell identity was acquired */
-    time_t                 cell_age;                    // set by nas_auth_param_req_t
+  /* Last known cell identity */
+  cgi_t                  e_utran_cgi;                 // set by nas_attach_req_t
+  // read for S11 CREATE_SESSION_REQUEST
+  /* Time when the cell identity was acquired */
+  time_t                 cell_age;                    // set by nas_auth_param_req_t
 
-    /* TODO: add csg_id */
-    /* TODO: add csg_membership */
+  /* TODO: add csg_id */
+  /* TODO: add csg_membership */
 
-    network_access_mode_t  access_mode;                  // set by S6A UPDATE LOCATION ANSWER
+  network_access_mode_t  access_mode;                  // set by S6A UPDATE LOCATION ANSWER
 
-    /* TODO: add ue radio cap, ms classmarks, supported codecs */
+  /* TODO: add ue radio cap, ms classmarks, supported codecs */
 
-    /* TODO: add ue network capability, ms network capability */
-    /* TODO: add selected NAS algorithm */
+  /* TODO: add ue network capability, ms network capability */
+  /* TODO: add selected NAS algorithm */
 
-    /* TODO: add DRX parameter */
+  /* TODO: add DRX parameter */
 
-    apn_config_profile_t   apn_profile;                  // set by S6A UPDATE LOCATION ANSWER
-    ard_t                  access_restriction_data;      // set by S6A UPDATE LOCATION ANSWER
-    subscriber_status_t    sub_status;                   // set by S6A UPDATE LOCATION ANSWER
-    ambr_t                 subscribed_ambr;              // set by S6A UPDATE LOCATION ANSWER
-    ambr_t                 used_ambr;
+  apn_config_profile_t   apn_profile;                  // set by S6A UPDATE LOCATION ANSWER
+  ard_t                  access_restriction_data;      // set by S6A UPDATE LOCATION ANSWER
+  subscriber_status_t    sub_status;                   // set by S6A UPDATE LOCATION ANSWER
+  ambr_t                 subscribed_ambr;              // set by S6A UPDATE LOCATION ANSWER
+  ambr_t                 used_ambr;
 
-    rau_tau_timer_t        rau_tau_timer;               // set by S6A UPDATE LOCATION ANSWER
+  rau_tau_timer_t        rau_tau_timer;               // set by S6A UPDATE LOCATION ANSWER
 
-    /* Store the radio capabilities as received in S1AP UE capability indication
-     * message.
-     */
-    char                  *ue_radio_capabilities;       // not set/read
-    int                    ue_radio_cap_length;         // not set/read
+  /* Store the radio capabilities as received in S1AP UE capability indication
+   * message.
+   */
+  char                  *ue_radio_capabilities;       // not set/read
+  int                    ue_radio_cap_length;         // not set/read
 
-    Teid_t                 mme_s11_teid;                // set by mme_app_send_s11_create_session_req
-    Teid_t                 sgw_s11_teid;                // set by S11 CREATE_SESSION_RESPONSE
-    PAA_t                  paa;                         // set by S11 CREATE_SESSION_RESPONSE
+  Teid_t                 mme_s11_teid;                // set by mme_app_send_s11_create_session_req
+  Teid_t                 sgw_s11_teid;                // set by S11 CREATE_SESSION_RESPONSE
+  PAA_t                  paa;                         // set by S11 CREATE_SESSION_RESPONSE
 
-    // temp
-    char                   pending_pdn_connectivity_req_imsi[16];
-    uint8_t                pending_pdn_connectivity_req_imsi_length;
-    OctetString            pending_pdn_connectivity_req_apn;
-    OctetString            pending_pdn_connectivity_req_pdn_addr;
-    int                    pending_pdn_connectivity_req_pti;
-    unsigned               pending_pdn_connectivity_req_ue_id;
-    network_qos_t          pending_pdn_connectivity_req_qos;
-    void                  *pending_pdn_connectivity_req_proc_data;
-    int                    pending_pdn_connectivity_req_request_type;
+  // temp
+  char                   pending_pdn_connectivity_req_imsi[16];
+  uint8_t                pending_pdn_connectivity_req_imsi_length;
+  OctetString            pending_pdn_connectivity_req_apn;
+  OctetString            pending_pdn_connectivity_req_pdn_addr;
+  int                    pending_pdn_connectivity_req_pti;
+  unsigned               pending_pdn_connectivity_req_ue_id;
+  network_qos_t          pending_pdn_connectivity_req_qos;
+  void                  *pending_pdn_connectivity_req_proc_data;
+  int                    pending_pdn_connectivity_req_request_type;
 
-    ebi_t                  default_bearer_id;
-    bearer_context_t       eps_bearers[BEARERS_PER_UE];
+  ebi_t                  default_bearer_id;
+  bearer_context_t       eps_bearers[BEARERS_PER_UE];
 } ue_context_t;
 
 typedef struct {
-    uint32_t nb_ue_managed;
-    uint32_t nb_ue_idle;
+  uint32_t nb_ue_managed;
+  uint32_t nb_ue_idle;
 
-    uint32_t nb_bearers_managed;
+  uint32_t nb_bearers_managed;
 
-    uint32_t nb_ue_since_last_stat;
-    uint32_t nb_bearers_since_last_stat;
+  uint32_t nb_ue_since_last_stat;
+  uint32_t nb_bearers_since_last_stat;
 
-    /* Entry to the root */
-    RB_HEAD(ue_context_map, ue_context_s) ue_context_tree;
+  /* Entry to the root */
+  RB_HEAD(ue_context_map, ue_context_s) ue_context_tree;
 } mme_ue_context_t;
 
 /** \brief Retrieve an UE context by selecting the provided IMSI
@@ -202,7 +202,7 @@ typedef struct {
  **/
 inline
 ue_context_t *mme_ue_context_exists_imsi(mme_ue_context_t *mme_ue_context,
-                                         mme_app_imsi_t imsi);
+    mme_app_imsi_t imsi);
 
 /** \brief Retrieve an UE context by selecting the provided S11 teid
  * \param teid The tunnel endpoint identifier used between MME and S-GW
@@ -210,7 +210,7 @@ ue_context_t *mme_ue_context_exists_imsi(mme_ue_context_t *mme_ue_context,
  **/
 inline
 ue_context_t *mme_ue_context_exists_s11_teid(mme_ue_context_t *mme_ue_context,
-                                             uint32_t teid);
+    uint32_t teid);
 
 /** \brief Retrieve an UE context by selecting the provided mme_ue_s1ap_id
  * \param mme_ue_s1ap_id The UE id identifier used in S1AP MME (and NAS)
@@ -218,7 +218,7 @@ ue_context_t *mme_ue_context_exists_s11_teid(mme_ue_context_t *mme_ue_context,
  **/
 inline
 ue_context_t *mme_ue_context_exists_mme_ue_s1ap_id(mme_ue_context_t *mme_ue_context,
-                                             uint32_t mme_ue_s1ap_id);
+    uint32_t mme_ue_s1ap_id);
 
 /** \brief Retrieve an UE context by selecting the provided nas_ue_id
  * \param nas_ue_id The UE id identifier used in S1AP MME and NAS
@@ -226,7 +226,7 @@ ue_context_t *mme_ue_context_exists_mme_ue_s1ap_id(mme_ue_context_t *mme_ue_cont
  **/
 inline
 ue_context_t *mme_ue_context_exists_nas_ue_id(mme_ue_context_t *mme_ue_context,
-                                             uint32_t nas_ue_id);
+    uint32_t nas_ue_id);
 
 /** \brief Retrieve an UE context by selecting the provided guti
  * \param guti The GUTI used by the UE
@@ -234,7 +234,7 @@ ue_context_t *mme_ue_context_exists_nas_ue_id(mme_ue_context_t *mme_ue_context,
  **/
 inline
 ue_context_t *mme_ue_context_exists_guti(mme_ue_context_t *mme_ue_context,
-                                                GUTI_t guti);
+    GUTI_t guti);
 
 /** \brief Insert a new UE context in the tree of known UEs.
  * At least the IMSI should be known to insert the context in the tree.

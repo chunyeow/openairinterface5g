@@ -61,13 +61,13 @@
  */
 
 typedef struct detach_request_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator        protocoldiscriminator:4;
-    SecurityHeaderType           securityheadertype:4;
-    MessageType                  messagetype;
-    DetachType                   detachtype;
-    NasKeySetIdentifier          naskeysetidentifier;
-    EpsMobileIdentity            gutiorimsi;
+  /* Mandatory fields */
+  ProtocolDiscriminator        protocoldiscriminator:4;
+  SecurityHeaderType           securityheadertype:4;
+  MessageType                  messagetype;
+  DetachType                   detachtype;
+  NasKeySetIdentifier          naskeysetidentifier;
+  EpsMobileIdentity            gutiorimsi;
 } detach_request_msg;
 
 int decode_detach_request(detach_request_msg *detachrequest, uint8_t *buffer, uint32_t len);

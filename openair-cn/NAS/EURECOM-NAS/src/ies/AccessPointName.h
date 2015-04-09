@@ -39,7 +39,7 @@
 #define ACCESS_POINT_NAME_MAXIMUM_LENGTH 102
 
 typedef struct AccessPointName_tag {
-    OctetString accesspointnamevalue;
+  OctetString accesspointnamevalue;
 } AccessPointName;
 
 int encode_access_point_name(AccessPointName *accesspointname, uint8_t iei, uint8_t *buffer, uint32_t len);

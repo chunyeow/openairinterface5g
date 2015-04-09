@@ -66,17 +66,17 @@ Description Defines functions used to handle ESM procedure transactions.
 #ifdef NAS_UE
 /* Procedure transaction states */
 typedef enum {
-    ESM_PT_INACTIVE,    /* No procedure transaction exists      */
-    ESM_PT_PENDING, /* The UE has initiated a procedure transaction
+  ESM_PT_INACTIVE,    /* No procedure transaction exists      */
+  ESM_PT_PENDING, /* The UE has initiated a procedure transaction
              * towards the network              */
-    ESM_PT_STATE_MAX
+  ESM_PT_STATE_MAX
 } esm_pt_state;
 
 /* ESM message timer retransmission data */
 typedef struct {
-    unsigned char pti;      /* Procedure transaction identity   */
-    unsigned int count;     /* Retransmission counter       */
-    OctetString msg;        /* Encoded ESM message to re-transmit   */
+  unsigned char pti;      /* Procedure transaction identity   */
+  unsigned int count;     /* Retransmission counter       */
+  OctetString msg;        /* Encoded ESM message to re-transmit   */
 } esm_pt_timer_data_t;
 #endif // NAS_UE
 

@@ -4,17 +4,17 @@
  * Authors: OPENAIR3 <openair_tech@eurecom.fr>
  *
  * Copyright 2010-2011 EURECOM (Sophia-Antipolis, FRANCE)
- * 
- * Proxy Mobile IPv6 (or PMIPv6, or PMIP) is a network-based mobility 
- * management protocol standardized by IETF. It is a protocol for building 
- * a common and access technology independent of mobile core networks, 
- * accommodating various access technologies such as WiMAX, 3GPP, 3GPP2 
- * and WLAN based access architectures. Proxy Mobile IPv6 is the only 
+ *
+ * Proxy Mobile IPv6 (or PMIPv6, or PMIP) is a network-based mobility
+ * management protocol standardized by IETF. It is a protocol for building
+ * a common and access technology independent of mobile core networks,
+ * accommodating various access technologies such as WiMAX, 3GPP, 3GPP2
+ * and WLAN based access architectures. Proxy Mobile IPv6 is the only
  * network-based mobility management protocol standardized by IETF.
- * 
+ *
  * PMIP Proxy Mobile IPv6 for Linux has been built above MIPL free software;
  * which it involves that it is under the same terms of GNU General Public
- * License version 2. See MIPL terms condition if you need more details. 
+ * License version 2. See MIPL terms condition if you need more details.
  */
 /*! \file pmip_hnp_cache.h
 * \brief
@@ -57,8 +57,8 @@
 /*! \struct  mnid_hnp_t
 * \brief Data structure to store the association of a network prefix and a mobile interface identifier.
 */typedef struct mnid_hnp_t {
-    struct in6_addr mn_prefix;  /*!< \brief Network Address Prefix for mobile node */
-    struct in6_addr mn_iid;     /*!< \brief Mobile node MAC address (IID) */
+  struct in6_addr mn_prefix;  /*!< \brief Network Address Prefix for mobile node */
+  struct in6_addr mn_iid;     /*!< \brief Mobile node MAC address (IID) */
 } mnid_hnp_t;
 //-PROTOTYPES----------------------------------------------------------------------------
 /*! \fn struct in6_addr EUI64_to_EUI48(struct in6_addr )

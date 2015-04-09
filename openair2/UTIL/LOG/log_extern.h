@@ -38,5 +38,5 @@ extern pthread_cond_t log_notify;
 extern int log_shutdown;
 #endif
 
-extern mapping log_level_names[]; 
+extern mapping log_level_names[];
 extern mapping log_verbosity_names[];

@@ -55,27 +55,27 @@ void            rlc_tm_rx_segment (void *arg_pP, struct mac_data_ind data_indP);
 void
 rlc_tm_get_pdus (void *arg_pP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   struct rlc_tm_entity *rlc = (struct rlc_tm_entity *) arg_pP;
 
   switch (rlc->protocol_state) {
 
-      case RLC_NULL_STATE:
-        // from 3GPP TS 25.322 V4.2.0
-        // In the NULL state the RLC entity does not exist and therefore it is not possible to transfer any data through it.
-        // Upon reception of a CRLC-CONFIG-Req from upper layer indicating establishment, the RLC entity:
-        // -      is created; and
-        // -      enters the DATA_TRANSFER_READY state.
-        break;
+  case RLC_NULL_STATE:
+    // from 3GPP TS 25.322 V4.2.0
+    // In the NULL state the RLC entity does not exist and therefore it is not possible to transfer any data through it.
+    // Upon reception of a CRLC-CONFIG-Req from upper layer indicating establishment, the RLC entity:
+    // -      is created; and
+    // -      enters the DATA_TRANSFER_READY state.
+    break;
 
-      case RLC_DATA_TRANSFER_READY_STATE:
+  case RLC_DATA_TRANSFER_READY_STATE:
 
-        rlc->segmentation (rlc);
-        break;
+    rlc->segmentation (rlc);
+    break;
 
-      default:
-        msg ("[RLC_TM %p] MAC_DATA_REQ UNKNOWN PROTOCOL STATE %02X hex\n", rlc, rlc->protocol_state);
+  default:
+    msg ("[RLC_TM %p] MAC_DATA_REQ UNKNOWN PROTOCOL STATE %02X hex\n", rlc, rlc->protocol_state);
   }
 }
 
@@ -83,7 +83,7 @@ rlc_tm_get_pdus (void *arg_pP)
 void
 rlc_tm_rx_no_segment (void *arg_pP, struct mac_data_ind data_indP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   struct rlc_tm_entity *rlc = (struct rlc_tm_entity *) arg_pP;
   mem_block_t *tb_p;
@@ -95,52 +95,57 @@ rlc_tm_rx_no_segment (void *arg_pP, struct mac_data_ind data_indP)
 
   switch (rlc->protocol_state) {
 
-      case RLC_NULL_STATE:
-        // from 3GPP TS 25.322 V4.2.0
-        // In the NULL state the RLC entity does not exist and therefore it is not possible to transfer any data through it.
-        // Upon reception of a CRLC-CONFIG-Req from upper layer indicating establishment, the RLC entity:
-        // -      is created; and
-        // -      enters the DATA_TRANSFER_READY state.
-        msg ("[RLC_TM %p] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", arg_pP);
-        list_free (&data_indP.data);
-        break;
+  case RLC_NULL_STATE:
+    // from 3GPP TS 25.322 V4.2.0
+    // In the NULL state the RLC entity does not exist and therefore it is not possible to transfer any data through it.
+    // Upon reception of a CRLC-CONFIG-Req from upper layer indicating establishment, the RLC entity:
+    // -      is created; and
+    // -      enters the DATA_TRANSFER_READY state.
+    msg ("[RLC_TM %p] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", arg_pP);
+    list_free (&data_indP.data);
+    break;
 
-      case RLC_DATA_TRANSFER_READY_STATE:
-        rlc->output_sdu_size_to_write = 0;      // size of sdu reassemblied
-        while ((tb_p = list_remove_head (&data_indP.data))) {
-          first_byte = ((struct mac_tb_ind *) (tb_p->data))->data_ptr;
+  case RLC_DATA_TRANSFER_READY_STATE:
+    rlc->output_sdu_size_to_write = 0;      // size of sdu reassemblied
 
-          tb_size_in_bytes = (data_indP.tb_size + 7) >> 3;
-          first_bit = ((struct mac_tb_ind *) (tb_p->data))->first_bit;
-          if (first_bit > 0) {
-            // shift data of transport_block TO CHECK
-            bits_to_shift_last_loop = 0;
-            first_byte[tb_size_in_bytes] &= (0xFF << (8 - first_bit));
-            while ((tb_size_in_bytes)) {
-              bits_to_shift = first_byte[tb_size_in_bytes - 1] >> (8 - first_bit);
-              first_byte[tb_size_in_bytes - 1] = (first_byte[tb_size_in_bytes - 1] << first_bit) | (bits_to_shift_last_loop);
-              tb_size_in_bytes -= 1;
-              bits_to_shift_last_loop = bits_to_shift;
-            }
-          }
+    while ((tb_p = list_remove_head (&data_indP.data))) {
+      first_byte = ((struct mac_tb_ind *) (tb_p->data))->data_ptr;
 
-          ((struct rlc_tm_rx_pdu_management *) (tb_p->data))->first_byte = first_byte;
+      tb_size_in_bytes = (data_indP.tb_size + 7) >> 3;
+      first_bit = ((struct mac_tb_ind *) (tb_p->data))->first_bit;
 
-          if (rlc->delivery_of_erroneous_sdu == RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_NO_DETECT) {
-            rlc_tm_send_sdu_no_segment (rlc, 0, first_byte, data_indP.tb_size);
-          } else if (rlc->delivery_of_erroneous_sdu == RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_YES) {
-            rlc_tm_send_sdu_no_segment (rlc, (((struct mac_tb_ind *) (tb_p->data))->error_indication), first_byte, data_indP.tb_size);
-          } else {              //RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_NO
-            if (!(((struct mac_tb_ind *) (tb_p->data))->error_indication)) {
-              rlc_tm_send_sdu_no_segment (rlc, 0, first_byte, data_indP.tb_size);
-            }
-          }
-          free_mem_block (tb_p);
+      if (first_bit > 0) {
+        // shift data of transport_block TO CHECK
+        bits_to_shift_last_loop = 0;
+        first_byte[tb_size_in_bytes] &= (0xFF << (8 - first_bit));
+
+        while ((tb_size_in_bytes)) {
+          bits_to_shift = first_byte[tb_size_in_bytes - 1] >> (8 - first_bit);
+          first_byte[tb_size_in_bytes - 1] = (first_byte[tb_size_in_bytes - 1] << first_bit) | (bits_to_shift_last_loop);
+          tb_size_in_bytes -= 1;
+          bits_to_shift_last_loop = bits_to_shift;
         }
-        break;
+      }
 
-      default:
-        msg ("[rlc_tm %p] TX UNKNOWN PROTOCOL STATE %02X hex\n", rlc, rlc->protocol_state);
+      ((struct rlc_tm_rx_pdu_management *) (tb_p->data))->first_byte = first_byte;
+
+      if (rlc->delivery_of_erroneous_sdu == RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_NO_DETECT) {
+        rlc_tm_send_sdu_no_segment (rlc, 0, first_byte, data_indP.tb_size);
+      } else if (rlc->delivery_of_erroneous_sdu == RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_YES) {
+        rlc_tm_send_sdu_no_segment (rlc, (((struct mac_tb_ind *) (tb_p->data))->error_indication), first_byte, data_indP.tb_size);
+      } else {              //RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_NO
+        if (!(((struct mac_tb_ind *) (tb_p->data))->error_indication)) {
+          rlc_tm_send_sdu_no_segment (rlc, 0, first_byte, data_indP.tb_size);
+        }
+      }
+
+      free_mem_block (tb_p);
+    }
+
+    break;
+
+  default:
+    msg ("[rlc_tm %p] TX UNKNOWN PROTOCOL STATE %02X hex\n", rlc, rlc->protocol_state);
   }
 }
 
@@ -148,7 +153,7 @@ rlc_tm_rx_no_segment (void *arg_pP, struct mac_data_ind data_indP)
 void
 rlc_tm_rx_segment (void *arg_pP, struct mac_data_ind data_indP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   struct rlc_tm_entity *rlc             = (struct rlc_tm_entity_s *) arg_pP;
   mem_block_t          *tb_p            = NULL;
@@ -165,127 +170,141 @@ rlc_tm_rx_segment (void *arg_pP, struct mac_data_ind data_indP)
 
   switch (rlc->protocol_state) {
 
-      case RLC_NULL_STATE:
-        // from 3GPP TS 25.322 V4.2.0
-        // In the NULL state the RLC entity does not exist and therefore it is not possible to transfer any data through it.
-        // Upon reception of a CRLC-CONFIG-Req from upper layer indicating establishment, the RLC entity:
-        // -      is created; and
-        // -      enters the DATA_TRANSFER_READY state.
-        msg ("[RLC_TM %p] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", arg_pP);
-        list_free (&data_indP.data);
-        break;
+  case RLC_NULL_STATE:
+    // from 3GPP TS 25.322 V4.2.0
+    // In the NULL state the RLC entity does not exist and therefore it is not possible to transfer any data through it.
+    // Upon reception of a CRLC-CONFIG-Req from upper layer indicating establishment, the RLC entity:
+    // -      is created; and
+    // -      enters the DATA_TRANSFER_READY state.
+    msg ("[RLC_TM %p] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", arg_pP);
+    list_free (&data_indP.data);
+    break;
 
-      case RLC_DATA_TRANSFER_READY_STATE:
-        rlc->output_sdu_size_to_write = 0;      // size of sdu reassemblied
-        switch (rlc->delivery_of_erroneous_sdu) {
+  case RLC_DATA_TRANSFER_READY_STATE:
+    rlc->output_sdu_size_to_write = 0;      // size of sdu reassemblied
 
-            case RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_NO_DETECT:
-              break;
+    switch (rlc->delivery_of_erroneous_sdu) {
 
-            case RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_YES:
-              error_in_sdu = 0;
-              while ((tb_p = list_remove_head (&data_indP.data))) {
+    case RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_NO_DETECT:
+      break;
 
-                if ((((struct mac_tb_ind *) (tb_p->data))->error_indication)) {
-                  error_in_sdu = 1;
-                }
-              }
-              break;
+    case RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_YES:
+      error_in_sdu = 0;
 
-            case RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_NO:
-              error_in_sdu = 0;
-              if (rlc->output_sdu_in_construction == NULL) {
-                rlc->output_sdu_in_construction = get_free_mem_block (RLC_SDU_MAX_SIZE_DATA_PLANE);
-                rlc->output_sdu_size_to_write = 0;
-                rlc->last_bit_position_reassemblied = 0;
-              }
-              debug = (uint8_t*)&rlc->output_sdu_in_construction->data[0];
+      while ((tb_p = list_remove_head (&data_indP.data))) {
 
-              while ((tb_p = list_remove_head (&data_indP.data))) {
-
-                if ((((struct mac_tb_ind *) (tb_p->data))->error_indication) && (error_in_sdu)) {
-                  error_in_sdu = 1;
-                } else {
-                  first_byte = ((struct mac_tb_ind *) (tb_p->data))->data_ptr;
-
-                  tb_size_in_bytes = (data_indP.tb_size + 7) >> 3;
-                  tb_size_in_bits = data_indP.tb_size;
-                  first_bit = ((struct mac_tb_ind *) (tb_p->data))->first_bit;
-
-                  while (tb_size_in_bits > 0) {
-
-                    if ((first_bit == 0) && (rlc->last_bit_position_reassemblied == 0)) {
-                      memcpy (&rlc->output_sdu_in_construction->data[rlc->output_sdu_size_to_write >> 3], first_byte, tb_size_in_bytes);
-                      rlc->output_sdu_size_to_write += tb_size_in_bits;
-                      rlc->last_bit_position_reassemblied = rlc->output_sdu_size_to_write & 0x07;
-                      if ((rlc->last_bit_position_reassemblied)) {
-                        rlc->output_sdu_in_construction->data[(rlc->output_sdu_size_to_write) >> 3] &= (0xFF << (8 - rlc->last_bit_position_reassemblied));
-                      }
-                      tb_size_in_bits = 0;
-                    } else {
-
-                      if (rlc->last_bit_position_reassemblied == 0) {
-                        byte = first_byte[0];
-                        rlc->output_sdu_in_construction->data[((rlc->output_sdu_size_to_write + 7) >> 3) ]
-                          = (byte & (0xFF >> first_bit)) << first_bit;
-                        rlc->output_sdu_size_to_write += 8 - first_bit;
-                        rlc->last_bit_position_reassemblied = rlc->output_sdu_size_to_write & 0x07;
-                        tb_size_in_bits -= (8 - first_bit);
-                        first_bit = 0;
-                        first_byte += 1;
-
-                      } else if (first_bit == 0) {
-                        byte = first_byte[0];
-                        rlc->output_sdu_in_construction->data[((rlc->output_sdu_size_to_write) >> 3) ]
-                          |= (byte >> rlc->last_bit_position_reassemblied);
-                        if ((8 - rlc->last_bit_position_reassemblied) < tb_size_in_bits) {
-                          rlc->output_sdu_size_to_write += (8 - rlc->last_bit_position_reassemblied);
-                        } else {
-                          rlc->output_sdu_size_to_write += tb_size_in_bits;
-                        }
-                        first_bit = 8 - rlc->last_bit_position_reassemblied;
-                        tb_size_in_bits -= (8 - rlc->last_bit_position_reassemblied);
-                        rlc->last_bit_position_reassemblied = rlc->output_sdu_size_to_write & 0x07;
-
-                        // NEVER GO IN THAT BLOCK
-                      } else if ((rlc->last_bit_position_reassemblied <= first_bit) && (rlc->last_bit_position_reassemblied > 0)) {
-                        byte = first_byte[0];
-                        rlc->output_sdu_in_construction->data[((rlc->output_sdu_size_to_write + 7) >> 3)]
-                          |= ((byte & (0xFF >> first_bit)) << (first_bit - rlc->last_bit_position_reassemblied));
-                        rlc->output_sdu_size_to_write += (8 - first_bit);
-                        rlc->last_bit_position_reassemblied = rlc->output_sdu_size_to_write & 0x07;
-                        tb_size_in_bits -= (8 - first_bit);
-                        first_bit = 0;
-                        first_byte += 1;
-                        // now the case is  last_bit_position_reassemblied != 0 &&  first_bit = 0
-
-                        // NEVER GO IN THAT BLOCK
-                      } else if ((rlc->last_bit_position_reassemblied > first_bit) && (rlc->last_bit_position_reassemblied > 0)) {
-                        byte = first_byte[0];
-                        rlc->output_sdu_in_construction->data[((rlc->output_sdu_size_to_write + 7) >> 3)]
-                          |= ((byte >> (rlc->last_bit_position_reassemblied - first_bit)) & (0xFF >> rlc->last_bit_position_reassemblied));
-                        rlc->output_sdu_size_to_write += (8 - rlc->last_bit_position_reassemblied);
-                        first_bit = first_bit - (8 - rlc->last_bit_position_reassemblied);
-                        tb_size_in_bits -= (8 - rlc->last_bit_position_reassemblied);
-                        rlc->last_bit_position_reassemblied = rlc->output_sdu_size_to_write & 0x07;
-                        // now the case is  last_bit_position_reassemblied = 0 &&  first_bit != 0
-                      }
-                    }
-                  }
-                }
-                free_mem_block (tb_p);
-              }
-              if (!(error_in_sdu)) {
-                rlc_tm_send_sdu_segment (rlc, 0);
-              }
-              break;
-
-            default:;
+        if ((((struct mac_tb_ind *) (tb_p->data))->error_indication)) {
+          error_in_sdu = 1;
         }
-        break;                  //RLC_DATA_TRANSFER_READY_STATE
+      }
 
-      default:
-        msg ("[rlc_tm %p] TX UNKNOWN PROTOCOL STATE %02X hex\n", rlc, rlc->protocol_state);
+      break;
+
+    case RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_NO:
+      error_in_sdu = 0;
+
+      if (rlc->output_sdu_in_construction == NULL) {
+        rlc->output_sdu_in_construction = get_free_mem_block (RLC_SDU_MAX_SIZE_DATA_PLANE);
+        rlc->output_sdu_size_to_write = 0;
+        rlc->last_bit_position_reassemblied = 0;
+      }
+
+      debug = (uint8_t*)&rlc->output_sdu_in_construction->data[0];
+
+      while ((tb_p = list_remove_head (&data_indP.data))) {
+
+        if ((((struct mac_tb_ind *) (tb_p->data))->error_indication) && (error_in_sdu)) {
+          error_in_sdu = 1;
+        } else {
+          first_byte = ((struct mac_tb_ind *) (tb_p->data))->data_ptr;
+
+          tb_size_in_bytes = (data_indP.tb_size + 7) >> 3;
+          tb_size_in_bits = data_indP.tb_size;
+          first_bit = ((struct mac_tb_ind *) (tb_p->data))->first_bit;
+
+          while (tb_size_in_bits > 0) {
+
+            if ((first_bit == 0) && (rlc->last_bit_position_reassemblied == 0)) {
+              memcpy (&rlc->output_sdu_in_construction->data[rlc->output_sdu_size_to_write >> 3], first_byte, tb_size_in_bytes);
+              rlc->output_sdu_size_to_write += tb_size_in_bits;
+              rlc->last_bit_position_reassemblied = rlc->output_sdu_size_to_write & 0x07;
+
+              if ((rlc->last_bit_position_reassemblied)) {
+                rlc->output_sdu_in_construction->data[(rlc->output_sdu_size_to_write) >> 3] &= (0xFF << (8 - rlc->last_bit_position_reassemblied));
+              }
+
+              tb_size_in_bits = 0;
+            } else {
+
+              if (rlc->last_bit_position_reassemblied == 0) {
+                byte = first_byte[0];
+                rlc->output_sdu_in_construction->data[((rlc->output_sdu_size_to_write + 7) >> 3) ]
+                  = (byte & (0xFF >> first_bit)) << first_bit;
+                rlc->output_sdu_size_to_write += 8 - first_bit;
+                rlc->last_bit_position_reassemblied = rlc->output_sdu_size_to_write & 0x07;
+                tb_size_in_bits -= (8 - first_bit);
+                first_bit = 0;
+                first_byte += 1;
+
+              } else if (first_bit == 0) {
+                byte = first_byte[0];
+                rlc->output_sdu_in_construction->data[((rlc->output_sdu_size_to_write) >> 3) ]
+                |= (byte >> rlc->last_bit_position_reassemblied);
+
+                if ((8 - rlc->last_bit_position_reassemblied) < tb_size_in_bits) {
+                  rlc->output_sdu_size_to_write += (8 - rlc->last_bit_position_reassemblied);
+                } else {
+                  rlc->output_sdu_size_to_write += tb_size_in_bits;
+                }
+
+                first_bit = 8 - rlc->last_bit_position_reassemblied;
+                tb_size_in_bits -= (8 - rlc->last_bit_position_reassemblied);
+                rlc->last_bit_position_reassemblied = rlc->output_sdu_size_to_write & 0x07;
+
+                // NEVER GO IN THAT BLOCK
+              } else if ((rlc->last_bit_position_reassemblied <= first_bit) && (rlc->last_bit_position_reassemblied > 0)) {
+                byte = first_byte[0];
+                rlc->output_sdu_in_construction->data[((rlc->output_sdu_size_to_write + 7) >> 3)]
+                |= ((byte & (0xFF >> first_bit)) << (first_bit - rlc->last_bit_position_reassemblied));
+                rlc->output_sdu_size_to_write += (8 - first_bit);
+                rlc->last_bit_position_reassemblied = rlc->output_sdu_size_to_write & 0x07;
+                tb_size_in_bits -= (8 - first_bit);
+                first_bit = 0;
+                first_byte += 1;
+                // now the case is  last_bit_position_reassemblied != 0 &&  first_bit = 0
+
+                // NEVER GO IN THAT BLOCK
+              } else if ((rlc->last_bit_position_reassemblied > first_bit) && (rlc->last_bit_position_reassemblied > 0)) {
+                byte = first_byte[0];
+                rlc->output_sdu_in_construction->data[((rlc->output_sdu_size_to_write + 7) >> 3)]
+                |= ((byte >> (rlc->last_bit_position_reassemblied - first_bit)) & (0xFF >> rlc->last_bit_position_reassemblied));
+                rlc->output_sdu_size_to_write += (8 - rlc->last_bit_position_reassemblied);
+                first_bit = first_bit - (8 - rlc->last_bit_position_reassemblied);
+                tb_size_in_bits -= (8 - rlc->last_bit_position_reassemblied);
+                rlc->last_bit_position_reassemblied = rlc->output_sdu_size_to_write & 0x07;
+                // now the case is  last_bit_position_reassemblied = 0 &&  first_bit != 0
+              }
+            }
+          }
+        }
+
+        free_mem_block (tb_p);
+      }
+
+      if (!(error_in_sdu)) {
+        rlc_tm_send_sdu_segment (rlc, 0);
+      }
+
+      break;
+
+    default:
+      ;
+    }
+
+    break;                  //RLC_DATA_TRANSFER_READY_STATE
+
+  default:
+    msg ("[rlc_tm %p] TX UNKNOWN PROTOCOL STATE %02X hex\n", rlc, rlc->protocol_state);
   }
 }
 
@@ -293,7 +312,7 @@ rlc_tm_rx_segment (void *arg_pP, struct mac_data_ind data_indP)
 struct mac_status_resp
 rlc_tm_mac_status_indication (void *rlcP, uint16_t tb_sizeP, struct mac_status_ind tx_statusP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   struct mac_status_resp status_resp;
 
   ((struct rlc_tm_entity *) rlcP)->nb_pdu_requested_by_mac = 1;
@@ -309,7 +328,7 @@ rlc_tm_mac_status_indication (void *rlcP, uint16_t tb_sizeP, struct mac_status_i
 struct mac_data_req
 rlc_tm_mac_data_request (void *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   struct mac_data_req data_req;
 
   rlc_tm_get_pdus (rlcP);
@@ -327,7 +346,7 @@ rlc_tm_mac_data_request (void *rlcP)
 void
 rlc_tm_mac_data_indication (void *rlcP, struct mac_data_ind data_indP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   ((struct rlc_tm_entity *) rlcP)->rx (rlcP, data_indP);
 }
 
@@ -335,14 +354,15 @@ rlc_tm_mac_data_indication (void *rlcP, struct mac_data_ind data_indP)
 void
 rlc_tm_data_req (void *rlcP, mem_block_t *sduP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   struct rlc_tm_entity *rlc = (struct rlc_tm_entity *) rlcP;
   uint8_t              discard_go_on;
 
 
-  #ifdef DEBUG_RLC_TM_DATA_REQUEST
-  msg ("[RLC_TM %p] RLC_TM_DATA_REQ size %d Bytes, BO %ld , NB SDU %d current_sdu_index=%d next_sdu_index=%d\n", rlc, ((struct rlc_um_data_req *) (sduP->data))->data_size, rlc->buffer_occupancy, rlc->nb_sdu, rlc->current_sdu_index, rlc->next_sdu_index);
-  #endif
+#ifdef DEBUG_RLC_TM_DATA_REQUEST
+  msg ("[RLC_TM %p] RLC_TM_DATA_REQ size %d Bytes, BO %ld , NB SDU %d current_sdu_index=%d next_sdu_index=%d\n", rlc, ((struct rlc_um_data_req *) (sduP->data))->data_size, rlc->buffer_occupancy,
+       rlc->nb_sdu, rlc->current_sdu_index, rlc->next_sdu_index);
+#endif
 
   // From 3GPP TS 25.322 V4.2.0
   // If SDU discard has not been configured for a transparent mode RLC entity, the Sender shall upon reception
@@ -351,18 +371,21 @@ rlc_tm_data_req (void *rlcP, mem_block_t *sduP)
   // -  submit the new SDUs in the first possible TTI.
   if ((rlc->sdu_discard_mode & RLC_SDU_DISCARD_NOT_CONFIGURED)) {
     discard_go_on = 1;
+
     while ((rlc->input_sdus[rlc->current_sdu_index]) && discard_go_on) {
       if (rlc->last_tti >= ((struct rlc_tm_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index]->data))->sdu_creation_time) {
-        #ifdef DEBUG_RLC_TM_DISCARD_SDU
+#ifdef DEBUG_RLC_TM_DISCARD_SDU
         msg ("[RLC_TM %p] SDU DISCARDED NOT SUBMITTED IN THIS TTI %ld ms > ", rlc, rlc->last_tti);
         msg ("%ld ms ", ((struct rlc_tm_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index]->data))->sdu_creation_time);
         msg ("BO %d, NB SDU %d\n", rlc->buffer_occupancy, rlc->nb_sdu);
-        #endif
+#endif
 
         rlc->nb_sdu -= 1;
+
         if (!(rlc->segmentation_indication & RLC_TM_SEGMENTATION_ALLOWED)) {
           rlc->buffer_occupancy -= ((struct rlc_tm_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index]->data))->sdu_size;
         }
+
         free_mem_block (rlc->input_sdus[rlc->current_sdu_index]);
         rlc->input_sdus[rlc->current_sdu_index] = NULL;
         rlc->current_sdu_index = (rlc->current_sdu_index + 1) % rlc->size_input_sdus_buffer;
@@ -371,14 +394,17 @@ rlc_tm_data_req (void *rlcP, mem_block_t *sduP)
       }
     }
   }
+
   // not in 3GPP specification but the buffer may be full if not correctly configured
   if (rlc->input_sdus[rlc->next_sdu_index] == NULL) {
     ((struct rlc_tm_tx_sdu_management *) (sduP->data))->sdu_size = ((struct rlc_tm_data_req *) (sduP->data))->data_size;
+
     if ((rlc->segmentation_indication & RLC_TM_SEGMENTATION_ALLOWED)) {
       rlc->buffer_occupancy = ((struct rlc_tm_tx_sdu_management *) (sduP->data))->sdu_size >> 3;
     } else {
       rlc->buffer_occupancy += (((struct rlc_tm_tx_sdu_management *) (sduP->data))->sdu_size >> 3);
     }
+
     rlc->nb_sdu += 1;
     ((struct rlc_tm_tx_sdu_management *) (sduP->data))->first_byte = (uint8_t*)&sduP->data[sizeof (struct rlc_tm_data_req_alloc)];
     ((struct rlc_tm_tx_sdu_management *) (sduP->data))->sdu_segmented_size = 0;

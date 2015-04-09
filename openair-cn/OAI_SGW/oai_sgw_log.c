@@ -37,5 +37,5 @@
 
 int oai_sgw_log_specific(int log_level)
 {
-    return 0;
+  return 0;
 }

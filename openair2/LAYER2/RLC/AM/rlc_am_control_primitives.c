@@ -72,7 +72,7 @@ rlc_am_probing_get_buffer_occupancy_measurements (struct rlc_am_entity *rlcP, pr
 void
 config_req_rlc_am (struct rlc_am_entity *rlcP, module_id_t module_idP, rlc_am_info_t * config_amP, uint8_t rb_idP, rb_type_t rb_typeP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   mem_block_t      *mb;
 
   mb = get_free_mem_block (sizeof (struct crlc_primitive));
@@ -111,6 +111,7 @@ config_req_rlc_am (struct rlc_am_entity *rlcP, module_id_t module_idP, rlc_am_in
 
   ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.rb_id = rb_idP;
   send_rlc_am_control_primitive (rlcP, module_idP, mb);
+
   if (rb_typeP != SIGNALLING_RADIO_BEARER) {
     rlcP->data_plane = 1;
     msg ("[RLC AM][RB %d] DATA PLANE\n", rlcP->rb_id);
@@ -123,94 +124,106 @@ config_req_rlc_am (struct rlc_am_entity *rlcP, module_id_t module_idP, rlc_am_in
 void
 send_rlc_am_control_primitive (struct rlc_am_entity *rlcP, module_id_t module_idP, mem_block_t * cprimitiveP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   rlcP->module_id = module_idP;
+
   switch (((struct crlc_primitive *) cprimitiveP->data)->type) {
-      case CRLC_CONFIG_REQ:
+  case CRLC_CONFIG_REQ:
 
-        switch (((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.e_r) {
+    switch (((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.e_r) {
 
-            case RLC_E_R_ESTABLISHMENT:
-              if (rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
-                rlc_am_set_configured_parameters (rlcP, cprimitiveP);   // the order of the calling of procedures...
-                rlc_am_reset_state_variables (rlcP);    // ...must not ...
-                rlc_am_alloc_buffers_after_establishment (rlcP);        // ...be changed
-              }
-              break;
+    case RLC_E_R_ESTABLISHMENT:
+      if (rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
+        rlc_am_set_configured_parameters (rlcP, cprimitiveP);   // the order of the calling of procedures...
+        rlc_am_reset_state_variables (rlcP);    // ...must not ...
+        rlc_am_alloc_buffers_after_establishment (rlcP);        // ...be changed
+      }
 
-            case RLC_E_R_RE_ESTABLISHMENT:
-              // from 3GPP TS 25.322 V4.2.0(2001-09)
-              // The RLC re-establishment function is applicable for AM and UM and is used when upper layers request an RLC entity to be re-established.
-              // When an RLC entity is re-established by upper layers, the RLC entity shall:
-              // -   reset the state variables to their initial value;
-              // -   set the configurable parameters to their configured value;
-              // -   set the hyper frame number (HFN) in UL and DL to the value configured by upper layers;
-              // -   if the RLC entity is operating in unacknowledged mode:
-              // -   if it is a receiving UM RLC entity:
-              // -   discard all UMD PDUs;
-              // -   if it is a transmitting UM RLC entity:
-              // -   discard the RLC SDUs for which one or more segments have been submitted to a lower layer;
-              // -   otherwise if the RLC entity is operating in acknowledged mode:
-              // -   discard all AMD PDUs in the Receiver and Sender.
-              if (rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
-                rlc_am_free_all_resources (rlcP);
-                rlc_am_set_configured_parameters (rlcP, cprimitiveP);   // the order of the calling of procedures...
-                rlc_am_reset_state_variables (rlcP);    // ...must not ...
-                rlc_am_alloc_buffers_after_establishment (rlcP);        // ...be changed
-              }
-              break;
+      break;
 
-            case RLC_E_R_MODIFICATION:
-              msg ("[RLC_AM][RB %d] WARNING CRLC_CONFIG_REQ:RLC_AM_E_R_MODIFICATION NOT IMPLEMENTED AT ALL: MAY BE BUGGY IF CHANGING WINDOWS SIZE\n", rlcP->rb_id);
-              rlc_am_set_configured_parameters (rlcP, cprimitiveP);
-              break;
+    case RLC_E_R_RE_ESTABLISHMENT:
 
-            case RLC_E_R_RELEASE:
-              if (rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_CRLC_CONFIG_REQ_ENTER_NULL_STATE_EVENT)) {
-                rlc_am_free_all_resources (rlcP);
-              }
-              break;
+      // from 3GPP TS 25.322 V4.2.0(2001-09)
+      // The RLC re-establishment function is applicable for AM and UM and is used when upper layers request an RLC entity to be re-established.
+      // When an RLC entity is re-established by upper layers, the RLC entity shall:
+      // -   reset the state variables to their initial value;
+      // -   set the configurable parameters to their configured value;
+      // -   set the hyper frame number (HFN) in UL and DL to the value configured by upper layers;
+      // -   if the RLC entity is operating in unacknowledged mode:
+      // -   if it is a receiving UM RLC entity:
+      // -   discard all UMD PDUs;
+      // -   if it is a transmitting UM RLC entity:
+      // -   discard the RLC SDUs for which one or more segments have been submitted to a lower layer;
+      // -   otherwise if the RLC entity is operating in acknowledged mode:
+      // -   discard all AMD PDUs in the Receiver and Sender.
+      if (rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
+        rlc_am_free_all_resources (rlcP);
+        rlc_am_set_configured_parameters (rlcP, cprimitiveP);   // the order of the calling of procedures...
+        rlc_am_reset_state_variables (rlcP);    // ...must not ...
+        rlc_am_alloc_buffers_after_establishment (rlcP);        // ...be changed
+      }
 
-            default:
-              msg ("[RLC_AM][ERROR] control_rlc_am(CRLC_CONFIG_REQ) unknown parameter E_R\n");
-        }
-        break;
+      break;
 
-      case CRLC_SUSPEND_REQ:
-        // from 3GPP TS 25.322 V4.2.0(2001-09)
-        // When an RLC entity operating in acknowledged mode is suspended by upper layers with the parameter N, the RLC entity shall:
-        // -      acknowledge the suspend request with a confirmation containing the current value of VT(S);
-        // -      not send AMD PDUs with sequence number SNVT(S)+N.
-        if (rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_CRLC_SUSPEND_REQ_EVENT)) {
-          if ((rlcP->protocol_state == RLC_LOCAL_SUSPEND_STATE) || (rlcP->protocol_state == RLC_LOCAL_SUSPEND_STATE)) {
+    case RLC_E_R_MODIFICATION:
+      msg ("[RLC_AM][RB %d] WARNING CRLC_CONFIG_REQ:RLC_AM_E_R_MODIFICATION NOT IMPLEMENTED AT ALL: MAY BE BUGGY IF CHANGING WINDOWS SIZE\n", rlcP->rb_id);
+      rlc_am_set_configured_parameters (rlcP, cprimitiveP);
+      break;
 
-            // TO DO IN FUTURE, BUT IT SEEMS THERE IS NO NEED TO IMPLEMENT THIS FUNCTION IN THE CURRENTLY DEFINED ARCHITECTURE
-            // SO DISPLAY ERROR MESSAGE
-            msg ("[RLC_AM[RB %d] ERROR RECEIVED CRLC_SUSPEND_REQ NOT IMPLEMENTED AT ALL, RLC_AM MAY NOT WORK AS EXPECTED IN THE 3GPP SPECIFICATION\n", rlcP->rb_id);
-          }
-        }
-        break;
+    case RLC_E_R_RELEASE:
+      if (rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_CRLC_CONFIG_REQ_ENTER_NULL_STATE_EVENT)) {
+        rlc_am_free_all_resources (rlcP);
+      }
 
-      case CRLC_RESUME_REQ:
-        // from 3GPP TS 25.322 V4.2.0(2001-09)
-        // When an RLC entity operating in acknowledged mode is resumed by upper layers, the RLC entity shall:
-        // -      if the RLC entity is suspended and a RLC Reset procedure is not ongoing:
-        // -      resume data transfer procedure.
-        // -      otherwise, if the RLC entity is suspended and a RLC Reset procedure is ongoing:
-        // -      remove the suspend constraint;
-        // -      resume the RLC reset procedure according to subclause 11.4.
-        if (rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_CRLC_RESUME_REQ_EVENT)) {
-          if ((rlcP->protocol_state == RLC_RESET_PENDING_STATE) || (rlcP->protocol_state == RLC_DATA_TRANSFER_READY_STATE)) {
+      break;
 
-            // TO DO IN FUTURE, BUT IT SEEMS THERE IS NO NEED TO IMPLEMENT THIS FUNCTION IN THE CURRENTLY DEFINED ARCHITECTURE
-            // SO DISPLAY ERROR MESSAGE
-            msg ("[RLC_AM][RB %d] ERROR RECEIVED CRLC_RESUME_REQ NOT IMPLEMENTED AT ALL, RLC_AM MAY NOT WORK AS EXPECTED IN THE 3GPP SPECIFICATION\n", rlcP->rb_id);
-          }
-        }
-        break;
-      default:
-        msg ("[RLC_AM][RB %d][ERROR] control_rlc_am(UNKNOWN CPRIMITIVE)\n", rlcP->rb_id);
+    default:
+      msg ("[RLC_AM][ERROR] control_rlc_am(CRLC_CONFIG_REQ) unknown parameter E_R\n");
+    }
+
+    break;
+
+  case CRLC_SUSPEND_REQ:
+
+    // from 3GPP TS 25.322 V4.2.0(2001-09)
+    // When an RLC entity operating in acknowledged mode is suspended by upper layers with the parameter N, the RLC entity shall:
+    // -      acknowledge the suspend request with a confirmation containing the current value of VT(S);
+    // -      not send AMD PDUs with sequence number SNVT(S)+N.
+    if (rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_CRLC_SUSPEND_REQ_EVENT)) {
+      if ((rlcP->protocol_state == RLC_LOCAL_SUSPEND_STATE) || (rlcP->protocol_state == RLC_LOCAL_SUSPEND_STATE)) {
+
+        // TO DO IN FUTURE, BUT IT SEEMS THERE IS NO NEED TO IMPLEMENT THIS FUNCTION IN THE CURRENTLY DEFINED ARCHITECTURE
+        // SO DISPLAY ERROR MESSAGE
+        msg ("[RLC_AM[RB %d] ERROR RECEIVED CRLC_SUSPEND_REQ NOT IMPLEMENTED AT ALL, RLC_AM MAY NOT WORK AS EXPECTED IN THE 3GPP SPECIFICATION\n", rlcP->rb_id);
+      }
+    }
+
+    break;
+
+  case CRLC_RESUME_REQ:
+
+    // from 3GPP TS 25.322 V4.2.0(2001-09)
+    // When an RLC entity operating in acknowledged mode is resumed by upper layers, the RLC entity shall:
+    // -      if the RLC entity is suspended and a RLC Reset procedure is not ongoing:
+    // -      resume data transfer procedure.
+    // -      otherwise, if the RLC entity is suspended and a RLC Reset procedure is ongoing:
+    // -      remove the suspend constraint;
+    // -      resume the RLC reset procedure according to subclause 11.4.
+    if (rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_CRLC_RESUME_REQ_EVENT)) {
+      if ((rlcP->protocol_state == RLC_RESET_PENDING_STATE) || (rlcP->protocol_state == RLC_DATA_TRANSFER_READY_STATE)) {
+
+        // TO DO IN FUTURE, BUT IT SEEMS THERE IS NO NEED TO IMPLEMENT THIS FUNCTION IN THE CURRENTLY DEFINED ARCHITECTURE
+        // SO DISPLAY ERROR MESSAGE
+        msg ("[RLC_AM][RB %d] ERROR RECEIVED CRLC_RESUME_REQ NOT IMPLEMENTED AT ALL, RLC_AM MAY NOT WORK AS EXPECTED IN THE 3GPP SPECIFICATION\n", rlcP->rb_id);
+      }
+    }
+
+    break;
+
+  default:
+    msg ("[RLC_AM][RB %d][ERROR] control_rlc_am(UNKNOWN CPRIMITIVE)\n", rlcP->rb_id);
   }
+
   free_mem_block (cprimitiveP);
 }
 
@@ -218,7 +231,7 @@ send_rlc_am_control_primitive (struct rlc_am_entity *rlcP, module_id_t module_id
 void
 init_rlc_am (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   memset (rlcP, 0, sizeof (struct rlc_am_entity));
 
 
@@ -260,19 +273,23 @@ init_rlc_am (struct rlc_am_entity *rlcP)
 void
 rlc_am_alloc_buffers_after_establishment (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   rlcP->recomputed_configured_tx_window_size = 1;
+
   while (rlcP->recomputed_configured_tx_window_size < rlcP->configured_tx_window_size) {
     rlcP->recomputed_configured_tx_window_size = rlcP->recomputed_configured_tx_window_size << 1;
   }
+
   rlcP->retransmission_buffer_alloc = get_free_mem_block (rlcP->recomputed_configured_tx_window_size * sizeof (mem_block_t *));
   rlcP->retransmission_buffer = (mem_block_t **) (rlcP->retransmission_buffer_alloc->data);
   //memset (rlcP->retransmission_buffer, 0, rlcP->recomputed_configured_tx_window_size * sizeof (mem_block_t *));
 
   rlcP->recomputed_configured_rx_window_size = 1;
+
   while (rlcP->recomputed_configured_rx_window_size < rlcP->configured_rx_window_size) {
     rlcP->recomputed_configured_rx_window_size = rlcP->recomputed_configured_rx_window_size << 1;
   }
+
   rlcP->receiver_buffer_alloc = get_free_mem_block (rlcP->recomputed_configured_rx_window_size * sizeof (mem_block_t *));
   rlcP->receiver_buffer = (mem_block_t **) (rlcP->receiver_buffer_alloc->data);
   msg("[RLC AM][RB %d] Window size %d\n",rlcP->rb_id,rlcP->recomputed_configured_rx_window_size);
@@ -283,6 +300,7 @@ rlc_am_alloc_buffers_after_establishment (struct rlc_am_entity *rlcP)
   //memset (rlcP->holes_alloc->data, 0, (rlcP->recomputed_configured_rx_window_size * sizeof (mem_block_t *)) >> 1);
 
   rlcP->size_input_sdus_buffer = rlcP->recomputed_configured_tx_window_size * 4;
+
   if ((rlcP->input_sdus_alloc == NULL)) {
     rlcP->input_sdus_alloc = get_free_mem_block (rlcP->size_input_sdus_buffer * sizeof (void *));
     rlcP->input_sdus = (mem_block_t **) (rlcP->input_sdus_alloc->data);
@@ -294,7 +312,7 @@ rlc_am_alloc_buffers_after_establishment (struct rlc_am_entity *rlcP)
 void
 rlc_am_reset_state_variables (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   rlcP->vt_s = 0;
   rlcP->vt_a = 0;
   rlcP->vt_pdu = 0;
@@ -333,7 +351,7 @@ rlc_am_reset_state_variables (struct rlc_am_entity *rlcP)
   rlcP->current_sdu_index = 0;
   rlcP->nb_pdu_requested_by_mac_on_ch1 = 0;
   rlcP->nb_pdu_requested_by_mac_on_ch2 = 0;
-  
+
   rlcP->running_timer_status_prohibit = rlcP->timer_status_prohibit/10;
 }
 
@@ -341,7 +359,7 @@ rlc_am_reset_state_variables (struct rlc_am_entity *rlcP)
 void
 rlc_am_stop_all_timers (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   list2_free (&rlcP->rlc_am_timer_list);
 }
 
@@ -349,29 +367,36 @@ rlc_am_stop_all_timers (struct rlc_am_entity *rlcP)
 void
 rlc_am_discard_all_pdus (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   uint16_t             index;
 
   index = 0;
+
   while (index < rlcP->recomputed_configured_rx_window_size) {
     if (rlcP->receiver_buffer[index] != NULL) {
       free_mem_block (rlcP->receiver_buffer[index]);
       rlcP->receiver_buffer[index] = NULL;
     }
+
     index++;
   }
+
   index = 0;
+
   while (index < rlcP->recomputed_configured_tx_window_size) {
     if (rlcP->retransmission_buffer[index] != NULL) {
       free_mem_block (rlcP->retransmission_buffer[index]);
       rlcP->retransmission_buffer[index] = NULL;
     }
+
     index++;
   }
+
   list2_free (&rlcP->retransmission_buffer_to_send);
   list_free (&rlcP->pdus_to_mac_layer_ch1);
   list_free (&rlcP->pdus_to_mac_layer_ch2);
   list_free (&rlcP->control);
+
   if ((rlcP->output_sdu_in_construction)) {
     free_mem_block (rlcP->output_sdu_in_construction);
     rlcP->output_sdu_in_construction = NULL;
@@ -382,8 +407,9 @@ rlc_am_discard_all_pdus (struct rlc_am_entity *rlcP)
 void
 rlc_am_free_all_resources (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   int             index;
+
   for (index = 0; index < rlcP->size_input_sdus_buffer; index++) {
     if (rlcP->input_sdus[index]) {
       free_mem_block (rlcP->input_sdus[index]);
@@ -392,9 +418,11 @@ rlc_am_free_all_resources (struct rlc_am_entity *rlcP)
   }
 
   rlc_am_discard_all_pdus (rlcP);
+
   if (rlcP->retransmission_buffer_alloc) {
     free_mem_block (rlcP->retransmission_buffer_alloc);
   }
+
   if (rlcP->receiver_buffer_alloc) {
     free_mem_block (rlcP->receiver_buffer_alloc);
   }
@@ -402,9 +430,11 @@ rlc_am_free_all_resources (struct rlc_am_entity *rlcP)
   if (rlcP->input_sdus_alloc) {
     free_mem_block (rlcP->input_sdus_alloc);
   }
+
   if (rlcP->holes_alloc) {
     free_mem_block (rlcP->holes_alloc);
   }
+
   rlcP->holes_alloc = NULL;
   rlcP->input_sdus_alloc = NULL;
   rlcP->receiver_buffer_alloc = NULL;
@@ -416,7 +446,7 @@ rlc_am_free_all_resources (struct rlc_am_entity *rlcP)
 void
 rlc_am_set_configured_parameters (struct rlc_am_entity *rlcP, mem_block_t * cprimitiveP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   // timers
   //rlcP->timer_poll_trigger = ((struct crlc_primitive *)cprimitiveP->data)->cprimitive.c_config_req.parameters.am_parameters.timer_poll;
   //rlcP-> = ((struct crlc_primitive *)cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.timer_poll_prohibit;
@@ -453,6 +483,7 @@ rlc_am_set_configured_parameters (struct rlc_am_entity *rlcP, mem_block_t * cpri
   } else {
     rlcP->rlc_segment = rlc_am_segment_7;
   }
+
   if (rlcP->sdu_discard_mode == SDU_DISCARD_MODE_RESET) {
     msg ("[RLC AM][RB %d] SDU DISCARD RESET CONFIGURED\n", rlcP->rb_id);
   } else if (rlcP->sdu_discard_mode == SDU_DISCARD_MODE_TIMER_BASED_EXPLICIT) {

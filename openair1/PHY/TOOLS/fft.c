@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,21 +14,21 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
 #include "defs.h"
 #ifndef EXPRESSMIMO_TARGET
-/*! \brief 
+/*! \brief
 //  FFT base 2 in fixed point
 //  Alessandro Nordio, 03/2001
 //  Modified for Intel Free Compiler : R. Knopp, 06.04
@@ -81,31 +81,31 @@
 /// Function ReverseBits()
 /// computes bit reversed permutation vector
 
-uint16_t ReverseBits(uint16_t index, 
-			   uint16_t NumBits)
+uint16_t ReverseBits(uint16_t index,
+                     uint16_t NumBits)
 {
   // This routine reverse bit orders the bits of the argument 'index'
   // It assumes the index has NumBits bits.
   unsigned i, rev;
 
-  for ( i=rev=0; i < NumBits; i++ )
-    {
-      rev = (rev << 1) | (index & 1);
-      index >>= 1;
-    }
+  for ( i=rev=0; i < NumBits; i++ ) {
+    rev = (rev << 1) | (index & 1);
+    index >>= 1;
+  }
 
   return rev;
 }
 
 
-void init_fft(uint16_t size, uint8_t logsize,uint16_t *local_rev) {
+void init_fft(uint16_t size, uint8_t logsize,uint16_t *local_rev)
+{
 
 
   int i;
   //msg("[openair][FFT][INIT] Using %d point fft (%d, %p)\n",size,logsize,local_rev );
 
 
-  for(i=0;i<size;i++) {
+  for(i=0; i<size; i++) {
     local_rev[i] = ReverseBits(i,logsize);    // 8 if SAMPLES_PERCHIP=2, 9 if SAMPLES_PER_CHIP = 4
   }
 }
@@ -114,12 +114,12 @@ void init_fft(uint16_t size, uint8_t logsize,uint16_t *local_rev) {
 #define SHIFT 14 // Shift of twiddle amplitude
 
 void fft(int16_t *x,          /// complex input
-	 int16_t *y,          /// complex output
-	 int16_t *twiddle,    /// complex twiddle factors
-	 uint16_t *rev,        /// bit reversed permutation vector
-	 uint8_t log2size,     /// log2(FFT_SIZE)
-	 uint8_t scale,
-	 uint8_t input_fmt)   /// 0 means 64-bit complex interleaved format else complex-multiply ready repeated format
+         int16_t *y,          /// complex output
+         int16_t *twiddle,    /// complex twiddle factors
+         uint16_t *rev,        /// bit reversed permutation vector
+         uint8_t log2size,     /// log2(FFT_SIZE)
+         uint8_t scale,
+         uint8_t input_fmt)   /// 0 means 64-bit complex interleaved format else complex-multiply ready repeated format
 {
 
   int i,j,k;             // counters
@@ -141,50 +141,49 @@ void fft(int16_t *x,          /// complex input
 
   //  msg("fft: x %x, y %x, twiddle %x,rev %x, format %d, log2size %d, scale %d\n",
   //        x,y,twiddle,rev,input_fmt,log2size,scale);
-  
+
   //  for (i=0;i<10;i++)
   //    printf("%d ",rev[i]);
   //  printf("\n");
 
   if (input_fmt == 0)
-    for(i=0;i<(size>>1);i++)      // reverse 2 complex samples at a time => does the loop size>>1 times
-      {
-	
-	mm0 = x_pt[i];
+    for(i=0; i<(size>>1); i++) {  // reverse 2 complex samples at a time => does the loop size>>1 times
+
+      mm0 = x_pt[i];
 
 
-	mm1 = mm0;
-	mm2 = mm0;
+      mm1 = mm0;
+      mm2 = mm0;
 
 
 
-	mm1 = _m_punpckldq(mm1,mm0);
+      mm1 = _m_punpckldq(mm1,mm0);
 
-	mm2 = _m_punpckhdq(mm2,mm0);
+      mm2 = _m_punpckhdq(mm2,mm0);
 
-	index = revl[0];             // get the output index (reverse bit ordering index)
+      index = revl[0];             // get the output index (reverse bit ordering index)
 
-	//	printf("%x\n",index);
-	y_pt[index] = mm1;
+      //  printf("%x\n",index);
+      y_pt[index] = mm1;
 
-	//	printk("fft: rev0 = %d\n",index);
+      //  printk("fft: rev0 = %d\n",index);
 
-	//	printf("%x\n",index);
-	index = revl[1];             // get the output index (reverse bit ordering index)
+      //  printf("%x\n",index);
+      index = revl[1];             // get the output index (reverse bit ordering index)
 
-	y_pt[index] = mm2;
-	revl+=2;
-	//	printk("fft: rev1 = %d\n",index);
-	// increase reverse buffer pointer
-      }
+      y_pt[index] = mm2;
+      revl+=2;
+      //  printk("fft: rev1 = %d\n",index);
+      // increase reverse buffer pointer
+    }
   else
-    for(i=0;i<size;i++)      // reverse 2 complex samples at a time => does the loop size>>1 times
+    for(i=0; i<size; i++)    // reverse 2 complex samples at a time => does the loop size>>1 times
       y_pt[rev[i]] = x_pt[i];
 
 
   //return;
- 
-  // *** FIRST FFT STAGE *** 
+
+  // *** FIRST FFT STAGE ***
 
   // Now the input data is stored in y in reverse bit order in the format |x_i 0 x_i 0| (Re Im Re Im)
   // SECOND STEP: does the radix-2 FFT itself
@@ -207,7 +206,7 @@ void fft(int16_t *x,          /// complex input
   y_pt = (__m64 *)&y[0];
 
   //1 butterfly = 2 inputs
-  for(i=0;i<(size>>1);i++){
+  for(i=0; i<(size>>1); i++) {
 
     /*
       msg("[PHY_fft_intel_mmx: y_pt = %p\n",y_pt);
@@ -227,24 +226,24 @@ void fft(int16_t *x,          /// complex input
     //shift four 16-bit values right by 1 while shifting in the sign bit <=> PSRAWI and store the result for next stage
     y_pt[0] = mm0; //_mm_srai_pi16(mm0,1);
     y_pt[1] = mm1; //_mm_srai_pi16(mm1,1);
-      
+
 
     y_pt += 2;
 
 
-    
+
   }
-  
+
   // - Stages from 2 to log2size-1
 
   tw_pt++;                      // for the 2nd stage we start with twiddle[4]
   bs  =2;                       // the blocksize is two
   n_b =size>>2;                 // half n_b
 
-  for(i=1;i<(log2size>>1);i++) {
+  for(i=1; i<(log2size>>1); i++) {
     y_pt = (__m64 *)&y[0];
-    
-    for(k=0;k<n_b;k++){
+
+    for(k=0; k<n_b; k++) {
       // bs is greater than or equal to 2 so I can unroll a bit the inner loop
       // so that every loop computes two butterflies
       // bs is greater than or equal to 2 so I can unroll a bit the inner loop
@@ -256,42 +255,44 @@ void fft(int16_t *x,          /// complex input
       //   X1 = x0-w0*x1
       //   X2 = x2+w1*x3
       //   X3 = x2-w1*x3
-      
-      for(j=0;j<bs;j+=2) {
-	mm0 = _mm_madd_pi16(tw_pt[0],y_pt[bs]);//PMADDWD
-	mm0 = _mm_srai_pi32(mm0,SHIFT);//PSRAD, divide the 32-bit result of multiplication by 2^15 while shifting in the sign bit
-	mm0 = _mm_packs_pi32(mm0,mm0);//PACKSSWD pack with signed saturation to restore the result in format |Re Im Re Im|
-	y_pt[bs] = _mm_subs_pi16(y_pt[0],mm0);//PSUBSW
-	y_pt[0] = _mm_adds_pi16(y_pt[0],mm0);//PADDSW
-	
-	
-	
-	
-	mm0 = _mm_madd_pi16(tw_pt[1],y_pt[bs+1]);//PMADDWD
-	mm0 = _mm_srai_pi32(mm0,SHIFT);//PSRAD, divide the 32-bit result of multiplication by 2^15 while shifting in the sign bit
-	mm0 = _mm_packs_pi32(mm0,mm0);//PACKSSWD pack with signed saturation to restore the result in format |Re Im Re Im|
-	y_pt[bs+1] = _mm_subs_pi16(y_pt[1],mm0);//PSUBSW
-	y_pt[1] = _mm_adds_pi16(y_pt[1],mm0);//PADDSW
-	
-	
-	y_pt += 2;
-	tw_pt += 2;
+
+      for(j=0; j<bs; j+=2) {
+        mm0 = _mm_madd_pi16(tw_pt[0],y_pt[bs]);//PMADDWD
+        mm0 = _mm_srai_pi32(mm0,SHIFT);//PSRAD, divide the 32-bit result of multiplication by 2^15 while shifting in the sign bit
+        mm0 = _mm_packs_pi32(mm0,mm0);//PACKSSWD pack with signed saturation to restore the result in format |Re Im Re Im|
+        y_pt[bs] = _mm_subs_pi16(y_pt[0],mm0);//PSUBSW
+        y_pt[0] = _mm_adds_pi16(y_pt[0],mm0);//PADDSW
+
+
+
+
+        mm0 = _mm_madd_pi16(tw_pt[1],y_pt[bs+1]);//PMADDWD
+        mm0 = _mm_srai_pi32(mm0,SHIFT);//PSRAD, divide the 32-bit result of multiplication by 2^15 while shifting in the sign bit
+        mm0 = _mm_packs_pi32(mm0,mm0);//PACKSSWD pack with signed saturation to restore the result in format |Re Im Re Im|
+        y_pt[bs+1] = _mm_subs_pi16(y_pt[1],mm0);//PSUBSW
+        y_pt[1] = _mm_adds_pi16(y_pt[1],mm0);//PADDSW
+
+
+        y_pt += 2;
+        tw_pt += 2;
       }
+
       tw_pt -=bs;                  // twiddle pointer now points to the first twiddle of this stage
       y_pt +=bs;                   // jump to next block
     }
+
     tw_pt+=bs;                     // jump to the first twiddle of the next stage
-    
+
     bs  <<=1;                       // double bs
     n_b >>=1;                       // half n_b
 
   }
-  
+
   // last stage we shift by scale (for a normalized fft, log2size/2)
-  for(i=(log2size>>1);i<log2size;i++) {
+  for(i=(log2size>>1); i<log2size; i++) {
     y_pt = (__m64 *)&y[0];
-    
-    for(k=0;k<n_b;k++) {
+
+    for(k=0; k<n_b; k++) {
       // bs is greater than or equal to 2 so I can unroll a bit the inner loop
       // so that every loop computes two butterflies
       // bs is greater than or equal to 2 so I can unroll a bit the inner loop
@@ -303,38 +304,40 @@ void fft(int16_t *x,          /// complex input
       //   X1 = x0-w0*x1
       //   X2 = x2+w1*x3
       //   X3 = x2-w1*x3
-      
-      for(j=0;j<bs;j+=2) {
-	mm0 = _mm_madd_pi16(tw_pt[0],y_pt[bs]);//PMADDWD
-	mm0 = _mm_srai_pi32(mm0,SHIFT);//PSRAD, divide the 32-bit result of multiplication by 2^15 while shifting in the sign bit
-	mm0 = _mm_packs_pi32(mm0,mm0);//PACKSSWD pack with signed saturation to restore the result in format |Re Im Re Im|
-	
-	mm1 = _mm_adds_pi16(y_pt[0],mm0);//PADDSW
-	mm2 = _mm_subs_pi16(y_pt[0],mm0);//PSUBSW
-	//shift four 16-bit values right by 1 while shifting in the sign bit <=> PSRAWI and store the result for next stage
-	y_pt[0] = _mm_srai_pi16(mm1,scale2);
-	y_pt[bs] = _mm_srai_pi16(mm2,scale2);
-	
-	mm0 = _mm_madd_pi16(tw_pt[1],y_pt[bs+1]);//PMADDWD
-	mm0 = _mm_srai_pi32(mm0,SHIFT);//PSRAD, divide the 32-bit result of multiplication by 2^15 while shifting in the sign bit
-	mm0 = _mm_packs_pi32(mm0,mm0);//PACKSSWD pack with signed saturation to restore the result in format |Re Im Re Im|
-	mm1 = _mm_adds_pi16(y_pt[1],mm0);//PADDSW
-	mm2 = _mm_subs_pi16(y_pt[1],mm0);//PSUBSW
-	//shift four 16-bit values right by 1 while shifting in the sign bit <=> PSRAWI and store the result for next stage
-	y_pt[1] = _mm_srai_pi16(mm1,scale2);
-	y_pt[bs+1] = _mm_srai_pi16(mm2,scale2);
-	
-	y_pt += 2;
-	tw_pt += 2;
+
+      for(j=0; j<bs; j+=2) {
+        mm0 = _mm_madd_pi16(tw_pt[0],y_pt[bs]);//PMADDWD
+        mm0 = _mm_srai_pi32(mm0,SHIFT);//PSRAD, divide the 32-bit result of multiplication by 2^15 while shifting in the sign bit
+        mm0 = _mm_packs_pi32(mm0,mm0);//PACKSSWD pack with signed saturation to restore the result in format |Re Im Re Im|
+
+        mm1 = _mm_adds_pi16(y_pt[0],mm0);//PADDSW
+        mm2 = _mm_subs_pi16(y_pt[0],mm0);//PSUBSW
+        //shift four 16-bit values right by 1 while shifting in the sign bit <=> PSRAWI and store the result for next stage
+        y_pt[0] = _mm_srai_pi16(mm1,scale2);
+        y_pt[bs] = _mm_srai_pi16(mm2,scale2);
+
+        mm0 = _mm_madd_pi16(tw_pt[1],y_pt[bs+1]);//PMADDWD
+        mm0 = _mm_srai_pi32(mm0,SHIFT);//PSRAD, divide the 32-bit result of multiplication by 2^15 while shifting in the sign bit
+        mm0 = _mm_packs_pi32(mm0,mm0);//PACKSSWD pack with signed saturation to restore the result in format |Re Im Re Im|
+        mm1 = _mm_adds_pi16(y_pt[1],mm0);//PADDSW
+        mm2 = _mm_subs_pi16(y_pt[1],mm0);//PSUBSW
+        //shift four 16-bit values right by 1 while shifting in the sign bit <=> PSRAWI and store the result for next stage
+        y_pt[1] = _mm_srai_pi16(mm1,scale2);
+        y_pt[bs+1] = _mm_srai_pi16(mm2,scale2);
+
+        y_pt += 2;
+        tw_pt += 2;
       }
+
       tw_pt -=bs;                  // twiddle pointer now points to the first twiddle of this stage
       y_pt +=bs;                   // jump to next block
     }
+
     tw_pt+=bs;                     // jump to the first twiddle of the next stage
     bs  <<=1;                       // double bs
     n_b >>=1;                       // half n_b
   }
-  
+
   _mm_empty();
   _m_empty();
 
@@ -344,18 +347,19 @@ void fft(int16_t *x,          /// complex input
 
 #else //EXPRESSMIMO_TARGET
 
-void init_fft(uint16_t size, uint8_t logsize,uint16_t *local_rev) {
+void init_fft(uint16_t size, uint8_t logsize,uint16_t *local_rev)
+{
 
   return;
 }
 
 void fft(int16_t *x,          /// complex input
-	 int16_t *y,          /// complex output
-	 int16_t *twiddle,    /// complex twiddle factors
-	 uint16_t *rev,        /// bit reversed permutation vector
-	 uint8_t log2size,     /// log2(FFT_SIZE)
-	 uint8_t scale,
-	 uint8_t input_fmt)   /// 0 means 64-bit complex interleaved format else complex-multiply ready repeated format
+         int16_t *y,          /// complex output
+         int16_t *twiddle,    /// complex twiddle factors
+         uint16_t *rev,        /// bit reversed permutation vector
+         uint8_t log2size,     /// log2(FFT_SIZE)
+         uint8_t scale,
+         uint8_t input_fmt)   /// 0 means 64-bit complex interleaved format else complex-multiply ready repeated format
 {
 
 }
@@ -372,7 +376,8 @@ void fft(int16_t *x,          /// complex input
 
 uint32_t s0, s1, s2, b;
 
-inline void pset_taus_seed(uint32_t off) {
+inline void pset_taus_seed(uint32_t off)
+{
 
 
   s0 = (uint32_t)0x1e23d852 + (off<<4);
@@ -381,7 +386,8 @@ inline void pset_taus_seed(uint32_t off) {
 
 }
 
-inline uint32_t ptaus() {
+inline uint32_t ptaus()
+{
 
   b = (((s0 << 13) ^ s0) >> 19);
   s0 = (((s0 & 0xFFFFFFFE) << 12)^  b);
@@ -392,46 +398,51 @@ inline uint32_t ptaus() {
   return s0 ^ s1 ^ s2;
 }
 
-main() {
+main()
+{
 
   int16_t local_rev[256];
   int i;
   int input[512],output[512];
-  
+
   init_fft(256,8,local_rev);
 
   pset_taus_seed(3);
 
-  for (i=0;i<256;i++) {
+  for (i=0; i<256; i++) {
     input[i] = (((ptaus()>>5)&0xffff0000) | ((ptaus()>>21)&0x0000ffff);
   }
 
-  fft(input, 
-      output,
-      twiddle_fft256,    /// complex twiddle factors
-      local_rev,        /// bit reversed permutation vector
-      8,
-      4,
-      0);
-/*
+             fft(input,
+                 output,
+                 twiddle_fft256,    /// complex twiddle factors
+                 local_rev,        /// bit reversed permutation vector
+                 8,
+                 4,
+                 0);
+  /*
 
-  fft(input, 
-      output,
-      twiddle_fft256,    /// complex twiddle factors
-      local_rev,        /// bit reversed permutation vector
-      8,
-      4,
-      0);
-*/
+    fft(input,
+        output,
+        twiddle_fft256,    /// complex twiddle factors
+        local_rev,        /// bit reversed permutation vector
+        8,
+        4,
+        0);
+  */
 
   printf("input = [");
-  for (i=0;i<256;i++)
+
+  for (i=0; i<256; i++)
     printf("%d+sqrt(-1)*(%d)\n",((int16_t*)input)[2*i],((int16_t*)input)[1+(2*i)]);
+
   printf("];\n");
 
   printf("output = [");
-  for (i=0;i<256;i++)
+
+  for (i=0; i<256; i++)
     printf("%d+sqrt(-1)*(%d)\n",((int16_t*)output)[4*i],((int16_t*)output)[1+(4*i)]);
+
   printf("];\n");
 }
 

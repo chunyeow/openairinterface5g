@@ -39,7 +39,7 @@
 #define MOBILE_STATION_CLASSMARK_3_MAXIMUM_LENGTH 1
 
 typedef struct {
-    uint8_t field;
+  uint8_t field;
 } MobileStationClassmark3;
 
 int encode_mobile_station_classmark_3(MobileStationClassmark3 *mobilestationclassmark3, uint8_t iei, uint8_t *buffer, uint32_t len);

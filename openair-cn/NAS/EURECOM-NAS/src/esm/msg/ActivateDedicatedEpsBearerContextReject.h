@@ -55,7 +55,7 @@
 # define ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<0)
 
 typedef enum activate_dedicated_eps_bearer_context_reject_iei_tag {
-    ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
+  ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
 } activate_dedicated_eps_bearer_context_reject_iei;
 
 /*
@@ -66,15 +66,15 @@ typedef enum activate_dedicated_eps_bearer_context_reject_iei_tag {
  */
 
 typedef struct activate_dedicated_eps_bearer_context_reject_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                                  protocoldiscriminator:4;
-    EpsBearerIdentity                                      epsbeareridentity:4;
-    ProcedureTransactionIdentity                           proceduretransactionidentity;
-    MessageType                                            messagetype;
-    EsmCause                                               esmcause;
-    /* Optional fields */
-    uint32_t                                               presencemask;
-    ProtocolConfigurationOptions                           protocolconfigurationoptions;
+  /* Mandatory fields */
+  ProtocolDiscriminator                                  protocoldiscriminator:4;
+  EpsBearerIdentity                                      epsbeareridentity:4;
+  ProcedureTransactionIdentity                           proceduretransactionidentity;
+  MessageType                                            messagetype;
+  EsmCause                                               esmcause;
+  /* Optional fields */
+  uint32_t                                               presencemask;
+  ProtocolConfigurationOptions                           protocolconfigurationoptions;
 } activate_dedicated_eps_bearer_context_reject_msg;
 
 int decode_activate_dedicated_eps_bearer_context_reject(activate_dedicated_eps_bearer_context_reject_msg *activatededicatedepsbearercontextreject, uint8_t *buffer, uint32_t len);

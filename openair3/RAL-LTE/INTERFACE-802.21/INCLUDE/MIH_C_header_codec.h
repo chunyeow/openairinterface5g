@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -101,17 +101,17 @@ TYPEDEF_INTEGER1(MIH_C_TLV_TYPE);
 * \brief Structure defining the header of messages exchanged between MIH entities.
 */
 typedef struct MIH_C_HEADER {
-    MIH_C_VERSION_T                 version;
-    MIH_C_ACK_REQ_T                 ack_req;
-    MIH_C_ACK_RSP_T                 ack_rsp;
-    MIH_C_UIR_T                     uir;
-    MIH_C_M_T                       more_fragment;
-    MIH_C_FN_T                      fragment_number;
-    MIH_C_SID_T                     service_identifier;
-    MIH_C_OPCODE_T                  operation_code;
-    MIH_C_AID_T                     action_identifier;
-    MIH_C_TRANSACTION_ID_T          transaction_id;
-    MIH_C_VARIABLE_PAYLOAD_LENGTH_T payload_length;
+  MIH_C_VERSION_T                 version;
+  MIH_C_ACK_REQ_T                 ack_req;
+  MIH_C_ACK_RSP_T                 ack_rsp;
+  MIH_C_UIR_T                     uir;
+  MIH_C_M_T                       more_fragment;
+  MIH_C_FN_T                      fragment_number;
+  MIH_C_SID_T                     service_identifier;
+  MIH_C_OPCODE_T                  operation_code;
+  MIH_C_AID_T                     action_identifier;
+  MIH_C_TRANSACTION_ID_T          transaction_id;
+  MIH_C_VARIABLE_PAYLOAD_LENGTH_T payload_length;
 } MIH_C_HEADER_T;
 //-----------------------------------------------------------------------------
 public_header_codec(int MIH_C_HEADER2String(MIH_C_HEADER_T* headerP, char* bufP);)

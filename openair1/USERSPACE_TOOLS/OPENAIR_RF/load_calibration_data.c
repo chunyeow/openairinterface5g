@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -49,7 +49,7 @@ int             usr_load_calibration_data (unsigned int daq_fdP, unsigned int nb
 int
 readln (int file_desc, int *value)
 {
-//------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------
   char            ascii_buffer[20];
   int             status;
   int             nb_cars = 0;
@@ -58,11 +58,14 @@ readln (int file_desc, int *value)
     if (nb_cars >= 20) {
       return -1;
     }
+
     status = read (file_desc, &ascii_buffer[nb_cars], 1);
+
     if (status != 1) {
       return -1;
     }
   } while (ascii_buffer[nb_cars++] != '\n');
+
   ascii_buffer[nb_cars - 1] = 0;
   *value = atoi (ascii_buffer);
   printf ("[AS] loading gain %d\n", *value);
@@ -73,7 +76,7 @@ readln (int file_desc, int *value)
 int
 usr_load_calibration_data (unsigned int daq_fdP, unsigned int nb_rf_cardsP, char **argvP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   HARDWARE_CONFIGURATION hardware_configuration;
   char            file_name[] = "                                                  ";
   char            file_name_start[] = "../arch/platon/rf/PLATON_";
@@ -88,8 +91,8 @@ usr_load_calibration_data (unsigned int daq_fdP, unsigned int nb_rf_cardsP, char
   memset (inv_rx_gain_table, 0, sizeof (int) * 4 * 200);
   memset (rx_nf_table, 0, sizeof (int) * 4 * 200);
 
-    printf ("[AS][INFO][LOAD CALIB DATA]  nb_rf_cards %d \n", nb_rf_cardsP);
-    ioctl (daq_fdP, DAQ_GET_HARDWARE_CONFIGURATION, &hardware_configuration);
+  printf ("[AS][INFO][LOAD CALIB DATA]  nb_rf_cards %d \n", nb_rf_cardsP);
+  ioctl (daq_fdP, DAQ_GET_HARDWARE_CONFIGURATION, &hardware_configuration);
 
   //printf ("[AS][INFO][LOAD CALIB DATA] Configured for %d antennas, master_id = %d\n", hardware_configuration.number_of_DAQ_cards, hardware_configuration.master_id);
 
@@ -106,23 +109,25 @@ usr_load_calibration_data (unsigned int daq_fdP, unsigned int nb_rf_cardsP, char
     strcat (file_name, file_tx_extension);
     calibration_file_tx_name = file_name;
 
-    
+
     offset = 0;
     printf ("[AS][INFO][LOAD CALIB DATA]  Loading gains from file %s for antenna %d\n", calibration_file_tx_name, index);
-    
+
     if ((fd = open (calibration_file_tx_name, O_RDONLY)) < 0) {
       printf ("[AS][ERROR][LOAD CALIB DATA] Could not open %s\n", calibration_file_tx_name);
       close (daq_fdP);
       return(-1);
-     
+
     }
+
     while ((readln (fd, &inv_tx_gain_table[index][offset++]) == 0) && (offset < 300));
+
     close (fd);
 
 
     file_name[0] = '\0';
     strcat (file_name, file_name_start);
-    
+
     strcat (file_name, argvP[1]);
 
     strcat (file_name, "_");
@@ -133,6 +138,7 @@ usr_load_calibration_data (unsigned int daq_fdP, unsigned int nb_rf_cardsP, char
     calibration_file_rx_name = file_name;
     offset = 0;
     printf ("[AS][INFO][LOAD CALIB DATA]  Loading gains from file %s for antenna %d\n", calibration_file_rx_name, index);
+
     if ((fd = open (calibration_file_rx_name, O_RDONLY)) < 0) {
       printf ("[AS][ERROR][LOAD CALIB DATA] Could not open %s\n", calibration_file_rx_name);
       close (daq_fdP);
@@ -140,13 +146,17 @@ usr_load_calibration_data (unsigned int daq_fdP, unsigned int nb_rf_cardsP, char
     }
 
     while ((readln (fd, &inv_rx_gain_table[index][offset++]) == 0) && (offset < 200));
+
     offset = 0;
+
     while ((readln (fd, &rx_nf_table[index][offset++]) == 0) && (offset < 200));
+
     close (fd);
   }
-  ioctl (daq_fdP, DAQ_SET_CALIBRATION_TX_DATA, &inv_tx_gain_table[0][0]);       
-  ioctl (daq_fdP, DAQ_SET_CALIBRATION_RX_DATA, &inv_rx_gain_table[0][0]);        
-  ioctl (daq_fdP, DAQ_SET_NOISE_FACTOR_DATA, &rx_nf_table[0][0]);    
+
+  ioctl (daq_fdP, DAQ_SET_CALIBRATION_TX_DATA, &inv_tx_gain_table[0][0]);
+  ioctl (daq_fdP, DAQ_SET_CALIBRATION_RX_DATA, &inv_rx_gain_table[0][0]);
+  ioctl (daq_fdP, DAQ_SET_NOISE_FACTOR_DATA, &rx_nf_table[0][0]);
   printf ("[AS][INFO][LOAD CALIB DATA]  DONE\n");
   return 0;
 }

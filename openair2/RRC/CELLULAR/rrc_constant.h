@@ -3,7 +3,7 @@
                              -------------------
     begin             : Someday 2001
     copyright         : (C) 2001, 2010 by Eurecom
-    created by        : Lionel.Gauthier@eurecom.fr	
+    created by        : Lionel.Gauthier@eurecom.fr
     modified by       : Michelle.Wetterwald@eurecom.fr
  **************************************************************************
   RRC protocol constants
@@ -62,8 +62,8 @@
 // !!Activate or deactivate the MBMS Protocol!!
 //#define ALLOW_MBMS_PROTOCOL
 
-//#define MBMS_TEST_MODE	//Used in stand-alone mode (MBMS standalone simulator)
-#define MBMS_INTEGRATION_MODE	//Used in platform mode - simulation or realtime mode
+//#define MBMS_TEST_MODE  //Used in stand-alone mode (MBMS standalone simulator)
+#define MBMS_INTEGRATION_MODE //Used in platform mode - simulation or realtime mode
 
 //#define ALLOW_MBMS_ACCESS_INFO
 
@@ -252,7 +252,7 @@
 
 
 //The real value is defined in rrc_msg_constant.h
-#define ACCESS_STRATUM_RELEASE_INDICATOR_DEFAULT  ACCESS_STRATUM_RELEASE_INDICATOR_REL_6 
+#define ACCESS_STRATUM_RELEASE_INDICATOR_DEFAULT  ACCESS_STRATUM_RELEASE_INDICATOR_REL_6
 #define EURECOM_KERNEL_RELEASE_INDICATOR_DEFAULT  EURECOM_KERNEL_RELEASE_INDICATOR_REL_26
 
 ////25.331

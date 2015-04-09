@@ -54,7 +54,7 @@
 # define ATTACH_REJECT_ESM_MESSAGE_CONTAINER_PRESENT (1<<0)
 
 typedef enum attach_reject_iei_tag {
-    ATTACH_REJECT_ESM_MESSAGE_CONTAINER_IEI  = 0x78, /* 0x78 = 120 */
+  ATTACH_REJECT_ESM_MESSAGE_CONTAINER_IEI  = 0x78, /* 0x78 = 120 */
 } attach_reject_iei;
 
 /*
@@ -65,14 +65,14 @@ typedef enum attach_reject_iei_tag {
  */
 
 typedef struct attach_reject_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator       protocoldiscriminator:4;
-    SecurityHeaderType          securityheadertype:4;
-    MessageType                 messagetype;
-    EmmCause                    emmcause;
-    /* Optional fields */
-    uint32_t                    presencemask;
-    EsmMessageContainer         esmmessagecontainer;
+  /* Mandatory fields */
+  ProtocolDiscriminator       protocoldiscriminator:4;
+  SecurityHeaderType          securityheadertype:4;
+  MessageType                 messagetype;
+  EmmCause                    emmcause;
+  /* Optional fields */
+  uint32_t                    presencemask;
+  EsmMessageContainer         esmmessagecontainer;
 } attach_reject_msg;
 
 int decode_attach_reject(attach_reject_msg *attachreject, uint8_t *buffer, uint32_t len);

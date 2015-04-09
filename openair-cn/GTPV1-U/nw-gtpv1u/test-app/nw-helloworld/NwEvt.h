@@ -29,9 +29,9 @@
 
 #ifndef __NW_EVT_H__
 #define __NW_EVT_H__
-/** 
+/**
  * @file NwEvt.h
- * @brief 
+ * @brief
 */
 
 #ifdef __WITH_LIBEVENT__
@@ -60,9 +60,8 @@ typedef struct event                    NwEventT;
 
 /* HACK : Defining dummy values for compilation!*/
 
-typedef struct 
-{ 
-  int __tbd; 
+typedef struct {
+  int __tbd;
 } NwEventT;
 
 #define NW_EVT_READ                     (0)
@@ -71,9 +70,9 @@ typedef struct
 #define NW_TMR_CALLBACK(__cbFunc)       __cbFunc(void *arg)
 
 
-#define NW_EVT_INIT()                   do { printf("error: Event library not defined!\n"); exit (0); } while(0) 
-#define NW_EVT_LOOP()                   do { printf("error: Event library not defined!\n"); exit (0); } while(0) 
-#define NW_EVENT_ADD(...)               do { printf("error: Event library not defined!\n"); exit (0); } while(0) 
+#define NW_EVT_INIT()                   do { printf("error: Event library not defined!\n"); exit (0); } while(0)
+#define NW_EVT_LOOP()                   do { printf("error: Event library not defined!\n"); exit (0); } while(0)
+#define NW_EVENT_ADD(...)               do { printf("error: Event library not defined!\n"); exit (0); } while(0)
 
 
 #endif

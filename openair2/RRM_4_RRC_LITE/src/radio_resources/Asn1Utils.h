@@ -38,16 +38,17 @@
 
 using namespace std;
 
-class Asn1Utils  {
-    public:
+class Asn1Utils
+{
+public:
 
-        Asn1Utils () {};
-        ~Asn1Utils ();
+  Asn1Utils () {};
+  ~Asn1Utils ();
 
-        static DRB_Identity_t*   Clone(DRB_Identity_t*);
-        static DRB_ToAddMod_t*   Clone(DRB_ToAddMod_t*);
-        static SRB_ToAddMod_t*   Clone(SRB_ToAddMod_t*);
-        static MAC_MainConfig_t* Clone(MAC_MainConfig_t*);
+  static DRB_Identity_t*   Clone(DRB_Identity_t*);
+  static DRB_ToAddMod_t*   Clone(DRB_ToAddMod_t*);
+  static SRB_ToAddMod_t*   Clone(SRB_ToAddMod_t*);
+  static MAC_MainConfig_t* Clone(MAC_MainConfig_t*);
 };
 #    endif
 

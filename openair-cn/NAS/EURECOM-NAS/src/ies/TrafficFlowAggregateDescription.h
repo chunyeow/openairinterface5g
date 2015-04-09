@@ -39,7 +39,7 @@
 #define TRAFFIC_FLOW_AGGREGATE_DESCRIPTION_MAXIMUM_LENGTH 1
 
 typedef struct {
-    uint8_t field;
+  uint8_t field;
 } TrafficFlowAggregateDescription;
 
 int encode_traffic_flow_aggregate_description(TrafficFlowAggregateDescription *trafficflowaggregatedescription, uint8_t iei, uint8_t *buffer, uint32_t len);

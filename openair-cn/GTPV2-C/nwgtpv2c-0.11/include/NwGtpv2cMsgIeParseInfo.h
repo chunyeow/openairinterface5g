@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                              n w - g t p v 2 c                             * 
+ *                              n w - g t p v 2 c                             *
  *    G P R S   T u n n e l i n g    P r o t o c o l   v 2 c    S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -37,13 +37,12 @@
 #include "NwTypes.h"
 #include "NwGtpv2c.h"
 
-/** 
+/**
  * @file NwGtpv2cMsgParseInfo.h
  * @brief This file defines APIs for to parse incoming messages.
 */
 
-typedef struct
-{
+typedef struct {
   NwU8T                 groupedIeType;
   NwU16T                mandatoryIeCount;
   NwGtpv2cStackHandleT  hStack;
@@ -55,8 +54,7 @@ typedef struct
 
 } NwGtpv2cGroupedIeParseInfoT;
 
-typedef struct
-{
+typedef struct {
   NwU16T                msgType;
   NwU16T                mandatoryIeCount;
   NwGtpv2cStackHandleT  hStack;
@@ -80,9 +78,9 @@ NwRcT
 nwGtpv2cMsgIeParseInfoDelete(NwGtpv2cMsgIeParseInfoT* thiz);
 
 NwRcT
-nwGtpv2cMsgIeParse(NW_IN NwGtpv2cMsgIeParseInfoT* thiz, 
-    NW_IN       NwGtpv2cMsgHandleT hMsg,
-    NW_INOUT    NwGtpv2cErrorT     *pError);
+nwGtpv2cMsgIeParse(NW_IN NwGtpv2cMsgIeParseInfoT* thiz,
+                   NW_IN       NwGtpv2cMsgHandleT hMsg,
+                   NW_INOUT    NwGtpv2cErrorT     *pError);
 
 #ifdef __cplusplus
 }

@@ -4,7 +4,7 @@
 #include_next <netinet/in.h>
 
 #ifndef IPPROTO_MH
-#define IPPROTO_MH	135	/* IPv6 Mobility Header */
+#define IPPROTO_MH  135 /* IPv6 Mobility Header */
 #endif
 
 /* This section is to provide limited Advanced Socket API for IPv6
@@ -35,7 +35,7 @@ extern int inet6_rth_gettype(const void *);
 #endif
 
 #ifndef IPV6_JOIN_ANYCAST
-#define IPV6_JOIN_ANYCAST	27
+#define IPV6_JOIN_ANYCAST 27
 #endif
 
 /* Software only works on >=2.6.14 kernels, so RFC3542 values for
@@ -54,7 +54,7 @@ extern int inet6_rth_gettype(const void *);
 #define IPV6_RECVHOPLIMIT       51
 #ifdef IPV6_HOPLIMIT
 #undef IPV6_HOPLIMIT
-#define IPV6_HOPLIMIT		52
+#define IPV6_HOPLIMIT   52
 #endif
 #endif
 
@@ -62,7 +62,7 @@ extern int inet6_rth_gettype(const void *);
 #define IPV6_RECVRTHDR          56
 #ifdef IPV6_RTHDR
 #undef IPV6_RTHDR
-#define IPV6_RTHDR		57
+#define IPV6_RTHDR    57
 #endif
 #endif
 
@@ -70,8 +70,8 @@ extern int inet6_rth_gettype(const void *);
 #define IPV6_RECVDSTOPTS        58
 #ifdef IPV6_DSTOPTS
 #undef IPV6_DSTOPTS
-#define IPV6_DSTOPTS		59
+#define IPV6_DSTOPTS    59
 #endif
 #endif
 
-#endif	/* netinet/in.h */
+#endif  /* netinet/in.h */

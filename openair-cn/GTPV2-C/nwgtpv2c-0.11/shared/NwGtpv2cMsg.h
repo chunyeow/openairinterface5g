@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                              n w - g t p v 2 c                             * 
+ *                              n w - g t p v 2 c                             *
  *    G P R S   T u n n e l i n g    P r o t o c o l   v 2 c    S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -37,7 +37,7 @@
 #include "NwTypes.h"
 #include "NwGtpv2c.h"
 
-/** 
+/**
  * @file NwGtpv2cMsg.h
  * @brief This file defines APIs for to build new outgoing gtpv2c messages and to parse incoming messages.
  */
@@ -185,40 +185,35 @@ extern "C" {
 
 #pragma pack(1)
 
-typedef struct NwGtpv2cIeTv1
-{
+typedef struct NwGtpv2cIeTv1 {
   NwU8T  t;
   NwU16T l;
   NwU8T  i;
   NwU8T  v;
 } NwGtpv2cIeTv1T;
 
-typedef struct NwGtpv2cIeTv2
-{
+typedef struct NwGtpv2cIeTv2 {
   NwU8T  t;
   NwU16T l;
   NwU8T  i;
   NwU16T  v;
 } NwGtpv2cIeTv2T;
 
-typedef struct NwGtpv2cIeTv4
-{
+typedef struct NwGtpv2cIeTv4 {
   NwU8T  t;
   NwU16T l;
   NwU8T  i;
   NwU32T  v;
 } NwGtpv2cIeTv4T;
 
-typedef struct NwGtpv2cIeTv8
-{
+typedef struct NwGtpv2cIeTv8 {
   NwU8T  t;
   NwU16T l;
   NwU8T  i;
   NwU64T v;
 } NwGtpv2cIeTv8T;
 
-typedef struct NwGtpv2cIeTlv
-{
+typedef struct NwGtpv2cIeTlv {
   NwU8T  t;
   NwU16T l;
   NwU8T  i;
@@ -227,16 +222,16 @@ typedef struct NwGtpv2cIeTlv
 #pragma pack()
 
 
- /**
-  * Allocate a gtpv2c message.
-  *
-  * @param[in] hGtpcStackHandle : gtpv2c stack handle.
-  * @param[in] teidPresent : TEID is present flag.
-  * @param[in] msgType : Message type for this message.
-  * @param[in] teid : TEID for this message.
-  * @param[in] seqNum : Sequence number for this message.
-  * @param[out] phMsg : Pointer to message handle.
-  */
+/**
+ * Allocate a gtpv2c message.
+ *
+ * @param[in] hGtpcStackHandle : gtpv2c stack handle.
+ * @param[in] teidPresent : TEID is present flag.
+ * @param[in] msgType : Message type for this message.
+ * @param[in] teid : TEID for this message.
+ * @param[in] seqNum : Sequence number for this message.
+ * @param[out] phMsg : Pointer to message handle.
+ */
 
 NwRcT
 nwGtpv2cMsgNew( NW_IN NwGtpv2cStackHandleT hGtpcStackHandle,
@@ -247,363 +242,363 @@ nwGtpv2cMsgNew( NW_IN NwGtpv2cStackHandleT hGtpcStackHandle,
                 NW_OUT NwGtpv2cMsgHandleT *phMsg);
 
 
- /**
-  * Allocate a gtpv2c message from data buffer.
-  *
-  * @param[in] hGtpcStackHandle : gtpv2c stack handle.
-  * @param[in] pBuf: Buffer to be copied in this message.
-  * @param[in] bufLen: Buffer length to be copied in this message.
-  * @param[out] phMsg : Pointer to message handle.
-  */
+/**
+ * Allocate a gtpv2c message from data buffer.
+ *
+ * @param[in] hGtpcStackHandle : gtpv2c stack handle.
+ * @param[in] pBuf: Buffer to be copied in this message.
+ * @param[in] bufLen: Buffer length to be copied in this message.
+ * @param[out] phMsg : Pointer to message handle.
+ */
 
 NwRcT
 nwGtpv2cMsgFromBufferNew( NW_IN NwGtpv2cStackHandleT hGtpcStackHandle,
-                         NW_IN NwU8T* pBuf,
-                         NW_IN NwU32T bufLen,
-                         NW_OUT NwGtpv2cMsgHandleT *phMsg);
+                          NW_IN NwU8T* pBuf,
+                          NW_IN NwU32T bufLen,
+                          NW_OUT NwGtpv2cMsgHandleT *phMsg);
 
- /**
-  * Free a gtpv2c message.
-  *
-  * @param[in] hGtpcStackHandle : gtpv2c stack handle.
-  * @param[in] hMsg : Message handle.
-  */
+/**
+ * Free a gtpv2c message.
+ *
+ * @param[in] hGtpcStackHandle : gtpv2c stack handle.
+ * @param[in] hMsg : Message handle.
+ */
 
 NwRcT
 nwGtpv2cMsgDelete( NW_IN NwGtpv2cStackHandleT hGtpcStackHandle,
                    NW_IN NwGtpv2cMsgHandleT hMsg);
 
- /**
-  * Set TEID for gtpv2c message.
-  *
-  * @param[in] hMsg : Message handle.
-  * @param[in] teid: TEID value.
-  */
+/**
+ * Set TEID for gtpv2c message.
+ *
+ * @param[in] hMsg : Message handle.
+ * @param[in] teid: TEID value.
+ */
 
 NwRcT
 nwGtpv2cMsgSetTeid(NW_IN NwGtpv2cMsgHandleT hMsg, NwU32T teid);
 
- /**
-  * Set TEID present flag for gtpv2c message.
-  *
-  * @param[in] hMsg : Message handle.
-  * @param[in] teidPesent: Flag boolean value.
-  */
+/**
+ * Set TEID present flag for gtpv2c message.
+ *
+ * @param[in] hMsg : Message handle.
+ * @param[in] teidPesent: Flag boolean value.
+ */
 
 NwRcT
 nwGtpv2cMsgSetTeidPresent(NW_IN NwGtpv2cMsgHandleT hMsg, NwBoolT teidPresent);
 
- /**
-  * Set sequence for gtpv2c message.
-  *
-  * @param[in] hMsg : Message handle.
-  * @param[in] seqNum: Flag boolean value.
-  */
+/**
+ * Set sequence for gtpv2c message.
+ *
+ * @param[in] hMsg : Message handle.
+ * @param[in] seqNum: Flag boolean value.
+ */
 
 NwRcT
 nwGtpv2cMsgSetSeqNumber(NW_IN NwGtpv2cMsgHandleT hMsg, NwU32T seqNum);
 
- /**
-  * Get TEID present for gtpv2c message.
-  *
-  * @param[in] hMsg : Message handle.
-  */
+/**
+ * Get TEID present for gtpv2c message.
+ *
+ * @param[in] hMsg : Message handle.
+ */
 
 NwU32T
 nwGtpv2cMsgGetTeid(NW_IN NwGtpv2cMsgHandleT hMsg);
 
- /**
-  * Get TEID present for gtpv2c message.
-  *
-  * @param[in] hMsg : Message handle.
-  */
+/**
+ * Get TEID present for gtpv2c message.
+ *
+ * @param[in] hMsg : Message handle.
+ */
 
 NwBoolT
 nwGtpv2cMsgGetTeidPresent(NW_IN NwGtpv2cMsgHandleT hMsg);
 
- /**
-  * Get sequence number for gtpv2c message.
-  *
-  * @param[in] hMsg : Message handle.
-  */
+/**
+ * Get sequence number for gtpv2c message.
+ *
+ * @param[in] hMsg : Message handle.
+ */
 
 NwU32T
 nwGtpv2cMsgGetSeqNumber(NW_IN NwGtpv2cMsgHandleT hMsg);
 
- /**
-  * Get msg lenght for gtpv2c message.
-  *
-  * @param[in] hMsg : Message handle.
-  */
+/**
+ * Get msg lenght for gtpv2c message.
+ *
+ * @param[in] hMsg : Message handle.
+ */
 
 NwU32T
 nwGtpv2cMsgGetLength(NW_IN NwGtpv2cMsgHandleT hMsg);
 
- /**
-  * Add a gtpv2c information element of length 1 to gtpv2c message.
-  *
-  * @param[in] hMsg : Handle to gtpv2c message.
-  * @param[in] type : IE type.
-  * @param[in] instance : IE instance.
-  * @param[in] value : IE value.
-  */
+/**
+ * Add a gtpv2c information element of length 1 to gtpv2c message.
+ *
+ * @param[in] hMsg : Handle to gtpv2c message.
+ * @param[in] type : IE type.
+ * @param[in] instance : IE instance.
+ * @param[in] value : IE value.
+ */
 
 NwRcT
-nwGtpv2cMsgAddIeTV1(NW_IN NwGtpv2cMsgHandleT hMsg, 
-              NW_IN NwU8T       type,
-              NW_IN NwU8T       instance,
-              NW_IN NwU8T       value);
+nwGtpv2cMsgAddIeTV1(NW_IN NwGtpv2cMsgHandleT hMsg,
+                    NW_IN NwU8T       type,
+                    NW_IN NwU8T       instance,
+                    NW_IN NwU8T       value);
 
 
- /**
-  * Add a gtpv2c information element of length 2 to gtpv2c message.
-  *
-  * @param[in] hMsg : Handle to gtpv2c message.
-  * @param[in] type : IE type.
-  * @param[in] instance : IE instance.
-  * @param[in] value : IE value.
-  */
-
-NwRcT
-nwGtpv2cMsgAddIeTV2(NW_IN NwGtpv2cMsgHandleT hMsg, 
-              NW_IN NwU8T       type,
-              NW_IN NwU8T       instance,
-              NW_IN NwU16T      value);
-
-
- /**
-  * Add a gtpv2c information element of length 4 to gtpv2c message.
-  *
-  * @param[in] hMsg : Handle to gtpv2c message.
-  * @param[in] type : IE type.
-  * @param[in] instance : IE instance.
-  * @param[in] value : IE value.
-  */
+/**
+ * Add a gtpv2c information element of length 2 to gtpv2c message.
+ *
+ * @param[in] hMsg : Handle to gtpv2c message.
+ * @param[in] type : IE type.
+ * @param[in] instance : IE instance.
+ * @param[in] value : IE value.
+ */
 
 NwRcT
-nwGtpv2cMsgAddIeTV4(NW_IN NwGtpv2cMsgHandleT hMsg, 
-              NW_IN NwU8T       type,
-              NW_IN NwU8T       instance,
-              NW_IN NwU32T      value);
+nwGtpv2cMsgAddIeTV2(NW_IN NwGtpv2cMsgHandleT hMsg,
+                    NW_IN NwU8T       type,
+                    NW_IN NwU8T       instance,
+                    NW_IN NwU16T      value);
 
 
- /**
-  * Add a gtpv2c information element of variable length to gtpv2c message.
-  *
-  * @param[in] hMsg : Handle to gtpv2c message.
-  * @param[in] type : IE type.
-  * @param[in] length : IE length.
-  * @param[in] instance : IE instance.
-  * @param[in] value : IE value.
-  */
-
-NwRcT
-nwGtpv2cMsgAddIe(NW_IN NwGtpv2cMsgHandleT hMsg, 
-              NW_IN NwU8T       type,
-              NW_IN NwU16T      length,
-              NW_IN NwU8T       instance,
-              NW_IN NwU8T*      pVal);
-
- /**
-  * Add CAUSE information element to gtpv2c message.
-  *
-  * @param[in] hMsg : Handle to gtpv2c message.
-  * @param[in] instance : IE instance.
-  * @param[in] causeValue: Cause value.
-  * @param[in] bitFlags: PDN Connetiion IE Error Flag, Bearer Context IE Error Flag, Cause Source Flag.
-  * @param[in] offendingIeType: Offending IE type.
-  * @param[in] offendingIeInstance: Offending IE instance.
-  */
+/**
+ * Add a gtpv2c information element of length 4 to gtpv2c message.
+ *
+ * @param[in] hMsg : Handle to gtpv2c message.
+ * @param[in] type : IE type.
+ * @param[in] instance : IE instance.
+ * @param[in] value : IE value.
+ */
 
 NwRcT
-nwGtpv2cMsgAddIeCause(NW_IN NwGtpv2cMsgHandleT hMsg, 
+nwGtpv2cMsgAddIeTV4(NW_IN NwGtpv2cMsgHandleT hMsg,
+                    NW_IN NwU8T       type,
+                    NW_IN NwU8T       instance,
+                    NW_IN NwU32T      value);
+
+
+/**
+ * Add a gtpv2c information element of variable length to gtpv2c message.
+ *
+ * @param[in] hMsg : Handle to gtpv2c message.
+ * @param[in] type : IE type.
+ * @param[in] length : IE length.
+ * @param[in] instance : IE instance.
+ * @param[in] value : IE value.
+ */
+
+NwRcT
+nwGtpv2cMsgAddIe(NW_IN NwGtpv2cMsgHandleT hMsg,
+                 NW_IN NwU8T       type,
+                 NW_IN NwU16T      length,
+                 NW_IN NwU8T       instance,
+                 NW_IN NwU8T*      pVal);
+
+/**
+ * Add CAUSE information element to gtpv2c message.
+ *
+ * @param[in] hMsg : Handle to gtpv2c message.
+ * @param[in] instance : IE instance.
+ * @param[in] causeValue: Cause value.
+ * @param[in] bitFlags: PDN Connetiion IE Error Flag, Bearer Context IE Error Flag, Cause Source Flag.
+ * @param[in] offendingIeType: Offending IE type.
+ * @param[in] offendingIeInstance: Offending IE instance.
+ */
+
+NwRcT
+nwGtpv2cMsgAddIeCause(NW_IN NwGtpv2cMsgHandleT hMsg,
                       NW_IN NwU8T instance,
                       NW_IN NwU8T causeValue,
                       NW_IN NwU8T bitFlags,
                       NW_IN NwU8T offendingIeType,
                       NW_IN NwU8T offendingIeInstance);
 
- /**
-  * Add F-TEID information element to gtpv2c message.
-  *
-  * @param[in] hMsg : Handle to gtpv2c message.
-  * @param[in] instance : IE instance.
-  * @param[in] ifType : Interface Type.
-  * @param[in] teidOrGreKey: TEID/ GRE Key
-  * @param[in] ipv4Addr : Ipv4 Address in Network Byte Order.
-  * @param[in] pIpv6Addr: Pointer to IPv6 Address in Network Byte Order.
-  */
+/**
+ * Add F-TEID information element to gtpv2c message.
+ *
+ * @param[in] hMsg : Handle to gtpv2c message.
+ * @param[in] instance : IE instance.
+ * @param[in] ifType : Interface Type.
+ * @param[in] teidOrGreKey: TEID/ GRE Key
+ * @param[in] ipv4Addr : Ipv4 Address in Network Byte Order.
+ * @param[in] pIpv6Addr: Pointer to IPv6 Address in Network Byte Order.
+ */
 
 NwRcT
-nwGtpv2cMsgAddIeFteid(NW_IN NwGtpv2cMsgHandleT hMsg, 
-              NW_IN NwU8T       instance,
-              NW_IN NwU8T       ifType,
-              NW_IN NwU32T      teidOrGreKey,
-              NW_IN NwU32T      ipv4Addr,
-              NW_IN NwU8T*      pIpv6Addr);
+nwGtpv2cMsgAddIeFteid(NW_IN NwGtpv2cMsgHandleT hMsg,
+                      NW_IN NwU8T       instance,
+                      NW_IN NwU8T       ifType,
+                      NW_IN NwU32T      teidOrGreKey,
+                      NW_IN NwU32T      ipv4Addr,
+                      NW_IN NwU8T*      pIpv6Addr);
 
 NwRcT
-nwGtpv2cMsgGroupedIeStart(NW_IN NwGtpv2cMsgHandleT hMsg, 
-              NW_IN NwU8T       type,
-              NW_IN NwU8T       instance);
+nwGtpv2cMsgGroupedIeStart(NW_IN NwGtpv2cMsgHandleT hMsg,
+                          NW_IN NwU8T       type,
+                          NW_IN NwU8T       instance);
 
 NwRcT
 nwGtpv2cMsgGroupedIeEnd(NW_IN NwGtpv2cMsgHandleT hMsg);
 
 
- /**
-  * Check if information element of type and instance is present
-  * in gtpv2c message.
-  *
-  * @param[in] hMsg : Handle to gtpv2c message.
-  * @param[in] type : IE Type.
-  * @param[in] instance : IE instance.
-  * @return NW_TRUE on success, NW_FALSE on failure.
-  */
+/**
+ * Check if information element of type and instance is present
+ * in gtpv2c message.
+ *
+ * @param[in] hMsg : Handle to gtpv2c message.
+ * @param[in] type : IE Type.
+ * @param[in] instance : IE instance.
+ * @return NW_TRUE on success, NW_FALSE on failure.
+ */
 
 NwBoolT
-nwGtpv2cMsgIsIePresent(NW_IN NwGtpv2cMsgHandleT hMsg, 
+nwGtpv2cMsgIsIePresent(NW_IN NwGtpv2cMsgHandleT hMsg,
                        NW_IN NwU8T type,
                        NW_IN NwU8T instance);
 
- /**
-  * Get an information element of type 'NwU8T' from gtpv2c message.
-  *
-  * @param[in] hMsg : Handle to gtpv2c message.
-  * @param[in] type : IE Type.
-  * @param[in] instance : IE instance.
-  * @param[out] pVal : Pointer to value buffer.
-  * @return NW_OK on success.
-  */
+/**
+ * Get an information element of type 'NwU8T' from gtpv2c message.
+ *
+ * @param[in] hMsg : Handle to gtpv2c message.
+ * @param[in] type : IE Type.
+ * @param[in] instance : IE instance.
+ * @param[out] pVal : Pointer to value buffer.
+ * @return NW_OK on success.
+ */
 
 NwRcT
-nwGtpv2cMsgGetIeTV1(NW_IN NwGtpv2cMsgHandleT hMsg, 
-                        NW_IN NwU8T type,
-                        NW_IN NwU8T instance,
-                        NW_OUT NwU8T* pVal);
+nwGtpv2cMsgGetIeTV1(NW_IN NwGtpv2cMsgHandleT hMsg,
+                    NW_IN NwU8T type,
+                    NW_IN NwU8T instance,
+                    NW_OUT NwU8T* pVal);
 
- /**
-  * Get an information element of type 'NwU16T' from gtpv2c message.
-  *
-  * @param[in] hMsg : Handle to gtpv2c message.
-  * @param[in] tyep : IE Type.
-  * @param[in] instance : IE instance.
-  * @param[out] pVal : Pointer to value buffer.
-  * @return NW_OK on success.
-  */
-
-
-NwRcT
-nwGtpv2cMsgGetIeTV2(NW_IN NwGtpv2cMsgHandleT hMsg, 
-                        NW_IN NwU8T type,
-                        NW_IN NwU8T instance,
-                        NW_OUT NwU16T* pVal);
-
- /**
-  * Get an information element of type 'NwU32T' from gtpv2c message.
-  *
-  * @param[in] hMsg : Handle to gtpv2c message.
-  * @param[in] tyep : IE Type.
-  * @param[in] instance : IE instance.
-  * @param[out] pVal : Pointer to value buffer.
-  * @return NW_OK on success.
-  */
+/**
+ * Get an information element of type 'NwU16T' from gtpv2c message.
+ *
+ * @param[in] hMsg : Handle to gtpv2c message.
+ * @param[in] tyep : IE Type.
+ * @param[in] instance : IE instance.
+ * @param[out] pVal : Pointer to value buffer.
+ * @return NW_OK on success.
+ */
 
 
 NwRcT
-nwGtpv2cMsgGetIeTV4(NW_IN NwGtpv2cMsgHandleT hMsg, 
-                        NW_IN NwU8T type,
-                        NW_IN NwU8T instance,
-                        NW_OUT NwU32T* pVal);
+nwGtpv2cMsgGetIeTV2(NW_IN NwGtpv2cMsgHandleT hMsg,
+                    NW_IN NwU8T type,
+                    NW_IN NwU8T instance,
+                    NW_OUT NwU16T* pVal);
 
- /**
-  * Get an information element of type 'NwU64T' from gtpv2c message.
-  *
-  * @param[in] hMsg : Handle to gtpv2c message.
-  * @param[in] tyep : IE Type.
-  * @param[in] instance : IE instance.
-  * @param[out] pVal : Pointer to IE value buffer.
-  * @return NW_OK on success.
-  */
+/**
+ * Get an information element of type 'NwU32T' from gtpv2c message.
+ *
+ * @param[in] hMsg : Handle to gtpv2c message.
+ * @param[in] tyep : IE Type.
+ * @param[in] instance : IE instance.
+ * @param[out] pVal : Pointer to value buffer.
+ * @return NW_OK on success.
+ */
 
 
 NwRcT
-nwGtpv2cMsgGetIeTV8(NW_IN NwGtpv2cMsgHandleT hMsg, 
-                        NW_IN NwU8T type,
-                        NW_IN NwU8T instance,
-                        NW_OUT NwU64T* pVal);
+nwGtpv2cMsgGetIeTV4(NW_IN NwGtpv2cMsgHandleT hMsg,
+                    NW_IN NwU8T type,
+                    NW_IN NwU8T instance,
+                    NW_OUT NwU32T* pVal);
 
- /**
-  * Get an information element of variable length from gtpv2c message.
-  *
-  * @param[in] hMsg : Handle to gtpv2c message.
-  * @param[in] tyep : IE Type.
-  * @param[in] instance : IE instance.
-  * @param[in] maxLen : Maximum length of IE.
-  * @param[out] pVal : Pointer to IE value buffer.
-  * @param[out] pLen : Pointer to IE length buffer.
-  * @return NW_OK on success.
-  */
+/**
+ * Get an information element of type 'NwU64T' from gtpv2c message.
+ *
+ * @param[in] hMsg : Handle to gtpv2c message.
+ * @param[in] tyep : IE Type.
+ * @param[in] instance : IE instance.
+ * @param[out] pVal : Pointer to IE value buffer.
+ * @return NW_OK on success.
+ */
+
 
 NwRcT
-nwGtpv2cMsgGetIeTlv(NW_IN NwGtpv2cMsgHandleT hMsg, 
-                        NW_IN NwU8T type,
-                        NW_IN NwU8T instance,
-                        NW_IN NwU16T maxLen,
-                        NW_OUT NwU8T* pVal,
-                        NW_OUT NwU16T* pLen);
+nwGtpv2cMsgGetIeTV8(NW_IN NwGtpv2cMsgHandleT hMsg,
+                    NW_IN NwU8T type,
+                    NW_IN NwU8T instance,
+                    NW_OUT NwU64T* pVal);
 
- /**
-  * Get an information element of variable length from gtpv2c message.
-  *
-  * @param[in] hMsg : Handle to gtpv2c message.
-  * @param[in] tyep : IE Type.
-  * @param[in] instance : IE instance.
-  * @param[out] ppVal : Pointer to IE value buffer pointer.
-  * @param[out] pLen : Pointer to IE length buffer.
-  * @return NW_OK on success.
-  */
-
-NwRcT
-nwGtpv2cMsgGetIeTlvP(NW_IN NwGtpv2cMsgHandleT hMsg, 
-                        NW_IN NwU8T type,
-                        NW_IN NwU8T instance,
-                        NW_OUT NwU8T** ppVal,
-                        NW_OUT NwU16T* pLen);
-
-
- /**
-  * Get F-TEID information element to gtpv2c message.
-  *
-  * @param[in] hMsg : Handle to gtpv2c message.
-  * @param[in] instance : IE instance.
-  * @param[out] ifType : Interface Type.
-  * @param[out] teidOrGreKey: TEID/ GRE Key
-  * @param[out] ipv4Addr : Ipv4 Address in Network Byte Order.
-  * @param[out] pIpv6Addr: Pointer to IPv6 Address in Network Byte Order.
-  */
+/**
+ * Get an information element of variable length from gtpv2c message.
+ *
+ * @param[in] hMsg : Handle to gtpv2c message.
+ * @param[in] tyep : IE Type.
+ * @param[in] instance : IE instance.
+ * @param[in] maxLen : Maximum length of IE.
+ * @param[out] pVal : Pointer to IE value buffer.
+ * @param[out] pLen : Pointer to IE length buffer.
+ * @return NW_OK on success.
+ */
 
 NwRcT
-nwGtpv2cMsgGetIeFteid(NW_IN NwGtpv2cMsgHandleT hMsg, 
-              NW_IN  NwU8T       instance,
-              NW_OUT NwU8T*      ifType,
-              NW_OUT NwU32T*     teidOrGreKey,
-              NW_OUT NwU32T*     ipv4Addr,
-              NW_OUT NwU8T*      pIpv6Addr);
+nwGtpv2cMsgGetIeTlv(NW_IN NwGtpv2cMsgHandleT hMsg,
+                    NW_IN NwU8T type,
+                    NW_IN NwU8T instance,
+                    NW_IN NwU16T maxLen,
+                    NW_OUT NwU8T* pVal,
+                    NW_OUT NwU16T* pLen);
+
+/**
+ * Get an information element of variable length from gtpv2c message.
+ *
+ * @param[in] hMsg : Handle to gtpv2c message.
+ * @param[in] tyep : IE Type.
+ * @param[in] instance : IE instance.
+ * @param[out] ppVal : Pointer to IE value buffer pointer.
+ * @param[out] pLen : Pointer to IE length buffer.
+ * @return NW_OK on success.
+ */
 
 NwRcT
-nwGtpv2cMsgGetIeCause(NW_IN NwGtpv2cMsgHandleT hMsg, 
-              NW_IN  NwU8T       instance,
-              NW_OUT NwU8T*      causeValue,
-              NW_OUT NwU8T*      flags,
-              NW_OUT NwU8T*      offendingIeType,
-              NW_OUT NwU8T*      offendingIeInstance);
+nwGtpv2cMsgGetIeTlvP(NW_IN NwGtpv2cMsgHandleT hMsg,
+                     NW_IN NwU8T type,
+                     NW_IN NwU8T instance,
+                     NW_OUT NwU8T** ppVal,
+                     NW_OUT NwU16T* pLen);
 
- /**
-  * Get msg type for gtpv2c message.
-  *
-  * @param[in] hMsg : Message handle.
-  */
+
+/**
+ * Get F-TEID information element to gtpv2c message.
+ *
+ * @param[in] hMsg : Handle to gtpv2c message.
+ * @param[in] instance : IE instance.
+ * @param[out] ifType : Interface Type.
+ * @param[out] teidOrGreKey: TEID/ GRE Key
+ * @param[out] ipv4Addr : Ipv4 Address in Network Byte Order.
+ * @param[out] pIpv6Addr: Pointer to IPv6 Address in Network Byte Order.
+ */
+
+NwRcT
+nwGtpv2cMsgGetIeFteid(NW_IN NwGtpv2cMsgHandleT hMsg,
+                      NW_IN  NwU8T       instance,
+                      NW_OUT NwU8T*      ifType,
+                      NW_OUT NwU32T*     teidOrGreKey,
+                      NW_OUT NwU32T*     ipv4Addr,
+                      NW_OUT NwU8T*      pIpv6Addr);
+
+NwRcT
+nwGtpv2cMsgGetIeCause(NW_IN NwGtpv2cMsgHandleT hMsg,
+                      NW_IN  NwU8T       instance,
+                      NW_OUT NwU8T*      causeValue,
+                      NW_OUT NwU8T*      flags,
+                      NW_OUT NwU8T*      offendingIeType,
+                      NW_OUT NwU8T*      offendingIeInstance);
+
+/**
+ * Get msg type for gtpv2c message.
+ *
+ * @param[in] hMsg : Message handle.
+ */
 
 NwU32T
 nwGtpv2cMsgGetMsgType(NW_IN NwGtpv2cMsgHandleT hMsg);

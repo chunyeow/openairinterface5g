@@ -87,63 +87,66 @@ Description Implements the EPS Mobility Management procedures executed
  ***************************************************************************/
 int EmmDeregisteredInitiated(const emm_reg_t *evt)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc = RETURNerror;
+  int rc = RETURNerror;
 
 #ifdef NAS_UE
-    assert(emm_fsm_get_status() == EMM_DEREGISTERED_INITIATED);
+  assert(emm_fsm_get_status() == EMM_DEREGISTERED_INITIATED);
 #endif
 #ifdef NAS_MME
-    assert(emm_fsm_get_status(evt->ueid, evt->ctx) == EMM_DEREGISTERED_INITIATED);
+  assert(emm_fsm_get_status(evt->ueid, evt->ctx) == EMM_DEREGISTERED_INITIATED);
 #endif
 
-    switch (evt->primitive) {
+  switch (evt->primitive) {
 #ifdef NAS_UE
-        case _EMMREG_DETACH_CNF:
-            /*
-             * The UE explicitly detached from the network (all EPS
-             * bearer contexts have been deactivated as UE initiated
-             * detach procedure successfully completed)
-             */
-            rc = emm_fsm_set_status(EMM_DEREGISTERED);
-            break;
 
-        case _EMMREG_DETACH_FAILED:
-            /*
-             * The detach procedure failed
-             */
-            if (evt->u.detach.type == EMM_DETACH_TYPE_IMSI) {
-                rc = emm_fsm_set_status(EMM_REGISTERED_NORMAL_SERVICE);
-            } else {
-                rc = emm_fsm_set_status(EMM_DEREGISTERED);
-            }
-            break;
+  case _EMMREG_DETACH_CNF:
+    /*
+     * The UE explicitly detached from the network (all EPS
+     * bearer contexts have been deactivated as UE initiated
+     * detach procedure successfully completed)
+     */
+    rc = emm_fsm_set_status(EMM_DEREGISTERED);
+    break;
 
-        case _EMMREG_LOWERLAYER_SUCCESS:
-            /*
-             * Ignore Detach Request message successful retransmission
-             */
-            rc = RETURNok;
-            break;
+  case _EMMREG_DETACH_FAILED:
 
-        case _EMMREG_LOWERLAYER_FAILURE:
-        case _EMMREG_LOWERLAYER_RELEASE:
-            /*
-             * Lower layer failure or release of the NAS signalling connection
-             * before the Detach Accept is received
-             */
-            rc = emm_proc_lowerlayer_release();
-            break;
-#endif
-
-        default:
-            LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
-                      evt->primitive);
-            break;
+    /*
+     * The detach procedure failed
+     */
+    if (evt->u.detach.type == EMM_DETACH_TYPE_IMSI) {
+      rc = emm_fsm_set_status(EMM_REGISTERED_NORMAL_SERVICE);
+    } else {
+      rc = emm_fsm_set_status(EMM_DEREGISTERED);
     }
 
-    LOG_FUNC_RETURN (rc);
+    break;
+
+  case _EMMREG_LOWERLAYER_SUCCESS:
+    /*
+     * Ignore Detach Request message successful retransmission
+     */
+    rc = RETURNok;
+    break;
+
+  case _EMMREG_LOWERLAYER_FAILURE:
+  case _EMMREG_LOWERLAYER_RELEASE:
+    /*
+     * Lower layer failure or release of the NAS signalling connection
+     * before the Detach Accept is received
+     */
+    rc = emm_proc_lowerlayer_release();
+    break;
+#endif
+
+  default:
+    LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
+              evt->primitive);
+    break;
+  }
+
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************/

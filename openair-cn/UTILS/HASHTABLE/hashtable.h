@@ -7,28 +7,28 @@
 typedef size_t hash_size_t;
 
 typedef enum hashtable_return_code_e {
-    HASH_TABLE_OK                      = 0,
-    HASH_TABLE_INSERT_OVERWRITTEN_DATA = 1,
-    HASH_TABLE_KEY_NOT_EXISTS          = 2,
-    HASH_TABLE_KEY_ALREADY_EXISTS      = 3,
-    HASH_TABLE_BAD_PARAMETER_HASHTABLE = 4,
-    HASH_TABLE_SYSTEM_ERROR            = 5,
-    HASH_TABLE_CODE_MAX
+  HASH_TABLE_OK                      = 0,
+  HASH_TABLE_INSERT_OVERWRITTEN_DATA = 1,
+  HASH_TABLE_KEY_NOT_EXISTS          = 2,
+  HASH_TABLE_KEY_ALREADY_EXISTS      = 3,
+  HASH_TABLE_BAD_PARAMETER_HASHTABLE = 4,
+  HASH_TABLE_SYSTEM_ERROR            = 5,
+  HASH_TABLE_CODE_MAX
 } hashtable_rc_t;
 
 
 typedef struct hash_node_s {
-    uint64_t            key;
-    void               *data;
-    struct hash_node_s *next;
+  uint64_t            key;
+  void               *data;
+  struct hash_node_s *next;
 } hash_node_t;
 
 typedef struct hash_table_s {
-    hash_size_t         size;
-    hash_size_t         num_elements;
-    struct hash_node_s **nodes;
-    hash_size_t       (*hashfunc)(const uint64_t);
-    void              (*freefunc)(void*);
+  hash_size_t         size;
+  hash_size_t         num_elements;
+  struct hash_node_s **nodes;
+  hash_size_t       (*hashfunc)(const uint64_t);
+  void              (*freefunc)(void*);
 } hash_table_t;
 
 char*           hashtable_rc_code2string(hashtable_rc_t rcP);

@@ -55,11 +55,11 @@
  */
 
 typedef struct attach_complete_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator         protocoldiscriminator:4;
-    SecurityHeaderType            securityheadertype:4;
-    MessageType                   messagetype;
-    EsmMessageContainer           esmmessagecontainer;
+  /* Mandatory fields */
+  ProtocolDiscriminator         protocoldiscriminator:4;
+  SecurityHeaderType            securityheadertype:4;
+  MessageType                   messagetype;
+  EsmMessageContainer           esmmessagecontainer;
 } attach_complete_msg;
 
 int decode_attach_complete(attach_complete_msg *attachcomplete, uint8_t *buffer, uint32_t len);

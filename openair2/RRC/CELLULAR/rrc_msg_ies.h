@@ -23,16 +23,16 @@ typedef u32     IntegrityCheckInfo;
 /**************************************************************/
 /*  RRCConnectionRequest                                      */
 /**************************************************************/
-   /*  IMEI_Digit   */
+/*  IMEI_Digit   */
 typedef u8      IMEI_Digit;
 
-   /*  IMEI         */
+/*  IMEI         */
 typedef struct IMEI {
   u8              numDigits;
   IMEI_Digit      digit[15];
 } IMEI;
 
-   /*  EstablishmentCause  -  Full 25.331 list */
+/*  EstablishmentCause  -  Full 25.331 list */
 typedef enum {
   originatingConversationalCall = 0,
   originatingStreamingCall = 1,
@@ -56,7 +56,7 @@ typedef enum {
   terminatingCauseUnknown = 19,
 } EstablishmentCause;
 
-   /*  ProtocolErrorIndicator */
+/*  ProtocolErrorIndicator */
 typedef enum {
   noError = 0,
   errorOccurred = 1
@@ -161,9 +161,9 @@ typedef u16     SAP_Id;
 /*  RB_InformationSetup  */
 typedef struct RB_InformationSetup {
   RB_Identity     rb_identity;
-//   PDCP_Info  pdcp_Info;
-//   RLC_InfoChoice  rlc_InfoChoice;
-//   RB_MappingInfo  rb_MappingInfo;
+  //   PDCP_Info  pdcp_Info;
+  //   RLC_InfoChoice  rlc_InfoChoice;
+  //   RB_MappingInfo  rb_MappingInfo;
   QOS_Class       qos_class;
   IP_DSCP_Code    ip_dscp_code;
   SAP_Id          sap_id;
@@ -311,7 +311,7 @@ typedef enum {
 /*  IntraFreqMeasQuantity  */
 typedef struct IntraFreqMeasQuantity {
   FilterCoefficient filterCoefficient;
-//   IntraFreqMeasQuantityList measureList[4]; //4 defined in 25.331 - not used
+  //   IntraFreqMeasQuantityList measureList[4]; //4 defined in 25.331 - not used
 } IntraFreqMeasQuantity;
 
 /*  CellReportingQuantities */
@@ -327,10 +327,10 @@ typedef enum {
   mv_cell_DCH = 0,
   mv_all_But_Cell_DCH = 1,
   mv_all_States = 2
-//} MV_ue_State;
-///*  MeasurementValidity */
-//typedef struct  MeasurementValidity {
-//   MV_ue_State  ue_State;
+                  //} MV_ue_State;
+                  ///*  MeasurementValidity */
+                  //typedef struct  MeasurementValidity {
+                  //   MV_ue_State  ue_State;
 } MeasurementValidity;
 
 /*  IntraFreqReportingCriteria_r4  */
@@ -416,8 +416,8 @@ typedef struct TrafficVolumeReportCriteria {
 
 /*  TrafficVolumeMeasurement  */
 typedef struct TrafficVolumeMeasurement {
-//   TrafficVolumeMeasurementObjectList  trafficVolumeMeasurementObjectList;  FFS
-//   TrafficVolumeMeasQuantity  trafficVolumeMeasQuantity;   Ignored anyway
+  //   TrafficVolumeMeasurementObjectList  trafficVolumeMeasurementObjectList;  FFS
+  //   TrafficVolumeMeasQuantity  trafficVolumeMeasQuantity;   Ignored anyway
   TrafficVolumeReportingQuantity trafficVolumeReportingQuantity;
   MeasurementValidity measurementValidity;
   TrafficVolumeReportCriteria reportCriteria;
@@ -444,7 +444,7 @@ typedef struct SIR_TFCS_List {
 /*  QualityReportingQuantity */
 typedef struct QualityReportingQuantity {
   u8              dl_TransChBLER;
-//   BLER_TransChIdList  bler_dl_TransChIdList;FFS
+  //   BLER_TransChIdList  bler_dl_TransChIdList;FFS
   SIR_TFCS_List   sir_TFCS_List;
 } QualityReportingQuantity;
 
@@ -786,7 +786,7 @@ typedef struct MeasuredResults {
 //   s16 alpha __attribute__ ((packed));
 //   u16 maxPowerIncrease __attribute__ ((packed));
 // } OpenLoopPowerControl;
-// 
+//
 // /**************************************************************/
 // /*  UL_DPCH_PowerControlInfo_tdd                              */
 // /**************************************************************/
@@ -798,7 +798,7 @@ typedef struct MeasuredResults {
 //   s16 dpch_ConstantValue __attribute__ ((packed));
 //   OpenLoopPowerControl openLoopPowerControl __attribute__ ((packed));
 // } UplinkPhysicalChannelControl;
-// 
+//
 // /**************************************************************/
 // /*  UL_DPCH_PowerControlInfo_tdd                              */
 // /**************************************************************/
@@ -825,9 +825,9 @@ typedef struct MeasuredResults {
 //**************************************************************/
 /*  UE Capability Information                                 */
 /**************************************************************/
-  /* AccessStratumReleaseIndicator */
+/* AccessStratumReleaseIndicator */
 typedef u8 AccessStratumReleaseIndicator;
-  /* EurecomKernelReleaseIndicator */
+/* EurecomKernelReleaseIndicator */
 typedef u8 EurecomKernelReleaseIndicator;
 
 

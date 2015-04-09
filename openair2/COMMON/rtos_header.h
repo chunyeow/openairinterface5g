@@ -69,4 +69,4 @@
 #            define rtf_put    write
 #        endif
 #    endif
-#endif 
+#endif

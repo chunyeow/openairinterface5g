@@ -106,11 +106,11 @@ struct oai_nw_drv_priv {
 
 struct ipversion {
 #if defined(__LITTLE_ENDIAN_BITFIELD)
-    uint8_t    reserved:4,
-          version:4;
+  uint8_t    reserved:4,
+             version:4;
 #else
-    uint8_t    version:4,
-          reserved:4;
+  uint8_t    version:4,
+             reserved:4;
 #endif
 };
 

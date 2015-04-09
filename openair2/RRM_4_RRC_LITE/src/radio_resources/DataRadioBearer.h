@@ -41,29 +41,28 @@
 
 using namespace std;
 
-class DataRadioBearer: public RadioBearer  {
-    public:
-        //typedef boost::shared_ptr<ENodeB> ENodeBPtr;
+class DataRadioBearer: public RadioBearer
+{
+public:
+  //typedef boost::shared_ptr<ENodeB> ENodeBPtr;
 
-        DataRadioBearer ():m_id(0u) {};
-        DataRadioBearer (unsigned int);
-        ~DataRadioBearer ();
+  DataRadioBearer ():m_id(0u) {};
+  DataRadioBearer (unsigned int);
+  ~DataRadioBearer ();
 
-        friend inline bool operator>( const DataRadioBearer& l, const DataRadioBearer r )
-        {
-            return l.m_id > r.m_id;
-        }
-        friend inline bool operator==( const DataRadioBearer& l, const DataRadioBearer r )
-        {
-            return l.m_id == r.m_id;
-        }
-
-
-    private:
-        unsigned int       m_id;
+  friend inline bool operator>( const DataRadioBearer& l, const DataRadioBearer r ) {
+    return l.m_id > r.m_id;
+  }
+  friend inline bool operator==( const DataRadioBearer& l, const DataRadioBearer r ) {
+    return l.m_id == r.m_id;
+  }
 
 
-        DRB_ToAddMod_t     m_drb_to_add_mod;
+private:
+  unsigned int       m_id;
+
+
+  DRB_ToAddMod_t     m_drb_to_add_mod;
 };
 #    endif
 

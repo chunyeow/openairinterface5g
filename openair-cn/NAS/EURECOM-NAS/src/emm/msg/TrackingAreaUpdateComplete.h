@@ -51,10 +51,10 @@
  */
 
 typedef struct tracking_area_update_complete_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                     protocoldiscriminator:4;
-    SecurityHeaderType                        securityheadertype:4;
-    MessageType                               messagetype;
+  /* Mandatory fields */
+  ProtocolDiscriminator                     protocoldiscriminator:4;
+  SecurityHeaderType                        securityheadertype:4;
+  MessageType                               messagetype;
 } tracking_area_update_complete_msg;
 
 int decode_tracking_area_update_complete(tracking_area_update_complete_msg *trackingareaupdatecomplete, uint8_t *buffer, uint32_t len);

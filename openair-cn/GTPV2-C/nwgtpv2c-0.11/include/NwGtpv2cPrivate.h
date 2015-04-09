@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                              n w - g t p v 2 c                             * 
+ *                              n w - g t p v 2 c                             *
  *    G P R S   T u n n e l i n g    P r o t o c o l   v 2 c    S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -47,9 +47,9 @@
 #include "NwGtpv2cMsgIeParseInfo.h"
 #include "NwGtpv2cTunnel.h"
 
-/** 
+/**
  * @file NwGtpv2cPrivate.h
- * @brief This header file contains nw-gtpv2c private definitions not to be 
+ * @brief This header file contains nw-gtpv2c private definitions not to be
  * exposed to user application.
 */
 
@@ -89,8 +89,7 @@ extern "C" {
  * gtpv2c stack class definition
  */
 
-typedef struct NwGtpv2cStack
-{
+typedef struct NwGtpv2cStack {
   NwU32T                        id;
   NwGtpv2cUlpEntityT            ulp;
   NwGtpv2cUdpEntityT            udp;
@@ -110,19 +109,18 @@ typedef struct NwGtpv2cStack
   RB_HEAD( NwGtpv2cOutstandingRxSeqNumTrxnMap, NwGtpv2cTrxn ) outstandingRxSeqNumMap;
   RB_HEAD( NwGtpv2cActiveTimerList, NwGtpv2cTimeoutInfo     ) activeTimerList;
   NwHandleT                     hTmrMinHeap;
-} NwGtpv2cStackT; 
+} NwGtpv2cStackT;
 
 
 /*--------------------------------------------------------------------------*
- * Timeout Info Type Definition  
+ * Timeout Info Type Definition
  *--------------------------------------------------------------------------*/
 
 /**
- * gtpv2c timeout info 
+ * gtpv2c timeout info
  */
 
-typedef struct NwGtpv2cTimeoutInfo
-{
+typedef struct NwGtpv2cTimeoutInfo {
   NwGtpv2cStackHandleT          hStack;
   struct timeval                tvTimeout;
   NwU32T                        tmrType;
@@ -144,8 +142,7 @@ typedef struct NwGtpv2cTimeoutInfo
 /**
  * NwGtpv2cMsgT holds gtpv2c messages to/from the peer.
  */
-typedef struct NwGtpv2cMsgS
-{
+typedef struct NwGtpv2cMsgS {
   NwU8T                         version;
   NwU8T                         teidPresent;
   NwU8T                         msgType;
@@ -171,8 +168,7 @@ typedef struct NwGtpv2cMsgS
  * Transaction structure
  */
 
-typedef struct NwGtpv2cTrxn
-{
+typedef struct NwGtpv2cTrxn {
   NwU32T                        seqNum;
   NwU32T                        peerIp;
   NwU32T                        peerPort;
@@ -192,8 +188,7 @@ typedef struct NwGtpv2cTrxn
  *  GTPv2c Path Context
  */
 
-typedef struct NwGtpv2cPathS
-{
+typedef struct NwGtpv2cPathS {
   NwU32T                        hUlpPath;                               /**< Handle to ULP path contect         */
   NwU32T                        ipv4Address;
   NwU32T                        restartCounter;

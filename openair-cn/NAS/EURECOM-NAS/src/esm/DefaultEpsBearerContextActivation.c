@@ -78,7 +78,7 @@ Description Defines the default EPS bearer context activation ESM
  */
 #ifdef NAS_UE
 static struct {
-    int ebi;    /* EPS bearer identity of the default EPS bearer associated
+  int ebi;    /* EPS bearer identity of the default EPS bearer associated
          * to the PDN connection to be activated */
 } _default_eps_bearer_context_data = {ESM_EBI_UNASSIGNED};
 
@@ -139,37 +139,39 @@ int esm_proc_default_eps_bearer_context(emm_data_context_t *ctx, int pid,
                                         const esm_proc_qos_t *qos,
                                         int *esm_cause)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    LOG_TRACE(INFO, "ESM-PROC  - Default EPS bearer context activation "
-              "(ueid=%u, pid=%d, GBR UL %u GBR DL %u, MBR UL %u MBR DL %u QCI %u)",
-              ctx->ueid,
-              pid,
-              qos->gbrUL,
-              qos->gbrDL,
-              qos->mbrUL,
-              qos->mbrDL,
-              qos->qci);
+  LOG_TRACE(INFO, "ESM-PROC  - Default EPS bearer context activation "
+            "(ueid=%u, pid=%d, GBR UL %u GBR DL %u, MBR UL %u MBR DL %u QCI %u)",
+            ctx->ueid,
+            pid,
+            qos->gbrUL,
+            qos->gbrDL,
+            qos->mbrUL,
+            qos->mbrDL,
+            qos->qci);
 
-    /* Assign new EPS bearer context */
-    *ebi = esm_ebr_assign(ctx, ESM_EBI_UNASSIGNED);
+  /* Assign new EPS bearer context */
+  *ebi = esm_ebr_assign(ctx, ESM_EBI_UNASSIGNED);
 
-    if (*ebi != ESM_EBI_UNASSIGNED) {
-        /* Create default EPS bearer context */
-        *ebi = esm_ebr_context_create(ctx, pid, *ebi, TRUE, qos, NULL);
-        if (*ebi == ESM_EBI_UNASSIGNED) {
-            /* No resource available */
-            LOG_TRACE(WARNING, "ESM-PROC  - Failed to create new default EPS "
-                      "bearer context (ebi=%d)", *ebi);
-            *esm_cause = ESM_CAUSE_INSUFFICIENT_RESOURCES;
-            LOG_FUNC_RETURN (RETURNerror);
-        }
-        LOG_FUNC_RETURN (RETURNok);
+  if (*ebi != ESM_EBI_UNASSIGNED) {
+    /* Create default EPS bearer context */
+    *ebi = esm_ebr_context_create(ctx, pid, *ebi, TRUE, qos, NULL);
+
+    if (*ebi == ESM_EBI_UNASSIGNED) {
+      /* No resource available */
+      LOG_TRACE(WARNING, "ESM-PROC  - Failed to create new default EPS "
+                "bearer context (ebi=%d)", *ebi);
+      *esm_cause = ESM_CAUSE_INSUFFICIENT_RESOURCES;
+      LOG_FUNC_RETURN (RETURNerror);
     }
 
-    LOG_TRACE(WARNING, "ESM-PROC  - Failed to assign new EPS bearer context");
-    *esm_cause = ESM_CAUSE_INSUFFICIENT_RESOURCES;
-    LOG_FUNC_RETURN (RETURNerror);
+    LOG_FUNC_RETURN (RETURNok);
+  }
+
+  LOG_TRACE(WARNING, "ESM-PROC  - Failed to assign new EPS bearer context");
+  *esm_cause = ESM_CAUSE_INSUFFICIENT_RESOURCES;
+  LOG_FUNC_RETURN (RETURNerror);
 }
 
 /****************************************************************************
@@ -202,36 +204,37 @@ int esm_proc_default_eps_bearer_context(emm_data_context_t *ctx, int pid,
  **                                                                        **
  ***************************************************************************/
 int esm_proc_default_eps_bearer_context_request(int is_standalone,
-        emm_data_context_t *ctx, int ebi,
-        OctetString *msg, int ue_triggered)
+    emm_data_context_t *ctx, int ebi,
+    OctetString *msg, int ue_triggered)
 {
-    int rc = RETURNok;
+  int rc = RETURNok;
 
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
 
-    if (is_standalone) {
-        /* Send activate default EPS bearer context request message and
-         * start timer T3485 */
-        LOG_TRACE(INFO,"ESM-PROC  - Initiate standalone default EPS bearer context activation "
-                  "(ueid=%u, ebi=%d)", ctx->ueid, ebi);
-        rc = _default_eps_bearer_activate(ctx, ebi, msg);
-    } else {
-        LOG_TRACE(INFO,"ESM-PROC  - Initiate non standalone default EPS bearer context activation "
-                  "(ueid=%u, ebi=%d)", ctx->ueid, ebi);
+  if (is_standalone) {
+    /* Send activate default EPS bearer context request message and
+     * start timer T3485 */
+    LOG_TRACE(INFO,"ESM-PROC  - Initiate standalone default EPS bearer context activation "
+              "(ueid=%u, ebi=%d)", ctx->ueid, ebi);
+    rc = _default_eps_bearer_activate(ctx, ebi, msg);
+  } else {
+    LOG_TRACE(INFO,"ESM-PROC  - Initiate non standalone default EPS bearer context activation "
+              "(ueid=%u, ebi=%d)", ctx->ueid, ebi);
+  }
+
+  if (rc != RETURNerror) {
+    /* Set the EPS bearer context state to ACTIVE PENDING */
+    rc = esm_ebr_set_status(ctx, ebi, ESM_EBR_ACTIVE_PENDING, ue_triggered);
+
+    if (rc != RETURNok) {
+      /* The EPS bearer context was already in ACTIVE PENDING state */
+      LOG_TRACE(WARNING, "ESM-PROC  - EBI %d was already ACTIVE PENDING",
+                ebi);
     }
+  }
 
-    if (rc != RETURNerror) {
-        /* Set the EPS bearer context state to ACTIVE PENDING */
-        rc = esm_ebr_set_status(ctx, ebi, ESM_EBR_ACTIVE_PENDING, ue_triggered);
-        if (rc != RETURNok) {
-            /* The EPS bearer context was already in ACTIVE PENDING state */
-            LOG_TRACE(WARNING, "ESM-PROC  - EBI %d was already ACTIVE PENDING",
-                      ebi);
-        }
-    }
-
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************
@@ -257,28 +260,30 @@ int esm_proc_default_eps_bearer_context_request(int is_standalone,
  **                                                                        **
  ***************************************************************************/
 int esm_proc_default_eps_bearer_context_accept(emm_data_context_t *ctx, int ebi,
-        int *esm_cause)
+    int *esm_cause)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc;
+  int rc;
 
-    LOG_TRACE(INFO, "ESM-PROC  - Default EPS bearer context activation "
-              "accepted by the UE (ueid=%u, ebi=%d)", ctx->ueid, ebi);
+  LOG_TRACE(INFO, "ESM-PROC  - Default EPS bearer context activation "
+            "accepted by the UE (ueid=%u, ebi=%d)", ctx->ueid, ebi);
 
-    /* Stop T3485 timer if running */
-    rc = esm_ebr_stop_timer(ctx, ebi);
-    if (rc != RETURNerror) {
-        /* Set the EPS bearer context state to ACTIVE */
-        rc = esm_ebr_set_status(ctx, ebi, ESM_EBR_ACTIVE, FALSE);
-        if (rc != RETURNok) {
-            /* The EPS bearer context was already in ACTIVE state */
-            LOG_TRACE(WARNING, "ESM-PROC  - EBI %d was already ACTIVE", ebi);
-            *esm_cause = ESM_CAUSE_PROTOCOL_ERROR;
-        }
+  /* Stop T3485 timer if running */
+  rc = esm_ebr_stop_timer(ctx, ebi);
+
+  if (rc != RETURNerror) {
+    /* Set the EPS bearer context state to ACTIVE */
+    rc = esm_ebr_set_status(ctx, ebi, ESM_EBR_ACTIVE, FALSE);
+
+    if (rc != RETURNok) {
+      /* The EPS bearer context was already in ACTIVE state */
+      LOG_TRACE(WARNING, "ESM-PROC  - EBI %d was already ACTIVE", ebi);
+      *esm_cause = ESM_CAUSE_PROTOCOL_ERROR;
     }
+  }
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************
@@ -304,29 +309,31 @@ int esm_proc_default_eps_bearer_context_accept(emm_data_context_t *ctx, int ebi,
  **                                                                        **
  ***************************************************************************/
 int esm_proc_default_eps_bearer_context_reject(emm_data_context_t *ctx, int ebi,
-        int *esm_cause)
+    int *esm_cause)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc;
+  int rc;
 
-    LOG_TRACE(WARNING, "ESM-PROC  - Default EPS bearer context activation "
-              "not accepted by the UE (ueid=%u, ebi=%d)", ctx->ueid, ebi);
+  LOG_TRACE(WARNING, "ESM-PROC  - Default EPS bearer context activation "
+            "not accepted by the UE (ueid=%u, ebi=%d)", ctx->ueid, ebi);
 
-    /* Stop T3485 timer if running */
-    rc = esm_ebr_stop_timer(ctx, ebi);
-    if (rc != RETURNerror) {
-        int pid, bid;
-        /* Release the default EPS bearer context and enter state INACTIVE */
-        rc = esm_proc_eps_bearer_context_deactivate(ctx, TRUE, ebi,
-                &pid, &bid, NULL);
-        if (rc != RETURNok) {
-            /* Failed to release the default EPS bearer context */
-            *esm_cause = ESM_CAUSE_PROTOCOL_ERROR;
-        }
+  /* Stop T3485 timer if running */
+  rc = esm_ebr_stop_timer(ctx, ebi);
+
+  if (rc != RETURNerror) {
+    int pid, bid;
+    /* Release the default EPS bearer context and enter state INACTIVE */
+    rc = esm_proc_eps_bearer_context_deactivate(ctx, TRUE, ebi,
+         &pid, &bid, NULL);
+
+    if (rc != RETURNok) {
+      /* Failed to release the default EPS bearer context */
+      *esm_cause = ESM_CAUSE_PROTOCOL_ERROR;
     }
+  }
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************
@@ -355,28 +362,30 @@ int esm_proc_default_eps_bearer_context_reject(emm_data_context_t *ctx, int ebi,
  ***************************************************************************/
 int esm_proc_default_eps_bearer_context_failure(emm_data_context_t *ctx)
 {
-    int rc = RETURNerror;
-    int pid;
+  int rc = RETURNerror;
+  int pid;
 
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    LOG_TRACE(WARNING, "ESM-PROC  - Default EPS bearer context activation "
-              "failure (ueid=%u)", ctx->ueid);
+  LOG_TRACE(WARNING, "ESM-PROC  - Default EPS bearer context activation "
+            "failure (ueid=%u)", ctx->ueid);
 
-    /* Get the EPS bearer identity of the EPS bearer context which is still
-     * pending in the active pending state */
-    int ebi = esm_ebr_get_pending_ebi(ctx, ESM_EBR_ACTIVE_PENDING);
-    if (ebi != ESM_EBI_UNASSIGNED) {
-        int bid;
-        /* Release the default EPS bearer context and enter state INACTIVE */
-        rc = esm_proc_eps_bearer_context_deactivate(ctx, TRUE, ebi,
-                &pid, &bid, NULL);
-    }
+  /* Get the EPS bearer identity of the EPS bearer context which is still
+   * pending in the active pending state */
+  int ebi = esm_ebr_get_pending_ebi(ctx, ESM_EBR_ACTIVE_PENDING);
 
-    if (rc != RETURNerror) {
-        LOG_FUNC_RETURN (pid);
-    }
-    LOG_FUNC_RETURN (RETURNerror);
+  if (ebi != ESM_EBI_UNASSIGNED) {
+    int bid;
+    /* Release the default EPS bearer context and enter state INACTIVE */
+    rc = esm_proc_eps_bearer_context_deactivate(ctx, TRUE, ebi,
+         &pid, &bid, NULL);
+  }
+
+  if (rc != RETURNerror) {
+    LOG_FUNC_RETURN (pid);
+  }
+
+  LOG_FUNC_RETURN (RETURNerror);
 }
 
 #endif // NAS_MME
@@ -406,53 +415,56 @@ int esm_proc_default_eps_bearer_context_failure(emm_data_context_t *ctx)
  **                                                                        **
  ***************************************************************************/
 int esm_proc_default_eps_bearer_context_request(int pid, int ebi,
-        const esm_proc_qos_t *qos,
-        int *esm_cause)
+    const esm_proc_qos_t *qos,
+    int *esm_cause)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc = RETURNerror;
+  int rc = RETURNerror;
 
-    LOG_TRACE(INFO, "ESM-PROC  - Default EPS bearer context activation "
-              "requested by the network (ebi=%d)", ebi);
+  LOG_TRACE(INFO, "ESM-PROC  - Default EPS bearer context activation "
+            "requested by the network (ebi=%d)", ebi);
 
-    /* Assign default EPS bearer context */
-    int new_ebi = esm_ebr_assign(ebi, pid+1, TRUE);
-    if (new_ebi == ESM_EBI_UNASSIGNED) {
-        /* 3GPP TS 24.301, section 6.4.1.5, abnormal cases a and b
-         * Default EPS bearer context activation request for an already
-         * activated default or dedicated EPS bearer context
-         */
-        int old_pid, old_bid;
-        /* Locally deactivate the existing EPS bearer context and proceed
-         * with the requested default EPS bearer context activation */
-        rc = esm_proc_eps_bearer_context_deactivate(TRUE, ebi,
-                &old_pid, &old_bid);
-        if (rc != RETURNok) {
-            /* Failed to release EPS bearer context */
-            *esm_cause = ESM_CAUSE_PROTOCOL_ERROR;
-        } else {
-            /* Assign new default EPS bearer context */
-            ebi = esm_ebr_assign(ebi, pid+1, TRUE);
-        }
+  /* Assign default EPS bearer context */
+  int new_ebi = esm_ebr_assign(ebi, pid+1, TRUE);
+
+  if (new_ebi == ESM_EBI_UNASSIGNED) {
+    /* 3GPP TS 24.301, section 6.4.1.5, abnormal cases a and b
+     * Default EPS bearer context activation request for an already
+     * activated default or dedicated EPS bearer context
+     */
+    int old_pid, old_bid;
+    /* Locally deactivate the existing EPS bearer context and proceed
+     * with the requested default EPS bearer context activation */
+    rc = esm_proc_eps_bearer_context_deactivate(TRUE, ebi,
+         &old_pid, &old_bid);
+
+    if (rc != RETURNok) {
+      /* Failed to release EPS bearer context */
+      *esm_cause = ESM_CAUSE_PROTOCOL_ERROR;
+    } else {
+      /* Assign new default EPS bearer context */
+      ebi = esm_ebr_assign(ebi, pid+1, TRUE);
     }
+  }
+
+  if (ebi != ESM_EBI_UNASSIGNED) {
+    /* Create new default EPS bearer context */
+    ebi = esm_ebr_context_create(pid, ebi, TRUE, qos, NULL);
 
     if (ebi != ESM_EBI_UNASSIGNED) {
-        /* Create new default EPS bearer context */
-        ebi = esm_ebr_context_create(pid, ebi, TRUE, qos, NULL);
-        if (ebi != ESM_EBI_UNASSIGNED) {
-            /* Default EPS bearer contextx successfully created */
-            _default_eps_bearer_context_data.ebi = ebi;
-            rc = RETURNok;
-        } else {
-            /* No resource available */
-            LOG_TRACE(WARNING, "ESM-PROC  - Failed to create new default EPS "
-                      "bearer context");
-            *esm_cause = ESM_CAUSE_INSUFFICIENT_RESOURCES;
-        }
+      /* Default EPS bearer contextx successfully created */
+      _default_eps_bearer_context_data.ebi = ebi;
+      rc = RETURNok;
+    } else {
+      /* No resource available */
+      LOG_TRACE(WARNING, "ESM-PROC  - Failed to create new default EPS "
+                "bearer context");
+      *esm_cause = ESM_CAUSE_INSUFFICIENT_RESOURCES;
     }
+  }
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************
@@ -487,41 +499,42 @@ int esm_proc_default_eps_bearer_context_request(int pid, int ebi,
  **                                                                        **
  ***************************************************************************/
 int esm_proc_default_eps_bearer_context_accept(int is_standalone, int ebi,
-        OctetString *msg, int ue_triggered)
+    OctetString *msg, int ue_triggered)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc = RETURNok;
+  int rc = RETURNok;
 
-    LOG_TRACE(INFO,"ESM-PROC  - Default EPS bearer context activation "
-              "accepted by the UE (ebi=%d)", ebi);
+  LOG_TRACE(INFO,"ESM-PROC  - Default EPS bearer context activation "
+            "accepted by the UE (ebi=%d)", ebi);
 
-    if (is_standalone) {
-        emm_sap_t emm_sap;
-        emm_esm_data_t *emm_esm = &emm_sap.u.emm_esm.u.data;
-        /*
-         * Notity EMM that ESM PDU has to be forwarded to lower layers
-         */
-        emm_sap.primitive = EMMESM_UNITDATA_REQ;
-        emm_sap.u.emm_esm.ueid = 0;
-        emm_esm->msg.length = msg->length;
-        emm_esm->msg.value = msg->value;
-        rc = emm_sap_send(&emm_sap);
+  if (is_standalone) {
+    emm_sap_t emm_sap;
+    emm_esm_data_t *emm_esm = &emm_sap.u.emm_esm.u.data;
+    /*
+     * Notity EMM that ESM PDU has to be forwarded to lower layers
+     */
+    emm_sap.primitive = EMMESM_UNITDATA_REQ;
+    emm_sap.u.emm_esm.ueid = 0;
+    emm_esm->msg.length = msg->length;
+    emm_esm->msg.value = msg->value;
+    rc = emm_sap_send(&emm_sap);
+  }
+
+  if (rc != RETURNerror) {
+    /* Set the EPS bearer context state to ACTIVE */
+    rc = esm_ebr_set_status(ebi, ESM_EBR_ACTIVE, ue_triggered);
+
+    if (rc != RETURNok) {
+      /* The EPS bearer context was already in ACTIVE state */
+      LOG_TRACE(WARNING, "ESM-PROC  - EBI %d was already ACTIVE", ebi);
+      /* Accept network retransmission of already accepted activate
+       * default EPS bearer context request */
+      LOG_FUNC_RETURN (RETURNok);
     }
+  }
 
-    if (rc != RETURNerror) {
-        /* Set the EPS bearer context state to ACTIVE */
-        rc = esm_ebr_set_status(ebi, ESM_EBR_ACTIVE, ue_triggered);
-        if (rc != RETURNok) {
-            /* The EPS bearer context was already in ACTIVE state */
-            LOG_TRACE(WARNING, "ESM-PROC  - EBI %d was already ACTIVE", ebi);
-            /* Accept network retransmission of already accepted activate
-             * default EPS bearer context request */
-            LOG_FUNC_RETURN (RETURNok);
-        }
-    }
-
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************
@@ -554,42 +567,42 @@ int esm_proc_default_eps_bearer_context_accept(int is_standalone, int ebi,
  **                                                                        **
  ***************************************************************************/
 int esm_proc_default_eps_bearer_context_reject(int is_standalone, int ebi,
-        OctetString *msg, int ue_triggered)
+    OctetString *msg, int ue_triggered)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc = RETURNok;
+  int rc = RETURNok;
 
-    LOG_TRACE(WARNING, "ESM-PROC  - Default EPS bearer context activation "
-              "not accepted by the UE (ebi=%d)", ebi);
+  LOG_TRACE(WARNING, "ESM-PROC  - Default EPS bearer context activation "
+            "not accepted by the UE (ebi=%d)", ebi);
 
-    if ( !esm_ebr_is_not_in_use(ebi) ) {
-        /* Release EPS bearer data currently in use */
-        rc = esm_ebr_release(ebi);
-    }
+  if ( !esm_ebr_is_not_in_use(ebi) ) {
+    /* Release EPS bearer data currently in use */
+    rc = esm_ebr_release(ebi);
+  }
 
-    if (rc != RETURNok) {
-        LOG_TRACE(WARNING, "ESM-PROC  - Failed to release EPS bearer data");
-    } else if (is_standalone) {
-        emm_sap_t emm_sap;
-        emm_esm_data_t *emm_esm = &emm_sap.u.emm_esm.u.data;
-        /*
-         * Notity EMM that ESM PDU has to be forwarded to lower layers
-         */
-        emm_sap.primitive = EMMESM_UNITDATA_REQ;
-        emm_sap.u.emm_esm.ueid = 0;
-        emm_esm->msg.length = msg->length;
-        emm_esm->msg.value = msg->value;
-        rc = emm_sap_send(&emm_sap);
-    } else {
-        /* An error is returned to notify EMM that the default EPS bearer
-         * activation procedure initiated as part of the initial attach
-         * procedure has failed
-         */
-        rc = RETURNerror;
-    }
+  if (rc != RETURNok) {
+    LOG_TRACE(WARNING, "ESM-PROC  - Failed to release EPS bearer data");
+  } else if (is_standalone) {
+    emm_sap_t emm_sap;
+    emm_esm_data_t *emm_esm = &emm_sap.u.emm_esm.u.data;
+    /*
+     * Notity EMM that ESM PDU has to be forwarded to lower layers
+     */
+    emm_sap.primitive = EMMESM_UNITDATA_REQ;
+    emm_sap.u.emm_esm.ueid = 0;
+    emm_esm->msg.length = msg->length;
+    emm_esm->msg.value = msg->value;
+    rc = emm_sap_send(&emm_sap);
+  } else {
+    /* An error is returned to notify EMM that the default EPS bearer
+     * activation procedure initiated as part of the initial attach
+     * procedure has failed
+     */
+    rc = RETURNerror;
+  }
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************
@@ -612,15 +625,15 @@ int esm_proc_default_eps_bearer_context_reject(int is_standalone, int ebi,
  ***************************************************************************/
 int esm_proc_default_eps_bearer_context_complete(void)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    LOG_TRACE(INFO,
-              "ESM-PROC  - Default EPS bearer context activation complete");
+  LOG_TRACE(INFO,
+            "ESM-PROC  - Default EPS bearer context activation complete");
 
-    /* Reset default EPS bearer context internal data */
-    _default_eps_bearer_context_data.ebi = ESM_EBI_UNASSIGNED;
+  /* Reset default EPS bearer context internal data */
+  _default_eps_bearer_context_data.ebi = ESM_EBI_UNASSIGNED;
 
-    LOG_FUNC_RETURN (RETURNok);
+  LOG_FUNC_RETURN (RETURNok);
 }
 
 /****************************************************************************
@@ -645,22 +658,23 @@ int esm_proc_default_eps_bearer_context_complete(void)
  ***************************************************************************/
 int esm_proc_default_eps_bearer_context_failure(void)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int ebi = _default_eps_bearer_context_data.ebi;
-    int pid, bid;
+  int ebi = _default_eps_bearer_context_data.ebi;
+  int pid, bid;
 
-    LOG_TRACE(WARNING,
-              "ESM-PROC  - Default EPS bearer context activation failure");
+  LOG_TRACE(WARNING,
+            "ESM-PROC  - Default EPS bearer context activation failure");
 
-    /* Release the default EPS bearer context and enter state INACTIVE */
-    int rc = esm_proc_eps_bearer_context_deactivate(TRUE, ebi, &pid, &bid);
-    if (rc != RETURNerror) {
-        /* Reset default EPS bearer context internal data */
-        _default_eps_bearer_context_data.ebi = ESM_EBI_UNASSIGNED;
-    }
+  /* Release the default EPS bearer context and enter state INACTIVE */
+  int rc = esm_proc_eps_bearer_context_deactivate(TRUE, ebi, &pid, &bid);
 
-    LOG_FUNC_RETURN (rc);
+  if (rc != RETURNerror) {
+    /* Reset default EPS bearer context internal data */
+    _default_eps_bearer_context_data.ebi = ESM_EBI_UNASSIGNED;
+  }
+
+  LOG_FUNC_RETURN (rc);
 }
 #endif // NAS_UE
 
@@ -698,41 +712,42 @@ int esm_proc_default_eps_bearer_context_failure(void)
  ***************************************************************************/
 static void *_default_eps_bearer_activate_t3485_handler(void *args)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc;
+  int rc;
 
-    /* Get retransmission timer parameters data */
-    esm_ebr_timer_data_t *data = (esm_ebr_timer_data_t *)(args);
+  /* Get retransmission timer parameters data */
+  esm_ebr_timer_data_t *data = (esm_ebr_timer_data_t *)(args);
 
-    /* Increment the retransmission counter */
-    data->count += 1;
+  /* Increment the retransmission counter */
+  data->count += 1;
 
-    LOG_TRACE(WARNING, "ESM-PROC  - T3485 timer expired (ueid=%d, ebi=%d), "
-              "retransmission counter = %d",
-              data->ueid, data->ebi, data->count);
+  LOG_TRACE(WARNING, "ESM-PROC  - T3485 timer expired (ueid=%d, ebi=%d), "
+            "retransmission counter = %d",
+            data->ueid, data->ebi, data->count);
 
-    if (data->count < DEFAULT_EPS_BEARER_ACTIVATE_COUNTER_MAX) {
-        /* Re-send activate default EPS bearer context request message
-         * to the UE */
-        rc = _default_eps_bearer_activate(data->ctx, data->ebi, &data->msg);
-    } else {
-        /*
-         * The maximum number of activate default EPS bearer context request
-         * message retransmission has exceed
-         */
-        int pid, bid;
-        /* Release the default EPS bearer context and enter state INACTIVE */
-        rc = esm_proc_eps_bearer_context_deactivate(data->ctx, TRUE,
-                data->ebi, &pid, &bid,
-                NULL);
-        if (rc != RETURNerror) {
-            /* Stop timer T3485 */
-            rc = esm_ebr_stop_timer(data->ctx, data->ebi);
-        }
+  if (data->count < DEFAULT_EPS_BEARER_ACTIVATE_COUNTER_MAX) {
+    /* Re-send activate default EPS bearer context request message
+     * to the UE */
+    rc = _default_eps_bearer_activate(data->ctx, data->ebi, &data->msg);
+  } else {
+    /*
+     * The maximum number of activate default EPS bearer context request
+     * message retransmission has exceed
+     */
+    int pid, bid;
+    /* Release the default EPS bearer context and enter state INACTIVE */
+    rc = esm_proc_eps_bearer_context_deactivate(data->ctx, TRUE,
+         data->ebi, &pid, &bid,
+         NULL);
+
+    if (rc != RETURNerror) {
+      /* Stop timer T3485 */
+      rc = esm_ebr_stop_timer(data->ctx, data->ebi);
     }
+  }
 
-    LOG_FUNC_RETURN (NULL);
+  LOG_FUNC_RETURN (NULL);
 }
 
 /*
@@ -761,28 +776,28 @@ static void *_default_eps_bearer_activate_t3485_handler(void *args)
 static int _default_eps_bearer_activate(emm_data_context_t *ctx, int ebi,
                                         const OctetString *msg)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    emm_sap_t emm_sap;
-    int rc;
+  emm_sap_t emm_sap;
+  int rc;
 
-    /*
-     * Notify EMM that an activate default EPS bearer context request message
-     * has to be sent to the UE
-     */
-    emm_esm_data_t *emm_esm = &emm_sap.u.emm_esm.u.data;
-    emm_sap.primitive = EMMESM_UNITDATA_REQ;
-    emm_sap.u.emm_esm.ueid = ctx->ueid;
-    emm_sap.u.emm_esm.ctx  = ctx;
-    emm_esm->msg = *msg;
-    rc = emm_sap_send(&emm_sap);
+  /*
+   * Notify EMM that an activate default EPS bearer context request message
+   * has to be sent to the UE
+   */
+  emm_esm_data_t *emm_esm = &emm_sap.u.emm_esm.u.data;
+  emm_sap.primitive = EMMESM_UNITDATA_REQ;
+  emm_sap.u.emm_esm.ueid = ctx->ueid;
+  emm_sap.u.emm_esm.ctx  = ctx;
+  emm_esm->msg = *msg;
+  rc = emm_sap_send(&emm_sap);
 
-    if (rc != RETURNerror) {
-        /* Start T3485 retransmission timer */
-        rc = esm_ebr_start_timer(ctx, ebi, msg, T3485_DEFAULT_VALUE,
-                                 _default_eps_bearer_activate_t3485_handler);
-    }
+  if (rc != RETURNerror) {
+    /* Start T3485 retransmission timer */
+    rc = esm_ebr_start_timer(ctx, ebi, msg, T3485_DEFAULT_VALUE,
+                             _default_eps_bearer_activate_t3485_handler);
+  }
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 #endif // NAS_MME

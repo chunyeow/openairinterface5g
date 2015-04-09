@@ -42,7 +42,7 @@
 #        include <rtai_posix.h>
 #        include <rtai_fifos.h>
 #    else
-      /* RTLINUX */
+/* RTLINUX */
 #        include <rtl.h>
 #        include <time.h>
 #        include <rtl_sched.h>
@@ -90,7 +90,7 @@ void            rlc_um_data_req (void *rlcP, struct mem_block *sduP);
 uint32_t
 rlc_um_get_buffer_occupancy (struct rlc_um_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   return rlcP->buffer_occupancy;
 }
 
@@ -98,59 +98,61 @@ rlc_um_get_buffer_occupancy (struct rlc_um_entity *rlcP)
 void
 rlc_um_get_pdus (void *argP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   struct rlc_um_entity *rlc = (struct rlc_um_entity *) argP;
 
   switch (rlc->protocol_state) {
 
-      case RLC_NULL_STATE:
-        // from 3GPP TS 25.322 V4.2.0
-        // In the NULL state the RLC entity does not exist and therefore it is not possible to transfer any data through it.
-        // Upon reception of a CRLC-CONFIG-Req from upper layer indicating establishment, the RLC entity:
-        // -      is created; and
-        // -      enters the DATA_TRANSFER_READY state.
-        break;
+  case RLC_NULL_STATE:
+    // from 3GPP TS 25.322 V4.2.0
+    // In the NULL state the RLC entity does not exist and therefore it is not possible to transfer any data through it.
+    // Upon reception of a CRLC-CONFIG-Req from upper layer indicating establishment, the RLC entity:
+    // -      is created; and
+    // -      enters the DATA_TRANSFER_READY state.
+    break;
 
-      case RLC_DATA_TRANSFER_READY_STATE:
-        // from 3GPP TS 25.322 V4.2.0
-        // In the DATA_TRANSFER_READY state, unacknowledged mode data can be exchanged between the entities according to subclause 11.2.
-        // Upon reception of a CRLC-CONFIG-Req from upper layer indicating release, the RLC entity:
-        // -      enters the NULL state; and
-        // -      is considered as being terminated.
-        // Upon reception of a CRLC-CONFIG-Req from upper layer indicating modification, the RLC entity:
-        // -      stays in the DATA_TRANSFER_READY state;
-        // -      modifies only the protocol parameters and timers as indicated by upper layers.
-        // Upon reception of a CRLC-SUSPEND-Req from upper layers, the RLC entity:
-        // -      enters the LOCAL_SUSPEND state.
-        // SEND DATA TO MAC
+  case RLC_DATA_TRANSFER_READY_STATE:
+    // from 3GPP TS 25.322 V4.2.0
+    // In the DATA_TRANSFER_READY state, unacknowledged mode data can be exchanged between the entities according to subclause 11.2.
+    // Upon reception of a CRLC-CONFIG-Req from upper layer indicating release, the RLC entity:
+    // -      enters the NULL state; and
+    // -      is considered as being terminated.
+    // Upon reception of a CRLC-CONFIG-Req from upper layer indicating modification, the RLC entity:
+    // -      stays in the DATA_TRANSFER_READY state;
+    // -      modifies only the protocol parameters and timers as indicated by upper layers.
+    // Upon reception of a CRLC-SUSPEND-Req from upper layers, the RLC entity:
+    // -      enters the LOCAL_SUSPEND state.
+    // SEND DATA TO MAC
 #ifndef NO_THREAD_SAFE
-        pthread_mutex_lock (&rlc->mutex_input_buffer);
+    pthread_mutex_lock (&rlc->mutex_input_buffer);
 #endif
-        if (rlc->data_pdu_size > 125) {
-          rlc_um_segment_15 (rlc);
-        } else {
-          rlc_um_segment_7 (rlc);
-        }
+
+    if (rlc->data_pdu_size > 125) {
+      rlc_um_segment_15 (rlc);
+    } else {
+      rlc_um_segment_7 (rlc);
+    }
+
 #ifndef NO_THREAD_SAFE
-        pthread_mutex_unlock (&rlc->mutex_input_buffer);
+    pthread_mutex_unlock (&rlc->mutex_input_buffer);
 #endif
-        break;
+    break;
 
-      case RLC_LOCAL_SUSPEND_STATE:
-        // from 3GPP TS 25.322 V4.2.0
-        // In the LOCAL_SUSPEND state, the RLC entity is suspended, i.e. it does not send UMD PDUs with SN greater than equal to certain specified value (see subclause 9.7.5).
-        // Upon reception of a CRLC-RESUME-Req from upper layers, the RLC entity:
-        // -      enters the DATA_TRANSFER_READY state; and
-        // -      resumes the data transmission.
-        // Upon reception of a CRLC-CONFIG-Req from upper layer indicating modification, the RLC entity:
-        // -      stays in the LOCAL_SUSPEND state;
-        // -      modifies only the protocol parameters and timers as indicated by upper layers.
+  case RLC_LOCAL_SUSPEND_STATE:
+    // from 3GPP TS 25.322 V4.2.0
+    // In the LOCAL_SUSPEND state, the RLC entity is suspended, i.e. it does not send UMD PDUs with SN greater than equal to certain specified value (see subclause 9.7.5).
+    // Upon reception of a CRLC-RESUME-Req from upper layers, the RLC entity:
+    // -      enters the DATA_TRANSFER_READY state; and
+    // -      resumes the data transmission.
+    // Upon reception of a CRLC-CONFIG-Req from upper layer indicating modification, the RLC entity:
+    // -      stays in the LOCAL_SUSPEND state;
+    // -      modifies only the protocol parameters and timers as indicated by upper layers.
 
-        // TO DO TAKE CARE OF SN : THE IMPLEMENTATION OF THIS FUNCTIONNALITY IS NOT CRITICAL
-        break;
+    // TO DO TAKE CARE OF SN : THE IMPLEMENTATION OF THIS FUNCTIONNALITY IS NOT CRITICAL
+    break;
 
-      default:
-        msg ("[RLC_UM %p] MAC_DATA_REQ UNKNOWN PROTOCOL STATE %02X hex\n", rlc, rlc->protocol_state);
+  default:
+    msg ("[RLC_UM %p] MAC_DATA_REQ UNKNOWN PROTOCOL STATE %02X hex\n", rlc, rlc->protocol_state);
   }
 }
 
@@ -158,55 +160,57 @@ rlc_um_get_pdus (void *argP)
 void
 rlc_um_rx (void *argP, struct mac_data_ind data_indP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   struct rlc_um_entity *rlc = (struct rlc_um_entity *) argP;
 
   switch (rlc->protocol_state) {
 
-      case RLC_NULL_STATE:
-        // from 3GPP TS 25.322 V4.2.0
-        // In the NULL state the RLC entity does not exist and therefore it is not possible to transfer any data through it.
-        // Upon reception of a CRLC-CONFIG-Req from upper layer indicating establishment, the RLC entity:
-        // -      is created; and
-        // -      enters the DATA_TRANSFER_READY state.
-        msg ("[RLC_UM_RX %p] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", argP);
-        free_up (&data_indP.data);
-        break;
+  case RLC_NULL_STATE:
+    // from 3GPP TS 25.322 V4.2.0
+    // In the NULL state the RLC entity does not exist and therefore it is not possible to transfer any data through it.
+    // Upon reception of a CRLC-CONFIG-Req from upper layer indicating establishment, the RLC entity:
+    // -      is created; and
+    // -      enters the DATA_TRANSFER_READY state.
+    msg ("[RLC_UM_RX %p] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", argP);
+    free_up (&data_indP.data);
+    break;
 
-      case RLC_DATA_TRANSFER_READY_STATE:
-        // from 3GPP TS 25.322 V4.2.0
-        // In the DATA_TRANSFER_READY state, unacknowledged mode data can be exchanged between the entities according to subclause 11.2.
-        // Upon reception of a CRLC-CONFIG-Req from upper layer indicating release, the RLC entity:
-        // -      enters the NULL state; and
-        // -      is considered as being terminated.
-        // Upon reception of a CRLC-CONFIG-Req from upper layer indicating modification, the RLC entity:
-        // -      stays in the DATA_TRANSFER_READY state;
-        // -      modifies only the protocol parameters and timers as indicated by upper layers.
-        // Upon reception of a CRLC-SUSPEND-Req from upper layers, the RLC entity:
-        // -      enters the LOCAL_SUSPEND state.
-        data_indP.tb_size = (data_indP.tb_size + 7) >> 3;       // from bits to bytes
-        if (data_indP.tb_size <= 125) {
-          rlc_um_receive_7 (rlc, data_indP);
-        } else {
-          rlc_um_receive_15 (rlc, data_indP);
-        }
-        break;
+  case RLC_DATA_TRANSFER_READY_STATE:
+    // from 3GPP TS 25.322 V4.2.0
+    // In the DATA_TRANSFER_READY state, unacknowledged mode data can be exchanged between the entities according to subclause 11.2.
+    // Upon reception of a CRLC-CONFIG-Req from upper layer indicating release, the RLC entity:
+    // -      enters the NULL state; and
+    // -      is considered as being terminated.
+    // Upon reception of a CRLC-CONFIG-Req from upper layer indicating modification, the RLC entity:
+    // -      stays in the DATA_TRANSFER_READY state;
+    // -      modifies only the protocol parameters and timers as indicated by upper layers.
+    // Upon reception of a CRLC-SUSPEND-Req from upper layers, the RLC entity:
+    // -      enters the LOCAL_SUSPEND state.
+    data_indP.tb_size = (data_indP.tb_size + 7) >> 3;       // from bits to bytes
 
-      case RLC_LOCAL_SUSPEND_STATE:
-        // from 3GPP TS 25.322 V4.2.0
-        // In the LOCAL_SUSPEND state, the RLC entity is suspended, i.e. it does not send UMD PDUs with SN greater than equal to certain specified value (see subclause 9.7.5).
-        // Upon reception of a CRLC-RESUME-Req from upper layers, the RLC entity:
-        // -      enters the DATA_TRANSFER_READY state; and
-        // -      resumes the data transmission.
-        // Upon reception of a CRLC-CONFIG-Req from upper layer indicating modification, the RLC entity:
-        // -      stays in the LOCAL_SUSPEND state;
-        // -      modifies only the protocol parameters and timers as indicated by upper layers.
-        msg ("[RLC_UM_RX %p] RLC_LOCAL_SUSPEND_STATE\n", argP);
-        break;
+    if (data_indP.tb_size <= 125) {
+      rlc_um_receive_7 (rlc, data_indP);
+    } else {
+      rlc_um_receive_15 (rlc, data_indP);
+    }
 
-      default:
-        msg ("[RLC_UM_RX][RB %d] TX UNKNOWN PROTOCOL STATE %02X hex\n", rlc->rb_id, rlc->protocol_state);
+    break;
+
+  case RLC_LOCAL_SUSPEND_STATE:
+    // from 3GPP TS 25.322 V4.2.0
+    // In the LOCAL_SUSPEND state, the RLC entity is suspended, i.e. it does not send UMD PDUs with SN greater than equal to certain specified value (see subclause 9.7.5).
+    // Upon reception of a CRLC-RESUME-Req from upper layers, the RLC entity:
+    // -      enters the DATA_TRANSFER_READY state; and
+    // -      resumes the data transmission.
+    // Upon reception of a CRLC-CONFIG-Req from upper layer indicating modification, the RLC entity:
+    // -      stays in the LOCAL_SUSPEND state;
+    // -      modifies only the protocol parameters and timers as indicated by upper layers.
+    msg ("[RLC_UM_RX %p] RLC_LOCAL_SUSPEND_STATE\n", argP);
+    break;
+
+  default:
+    msg ("[RLC_UM_RX][RB %d] TX UNKNOWN PROTOCOL STATE %02X hex\n", rlc->rb_id, rlc->protocol_state);
   }
 }
 
@@ -214,7 +218,7 @@ rlc_um_rx (void *argP, struct mac_data_ind data_indP)
 struct mac_status_resp
 rlc_um_mac_status_indication (void *rlcP, uint16_t no_tbP, uint16_t tb_sizeP, struct mac_status_ind tx_statusP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   struct mac_status_resp status_resp;
 
   ((struct rlc_um_entity *) rlcP)->nb_pdu_requested_by_mac = no_tbP - ((struct rlc_um_entity *) rlcP)->pdus_to_mac_layer.nb_elements;
@@ -225,15 +229,19 @@ rlc_um_mac_status_indication (void *rlcP, uint16_t no_tbP, uint16_t tb_sizeP, st
   status_resp.buffer_occupancy_in_pdus = status_resp.buffer_occupancy_in_bytes / ((struct rlc_um_entity *) rlcP)->data_pdu_size;
   status_resp.rlc_info.rlc_protocol_state = ((struct rlc_um_entity *) rlcP)->protocol_state;
 #ifdef DEBUG_RLC_UM_TX_STATUS
+
   if (((struct rlc_um_entity *) rlcP)->rb_id > 0) {
     msg ("[RLC_UM][RB %d] MAC_STATUS_INDICATION (DATA) %d TBs -> %d TBs\n", ((struct rlc_um_entity *) rlcP)->rb_id, no_tbP, status_resp.buffer_occupancy_in_pdus);
+
     if ((tx_statusP.tx_status == MAC_TX_STATUS_SUCCESSFUL) && (tx_statusP.no_pdu)) {
       msg ("[RLC_UM][RB %d] MAC_STATUS_INDICATION  TX STATUS   SUCCESSFUL %d PDUs\n", ((struct rlc_um_entity *) rlcP)->rb_id, tx_statusP.no_pdu);
     }
+
     if ((tx_statusP.tx_status == MAC_TX_STATUS_UNSUCCESSFUL) && (tx_statusP.no_pdu)) {
       msg ("[RLC_UM][RB %d] MAC_STATUS_INDICATION  TX STATUS UNSUCCESSFUL %d PDUs\n", ((struct rlc_um_entity *) rlcP)->rb_id, tx_statusP.no_pdu);
     }
   }
+
 #endif
   return status_resp;
 }
@@ -242,7 +250,7 @@ rlc_um_mac_status_indication (void *rlcP, uint16_t no_tbP, uint16_t tb_sizeP, st
 struct mac_data_req
 rlc_um_mac_data_request (void *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   struct mac_data_req data_req;
 
   rlc_um_get_pdus (rlcP);
@@ -254,9 +262,11 @@ rlc_um_mac_data_request (void *rlcP)
 #endif
 
 #ifdef DEBUG_RLC_UM_MAC_DATA_REQUEST
+
   if (((struct rlc_um_entity *) rlcP)->rb_id > 0) {
     // msg ("[RLC_UM][RB %d] MAC_DATA_REQUEST %d TBs\n", ((struct rlc_um_entity *) rlcP)->rb_id, data_req.data.nb_elements);
   }
+
 #endif
   data_req.buffer_occupancy_in_bytes = rlc_um_get_buffer_occupancy ((struct rlc_um_entity *) rlcP);
   data_req.buffer_occupancy_in_pdus = data_req.buffer_occupancy_in_bytes / ((struct rlc_um_entity *) rlcP)->data_pdu_size;
@@ -268,7 +278,7 @@ rlc_um_mac_data_request (void *rlcP)
 void
 rlc_um_mac_data_indication (void *rlcP, struct mac_data_ind data_indP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   rlc_um_rx (rlcP, data_indP);
 }
 
@@ -276,7 +286,7 @@ rlc_um_mac_data_indication (void *rlcP, struct mac_data_ind data_indP)
 void
 rlc_um_data_req (void *rlcP, struct mem_block *sduP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   struct rlc_um_entity *rlc = (struct rlc_um_entity *) rlcP;
   uint8_t              use_special_li;
   uint8_t              insert_sdu = 0;
@@ -296,6 +306,7 @@ rlc_um_data_req (void *rlcP, struct mem_block *sduP)
   //msg ("[RLC_UM][RB  %d] RLC_UM_DATA_REQ size %d Bytes, BO %ld , NB SDU %d current_sdu_index=%d next_sdu_index=%d\n",
   //   rlc->rb_id, ((struct rlc_um_data_req *) (sduP->data))->data_size, rlc->buffer_occupancy, rlc->nb_sdu, rlc->current_sdu_index, rlc->next_sdu_index);
 #endif
+
   if (rlc->input_sdus[rlc->next_sdu_index] == NULL) {
     insert_sdu = 1;
   } else {
@@ -312,6 +323,7 @@ rlc_um_data_req (void *rlcP, struct mem_block *sduP)
 #ifdef DEBUG_RLC_UM_DISCARD_SDU
         msg ("[RLC_UM][RB %d] SDU DISCARDED : BUFFER OVERFLOW, BO %ld , NB SDU %d\n", rlc->rb_id, rlc->buffer_occupancy, rlc->nb_sdu);
 #endif
+
         if (((struct rlc_um_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index]->data))->sdu_remaining_size !=
             ((struct rlc_um_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index]->data))->sdu_size) {
 #ifdef DEBUG_RLC_UM_VT_US
@@ -324,6 +336,7 @@ rlc_um_data_req (void *rlcP, struct mem_block *sduP)
         } else {
           rlc->buffer_occupancy -= ((struct rlc_um_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index]->data))->sdu_size;
         }
+
         rlc->nb_sdu -= 1;
         free_mem_block (rlc->input_sdus[rlc->current_sdu_index]);
         rlc->input_sdus[rlc->current_sdu_index] = NULL;
@@ -331,22 +344,27 @@ rlc_um_data_req (void *rlcP, struct mem_block *sduP)
         rlc->current_sdu_index = (rlc->current_sdu_index + 1) % rlc->size_input_sdus_buffer;
 #ifdef DEBUG_RLC_UM_DISCARD_SDU
         msg ("[RLC_UM][RB %d] DISCARD RESULT:\n", rlc->rb_id);
+
         //msg ("[RLC_UM][RB %d] size input buffer=%d current_sdu_index=%d next_sdu_index=%d\n", rlc->rb_id, rlc->size_input_sdus_buffer, rlc->current_sdu_index, rlc->next_sdu_index);
         for (index = 0; index < rlc->size_input_sdus_buffer; index++) {
           //msg ("[RLC_UM][RB %d] BUFFER[%d]=%p\n", rlc->rb_id, index, rlc->input_sdus[index]);
         }
+
 #endif
       } else {
 #ifdef DEBUG_RLC_UM_DISCARD_SDU
         msg ("[RLC_UM][RB %d] DISCARD : BUFFER OVERFLOW ERROR : SHOULD FIND A SDU\n", rlc->rb_id);
+
         //msg ("[RLC_UM][RB %d] size input buffer=%d current_sdu_index=%d next_sdu_index=%d\n", rlc->rb_id, rlc->size_input_sdus_buffer, rlc->current_sdu_index, rlc->next_sdu_index);
         for (index = 0; index < rlc->size_input_sdus_buffer; index++) {
           msg ("[RLC_UM][rb %d] BUFFER[%d]=%p\n", rlc->rb_id, index, rlc->input_sdus[index]);
         }
+
 #endif
       }
     }
   }
+
   if ((insert_sdu)) {
 #ifdef BENCH_QOS_L2
     fprintf (bench_l2, "[SDU REQUEST] FRAME %d SIZE %d RB %d RLC-UM %p\n", mac_xface->frame, ((struct rlc_um_data_req *) (sduP->data))->data_size, rlc->rb_id, rlc);
@@ -364,16 +382,19 @@ rlc_um_data_req (void *rlcP, struct mem_block *sduP)
     ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_creation_time = *rlc->frame_tick_milliseconds;
     rlc->next_sdu_index = (rlc->next_sdu_index + 1) % rlc->size_input_sdus_buffer;
 #ifdef DEBUG_RLC_UM_DISPLAY_ASCII_DATA
+
     //msg ("[RLC_UM][RB %d]SDU REQUEST DATA :", rlc->rb_id);
     for (index = 0; index < ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_remaining_size; index++) {
       msg ("%02X-", ((struct rlc_um_tx_sdu_management *) (sduP->data))->first_byte[index]);
     }
+
     msg ("\n");
 #endif
 
   } else {
     free_mem_block (sduP);
   }
+
 #ifndef NO_THREAD_SAFE
   pthread_mutex_unlock (&rlc->mutex_input_buffer);
 #endif

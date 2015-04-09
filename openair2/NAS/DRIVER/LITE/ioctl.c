@@ -50,7 +50,8 @@ uint8_t g_msgrep[OAI_NW_DRV_LIST_CLASS_MAX*sizeof(struct oai_nw_drv_msg_class_li
 // Statistic
 //---------------------------------------------------------------------------
 void oai_nw_drv_set_msg_statistic_reply(struct oai_nw_drv_msg_statistic_reply *msgrep,
-                 struct oai_nw_drv_priv *priv){
+                                        struct oai_nw_drv_priv *priv)
+{
   //---------------------------------------------------------------------------
   msgrep->rx_packets=priv->stats.rx_packets;
   msgrep->tx_packets=priv->stats.tx_packets;
@@ -64,16 +65,18 @@ void oai_nw_drv_set_msg_statistic_reply(struct oai_nw_drv_msg_statistic_reply *m
 
 //---------------------------------------------------------------------------
 int oai_nw_drv_ioCTL_statistic_request(struct oai_nw_drv_ioctl *gifr,
-                struct oai_nw_drv_priv *priv){
+                                       struct oai_nw_drv_priv *priv)
+{
   //---------------------------------------------------------------------------
   struct oai_nw_drv_msg_statistic_reply msgrep;
   printk("NAS_IOCTL_STATISTIC: stat requested\n");
   oai_nw_drv_set_msg_statistic_reply(&msgrep,priv);
-  if (copy_to_user(gifr->msg, &msgrep, sizeof(msgrep)))
-    {
-      printk("NAS_IOCTL_STATISTIC: copy_to_user failure\n");
-      return -EFAULT;
-    }
+
+  if (copy_to_user(gifr->msg, &msgrep, sizeof(msgrep))) {
+    printk("NAS_IOCTL_STATISTIC: copy_to_user failure\n");
+    return -EFAULT;
+  }
+
   return 0;
 }
 
@@ -89,8 +92,9 @@ int oai_nw_drv_ioCTL_statistic_request(struct oai_nw_drv_ioctl *gifr,
 // IOCTL command
 //---------------------------------------------------------------------------
 int oai_nw_drv_CTL_ioctl(struct net_device *dev,
-          struct ifreq *ifr,
-          int cmd){
+                         struct ifreq *ifr,
+                         int cmd)
+{
   //---------------------------------------------------------------------------
   struct oai_nw_drv_ioctl *gifr;
   struct oai_nw_drv_priv *priv=netdev_priv(dev);
@@ -99,12 +103,11 @@ int oai_nw_drv_CTL_ioctl(struct net_device *dev,
 
   //  printk("NAS_CTL_IOCTL: begin ioctl for instance %d\n",find_inst(dev));
 
-  switch(cmd)
-    {
-    case OAI_NW_DRV_IOCTL_RRM:
-      gifr=(struct oai_nw_drv_ioctl *)ifr;
-      switch(gifr->type)
-    {
+  switch(cmd) {
+  case OAI_NW_DRV_IOCTL_RRM:
+    gifr=(struct oai_nw_drv_ioctl *)ifr;
+
+    switch(gifr->type) {
     case OAI_NW_DRV_MSG_STATISTIC_REQUEST:
       r=oai_nw_drv_ioCTL_statistic_request(gifr,priv);
       break;
@@ -114,17 +117,21 @@ int oai_nw_drv_CTL_ioctl(struct net_device *dev,
       //  printk("NAS_IOCTL_RRM: unkwon request type, type=%x\n", gifr->type);
       r=-EFAULT;
     }
-      break;
-    default:
-      //      printk("NAS_CTL_IOCTL: Unknown ioctl command, cmd=%x\n", cmd);
-      r=-EFAULT;
-    }
+
+    break;
+
+  default:
+    //      printk("NAS_CTL_IOCTL: Unknown ioctl command, cmd=%x\n", cmd);
+    r=-EFAULT;
+  }
+
   //  printk("NAS_CTL_IOCTL: end\n");
   return r;
 }
 
 //---------------------------------------------------------------------------
-void oai_nw_drv_CTL_send(struct sk_buff *skb, int inst) {
+void oai_nw_drv_CTL_send(struct sk_buff *skb, int inst)
+{
   //---------------------------------------------------------------------------
   printk("NAS_CTL_SEND - void \n");
 }

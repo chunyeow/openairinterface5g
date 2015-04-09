@@ -109,39 +109,39 @@ typedef UInt8_t     AcT_t;      /* Access Technology    */
  * International Mobile Subscriber Identity
  */
 typedef struct {
-    Byte_t length;
-    union {
-        struct {
-            Byte_t digit2:4;
-            Byte_t digit1:4;
-            Byte_t digit4:4;
-            Byte_t digit3:4;
-            Byte_t digit6:4;
-            Byte_t digit5:4;
-            Byte_t digit8:4;
-            Byte_t digit7:4;
-            Byte_t digit10:4;
-            Byte_t digit9:4;
-            Byte_t digit12:4;
-            Byte_t digit11:4;
-            Byte_t digit14:4;
-            Byte_t digit13:4;
+  Byte_t length;
+  union {
+    struct {
+      Byte_t digit2:4;
+      Byte_t digit1:4;
+      Byte_t digit4:4;
+      Byte_t digit3:4;
+      Byte_t digit6:4;
+      Byte_t digit5:4;
+      Byte_t digit8:4;
+      Byte_t digit7:4;
+      Byte_t digit10:4;
+      Byte_t digit9:4;
+      Byte_t digit12:4;
+      Byte_t digit11:4;
+      Byte_t digit14:4;
+      Byte_t digit13:4;
 #define EVEN_PARITY 0
 #define ODD_PARITY  1
-            Byte_t parity:4;
-            Byte_t digit15:4;
-        } num;
+      Byte_t parity:4;
+      Byte_t digit15:4;
+    } num;
 #define IMSI_SIZE   8
-        Byte_t value[IMSI_SIZE];
-    } u;
+    Byte_t value[IMSI_SIZE];
+  } u;
 } imsi_t;
 
 /*
  * Mobile subscriber dialing number
  */
 typedef struct {
-    Byte_t ext:1;
-    /* Type Of Number           */
+  Byte_t ext:1;
+  /* Type Of Number           */
 #define MSISDN_TON_UNKNOWKN     0b000
 #define MSISDN_TON_INTERNATIONAL    0b001
 #define MSISDN_TON_NATIONAL     0b010
@@ -149,8 +149,8 @@ typedef struct {
 #define MSISDN_TON_SUBCRIBER        0b100
 #define MSISDN_TON_ABBREVIATED      0b110
 #define MSISDN_TON_RESERVED     0b111
-    Byte_t ton:3;
-    /* Numbering Plan Identification    */
+  Byte_t ton:3;
+  /* Numbering Plan Identification    */
 #define MSISDN_NPI_UNKNOWN      0b0000
 #define MSISDN_NPI_ISDN_TELEPHONY   0b0001
 #define MSISDN_NPI_GENERIC      0b0010
@@ -161,13 +161,13 @@ typedef struct {
 #define MSISDN_NPI_ISDN_MOBILE      0b0111
 #define MSISDN_NPI_PRIVATE      0b1110
 #define MSISDN_NPI_RESERVED     0b1111
-    Byte_t npi:4;
-    /* Dialing Number           */
-    struct {
-        Byte_t lsb:4;
-        Byte_t msb:4;
+  Byte_t npi:4;
+  /* Dialing Number           */
+  struct {
+    Byte_t lsb:4;
+    Byte_t msb:4;
 #define MSISDN_DIGIT_SIZE   10
-    } digit[MSISDN_DIGIT_SIZE];
+  } digit[MSISDN_DIGIT_SIZE];
 } msisdn_t;
 
 /*
@@ -180,54 +180,54 @@ typedef imsi_t imei_t;
  * PLMN = BCD encoding (Mobile Country Code + Mobile Network Code)
  */
 typedef struct {
-    Byte_t MCCdigit2:4;
-    Byte_t MCCdigit1:4;
-    Byte_t MNCdigit3:4;
-    Byte_t MCCdigit3:4;
-    Byte_t MNCdigit2:4;
-    Byte_t MNCdigit1:4;
+  Byte_t MCCdigit2:4;
+  Byte_t MCCdigit1:4;
+  Byte_t MNCdigit3:4;
+  Byte_t MCCdigit3:4;
+  Byte_t MNCdigit2:4;
+  Byte_t MNCdigit1:4;
 } plmn_t;
 
 /*
  * Location Area Identification
  */
 typedef struct {
-    plmn_t plmn;    /* <MCC> + <MNC>    */
-    lac_t lac;      /* Location Area Code   */
+  plmn_t plmn;    /* <MCC> + <MNC>    */
+  lac_t lac;      /* Location Area Code   */
 } lai_t;
 
 /*
  * GPRS Routing Area Identification
  */
 typedef struct {
-    plmn_t plmn;    /* <MCC> + <MNC>    */
-    lac_t lac;      /* Location Area Code   */
-    rac_t rac;      /* Routing Area Code    */
+  plmn_t plmn;    /* <MCC> + <MNC>    */
+  lac_t lac;      /* Location Area Code   */
+  rac_t rac;      /* Routing Area Code    */
 } RAI_t;
 
 /*
  * EPS Tracking Area Identification
  */
 typedef struct {
-    plmn_t plmn;    /* <MCC> + <MNC>    */
-    tac_t tac;      /* Tracking Area Code   */
+  plmn_t plmn;    /* <MCC> + <MNC>    */
+  tac_t tac;      /* Tracking Area Code   */
 } tai_t;
 
 /*
  * EPS Globally Unique MME Identity
  */
 typedef struct {
-    plmn_t plmn;    /* <MCC> + <MNC>    */
-    UInt16_t MMEgid;    /* MME group identifier */
-    UInt8_t MMEcode;    /* MME code     */
+  plmn_t plmn;    /* <MCC> + <MNC>    */
+  UInt16_t MMEgid;    /* MME group identifier */
+  UInt8_t MMEcode;    /* MME code     */
 } gummei_t;
 
 /*
  * EPS Globally Unique Temporary UE Identity
  */
 typedef struct {
-    gummei_t gummei;    /* Globally Unique MME Identity         */
-    UInt32_t m_tmsi;    /* M-Temporary Mobile Subscriber Identity   */
+  gummei_t gummei;    /* Globally Unique MME Identity         */
+  UInt32_t m_tmsi;    /* M-Temporary Mobile Subscriber Identity   */
 } GUTI_t;
 
 /* Checks PLMN validity */
@@ -263,14 +263,14 @@ typedef struct {
  * EPS Mobility Management sublayer
  */
 typedef int (*emm_indication_callback_t) (Stat_t, tac_t, ci_t, AcT_t,
-        const char *, size_t);
+    const char *, size_t);
 
 typedef enum eps_protocol_discriminator_e {
-    /* Protocol discriminator identifier for EPS Mobility Management */
-    EPS_MOBILITY_MANAGEMENT_MESSAGE =   0x7,
+  /* Protocol discriminator identifier for EPS Mobility Management */
+  EPS_MOBILITY_MANAGEMENT_MESSAGE =   0x7,
 
-    /* Protocol discriminator identifier for EPS Session Management */
-    EPS_SESSION_MANAGEMENT_MESSAGE =    0x2,
+  /* Protocol discriminator identifier for EPS Session Management */
+  EPS_SESSION_MANAGEMENT_MESSAGE =    0x2,
 } eps_protocol_discriminator_t;
 
 /****************************************************************************/

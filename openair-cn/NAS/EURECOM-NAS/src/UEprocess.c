@@ -85,114 +85,119 @@ static void _nas_clean(int usr_fd, int net_fd);
 /****************************************************************************/
 int main(int argc, const char *argv[])
 {
-    /*
-     * Get the command line options
-     */
-    if (nas_parser_get_options (argc, argv) != RETURNok) {
-        nas_parser_print_usage (FIRMWARE_VERSION);
-        exit (EXIT_FAILURE);
-    }
+  /*
+   * Get the command line options
+   */
+  if (nas_parser_get_options (argc, argv) != RETURNok) {
+    nas_parser_print_usage (FIRMWARE_VERSION);
+    exit (EXIT_FAILURE);
+  }
 
-    /*
-     * Initialize logging trace utility
-     */
-    nas_log_init (nas_parser_get_trace_level ());
+  /*
+   * Initialize logging trace utility
+   */
+  nas_log_init (nas_parser_get_trace_level ());
 
-    const char *uhost = nas_parser_get_user_host ();
-    const char *uport = nas_parser_get_user_port ();
-    const char *devpath = nas_parser_get_device_path ();
-    const char *devparams = nas_parser_get_device_params ();
-    const char *nhost = nas_parser_get_network_host ();
-    const char *nport = nas_parser_get_network_port ();
+  const char *uhost = nas_parser_get_user_host ();
+  const char *uport = nas_parser_get_user_port ();
+  const char *devpath = nas_parser_get_device_path ();
+  const char *devparams = nas_parser_get_device_params ();
+  const char *nhost = nas_parser_get_network_host ();
+  const char *nport = nas_parser_get_network_port ();
 
-    LOG_TRACE (INFO,
-               "UE-MAIN   - %s -ueid %d -uhost %s -uport %s -nhost %s -nport %s -dev %s -params %s -trace 0x%x",
-               argv[0], nas_parser_get_ueid (), uhost, uport, nhost, nport, devpath, devparams,
-               nas_parser_get_trace_level ());
+  LOG_TRACE (INFO,
+             "UE-MAIN   - %s -ueid %d -uhost %s -uport %s -nhost %s -nport %s -dev %s -params %s -trace 0x%x",
+             argv[0], nas_parser_get_ueid (), uhost, uport, nhost, nport, devpath, devparams,
+             nas_parser_get_trace_level ());
 
-    /*
-     * Initialize the User interface
-     */
-    if (user_api_initialize (uhost, uport, devpath, devparams) != RETURNok) {
-        LOG_TRACE (ERROR, "UE-MAIN   - user_api_initialize() failed");
-        exit (EXIT_FAILURE);
-    }
-    int user_fd = user_api_get_fd ();
+  /*
+   * Initialize the User interface
+   */
+  if (user_api_initialize (uhost, uport, devpath, devparams) != RETURNok) {
+    LOG_TRACE (ERROR, "UE-MAIN   - user_api_initialize() failed");
+    exit (EXIT_FAILURE);
+  }
 
-    /*
-     * Initialize the Network interface
-     */
-    if (network_api_initialize (nhost, nport) != RETURNok) {
-        LOG_TRACE (ERROR, "UE-MAIN   - network_api_initialize() failed");
-        user_api_close (user_fd);
-        exit (EXIT_FAILURE);
-    }
-    int network_fd = network_api_get_fd ();
+  int user_fd = user_api_get_fd ();
 
-    /*
-     * Initialize the NAS contexts
-     */
-    nas_user_initialize (&user_api_emm_callback, &user_api_esm_callback,
-                         FIRMWARE_VERSION);
-    nas_network_initialize ();
+  /*
+   * Initialize the Network interface
+   */
+  if (network_api_initialize (nhost, nport) != RETURNok) {
+    LOG_TRACE (ERROR, "UE-MAIN   - network_api_initialize() failed");
+    user_api_close (user_fd);
+    exit (EXIT_FAILURE);
+  }
 
-    /*
-     * Initialize NAS timer handlers
-     */
-    nas_timer_init ();
+  int network_fd = network_api_get_fd ();
 
-    /*
-     * Set up signal handlers
-     */
-    (void) _nas_set_signal_handler (SIGINT, _nas_signal_handler);
-    (void) _nas_set_signal_handler (SIGTERM, _nas_signal_handler);
+  /*
+   * Initialize the NAS contexts
+   */
+  nas_user_initialize (&user_api_emm_callback, &user_api_esm_callback,
+                       FIRMWARE_VERSION);
+  nas_network_initialize ();
 
-    pthread_attr_t attr;
-    pthread_attr_init (&attr);
-    pthread_attr_setscope (&attr, PTHREAD_SCOPE_SYSTEM);
-    pthread_attr_setdetachstate (&attr, PTHREAD_CREATE_DETACHED);
+  /*
+   * Initialize NAS timer handlers
+   */
+  nas_timer_init ();
 
-    /*
-     * Start thread use to manage the user connection endpoint
-     */
-    pthread_t user_mngr;
-    if (pthread_create (&user_mngr, &attr, _nas_user_mngr, &user_fd) != 0) {
-        LOG_TRACE (ERROR, "UE-MAIN   - "
-                   "Failed to create the user management thread");
-        user_api_close (user_fd);
-        network_api_close (network_fd);
-        exit (EXIT_FAILURE);
-    }
+  /*
+   * Set up signal handlers
+   */
+  (void) _nas_set_signal_handler (SIGINT, _nas_signal_handler);
+  (void) _nas_set_signal_handler (SIGTERM, _nas_signal_handler);
 
-    /*
-     * Start thread use to manage the network connection endpoint
-     */
-    pthread_t network_mngr;
-    if (pthread_create (&network_mngr, &attr, _nas_network_mngr,
-                        &network_fd) != 0) {
-        LOG_TRACE (ERROR, "UE-MAIN   - "
-                   "Failed to create the network management thread");
-        user_api_close (user_fd);
-        network_api_close (network_fd);
-        exit (EXIT_FAILURE);
-    }
-    pthread_attr_destroy (&attr);
+  pthread_attr_t attr;
+  pthread_attr_init (&attr);
+  pthread_attr_setscope (&attr, PTHREAD_SCOPE_SYSTEM);
+  pthread_attr_setdetachstate (&attr, PTHREAD_CREATE_DETACHED);
 
-    /*
-     * Suspend execution of the main process until all connection
-     * endpoints are still active
-     */
-    while ((user_fd != -1) && (network_fd != -1)) {
-        poll (NULL, 0, NAS_SLEEP_TIMEOUT);
-        user_fd = user_api_get_fd ();
-        network_fd = network_api_get_fd ();
-    }
+  /*
+   * Start thread use to manage the user connection endpoint
+   */
+  pthread_t user_mngr;
 
-    /* Termination cleanup */
-    _nas_clean (user_fd, network_fd);
+  if (pthread_create (&user_mngr, &attr, _nas_user_mngr, &user_fd) != 0) {
+    LOG_TRACE (ERROR, "UE-MAIN   - "
+               "Failed to create the user management thread");
+    user_api_close (user_fd);
+    network_api_close (network_fd);
+    exit (EXIT_FAILURE);
+  }
 
-    LOG_TRACE
-    (WARNING, "UE-MAIN   - NAS main process exited");
+  /*
+   * Start thread use to manage the network connection endpoint
+   */
+  pthread_t network_mngr;
+
+  if (pthread_create (&network_mngr, &attr, _nas_network_mngr,
+                      &network_fd) != 0) {
+    LOG_TRACE (ERROR, "UE-MAIN   - "
+               "Failed to create the network management thread");
+    user_api_close (user_fd);
+    network_api_close (network_fd);
+    exit (EXIT_FAILURE);
+  }
+
+  pthread_attr_destroy (&attr);
+
+  /*
+   * Suspend execution of the main process until all connection
+   * endpoints are still active
+   */
+  while ((user_fd != -1) && (network_fd != -1)) {
+    poll (NULL, 0, NAS_SLEEP_TIMEOUT);
+    user_fd = user_api_get_fd ();
+    network_fd = network_api_get_fd ();
+  }
+
+  /* Termination cleanup */
+  _nas_clean (user_fd, network_fd);
+
+  LOG_TRACE
+  (WARNING, "UE-MAIN   - NAS main process exited");
 }
 
 /****************************************************************************/
@@ -216,25 +221,25 @@ int main(int argc, const char *argv[])
  ***************************************************************************/
 static void *_nas_user_mngr(void *args)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int exit_loop = FALSE;
+  int exit_loop = FALSE;
 
-    int *fd = (int *) args;
+  int *fd = (int *) args;
 
-    LOG_TRACE (INFO, "UE-MAIN   - User connection manager started (%d)", *fd);
+  LOG_TRACE (INFO, "UE-MAIN   - User connection manager started (%d)", *fd);
 
-    /* User receiving loop */
-    while (!exit_loop) {
-      exit_loop = nas_user_receive_and_process(fd, NULL);
-    }
+  /* User receiving loop */
+  while (!exit_loop) {
+    exit_loop = nas_user_receive_and_process(fd, NULL);
+  }
 
-    /* Close the connection to the user application layer */
-    user_api_close (*fd);
-    LOG_TRACE (WARNING, "UE-MAIN   - "
-               "The user connection endpoint manager exited");
+  /* Close the connection to the user application layer */
+  user_api_close (*fd);
+  LOG_TRACE (WARNING, "UE-MAIN   - "
+             "The user connection endpoint manager exited");
 
-    LOG_FUNC_RETURN(NULL);
+  LOG_FUNC_RETURN(NULL);
 }
 
 /****************************************************************************
@@ -254,59 +259,62 @@ static void *_nas_user_mngr(void *args)
  ***************************************************************************/
 static void *_nas_network_mngr(void *args)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int ret_code;
-    int network_message_id;
-    int bytes;
+  int ret_code;
+  int network_message_id;
+  int bytes;
 
-    int *fd = (int *) args;
+  int *fd = (int *) args;
 
-    LOG_TRACE (INFO, "UE-MAIN   - Network connection manager started (%d)", *fd);
+  LOG_TRACE (INFO, "UE-MAIN   - Network connection manager started (%d)", *fd);
 
-    /* Network receiving loop */
-    while (TRUE) {
-        /* Read the network data message */
-        bytes = network_api_read_data (*fd);
-        if (bytes == RETURNerror) {
-            /* Failed to read data from the network sublayer;
-             * exit from the receiving loop */
-            LOG_TRACE (ERROR, "UE-MAIN   - "
-                       "Failed to read data from the network sublayer");
-            break;
-        }
+  /* Network receiving loop */
+  while (TRUE) {
+    /* Read the network data message */
+    bytes = network_api_read_data (*fd);
 
-        if (bytes == 0) {
-            /* A signal was caught before any data were available */
-            continue;
-        }
-
-        /* Decode the network data message */
-        network_message_id = network_api_decode_data (bytes);
-        if (network_message_id == RETURNerror) {
-            /* Failed to decode data read from the network sublayer */
-            continue;
-        }
-
-        /* Process the network data message */
-        ret_code = nas_network_process_data (network_message_id,
-                                             network_api_get_data ());
-        if (ret_code != RETURNok) {
-            /* The network data message has not been successfully
-             * processed */
-            LOG_TRACE
-            (WARNING, "UE-MAIN   - "
-             "The network procedure call 0x%x failed",
-             network_message_id);
-        }
+    if (bytes == RETURNerror) {
+      /* Failed to read data from the network sublayer;
+       * exit from the receiving loop */
+      LOG_TRACE (ERROR, "UE-MAIN   - "
+                 "Failed to read data from the network sublayer");
+      break;
     }
 
-    /* Close the connection to the network sublayer */
-    network_api_close (*fd);
-    LOG_TRACE (WARNING, "UE-MAIN   - "
-               "The network connection endpoint manager exited");
+    if (bytes == 0) {
+      /* A signal was caught before any data were available */
+      continue;
+    }
 
-    LOG_FUNC_RETURN(NULL);
+    /* Decode the network data message */
+    network_message_id = network_api_decode_data (bytes);
+
+    if (network_message_id == RETURNerror) {
+      /* Failed to decode data read from the network sublayer */
+      continue;
+    }
+
+    /* Process the network data message */
+    ret_code = nas_network_process_data (network_message_id,
+                                         network_api_get_data ());
+
+    if (ret_code != RETURNok) {
+      /* The network data message has not been successfully
+       * processed */
+      LOG_TRACE
+      (WARNING, "UE-MAIN   - "
+       "The network procedure call 0x%x failed",
+       network_message_id);
+    }
+  }
+
+  /* Close the connection to the network sublayer */
+  network_api_close (*fd);
+  LOG_TRACE (WARNING, "UE-MAIN   - "
+             "The network connection endpoint manager exited");
+
+  LOG_FUNC_RETURN(NULL);
 }
 
 /****************************************************************************
@@ -325,36 +333,37 @@ static void *_nas_network_mngr(void *args)
  ***************************************************************************/
 static int _nas_set_signal_handler(int signal, void (handler)(int))
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    struct sigaction act;
+  struct sigaction act;
 
-    /* Initialize signal set */
-    (void) memset (&act, 0, sizeof(act));
-    (void) sigfillset (&act.sa_mask);
-    (void) sigdelset (&act.sa_mask, SIGHUP);
-    (void) sigdelset (&act.sa_mask, SIGINT);
-    (void) sigdelset (&act.sa_mask, SIGTERM);
-    (void) sigdelset (&act.sa_mask, SIGILL);
-    (void) sigdelset (&act.sa_mask, SIGTRAP);
-    (void) sigdelset (&act.sa_mask, SIGIOT);
+  /* Initialize signal set */
+  (void) memset (&act, 0, sizeof(act));
+  (void) sigfillset (&act.sa_mask);
+  (void) sigdelset (&act.sa_mask, SIGHUP);
+  (void) sigdelset (&act.sa_mask, SIGINT);
+  (void) sigdelset (&act.sa_mask, SIGTERM);
+  (void) sigdelset (&act.sa_mask, SIGILL);
+  (void) sigdelset (&act.sa_mask, SIGTRAP);
+  (void) sigdelset (&act.sa_mask, SIGIOT);
 #ifndef LINUX
-    (void) sigdelset (&act.sa_mask, SIGEMT);
+  (void) sigdelset (&act.sa_mask, SIGEMT);
 #endif
-    (void) sigdelset (&act.sa_mask, SIGFPE);
-    (void) sigdelset (&act.sa_mask, SIGBUS);
-    (void) sigdelset (&act.sa_mask, SIGSEGV);
-    (void) sigdelset (&act.sa_mask, SIGSYS);
+  (void) sigdelset (&act.sa_mask, SIGFPE);
+  (void) sigdelset (&act.sa_mask, SIGBUS);
+  (void) sigdelset (&act.sa_mask, SIGSEGV);
+  (void) sigdelset (&act.sa_mask, SIGSYS);
 
-    /* Initialize signal handler */
-    act.sa_handler = handler;
-    if (sigaction (signal, &act, 0) < 0) {
-        return RETURNerror;
-    }
+  /* Initialize signal handler */
+  act.sa_handler = handler;
 
-    LOG_TRACE (INFO, "UE-MAIN   - Handler successfully set for signal %d", signal);
+  if (sigaction (signal, &act, 0) < 0) {
+    return RETURNerror;
+  }
 
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_TRACE (INFO, "UE-MAIN   - Handler successfully set for signal %d", signal);
+
+  LOG_FUNC_RETURN(RETURNok);
 }
 
 /****************************************************************************
@@ -372,14 +381,14 @@ static int _nas_set_signal_handler(int signal, void (handler)(int))
  ***************************************************************************/
 static void _nas_signal_handler(int signal)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    LOG_TRACE (WARNING, "UE-MAIN   - Signal %d received", signal);
-    _nas_clean (user_api_get_fd (), network_api_get_fd ());
-    exit (EXIT_SUCCESS);
+  LOG_TRACE (WARNING, "UE-MAIN   - Signal %d received", signal);
+  _nas_clean (user_api_get_fd (), network_api_get_fd ());
+  exit (EXIT_SUCCESS);
 
-    LOG_FUNC_OUT
-    ;
+  LOG_FUNC_OUT
+  ;
 }
 
 /****************************************************************************
@@ -398,18 +407,18 @@ static void _nas_signal_handler(int signal)
  ***************************************************************************/
 static void _nas_clean(int usr_fd, int net_fd)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    LOG_TRACE (INFO, "UE-MAIN   - Perform EMM and ESM cleanup");
-    nas_network_cleanup ();
+  LOG_TRACE (INFO, "UE-MAIN   - Perform EMM and ESM cleanup");
+  nas_network_cleanup ();
 
-    LOG_TRACE (INFO, "UE-MAIN   - "
-               "Closing user connection %d and network connection %d",
-               usr_fd, net_fd);
-    user_api_close (usr_fd);
-    network_api_close (net_fd);
+  LOG_TRACE (INFO, "UE-MAIN   - "
+             "Closing user connection %d and network connection %d",
+             usr_fd, net_fd);
+  user_api_close (usr_fd);
+  network_api_close (net_fd);
 
-    LOG_FUNC_OUT
-    ;
+  LOG_FUNC_OUT
+  ;
 }
 

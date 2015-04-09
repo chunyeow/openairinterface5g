@@ -36,14 +36,14 @@
 #define S11_CAUSES_H_
 
 typedef struct SGWCauseMapping_e {
-    uint8_t value;
-    /* Displayable cause name */
-    char    *name;
-    /* Possible cause in message? */
-    unsigned create_session_response:1;
-    unsigned create_bearer_response:1;
-    unsigned modify_bearer_response:1;
-    unsigned delete_session_response:1;
+  uint8_t value;
+  /* Displayable cause name */
+  char    *name;
+  /* Possible cause in message? */
+  unsigned create_session_response:1;
+  unsigned create_bearer_response:1;
+  unsigned modify_bearer_response:1;
+  unsigned delete_session_response:1;
 } SGWCauseMapping_t;
 
 char *sgw_cause_2_string(uint8_t cause_value);

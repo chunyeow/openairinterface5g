@@ -38,6 +38,6 @@ int s11_mme_create_session_request(NwGtpv2cStackHandleT    *stack_p,
 /* @brief Handle a Create Session Response received from S-GW.
  */
 int s11_mme_handle_create_session_response(NwGtpv2cStackHandleT *stack_p,
-                                           NwGtpv2cUlpApiT      *pUlpApi);
+    NwGtpv2cUlpApiT      *pUlpApi);
 
 #endif /* S11_MME_SESSION_MANAGER_H_ */

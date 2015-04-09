@@ -86,45 +86,47 @@ Description Implements the EPS Mobility Management procedures executed
  ***************************************************************************/
 int EmmNull(const emm_reg_t *evt)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc;
+  int rc;
 
-    assert(emm_fsm_get_status() == EMM_NULL);
+  assert(emm_fsm_get_status() == EMM_NULL);
 
-    /* Delete the authentication data RAND and RES */
-    rc = emm_proc_authentication_delete();
-    if (rc != RETURNok) {
-        LOG_FUNC_RETURN (rc);
-    }
+  /* Delete the authentication data RAND and RES */
+  rc = emm_proc_authentication_delete();
 
-    switch (evt->primitive) {
-        case _EMMREG_S1_ENABLED:
-            /*
-             * The EPS capability has been enabled in the UE:
-             * Move to the DEREGISTERED state;
-             */
-            rc = emm_fsm_set_status(EMM_DEREGISTERED);
-
-            /*
-             * And initialize the EMM procedure call manager in order to
-             * establish an EMM context and make the UE reachable by an MME.
-             */
-            if (rc != RETURNerror) {
-                rc = emm_proc_initialize();
-            }
-            break;
-
-        default:
-            rc = RETURNerror;
-            LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
-                      evt->primitive);
-            LOG_TRACE(WARNING, "EMM-FSM   - Set phone functionnality to "
-                      "enable EPS capability (+cfun=1)");
-            break;
-    }
-
+  if (rc != RETURNok) {
     LOG_FUNC_RETURN (rc);
+  }
+
+  switch (evt->primitive) {
+  case _EMMREG_S1_ENABLED:
+    /*
+     * The EPS capability has been enabled in the UE:
+     * Move to the DEREGISTERED state;
+     */
+    rc = emm_fsm_set_status(EMM_DEREGISTERED);
+
+    /*
+     * And initialize the EMM procedure call manager in order to
+     * establish an EMM context and make the UE reachable by an MME.
+     */
+    if (rc != RETURNerror) {
+      rc = emm_proc_initialize();
+    }
+
+    break;
+
+  default:
+    rc = RETURNerror;
+    LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
+              evt->primitive);
+    LOG_TRACE(WARNING, "EMM-FSM   - Set phone functionnality to "
+              "enable EPS capability (+cfun=1)");
+    break;
+  }
+
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************/

@@ -52,11 +52,11 @@
  */
 
 typedef struct esm_information_request_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                protocoldiscriminator:4;
-    EpsBearerIdentity                    epsbeareridentity:4;
-    ProcedureTransactionIdentity         proceduretransactionidentity;
-    MessageType                          messagetype;
+  /* Mandatory fields */
+  ProtocolDiscriminator                protocoldiscriminator:4;
+  EpsBearerIdentity                    epsbeareridentity:4;
+  ProcedureTransactionIdentity         proceduretransactionidentity;
+  MessageType                          messagetype;
 } esm_information_request_msg;
 
 int decode_esm_information_request(esm_information_request_msg *esminformationrequest, uint8_t *buffer, uint32_t len);

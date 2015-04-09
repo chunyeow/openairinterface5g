@@ -51,10 +51,10 @@
  */
 
 typedef struct authentication_reject_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator           protocoldiscriminator:4;
-    SecurityHeaderType              securityheadertype:4;
-    MessageType                     messagetype;
+  /* Mandatory fields */
+  ProtocolDiscriminator           protocoldiscriminator:4;
+  SecurityHeaderType              securityheadertype:4;
+  MessageType                     messagetype;
 } authentication_reject_msg;
 
 int decode_authentication_reject(authentication_reject_msg *authenticationreject, uint8_t *buffer, uint32_t len);

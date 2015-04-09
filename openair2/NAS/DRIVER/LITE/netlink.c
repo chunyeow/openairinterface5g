@@ -68,12 +68,12 @@ static DEFINE_MUTEX(nasmesh_mutex);
 
 static inline void nasmesh_lock(void)
 {
-	mutex_lock(&nasmesh_mutex);
+  mutex_lock(&nasmesh_mutex);
 }
 
 static inline void nasmesh_unlock(void)
 {
-	mutex_unlock(&nasmesh_mutex);
+  mutex_unlock(&nasmesh_mutex);
 }
 
 // This can also be implemented using thread to get the data from PDCP without blocking.
@@ -85,6 +85,7 @@ static void nas_nl_data_ready (struct sk_buff *skb)
   //nasmesh_unlock();
 
   struct nlmsghdr *nlh = NULL;
+
   if (skb) {
 #ifdef NETLINK_DEBUG
     printk("[OAI_IP_DRV][NETLINK] Received socket from PDCP\n");
@@ -108,20 +109,20 @@ int oai_nw_drv_netlink_init(void)
   oai_netlink_cfg.bind     = NULL;
 
   nas_nl_sk = netlink_kernel_create(
-      &init_net,
-      NAS_NETLINK_ID,
+                &init_net,
+                NAS_NETLINK_ID,
 # if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
-      THIS_MODULE,
+                THIS_MODULE,
 # endif
-      &oai_netlink_cfg);
+                &oai_netlink_cfg);
 #else /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0) */
   nas_nl_sk = netlink_kernel_create(
-				    &init_net,       
-				    NAS_NETLINK_ID, 
-				    0, 
-				    nas_nl_data_ready, 
-				    &nasmesh_mutex, // NULL
-				    THIS_MODULE);
+                &init_net,
+                NAS_NETLINK_ID,
+                0,
+                nas_nl_data_ready,
+                &nasmesh_mutex, // NULL
+                THIS_MODULE);
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0) */
 
   if (nas_nl_sk == NULL) {
@@ -130,32 +131,34 @@ int oai_nw_drv_netlink_init(void)
     return(-1);
   }
 
-  
+
 
   return(0);
-  
+
 }
 
 
-void oai_nw_drv_netlink_release(void) {  
+void oai_nw_drv_netlink_release(void)
+{
 
   exit_netlink_thread=1;
   printk("[OAI_IP_DRV][NETLINK] Releasing netlink socket\n");
- 
-  if(nas_nl_sk){
+
+  if(nas_nl_sk) {
     netlink_kernel_release(nas_nl_sk); //or skb->sk
-    
+
   }
-  
- //  printk("[OAI_IP_DRV][NETLINK] Removing netlink_rx_thread\n");
- //kthread_stop(netlink_rx_thread);
+
+  //  printk("[OAI_IP_DRV][NETLINK] Removing netlink_rx_thread\n");
+  //kthread_stop(netlink_rx_thread);
 
 }
 
 
 
 
-int oai_nw_drv_netlink_send(unsigned char *data,unsigned int len) {
+int oai_nw_drv_netlink_send(unsigned char *data,unsigned int len)
+{
 
 
   struct sk_buff *nl_skb = alloc_skb(NLMSG_SPACE(len),GFP_ATOMIC);
@@ -189,17 +192,15 @@ int oai_nw_drv_netlink_send(unsigned char *data,unsigned int len) {
     // mutex_unlock(&nasmesh_mutex);
 
     if (status < 0) {
-	printk("[OAI_IP_DRV][NETLINK] SEND status is %d\n",status);
-	return(0);
-    }
-    else {
+      printk("[OAI_IP_DRV][NETLINK] SEND status is %d\n",status);
+      return(0);
+    } else {
 #ifdef NETLINK_DEBUG
       printk("[OAI_IP_DRV][NETLINK] SEND status is %d\n",status);
 #endif
       return len;
     }
-  }
-  else {
+  } else {
     printk("[OAI_IP_DRV][SEND] socket is NULL\n");
     return(0);
   }

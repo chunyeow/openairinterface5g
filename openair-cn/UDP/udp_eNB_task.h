@@ -57,11 +57,11 @@ typedef int (*udp_recv_callback)(uint16_t  port,
                                  void     *arg_p);
 
 typedef struct {
-    int       sd;              /* Socket descriptor to use */
-    pthread_t listener_thread; /* Thread affected to recv */
-    char     *local_address;   /* Local ipv4 address to use */
-    uint16_t  local_port;      /* Local port to use */
-    task_id_t task_id;         /* Task who has requested the new endpoint */
+  int       sd;              /* Socket descriptor to use */
+  pthread_t listener_thread; /* Thread affected to recv */
+  char     *local_address;   /* Local ipv4 address to use */
+  uint16_t  local_port;      /* Local port to use */
+  task_id_t task_id;         /* Task who has requested the new endpoint */
 } udp_data_t;
 
 /** \brief Create new datagram connection-less socket and create new thread

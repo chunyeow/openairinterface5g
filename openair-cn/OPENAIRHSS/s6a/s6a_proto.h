@@ -81,71 +81,71 @@
 #define AVP_CODE_VENDOR_ID               (266)
 
 typedef struct {
-    struct dict_object *dataobj_s6a_vendor;     /* s6a vendor object */
-    struct dict_object *dataobj_s6a_app;        /* s6a application object */
-    /* Commands */
-    struct dict_object *dataobj_s6a_auth_cmd;   /* s6a authentication command */
-    struct dict_object *dataobj_s6a_loc_up;     /* s6a update location */
-    struct dict_object *dataobj_s6a_purge_ue;     /* s6a purge ue req */
-    struct dict_object *dataobj_s6a_cancel_loc_req; /* s6a Cancel Location req */
-    struct dict_object *dataobj_s6a_cancel_loc_ans; /* s6a Cancel Location ans */
-    /* AVPs */
-    struct dict_object *dataobj_s6a_origin_host;
-    struct dict_object *dataobj_s6a_origin_realm;
-    struct dict_object *dataobj_s6a_imsi;            /* s6a imsi avp */
-    struct dict_object *dataobj_s6a_imei;
-    struct dict_object *dataobj_s6a_software_version;
-    struct dict_object *dataobj_s6a_supported_features;
-    struct dict_object *dataobj_s6a_req_e_utran_auth_info;
-    struct dict_object *dataobj_s6a_req_resync_info;
-    struct dict_object *dataobj_s6a_req_nb_of_req_vectors;
-    struct dict_object *dataobj_s6a_req_geran_auth_info;
-    struct dict_object *dataobj_s6a_immediate_response_pref;
-    struct dict_object *dataobj_s6a_visited_plmn_id;
-    struct dict_object *dataobj_s6a_result_code;
-    struct dict_object *dataobj_s6a_experimental_result;
-    struct dict_object *dataobj_s6a_vendor_id;
-    struct dict_object *dataobj_s6a_experimental_result_code;
-    struct dict_object *dataobj_s6a_auth_session_state;
-    struct dict_object *dataobj_s6a_authentication_info;
-    struct dict_object *dataobj_s6a_e_utran_vector;
-    struct dict_object *dataobj_s6a_rand;
-    struct dict_object *dataobj_s6a_xres;
-    struct dict_object *dataobj_s6a_autn;
-    struct dict_object *dataobj_s6a_kasme;
-    struct dict_object *dataobj_s6a_ulr_flags;
-    struct dict_object *dataobj_s6a_ula_flags;
-    struct dict_object *dataobj_s6a_pur_flags;
-    struct dict_object *dataobj_s6a_pua_flags;
-    struct dict_object *dataobj_s6a_rat_type;
-    struct dict_object *dataobj_s6a_terminal_info;
-    struct dict_object *dataobj_s6a_ue_srvcc_cap;
-    struct dict_object *dataobj_s6a_gmlc_addr;
-    struct dict_object *dataobj_s6a_subscription_data;
-    struct dict_object *dataobj_s6a_subscriber_status;
-    struct dict_object *dataobj_s6a_msisdn;
-    struct dict_object *dataobj_s6a_ambr;
-    struct dict_object *dataobj_s6a_network_access_mode;
-    struct dict_object *dataobj_s6a_access_restriction_data;
-    struct dict_object *dataobj_s6a_apn_configuration_profile;
-    struct dict_object *dataobj_s6a_subscribed_rau_tau_timer;
-    struct dict_object *dataobj_s6a_context_identifier;
-    /* All-APN-Configurations-Included-Indicator */
-    struct dict_object *dataobj_s6a_all_apn_conf_inc_ind;
-    struct dict_object *dataobj_s6a_apn_configuration;
-    /* Max-Requested-Bandwidth-UL */
-    struct dict_object *dataobj_s6a_max_bandwidth_ul;
-    /* Max-Requested-Bandwidth-DL */
-    struct dict_object *dataobj_s6a_max_bandwidth_dl;
-    struct dict_object *dataobj_s6a_pdn_type;
-    struct dict_object *dataobj_s6a_service_selection;
-    struct dict_object *dataobj_s6a_eps_subscribed_qos_profile;
-    struct dict_object *dataobj_s6a_qos_class_identifier;
-    struct dict_object *dataobj_s6a_allocation_retention_priority;
-    struct dict_object *dataobj_s6a_priority_level;
-    struct dict_object *dataobj_s6a_pre_emption_capability;
-    struct dict_object *dataobj_s6a_pre_emption_vulnerability;
-    struct dict_object *dataobj_s6a_served_party_ip_addr;
+  struct dict_object *dataobj_s6a_vendor;     /* s6a vendor object */
+  struct dict_object *dataobj_s6a_app;        /* s6a application object */
+  /* Commands */
+  struct dict_object *dataobj_s6a_auth_cmd;   /* s6a authentication command */
+  struct dict_object *dataobj_s6a_loc_up;     /* s6a update location */
+  struct dict_object *dataobj_s6a_purge_ue;     /* s6a purge ue req */
+  struct dict_object *dataobj_s6a_cancel_loc_req; /* s6a Cancel Location req */
+  struct dict_object *dataobj_s6a_cancel_loc_ans; /* s6a Cancel Location ans */
+  /* AVPs */
+  struct dict_object *dataobj_s6a_origin_host;
+  struct dict_object *dataobj_s6a_origin_realm;
+  struct dict_object *dataobj_s6a_imsi;            /* s6a imsi avp */
+  struct dict_object *dataobj_s6a_imei;
+  struct dict_object *dataobj_s6a_software_version;
+  struct dict_object *dataobj_s6a_supported_features;
+  struct dict_object *dataobj_s6a_req_e_utran_auth_info;
+  struct dict_object *dataobj_s6a_req_resync_info;
+  struct dict_object *dataobj_s6a_req_nb_of_req_vectors;
+  struct dict_object *dataobj_s6a_req_geran_auth_info;
+  struct dict_object *dataobj_s6a_immediate_response_pref;
+  struct dict_object *dataobj_s6a_visited_plmn_id;
+  struct dict_object *dataobj_s6a_result_code;
+  struct dict_object *dataobj_s6a_experimental_result;
+  struct dict_object *dataobj_s6a_vendor_id;
+  struct dict_object *dataobj_s6a_experimental_result_code;
+  struct dict_object *dataobj_s6a_auth_session_state;
+  struct dict_object *dataobj_s6a_authentication_info;
+  struct dict_object *dataobj_s6a_e_utran_vector;
+  struct dict_object *dataobj_s6a_rand;
+  struct dict_object *dataobj_s6a_xres;
+  struct dict_object *dataobj_s6a_autn;
+  struct dict_object *dataobj_s6a_kasme;
+  struct dict_object *dataobj_s6a_ulr_flags;
+  struct dict_object *dataobj_s6a_ula_flags;
+  struct dict_object *dataobj_s6a_pur_flags;
+  struct dict_object *dataobj_s6a_pua_flags;
+  struct dict_object *dataobj_s6a_rat_type;
+  struct dict_object *dataobj_s6a_terminal_info;
+  struct dict_object *dataobj_s6a_ue_srvcc_cap;
+  struct dict_object *dataobj_s6a_gmlc_addr;
+  struct dict_object *dataobj_s6a_subscription_data;
+  struct dict_object *dataobj_s6a_subscriber_status;
+  struct dict_object *dataobj_s6a_msisdn;
+  struct dict_object *dataobj_s6a_ambr;
+  struct dict_object *dataobj_s6a_network_access_mode;
+  struct dict_object *dataobj_s6a_access_restriction_data;
+  struct dict_object *dataobj_s6a_apn_configuration_profile;
+  struct dict_object *dataobj_s6a_subscribed_rau_tau_timer;
+  struct dict_object *dataobj_s6a_context_identifier;
+  /* All-APN-Configurations-Included-Indicator */
+  struct dict_object *dataobj_s6a_all_apn_conf_inc_ind;
+  struct dict_object *dataobj_s6a_apn_configuration;
+  /* Max-Requested-Bandwidth-UL */
+  struct dict_object *dataobj_s6a_max_bandwidth_ul;
+  /* Max-Requested-Bandwidth-DL */
+  struct dict_object *dataobj_s6a_max_bandwidth_dl;
+  struct dict_object *dataobj_s6a_pdn_type;
+  struct dict_object *dataobj_s6a_service_selection;
+  struct dict_object *dataobj_s6a_eps_subscribed_qos_profile;
+  struct dict_object *dataobj_s6a_qos_class_identifier;
+  struct dict_object *dataobj_s6a_allocation_retention_priority;
+  struct dict_object *dataobj_s6a_priority_level;
+  struct dict_object *dataobj_s6a_pre_emption_capability;
+  struct dict_object *dataobj_s6a_pre_emption_vulnerability;
+  struct dict_object *dataobj_s6a_served_party_ip_addr;
 } s6a_cnf_t;
 
 /* External definition of the S6A decriptor */

@@ -56,13 +56,13 @@
 #        define RLC_AM_SUFI_MRW_ACK                      0x7
 
 #        define RLC_AM_SUFI_NO_MORE_SIZE                 4
-                                                        //in bits
+//in bits
 #        define RLC_AM_SUFI_ACK_SIZE                     16
-                                                        //in bits
+//in bits
 #        define RLC_AM_SUFI_LIST_SIZE_MIN                24
-                                                        //in bits
+//in bits
 #        define RLC_AM_SUFI_BITMAP_SIZE_MIN              28
-                                                        //in bits
+//in bits
 //----------------------------------------------------------
 // values for ack field of struct rlc_am_tx_pdu_management
 // this struct is mapped on the misc field of each pdu
@@ -99,7 +99,7 @@
 #        define RLC_AM_TIMER_MRW_TIME_OUT_EVENT              0x100
 //----------------------------------------------------------
 #        define RLC_AM_SDU_SEGMENTS_SUBMITTED_TO_LOWER_LAYER           0xFF
-                                                                        // for sdu_header_copy
+// for sdu_header_copy
 #        define RLC_AM_SN_INVALID                                      0xFFFF
 
 // PDU transmission
@@ -120,14 +120,14 @@
 //----------------------------------------------------------
 #        define RLC_AM_TRAFFIC_NOT_ALLOWED                                            0x00
 #        define RLC_AM_TRAFFIC_ALLOWED_FOR_STATUS                                     0xC0
-                                                                                        // mutual exclusion of set bits with next value
+// mutual exclusion of set bits with next value
 #        define RLC_AM_TRAFFIC_ALLOWED_FOR_DATA                                       0x0D
-                                                                                        // mutual exclusion of set bits with previous value
+// mutual exclusion of set bits with previous value
 
 #        define RLC_AM_DCCH_ID    0xC0
-                                // mutual exclusion of set bits with next value
+// mutual exclusion of set bits with next value
 #        define RLC_AM_DTCH_ID    0x0D
-                                // mutual exclusion of set bits with previous value
+// mutual exclusion of set bits with previous value
 //----------------------------------------------------------
 // for status report of transmission by MAC layer
 #        define RLC_AM_STATUS_PDU_TYPE                         0x0001

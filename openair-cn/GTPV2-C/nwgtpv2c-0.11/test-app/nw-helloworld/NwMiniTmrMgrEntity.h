@@ -7,7 +7,7 @@
  *----------------------------------------------------------------------------*/
 
 
-/** 
+/**
  * @file NwMiniTmrMgrEntity.c
  * @brief This file ontains example of a minimalistic timer manager entity.
 */
@@ -19,18 +19,16 @@
 
 #ifndef NW_ASSERT
 #define NW_ASSERT assert
-#endif 
+#endif
 
 #ifndef __NW_MINI_TMR_MGR_H__
 #define __NW_MINI_TMR_MGR_H__
 
-typedef struct
-{
+typedef struct {
   NwU8T _tbd;
 } NwGtpv2cNodeTmrMgrT;
 
-typedef struct
-{
+typedef struct {
   NwEventT      ev;
   void*         timeoutArg;
 } NwGtpv2cNodeTmrT;
@@ -41,15 +39,15 @@ extern "C" {
 #endif
 
 NwRcT nwTimerStart( NwGtpv2cTimerMgrHandleT tmrMgrHandle,
-    NwU32T timeoutSec,
-    NwU32T timeoutUsec,
-    NwU32T tmrType,
-    void*  timeoutArg,
-    NwGtpv2cTimerHandleT* hTmr);
+                    NwU32T timeoutSec,
+                    NwU32T timeoutUsec,
+                    NwU32T tmrType,
+                    void*  timeoutArg,
+                    NwGtpv2cTimerHandleT* hTmr);
 
 
 NwRcT nwTimerStop( NwGtpv2cTimerMgrHandleT tmrMgrHandle,
-    NwGtpv2cTimerHandleT hTmr);
+                   NwGtpv2cTimerHandleT hTmr);
 
 
 #ifdef __cplusplus

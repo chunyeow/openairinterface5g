@@ -28,17 +28,17 @@
  *******************************************************************************/
 /*****************************************************************************
 
-Version		0.1
+Version   0.1
 
-Date		2012/09/27
+Date    2012/09/27
 
-Product		NAS stack
+Product   NAS stack
 
-Subsystem	EPS Session Management
+Subsystem EPS Session Management
 
-Author		Frederic Maurel, Sebastien Roux
+Author    Frederic Maurel, Sebastien Roux
 
-Description	Defines identifiers of the EPS Session Management messages
+Description Defines identifiers of the EPS Session Management messages
 
 *****************************************************************************/
 #ifndef __ESM_MSGDEF_H__
@@ -51,12 +51,12 @@ Description	Defines identifiers of the EPS Session Management messages
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
 
-/* Header length boundaries of EPS Session Management messages	*/
-#define ESM_HEADER_LENGTH		sizeof(esm_msg_header_t)
-#define ESM_HEADER_MINIMUM_LENGTH	ESM_HEADER_LENGTH
-#define ESM_HEADER_MAXIMUM_LENGTH	ESM_HEADER_LENGTH
+/* Header length boundaries of EPS Session Management messages  */
+#define ESM_HEADER_LENGTH   sizeof(esm_msg_header_t)
+#define ESM_HEADER_MINIMUM_LENGTH ESM_HEADER_LENGTH
+#define ESM_HEADER_MAXIMUM_LENGTH ESM_HEADER_LENGTH
 
-/* Message identifiers for EPS Session Management		*/
+/* Message identifiers for EPS Session Management   */
 # define ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST   0b11000001 /* 193 = 0xc1 */
 # define ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT    0b11000010 /* 194 = 0xc2 */
 # define ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT    0b11000011 /* 195 = 0xc3 */
@@ -87,27 +87,27 @@ Description	Defines identifiers of the EPS Session Management messages
 /*
  * Header of EPS Session Management plain NAS message
  * --------------------------------------------------
- *	 8     7      6      5     4      3      2      1
- *	+-----------------------+------------------------+
- *	| EPS bearer identity	| Protocol discriminator |
- *	+-----------------------+------------------------+
- *	|	Procedure transaction identity		 |
- *	+-----------------------+------------------------+
- *	|		  Message type			 |
- *	+-----------------------+------------------------+
+ *   8     7      6      5     4      3      2      1
+ *  +-----------------------+------------------------+
+ *  | EPS bearer identity | Protocol discriminator |
+ *  +-----------------------+------------------------+
+ *  | Procedure transaction identity     |
+ *  +-----------------------+------------------------+
+ *  |     Message type       |
+ *  +-----------------------+------------------------+
  */
 typedef struct {
 #ifdef __LITTLE_ENDIAN_BITFIELD
-    uint8_t protocol_discriminator:4;
-    uint8_t eps_bearer_identity:4;
+  uint8_t protocol_discriminator:4;
+  uint8_t eps_bearer_identity:4;
 #endif
 #ifdef __BIG_ENDIAN_BITFIELD
-    uint8_t eps_bearer_identity:4;
-    uint8_t protocol_discriminator:4;
+  uint8_t eps_bearer_identity:4;
+  uint8_t protocol_discriminator:4;
 #endif
-    uint8_t procedure_transaction_identity;
-    uint8_t message_type;
-}__attribute__((__packed__)) esm_msg_header_t;
+  uint8_t procedure_transaction_identity;
+  uint8_t message_type;
+} __attribute__((__packed__)) esm_msg_header_t;
 
 /****************************************************************************/
 /********************  G L O B A L    V A R I A B L E S  ********************/

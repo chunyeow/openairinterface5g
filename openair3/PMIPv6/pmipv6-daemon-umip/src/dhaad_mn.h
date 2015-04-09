@@ -6,9 +6,9 @@
 #include "list.h"
 
 struct ha_candidate {
-	struct list_head list;
-	struct in6_addr addr;
-	int retry;
+  struct list_head list;
+  struct in6_addr addr;
+  int retry;
 };
 
 struct icmp6_hdr;

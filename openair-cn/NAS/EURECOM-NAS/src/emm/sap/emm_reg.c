@@ -82,12 +82,12 @@ Description Defines the EMMREG Service Access Point that provides
  ***************************************************************************/
 void emm_reg_initialize(void)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* Initialize the EMM state machine */
-    emm_fsm_initialize();
+  /* Initialize the EMM state machine */
+  emm_fsm_initialize();
 
-    LOG_FUNC_OUT;
+  LOG_FUNC_OUT;
 }
 
 /****************************************************************************
@@ -106,18 +106,18 @@ void emm_reg_initialize(void)
  ***************************************************************************/
 int emm_reg_send(const emm_reg_t *msg)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc;
+  int rc;
 
-    /* Check the EMM-SAP primitive */
-    emm_reg_primitive_t primitive = msg->primitive;
-    assert( (primitive > _EMMREG_START) && (primitive < _EMMREG_END));
+  /* Check the EMM-SAP primitive */
+  emm_reg_primitive_t primitive = msg->primitive;
+  assert( (primitive > _EMMREG_START) && (primitive < _EMMREG_END));
 
-    /* Execute the EMM procedure */
-    rc = emm_fsm_process(msg);
+  /* Execute the EMM procedure */
+  rc = emm_fsm_process(msg);
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************/

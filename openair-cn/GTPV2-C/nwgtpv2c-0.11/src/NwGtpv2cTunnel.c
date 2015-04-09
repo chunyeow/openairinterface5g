@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                              n w - g t p v 2 c                             * 
+ *                              n w - g t p v 2 c                             *
  *    G P R S   T u n n e l i n g    P r o t o c o l   v 2 c    S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -52,23 +52,20 @@ nwGtpv2cTunnelNew(struct NwGtpv2cStack *pStack, NwU32T teid, NwU32T ipv4AddrRemo
 {
   NwGtpv2cTunnelT* thiz;
 
-  if(gpGtpv2cTunnelPool)
-  {
+  if(gpGtpv2cTunnelPool) {
     thiz = gpGtpv2cTunnelPool;
     gpGtpv2cTunnelPool = gpGtpv2cTunnelPool->next;
-  }
-  else
-  {
+  } else {
     NW_GTPV2C_MALLOC(pStack, sizeof(NwGtpv2cTunnelT), thiz, NwGtpv2cTunnelT*);
   }
 
-  if(thiz)
-  {
+  if(thiz) {
     memset(thiz, 0, sizeof(NwGtpv2cTunnelT));
     thiz->teid          = teid;
     thiz->ipv4AddrRemote  = ipv4AddrRemote;
     thiz->hUlpTunnel    = hUlpTunnel;
   }
+
   return thiz;
 }
 

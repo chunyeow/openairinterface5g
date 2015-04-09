@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,28 +14,28 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-    included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+    included in this distribution in the file called "COPYING". If not,
     see <http://www.gnu.org/licenses/>.
 
    Contact Information
    OpenAirInterface Admin: openair_admin@eurecom.fr
    OpenAirInterface Tech : openair_tech@eurecom.fr
    OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
    Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
 
- /** ethernet_lib : API to stream I/Q samples over standard ethernet
- * 
- *  Authors: Pedro Dinis    <pedrodinis20@gmail.com>
- *           Lucio Ferreira <lucio.ferreira@inov.pt>
- *           Raymond Knopp  <raymond.knopp@eurecom.fr>
- * 
- *  Changelog:
- *  06.10.2014: Initial version
- */
+/** ethernet_lib : API to stream I/Q samples over standard ethernet
+*
+*  Authors: Pedro Dinis    <pedrodinis20@gmail.com>
+*           Lucio Ferreira <lucio.ferreira@inov.pt>
+*           Raymond Knopp  <raymond.knopp@eurecom.fr>
+*
+*  Changelog:
+*  06.10.2014: Initial version
+*/
 
 #include <arpa/inet.h>
 #include <linux/if_packet.h>
@@ -51,8 +51,8 @@
 
 #include "common_lib.h"
 
-#define DEFAULT_IF	"eth0"
-#define BUF_SIZ		8960 /*Jumbo frame size*/
+#define DEFAULT_IF  "eth0"
+#define BUF_SIZ   8960 /*Jumbo frame size*/
 #define MAX_INST        4
 
 int sockfd[MAX_INST];
@@ -62,12 +62,12 @@ int dest_addr_len[MAX_INST];
 int i;
 int tx_len = 0;
 char sendbuf[MAX_INST][BUF_SIZ]; /*TODO*/
- 
+
 
 /**PDF: Initialization of UDP Socket to communicate with one DEST */
 int ethernet_socket_init(int Mod_id, char *dest_ip,int dest_port)
-{  
-  
+{
+
   /**PDF: To be passed by input argument*/
   //  DEST_port = 32000;
   struct sockaddr_in *dest = &dest_addr[Mod_id];
@@ -86,50 +86,53 @@ int ethernet_socket_init(int Mod_id, char *dest_ip,int dest_port)
   dest->sin_port=htons(dest_port);
   dest_addr_len[Mod_id] = sizeof(struct sockaddr);
 
-  inet_ntop(AF_INET, &(dest->sin_addr), str, INET_ADDRSTRLEN);      
+  inet_ntop(AF_INET, &(dest->sin_addr), str, INET_ADDRSTRLEN);
   printf("Connecting to %s:%d\n",str,ntohs(dest->sin_port));
 
 
 }
-  
 
 
-int ethernet_write_data(int Mod_id, openair0_timestamp timestamp, const void **buff, int antenna_id, int nsamps) {
+
+int ethernet_write_data(int Mod_id, openair0_timestamp timestamp, const void **buff, int antenna_id, int nsamps)
+{
 
   void *buff2 = (void*)buff[antenna_id]-sizeof(openair0_timestamp)-(sizeof(int16_t)*2);
   int32_t temp0 = *(int32_t *)buff2;
   openair0_timestamp temp1 = *(openair0_timestamp *)(buff2+(sizeof(int16_t)*2));
 
   int n_written;
-  
+
   n_written = 0;
   ((int16_t *)buff2)[0] = 1+(antenna_id<<1);
   ((int16_t *)buff2)[1] = nsamps;
   *((openair0_timestamp *)(buff2+(sizeof(int16_t)*2))) = timestamp;
-//  printf("Timestamp TX sent : %d\n",timestamp);
+  //  printf("Timestamp TX sent : %d\n",timestamp);
 
-//  printf("buffer head : %d %d %d %d \n",((int16_t *)buff2)[0],((int16_t *)buff2)[1],((int16_t *)buff2)[2],((int16_t *)buff2)[3]);
+  //  printf("buffer head : %d %d %d %d \n",((int16_t *)buff2)[0],((int16_t *)buff2)[1],((int16_t *)buff2)[2],((int16_t *)buff2)[3]);
   while(n_written < nsamps) {
     /* Send packet */
-    if ((n_written += sendto(sockfd[Mod_id], 
-			     buff2,
-			     (nsamps<<2)+sizeof(openair0_timestamp)+(2*sizeof(int16_t)), 
-			     0, 
-			     (struct sockaddr*)&dest_addr[Mod_id], 
-			     dest_addr_len[Mod_id])) < 0) {
+    if ((n_written += sendto(sockfd[Mod_id],
+                             buff2,
+                             (nsamps<<2)+sizeof(openair0_timestamp)+(2*sizeof(int16_t)),
+                             0,
+                             (struct sockaddr*)&dest_addr[Mod_id],
+                             dest_addr_len[Mod_id])) < 0) {
       printf("Send failed for Mod_id %d\n",Mod_id);
       perror("ETHERNET:");
       exit(-1);
-    }    
+    }
   }
+
   *(int32_t *)buff2 = temp0;
   *(openair0_timestamp *)(buff2+2*sizeof(int16_t)) = temp1;
   return n_written;
-  
+
 }
 
 
-int ethernet_read_data(int Mod_id,openair0_timestamp *timestamp,void **buff, int antenna_id, int nsamps) {
+int ethernet_read_data(int Mod_id,openair0_timestamp *timestamp,void **buff, int antenna_id, int nsamps)
+{
 
   void *buff2 = (void*)buff[antenna_id]-sizeof(openair0_timestamp);
   int bytes_received;
@@ -150,27 +153,28 @@ int ethernet_read_data(int Mod_id,openair0_timestamp *timestamp,void **buff, int
 
   bytes_received=0;
   block_cnt=0;
+
   while(bytes_received < (int)((nsamps<<2))) {
     //printf("requesting %d bytes\n",(nsamps<<2));
     ret=recvfrom(sockfd[Mod_id],
-		 buff2+bytes_received,
-		 (nsamps<<2)+sizeof(openair0_timestamp)-bytes_received,
-		 0,//MSG_DONTWAIT,
-		 (struct sockaddr *)&dest_addr[Mod_id],
-		 &dest_addr_len[Mod_id]);
+                 buff2+bytes_received,
+                 (nsamps<<2)+sizeof(openair0_timestamp)-bytes_received,
+                 0,//MSG_DONTWAIT,
+                 (struct sockaddr *)&dest_addr[Mod_id],
+                 &dest_addr_len[Mod_id]);
+
     //printf("bytes_received %d (ret %d)\n",bytes_received+ret,ret);
     if (ret==-1) {
       if (errno == EAGAIN) {
-	perror("ETHERNET: ");
-	return((nsamps<<2)+sizeof(openair0_timestamp));
+        perror("ETHERNET: ");
+        return((nsamps<<2)+sizeof(openair0_timestamp));
+      } else if (errno == EWOULDBLOCK) {
+        block_cnt++;
+        usleep(10);
+
+        if (block_cnt == 100) return(-1);
       }
-      else if (errno == EWOULDBLOCK) {
-	block_cnt++;
-	usleep(10);
-	if (block_cnt == 100) return(-1);
-      }
-    }
-    else {
+    } else {
       bytes_received+=ret;
     }
   }
@@ -178,18 +182,19 @@ int ethernet_read_data(int Mod_id,openair0_timestamp *timestamp,void **buff, int
 
   //printf("buffer head : %x %x %x %x \n",((int32_t *)buff2)[0],((int32_t *)buff2)[1],((int32_t *)buff2)[2],((int32_t *)buff2)[3]);
   *timestamp =  *(openair0_timestamp *)(buff2);
-//  printf("Received %d samples, timestamp = %d\n",bytes_received>>2,*(int32_t*)timestamp);
+  //  printf("Received %d samples, timestamp = %d\n",bytes_received>>2,*(int32_t*)timestamp);
   *(openair0_timestamp *)(buff2) = temp;
   return nsamps;
-  
+
 }
 
 
-int trx_eth_start(openair0_device *openair0) {
+int trx_eth_start(openair0_device *openair0)
+{
 
   int16_t mesg[2];
   int Mod_id;
-  
+
   Mod_id = openair0->openair0_cfg.Mod_id;
   ethernet_socket_init(openair0->openair0_cfg.Mod_id, openair0->openair0_cfg.rrh_ip,openair0->openair0_cfg.rrh_port);
 
@@ -205,18 +210,22 @@ int trx_eth_start(openair0_device *openair0) {
 void trx_eth_write(openair0_device *device, openair0_timestamp timestamp, const void **buff, int nsamps, int cc, int flags)
 {
   int i;
-  for (i=0;i<cc;i++)
+
+  for (i=0; i<cc; i++)
     ethernet_write_data(device->Mod_id,timestamp,buff,i,nsamps);
 }
-int trx_eth_read(openair0_device *device, openair0_timestamp *ptimestamp, void **buff, int nsamps,int cc) {
+int trx_eth_read(openair0_device *device, openair0_timestamp *ptimestamp, void **buff, int nsamps,int cc)
+{
 
   int i;
-  for (i=0;i<cc;i++)
+
+  for (i=0; i<cc; i++)
     return(ethernet_read_data(device->Mod_id,ptimestamp,buff,i,nsamps));
 
 }
 
-void trx_eth_end(openair0_device *device) {
+void trx_eth_end(openair0_device *device)
+{
 
 
 

@@ -40,10 +40,10 @@
  * or an answer to a previously requested score
  */
 typedef enum {
-	Sense,       //!< Sense
-	Classifying, //!< Classifying
-	ScoreResponse, //!< ScoreResponse
-    EndProcessing
+  Sense,       //!< Sense
+  Classifying, //!< Classifying
+  ScoreResponse, //!< ScoreResponse
+  EndProcessing
 } messageType;
 
 /**
@@ -52,41 +52,41 @@ typedef enum {
 //! An enum.
 /*! More detailed enum description. */
 typedef enum {
-	EnergyDetection,   //!< EnergyDetection
-	WelchPeriodograms  //!< WelchPeriodograms
+  EnergyDetection,   //!< EnergyDetection
+  WelchPeriodograms  //!< WelchPeriodograms
 } functionToBePerformed;
 
 /**
  * Definition of the spectra control packets
  */
 typedef struct {
-	uint16_t messageID;                //!<  Operation ID, used to identify an request and its answer
-	messageType type :4;                //!<  16 different types of message possible
-	functionToBePerformed function :4;  //!<  Embb function to be performed 16 possible different functions
-	unsigned char numberOfparameters;  //!<  up to 255 parameters per message
-	uint32_t * parameters;             //!<  variable number of parameters, depending
-									   //!<  on what we are doing and the default values
-}__attribute__((packed)) SpectraMessage;
+  uint16_t messageID;                //!<  Operation ID, used to identify an request and its answer
+  messageType type :4;                //!<  16 different types of message possible
+  functionToBePerformed function :4;  //!<  Embb function to be performed 16 possible different functions
+  unsigned char numberOfparameters;  //!<  up to 255 parameters per message
+  uint32_t * parameters;             //!<  variable number of parameters, depending
+  //!<  on what we are doing and the default values
+} __attribute__((packed)) SpectraMessage;
 
 /**
  * \typedef SpectraMsgHelper
  * Helper structure to handle control packets
  */
 typedef struct {
-	uint16_t messageID;                //!<  Operation ID
-	unsigned char type_function;       //!<  Assembled type and function for easier treatment
-	unsigned char numberOfparameters;  //!<  Number of parameters
-//	uint32_t parameter;          //!<  Parameters in sequence
-	uint32_t parameters[256];          //!<  Parameters in sequence
-}__attribute__((packed)) SpectraMsgHelper;
+  uint16_t messageID;                //!<  Operation ID
+  unsigned char type_function;       //!<  Assembled type and function for easier treatment
+  unsigned char numberOfparameters;  //!<  Number of parameters
+  //  uint32_t parameter;          //!<  Parameters in sequence
+  uint32_t parameters[256];          //!<  Parameters in sequence
+} __attribute__((packed)) SpectraMsgHelper;
 
 /**
  * Helper union structure to make easier to pack and unpack messages
  */
 union uSpectraPackets {
-	SpectraMessage spectraMsg;                       //!<  spectraMsg
-	SpectraMsgHelper spectraMsgHelper;               //!<  spectraMsgHelper
-	unsigned char spectraMsgStream[MAX_PACKET_SIZE]; //!<  spectraMsgStream
+  SpectraMessage spectraMsg;                       //!<  spectraMsg
+  SpectraMsgHelper spectraMsgHelper;               //!<  spectraMsgHelper
+  unsigned char spectraMsgStream[MAX_PACKET_SIZE]; //!<  spectraMsgStream
 };
 
 /**
@@ -96,12 +96,12 @@ union uSpectraPackets {
  */
 int isBigEndian(void)
 {
-    union {
-        uint32_t i;
-        char c[4];
-    } e = { 0x01000000 };
+  union {
+    uint32_t i;
+    char c[4];
+  } e = { 0x01000000 };
 
-    return e.c[0];
+  return e.c[0];
 }
 
 /**
@@ -112,16 +112,14 @@ int isBigEndian(void)
  */
 uint64_t htonll(uint64_t value)
 {
-    // Check the endianess
-    if (!isBigEndian())
-    {
-        uint32_t high_part = htonl((uint32_t)(value >> 32));
-        uint32_t low_part = htonl((uint32_t)(value & 0xFFFFFFFFULL));
-        return (uint64_t)(((uint64_t)low_part) << 32) | high_part;
-   } else
-    {
-        return value;
-    }
+  // Check the endianess
+  if (!isBigEndian()) {
+    uint32_t high_part = htonl((uint32_t)(value >> 32));
+    uint32_t low_part = htonl((uint32_t)(value & 0xFFFFFFFFULL));
+    return (uint64_t)(((uint64_t)low_part) << 32) | high_part;
+  } else {
+    return value;
+  }
 }
 
 /**
@@ -133,17 +131,15 @@ uint64_t htonll(uint64_t value)
 uint64_t ntohll(uint64_t value)
 {
 
-    // Check the endianess
-    if (!isBigEndian())
-    {
-        uint32_t high_part = ntohl((uint32_t)(value >> 32));
-        uint32_t low_part = ntohl((uint32_t)(value & 0xFFFFFFFFULL));
+  // Check the endianess
+  if (!isBigEndian()) {
+    uint32_t high_part = ntohl((uint32_t)(value >> 32));
+    uint32_t low_part = ntohl((uint32_t)(value & 0xFFFFFFFFULL));
 
-        return (uint64_t)(((uint64_t)low_part) << 32) | high_part;
-    } else
-    {
-        return value;
-    }
+    return (uint64_t)(((uint64_t)low_part) << 32) | high_part;
+  } else {
+    return value;
+  }
 }
 
 
@@ -154,38 +150,41 @@ uint64_t ntohll(uint64_t value)
  * @param msg  - message to be transmitted
  * @return error status 0 if OK, 1 if something went wrong
  */
-int sendClientSpectraPacket(int sock, SpectraMessage msg) {
-	int i;
-	union uSpectraPackets toTransmitPacket;
-	toTransmitPacket.spectraMsg = msg;
+int sendClientSpectraPacket(int sock, SpectraMessage msg)
+{
+  int i;
+  union uSpectraPackets toTransmitPacket;
+  toTransmitPacket.spectraMsg = msg;
 
-	// Puts the values bigger than one byte on Internet format
-	toTransmitPacket.spectraMsgHelper.messageID = htons(msg.messageID);
+  // Puts the values bigger than one byte on Internet format
+  toTransmitPacket.spectraMsgHelper.messageID = htons(msg.messageID);
 
-	toTransmitPacket.spectraMsgHelper.type_function = (msg.type << 4) | msg.function;
-	for (i = 0; i < msg.numberOfparameters; i++) {
-		toTransmitPacket.spectraMsgHelper.parameters[i] = htonl(msg.parameters[i]);
-        printf("Value %d=%d\n", i, htonl(msg.parameters[i]));
-	}
+  toTransmitPacket.spectraMsgHelper.type_function = (msg.type << 4) | msg.function;
 
-    // sends the package
-	if ( (i = send(sock, toTransmitPacket.spectraMsgStream, PACKET_ALIGNEMENT_BYTES + (msg.numberOfparameters * sizeof(uint32_t)), 0)) < 0) {
-		printf("Send failed (%i)\n", i);
-		// to avoid memory leaking
- 	    free(msg.parameters);
-		return -1;
-	}
+  for (i = 0; i < msg.numberOfparameters; i++) {
+    toTransmitPacket.spectraMsgHelper.parameters[i] = htonl(msg.parameters[i]);
+    printf("Value %d=%d\n", i, htonl(msg.parameters[i]));
+  }
 
-    int k = (int)(PACKET_ALIGNEMENT_BYTES + (msg.numberOfparameters * sizeof(uint32_t)));
-	printf("Sent message size: %d\n >", k);
-        
-	for (i=0; i<k;i++){
-	   printf("%x ", (toTransmitPacket.spectraMsgStream[i] & 0xff));	
-    }
-	printf("<\n");
-	// to avoid memory leaking
+  // sends the package
+  if ( (i = send(sock, toTransmitPacket.spectraMsgStream, PACKET_ALIGNEMENT_BYTES + (msg.numberOfparameters * sizeof(uint32_t)), 0)) < 0) {
+    printf("Send failed (%i)\n", i);
+    // to avoid memory leaking
     free(msg.parameters);
-	return 0;
+    return -1;
+  }
+
+  int k = (int)(PACKET_ALIGNEMENT_BYTES + (msg.numberOfparameters * sizeof(uint32_t)));
+  printf("Sent message size: %d\n >", k);
+
+  for (i=0; i<k; i++) {
+    printf("%x ", (toTransmitPacket.spectraMsgStream[i] & 0xff));
+  }
+
+  printf("<\n");
+  // to avoid memory leaking
+  free(msg.parameters);
+  return 0;
 }
 
 /**
@@ -193,24 +192,25 @@ int sendClientSpectraPacket(int sock, SpectraMessage msg) {
  *  @param var - void pointer to the memory area the message is stored
  *  @return  a formated Spectra message
  */
-SpectraMessage assembleMessage(void * var) {
-	int i;
-	SpectraMessage returnMessage;
-	char nParameters = (*(SpectraMessage*) var).numberOfparameters;
+SpectraMessage assembleMessage(void * var)
+{
+  int i;
+  SpectraMessage returnMessage;
+  char nParameters = (*(SpectraMessage*) var).numberOfparameters;
 
-	// Alocates enough memory area for the variable parameters field
-	returnMessage.parameters = malloc(nParameters * sizeof(uint32_t));
+  // Alocates enough memory area for the variable parameters field
+  returnMessage.parameters = malloc(nParameters * sizeof(uint32_t));
 
-	returnMessage.messageID = ntohs((*(SpectraMessage*) var).messageID);
-	returnMessage.type = ((*(SpectraMsgHelper*) var).type_function) >>4;
-	returnMessage.function = (((*(SpectraMsgHelper*) var).type_function << 4)>>4) & 0xF;
-	returnMessage.numberOfparameters = nParameters;
+  returnMessage.messageID = ntohs((*(SpectraMessage*) var).messageID);
+  returnMessage.type = ((*(SpectraMsgHelper*) var).type_function) >>4;
+  returnMessage.function = (((*(SpectraMsgHelper*) var).type_function << 4)>>4) & 0xF;
+  returnMessage.numberOfparameters = nParameters;
 
-	for (i = 0; i < nParameters; i++) {
-		returnMessage.parameters[i] = (*(SpectraMsgHelper*) var).parameters[i];
-	}
+  for (i = 0; i < nParameters; i++) {
+    returnMessage.parameters[i] = (*(SpectraMsgHelper*) var).parameters[i];
+  }
 
-	return returnMessage;
+  return returnMessage;
 }
 
 /**
@@ -218,23 +218,24 @@ SpectraMessage assembleMessage(void * var) {
  *
  *  @param msg - message to print the components
  */
-void printReturnValueMessage(SpectraMessage msg) {
-// 	int i;
+void printReturnValueMessage(SpectraMessage msg)
+{
+  //  int i;
 
-	printf("msg.messageID: %d\n", msg.messageID);
-	printf("msg.type: %d\n", msg.type);
-	printf("msg.function: %d\n", msg.function);
-//	printf("msg.numberOfparameters: %d\n", msg.numberOfparameters);
-//	for (i = 0; i < msg.numberOfparameters; i++) {
-//		printf("[%d] parameters: %d\n", i, msg.parameters[i]);
-//	}
+  printf("msg.messageID: %d\n", msg.messageID);
+  printf("msg.type: %d\n", msg.type);
+  printf("msg.function: %d\n", msg.function);
+  //  printf("msg.numberOfparameters: %d\n", msg.numberOfparameters);
+  //  for (i = 0; i < msg.numberOfparameters; i++) {
+  //    printf("[%d] parameters: %d\n", i, msg.parameters[i]);
+  //  }
 
-	// To transform the 2x32bits in on 64bits value
-	uint64_t realValue = (uint64_t)(((uint64_t)msg.parameters[0]) << 32) | msg.parameters[1];
+  // To transform the 2x32bits in on 64bits value
+  uint64_t realValue = (uint64_t)(((uint64_t)msg.parameters[0]) << 32) | msg.parameters[1];
 
-	printf("packet value: 0x%016llx\n", (long long int)realValue);
-	printf("Network to host value: 0x%016llx\n", (long long int)ntohll(realValue));
-	printf("SCORE: %lld\n", (long long int)ntohll(realValue));
+  printf("packet value: 0x%016llx\n", (long long int)realValue);
+  printf("Network to host value: 0x%016llx\n", (long long int)ntohll(realValue));
+  printf("SCORE: %lld\n", (long long int)ntohll(realValue));
 }
 
 #endif /* SPECTRA_H_ */

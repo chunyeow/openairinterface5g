@@ -70,16 +70,17 @@ static NwGtpv1uTunnelEndPointT *gpTunnelEndPointPool = NULL;
 NwGtpv1uTunnelEndPointT *
 nwGtpTunnelEndPointNew(struct NwGtpv1uStack *pStack)
 {
-    NwGtpv1uTunnelEndPointT *thiz;
-    if(gpTunnelEndPointPool) {
-        thiz = gpTunnelEndPointPool;
-        gpTunnelEndPointPool = gpTunnelEndPointPool->next;
-    } else {
-        NW_GTPV1U_MALLOC(pStack, sizeof(NwGtpv1uTunnelEndPointT), thiz,
-                         NwGtpv1uTunnelEndPointT *);
-    }
+  NwGtpv1uTunnelEndPointT *thiz;
 
-    return thiz;
+  if(gpTunnelEndPointPool) {
+    thiz = gpTunnelEndPointPool;
+    gpTunnelEndPointPool = gpTunnelEndPointPool->next;
+  } else {
+    NW_GTPV1U_MALLOC(pStack, sizeof(NwGtpv1uTunnelEndPointT), thiz,
+                     NwGtpv1uTunnelEndPointT *);
+  }
+
+  return thiz;
 }
 
 /**
@@ -93,9 +94,9 @@ NwGtpv1uRcT
 nwGtpTunnelEndPointDestroy(struct NwGtpv1uStack *pStack,
                            NwGtpv1uTunnelEndPointT *thiz)
 {
-    thiz->next = gpTunnelEndPointPool;
-    gpTunnelEndPointPool = thiz;
-    return NW_GTPV1U_OK;
+  thiz->next = gpTunnelEndPointPool;
+  gpTunnelEndPointPool = thiz;
+  return NW_GTPV1U_OK;
 }
 
 /**
@@ -110,19 +111,19 @@ NwGtpv1uRcT
 nwGtpSessionSendMsgApiToUlpEntity(NwGtpv1uTunnelEndPointT *thiz,
                                   NwGtpv1uMsgT *pMsg)
 {
-    NwGtpv1uRcT rc = NW_GTPV1U_OK;
-    NwGtpv1uUlpApiT api;
+  NwGtpv1uRcT rc = NW_GTPV1U_OK;
+  NwGtpv1uUlpApiT api;
 
-    api.apiType                         = NW_GTPV1U_ULP_API_RECV_TPDU;
-    api.apiInfo.recvMsgInfo.hUlpSession = thiz->hUlpSession;
-    api.apiInfo.recvMsgInfo.teid        = thiz->teid;
-    api.apiInfo.recvMsgInfo.hMsg        = (NwGtpv1uMsgHandleT)pMsg;
+  api.apiType                         = NW_GTPV1U_ULP_API_RECV_TPDU;
+  api.apiInfo.recvMsgInfo.hUlpSession = thiz->hUlpSession;
+  api.apiInfo.recvMsgInfo.teid        = thiz->teid;
+  api.apiInfo.recvMsgInfo.hMsg        = (NwGtpv1uMsgHandleT)pMsg;
 
-    NW_ASSERT(thiz->pStack->ulp.ulpReqCallback != NULL);
+  NW_ASSERT(thiz->pStack->ulp.ulpReqCallback != NULL);
 
-    thiz->pStack->ulp.ulpReqCallback(thiz->pStack->ulp.hUlp, &api);
+  thiz->pStack->ulp.ulpReqCallback(thiz->pStack->ulp.hUlp, &api);
 
-    return rc;
+  return rc;
 }
 
 #ifdef __cplusplus

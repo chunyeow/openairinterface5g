@@ -61,8 +61,8 @@ Description Timer utilities
 
 /* Timer structure */
 struct nas_timer_t {
-    int id;         /* The timer identifier                 */
-    long sec;       /* The timer interval value in seconds  */
+  int id;         /* The timer identifier                 */
+  long sec;       /* The timer interval value in seconds  */
 };
 
 /* Type of the callback executed when the timer expired */

@@ -27,19 +27,19 @@
 
  *******************************************************************************/
 /*****************************************************************************
-Source		device.h
+Source    device.h
 
-Version		0.1
+Version   0.1
 
-Date		2012/11/29
+Date    2012/11/29
 
-Product		NAS stack
+Product   NAS stack
 
-Subsystem	Utilities
+Subsystem Utilities
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Implements Linux/UNIX I/O device handlers
+Description Implements Linux/UNIX I/O device handlers
 
 *****************************************************************************/
 #ifndef __DEVICE_H__
@@ -56,7 +56,7 @@ Description	Implements Linux/UNIX I/O device handlers
 /****************************************************************************/
 
 /* Type of the connection endpoint */
-#define DEVICE		3
+#define DEVICE    3
 
 /* Hidden structure that handles device data */
 typedef struct device_id_s device_id_t;

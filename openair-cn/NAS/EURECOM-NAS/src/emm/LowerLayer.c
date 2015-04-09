@@ -73,10 +73,10 @@ Description Defines EMM procedures executed by the Non-Access Stratum
  * receiving lower layer notifications
  */
 static struct {
-    lowerlayer_success_callback_t success; /* Successful data delivery  */
-    lowerlayer_failure_callback_t failure; /* Lower layer failure   */
-    lowerlayer_release_callback_t release; /* NAS signalling release    */
-    void *args;         /* EMM procedure argument parameters    */
+  lowerlayer_success_callback_t success; /* Successful data delivery  */
+  lowerlayer_failure_callback_t failure; /* Lower layer failure   */
+  lowerlayer_release_callback_t release; /* NAS signalling release    */
+  void *args;         /* EMM procedure argument parameters    */
 } _lowerlayer_data;
 #endif
 
@@ -107,16 +107,16 @@ static struct {
  ***************************************************************************/
 int lowerlayer_success(unsigned int ueid)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    emm_sap_t emm_sap;
-    int rc;
+  emm_sap_t emm_sap;
+  int rc;
 
-    emm_sap.primitive = EMMREG_LOWERLAYER_SUCCESS;
-    emm_sap.u.emm_reg.ueid = ueid;
-    rc = emm_sap_send(&emm_sap);
+  emm_sap.primitive = EMMREG_LOWERLAYER_SUCCESS;
+  emm_sap.u.emm_reg.ueid = ueid;
+  rc = emm_sap_send(&emm_sap);
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************
@@ -136,16 +136,16 @@ int lowerlayer_success(unsigned int ueid)
  ***************************************************************************/
 int lowerlayer_failure(unsigned int ueid)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    emm_sap_t emm_sap;
-    int rc;
+  emm_sap_t emm_sap;
+  int rc;
 
-    emm_sap.primitive = EMMREG_LOWERLAYER_FAILURE;
-    emm_sap.u.emm_reg.ueid = ueid;
-    rc = emm_sap_send(&emm_sap);
+  emm_sap.primitive = EMMREG_LOWERLAYER_FAILURE;
+  emm_sap.u.emm_reg.ueid = ueid;
+  rc = emm_sap_send(&emm_sap);
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************
@@ -166,14 +166,14 @@ int lowerlayer_failure(unsigned int ueid)
  ***************************************************************************/
 int lowerlayer_establish(void)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
 #ifdef NAS_UE
-    /* Update the EPS Connection Management status */
-    _emm_data.ecm_status = ECM_CONNECTED;
+  /* Update the EPS Connection Management status */
+  _emm_data.ecm_status = ECM_CONNECTED;
 #endif
 
-    LOG_FUNC_RETURN (RETURNok);
+  LOG_FUNC_RETURN (RETURNok);
 }
 
 /****************************************************************************
@@ -193,21 +193,21 @@ int lowerlayer_establish(void)
  ***************************************************************************/
 int lowerlayer_release(int cause)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    emm_sap_t emm_sap;
-    int rc;
+  emm_sap_t emm_sap;
+  int rc;
 
 #ifdef NAS_UE
-    /* Update the EPS Connection Management status */
-    _emm_data.ecm_status = ECM_IDLE;
+  /* Update the EPS Connection Management status */
+  _emm_data.ecm_status = ECM_IDLE;
 #endif
 
-    emm_sap.primitive = EMMREG_LOWERLAYER_RELEASE;
-    emm_sap.u.emm_reg.ueid = 0;
-    rc = emm_sap_send(&emm_sap);
+  emm_sap.primitive = EMMREG_LOWERLAYER_RELEASE;
+  emm_sap.u.emm_reg.ueid = 0;
+  rc = emm_sap_send(&emm_sap);
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************
@@ -228,30 +228,32 @@ int lowerlayer_release(int cause)
  ***************************************************************************/
 int lowerlayer_data_ind(unsigned int ueid, const OctetString *data)
 {
-    esm_sap_t esm_sap;
-    int rc;
+  esm_sap_t esm_sap;
+  int rc;
 #if defined(NAS_MME)
-    emm_data_context_t *emm_ctx = NULL;
+  emm_data_context_t *emm_ctx = NULL;
 #endif
 
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
 #if defined(EPC_BUILD) && defined(NAS_MME)
-    if (ueid > 0) {
-        emm_ctx = emm_data_context_get(&_emm_data, ueid);
-    }
+
+  if (ueid > 0) {
+    emm_ctx = emm_data_context_get(&_emm_data, ueid);
+  }
+
 #endif
 
-    esm_sap.primitive = ESM_UNITDATA_IND;
-    esm_sap.is_standalone = TRUE;
-    esm_sap.ueid = ueid;
+  esm_sap.primitive = ESM_UNITDATA_IND;
+  esm_sap.is_standalone = TRUE;
+  esm_sap.ueid = ueid;
 #if defined(NAS_MME)
-    esm_sap.ctx  = emm_ctx;
+  esm_sap.ctx  = emm_ctx;
 #endif
-    esm_sap.recv = data;
-    rc = esm_sap_send(&esm_sap);
+  esm_sap.recv = data;
+  rc = esm_sap_send(&esm_sap);
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************
@@ -272,43 +274,49 @@ int lowerlayer_data_ind(unsigned int ueid, const OctetString *data)
  ***************************************************************************/
 int lowerlayer_data_req(unsigned int ueid, const OctetString *data)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc;
-    emm_sap_t emm_sap;
-    emm_security_context_t    *sctx = NULL;
-    struct emm_data_context_s *ctx  = NULL;
+  int rc;
+  emm_sap_t emm_sap;
+  emm_security_context_t    *sctx = NULL;
+  struct emm_data_context_s *ctx  = NULL;
 
-    emm_sap.primitive = EMMAS_DATA_REQ;
+  emm_sap.primitive = EMMAS_DATA_REQ;
 #ifdef NAS_UE
-    emm_sap.u.emm_as.u.data.guti = _emm_data.guti;
-    emm_sap.u.emm_as.u.data.ueid = 0;
-    sctx = _emm_data.security;
+  emm_sap.u.emm_as.u.data.guti = _emm_data.guti;
+  emm_sap.u.emm_as.u.data.ueid = 0;
+  sctx = _emm_data.security;
 #endif
 #ifdef NAS_MME
-    emm_sap.u.emm_as.u.data.guti = NULL;
-    emm_sap.u.emm_as.u.data.ueid = ueid;
+  emm_sap.u.emm_as.u.data.guti = NULL;
+  emm_sap.u.emm_as.u.data.ueid = ueid;
 # if defined(EPC_BUILD)
-    if (ueid > 0) {
-        ctx = emm_data_context_get(&_emm_data, ueid);
-    }
-# else
-    if (ueid < EMM_DATA_NB_UE_MAX) {
-        ctx = _emm_data.ctx[ueid];
-    }
-# endif
-    if (ctx) {
-        sctx = ctx->security;
-    }
-#endif
-    emm_sap.u.emm_as.u.data.NASinfo = 0;
-    emm_sap.u.emm_as.u.data.NASmsg.length = data->length;
-    emm_sap.u.emm_as.u.data.NASmsg.value = data->value;
-    /* Setup EPS NAS security data */
-    emm_as_set_security_data(&emm_sap.u.emm_as.u.data.sctx, sctx, FALSE, TRUE);
-    rc = emm_sap_send(&emm_sap);
 
-    LOG_FUNC_RETURN (rc);
+  if (ueid > 0) {
+    ctx = emm_data_context_get(&_emm_data, ueid);
+  }
+
+# else
+
+  if (ueid < EMM_DATA_NB_UE_MAX) {
+    ctx = _emm_data.ctx[ueid];
+  }
+
+# endif
+
+  if (ctx) {
+    sctx = ctx->security;
+  }
+
+#endif
+  emm_sap.u.emm_as.u.data.NASinfo = 0;
+  emm_sap.u.emm_as.u.data.NASmsg.length = data->length;
+  emm_sap.u.emm_as.u.data.NASmsg.value = data->value;
+  /* Setup EPS NAS security data */
+  emm_as_set_security_data(&emm_sap.u.emm_as.u.data.sctx, sctx, FALSE, TRUE);
+  rc = emm_sap_send(&emm_sap);
+
+  LOG_FUNC_RETURN (rc);
 }
 
 /*
@@ -343,14 +351,14 @@ int emm_proc_lowerlayer_initialize(lowerlayer_success_callback_t success,
                                    lowerlayer_release_callback_t release,
                                    void *args)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    _lowerlayer_data.success = success;
-    _lowerlayer_data.failure = failure;
-    _lowerlayer_data.release = release;
-    _lowerlayer_data.args = args;
+  _lowerlayer_data.success = success;
+  _lowerlayer_data.failure = failure;
+  _lowerlayer_data.release = release;
+  _lowerlayer_data.args = args;
 
-    LOG_FUNC_RETURN (RETURNok);
+  LOG_FUNC_RETURN (RETURNok);
 }
 
 /****************************************************************************
@@ -371,18 +379,18 @@ int emm_proc_lowerlayer_initialize(lowerlayer_success_callback_t success,
  ***************************************************************************/
 int emm_proc_lowerlayer_success(void)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc = RETURNok;
+  int rc = RETURNok;
 
-    lowerlayer_success_callback_t emm_callback = _lowerlayer_data.success;
+  lowerlayer_success_callback_t emm_callback = _lowerlayer_data.success;
 
-    if (emm_callback) {
-        rc = (*emm_callback)(_lowerlayer_data.args);
-        _lowerlayer_data.success = NULL;
-    }
+  if (emm_callback) {
+    rc = (*emm_callback)(_lowerlayer_data.args);
+    _lowerlayer_data.success = NULL;
+  }
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************
@@ -403,18 +411,18 @@ int emm_proc_lowerlayer_success(void)
  ***************************************************************************/
 int emm_proc_lowerlayer_failure(int is_initial)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc = RETURNok;
+  int rc = RETURNok;
 
-    lowerlayer_failure_callback_t emm_callback = _lowerlayer_data.failure;
+  lowerlayer_failure_callback_t emm_callback = _lowerlayer_data.failure;
 
-    if (emm_callback) {
-        rc = (*emm_callback)(is_initial, _lowerlayer_data.args);
-        _lowerlayer_data.failure = NULL;
-    }
+  if (emm_callback) {
+    rc = (*emm_callback)(is_initial, _lowerlayer_data.args);
+    _lowerlayer_data.failure = NULL;
+  }
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************
@@ -434,18 +442,18 @@ int emm_proc_lowerlayer_failure(int is_initial)
  ***************************************************************************/
 int emm_proc_lowerlayer_release(void)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc = RETURNok;
+  int rc = RETURNok;
 
-    lowerlayer_release_callback_t emm_callback = _lowerlayer_data.release;
+  lowerlayer_release_callback_t emm_callback = _lowerlayer_data.release;
 
-    if (emm_callback) {
-        rc = (*emm_callback)(_lowerlayer_data.args);
-        _lowerlayer_data.release = NULL;
-    }
+  if (emm_callback) {
+    rc = (*emm_callback)(_lowerlayer_data.args);
+    _lowerlayer_data.release = NULL;
+  }
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 #endif // NAS_UE
 
@@ -471,65 +479,66 @@ int emm_proc_lowerlayer_release(void)
 void emm_as_set_security_data(emm_as_security_data_t *data, const void *args,
                               int is_new, int is_ciphered)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    const emm_security_context_t *context = (emm_security_context_t *)(args);
+  const emm_security_context_t *context = (emm_security_context_t *)(args);
 
-    memset(data, 0, sizeof(emm_as_security_data_t));
+  memset(data, 0, sizeof(emm_as_security_data_t));
 
-    if ( context && (context->type != EMM_KSI_NOT_AVAILABLE) ) {
-        /* 3GPP TS 24.301, sections 5.4.3.3 and 5.4.3.4
-         * Once a valid EPS security context exists and has been taken
-         * into use, UE and MME shall cipher and integrity protect all
-         * NAS signalling messages with the selected NAS ciphering and
-         * NAS integrity algorithms */
-        LOG_TRACE(INFO,
-            "EPS security context exists is new %u KSI %u SQN %u count %u",
-            is_new,
-            context->eksi,
-            context->ul_count.seq_num,
-            *(UInt32_t *)(&context->ul_count));
-        LOG_TRACE(INFO,
-                "knas_int %s",dump_octet_string(&context->knas_int));
-        LOG_TRACE(INFO,
-                "knas_enc %s",dump_octet_string(&context->knas_enc));
-        LOG_TRACE(INFO,
-                "kasme %s",dump_octet_string(&context->kasme));
+  if ( context && (context->type != EMM_KSI_NOT_AVAILABLE) ) {
+    /* 3GPP TS 24.301, sections 5.4.3.3 and 5.4.3.4
+     * Once a valid EPS security context exists and has been taken
+     * into use, UE and MME shall cipher and integrity protect all
+     * NAS signalling messages with the selected NAS ciphering and
+     * NAS integrity algorithms */
+    LOG_TRACE(INFO,
+              "EPS security context exists is new %u KSI %u SQN %u count %u",
+              is_new,
+              context->eksi,
+              context->ul_count.seq_num,
+              *(UInt32_t *)(&context->ul_count));
+    LOG_TRACE(INFO,
+              "knas_int %s",dump_octet_string(&context->knas_int));
+    LOG_TRACE(INFO,
+              "knas_enc %s",dump_octet_string(&context->knas_enc));
+    LOG_TRACE(INFO,
+              "kasme %s",dump_octet_string(&context->kasme));
 
-        data->is_new = is_new;
-        data->ksi    = context->eksi;
+    data->is_new = is_new;
+    data->ksi    = context->eksi;
 #if defined (NAS_UE)
-        data->sqn    = context->ul_count.seq_num;
-        // LG data->count = *(UInt32_t *)(&context->ul_count);
-        data->count  = 0x00000000 | (context->ul_count.overflow << 8 ) | context->ul_count.seq_num;
+    data->sqn    = context->ul_count.seq_num;
+    // LG data->count = *(UInt32_t *)(&context->ul_count);
+    data->count  = 0x00000000 | (context->ul_count.overflow << 8 ) | context->ul_count.seq_num;
 #else
-        data->sqn    = context->dl_count.seq_num;
-        // LG data->count = *(UInt32_t *)(&context->ul_count);
-        data->count  = 0x00000000 | (context->dl_count.overflow << 8 ) | context->dl_count.seq_num;
+    data->sqn    = context->dl_count.seq_num;
+    // LG data->count = *(UInt32_t *)(&context->ul_count);
+    data->count  = 0x00000000 | (context->dl_count.overflow << 8 ) | context->dl_count.seq_num;
 #endif
-        /* NAS integrity and cyphering keys may not be available if the
-         * current security context is a partial EPS security context
-         * and not a full native EPS security context */
-        data->k_int = &context->knas_int;
-        if (is_ciphered) {
-            /* 3GPP TS 24.301, sections 4.4.5
-             * When the UE establishes a new NAS signalling connection,
-             * it shall send initial NAS messages integrity protected
-             * and unciphered */
-            /* 3GPP TS 24.301, section 5.4.3.2
-             * The MME shall send the SECURITY MODE COMMAND message integrity
-             * protected and unciphered */
-            LOG_TRACE(WARNING,
-                "EPS security context exists knas_enc");
-            data->k_enc = &context->knas_enc;
-        }
-    } else {
-        LOG_TRACE(WARNING, "EMM_AS_NO_KEY_AVAILABLE");
-        /* No valid EPS security context exists */
-        data->ksi = EMM_AS_NO_KEY_AVAILABLE;
-    }
+    /* NAS integrity and cyphering keys may not be available if the
+     * current security context is a partial EPS security context
+     * and not a full native EPS security context */
+    data->k_int = &context->knas_int;
 
-    LOG_FUNC_OUT;
+    if (is_ciphered) {
+      /* 3GPP TS 24.301, sections 4.4.5
+       * When the UE establishes a new NAS signalling connection,
+       * it shall send initial NAS messages integrity protected
+       * and unciphered */
+      /* 3GPP TS 24.301, section 5.4.3.2
+       * The MME shall send the SECURITY MODE COMMAND message integrity
+       * protected and unciphered */
+      LOG_TRACE(WARNING,
+                "EPS security context exists knas_enc");
+      data->k_enc = &context->knas_enc;
+    }
+  } else {
+    LOG_TRACE(WARNING, "EMM_AS_NO_KEY_AVAILABLE");
+    /* No valid EPS security context exists */
+    data->ksi = EMM_AS_NO_KEY_AVAILABLE;
+  }
+
+  LOG_FUNC_OUT;
 }
 
 /****************************************************************************/

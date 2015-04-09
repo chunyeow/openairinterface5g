@@ -70,16 +70,16 @@ Description Defines the EPS Session Management procedures executed at
 
 /* Type of PDN address */
 typedef enum {
-    ESM_PDN_TYPE_IPV4 = NET_PDN_TYPE_IPV4,
-    ESM_PDN_TYPE_IPV6 = NET_PDN_TYPE_IPV6,
-    ESM_PDN_TYPE_IPV4V6 = NET_PDN_TYPE_IPV4V6
+  ESM_PDN_TYPE_IPV4 = NET_PDN_TYPE_IPV4,
+  ESM_PDN_TYPE_IPV6 = NET_PDN_TYPE_IPV6,
+  ESM_PDN_TYPE_IPV4V6 = NET_PDN_TYPE_IPV4V6
 } esm_proc_pdn_type_t;
 
 /* Type of PDN request */
 typedef enum {
-    ESM_PDN_REQUEST_INITIAL = 1,
-    ESM_PDN_REQUEST_HANDOVER,
-    ESM_PDN_REQUEST_EMERGENCY
+  ESM_PDN_REQUEST_INITIAL = 1,
+  ESM_PDN_REQUEST_HANDOVER,
+  ESM_PDN_REQUEST_EMERGENCY
 } esm_proc_pdn_request_t;
 
 /****************************************************************************/
@@ -105,11 +105,11 @@ typedef network_tft_t esm_proc_tft_t;
 
 /* PDN connection and EPS bearer context data */
 typedef struct {
-    OctetString apn;
-    esm_proc_pdn_type_t pdn_type;
-    OctetString pdn_addr;
-    esm_proc_qos_t qos;
-    esm_proc_tft_t tft;
+  OctetString apn;
+  esm_proc_pdn_type_t pdn_type;
+  OctetString pdn_addr;
+  esm_proc_qos_t qos;
+  esm_proc_tft_t tft;
 } esm_proc_data_t;
 
 /****************************************************************************/
@@ -198,25 +198,25 @@ int esm_proc_pdn_disconnect_reject(int is_standalone, emm_data_context_t *ctx,
 int esm_proc_default_eps_bearer_context(emm_data_context_t *ctx, int pid,
                                         unsigned int *ebi, const esm_proc_qos_t *esm_qos, int *esm_cause);
 int esm_proc_default_eps_bearer_context_request(int is_standalone,
-        emm_data_context_t *ctx, int ebi, OctetString *msg, int ue_triggered);
+    emm_data_context_t *ctx, int ebi, OctetString *msg, int ue_triggered);
 int esm_proc_default_eps_bearer_context_failure(emm_data_context_t *ctx);
 
 int esm_proc_default_eps_bearer_context_accept(emm_data_context_t *ctx, int ebi,
-        int *esm_cause);
+    int *esm_cause);
 int esm_proc_default_eps_bearer_context_reject(emm_data_context_t *ctx, int ebi,
-        int *esm_cause);
+    int *esm_cause);
 #endif
 
 #ifdef NAS_UE
 int esm_proc_default_eps_bearer_context_request(int pid, int ebi,
-        const esm_proc_qos_t *esm_qos, int *esm_cause);
+    const esm_proc_qos_t *esm_qos, int *esm_cause);
 int esm_proc_default_eps_bearer_context_complete(void);
 int esm_proc_default_eps_bearer_context_failure(void);
 
 int esm_proc_default_eps_bearer_context_accept(int is_standalone, int ebi,
-        OctetString *msg, int ue_triggered);
+    OctetString *msg, int ue_triggered);
 int esm_proc_default_eps_bearer_context_reject(int is_standalone, int ebi,
-        OctetString *msg, int ue_triggered);
+    OctetString *msg, int ue_triggered);
 #endif
 
 /*
@@ -226,25 +226,25 @@ int esm_proc_default_eps_bearer_context_reject(int is_standalone, int ebi,
  */
 #ifdef NAS_MME
 int esm_proc_dedicated_eps_bearer_context(emm_data_context_t *ctx, int pid,
-        unsigned int *ebi, unsigned int *default_ebi, const esm_proc_qos_t *qos,
-        const esm_proc_tft_t *tft, int *esm_cause);
+    unsigned int *ebi, unsigned int *default_ebi, const esm_proc_qos_t *qos,
+    const esm_proc_tft_t *tft, int *esm_cause);
 int esm_proc_dedicated_eps_bearer_context_request(int is_standalone,
-        emm_data_context_t *ctx, int ebi, OctetString *msg, int ue_triggered);
+    emm_data_context_t *ctx, int ebi, OctetString *msg, int ue_triggered);
 
 int esm_proc_dedicated_eps_bearer_context_accept(emm_data_context_t *ctx, int ebi,
-        int *esm_cause);
+    int *esm_cause);
 int esm_proc_dedicated_eps_bearer_context_reject(emm_data_context_t *ctx, int ebi,
-        int *esm_cause);
+    int *esm_cause);
 #endif
 
 #ifdef NAS_UE
 int esm_proc_dedicated_eps_bearer_context_request(int ebi, int default_ebi,
-        const esm_proc_qos_t *qos, const esm_proc_tft_t *tft, int *esm_cause);
+    const esm_proc_qos_t *qos, const esm_proc_tft_t *tft, int *esm_cause);
 
 int esm_proc_dedicated_eps_bearer_context_accept(int is_standalone, int ebi,
-        OctetString *msg, int ue_triggered);
+    OctetString *msg, int ue_triggered);
 int esm_proc_dedicated_eps_bearer_context_reject(int is_standalone, int ebi,
-        OctetString *msg, int ue_triggered);
+    OctetString *msg, int ue_triggered);
 #endif
 
 /*
@@ -254,21 +254,21 @@ int esm_proc_dedicated_eps_bearer_context_reject(int is_standalone, int ebi,
  */
 #ifdef NAS_MME
 int esm_proc_eps_bearer_context_deactivate(emm_data_context_t *ctx, int is_local,
-        int ebi, int *pid, int *bid,
-        int *esm_cause);
+    int ebi, int *pid, int *bid,
+    int *esm_cause);
 int esm_proc_eps_bearer_context_deactivate_request(int is_standalone,
-        emm_data_context_t *ctx, int ebi, OctetString *msg, int ue_triggered);
+    emm_data_context_t *ctx, int ebi, OctetString *msg, int ue_triggered);
 int esm_proc_eps_bearer_context_deactivate_accept(emm_data_context_t *ctx, int ebi,
-        int *esm_cause);
+    int *esm_cause);
 #endif
 
 #ifdef NAS_UE
 int esm_proc_eps_bearer_context_deactivate(int is_local, int ebi, int *pid,
-        int *bid);
+    int *bid);
 int esm_proc_eps_bearer_context_deactivate_request(int ebi, int *esm_cause);
 
 int esm_proc_eps_bearer_context_deactivate_accept(int is_standalone, int ebi,
-        OctetString *msg, int ue_triggered);
+    OctetString *msg, int ue_triggered);
 #endif
 
 #endif /* __ESM_PROC_H__*/

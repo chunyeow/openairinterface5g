@@ -87,83 +87,70 @@
 
 typedef unsigned short oai_nw_drv_MsgType_t;
 
-struct oai_nw_drv_ioctl
-{
-    char name[IFNAMSIZ];
-    oai_nw_drv_MsgType_t type;
-    char *msg;
+struct oai_nw_drv_ioctl {
+  char name[IFNAMSIZ];
+  oai_nw_drv_MsgType_t type;
+  char *msg;
 };
 
-struct oai_nw_drv_msg_statistic_reply
-{
-    unsigned int rx_packets;
-    unsigned int tx_packets;
-    unsigned int rx_bytes;
-    unsigned int tx_bytes;
-    unsigned int rx_errors;
-    unsigned int tx_errors;
-    unsigned int rx_dropped;
-    unsigned int tx_dropped;
+struct oai_nw_drv_msg_statistic_reply {
+  unsigned int rx_packets;
+  unsigned int tx_packets;
+  unsigned int rx_bytes;
+  unsigned int tx_bytes;
+  unsigned int rx_errors;
+  unsigned int tx_errors;
+  unsigned int rx_dropped;
+  unsigned int tx_dropped;
 };
 
-struct oai_nw_drv_msg_cx_list_reply
-{
-    OaiNwDrvLocalConnectionRef_t lcr;    // Local Connection reference
-    unsigned char state;
-    OaiNwDrvCellID_t cellid;     // cell identification
-    unsigned int iid6[2];           // IPv6  interface identification
-    unsigned char iid4;             // IPv4 interface identification
-    unsigned short num_rb;
-    unsigned short nsclassifier;
+struct oai_nw_drv_msg_cx_list_reply {
+  OaiNwDrvLocalConnectionRef_t lcr;    // Local Connection reference
+  unsigned char state;
+  OaiNwDrvCellID_t cellid;     // cell identification
+  unsigned int iid6[2];           // IPv6  interface identification
+  unsigned char iid4;             // IPv4 interface identification
+  unsigned short num_rb;
+  unsigned short nsclassifier;
 };
-struct oai_nw_drv_msg_cx_establishment_reply
-{
-    int status;
+struct oai_nw_drv_msg_cx_establishment_reply {
+  int status;
 };
-struct oai_nw_drv_msg_cx_establishment_request
-{
-    OaiNwDrvLocalConnectionRef_t lcr;    // Local Connection reference
-    OaiNwDrvCellID_t cellid; // Cell identification
+struct oai_nw_drv_msg_cx_establishment_request {
+  OaiNwDrvLocalConnectionRef_t lcr;    // Local Connection reference
+  OaiNwDrvCellID_t cellid; // Cell identification
 };
-struct oai_nw_drv_msg_cx_release_reply
-{
-    int status;
+struct oai_nw_drv_msg_cx_release_reply {
+  int status;
 };
-struct oai_nw_drv_msg_cx_release_request
-{
-    OaiNwDrvLocalConnectionRef_t lcr; // Local Connection reference
+struct oai_nw_drv_msg_cx_release_request {
+  OaiNwDrvLocalConnectionRef_t lcr; // Local Connection reference
 };
 
-struct oai_nw_drv_msg_rb_list_reply
-{
-    OaiNwDrvRadioBearerId_t rab_id;
-    OaiNwDrvSapId_t sapi;
-    OaiNwDrvQoSTrafficClass_t qos;
-    unsigned char state;
+struct oai_nw_drv_msg_rb_list_reply {
+  OaiNwDrvRadioBearerId_t rab_id;
+  OaiNwDrvSapId_t sapi;
+  OaiNwDrvQoSTrafficClass_t qos;
+  unsigned char state;
 };
-struct oai_nw_drv_msg_rb_list_request
-{
-    OaiNwDrvLocalConnectionRef_t lcr;    // Local Connection reference
+struct oai_nw_drv_msg_rb_list_request {
+  OaiNwDrvLocalConnectionRef_t lcr;    // Local Connection reference
 };
-struct oai_nw_drv_msg_rb_establishment_reply
-{
-    int status;
+struct oai_nw_drv_msg_rb_establishment_reply {
+  int status;
 };
-struct oai_nw_drv_msg_rb_establishment_request
-{
-    OaiNwDrvLocalConnectionRef_t lcr;    // Local Connection reference
-    OaiNwDrvRadioBearerId_t rab_id;
-    OaiNwDrvQoSTrafficClass_t qos;
+struct oai_nw_drv_msg_rb_establishment_request {
+  OaiNwDrvLocalConnectionRef_t lcr;    // Local Connection reference
+  OaiNwDrvRadioBearerId_t rab_id;
+  OaiNwDrvQoSTrafficClass_t qos;
 };
 
-struct oai_nw_drv_msg_rb_release_reply
-{
-    int status;
+struct oai_nw_drv_msg_rb_release_reply {
+  int status;
 };
-struct oai_nw_drv_msg_rb_release_request
-{
-    OaiNwDrvLocalConnectionRef_t lcr; // Local Connection reference
-    OaiNwDrvRadioBearerId_t rab_id;
+struct oai_nw_drv_msg_rb_release_request {
+  OaiNwDrvLocalConnectionRef_t lcr; // Local Connection reference
+  OaiNwDrvRadioBearerId_t rab_id;
 };
 /*
 struct saddr {
@@ -179,8 +166,7 @@ struct daddr {
   unsigned int mpls_label;
 };
 */
-struct oai_nw_drv_msg_class_add_request
-{
+struct oai_nw_drv_msg_class_add_request {
   OaiNwDrvLocalConnectionRef_t lcr; // Local Connection reference
   OaiNwDrvRadioBearerId_t rab_id;
   OaiNwDrvRadioBearerId_t rab_id_rx;
@@ -195,8 +181,7 @@ struct oai_nw_drv_msg_class_add_request
 
   unsigned char splen; // prefix length
 
-   union
-  {
+  union {
     struct in6_addr ipv6;
 
     // begin navid
@@ -207,8 +192,7 @@ struct oai_nw_drv_msg_class_add_request
     unsigned int mpls_label;
   } daddr; // IP destination address
 
- union
-  {
+  union {
     struct in6_addr ipv6;
 
     // begin navid
@@ -227,27 +211,23 @@ struct oai_nw_drv_msg_class_add_request
   unsigned short dport;              //!< destination port
 };
 
-struct oai_nw_drv_msg_class_add_reply
-{
-    int status;
+struct oai_nw_drv_msg_class_add_reply {
+  int status;
 };
-struct oai_nw_drv_msg_class_del_request
-{
-    OaiNwDrvLocalConnectionRef_t lcr; // Local Connection reference
-    unsigned char dir; // direction (send or receive)
-    unsigned char dscp; // codepoint
-    unsigned short classref;
+struct oai_nw_drv_msg_class_del_request {
+  OaiNwDrvLocalConnectionRef_t lcr; // Local Connection reference
+  unsigned char dir; // direction (send or receive)
+  unsigned char dscp; // codepoint
+  unsigned short classref;
 };
-struct oai_nw_drv_msg_class_del_reply
-{
-    int status;
+struct oai_nw_drv_msg_class_del_reply {
+  int status;
 };
 #define oai_nw_drv_msg_class_list_reply oai_nw_drv_msg_class_add_request
-struct oai_nw_drv_msg_class_list_request
-{
-    OaiNwDrvLocalConnectionRef_t lcr;    // Local Connection reference
-    unsigned char dir;
-    unsigned char dscp;
+struct oai_nw_drv_msg_class_list_request {
+  OaiNwDrvLocalConnectionRef_t lcr;    // Local Connection reference
+  unsigned char dir;
+  unsigned char dscp;
 };
 
 
@@ -255,20 +235,18 @@ struct oai_nw_drv_msg_class_list_request
 typedef unsigned int nioctlProviderId_t;
 typedef unsigned short nioctlSignalLoss_t;
 typedef struct nioctlMeasures {
-        OaiNwDrvCellID_t cell_id;
-        OaiNwDrvSigLevel_t level;
-        nioctlProviderId_t provider_id;
+  OaiNwDrvCellID_t cell_id;
+  OaiNwDrvSigLevel_t level;
+  nioctlProviderId_t provider_id;
 } nioctlMeasures_t;
 
-struct oai_nw_drv_msg_measure_request
-{
+struct oai_nw_drv_msg_measure_request {
   OaiNwDrvNumRGsMeas_t num_cells;
-    OaiNwDrvCellID_t cellid[OAI_NW_DRV_MAX_MEASURE_NB]; // Cell identification
+  OaiNwDrvCellID_t cellid[OAI_NW_DRV_MAX_MEASURE_NB]; // Cell identification
   unsigned short num_providers;
-    nioctlProviderId_t provider_id[OAI_NW_DRV_MAX_MEASURE_NB]; // Provider identification
+  nioctlProviderId_t provider_id[OAI_NW_DRV_MAX_MEASURE_NB]; // Provider identification
 };
-struct oai_nw_drv_msg_measure_reply
-{
+struct oai_nw_drv_msg_measure_reply {
   OaiNwDrvNumRGsMeas_t num_cells;
   nioctlMeasures_t measures[OAI_NW_DRV_MAX_MEASURE_NB];
   nioctlSignalLoss_t signal_lost_flag;
@@ -277,8 +255,7 @@ struct oai_nw_drv_msg_measure_reply
 // Messages for Measurement transfer - MW 01/04/2005
 typedef unsigned int nioctlL2Id_t[2];
 
-struct oai_nw_drv_msg_l2id_reply
-{
+struct oai_nw_drv_msg_l2id_reply {
   nioctlL2Id_t l2id;
 };
 

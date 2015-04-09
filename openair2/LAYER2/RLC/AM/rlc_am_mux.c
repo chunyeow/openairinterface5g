@@ -59,7 +59,7 @@
 void
 rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   mem_block_t      *pdu;
   mem_block_t      *sdu;
@@ -85,6 +85,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
   if ((rlcP->sdu_discarded.head) && (traffic_typeP & RLC_AM_TRAFFIC_ALLOWED_FOR_STATUS)) {
     rlc_am_process_sdu_discarded (rlcP);
   }
+
   /******************************************
   *             CONTROL PDU                 *
   ******************************************/
@@ -95,6 +96,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
   if (rlcP->nb_logical_channels_per_rlc == 1) {
     while ((rlcP->control.head) && (nb_pdu_to_transmit_ch1)) {
       pdu = list_remove_head (&rlcP->control);
+
       if ((traffic_typeP & RLC_AM_TRAFFIC_ALLOWED_FOR_STATUS)) {
         tx_pdu = 1;
       } else {
@@ -104,6 +106,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
           tx_pdu = 0;
         }
       }
+
       if ((tx_pdu)) {
         nb_pdu_to_transmit_ch1--;
         // for polling
@@ -126,6 +129,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
   } else if (rlcP->nb_logical_channels_per_rlc == 2) {
     while ((rlcP->control.head) && (nb_pdu_to_transmit_ch2)) {
       pdu = list_remove_head (&rlcP->control);
+
       if ((traffic_typeP & RLC_AM_TRAFFIC_ALLOWED_FOR_STATUS)) {
         tx_pdu = 1;
       } else {
@@ -135,6 +139,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
           tx_pdu = 0;
         }
       }
+
       if ((tx_pdu)) {
         nb_pdu_to_transmit_ch2--;
         // for polling
@@ -169,7 +174,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
       // pdu in the same queue)
       pdu = ((struct rlc_am_tx_data_pdu_management *) (copy_pdu->data))->copy;
 #    ifdef DEBUG_MUX
-            rlc_am_display_data_pdu7(copy_pdu);
+      rlc_am_display_data_pdu7(copy_pdu);
 #    endif
       ((struct rlc_am_tx_data_pdu_management *) (pdu->data))->copy = NULL;
 
@@ -182,9 +187,11 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
       list_add_tail_eurecom (copy_pdu, &rlcP->pdus_to_mac_layer_ch1);
       nb_pdu_to_transmit_ch1--;
       data_pdu_tx++;
+
       // for polling
       if (rlcP->poll_pdu_trigger) {
         rlcP->vt_pdu++;
+
         if (rlcP->vt_pdu >= rlcP->poll_pdu_trigger) {
           // set poll bit
           ((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 |= RLC_AM_P_STATUS_REPORT_REQUESTED;
@@ -195,9 +202,10 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
             (((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2) & ~RLC_AM_P_STATUS_REPORT_REQUESTED;
         }
       }
+
 #    ifdef DEBUG_MUX
       id = (((uint16_t) (((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte1 & RLC_AM_SN_1ST_PART_MASK)) << 5) |
-        ((((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 & RLC_AM_SN_2ND_PART_MASK) >> 3);
+           ((((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 & RLC_AM_SN_2ND_PART_MASK) >> 3);
 
       msg ("[RLC_AM][RB %d][MUX] RETRANSMIT DATA PDU %04X   VT(A) 0x%03X VT(S) 0x%03X VT(MS) 0x%03X VR(R) 0x%03X VR(MR) 0x%03X\n",
            rlcP->rb_id, id, rlcP->vt_a, rlcP->vt_s, rlcP->vt_ms, rlcP->vr_r, rlcP->vr_mr);
@@ -217,8 +225,10 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
           rlc_header = (struct rlc_am_pdu_header *) (&pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]);
           // check polling
           pool_is_set = 0;
+
           if (rlcP->poll_pdu_trigger) {
             rlcP->vt_pdu++;
+
             // test every poll_PDU trigger
             if (rlcP->vt_pdu >= rlcP->poll_pdu_trigger) {
               ((struct rlc_am_tx_data_pdu_management *) (pdu->data))->rlc_tb_type = RLC_AM_DATA_POLL_PDU_TYPE;
@@ -230,6 +240,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
 #    endif
             }
           }
+
           // test every poll_SDU trigger
           if ((rlcP->poll_sdu_trigger) && (((struct rlc_am_tx_data_pdu_management *) (pdu->data))->last_pdu_of_sdu)) {
             if (rlcP->vt_sdu >= rlcP->poll_sdu_trigger) {
@@ -255,6 +266,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
               msg ("[RLC_AM %p] POOL SET BY last pdu in tr buffer trigger\n", rlcP);
 #    endif
             }
+
             if (!pool_is_set) {
               // test last pdu in retransmission buffer trigger
               if ((rlcP->retransmission_buffer_to_send.head) && (rlcP->retransmission_buffer_to_send.head == rlcP->retransmission_buffer_to_send.tail) && (rlcP->last_retransmission_pdu_poll_trigger)) {
@@ -265,6 +277,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
                 msg ("[RLC_AM %p] POOL SET BY last pdu in retrans buffer trigger\n", rlcP);
 #    endif
               }
+
               if (!pool_is_set) {
                 // test window based trigger
                 if (rlcP->poll_window_trigger) {
@@ -301,10 +314,11 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
               }
 
               ((struct rlc_am_tx_sdu_management *) (sdu->data))->nb_pdus_time += 1;
+
               if ((((struct rlc_am_tx_sdu_management *) (sdu->data))->nb_pdus_time ==
                    ((struct rlc_am_tx_sdu_management *) (sdu->data))->nb_pdus) &&
                   !(((struct rlc_am_tx_sdu_management *) (sdu->data))->confirm) && (((struct rlc_am_tx_sdu_management *) (sdu->data))->segmented)
-                ) {
+                 ) {
                 ((struct rlc_am_tx_data_pdu_management *) (pdu->data))->sdu[index] = -1;        // tag sdu as non valid
 
                 // we can remove the sdu if timer based discard and all pdus submitted to lower layers and no confirm running
@@ -323,7 +337,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
               ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[((struct rlc_am_tx_data_pdu_management *) (pdu->data))->sdu[index]]->data))->last_pdu_sn = rlcP->vt_s;
               // register the sn of the pdus where the sdu was segmented
               ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[((struct rlc_am_tx_data_pdu_management *) (pdu->data))->sdu[index]]->data))->
-                pdus_index[((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[((struct rlc_am_tx_data_pdu_management *) (pdu->data))->sdu[index]]->data))->nb_pdus_internal_use++] = rlcP->vt_s;
+              pdus_index[((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[((struct rlc_am_tx_data_pdu_management *) (pdu->data))->sdu[index]]->data))->nb_pdus_internal_use++] = rlcP->vt_s;
 #    ifdef DEBUG_MUX
               msg ("[RLC_AM][RB %d] MUX SDU INDEX %d LINK PDU SN 0x%04X\n", rlcP->rb_id, ((struct rlc_am_tx_data_pdu_management *) (pdu->data))->sdu[index], rlcP->vt_s);
 #    endif
@@ -334,6 +348,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
 
 
           copy_pdu = get_free_mem_block (rlcP->pdu_size + sizeof (struct rlc_am_tx_data_pdu_allocation) + GUARD_CRC_LIH_SIZE);
+
           if (copy_pdu) {
             memcpy (copy_pdu->data, pdu->data, rlcP->pdu_size + sizeof (struct rlc_am_tx_data_pdu_allocation));
 #    ifdef DEBUG_MUX
@@ -370,6 +385,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
         }
       }
     }
+
     // From 3GPP TS 25.322 V5.0.0 (2002-03)
     // -        if a poll has been triggered by either the poll triggers "Poll timer" or "Timer based" (see subclause 9.7.1);
     // AND
@@ -394,8 +410,9 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
       if (rlcP->configured_tx_window_size < 2048) {
         rlc_am_get_not_acknowledged_pdu_optimized (rlcP);
       } else if (rlcP->vt_s != rlcP->vt_a) {
-	rlc_am_get_not_acknowledged_pdu_optimized (rlcP);//rlc_am_get_not_acknowledged_pdu_vt_s_minus_1 (rlcP);
+        rlc_am_get_not_acknowledged_pdu_optimized (rlcP);//rlc_am_get_not_acknowledged_pdu_vt_s_minus_1 (rlcP);
       }
+
       // each retransmission may send RLC in RESET STATE if no discard is configured
       copy_pdu = list2_remove_head (&rlcP->retransmission_buffer_to_send);
 
@@ -404,7 +421,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
         // pdu in the same queue)
         pdu = ((struct rlc_am_tx_data_pdu_management *) (copy_pdu->data))->copy;
 #    ifdef DEBUG_MUX
-            rlc_am_display_data_pdu7(copy_pdu);
+        rlc_am_display_data_pdu7(copy_pdu);
 #    endif
         ((struct rlc_am_tx_data_pdu_management *) (pdu->data))->copy = NULL;
 
@@ -424,7 +441,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
 
 #    ifdef DEBUG_MUX
         id = (((uint16_t) (((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte1 & RLC_AM_SN_1ST_PART_MASK)) << 5) |
-          ((((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 & RLC_AM_SN_2ND_PART_MASK) >> 3);
+             ((((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 & RLC_AM_SN_2ND_PART_MASK) >> 3);
 
         msg ("[RLC_AM][RB %d][MUX] RETRANSMIT DATA PDU 0x%04X   VT(A) 0x%03X VT(S) 0x%03X VT(MS) 0x%03X VR(R) 0x%03X VR(MR) 0x%03X\n",
              rlcP->rb_id, id, rlcP->vt_a, rlcP->vt_s, rlcP->vt_ms, rlcP->vr_r, rlcP->vr_mr);
@@ -444,7 +461,7 @@ rlc_am_mux_ue (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
 void
 rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   mem_block_t      *pdu;
   mem_block_t      *sdu;
@@ -471,6 +488,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
   if ((rlcP->sdu_discarded.head) && (traffic_typeP & RLC_AM_TRAFFIC_ALLOWED_FOR_STATUS)) {
     rlc_am_process_sdu_discarded (rlcP);
   }
+
   // from TS25.322 V4.2.0 p13
   // In case two logical channels are configured in the downlink, AMD and Control
   // PDUs can be transmitted on any of the two logical channels.
@@ -480,6 +498,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
   if (rlcP->nb_logical_channels_per_rlc == 1) {
     while ((rlcP->control.head) && (nb_pdu_to_transmit_ch1)) {
       pdu = list_remove_head (&rlcP->control);
+
       if ((traffic_typeP & RLC_AM_TRAFFIC_ALLOWED_FOR_STATUS)) {
         tx_pdu = 1;
       } else {
@@ -489,6 +508,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
           tx_pdu = 0;
         }
       }
+
       if ((tx_pdu)) {
         nb_pdu_to_transmit_ch1--;
         // for polling
@@ -512,6 +532,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
   } else if (rlcP->nb_logical_channels_per_rlc == 2) {
     while ((rlcP->control.head) && (nb_pdu_to_transmit_ch2)) {
       pdu = list_remove_head (&rlcP->control);
+
       if ((traffic_typeP & RLC_AM_TRAFFIC_ALLOWED_FOR_STATUS)) {
         tx_pdu = 1;
       } else {
@@ -521,6 +542,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
           tx_pdu = 0;
         }
       }
+
       if ((tx_pdu)) {
         nb_pdu_to_transmit_ch2--;
         // for polling
@@ -542,8 +564,10 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
         free_mem_block (pdu);
       }
     }
+
     while ((rlcP->control.head) && (nb_pdu_to_transmit_ch1)) {
       pdu = list_remove_head (&rlcP->control);
+
       if ((traffic_typeP & RLC_AM_TRAFFIC_ALLOWED_FOR_STATUS)) {
         tx_pdu = 1;
       } else {
@@ -553,6 +577,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
           tx_pdu = 0;
         }
       }
+
       if ((tx_pdu)) {
         nb_pdu_to_transmit_ch1--;
         // for polling
@@ -589,7 +614,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
       // pdu in the same queue)
       pdu = ((struct rlc_am_tx_data_pdu_management *) (copy_pdu->data))->copy;
 #    ifdef DEBUG_MUX
-       rlc_am_display_data_pdu7(copy_pdu);
+      rlc_am_display_data_pdu7(copy_pdu);
 #    endif
       ((struct rlc_am_tx_data_pdu_management *) (pdu->data))->copy = NULL;
 
@@ -601,13 +626,15 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
       ((struct mac_tb_req *) (copy_pdu->data))->tb_size_in_bits = rlcP->pdu_size << 3;
 
       list_add_tail_eurecom (copy_pdu, &rlcP->pdus_to_mac_layer_ch1);
-        rlcP->stat_tx_retransmit_pdu += 1;
+      rlcP->stat_tx_retransmit_pdu += 1;
 
       nb_pdu_to_transmit_ch1--;
       data_pdu_tx++;
+
       // for polling
       if (rlcP->poll_pdu_trigger) {
         rlcP->vt_pdu++;
+
         if (rlcP->vt_pdu >= rlcP->poll_pdu_trigger) {
           // set poll bit
           ((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 |= RLC_AM_P_STATUS_REPORT_REQUESTED;
@@ -618,9 +645,10 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
             ((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 & ~RLC_AM_P_STATUS_REPORT_REQUESTED;
         }
       }
+
 #    ifdef DEBUG_MUX
       id = (((uint16_t) (((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte1 & RLC_AM_SN_1ST_PART_MASK)) << 5) |
-        ((((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 & RLC_AM_SN_2ND_PART_MASK) >> 3);
+           ((((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 & RLC_AM_SN_2ND_PART_MASK) >> 3);
 
       msg ("[RLC_AM][RB %d][MUX] RETRANSMIT DATA PDU %04X   VT(A) 0x%03X VT(S) 0x%03X VT(MS) 0x%03X VR(R) 0x%03X VR(MR) 0x%03X\n",
            rlcP->rb_id, id, rlcP->vt_a, rlcP->vt_s, rlcP->vt_ms, rlcP->vr_r, rlcP->vr_mr);
@@ -635,7 +663,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
       // pdu in the same queue)
       pdu = ((struct rlc_am_tx_data_pdu_management *) (copy_pdu->data))->copy;
 #    ifdef DEBUG_MUX
-       rlc_am_display_data_pdu7(copy_pdu);
+      rlc_am_display_data_pdu7(copy_pdu);
 #    endif
       ((struct rlc_am_tx_data_pdu_management *) (pdu->data))->copy = NULL;
 
@@ -647,12 +675,14 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
       ((struct mac_tb_req *) (copy_pdu->data))->tb_size_in_bits = rlcP->pdu_size << 3;
 
       list_add_tail_eurecom (copy_pdu, &rlcP->pdus_to_mac_layer_ch2);
-        rlcP->stat_tx_retransmit_pdu += 1;
+      rlcP->stat_tx_retransmit_pdu += 1;
       nb_pdu_to_transmit_ch2--;
       data_pdu_tx++;
+
       // for polling
       if (rlcP->poll_pdu_trigger) {
         rlcP->vt_pdu++;
+
         if (rlcP->vt_pdu >= rlcP->poll_pdu_trigger) {
           // set poll bit
 #    ifdef DEBUG_RLC_AM_POLL
@@ -666,9 +696,10 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
             ((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 & ~RLC_AM_P_STATUS_REPORT_REQUESTED;
         }
       }
+
 #    ifdef DEBUG_MUX
       id = (((uint16_t) (((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte1 & RLC_AM_SN_1ST_PART_MASK)) << 5) |
-        ((((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 & RLC_AM_SN_2ND_PART_MASK) >> 3);
+           ((((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 & RLC_AM_SN_2ND_PART_MASK) >> 3);
 
       msg ("[RLC_AM][RB %d][MUX] RETRANSMIT DATA PDU 0x%04X   VT(A) 0x%03X VT(S) 0x%03X VT(MS) 0x%03X VR(R) 0x%03X VR(MR) 0x%03X\n",
            rlcP->rb_id, id, rlcP->vt_a, rlcP->vt_s, rlcP->vt_ms, rlcP->vr_r, rlcP->vr_mr);
@@ -680,6 +711,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
     ******************************************/
     if (!(rlcP->protocol_state & RLC_RESET_PENDING_STATE)) {
       segmentation_returned_pdu = 1;
+
       while (((nb_pdu_to_transmit_ch1) || (nb_pdu_to_transmit_ch2)) && (rlcP->vt_s != rlcP->vt_ms) && (segmentation_returned_pdu)) {
 
         if ((pdu = rlcP->rlc_segment (rlcP))) {
@@ -687,8 +719,10 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
           rlc_header = (struct rlc_am_pdu_header *) (&pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]);
           // check polling
           pool_is_set = 0;
+
           if (rlcP->poll_pdu_trigger) {
             rlcP->vt_pdu++;
+
             // test every poll_PDU trigger
             if (rlcP->vt_pdu >= rlcP->poll_pdu_trigger) {
               ((struct rlc_am_tx_data_pdu_management *) (pdu->data))->rlc_tb_type = RLC_AM_DATA_POLL_PDU_TYPE;
@@ -700,6 +734,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
 #    endif
             }
           }
+
           // test every poll_SDU trigger
           if ((rlcP->poll_sdu_trigger) && (((struct rlc_am_tx_data_pdu_management *) (pdu->data))->last_pdu_of_sdu)) {
             if (rlcP->vt_sdu >= rlcP->poll_sdu_trigger) {
@@ -725,6 +760,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
               msg ("[RLC_AM %p] POOL SET BY last pdu in tr buffer trigger\n", rlcP);
 #    endif
             }
+
             if (!pool_is_set) {
               // test last pdu in retransmission buffer trigger
               if ((rlcP->retransmission_buffer_to_send.head) && (rlcP->retransmission_buffer_to_send.head == rlcP->retransmission_buffer_to_send.tail) && (rlcP->last_retransmission_pdu_poll_trigger)) {
@@ -735,6 +771,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
                 msg ("[RLC_AM %p] POOL SET BY last pdu in retrans buffer trigger\n", rlcP);
 #    endif
               }
+
               if (!pool_is_set) {
                 // test window based trigger
                 if (rlcP->poll_window_trigger) {
@@ -770,10 +807,11 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
               }
 
               ((struct rlc_am_tx_sdu_management *) (sdu->data))->nb_pdus_time += 1;
+
               if ((((struct rlc_am_tx_sdu_management *) (sdu->data))->nb_pdus_time ==
                    ((struct rlc_am_tx_sdu_management *) (sdu->data))->nb_pdus) &&
                   !(((struct rlc_am_tx_sdu_management *) (sdu->data))->confirm) && (((struct rlc_am_tx_sdu_management *) (sdu->data))->segmented)
-                ) {
+                 ) {
                 ((struct rlc_am_tx_data_pdu_management *) (pdu->data))->sdu[index] = -1;        // tag sdu as non valid
 
                 // we can remove the sdu if timer based discard and all pdus submitted to lower layers and no confirm running
@@ -792,7 +830,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
               ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[((struct rlc_am_tx_data_pdu_management *) (pdu->data))->sdu[index]]->data))->last_pdu_sn = rlcP->vt_s;
               // register the sn of the pdus where the sdu was segmented
               ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[((struct rlc_am_tx_data_pdu_management *) (pdu->data))->sdu[index]]->data))->
-                pdus_index[((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[((struct rlc_am_tx_data_pdu_management *) (pdu->data))->sdu[index]]->data))->nb_pdus_internal_use++] = rlcP->vt_s;
+              pdus_index[((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[((struct rlc_am_tx_data_pdu_management *) (pdu->data))->sdu[index]]->data))->nb_pdus_internal_use++] = rlcP->vt_s;
 #    ifdef DEBUG_MUX
               msg ("[RLC_AM][RB %d] MUX SDU INDEX %d LINK PDU SN 0x%04X\n", rlcP->rb_id, ((struct rlc_am_tx_data_pdu_management *) (pdu->data))->sdu[index], rlcP->vt_s);
 #    endif
@@ -803,6 +841,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
 
 
           copy_pdu = get_free_mem_block (rlcP->pdu_size + sizeof (struct rlc_am_tx_data_pdu_allocation) + GUARD_CRC_LIH_SIZE);
+
           if (copy_pdu) {
             memcpy (copy_pdu->data, pdu->data, rlcP->pdu_size + sizeof (struct rlc_am_tx_data_pdu_allocation));
 #    ifdef DEBUG_MUX
@@ -817,19 +856,20 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
 
             if ((nb_pdu_to_transmit_ch1)) {
               list_add_tail_eurecom (copy_pdu, &rlcP->pdus_to_mac_layer_ch1);
-                      rlcP->stat_tx_data_pdu += 1;
+              rlcP->stat_tx_data_pdu += 1;
               nb_pdu_to_transmit_ch1--;
             } else if ((nb_pdu_to_transmit_ch2)) {
               list_add_tail_eurecom (copy_pdu, &rlcP->pdus_to_mac_layer_ch2);
-                      rlcP->stat_tx_data_pdu += 1;
+              rlcP->stat_tx_data_pdu += 1;
               nb_pdu_to_transmit_ch2--;
             }
+
             data_pdu_tx++;
 
 
 #    ifdef DEBUG_MUX
             id = (((uint16_t) (((struct rlc_am_pdu_header *) (&pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte1 & RLC_AM_SN_1ST_PART_MASK)) << 5) |
-              ((((struct rlc_am_pdu_header *) (&pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 & RLC_AM_SN_2ND_PART_MASK) >> 3);
+                 ((((struct rlc_am_pdu_header *) (&pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 & RLC_AM_SN_2ND_PART_MASK) >> 3);
             msg ("[RLC_AM][RB %d][MUX] TX DATA PDU 0x%04X   VT(A) 0x%03X VT(S) 0x%03X VT(MS) 0x%03X VR(R) 0x%03X VR(MR) 0x%03X\n",
                  rlcP->rb_id, id, rlcP->vt_a, rlcP->vt_s, rlcP->vt_ms, rlcP->vr_r, rlcP->vr_mr);
             /*        for (index = 0; index < 32 ; index++) {
@@ -846,6 +886,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
         }
       }
     }
+
     // From 3GPP TS 25.322 V5.0.0 (2001-09)
     // -        if a poll has been triggered by either the poll triggers "Poll timer" or "Timer based" (see subclause 9.7.1);
     // AND
@@ -871,14 +912,15 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
       // when several DSCH are configured in the RG
       if ((last_scheduled != (unsigned int) Mac_rlc_xface->frame) && (((unsigned int) Mac_rlc_xface->frame) % 48 == 0) ) {
 
-         if (rlcP->configured_tx_window_size < 2048) {
+        if (rlcP->configured_tx_window_size < 2048) {
           // rlc_am_get_not_acknowledged_pdu(rlcP);
-	   rlc_am_get_not_acknowledged_pdu_optimized (rlcP);
-	   //rlc_am_get_not_acknowledged_pdu_vt_s_minus_1 (rlcP);  // LG JUST FOR TEST
+          rlc_am_get_not_acknowledged_pdu_optimized (rlcP);
+          //rlc_am_get_not_acknowledged_pdu_vt_s_minus_1 (rlcP);  // LG JUST FOR TEST
         } else if (rlcP->vt_s != rlcP->vt_a) {
-	   rlc_am_get_not_acknowledged_pdu_optimized (rlcP);//rlc_am_get_not_acknowledged_pdu_vt_s_minus_1 (rlcP);
+          rlc_am_get_not_acknowledged_pdu_optimized (rlcP);//rlc_am_get_not_acknowledged_pdu_vt_s_minus_1 (rlcP);
         }
       }
+
       last_scheduled = (unsigned int) Mac_rlc_xface->frame;
 
       // each retransmission may send RLC in RESET STATE if no discard is configured
@@ -910,7 +952,7 @@ rlc_am_mux_rg (struct rlc_am_entity *rlcP, unsigned int traffic_typeP)
 
 #    ifdef DEBUG_MUX
         id = (((uint16_t) (((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte1 & RLC_AM_SN_1ST_PART_MASK)) << 5) |
-          ((((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 & RLC_AM_SN_2ND_PART_MASK) >> 3);
+             ((((struct rlc_am_pdu_header *) (&copy_pdu->data[sizeof (struct rlc_am_tx_data_pdu_allocation)]))->byte2 & RLC_AM_SN_2ND_PART_MASK) >> 3);
 
         msg ("[RLC_AM][RB %d][MUX] RETRANSMIT DATA PDU 0x%04X   VT(A) 0x%03X VT(S) 0x%03X VT(MS) 0x%03X VR(R) 0x%03X VR(MR) 0x%03X\n",
              rlcP->rb_id, id, rlcP->vt_a, rlcP->vt_s, rlcP->vt_ms, rlcP->vr_r, rlcP->vr_mr);

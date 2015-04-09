@@ -74,12 +74,12 @@
 # define ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<5)
 
 typedef enum activate_dedicated_eps_bearer_context_request_iei_tag {
-    ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_IEI          = 0x5D, /* 0x5D = 93 */
-    ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_IEI                  = 0x30, /* 0x30 = 48 */
-    ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_IEI             = 0x32, /* 0x32 = 50 */
-    ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_IEI                  = 0x80, /* 0x80 = 128 */
-    ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_IEI          = 0x34, /* 0x34 = 52 */
-    ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
+  ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_IEI          = 0x5D, /* 0x5D = 93 */
+  ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_IEI                  = 0x30, /* 0x30 = 48 */
+  ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_IEI             = 0x32, /* 0x32 = 50 */
+  ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_IEI                  = 0x80, /* 0x80 = 128 */
+  ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_IEI          = 0x34, /* 0x34 = 52 */
+  ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
 } activate_dedicated_eps_bearer_context_request_iei;
 
 /*
@@ -90,22 +90,22 @@ typedef enum activate_dedicated_eps_bearer_context_request_iei_tag {
  */
 
 typedef struct activate_dedicated_eps_bearer_context_request_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                                   protocoldiscriminator:4;
-    EpsBearerIdentity                                       epsbeareridentity:4;
-    ProcedureTransactionIdentity                            proceduretransactionidentity;
-    MessageType                                             messagetype;
-    LinkedEpsBearerIdentity                                 linkedepsbeareridentity;
-    EpsQualityOfService                                     epsqos;
-    TrafficFlowTemplate                                     tft;
-    /* Optional fields */
-    uint32_t                                                presencemask;
-    TransactionIdentifier                                   transactionidentifier;
-    QualityOfService                                        negotiatedqos;
-    LlcServiceAccessPointIdentifier                         negotiatedllcsapi;
-    RadioPriority                                           radiopriority;
-    PacketFlowIdentifier                                    packetflowidentifier;
-    ProtocolConfigurationOptions                            protocolconfigurationoptions;
+  /* Mandatory fields */
+  ProtocolDiscriminator                                   protocoldiscriminator:4;
+  EpsBearerIdentity                                       epsbeareridentity:4;
+  ProcedureTransactionIdentity                            proceduretransactionidentity;
+  MessageType                                             messagetype;
+  LinkedEpsBearerIdentity                                 linkedepsbeareridentity;
+  EpsQualityOfService                                     epsqos;
+  TrafficFlowTemplate                                     tft;
+  /* Optional fields */
+  uint32_t                                                presencemask;
+  TransactionIdentifier                                   transactionidentifier;
+  QualityOfService                                        negotiatedqos;
+  LlcServiceAccessPointIdentifier                         negotiatedllcsapi;
+  RadioPriority                                           radiopriority;
+  PacketFlowIdentifier                                    packetflowidentifier;
+  ProtocolConfigurationOptions                            protocolconfigurationoptions;
 } activate_dedicated_eps_bearer_context_request_msg;
 
 int decode_activate_dedicated_eps_bearer_context_request(activate_dedicated_eps_bearer_context_request_msg *activatededicatedepsbearercontextrequest, uint8_t *buffer, uint32_t len);

@@ -37,58 +37,66 @@
 
 int decode_nas_message_container(NasMessageContainer *nasmessagecontainer, uint8_t iei, uint8_t *buffer, uint32_t len)
 {
-    int decoded = 0;
-    uint8_t ielen = 0;
-    int decode_result;
-    if (iei > 0)
-    {
-        CHECK_IEI_DECODER(iei, *buffer);
-        decoded++;
-    }
-    ielen = *(buffer + decoded);
+  int decoded = 0;
+  uint8_t ielen = 0;
+  int decode_result;
+
+  if (iei > 0) {
+    CHECK_IEI_DECODER(iei, *buffer);
     decoded++;
-    CHECK_LENGTH_DECODER(len - decoded, ielen);
-    if ((decode_result = decode_octet_string(&nasmessagecontainer->nasmessagecontainercontents, ielen, buffer + decoded, len - decoded)) < 0)
-        return decode_result;
-    else
-        decoded += decode_result;
+  }
+
+  ielen = *(buffer + decoded);
+  decoded++;
+  CHECK_LENGTH_DECODER(len - decoded, ielen);
+
+  if ((decode_result = decode_octet_string(&nasmessagecontainer->nasmessagecontainercontents, ielen, buffer + decoded, len - decoded)) < 0)
+    return decode_result;
+  else
+    decoded += decode_result;
+
 #if defined (NAS_DEBUG)
-    dump_nas_message_container_xml(nasmessagecontainer, iei);
+  dump_nas_message_container_xml(nasmessagecontainer, iei);
 #endif
-    return decoded;
+  return decoded;
 }
 int encode_nas_message_container(NasMessageContainer *nasmessagecontainer, uint8_t iei, uint8_t *buffer, uint32_t len)
 {
-    uint8_t *lenPtr;
-    uint32_t encoded = 0;
-    int encode_result;
-    /* Checking IEI and pointer */
-    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(buffer, NAS_MESSAGE_CONTAINER_MINIMUM_LENGTH, len);
+  uint8_t *lenPtr;
+  uint32_t encoded = 0;
+  int encode_result;
+  /* Checking IEI and pointer */
+  CHECK_PDU_POINTER_AND_LENGTH_ENCODER(buffer, NAS_MESSAGE_CONTAINER_MINIMUM_LENGTH, len);
 #if defined (NAS_DEBUG)
-    dump_nas_message_container_xml(nasmessagecontainer, iei);
+  dump_nas_message_container_xml(nasmessagecontainer, iei);
 #endif
-    if (iei > 0)
-    {
-        *buffer = iei;
-        encoded++;
-    }
-    lenPtr  = (buffer + encoded);
-    encoded ++;
-    if ((encode_result = encode_octet_string(&nasmessagecontainer->nasmessagecontainercontents, buffer + encoded, len - encoded)) < 0)
-        return encode_result;
-    else
-        encoded += encode_result;
-    *lenPtr = encoded - 1 - ((iei > 0) ? 1 : 0);
-    return encoded;
+
+  if (iei > 0) {
+    *buffer = iei;
+    encoded++;
+  }
+
+  lenPtr  = (buffer + encoded);
+  encoded ++;
+
+  if ((encode_result = encode_octet_string(&nasmessagecontainer->nasmessagecontainercontents, buffer + encoded, len - encoded)) < 0)
+    return encode_result;
+  else
+    encoded += encode_result;
+
+  *lenPtr = encoded - 1 - ((iei > 0) ? 1 : 0);
+  return encoded;
 }
 
 void dump_nas_message_container_xml(NasMessageContainer *nasmessagecontainer, uint8_t iei)
 {
-    printf("<Nas Message Container>\n");
-    if (iei > 0)
-        /* Don't display IEI if = 0 */
-        printf("    <IEI>0x%X</IEI>\n", iei);
-    printf("%s", dump_octet_string_xml(&nasmessagecontainer->nasmessagecontainercontents));
-    printf("</Nas Message Container>\n");
+  printf("<Nas Message Container>\n");
+
+  if (iei > 0)
+    /* Don't display IEI if = 0 */
+    printf("    <IEI>0x%X</IEI>\n", iei);
+
+  printf("%s", dump_octet_string_xml(&nasmessagecontainer->nasmessagecontainercontents));
+  printf("</Nas Message Container>\n");
 }
 

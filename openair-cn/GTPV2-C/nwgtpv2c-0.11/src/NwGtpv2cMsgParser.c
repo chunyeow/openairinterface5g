@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                              n w - g t p v 2 c                             * 
+ *                              n w - g t p v 2 c                             *
  *    G P R S   T u n n e l i n g    P r o t o c o l   v 2 c    S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -44,30 +44,30 @@
 extern "C" {
 #endif
 
- /**
-  * Allocate a gtpv2c message Parser.
-  *
-  * @param[in] hGtpcStackHandle : gtpv2c stack handle.
-  * @param[in] msgType : Message type for this message parser.
-  * @param[out] pthiz : Pointer to message parser handle.
-  */
+/**
+ * Allocate a gtpv2c message Parser.
+ *
+ * @param[in] hGtpcStackHandle : gtpv2c stack handle.
+ * @param[in] msgType : Message type for this message parser.
+ * @param[out] pthiz : Pointer to message parser handle.
+ */
 
 NwRcT
 nwGtpv2cMsgParserNew( NW_IN NwGtpv2cStackHandleT hGtpcStackHandle,
                       NW_IN NwU8T     msgType,
-                      NW_IN NwRcT (*ieReadCallback) (NwU8T ieType, 
-                                                       NwU8T ieLength, 
-                                                       NwU8T ieInstance,  
-                                                       NwU8T* ieValue, 
-                                                       void* ieReadCallbackArg),
-                       NW_IN void* ieReadCallbackArg,
-                       NW_IN NwGtpv2cMsgParserT **pthiz)
+                      NW_IN NwRcT (*ieReadCallback) (NwU8T ieType,
+                          NwU8T ieLength,
+                          NwU8T ieInstance,
+                          NwU8T* ieValue,
+                          void* ieReadCallbackArg),
+                      NW_IN void* ieReadCallbackArg,
+                      NW_IN NwGtpv2cMsgParserT **pthiz)
 {
   NwGtpv2cMsgParserT* thiz;
-//  NW_GTPV2C_MALLOC(hGtpcStackHandle, sizeof(NwGtpv2cMsgParserT), thiz, NwGtpv2cMsgParserT*);
+  //  NW_GTPV2C_MALLOC(hGtpcStackHandle, sizeof(NwGtpv2cMsgParserT), thiz, NwGtpv2cMsgParserT*);
   thiz = (NwGtpv2cMsgParserT*) malloc (sizeof(NwGtpv2cMsgParserT));
-  if(thiz)
-  {
+
+  if(thiz) {
     memset(thiz, 0, sizeof(NwGtpv2cMsgParserT));
     thiz->msgType = msgType;
     thiz->hStack  = hGtpcStackHandle;
@@ -76,19 +76,20 @@ nwGtpv2cMsgParserNew( NW_IN NwGtpv2cStackHandleT hGtpcStackHandle,
     thiz->ieReadCallbackArg   = ieReadCallbackArg;
     return NW_OK;
   }
+
   return NW_FAILURE;
 }
 
- /**
-  * Free a gtpv2c message parser.
-  *
-  * @param[in] hGtpcStackHandle : gtpv2c stack handle.
-  * @param[in] thiz : Message parser handle.
-  */
+/**
+ * Free a gtpv2c message parser.
+ *
+ * @param[in] hGtpcStackHandle : gtpv2c stack handle.
+ * @param[in] thiz : Message parser handle.
+ */
 
 NwRcT
 nwGtpv2cMsgParserDelete( NW_IN NwGtpv2cStackHandleT hGtpcStackHandle,
-                          NW_IN NwGtpv2cMsgParserT* thiz)
+                         NW_IN NwGtpv2cMsgParserT* thiz)
 {
   NW_GTPV2C_FREE(hGtpcStackHandle, thiz);
   return NW_OK;
@@ -96,29 +97,29 @@ nwGtpv2cMsgParserDelete( NW_IN NwGtpv2cStackHandleT hGtpcStackHandle,
 
 NwRcT
 nwGtpv2cMsgParserUpdateIeReadCallback( NW_IN NwGtpv2cMsgParserT* thiz,
-                                       NW_IN NwRcT (*ieReadCallback) (NwU8T ieType, 
-                                                       NwU8T ieLength, 
-                                                       NwU8T ieInstance,  
-                                                       NwU8T* ieValue, 
-                                                       void* ieReadCallbackArg))
+                                       NW_IN NwRcT (*ieReadCallback) (NwU8T ieType,
+                                           NwU8T ieLength,
+                                           NwU8T ieInstance,
+                                           NwU8T* ieValue,
+                                           void* ieReadCallbackArg))
 {
-  if(thiz)
-  {
+  if(thiz) {
     thiz->ieReadCallback      = ieReadCallback;
     return NW_OK;
   }
+
   return NW_FAILURE;
 }
 
 NwRcT
 nwGtpv2cMsgParserUpdateIeReadCallbackArg( NW_IN NwGtpv2cMsgParserT* thiz,
-                                          NW_IN void* ieReadCallbackArg)
+    NW_IN void* ieReadCallbackArg)
 {
-  if(thiz)
-  {
+  if(thiz) {
     thiz->ieReadCallbackArg   = ieReadCallbackArg;
     return NW_OK;
   }
+
   return NW_FAILURE;
 }
 
@@ -127,29 +128,26 @@ nwGtpv2cMsgParserAddIe( NW_IN NwGtpv2cMsgParserT* thiz,
                         NW_IN NwU8T ieType,
                         NW_IN NwU8T ieInstance,
                         NW_IN NwU8T iePresence,
-                        NW_IN NwRcT (*ieReadCallback) (NwU8T ieType, 
-                                                       NwU8T ieLength, 
-                                                       NwU8T ieInstance,  
-                                                       NwU8T* ieValue, 
-                                                       void* ieReadCallbackArg),
+                        NW_IN NwRcT (*ieReadCallback) (NwU8T ieType,
+                            NwU8T ieLength,
+                            NwU8T ieInstance,
+                            NwU8T* ieValue,
+                            void* ieReadCallbackArg),
                         NW_IN void* ieReadCallbackArg)
 {
   NW_ASSERT(thiz);
-  if(thiz->ieParseInfo[ieType][ieInstance].iePresence == 0)
-  {
+
+  if(thiz->ieParseInfo[ieType][ieInstance].iePresence == 0) {
     NW_ASSERT(ieInstance <= NW_GTPV2C_IE_INSTANCE_MAXIMUM);
 
     thiz->ieParseInfo[ieType][ieInstance].ieReadCallback      = ieReadCallback;
     thiz->ieParseInfo[ieType][ieInstance].ieReadCallbackArg   = ieReadCallbackArg;
     thiz->ieParseInfo[ieType][ieInstance].iePresence          = iePresence;
 
-    if (iePresence == NW_GTPV2C_IE_PRESENCE_MANDATORY)
-    {
+    if (iePresence == NW_GTPV2C_IE_PRESENCE_MANDATORY) {
       thiz->mandatoryIeCount++;
     }
-  }
-  else
-  {
+  } else {
     NW_LOG(thiz->hStack, NW_LOG_LEVEL_ERRO, "Cannot add IE to parser for type %u and instance %u. IE info already exists!", ieType, ieInstance);
   }
 
@@ -158,26 +156,24 @@ nwGtpv2cMsgParserAddIe( NW_IN NwGtpv2cMsgParserT* thiz,
 
 NwRcT
 nwGtpv2cMsgParserUpdateIe( NW_IN NwGtpv2cMsgParserT* thiz,
-                        NW_IN NwU8T ieType,
-                        NW_IN NwU8T ieInstance,
-                        NW_IN NwU8T iePresence,
-                        NW_IN NwRcT (*ieReadCallback) (NwU8T ieType, 
-                                                       NwU8T ieLength, 
-                                                       NwU8T ieInstance,  
-                                                       NwU8T* ieValue, 
-                                                       void* ieReadCallbackArg),
-                        NW_IN void* ieReadCallbackArg)
+                           NW_IN NwU8T ieType,
+                           NW_IN NwU8T ieInstance,
+                           NW_IN NwU8T iePresence,
+                           NW_IN NwRcT (*ieReadCallback) (NwU8T ieType,
+                               NwU8T ieLength,
+                               NwU8T ieInstance,
+                               NwU8T* ieValue,
+                               void* ieReadCallbackArg),
+                           NW_IN void* ieReadCallbackArg)
 {
   NW_ASSERT(thiz);
-  if(thiz->ieParseInfo[ieType][ieInstance].iePresence)
-  {
+
+  if(thiz->ieParseInfo[ieType][ieInstance].iePresence) {
     thiz->ieParseInfo[ieType][ieInstance].ieReadCallback      = ieReadCallback;
     thiz->ieParseInfo[ieType][ieInstance].ieReadCallbackArg   = ieReadCallbackArg;
 
     thiz->ieParseInfo[ieType][ieInstance].iePresence          = iePresence;
-  }
-  else
-  {
+  } else {
     NW_LOG(thiz->hStack, NW_LOG_LEVEL_ERRO, "Cannot update IE info for type %u and instance %u. IE info does not exist!", ieType, ieInstance);
   }
 
@@ -211,86 +207,66 @@ nwGtpv2cMsgParserRun( NW_IN NwGtpv2cMsgParserT *thiz,
   memset(thiz->pIe, 0, sizeof(NwU8T*) * (NW_GTPV2C_IE_TYPE_MAXIMUM) * (NW_GTPV2C_IE_INSTANCE_MAXIMUM));
   memset(pMsg->pIe, 0, sizeof(NwU8T*) * (NW_GTPV2C_IE_TYPE_MAXIMUM) * (NW_GTPV2C_IE_INSTANCE_MAXIMUM));
 
-  while (pIeStart < pIeEnd)
-  {
+  while (pIeStart < pIeEnd) {
     pIe = (NwGtpv2cIeTlvT*) pIeStart;
     ieLength = ntohs(pIe->l);
 
-    if(pIeStart + 4 + ieLength > pIeEnd)
-    {
+    if(pIeStart + 4 + ieLength > pIeEnd) {
       *pOffendingIeType = pIe->t;
       *pOffendingIeLength = pIe->l;
       *pOffendingIeInstance = pIe->i;
       return NW_GTPV2C_MSG_MALFORMED;
     }
 
-    if((thiz->ieParseInfo[pIe->t][pIe->i].iePresence))
-    {
+    if((thiz->ieParseInfo[pIe->t][pIe->i].iePresence)) {
       thiz->pIe[pIe->t][pIe->i] = (NwU8T*) pIeStart;
       pMsg->pIe[pIe->t][pIe->i] = (NwU8T*) pIeStart;
 
       NW_LOG(thiz->hStack, NW_LOG_LEVEL_DEBG, "Received IE %u of length %u!", pIe->t, ieLength);
-      if((thiz->ieParseInfo[pIe->t][pIe->i].ieReadCallback) != NULL )
-      {
+
+      if((thiz->ieParseInfo[pIe->t][pIe->i].ieReadCallback) != NULL ) {
         rc = thiz->ieParseInfo[pIe->t][pIe->i].ieReadCallback(pIe->t, ieLength, pIe->i, pIeStart + 4, thiz->ieParseInfo[pIe->t][pIe->i].ieReadCallbackArg);
 
-        if(NW_OK == rc)
-        {
-          if(thiz->ieParseInfo[pIe->t][pIe->i].iePresence == NW_GTPV2C_IE_PRESENCE_MANDATORY) 
+        if(NW_OK == rc) {
+          if(thiz->ieParseInfo[pIe->t][pIe->i].iePresence == NW_GTPV2C_IE_PRESENCE_MANDATORY)
             mandatoryIeCount++;
-        }
-        else
-        {
+        } else {
           NW_LOG(thiz->hStack, NW_LOG_LEVEL_ERRO, "Error while parsing IE %u with instance %u and length %u!", pIe->t, pIe->i, ieLength);
           break;
         }
-      }
-      else
-      {
-        if((thiz->ieReadCallback) != NULL )
-        {
+      } else {
+        if((thiz->ieReadCallback) != NULL ) {
           NW_LOG(thiz->hStack, NW_LOG_LEVEL_DEBG, "Received IE %u of length %u!", pIe->t, ieLength);
           rc = thiz->ieReadCallback(pIe->t, ieLength, pIe->i, pIeStart + 4, thiz->ieReadCallbackArg);
 
-          if(NW_OK == rc)
-          {
-            if(thiz->ieParseInfo[pIe->t][pIe->i].iePresence == NW_GTPV2C_IE_PRESENCE_MANDATORY) 
+          if(NW_OK == rc) {
+            if(thiz->ieParseInfo[pIe->t][pIe->i].iePresence == NW_GTPV2C_IE_PRESENCE_MANDATORY)
               mandatoryIeCount++;
-          }
-          else
-          {
+          } else {
             NW_LOG(thiz->hStack, NW_LOG_LEVEL_ERRO, "Error while parsing IE %u of length %u!", pIe->t, ieLength);
             break;
           }
-        }
-        else
-        {
+        } else {
           NW_LOG(thiz->hStack, NW_LOG_LEVEL_WARN, "No parse method defined for received IE type %u of length %u in message %u!", pIe->t, ieLength, thiz->msgType);
         }
       }
-    }
-    else
-    {
+    } else {
       NW_LOG(thiz->hStack, NW_LOG_LEVEL_WARN, "Unexpected IE %u of length %u received in msg %u!", pIe->t, ieLength, thiz->msgType);
     }
 
     pIeStart += (ieLength + 4);
   }
 
-  if((NW_OK == rc) && (mandatoryIeCount != thiz->mandatoryIeCount))
-  {
+  if((NW_OK == rc) && (mandatoryIeCount != thiz->mandatoryIeCount)) {
     NwU16T t, i;
     *pOffendingIeType     = 0;
     *pOffendingIeInstance = 0;
     *pOffendingIeLength   = 0;
-    for(t = 0; t < NW_GTPV2C_IE_TYPE_MAXIMUM; t++)
-    {
-      for(i = 0; i < NW_GTPV2C_IE_INSTANCE_MAXIMUM; i++)
-      {
-        if(thiz->ieParseInfo[t][i].iePresence == NW_GTPV2C_IE_PRESENCE_MANDATORY)
-        {
-          if(thiz->pIe[t][i] == NULL)
-          {
+
+    for(t = 0; t < NW_GTPV2C_IE_TYPE_MAXIMUM; t++) {
+      for(i = 0; i < NW_GTPV2C_IE_INSTANCE_MAXIMUM; i++) {
+        if(thiz->ieParseInfo[t][i].iePresence == NW_GTPV2C_IE_PRESENCE_MANDATORY) {
+          if(thiz->pIe[t][i] == NULL) {
             *pOffendingIeType = t;
             *pOffendingIeInstance = i;
             return NW_GTPV2C_MANDATORY_IE_MISSING;
@@ -298,6 +274,7 @@ nwGtpv2cMsgParserRun( NW_IN NwGtpv2cMsgParserT *thiz,
         }
       }
     }
+
     NW_LOG(thiz->hStack, NW_LOG_LEVEL_WARN, "Unknown mandatory IE missing. Parser formed incorrectly! %u:%u", mandatoryIeCount, thiz->mandatoryIeCount);
     return NW_GTPV2C_MANDATORY_IE_MISSING;
   }

@@ -59,7 +59,7 @@
 #include <stdlib.h>
 #include <errno.h>
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -74,15 +74,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -106,32 +106,32 @@
 typedef u_int16_t MIH_C_Message_Id_t;
 
 typedef struct MIH_C_Message_Wrapper {
-    MIH_C_Message_Id_t         message_id;
-    union {
+  MIH_C_Message_Id_t         message_id;
+  union {
 #ifdef MIH_C_MEDIEVAL_EXTENSIONS
-        MIH_C_Message_Link_Register_indication_t                   link_register_indication;
+    MIH_C_Message_Link_Register_indication_t                   link_register_indication;
 #endif
-        MIH_C_Message_Link_Detected_indication_t                   link_detected_indication;
-        MIH_C_Message_Link_Up_indication_t                         link_up_indication;
-        MIH_C_Message_Link_Down_indication_t                       link_down_indication;
-        MIH_C_Message_Link_Parameters_Report_indication_t          link_parameters_report_indication;
-        MIH_C_Message_Link_Going_Down_indication_t                 link_going_down_indication;
-        MIH_C_Message_Link_Handover_Imminent_indication_t          link_handover_imminent_indication;
-        MIH_C_Message_Link_Handover_Complete_indication_t          link_handover_complete_indication;
-        MIH_C_Message_Link_PDU_Transmit_Status_indication_t        link_pdu_transmit_status_indication;
-        MIH_C_Message_Link_Capability_Discover_request_t           link_capability_discover_request;
-        MIH_C_Message_Link_Capability_Discover_confirm_t           link_capability_discover_confirm;
-        MIH_C_Message_Link_Event_Subscribe_request_t               link_event_subscribe_request;
-        MIH_C_Message_Link_Event_Subscribe_confirm_t               link_event_subscribe_confirm;
-        MIH_C_Message_Link_Event_Unsubscribe_request_t             link_event_unsubscribe_request;
-        MIH_C_Message_Link_Event_Unsubscribe_confirm_t             link_event_unsubscribe_confirm;
-        MIH_C_Message_Link_Get_Parameters_request_t                link_get_parameters_request;
-        MIH_C_Message_Link_Get_Parameters_confirm_t                link_get_parameters_confirm;
-        MIH_C_Message_Link_Configure_Thresholds_request_t          link_configure_thresholds_request;
-        MIH_C_Message_Link_Configure_Thresholds_confirm_t          link_configure_thresholds_confirm;
-        MIH_C_Message_Link_Action_request_t                        link_action_request;
-        MIH_C_Message_Link_Action_confirm_t                        link_action_confirm;
-    } _union_message;
+    MIH_C_Message_Link_Detected_indication_t                   link_detected_indication;
+    MIH_C_Message_Link_Up_indication_t                         link_up_indication;
+    MIH_C_Message_Link_Down_indication_t                       link_down_indication;
+    MIH_C_Message_Link_Parameters_Report_indication_t          link_parameters_report_indication;
+    MIH_C_Message_Link_Going_Down_indication_t                 link_going_down_indication;
+    MIH_C_Message_Link_Handover_Imminent_indication_t          link_handover_imminent_indication;
+    MIH_C_Message_Link_Handover_Complete_indication_t          link_handover_complete_indication;
+    MIH_C_Message_Link_PDU_Transmit_Status_indication_t        link_pdu_transmit_status_indication;
+    MIH_C_Message_Link_Capability_Discover_request_t           link_capability_discover_request;
+    MIH_C_Message_Link_Capability_Discover_confirm_t           link_capability_discover_confirm;
+    MIH_C_Message_Link_Event_Subscribe_request_t               link_event_subscribe_request;
+    MIH_C_Message_Link_Event_Subscribe_confirm_t               link_event_subscribe_confirm;
+    MIH_C_Message_Link_Event_Unsubscribe_request_t             link_event_unsubscribe_request;
+    MIH_C_Message_Link_Event_Unsubscribe_confirm_t             link_event_unsubscribe_confirm;
+    MIH_C_Message_Link_Get_Parameters_request_t                link_get_parameters_request;
+    MIH_C_Message_Link_Get_Parameters_confirm_t                link_get_parameters_confirm;
+    MIH_C_Message_Link_Configure_Thresholds_request_t          link_configure_thresholds_request;
+    MIH_C_Message_Link_Configure_Thresholds_confirm_t          link_configure_thresholds_confirm;
+    MIH_C_Message_Link_Action_request_t                        link_action_request;
+    MIH_C_Message_Link_Action_confirm_t                        link_action_confirm;
+  } _union_message;
 } MIH_C_Message_Wrapper_t;
 //-----------------------------------------------------------------------------
 private_mih_c_msg_codec(MIH_C_TRANSACTION_ID_T g_transaction_id_generator;)

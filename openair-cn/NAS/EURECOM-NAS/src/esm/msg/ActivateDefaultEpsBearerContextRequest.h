@@ -82,14 +82,14 @@
 # define ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<7)
 
 typedef enum activate_default_eps_bearer_context_request_iei_tag {
-    ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_IEI          = 0x5D, /* 0x5D = 93 */
-    ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_IEI                  = 0x30, /* 0x30 = 48 */
-    ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_IEI             = 0x32, /* 0x32 = 50 */
-    ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_IEI                  = 0x80, /* 0x80 = 128 */
-    ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_IEI          = 0x34, /* 0x34 = 52 */
-    ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_APNAMBR_IEI                         = 0x5E, /* 0x5E = 94 */
-    ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_IEI                       = 0x58, /* 0x58 = 88 */
-    ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
+  ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_IEI          = 0x5D, /* 0x5D = 93 */
+  ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_IEI                  = 0x30, /* 0x30 = 48 */
+  ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_IEI             = 0x32, /* 0x32 = 50 */
+  ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_IEI                  = 0x80, /* 0x80 = 128 */
+  ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_IEI          = 0x34, /* 0x34 = 52 */
+  ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_APNAMBR_IEI                         = 0x5E, /* 0x5E = 94 */
+  ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_IEI                       = 0x58, /* 0x58 = 88 */
+  ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
 } activate_default_eps_bearer_context_request_iei;
 
 /*
@@ -100,24 +100,24 @@ typedef enum activate_default_eps_bearer_context_request_iei_tag {
  */
 
 typedef struct activate_default_eps_bearer_context_request_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                                 protocoldiscriminator:4;
-    EpsBearerIdentity                                     epsbeareridentity:4;
-    ProcedureTransactionIdentity                          proceduretransactionidentity;
-    MessageType                                           messagetype;
-    EpsQualityOfService                                   epsqos;
-    AccessPointName                                       accesspointname;
-    PdnAddress                                            pdnaddress;
-    /* Optional fields */
-    uint32_t                                              presencemask;
-    TransactionIdentifier                                 transactionidentifier;
-    QualityOfService                                      negotiatedqos;
-    LlcServiceAccessPointIdentifier                       negotiatedllcsapi;
-    RadioPriority                                         radiopriority;
-    PacketFlowIdentifier                                  packetflowidentifier;
-    ApnAggregateMaximumBitRate                            apnambr;
-    EsmCause                                              esmcause;
-    ProtocolConfigurationOptions                          protocolconfigurationoptions;
+  /* Mandatory fields */
+  ProtocolDiscriminator                                 protocoldiscriminator:4;
+  EpsBearerIdentity                                     epsbeareridentity:4;
+  ProcedureTransactionIdentity                          proceduretransactionidentity;
+  MessageType                                           messagetype;
+  EpsQualityOfService                                   epsqos;
+  AccessPointName                                       accesspointname;
+  PdnAddress                                            pdnaddress;
+  /* Optional fields */
+  uint32_t                                              presencemask;
+  TransactionIdentifier                                 transactionidentifier;
+  QualityOfService                                      negotiatedqos;
+  LlcServiceAccessPointIdentifier                       negotiatedllcsapi;
+  RadioPriority                                         radiopriority;
+  PacketFlowIdentifier                                  packetflowidentifier;
+  ApnAggregateMaximumBitRate                            apnambr;
+  EsmCause                                              esmcause;
+  ProtocolConfigurationOptions                          protocolconfigurationoptions;
 } activate_default_eps_bearer_context_request_msg;
 
 int decode_activate_default_eps_bearer_context_request(activate_default_eps_bearer_context_request_msg *activatedefaultepsbearercontextrequest, uint8_t *buffer, uint32_t len);

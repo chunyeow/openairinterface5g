@@ -36,10 +36,10 @@
                            knopp@eurecom.fr
  *********************************************************************
   Define RRC external interface primitives
- ********************************************************************/  
+ ********************************************************************/
 #ifndef __RRC_NASPRIM_H__
 #    define __RRC_NASPRIM_H__
-  
+
 //----------------------------------------------------------
 // Primitives
 //----------------------------------------------------------
@@ -62,27 +62,27 @@
 #    define CONN_LOSS_IND       18
 #    define PAGING_REQ          19
 #    define NOTIFICATION_IND    20
-  
+
 //----------------------------------------------------------
 // Constants
 //----------------------------------------------------------
 // Define max length authorized (to be updated later)
 #    define NAS_MAX_LENGTH 180  // maximum length of a NAS primitive
-#    define NAS_TL_SIZE	 4      // size of the Type+Length fields of the primitive
+#    define NAS_TL_SIZE  4      // size of the Type+Length fields of the primitive
 #    define NAS_DATA_MAX_LENGTH NAS_MAX_LENGTH - NAS_TL_SIZE    //remaining bytes for the message
 #    define MAX_RABS     8 * 64 //NB_RAB_MAX * MAX_MOBILES_PER_RG  //27   // = MAXURAB
 #    define MAX_MEASURE_NB  5
-  
+
 //Connection Establishment status
 // UE
 #    define TERMINATED         0
-#    define ABORTED	         1
+#    define ABORTED          1
 #    define ALREADY_CONNECTED  2
 // RG + RB Establishment Confirm
 #    define ACCEPTED   0
-#    define FAILURE	 1
+#    define FAILURE  1
 //----------------------------------------------------------
-  
+
 // Parameter types
 //----------------------------------------------------------
 typedef unsigned int     nasPeriod_t;    // Broadcast repetition period
@@ -118,11 +118,11 @@ typedef struct nasMeasures {
 // Primitive definitions
 //----------------------------------------------------------
 // -- SAP-GC
-  struct NASInfoBroadcastReq {
+struct NASInfoBroadcastReq {
   nasPeriod_t period;          // 0 = one-shot, otherwise in  x 10 ms
   nasBroadcastCategory_t category;
-                 nasDataLength_t nasDataLength;
-               };
+  nasDataLength_t nasDataLength;
+};
 struct NASInfoBroadcastInd {
   nasDataLength_t nasDataLength;
 };
@@ -131,21 +131,21 @@ struct nas_ue_gc_element {
   unsigned short length;
   union {
     struct NASInfoBroadcastInd broadcast_ind;
-                 } nasUEGCPrimitive;
-               };
+  } nasUEGCPrimitive;
+};
 struct nas_rg_gc_element {
   unsigned short type;
   unsigned short length;
   union {
     struct NASInfoBroadcastReq broadcast_req;
-                 } nasRGGCPrimitive;
-               };
+  } nasRGGCPrimitive;
+};
 
 // -- SAP-DC
-  struct NASConnEstablishReq {
+struct NASConnEstablishReq {
   nasLocalConnectionRef_t localConnectionRef;  //provided by NAS
   nasCellID_t     cellId;
-               };
+};
 struct NASConnEstablishInd {
   nasLocalConnectionRef_t localConnectionRef;
   nasIMEI_t InterfaceIMEI;
@@ -155,7 +155,7 @@ struct NASConnEstablishConf {
   nasConnectionStatus_t status;        // can be : Accepted, Failure
   nasNumRBsInList_t num_RBs;    // actual number of RBs in the list
   nasRBList_t     RB_List;
-               };
+};
 struct NASConnEstablishResp {
   nasLocalConnectionRef_t localConnectionRef;
   nasIMEI_t InterfaceIMEI;
@@ -220,49 +220,49 @@ struct NASMeasureInd {
 
 /*****
  * UE Primitives
- *****/ 
-  struct nas_ue_dc_element {
+ *****/
+struct nas_ue_dc_element {
   unsigned short type;
   unsigned short length;
   union {
     struct NASConnEstablishReq conn_establish_req;
-                   struct NASConnEstablishResp conn_establish_resp;
-                   
-//    struct NASConnReleaseInd conn_release_ind;
+    struct NASConnEstablishResp conn_establish_resp;
+
+    //    struct NASConnReleaseInd conn_release_ind;
     struct NASConnReleaseReq conn_release_req;
-                   struct NASConnLossInd conn_loss_ind;
-                   struct NASDataReq data_transfer_req;
-                   struct NASDataInd data_transfer_ind;
-                   struct NASrbEstablishInd rb_establish_ind;
-                   struct NASrbReleaseInd rb_release_ind;
-                   struct NASMeasureInd measurement_ind;
-                   struct NASMeasureReq measurement_req;
-                 } nasUEDCPrimitive;
-               };
+    struct NASConnLossInd conn_loss_ind;
+    struct NASDataReq data_transfer_req;
+    struct NASDataInd data_transfer_ind;
+    struct NASrbEstablishInd rb_establish_ind;
+    struct NASrbReleaseInd rb_release_ind;
+    struct NASMeasureInd measurement_ind;
+    struct NASMeasureReq measurement_req;
+  } nasUEDCPrimitive;
+};
 
 /*****
  * RG Primitives
- *****/ 
-  struct nas_rg_dc_element {
+ *****/
+struct nas_rg_dc_element {
   unsigned short type;
   unsigned short length;
   union {
     struct NASConnEstablishInd conn_establish_ind;
-                   struct NASConnEstablishConf conn_establish_conf;
-                   struct NASConnReleaseInd conn_release_ind;
-                   
-//    struct NASConnReleaseReq conn_release_req;
+    struct NASConnEstablishConf conn_establish_conf;
+    struct NASConnReleaseInd conn_release_ind;
+
+    //    struct NASConnReleaseReq conn_release_req;
     struct NASConnLossInd conn_loss_ind;
-                   struct NASDataReq data_transfer_req;
-                   struct NASDataInd data_transfer_ind;
-                   struct NASrbEstablishReq rb_establish_req;
-                   struct NASrbEstablishConf rb_establish_conf;
-                   struct NASrbReleaseReq rb_release_req;
-                 } nasRGDCPrimitive;
-               };
+    struct NASDataReq data_transfer_req;
+    struct NASDataInd data_transfer_ind;
+    struct NASrbEstablishReq rb_establish_req;
+    struct NASrbEstablishConf rb_establish_conf;
+    struct NASrbReleaseReq rb_release_req;
+  } nasRGDCPrimitive;
+};
 
 // -- SAP-NT
-  struct NASPagingReq {
+struct NASPagingReq {
   nasPagingUEId_t UeId;
   nasDataLength_t nasDataLength;
 };
@@ -274,14 +274,14 @@ struct nas_ue_nt_element {
   unsigned short length;
   union {
     struct NASNotificationInd notification_ind;
-                 } nasUENTPrimitive;
-               };
+  } nasUENTPrimitive;
+};
 struct nas_rg_nt_element {
   unsigned short type;
   unsigned short length;
   union {
     struct NASPagingReq paging_req;
-                 } nasRGNTPrimitive;
-               };
+  } nasRGNTPrimitive;
+};
 
 #endif

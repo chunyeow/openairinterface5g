@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                             n w - g t p v 2 u                              * 
+ *                             n w - g t p v 2 u                              *
  *    G P R S   T u n n e l i n g    P r o t o c o l   v 2 u    S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -31,7 +31,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.          *
  *----------------------------------------------------------------------------*/
 
-/** 
+/**
  * @file NwGtpv1uIe.h
  * @brief This header file contains Information Element definitions for GTPv1u
  * as per 3GPP TS 29281-930.
@@ -55,8 +55,8 @@
  *   G T P V 2 U      C A U S E      V A L U E     D E F I N I T I O N S    *
  *--------------------------------------------------------------------------*/
 
-#define NW_GTPV1U_CAUSE_REQUEST_ACCEPTED                                (16) 
-#define NW_GTPV1U_CAUSE_MANDATORY_IE_MISSING                            (70) 
+#define NW_GTPV1U_CAUSE_REQUEST_ACCEPTED                                (16)
+#define NW_GTPV1U_CAUSE_MANDATORY_IE_MISSING                            (70)
 
 #endif  /* __NW_GTPV1U_IE_H__ */
 

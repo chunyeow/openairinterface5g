@@ -69,13 +69,13 @@ Description Defines the EMMESM Service Access Point that provides
  */
 static const char *_emm_esm_primitive_str[] = {
 #ifdef NAS_UE
-    "EMMESM_ESTABLISH_REQ",
-    "EMMESM_ESTABLISH_CNF",
-    "EMMESM_ESTABLISH_REJ",
+  "EMMESM_ESTABLISH_REQ",
+  "EMMESM_ESTABLISH_CNF",
+  "EMMESM_ESTABLISH_REJ",
 #endif
-    "EMMESM_RELEASE_IND",
-    "EMMESM_UNITDATA_REQ",
-    "EMMESM_UNITDATA_IND",
+  "EMMESM_RELEASE_IND",
+  "EMMESM_UNITDATA_REQ",
+  "EMMESM_UNITDATA_IND",
 };
 
 /****************************************************************************/
@@ -98,11 +98,11 @@ static const char *_emm_esm_primitive_str[] = {
  ***************************************************************************/
 void emm_esm_initialize(void)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    /* TODO: Initialize the EMMESM-SAP */
+  /* TODO: Initialize the EMMESM-SAP */
 
-    LOG_FUNC_OUT;
+  LOG_FUNC_OUT;
 }
 
 /****************************************************************************
@@ -121,58 +121,62 @@ void emm_esm_initialize(void)
  ***************************************************************************/
 int emm_esm_send(const emm_esm_t *msg)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc = RETURNerror;
-    emm_esm_primitive_t primitive = msg->primitive;
+  int rc = RETURNerror;
+  emm_esm_primitive_t primitive = msg->primitive;
 
-    LOG_TRACE(INFO, "EMMESM-SAP - Received primitive %s (%d)",
-              _emm_esm_primitive_str[primitive - _EMMESM_START - 1], primitive);
+  LOG_TRACE(INFO, "EMMESM-SAP - Received primitive %s (%d)",
+            _emm_esm_primitive_str[primitive - _EMMESM_START - 1], primitive);
 
-    switch (primitive) {
+  switch (primitive) {
 #ifdef NAS_UE
-        case _EMMESM_ESTABLISH_REQ:
-            /* ESM requests EMM to initiate an attach procedure before
-             * requesting subsequent connectivity to additional PDNs */
-            rc = emm_proc_attach_restart();
-            break;
 
-        case _EMMESM_ESTABLISH_CNF:
-            /* ESM notifies EMM that PDN connectivity procedure successfully
-             * processed */
-            if (msg->u.establish.is_attached) {
-                if (msg->u.establish.is_emergency) {
-                    /* Consider the UE attached for emergency bearer services
-                     * only */
-                    rc = emm_proc_attach_set_emergency();
-                }
-            } else {
-                /* Consider the UE locally detached from the network */
-                rc = emm_proc_attach_set_detach();
-            }
-            break;
+  case _EMMESM_ESTABLISH_REQ:
+    /* ESM requests EMM to initiate an attach procedure before
+     * requesting subsequent connectivity to additional PDNs */
+    rc = emm_proc_attach_restart();
+    break;
 
-        case _EMMESM_ESTABLISH_REJ:
-            /* ESM notifies EMM that PDN connectivity procedure failed */
-            break;
+  case _EMMESM_ESTABLISH_CNF:
+
+    /* ESM notifies EMM that PDN connectivity procedure successfully
+     * processed */
+    if (msg->u.establish.is_attached) {
+      if (msg->u.establish.is_emergency) {
+        /* Consider the UE attached for emergency bearer services
+         * only */
+        rc = emm_proc_attach_set_emergency();
+      }
+    } else {
+      /* Consider the UE locally detached from the network */
+      rc = emm_proc_attach_set_detach();
+    }
+
+    break;
+
+  case _EMMESM_ESTABLISH_REJ:
+    /* ESM notifies EMM that PDN connectivity procedure failed */
+    break;
 #endif
-        case _EMMESM_UNITDATA_REQ:
-            /* ESM requests EMM to transfer ESM data unit to lower layer */
-            rc = lowerlayer_data_req(msg->ueid, &msg->u.data.msg);
-            break;
 
-        default:
-            break;
+  case _EMMESM_UNITDATA_REQ:
+    /* ESM requests EMM to transfer ESM data unit to lower layer */
+    rc = lowerlayer_data_req(msg->ueid, &msg->u.data.msg);
+    break;
 
-    }
+  default:
+    break;
 
-    if (rc != RETURNok) {
-        LOG_TRACE(WARNING, "EMMESM-SAP - Failed to process primitive %s (%d)",
-                  _emm_esm_primitive_str[primitive - _EMMESM_START - 1],
-                  primitive);
-    }
+  }
 
-    LOG_FUNC_RETURN (rc);
+  if (rc != RETURNok) {
+    LOG_TRACE(WARNING, "EMMESM-SAP - Failed to process primitive %s (%d)",
+              _emm_esm_primitive_str[primitive - _EMMESM_START - 1],
+              primitive);
+  }
+
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************/

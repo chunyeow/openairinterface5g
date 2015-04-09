@@ -3,7 +3,7 @@
                           -------------------
     begin                : Someday 2001
     copyright            : (C) 2001, 2010 by Eurecom
-    created by           : Lionel.Gauthier@eurecom.fr	
+    created by           : Lionel.Gauthier@eurecom.fr
     modified by          : Michelle.Wetterwald@eurecom.fr
  **************************************************************************
   Data structure with RRC RG protocol parameters
@@ -28,14 +28,14 @@
 *                        Protocol variables                                   *
 ******************************************************************************/
 struct rrc_rg_entity {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   int current_SFN;
 
   u8  protocol_state[maxUsers];
   // Table to be changed into a list??
   struct Mobile_Node Mobile_List[maxUsers];
   u8  establishment_cause;  // For NAS - A Revoir
-//  u8  release_cause;
+  //  u8  release_cause;
   u32 next_MUI;     // for RLC AM
 
   //External missing components simulation (debug)

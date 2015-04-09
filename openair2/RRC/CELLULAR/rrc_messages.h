@@ -25,7 +25,7 @@
 #define UE_RB_RELEASE      9
 #define CELLU_CNF          11
 #define T300_TO            15
-#define WAIT_TO						 17
+#define WAIT_TO            17
 #define RRC_RLC_SUCCESS    19
 #define RRC_RLC_FAILURE    21
 #define NAS_REL_REQ        23

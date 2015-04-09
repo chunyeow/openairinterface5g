@@ -38,10 +38,10 @@
 #define IDENTITY_TYPE_2_MINIMUM_LENGTH 1
 #define IDENTITY_TYPE_2_MAXIMUM_LENGTH 1
 
-#define IDENTITY_TYPE_2_IMSI	0b001
-#define IDENTITY_TYPE_2_IMEI	0b010
-#define IDENTITY_TYPE_2_IMEISV	0b011
-#define IDENTITY_TYPE_2_TMSI	0b100
+#define IDENTITY_TYPE_2_IMSI  0b001
+#define IDENTITY_TYPE_2_IMEI  0b010
+#define IDENTITY_TYPE_2_IMEISV  0b011
+#define IDENTITY_TYPE_2_TMSI  0b100
 typedef uint8_t IdentityType2;
 
 int encode_identity_type_2(IdentityType2 *identitytype2, uint8_t iei, uint8_t *buffer, uint32_t len);

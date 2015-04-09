@@ -55,7 +55,7 @@ void            rlc_am_discard_notify_max_dat_pdu (struct rlc_am_entity *rlcP, m
 void
 rlc_am_discard_notify_mrw_ack_time_out (struct rlc_am_entity *rlcP, mem_block_t * discard_procedureP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   /* from 3GPP TS 25.322 V5.5.0
      If Timer_MRW expires before the discard procedure is terminated, the Sender shall:
      - if VT(MRW)<MaxMRW-1:
@@ -99,7 +99,7 @@ rlc_am_discard_notify_mrw_ack_time_out (struct rlc_am_entity *rlcP, mem_block_t 
 void
 rlc_am_discard_check_sdu_time_out (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   mem_block_t      *sdu;
   mem_block_t      *pdu;
   int             discard_go_on;
@@ -157,6 +157,7 @@ rlc_am_discard_check_sdu_time_out (struct rlc_am_entity *rlcP)
           msg ("BO %d, NB SDU %d\n", rlcP->buffer_occupancy, rlcP->nb_sdu);
           display_protocol_vars_rlc_am (rlcP);
 #endif
+
           if (((struct rlc_am_tx_sdu_management *) (sdu->data))->sdu_size != ((struct rlc_am_tx_sdu_management *) (sdu->data))->sdu_remaining_size) {
             // some pdu have to be removed if a sdu discarded generated almost one pdu
             if (last_removed_pdu_sn == -1) {
@@ -164,8 +165,10 @@ rlc_am_discard_check_sdu_time_out (struct rlc_am_entity *rlcP)
             } else {
               sn = last_removed_pdu_sn;
             }
+
             while (sn != rlcP->vt_s) {
               pdu = rlcP->retransmission_buffer[sn % rlcP->recomputed_configured_tx_window_size];
+
               if ((pdu)) {
 
                 // now check if a copy of the pdu is not present in the retransmission_buffer_to_send
@@ -173,6 +176,7 @@ rlc_am_discard_check_sdu_time_out (struct rlc_am_entity *rlcP)
                   list2_remove_element (((struct rlc_am_tx_data_pdu_management *) (pdu->data))->copy, &rlcP->retransmission_buffer_to_send);
                   free_mem_block (((struct rlc_am_tx_data_pdu_management *) (pdu->data))->copy);
                 }
+
                 // if this pdu has been retransmitted, remove its size from buffer occupancy
                 if (((struct rlc_am_tx_data_pdu_management *) (pdu->data))->vt_dat > 0) {
                   rlcP->buffer_occupancy_retransmission_buffer -= 1;
@@ -181,8 +185,10 @@ rlc_am_discard_check_sdu_time_out (struct rlc_am_entity *rlcP)
                 free_mem_block (rlcP->retransmission_buffer[sn % rlcP->recomputed_configured_tx_window_size]);
                 rlcP->retransmission_buffer[sn % rlcP->recomputed_configured_tx_window_size] = NULL;
               }
+
               sn = (sn + 1) & SN_12BITS_MASK;
             }
+
             last_removed_pdu_sn = sn;
           }
         } else {
@@ -219,7 +225,7 @@ rlc_am_discard_check_sdu_time_out (struct rlc_am_entity *rlcP)
 void
 rlc_am_discard_notify_max_dat_pdu (struct rlc_am_entity *rlcP, mem_block_t * pduP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   struct rlc_am_tx_data_pdu_management *pdu_mngt;
   struct rlc_am_tx_sdu_management *sdu_mngt;
@@ -242,10 +248,12 @@ rlc_am_discard_notify_max_dat_pdu (struct rlc_am_entity *rlcP, mem_block_t * pdu
 #ifdef DEBUG_RLC_AM_DISCARD_MAX_DAT
   msg ("[RLC_AM][RB %d] DISCARD  MAX DAT PDU FRAME %d SN 0x%03X CONTAINS SDU INDEX ", rlcP->rb_id, Mac_rlc_xface->frame, pdu_mngt->sn);
   sdu_index = 0;
+
   while (sdu_index < pdu_mngt->nb_sdu) {
     msg ("%d ", pdu_mngt->sdu[sdu_index]);
     sdu_index += 1;
   }
+
   msg ("\n");
 
 #endif
@@ -273,6 +281,7 @@ rlc_am_discard_notify_max_dat_pdu (struct rlc_am_entity *rlcP, mem_block_t * pdu
 #endif
         rlc_data_conf (0, rlcP->rb_id, ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[sdu_index]->data))->mui, RLC_TX_CONFIRM_FAILURE, rlcP->data_plane);
       }
+
       rlcP->input_sdus[sdu_index] = NULL;
       rlcP->nb_sdu -= 1;
 
@@ -280,6 +289,7 @@ rlc_am_discard_notify_max_dat_pdu (struct rlc_am_entity *rlcP, mem_block_t * pdu
       msg ("[RLC_AM][RB %d] DISCARD  MAX DAT FREE_SDU INDEX %d\n", rlcP->rb_id, sdu_index);
 #endif
     }
+
     sdu_index = (sdu_index + 1) % rlcP->size_input_sdus_buffer;
   }
 
@@ -289,11 +299,13 @@ rlc_am_discard_notify_max_dat_pdu (struct rlc_am_entity *rlcP, mem_block_t * pdu
   sdu_mngt = (struct rlc_am_tx_sdu_management *) (sdu->data);
 
   sn = rlcP->vt_a;
+
   while (sn != sdu_mngt->last_pdu_sn) {
     if ((pdu2 = rlcP->retransmission_buffer[sn % rlcP->recomputed_configured_tx_window_size])) {
 #ifdef DEBUG_RLC_AM_DISCARD
       msg ("[RLC_AM][RB %d] DISCARD  FREE PDU SN 0x%03X\n", rlcP->rb_id, sn);
 #endif
+
       // check if a copy of the pdu is not present in the retransmission_buffer_to_send
       if ((((struct rlc_am_tx_data_pdu_management *) (pdu2->data))->copy)) {
 #ifdef DEBUG_RLC_AM_DISCARD
@@ -302,13 +314,16 @@ rlc_am_discard_notify_max_dat_pdu (struct rlc_am_entity *rlcP, mem_block_t * pdu
         list2_remove_element (((struct rlc_am_tx_data_pdu_management *) (pdu2->data))->copy, &rlcP->retransmission_buffer_to_send);
         free_mem_block (((struct rlc_am_tx_data_pdu_management *) (pdu2->data))->copy);
       }
+
       // if this pdu has been retransmitted, remove its size from buffer occupancy
       if (((struct rlc_am_tx_data_pdu_management *) (pdu2->data))->vt_dat > 0) {
         rlcP->buffer_occupancy_retransmission_buffer -= 1;
       }
+
       free_mem_block (pdu2);
       rlcP->retransmission_buffer[sn % rlcP->recomputed_configured_tx_window_size] = NULL;
     }
+
     sn = (sn + 1) & SN_12BITS_MASK;
   }
 
@@ -317,9 +332,11 @@ rlc_am_discard_notify_max_dat_pdu (struct rlc_am_entity *rlcP, mem_block_t * pdu
   // sdu newer than the discarded
   // if the pdu cannot be found : it is OK, nothing to do
   pdu = rlcP->retransmission_buffer[sdu_mngt->last_pdu_sn % rlcP->recomputed_configured_tx_window_size];
+
   if ((pdu)) {
     // search the index of the sdu passed in parameter
     pdu_mngt = (struct rlc_am_tx_data_pdu_management *) pdu->data;
+
     if (pdu_mngt->sdu[pdu_mngt->nb_sdu - 1] == sdu_index) {
       //----------------------------------------------
       // now check if a copy of the pdu is not present in the retransmission_buffer_to_send
@@ -327,16 +344,19 @@ rlc_am_discard_notify_max_dat_pdu (struct rlc_am_entity *rlcP, mem_block_t * pdu
         list2_remove_element (pdu_mngt->copy, &rlcP->retransmission_buffer_to_send);
         free_mem_block (pdu_mngt->copy);
       }
+
 #ifdef DEBUG_RLC_AM_DISCARD
       msg ("[RLC_AM][RB %d] DISCARD  LAST PDU SN 0x%03X\n", rlcP->rb_id, sn);
       rlc_am_display_data_pdu7 (pdu);
 #endif
+
       //----------------
       // discard the pdu
       // if this pdu has been retransmitted, remove its size from buffer occupancy
       if (((struct rlc_am_tx_data_pdu_management *) (pdu->data))->vt_dat > 0) {
         rlcP->buffer_occupancy_retransmission_buffer -= 1;
       }
+
       pdu_index = pdu_mngt->sn % rlcP->recomputed_configured_tx_window_size;
       free_mem_block (rlcP->retransmission_buffer[pdu_index]);
       rlcP->retransmission_buffer[pdu_index] = NULL;
@@ -346,6 +366,7 @@ rlc_am_discard_notify_max_dat_pdu (struct rlc_am_entity *rlcP, mem_block_t * pdu
       msg ("[RLC_AM][RB %d] DISCARD  LAST PDU SN 0x%03X, CONTAINS OTHER SDUS (LAST SDU INDEX=%d): NOT CLEARED\n", rlcP->rb_id, sdu_mngt->last_pdu_sn, pdu_mngt->sdu[pdu_mngt->nb_sdu - 1]);
 #endif
       sdu_index2 = 0;
+
       while (pdu_mngt->sdu[sdu_index2] != sdu_index) {
 
 #ifdef DEBUG_RLC_AM_DISCARD
@@ -354,16 +375,19 @@ rlc_am_discard_notify_max_dat_pdu (struct rlc_am_entity *rlcP, mem_block_t * pdu
         pdu_mngt->sdu[sdu_index2] = -1;
         sdu_index2 += 1;
       }
+
 #ifdef DEBUG_RLC_AM_DISCARD
       msg ("[RLC_AM][RB %d] DISCARD  LAST PDU SN 0x%03X, MARK SDU index %d AS DISCARDED\n", rlcP->rb_id, pdu_mngt->sn, pdu_mngt->sdu[sdu_index2]);
 #endif
       pdu_mngt->sdu[sdu_index2] = -1;
     }
   }
+
 #ifdef DEBUG_RLC_AM_DISCARD
   else {
     msg ("[RLC_AM][RB %d] DISCARD  LAST PDU SN 0x%03X, ALREADY CLEARED\n", rlcP->rb_id, sdu_mngt->last_pdu_sn);
   }
+
 #endif
 
   //----------------

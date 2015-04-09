@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,22 +14,22 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
 #include "defs.h"
 #include "PHY/sse_intrin.h"
 
-// returns the complex dot product of x and y 
+// returns the complex dot product of x and y
 
 #ifdef MAIN
 void print_ints(char *s,__m128i *x);
@@ -38,9 +38,10 @@ void print_bytes(char *s,__m128i *x);
 #endif
 
 int32_t dot_product(int16_t *x,
-		int16_t *y,
-		uint32_t N, //must be a multiple of 8
-		uint8_t output_shift) {
+                    int16_t *y,
+                    uint32_t N, //must be a multiple of 8
+                    uint8_t output_shift)
+{
 
   __m128i *x128,*y128,mmtmp1,mmtmp2,mmtmp3,mmcumul,mmcumul_re,mmcumul_im;
   __m64 mmtmp7;
@@ -54,7 +55,7 @@ int32_t dot_product(int16_t *x,
   mmcumul_re = _mm_setzero_si128();
   mmcumul_im = _mm_setzero_si128();
 
-  for (n=0;n<(N>>2);n++) {
+  for (n=0; n<(N>>2); n++) {
 
     //printf("n=%d, x128=%p, y128=%p\n",n,x128,y128);
     //    print_shorts("x",&x128[0]);
@@ -63,14 +64,14 @@ int32_t dot_product(int16_t *x,
     // this computes Re(z) = Re(x)*Re(y) + Im(x)*Im(y)
     mmtmp1 = _mm_madd_epi16(x128[0],y128[0]);
     //    print_ints("re",&mmtmp1);
-	// mmtmp1 contains real part of 4 consecutive outputs (32-bit)
+    // mmtmp1 contains real part of 4 consecutive outputs (32-bit)
 
     // shift and accumulate results
     mmtmp1 = _mm_srai_epi32(mmtmp1,output_shift);
     mmcumul_re = _mm_add_epi32(mmcumul_re,mmtmp1);
     //    print_ints("re",&mmcumul_re);
 
-    
+
     // this computes Im(z) = Re(x)*Im(y) - Re(y)*Im(x)
     mmtmp2 = _mm_shufflelo_epi16(y128[0],_MM_SHUFFLE(2,3,0,1));
     //    print_shorts("y",&mmtmp2);
@@ -96,8 +97,8 @@ int32_t dot_product(int16_t *x,
   mmcumul = _mm_hadd_epi32(mmcumul_re,mmcumul_im);
   //  print_ints("cumul1",&mmcumul);
 
-  // this gives Re Im Re Im  
-  mmcumul = _mm_hadd_epi32(mmcumul,mmcumul);  
+  // this gives Re Im Re Im
+  mmcumul = _mm_hadd_epi32(mmcumul,mmcumul);
 
   //  print_ints("cumul2",&mmcumul);
 
@@ -121,43 +122,47 @@ int32_t dot_product(int16_t *x,
 
 
 #ifdef MAIN
-void print_bytes(char *s,__m128i *x) {
+void print_bytes(char *s,__m128i *x)
+{
 
   char *tempb = (char *)x;
 
   printf("%s  : %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",s,
          tempb[0],tempb[1],tempb[2],tempb[3],tempb[4],tempb[5],tempb[6],tempb[7],
          tempb[8],tempb[9],tempb[10],tempb[11],tempb[12],tempb[13],tempb[14],tempb[15]
-         );
+        );
 
 }
 
-void print_shorts(char *s,__m128i *x) {
+void print_shorts(char *s,__m128i *x)
+{
 
   int16_t *tempb = (int16_t *)x;
 
   printf("%s  : %d,%d,%d,%d,%d,%d,%d,%d\n",s,
          tempb[0],tempb[1],tempb[2],tempb[3],tempb[4],tempb[5],tempb[6],tempb[7]
-         );
+        );
 
 }
 
-void print_ints(char *s,__m128i *x) {
+void print_ints(char *s,__m128i *x)
+{
 
   int32_t *tempb = (int32_t *)x;
 
   printf("%s  : %d,%d,%d,%d\n",s,
          tempb[0],tempb[1],tempb[2],tempb[3]
-         );
+        );
 
 }
 
-void main(void) {
+void main(void)
+{
 
   int32_t result;
 
-  int16_t x[16*2] __attribute__((aligned(16))) = {1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13,1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13};  
-  int16_t y[16*2] __attribute__((aligned(16))) = {1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13,1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13};  
+  int16_t x[16*2] __attribute__((aligned(16))) = {1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13,1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13};
+  int16_t y[16*2] __attribute__((aligned(16))) = {1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13,1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13};
   //  int16_t y[16*2] __attribute__((aligned(16))) = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
   result = dot_product(x,y,8*2,15);

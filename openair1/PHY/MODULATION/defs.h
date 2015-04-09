@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -47,45 +47,45 @@ This function performs OFDM modulation with cyclic extension or zero-padding.
 @param etype Type of extension (CYCLIC_PREFIX,CYCLIC_SUFFIX,ZEROS)
 
 */
-void PHY_ofdm_mod(int *input,           
-	          int *output,          
-	          unsigned char log2fftsize,       
-	          unsigned char nb_symbols,
-	          unsigned short nb_prefix_samples,        
-		  short *twiddle_ifft,
-		  unsigned short *rev,
-		  Extension_t etype
-		  );
+void PHY_ofdm_mod(int *input,
+                  int *output,
+                  unsigned char log2fftsize,
+                  unsigned char nb_symbols,
+                  unsigned short nb_prefix_samples,
+                  short *twiddle_ifft,
+                  unsigned short *rev,
+                  Extension_t etype
+                 );
 
 #ifdef OPENAIR_LTE
 
-/*! 
+/*!
 \brief This function implements the OFDM front end processor on reception (FEP)
 \param phy_vars_ue Pointer to PHY variables
 \param l symbol within slot (0..6/7)
 \param Ns Slot number (0..19)
 \param sample_offset offset within rxdata (points to beginning of subframe)
-\param no_prefix if 1 prefix is removed by HW 
+\param no_prefix if 1 prefix is removed by HW
 */
 
 int slot_fep(PHY_VARS_UE *phy_vars_ue,
-	     unsigned char l,
-	     unsigned char Ns,
-	     int sample_offset,
-	     int no_prefix);
+             unsigned char l,
+             unsigned char Ns,
+             int sample_offset,
+             int no_prefix);
 
 int slot_fep_mbsfn(PHY_VARS_UE *phy_vars_ue,
-	     unsigned char l,
-	     int subframe,
-	     int sample_offset,
-	     int no_prefix);
+                   unsigned char l,
+                   int subframe,
+                   int sample_offset,
+                   int no_prefix);
 
 int slot_fep_ul(LTE_DL_FRAME_PARMS *frame_parms,
-		LTE_eNB_COMMON *eNb_common_vars,
-		unsigned char l,
-		unsigned char Ns,
-		unsigned char eNb_id,
-		int no_prefix);
+                LTE_eNB_COMMON *eNb_common_vars,
+                unsigned char l,
+                unsigned char Ns,
+                unsigned char eNb_id,
+                int no_prefix);
 
 void normal_prefix_mod(int32_t *txdataF,int32_t *txdata,uint8_t nsymb,LTE_DL_FRAME_PARMS *frame_parms);
 

@@ -49,7 +49,7 @@
 void
 rlc_tm_no_segment (struct rlc_tm_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   mem_block_t *pdu;
   struct rlc_tm_tx_sdu_management *sdu_mngt;
   struct rlc_tm_tx_pdu_management *pdu_mngt;
@@ -61,12 +61,14 @@ rlc_tm_no_segment (struct rlc_tm_entity *rlcP)
 
   if ((rlcP->sdu_discard_mode & RLC_SDU_DISCARD_TIMER_BASED_NO_EXPLICIT)) {
     discard_go_on = 1;
+
     while ((rlcP->input_sdus[rlcP->current_sdu_index]) && discard_go_on) {
       if ((*rlcP->frame_tick_milliseconds - ((struct rlc_tm_tx_sdu_management *) (rlcP->input_sdus[rlcP->current_sdu_index]->data))->sdu_creation_time) >= rlcP->timer_discard_init) {
-        #ifdef DEBUG_RLC_TM_DISCARD_SDU
-        msg("[RLC_TM %p] SDU DISCARDED  TIMED OUT %ld ms ", rlcP, (*rlcP->frame_tick_milliseconds - ((struct rlc_tm_tx_sdu_management *) (rlcP->input_sdus[rlcP->current_sdu_index]->data))->sdu_creation_time));
+#ifdef DEBUG_RLC_TM_DISCARD_SDU
+        msg("[RLC_TM %p] SDU DISCARDED  TIMED OUT %ld ms ", rlcP, (*rlcP->frame_tick_milliseconds - ((struct rlc_tm_tx_sdu_management *) (
+              rlcP->input_sdus[rlcP->current_sdu_index]->data))->sdu_creation_time));
         msg("BO %d, NB SDU %d\n", rlcP->buffer_occupancy, rlcP->nb_sdu);
-        #endif
+#endif
         rlcP->buffer_occupancy -= (((struct rlc_tm_tx_sdu_management *) (rlcP->input_sdus[rlcP->current_sdu_index]->data))->sdu_size >> 3);
         rlcP->nb_sdu -= 1;
         free_mem_block (rlcP->input_sdus[rlcP->current_sdu_index]);
@@ -77,6 +79,7 @@ rlc_tm_no_segment (struct rlc_tm_entity *rlcP)
       }
     }
   }
+
   // only one SDU per TTI
   while ((rlcP->input_sdus[rlcP->current_sdu_index]) && (nb_pdu_to_transmit > 0)) {
 
@@ -87,6 +90,7 @@ rlc_tm_no_segment (struct rlc_tm_entity *rlcP)
       msg ("[RLC_TM %p][SEGMENT] ERROR COULD NOT GET NEW PDU, EXIT\n", rlcP);
       return;
     }
+
     // SHOULD BE OPTIMIZED...SOON
     pdu_mngt = (struct rlc_tm_tx_pdu_management *) (pdu->data);
     memset (pdu->data, 0, sizeof (struct rlc_tm_tx_pdu_management));
@@ -112,7 +116,7 @@ rlc_tm_no_segment (struct rlc_tm_entity *rlcP)
 void
 rlc_tm_segment (struct rlc_tm_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   mem_block_t *pdu;
   struct rlc_tm_tx_sdu_management *sdu_mngt;
   struct rlc_tm_tx_pdu_management *pdu_mngt;
@@ -124,12 +128,13 @@ rlc_tm_segment (struct rlc_tm_entity *rlcP)
 
   if ((rlcP->sdu_discard_mode & RLC_SDU_DISCARD_TIMER_BASED_NO_EXPLICIT)) {
     discard_go_on = 1;
+
     while ((rlcP->input_sdus[rlcP->current_sdu_index]) && discard_go_on) {
       if ((*rlcP->frame_tick_milliseconds - ((struct rlc_tm_tx_sdu_management *) (rlcP->input_sdus[rlcP->current_sdu_index]->data))->sdu_creation_time) >= rlcP->timer_discard_init) {
-        #ifdef DEBUG_RLC_TM_DISCARD_SDU
+#ifdef DEBUG_RLC_TM_DISCARD_SDU
         msg("[RLC_TM %p] SDU DISCARDED  TIMED OUT %ld ms ", rlcP,(*rlcP->frame_tick_milliseconds - ((struct rlc_tm_tx_sdu_management *) (rlcP->input_sdus[rlcP->current_sdu_index]->data))->sdu_creation_time));
         msg ("BO %d, NB SDU %d\n", rlcP->buffer_occupancy, rlcP->nb_sdu);
-        #endif
+#endif
         rlcP->nb_sdu -= 1;
         free_mem_block (rlcP->input_sdus[rlcP->current_sdu_index]);
         rlcP->input_sdus[rlcP->current_sdu_index] = NULL;
@@ -139,9 +144,11 @@ rlc_tm_segment (struct rlc_tm_entity *rlcP)
       }
     }
   }
+
   // only one SDU per TTI
   if ((rlcP->input_sdus[rlcP->current_sdu_index])) {
     sdu_mngt = (struct rlc_tm_tx_sdu_management *) (rlcP->input_sdus[rlcP->current_sdu_index]->data);
+
     //PRINT_RLC_TM_SEGMENT("[RLC_TM %p] SEGMENT GET NEW SDU %p AVAILABLE SIZE %d Bytes\n", rlcP, sdu_mngt, sdu_mngt->sdu_remaining_size);
     while ((nb_pdu_to_transmit > 0) && (sdu_mngt->sdu_segmented_size < sdu_mngt->sdu_size)) {
 
@@ -149,6 +156,7 @@ rlc_tm_segment (struct rlc_tm_entity *rlcP)
         msg ("[RLC_TM %p][SEGMENT] ERROR COULD NOT GET NEW PDU, EXIT\n", rlcP);
         return;
       }
+
       // SHOULD BE OPTIMIZED...SOON
       pdu_mngt = (struct rlc_tm_tx_pdu_management *) (pdu->data);
       memset (pdu->data, 0, sizeof (struct rlc_tm_tx_pdu_management));
@@ -164,11 +172,13 @@ rlc_tm_segment (struct rlc_tm_entity *rlcP)
       sdu_mngt->sdu_segmented_size += rlcP->rlc_pdu_size;
       nb_pdu_to_transmit -= 1;
     }
+
     free_mem_block (rlcP->input_sdus[rlcP->current_sdu_index]);
     rlcP->input_sdus[rlcP->current_sdu_index] = NULL;
     rlcP->current_sdu_index = (rlcP->current_sdu_index + 1) % rlcP->size_input_sdus_buffer;
     rlcP->nb_sdu -= 1;
   }
+
   if ((rlcP->input_sdus[rlcP->current_sdu_index])) {
     rlcP->buffer_occupancy = ((struct rlc_tm_tx_sdu_management *) (rlcP->input_sdus[rlcP->current_sdu_index]->data))->sdu_size >> 3;
   } else {

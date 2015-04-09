@@ -39,7 +39,7 @@
 #define CLI_MAXIMUM_LENGTH 14
 
 typedef struct Cli_tag {
-    OctetString clivalue;
+  OctetString clivalue;
 } Cli;
 
 int encode_cli(Cli *cli, uint8_t iei, uint8_t *buffer, uint32_t len);

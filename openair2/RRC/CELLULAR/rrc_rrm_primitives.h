@@ -2,7 +2,7 @@
                           rrc_rrm_primitives.h
                           -------------------
     copyright            : (C) 2010 by Eurecom
-    created by	         : Lionel.Gauthier@eurecom.fr	
+    created by           : Lionel.Gauthier@eurecom.fr
     modified by          : Michelle.Wetterwald@eurecom.fr
  **************************************************************************
   Definition of RRC external interface to RRM
@@ -66,7 +66,7 @@
 #define INTERACTIVE    3
 #define BACKGROUND     4
 
-// CONNECTION RESPONSE STATUS 
+// CONNECTION RESPONSE STATUS
 #define STATUS_CONNECTION_ACCEPTED                   0
 #define STATUS_CONNECTION_REFUSED_ALREADY_CONNECTED -1
 #define STATUS_CONNECTION_REFUSED_TOO_MANY_RG       -2
@@ -135,7 +135,7 @@ struct rrc_rrm_meas_report_mt_q {
   u16 q_sir[MAXMEASTFCS][JRRM_SLOTS_PER_FRAME] __attribute__ ((packed));
 };
 struct rrc_rrm_meas_report_mt_int {
-//  u8 UE_Id;
+  //  u8 UE_Id;
   u16 UE_Id __attribute__ ((packed));
   u16 int_xmit_power[JRRM_SLOTS_PER_FRAME] __attribute__ ((packed));
   u16 int_timing_advance __attribute__ ((packed));

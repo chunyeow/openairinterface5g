@@ -73,11 +73,11 @@
 //#define NAS_IID1_CONTROL 0x0
 //#define NAS_IID2_CONTROL __constant_htonl(0xffffffff)
 
-//#define NAS_STATE_IDLE 			0
-//#define NAS_STATE_CONNECTED			1
-//#define NAS_STATE_ESTABLISHMENT_REQUEST	2
-//#define NAS_STATE_ESTABLISHMENT_FAILURE	3
-//#define NAS_STATE_RELEASE_FAILURE		4
+//#define NAS_STATE_IDLE      0
+//#define NAS_STATE_CONNECTED     1
+//#define NAS_STATE_ESTABLISHMENT_REQUEST 2
+//#define NAS_STATE_ESTABLISHMENT_FAILURE 3
+//#define NAS_STATE_RELEASE_FAILURE   4
 #define NAS_CX_RELEASE_UNDEF_CAUSE 1
 
 // MT+RG NAS States
@@ -119,19 +119,19 @@
 #define NAS_IOCTL_RRM 0x89F0
 
 // Error cause
-#define NAS_ERROR_ALREADYEXIST	        1
-#define NAS_ERROR_NOMEMORY		3
-#define NAS_ERROR_NOTMT 		9
-#define NAS_ERROR_NOTRG 		10
-#define NAS_ERROR_NOTIDLE 		11
-#define NAS_ERROR_NOTCONNECTED  	12
-#define NAS_ERROR_NORB		        14
-#define NAS_ERROR_NOTCORRECTVALUE	32
-#define NAS_ERROR_NOTCORRECTLCR	        33
-#define NAS_ERROR_NOTCORRECTDIR	        34
-#define NAS_ERROR_NOTCORRECTDSCP	35
-#define NAS_ERROR_NOTCORRECTVERSION	36
-#define NAS_ERROR_NOTCORRECTRABI	37
+#define NAS_ERROR_ALREADYEXIST          1
+#define NAS_ERROR_NOMEMORY    3
+#define NAS_ERROR_NOTMT     9
+#define NAS_ERROR_NOTRG     10
+#define NAS_ERROR_NOTIDLE     11
+#define NAS_ERROR_NOTCONNECTED    12
+#define NAS_ERROR_NORB            14
+#define NAS_ERROR_NOTCORRECTVALUE 32
+#define NAS_ERROR_NOTCORRECTLCR         33
+#define NAS_ERROR_NOTCORRECTDIR         34
+#define NAS_ERROR_NOTCORRECTDSCP  35
+#define NAS_ERROR_NOTCORRECTVERSION 36
+#define NAS_ERROR_NOTCORRECTRABI  37
 
 
 /**********************************************************/
@@ -157,12 +157,12 @@
 #define NAS_PROTOCOL_ICMP4 IPPROTO_ICMP
 #define NAS_PROTOCOL_ICMP6 IPPROTO_ICMPV6
 
-#define NAS_PORT_DEFAULT	__constant_htons(65535)
-#define NAS_PORT_HTTP 	__constant_htons(80)
+#define NAS_PORT_DEFAULT  __constant_htons(65535)
+#define NAS_PORT_HTTP   __constant_htons(80)
 
-#define NAS_VERSION_DEFAULT 	0
-#define NAS_VERSION_4 	4
-#define NAS_VERSION_6 	0 //?MW
+#define NAS_VERSION_DEFAULT   0
+#define NAS_VERSION_4   4
+#define NAS_VERSION_6   0 //?MW
 
 #define NAS_DEFAULT_IPV4_ADDR 0
 #define NAS_DEFAULT_IPV6_ADDR0 0

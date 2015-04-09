@@ -57,7 +57,7 @@ void            rlc_am_display_data_pdu7 (mem_block_t * pduP);
 void
 debug_rlc_am_confirm (struct rlc_am_entity *rlcP, mem_block_t * confP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   msg ("[RLC_AM][RB %d] CONFIRM SDU MUI %d\n", rlcP->rb_id, ((struct rlc_output_primitive *) (confP->data))->primitive.conf.mui);
   free_mem_block_t (confP);
 }
@@ -70,13 +70,15 @@ debug_rlc_am_confirm (struct rlc_am_entity *rlcP, mem_block_t * confP)
 inline int
 rlc_am_comp_sn (struct rlc_am_entity *rlcP, uint16_t low_boundaryP, uint16_t sn1P, uint16_t sn2P)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   // we require that sn are in tx window, if they are not we consider that they are always
   // before low_boundaryP (one loop over the max sn 0x0FFF), never above the boundary
   uint16_t             bound = (low_boundaryP + rlcP->configured_tx_window_size - 1) & SN_12BITS_MASK;
+
   if (sn1P == sn2P) {
     return 0;
   }
+
   if (low_boundaryP < bound) {
     if ((sn1P >= low_boundaryP) && (sn1P <= bound)) {
       if ((sn2P >= low_boundaryP) && (sn2P <= bound)) {
@@ -146,7 +148,7 @@ rlc_am_comp_sn (struct rlc_am_entity *rlcP, uint16_t low_boundaryP, uint16_t sn1
 void
 adjust_vt_a_ms (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   uint16_t             vt_a_index, vt_s_index;
 
@@ -157,6 +159,7 @@ adjust_vt_a_ms (struct rlc_am_entity *rlcP)
     rlcP->vt_a = (rlcP->vt_a + 1) & SN_12BITS_MASK;
     vt_a_index = rlcP->vt_a % rlcP->recomputed_configured_tx_window_size;
   }
+
   rlcP->vt_ms = (rlcP->vt_a + rlcP->vt_ws - 1) & SN_12BITS_MASK;
 }
 
@@ -164,7 +167,7 @@ adjust_vt_a_ms (struct rlc_am_entity *rlcP)
 void
 adjust_vr_r_mr (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   uint16_t             vr_r_index, vr_h_index;
 
@@ -188,7 +191,7 @@ adjust_vr_r_mr (struct rlc_am_entity *rlcP)
 void
 display_protocol_vars_rlc_am (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   msg ("[RLC_AM][RB %d] VT(A) 0x%04X  VT(S) 0x%04X  VT(MS) 0x%04X  VT(PDU) 0x%04X  VT(SDU) 0x%04X  VR(R) 0x%04X  VR(H) 0x%04X  VR(MR) 0x%04X\n",
        rlcP->rb_id, rlcP->vt_a, rlcP->vt_s, rlcP->vt_ms, rlcP->vt_pdu, rlcP->vt_sdu, rlcP->vr_r, rlcP->vr_h, rlcP->vr_mr);
@@ -218,12 +221,15 @@ display_retransmission_buffer (struct rlc_am_entity *rlcP)
     } else {
       msg ("_.");
     }
+
     if ((working_sn_index % 32) == 0) {
       msg ("\n");
     }
+
     working_sn = (working_sn + 1) & SN_12BITS_MASK;
     working_sn_index = working_sn % rlcP->recomputed_configured_tx_window_size;
   }
+
   msg ("\n------------------------------------------\n");
 }
 
@@ -231,7 +237,7 @@ display_retransmission_buffer (struct rlc_am_entity *rlcP)
 void
 display_receiver_buffer (struct rlc_am_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   uint16_t             working_sn, working_sn_index;
   uint16_t             end_sn, end_sn_index;
@@ -251,12 +257,15 @@ display_receiver_buffer (struct rlc_am_entity *rlcP)
     } else {
       msg ("_.");
     }
+
     if ((working_sn_index % 32) == 0) {
       msg ("\n");
     }
+
     working_sn = (working_sn + 1) & SN_12BITS_MASK;
     working_sn_index = working_sn % rlcP->recomputed_configured_rx_window_size;
   }
+
   msg ("\n--------------------------------------\n");
 }
 
@@ -264,7 +273,7 @@ display_receiver_buffer (struct rlc_am_entity *rlcP)
 void
 rlc_am_check_retransmission_buffer (struct rlc_am_entity *rlcP, uint8_t * messageP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   int             error_found = 0;
   uint16_t             working_sn, working_sn_index;
@@ -286,9 +295,11 @@ rlc_am_check_retransmission_buffer (struct rlc_am_entity *rlcP, uint8_t * messag
       rlc_am_display_data_pdu7 (rlcP->retransmission_buffer[working_sn_index]);
       error_found = 1;
     }
+
     working_sn = (working_sn + 1) & SN_12BITS_MASK;
     working_sn_index = working_sn % rlcP->recomputed_configured_tx_window_size;
   }
+
   //---------------------------------------------
   // check if pdu remaining inside the window have the correct value for ack field
   //---------------------------------------------
@@ -308,12 +319,14 @@ rlc_am_check_retransmission_buffer (struct rlc_am_entity *rlcP, uint8_t * messag
         error_found = 1;
       }
     }
+
     working_sn = (working_sn + 1) & SN_12BITS_MASK;
     working_sn_index = working_sn % rlcP->recomputed_configured_tx_window_size;
   }
 
   if ((error_found)) {
     display_protocol_vars_rlc_am (rlcP);
+
     while (1);
   } else {
     msg ("[RLC_AM][RB %d] CHECK RETRANSMISSION BUFFER OK\n", rlcP->rb_id);
@@ -324,7 +337,7 @@ rlc_am_check_retransmission_buffer (struct rlc_am_entity *rlcP, uint8_t * messag
 void
 rlc_am_check_receiver_buffer (struct rlc_am_entity *rlcP, uint8_t * messageP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   int             error_found = 0;
   uint16_t             working_sn, working_sn_index;
@@ -342,9 +355,11 @@ rlc_am_check_receiver_buffer (struct rlc_am_entity *rlcP, uint8_t * messageP)
       msg ("[RLC_AM][RB %d] CHECK RECEIVER BUFFER ERROR %s : REMAINING PDU INDEX %d=0x%04X\n", rlcP->rb_id, messageP, working_sn_index, working_sn_index);
       error_found = 1;
     }
+
     working_sn = (working_sn + 1) & SN_12BITS_MASK;
     working_sn_index = working_sn % rlcP->recomputed_configured_rx_window_size;
   }
+
   if ((error_found)) {
     while (1);
   }
@@ -354,7 +369,7 @@ rlc_am_check_receiver_buffer (struct rlc_am_entity *rlcP, uint8_t * messageP)
 void
 rlc_am_display_data_pdu7 (mem_block_t * pduP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   struct rlc_am_tx_data_pdu_management *pdu_mngt;
   struct rlc_am_pdu_header *rlc_header;
   int             index;
@@ -367,17 +382,21 @@ rlc_am_display_data_pdu7 (mem_block_t * pduP)
 
     msg ("[RLC_AM] DISPLAY DATA PDU %p SN 0x%04X LAST_PDU_OF_SDU %d\n", pduP, pdu_mngt->sn, pdu_mngt->last_pdu_of_sdu);
     msg ("[RLC_AM] DISPLAY DATA PDU HEADER ");
+
     for (index = 0; index < 10; index++) {
       msg ("%02X.", pdu_mngt->first_byte[index]);
     }
+
     msg ("\n");
     //--------------------------------------
     // LINKED SDUs
     //--------------------------------------
     msg ("[RLC_AM] DISPLAY DATA PDU CONTAINS SDU(s) INDEX ");
+
     for (index = 0; index < pdu_mngt->nb_sdu; index++) {
       msg ("%d", pdu_mngt->sdu[index]);
     }
+
     msg ("\n");
     //--------------------------------------
     // LENGTH INDICATORS
@@ -387,42 +406,53 @@ rlc_am_display_data_pdu7 (mem_block_t * pduP)
     if ((rlc_header->byte2 & RLC_HE_MASK) != RLC_HE_SUCC_BYTE_CONTAINS_DATA) {
       msg ("[RLC_AM] DISPLAY DATA PDU CONTAINS LI(s) ");
       nb_li = 0;
+
       while ((li[nb_li] = (rlc_header->li_data_7[nb_li])) & RLC_E_NEXT_FIELD_IS_LI_E) {
         li[nb_li] = li[nb_li] & (~(uint8_t) RLC_E_NEXT_FIELD_IS_LI_E);
         nb_li++;
       }
+
       nb_li++;
+
       while (li_index < nb_li) {
         switch (li[li_index]) {
-            case RLC_LI_LAST_PDU_EXACTLY_FILLED:
-              msg ("LAST_PDU_EXACTLY_FILLED ");
-              break;
-            case RLC_LI_LAST_PDU_ONE_BYTE_SHORT:
-              msg ("LAST_PDU_ONE_BYTE_SHORT ");
-              break;
-            case RLC_LI_PDU_PIGGY_BACKED_STATUS:       // ignore
-              msg ("PDU_PIGGY_BACKED_STATUS ");
-              break;
-            case RLC_LI_PDU_PADDING:
-              msg ("PDU_PADDING ");
-              break;
-            default:           // li is length
-              msg ("LENGTH %d ", li[li_index] >> 1);
+        case RLC_LI_LAST_PDU_EXACTLY_FILLED:
+          msg ("LAST_PDU_EXACTLY_FILLED ");
+          break;
+
+        case RLC_LI_LAST_PDU_ONE_BYTE_SHORT:
+          msg ("LAST_PDU_ONE_BYTE_SHORT ");
+          break;
+
+        case RLC_LI_PDU_PIGGY_BACKED_STATUS:       // ignore
+          msg ("PDU_PIGGY_BACKED_STATUS ");
+          break;
+
+        case RLC_LI_PDU_PADDING:
+          msg ("PDU_PADDING ");
+          break;
+
+        default:           // li is length
+          msg ("LENGTH %d ", li[li_index] >> 1);
         }
+
         li_index++;
       }
     } else {
       msg ("[RLC_AM] DISPLAY DATA PDU CONTAINS NO LI(s) ");
     }
+
     msg ("\n");
 
     //--------------------------------------
     // DATA
     //--------------------------------------
     msg ("[RLC_AM] DISPLAY DATA PDU CONTENT <PDU>");
+
     for (index = 0; index < pdu_mngt->data_size; index++) {
       msg ("%02X.", pdu_mngt->payload[index]);
     }
+
     msg ("</PDU>\n");
 
   } else {
@@ -431,30 +461,31 @@ rlc_am_display_data_pdu7 (mem_block_t * pduP)
 }
 //-----------------------------------------------------------------------------
 void
-rlc_am_stat_req     (struct rlc_am_entity *rlcP, 
-							  unsigned int* tx_pdcp_sdu,
-							  unsigned int* tx_pdcp_sdu_discarded,
-							  unsigned int* tx_retransmit_pdu_unblock,
-							  unsigned int* tx_retransmit_pdu_by_status,
-							  unsigned int* tx_retransmit_pdu,
-							  unsigned int* tx_data_pdu,
-							  unsigned int* tx_control_pdu,
-							  unsigned int* rx_sdu,
-							  unsigned int* rx_error_pdu,  
-							  unsigned int* rx_data_pdu,
-							  unsigned int* rx_data_pdu_out_of_window,
-							  unsigned int* rx_control_pdu) {
-//-----------------------------------------------------------------------------
-			*tx_pdcp_sdu                        = rlcP->stat_tx_pdcp_sdu;
-			*tx_pdcp_sdu_discarded         = rlcP->stat_tx_pdcp_sdu_discarded;
-			*tx_retransmit_pdu_unblock = rlcP->stat_tx_retransmit_pdu_unblock;
-			*tx_retransmit_pdu_by_status = rlcP->stat_tx_retransmit_pdu_by_status;
-			*tx_retransmit_pdu = rlcP->stat_tx_retransmit_pdu;
-			*tx_data_pdu = rlcP->stat_tx_data_pdu;
-			*tx_control_pdu = rlcP->stat_tx_control_pdu;
-			*rx_sdu = rlcP->stat_rx_sdu;
-			*rx_error_pdu = rlcP->stat_rx_error_pdu;
-			*rx_data_pdu = rlcP->stat_rx_data_pdu;
-			*rx_data_pdu_out_of_window = rlcP->stat_rx_data_pdu_out_of_window;
-			*rx_control_pdu = rlcP->stat_rx_control_pdu;
+rlc_am_stat_req     (struct rlc_am_entity *rlcP,
+                     unsigned int* tx_pdcp_sdu,
+                     unsigned int* tx_pdcp_sdu_discarded,
+                     unsigned int* tx_retransmit_pdu_unblock,
+                     unsigned int* tx_retransmit_pdu_by_status,
+                     unsigned int* tx_retransmit_pdu,
+                     unsigned int* tx_data_pdu,
+                     unsigned int* tx_control_pdu,
+                     unsigned int* rx_sdu,
+                     unsigned int* rx_error_pdu,
+                     unsigned int* rx_data_pdu,
+                     unsigned int* rx_data_pdu_out_of_window,
+                     unsigned int* rx_control_pdu)
+{
+  //-----------------------------------------------------------------------------
+  *tx_pdcp_sdu                        = rlcP->stat_tx_pdcp_sdu;
+  *tx_pdcp_sdu_discarded         = rlcP->stat_tx_pdcp_sdu_discarded;
+  *tx_retransmit_pdu_unblock = rlcP->stat_tx_retransmit_pdu_unblock;
+  *tx_retransmit_pdu_by_status = rlcP->stat_tx_retransmit_pdu_by_status;
+  *tx_retransmit_pdu = rlcP->stat_tx_retransmit_pdu;
+  *tx_data_pdu = rlcP->stat_tx_data_pdu;
+  *tx_control_pdu = rlcP->stat_tx_control_pdu;
+  *rx_sdu = rlcP->stat_rx_sdu;
+  *rx_error_pdu = rlcP->stat_rx_error_pdu;
+  *rx_data_pdu = rlcP->stat_rx_data_pdu;
+  *rx_data_pdu_out_of_window = rlcP->stat_rx_data_pdu_out_of_window;
+  *rx_control_pdu = rlcP->stat_rx_control_pdu;
 }

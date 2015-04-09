@@ -38,8 +38,8 @@
 #define GUTI_TYPE_MINIMUM_LENGTH 1
 #define GUTI_TYPE_MAXIMUM_LENGTH 1
 
-#define GUTI_NATIVE	0
-#define GUTI_MAPPED	1
+#define GUTI_NATIVE 0
+#define GUTI_MAPPED 1
 typedef uint8_t GutiType;
 
 int encode_guti_type(GutiType *gutitype, uint8_t iei, uint8_t *buffer, uint32_t len);

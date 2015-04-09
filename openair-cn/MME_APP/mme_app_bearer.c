@@ -53,7 +53,7 @@
 
 int
 mme_app_send_s11_create_session_req(
-    struct ue_context_s * const ue_context_pP)
+  struct ue_context_s * const ue_context_pP)
 {
   uint8_t                     i                 = 0;
   task_id_t                   to_task           = TASK_UNKNOWN;
@@ -76,10 +76,10 @@ mme_app_send_s11_create_session_req(
   MME_APP_DEBUG("Handling imsi %"IMSI_FORMAT"\n", ue_context_pP->imsi);
 
   if (ue_context_pP->sub_status != SS_SERVICE_GRANTED) {
-      /* HSS rejected the bearer creation or roaming is not allowed for this
-       * UE. This result will trigger an ESM Failure message sent to UE.
-       */
-      DevMessage("Not implemented: ACCESS NOT GRANTED, send ESM Failure to NAS\n");
+    /* HSS rejected the bearer creation or roaming is not allowed for this
+     * UE. This result will trigger an ESM Failure message sent to UE.
+     */
+    DevMessage("Not implemented: ACCESS NOT GRANTED, send ESM Failure to NAS\n");
   }
 
   message_p = itti_alloc_new_message(TASK_MME_APP, SGW_CREATE_SESSION_REQUEST);
@@ -114,34 +114,36 @@ mme_app_send_s11_create_session_req(
 
   /* Copy the MSISDN */
   memcpy(
-      session_request_p->msisdn.digit,
-      ue_context_pP->msisdn,
-      ue_context_pP->msisdn_length);
+    session_request_p->msisdn.digit,
+    ue_context_pP->msisdn,
+    ue_context_pP->msisdn_length);
   session_request_p->msisdn.length = ue_context_pP->msisdn_length;
 
   session_request_p->rat_type = RAT_EUTRAN;
 
   /* Copy the subscribed ambr to the sgw create session request message */
   memcpy(
-      &session_request_p->ambr,
-      &ue_context_pP->subscribed_ambr,
-      sizeof(ambr_t));
+    &session_request_p->ambr,
+    &ue_context_pP->subscribed_ambr,
+    sizeof(ambr_t));
 
   if (ue_context_pP->apn_profile.nb_apns == 0) {
-      DevMessage("No APN returned by the HSS");
+    DevMessage("No APN returned by the HSS");
   }
 
   context_identifier = ue_context_pP->apn_profile.context_identifier;
+
   for (i = 0; i < ue_context_pP->apn_profile.nb_apns; i++) {
-      default_apn_p = &ue_context_pP->apn_profile.apn_configuration[i];
-      /* OK we got our default APN */
-      if (default_apn_p->context_identifier == context_identifier)
-          break;
+    default_apn_p = &ue_context_pP->apn_profile.apn_configuration[i];
+
+    /* OK we got our default APN */
+    if (default_apn_p->context_identifier == context_identifier)
+      break;
   }
 
   if (!default_apn_p) {
-      /* Unfortunately we didn't find our default APN... */
-      DevMessage("No default APN found");
+    /* Unfortunately we didn't find our default APN... */
+    DevMessage("No default APN found");
   }
 
   memcpy(&session_request_p->bearer_to_create.bearer_level_qos.gbr,
@@ -150,14 +152,14 @@ mme_app_send_s11_create_session_req(
          &default_apn_p->ambr, sizeof(ambr_t));
 
   session_request_p->bearer_to_create.bearer_level_qos.qci =
-      default_apn_p->subscribed_qos.qci;
+    default_apn_p->subscribed_qos.qci;
 
   session_request_p->bearer_to_create.bearer_level_qos.pvi =
-      default_apn_p->subscribed_qos.allocation_retention_priority.pre_emp_vulnerability;
+    default_apn_p->subscribed_qos.allocation_retention_priority.pre_emp_vulnerability;
   session_request_p->bearer_to_create.bearer_level_qos.pci =
-      default_apn_p->subscribed_qos.allocation_retention_priority.pre_emp_capability;
+    default_apn_p->subscribed_qos.allocation_retention_priority.pre_emp_capability;
   session_request_p->bearer_to_create.bearer_level_qos.pl =
-      default_apn_p->subscribed_qos.allocation_retention_priority.priority_level;
+    default_apn_p->subscribed_qos.allocation_retention_priority.priority_level;
 
   /* Asking for default bearer in initial UE message.
    * Use the address of ue_context as unique TEID: Need to find better here
@@ -176,23 +178,26 @@ mme_app_send_s11_create_session_req(
   /* Set PDN type for pdn_type and PAA even if this IE is redundant */
   session_request_p->pdn_type = default_apn_p->pdn_type;
   session_request_p->paa.pdn_type = default_apn_p->pdn_type;
-  if (default_apn_p->nb_ip_address == 0) {
-      /* UE DHCPv4 allocated ip address */
-      memset(session_request_p->paa.ipv4_address, 0, 4);
-      memset(session_request_p->paa.ipv6_address, 0, 16);
-  } else {
-      uint8_t j;
 
-      for (j = 0; j < default_apn_p->nb_ip_address; j++) {
-          ip_address_t *ip_address;
-          ip_address = &default_apn_p->ip_address[j];
-          if (ip_address->pdn_type == IPv4) {
-              memcpy(session_request_p->paa.ipv4_address, ip_address->address.ipv4_address, 4);
-          } else if (ip_address->pdn_type == IPv6) {
-              memcpy(session_request_p->paa.ipv6_address, ip_address->address.ipv6_address, 16);
-          }
-//             free(ip_address);
+  if (default_apn_p->nb_ip_address == 0) {
+    /* UE DHCPv4 allocated ip address */
+    memset(session_request_p->paa.ipv4_address, 0, 4);
+    memset(session_request_p->paa.ipv6_address, 0, 16);
+  } else {
+    uint8_t j;
+
+    for (j = 0; j < default_apn_p->nb_ip_address; j++) {
+      ip_address_t *ip_address;
+      ip_address = &default_apn_p->ip_address[j];
+
+      if (ip_address->pdn_type == IPv4) {
+        memcpy(session_request_p->paa.ipv4_address, ip_address->address.ipv4_address, 4);
+      } else if (ip_address->pdn_type == IPv6) {
+        memcpy(session_request_p->paa.ipv6_address, ip_address->address.ipv6_address, 16);
       }
+
+      //             free(ip_address);
+    }
   }
 
   config_read_lock(&mme_config);
@@ -215,7 +220,7 @@ mme_app_send_s11_create_session_req(
 
 int
 mme_app_handle_nas_pdn_connectivity_req(
-        nas_pdn_connectivity_req_t * const nas_pdn_connectivity_req_pP)
+  nas_pdn_connectivity_req_t * const nas_pdn_connectivity_req_pP)
 {
   struct ue_context_s *ue_context_p = NULL;
   uint64_t             imsi         = 0;
@@ -228,9 +233,9 @@ mme_app_handle_nas_pdn_connectivity_req(
   MME_APP_DEBUG("Handling imsi %"IMSI_FORMAT"\n", imsi);
 
   if ((ue_context_p = mme_ue_context_exists_imsi(&mme_app_desc.mme_ue_contexts,
-                    imsi)) == NULL) {
-      MME_APP_ERROR("That's embarrassing as we don't know this IMSI\n");
-      return -1;
+                      imsi)) == NULL) {
+    MME_APP_ERROR("That's embarrassing as we don't know this IMSI\n");
+    return -1;
   }
 
   /* Consider the UE authenticated */
@@ -239,15 +244,15 @@ mme_app_handle_nas_pdn_connectivity_req(
   // Temp: save request, in near future merge wisely params in context
   memset(ue_context_p->pending_pdn_connectivity_req_imsi,0, 16);
   AssertFatal((nas_pdn_connectivity_req_pP->imsi_length > 0) &&
-          (nas_pdn_connectivity_req_pP->imsi_length < 16),
-          "BAD IMSI LENGTH %d", nas_pdn_connectivity_req_pP->imsi_length);
+              (nas_pdn_connectivity_req_pP->imsi_length < 16),
+              "BAD IMSI LENGTH %d", nas_pdn_connectivity_req_pP->imsi_length);
 
   AssertFatal((nas_pdn_connectivity_req_pP->imsi_length > 0) &&
-          (nas_pdn_connectivity_req_pP->imsi_length < 16),
-          "STOP ON IMSI LENGTH %d", nas_pdn_connectivity_req_pP->imsi_length);
+              (nas_pdn_connectivity_req_pP->imsi_length < 16),
+              "STOP ON IMSI LENGTH %d", nas_pdn_connectivity_req_pP->imsi_length);
   memcpy(ue_context_p->pending_pdn_connectivity_req_imsi,
-          nas_pdn_connectivity_req_pP->imsi,
-          nas_pdn_connectivity_req_pP->imsi_length);
+         nas_pdn_connectivity_req_pP->imsi,
+         nas_pdn_connectivity_req_pP->imsi_length);
   ue_context_p->pending_pdn_connectivity_req_imsi_length = nas_pdn_connectivity_req_pP->imsi_length;
   DUP_OCTET_STRING(nas_pdn_connectivity_req_pP->apn, ue_context_p->pending_pdn_connectivity_req_apn);
   FREE_OCTET_STRING(nas_pdn_connectivity_req_pP->apn)
@@ -265,11 +270,11 @@ mme_app_handle_nas_pdn_connectivity_req(
   ue_context_p->pending_pdn_connectivity_req_request_type = nas_pdn_connectivity_req_pP->request_type;
 
   //if ((nas_pdn_connectivity_req_pP->apn.value == NULL) || (nas_pdn_connectivity_req_pP->apn.length == 0)) {
-      /* TODO: Get keys... */
-      /* Now generate S6A ULR */
-      return mme_app_send_s6a_update_location_req(ue_context_p);
+  /* TODO: Get keys... */
+  /* Now generate S6A ULR */
+  return mme_app_send_s6a_update_location_req(ue_context_p);
   //} else {
-      //return mme_app_send_s11_create_session_req(ue_context_p);
+  //return mme_app_send_s11_create_session_req(ue_context_p);
 
   //}
   //return -1;
@@ -280,71 +285,75 @@ mme_app_handle_nas_pdn_connectivity_req(
 // sent by NAS
 void
 mme_app_handle_conn_est_cnf(
-        const nas_conn_est_cnf_t * const nas_conn_est_cnf_pP)
+  const nas_conn_est_cnf_t * const nas_conn_est_cnf_pP)
 {
-    struct ue_context_s                    *ue_context_p        = NULL;
-    MessageDef                             *message_p           = NULL;
-    mme_app_connection_establishment_cnf_t *establishment_cnf_p = NULL;
-    bearer_context_t                       *current_bearer_p    = NULL;
-    ebi_t                                   bearer_id           = 0;
-    uint8_t                                 keNB[32];
+  struct ue_context_s                    *ue_context_p        = NULL;
+  MessageDef                             *message_p           = NULL;
+  mme_app_connection_establishment_cnf_t *establishment_cnf_p = NULL;
+  bearer_context_t                       *current_bearer_p    = NULL;
+  ebi_t                                   bearer_id           = 0;
+  uint8_t                                 keNB[32];
 
-    MME_APP_DEBUG("Received NAS_CONNECTION_ESTABLISHMENT_CNF from NAS\n");
+  MME_APP_DEBUG("Received NAS_CONNECTION_ESTABLISHMENT_CNF from NAS\n");
 
-    ue_context_p = mme_ue_context_exists_nas_ue_id(&mme_app_desc.mme_ue_contexts, nas_conn_est_cnf_pP->UEid);
-    if (ue_context_p == NULL) {
-        MME_APP_ERROR("UE context doesn't exist for UE 0x%08X/dec%u\n",
-        		nas_conn_est_cnf_pP->UEid,
-        		nas_conn_est_cnf_pP->UEid);
-        return;
-    }
+  ue_context_p = mme_ue_context_exists_nas_ue_id(&mme_app_desc.mme_ue_contexts, nas_conn_est_cnf_pP->UEid);
 
-    message_p           = itti_alloc_new_message(TASK_MME_APP, MME_APP_CONNECTION_ESTABLISHMENT_CNF);
-    establishment_cnf_p = &message_p->ittiMsg.mme_app_connection_establishment_cnf;
-    memset(establishment_cnf_p, 0, sizeof(mme_app_connection_establishment_cnf_t));
+  if (ue_context_p == NULL) {
+    MME_APP_ERROR("UE context doesn't exist for UE 0x%08X/dec%u\n",
+                  nas_conn_est_cnf_pP->UEid,
+                  nas_conn_est_cnf_pP->UEid);
+    return;
+  }
 
-    memcpy(&establishment_cnf_p->nas_conn_est_cnf,
-            nas_conn_est_cnf_pP,
-            sizeof(nas_conn_est_cnf_t));
+  message_p           = itti_alloc_new_message(TASK_MME_APP, MME_APP_CONNECTION_ESTABLISHMENT_CNF);
+  establishment_cnf_p = &message_p->ittiMsg.mme_app_connection_establishment_cnf;
+  memset(establishment_cnf_p, 0, sizeof(mme_app_connection_establishment_cnf_t));
 
-    bearer_id = ue_context_p->default_bearer_id;
-    current_bearer_p = &ue_context_p->eps_bearers[bearer_id];
-    establishment_cnf_p->eps_bearer_id = bearer_id;
+  memcpy(&establishment_cnf_p->nas_conn_est_cnf,
+         nas_conn_est_cnf_pP,
+         sizeof(nas_conn_est_cnf_t));
 
-    establishment_cnf_p->bearer_s1u_sgw_fteid.interface_type = S1_U_SGW_GTP_U;
-    establishment_cnf_p->bearer_s1u_sgw_fteid.teid = current_bearer_p->s_gw_teid;
-    if ((current_bearer_p->s_gw_address.pdn_type == IPv4) ||
-        (current_bearer_p->s_gw_address.pdn_type == IPv4_AND_v6)) {
-        establishment_cnf_p->bearer_s1u_sgw_fteid.ipv4 = 1;
-        memcpy(&establishment_cnf_p->bearer_s1u_sgw_fteid.ipv4_address,
-                current_bearer_p->s_gw_address.address.ipv4_address,
-                4);
-    }
-    if ((current_bearer_p->s_gw_address.pdn_type == IPv6) ||
-            (current_bearer_p->s_gw_address.pdn_type == IPv4_AND_v6)) {
-            establishment_cnf_p->bearer_s1u_sgw_fteid.ipv6 = 1;
-            memcpy(establishment_cnf_p->bearer_s1u_sgw_fteid.ipv6_address,
-                   current_bearer_p->s_gw_address.address.ipv6_address,
-                   16);
-        }
-    establishment_cnf_p->bearer_qos_qci                    = current_bearer_p->qci;
-    establishment_cnf_p->bearer_qos_prio_level             = current_bearer_p->prio_level;
-    establishment_cnf_p->bearer_qos_pre_emp_vulnerability  = current_bearer_p->pre_emp_vulnerability;
-    establishment_cnf_p->bearer_qos_pre_emp_capability     = current_bearer_p->pre_emp_capability;
+  bearer_id = ue_context_p->default_bearer_id;
+  current_bearer_p = &ue_context_p->eps_bearers[bearer_id];
+  establishment_cnf_p->eps_bearer_id = bearer_id;
+
+  establishment_cnf_p->bearer_s1u_sgw_fteid.interface_type = S1_U_SGW_GTP_U;
+  establishment_cnf_p->bearer_s1u_sgw_fteid.teid = current_bearer_p->s_gw_teid;
+
+  if ((current_bearer_p->s_gw_address.pdn_type == IPv4) ||
+      (current_bearer_p->s_gw_address.pdn_type == IPv4_AND_v6)) {
+    establishment_cnf_p->bearer_s1u_sgw_fteid.ipv4 = 1;
+    memcpy(&establishment_cnf_p->bearer_s1u_sgw_fteid.ipv4_address,
+           current_bearer_p->s_gw_address.address.ipv4_address,
+           4);
+  }
+
+  if ((current_bearer_p->s_gw_address.pdn_type == IPv6) ||
+      (current_bearer_p->s_gw_address.pdn_type == IPv4_AND_v6)) {
+    establishment_cnf_p->bearer_s1u_sgw_fteid.ipv6 = 1;
+    memcpy(establishment_cnf_p->bearer_s1u_sgw_fteid.ipv6_address,
+           current_bearer_p->s_gw_address.address.ipv6_address,
+           16);
+  }
+
+  establishment_cnf_p->bearer_qos_qci                    = current_bearer_p->qci;
+  establishment_cnf_p->bearer_qos_prio_level             = current_bearer_p->prio_level;
+  establishment_cnf_p->bearer_qos_pre_emp_vulnerability  = current_bearer_p->pre_emp_vulnerability;
+  establishment_cnf_p->bearer_qos_pre_emp_capability     = current_bearer_p->pre_emp_capability;
 #warning "Check ue_context_p ambr"
-    establishment_cnf_p->ambr.br_ul                        = ue_context_p->subscribed_ambr.br_ul;
-    establishment_cnf_p->ambr.br_dl                        = ue_context_p->subscribed_ambr.br_dl;
+  establishment_cnf_p->ambr.br_ul                        = ue_context_p->subscribed_ambr.br_ul;
+  establishment_cnf_p->ambr.br_dl                        = ue_context_p->subscribed_ambr.br_dl;
 
-    establishment_cnf_p->security_capabilities_encryption_algorithms = nas_conn_est_cnf_pP->selected_encryption_algorithm;
-    establishment_cnf_p->security_capabilities_integrity_algorithms  = nas_conn_est_cnf_pP->selected_integrity_algorithm;
-    MME_APP_DEBUG("security_capabilities_encryption_algorithms 0x%04X\n", establishment_cnf_p->security_capabilities_encryption_algorithms);
-    MME_APP_DEBUG("security_capabilities_integrity_algorithms  0x%04X\n", establishment_cnf_p->security_capabilities_integrity_algorithms);
+  establishment_cnf_p->security_capabilities_encryption_algorithms = nas_conn_est_cnf_pP->selected_encryption_algorithm;
+  establishment_cnf_p->security_capabilities_integrity_algorithms  = nas_conn_est_cnf_pP->selected_integrity_algorithm;
+  MME_APP_DEBUG("security_capabilities_encryption_algorithms 0x%04X\n", establishment_cnf_p->security_capabilities_encryption_algorithms);
+  MME_APP_DEBUG("security_capabilities_integrity_algorithms  0x%04X\n", establishment_cnf_p->security_capabilities_integrity_algorithms);
 
-    MME_APP_DEBUG("Derive keNB with UL NAS COUNT %x\n", nas_conn_est_cnf_pP->ul_nas_count);
-    derive_keNB(ue_context_p->vector_in_use->kasme, nas_conn_est_cnf_pP->ul_nas_count, keNB); //156
-    memcpy(establishment_cnf_p->keNB, keNB, 32);
+  MME_APP_DEBUG("Derive keNB with UL NAS COUNT %x\n", nas_conn_est_cnf_pP->ul_nas_count);
+  derive_keNB(ue_context_p->vector_in_use->kasme, nas_conn_est_cnf_pP->ul_nas_count, keNB); //156
+  memcpy(establishment_cnf_p->keNB, keNB, 32);
 
-    itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
+  itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
 }
 
 
@@ -352,317 +361,340 @@ mme_app_handle_conn_est_cnf(
 // sent by S1AP
 void
 mme_app_handle_conn_est_ind(
-        const mme_app_connection_establishment_ind_t * const conn_est_ind_pP)
+  const mme_app_connection_establishment_ind_t * const conn_est_ind_pP)
 {
-    struct ue_context_s *ue_context_p  = NULL;
-    MessageDef          *message_p     = NULL;
+  struct ue_context_s *ue_context_p  = NULL;
+  MessageDef          *message_p     = NULL;
 
-    MME_APP_DEBUG("Received MME_APP_CONNECTION_ESTABLISHMENT_IND from S1AP\n");
+  MME_APP_DEBUG("Received MME_APP_CONNECTION_ESTABLISHMENT_IND from S1AP\n");
 
-    ue_context_p = mme_ue_context_exists_mme_ue_s1ap_id(
-            &mme_app_desc.mme_ue_contexts,
-            conn_est_ind_pP->mme_ue_s1ap_id);
-    if (ue_context_p == NULL) {
-        MME_APP_DEBUG("We didn't find this mme_ue_s1ap_id in list of UE: 0x%08x/dec%u\n",
-        		conn_est_ind_pP->mme_ue_s1ap_id,
-        		conn_est_ind_pP->mme_ue_s1ap_id);
-        MME_APP_DEBUG("UE context doesn't exist -> create one\n");
-        if ((ue_context_p = mme_create_new_ue_context()) == NULL) {
-            /* Error during ue context malloc */
-            /* TODO */
-            DevMessage("mme_create_new_ue_context");
-            return;
-        }
-        // S1AP UE ID AND NAS UE ID ARE THE SAME
-        ue_context_p->mme_ue_s1ap_id = conn_est_ind_pP->mme_ue_s1ap_id;
-        ue_context_p->ue_id          = conn_est_ind_pP->mme_ue_s1ap_id;
-        DevAssert(mme_insert_ue_context(&mme_app_desc.mme_ue_contexts, ue_context_p) == 0);
+  ue_context_p = mme_ue_context_exists_mme_ue_s1ap_id(
+                   &mme_app_desc.mme_ue_contexts,
+                   conn_est_ind_pP->mme_ue_s1ap_id);
 
-        // tests
-        ue_context_p = mme_ue_context_exists_mme_ue_s1ap_id(
-                    &mme_app_desc.mme_ue_contexts,
-                    conn_est_ind_pP->mme_ue_s1ap_id);
-        AssertFatal(ue_context_p != NULL, "mme_ue_context_exists_mme_ue_s1ap_id Failed");
-        ue_context_p = mme_ue_context_exists_nas_ue_id(
-                    &mme_app_desc.mme_ue_contexts,
-                    conn_est_ind_pP->mme_ue_s1ap_id);
-        AssertFatal(ue_context_p != NULL, "mme_ue_context_exists_nas_ue_id Failed");
+  if (ue_context_p == NULL) {
+    MME_APP_DEBUG("We didn't find this mme_ue_s1ap_id in list of UE: 0x%08x/dec%u\n",
+                  conn_est_ind_pP->mme_ue_s1ap_id,
+                  conn_est_ind_pP->mme_ue_s1ap_id);
+    MME_APP_DEBUG("UE context doesn't exist -> create one\n");
+
+    if ((ue_context_p = mme_create_new_ue_context()) == NULL) {
+      /* Error during ue context malloc */
+      /* TODO */
+      DevMessage("mme_create_new_ue_context");
+      return;
     }
 
-    message_p  = itti_alloc_new_message(TASK_MME_APP, NAS_CONNECTION_ESTABLISHMENT_IND);
-    memcpy(&NAS_CONN_EST_IND(message_p).nas,
-            &conn_est_ind_pP->nas,
-            sizeof (nas_establish_ind_t));
+    // S1AP UE ID AND NAS UE ID ARE THE SAME
+    ue_context_p->mme_ue_s1ap_id = conn_est_ind_pP->mme_ue_s1ap_id;
+    ue_context_p->ue_id          = conn_est_ind_pP->mme_ue_s1ap_id;
+    DevAssert(mme_insert_ue_context(&mme_app_desc.mme_ue_contexts, ue_context_p) == 0);
 
-    itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
+    // tests
+    ue_context_p = mme_ue_context_exists_mme_ue_s1ap_id(
+                     &mme_app_desc.mme_ue_contexts,
+                     conn_est_ind_pP->mme_ue_s1ap_id);
+    AssertFatal(ue_context_p != NULL, "mme_ue_context_exists_mme_ue_s1ap_id Failed");
+    ue_context_p = mme_ue_context_exists_nas_ue_id(
+                     &mme_app_desc.mme_ue_contexts,
+                     conn_est_ind_pP->mme_ue_s1ap_id);
+    AssertFatal(ue_context_p != NULL, "mme_ue_context_exists_nas_ue_id Failed");
+  }
+
+  message_p  = itti_alloc_new_message(TASK_MME_APP, NAS_CONNECTION_ESTABLISHMENT_IND);
+  memcpy(&NAS_CONN_EST_IND(message_p).nas,
+         &conn_est_ind_pP->nas,
+         sizeof (nas_establish_ind_t));
+
+  itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
 }
 
 
 
 int
 mme_app_handle_create_sess_resp(
-        const SgwCreateSessionResponse * const create_sess_resp_pP)
+  const SgwCreateSessionResponse * const create_sess_resp_pP)
 {
-    struct ue_context_s *ue_context_p     = NULL;
-    bearer_context_t    *current_bearer_p = NULL;
-    MessageDef          *message_p = NULL;
+  struct ue_context_s *ue_context_p     = NULL;
+  bearer_context_t    *current_bearer_p = NULL;
+  MessageDef          *message_p = NULL;
 
-    int16_t bearer_id;
+  int16_t bearer_id;
 
-    DevAssert(create_sess_resp_pP != NULL);
+  DevAssert(create_sess_resp_pP != NULL);
 
-    MME_APP_DEBUG("Received SGW_CREATE_SESSION_RESPONSE from S+P-GW\n");
+  MME_APP_DEBUG("Received SGW_CREATE_SESSION_RESPONSE from S+P-GW\n");
 
-    ue_context_p = mme_ue_context_exists_s11_teid(&mme_app_desc.mme_ue_contexts,
-                                                  create_sess_resp_pP->teid);
-    if (ue_context_p == NULL) {
-        MME_APP_DEBUG("We didn't find this teid in list of UE: %08x\n",
-                      create_sess_resp_pP->teid);
-        return -1;
-    }
+  ue_context_p = mme_ue_context_exists_s11_teid(&mme_app_desc.mme_ue_contexts,
+                 create_sess_resp_pP->teid);
 
-    /* Store the S-GW teid */
-    ue_context_p->sgw_s11_teid = create_sess_resp_pP->s11_sgw_teid.teid;
+  if (ue_context_p == NULL) {
+    MME_APP_DEBUG("We didn't find this teid in list of UE: %08x\n",
+                  create_sess_resp_pP->teid);
+    return -1;
+  }
 
-    //---------------------------------------------------------
-    // Process SgwCreateSessionResponse.bearer_context_created
-    //---------------------------------------------------------
-    bearer_id = create_sess_resp_pP->bearer_context_created.eps_bearer_id/* - 5*/;
-    /* Depending on s11 result we have to send reject or accept for bearers */
-    DevCheck((bearer_id < BEARERS_PER_UE) && (bearer_id >= 0),
-            bearer_id,
-            BEARERS_PER_UE,
-            0);
-    ue_context_p->default_bearer_id = bearer_id;
+  /* Store the S-GW teid */
+  ue_context_p->sgw_s11_teid = create_sess_resp_pP->s11_sgw_teid.teid;
 
-    if (create_sess_resp_pP->bearer_context_created.cause != REQUEST_ACCEPTED) {
-        DevMessage("Cases where bearer cause != REQUEST_ACCEPTED are not handled\n");
-    }
-    DevAssert(create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.interface_type == S1_U_SGW_GTP_U);
+  //---------------------------------------------------------
+  // Process SgwCreateSessionResponse.bearer_context_created
+  //---------------------------------------------------------
+  bearer_id = create_sess_resp_pP->bearer_context_created.eps_bearer_id/* - 5*/;
+  /* Depending on s11 result we have to send reject or accept for bearers */
+  DevCheck((bearer_id < BEARERS_PER_UE) && (bearer_id >= 0),
+           bearer_id,
+           BEARERS_PER_UE,
+           0);
+  ue_context_p->default_bearer_id = bearer_id;
 
-    /* Updating statistics */
-    mme_app_desc.mme_ue_contexts.nb_bearers_managed++;
-    mme_app_desc.mme_ue_contexts.nb_bearers_since_last_stat++;
+  if (create_sess_resp_pP->bearer_context_created.cause != REQUEST_ACCEPTED) {
+    DevMessage("Cases where bearer cause != REQUEST_ACCEPTED are not handled\n");
+  }
 
-    current_bearer_p = &ue_context_p->eps_bearers[bearer_id];
-    current_bearer_p->s_gw_teid = create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.teid;
-    switch (create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.ipv4 +
-        (create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.ipv6 << 1))
-    {
-        default:
-        case 0: {
-            /* No address provided: impossible case */
-            DevMessage("No ip address for user-plane provided...\n");
-        } break;
-        case 1: {
-            /* Only IPv4 address */
-            current_bearer_p->s_gw_address.pdn_type = IPv4;
-            memcpy(current_bearer_p->s_gw_address.address.ipv4_address,
-                   &create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.ipv4_address, 4);
-        } break;
-        case 2: {
-            /* Only IPv6 address */
-            current_bearer_p->s_gw_address.pdn_type = IPv6;
-            memcpy(current_bearer_p->s_gw_address.address.ipv6_address,
-                   create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.ipv6_address, 16);
-        } break;
-        case 3: {
-            /* Both IPv4 and Ipv6 */
-            current_bearer_p->s_gw_address.pdn_type = IPv4_AND_v6;
-            memcpy(current_bearer_p->s_gw_address.address.ipv4_address,
-                   &create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.ipv4_address, 4);
-            memcpy(current_bearer_p->s_gw_address.address.ipv6_address,
-                   create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.ipv6_address, 16);
-        } break;
-    }
-    current_bearer_p->p_gw_teid = create_sess_resp_pP->bearer_context_created.s5_s8_u_pgw_fteid.teid;
-    memset(&current_bearer_p->p_gw_address,0, sizeof(ip_address_t));
-    if (create_sess_resp_pP->bearer_context_created.bearer_level_qos != NULL) {
-        current_bearer_p->qci                    = create_sess_resp_pP->bearer_context_created.bearer_level_qos->qci;
-        current_bearer_p->prio_level             = create_sess_resp_pP->bearer_context_created.bearer_level_qos->pl;
-        current_bearer_p->pre_emp_vulnerability  = create_sess_resp_pP->bearer_context_created.bearer_level_qos->pvi;
-        current_bearer_p->pre_emp_capability     = create_sess_resp_pP->bearer_context_created.bearer_level_qos->pci;
-        MME_APP_DEBUG("%s set qci %u in bearer %u\n",
-                __FUNCTION__,
-                current_bearer_p->qci,
-                ue_context_p->default_bearer_id);
-    } else {
-        // if null, it is not modified
-        //current_bearer_p->qci                    = ue_context_p->pending_pdn_connectivity_req_qos.qci;
+  DevAssert(create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.interface_type == S1_U_SGW_GTP_U);
+
+  /* Updating statistics */
+  mme_app_desc.mme_ue_contexts.nb_bearers_managed++;
+  mme_app_desc.mme_ue_contexts.nb_bearers_since_last_stat++;
+
+  current_bearer_p = &ue_context_p->eps_bearers[bearer_id];
+  current_bearer_p->s_gw_teid = create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.teid;
+
+  switch (create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.ipv4 +
+          (create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.ipv6 << 1)) {
+  default:
+  case 0: {
+    /* No address provided: impossible case */
+    DevMessage("No ip address for user-plane provided...\n");
+  }
+  break;
+
+  case 1: {
+    /* Only IPv4 address */
+    current_bearer_p->s_gw_address.pdn_type = IPv4;
+    memcpy(current_bearer_p->s_gw_address.address.ipv4_address,
+           &create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.ipv4_address, 4);
+  }
+  break;
+
+  case 2: {
+    /* Only IPv6 address */
+    current_bearer_p->s_gw_address.pdn_type = IPv6;
+    memcpy(current_bearer_p->s_gw_address.address.ipv6_address,
+           create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.ipv6_address, 16);
+  }
+  break;
+
+  case 3: {
+    /* Both IPv4 and Ipv6 */
+    current_bearer_p->s_gw_address.pdn_type = IPv4_AND_v6;
+    memcpy(current_bearer_p->s_gw_address.address.ipv4_address,
+           &create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.ipv4_address, 4);
+    memcpy(current_bearer_p->s_gw_address.address.ipv6_address,
+           create_sess_resp_pP->bearer_context_created.s1u_sgw_fteid.ipv6_address, 16);
+  }
+  break;
+  }
+
+  current_bearer_p->p_gw_teid = create_sess_resp_pP->bearer_context_created.s5_s8_u_pgw_fteid.teid;
+  memset(&current_bearer_p->p_gw_address,0, sizeof(ip_address_t));
+
+  if (create_sess_resp_pP->bearer_context_created.bearer_level_qos != NULL) {
+    current_bearer_p->qci                    = create_sess_resp_pP->bearer_context_created.bearer_level_qos->qci;
+    current_bearer_p->prio_level             = create_sess_resp_pP->bearer_context_created.bearer_level_qos->pl;
+    current_bearer_p->pre_emp_vulnerability  = create_sess_resp_pP->bearer_context_created.bearer_level_qos->pvi;
+    current_bearer_p->pre_emp_capability     = create_sess_resp_pP->bearer_context_created.bearer_level_qos->pci;
+    MME_APP_DEBUG("%s set qci %u in bearer %u\n",
+                  __FUNCTION__,
+                  current_bearer_p->qci,
+                  ue_context_p->default_bearer_id);
+  } else {
+    // if null, it is not modified
+    //current_bearer_p->qci                    = ue_context_p->pending_pdn_connectivity_req_qos.qci;
 #warning "may force QCI here to 9"
-        current_bearer_p->qci                    = 9;
-        current_bearer_p->prio_level             = 1;
-        current_bearer_p->pre_emp_vulnerability  = 0;
-        current_bearer_p->pre_emp_capability     = 0;
-        MME_APP_DEBUG("%s set qci %u in bearer %u (qos not modified by S/P-GW)\n",
-                __FUNCTION__,
-                current_bearer_p->qci,
-                ue_context_p->default_bearer_id);
+    current_bearer_p->qci                    = 9;
+    current_bearer_p->prio_level             = 1;
+    current_bearer_p->pre_emp_vulnerability  = 0;
+    current_bearer_p->pre_emp_capability     = 0;
+    MME_APP_DEBUG("%s set qci %u in bearer %u (qos not modified by S/P-GW)\n",
+                  __FUNCTION__,
+                  current_bearer_p->qci,
+                  ue_context_p->default_bearer_id);
+  }
+
+  mme_app_dump_ue_contexts(&mme_app_desc.mme_ue_contexts);
+
+  {
+    //uint8_t *keNB = NULL;
+
+    message_p = itti_alloc_new_message(TASK_MME_APP, NAS_PDN_CONNECTIVITY_RSP);
+    memset((void*)&message_p->ittiMsg.nas_pdn_connectivity_rsp,
+           0,
+           sizeof(nas_pdn_connectivity_rsp_t));
+
+    // moved to NAS_CONNECTION_ESTABLISHMENT_CONF, keNB not handled in NAS MME
+    //derive_keNB(ue_context_p->vector_in_use->kasme, 156, &keNB);
+    //memcpy(NAS_PDN_CONNECTIVITY_RSP(message_p).keNB, keNB, 32);
+
+    //free(keNB);
+
+    NAS_PDN_CONNECTIVITY_RSP(message_p).pti            = ue_context_p->pending_pdn_connectivity_req_pti;   // NAS internal ref
+    NAS_PDN_CONNECTIVITY_RSP(message_p).ue_id          = ue_context_p->pending_pdn_connectivity_req_ue_id; // NAS internal ref
+
+    // TO REWORK:
+    if ((ue_context_p->pending_pdn_connectivity_req_apn.value != NULL)
+        && (ue_context_p->pending_pdn_connectivity_req_apn.length != 0)) {
+      DUP_OCTET_STRING(
+        ue_context_p->pending_pdn_connectivity_req_apn,
+        NAS_PDN_CONNECTIVITY_RSP(message_p).apn);
+      MME_APP_DEBUG("SET APN FROM NAS PDN CONNECTIVITY CREATE: %s\n", NAS_PDN_CONNECTIVITY_RSP(message_p).apn.value);
+    } else {
+      int i;
+      context_identifier_t context_identifier = ue_context_p->apn_profile.context_identifier;
+
+      for (i = 0; i < ue_context_p->apn_profile.nb_apns; i++) {
+        if (ue_context_p->apn_profile.apn_configuration[i].context_identifier == context_identifier) {
+          AssertFatal(ue_context_p->apn_profile.apn_configuration[i].service_selection_length > 0, "Bad APN string (len = 0)");
+
+          if (ue_context_p->apn_profile.apn_configuration[i].service_selection_length > 0) {
+            NAS_PDN_CONNECTIVITY_RSP(message_p).apn.value  = malloc(ue_context_p->apn_profile.apn_configuration[i].service_selection_length + 1);
+            NAS_PDN_CONNECTIVITY_RSP(message_p).apn.length = ue_context_p->apn_profile.apn_configuration[i].service_selection_length;
+            AssertFatal(ue_context_p->apn_profile.apn_configuration[i].service_selection_length <= APN_MAX_LENGTH,
+                        "Bad APN string length %d",
+                        ue_context_p->apn_profile.apn_configuration[i].service_selection_length);
+            memcpy(NAS_PDN_CONNECTIVITY_RSP(message_p).apn.value,
+                   ue_context_p->apn_profile.apn_configuration[i].service_selection,
+                   ue_context_p->apn_profile.apn_configuration[i].service_selection_length);
+            NAS_PDN_CONNECTIVITY_RSP(message_p).apn.value[ue_context_p->apn_profile.apn_configuration[i].service_selection_length] = '\0';
+            MME_APP_DEBUG("SET APN FROM HSS ULA: %s\n", NAS_PDN_CONNECTIVITY_RSP(message_p).apn.value);
+            break;
+          }
+        }
+      }
     }
 
-    mme_app_dump_ue_contexts(&mme_app_desc.mme_ue_contexts);
+    MME_APP_DEBUG("APN: %s\n", NAS_PDN_CONNECTIVITY_RSP(message_p).apn.value);
 
-    {
-        //uint8_t *keNB = NULL;
+    switch (create_sess_resp_pP->paa.pdn_type) {
+    case IPv4:
+      NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length = 4;
+      NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value  = malloc(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length+1);
+      DevAssert(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value != NULL);
+      memcpy(
+        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value,
+        create_sess_resp_pP->paa.ipv4_address,
+        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length);
+      NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value[NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length] = '0';
+      break;
 
-        message_p = itti_alloc_new_message(TASK_MME_APP, NAS_PDN_CONNECTIVITY_RSP);
-        memset((void*)&message_p->ittiMsg.nas_pdn_connectivity_rsp,
-                0,
-                sizeof(nas_pdn_connectivity_rsp_t));
+    case IPv6:
+      DevAssert(create_sess_resp_pP->paa.ipv6_prefix_length == 64); // NAS seems to only support 64 bits
+      NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length = create_sess_resp_pP->paa.ipv6_prefix_length/8;
+      NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value  = malloc(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length+1);
+      DevAssert(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value != NULL);
+      memcpy(
+        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value,
+        create_sess_resp_pP->paa.ipv6_address,
+        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length);
+      NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value[NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length] = '0';
+      break;
 
-        // moved to NAS_CONNECTION_ESTABLISHMENT_CONF, keNB not handled in NAS MME
-        //derive_keNB(ue_context_p->vector_in_use->kasme, 156, &keNB);
-        //memcpy(NAS_PDN_CONNECTIVITY_RSP(message_p).keNB, keNB, 32);
+    case IPv4_AND_v6:
+      DevAssert(create_sess_resp_pP->paa.ipv6_prefix_length == 64); // NAS seems to only support 64 bits
+      NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length = 4 + create_sess_resp_pP->paa.ipv6_prefix_length/8;
+      NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value  = malloc(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length+1);
+      DevAssert(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value != NULL);
+      memcpy(
+        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value,
+        create_sess_resp_pP->paa.ipv4_address,
+        4);
+      memcpy(
+        &NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value[4],
+        create_sess_resp_pP->paa.ipv6_address,
+        create_sess_resp_pP->paa.ipv6_prefix_length/8);
+      NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value[NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length] = '0';
+      break;
 
-        //free(keNB);
+    case IPv4_OR_v6:
+      NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length = 4;
+      NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value  = malloc(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length+1);
+      DevAssert(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value != NULL);
+      memcpy(
+        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value,
+        create_sess_resp_pP->paa.ipv4_address,
+        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length);
+      NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value[NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length] = '0';
+      break;
 
-        NAS_PDN_CONNECTIVITY_RSP(message_p).pti            = ue_context_p->pending_pdn_connectivity_req_pti;   // NAS internal ref
-        NAS_PDN_CONNECTIVITY_RSP(message_p).ue_id          = ue_context_p->pending_pdn_connectivity_req_ue_id; // NAS internal ref
-        // TO REWORK:
-        if ((ue_context_p->pending_pdn_connectivity_req_apn.value != NULL)
-            && (ue_context_p->pending_pdn_connectivity_req_apn.length != 0)) {
-            DUP_OCTET_STRING(
-                    ue_context_p->pending_pdn_connectivity_req_apn,
-                    NAS_PDN_CONNECTIVITY_RSP(message_p).apn);
-            MME_APP_DEBUG("SET APN FROM NAS PDN CONNECTIVITY CREATE: %s\n", NAS_PDN_CONNECTIVITY_RSP(message_p).apn.value);
-        } else {
-            int i;
-            context_identifier_t context_identifier = ue_context_p->apn_profile.context_identifier;
-            for (i = 0; i < ue_context_p->apn_profile.nb_apns; i++) {
-                if (ue_context_p->apn_profile.apn_configuration[i].context_identifier == context_identifier) {
-                    AssertFatal(ue_context_p->apn_profile.apn_configuration[i].service_selection_length > 0, "Bad APN string (len = 0)");
-                    if (ue_context_p->apn_profile.apn_configuration[i].service_selection_length > 0) {
-                        NAS_PDN_CONNECTIVITY_RSP(message_p).apn.value  = malloc(ue_context_p->apn_profile.apn_configuration[i].service_selection_length + 1);
-                        NAS_PDN_CONNECTIVITY_RSP(message_p).apn.length = ue_context_p->apn_profile.apn_configuration[i].service_selection_length;
-                        AssertFatal(ue_context_p->apn_profile.apn_configuration[i].service_selection_length <= APN_MAX_LENGTH,
-                                "Bad APN string length %d",
-                                ue_context_p->apn_profile.apn_configuration[i].service_selection_length);
-                        memcpy(NAS_PDN_CONNECTIVITY_RSP(message_p).apn.value,
-                                ue_context_p->apn_profile.apn_configuration[i].service_selection,
-                                ue_context_p->apn_profile.apn_configuration[i].service_selection_length);
-                        NAS_PDN_CONNECTIVITY_RSP(message_p).apn.value[ue_context_p->apn_profile.apn_configuration[i].service_selection_length] = '\0';
-                        MME_APP_DEBUG("SET APN FROM HSS ULA: %s\n", NAS_PDN_CONNECTIVITY_RSP(message_p).apn.value);
-                        break;
-                    }
-                }
-            }
-        }
-        MME_APP_DEBUG("APN: %s\n", NAS_PDN_CONNECTIVITY_RSP(message_p).apn.value);
+    default:
+      DevAssert(0);
+    }
 
-        switch (create_sess_resp_pP->paa.pdn_type) {
-            case IPv4:
-                NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length = 4;
-                NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value  = malloc(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length+1);
-                DevAssert(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value != NULL);
-                memcpy(
-                        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value,
-                        create_sess_resp_pP->paa.ipv4_address,
-                        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length);
-                NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value[NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length] = '0';
-                break;
-            case IPv6:
-                DevAssert(create_sess_resp_pP->paa.ipv6_prefix_length == 64); // NAS seems to only support 64 bits
-                NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length = create_sess_resp_pP->paa.ipv6_prefix_length/8;
-                NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value  = malloc(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length+1);
-                DevAssert(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value != NULL);
-                memcpy(
-                        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value,
-                        create_sess_resp_pP->paa.ipv6_address,
-                        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length);
-                NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value[NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length] = '0';
-                break;
-            case IPv4_AND_v6:
-                DevAssert(create_sess_resp_pP->paa.ipv6_prefix_length == 64); // NAS seems to only support 64 bits
-                NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length = 4 + create_sess_resp_pP->paa.ipv6_prefix_length/8;
-                NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value  = malloc(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length+1);
-                DevAssert(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value != NULL);
-                memcpy(
-                        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value,
-                        create_sess_resp_pP->paa.ipv4_address,
-                        4);
-                memcpy(
-                        &NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value[4],
-                        create_sess_resp_pP->paa.ipv6_address,
-                        create_sess_resp_pP->paa.ipv6_prefix_length/8);
-                NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value[NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length] = '0';
-                break;
-            case IPv4_OR_v6:
-                NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length = 4;
-                NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value  = malloc(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length+1);
-                DevAssert(NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value != NULL);
-                memcpy(
-                        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value,
-                        create_sess_resp_pP->paa.ipv4_address,
-                        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length);
-                NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.value[NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_addr.length] = '0';
-                break;
-            default:
-                DevAssert(0);
-        }
-
-        NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_type       = create_sess_resp_pP->paa.pdn_type;
-        NAS_PDN_CONNECTIVITY_RSP(message_p).proc_data      = ue_context_p->pending_pdn_connectivity_req_proc_data;    // NAS internal ref
-        ue_context_p->pending_pdn_connectivity_req_proc_data = NULL;
+    NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_type       = create_sess_resp_pP->paa.pdn_type;
+    NAS_PDN_CONNECTIVITY_RSP(message_p).proc_data      = ue_context_p->pending_pdn_connectivity_req_proc_data;    // NAS internal ref
+    ue_context_p->pending_pdn_connectivity_req_proc_data = NULL;
 
 #warning "QOS hardcoded here"
-        //memcpy(&NAS_PDN_CONNECTIVITY_RSP(message_p).qos,
-        //        &ue_context_p->pending_pdn_connectivity_req_qos,
-        //        sizeof(network_qos_t));
-        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.gbrUL    = 64;  /* 64=64kb/s   Guaranteed Bit Rate for uplink   */
-        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.gbrDL    = 120; /* 120=512kb/s Guaranteed Bit Rate for downlink */
-        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.mbrUL    = 72; /* 72=128kb/s   Maximum Bit Rate for uplink      */
-        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.mbrDL    = 135; /*135=1024kb/s Maximum Bit Rate for downlink    */
-        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.qci      = 9; /* QoS Class Identifier                           */
+    //memcpy(&NAS_PDN_CONNECTIVITY_RSP(message_p).qos,
+    //        &ue_context_p->pending_pdn_connectivity_req_qos,
+    //        sizeof(network_qos_t));
+    NAS_PDN_CONNECTIVITY_RSP(message_p).qos.gbrUL    = 64;  /* 64=64kb/s   Guaranteed Bit Rate for uplink   */
+    NAS_PDN_CONNECTIVITY_RSP(message_p).qos.gbrDL    = 120; /* 120=512kb/s Guaranteed Bit Rate for downlink */
+    NAS_PDN_CONNECTIVITY_RSP(message_p).qos.mbrUL    = 72; /* 72=128kb/s   Maximum Bit Rate for uplink      */
+    NAS_PDN_CONNECTIVITY_RSP(message_p).qos.mbrDL    = 135; /*135=1024kb/s Maximum Bit Rate for downlink    */
+    NAS_PDN_CONNECTIVITY_RSP(message_p).qos.qci      = 9; /* QoS Class Identifier                           */
 
-        NAS_PDN_CONNECTIVITY_RSP(message_p).request_type   = ue_context_p->pending_pdn_connectivity_req_request_type; // NAS internal ref
-        ue_context_p->pending_pdn_connectivity_req_request_type = 0;
+    NAS_PDN_CONNECTIVITY_RSP(message_p).request_type   = ue_context_p->pending_pdn_connectivity_req_request_type; // NAS internal ref
+    ue_context_p->pending_pdn_connectivity_req_request_type = 0;
 
-        // here at this point OctetString are saved in resp, no loss of memory (apn, pdn_addr)
+    // here at this point OctetString are saved in resp, no loss of memory (apn, pdn_addr)
 
-        NAS_PDN_CONNECTIVITY_RSP(message_p).eNB_ue_s1ap_id = ue_context_p->eNB_ue_s1ap_id;
-        NAS_PDN_CONNECTIVITY_RSP(message_p).mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
+    NAS_PDN_CONNECTIVITY_RSP(message_p).eNB_ue_s1ap_id = ue_context_p->eNB_ue_s1ap_id;
+    NAS_PDN_CONNECTIVITY_RSP(message_p).mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
 
-        NAS_PDN_CONNECTIVITY_RSP(message_p).ebi = bearer_id;
+    NAS_PDN_CONNECTIVITY_RSP(message_p).ebi = bearer_id;
 
-        NAS_PDN_CONNECTIVITY_RSP(message_p).qci = current_bearer_p->qci;
-        NAS_PDN_CONNECTIVITY_RSP(message_p).prio_level = current_bearer_p->prio_level;
-        NAS_PDN_CONNECTIVITY_RSP(message_p).pre_emp_vulnerability = current_bearer_p->pre_emp_vulnerability;
-        NAS_PDN_CONNECTIVITY_RSP(message_p).pre_emp_capability = current_bearer_p->pre_emp_capability;
+    NAS_PDN_CONNECTIVITY_RSP(message_p).qci = current_bearer_p->qci;
+    NAS_PDN_CONNECTIVITY_RSP(message_p).prio_level = current_bearer_p->prio_level;
+    NAS_PDN_CONNECTIVITY_RSP(message_p).pre_emp_vulnerability = current_bearer_p->pre_emp_vulnerability;
+    NAS_PDN_CONNECTIVITY_RSP(message_p).pre_emp_capability = current_bearer_p->pre_emp_capability;
 
-        NAS_PDN_CONNECTIVITY_RSP(message_p).sgw_s1u_teid = current_bearer_p->s_gw_teid;
-        memcpy(&NAS_PDN_CONNECTIVITY_RSP(message_p).sgw_s1u_address,
-               &current_bearer_p->s_gw_address, sizeof(ip_address_t));
+    NAS_PDN_CONNECTIVITY_RSP(message_p).sgw_s1u_teid = current_bearer_p->s_gw_teid;
+    memcpy(&NAS_PDN_CONNECTIVITY_RSP(message_p).sgw_s1u_address,
+           &current_bearer_p->s_gw_address, sizeof(ip_address_t));
 
-        NAS_PDN_CONNECTIVITY_RSP(message_p).ambr.br_ul = ue_context_p->subscribed_ambr.br_ul;
-        NAS_PDN_CONNECTIVITY_RSP(message_p).ambr.br_dl = ue_context_p->subscribed_ambr.br_dl;
+    NAS_PDN_CONNECTIVITY_RSP(message_p).ambr.br_ul = ue_context_p->subscribed_ambr.br_ul;
+    NAS_PDN_CONNECTIVITY_RSP(message_p).ambr.br_dl = ue_context_p->subscribed_ambr.br_dl;
 
 
-        return itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
-    }
-    return 0;
+    return itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
+  }
+  return 0;
 }
 
 
 
 void
 mme_app_handle_initial_context_setup_rsp(
-        const mme_app_initial_context_setup_rsp_t * const initial_ctxt_setup_rsp_pP)
+  const mme_app_initial_context_setup_rsp_t * const initial_ctxt_setup_rsp_pP)
 {
-    struct ue_context_s *ue_context_p  = NULL;
-    MessageDef          *message_p     = NULL;
-    task_id_t            to_task       = TASK_UNKNOWN;
+  struct ue_context_s *ue_context_p  = NULL;
+  MessageDef          *message_p     = NULL;
+  task_id_t            to_task       = TASK_UNKNOWN;
 
-    MME_APP_DEBUG("Received MME_APP_INITIAL_CONTEXT_SETUP_RSP from S1AP\n");
+  MME_APP_DEBUG("Received MME_APP_INITIAL_CONTEXT_SETUP_RSP from S1AP\n");
 
-    ue_context_p = mme_ue_context_exists_mme_ue_s1ap_id(
-            &mme_app_desc.mme_ue_contexts,
-            initial_ctxt_setup_rsp_pP->mme_ue_s1ap_id);
-    if (ue_context_p == NULL) {
-        MME_APP_DEBUG("We didn't find this mme_ue_s1ap_id in list of UE: %08x %d(dec)\n",
-                initial_ctxt_setup_rsp_pP->mme_ue_s1ap_id,
-                initial_ctxt_setup_rsp_pP->mme_ue_s1ap_id);
-        return;
-    }
+  ue_context_p = mme_ue_context_exists_mme_ue_s1ap_id(
+                   &mme_app_desc.mme_ue_contexts,
+                   initial_ctxt_setup_rsp_pP->mme_ue_s1ap_id);
+
+  if (ue_context_p == NULL) {
+    MME_APP_DEBUG("We didn't find this mme_ue_s1ap_id in list of UE: %08x %d(dec)\n",
+                  initial_ctxt_setup_rsp_pP->mme_ue_s1ap_id,
+                  initial_ctxt_setup_rsp_pP->mme_ue_s1ap_id);
+    return;
+  }
 
 #if !defined(ENABLE_STANDALONE_EPC)
   to_task = TASK_S11;
@@ -672,29 +704,29 @@ mme_app_handle_initial_context_setup_rsp(
 
   message_p = itti_alloc_new_message(TASK_MME_APP, SGW_MODIFY_BEARER_REQUEST);
 
-    AssertFatal(message_p != NULL, "itti_alloc_new_message Failed");
-    memset((void*)&message_p->ittiMsg.sgwModifyBearerRequest,
-            0,
-            sizeof(SgwModifyBearerRequest));
+  AssertFatal(message_p != NULL, "itti_alloc_new_message Failed");
+  memset((void*)&message_p->ittiMsg.sgwModifyBearerRequest,
+         0,
+         sizeof(SgwModifyBearerRequest));
 
-    SGW_MODIFY_BEARER_REQUEST(message_p).teid                      = ue_context_p->sgw_s11_teid;
+  SGW_MODIFY_BEARER_REQUEST(message_p).teid                      = ue_context_p->sgw_s11_teid;
 
-    /* Delay Value in integer multiples of 50 millisecs, or zero */
-    SGW_MODIFY_BEARER_REQUEST(message_p).delay_dl_packet_notif_req = 0; // TO DO
+  /* Delay Value in integer multiples of 50 millisecs, or zero */
+  SGW_MODIFY_BEARER_REQUEST(message_p).delay_dl_packet_notif_req = 0; // TO DO
 
-    SGW_MODIFY_BEARER_REQUEST(message_p).bearer_context_to_modify.eps_bearer_id  = initial_ctxt_setup_rsp_pP->eps_bearer_id;
-    memcpy(&SGW_MODIFY_BEARER_REQUEST(message_p).bearer_context_to_modify.s1_eNB_fteid,
-            &initial_ctxt_setup_rsp_pP->bearer_s1u_enb_fteid,
-            sizeof(SGW_MODIFY_BEARER_REQUEST(message_p).bearer_context_to_modify.s1_eNB_fteid));
+  SGW_MODIFY_BEARER_REQUEST(message_p).bearer_context_to_modify.eps_bearer_id  = initial_ctxt_setup_rsp_pP->eps_bearer_id;
+  memcpy(&SGW_MODIFY_BEARER_REQUEST(message_p).bearer_context_to_modify.s1_eNB_fteid,
+         &initial_ctxt_setup_rsp_pP->bearer_s1u_enb_fteid,
+         sizeof(SGW_MODIFY_BEARER_REQUEST(message_p).bearer_context_to_modify.s1_eNB_fteid));
 
-    SGW_MODIFY_BEARER_REQUEST(message_p).mme_fq_csid.node_id_type  = GLOBAL_UNICAST_IPv4; // TO DO
-    SGW_MODIFY_BEARER_REQUEST(message_p).mme_fq_csid.csid          = 0; // TO DO ...
-    SGW_MODIFY_BEARER_REQUEST(message_p).indication_flags          = 0; // TO DO
-    SGW_MODIFY_BEARER_REQUEST(message_p).rat_type                  = RAT_EUTRAN;
+  SGW_MODIFY_BEARER_REQUEST(message_p).mme_fq_csid.node_id_type  = GLOBAL_UNICAST_IPv4; // TO DO
+  SGW_MODIFY_BEARER_REQUEST(message_p).mme_fq_csid.csid          = 0; // TO DO ...
+  SGW_MODIFY_BEARER_REQUEST(message_p).indication_flags          = 0; // TO DO
+  SGW_MODIFY_BEARER_REQUEST(message_p).rat_type                  = RAT_EUTRAN;
 
-    /* S11 stack specific parameter. Not used in standalone epc mode */
-    SGW_MODIFY_BEARER_REQUEST(message_p).trxn                      = NULL;
+  /* S11 stack specific parameter. Not used in standalone epc mode */
+  SGW_MODIFY_BEARER_REQUEST(message_p).trxn                      = NULL;
 
-    itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+  itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
 }
 

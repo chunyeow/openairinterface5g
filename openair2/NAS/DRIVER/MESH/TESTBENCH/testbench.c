@@ -32,17 +32,18 @@ struct msghdr msg;
 void foo( int sig )
 {
 
-   printf("I got cntl-C, closing socket\n");
-   
+  printf("I got cntl-C, closing socket\n");
 
-   close(sock_fd);
-   exit(-1);
+
+  close(sock_fd);
+  exit(-1);
 }
 
 
 #define NAS_NETLINK_ID 31
 
-void main() {
+void main()
+{
 
 
   struct sigaction newaction;
@@ -51,12 +52,12 @@ void main() {
   int len;
 
   newaction.sa_handler = foo;
-   
+
   if ( sigaction( SIGINT, &newaction, NULL ) == -1)
     perror("Could not install the new signal handler");
 
   sock_fd = socket(PF_NETLINK, SOCK_RAW,NAS_NETLINK_ID);
-  
+
   printf("Opened socket with fd %d\n",sock_fd);
 
   ret = fcntl(sock_fd,F_SETFL,O_NONBLOCK);
@@ -67,20 +68,20 @@ void main() {
   src_addr.nl_pid = 1;//getpid();  /* self pid */
   src_addr.nl_groups = 0;  /* not in mcast groups */
   ret = bind(sock_fd, (struct sockaddr*)&src_addr,
-	     sizeof(src_addr));
+             sizeof(src_addr));
   printf("bind returns %d\n",ret);
 
   memset(&dest_addr, 0, sizeof(dest_addr));
   dest_addr.nl_family = AF_NETLINK;
   dest_addr.nl_pid = 0;   /* For Linux Kernel */
   dest_addr.nl_groups = 0; /* unicast */
-  
+
   nlh=(struct nlmsghdr *)malloc(NLMSG_SPACE(MAX_PAYLOAD));
   /* Fill the netlink message header */
   nlh->nlmsg_len = NLMSG_SPACE(MAX_PAYLOAD);
   nlh->nlmsg_pid = 1;//getpid();  /* self pid */
   nlh->nlmsg_flags = 0;
-  
+
   iov.iov_base = (void *)nlh;
   iov.iov_len = nlh->nlmsg_len;
   memset(&msg,0,sizeof(msg));
@@ -88,34 +89,36 @@ void main() {
   msg.msg_namelen = sizeof(dest_addr);
   msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
-  
-  
+
+
   /* Read message from kernel */
   memset(nlh, 0, NLMSG_SPACE(MAX_PAYLOAD));
+
   while (1) {
     len = recvmsg(sock_fd, &msg, 0);
 
-  
+
     if (len<0) {
-      
-      //	exit(-1);
-    }
-    else {
-    printf("Received socket with length %d (nlmsg_len = %d)\n",len,nlh->nlmsg_len);
+
+      //  exit(-1);
+    } else {
+      printf("Received socket with length %d (nlmsg_len = %d)\n",len,nlh->nlmsg_len);
     }
 
     usleep(1000);
     i=i+1;
+
     if ((i % 100) == 0)
       printf("%d\n",i);
 
     /*
     for (i=0;i<nlh->nlmsg_len - sizeof(struct nlmsghdr);i++) {
       printf("%x ",
-	     ((unsigned char *)NLMSG_DATA(nlh))[i]);
-	     }
-	     */
+       ((unsigned char *)NLMSG_DATA(nlh))[i]);
+       }
+       */
   }
+
   /* Close Netlink Socket */
 
 }

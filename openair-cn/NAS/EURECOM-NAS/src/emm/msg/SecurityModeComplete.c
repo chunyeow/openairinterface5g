@@ -38,61 +38,63 @@
 
 int decode_security_mode_complete(security_mode_complete_msg *security_mode_complete, uint8_t *buffer, uint32_t len)
 {
-    uint32_t decoded = 0;
-    int decoded_result = 0;
+  uint32_t decoded = 0;
+  int decoded_result = 0;
 
-    // Check if we got a NULL pointer and if buffer length is >= minimum length expected for the message.
-    CHECK_PDU_POINTER_AND_LENGTH_DECODER(buffer, SECURITY_MODE_COMPLETE_MINIMUM_LENGTH, len);
+  // Check if we got a NULL pointer and if buffer length is >= minimum length expected for the message.
+  CHECK_PDU_POINTER_AND_LENGTH_DECODER(buffer, SECURITY_MODE_COMPLETE_MINIMUM_LENGTH, len);
 
-    /* Decoding mandatory fields */
-    /* Decoding optional fields */
-    while(len - decoded > 0)
-    {
-        uint8_t ieiDecoded = *(buffer + decoded);
-        /* Type | value iei are below 0x80 so just return the first 4 bits */
-        if (ieiDecoded >= 0x80)
-            ieiDecoded = ieiDecoded & 0xf0;
-        switch(ieiDecoded)
-        {
-            case SECURITY_MODE_COMPLETE_IMEISV_IEI:
-                if ((decoded_result =
-                    decode_mobile_identity(&security_mode_complete->imeisv,
-                    SECURITY_MODE_COMPLETE_IMEISV_IEI, buffer + decoded, len -
-                    decoded)) <= 0)
-                    return decoded_result;
-                decoded += decoded_result;
-                /* Set corresponding mask to 1 in presencemask */
-                security_mode_complete->presencemask |= SECURITY_MODE_COMPLETE_IMEISV_PRESENT;
-                break;
-            default:
-                errorCodeDecoder = TLV_DECODE_UNEXPECTED_IEI;
-                return TLV_DECODE_UNEXPECTED_IEI;
-        }
+  /* Decoding mandatory fields */
+  /* Decoding optional fields */
+  while(len - decoded > 0) {
+    uint8_t ieiDecoded = *(buffer + decoded);
+
+    /* Type | value iei are below 0x80 so just return the first 4 bits */
+    if (ieiDecoded >= 0x80)
+      ieiDecoded = ieiDecoded & 0xf0;
+
+    switch(ieiDecoded) {
+    case SECURITY_MODE_COMPLETE_IMEISV_IEI:
+      if ((decoded_result =
+             decode_mobile_identity(&security_mode_complete->imeisv,
+                                    SECURITY_MODE_COMPLETE_IMEISV_IEI, buffer + decoded, len -
+                                    decoded)) <= 0)
+        return decoded_result;
+
+      decoded += decoded_result;
+      /* Set corresponding mask to 1 in presencemask */
+      security_mode_complete->presencemask |= SECURITY_MODE_COMPLETE_IMEISV_PRESENT;
+      break;
+
+    default:
+      errorCodeDecoder = TLV_DECODE_UNEXPECTED_IEI;
+      return TLV_DECODE_UNEXPECTED_IEI;
     }
-    return decoded;
+  }
+
+  return decoded;
 }
 
 int encode_security_mode_complete(security_mode_complete_msg *security_mode_complete, uint8_t *buffer, uint32_t len)
 {
-    int encoded = 0;
-    int encode_result = 0;
+  int encoded = 0;
+  int encode_result = 0;
 
-    /* Checking IEI and pointer */
-    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(buffer, SECURITY_MODE_COMPLETE_MINIMUM_LENGTH, len);
+  /* Checking IEI and pointer */
+  CHECK_PDU_POINTER_AND_LENGTH_ENCODER(buffer, SECURITY_MODE_COMPLETE_MINIMUM_LENGTH, len);
 
-    if ((security_mode_complete->presencemask & SECURITY_MODE_COMPLETE_IMEISV_PRESENT)
-        == SECURITY_MODE_COMPLETE_IMEISV_PRESENT)
-    {
-        if ((encode_result =
-             encode_mobile_identity(&security_mode_complete->imeisv,
-             SECURITY_MODE_COMPLETE_IMEISV_IEI, buffer + encoded, len -
-             encoded)) < 0)
-            // Return in case of error
-            return encode_result;
-        else
-            encoded += encode_result;
-    }
+  if ((security_mode_complete->presencemask & SECURITY_MODE_COMPLETE_IMEISV_PRESENT)
+      == SECURITY_MODE_COMPLETE_IMEISV_PRESENT) {
+    if ((encode_result =
+           encode_mobile_identity(&security_mode_complete->imeisv,
+                                  SECURITY_MODE_COMPLETE_IMEISV_IEI, buffer + encoded, len -
+                                  encoded)) < 0)
+      // Return in case of error
+      return encode_result;
+    else
+      encoded += encode_result;
+  }
 
-    return encoded;
+  return encoded;
 }
 

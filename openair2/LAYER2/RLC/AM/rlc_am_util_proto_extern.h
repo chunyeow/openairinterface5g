@@ -40,19 +40,19 @@
 #        include "rlc_am_entity.h"
 #        include "mem_block.h"
 //-----------------------------------------------------------------------------
-extern void     rlc_am_stat_req     (struct rlc_am_entity *rlcP, 
-							  unsigned int* tx_pdcp_sdu,
-							  unsigned int* tx_pdcp_sdu_discarded,
-							  unsigned int* tx_retransmit_pdu_unblock,
-							  unsigned int* tx_retransmit_pdu_by_status,
-							  unsigned int* tx_retransmit_pdu,
-							  unsigned int* tx_data_pdu,
-							  unsigned int* tx_control_pdu,
-							  unsigned int* rx_sdu,
-							  unsigned int* rx_error_pdu,  
-							  unsigned int* rx_data_pdu,
-							  unsigned int* rx_data_pdu_out_of_window,
-							  unsigned int* rx_control_pdu);
+extern void     rlc_am_stat_req     (struct rlc_am_entity *rlcP,
+                                     unsigned int* tx_pdcp_sdu,
+                                     unsigned int* tx_pdcp_sdu_discarded,
+                                     unsigned int* tx_retransmit_pdu_unblock,
+                                     unsigned int* tx_retransmit_pdu_by_status,
+                                     unsigned int* tx_retransmit_pdu,
+                                     unsigned int* tx_data_pdu,
+                                     unsigned int* tx_control_pdu,
+                                     unsigned int* rx_sdu,
+                                     unsigned int* rx_error_pdu,
+                                     unsigned int* rx_data_pdu,
+                                     unsigned int* rx_data_pdu_out_of_window,
+                                     unsigned int* rx_control_pdu);
 extern int      rlc_am_comp_sn (struct rlc_am_entity *rlcP, uint16_t low_boundaryP, uint16_t sn1P, uint16_t sn2P);
 extern void     adjust_vr_r_mr (struct rlc_am_entity *rlcP);
 extern void     adjust_vt_a_ms (struct rlc_am_entity *rlcP);

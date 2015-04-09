@@ -44,9 +44,9 @@ extern unsigned decode_hex_length(const char *h);
 #define HL(x) decode_hex_dup(x), decode_hex_length(x)
 
 extern void fail (const char *format, ...)
-  __attribute__ ((format (printf, 1, 2)));
+__attribute__ ((format (printf, 1, 2)));
 extern void success (const char *format, ...)
-  __attribute__ ((format (printf, 1, 2)));
+__attribute__ ((format (printf, 1, 2)));
 
 extern void escapeprint (const char *str, size_t len);
 extern void hexprint (const void *str, size_t len);

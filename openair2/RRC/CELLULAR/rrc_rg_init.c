@@ -3,7 +3,7 @@
                           -------------------
     begin                : Someday 2008
     copyright            : (C) 2010 by Eurecom
-    created by	         : Michelle.Wetterwald@eurecom.fr
+    created by           : Michelle.Wetterwald@eurecom.fr
  **************************************************************************
   Initialization of RRC protocol entity for Radio Gateway
  ***************************************************************************/
@@ -41,19 +41,20 @@ rlc_info_t Rlc_info_um;
 rlc_info_t Rlc_info_am_config;
 
 //-----------------------------------------------------------------------------
-void rrc_rg_init (u8 Mod_id){
-//-----------------------------------------------------------------------------
+void rrc_rg_init (u8 Mod_id)
+{
+  //-----------------------------------------------------------------------------
   int user;
   int ix;
 
-  #ifdef DEBUG_RRC_STATE
+#ifdef DEBUG_RRC_STATE
   printk("\n\n***********************************************\n");
   printk("**************[RRC CELL][RG-INIT]**************\n");
   printk("***********************************************\n");
-  #endif
+#endif
   printk("[RRC CELL][RG-INIT] Init BS function start\n");
 
- // Initialize the control block for variables
+  // Initialize the control block for variables
   pool_buffer_init();
   protocol_bs = &prot_pool_bs;
   memset ((char *)protocol_bs, 0, sizeof (struct protocol_pool_bs));
@@ -81,7 +82,7 @@ void rrc_rg_init (u8 Mod_id){
   //rrc_rg_rrm_connected_init(); // Transferred to rrc_rg_rrm_process.c
 
   // set hard-coded values for congestion measurement
-  for (ix=0; ix<maxUsers; ix++){
+  for (ix=0; ix<maxUsers; ix++) {
     protocol_bs->rrc.conf_rlcBufferOccupancy[ix] = 60 - (30*ix);
     protocol_bs->rrc.conf_scheduledPRB[ix] = 500 - (200*ix);
     protocol_bs->rrc.conf_totalDataVolume[ix] = 640000 + (160000*ix);
@@ -91,11 +92,11 @@ void rrc_rg_init (u8 Mod_id){
   rrc_init_mac_config();
 
 #ifdef USER_MODE
- #ifdef RRC_NETLINK
+#ifdef RRC_NETLINK
   rrc_rg_netlink_init ();  // init RRC netlink socket
- #else
+#else
   rrc_rg_sap_init ();      // init FIFOs towards NAS
- #endif
+#endif
   rrc_rg_rrm_sap_init ();  // init FIFOs towards RRM
 #endif
   // init function pointers for RRM interface
@@ -112,8 +113,9 @@ void rrc_rg_init (u8 Mod_id){
 
 //-----------------------------------------------------------------------------
 // This funstion sompletes the init once the RRC is connected to the RRM
-void rrc_rg_rrm_connected_init (void){
-//-----------------------------------------------------------------------------
+void rrc_rg_rrm_connected_init (void)
+{
+  //-----------------------------------------------------------------------------
   //int  i;
 
   //struct rrc_rrm_measure_ctl rrm_control;
@@ -125,7 +127,7 @@ void rrc_rg_rrm_connected_init (void){
   rrc_rg_init_bch ();
   rrc_init_blocks (); //prepares SIBs for broadcast
 
-  /* TEMP Next lines have been transferred to rrc_rg_config_LTE_srb2 in L2_frontend 
+  /* TEMP Next lines have been transferred to rrc_rg_config_LTE_srb2 in L2_frontend
   // because MCCH is using srb2
   //Initialise MBMS
   rrc_rg_mbms_init();
@@ -133,7 +135,7 @@ void rrc_rg_rrm_connected_init (void){
 
   //rrc_rg_init_mac (0);
 
-/*  rrm_config_indication = 0; */
+  /*  rrm_config_indication = 0; */
 }
 
 

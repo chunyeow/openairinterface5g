@@ -51,10 +51,10 @@
  */
 
 typedef struct guti_reallocation_complete_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                   protocoldiscriminator:4;
-    SecurityHeaderType                      securityheadertype:4;
-    MessageType                             messagetype;
+  /* Mandatory fields */
+  ProtocolDiscriminator                   protocoldiscriminator:4;
+  SecurityHeaderType                      securityheadertype:4;
+  MessageType                             messagetype;
 } guti_reallocation_complete_msg;
 
 int decode_guti_reallocation_complete(guti_reallocation_complete_msg *gutireallocationcomplete, uint8_t *buffer, uint32_t len);

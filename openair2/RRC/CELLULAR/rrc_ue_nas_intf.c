@@ -30,14 +30,14 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
- #ifdef RRC_NETLINK
- #include <sys/socket.h>
- #include <linux/netlink.h>
- #include <signal.h>
- #include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
- #endif
+#ifdef RRC_NETLINK
+#include <sys/socket.h>
+#include <linux/netlink.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#endif
 #endif
 
 extern int rrc_ue_mobileId;
@@ -56,8 +56,9 @@ struct msghdr rrcnl_msg;
 #ifndef RRC_NETLINK
 //-----------------------------------------------------------------------------
 // Create and initialize FIFOs for UE RRC SAPs
-void rrc_ue_sap_init (void){
-//-----------------------------------------------------------------------------
+void rrc_ue_sap_init (void)
+{
+  //-----------------------------------------------------------------------------
   int  write_flag = O_WRONLY | O_NONBLOCK | O_NDELAY;
   int  read_flag = O_RDONLY | O_NONBLOCK | O_NDELAY;
   char gcsap[40], ntsap[40], dcsap_in[40], dcsap_out[40];
@@ -103,15 +104,18 @@ void rrc_ue_sap_init (void){
 #else
 //-----------------------------------------------------------------------------
 // Create and initialize NETLINK Sockets for UE RRC SAPs
-void rrc_ue_netlink_init (void){
-//-----------------------------------------------------------------------------
+void rrc_ue_netlink_init (void)
+{
+  //-----------------------------------------------------------------------------
   int ret;
 
   rrcnl_sock_fd = socket(PF_NETLINK, SOCK_RAW, NAS_RRCNL_ID);
+
   if (rrcnl_sock_fd == -1) {
     fprintf(stderr, "socket failed (%d:%s)\n", errno, strerror(errno));
     exit(EXIT_FAILURE);
   }
+
   printf("rrc_ue_netlink_init - Opened socket with fd %d\n", rrcnl_sock_fd);
 
   ret = fcntl(rrcnl_sock_fd,F_SETFL,O_NONBLOCK);
@@ -157,8 +161,9 @@ void rrc_ue_netlink_init (void){
 #ifndef RRC_NETLINK
 //-----------------------------------------------------------------------------
 // This function sends data from RRC to the NAS
-void rrc_ue_write_FIFO (mem_block_t * p){
-//-----------------------------------------------------------------------------
+void rrc_ue_write_FIFO (mem_block_t * p)
+{
+  //-----------------------------------------------------------------------------
   int count = 0;
   int xmit_length;
   char *xmit_ptr;
@@ -169,29 +174,32 @@ void rrc_ue_write_FIFO (mem_block_t * p){
   count = rtf_put (((struct nas_ue_if_element *) p->data)->xmit_fifo, xmit_ptr, xmit_length);
 
   if (count == xmit_length) {
-  #ifdef DEBUG_RRC_STATE
+#ifdef DEBUG_RRC_STATE
     msg ("[RRC_UE][NAS] NAS primitive sent successfully, length %d \n", count);
     //msg("\n[RRC_UE][NAS] on FIFO, %d \n", ((struct nas_ue_if_element *) p->data)->xmit_fifo);
-  #endif
+#endif
     protocol_ms->rrc.NASMessageToXmit = p->next;        //Dequeue next message if any
     free_mem_block (p);
-  #ifndef USER_MODE
+#ifndef USER_MODE
+
     if (protocol_ms->rrc.ip_rx_irq > 0) {   //Temp - later a specific control irq
       rt_pend_linux_srq (protocol_ms->rrc.ip_rx_irq);
     } else {
       msg ("[RRC_UE] ERROR IF IP STACK WANTED NOTIF PACKET(S) ip_rx_irq not initialized\n");
     }
-  #endif
+
+#endif
   } else {
     msg ("[RRC_UE][NAS] transmission on FIFO failed, %d bytes sent\n", count);
   }
 }
 #else
 //-----------------------------------------------------------------------------
-// This function sends data from RRC to the NAS via Netlink socket 
+// This function sends data from RRC to the NAS via Netlink socket
 // Name has been kept rrc_ue_write_FIFO for backwards compatibility
-void rrc_ue_write_FIFO (mem_block_t * p){
-//-----------------------------------------------------------------------------
+void rrc_ue_write_FIFO (mem_block_t * p)
+{
+  //-----------------------------------------------------------------------------
   int count = 0;
   int xmit_length;
   char *xmit_ptr;
@@ -212,16 +220,17 @@ void rrc_ue_write_FIFO (mem_block_t * p){
   //rrc_print_buffer (xmit_ptr, xmit_length);
 
   ret = sendmsg(rrcnl_sock_fd,&rrcnl_msg,0);
+
   if (ret<0) {
     msg ("[RRC_UE][NAS] rrc_ue_write_FIFO - sendmsg returns %d (errno: %d)\n", ret, errno);
     mac_xface->macphy_exit("RRC Netlink Socket could not be written");
-  }else{
+  } else {
     count = xmit_length+1;
-    #ifdef DEBUG_RRC_STATE
+#ifdef DEBUG_RRC_STATE
     msg ("[RRC_UE][NAS] NAS primitive sent successfully, length %d (including NETLINK SAP value)\n", count);
     //rrc_print_buffer (NLMSG_DATA(rrcnl_nlh), count);
     //msg("\n[RRC_UE][NAS] on FIFO, %d \n", ((struct nas_ue_if_element *) p->data)->xmit_fifo);
-    #endif
+#endif
     protocol_ms->rrc.NASMessageToXmit = p->next;        //Dequeue next message if any
     free_mem_block (p);
   }
@@ -230,15 +239,17 @@ void rrc_ue_write_FIFO (mem_block_t * p){
 
 //-----------------------------------------------------------------------------
 // Enqueue a message for NAS -- NOT IMPLEMENTED YET
-void rrc_ue_nas_xmit_enqueue (mem_block_t * p){
-//-----------------------------------------------------------------------------
+void rrc_ue_nas_xmit_enqueue (mem_block_t * p)
+{
+  //-----------------------------------------------------------------------------
   protocol_ms->rrc.NASMessageToXmit = p;
 }
 
 //-----------------------------------------------------------------------------
 // This function receives data in RRC from the NAS
-void rrc_ue_read_FIFO (void){
-//-----------------------------------------------------------------------------
+void rrc_ue_read_FIFO (void)
+{
+  //-----------------------------------------------------------------------------
   int count = 0;
   u8  rcve_buffer[RRC_NAS_MAX_SIZE];
   struct nas_ue_dc_element *p;
@@ -248,47 +259,55 @@ void rrc_ue_read_FIFO (void){
 
   memset (rcve_buffer, 0, RRC_NAS_MAX_SIZE);
   // Read Message header
-  #ifndef RRC_NETLINK
+#ifndef RRC_NETLINK
   count = rtf_get (protocol_ms->rrc.rrc_ue_DCIn_fifo, rcve_buffer, NAS_TL_SIZE);
-  if (count  > 0) 
+
+  if (count  > 0)
     sap_to_read = RRC_NAS_DC0_IN;  // This should be replicated if read from several SAPs
-  #else
+
+#else
   count = recvmsg(rrcnl_sock_fd, &rrcnl_msg, 0);
-  #ifdef DEBUG_RRC_DETAILS_2
-  if (!(protocol_ms->rrc.current_SFN%50)){
+#ifdef DEBUG_RRC_DETAILS_2
+
+  if (!(protocol_ms->rrc.current_SFN%50)) {
     msg ("[RRC_UE][NETLINK] rrc_ue_read_FIFO - count = %d\n", count);
   }
-  #endif
-  if (count  > 0){ 
+
+#endif
+
+  if (count  > 0) {
     msg ("[RRC_UE][NETLINK] Received socket with length %d (nlmsg_len = %d)\n", count, (rrcnl_nlh->nlmsg_len)-sizeof(struct nlmsghdr));
     sap_to_read = ((char*)NLMSG_DATA(rrcnl_nlh))[0];
-    if (sap_to_read != RRC_NAS_DC0_IN){
+
+    if (sap_to_read != RRC_NAS_DC0_IN) {
       return;
     }
+
     memcpy(rcve_buffer, &((char*)NLMSG_DATA(rrcnl_nlh))[1], NAS_TL_SIZE);
     count --;
   }
-  #endif
 
-  if (count  > 0){
+#endif
+
+  if (count  > 0) {
     // Message received in DC-SAP - Continue
-    #ifdef DEBUG_RRC_STATE
+#ifdef DEBUG_RRC_STATE
     msg ("[RRC_UE] Message Received from NAS: -%hx- \n", rcve_buffer[0]);
-    #endif
+#endif
 
     p = (struct nas_ue_dc_element *) rcve_buffer;
     prim_length = (int) (p->length);
     prim_type = (int) (p->type);
-    #ifdef DEBUG_RRC_STATE
+#ifdef DEBUG_RRC_STATE
     msg ("[RRC_UE] Primitive Type %d,\t Primitive length %d \n", prim_type, prim_length);
-    #endif
+#endif
     //get the rest of the primitive
-    #ifndef RRC_NETLINK
+#ifndef RRC_NETLINK
     count += rtf_get (protocol_ms->rrc.rrc_ue_DCIn_fifo, &(rcve_buffer[NAS_TL_SIZE]), prim_length - NAS_TL_SIZE);
-    #else
+#else
     memcpy(&(rcve_buffer[NAS_TL_SIZE]), &((char*)NLMSG_DATA(rrcnl_nlh))[1+NAS_TL_SIZE], prim_length - NAS_TL_SIZE);
     count = prim_length;
-    #endif
+#endif
     rrc_ue_read_DCin_FIFO (p, count);
   }
 }
@@ -297,8 +316,9 @@ void rrc_ue_read_FIFO (void){
 #ifdef RRC_NETLINK
 //-----------------------------------------------------------------------------
 // This function receives data in RRC from the NAS
-int rrc_ue_read_data_from_nlh (char * buffer, int length, int offset){
-//-----------------------------------------------------------------------------
+int rrc_ue_read_data_from_nlh (char * buffer, int length, int offset)
+{
+  //-----------------------------------------------------------------------------
   int count = length;
   memcpy(buffer, &((char*)NLMSG_DATA(rrcnl_nlh))[1+offset], count);
   return count;

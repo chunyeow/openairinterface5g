@@ -1,20 +1,20 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+      Eurecom OpenAirInterface 3
+      Copyright(c) 2012 Eurecom
 
-Source		as_simulator_parser.h
+Source    as_simulator_parser.h
 
-Version		0.1
+Version   0.1
 
-Date		2013/04/11
+Date    2013/04/11
 
-Product		Access-Stratum sublayer simulator
+Product   Access-Stratum sublayer simulator
 
-Subsystem	Command line parser
+Subsystem Command line parser
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Command line parser of the AS Simulator process
+Description Command line parser of the AS Simulator process
 
 *****************************************************************************/
 
@@ -26,16 +26,16 @@ Description	Command line parser of the AS Simulator process
 /****************************************************************************/
 
 /* UE process default hostname */
-#define AS_SIMULATOR_PARSER_DEFAULT_UE_HOSTNAME		"localhost"
+#define AS_SIMULATOR_PARSER_DEFAULT_UE_HOSTNAME   "localhost"
 
 /* MME process default hostname */
-#define AS_SIMULATOR_PARSER_DEFAULT_MME_HOSTNAME	"localhost"
+#define AS_SIMULATOR_PARSER_DEFAULT_MME_HOSTNAME  "localhost"
 
 /* UE process default port number */
-#define AS_SIMULATOR_PARSER_DEFAULT_UE_PORT_NUMBER	"12000"
+#define AS_SIMULATOR_PARSER_DEFAULT_UE_PORT_NUMBER  "12000"
 
 /* MME process default port number */
-#define AS_SIMULATOR_PARSER_DEFAULT_MME_PORT_NUMBER	"14000"
+#define AS_SIMULATOR_PARSER_DEFAULT_MME_PORT_NUMBER "14000"
 
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/

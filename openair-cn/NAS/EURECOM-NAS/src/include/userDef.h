@@ -73,18 +73,18 @@ Description Contains user's global definitions
  * ------------------------------
  */
 typedef struct {
-    /* International Mobile Equipment Identity  */
+  /* International Mobile Equipment Identity  */
 #define USER_IMEI_SIZE          15
-    char IMEI[USER_IMEI_SIZE+1];
-    /* Manufacturer identifier          */
+  char IMEI[USER_IMEI_SIZE+1];
+  /* Manufacturer identifier          */
 #define USER_MANUFACTURER_SIZE      16
-    char manufacturer[USER_MANUFACTURER_SIZE+1];
-    /* Model identifier             */
+  char manufacturer[USER_MANUFACTURER_SIZE+1];
+  /* Model identifier             */
 #define USER_MODEL_SIZE         16
-    char model[USER_MODEL_SIZE+1];
-    /* SIM Personal Identification Number   */
+  char model[USER_MODEL_SIZE+1];
+  /* SIM Personal Identification Number   */
 #define USER_PIN_SIZE           4
-    char PIN[USER_PIN_SIZE+1];
+  char PIN[USER_PIN_SIZE+1];
 } user_nvdata_t;
 
 /****************************************************************************/

@@ -57,14 +57,14 @@
  */
 
 typedef struct service_reject_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator        protocoldiscriminator:4;
-    SecurityHeaderType           securityheadertype:4;
-    MessageType                  messagetype;
-    EmmCause                     emmcause;
-    /* Optional fields */
-    uint32_t                     presencemask;
-    GprsTimer                    t3442value;
+  /* Mandatory fields */
+  ProtocolDiscriminator        protocoldiscriminator:4;
+  SecurityHeaderType           securityheadertype:4;
+  MessageType                  messagetype;
+  EmmCause                     emmcause;
+  /* Optional fields */
+  uint32_t                     presencemask;
+  GprsTimer                    t3442value;
 } service_reject_msg;
 
 int decode_service_reject(service_reject_msg *servicereject, uint8_t *buffer, uint32_t len);

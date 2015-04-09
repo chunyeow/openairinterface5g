@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -86,87 +86,87 @@ public_mrallte_main(char*   g_conf_ue_mihf_id;)
 typedef int ral_ue_instance_t;
 
 typedef struct lte_ral_ue_object_s {
-    //------------------------
-    // CONFIG PARAMETERS
-    //------------------------
-    char*                      ral_listening_port;
-    char*                      ral_ip_address;
-    char*                      ral_link_address;
-    char*                      mihf_remote_port;
-    char*                      mihf_ip_address;
-    char*                      link_id;
-    char*                      mihf_id;
-    MIH_C_LINK_MIHCAP_FLAG_T   link_mihcap_flag; // hardcoded parameters
-    MIH_C_NET_CAPS_T           net_caps;// hardcoded parameters
+  //------------------------
+  // CONFIG PARAMETERS
+  //------------------------
+  char*                      ral_listening_port;
+  char*                      ral_ip_address;
+  char*                      ral_link_address;
+  char*                      mihf_remote_port;
+  char*                      mihf_ip_address;
+  char*                      link_id;
+  char*                      mihf_id;
+  MIH_C_LINK_MIHCAP_FLAG_T   link_mihcap_flag; // hardcoded parameters
+  MIH_C_NET_CAPS_T           net_caps;// hardcoded parameters
 
 
-    // only to call ralu_verifyPendingConnection
-    uint8_t pending_req_flag;
+  // only to call ralu_verifyPendingConnection
+  uint8_t pending_req_flag;
 
 
- // network parameters
-    uint16_t     cell_id;
-    plmn_t  plmn_id;
-    //uint16_t nas_state;
-    int state;
-    //uint32_t curr_signal_level;
-    uint32_t ipv6_l2id[2];
- //measures
-    uint8_t  req_num_bs;
-    uint16_t req_cell_id[MAX_NUMBER_BS];
-    uint32_t req_prov_id[MAX_NUMBER_BS];
-    uint16_t req_order_index[MAX_NUMBER_BS];
-    int num_measures;
-    uint16_t meas_cell_id[MAX_NUMBER_BS];
-    uint32_t last_meas_level[MAX_NUMBER_BS];
-    uint32_t integrated_meas_level[MAX_NUMBER_BS];
-    uint32_t prev_integrated_meas_level[MAX_NUMBER_BS];
-    uint32_t provider_id[MAX_NUMBER_BS];
- //Radio Bearers
-    uint16_t num_rb;
-    int num_class;
-    uint16_t rbId[RAL_MAX_RB];
-    uint16_t QoSclass[RAL_MAX_RB];
-    uint16_t dscp[RAL_MAX_RB];
- // statistics
-    //uint32_t rx_packets;
-    //uint32_t tx_packets;
-    //uint32_t rx_bytes;
-    //uint32_t tx_bytes;
-    //uint32_t rx_errors;
-    //uint32_t tx_errors;
-    //uint32_t rx_dropped;
-    //uint32_t tx_dropped;
-    //char buffer[800];  // For ioctl with NAS driver
+  // network parameters
+  uint16_t     cell_id;
+  plmn_t  plmn_id;
+  //uint16_t nas_state;
+  int state;
+  //uint32_t curr_signal_level;
+  uint32_t ipv6_l2id[2];
+  //measures
+  uint8_t  req_num_bs;
+  uint16_t req_cell_id[MAX_NUMBER_BS];
+  uint32_t req_prov_id[MAX_NUMBER_BS];
+  uint16_t req_order_index[MAX_NUMBER_BS];
+  int num_measures;
+  uint16_t meas_cell_id[MAX_NUMBER_BS];
+  uint32_t last_meas_level[MAX_NUMBER_BS];
+  uint32_t integrated_meas_level[MAX_NUMBER_BS];
+  uint32_t prev_integrated_meas_level[MAX_NUMBER_BS];
+  uint32_t provider_id[MAX_NUMBER_BS];
+  //Radio Bearers
+  uint16_t num_rb;
+  int num_class;
+  uint16_t rbId[RAL_MAX_RB];
+  uint16_t QoSclass[RAL_MAX_RB];
+  uint16_t dscp[RAL_MAX_RB];
+  // statistics
+  //uint32_t rx_packets;
+  //uint32_t tx_packets;
+  //uint32_t rx_bytes;
+  //uint32_t tx_bytes;
+  //uint32_t rx_errors;
+  //uint32_t tx_errors;
+  //uint32_t rx_dropped;
+  //uint32_t tx_dropped;
+  //char buffer[800];  // For ioctl with NAS driver
 
-    // MIH-INTERFACE data
-    // MIH-INTERFACE data
-    int                        mih_sock_desc;
+  // MIH-INTERFACE data
+  // MIH-INTERFACE data
+  int                        mih_sock_desc;
 
-    // Initialised, then read-only, supported actions
-    MIH_C_LINK_AC_TYPE_T       mih_supported_action_list;
-    // action currently processed
-    MIH_C_LINK_AC_TYPE_T       pending_req_action;
-    // actions requested by MIH-H
-    MIH_C_LINK_AC_TYPE_T       req_action_list;
-    //MIH_C_STATUS_T             pending_req_status;
-    MIH_C_LINK_AC_RESULT_T     pending_req_ac_result;
-    //MIH_C_TRANSACTION_ID_T     pending_req_transaction_id;
-    // set unset bits by MIH_C_Message_Link_Event_Subscribe_request MIH_C_Message_Link_Event_Unsubscribe_request
-    MIH_C_LINK_EVENT_LIST_T    mih_subscribe_req_event_list;
-    // Initialised, then read-only
-    MIH_C_LINK_EVENT_LIST_T    mih_supported_link_event_list;
-    // Initialised, then read-only
-    MIH_C_LINK_CMD_LIST_T      mih_supported_link_command_list;
-    LIST(MIH_C_LINK_CFG_PARAM, mih_link_cfg_param_thresholds);
-    // to tell what are the configured thresholds in mih_link_cfg_param_thresholds_list
-    MIH_C_BOOLEAN_T            active_mih_link_cfg_param_threshold[MIH_C_LINK_CFG_PARAM_LIST_LENGTH];
-    MIH_C_BOOLEAN_T            link_to_be_detected;
+  // Initialised, then read-only, supported actions
+  MIH_C_LINK_AC_TYPE_T       mih_supported_action_list;
+  // action currently processed
+  MIH_C_LINK_AC_TYPE_T       pending_req_action;
+  // actions requested by MIH-H
+  MIH_C_LINK_AC_TYPE_T       req_action_list;
+  //MIH_C_STATUS_T             pending_req_status;
+  MIH_C_LINK_AC_RESULT_T     pending_req_ac_result;
+  //MIH_C_TRANSACTION_ID_T     pending_req_transaction_id;
+  // set unset bits by MIH_C_Message_Link_Event_Subscribe_request MIH_C_Message_Link_Event_Unsubscribe_request
+  MIH_C_LINK_EVENT_LIST_T    mih_subscribe_req_event_list;
+  // Initialised, then read-only
+  MIH_C_LINK_EVENT_LIST_T    mih_supported_link_event_list;
+  // Initialised, then read-only
+  MIH_C_LINK_CMD_LIST_T      mih_supported_link_command_list;
+  LIST(MIH_C_LINK_CFG_PARAM, mih_link_cfg_param_thresholds);
+  // to tell what are the configured thresholds in mih_link_cfg_param_thresholds_list
+  MIH_C_BOOLEAN_T            active_mih_link_cfg_param_threshold[MIH_C_LINK_CFG_PARAM_LIST_LENGTH];
+  MIH_C_BOOLEAN_T            link_to_be_detected;
 
 
-    MIH_C_TRANSACTION_ID_T        transaction_id;
+  MIH_C_TRANSACTION_ID_T        transaction_id;
 
-}lte_ral_ue_object_t;
+} lte_ral_ue_object_t;
 
 
 /* RAL LTE internal data  */

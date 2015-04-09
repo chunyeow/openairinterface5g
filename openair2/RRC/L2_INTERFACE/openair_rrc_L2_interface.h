@@ -28,13 +28,13 @@
 *******************************************************************************/
 
 /*! \file l2_interface.c
-* \brief layer 2 interface 
+* \brief layer 2 interface
 * \author Navid Nikaein and Raymond Knopp
 * \date 2011
-* \version 1.0 
+* \version 1.0
 * \company Eurecom
-* \email: navid.nikaein@eurecom.fr,raymond.knopp@eurecom.fr 
-*/ 
+* \email: navid.nikaein@eurecom.fr,raymond.knopp@eurecom.fr
+*/
 #ifndef __OPENAIR_RRC_L2_INTERFACE_H__
 #define __OPENAIR_RRC_L2_INTERFACE_H__
 
@@ -42,10 +42,10 @@
 #include "COMMON/platform_types.h"
 
 int8_t mac_rrc_data_req(module_id_t module_idP, frame_t frameP, rb_id_t srb_idP, uint8_t nb_tbP, uint8_t *buffer_pP, eNB_flag_t eNB_flagP, uint8_t eNB_indexP,
-                    uint8_t mbsfn_sync_areaP);
+                        uint8_t mbsfn_sync_areaP);
 
 int8_t mac_rrc_data_ind(module_id_t module_idP, frame_t frameP, rb_id_t srb_idP, uint8_t *sduP, sdu_size_t sdu_lenP, eNB_flag_t eNB_flagP, uint8_t eNB_index,
-                    uint8_t mbsfn_sync_areaP);
+                        uint8_t mbsfn_sync_areaP);
 
 void mac_lite_sync_ind(module_id_t module_idP, uint8_t statusP);
 
@@ -54,7 +54,7 @@ void mac_rrc_meas_ind(module_id_t, MAC_MEAS_REQ_ENTRY*);
 void rlcrrc_data_ind(const protocol_ctxt_t* const ctxt_pP, rb_id_t rb_idP, sdu_size_t sdu_sizeP, uint8_t *buffer_pP);
 
 uint8_t pdcp_rrc_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t rb_idP, mui_t muiP, boolean_t confirmP,
-                     sdu_size_t sdu_buffer_size, uint8_t* sdu_buffer, uint8_t mode);
+                          sdu_size_t sdu_buffer_size, uint8_t* sdu_buffer, uint8_t mode);
 
 void pdcp_rrc_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t srb_idP, sdu_size_t sdu_sizeP, uint8_t *buffer_pP);
 

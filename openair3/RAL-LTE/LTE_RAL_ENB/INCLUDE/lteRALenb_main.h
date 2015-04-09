@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -72,135 +72,135 @@ public_lteralenb_main(char*   g_conf_enb_mihf_id;)
  * Radio Bearer data
  */
 typedef struct ral_lte_channel {
-    uint32_t   cnx_id;
-    uint8_t    multicast;
-// MIHF parameters  ix=0 UPLINK, ix=1 DOWNLINK
-    uint16_t   flowId[2];
-    uint16_t   classId[2];
-    float resBitrate[2];
-    float meanBitrate[2];
-    float bktDepth[2];
-    float pkBitrate[2];
-    float MTU[2];
+  uint32_t   cnx_id;
+  uint8_t    multicast;
+  // MIHF parameters  ix=0 UPLINK, ix=1 DOWNLINK
+  uint16_t   flowId[2];
+  uint16_t   classId[2];
+  float resBitrate[2];
+  float meanBitrate[2];
+  float bktDepth[2];
+  float pkBitrate[2];
+  float MTU[2];
 
-// #if ! defined(ENABLE_USE_MME)
-    //IP driver parameters
-    uint16_t   rbId;
-    uint16_t   RadioQoSclass;
-    uint16_t   dscpUL;
-    uint16_t   dscpDL;
-    uint16_t   nas_state;
-    uint16_t   status;
-// #endif
-}ral_lte_channel_t;
+  // #if ! defined(ENABLE_USE_MME)
+  //IP driver parameters
+  uint16_t   rbId;
+  uint16_t   RadioQoSclass;
+  uint16_t   dscpUL;
+  uint16_t   dscpDL;
+  uint16_t   nas_state;
+  uint16_t   status;
+  // #endif
+} ral_lte_channel_t;
 
 /*
  * Mobile Terminal data
  */
 typedef struct ral_lte_mt_s {
-    /* The identifier of the link that is associated with a PoA */
-    MIH_C_LINK_TUPLE_ID_T ltid;
-    uint8_t  ipv6_addr[16];
-    uint32_t ipv6_l2id[2];
-    uint32_t ue_id;
-    struct ral_lte_channel radio_channel[RAL_MAX_RB];
-    int num_rbs;
-    int num_class;
-    int nas_state;
-    int mt_state;
-}ral_lte_mt_t;
+  /* The identifier of the link that is associated with a PoA */
+  MIH_C_LINK_TUPLE_ID_T ltid;
+  uint8_t  ipv6_addr[16];
+  uint32_t ipv6_l2id[2];
+  uint32_t ue_id;
+  struct ral_lte_channel radio_channel[RAL_MAX_RB];
+  int num_rbs;
+  int num_class;
+  int nas_state;
+  int mt_state;
+} ral_lte_mt_t;
 
 
 /*
  * Multicast data  // TEMP MW A supprimer!!!!
  */
 typedef struct ral_lte_mcast_s {
-    /* The identifier of the multicast link that is associated with a PoA */
-    MIH_C_LINK_TUPLE_ID_T ltid;
-    struct ral_lte_channel radio_channel;
-    uint8_t mc_group_addr[16];
-}ral_lte_mcast_t;
+  /* The identifier of the multicast link that is associated with a PoA */
+  MIH_C_LINK_TUPLE_ID_T ltid;
+  struct ral_lte_channel radio_channel;
+  uint8_t mc_group_addr[16];
+} ral_lte_mcast_t;
 
 /*
  * RAL LTE internal data
  */
 
 typedef struct lte_ral_enb_object {
-    //------------------------
-    // CONFIG PARAMETERS
-    //------------------------
-    char*                      ral_listening_port;
-    char*                      ral_ip_address;
-    char*                      ral_link_address;
-    char*                      mihf_remote_port;
-    char*                      mihf_ip_address;
-    char*                      link_id;
-    char*                      mihf_id;
-    MIH_C_LINK_MIHCAP_FLAG_T   link_mihcap_flag; // hardcoded parameters
-    MIH_C_NET_CAPS_T           net_caps;// hardcoded parameters
+  //------------------------
+  // CONFIG PARAMETERS
+  //------------------------
+  char*                      ral_listening_port;
+  char*                      ral_ip_address;
+  char*                      ral_link_address;
+  char*                      mihf_remote_port;
+  char*                      mihf_ip_address;
+  char*                      link_id;
+  char*                      mihf_id;
+  MIH_C_LINK_MIHCAP_FLAG_T   link_mihcap_flag; // hardcoded parameters
+  MIH_C_NET_CAPS_T           net_caps;// hardcoded parameters
 
-    // provided by RRC with RRC_RAL_SYSTEM_CONFIGURATION_IND message
-    plmn_t                     plmn_id;
-    unsigned int               cell_id:28;
-
-
-    int num_connected_mts;
-
-    uint8_t pending_req_flag;
-    uint8_t pending_req_mt_ix;
-    uint8_t pending_req_ch_ix;
-    uint8_t pending_req_multicast;
-//    uint16_t pending_req_transaction_id;
-//    uint8_t pending_req_status;
-    MIH_C_FLOW_ID_T pending_req_fid;
-
-    ral_lte_mt_t pending_mt;
-    int pending_mt_timer;
-    int pending_mt_flag;
-
-    ral_lte_mt_t         mt[RAL_MAX_MT];
-    ral_lte_mcast_t      mcast;
-
-    // measurements for MEDIEVAL project
-    //MIH_C_TIMER_INTERVAL_T  measurement_timer_interval; // This timer value (ms) is used to set the interval between
-                                                        // periodic reports. Valid Range: 0..65535
-    //long                    measurement_timer_id;
-
-    //uint16_t                     num_UEs;
-    //uint32_t                     rlcBufferOccupancy[RAL_MAX_MT];
-    //uint32_t                     scheduledPRB[RAL_MAX_MT];
-    //uint32_t                     totalDataVolume[RAL_MAX_MT];
-    //uint32_t                     totalNumPRBs;
+  // provided by RRC with RRC_RAL_SYSTEM_CONFIGURATION_IND message
+  plmn_t                     plmn_id;
+  unsigned int               cell_id:28;
 
 
-    //int                     congestion_flag;
-    //int                     congestion_threshold;
-    //int                     measures_triggered_flag;
-    //int                     requested_period;
+  int num_connected_mts;
 
-    // MIH-INTERFACE data
-    int                        mih_sock_desc;
-    MIH_C_LINK_AC_TYPE_LIST_T  mih_supported_link_action_list;
-    MIH_C_LINK_EVENT_LIST_T    mih_supported_link_event_list;
-    MIH_C_LINK_CMD_LIST_T      mih_supported_link_command_list;
-    MIH_C_LINK_EVENT_LIST_T    mih_subscribe_req_event_list;
+  uint8_t pending_req_flag;
+  uint8_t pending_req_mt_ix;
+  uint8_t pending_req_ch_ix;
+  uint8_t pending_req_multicast;
+  //    uint16_t pending_req_transaction_id;
+  //    uint8_t pending_req_status;
+  MIH_C_FLOW_ID_T pending_req_fid;
 
-    //LIST(MIH_C_LINK_CFG_PARAM, mih_link_cfg_param_thresholds);
-    // to tell what are the configured thresholds in mih_link_cfg_param_thresholds_list
-    //MIH_C_BOOLEAN_T  active_mih_link_cfg_param_threshold[MIH_C_LINK_CFG_PARAM_LIST_LENGTH];
+  ral_lte_mt_t pending_mt;
+  int pending_mt_timer;
+  int pending_mt_flag;
+
+  ral_lte_mt_t         mt[RAL_MAX_MT];
+  ral_lte_mcast_t      mcast;
+
+  // measurements for MEDIEVAL project
+  //MIH_C_TIMER_INTERVAL_T  measurement_timer_interval; // This timer value (ms) is used to set the interval between
+  // periodic reports. Valid Range: 0..65535
+  //long                    measurement_timer_id;
+
+  //uint16_t                     num_UEs;
+  //uint32_t                     rlcBufferOccupancy[RAL_MAX_MT];
+  //uint32_t                     scheduledPRB[RAL_MAX_MT];
+  //uint32_t                     totalDataVolume[RAL_MAX_MT];
+  //uint32_t                     totalNumPRBs;
 
 
-    MIH_C_LINK_AC_TYPE_T    pending_req_action;
-    MIH_C_STATUS_T          pending_req_status;
-    MIH_C_LINK_AC_RESULT_T  pending_req_ac_result;
-    MIH_C_TRANSACTION_ID_T  pending_req_transaction_id;
+  //int                     congestion_flag;
+  //int                     congestion_threshold;
+  //int                     measures_triggered_flag;
+  //int                     requested_period;
+
+  // MIH-INTERFACE data
+  int                        mih_sock_desc;
+  MIH_C_LINK_AC_TYPE_LIST_T  mih_supported_link_action_list;
+  MIH_C_LINK_EVENT_LIST_T    mih_supported_link_event_list;
+  MIH_C_LINK_CMD_LIST_T      mih_supported_link_command_list;
+  MIH_C_LINK_EVENT_LIST_T    mih_subscribe_req_event_list;
+
+  //LIST(MIH_C_LINK_CFG_PARAM, mih_link_cfg_param_thresholds);
+  // to tell what are the configured thresholds in mih_link_cfg_param_thresholds_list
+  //MIH_C_BOOLEAN_T  active_mih_link_cfg_param_threshold[MIH_C_LINK_CFG_PARAM_LIST_LENGTH];
 
 
-    hash_table_t                 *ue_htbl;
+  MIH_C_LINK_AC_TYPE_T    pending_req_action;
+  MIH_C_STATUS_T          pending_req_status;
+  MIH_C_LINK_AC_RESULT_T  pending_req_ac_result;
+  MIH_C_TRANSACTION_ID_T  pending_req_transaction_id;
 
-    MIH_C_TRANSACTION_ID_T        transaction_id;
 
-    char buffer[800];
+  hash_table_t                 *ue_htbl;
+
+  MIH_C_TRANSACTION_ID_T        transaction_id;
+
+  char buffer[800];
 } lte_ral_enb_object_t;
 
 

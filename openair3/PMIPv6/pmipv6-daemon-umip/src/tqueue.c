@@ -2,7 +2,7 @@
  * $Id: tqueue.c 1.49 06/02/28 18:57:32+02:00 anttit@tcs.hut.fi $
  *
  * This file is part of the MIPL Mobile IPv6 for Linux.
- * 
+ *
  * Authors:
  *  Antti Tuominen <anttit@tcs.hut.fi>
  *  Ville Nuorvala <vnuorval@tcs.hut.fi>
@@ -50,7 +50,7 @@ static volatile struct tq_elem *curr = NULL;
 
 static inline int is_first_task(struct tq_elem *tqe)
 {
-	return (tq_list.next == &tqe->list);
+  return (tq_list.next == &tqe->list);
 }
 
 static void *runner(void *arg);
@@ -63,14 +63,16 @@ static void *runner(void *arg);
  **/
 int taskqueue_init(void)
 {
-	pthread_mutexattr_t mattrs;
-	pthread_mutexattr_init(&mattrs);
-	pthread_mutexattr_settype(&mattrs, PTHREAD_MUTEX_FAST_NP);
-	if (pthread_mutex_init(&mutex, &mattrs) ||
-	    pthread_cond_init(&cond, NULL) ||
-	    pthread_create(&tq_runner, NULL, runner, NULL))
-		return -1;
-	return 0;
+  pthread_mutexattr_t mattrs;
+  pthread_mutexattr_init(&mattrs);
+  pthread_mutexattr_settype(&mattrs, PTHREAD_MUTEX_FAST_NP);
+
+  if (pthread_mutex_init(&mutex, &mattrs) ||
+      pthread_cond_init(&cond, NULL) ||
+      pthread_create(&tq_runner, NULL, runner, NULL))
+    return -1;
+
+  return 0;
 }
 
 /**
@@ -82,18 +84,18 @@ int taskqueue_init(void)
  **/
 void taskqueue_destroy(void)
 {
-	struct list_head *l, *n;
-	pthread_mutex_lock(&mutex);
-	list_for_each_safe(l, n, &tq_list) {
-		struct tq_elem *tqe;
-		list_del(l);
-		tqe = list_entry(l, struct tq_elem, list);
-		tsclear(tqe->expires);
-	}
-	killed = 1;
-	pthread_cond_signal(&cond);
-	pthread_mutex_unlock(&mutex);
-	pthread_join(tq_runner, NULL);
+  struct list_head *l, *n;
+  pthread_mutex_lock(&mutex);
+  list_for_each_safe(l, n, &tq_list) {
+    struct tq_elem *tqe;
+    list_del(l);
+    tqe = list_entry(l, struct tq_elem, list);
+    tsclear(tqe->expires);
+  }
+  killed = 1;
+  pthread_cond_signal(&cond);
+  pthread_mutex_unlock(&mutex);
+  pthread_join(tq_runner, NULL);
 }
 
 /**
@@ -104,16 +106,17 @@ void taskqueue_destroy(void)
  **/
 static inline void sorted_insert(struct tq_elem *tqi)
 {
-	struct list_head *l;
+  struct list_head *l;
 
-	list_for_each(l, &tq_list) {
-		struct tq_elem *cur = list_entry(l, struct tq_elem, list);
-		if (tsbefore(cur->expires, tqi->expires)) {
-			list_add_tail(&tqi->list, &cur->list);
-			return;
-		}
-	}
-	list_add_tail(&tqi->list, &tq_list);
+  list_for_each(l, &tq_list) {
+    struct tq_elem *cur = list_entry(l, struct tq_elem, list);
+
+    if (tsbefore(cur->expires, tqi->expires)) {
+      list_add_tail(&tqi->list, &cur->list);
+      return;
+    }
+  }
+  list_add_tail(&tqi->list, &tq_list);
 }
 
 /**
@@ -126,16 +129,18 @@ static inline void sorted_insert(struct tq_elem *tqi)
  **/
 int del_task(struct tq_elem *elem)
 {
-	assert(elem != NULL);
+  assert(elem != NULL);
 
-	pthread_mutex_lock(&mutex);
-	list_del(&elem->list);
-	tsclear(elem->expires);
-	if (elem == curr)
-		curr = NULL;
-	pthread_mutex_unlock(&mutex);
-	
-	return 0;
+  pthread_mutex_lock(&mutex);
+  list_del(&elem->list);
+  tsclear(elem->expires);
+
+  if (elem == curr)
+    curr = NULL;
+
+  pthread_mutex_unlock(&mutex);
+
+  return 0;
 }
 
 /**
@@ -149,33 +154,37 @@ int del_task(struct tq_elem *elem)
  * hold the actual task queue entry.
  **/
 int add_task_abs(const struct timespec *expires,
-		 struct tq_elem *tqi, void (*task)(struct tq_elem *))
+                 struct tq_elem *tqi, void (*task)(struct tq_elem *))
 {
-	pthread_mutex_lock(&mutex);
-	if (tsisset(tqi->expires)) {
-		list_del(&tqi->list);
-	}
-	if (tqi == curr)
-		curr = NULL;
-	tqi->expires = *expires;
-	tqi->task = task;
-	tqi->thread = pthread_self();
-	sorted_insert(tqi);
-	if (is_first_task(tqi))
-		pthread_cond_signal(&cond);
+  pthread_mutex_lock(&mutex);
 
-	pthread_mutex_unlock(&mutex);
+  if (tsisset(tqi->expires)) {
+    list_del(&tqi->list);
+  }
 
-	return 0;
+  if (tqi == curr)
+    curr = NULL;
+
+  tqi->expires = *expires;
+  tqi->task = task;
+  tqi->thread = pthread_self();
+  sorted_insert(tqi);
+
+  if (is_first_task(tqi))
+    pthread_cond_signal(&cond);
+
+  pthread_mutex_unlock(&mutex);
+
+  return 0;
 }
 
 int task_interrupted(void)
 {
-	int ret;
-	pthread_mutex_lock(&mutex);
-	ret = (curr == NULL);
-	pthread_mutex_unlock(&mutex);
-	return ret;
+  int ret;
+  pthread_mutex_lock(&mutex);
+  ret = (curr == NULL);
+  pthread_mutex_unlock(&mutex);
+  return ret;
 }
 
 /**
@@ -185,36 +194,40 @@ int task_interrupted(void)
  **/
 static void *runner(__attribute__ ((unused)) void *arg)
 {
-	pthread_dbg("thread started");
-	pthread_mutex_lock(&mutex);
-	for (;;) {
-		struct timespec now;
+  pthread_dbg("thread started");
+  pthread_mutex_lock(&mutex);
 
-		if (killed)
-			break;
+  for (;;) {
+    struct timespec now;
 
-		if (list_empty(&tq_list))
-			pthread_cond_wait(&cond, &mutex);
+    if (killed)
+      break;
 
-		clock_gettime(CLOCK_REALTIME, &now);
+    if (list_empty(&tq_list))
+      pthread_cond_wait(&cond, &mutex);
 
-		while (!list_empty(&tq_list)) {
-			struct tq_elem *first;
-			first = list_entry(tq_list.next, struct tq_elem, list);
-			if (tsbefore(first->expires, now)) {
-				pthread_cond_timedwait(&cond, &mutex,
-						       &first->expires);
-				break;
-			}
-			list_del(&first->list);
-			tsclear(first->expires);
-			curr = first;
-			pthread_mutex_unlock(&mutex);
-			first->task(first);
-			pthread_mutex_lock(&mutex);
-			curr = NULL;
-		}		
-	}
-	pthread_mutex_unlock(&mutex);
-	pthread_exit(NULL);
+    clock_gettime(CLOCK_REALTIME, &now);
+
+    while (!list_empty(&tq_list)) {
+      struct tq_elem *first;
+      first = list_entry(tq_list.next, struct tq_elem, list);
+
+      if (tsbefore(first->expires, now)) {
+        pthread_cond_timedwait(&cond, &mutex,
+                               &first->expires);
+        break;
+      }
+
+      list_del(&first->list);
+      tsclear(first->expires);
+      curr = first;
+      pthread_mutex_unlock(&mutex);
+      first->task(first);
+      pthread_mutex_lock(&mutex);
+      curr = NULL;
+    }
+  }
+
+  pthread_mutex_unlock(&mutex);
+  pthread_exit(NULL);
 }

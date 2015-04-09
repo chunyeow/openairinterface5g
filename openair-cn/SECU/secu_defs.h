@@ -43,11 +43,11 @@
 #define SECU_DIRECTION_DOWNLINK 1
 
 void kdf(const uint8_t *key,
-		uint16_t key_len,
-		uint8_t *s,
-		uint16_t s_len,
-		uint8_t *out,
-		uint16_t out_len);
+         uint16_t key_len,
+         uint8_t *s,
+         uint16_t s_len,
+         uint8_t *out,
+         uint16_t out_len);
 
 int derive_keNB(const uint8_t kasme[32], const uint32_t nas_count, uint8_t *keNB);
 
@@ -76,14 +76,14 @@ int derive_key_nas(algorithm_type_dist_t nas_alg_type, uint8_t nas_enc_alg_id,
 #define SECU_DIRECTION_DOWNLINK 1
 
 typedef struct {
-    uint8_t *key;
-    uint32_t key_length;
-    uint32_t count;
-    uint8_t  bearer;
-    uint8_t  direction;
-    uint8_t  *message;
-    /* length in bits */
-    uint32_t  blength;
+  uint8_t *key;
+  uint32_t key_length;
+  uint32_t count;
+  uint8_t  bearer;
+  uint8_t  direction;
+  uint8_t  *message;
+  /* length in bits */
+  uint32_t  blength;
 } nas_stream_cipher_t;
 
 int nas_stream_encrypt_eea1(nas_stream_cipher_t *stream_cipher, uint8_t *out);

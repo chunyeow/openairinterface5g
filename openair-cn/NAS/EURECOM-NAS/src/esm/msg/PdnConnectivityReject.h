@@ -55,7 +55,7 @@
 # define PDN_CONNECTIVITY_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<0)
 
 typedef enum pdn_connectivity_reject_iei_tag {
-    PDN_CONNECTIVITY_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
+  PDN_CONNECTIVITY_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
 } pdn_connectivity_reject_iei;
 
 /*
@@ -66,15 +66,15 @@ typedef enum pdn_connectivity_reject_iei_tag {
  */
 
 typedef struct pdn_connectivity_reject_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                protocoldiscriminator:4;
-    EpsBearerIdentity                    epsbeareridentity:4;
-    ProcedureTransactionIdentity         proceduretransactionidentity;
-    MessageType                          messagetype;
-    EsmCause                             esmcause;
-    /* Optional fields */
-    uint32_t                             presencemask;
-    ProtocolConfigurationOptions         protocolconfigurationoptions;
+  /* Mandatory fields */
+  ProtocolDiscriminator                protocoldiscriminator:4;
+  EpsBearerIdentity                    epsbeareridentity:4;
+  ProcedureTransactionIdentity         proceduretransactionidentity;
+  MessageType                          messagetype;
+  EsmCause                             esmcause;
+  /* Optional fields */
+  uint32_t                             presencemask;
+  ProtocolConfigurationOptions         protocolconfigurationoptions;
 } pdn_connectivity_reject_msg;
 
 int decode_pdn_connectivity_reject(pdn_connectivity_reject_msg *pdnconnectivityreject, uint8_t *buffer, uint32_t len);

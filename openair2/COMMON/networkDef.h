@@ -162,14 +162,14 @@ Description Contains network's global definitions
  * ---------------------
  */
 typedef enum {
-    /* MT = The Mobile Terminal, NW = The Network               */
-    NET_PDN_MT_DEFAULT_ACT = 1, /* MT has activated a PDN connection        */
-    NET_PDN_NW_DEFAULT_DEACT,   /* NW has deactivated a PDN connection      */
-    NET_PDN_MT_DEFAULT_DEACT,   /* MT has deactivated a PDN connection      */
-    NET_PDN_NW_DEDICATED_ACT,   /* NW has activated an EPS bearer context   */
-    NET_PDN_MT_DEDICATED_ACT,   /* MT has activated an EPS bearer context   */
-    NET_PDN_NW_DEDICATED_DEACT, /* NW has deactivated an EPS bearer context */
-    NET_PDN_MT_DEDICATED_DEACT, /* MT has deactivated an EPS bearer context */
+  /* MT = The Mobile Terminal, NW = The Network               */
+  NET_PDN_MT_DEFAULT_ACT = 1, /* MT has activated a PDN connection        */
+  NET_PDN_NW_DEFAULT_DEACT,   /* NW has deactivated a PDN connection      */
+  NET_PDN_MT_DEFAULT_DEACT,   /* MT has deactivated a PDN connection      */
+  NET_PDN_NW_DEDICATED_ACT,   /* NW has activated an EPS bearer context   */
+  NET_PDN_MT_DEDICATED_ACT,   /* MT has activated an EPS bearer context   */
+  NET_PDN_NW_DEDICATED_DEACT, /* NW has deactivated an EPS bearer context */
+  NET_PDN_MT_DEDICATED_DEACT, /* MT has deactivated an EPS bearer context */
 } network_pdn_state_t;
 
 /*
@@ -181,11 +181,11 @@ typedef struct {
 #define NET_FORMAT_LONG_SIZE    16  /* Long alphanumeric format     */
 #define NET_FORMAT_SHORT_SIZE   8   /* Short alphanumeric format        */
 #define NET_FORMAT_NUM_SIZE 6   /* Numeric format (PLMN identifier  */
-    union {
-        unsigned char alpha_long[NET_FORMAT_LONG_SIZE+1];
-        unsigned char alpha_short[NET_FORMAT_SHORT_SIZE+1];
-        unsigned char num[NET_FORMAT_NUM_SIZE+1];
-    } id;
+  union {
+    unsigned char alpha_long[NET_FORMAT_LONG_SIZE+1];
+    unsigned char alpha_short[NET_FORMAT_SHORT_SIZE+1];
+    unsigned char num[NET_FORMAT_NUM_SIZE+1];
+  } id;
 } network_plmn_t;
 
 /*
@@ -194,11 +194,11 @@ typedef struct {
  * -------------------------------
  */
 typedef struct {
-    int gbrUL;      /* Guaranteed Bit Rate for uplink   */
-    int gbrDL;      /* Guaranteed Bit Rate for downlink */
-    int mbrUL;      /* Maximum Bit Rate for uplink      */
-    int mbrDL;      /* Maximum Bit Rate for downlink    */
-    int qci;        /* QoS Class Identifier         */
+  int gbrUL;      /* Guaranteed Bit Rate for uplink   */
+  int gbrDL;      /* Guaranteed Bit Rate for downlink */
+  int mbrUL;      /* Maximum Bit Rate for uplink      */
+  int mbrDL;      /* Maximum Bit Rate for downlink    */
+  int qci;        /* QoS Class Identifier         */
 } network_qos_t;
 
 /*
@@ -207,11 +207,11 @@ typedef struct {
  * -----------------------------
  */
 typedef struct {
-    unsigned char protocol; /* Protocol identifier      */
-    unsigned char tos;      /* Type of service      */
+  unsigned char protocol; /* Protocol identifier      */
+  unsigned char tos;      /* Type of service      */
 #define NET_PACKET_FILTER_IPV4_ADDR_SIZE    4
-    unsigned char addr[NET_PACKET_FILTER_IPV4_ADDR_SIZE];
-    unsigned char mask[NET_PACKET_FILTER_IPV4_ADDR_SIZE];
+  unsigned char addr[NET_PACKET_FILTER_IPV4_ADDR_SIZE];
+  unsigned char mask[NET_PACKET_FILTER_IPV4_ADDR_SIZE];
 } network_ipv4_data_t;
 
 /*
@@ -220,13 +220,13 @@ typedef struct {
  * -----------------------------
  */
 typedef struct {
-    unsigned char nh;       /* Next header type     */
-    unsigned char tf;       /* Traffic class        */
+  unsigned char nh;       /* Next header type     */
+  unsigned char tf;       /* Traffic class        */
 #define NET_PACKET_FILTER_IPV6_ADDR_SIZE    16
-    unsigned char addr[NET_PACKET_FILTER_IPV6_ADDR_SIZE];
-    unsigned char mask[NET_PACKET_FILTER_IPV6_ADDR_SIZE];
-    unsigned int ipsec;     /* IPSec security parameter index */
-    unsigned int fl;        /* Flow label             */
+  unsigned char addr[NET_PACKET_FILTER_IPV6_ADDR_SIZE];
+  unsigned char mask[NET_PACKET_FILTER_IPV6_ADDR_SIZE];
+  unsigned int ipsec;     /* IPSec security parameter index */
+  unsigned int fl;        /* Flow label             */
 } network_ipv6_data_t;
 
 /*
@@ -235,18 +235,18 @@ typedef struct {
  * -------------
  */
 typedef struct {
-    unsigned char id;       /* Packet filter identifier */
+  unsigned char id;       /* Packet filter identifier */
 #define NET_PACKET_FILTER_DOWNLINK  0x01
 #define NET_PACKET_FILTER_UPLINK    0x02
 #define NET_PACKET_FILTER_BIDIR     0x03
-    unsigned char dir;      /* Packet filter direction  */
-    unsigned char precedence;   /* Evaluation precedence    */
-    union {
-        network_ipv4_data_t ipv4;
-        network_ipv6_data_t ipv6;
-    } data;
-    unsigned short lport;   /* Local (UE) port number   */
-    unsigned short rport;   /* Remote (network) port number */
+  unsigned char dir;      /* Packet filter direction  */
+  unsigned char precedence;   /* Evaluation precedence    */
+  union {
+    network_ipv4_data_t ipv4;
+    network_ipv6_data_t ipv6;
+  } data;
+  unsigned short lport;   /* Local (UE) port number   */
+  unsigned short rport;   /* Remote (network) port number */
 } network_pkf_t;
 
 /*
@@ -255,9 +255,9 @@ typedef struct {
  * ---------------------
  */
 typedef struct {
-    int n_pkfs;
+  int n_pkfs;
 #define NET_PACKET_FILTER_MAX   16
-    network_pkf_t *pkf[NET_PACKET_FILTER_MAX];
+  network_pkf_t *pkf[NET_PACKET_FILTER_MAX];
 } network_tft_t;
 
 /*

@@ -46,13 +46,14 @@ rlc_info_t Rlc_info_um;
 rlc_info_t Rlc_info_am_config;
 
 //-------------------------------------------------------------------
-void rrc_ue_get_mobile_id (void){
-//-------------------------------------------------------------------
- // TEMP : This function sets the mobile ID - 1st version, hard coded
- // Later, will be retrieved from configuration to allow sevearl mobile terminals
+void rrc_ue_get_mobile_id (void)
+{
+  //-------------------------------------------------------------------
+  // TEMP : This function sets the mobile ID - 1st version, hard coded
+  // Later, will be retrieved from configuration to allow sevearl mobile terminals
 
   rrc_ue_mobileId = 0;
-//#ifdef OAI_EMU
+  //#ifdef OAI_EMU
 #ifdef RRC_OAI_EMU
   rrc_ue_mobileId = rrc_ethernet_id - 1;
   msg ("[RRC CELL]rrc_ue_get_mobile_id - EMULATION - UE_ID initialized to: %d\n", rrc_ue_mobileId);
@@ -62,34 +63,35 @@ void rrc_ue_get_mobile_id (void){
 #endif
 }
 //-------------------------------------------------------------------
-int rrc_ue_get_initial_id (void){
-//-------------------------------------------------------------------
+int rrc_ue_get_initial_id (void)
+{
+  //-------------------------------------------------------------------
   int UE_Id = 99;
 
-//   #ifdef USER_MODE
-//   int uni;
-// 
-//   UE_Id = rrc_ue_mobileId;
-// 
-//   uni = uniform ();
-//   protocol_ms->rrc.IMEI[0] = (uni & 0x0F000000) >> 24;
-//   protocol_ms->rrc.IMEI[1] = (uni & 0x000F0000) >> 16;
-//   protocol_ms->rrc.IMEI[2] = (uni & 0x00000F00) >> 8;
-//   protocol_ms->rrc.IMEI[3] = uni & 0x0000000F;
-//   uni = uniform ();
-//   protocol_ms->rrc.IMEI[4] = (uni & 0x0F000000) >> 24;
-//   protocol_ms->rrc.IMEI[5] = (uni & 0x000F0000) >> 16;
-//   protocol_ms->rrc.IMEI[6] = (uni & 0x00000F00) >> 8;
-//   protocol_ms->rrc.IMEI[7] = uni & 0x0000000F;
-//   uni = uniform ();
-//   protocol_ms->rrc.IMEI[8] = (uni & 0x0F000000) >> 24;
-//   protocol_ms->rrc.IMEI[9] = (uni & 0x000F0000) >> 16;
-//   protocol_ms->rrc.IMEI[10] = (uni & 0x00000F00) >> 8;
-//   protocol_ms->rrc.IMEI[11] = uni & 0x0000000F;
-//   uni = uniform ();
-//   protocol_ms->rrc.IMEI[12] = (uni & 0x0F000000) >> 24;
-//   protocol_ms->rrc.IMEI[13] = (uni & 0x000F0000) >> 16;
-//   #else
+  //   #ifdef USER_MODE
+  //   int uni;
+  //
+  //   UE_Id = rrc_ue_mobileId;
+  //
+  //   uni = uniform ();
+  //   protocol_ms->rrc.IMEI[0] = (uni & 0x0F000000) >> 24;
+  //   protocol_ms->rrc.IMEI[1] = (uni & 0x000F0000) >> 16;
+  //   protocol_ms->rrc.IMEI[2] = (uni & 0x00000F00) >> 8;
+  //   protocol_ms->rrc.IMEI[3] = uni & 0x0000000F;
+  //   uni = uniform ();
+  //   protocol_ms->rrc.IMEI[4] = (uni & 0x0F000000) >> 24;
+  //   protocol_ms->rrc.IMEI[5] = (uni & 0x000F0000) >> 16;
+  //   protocol_ms->rrc.IMEI[6] = (uni & 0x00000F00) >> 8;
+  //   protocol_ms->rrc.IMEI[7] = uni & 0x0000000F;
+  //   uni = uniform ();
+  //   protocol_ms->rrc.IMEI[8] = (uni & 0x0F000000) >> 24;
+  //   protocol_ms->rrc.IMEI[9] = (uni & 0x000F0000) >> 16;
+  //   protocol_ms->rrc.IMEI[10] = (uni & 0x00000F00) >> 8;
+  //   protocol_ms->rrc.IMEI[11] = uni & 0x0000000F;
+  //   uni = uniform ();
+  //   protocol_ms->rrc.IMEI[12] = (uni & 0x0F000000) >> 24;
+  //   protocol_ms->rrc.IMEI[13] = (uni & 0x000F0000) >> 16;
+  //   #else
 
   protocol_ms->rrc.IMEI[0] = IMEI_D0;
   protocol_ms->rrc.IMEI[1] = IMEI_D1;
@@ -105,26 +107,27 @@ int rrc_ue_get_initial_id (void){
   protocol_ms->rrc.IMEI[11] = IMEI_D11;
   protocol_ms->rrc.IMEI[12] = IMEI_D12;
   protocol_ms->rrc.IMEI[13] = rrc_ue_mobileId;
-//   protocol_ms->rrc.IMEI[13] = IMEI_D13;
-//   #endif
+  //   protocol_ms->rrc.IMEI[13] = IMEI_D13;
+  //   #endif
   UE_Id = 32- rrc_ue_mobileId;
 
-  #ifdef DEBUG_RRC_STATE
-   msg ("[RRC CELL]rrc_ue_get_initial_id (UE_ID %d) IMEI initialized to:", UE_Id);
-   rrc_print_buffer ((char *)protocol_ms->rrc.IMEI, 14);
-  #endif
+#ifdef DEBUG_RRC_STATE
+  msg ("[RRC CELL]rrc_ue_get_initial_id (UE_ID %d) IMEI initialized to:", UE_Id);
+  rrc_print_buffer ((char *)protocol_ms->rrc.IMEI, 14);
+#endif
   return UE_Id;
 }
 
 //-----------------------------------------------------------------------------
-void rrc_ue_init (u8 Mod_id){
-//-----------------------------------------------------------------------------
+void rrc_ue_init (u8 Mod_id)
+{
+  //-----------------------------------------------------------------------------
   //  int i;
-  #ifdef DEBUG_RRC_STATE
+#ifdef DEBUG_RRC_STATE
   printk("\n\n***********************************************\n");
   printk("**************[RRC CELL][UE-INIT]**************\n");
   printk("***********************************************\n");
-  #endif
+#endif
   printk("[RRC CELL][UE-INIT] Init UE function start\n");
 
   // Initialize the control block for variables
@@ -155,18 +158,18 @@ void rrc_ue_init (u8 Mod_id){
   rrc_ue_fsm_init (protocol_ms->rrc.ue_initial_id);
   protocol_ms->rrc.rrc_currently_updating = FALSE;
 
-  #ifdef USER_MODE
-   #ifdef RRC_NETLINK
-   rrc_ue_netlink_init ();
-   #else
-   rrc_ue_sap_init (); // init FIFOs towards NAS
-   //qos_fifo_open ();
-   #endif
-  #endif
+#ifdef USER_MODE
+#ifdef RRC_NETLINK
+  rrc_ue_netlink_init ();
+#else
+  rrc_ue_sap_init (); // init FIFOs towards NAS
+  //qos_fifo_open ();
+#endif
+#endif
   //Initialise MBMS
-  #ifdef ALLOW_MBMS_PROTOCOL
+#ifdef ALLOW_MBMS_PROTOCOL
   rrc_ue_mbms_init();
-  #endif
+#endif
 
   rrc_init_mac_config();
 

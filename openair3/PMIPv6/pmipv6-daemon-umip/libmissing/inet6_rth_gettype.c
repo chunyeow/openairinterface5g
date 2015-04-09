@@ -6,7 +6,7 @@
 
 int inet6_rth_gettype(void *bp)
 {
-	uint8_t *rthp = (uint8_t *)bp;
+  uint8_t *rthp = (uint8_t *)bp;
 
-	return rthp[2];
+  return rthp[2];
 }

@@ -47,10 +47,10 @@
 
 /*! \fn server_socket_tcp_ip4()
 * \brief this function allow to run a server dedicated to IP v4 and TCP traffic .
-* \param[in] 
-* \param[out]  
-* \return void 
-* \note 
+* \param[in]
+* \param[out]
+* \return void
+* \note
 * @ingroup  _otg
 */
 void server_socket_tcp_ip4();

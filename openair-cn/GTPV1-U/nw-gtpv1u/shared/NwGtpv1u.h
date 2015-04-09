@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                             n w - g t p v 2 u                              * 
+ *                             n w - g t p v 2 u                              *
  *    G P R S    T u n n e l i n g    P r o t o c o l   v 2 u   S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -44,17 +44,17 @@
 /**
  * @file NwGtpv1u.h
  * @author Amit Chawre
- * @brief 
+ * @brief
  *
  * This header file contains all required definitions and functions
- * prototypes for using nw-gtpv1u library. 
+ * prototypes for using nw-gtpv1u library.
  *
  **/
 
 #define NW_GTPU_VERSION                                         (0x01)
 #define NW_GTP_PROTOCOL_TYPE_GTP                                (0x01)
 #define NW_GTP_PROTOCOL_TYPE_GTP_PRIME                          (0x00)
-  
+
 /*--------------------------------------------------------------------------*
  *                   S H A R E D     A P I    M A C R O S                   *
  *--------------------------------------------------------------------------*/
@@ -71,16 +71,15 @@
  *--------------------------------------------------------------------------*/
 
 typedef NwPtrT  NwGtpv1uStackHandleT;                     /**< Gtpv2 Stack Handle               */
-typedef NwPtrT  NwGtpv1uUlpHandleT;                       /**< Gtpv2 Stack Ulp Entity Handle    */ 
-typedef NwPtrT  NwGtpv1uUdpHandleT;                       /**< Gtpv2 Stack Udp Entity Handle    */ 
-typedef NwPtrT  NwGtpv1uMemMgrHandleT;                    /**< Gtpv2 Stack Mem Manager Handle   */ 
-typedef NwPtrT  NwGtpv1uTimerMgrHandleT;                  /**< Gtpv2 Stack Timer Manager Handle */ 
-typedef NwPtrT  NwGtpv1uLogMgrHandleT;                    /**< Gtpv2 Stack Log Mnagaer Handle   */ 
+typedef NwPtrT  NwGtpv1uUlpHandleT;                       /**< Gtpv2 Stack Ulp Entity Handle    */
+typedef NwPtrT  NwGtpv1uUdpHandleT;                       /**< Gtpv2 Stack Udp Entity Handle    */
+typedef NwPtrT  NwGtpv1uMemMgrHandleT;                    /**< Gtpv2 Stack Mem Manager Handle   */
+typedef NwPtrT  NwGtpv1uTimerMgrHandleT;                  /**< Gtpv2 Stack Timer Manager Handle */
+typedef NwPtrT  NwGtpv1uLogMgrHandleT;                    /**< Gtpv2 Stack Log Mnagaer Handle   */
 typedef NwPtrT  NwGtpv1uTimerHandleT;                     /**< Gtpv2 Stack Timer Handle         */
 typedef NwPtrT  NwGtpv1uMsgHandleT;                       /**< Gtpv2 Msg Handle                 */
 
-typedef struct NwGtpv1uStackConfig
-{
+typedef struct NwGtpv1uStackConfig {
   NwU16T udpSrcPort;
 } NwGtpv1uStackConfigT;
 
@@ -92,12 +91,11 @@ typedef struct NwGtpv1uStackConfig
  * Gtpv2 Stack ULP API type definitions
  *--------------------------------------------------------------------------*/
 
-/** 
- * APIs types between ULP and Stack 
+/**
+ * APIs types between ULP and Stack
  */
 
-typedef enum 
-{
+typedef enum {
   /* APIs from ULP to stack */
 
   NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT = 0x00000000,        /**< Create a local teid context on stack       */
@@ -128,35 +126,32 @@ typedef NwU32T  NwGtpv1uTrxnHandleT;        /**< Gtpv2 Transaction Handle */
 typedef NwU32T  NwGtpv1uUlpTrxnHandleT;     /**< Gtpv2 Ulp Transaction Handle */
 typedef NwU32T  NwGtpv1uUlpSessionHandleT;  /**< Gtpv2 Ulp session Handle */
 
-/** 
- * API information elements between ULP and Stack for 
- * creating a session. 
+/**
+ * API information elements between ULP and Stack for
+ * creating a session.
  */
 
-typedef struct 
-{
-  NW_IN    NwU32T                       teid; 
-  NW_IN    NwGtpv1uUlpSessionHandleT    hUlpSession; 
-  NW_OUT   NwGtpv1uStackSessionHandleT  hStackSession; 
+typedef struct {
+  NW_IN    NwU32T                       teid;
+  NW_IN    NwGtpv1uUlpSessionHandleT    hUlpSession;
+  NW_OUT   NwGtpv1uStackSessionHandleT  hStackSession;
 } NwGtpv1uCreateTunnelEndPointT;
 
-/** 
- * API information elements between ULP and Stack for 
- * destroying a session. 
+/**
+ * API information elements between ULP and Stack for
+ * destroying a session.
  */
 
-typedef struct 
-{
-  NW_IN   NwGtpv1uStackSessionHandleT   hStackSessionHandle; 
+typedef struct {
+  NW_IN   NwGtpv1uStackSessionHandleT   hStackSessionHandle;
 } NwGtpv1uDestroyTunnelEndPointT;
 
-/** 
- * API information elements between ULP and Stack for 
- * sending a Gtpv1u initial message. 
+/**
+ * API information elements between ULP and Stack for
+ * sending a Gtpv1u initial message.
  */
 
-typedef struct 
-{
+typedef struct {
   NW_IN    NwGtpv1uUlpTrxnHandleT        hUlpTrxn;
   NW_IN    NwU32T                        peerIp;
   NW_IN    NwU32T                        peerPort;
@@ -164,13 +159,12 @@ typedef struct
   NW_IN    NwU32T                        teid;
 } NwGtpv1uInitialReqInfoT;
 
-/** 
- * API information elements between ULP and Stack for 
- * sending a Gtpv1u triggered response message. 
+/**
+ * API information elements between ULP and Stack for
+ * sending a Gtpv1u triggered response message.
  */
 
-typedef struct 
-{
+typedef struct {
   NW_IN    NwGtpv1uUlpTrxnHandleT        hUlpTrxn;
   NW_IN    NwU32T                        peerIp;
   NW_IN    NwU32T                        peerPort;
@@ -180,13 +174,12 @@ typedef struct
   NW_IN    NwGtpv1uMsgHandleT            hMsg;
 } NwGtpv1uTriggeredRspInfoT;
 
-/** 
- * API information elements between ULP and Stack for 
- * sending a Gtpv1u triggered request message. 
+/**
+ * API information elements between ULP and Stack for
+ * sending a Gtpv1u triggered request message.
  */
 
-typedef struct 
-{
+typedef struct {
   NW_IN    NwGtpv1uUlpTrxnHandleT        hUlpTrxn;
   NW_IN    NwU32T                        peerIp;
   NW_IN    NwU32T                        peerPort;
@@ -197,13 +190,12 @@ typedef struct
 } NwGtpv1uTriggeredReqInfoT;
 
 
-/** 
- * API information elements between ULP and Stack for 
- * sending a Gtpv2 message over a session. 
+/**
+ * API information elements between ULP and Stack for
+ * sending a Gtpv2 message over a session.
  */
 
-typedef struct 
-{
+typedef struct {
   NW_IN    NwU32T                       teid;
   NW_IN    NwU32T                       ipAddr;
   NW_IN    NwU8T                        flags;
@@ -211,14 +203,13 @@ typedef struct
 } NwGtpv1uSendtoInfoT;
 
 
-/** 
- * API information elements between ULP and Stack for 
- * sending a Gtpv2 message over a session. 
+/**
+ * API information elements between ULP and Stack for
+ * sending a Gtpv2 message over a session.
  */
 
-typedef struct 
-{
-  NW_OUT   NwGtpv1uStackSessionHandleT  hStackSessionHandle; 
+typedef struct {
+  NW_OUT   NwGtpv1uStackSessionHandleT  hStackSessionHandle;
   NW_INOUT NwGtpv1uTrxnHandleT          hTrxn;
   NW_IN    NwGtpv1uUlpTrxnHandleT       hUlpTrxn;
   NW_IN    NwGtpv1uMsgTypeT            msgType;
@@ -226,14 +217,13 @@ typedef struct
   NW_IN    NwGtpv1uMsgHandleT           hMsg;
 } NwGtpv1uSendMsgInfoT;
 
-/** 
- * API information elements between ULP and Stack for 
- * receiving a Gtpv2 message over a session from stack. 
+/**
+ * API information elements between ULP and Stack for
+ * receiving a Gtpv2 message over a session from stack.
  */
 
-typedef struct
-{
-  NW_IN    NwGtpv1uUlpSessionHandleT    hUlpSession; 
+typedef struct {
+  NW_IN    NwGtpv1uUlpSessionHandleT    hUlpSession;
   NW_IN    NwGtpv1uUlpTrxnHandleT       hUlpTrxn;
   NW_IN    NwU32T                       teid;
   NW_IN    NwU32T                       peerIp;
@@ -242,14 +232,13 @@ typedef struct
   NW_IN    NwGtpv1uMsgHandleT           hMsg;         /**< Gtp Message handle                 */
 } NwGtpv1uRecvMsgInfoT;
 
-/** 
- * API information elements between ULP and Stack for 
- * receiving a Gtpv2 message over a session from stack. 
+/**
+ * API information elements between ULP and Stack for
+ * receiving a Gtpv2 message over a session from stack.
  */
 
-typedef struct
-{
-  NW_IN    NwGtpv1uUlpSessionHandleT    hUlpSession; 
+typedef struct {
+  NW_IN    NwGtpv1uUlpSessionHandleT    hUlpSession;
   NW_IN    NwGtpv1uTrxnHandleT          hTrxn;
 } NwGtpv1uNackInfoT;
 
@@ -257,16 +246,14 @@ typedef struct
  * Gtpv2 Stack API structure definition
  *--------------------------------------------------------------------------*/
 
-/** 
- * API structure between ULP and Stack 
+/**
+ * API structure between ULP and Stack
  */
 
-typedef struct 
-{
+typedef struct {
   NwGtpv1uUlpApiTypeT                   apiType;
   NwGtpv1uMsgHandleT                    hMsg;
-  union
-  {
+  union {
     NwGtpv1uCreateTunnelEndPointT       createTunnelEndPointInfo;
     NwGtpv1uDestroyTunnelEndPointT      destroyTunnelEndPointInfo;
     NwGtpv1uInitialReqInfoT             initialReqInfo;
@@ -292,11 +279,10 @@ typedef struct
  * Gtpv2 ULP entity definition
  */
 
-typedef struct 
-{
+typedef struct {
   NwGtpv1uUlpHandleT        hUlp;
-  NwGtpv1uRcT (*ulpReqCallback) ( NW_IN        NwGtpv1uUlpHandleT hUlp, 
-                            NW_IN        NwGtpv1uUlpApiT *pUlpApi);
+  NwGtpv1uRcT (*ulpReqCallback) ( NW_IN        NwGtpv1uUlpHandleT hUlp,
+                                  NW_IN        NwGtpv1uUlpApiT *pUlpApi);
 } NwGtpv1uUlpEntityT;
 
 
@@ -308,33 +294,31 @@ typedef struct
  * Gtpv2 UDP entity definition
  */
 
-typedef struct
-{
+typedef struct {
   NwGtpv1uUdpHandleT        hUdp;
-  NwGtpv1uRcT (*udpDataReqCallback) ( NW_IN     NwGtpv1uUdpHandleT udpHandle, 
-                                NW_IN     NwU8T* dataBuf, 
-                                NW_IN     NwU32T dataSize,
-                                NW_IN     NwU32T dataOffset,
-                                NW_IN     NwU32T peerIP,
-                                NW_IN     NwU16T peerPort);
+  NwGtpv1uRcT (*udpDataReqCallback) ( NW_IN     NwGtpv1uUdpHandleT udpHandle,
+                                      NW_IN     NwU8T* dataBuf,
+                                      NW_IN     NwU32T dataSize,
+                                      NW_IN     NwU32T dataOffset,
+                                      NW_IN     NwU32T peerIP,
+                                      NW_IN     NwU16T peerPort);
 } NwGtpv1uUdpEntityT;
 
 /**
  * Gtpv1u Memory Manager entity definition
  */
 
-typedef struct 
-{ 
+typedef struct {
   NwGtpv1uMemMgrHandleT         hMemMgr;
   void* (*memAlloc)( NW_IN      NwGtpv1uMemMgrHandleT hMemMgr,
-      NW_IN      NwU32T memSize,
-      NW_IN      NwCharT* fileName,
-      NW_IN      NwU32T lineNumber);
+                     NW_IN      NwU32T memSize,
+                     NW_IN      NwCharT* fileName,
+                     NW_IN      NwU32T lineNumber);
 
   void (*memFree) ( NW_IN       NwGtpv1uMemMgrHandleT hMemMgr,
-      NW_IN       void* hMem,
-      NW_IN       NwCharT* fileName,
-      NW_IN       NwU32T lineNumber);
+                    NW_IN       void* hMem,
+                    NW_IN       NwCharT* fileName,
+                    NW_IN       NwU32T lineNumber);
 } NwGtpv1uMemMgrEntityT;
 
 
@@ -349,18 +333,17 @@ typedef struct
  * Gtpv2 Timer Manager entity definition
  */
 
-typedef struct 
-{
+typedef struct {
   NwGtpv1uTimerMgrHandleT        tmrMgrHandle;
-  NwGtpv1uRcT (*tmrStartCallback)( NW_IN       NwGtpv1uTimerMgrHandleT tmrMgrHandle, 
-                             NW_IN       NwU32T timeoutSecs,
-                             NW_IN       NwU32T timeoutUsec,
-                             NW_IN       NwU32T tmrType, 
-                             NW_IN       void* tmrArg, 
-                             NW_OUT      NwGtpv1uTimerHandleT* tmrHandle);
+  NwGtpv1uRcT (*tmrStartCallback)( NW_IN       NwGtpv1uTimerMgrHandleT tmrMgrHandle,
+                                   NW_IN       NwU32T timeoutSecs,
+                                   NW_IN       NwU32T timeoutUsec,
+                                   NW_IN       NwU32T tmrType,
+                                   NW_IN       void* tmrArg,
+                                   NW_OUT      NwGtpv1uTimerHandleT* tmrHandle);
 
-  NwGtpv1uRcT (*tmrStopCallback) ( NW_IN       NwGtpv1uTimerMgrHandleT tmrMgrHandle, 
-                             NW_IN       NwGtpv1uTimerHandleT tmrHandle);
+  NwGtpv1uRcT (*tmrStopCallback) ( NW_IN       NwGtpv1uTimerMgrHandleT tmrMgrHandle,
+                                   NW_IN       NwGtpv1uTimerHandleT tmrHandle);
 } NwGtpv1uTimerMgrEntityT;
 
 
@@ -372,14 +355,13 @@ typedef struct
  * Gtpv2 Log manager entity definition
  */
 
-typedef struct
-{
+typedef struct {
   NwGtpv1uLogMgrHandleT          logMgrHandle;
-  NwGtpv1uRcT (*logReqCallback) (NW_IN      NwGtpv1uLogMgrHandleT logMgrHandle, 
-                           NW_IN      NwU32T logLevel,
-                           NW_IN      NwCharT* file,
-                           NW_IN      NwU32T line,
-                           NW_IN      NwCharT* logStr);
+  NwGtpv1uRcT (*logReqCallback) (NW_IN      NwGtpv1uLogMgrHandleT logMgrHandle,
+                                 NW_IN      NwU32T logLevel,
+                                 NW_IN      NwCharT* file,
+                                 NW_IN      NwU32T line,
+                                 NW_IN      NwCharT* logStr);
 } NwGtpv1uLogMgrEntityT;
 
 
@@ -390,12 +372,12 @@ typedef struct
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
 /*---------------------------------------------------------------------------
  *  Constructor
  *--------------------------------------------------------------------------*/
 
-/** 
+/**
  Initialize the nw-gtpv1u stack.
 
  @param[in,out] phGtpv1uStackHandle : Pointer to stack handle
@@ -408,7 +390,7 @@ nwGtpv1uInitialize( NW_INOUT NwGtpv1uStackHandleT* phGtpv1uStackHandle);
  * Destructor
  *--------------------------------------------------------------------------*/
 
-/** 
+/**
  Destroy the nw-gtpv1u stack.
 
  @param[in] hGtpv1uStackHandle : Stack handle
@@ -421,7 +403,7 @@ nwGtpv1uFinalize( NW_IN  NwGtpv1uStackHandleT hGtpv1uStackHandle);
  * Configuration Get/Set Operations
  *--------------------------------------------------------------------------*/
 
-/** 
+/**
  Set Configuration for the nw-gtpv1u stack.
 
  @param[in,out] phGtpv1uStackHandle : Pointer to stack handle
@@ -430,7 +412,7 @@ nwGtpv1uFinalize( NW_IN  NwGtpv1uStackHandleT hGtpv1uStackHandle);
 NwGtpv1uRcT
 NwGtpv1uConfigSet( NW_IN NwGtpv1uStackHandleT* phGtpv1uStackHandle, NW_IN NwGtpv1uStackConfigT* pConfig);
 
-/** 
+/**
  Get Configuration for the nw-gtpv1u stack.
 
  @param[in,out] phGtpv1uStackHandle : Pointer to stack handle
@@ -439,7 +421,7 @@ NwGtpv1uConfigSet( NW_IN NwGtpv1uStackHandleT* phGtpv1uStackHandle, NW_IN NwGtpv
 NwGtpv1uRcT
 NwGtpv1uConfigGet( NW_IN NwGtpv1uStackHandleT* phGtpv1uStackHandle, NW_OUT NwGtpv1uStackConfigT* pConfig);
 
-/** 
+/**
  Set ULP entity for the stack.
 
  @param[in] hGtpv1uStackHandle : Stack handle
@@ -449,9 +431,9 @@ NwGtpv1uConfigGet( NW_IN NwGtpv1uStackHandleT* phGtpv1uStackHandle, NW_OUT NwGtp
 
 NwGtpv1uRcT
 nwGtpv1uSetUlpEntity( NW_IN NwGtpv1uStackHandleT hGtpv1uStackHandle,
-                   NW_IN NwGtpv1uUlpEntityT* pUlpEntity);
+                      NW_IN NwGtpv1uUlpEntityT* pUlpEntity);
 
-/** 
+/**
  Set UDP entity for the stack.
 
  @param[in] hGtpv1uStackHandle : Stack handle
@@ -461,9 +443,9 @@ nwGtpv1uSetUlpEntity( NW_IN NwGtpv1uStackHandleT hGtpv1uStackHandle,
 
 NwGtpv1uRcT
 nwGtpv1uSetUdpEntity( NW_IN NwGtpv1uStackHandleT hGtpv1uStackHandle,
-                   NW_IN NwGtpv1uUdpEntityT* pUdpEntity);
+                      NW_IN NwGtpv1uUdpEntityT* pUdpEntity);
 
-/** 
+/**
  Set MemMgr entity for the stack.
 
  @param[in] hGtpv1uStackHandle : Stack handle
@@ -473,10 +455,10 @@ nwGtpv1uSetUdpEntity( NW_IN NwGtpv1uStackHandleT hGtpv1uStackHandle,
 
 NwGtpv1uRcT
 nwGtpv1uSetMemMgrEntity( NW_IN NwGtpv1uStackHandleT hGtpv1uStackHandle,
-                        NW_IN NwGtpv1uMemMgrEntityT* pMemMgr);
+                         NW_IN NwGtpv1uMemMgrEntityT* pMemMgr);
 
 
-/** 
+/**
  Set TmrMgr entity for the stack.
 
  @param[in] hGtpv1uStackHandle : Stack handle
@@ -486,9 +468,9 @@ nwGtpv1uSetMemMgrEntity( NW_IN NwGtpv1uStackHandleT hGtpv1uStackHandle,
 
 NwGtpv1uRcT
 nwGtpv1uSetTimerMgrEntity( NW_IN NwGtpv1uStackHandleT hGtpv1uStackHandle,
-                        NW_IN NwGtpv1uTimerMgrEntityT* pTmrMgr);
+                           NW_IN NwGtpv1uTimerMgrEntityT* pTmrMgr);
 
-/** 
+/**
  Set LogMgr entity for the stack.
 
  @param[in] hGtpv1uStackHandle : Stack handle
@@ -498,9 +480,9 @@ nwGtpv1uSetTimerMgrEntity( NW_IN NwGtpv1uStackHandleT hGtpv1uStackHandle,
 
 NwGtpv1uRcT
 nwGtpv1uSetLogMgrEntity( NW_IN NwGtpv1uStackHandleT hGtpv1uStackHandle,
-                      NW_IN NwGtpv1uLogMgrEntityT* pLogMgr);
+                         NW_IN NwGtpv1uLogMgrEntityT* pLogMgr);
 
-/** 
+/**
  Set log level for the stack.
 
  @param[in] hGtpv1uStackHandle : Stack handle
@@ -526,12 +508,12 @@ nwGtpv1uSetLogLevel( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
  @return NW_GTPV1U_OK on success.
  */
 
-NwGtpv1uRcT 
+NwGtpv1uRcT
 nwGtpv1uProcessUdpReq( NW_IN NwGtpv1uStackHandleT hGtpv1uStackHandle,
-                    NW_IN NwU8T* udpData,
-                    NW_IN NwU32T udpDataLen,
-                    NW_IN NwU16T peerPort,
-                    NW_IN NwU32T peerIP);
+                       NW_IN NwU8T* udpData,
+                       NW_IN NwU32T udpDataLen,
+                       NW_IN NwU16T peerPort,
+                       NW_IN NwU32T peerIP);
 
 /*---------------------------------------------------------------------------
  * Process Request from Upper Layer

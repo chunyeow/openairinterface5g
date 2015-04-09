@@ -27,20 +27,20 @@
 
  *******************************************************************************/
 /*****************************************************************************
-Source		emm_msg.h
+Source    emm_msg.h
 
-Version		0.1
+Version   0.1
 
-Date		2012/09/27
+Date    2012/09/27
 
-Product		NAS stack
+Product   NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem EPS Mobility Management
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Defines EPS Mobility Management messages and functions used
-		to encode and decode
+Description Defines EPS Mobility Management messages and functions used
+    to encode and decode
 
 *****************************************************************************/
 #ifndef __EMM_MSG_H__
@@ -93,36 +93,36 @@ Description	Defines EPS Mobility Management messages and functions used
  * ----------------------------------
  */
 typedef union {
-    emm_msg_header_t header;
-    attach_request_msg attach_request;
-    attach_accept_msg attach_accept;
-    attach_complete_msg attach_complete;
-    attach_reject_msg attach_reject;
-    detach_request_msg detach_request;
-    detach_accept_msg detach_accept;
-    tracking_area_update_request_msg tracking_area_update_request;
-    tracking_area_update_accept_msg tracking_area_update_accept;
-    tracking_area_update_complete_msg tracking_area_update_complete;
-    tracking_area_update_reject_msg tracking_area_update_reject;
-    extended_service_request_msg extended_service_request;
-    service_request_msg service_request;
-    service_reject_msg service_reject;
-    guti_reallocation_command_msg guti_reallocation_command;
-    guti_reallocation_complete_msg guti_reallocation_complete;
-    authentication_request_msg authentication_request;
-    authentication_response_msg authentication_response;
-    authentication_reject_msg authentication_reject;
-    authentication_failure_msg authentication_failure;
-    identity_request_msg identity_request;
-    identity_response_msg identity_response;
-    security_mode_command_msg security_mode_command;
-    security_mode_complete_msg security_mode_complete;
-    security_mode_reject_msg security_mode_reject;
-    emm_status_msg emm_status;
-    emm_information_msg emm_information;
-    downlink_nas_transport_msg downlink_nas_transport;
-    uplink_nas_transport_msg uplink_nas_transport;
-    cs_service_notification_msg cs_service_notification;
+  emm_msg_header_t header;
+  attach_request_msg attach_request;
+  attach_accept_msg attach_accept;
+  attach_complete_msg attach_complete;
+  attach_reject_msg attach_reject;
+  detach_request_msg detach_request;
+  detach_accept_msg detach_accept;
+  tracking_area_update_request_msg tracking_area_update_request;
+  tracking_area_update_accept_msg tracking_area_update_accept;
+  tracking_area_update_complete_msg tracking_area_update_complete;
+  tracking_area_update_reject_msg tracking_area_update_reject;
+  extended_service_request_msg extended_service_request;
+  service_request_msg service_request;
+  service_reject_msg service_reject;
+  guti_reallocation_command_msg guti_reallocation_command;
+  guti_reallocation_complete_msg guti_reallocation_complete;
+  authentication_request_msg authentication_request;
+  authentication_response_msg authentication_response;
+  authentication_reject_msg authentication_reject;
+  authentication_failure_msg authentication_failure;
+  identity_request_msg identity_request;
+  identity_response_msg identity_response;
+  security_mode_command_msg security_mode_command;
+  security_mode_complete_msg security_mode_complete;
+  security_mode_reject_msg security_mode_reject;
+  emm_status_msg emm_status;
+  emm_information_msg emm_information;
+  downlink_nas_transport_msg downlink_nas_transport;
+  uplink_nas_transport_msg uplink_nas_transport;
+  cs_service_notification_msg cs_service_notification;
 } EMM_msg;
 
 

@@ -63,16 +63,16 @@
  */
 
 typedef struct extended_service_request_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                 protocoldiscriminator:4;
-    SecurityHeaderType                    securityheadertype:4;
-    MessageType                           messagetype;
-    ServiceType                           servicetype;
-    NasKeySetIdentifier                   naskeysetidentifier;
-    MobileIdentity                        mtmsi;
-    /* Optional fields */
-    uint32_t                              presencemask;
-    CsfbResponse                          csfbresponse;
+  /* Mandatory fields */
+  ProtocolDiscriminator                 protocoldiscriminator:4;
+  SecurityHeaderType                    securityheadertype:4;
+  MessageType                           messagetype;
+  ServiceType                           servicetype;
+  NasKeySetIdentifier                   naskeysetidentifier;
+  MobileIdentity                        mtmsi;
+  /* Optional fields */
+  uint32_t                              presencemask;
+  CsfbResponse                          csfbresponse;
 } extended_service_request_msg;
 
 int decode_extended_service_request(extended_service_request_msg *extendedservicerequest, uint8_t *buffer, uint32_t len);

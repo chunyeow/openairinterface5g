@@ -27,17 +27,17 @@
 
  *******************************************************************************/
 /*****************************************************************************
-Version		0.1
+Version   0.1
 
-Date		2012/09/27
+Date    2012/09/27
 
-Product		NAS stack
+Product   NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem EPS Mobility Management
 
-Author		Frederic Maurel, Sebastien Roux
+Author    Frederic Maurel, Sebastien Roux
 
-Description	Defines identifiers of the EPS Mobility Management messages.
+Description Defines identifiers of the EPS Mobility Management messages.
 
 *****************************************************************************/
 #ifndef __EMM_MSGDEF_H__
@@ -50,20 +50,20 @@ Description	Defines identifiers of the EPS Mobility Management messages.
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
 
-/* Header length boundaries of EPS Mobility Management messages	 */
-#define EMM_HEADER_LENGTH		sizeof(emm_msg_header_t)
-#define EMM_HEADER_MINIMUM_LENGTH	EMM_HEADER_LENGTH
-#define EMM_HEADER_MAXIMUM_LENGTH	EMM_HEADER_LENGTH
+/* Header length boundaries of EPS Mobility Management messages  */
+#define EMM_HEADER_LENGTH   sizeof(emm_msg_header_t)
+#define EMM_HEADER_MINIMUM_LENGTH EMM_HEADER_LENGTH
+#define EMM_HEADER_MAXIMUM_LENGTH EMM_HEADER_LENGTH
 
 /* EPS Mobility Management Security header type */
-#define SECURITY_HEADER_TYPE_NOT_PROTECTED			0b0000
-#define SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED		0b0001
-#define SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_CYPHERED	0b0010
-#define SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_NEW		0b0011
-#define SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_CYPHERED_NEW	0b0100
-#define SECURITY_HEADER_TYPE_SERVICE_REQUEST			0b1100
+#define SECURITY_HEADER_TYPE_NOT_PROTECTED      0b0000
+#define SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED    0b0001
+#define SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_CYPHERED 0b0010
+#define SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_NEW    0b0011
+#define SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_CYPHERED_NEW 0b0100
+#define SECURITY_HEADER_TYPE_SERVICE_REQUEST      0b1100
 
-/* Message identifiers for EPS Mobility Management		 */
+/* Message identifiers for EPS Mobility Management     */
 # define ATTACH_REQUEST                0b01000001 /* 65 = 0x41 */
 # define ATTACH_ACCEPT                 0b01000010 /* 66 = 0x42 */
 # define ATTACH_COMPLETE               0b01000011 /* 67 = 0x43 */
@@ -106,24 +106,24 @@ Description	Defines identifiers of the EPS Mobility Management messages.
 /*
  * Header of EPS Mobility Management plain NAS message
  * ---------------------------------------------------
- *	 8     7      6      5     4      3      2      1
- *	+-----------------------+------------------------+
- *	| Security header type	| Protocol discriminator |
- *	+-----------------------+------------------------+
- *	|		  Message type			 |
- *	+-----------------------+------------------------+
+ *   8     7      6      5     4      3      2      1
+ *  +-----------------------+------------------------+
+ *  | Security header type  | Protocol discriminator |
+ *  +-----------------------+------------------------+
+ *  |     Message type       |
+ *  +-----------------------+------------------------+
  */
 typedef struct {
 #ifdef __LITTLE_ENDIAN_BITFIELD
-    uint8_t protocol_discriminator:4;
-    uint8_t security_header_type:4;
+  uint8_t protocol_discriminator:4;
+  uint8_t security_header_type:4;
 #endif
 #ifdef __BIG_ENDIAN_BITFIELD
-    uint8_t security_header_type:4;
-    uint8_t protocol_discriminator:4;
+  uint8_t security_header_type:4;
+  uint8_t protocol_discriminator:4;
 #endif
-    uint8_t message_type;
-}__attribute__((__packed__)) emm_msg_header_t;
+  uint8_t message_type;
+} __attribute__((__packed__)) emm_msg_header_t;
 
 /****************************************************************************/
 /********************  G L O B A L    V A R I A B L E S  ********************/

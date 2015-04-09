@@ -22,27 +22,26 @@
 
 ENV *rc_new_env(int size)
 {
-	ENV *p;
+  ENV *p;
 
-	if (size < 1)
-		return NULL;
+  if (size < 1)
+    return NULL;
 
-	if ((p = malloc(sizeof(*p))) == NULL)
-		return NULL;
+  if ((p = malloc(sizeof(*p))) == NULL)
+    return NULL;
 
-	if ((p->env = malloc(size * sizeof(char *))) == NULL)
-	{
-		rc_log(LOG_CRIT, "rc_new_env: out of memory");
-		free(p);
-		return NULL;
-	}
+  if ((p->env = malloc(size * sizeof(char *))) == NULL) {
+    rc_log(LOG_CRIT, "rc_new_env: out of memory");
+    free(p);
+    return NULL;
+  }
 
-	p->env[0] = NULL;
+  p->env[0] = NULL;
 
-	p->size = 0;
-	p->maxsize = size;
+  p->size = 0;
+  p->maxsize = size;
 
-	return p;
+  return p;
 }
 
 /*
@@ -54,8 +53,8 @@ ENV *rc_new_env(int size)
 
 void rc_free_env(ENV *env)
 {
-	free(env->env);
-	free(env);
+  free(env->env);
+  free(env);
 }
 
 /*
@@ -67,42 +66,40 @@ void rc_free_env(ENV *env)
 
 int rc_add_env(ENV *env, char *name, char *value)
 {
-	int i;
-	char *new_env;
+  int i;
+  char *new_env;
 
-	for (i = 0; env->env[i] != NULL; i++)
-	{
-		if (strncmp(env->env[i], name, MAX(strchr(env->env[i], '=') - env->env[i], (int)strlen(name))) == 0)
-			break;
-	}
+  for (i = 0; env->env[i] != NULL; i++) {
+    if (strncmp(env->env[i], name, MAX(strchr(env->env[i], '=') - env->env[i], (int)strlen(name))) == 0)
+      break;
+  }
 
-	if (env->env[i])
-	{
-		if ((new_env = realloc(env->env[i], strlen(name)+strlen(value)+2)) == NULL)
-			return -1;
+  if (env->env[i]) {
+    if ((new_env = realloc(env->env[i], strlen(name)+strlen(value)+2)) == NULL)
+      return -1;
 
-		env->env[i] = new_env;
+    env->env[i] = new_env;
 
-		sprintf(env->env[i],"%s=%s", name, value);
-	} else {
-		if (env->size == (env->maxsize-1)) {
-			rc_log(LOG_CRIT, "rc_add_env: not enough space for environment (increase ENV_SIZE)");
-			return -1;
-		}
+    sprintf(env->env[i],"%s=%s", name, value);
+  } else {
+    if (env->size == (env->maxsize-1)) {
+      rc_log(LOG_CRIT, "rc_add_env: not enough space for environment (increase ENV_SIZE)");
+      return -1;
+    }
 
-		if ((env->env[env->size] = malloc(strlen(name)+strlen(value)+2)) == NULL) {
-			rc_log(LOG_CRIT, "rc_add_env: out of memory");
-			return -1;
-		}
+    if ((env->env[env->size] = malloc(strlen(name)+strlen(value)+2)) == NULL) {
+      rc_log(LOG_CRIT, "rc_add_env: out of memory");
+      return -1;
+    }
 
-		sprintf(env->env[env->size],"%s=%s", name, value);
+    sprintf(env->env[env->size],"%s=%s", name, value);
 
-		env->size++;
+    env->size++;
 
-		env->env[env->size] = NULL;
-	}
+    env->env[env->size] = NULL;
+  }
 
-	return 0;
+  return 0;
 }
 
 /*
@@ -114,31 +111,28 @@ int rc_add_env(ENV *env, char *name, char *value)
 
 int rc_import_env(ENV *env, char **import)
 {
-	char *es;
+  char *es;
 
-	while (*import)
-	{
-		es = strchr(*import, '=');
+  while (*import) {
+    es = strchr(*import, '=');
 
-		if (!es)
-		{
-			import++;
-			continue;
-		}
+    if (!es) {
+      import++;
+      continue;
+    }
 
-		/* ok, i grant thats not very clean... */
-		*es = '\0';
+    /* ok, i grant thats not very clean... */
+    *es = '\0';
 
-		if (rc_add_env(env, *import, es+1) < 0)
-		{
-			*es = '=';
-			return -1;
-		}
+    if (rc_add_env(env, *import, es+1) < 0) {
+      *es = '=';
+      return -1;
+    }
 
-		*es = '=';
+    *es = '=';
 
-		import++;
-	}
+    import++;
+  }
 
-	return 0;
+  return 0;
 }

@@ -37,11 +37,11 @@
 void
 doit (void)
 {
-    s6a_fd_init();
+  s6a_fd_init();
 
-    sleep(1);
+  sleep(1);
 
-    s6a_fd_stop();
+  s6a_fd_stop();
 
-    success ("freediameter start/stop ok\n");
+  success ("freediameter start/stop ok\n");
 }

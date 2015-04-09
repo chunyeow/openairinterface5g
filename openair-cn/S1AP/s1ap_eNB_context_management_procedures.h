@@ -32,7 +32,7 @@
 
 
 int s1ap_ue_context_release_complete(instance_t instance,
-                             s1ap_ue_release_complete_t *ue_release_complete_p);
+                                     s1ap_ue_release_complete_t *ue_release_complete_p);
 
 int s1ap_ue_context_release_req(instance_t instance,
                                 s1ap_ue_release_req_t *ue_release_req_p);

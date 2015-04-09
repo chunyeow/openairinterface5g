@@ -28,20 +28,20 @@
  *******************************************************************************/
 /*****************************************************************************
 
-Source		user_api.h
+Source    user_api.h
 
-Version		0.1
+Version   0.1
 
-Date		2012/02/28
+Date    2012/02/28
 
-Product		NAS stack
+Product   NAS stack
 
-Subsystem	Application Programming Interface
+Subsystem Application Programming Interface
 
-Author		Frederic Maurel
+Author    Frederic Maurel
 
-Description	Implements the API used by the NAS layer running in the UE
-		to send/receive message to/from the user application layer
+Description Implements the API used by the NAS layer running in the UE
+    to send/receive message to/from the user application layer
 
 *****************************************************************************/
 #ifndef __USER_API_H__

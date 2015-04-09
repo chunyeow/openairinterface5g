@@ -102,25 +102,33 @@ typedef struct rlc_am_entity_s {
   //-----------------------------
   // TX STATE VARIABLES
   //-----------------------------
-  rlc_usn_t           vt_a;         /*!< \brief Acknowledgement state variable. This state variable holds the value of the SN of the next AMD PDU for which a positive acknowledgment is to be received in-sequence, and it serves as the lower edge of the transmitting window. It is initially set to 0, and is updated whenever the AM RLC entity receives a positive acknowledgment for an AMD PDU with SN = VT(A).*/
+  rlc_usn_t
+  vt_a;         /*!< \brief Acknowledgement state variable. This state variable holds the value of the SN of the next AMD PDU for which a positive acknowledgment is to be received in-sequence, and it serves as the lower edge of the transmitting window. It is initially set to 0, and is updated whenever the AM RLC entity receives a positive acknowledgment for an AMD PDU with SN = VT(A).*/
   rlc_usn_t           vt_ms;        /*!< \brief Maximum send state variable. This state variable equals VT(A) + AM_Window_Size, and it serves as the higher edge of the transmitting window. */
-  rlc_usn_t           vt_s;         /*!< \brief  Send state variable. This state variable holds the value of the SN to be assigned for the next newly generated AMD PDU. It is initially set to 0, and is updated whenever the AM RLC entity delivers an AMD PDU with SN = VT(S).*/
-  rlc_usn_t           poll_sn;      /*!< \brief  Poll send state variable. This state variable holds the value of VT(S)-1 upon the most recent transmission of a RLC data PDU with the poll bit set to “1”. It is initially set to 0.*/
+  rlc_usn_t
+  vt_s;         /*!< \brief  Send state variable. This state variable holds the value of the SN to be assigned for the next newly generated AMD PDU. It is initially set to 0, and is updated whenever the AM RLC entity delivers an AMD PDU with SN = VT(S).*/
+  rlc_usn_t
+  poll_sn;      /*!< \brief  Poll send state variable. This state variable holds the value of VT(S)-1 upon the most recent transmission of a RLC data PDU with the poll bit set to “1”. It is initially set to 0.*/
 
   //-----------------------------
   // RX STATE VARIABLES
   //-----------------------------
-  rlc_usn_t           vr_r;         /*!< \brief Receive state variable. This state variable holds the value of the SN following the last in-sequence completely received AMD PDU, and it serves as the lower edge of the receiving window. It is initially set to 0, and is updated whenever the AM RLC entity receives an AMD PDU with SN = VR(R). */
-  rlc_usn_t           vr_mr;        /*!< \brief Maximum acceptable receive state variable. This state variable equals VR(R) + AM_Window_Size, and it holds the value of the SN of the first AMD PDU that is beyond the receiving window and serves as the higher edge of the receiving window. */
+  rlc_usn_t
+  vr_r;         /*!< \brief Receive state variable. This state variable holds the value of the SN following the last in-sequence completely received AMD PDU, and it serves as the lower edge of the receiving window. It is initially set to 0, and is updated whenever the AM RLC entity receives an AMD PDU with SN = VR(R). */
+  rlc_usn_t
+  vr_mr;        /*!< \brief Maximum acceptable receive state variable. This state variable equals VR(R) + AM_Window_Size, and it holds the value of the SN of the first AMD PDU that is beyond the receiving window and serves as the higher edge of the receiving window. */
   rlc_usn_t           vr_x;         /*!< \brief t-Reordering state variable. This state variable holds the value of the SN following the SN of the RLC data PDU which triggered t-Reordering. */
-  rlc_usn_t           vr_ms;        /*!< \brief Maximum STATUS transmit state variable. This state variable holds the highest possible value of the SN which can be indicated by “ACK_SN” when a STATUS PDU needs to be constructed. It is initially set to 0. */
-  rlc_usn_t           vr_h;         /*!< \brief Highest received state variable. This state variable holds the value of the SN following the SN of the RLC data PDU with the highest SN among received RLC data PDUs. It is initially set to 0. */
+  rlc_usn_t
+  vr_ms;        /*!< \brief Maximum STATUS transmit state variable. This state variable holds the highest possible value of the SN which can be indicated by “ACK_SN” when a STATUS PDU needs to be constructed. It is initially set to 0. */
+  rlc_usn_t
+  vr_h;         /*!< \brief Highest received state variable. This state variable holds the value of the SN following the SN of the RLC data PDU with the highest SN among received RLC data PDUs. It is initially set to 0. */
 
   //-----------------------------
   // TIMERS CONFIGURED BY RRC
   //-----------------------------
   rlc_am_timer_t  t_poll_retransmit; /*!< \brief This timer is used by the transmitting side of an AM RLC entity in order to retransmit a poll. */
-  rlc_am_timer_t  t_reordering;      /*!< \brief This timer is used by the receiving side of an AM RLC entity and receiving UM RLC entity in order to detect loss of RLC PDUs at lower layer (see sub clauses 5.1.2.2 and 5.1.3.2). If t-Reordering is running, t-Reordering shall not be started additionally, i.e. only one t-Reordering per RLC entity is running at a given time. */
+  rlc_am_timer_t
+  t_reordering;      /*!< \brief This timer is used by the receiving side of an AM RLC entity and receiving UM RLC entity in order to detect loss of RLC PDUs at lower layer (see sub clauses 5.1.2.2 and 5.1.3.2). If t-Reordering is running, t-Reordering shall not be started additionally, i.e. only one t-Reordering per RLC entity is running at a given time. */
   rlc_am_timer_t  t_status_prohibit; /*!< \brief This timer is used by the receiving side of an AM RLC entity in order to prohibit transmission of a STATUS PDU. */
 
   //-----------------------------

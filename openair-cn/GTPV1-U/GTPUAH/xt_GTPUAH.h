@@ -9,17 +9,15 @@
  *
  */
 
-enum xt_gtpuah_mode_
-{
-    PARAM_GTPUAH_ACTION_ADD = 1 << 8,
+enum xt_gtpuah_mode_ {
+  PARAM_GTPUAH_ACTION_ADD = 1 << 8,
 };
 
-struct xt_gtpuah_target_info
-{
-        u_int32_t laddr   __attribute__((aligned(8)));
-        u_int32_t raddr   __attribute__((aligned(8)));
-        u_int32_t ltun    __attribute__((aligned(8)));
-        u_int32_t rtun    __attribute__((aligned(8)));
-        u_int32_t action  __attribute__((aligned(8)));
+struct xt_gtpuah_target_info {
+  u_int32_t laddr   __attribute__((aligned(8)));
+  u_int32_t raddr   __attribute__((aligned(8)));
+  u_int32_t ltun    __attribute__((aligned(8)));
+  u_int32_t rtun    __attribute__((aligned(8)));
+  u_int32_t action  __attribute__((aligned(8)));
 };
 

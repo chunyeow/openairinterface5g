@@ -112,32 +112,33 @@ static int _emm_tracking_area_update_reject(void *args);
  ***************************************************************************/
 int emm_proc_tracking_area_update_reject(unsigned int ueid, int emm_cause)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc;
+  int rc;
 
-    /* Create temporary UE context */
-    emm_data_context_t ue_ctx;
-    memset(&ue_ctx, 0 , sizeof(emm_data_context_t));
-    ue_ctx.is_dynamic = FALSE;
-    ue_ctx.ueid = ueid;
+  /* Create temporary UE context */
+  emm_data_context_t ue_ctx;
+  memset(&ue_ctx, 0 , sizeof(emm_data_context_t));
+  ue_ctx.is_dynamic = FALSE;
+  ue_ctx.ueid = ueid;
 
-    /* Update the EMM cause code */
+  /* Update the EMM cause code */
 #if defined(EPC_BUILD)
-    if (ueid > 0)
+
+  if (ueid > 0)
 #else
-    if (ueid < EMM_DATA_NB_UE_MAX)
+  if (ueid < EMM_DATA_NB_UE_MAX)
 #endif
-    {
-        ue_ctx.emm_cause = emm_cause;
-    } else {
-        ue_ctx.emm_cause = EMM_CAUSE_ILLEGAL_UE;
-    }
+  {
+    ue_ctx.emm_cause = emm_cause;
+  } else {
+    ue_ctx.emm_cause = EMM_CAUSE_ILLEGAL_UE;
+  }
 
-    /* Do not accept attach request with protocol error */
-    rc = _emm_tracking_area_update_reject(&ue_ctx);
+  /* Do not accept attach request with protocol error */
+  rc = _emm_tracking_area_update_reject(&ue_ctx);
 
-    LOG_FUNC_RETURN(rc);
+  LOG_FUNC_RETURN(rc);
 }
 #endif // NAS_MME
 
@@ -170,14 +171,14 @@ int emm_proc_tracking_area_update_reject(unsigned int ueid, int emm_cause)
  ***************************************************************************/
 void *_emm_tau_t3430_handler(void *args)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    LOG_TRACE(WARNING, "EMM-PROC  - T3430 timer expired");
+  LOG_TRACE(WARNING, "EMM-PROC  - T3430 timer expired");
 
-    /* Stop timer T3430 */
-    T3430.id = nas_timer_stop(T3430.id);
+  /* Stop timer T3430 */
+  T3430.id = nas_timer_stop(T3430.id);
 
-    LOG_FUNC_RETURN(NULL);
+  LOG_FUNC_RETURN(NULL);
 }
 
 #endif // NAS_UE
@@ -200,39 +201,41 @@ void *_emm_tau_t3430_handler(void *args)
  ***************************************************************************/
 static int _emm_tracking_area_update_reject(void *args)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc = RETURNerror;
+  int rc = RETURNerror;
 
-    emm_data_context_t *emm_ctx = (emm_data_context_t *)(args);
+  emm_data_context_t *emm_ctx = (emm_data_context_t *)(args);
 
-    if (emm_ctx) {
-        emm_sap_t emm_sap;
-        LOG_TRACE(WARNING, "EMM-PROC  - EMM tracking area update procedure not accepted "
-                  "by the network (ueid=%08x, cause=%d)",
-                  emm_ctx->ueid, emm_ctx->emm_cause);
-        /*
-         * Notify EMM-AS SAP that Tracking Area Update Reject message has to be sent
-         * onto the network
-         */
-        emm_sap.primitive = EMMAS_ESTABLISH_REJ;
-        emm_sap.u.emm_as.u.establish.ueid = emm_ctx->ueid;
-        emm_sap.u.emm_as.u.establish.UEid.guti = NULL;
-        if (emm_ctx->emm_cause == EMM_CAUSE_SUCCESS) {
-            emm_ctx->emm_cause = EMM_CAUSE_ILLEGAL_UE;
-        }
-        emm_sap.u.emm_as.u.establish.emm_cause = emm_ctx->emm_cause;
-        emm_sap.u.emm_as.u.establish.NASinfo = EMM_AS_NAS_INFO_TAU;
-        emm_sap.u.emm_as.u.establish.NASmsg.length = 0;
-        emm_sap.u.emm_as.u.establish.NASmsg.value = NULL;
+  if (emm_ctx) {
+    emm_sap_t emm_sap;
+    LOG_TRACE(WARNING, "EMM-PROC  - EMM tracking area update procedure not accepted "
+              "by the network (ueid=%08x, cause=%d)",
+              emm_ctx->ueid, emm_ctx->emm_cause);
+    /*
+     * Notify EMM-AS SAP that Tracking Area Update Reject message has to be sent
+     * onto the network
+     */
+    emm_sap.primitive = EMMAS_ESTABLISH_REJ;
+    emm_sap.u.emm_as.u.establish.ueid = emm_ctx->ueid;
+    emm_sap.u.emm_as.u.establish.UEid.guti = NULL;
 
-        /* Setup EPS NAS security data */
-        emm_as_set_security_data(&emm_sap.u.emm_as.u.establish.sctx,
-                                 emm_ctx->security, FALSE, TRUE);
-        rc = emm_sap_send(&emm_sap);
+    if (emm_ctx->emm_cause == EMM_CAUSE_SUCCESS) {
+      emm_ctx->emm_cause = EMM_CAUSE_ILLEGAL_UE;
     }
 
-    LOG_FUNC_RETURN(rc);
+    emm_sap.u.emm_as.u.establish.emm_cause = emm_ctx->emm_cause;
+    emm_sap.u.emm_as.u.establish.NASinfo = EMM_AS_NAS_INFO_TAU;
+    emm_sap.u.emm_as.u.establish.NASmsg.length = 0;
+    emm_sap.u.emm_as.u.establish.NASmsg.value = NULL;
+
+    /* Setup EPS NAS security data */
+    emm_as_set_security_data(&emm_sap.u.emm_as.u.establish.sctx,
+                             emm_ctx->security, FALSE, TRUE);
+    rc = emm_sap_send(&emm_sap);
+  }
+
+  LOG_FUNC_RETURN(rc);
 }
 
 #endif // NAS_MME

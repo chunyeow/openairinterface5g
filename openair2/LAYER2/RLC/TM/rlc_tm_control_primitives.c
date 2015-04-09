@@ -56,7 +56,7 @@ void            rlc_tm_set_configured_parameters (struct rlc_tm_entity *rlcP, me
 void
 config_req_rlc_tm (struct rlc_tm_entity *rlcP, module_id_t module_idP, rlc_tm_info_t * config_tmP, rb_id_t rb_idP, rb_type_t rb_typeP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   mem_block_t *mb;
 
   mb = get_free_mem_block (sizeof (struct crlc_primitive));
@@ -75,6 +75,7 @@ config_req_rlc_tm (struct rlc_tm_entity *rlcP, module_id_t module_idP, rlc_tm_in
   ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.tm_parameters.size_input_sdus_buffer = 128;
   ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.tm_parameters.rb_id = rb_idP;
   send_rlc_tm_control_primitive (rlcP, module_idP, mb);
+
   if (rb_typeP != SIGNALLING_RADIO_BEARER) {
     rlcP->data_plane = 1;
   } else {
@@ -86,34 +87,39 @@ config_req_rlc_tm (struct rlc_tm_entity *rlcP, module_id_t module_idP, rlc_tm_in
 void
 send_rlc_tm_control_primitive (struct rlc_tm_entity *rlcP, module_id_t module_idP, mem_block_t *cprimitiveP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   switch (((struct crlc_primitive *) cprimitiveP->data)->type) {
 
-      case CRLC_CONFIG_REQ:
-        rlcP->module_id = module_idP;
-        switch (((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.tm_parameters.e_r) {
+  case CRLC_CONFIG_REQ:
+    rlcP->module_id = module_idP;
 
-            case RLC_E_R_ESTABLISHMENT:
-              if (rlc_tm_fsm_notify_event (rlcP, RLC_TM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
-                rlc_tm_set_configured_parameters (rlcP, cprimitiveP);   // the order of the calling of procedures...
-                rlc_tm_reset_state_variables (rlcP);    // ...must not ...
-              }
-              break;
+    switch (((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.tm_parameters.e_r) {
 
-            case RLC_E_R_RELEASE:
-              if (rlc_tm_fsm_notify_event (rlcP, RLC_TM_RECEIVE_CRLC_CONFIG_REQ_ENTER_NULL_STATE_EVENT)) {
-                rlc_tm_free_all_resources (rlcP);
-              }
-              break;
+    case RLC_E_R_ESTABLISHMENT:
+      if (rlc_tm_fsm_notify_event (rlcP, RLC_TM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
+        rlc_tm_set_configured_parameters (rlcP, cprimitiveP);   // the order of the calling of procedures...
+        rlc_tm_reset_state_variables (rlcP);    // ...must not ...
+      }
 
-            default:
-              msg ("[RLC_TM][ERROR] send_rlc_tm_control_primitive(CRLC_CONFIG_REQ) unknown parameter E_R\n");
-        }
-        break;
+      break;
 
-      default:
-        msg ("[RLC_TM %p][ERROR] send_rlc_tm_control_primitive(UNKNOWN CPRIMITIVE)\n", rlcP);
+    case RLC_E_R_RELEASE:
+      if (rlc_tm_fsm_notify_event (rlcP, RLC_TM_RECEIVE_CRLC_CONFIG_REQ_ENTER_NULL_STATE_EVENT)) {
+        rlc_tm_free_all_resources (rlcP);
+      }
+
+      break;
+
+    default:
+      msg ("[RLC_TM][ERROR] send_rlc_tm_control_primitive(CRLC_CONFIG_REQ) unknown parameter E_R\n");
+    }
+
+    break;
+
+  default:
+    msg ("[RLC_TM %p][ERROR] send_rlc_tm_control_primitive(UNKNOWN CPRIMITIVE)\n", rlcP);
   }
+
   free_mem_block (cprimitiveP);
 }
 
@@ -121,7 +127,7 @@ send_rlc_tm_control_primitive (struct rlc_tm_entity *rlcP, module_id_t module_id
 void
 init_rlc_tm (struct rlc_tm_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   memset (rlcP, 0, sizeof (struct rlc_tm_entity));
   list_init (&rlcP->pdus_to_mac_layer, NULL);
@@ -136,7 +142,7 @@ init_rlc_tm (struct rlc_tm_entity *rlcP)
 void
 rlc_tm_reset_state_variables (struct rlc_tm_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   rlcP->output_sdu_size_to_write = 0;
   rlcP->buffer_occupancy = 0;
   rlcP->nb_sdu = 0;
@@ -149,7 +155,7 @@ rlc_tm_reset_state_variables (struct rlc_tm_entity *rlcP)
 void
 rlc_tm_free_all_resources (struct rlc_tm_entity *rlcP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   int             index;
 
   list_free (&rlcP->pdus_to_mac_layer);
@@ -161,9 +167,11 @@ rlc_tm_free_all_resources (struct rlc_tm_entity *rlcP)
         free_mem_block (rlcP->input_sdus[index]);
       }
     }
+
     free_mem_block (rlcP->input_sdus_alloc);
     rlcP->input_sdus_alloc = NULL;
   }
+
   if ((rlcP->output_sdu_in_construction)) {
     free_mem_block (rlcP->output_sdu_in_construction);
   }
@@ -173,7 +181,7 @@ rlc_tm_free_all_resources (struct rlc_tm_entity *rlcP)
 void
 rlc_tm_set_configured_parameters (struct rlc_tm_entity *rlcP, mem_block_t *cprimitiveP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   // timers
   rlcP->timer_discard_init = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.tm_parameters.timer_discard;
 

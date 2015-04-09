@@ -50,26 +50,26 @@
  */
 int split_plmn(uint8_t plmn[3], uint8_t mcc[3], uint8_t mnc[3])
 {
-    if (plmn == NULL) {
-        return -1;
-    }
+  if (plmn == NULL) {
+    return -1;
+  }
 
-    mcc[0] =  plmn[0] & 0x0F;
-    mcc[1] = (plmn[0] & 0xF0) >> 4;
-    mcc[2] =  plmn[1] & 0x0F;
+  mcc[0] =  plmn[0] & 0x0F;
+  mcc[1] = (plmn[0] & 0xF0) >> 4;
+  mcc[2] =  plmn[1] & 0x0F;
 
-    if ((plmn[1] & 0xF0) == 0xF0) {
-        /* Only 2 digits case */
-        mnc[1] =  plmn[2] & 0x0F;
-        mnc[2] = (plmn[2] & 0xF0) >> 4;
-        mnc[0] = 0;
-    } else {
-        mnc[0] =   plmn[2] & 0x0F;
-        mnc[1] =  (plmn[2] & 0xF0) >> 4;
-        mnc[2] = ((plmn[1] & 0xF0) >> 4);
-    }
+  if ((plmn[1] & 0xF0) == 0xF0) {
+    /* Only 2 digits case */
+    mnc[1] =  plmn[2] & 0x0F;
+    mnc[2] = (plmn[2] & 0xF0) >> 4;
+    mnc[0] = 0;
+  } else {
+    mnc[0] =   plmn[2] & 0x0F;
+    mnc[1] =  (plmn[2] & 0xF0) >> 4;
+    mnc[2] = ((plmn[1] & 0xF0) >> 4);
+  }
 
-    return 0;
+  return 0;
 }
 
 /* Apply restriction (if any) to current 'visited' PLMN for this user.
@@ -83,46 +83,47 @@ int split_plmn(uint8_t plmn[3], uint8_t mcc[3], uint8_t mnc[3])
 
 int apply_access_restriction(char *imsi, uint8_t *vplmn)
 {
-    uint8_t vmcc[3], vmnc[3];
-    uint8_t hmcc[3], hmnc[3];
+  uint8_t vmcc[3], vmnc[3];
+  uint8_t hmcc[3], hmnc[3];
 
-    uint8_t imsi_hex[15];
+  uint8_t imsi_hex[15];
 
-    if (bcd_to_hex(imsi_hex, imsi, strlen(imsi)) != 0) {
-        fprintf(stderr, "Failed to convert imsi %s to hex representation\n",
-                imsi);
-        return -1;
-    }
+  if (bcd_to_hex(imsi_hex, imsi, strlen(imsi)) != 0) {
+    fprintf(stderr, "Failed to convert imsi %s to hex representation\n",
+            imsi);
+    return -1;
+  }
 
-    /* There is a problem while converting the PLMN... */
-    if (split_plmn(vplmn, vmcc, vmnc) != 0) {
-        fprintf(stderr, "Fail to convert vplmn %02x%02x%02x to mcc/mnc for imsi %s\n",
-                vplmn[0], vplmn[1], vplmn[2], imsi);
-        return -1;
-    }
+  /* There is a problem while converting the PLMN... */
+  if (split_plmn(vplmn, vmcc, vmnc) != 0) {
+    fprintf(stderr, "Fail to convert vplmn %02x%02x%02x to mcc/mnc for imsi %s\n",
+            vplmn[0], vplmn[1], vplmn[2], imsi);
+    return -1;
+  }
 
-    fprintf(stderr, "Converted %02x%02x%02x to plmn %u.%u\n", vplmn[0], vplmn[1], vplmn[2],
-            FORMAT_MCC(vmcc), FORMAT_MNC(vmnc));
+  fprintf(stderr, "Converted %02x%02x%02x to plmn %u.%u\n", vplmn[0], vplmn[1], vplmn[2],
+          FORMAT_MCC(vmcc), FORMAT_MNC(vmnc));
 
-    /* MCC is always 3 digits */
-    memcpy(hmcc, &imsi_hex[0], 3);
-    if (memcmp(vmcc, hmcc, 3) != 0) {
-        fprintf(stderr, "Only France MCC is handled for now, got imsi plmn %u.%u for a visited plmn %u.%u\n",
-                FORMAT_MCC(hmcc), FORMAT_MNC(hmnc), FORMAT_MCC(vmcc), FORMAT_MNC(vmnc));
-        /* Reject the association */
-        return -1;
-    }
+  /* MCC is always 3 digits */
+  memcpy(hmcc, &imsi_hex[0], 3);
 
-    /* In France MNC is composed of 2 digits and thus imsi by 14 digit */
-    hmnc[0] = 0;
-    memcpy(&hmnc[1], &imsi_hex[3], 2);
+  if (memcmp(vmcc, hmcc, 3) != 0) {
+    fprintf(stderr, "Only France MCC is handled for now, got imsi plmn %u.%u for a visited plmn %u.%u\n",
+            FORMAT_MCC(hmcc), FORMAT_MNC(hmnc), FORMAT_MCC(vmcc), FORMAT_MNC(vmnc));
+    /* Reject the association */
+    return -1;
+  }
 
-    if ((memcmp(vmcc, hmcc, 3) != 0) && (memcmp(vmnc, hmnc, 3) != 0)) {
-        fprintf(stderr, "UE is roaming from %u.%u to %u.%u which is not allowed"
-        " by the ODB\n", FORMAT_MCC(hmcc), FORMAT_MNC(hmnc), FORMAT_MCC(vmcc), FORMAT_MNC(vmnc));
-        return -1;
-    }
+  /* In France MNC is composed of 2 digits and thus imsi by 14 digit */
+  hmnc[0] = 0;
+  memcpy(&hmnc[1], &imsi_hex[3], 2);
 
-    /* User has successfully passed all the checking -> accept the association */
-    return 0;
+  if ((memcmp(vmcc, hmcc, 3) != 0) && (memcmp(vmnc, hmnc, 3) != 0)) {
+    fprintf(stderr, "UE is roaming from %u.%u to %u.%u which is not allowed"
+            " by the ODB\n", FORMAT_MCC(hmcc), FORMAT_MNC(hmnc), FORMAT_MCC(vmcc), FORMAT_MNC(vmnc));
+    return -1;
+  }
+
+  /* User has successfully passed all the checking -> accept the association */
+  return 0;
 }

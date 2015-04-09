@@ -40,8 +40,8 @@
 #define DEBUG_AUC_KDF 1
 
 uint8_t opc[16] = {
-    0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11,
-    0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11
+  0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11,
+  0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11
 };
 
 /*
@@ -56,13 +56,13 @@ inline
 void kdf(uint8_t *key, uint16_t key_len, uint8_t *s, uint16_t s_len, uint8_t *out,
          uint16_t out_len)
 {
-    struct hmac_sha256_ctx ctx;
+  struct hmac_sha256_ctx ctx;
 
-    memset(&ctx, 0, sizeof(ctx));
+  memset(&ctx, 0, sizeof(ctx));
 
-    hmac_sha256_set_key(&ctx, key_len, key);
-    hmac_sha256_update(&ctx, s_len, s);
-    hmac_sha256_digest(&ctx, out_len, out);
+  hmac_sha256_set_key(&ctx, key_len, key);
+  hmac_sha256_update(&ctx, s_len, s);
+  hmac_sha256_digest(&ctx, out_len, out);
 }
 
 /*
@@ -79,93 +79,97 @@ inline
 void derive_kasme(uint8_t ck[16], uint8_t ik[16], uint8_t plmn[3], uint8_t sqn[6],
                   uint8_t ak[6], uint8_t *kasme)
 {
-    uint8_t s[14];
-    int i;
-    uint8_t key[32];
+  uint8_t s[14];
+  int i;
+  uint8_t key[32];
 
-    /* The input key is equal to the concatenation of CK and IK */
-    memcpy(&key[0], ck, 16);
-    memcpy(&key[16], ik, 16);
+  /* The input key is equal to the concatenation of CK and IK */
+  memcpy(&key[0], ck, 16);
+  memcpy(&key[16], ik, 16);
 
-    SetOPc(opc);
+  SetOPc(opc);
 
-    /* FC */
-    s[0] = 0x10;
+  /* FC */
+  s[0] = 0x10;
 
-    /* SN id is composed of MCC and MNC
-     * Octets:
-     *   1      MCC digit 2 | MCC digit 1
-     *   2      MNC digit 3 | MCC digit 3
-     *   3      MNC digit 2 | MNC digit 1
-     */
-    memcpy(&s[1], plmn, 3);
+  /* SN id is composed of MCC and MNC
+   * Octets:
+   *   1      MCC digit 2 | MCC digit 1
+   *   2      MNC digit 3 | MCC digit 3
+   *   3      MNC digit 2 | MNC digit 1
+   */
+  memcpy(&s[1], plmn, 3);
 
-    /* L0 */
-    s[4] = 0x00;
-    s[5] = 0x03;
+  /* L0 */
+  s[4] = 0x00;
+  s[5] = 0x03;
 
-    /* P1 */
-    for (i = 0; i < 6; i++) {
-        s[6 + i] = sqn[i] ^ ak[i];
-    }
+  /* P1 */
+  for (i = 0; i < 6; i++) {
+    s[6 + i] = sqn[i] ^ ak[i];
+  }
 
-    /* L1 */
-    s[12] = 0x00;
-    s[13] = 0x06;
+  /* L1 */
+  s[12] = 0x00;
+  s[13] = 0x06;
 
 #if defined(DEBUG_AUC_KDF)
-    for (i = 0; i < 32; i++)
-        printf("0x%02x ", key[i]);
-    printf("\n");
-    for (i = 0; i < 14; i++)
-        printf("0x%02x ", s[i]);
-    printf("\n");
+
+  for (i = 0; i < 32; i++)
+    printf("0x%02x ", key[i]);
+
+  printf("\n");
+
+  for (i = 0; i < 14; i++)
+    printf("0x%02x ", s[i]);
+
+  printf("\n");
 #endif
 
-    kdf(key, 32, s, 14, kasme, 32);
+  kdf(key, 32, s, 14, kasme, 32);
 }
 
 int generate_vector(uint64_t imsi, uint8_t key[16], uint8_t plmn[3],
                     uint8_t sqn[6], auc_vector_t *vector)
 {
-    /* in E-UTRAN an authentication vector is composed of:
-     * - RAND
-     * - XRES
-     * - AUTN
-     * - KASME
-     */
+  /* in E-UTRAN an authentication vector is composed of:
+   * - RAND
+   * - XRES
+   * - AUTN
+   * - KASME
+   */
 
-    uint8_t amf[] = { 0x80, 0x00 };
-    uint8_t mac_a[8];
-    uint8_t ck[16];
-    uint8_t ik[16];
-    uint8_t ak[6];
+  uint8_t amf[] = { 0x80, 0x00 };
+  uint8_t mac_a[8];
+  uint8_t ck[16];
+  uint8_t ik[16];
+  uint8_t ak[6];
 
-    if (vector == NULL) {
-        return EINVAL;
-    }
+  if (vector == NULL) {
+    return EINVAL;
+  }
 
-    /* Compute MAC */
-    f1(key, vector->rand, sqn, amf, mac_a);
+  /* Compute MAC */
+  f1(key, vector->rand, sqn, amf, mac_a);
 
-    print_buffer("MAC_A   : ", mac_a, 8);
-    print_buffer("SQN     : ", sqn, 6);
-    print_buffer("RAND    : ", vector->rand, 16);
+  print_buffer("MAC_A   : ", mac_a, 8);
+  print_buffer("SQN     : ", sqn, 6);
+  print_buffer("RAND    : ", vector->rand, 16);
 
-    /* Compute XRES, CK, IK, AK */
-    f2345(key, vector->rand, vector->xres, ck, ik, ak);
-    print_buffer("AK      : ", ak, 6);
-    print_buffer("CK      : ", ck, 16);
-    print_buffer("IK      : ", ik, 16);
-    print_buffer("XRES    : ", vector->xres, 8);
+  /* Compute XRES, CK, IK, AK */
+  f2345(key, vector->rand, vector->xres, ck, ik, ak);
+  print_buffer("AK      : ", ak, 6);
+  print_buffer("CK      : ", ck, 16);
+  print_buffer("IK      : ", ik, 16);
+  print_buffer("XRES    : ", vector->xres, 8);
 
-    /* AUTN = SQN ^ AK || AMF || MAC */
-    generate_autn(sqn, ak, amf, mac_a, vector->autn);
+  /* AUTN = SQN ^ AK || AMF || MAC */
+  generate_autn(sqn, ak, amf, mac_a, vector->autn);
 
-    print_buffer("AUTN    : ", vector->autn, 16);
+  print_buffer("AUTN    : ", vector->autn, 16);
 
-    derive_kasme(ck, ik, plmn, sqn, ak, vector->kasme);
-    print_buffer("KASME   : ", vector->kasme, 32);
+  derive_kasme(ck, ik, plmn, sqn, ak, vector->kasme);
+  print_buffer("KASME   : ", vector->kasme, 32);
 
-    return 0;
+  return 0;
 }

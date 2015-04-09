@@ -55,11 +55,11 @@
  */
 
 typedef struct identity_response_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator   protocoldiscriminator:4;
-    SecurityHeaderType      securityheadertype:4;
-    MessageType             messagetype;
-    MobileIdentity          mobileidentity;
+  /* Mandatory fields */
+  ProtocolDiscriminator   protocoldiscriminator:4;
+  SecurityHeaderType      securityheadertype:4;
+  MessageType             messagetype;
+  MobileIdentity          mobileidentity;
 } identity_response_msg;
 
 int decode_identity_response(identity_response_msg *identityresponse, uint8_t *buffer, uint32_t len);

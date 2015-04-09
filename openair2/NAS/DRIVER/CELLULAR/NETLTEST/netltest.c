@@ -13,13 +13,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
- #include <sys/socket.h>
- #include <linux/netlink.h>
- #include <signal.h>
- #include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
- 
+#include <sys/socket.h>
+#include <linux/netlink.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 /********************
 // RRC definitions
  ********************/
@@ -60,23 +60,26 @@ struct msghdr msg;
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-void foo( int sig ){
-//-----------------------------------------------------------------------------
-   printf("I got cntl-C, closing socket\n");
-   close(sock_fd);
-   close(rrcnl_sock_fd);
+void foo( int sig )
+{
+  //-----------------------------------------------------------------------------
+  printf("I got cntl-C, closing socket\n");
+  close(sock_fd);
+  close(rrcnl_sock_fd);
   exit(-1);
 }
 
 //-----------------------------------------------------------------------------
-int main() {
-//-----------------------------------------------------------------------------
+int main()
+{
+  //-----------------------------------------------------------------------------
   struct sigaction newaction;
   int i=0;
   int ret;
   int len, count;
 
   newaction.sa_handler = foo;
+
   // register cntl-C handler
   if ( sigaction( SIGINT, &newaction, NULL ) == -1)
     perror("Could not install the new signal handler");
@@ -158,35 +161,37 @@ int main() {
   while (1) {
     len = recvmsg(sock_fd, &msg, 0);
     count = recvmsg(rrcnl_sock_fd, &rrcnl_msg, 0);
+
     if (len<0) {
-      //	exit(-1);
-    }
-    else {
-    printf("Received PDCP socket with length %d (nlmsg_len = %d)\n",len,nlh->nlmsg_len);
-    }
-    if (count<0) {
-      //	exit(-1);
-    }
-    else {
-    printf("Received RRC socket with length %d (nlmsg_len = %d)\n",count,rrcnl_nlh->nlmsg_len);
+      //  exit(-1);
+    } else {
+      printf("Received PDCP socket with length %d (nlmsg_len = %d)\n",len,nlh->nlmsg_len);
     }
 
-/*    usleep(1000);
-    i=i+1;
-    if ((i % 100) == 0)
-      printf("%d\n",i);*/
+    if (count<0) {
+      //  exit(-1);
+    } else {
+      printf("Received RRC socket with length %d (nlmsg_len = %d)\n",count,rrcnl_nlh->nlmsg_len);
+    }
+
+    /*    usleep(1000);
+        i=i+1;
+        if ((i % 100) == 0)
+          printf("%d\n",i);*/
     usleep(50);
     i=i+1;
+
     if ((i % 1000) == 0)
       printf("%d\n",i);
 
     /*
     for (i=0;i<nlh->nlmsg_len - sizeof(struct nlmsghdr);i++) {
       printf("%x ",
-	     ((unsigned char *)NLMSG_DATA(nlh))[i]);
-	     }
-	     */
+       ((unsigned char *)NLMSG_DATA(nlh))[i]);
+       }
+       */
   }
+
   /* Close Netlink Socket */
   return 0;
 }

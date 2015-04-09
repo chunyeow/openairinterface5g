@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06410 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -41,8 +41,8 @@ FD_sens_sensor *create_form_sens_sensor(void)
   fdui->sens_sensor = fl_bgn_form(FL_NO_BOX, 940, 280);
   obj = fl_add_box(FL_UP_BOX,0,0,940,280,"");
   fdui->local_sensing_results = obj = fl_add_xyplot(FL_IMPULSE_XYPLOT,30,30,880,210,"Local Sensing Results");
-    fl_set_object_color(obj,FL_BLACK,FL_BLUE);
-    fl_set_object_lsize(obj,FL_NORMAL_SIZE);
+  fl_set_object_color(obj,FL_BLACK,FL_BLUE);
+  fl_set_object_lsize(obj,FL_NORMAL_SIZE);
   fl_end_form();
 
   fdui->sens_sensor->fdui = fdui;

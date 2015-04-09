@@ -39,10 +39,10 @@
 #define NETWORK_NAME_MAXIMUM_LENGTH 255
 
 typedef struct NetworkName_tag {
-    uint8_t  codingscheme:3;
-    uint8_t  addci:1;
-    uint8_t  numberofsparebitsinlastoctet:3;
-    OctetString textstring;
+  uint8_t  codingscheme:3;
+  uint8_t  addci:1;
+  uint8_t  numberofsparebitsinlastoctet:3;
+  OctetString textstring;
 } NetworkName;
 
 int encode_network_name(NetworkName *networkname, uint8_t iei, uint8_t *buffer, uint32_t len);

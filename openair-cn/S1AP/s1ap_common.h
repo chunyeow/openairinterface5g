@@ -423,9 +423,9 @@ struct s1ap_message_s;
 /** \brief Function callback prototype.
  **/
 typedef int (*s1ap_message_decoded_callback)(
-    uint32_t               assoc_id,
-    uint32_t               stream,
-    struct s1ap_message_s *message_p
+  uint32_t               assoc_id,
+  uint32_t               stream,
+  struct s1ap_message_s *message_p
 );
 
 /** \brief Encode a successfull outcome message
@@ -438,12 +438,12 @@ typedef int (*s1ap_message_decoded_callback)(
  @returns size in bytes encded on success or 0 on failure
  **/
 ssize_t s1ap_generate_successfull_outcome(
-    uint8_t               **buffer,
-    uint32_t               *length,
-    e_S1ap_ProcedureCode    procedureCode,
-    S1ap_Criticality_t      criticality,
-    asn_TYPE_descriptor_t  *td,
-    void                   *sptr);
+  uint8_t               **buffer,
+  uint32_t               *length,
+  e_S1ap_ProcedureCode    procedureCode,
+  S1ap_Criticality_t      criticality,
+  asn_TYPE_descriptor_t  *td,
+  void                   *sptr);
 
 /** \brief Encode an initiating message
  \param buffer pointer to buffer in which data will be encoded
@@ -455,12 +455,12 @@ ssize_t s1ap_generate_successfull_outcome(
  @returns size in bytes encded on success or 0 on failure
  **/
 ssize_t s1ap_generate_initiating_message(
-    uint8_t               **buffer,
-    uint32_t               *length,
-    e_S1ap_ProcedureCode    procedureCode,
-    S1ap_Criticality_t      criticality,
-    asn_TYPE_descriptor_t  *td,
-    void                   *sptr);
+  uint8_t               **buffer,
+  uint32_t               *length,
+  e_S1ap_ProcedureCode    procedureCode,
+  S1ap_Criticality_t      criticality,
+  asn_TYPE_descriptor_t  *td,
+  void                   *sptr);
 
 /** \brief Encode an unsuccessfull outcome message
  \param buffer pointer to buffer in which data will be encoded
@@ -472,12 +472,12 @@ ssize_t s1ap_generate_initiating_message(
  @returns size in bytes encded on success or 0 on failure
  **/
 ssize_t s1ap_generate_unsuccessfull_outcome(
-    uint8_t               **buffer,
-    uint32_t               *length,
-    e_S1ap_ProcedureCode    procedureCode,
-    S1ap_Criticality_t      criticality,
-    asn_TYPE_descriptor_t  *td,
-    void                   *sptr);
+  uint8_t               **buffer,
+  uint32_t               *length,
+  e_S1ap_ProcedureCode    procedureCode,
+  S1ap_Criticality_t      criticality,
+  asn_TYPE_descriptor_t  *td,
+  void                   *sptr);
 
 /** \brief Generate a new IE
  \param id Protocol ie id of the IE

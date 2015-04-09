@@ -65,9 +65,9 @@
 # define SECURITY_MODE_COMMAND_NONCEMME_PRESENT         (1<<2)
 
 typedef enum security_mode_command_iei_tag {
-    SECURITY_MODE_COMMAND_IMEISV_REQUEST_IEI    = 0xC0, /* 0xC0 = 192 */
-    SECURITY_MODE_COMMAND_REPLAYED_NONCEUE_IEI  = 0x55, /* 0x55 = 85 */
-    SECURITY_MODE_COMMAND_NONCEMME_IEI          = 0x56, /* 0x56 = 86 */
+  SECURITY_MODE_COMMAND_IMEISV_REQUEST_IEI    = 0xC0, /* 0xC0 = 192 */
+  SECURITY_MODE_COMMAND_REPLAYED_NONCEUE_IEI  = 0x55, /* 0x55 = 85 */
+  SECURITY_MODE_COMMAND_NONCEMME_IEI          = 0x56, /* 0x56 = 86 */
 } security_mode_command_iei;
 
 /*
@@ -78,18 +78,18 @@ typedef enum security_mode_command_iei_tag {
  */
 
 typedef struct security_mode_command_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator              protocoldiscriminator:4;
-    SecurityHeaderType                 securityheadertype:4;
-    MessageType                        messagetype;
-    NasSecurityAlgorithms              selectednassecurityalgorithms;
-    NasKeySetIdentifier                naskeysetidentifier;
-    UeSecurityCapability               replayeduesecuritycapabilities;
-    /* Optional fields */
-    uint32_t                           presencemask;
-    ImeisvRequest                      imeisvrequest;
-    Nonce                              replayednonceue;
-    Nonce                              noncemme;
+  /* Mandatory fields */
+  ProtocolDiscriminator              protocoldiscriminator:4;
+  SecurityHeaderType                 securityheadertype:4;
+  MessageType                        messagetype;
+  NasSecurityAlgorithms              selectednassecurityalgorithms;
+  NasKeySetIdentifier                naskeysetidentifier;
+  UeSecurityCapability               replayeduesecuritycapabilities;
+  /* Optional fields */
+  uint32_t                           presencemask;
+  ImeisvRequest                      imeisvrequest;
+  Nonce                              replayednonceue;
+  Nonce                              noncemme;
 } security_mode_command_msg;
 
 int decode_security_mode_command(security_mode_command_msg *securitymodecommand, uint8_t *buffer, uint32_t len);

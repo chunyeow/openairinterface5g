@@ -51,10 +51,10 @@
  */
 
 typedef struct detach_accept_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator       protocoldiscriminator:4;
-    SecurityHeaderType          securityheadertype:4;
-    MessageType                 messagetype;
+  /* Mandatory fields */
+  ProtocolDiscriminator       protocoldiscriminator:4;
+  SecurityHeaderType          securityheadertype:4;
+  MessageType                 messagetype;
 } detach_accept_msg;
 
 int decode_detach_accept(detach_accept_msg *detachaccept, uint8_t *buffer, uint32_t len);

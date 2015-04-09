@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*
  *                                                                            *
- *                              n w - g t p v 2 c                             * 
+ *                              n w - g t p v 2 c                             *
  *    G P R S   T u n n e l i n g    P r o t o c o l   v 2 c    S t a c k     *
  *                                                                            *
  *                                                                            *
@@ -35,8 +35,8 @@
 #ifndef __NW_GTPV1U_ERROR_H__
 #define __NW_GTPV1U_ERROR_H__
 
-/** 
- * @file NwGtpv1uError.h 
+/**
+ * @file NwGtpv1uError.h
  * @brief This header file contains return error code type definitions.
 */
 
@@ -51,7 +51,8 @@ typedef enum {
   NW_GTPV1U_MANDATORY_IE_MISSING,
   NW_GTPV1U_MSG_MALFORMED,
   NW_GTPV1U_FAILURE            = 0xFFFFFFFE
-} NwGtpv1uRcT;
+}
+NwGtpv1uRcT;
 
 #ifdef __cplusplus
 }

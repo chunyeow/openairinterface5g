@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -75,7 +75,8 @@
 int current_dlsch_cqi;
 
 
-int main (int argc, char **argv) {
+int main (int argc, char **argv)
+{
 
   int openair_fd,rx_sig_fifo_fd,frequency,i;
 
@@ -112,7 +113,7 @@ int main (int argc, char **argv) {
     printf("[openair][INFO] Action 10 : TX SCCP/QPSK param 0/1 = 66 kHz frequency offset on/off\n");
     printf("[openair][INFO] Action 11 : TX SCCP/16QAM param 0/1 = 66 kHz frequency offset on/off\n");
     printf("[openair][INFO] Action 12 : TX I/Q impulses (delay test)\n");
-    printf("[openair][INFO] Action 13 : TX real C/W fs/4 + offset with DC component - param 0/1 = 66 kHz frequency offset off/on\n");  
+    printf("[openair][INFO] Action 13 : TX real C/W fs/4 + offset with DC component - param 0/1 = 66 kHz frequency offset off/on\n");
     printf("[openair][INFO] Action 14 : SET RX RF Mode - param\n");
     printf("[openair][INFO] Action 15 : SET TCXO param (set > 255 to use calibrated value)\n");
     printf("[openair][INFO] Action 16 : SET CALIBRATED RX GAIN param (also turns off AGC)\n");
@@ -182,17 +183,17 @@ int main (int argc, char **argv) {
     printf("[openair][INFO][START] Action              is : SET_TIMING_ADVANCE\n");
   else if (action == 26) // Set freq offset
     printf("[openair][INFO][START] Action              is : SET_FREQ_OFFSET\n");
-  else if (action == 28) // 
+  else if (action == 28) //
     printf("[openair][INFO][START] Action              is : SET_UE_DL_MCS\n");
-  else if (action == 29) // 
+  else if (action == 29) //
     printf("[openair][INFO][START] Action              is : SET_UE_UL_MCS\n");
-  else if (action == 30) // 
+  else if (action == 30) //
     printf("[openair][INFO][START] Action              is : SET_UE_UL_NB_RB\n");
-  else if (action == 31) // 
+  else if (action == 31) //
     printf("[openair][INFO][START] Action              is : SET_DLSCH_RATE_ADAPTATION\n");
-  else if (action == 32) // 
+  else if (action == 32) //
     printf("[openair][INFO][START] Action              is : SET_DLSCH_TRANSMISSION_MODE\n");
-  else if (action == 33) // 
+  else if (action == 33) //
     printf("[openair][INFO][START] Action              is : SET_ULSCH_ALLOCATION_MODE\n");
   else if (action == 39) // Send EMOS Rec flag
     printf("[openair][INFO][START] Action              is : START_EMOS_NODEB\n");
@@ -202,6 +203,7 @@ int main (int argc, char **argv) {
 
 
   printf("[openair][INFO][START] Opening /dev/openair0\n");
+
   if ((openair_fd = open("/dev/openair0", O_RDWR,0)) <0) {
     fprintf(stderr,"Error %d opening /dev/openair0\n",openair_fd);
     exit(-1);
@@ -222,7 +224,7 @@ int main (int argc, char **argv) {
   frame_parms->frame_type         = 1; //TDD
   frame_parms->tdd_config         = 255;
   frame_parms->tdd_config_S       = 0;
-  frame_parms->mode1_flag         = 1; 
+  frame_parms->mode1_flag         = 1;
   frame_parms->nb_antennas_tx     = 2; //NB_ANTENNAS_TX;
   frame_parms->nb_antennas_rx     = 1; //NB_ANTENNAS_RX;
   frame_parms->dual_tx            = 0;
@@ -231,7 +233,7 @@ int main (int argc, char **argv) {
   frame_parms->phich_config_common.phich_duration = normal;
 
   frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.cyclicShift = 0;//n_DMRS1 set to 0
-  
+
   init_frame_parms(frame_parms,1);
 
   printf("Initialized PHY variables\n");
@@ -241,7 +243,7 @@ int main (int argc, char **argv) {
   chbch_size = (NUMBER_OF_USEFUL_CARRIERS*NUMBER_OF_CHBCH_SYMBOLS)>>3;
   chbch_pdu  = malloc(chbch_size);
 
-  for (i=0;i<chbch_size-4;i++) {
+  for (i=0; i<chbch_size-4; i++) {
     chbch_pdu[i] = i;
   }
 
@@ -256,21 +258,22 @@ int main (int argc, char **argv) {
   }
 
   printf("Running action %d\n",action);
+
   switch (action) {
 
   case 0 :
 
-    if (argc>5) 
+    if (argc>5)
       frame_parms->tdd_config = atoi(argv[5]);
-    else 
+    else
       printf("Using TDD config %d\n",frame_parms->tdd_config);
 
-    if (argc>4) 
+    if (argc>4)
       frame_parms->frame_type = (unsigned char) atoi(argv[4]);
     else
       printf("Using frame type %d\n",frame_parms->frame_type);
 
-    if (argc>3) 
+    if (argc>3)
       frame_parms->dual_tx    = (unsigned char) atoi(argv[3]);
     else
       printf("Using dual_tx %d\n",frame_parms->dual_tx);
@@ -280,6 +283,7 @@ int main (int argc, char **argv) {
     dump_frame_parms(frame_parms);
 
     result=ioctl(openair_fd, openair_DUMP_CONFIG,(char *)frame_parms);
+
     if (result == 0) {
       printf ("[openair][CONFIG][INFO] loading openair configuration in kernel space\n");
     } else {
@@ -288,22 +292,26 @@ int main (int argc, char **argv) {
 
 
     break;
-    
+
   case 1 :
     printf("[openair][START][INFO] Starting clusterhead\n");
     fc = (atoi(argv[3])&1) | ((frequency&7)<<1) | ((frequency&7)<<4) | ((atoi(argv[4])&0xFF) << 7);
     printf("[openair][START][INFO] fc = %d\n",fc);
     result=ioctl(openair_fd,openair_START_1ARY_CLUSTERHEAD, &fc);
+
     if (result == 0) {
       printf ("[openair][START][INFO] primary clusterhead running\n");
     } else {
       printf ("[openair][START][INFO] starting primary clusterhead failed \n");
     }
+
     break;
+
   case 2 :
     printf("[openair][START][INFO] Starting secondary clusterhead\n");
     fc = (atoi(argv[3])&1) | ((frequency&7)<<1) | ((frequency&7)<<4) |  ((atoi(argv[4])&0xFF) << 7);
     result=ioctl(openair_fd,openair_START_2ARY_CLUSTERHEAD,&fc);
+
     if (result == 0) {
       printf ("[openair][START][INFO] secondary clusterhead running\n");
     } else {
@@ -327,11 +335,12 @@ int main (int argc, char **argv) {
 
     break;
 
-  case 4 : 
+  case 4 :
     printf("[openair][START][INFO] Stoping ...\n");
     fc = (atoi(argv[3])&1) | ((frequency&7)<<1) | ((frequency&7)<<4);
 
     result=ioctl(openair_fd,openair_STOP,(void *)&fc);
+
     if (result == 0) {
       printf ("[openair][STOP][INFO] ok! \n");
     } else {
@@ -341,8 +350,8 @@ int main (int argc, char **argv) {
     /*
     if ((rx_frame_file = fopen("rx_frame.dat","w")) == NULL)
       {
-	printf("[openair][STOP][INFO] Cannot open rx_frame.m data file\n");
-	exit(0);
+    printf("[openair][STOP][INFO] Cannot open rx_frame.m data file\n");
+    exit(0);
       }
 
     read(rx_sig_fifo_fd,(void *)dma_buffer_local,NB_ANTENNAS_RX*FRAME_LENGTH_BYTES);
@@ -352,19 +361,17 @@ int main (int argc, char **argv) {
 
     break;
 
-  case 5 : 
+  case 5 :
 
-    if ((rx_frame_file = fopen("rx_frame.dat","w")) == NULL)
-      {
-	printf("[openair][INFO] Cannot open rx_frame.m data file\n");
-	exit(0);
-      }
+    if ((rx_frame_file = fopen("rx_frame.dat","w")) == NULL) {
+      printf("[openair][INFO] Cannot open rx_frame.m data file\n");
+      exit(0);
+    }
 
-    if ((rx_sig_fifo_fd = open("/dev/rtf59",O_RDONLY,0)) <0)
-      {
-	printf("[openair][INFO] Cannot open rx_sig_fifo\n");
-	exit(0);
-      }
+    if ((rx_sig_fifo_fd = open("/dev/rtf59",O_RDONLY,0)) <0) {
+      printf("[openair][INFO] Cannot open rx_sig_fifo\n");
+      exit(0);
+    }
 
     fc = (atoi(argv[3])&1) | ((frequency&7)<<1) | ((frequency&7)<<4);
     ioctl(openair_fd,openair_GET_BUFFER,(void *)&fc);
@@ -409,26 +416,26 @@ int main (int argc, char **argv) {
     /*
     if ((tx_frame_file = fopen("tx_frame.dat","w")) == NULL)
       {
-	printf("[openair][INFO] Cannot open tx_frame.dat data file\n");
-	exit(0);
+    printf("[openair][INFO] Cannot open tx_frame.dat data file\n");
+    exit(0);
       }
-    
+
     //openair_generate_ofdm(1,0xffff,chbch_pdu);
     openair_generate_ofdm(TX_vars,4,0,0);
 
     printf("[openair][START][INFO] TX_DMA_BUFFER = %p\n",TX_vars->TX_DMA_BUFFER[0]);
     result=ioctl(openair_fd,openair_START_TX_SIG,(void *)TX_vars);
-#ifdef IFFT_FPGA
+    #ifdef IFFT_FPGA
     fwrite(TX_vars->TX_DMA_BUFFER[0],1,NUMBER_OF_USEFUL_CARRIERS*NUMBER_OF_SYMBOLS_PER_FRAME,tx_frame_file);
-#else
+    #else
     fwrite(TX_vars->TX_DMA_BUFFER[0],4,FRAME_LENGTH_COMPLEX_SAMPLES,tx_frame_file);
-#endif
+    #endif
     fclose(tx_frame_file);
     */
 
     fc = (atoi(argv[3])&1) | ((frequency&7)<<1) | ((frequency&7)<<4) | (atoi(argv[4])<<7) | (atoi(argv[5])<<12);
     result=ioctl(openair_fd,openair_START_OFDM_TEST,&fc);
-   
+
     break;
 
   case 10 :
@@ -476,17 +483,17 @@ int main (int argc, char **argv) {
     break;
 
     /*
-  case 17:        // DO SYNCHRONIZATION
+    case 17:        // DO SYNCHRONIZATION
     printf("[openair][INFO] Do CHBCH Synchronization\n");
     ((unsigned char *)&dma_buffer_local[0])[0] = (unsigned char)((atoi(argv[3])&1) | ((frequency&7)<<1) | ((frequency&7)<<4));
     ((unsigned char *)&dma_buffer_local[0])[1] = (unsigned char)(atoi(argv[4]));
     ioctl(openair_fd,openair_DO_SYNCH,(void *)dma_buffer_local);
     break;
 
-  case 18:        // GET SIGNALS
+    case 18:        // GET SIGNALS
 
     temp[0] = atoi(argv[4]);
-    
+
     if (temp[0]==0)
       printf("[openair][START][INFO] Get Synch Symbols\n");
     else if (temp[0]==1)
@@ -497,30 +504,30 @@ int main (int argc, char **argv) {
       printf("[openair][START][INFO] Get Decoded Data\n");
     else
       printf("[openair][START][INFO] Get Signals : wrong selection (choose from 0-3)\n");
-    
+
 
     if ((rx_frame_file = fopen("rx_frame.dat","w")) == NULL)
       {
-	printf("[openair][GET_SIGNALS][INFO] Cannot open rx_frame.dat data file\n");
-	exit(0);
+    printf("[openair][GET_SIGNALS][INFO] Cannot open rx_frame.dat data file\n");
+    exit(0);
       }
-    
+
     ((unsigned int *)&dma_buffer_local[0])[0] = (atoi(argv[3])&1) | ((frequency&7)<<1) | ((frequency&7)<<4);
     ((unsigned char *)&dma_buffer_local[0])[1] = (unsigned char)(atoi(argv[4]));
 
     if (temp[0] < 4)
       ioctl(openair_fd,openair_GET_SIGNALS,(void *)dma_buffer_local);
     //    sleep(2);
-    
+
     fwrite(dma_buffer_local,4,7*256,rx_frame_file);
-    
+
     fclose(rx_frame_file);
     break;
     */
-    
+
   case 19:        // SET FFT SCALE
     printf("[openair][START][INFO] Set FFT Scale to %d, %d\n",atoi(argv[3]),atoi(argv[4]));
-    
+
     temp[0] = atoi(argv[3]);
     temp[1] = atoi(argv[4]);
     result=ioctl(openair_fd,openair_SET_FFT_SCALE,&temp[0]);
@@ -534,68 +541,70 @@ int main (int argc, char **argv) {
 
   case 22:
     result=ioctl(openair_fd, openair_UPDATE_FIRMWARE);
+
     if (result) printf("[openair][START][INFO] NOK, ioctl failed\n");
+
     break;
 
-/*
-//#else //PHY_EMUL_IOCTL
-  case 23 :
-    printf("[OPENAIR][START][Topology] Configuring Topology,\n",argc);
-    unsigned short ri=0,rj=3,Nb_inst,Nb_ch,Nb_ue,kk;
-    Topo_info[ri++]=atoi(argv[rj++]);//NUMBER OF EMULATION MASTER (Machines)
-    printf("NUMBER OF MASTER %d\n",Topo_info[ri-1]);
-    Topo_info[ri++]=atoi(argv[rj++]);//LOCAL MASTER ID
-    printf("LOCAL MASTER ID %d\n",Topo_info[ri-1]);
-    Nb_inst=atoi(argv[rj++]);//LOCAL NUMBER OF INSTANCES
-    Topo_info[ri++]=Nb_inst;
-    printf("NUMBER OF INSTANCE %d\n",Topo_info[ri-1]);
-    for(i=0;i<Nb_inst;i++){
-      printf("INSTANCE %d\n",i);
-      Topo_info[ri++]=atoi(argv[rj++]);//Node_id of Instance i 
-      printf("NODE_ID %d\n",Topo_info[ri-1]);
-      Nb_ch=atoi(argv[rj++]);//Number of CH in the range
-      Topo_info[ri++]=Nb_ch;
-      printf("NB_CH %d\n",Topo_info[ri-1]);
-      for(kk=0;kk<Nb_ch;kk++)
-	Topo_info[ri++]=atoi(argv[rj++]);//List of CH IDs in the range
-      Nb_ue=atoi(argv[rj++]);//Number of UE in the range
-      Topo_info[ri++]=Nb_ue;
-      printf("NB_UE %d\n",Topo_info[ri-1]);
-      for(kk=0;kk<Nb_ue;kk++)
-	Topo_info[ri++]=atoi(argv[rj++]);//List of UE IDs in the range
-    }
-    result=ioctl(openair_fd,openair_config_topology, &Topo_info[0]);
-    
-    if (result == 0) {
-      printf ("[openair][START][Topology] ok! \n");
-    } else {
-      printf ("[openair][START][Topology] not ok! \n");
-    }
-    break;
+    /*
+    //#else //PHY_EMUL_IOCTL
+      case 23 :
+        printf("[OPENAIR][START][Topology] Configuring Topology,\n",argc);
+        unsigned short ri=0,rj=3,Nb_inst,Nb_ch,Nb_ue,kk;
+        Topo_info[ri++]=atoi(argv[rj++]);//NUMBER OF EMULATION MASTER (Machines)
+        printf("NUMBER OF MASTER %d\n",Topo_info[ri-1]);
+        Topo_info[ri++]=atoi(argv[rj++]);//LOCAL MASTER ID
+        printf("LOCAL MASTER ID %d\n",Topo_info[ri-1]);
+        Nb_inst=atoi(argv[rj++]);//LOCAL NUMBER OF INSTANCES
+        Topo_info[ri++]=Nb_inst;
+        printf("NUMBER OF INSTANCE %d\n",Topo_info[ri-1]);
+        for(i=0;i<Nb_inst;i++){
+          printf("INSTANCE %d\n",i);
+          Topo_info[ri++]=atoi(argv[rj++]);//Node_id of Instance i
+          printf("NODE_ID %d\n",Topo_info[ri-1]);
+          Nb_ch=atoi(argv[rj++]);//Number of CH in the range
+          Topo_info[ri++]=Nb_ch;
+          printf("NB_CH %d\n",Topo_info[ri-1]);
+          for(kk=0;kk<Nb_ch;kk++)
+      Topo_info[ri++]=atoi(argv[rj++]);//List of CH IDs in the range
+          Nb_ue=atoi(argv[rj++]);//Number of UE in the range
+          Topo_info[ri++]=Nb_ue;
+          printf("NB_UE %d\n",Topo_info[ri-1]);
+          for(kk=0;kk<Nb_ue;kk++)
+      Topo_info[ri++]=atoi(argv[rj++]);//List of UE IDs in the range
+        }
+        result=ioctl(openair_fd,openair_config_topology, &Topo_info[0]);
 
-case 24 :
-    printf("[OPENAIR][STOP][EMULTION] Disconnect Node\n");
-    Topo_info[0]=atoi(argv[3]);
-    result=ioctl(openair_fd,openair_stop_emulation, &Topo_info[0]);
+        if (result == 0) {
+          printf ("[openair][START][Topology] ok! \n");
+        } else {
+          printf ("[openair][START][Topology] not ok! \n");
+        }
+        break;
 
-    if (result == 0) {
-      printf ("[openair][STOP][EMULATION] ok! \n");
-    } else {
-      printf ("[openair][STOP][EMULATION] not ok! \n");
-    }
-    break;
-//#endif //PHY_EMUL_IOCTL
-*/
+    case 24 :
+        printf("[OPENAIR][STOP][EMULTION] Disconnect Node\n");
+        Topo_info[0]=atoi(argv[3]);
+        result=ioctl(openair_fd,openair_stop_emulation, &Topo_info[0]);
+
+        if (result == 0) {
+          printf ("[openair][STOP][EMULATION] ok! \n");
+        } else {
+          printf ("[openair][STOP][EMULATION] not ok! \n");
+        }
+        break;
+    //#endif //PHY_EMUL_IOCTL
+    */
 
   case 25:
-    
+
     fc = atoi(argv[3]);
     printf("[openair][START][INFO] SET TIMING ADVANCE to %d\n",fc);
     result = ioctl(openair_fd,openair_SET_TIMING_ADVANCE, &fc);
     break;
 
   case 26:
-    
+
     fc = atoi(argv[3]);
     printf("[openair][START][INFO] SET FREQ OFFSET to %d\n",fc);
     result = ioctl(openair_fd,openair_SET_FREQ_OFFSET, &fc);
@@ -605,50 +614,52 @@ case 24 :
     printf("[openair][START][INFO] Starting clusterhead in cognitive mode\n");
     fc = 0; //dummy value  - not needed
     result=ioctl(openair_fd,openair_START_1ARY_CLUSTERHEAD_COGNITIVE, &fc);
+
     if (result == 0) {
       printf ("[openair][START][INFO] primary clusterhead running\n");
     } else {
       printf ("[openair][START][INFO] starting primary clusterhead failed \n");
     }
+
     break;
 
   case 28:
-    
+
     fc = atoi(argv[3]);
     printf("[openair][START][INFO] SET UE DL MCS to %d\n",fc);
     result = ioctl(openair_fd,openair_SET_UE_DL_MCS, &fc);
     break;
 
   case 29:
-    
+
     fc = atoi(argv[3]);
     printf("[openair][START][INFO] SET UE UL MCS to %d\n",fc);
     result = ioctl(openair_fd,openair_SET_UE_UL_MCS, &fc);
     break;
 
   case 30:
-    
+
     fc = atoi(argv[3]);
     printf("[openair][START][INFO] SET UE NB_RB to %d\n",fc);
     result = ioctl(openair_fd,openair_SET_UE_UL_NB_RB, &fc);
     break;
 
   case 31:
-    
+
     fc = atoi(argv[3]);
     printf("[openair][START][INFO] SET DLSCH Rate Adaptation to %d\n",fc);
     result = ioctl(openair_fd,openair_SET_DLSCH_RATE_ADAPTATION, &fc);
     break;
 
   case 32:
-    
+
     fc = atoi(argv[3]);
     printf("[openair][START][INFO] SET DLSCH Transmission Mode to %d\n",fc);
     result = ioctl(openair_fd,openair_SET_DLSCH_TRANSMISSION_MODE, &fc);
     break;
 
   case 33:
-    
+
     fc = atoi(argv[3]);
     printf("[openair][START][INFO] SET ULSCH Allocation Mode to %d\n",fc);
     result = ioctl(openair_fd,openair_SET_ULSCH_ALLOCATION_MODE, &fc);
@@ -659,21 +670,21 @@ case 24 :
     result = ioctl(openair_fd,openair_SET_RRC_CONN_SETUP, NULL);
     break;
 
-  case 35: 
+  case 35:
 
     fc = atoi(argv[3]);
     result = ioctl(openair_fd,openair_SET_COOPERATION_FLAG, &fc);
     break;
-	
-  default: 
+
+  default:
 
     printf("[openair] Action unknown\n");
     return(-1);
 
   }
-  
+
   close(openair_fd);
-  
+
   return(0);
 }
 
@@ -682,26 +693,26 @@ float estimate_freq(short *buffer) {
 
   int i,j,tmp,tmp_re,tmp_im,max_f,max_point;
   float avg = 0.0;
-  
+
   for (i=2048;i<16*2048;i+=2048)
     fix_fft(&buffer[i],10,0);
-  
+
   for (j=1;j<16;j++) {
-    
+
     max_f = 0;
-    
+
     for (i=0;i<2048;i+=2) {
       tmp_re = buffer[i + (j<<11)];
       tmp_im = buffer[i+1 + (j<<11)];
       tmp = (tmp_re*(int)tmp_re) + (tmp_im*(int)tmp_im);
       if ( tmp > max_f) {
-	max_f = tmp;
-	max_point = i>>1;
+  max_f = tmp;
+  max_point = i>>1;
       }
     }
     avg += ((float)max_point/15);
     //    printf("%d (%f)\n",max_point,avg);
-    
+
   }
   return(avg);
 }

@@ -39,7 +39,7 @@
 #define LCS_CLIENT_IDENTITY_MAXIMUM_LENGTH 257
 
 typedef struct LcsClientIdentity_tag {
-    OctetString lcsclientidentityvalue;
+  OctetString lcsclientidentityvalue;
 } LcsClientIdentity;
 
 int encode_lcs_client_identity(LcsClientIdentity *lcsclientidentity, uint8_t iei, uint8_t *buffer, uint32_t len);

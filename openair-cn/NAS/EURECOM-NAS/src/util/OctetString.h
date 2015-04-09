@@ -33,8 +33,8 @@
 #define OCTET_STRING_H_
 
 typedef struct OctetString_tag {
-    uint32_t  length;
-    uint8_t  *value;
+  uint32_t  length;
+  uint8_t  *value;
 } OctetString;
 #define FREE_OCTET_STRING(oCTETsTRING)                     \
     do {                                                   \

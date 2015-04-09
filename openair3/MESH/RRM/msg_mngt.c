@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06410 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -37,7 +37,7 @@
 \author     BURLOT Pascal
 
 \date       17/07/08
-  
+
 \par     Historique:
             $Author$  $Date$  $Revision$
             $Id$
@@ -67,47 +67,48 @@
 
 #if DBG_MSG_MNGT==0
 //! Macro inactive
-#define PRINT_MSG_MNGT(...) 
+#define PRINT_MSG_MNGT(...)
 #else
 //! Macro affichant  la file de message
 #define PRINT_MSG_MNGT(...) print_msg_mngt( __VA_ARGS__ )
-#endif 
+#endif
 
 /*!
 *******************************************************************************
 \brief  La fonction affiche a l'ecran la liste des messages
-        
+
 \return  aucune valeur retournee
 */
 static void print_msg_mngt( file_msg_t *pEntry , int id )
 {
-    file_msg_t *pCurrentItem = pEntry;
-    
-    fprintf(stderr,"file_msg_t(%d)=[\n", id);
-    while ( pCurrentItem != NULL)
-    { 
-        fprintf(stderr,"  @%p(.s=%p, .msg=%p, .next=%p)\n", pCurrentItem, pCurrentItem->s, 
-                    pCurrentItem->msg, pCurrentItem->next);
-        pCurrentItem = pCurrentItem->next ;
-    }
-    fprintf(stderr," ]\n");
+  file_msg_t *pCurrentItem = pEntry;
+
+  fprintf(stderr,"file_msg_t(%d)=[\n", id);
+
+  while ( pCurrentItem != NULL) {
+    fprintf(stderr,"  @%p(.s=%p, .msg=%p, .next=%p)\n", pCurrentItem, pCurrentItem->s,
+            pCurrentItem->msg, pCurrentItem->next);
+    pCurrentItem = pCurrentItem->next ;
+  }
+
+  fprintf(stderr," ]\n");
 }
 
 /*!
 *******************************************************************************
 \brief  La fonction initialise  la file des messages.
-        
+
 \return aucune valeur.
 */
-void init_file_msg( 
-    file_head_t *file_hd , ///< descripteur de la file des messages
-    int  id                ///< file id
-    ) 
+void init_file_msg(
+  file_head_t *file_hd , ///< descripteur de la file des messages
+  int  id                ///< file id
+)
 {
-    pthread_mutex_init( &( file_hd->mutex ), NULL ) ;
+  pthread_mutex_init( &( file_hd->mutex ), NULL ) ;
 
-    file_hd->id   = id;
-    file_hd->file = NULL ;
+  file_hd->id   = id;
+  file_hd->file = NULL ;
 }
 
 /*!
@@ -116,50 +117,51 @@ void init_file_msg(
 
 \return  retourne le pointeur le nouvel element de la liste.
 */
-file_msg_t *put_msg( 
-    file_head_t *file_hd ,  ///< descripteur de la file des messages
-    //mod_lor_10_01_25
-    int s_type            , ///< socket type: 0 -> unix; 1 -> internet
-    //sock_rrm_t *s,          ///< socket associe au message
-    void *s ,               ///< socket associe au message
-    
-    msg_t *msg              ///< le message a ajouter dans la liste
-    ) 
+file_msg_t *put_msg(
+  file_head_t *file_hd ,  ///< descripteur de la file des messages
+  //mod_lor_10_01_25
+  int s_type            , ///< socket type: 0 -> unix; 1 -> internet
+  //sock_rrm_t *s,          ///< socket associe au message
+  void *s ,               ///< socket associe au message
+
+  msg_t *msg              ///< le message a ajouter dans la liste
+)
 {
-    file_msg_t *pOldEntry = file_hd->file;
-    
-    file_msg_t *pNewItem = RRM_MALLOC( file_msg_t , 1 ) ;
-        
-    if ( pNewItem == NULL ) 
-        return NULL ;
-        
-    //fprintf(stderr,"put_msg 1 \n");//dbg
-    CALL(pthread_mutex_lock( &(file_hd->mutex) ));
-        
-    file_hd->file       = pNewItem          ;
-    pNewItem->next      = pOldEntry         ;
-//mod_lor_10_01_25++
-    pNewItem->s_type    = s_type            ;
-    //fprintf(stderr,"put_msg 2 \n");//dbg
-    if (s_type){
-        pNewItem->s     = NULL              ;
-        pNewItem->s_int = s                 ;
-    }else{
-        pNewItem->s     = s                 ;
-        pNewItem->s_int = NULL              ;
-    }
-    
-//mod_lor_10_01_25--
-    pNewItem->msg       = msg               ;
-    
-    //fprintf(stderr,"put_msg 3 \n");//dbg
-    PRINT_MSG_MNGT( file_hd->file , file_hd->id );
-    
-    //fprintf(stderr,"put_msg 4 \n");//dbg
-    CALL(pthread_mutex_unlock( &(file_hd->mutex) ));
-    
-    //fprintf(stderr,"put_msg end \n");//dbg
-    return pNewItem ;
+  file_msg_t *pOldEntry = file_hd->file;
+
+  file_msg_t *pNewItem = RRM_MALLOC( file_msg_t , 1 ) ;
+
+  if ( pNewItem == NULL )
+    return NULL ;
+
+  //fprintf(stderr,"put_msg 1 \n");//dbg
+  CALL(pthread_mutex_lock( &(file_hd->mutex) ));
+
+  file_hd->file       = pNewItem          ;
+  pNewItem->next      = pOldEntry         ;
+  //mod_lor_10_01_25++
+  pNewItem->s_type    = s_type            ;
+
+  //fprintf(stderr,"put_msg 2 \n");//dbg
+  if (s_type) {
+    pNewItem->s     = NULL              ;
+    pNewItem->s_int = s                 ;
+  } else {
+    pNewItem->s     = s                 ;
+    pNewItem->s_int = NULL              ;
+  }
+
+  //mod_lor_10_01_25--
+  pNewItem->msg       = msg               ;
+
+  //fprintf(stderr,"put_msg 3 \n");//dbg
+  PRINT_MSG_MNGT( file_hd->file , file_hd->id );
+
+  //fprintf(stderr,"put_msg 4 \n");//dbg
+  CALL(pthread_mutex_unlock( &(file_hd->mutex) ));
+
+  //fprintf(stderr,"put_msg end \n");//dbg
+  return pNewItem ;
 }
 
 /*!
@@ -168,36 +170,37 @@ file_msg_t *put_msg(
 
 \return  retourne le pointeur sur l'element enleve de la liste.
 */
-file_msg_t *get_msg( 
-    file_head_t *file_hd ///< descripteur de la file des messages
-    ) 
+file_msg_t *get_msg(
+  file_head_t *file_hd ///< descripteur de la file des messages
+)
 {
-    file_msg_t *pCurrentItem = file_hd->file ;
-    file_msg_t *pNextItem   ;
-    file_msg_t **ppPrevItem  = &(file_hd->file) ;
-    
-    if ( (pCurrentItem == NULL)  ) 
-        return NULL ;
+  file_msg_t *pCurrentItem = file_hd->file ;
+  file_msg_t *pNextItem   ;
+  file_msg_t **ppPrevItem  = &(file_hd->file) ;
 
-    CALL(pthread_mutex_lock( &(file_hd->mutex) ));
+  if ( (pCurrentItem == NULL)  )
+    return NULL ;
 
-    while ( pCurrentItem != NULL )
-    { 
-        
-        pNextItem = pCurrentItem->next ;
-        if ( pNextItem == NULL )
-        { /* Dernier element */
-            *ppPrevItem = NULL ;
-            break ;
-        }
-        ppPrevItem   = &(pCurrentItem->next) ;
-        pCurrentItem = pNextItem ;
+  CALL(pthread_mutex_lock( &(file_hd->mutex) ));
+
+  while ( pCurrentItem != NULL ) {
+
+    pNextItem = pCurrentItem->next ;
+
+    if ( pNextItem == NULL ) {
+      /* Dernier element */
+      *ppPrevItem = NULL ;
+      break ;
     }
-    
-    PRINT_MSG_MNGT( file_hd->file , file_hd->id );
-    PRINT_MSG_MNGT( pCurrentItem , file_hd->id *-1 );
-    
-    CALL(pthread_mutex_unlock( &(file_hd->mutex) ));
-    return pCurrentItem ; 
+
+    ppPrevItem   = &(pCurrentItem->next) ;
+    pCurrentItem = pNextItem ;
+  }
+
+  PRINT_MSG_MNGT( file_hd->file , file_hd->id );
+  PRINT_MSG_MNGT( pCurrentItem , file_hd->id *-1 );
+
+  CALL(pthread_mutex_unlock( &(file_hd->mutex) ));
+  return pCurrentItem ;
 }
 

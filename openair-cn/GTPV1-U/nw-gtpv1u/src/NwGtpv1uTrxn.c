@@ -64,61 +64,62 @@ static NwGtpv1uTrxnT *gpGtpv1uTrxnPool = NULL;
 static NwGtpv1uRcT
 nwGtpv1uTrxnSendMsgRetransmission(NwGtpv1uTrxnT *thiz)
 {
-    NwGtpv1uRcT rc;
+  NwGtpv1uRcT rc;
 
-    NW_ASSERT(thiz);
-    NW_ASSERT(thiz->pMsg);
+  NW_ASSERT(thiz);
+  NW_ASSERT(thiz->pMsg);
 
-    rc = thiz->pStack->udp.udpDataReqCallback(thiz->pStack->udp.hUdp,
-            thiz->pMsg->msgBuf,
-            thiz->pMsg->msgLen,
-            thiz->pMsg->msgBufOffset,
-            thiz->peerIp,
-            thiz->peerPort);
+  rc = thiz->pStack->udp.udpDataReqCallback(thiz->pStack->udp.hUdp,
+       thiz->pMsg->msgBuf,
+       thiz->pMsg->msgLen,
+       thiz->pMsg->msgBufOffset,
+       thiz->peerIp,
+       thiz->peerPort);
 
-    return rc;
+  return rc;
 }
 
 static NwGtpv1uRcT
 nwGtpv1uTrxnPeerRspTimeout(void *arg)
 {
-    NwGtpv1uRcT rc = NW_GTPV1U_OK;
-    NwGtpv1uTrxnT *thiz;
-    NwGtpv1uStackT *pStack;
-    NwGtpv1uTimeoutInfoT *timeoutInfo = arg;
+  NwGtpv1uRcT rc = NW_GTPV1U_OK;
+  NwGtpv1uTrxnT *thiz;
+  NwGtpv1uStackT *pStack;
+  NwGtpv1uTimeoutInfoT *timeoutInfo = arg;
 
-    thiz = ((NwGtpv1uTrxnT *)timeoutInfo->timeoutArg);
-    pStack = thiz->pStack;
+  thiz = ((NwGtpv1uTrxnT *)timeoutInfo->timeoutArg);
+  pStack = thiz->pStack;
 
-    NW_ASSERT(pStack);
+  NW_ASSERT(pStack);
 
-    NW_LOG(pStack, NW_LOG_LEVEL_WARN, "T3 timer expired for transaction 0x%p",
-           thiz);
+  NW_LOG(pStack, NW_LOG_LEVEL_WARN, "T3 timer expired for transaction 0x%p",
+         thiz);
 
-    rc = nwGtpv1uTrxnSendMsgRetransmission(thiz);
+  rc = nwGtpv1uTrxnSendMsgRetransmission(thiz);
 
-    if(thiz->maxRetries) {
-        rc = pStack->tmrMgr.tmrStartCallback(pStack->tmrMgr.tmrMgrHandle,
-                                             thiz->t3Timer, 0, NW_GTPV1U_TMR_TYPE_ONE_SHOT, (void *)timeoutInfo,
-                                             &thiz->hRspTmr);
-        thiz->maxRetries--;
-    } else {
-        NwGtpv1uUlpApiT ulpApi;
-        ulpApi.apiType                      = NW_GTPV1U_ULP_API_RSP_FAILURE;
-        ulpApi.apiInfo.recvMsgInfo.msgType  = nwGtpv1uMsgGetMsgType((
-                NwGtpv1uMsgHandleT)thiz->pMsg);
-        ulpApi.apiInfo.recvMsgInfo.hUlpTrxn = thiz->hUlpTrxn;
-        ulpApi.apiInfo.recvMsgInfo.peerIp   = thiz->peerIp;
-        ulpApi.apiInfo.recvMsgInfo.peerPort = thiz->peerPort;
-        thiz->hRspTmr = 0;
+  if(thiz->maxRetries) {
+    rc = pStack->tmrMgr.tmrStartCallback(pStack->tmrMgr.tmrMgrHandle,
+                                         thiz->t3Timer, 0, NW_GTPV1U_TMR_TYPE_ONE_SHOT, (void *)timeoutInfo,
+                                         &thiz->hRspTmr);
+    thiz->maxRetries--;
+  } else {
+    NwGtpv1uUlpApiT ulpApi;
+    ulpApi.apiType                      = NW_GTPV1U_ULP_API_RSP_FAILURE;
+    ulpApi.apiInfo.recvMsgInfo.msgType  = nwGtpv1uMsgGetMsgType((
+                                            NwGtpv1uMsgHandleT)thiz->pMsg);
+    ulpApi.apiInfo.recvMsgInfo.hUlpTrxn = thiz->hUlpTrxn;
+    ulpApi.apiInfo.recvMsgInfo.peerIp   = thiz->peerIp;
+    ulpApi.apiInfo.recvMsgInfo.peerPort = thiz->peerPort;
+    thiz->hRspTmr = 0;
 
-        rc = nwGtpv1uTrxnDelete(&thiz);
-        NW_ASSERT(rc == NW_GTPV1U_OK);
+    rc = nwGtpv1uTrxnDelete(&thiz);
+    NW_ASSERT(rc == NW_GTPV1U_OK);
 
-        rc = pStack->ulp.ulpReqCallback(pStack->ulp.hUlp, &ulpApi);
-        NW_ASSERT(rc == NW_GTPV1U_OK);
-    }
-    return rc;
+    rc = pStack->ulp.ulpReqCallback(pStack->ulp.hUlp, &ulpApi);
+    NW_ASSERT(rc == NW_GTPV1U_OK);
+  }
+
+  return rc;
 }
 
 /**
@@ -133,21 +134,21 @@ static NwGtpv1uRcT
 nwGtpv1uTrxnStartPeerRspTimer(NwGtpv1uTrxnT *thiz,
                               NwGtpv1uRcT (*timeoutCallbackFunc)(void *))
 {
-    NwGtpv1uRcT rc;
-    NwGtpv1uTimeoutInfoT *timeoutInfo;
+  NwGtpv1uRcT rc;
+  NwGtpv1uTimeoutInfoT *timeoutInfo;
 
-    NW_ASSERT(thiz->pStack->tmrMgr.tmrStartCallback != NULL);
+  NW_ASSERT(thiz->pStack->tmrMgr.tmrStartCallback != NULL);
 
-    timeoutInfo                           = &thiz->peerRspTimeoutInfo;
-    timeoutInfo->timeoutArg               = thiz;
-    timeoutInfo->timeoutCallbackFunc      = timeoutCallbackFunc;
-    timeoutInfo->hStack                   = (NwGtpv1uStackHandleT)thiz->pStack;
+  timeoutInfo                           = &thiz->peerRspTimeoutInfo;
+  timeoutInfo->timeoutArg               = thiz;
+  timeoutInfo->timeoutCallbackFunc      = timeoutCallbackFunc;
+  timeoutInfo->hStack                   = (NwGtpv1uStackHandleT)thiz->pStack;
 
-    rc = thiz->pStack->tmrMgr.tmrStartCallback(thiz->pStack->tmrMgr.tmrMgrHandle,
-            thiz->t3Timer, 0, NW_GTPV1U_TMR_TYPE_ONE_SHOT, (void *)timeoutInfo,
-            &thiz->hRspTmr);
+  rc = thiz->pStack->tmrMgr.tmrStartCallback(thiz->pStack->tmrMgr.tmrMgrHandle,
+       thiz->t3Timer, 0, NW_GTPV1U_TMR_TYPE_ONE_SHOT, (void *)timeoutInfo,
+       &thiz->hRspTmr);
 
-    return rc;
+  return rc;
 }
 
 /**
@@ -160,16 +161,16 @@ nwGtpv1uTrxnStartPeerRspTimer(NwGtpv1uTrxnT *thiz,
 static NwGtpv1uRcT
 nwGtpv1uTrxnStopPeerRspTimer(NwGtpv1uTrxnT *thiz)
 {
-    NwGtpv1uRcT rc;
+  NwGtpv1uRcT rc;
 
-    NW_ASSERT(thiz->pStack->tmrMgr.tmrStopCallback != NULL);
+  NW_ASSERT(thiz->pStack->tmrMgr.tmrStopCallback != NULL);
 
-    rc = thiz->pStack->tmrMgr.tmrStopCallback(thiz->pStack->tmrMgr.tmrMgrHandle,
-            thiz->hRspTmr);
+  rc = thiz->pStack->tmrMgr.tmrStopCallback(thiz->pStack->tmrMgr.tmrMgrHandle,
+       thiz->hRspTmr);
 
-    thiz->hRspTmr = 0;
+  thiz->hRspTmr = 0;
 
-    return rc;
+  return rc;
 }
 
 /*--------------------------------------------------------------------------*
@@ -187,37 +188,38 @@ NwGtpv1uRcT
 nwGtpv1uTrxnNew( NW_IN  NwGtpv1uStackT *thiz,
                  NW_OUT NwGtpv1uTrxnT **ppTrxn)
 {
-    NwGtpv1uRcT rc = NW_GTPV1U_OK;
-    NwGtpv1uTrxnT *pTrxn;
+  NwGtpv1uRcT rc = NW_GTPV1U_OK;
+  NwGtpv1uTrxnT *pTrxn;
 
-    if(gpGtpv1uTrxnPool) {
-        pTrxn = gpGtpv1uTrxnPool;
-        gpGtpv1uTrxnPool = gpGtpv1uTrxnPool->next;
-    } else {
-        NW_GTPV1U_MALLOC(thiz, sizeof(NwGtpv1uTrxnT), pTrxn, NwGtpv1uTrxnT *);
+  if(gpGtpv1uTrxnPool) {
+    pTrxn = gpGtpv1uTrxnPool;
+    gpGtpv1uTrxnPool = gpGtpv1uTrxnPool->next;
+  } else {
+    NW_GTPV1U_MALLOC(thiz, sizeof(NwGtpv1uTrxnT), pTrxn, NwGtpv1uTrxnT *);
+  }
+
+  if (pTrxn) {
+    pTrxn->maxRetries   = 2;
+    pTrxn->pStack       = thiz;
+    pTrxn->t3Timer      = 2;
+    pTrxn->seqNum       = thiz->seq;
+
+    /* Increment sequence number */
+    thiz->seq++;
+
+    if(thiz->seq == 0x800000) {
+      thiz->seq = 0;
     }
 
-    if (pTrxn) {
-        pTrxn->maxRetries   = 2;
-        pTrxn->pStack       = thiz;
-        pTrxn->t3Timer      = 2;
-        pTrxn->seqNum       = thiz->seq;
+  } else {
+    rc = NW_GTPV1U_FAILURE;
+  }
 
-        /* Increment sequence number */
-        thiz->seq++;
-        if(thiz->seq == 0x800000) {
-            thiz->seq = 0;
-        }
+  NW_LOG(thiz, NW_LOG_LEVEL_DEBG, "Created transaction 0x%p", pTrxn);
 
-    } else {
-        rc = NW_GTPV1U_FAILURE;
-    }
+  *ppTrxn = pTrxn;
 
-    NW_LOG(thiz, NW_LOG_LEVEL_DEBG, "Created transaction 0x%p", pTrxn);
-
-    *ppTrxn = pTrxn;
-
-    return rc;
+  return rc;
 }
 
 /**
@@ -233,32 +235,32 @@ nwGtpv1uTrxnWithSeqNew( NW_IN  NwGtpv1uStackT *thiz,
                         NW_IN  NwU32T seqNum,
                         NW_OUT NwGtpv1uTrxnT **ppTrxn)
 {
-    NwGtpv1uRcT rc = NW_GTPV1U_OK;
-    NwGtpv1uTrxnT *pTrxn;
+  NwGtpv1uRcT rc = NW_GTPV1U_OK;
+  NwGtpv1uTrxnT *pTrxn;
 
-    if(gpGtpv1uTrxnPool) {
-        pTrxn = gpGtpv1uTrxnPool;
-        gpGtpv1uTrxnPool = gpGtpv1uTrxnPool->next;
-    } else {
-        NW_GTPV1U_MALLOC(thiz, sizeof(NwGtpv1uTrxnT), pTrxn, NwGtpv1uTrxnT *);
-    }
+  if(gpGtpv1uTrxnPool) {
+    pTrxn = gpGtpv1uTrxnPool;
+    gpGtpv1uTrxnPool = gpGtpv1uTrxnPool->next;
+  } else {
+    NW_GTPV1U_MALLOC(thiz, sizeof(NwGtpv1uTrxnT), pTrxn, NwGtpv1uTrxnT *);
+  }
 
 
-    if (pTrxn) {
-        pTrxn->maxRetries   = 2;
-        pTrxn->pStack       = thiz;
-        pTrxn->t3Timer      = 2;
-        pTrxn->seqNum       = seqNum;
-        pTrxn->pMsg         = NULL;
-    } else {
-        rc = NW_GTPV1U_FAILURE;
-    }
+  if (pTrxn) {
+    pTrxn->maxRetries   = 2;
+    pTrxn->pStack       = thiz;
+    pTrxn->t3Timer      = 2;
+    pTrxn->seqNum       = seqNum;
+    pTrxn->pMsg         = NULL;
+  } else {
+    rc = NW_GTPV1U_FAILURE;
+  }
 
-    NW_LOG(thiz, NW_LOG_LEVEL_DEBG, "Created transaction 0x%p", pTrxn);
+  NW_LOG(thiz, NW_LOG_LEVEL_DEBG, "Created transaction 0x%p", pTrxn);
 
-    *ppTrxn = pTrxn;
+  *ppTrxn = pTrxn;
 
-    return rc;
+  return rc;
 }
 
 /**
@@ -270,30 +272,30 @@ nwGtpv1uTrxnWithSeqNew( NW_IN  NwGtpv1uStackT *thiz,
 NwGtpv1uRcT
 nwGtpv1uTrxnDelete( NW_INOUT NwGtpv1uTrxnT **pthiz)
 {
-    NwGtpv1uRcT rc = NW_GTPV1U_OK;
-    NwGtpv1uStackT *pStack;
-    NwGtpv1uTrxnT *thiz = *pthiz;
+  NwGtpv1uRcT rc = NW_GTPV1U_OK;
+  NwGtpv1uStackT *pStack;
+  NwGtpv1uTrxnT *thiz = *pthiz;
 
-    pStack = thiz->pStack;
+  pStack = thiz->pStack;
 
-    if(thiz->hRspTmr) {
-        rc = nwGtpv1uTrxnStopPeerRspTimer(thiz);
-        NW_ASSERT(rc == NW_GTPV1U_OK);
-    }
+  if(thiz->hRspTmr) {
+    rc = nwGtpv1uTrxnStopPeerRspTimer(thiz);
+    NW_ASSERT(rc == NW_GTPV1U_OK);
+  }
 
-    if(thiz->pMsg) {
-        rc = nwGtpv1uMsgDelete((NwGtpv1uStackHandleT)pStack,
-                               (NwGtpv1uMsgHandleT)thiz->pMsg);
-        NW_ASSERT(rc == NW_GTPV1U_OK);
-    }
+  if(thiz->pMsg) {
+    rc = nwGtpv1uMsgDelete((NwGtpv1uStackHandleT)pStack,
+                           (NwGtpv1uMsgHandleT)thiz->pMsg);
+    NW_ASSERT(rc == NW_GTPV1U_OK);
+  }
 
-    thiz->next = gpGtpv1uTrxnPool;
-    gpGtpv1uTrxnPool = thiz;
+  thiz->next = gpGtpv1uTrxnPool;
+  gpGtpv1uTrxnPool = thiz;
 
-    NW_LOG(pStack, NW_LOG_LEVEL_DEBG, "Purged transaction 0x%p", thiz);
+  NW_LOG(pStack, NW_LOG_LEVEL_DEBG, "Purged transaction 0x%p", thiz);
 
-    *pthiz = NULL;
-    return rc;
+  *pthiz = NULL;
+  return rc;
 }
 
 
@@ -315,72 +317,75 @@ nwGtpv1uTrxnCreateAndSendMsg( NW_IN  NwGtpv1uStackT *thiz,
                               NW_IN  NwU32T peerPort,
                               NW_IN  NwGtpv1uMsgT *pMsg)
 {
-    NwGtpv1uRcT rc;
-    NwU8T *msgHdr;
+  NwGtpv1uRcT rc;
+  NwU8T *msgHdr;
 
-    NW_ASSERT(thiz);
-    NW_ASSERT(pMsg);
+  NW_ASSERT(thiz);
+  NW_ASSERT(pMsg);
 
-    msgHdr = &pMsg->msgBuf[pMsg->msgBufOffset];
+  msgHdr = &pMsg->msgBuf[pMsg->msgBufOffset];
 
-    NW_ASSERT(msgHdr != NULL);
+  NW_ASSERT(msgHdr != NULL);
 
-    *(msgHdr++)         = (pMsg->version << 5)            |
-                          (pMsg->protocolType << 4)       |
-                          (pMsg->extHdrFlag << 2)         |
-                          (pMsg->seqNumFlag << 1)         |
-                          (pMsg->npduNumFlag);
+  *(msgHdr++)         = (pMsg->version << 5)            |
+                        (pMsg->protocolType << 4)       |
+                        (pMsg->extHdrFlag << 2)         |
+                        (pMsg->seqNumFlag << 1)         |
+                        (pMsg->npduNumFlag);
 
-    *(msgHdr++)         = (pMsg->msgType);
-    *((NwU16T *) msgHdr) = htons(pMsg->msgLen);
+  *(msgHdr++)         = (pMsg->msgType);
+  *((NwU16T *) msgHdr) = htons(pMsg->msgLen);
+  msgHdr += 2;
+
+  *((NwU32T *) msgHdr) = htonl(pMsg->teid);
+  msgHdr += 4;
+
+  if(pMsg->seqNumFlag | pMsg->extHdrFlag | pMsg->npduNumFlag) {
+    if(pMsg->seqNumFlag) {
+      *((NwU16T *) msgHdr) = htons((pTrxn ? pTrxn->seqNum : pMsg->seqNum));
+    } else {
+      *((NwU16T *) msgHdr) = 0x0000;
+    }
+
     msgHdr += 2;
 
-    *((NwU32T *) msgHdr) = htonl(pMsg->teid);
-    msgHdr += 4;
-
-    if(pMsg->seqNumFlag | pMsg->extHdrFlag | pMsg->npduNumFlag) {
-        if(pMsg->seqNumFlag) {
-            *((NwU16T *) msgHdr) = htons((pTrxn ? pTrxn->seqNum : pMsg->seqNum));
-        } else {
-            *((NwU16T *) msgHdr) = 0x0000;
-        }
-        msgHdr += 2;
-
-        if(pMsg->npduNumFlag) {
-            *((NwU8T *) msgHdr) = pMsg->npduNumFlag;
-        } else {
-            *((NwU8T *) msgHdr) = 0x00;
-        }
-        msgHdr++;
-
-        if(pMsg->extHdrFlag) {
-            *((NwU8T *) msgHdr) = pMsg->extHdrFlag;
-        } else {
-            *((NwU8T *) msgHdr) = 0x00;
-        }
-        msgHdr++;
+    if(pMsg->npduNumFlag) {
+      *((NwU8T *) msgHdr) = pMsg->npduNumFlag;
+    } else {
+      *((NwU8T *) msgHdr) = 0x00;
     }
 
-    NW_ASSERT(thiz->udp.udpDataReqCallback != NULL);
+    msgHdr++;
 
-    rc = thiz->udp.udpDataReqCallback(thiz->udp.hUdp,
-                                      pMsg->msgBuf,
-                                      pMsg->msgLen,
-                                      pMsg->msgBufOffset,
-                                      peerIp,
-                                      peerPort);
-
-    /* Save the message for retransmission */
-    if(rc == NW_GTPV1U_OK && pTrxn) {
-        pTrxn->pMsg         = pMsg;
-        pTrxn->peerIp       = peerIp;
-        pTrxn->peerPort     = peerPort;
-
-        rc = nwGtpv1uTrxnStartPeerRspTimer(pTrxn, nwGtpv1uTrxnPeerRspTimeout);
-        NW_ASSERT(rc == NW_GTPV1U_OK);
+    if(pMsg->extHdrFlag) {
+      *((NwU8T *) msgHdr) = pMsg->extHdrFlag;
+    } else {
+      *((NwU8T *) msgHdr) = 0x00;
     }
 
-    return rc;
+    msgHdr++;
+  }
+
+  NW_ASSERT(thiz->udp.udpDataReqCallback != NULL);
+
+  rc = thiz->udp.udpDataReqCallback(thiz->udp.hUdp,
+                                    pMsg->msgBuf,
+                                    pMsg->msgLen,
+                                    pMsg->msgBufOffset,
+                                    peerIp,
+                                    peerPort);
+
+  /* Save the message for retransmission */
+  if(rc == NW_GTPV1U_OK && pTrxn) {
+    pTrxn->pMsg         = pMsg;
+    pTrxn->peerIp       = peerIp;
+    pTrxn->peerPort     = peerPort;
+
+    rc = nwGtpv1uTrxnStartPeerRspTimer(pTrxn, nwGtpv1uTrxnPeerRspTimeout);
+    NW_ASSERT(rc == NW_GTPV1U_OK);
+  }
+
+  return rc;
 }
 #endif
 

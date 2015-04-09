@@ -33,35 +33,35 @@
 
 static inline void
 mme_app_itti_auth_fail(
-        const uint32_t ue_id,
-        const nas_cause_t cause)
+  const uint32_t ue_id,
+  const nas_cause_t cause)
 {
-    MessageDef *message_p;
+  MessageDef *message_p;
 
-    message_p = itti_alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_PARAM_FAIL);
+  message_p = itti_alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_PARAM_FAIL);
 
-    NAS_AUTHENTICATION_PARAM_FAIL(message_p).ue_id = ue_id;
-    NAS_AUTHENTICATION_PARAM_FAIL(message_p).cause = cause;
+  NAS_AUTHENTICATION_PARAM_FAIL(message_p).ue_id = ue_id;
+  NAS_AUTHENTICATION_PARAM_FAIL(message_p).cause = cause;
 
-    itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
+  itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
 }
 
 
 
 static inline void mme_app_itti_auth_rsp(
-        const uint32_t                 ue_id,
-        const uint8_t                  nb_vectors,
-        const  eutran_vector_t * const vector)
+  const uint32_t                 ue_id,
+  const uint8_t                  nb_vectors,
+  const  eutran_vector_t * const vector)
 {
-    MessageDef *message_p;
+  MessageDef *message_p;
 
-    message_p = itti_alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_PARAM_RSP);
+  message_p = itti_alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_PARAM_RSP);
 
-    NAS_AUTHENTICATION_PARAM_RSP(message_p).ue_id       = ue_id;
-    NAS_AUTHENTICATION_PARAM_RSP(message_p).nb_vectors  = nb_vectors;
-    memcpy(&NAS_AUTHENTICATION_PARAM_RSP(message_p).vector, vector, sizeof(*vector));
+  NAS_AUTHENTICATION_PARAM_RSP(message_p).ue_id       = ue_id;
+  NAS_AUTHENTICATION_PARAM_RSP(message_p).nb_vectors  = nb_vectors;
+  memcpy(&NAS_AUTHENTICATION_PARAM_RSP(message_p).vector, vector, sizeof(*vector));
 
-    itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
+  itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
 }
 
 #endif /* MME_APP_ITTI_MESSAGING_H_ */

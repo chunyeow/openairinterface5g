@@ -38,7 +38,7 @@
 #    ifdef RTAI
 #        include <rtai.h>
 #    else
-      /* RTLINUX */
+/* RTLINUX */
 #        include <rtl.h>
 #    endif
 
@@ -74,7 +74,7 @@ rlc_um_receive_15_process_waited_pdu (struct rlc_um_entity             *rlc_pP,
                                       struct rlc_um_rx_data_pdu_struct *data_pP,
                                       sdu_size_t                        tb_sizeP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   uint8_t           *data_pdu_p              = NULL;
   sdu_size_t      remaining_data_size   = 0;
   int             nb_li                 = 0;
@@ -88,6 +88,7 @@ rlc_um_receive_15_process_waited_pdu (struct rlc_um_entity             *rlc_pP,
       li[nb_li] = li[nb_li] & (~(uint16_t) RLC_E_NEXT_FIELD_IS_LI_E);
       nb_li++;
     }
+
     nb_li++;                    // count the last li
 
     remaining_data_size = tb_sizeP - 1 - (nb_li << 1);
@@ -95,33 +96,40 @@ rlc_um_receive_15_process_waited_pdu (struct rlc_um_entity             *rlc_pP,
 
     while (li_index < nb_li) {
       switch (li[li_index]) {
-          case RLC_LI_LAST_PDU_EXACTLY_FILLED:
-            rlc_um_send_sdu (rlc_pP);
-            break;
-          case RLC_LI_LAST_PDU_ONE_BYTE_SHORT:
-            rlc_pP->output_sdu_size_to_write -= 1;
-            rlc_um_send_sdu (rlc_pP);
-            break;
-          case RLC_LI_PDU_PIGGY_BACKED_STATUS: // ignore
-          case RLC_LI_PDU_PADDING:
-            remaining_data_size = 0;
-            break;
-          case RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU:
-            rlc_pP->output_sdu_size_to_write = 0;
-            break;
-          default:             // li is length
-            remaining_data_size = remaining_data_size - (li[li_index] >> 1);
-            rlc_um_reassembly (data_pdu_p, (li[li_index] >> 1), rlc_pP);
-            data_pdu_p = (uint8_t *) ((uint64_t) data_pdu_p + (li[li_index] >> 1));
-            rlc_um_send_sdu (rlc_pP);
+      case RLC_LI_LAST_PDU_EXACTLY_FILLED:
+        rlc_um_send_sdu (rlc_pP);
+        break;
+
+      case RLC_LI_LAST_PDU_ONE_BYTE_SHORT:
+        rlc_pP->output_sdu_size_to_write -= 1;
+        rlc_um_send_sdu (rlc_pP);
+        break;
+
+      case RLC_LI_PDU_PIGGY_BACKED_STATUS: // ignore
+      case RLC_LI_PDU_PADDING:
+        remaining_data_size = 0;
+        break;
+
+      case RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU:
+        rlc_pP->output_sdu_size_to_write = 0;
+        break;
+
+      default:             // li is length
+        remaining_data_size = remaining_data_size - (li[li_index] >> 1);
+        rlc_um_reassembly (data_pdu_p, (li[li_index] >> 1), rlc_pP);
+        data_pdu_p = (uint8_t *) ((uint64_t) data_pdu_p + (li[li_index] >> 1));
+        rlc_um_send_sdu (rlc_pP);
       }
+
       li_index++;
     }
+
     if ((remaining_data_size)) {
       rlc_um_reassembly (data_pdu_p, remaining_data_size, rlc_pP);
       remaining_data_size = 0;
     }
   }
+
   rlc_pP->vr_us = (rlc_pP->vr_us + 1) & 127;
 }
 
@@ -129,7 +137,7 @@ rlc_um_receive_15_process_waited_pdu (struct rlc_um_entity             *rlc_pP,
 inline void
 rlc_um_receive_7_process_waited_pdu (struct rlc_um_entity *rlc_pP, struct rlc_um_rx_pdu_management *pdu_mngtP, struct rlc_um_rx_data_pdu_struct *dataP, uint16_t tb_sizeP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   uint8_t           *data_pdu_p            = NULL;
   sdu_size_t      remaining_data_size   = 0;
   int             nb_li                 = 0;
@@ -143,6 +151,7 @@ rlc_um_receive_7_process_waited_pdu (struct rlc_um_entity *rlc_pP, struct rlc_um
       li[nb_li] = li[nb_li] & (~(uint8_t) RLC_E_NEXT_FIELD_IS_LI_E);
       nb_li++;
     }
+
     nb_li++;                    // count the last li
 
     remaining_data_size = tb_sizeP - 1 - nb_li;
@@ -150,53 +159,56 @@ rlc_um_receive_7_process_waited_pdu (struct rlc_um_entity *rlc_pP, struct rlc_um
 
     while (li_index < nb_li) {
       switch (li[li_index]) {
-          case (uint8_t) RLC_LI_LAST_PDU_EXACTLY_FILLED:
-            PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li RLC_LI_LAST_PDU_EXACTLY_FILLED\n", rlc_pP, pdu_mngtP);
-            rlc_um_send_sdu (rlc_pP);
-            break;
+      case (uint8_t) RLC_LI_LAST_PDU_EXACTLY_FILLED:
+        PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li RLC_LI_LAST_PDU_EXACTLY_FILLED\n", rlc_pP, pdu_mngtP);
+        rlc_um_send_sdu (rlc_pP);
+        break;
 
-          case (uint8_t) RLC_LI_LAST_PDU_ONE_BYTE_SHORT:
-            PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li RLC_LI_LAST_PDU_ONE_BYTE_SHORT\n", rlc_pP, pdu_mngtP);
-            rlc_pP->output_sdu_size_to_write -= 1;
-            rlc_um_send_sdu (rlc_pP);
-            break;
+      case (uint8_t) RLC_LI_LAST_PDU_ONE_BYTE_SHORT:
+        PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li RLC_LI_LAST_PDU_ONE_BYTE_SHORT\n", rlc_pP, pdu_mngtP);
+        rlc_pP->output_sdu_size_to_write -= 1;
+        rlc_um_send_sdu (rlc_pP);
+        break;
 
-          case (uint8_t) RLC_LI_PDU_PIGGY_BACKED_STATUS:    // ignore
-          case (uint8_t) RLC_LI_PDU_PADDING:
-            PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li RLC_LI_PDU_PADDING\n", rlc_pP, pdu_mngtP);
-            remaining_data_size = 0;
-            break;
+      case (uint8_t) RLC_LI_PDU_PIGGY_BACKED_STATUS:    // ignore
+      case (uint8_t) RLC_LI_PDU_PADDING:
+        PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li RLC_LI_PDU_PADDING\n", rlc_pP, pdu_mngtP);
+        remaining_data_size = 0;
+        break;
 
-          case (uint8_t) RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU:
-            PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU\n", rlc_pP, pdu_mngtP);
-            rlc_pP->output_sdu_size_to_write = 0;
-            break;
+      case (uint8_t) RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU:
+        PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU\n", rlc_pP, pdu_mngtP);
+        rlc_pP->output_sdu_size_to_write = 0;
+        break;
 
-          default:             // li is length
-            PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li LI_SIZE %d Bytes\n", rlc_pP, pdu_mngtP, li[li_index] >> 1);
-            remaining_data_size = remaining_data_size - (li[li_index] >> 1);
-            rlc_um_reassembly (data_pdu_p, (li[li_index] >> 1), rlc_pP);
-            data_pdu_p = (uint8_t *) ((uint64_t) data_pdu_p + (li[li_index] >> 1));
-            rlc_um_send_sdu (rlc_pP);
+      default:             // li is length
+        PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li LI_SIZE %d Bytes\n", rlc_pP, pdu_mngtP, li[li_index] >> 1);
+        remaining_data_size = remaining_data_size - (li[li_index] >> 1);
+        rlc_um_reassembly (data_pdu_p, (li[li_index] >> 1), rlc_pP);
+        data_pdu_p = (uint8_t *) ((uint64_t) data_pdu_p + (li[li_index] >> 1));
+        rlc_um_send_sdu (rlc_pP);
       }
+
       li_index++;
     }
+
     if ((remaining_data_size)) {
       rlc_um_reassembly (data_pdu_p, remaining_data_size, rlc_pP);
       remaining_data_size = 0;
     }
   }
+
   rlc_pP->vr_us = (rlc_pP->vr_us + 1) & 127;
 }
 
 //-----------------------------------------------------------------------------
 inline void
 rlc_um_receive_15_process_unsynchronized_pdu (struct rlc_um_entity             *rlc_pP,
-                                              struct rlc_um_rx_pdu_management  *pdu_mngt_pP,
-                                              struct rlc_um_rx_data_pdu_struct *data_pP,
-                                              sdu_size_t                       tb_sizeP)
+    struct rlc_um_rx_pdu_management  *pdu_mngt_pP,
+    struct rlc_um_rx_data_pdu_struct *data_pP,
+    sdu_size_t                       tb_sizeP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   uint8_t             *data_pdu_p            = NULL;
   int               nb_li                 = 0;
   int               li_index              = 0;
@@ -213,6 +225,7 @@ rlc_um_receive_15_process_unsynchronized_pdu (struct rlc_um_entity             *
       li[nb_li] = li[nb_li] & (~(uint16_t) RLC_E_NEXT_FIELD_IS_LI_E);
       nb_li++;
     }
+
     nb_li++;                    // count the last li
 
     remaining_data_size = tb_sizeP - 1 - (nb_li << 1);
@@ -220,45 +233,53 @@ rlc_um_receive_15_process_unsynchronized_pdu (struct rlc_um_entity             *
 
     while (li_index < nb_li) {
       switch (li[li_index]) {
-          case RLC_LI_LAST_PDU_ONE_BYTE_SHORT:
-          case RLC_LI_LAST_PDU_EXACTLY_FILLED:
-            start_processing = 1;
-            break;
-          case RLC_LI_PDU_PIGGY_BACKED_STATUS: // ignore
-          case RLC_LI_PDU_PADDING:
-            remaining_data_size = 0;
-            break;
-          case RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU:
-            start_processing = 1;
-            rlc_pP->output_sdu_size_to_write = 0;
-            break;
-          default:             // li is length
-            remaining_data_size = remaining_data_size - (li[li_index] >> 1);
-            if ((start_processing)) {
-              rlc_um_reassembly (data_pdu_p, (li[li_index] >> 1), rlc_pP, 0);
-              rlc_um_send_sdu (rlc_pP);
-            }
-            start_processing = 1;
-            data_pdu_p = (uint8_t *) ((uint64_t) data_pdu_p + (li[li_index] >> 1));
+      case RLC_LI_LAST_PDU_ONE_BYTE_SHORT:
+      case RLC_LI_LAST_PDU_EXACTLY_FILLED:
+        start_processing = 1;
+        break;
+
+      case RLC_LI_PDU_PIGGY_BACKED_STATUS: // ignore
+      case RLC_LI_PDU_PADDING:
+        remaining_data_size = 0;
+        break;
+
+      case RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU:
+        start_processing = 1;
+        rlc_pP->output_sdu_size_to_write = 0;
+        break;
+
+      default:             // li is length
+        remaining_data_size = remaining_data_size - (li[li_index] >> 1);
+
+        if ((start_processing)) {
+          rlc_um_reassembly (data_pdu_p, (li[li_index] >> 1), rlc_pP, 0);
+          rlc_um_send_sdu (rlc_pP);
+        }
+
+        start_processing = 1;
+        data_pdu_p = (uint8_t *) ((uint64_t) data_pdu_p + (li[li_index] >> 1));
       }
+
       li_index++;
     }
+
     if ((remaining_data_size)) {
       rlc_um_reassembly (data_pdu_p, remaining_data_size, rlc_pP);
       remaining_data_size = 0;
     }
   }
+
   rlc_pP->vr_us = (pdu_mngt_pP->sn + 1) & 127;
 }
 
 //-----------------------------------------------------------------------------
 inline void
 rlc_um_receive_7_process_unsynchronized_pdu (struct rlc_um_entity            *rlc_pP,
-                                            struct rlc_um_rx_pdu_management  *pdu_mngt_pP,
-                                            struct rlc_um_rx_data_pdu_struct *data_pP,
-                                            sdu_size_t                        tb_sizeP)
+    struct rlc_um_rx_pdu_management  *pdu_mngt_pP,
+    struct rlc_um_rx_data_pdu_struct *data_pP,
+    sdu_size_t                        tb_sizeP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   uint8_t             *data_pdu_p            = NULL;
   int               nb_li                 = 0;
   int               li_index              = 0;
@@ -275,6 +296,7 @@ rlc_um_receive_7_process_unsynchronized_pdu (struct rlc_um_entity            *rl
       li[nb_li] = li[nb_li] & (~(uint8_t) RLC_E_NEXT_FIELD_IS_LI_E);
       nb_li++;
     }
+
     nb_li++;                    // count the last li
 
     remaining_data_size = tb_sizeP - 1 - nb_li;
@@ -283,34 +305,42 @@ rlc_um_receive_7_process_unsynchronized_pdu (struct rlc_um_entity            *rl
 
     while (li_index < nb_li) {
       switch (li[li_index]) {
-          case (uint8_t) RLC_LI_LAST_PDU_ONE_BYTE_SHORT:
-          case (uint8_t) RLC_LI_LAST_PDU_EXACTLY_FILLED:
-            start_processing = 1;
-            break;
-          case (uint8_t) RLC_LI_PDU_PIGGY_BACKED_STATUS:    // ignore
-          case (uint8_t) RLC_LI_PDU_PADDING:
-            remaining_data_size = 0;
-            break;
-          case (uint8_t) RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU:
-            start_processing = 1;
-            rlc_pP->output_sdu_size_to_write = 0;
-            break;
-          default:             // li is length
-            remaining_data_size = remaining_data_size - (li[li_index] >> 1);
-            if ((start_processing)) {
-              rlc_um_reassembly (data_pdu_p, (li[li_index] >> 1), rlc_pP, 0);
-              rlc_um_send_sdu (rlc_pP);
-            }
-            start_processing = 1;
-            data_pdu_p = (uint8_t *) ((uint64_t) data_pdu_p + (li[li_index] >> 1));
+      case (uint8_t) RLC_LI_LAST_PDU_ONE_BYTE_SHORT:
+      case (uint8_t) RLC_LI_LAST_PDU_EXACTLY_FILLED:
+        start_processing = 1;
+        break;
+
+      case (uint8_t) RLC_LI_PDU_PIGGY_BACKED_STATUS:    // ignore
+      case (uint8_t) RLC_LI_PDU_PADDING:
+        remaining_data_size = 0;
+        break;
+
+      case (uint8_t) RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU:
+        start_processing = 1;
+        rlc_pP->output_sdu_size_to_write = 0;
+        break;
+
+      default:             // li is length
+        remaining_data_size = remaining_data_size - (li[li_index] >> 1);
+
+        if ((start_processing)) {
+          rlc_um_reassembly (data_pdu_p, (li[li_index] >> 1), rlc_pP, 0);
+          rlc_um_send_sdu (rlc_pP);
+        }
+
+        start_processing = 1;
+        data_pdu_p = (uint8_t *) ((uint64_t) data_pdu_p + (li[li_index] >> 1));
       }
+
       li_index++;
     }
+
     if ((remaining_data_size)) {
       rlc_um_reassembly (data_pdu_p, remaining_data_size, rlc_pP);
       remaining_data_size = 0;
     }
   }
+
   rlc_pP->vr_us = (pdu_mngt_pP->sn + 1) & 127;
 }
 
@@ -318,7 +348,7 @@ rlc_um_receive_7_process_unsynchronized_pdu (struct rlc_um_entity            *rl
 void
 rlc_um_receive_15 (struct rlc_um_entity *rlc_pP, struct mac_data_ind data_indP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   struct rlc_um_rx_data_pdu_struct *data_p                   = NULL;
   struct rlc_um_rx_pdu_management  *pdu_mngt_p               = NULL;
@@ -338,15 +368,18 @@ rlc_um_receive_15 (struct rlc_um_entity *rlc_pP, struct mac_data_ind data_indP)
 
       tb_size_in_bytes = data_indP.tb_size;
       first_bit = ((struct mac_tb_ind *) (tb_p->data))->first_bit;
+
       if (first_bit > 0) {
         // shift data of transport_block TO CHECK
         bits_to_shift_last_loop = 0;
+
         while ((tb_size_in_bytes)) {
           bits_to_shift = first_byte_p[tb_size_in_bytes] >> (8 - first_bit);
           first_byte_p[tb_size_in_bytes] = (first_byte_p[tb_size_in_bytes] << first_bit) | (bits_to_shift_last_loop);
           tb_size_in_bytes -= 1;
           bits_to_shift_last_loop = bits_to_shift;
         }
+
         first_byte_p[0] = (first_byte_p[0] << first_bit) | (bits_to_shift_last_loop);
       }
 
@@ -363,6 +396,7 @@ rlc_um_receive_15 (struct rlc_um_entity *rlc_pP, struct mac_data_ind data_indP)
     } else {
       PRINT_RLC_UM_RX ("[RLC_UM][RB %d] RX PDU WITH ERROR INDICATED BY LOWER LAYERS -> GARBAGE\n", rlc_pP->rb_id);
     }
+
     free_mem_block (tb_p);
   }
 }
@@ -371,7 +405,7 @@ rlc_um_receive_15 (struct rlc_um_entity *rlc_pP, struct mac_data_ind data_indP)
 void
 rlc_um_receive_7 (struct rlc_um_entity *rlc_pP, struct mac_data_ind data_indP)
 {
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
 
   struct rlc_um_rx_data_pdu_struct *data_p                   = NULL;
   struct rlc_um_rx_pdu_management  *pdu_mngt_p               = NULL;
@@ -395,15 +429,18 @@ rlc_um_receive_7 (struct rlc_um_entity *rlc_pP, struct mac_data_ind data_indP)
 
       tb_size_in_bytes = data_indP.tb_size;
       first_bit = ((struct mac_tb_ind *) (tb_p->data))->first_bit;
+
       if (first_bit > 0) {
         // shift data of transport_block TO CHECK
         bits_to_shift_last_loop = 0;
+
         while ((tb_size_in_bytes)) {
           bits_to_shift = first_byte_p[tb_size_in_bytes] >> (8 - first_bit);
           first_byte_p[tb_size_in_bytes] = (first_byte_p[tb_size_in_bytes] << first_bit) | (bits_to_shift_last_loop);
           tb_size_in_bytes -= 1;
           bits_to_shift_last_loop = bits_to_shift;
         }
+
         first_byte_p[0] = (first_byte_p[0] << first_bit) | (bits_to_shift_last_loop);
       }
 
@@ -426,6 +463,7 @@ rlc_um_receive_7 (struct rlc_um_entity *rlc_pP, struct mac_data_ind data_indP)
       PRINT_RLC_UM_RX ("[RLC_UM][RB %d] RX7 PDU SN %02X hex??? WITH ERROR INDICATED BY LOWER LAYERS -> GARBAGE\n", rlc_pP->rb_id, pdu_mngt_p->sn);
 #endif
     }
+
     free_mem_block (tb_p);
   }
 }

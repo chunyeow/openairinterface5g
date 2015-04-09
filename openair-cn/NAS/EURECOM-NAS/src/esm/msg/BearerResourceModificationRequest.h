@@ -62,9 +62,9 @@
 # define BEARER_RESOURCE_MODIFICATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<2)
 
 typedef enum bearer_resource_modification_request_iei_tag {
-    BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_IEI       = 0x5B, /* 0x5B = 91 */
-    BEARER_RESOURCE_MODIFICATION_REQUEST_ESM_CAUSE_IEI                       = 0x58, /* 0x58 = 88 */
-    BEARER_RESOURCE_MODIFICATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
+  BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_IEI       = 0x5B, /* 0x5B = 91 */
+  BEARER_RESOURCE_MODIFICATION_REQUEST_ESM_CAUSE_IEI                       = 0x58, /* 0x58 = 88 */
+  BEARER_RESOURCE_MODIFICATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI  = 0x27, /* 0x27 = 39 */
 } bearer_resource_modification_request_iei;
 
 /*
@@ -75,18 +75,18 @@ typedef enum bearer_resource_modification_request_iei_tag {
  */
 
 typedef struct bearer_resource_modification_request_msg_tag {
-    /* Mandatory fields */
-    ProtocolDiscriminator                            protocoldiscriminator:4;
-    EpsBearerIdentity                                epsbeareridentity:4;
-    ProcedureTransactionIdentity                     proceduretransactionidentity;
-    MessageType                                      messagetype;
-    LinkedEpsBearerIdentity                          epsbeareridentityforpacketfilter;
-    TrafficFlowAggregateDescription                  trafficflowaggregate;
-    /* Optional fields */
-    uint32_t                                         presencemask;
-    EpsQualityOfService                              requiredtrafficflowqos;
-    EsmCause                                         esmcause;
-    ProtocolConfigurationOptions                     protocolconfigurationoptions;
+  /* Mandatory fields */
+  ProtocolDiscriminator                            protocoldiscriminator:4;
+  EpsBearerIdentity                                epsbeareridentity:4;
+  ProcedureTransactionIdentity                     proceduretransactionidentity;
+  MessageType                                      messagetype;
+  LinkedEpsBearerIdentity                          epsbeareridentityforpacketfilter;
+  TrafficFlowAggregateDescription                  trafficflowaggregate;
+  /* Optional fields */
+  uint32_t                                         presencemask;
+  EpsQualityOfService                              requiredtrafficflowqos;
+  EsmCause                                         esmcause;
+  ProtocolConfigurationOptions                     protocolconfigurationoptions;
 } bearer_resource_modification_request_msg;
 
 int decode_bearer_resource_modification_request(bearer_resource_modification_request_msg *bearerresourcemodificationrequest, uint8_t *buffer, uint32_t len);

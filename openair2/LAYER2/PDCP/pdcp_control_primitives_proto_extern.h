@@ -1,5 +1,5 @@
 /***************************************************************************
-                          	pdcp_control_primitives_proto_extern.h
+                            pdcp_control_primitives_proto_extern.h
                              -------------------
     begin                : Mon Dec 10 2001
     copyright            : (C) 2001 by EURECOM

@@ -69,11 +69,11 @@ struct rlc_am_entity {
   uint16_t             timer_poll_periodic;
   //uint16_t timer_status_prohibit;
   uint16_t             timer_status_periodic;
-  
+
   signed int     timer_status_prohibit;
   signed int     running_timer_status_prohibit;
-  
-  
+
+
   mem_block_t      *timer_rst;
   uint16_t             time_out_events;
   mem_block_t      *timer_mrw;    // if NULL : no timer is running
@@ -313,14 +313,14 @@ struct rlc_am_entity {
   unsigned int stat_tx_pdcp_sdu_discarded;
   unsigned int stat_tx_retransmit_pdu_unblock;
   unsigned int stat_tx_retransmit_pdu_by_status;
-  unsigned int stat_tx_retransmit_pdu;  
-  unsigned int stat_tx_data_pdu;  
-  unsigned int stat_tx_control_pdu;  
-  
-  unsigned int stat_rx_sdu;  
-  unsigned int stat_rx_error_pdu;  
-  unsigned int stat_rx_data_pdu;  
-  unsigned int stat_rx_data_pdu_out_of_window;  
-  unsigned int stat_rx_control_pdu;  
+  unsigned int stat_tx_retransmit_pdu;
+  unsigned int stat_tx_data_pdu;
+  unsigned int stat_tx_control_pdu;
+
+  unsigned int stat_rx_sdu;
+  unsigned int stat_rx_error_pdu;
+  unsigned int stat_rx_data_pdu;
+  unsigned int stat_rx_data_pdu_out_of_window;
+  unsigned int stat_rx_control_pdu;
 };
 #    endif

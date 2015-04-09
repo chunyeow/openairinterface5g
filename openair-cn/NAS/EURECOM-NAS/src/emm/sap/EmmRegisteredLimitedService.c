@@ -84,13 +84,13 @@ Description Implements the EPS Mobility Management procedures executed
  ***************************************************************************/
 int EmmRegisteredLimitedService(const emm_reg_t *evt)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    assert(emm_fsm_get_status() == EMM_REGISTERED_LIMITED_SERVICE);
+  assert(emm_fsm_get_status() == EMM_REGISTERED_LIMITED_SERVICE);
 
-    /* TODO */
+  /* TODO */
 
-    LOG_FUNC_RETURN (RETURNok);
+  LOG_FUNC_RETURN (RETURNok);
 }
 
 /****************************************************************************/

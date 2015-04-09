@@ -1,5 +1,5 @@
 /*******************************************************************************
-    OpenAirInterface 
+    OpenAirInterface
     Copyright(c) 1999 - 2014 Eurecom
 
     OpenAirInterface is free software: you can redistribute it and/or modify
@@ -14,15 +14,15 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
   OpenAirInterface Tech : openair_tech@eurecom.fr
   OpenAirInterface Dev  : openair4g-devel@eurecom.fr
-  
+
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
@@ -36,7 +36,7 @@
 #define NAS_LISTENING_PORT_FOR_MIH_USER "22222"
 #define RSSI_INCREMENT_STEP             5
 #endif
-//#define SOCKET_RAL_TD_CDMA_NAME		"/tmp/graal"
+//#define SOCKET_RAL_TD_CDMA_NAME   "/tmp/graal"
 
 #define MIHLink_MAX_LENGTH 500
 
@@ -60,11 +60,11 @@
 
 #define CONF_NUM_MEAS 5
 #define CONF_PERIOD_MEAS 30   // 30*100 = 3000 ms = 3 secs
-        // MIHF measure every CONF_PERIOD_MEAS * 100 ms
-        // Ex : CONF_PERIOD_MEAS = 20 ==> measure every 2 secs
+// MIHF measure every CONF_PERIOD_MEAS * 100 ms
+// Ex : CONF_PERIOD_MEAS = 20 ==> measure every 2 secs
 #define CONF_TEST_DURATION 300  // 60*100 = 60000 ms = 60 secs
-        // Actual duration = CONF_TEST_DURATION * 100 ms
-        // must be a mulptiple of CONF_PERIOD_MEAS
+// Actual duration = CONF_TEST_DURATION * 100 ms
+// must be a mulptiple of CONF_PERIOD_MEAS
 #define CONF_TEST_COUNTER CONF_TEST_DURATION/CONF_PERIOD_MEAS
 
 #define CONF_CURR_CELL_ID 5

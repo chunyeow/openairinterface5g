@@ -82,83 +82,86 @@ static void _nas_clean(int net_fd);
 /****************************************************************************/
 int main(int argc, const char *argv[])
 {
-    /*
-     * Get the command line options
-     */
-    if (nas_parser_get_options (argc, argv) != RETURNok) {
-        nas_parser_print_usage (FIRMWARE_VERSION);
-        exit (EXIT_FAILURE);
-    }
+  /*
+   * Get the command line options
+   */
+  if (nas_parser_get_options (argc, argv) != RETURNok) {
+    nas_parser_print_usage (FIRMWARE_VERSION);
+    exit (EXIT_FAILURE);
+  }
 
-    /*
-     * Initialize logging trace utility
-     */
-    nas_log_init (nas_parser_get_trace_level ());
+  /*
+   * Initialize logging trace utility
+   */
+  nas_log_init (nas_parser_get_trace_level ());
 
-    const char *nhost = nas_parser_get_network_host ();
-    const char *nport = nas_parser_get_network_port ();
+  const char *nhost = nas_parser_get_network_host ();
+  const char *nport = nas_parser_get_network_port ();
 
-    LOG_TRACE (INFO, "MME-MAIN  - %s -nhost %s -nport %s -trace 0x%x", argv[0],
-               nhost, nport,
-               nas_parser_get_trace_level ());
+  LOG_TRACE (INFO, "MME-MAIN  - %s -nhost %s -nport %s -trace 0x%x", argv[0],
+             nhost, nport,
+             nas_parser_get_trace_level ());
 
-    /*
-     * Initialize the Network interface
-     */
-    if (network_api_initialize (nhost, nport) != RETURNok) {
-        LOG_TRACE (ERROR, "MME-MAIN  - network_api_initialize() failed");
-        exit (EXIT_FAILURE);
-    }
-    int network_fd = network_api_get_fd ();
+  /*
+   * Initialize the Network interface
+   */
+  if (network_api_initialize (nhost, nport) != RETURNok) {
+    LOG_TRACE (ERROR, "MME-MAIN  - network_api_initialize() failed");
+    exit (EXIT_FAILURE);
+  }
 
-    /*
-     * Initialize the NAS contexts
-     */
-    nas_network_initialize ();
+  int network_fd = network_api_get_fd ();
 
-    /*
-     * Initialize NAS timer handlers
-     */
-    nas_timer_init ();
+  /*
+   * Initialize the NAS contexts
+   */
+  nas_network_initialize ();
 
-    /*
-     * Set up signal handlers
-     */
-    (void) _nas_set_signal_handler (SIGINT, _nas_signal_handler);
-    (void) _nas_set_signal_handler (SIGTERM, _nas_signal_handler);
+  /*
+   * Initialize NAS timer handlers
+   */
+  nas_timer_init ();
 
-    pthread_attr_t attr;
-    pthread_attr_init (&attr);
-    pthread_attr_setscope (&attr, PTHREAD_SCOPE_SYSTEM);
-    pthread_attr_setdetachstate (&attr, PTHREAD_CREATE_DETACHED);
+  /*
+   * Set up signal handlers
+   */
+  (void) _nas_set_signal_handler (SIGINT, _nas_signal_handler);
+  (void) _nas_set_signal_handler (SIGTERM, _nas_signal_handler);
 
-    /*
-     * Start thread use to manage the network connection endpoint
-     */
-    pthread_t network_mngr;
-    if (pthread_create (&network_mngr, &attr, _nas_network_mngr,
-                        &network_fd) != 0) {
-        LOG_TRACE (ERROR, "MME-MAIN  - "
-                   "Failed to create the network management thread");
-        network_api_close (network_fd);
-        exit (EXIT_FAILURE);
-    }
-    pthread_attr_destroy (&attr);
+  pthread_attr_t attr;
+  pthread_attr_init (&attr);
+  pthread_attr_setscope (&attr, PTHREAD_SCOPE_SYSTEM);
+  pthread_attr_setdetachstate (&attr, PTHREAD_CREATE_DETACHED);
 
-    /*
-     * Suspend execution of the main process until the network connection
-     * endpoint is still active
-     */
-    while (network_fd != -1) {
-        poll (NULL, 0, NAS_SLEEP_TIMEOUT);
-        network_fd = network_api_get_fd ();
-    }
+  /*
+   * Start thread use to manage the network connection endpoint
+   */
+  pthread_t network_mngr;
 
-    /* Termination cleanup */
-    _nas_clean (network_fd);
+  if (pthread_create (&network_mngr, &attr, _nas_network_mngr,
+                      &network_fd) != 0) {
+    LOG_TRACE (ERROR, "MME-MAIN  - "
+               "Failed to create the network management thread");
+    network_api_close (network_fd);
+    exit (EXIT_FAILURE);
+  }
 
-    LOG_TRACE
-    (WARNING, "MME-MAIN  - NAS main process exited");
+  pthread_attr_destroy (&attr);
+
+  /*
+   * Suspend execution of the main process until the network connection
+   * endpoint is still active
+   */
+  while (network_fd != -1) {
+    poll (NULL, 0, NAS_SLEEP_TIMEOUT);
+    network_fd = network_api_get_fd ();
+  }
+
+  /* Termination cleanup */
+  _nas_clean (network_fd);
+
+  LOG_TRACE
+  (WARNING, "MME-MAIN  - NAS main process exited");
 }
 
 /****************************************************************************/
@@ -182,58 +185,61 @@ int main(int argc, const char *argv[])
  ***************************************************************************/
 static void *_nas_network_mngr(void *args)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int ret_code;
-    int network_message_id;
-    int bytes;
+  int ret_code;
+  int network_message_id;
+  int bytes;
 
-    int *fd = (int *) args;
+  int *fd = (int *) args;
 
-    LOG_TRACE (INFO, "MME-MAIN  - Network connection manager started (%d)", *fd);
+  LOG_TRACE (INFO, "MME-MAIN  - Network connection manager started (%d)", *fd);
 
-    /* Network receiving loop */
-    while (TRUE) {
-        /* Read the network data message */
-        bytes = network_api_read_data (*fd);
-        if (bytes == RETURNerror) {
-            /* Failed to read data from the network sublayer;
-             * exit from the receiving loop */
-            LOG_TRACE (ERROR, "MME-MAIN  - "
-                       "Failed to read data from the network sublayer");
-            break;
-        }
+  /* Network receiving loop */
+  while (TRUE) {
+    /* Read the network data message */
+    bytes = network_api_read_data (*fd);
 
-        if (bytes == 0) {
-            /* A signal was caught before any data were available */
-            continue;
-        }
-
-        /* Decode the network data message */
-        network_message_id = network_api_decode_data (bytes);
-        if (network_message_id == RETURNerror) {
-            /* Failed to decode data read from the network sublayer */
-            continue;
-        }
-
-        /* Process the network data message */
-        ret_code = nas_network_process_data (network_message_id,
-                                             network_api_get_data ());
-        if (ret_code != RETURNok) {
-            /* The network data message has not been successfully
-             * processed */
-            LOG_TRACE
-            (WARNING, "MME-MAIN  - "
-             "The network procedure call 0x%x failed",
-             network_message_id);
-        }
+    if (bytes == RETURNerror) {
+      /* Failed to read data from the network sublayer;
+       * exit from the receiving loop */
+      LOG_TRACE (ERROR, "MME-MAIN  - "
+                 "Failed to read data from the network sublayer");
+      break;
     }
 
-    /* Close the connection to the network sublayer */LOG_TRACE (WARNING,
-            "MME-MAIN  - "
-            "The network connection endpoint manager exited");
+    if (bytes == 0) {
+      /* A signal was caught before any data were available */
+      continue;
+    }
 
-    LOG_FUNC_RETURN(NULL);
+    /* Decode the network data message */
+    network_message_id = network_api_decode_data (bytes);
+
+    if (network_message_id == RETURNerror) {
+      /* Failed to decode data read from the network sublayer */
+      continue;
+    }
+
+    /* Process the network data message */
+    ret_code = nas_network_process_data (network_message_id,
+                                         network_api_get_data ());
+
+    if (ret_code != RETURNok) {
+      /* The network data message has not been successfully
+       * processed */
+      LOG_TRACE
+      (WARNING, "MME-MAIN  - "
+       "The network procedure call 0x%x failed",
+       network_message_id);
+    }
+  }
+
+  /* Close the connection to the network sublayer */LOG_TRACE (WARNING,
+      "MME-MAIN  - "
+      "The network connection endpoint manager exited");
+
+  LOG_FUNC_RETURN(NULL);
 }
 
 /****************************************************************************
@@ -252,36 +258,37 @@ static void *_nas_network_mngr(void *args)
  ***************************************************************************/
 static int _nas_set_signal_handler(int signal, void (handler)(int))
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    struct sigaction act;
+  struct sigaction act;
 
-    /* Initialize signal set */
-    (void) memset (&act, 0, sizeof(act));
-    (void) sigfillset (&act.sa_mask);
-    (void) sigdelset (&act.sa_mask, SIGHUP);
-    (void) sigdelset (&act.sa_mask, SIGINT);
-    (void) sigdelset (&act.sa_mask, SIGTERM);
-    (void) sigdelset (&act.sa_mask, SIGILL);
-    (void) sigdelset (&act.sa_mask, SIGTRAP);
-    (void) sigdelset (&act.sa_mask, SIGIOT);
+  /* Initialize signal set */
+  (void) memset (&act, 0, sizeof(act));
+  (void) sigfillset (&act.sa_mask);
+  (void) sigdelset (&act.sa_mask, SIGHUP);
+  (void) sigdelset (&act.sa_mask, SIGINT);
+  (void) sigdelset (&act.sa_mask, SIGTERM);
+  (void) sigdelset (&act.sa_mask, SIGILL);
+  (void) sigdelset (&act.sa_mask, SIGTRAP);
+  (void) sigdelset (&act.sa_mask, SIGIOT);
 #ifndef LINUX
-    (void) sigdelset (&act.sa_mask, SIGEMT);
+  (void) sigdelset (&act.sa_mask, SIGEMT);
 #endif
-    (void) sigdelset (&act.sa_mask, SIGFPE);
-    (void) sigdelset (&act.sa_mask, SIGBUS);
-    (void) sigdelset (&act.sa_mask, SIGSEGV);
-    (void) sigdelset (&act.sa_mask, SIGSYS);
+  (void) sigdelset (&act.sa_mask, SIGFPE);
+  (void) sigdelset (&act.sa_mask, SIGBUS);
+  (void) sigdelset (&act.sa_mask, SIGSEGV);
+  (void) sigdelset (&act.sa_mask, SIGSYS);
 
-    /* Initialize signal handler */
-    act.sa_handler = handler;
-    if (sigaction (signal, &act, 0) < 0) {
-        return RETURNerror;
-    }
+  /* Initialize signal handler */
+  act.sa_handler = handler;
 
-    LOG_TRACE (INFO, "MME-MAIN  - Handler successfully set for signal %d", signal);
+  if (sigaction (signal, &act, 0) < 0) {
+    return RETURNerror;
+  }
 
-    LOG_FUNC_RETURN(RETURNok);
+  LOG_TRACE (INFO, "MME-MAIN  - Handler successfully set for signal %d", signal);
+
+  LOG_FUNC_RETURN(RETURNok);
 }
 
 /****************************************************************************
@@ -299,14 +306,14 @@ static int _nas_set_signal_handler(int signal, void (handler)(int))
  ***************************************************************************/
 static void _nas_signal_handler(int signal)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    LOG_TRACE (WARNING, "MME-MAIN  - Signal %d received", signal);
-    _nas_clean (network_api_get_fd ());
-    exit (EXIT_SUCCESS);
+  LOG_TRACE (WARNING, "MME-MAIN  - Signal %d received", signal);
+  _nas_clean (network_api_get_fd ());
+  exit (EXIT_SUCCESS);
 
-    LOG_FUNC_OUT
-    ;
+  LOG_FUNC_OUT
+  ;
 }
 
 /****************************************************************************
@@ -324,15 +331,15 @@ static void _nas_signal_handler(int signal)
  ***************************************************************************/
 static void _nas_clean(int net_fd)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    LOG_TRACE (INFO, "MME-MAIN  - Perform EMM and ESM cleanup");
-    nas_network_cleanup ();
+  LOG_TRACE (INFO, "MME-MAIN  - Perform EMM and ESM cleanup");
+  nas_network_cleanup ();
 
-    LOG_TRACE (INFO, "MME-MAIN  - Closing network connection %d", net_fd);
-    network_api_close (net_fd);
+  LOG_TRACE (INFO, "MME-MAIN  - Closing network connection %d", net_fd);
+  network_api_close (net_fd);
 
-    LOG_FUNC_OUT
-    ;
+  LOG_FUNC_OUT
+  ;
 }
 

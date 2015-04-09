@@ -90,128 +90,130 @@ Description Implements the EPS Mobility Management procedures executed
  ***************************************************************************/
 int EmmRegistered(const emm_reg_t *evt)
 {
-    LOG_FUNC_IN;
+  LOG_FUNC_IN;
 
-    int rc = RETURNerror;
+  int rc = RETURNerror;
 
 #ifdef NAS_UE
-    assert(emm_fsm_get_status() == EMM_REGISTERED);
+  assert(emm_fsm_get_status() == EMM_REGISTERED);
 #endif
 #ifdef NAS_MME
-    assert(emm_fsm_get_status(evt->ueid, evt->ctx) == EMM_REGISTERED);
+  assert(emm_fsm_get_status(evt->ueid, evt->ctx) == EMM_REGISTERED);
 #endif
 
-    switch (evt->primitive) {
+  switch (evt->primitive) {
 #ifdef NAS_UE
-        case _EMMREG_DETACH_INIT:
-            /*
-             * Initiate detach procedure for EPS services
-             */
-            rc = emm_proc_detach(EMM_DETACH_TYPE_EPS, evt->u.detach.switch_off);
-            break;
 
-        case _EMMREG_DETACH_REQ:
-            /*
-             * Network detach has been requested (Detach Request
-             * message successfully delivered to the network);
-             * enter state EMM-DEREGISTERED-INITIATED
-             */
-            rc = emm_fsm_set_status(EMM_DEREGISTERED_INITIATED);
-            break;
+  case _EMMREG_DETACH_INIT:
+    /*
+     * Initiate detach procedure for EPS services
+     */
+    rc = emm_proc_detach(EMM_DETACH_TYPE_EPS, evt->u.detach.switch_off);
+    break;
 
-        case _EMMREG_DETACH_CNF:
-            /*
-             * The UE implicitly detached from the network (all EPS
-             * bearer contexts may have been deactivated)
-             */
-            rc = emm_fsm_set_status(EMM_DEREGISTERED);
-            break;
+  case _EMMREG_DETACH_REQ:
+    /*
+     * Network detach has been requested (Detach Request
+     * message successfully delivered to the network);
+     * enter state EMM-DEREGISTERED-INITIATED
+     */
+    rc = emm_fsm_set_status(EMM_DEREGISTERED_INITIATED);
+    break;
 
-        case _EMMREG_TAU_REQ:
-            /*
-             * TODO: Tracking Area Update has been requested
-             */
-            LOG_TRACE(ERROR, "EMM-FSM   - Tracking Area Update procedure "
-                      "is not implemented");
-            break;
+  case _EMMREG_DETACH_CNF:
+    /*
+     * The UE implicitly detached from the network (all EPS
+     * bearer contexts may have been deactivated)
+     */
+    rc = emm_fsm_set_status(EMM_DEREGISTERED);
+    break;
 
-        case _EMMREG_SERVICE_REQ:
-            /*
-             * TODO: Service Request has been requested
-             */
-            LOG_TRACE(ERROR, "EMM-FSM   - Service Request procedure "
-                      "is not implemented");
-            break;
+  case _EMMREG_TAU_REQ:
+    /*
+     * TODO: Tracking Area Update has been requested
+     */
+    LOG_TRACE(ERROR, "EMM-FSM   - Tracking Area Update procedure "
+              "is not implemented");
+    break;
 
-        case _EMMREG_LOWERLAYER_SUCCESS:
-            /*
-             * Data transfer message has been successfully delivered
-             */
-            rc = emm_proc_lowerlayer_success();
-            break;
+  case _EMMREG_SERVICE_REQ:
+    /*
+     * TODO: Service Request has been requested
+     */
+    LOG_TRACE(ERROR, "EMM-FSM   - Service Request procedure "
+              "is not implemented");
+    break;
 
-        case _EMMREG_LOWERLAYER_FAILURE:
-            /*
-             * Data transfer message failed to be delivered
-             */
-            rc = emm_proc_lowerlayer_failure(FALSE);
-            break;
+  case _EMMREG_LOWERLAYER_SUCCESS:
+    /*
+     * Data transfer message has been successfully delivered
+     */
+    rc = emm_proc_lowerlayer_success();
+    break;
 
-        case _EMMREG_LOWERLAYER_RELEASE:
-            /*
-             * NAS signalling connection has been released
-             */
-            rc = emm_proc_lowerlayer_release();
-            break;
+  case _EMMREG_LOWERLAYER_FAILURE:
+    /*
+     * Data transfer message failed to be delivered
+     */
+    rc = emm_proc_lowerlayer_failure(FALSE);
+    break;
+
+  case _EMMREG_LOWERLAYER_RELEASE:
+    /*
+     * NAS signalling connection has been released
+     */
+    rc = emm_proc_lowerlayer_release();
+    break;
 #endif
 
 #ifdef NAS_MME
-        case _EMMREG_DETACH_REQ:
-            /*
-             * Network detach has been requested (implicit detach);
-             * enter state EMM-DEREGISTERED
-             */
-            rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_DEREGISTERED);
-            break;
 
-        case _EMMREG_COMMON_PROC_REQ:
-            /*
-             * An EMM common procedure has been initiated;
-             * enter state EMM-COMMON-PROCEDURE-INITIATED.
-             */
-            rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_COMMON_PROCEDURE_INITIATED);
-            break;
+  case _EMMREG_DETACH_REQ:
+    /*
+     * Network detach has been requested (implicit detach);
+     * enter state EMM-DEREGISTERED
+     */
+    rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_DEREGISTERED);
+    break;
 
-        case _EMMREG_TAU_REJ:
-            /*
-             * TODO: Tracking Area Update has been rejected
-             */
-            LOG_TRACE(ERROR, "EMM-FSM   - Tracking Area Update procedure "
-                      "is not implemented");
-            break;
+  case _EMMREG_COMMON_PROC_REQ:
+    /*
+     * An EMM common procedure has been initiated;
+     * enter state EMM-COMMON-PROCEDURE-INITIATED.
+     */
+    rc = emm_fsm_set_status(evt->ueid, evt->ctx, EMM_COMMON_PROCEDURE_INITIATED);
+    break;
 
-        case _EMMREG_LOWERLAYER_SUCCESS:
-            /*
-             * Data successfully delivered to the network
-             */
-            rc = RETURNok;
-            break;
+  case _EMMREG_TAU_REJ:
+    /*
+     * TODO: Tracking Area Update has been rejected
+     */
+    LOG_TRACE(ERROR, "EMM-FSM   - Tracking Area Update procedure "
+              "is not implemented");
+    break;
 
-        case _EMMREG_LOWERLAYER_FAILURE:
-            /*
-             * Data failed to be delivered to the network
-             */
-            rc = RETURNok;
-            break;
+  case _EMMREG_LOWERLAYER_SUCCESS:
+    /*
+     * Data successfully delivered to the network
+     */
+    rc = RETURNok;
+    break;
+
+  case _EMMREG_LOWERLAYER_FAILURE:
+    /*
+     * Data failed to be delivered to the network
+     */
+    rc = RETURNok;
+    break;
 #endif
 
-        default:
-            LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
-                      evt->primitive);
-            break;
-    }
+  default:
+    LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
+              evt->primitive);
+    break;
+  }
 
-    LOG_FUNC_RETURN (rc);
+  LOG_FUNC_RETURN (rc);
 }
 
 /****************************************************************************/

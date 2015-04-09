@@ -108,6 +108,7 @@ protected_rlc_am_receiver( void rlc_am_receive_routing (const protocol_ctxt_t* c
 * \param[in]  first_byteP       Pointer on first byte of the PDU.
 * \param[in]  tb_size_in_bytesP Transport block size in bytes (same as PDU size in bytes).
 */
-private_rlc_am_receiver( void rlc_am_receive_process_data_pdu (const protocol_ctxt_t* const ctxt_pP, rlc_am_entity_t * const rlc_pP, mem_block_t* tb_pP, uint8_t* first_byteP, uint16_t tb_size_in_bytesP));
+private_rlc_am_receiver( void rlc_am_receive_process_data_pdu (const protocol_ctxt_t* const ctxt_pP, rlc_am_entity_t * const rlc_pP, mem_block_t* tb_pP, uint8_t* first_byteP,
+                         uint16_t tb_size_in_bytesP));
 /** @} */
 #    endif
