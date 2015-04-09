@@ -1282,7 +1282,6 @@ void init_eNB_proc(void)
 void kill_eNB_proc(void)
 {
   int *status;
-  int result;
 
   for (int CC_id=0; CC_id<MAX_NUM_CCs; CC_id++)
     for (int i=0; i<NUM_ENB_THREADS; i++) {
@@ -1297,7 +1296,7 @@ void kill_eNB_proc(void)
 #ifdef DEBUG_THREADS
       printf( "Joining eNB TX CC_id %d thread %d...\n", CC_id, i );
 #endif
-      result = pthread_join( PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_tx, (void**)&status );
+      int result = pthread_join( PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_tx, (void**)&status );
 
 #ifdef DEBUG_THREADS
       if (result != 0) {
@@ -1309,6 +1308,8 @@ void kill_eNB_proc(void)
           printf( "The thread was killed. No status available.\n" );
         }
       }
+#else
+      UNUSED(result)
 #endif
 
 #ifdef DEBUG_THREADS
@@ -1333,6 +1334,8 @@ void kill_eNB_proc(void)
           printf( "The thread was killed. No status available.\n" );
         }
       }
+#else
+      UNUSED(result)
 #endif
 
       pthread_mutex_destroy( &PHY_vars_eNB_g[0][CC_id]->proc[i].mutex_tx );

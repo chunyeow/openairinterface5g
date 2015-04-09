@@ -66,7 +66,7 @@ void set_taus_seed(unsigned int seed_type);
 * \note 
 * @ingroup  _oml
 */
-inline unsigned int taus(unsigned int comp);
+unsigned int taus(unsigned int comp);
 
 
 /*! \fn void init_seeds(int seed);
