@@ -153,12 +153,14 @@ static int trx_usrp_read(openair0_device *device, openair0_timestamp *ptimestamp
   int samples_received=0,i;
   
   if (cc>1) {
+    // receive multiple channels (e.g. RF A and RF B)
     std::vector<void *> buff_ptrs;
     for (int i=0;i<cc;i++) buff_ptrs.push_back(buff[i]);
     samples_received = s->rx_stream->recv(buff_ptrs, nsamps, s->rx_md);
-  }
-  else
+  } else {
+    // receive a single channel (e.g. from connector RF A)
     samples_received = s->rx_stream->recv(buff[0], nsamps, s->rx_md);
+  }
 
   if (samples_received < nsamps) {
     printf("[recv] received %d samples out of %d\n",samples_received,nsamps);

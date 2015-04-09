@@ -115,10 +115,17 @@ struct openair0_device_t {
    * use flags = 1 to send as timestamp specfied*/
   void (*trx_write_func)(openair0_device *device, openair0_timestamp timestamp, void **buff, int nsamps, int cc, int flags);
 
-  /* Read 'nsamps' samples from each channel to buffers. buff[0] is the array for
+  /*! \brief Receive samples from hardware.
+   * Read \ref nsamps samples from each channel to buffers. buff[0] is the array for
    * the first channel. *ptimestamp is the time at which the first sample
    * was received.
-   * Return the number of sample read */
+   * \param device the hardware to use
+   * \param[out] ptimestamp the time at which the first sample was received.
+   * \param[out] An array of pointers to buffers for received samples. The buffers must be large enough to hold the number of samples \ref nsamps.
+   * \param nsamps Number of samples. One sample is 2 byte I + 2 byte Q => 4 byte.
+   * \param cc Number of channels. If cc == 1, only buff[0] is filled with samples.
+   * \returns the number of sample read
+   */
   int (*trx_read_func)(openair0_device *device, openair0_timestamp *ptimestamp, void **buff, int nsamps,int cc);
 
   /* Terminate operation of the transceiver -- free all associated resources */
