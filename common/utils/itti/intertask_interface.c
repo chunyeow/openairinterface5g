@@ -709,6 +709,9 @@ int itti_create_task(task_id_t task_id, void *(*start_routine)(void *), void *ar
 
     result = pthread_create (&itti_desc.threads[thread_id].task_thread, NULL, start_routine, args_p);
     AssertFatal (result >= 0, "Thread creation for task %d, thread %d failed (%d)!\n", task_id, thread_id, result);
+    char name[16];
+    snprintf( name, sizeof(name), "ITTI %d", thread_id );
+    pthread_setname_np( itti_desc.threads[thread_id].task_thread, name );
 
     itti_desc.created_tasks ++;
 

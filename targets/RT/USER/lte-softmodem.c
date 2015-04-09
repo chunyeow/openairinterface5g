@@ -1241,6 +1241,11 @@ void init_eNB_proc(void)
       pthread_cond_init( &PHY_vars_eNB_g[0][CC_id]->proc[i].cond_rx, NULL);
       pthread_create( &PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_tx, NULL, eNB_thread_tx, &PHY_vars_eNB_g[0][CC_id]->proc[i] );
       pthread_create( &PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_rx, NULL, eNB_thread_rx, &PHY_vars_eNB_g[0][CC_id]->proc[i] );
+      char name[16];
+      snprintf( name, sizeof(name), "TX %d", i );
+      pthread_setname_np( PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_tx, name );
+      snprintf( name, sizeof(name), "RX %d", i );
+      pthread_setname_np( PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_rx, name );
       PHY_vars_eNB_g[0][CC_id]->proc[i].frame_tx = 0;
       PHY_vars_eNB_g[0][CC_id]->proc[i].frame_rx = 0;
 #ifdef EXMIMO
@@ -2800,6 +2805,8 @@ int main( int argc, char **argv )
     }
 
     ret = pthread_create(&forms_thread, NULL, scope_thread, NULL);
+    if (ret == 0)
+      pthread_setname_np( forms_thread, "xforms" );
     printf("Scope thread created, ret=%d\n",ret);
   }
 #endif
@@ -2850,7 +2857,8 @@ int main( int argc, char **argv )
       return(error_code);
     }
     else {
-      LOG_D(HW,"[lte-softmodem.c] Allocate UE_thread successful\n");
+      LOG_D( HW, "[lte-softmodem.c] Allocate UE_thread successful\n" );
+      pthread_setname_np( main_ue_thread, "main UE" );
     }
 #endif
     printf("UE threads created\n");
@@ -2872,7 +2880,8 @@ int main( int argc, char **argv )
       return(error_code);
     }
     else {
-      LOG_D(HW,"[lte-softmodem.c] Allocate eNB_thread successful\n");
+      LOG_D( HW, "[lte-softmodem.c] Allocate eNB_thread successful\n" );
+      pthread_setname_np( main_eNB_thread, "main eNB" );
     }
 #endif
   }

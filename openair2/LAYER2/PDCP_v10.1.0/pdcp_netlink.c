@@ -38,6 +38,7 @@
  * @ingroup pdcp
  */
 
+#define _GNU_SOURCE // required for pthread_setname_np()
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -160,6 +161,7 @@ int pdcp_netlink_init(void) {
               errno, strerror(errno));
           exit(EXIT_FAILURE);
       }
+      pthread_setname_np( pdcp_netlink_thread, "PDCP netlink" );
   }
   return 0;
 }

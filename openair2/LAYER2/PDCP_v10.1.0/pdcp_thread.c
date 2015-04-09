@@ -133,6 +133,7 @@ int init_pdcp_thread(void) {
   }
   else {
       LOG_I(PDCP,"Allocate PDCP thread successful\n");
+      pthread_setname_np( pdcp_thread, "PDCP" );
   }
   return(0);
 }

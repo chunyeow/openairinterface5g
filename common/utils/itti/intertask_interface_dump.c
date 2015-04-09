@@ -34,6 +34,7 @@
  * @author Sebastien Roux <sebastien.roux@eurecom.fr>
  */
 
+#define _GNU_SOURCE // required for pthread_setname_np()
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -845,6 +846,7 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
     if (ret < 0) {
         AssertFatal (0, "pthread_create failed (%d:%s)!\n", errno, strerror(errno));
     }
+    pthread_setname_np( itti_dump_queue.itti_acceptor_thread, "ITTI acceptor" );
 
     return 0;
 }
