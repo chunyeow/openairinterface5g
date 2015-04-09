@@ -130,7 +130,6 @@ static void trx_usrp_end(openair0_device *device)
 static void trx_usrp_write(openair0_device *device, openair0_timestamp timestamp, void **buff, int nsamps, int cc, int flags)
 {
   usrp_state_t *s = (usrp_state_t*)device->priv;
-
   s->tx_md.time_spec = uhd::time_spec_t::from_ticks(timestamp, s->sample_rate);
   if(flags)
     s->tx_md.has_time_spec = true;
@@ -292,8 +291,9 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
     //  s->usrp->set_rx_subdev_spec(rx_subdev);
     //  s->usrp->set_tx_subdev_spec(tx_subdev);
 
-    // lock mboard clocks
-    s->usrp->set_clock_source("internal");
+// do not explicitly set the clock to "internal", because this will disable the gpsdo
+//    // lock mboard clocks
+//    s->usrp->set_clock_source("internal");
     // set master clock rate and sample rate for tx & rx for streaming
     s->usrp->set_master_clock_rate(30.72e6);
   }
