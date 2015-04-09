@@ -199,7 +199,7 @@ boolean_t pdcp_serialize_control_pdu_for_pdcp_status_report(unsigned char* pdu_b
    * Fill `First Missing PDU SN' field
    */
   pdu_buffer[0] |= ((pdu->first_missing_sn >> 8) & 0xFF);
-  pdu_buffer[1] |= (pdu->first_missing_sn && 0xFF);
+  pdu_buffer[1] |= (pdu->first_missing_sn & 0xFF);
 
   /*
    * Append `bitmap'
