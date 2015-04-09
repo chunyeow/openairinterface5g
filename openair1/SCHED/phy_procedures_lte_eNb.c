@@ -1319,7 +1319,7 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
   start_meas(&phy_vars_eNB->phy_proc_tx);
   
 #ifdef DEBUG_PHY_PROC
-  LOG_D(PHY,"[%s %"PRIu8"] Frame %d subframe %d : Doing phy_procedures_eNB_TX(%d)\n",
+  LOG_D(PHY,"[%s %"PRIu8"] Frame %d subframe %d : Doing phy_procedures_eNB_TX\n",
 	(r_type == multicast_relay) ? "RN/eNB" : "eNB",
 	phy_vars_eNB->Mod_id, frame, subframe);
 #endif

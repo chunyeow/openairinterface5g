@@ -336,10 +336,11 @@ int itti_send_broadcast_message(MessageDef *message_p) {
         if (thread_id != origin_thread_id) {
             /* Skip tasks which are not running */
             if (itti_desc.threads[thread_id].task_state == TASK_STATE_READY) {
-                new_message_p = itti_malloc (origin_task_id, destination_task_id, sizeof(MessageDef));
+                size_t size = sizeof(MessageHeader) + message_p->ittiMsgHeader.ittiMsgSize;
+                new_message_p = itti_malloc( origin_task_id, destination_task_id, size );
                 AssertFatal (new_message_p != NULL, "New message allocation failed!\n");
 
-                memcpy (new_message_p, message_p, sizeof(MessageDef));
+                memcpy( new_message_p, message_p, size );
                 result = itti_send_msg_to_task (destination_task_id, INSTANCE_DEFAULT, new_message_p);
                 AssertFatal (result >= 0, "Failed to send message %d to thread %d (task %d)!\n", message_p->ittiMsgHeader.messageId, thread_id, destination_task_id);
             }

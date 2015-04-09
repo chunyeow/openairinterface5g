@@ -145,8 +145,10 @@ typedef struct MessageHeader_s
 
 /** @struct MessageDef
  *  @brief Message structure for inter-task communication.
+ *  \internal
+ *  The attached attribute \c __packed__ is neccessary, because the memory allocation code expects \ref ittiMsg directly following \ref ittiMsgHeader.
  */
-typedef struct MessageDef_s
+typedef struct __attribute__ ((__packed__)) MessageDef_s
 {
         MessageHeader ittiMsgHeader; /**< Message header */
         msg_t         ittiMsg; /**< Union of payloads as defined in x_messages_def.h headers */
