@@ -295,8 +295,8 @@ void phy_scope_eNB(FD_lte_phy_scope_enb *form,
     }
     
     // PUSCH Throughput
-    memcpy((void*)tput_time_enb[UE_id],(void*)&tput_time_enb[UE_id][1],(TPUT_WINDOW_LENGTH-1)*sizeof(float));
-    memcpy((void*)tput_enb[UE_id],(void*)&tput_enb[UE_id][1],(TPUT_WINDOW_LENGTH-1)*sizeof(float));
+    memmove( tput_time_enb[UE_id], &tput_time_enb[UE_id][1], (TPUT_WINDOW_LENGTH-1)*sizeof(float) );
+    memmove( tput_enb[UE_id], &tput_enb[UE_id][1], (TPUT_WINDOW_LENGTH-1)*sizeof(float) );
     
     tput_time_enb[UE_id][TPUT_WINDOW_LENGTH-1]  = (float) frame;
     tput_enb[UE_id][TPUT_WINDOW_LENGTH-1] = ((float) total_dlsch_bitrate)/1000.0;
