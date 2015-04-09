@@ -129,20 +129,18 @@ struct openair0_device_t {
 #ifdef __cplusplus
 extern "C"
 {
-/* return 0 if OK, < 0 if error */
-int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cfg);
-openair0_timestamp get_usrp_time(openair0_device *device);
-  int openair0_set_frequencies(openair0_device* device, openair0_config_t *openair0_cfg);
-int openair0_set_rx_frequencies(openair0_device* device, openair0_config_t *openair0_cfg);
+#endif
 
-int openair0_set_gains(openair0_device* device, openair0_config_t *openair0_cfg);
-}
-#else
+/* return 0 if OK, < 0 if error */
 int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cfg);
 openair0_timestamp get_usrp_time(openair0_device *device);
 int openair0_set_frequencies(openair0_device* device, openair0_config_t *openair0_cfg);
 int openair0_set_rx_frequencies(openair0_device* device, openair0_config_t *openair0_cfg);
+
 int openair0_set_gains(openair0_device* device, openair0_config_t *openair0_cfg);
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif // COMMON_LIB_H
