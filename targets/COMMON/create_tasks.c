@@ -59,25 +59,25 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
             {
                 if (itti_create_task (TASK_SCTP, sctp_eNB_task, NULL) < 0)
                 {
-                    LOG_E(EMU, "Create task for SCTP failed\n");
+                    LOG_E(SCTP, "Create task for SCTP failed\n");
                     return -1;
                 }
 
                 if (itti_create_task (TASK_S1AP, s1ap_eNB_task, NULL) < 0)
                 {
-                    LOG_E(EMU, "Create task for S1AP failed\n");
+                    LOG_E(S1AP, "Create task for S1AP failed\n");
                     return -1;
                 }
 
                 if (itti_create_task (TASK_UDP, udp_eNB_task, NULL) < 0)
                 {
-                    LOG_E(EMU, "Create task for UDP failed\n");
+                    LOG_E(UDP_, "Create task for UDP failed\n");
                     return -1;
                 }
 
                 if (itti_create_task (TASK_GTPV1_U, &gtpv1u_eNB_task, NULL) < 0)
                 {
-                    LOG_E(EMU, "Create task for GTPV1U failed\n");
+                    LOG_E(GTPU, "Create task for GTPV1U failed\n");
                     return -1;
                 }
             }
@@ -86,7 +86,7 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
             {
                 if (itti_create_task (TASK_NAS_UE, nas_ue_task, NULL) < 0)
                 {
-                    LOG_E(EMU, "Create task for NAS UE failed\n");
+                    LOG_E(NAS, "Create task for NAS UE failed\n");
                     return -1;
                 }
             }
@@ -97,12 +97,12 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
         {
             if (itti_create_task (TASK_RRC_ENB, rrc_enb_task, NULL) < 0)
             {
-                LOG_E(EMU, "Create task for RRC eNB failed\n");
+                LOG_E(RRC, "Create task for RRC eNB failed\n");
                 return -1;
             }
 #   if defined(ENABLE_RAL)
             if (itti_create_task (TASK_RAL_ENB, eRAL_task, NULL) < 0) {
-                LOG_E(EMU, "Create task for RAL eNB failed\n");
+                LOG_E(RAL_ENB, "Create task for RAL eNB failed\n");
                 return -1;
             }
 #   endif
@@ -112,12 +112,12 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
         {
             if (itti_create_task (TASK_RRC_UE, rrc_ue_task, NULL) < 0)
             {
-                LOG_E(EMU, "Create task for RRC UE failed\n");
+                LOG_E(RRC, "Create task for RRC UE failed\n");
                 return -1;
             }
 #   if defined(ENABLE_RAL)
             if (itti_create_task (TASK_RAL_UE, mRAL_task, NULL) < 0) {
-                LOG_E(EMU, "Create task for RAL UE failed\n");
+                LOG_E(RAL_UE, "Create task for RAL UE failed\n");
                 return -1;
             }
 #   endif
@@ -127,7 +127,7 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
 
     if (itti_create_task (TASK_L2L1, l2l1_task, NULL) < 0)
     {
-        LOG_E(EMU, "Create task for L2L1 failed\n");
+        LOG_E(PDCP, "Create task for L2L1 failed\n");
         return -1;
     }
 
@@ -136,7 +136,7 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
         /* Last task to create, others task must be ready before its start */
         if (itti_create_task (TASK_ENB_APP, eNB_app_task, NULL) < 0)
         {
-            LOG_E(EMU, "Create task for eNB APP failed\n");
+            LOG_E(ENB_APP, "Create task for eNB APP failed\n");
             return -1;
         }
     }
