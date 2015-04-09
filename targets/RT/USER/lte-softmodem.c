@@ -57,10 +57,6 @@
 #include "rt_wrapper.h"
 #undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
 
-#ifndef EXMIMO
-static int hw_subframe;
-#endif
-
 #include "assertions.h"
 
 #ifdef EMOS
@@ -998,7 +994,9 @@ static void* eNB_thread_tx( void* param )
     }
       
     while (proc->instance_cnt_tx < 0) {
-      pthread_cond_wait( &proc->cond_tx, &proc->mutex_tx );
+      // most of the time the thread is waiting here
+      // proc->instance_cnt_tx is -1
+      pthread_cond_wait( &proc->cond_tx, &proc->mutex_tx ); // this unlocks mutex_tx while waiting and then locks it again
     }
 
     if (pthread_mutex_unlock(&proc->mutex_tx) != 0) {
@@ -1141,7 +1139,9 @@ static void* eNB_thread_rx( void* param )
     }
 
     while (proc->instance_cnt_rx < 0) {
-      pthread_cond_wait( &proc->cond_rx, &proc->mutex_rx );
+      // most of the time the thread is waiting here
+      // proc->instance_cnt_rx is -1
+      pthread_cond_wait( &proc->cond_rx, &proc->mutex_rx ); // this unlocks mutex_rx while waiting and then locks it again
     }
 
     if (pthread_mutex_unlock(&proc->mutex_rx) != 0) {
@@ -1357,18 +1357,10 @@ static void* eNB_thread( void* arg )
   UNUSED(arg);
   static int eNB_thread_status;
 
-#ifdef EXMIMO
-  unsigned char slot=0;
-#else
-  unsigned char slot=1;
-#endif
+  unsigned char slot;
   int frame=0;
-  int CC_id;
-
-  RTIME time_diff;
-
-  int sf;
 #ifdef EXMIMO
+  slot=0;
   RTIME time_in;
   volatile unsigned int *DAQ_MBOX = openair0_daq_cnt();
   int mbox_target=0,mbox_current=0;
@@ -1377,30 +1369,23 @@ static void* eNB_thread( void* arg )
   int ret;
   int first_run=1;
 #else
+  slot=1;
   unsigned int rx_pos = 0;
   unsigned int tx_pos;
   int spp;
   int tx_launched=0;
- 
-  void *rxp[2], *txp[2];
-  int i;
+
+  void *rxp[2]; // FIXME hard coded array size; indexed by lte_frame_parms.nb_antennas_rx
+  void *txp[2]; // FIXME hard coded array size; indexed by lte_frame_parms.nb_antennas_tx
 
   openair0_timestamp timestamp;
 
-  //  int trace_cnt=0;
-  hw_subframe = 0;
+  int hw_subframe = 0; // 0..NUM_ENB_THREADS-1 => 0..9
   spp = openair0_cfg[0].samples_per_packet;
   tx_pos = spp*tx_delay;
 #endif
 
-  struct timespec trx_time0,trx_time1,trx_time2;
-
-  /*
-    #if defined(ENABLE_ITTI)
-    // Wait for eNB application initialization to be complete (eNB registration to MME) 
-    wait_system_ready ("Waiting for eNB application to be ready %s\r", &start_eNB);
-    #endif
-  */
+  struct timespec trx_time0, trx_time1, trx_time2;
 
 #ifdef RTAI
   RT_TASK* task = rt_task_init_schmod(nam2num("eNBmain"), 0, 0, 0, SCHED_FIFO, 0xF);
@@ -1413,356 +1398,352 @@ static void* eNB_thread( void* arg )
   attr.sched_flags = 0;
   attr.sched_nice = 0;
   attr.sched_priority = 0;
-   
+
   /* This creates a .5 ms  reservation */
   attr.sched_policy = SCHED_DEADLINE;
   attr.sched_runtime  = 0.1 * 1000000;
   attr.sched_deadline = 0.5 * 1000000;
-  attr.sched_period   = 1.0   * 1000000;
+  attr.sched_period   = 1.0 * 1000000;
 
-   
+
   /* pin the eNB main thread to CPU0*/
   /* if (pthread_setaffinity_np(pthread_self(), sizeof(mask),&mask) <0) {
      perror("[MAIN_ENB_THREAD] pthread_setaffinity_np failed\n");
      }*/
-   
+
   if (sched_setattr(0, &attr, flags) < 0 ){
     perror("[SCHED] main eNB thread: sched_setattr failed\n");
     exit_fun("Nothing to add");
   } else {
     LOG_I(HW,"[SCHED][eNB] eNB main deadline thread %ld started on CPU %d\n",
-	  gettid(),sched_getcpu());
+          gettid(),sched_getcpu());
   }
 #endif
 #endif
 
-  if (!oai_exit) {
+  // stop early, if an exit is requested
+  // FIXME really neccessary?
+  if (oai_exit)
+    goto eNB_thread_cleanup;
+
 #ifdef RTAI
-    printf("[SCHED][eNB] Started eNB main thread (id %p)\n",task);
+  printf( "[SCHED][eNB] Started eNB main thread (id %p)\n", task );
 #else
-    printf("[SCHED][eNB] Started eNB main thread on CPU %d\n",
-	   sched_getcpu());
+  printf( "[SCHED][eNB] Started eNB main thread on CPU %d\n", sched_getcpu());
 #endif
 
 #ifdef HARD_RT
-    rt_make_hard_real_time();
+  rt_make_hard_real_time();
 #endif
 
-    printf("eNB_thread: mlockall in ...\n");
-    mlockall(MCL_CURRENT | MCL_FUTURE);
-    printf("eNB_thread: mlockall out ...\n");
+  printf("eNB_thread: mlockall in ...\n");
+  mlockall(MCL_CURRENT | MCL_FUTURE);
+  printf("eNB_thread: mlockall out ...\n");
 
-    timing_info.time_min = 100000000ULL;
-    timing_info.time_max = 0;
-    timing_info.time_avg = 0;
-    timing_info.n_samples = 0;
+  timing_info.time_min = 100000000ULL;
+  timing_info.time_max = 0;
+  timing_info.time_avg = 0;
+  timing_info.n_samples = 0;
 
-    printf("waiting for sync (eNB_thread)\n");
-    pthread_mutex_lock(&sync_mutex);
-    while (sync_var<0)
-      pthread_cond_wait(&sync_cond, &sync_mutex);
-    pthread_mutex_unlock(&sync_mutex);
+  printf( "waiting for sync (eNB_thread)\n" );
+  pthread_mutex_lock( &sync_mutex );
+  while (sync_var<0)
+    pthread_cond_wait( &sync_cond, &sync_mutex );
+  pthread_mutex_unlock(&sync_mutex);
 
-    while (!oai_exit) {
-      start_meas(&softmodem_stats_mt);
+  while (!oai_exit) {
+    start_meas( &softmodem_stats_mt );
+
 #ifdef EXMIMO
-      hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
-      //        LOG_D(HW,"eNB frame %d, time %llu: slot %d, hw_slot %d (mbox %d)\n",frame,rt_get_time_ns(),slot,hw_slot,((unsigned int *)DAQ_MBOX)[0]);
-      vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_slot>>1);
-      vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame);
-      //this is the mbox counter where we should be
-      mbox_target = mbox_bounds[slot];
-      //this is the mbox counter where we are
-      mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
-      //this is the time we need to sleep in order to synchronize with the hw (in multiples of DAQ_PERIOD)
-      if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
-	diff = 150-mbox_current+mbox_target;
-      else if ((mbox_current<15) && (mbox_target>=135))
-	diff = -150+mbox_target-mbox_current;
-      else
-	diff = mbox_target - mbox_current;
-      
-      //when we start the aquisition we want to start with slot 0, so we rather wait for the hardware than to advance the slot number (a positive diff will cause the programm to go into the second if clause rather than the first)
-      if (first_run==1) {
-	first_run=0;
-	if (diff<0)
-	  diff = diff +150;
-	LOG_I(HW,"eNB Frame %d, time %llu: slot %d, hw_slot %d, diff %d\n",frame, rt_get_time_ns(), slot, hw_slot, diff);
-      } 
+    hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
+    //        LOG_D(HW,"eNB frame %d, time %llu: slot %d, hw_slot %d (mbox %d)\n",frame,rt_get_time_ns(),slot,hw_slot,((unsigned int *)DAQ_MBOX)[0]);
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_slot>>1);
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame);
+    //this is the mbox counter where we should be
+    mbox_target = mbox_bounds[slot];
+    //this is the mbox counter where we are
+    mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
+    //this is the time we need to sleep in order to synchronize with the hw (in multiples of DAQ_PERIOD)
+    if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
+      diff = 150-mbox_current+mbox_target;
+    else if ((mbox_current<15) && (mbox_target>=135))
+      diff = -150+mbox_target-mbox_current;
+    else
+      diff = mbox_target - mbox_current;
 
-      if (((slot%2==0) && (diff < (-14))) || ((slot%2==1) && (diff < (-7)))) {
-	// at the eNB, even slots have double as much time since most of the processing is done here and almost nothing in odd slots
-	LOG_D(HW,"eNB Frame %d, time %llu: missed slot, proceeding with next one (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, mbox_current, mbox_target, diff);
-	slot++;
-	if (exit_missed_slots==1){
-	  stop_meas(&softmodem_stats_mt);
-	  exit_fun("[HW][eNB] missed slot");
-	}else{
-	  num_missed_slots++;
-	  LOG_W(HW,"[eNB] just missed slot (total missed slots %ld)\n", num_missed_slots);
-	}
+    //when we start the aquisition we want to start with slot 0, so we rather wait for the hardware than to advance the slot number (a positive diff will cause the programm to go into the second if clause rather than the first)
+    if (first_run==1) {
+      first_run=0;
+      if (diff<0)
+        diff = diff +150;
+      LOG_I(HW,"eNB Frame %d, time %llu: slot %d, hw_slot %d, diff %d\n",frame, rt_get_time_ns(), slot, hw_slot, diff);
+    }
+
+    if (((slot%2==0) && (diff < (-14))) || ((slot%2==1) && (diff < (-7)))) {
+      // at the eNB, even slots have double as much time since most of the processing is done here and almost nothing in odd slots
+      LOG_D(HW,"eNB Frame %d, time %llu: missed slot, proceeding with next one (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, mbox_current, mbox_target, diff);
+      slot++;
+      if (exit_missed_slots==1){
+        stop_meas(&softmodem_stats_mt);
+        exit_fun("[HW][eNB] missed slot");
+      }else{
+        num_missed_slots++;
+        LOG_W(HW,"[eNB] just missed slot (total missed slots %ld)\n", num_missed_slots);
       }
-      if (diff>8)
-	LOG_D(HW,"eNB Frame %d, time %llu: skipped slot, waiting for hw to catch up (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, mbox_current, mbox_target, diff);
-      
+    }
+    if (diff>8)
+      LOG_D(HW,"eNB Frame %d, time %llu: skipped slot, waiting for hw to catch up (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, mbox_current, mbox_target, diff);
+
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *DAQ_MBOX);
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DIFF, diff);
+
+    delay_cnt = 0;
+    while ((diff>0) && (!oai_exit)) {
+      time_in = rt_get_time_ns();
+      //LOG_D(HW,"eNB Frame %d delaycnt %d : hw_slot %d (%d), slot %d, (slot+1)*15=%d, diff %d, time %llu\n",frame,delay_cnt,hw_slot,((unsigned int *)DAQ_MBOX)[0],slot,(((slot+1)*15)>>1),diff,time_in);
+      //LOG_D(HW,"eNB Frame %d, time %llu: sleeping for %llu (slot %d, hw_slot %d, diff %d, mbox %d, delay_cnt %d)\n", frame, time_in, diff*DAQ_PERIOD,slot,hw_slot,diff,((volatile unsigned int *)DAQ_MBOX)[0],delay_cnt);
+      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,1);
+      ret = rt_sleep_ns(diff*DAQ_PERIOD);
+      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,0);
       vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *DAQ_MBOX);
-      vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DIFF, diff);
-      
-      delay_cnt = 0;
-      while ((diff>0) && (!oai_exit)) {
-	time_in = rt_get_time_ns();
-	//LOG_D(HW,"eNB Frame %d delaycnt %d : hw_slot %d (%d), slot %d, (slot+1)*15=%d, diff %d, time %llu\n",frame,delay_cnt,hw_slot,((unsigned int *)DAQ_MBOX)[0],slot,(((slot+1)*15)>>1),diff,time_in);
-	//LOG_D(HW,"eNB Frame %d, time %llu: sleeping for %llu (slot %d, hw_slot %d, diff %d, mbox %d, delay_cnt %d)\n", frame, time_in, diff*DAQ_PERIOD,slot,hw_slot,diff,((volatile unsigned int *)DAQ_MBOX)[0],delay_cnt);
-	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,1);
-	ret = rt_sleep_ns(diff*DAQ_PERIOD);
-	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,0);
-	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *DAQ_MBOX);
-	if (ret)
-	  LOG_D(HW,"eNB Frame %d, time %llu: rt_sleep_ns returned %d\n",frame, time_in);
-	hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
-	//LOG_D(HW,"eNB Frame %d : hw_slot %d, time %llu\n",frame,hw_slot,rt_get_time_ns());
-	delay_cnt++;
-	if (delay_cnt == 10) {
-	  stop_meas(&softmodem_stats_mt);
-	  LOG_D(HW,"eNB Frame %d: HW stopped ... \n",frame);
-	  exit_fun("[HW][eNB] HW stopped");
-	}
-	mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
-	if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
-	  diff = 150-mbox_current+mbox_target;
-	else if ((mbox_current<15) && (mbox_target>=135))
-	  diff = -150+mbox_target-mbox_current;
-	else
-	  diff = mbox_target - mbox_current;
+      if (ret)
+        LOG_D(HW,"eNB Frame %d, time %llu: rt_sleep_ns returned %d\n",frame, time_in);
+      hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
+      //LOG_D(HW,"eNB Frame %d : hw_slot %d, time %llu\n",frame,hw_slot,rt_get_time_ns());
+      delay_cnt++;
+      if (delay_cnt == 10) {
+        stop_meas(&softmodem_stats_mt);
+        LOG_D(HW,"eNB Frame %d: HW stopped ... \n",frame);
+        exit_fun("[HW][eNB] HW stopped");
       }
+      mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
+      if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
+        diff = 150-mbox_current+mbox_target;
+      else if ((mbox_current<15) && (mbox_target>=135))
+        diff = -150+mbox_target-mbox_current;
+      else
+        diff = mbox_target - mbox_current;
+    }
 
 #else  // EXMIMO
-      vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_subframe);
-      vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame);
-      tx_launched = 0;
-      while (rx_pos < ((1+hw_subframe)*PHY_vars_eNB_g[0][0]->lte_frame_parms.samples_per_tti)) {
+    vcd_signal_dumper_dump_variable_by_name( VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_subframe );
+    vcd_signal_dumper_dump_variable_by_name( VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame );
+    tx_launched = 0;
+    while (rx_pos < ((1+hw_subframe)*PHY_vars_eNB_g[0][0]->lte_frame_parms.samples_per_tti)) {
 
-	//	openair0_timestamp time0,time1;
-	unsigned int rxs;
+      unsigned int rxs;
 #ifndef USRP_DEBUG
-	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,1);
-	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_TXCNT,tx_pos);
-	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_RXCNT,rx_pos);
+      vcd_signal_dumper_dump_function_by_name( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ, 1 );
+      vcd_signal_dumper_dump_variable_by_name( VCD_SIGNAL_DUMPER_VARIABLES_TXCNT, tx_pos );
+      vcd_signal_dumper_dump_variable_by_name( VCD_SIGNAL_DUMPER_VARIABLES_RXCNT, rx_pos );
 
+      clock_gettime( CLOCK_MONOTONIC, &trx_time0 );
 
-	clock_gettime(CLOCK_MONOTONIC,&trx_time0);
-	for (i=0;i<PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_rx;i++)
-	  rxp[i] = (void*)&rxdata[i][rx_pos];
-	start_meas(&softmodem_stats_hw);
-	//	printf("rxp[0] %p\n",rxp[0]);
+      // prepare rx buffer pointers
+      for (int i=0; i<PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_rx; i++)
+        rxp[i] = (void*)&rxdata[i][rx_pos];
 
-	rxs = openair0.trx_read_func(&openair0, 
-				     &timestamp, 
-				     rxp, 
-				     spp,
-				     PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_rx);
-	stop_meas(&softmodem_stats_hw);
-	clock_gettime(CLOCK_MONOTONIC,&trx_time1);
+      start_meas( &softmodem_stats_hw );
 
-	if (rxs != spp)
-	  exit_fun("problem receiving samples");
- 
+      rxs = openair0.trx_read_func(&openair0,
+                                   &timestamp,
+                                   rxp,
+                                   spp,
+                                   PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_rx);
+      stop_meas( &softmodem_stats_hw );
+      clock_gettime( CLOCK_MONOTONIC, &trx_time1 );
 
-	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,0);
+      if (rxs != spp)
+        exit_fun( "problem receiving samples" );
 
-	// Transmit TX buffer based on timestamp from RX
-	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,1);
-	
-	for (i=0;i<PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_tx;i++)
-	  txp[i] = (void*)&txdata[i][tx_pos];
-	if (frame > 50) {
-	  openair0.trx_write_func(&openair0, 
-				  (timestamp+(tx_delay*spp)-tx_forward_nsamps), 
-				  txp,
-				  spp, 
-				  PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_tx,
-				  1);
-	}
+      vcd_signal_dumper_dump_function_by_name( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ, 0 );
 
-	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_TRX_TS,timestamp&0xffffffff);
-	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_TRX_TST,(timestamp+(tx_delay*spp)-tx_forward_nsamps)&0xffffffff);
+      // Transmit TX buffer based on timestamp from RX
+      vcd_signal_dumper_dump_function_by_name( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE, 1 );
 
+      // prepare tx buffer pointers
+      for (int i=0; i<PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_tx; i++)
+        txp[i] = (void*)&txdata[i][tx_pos];
 
-	stop_meas(&softmodem_stats_mt);
-	clock_gettime(CLOCK_MONOTONIC,&trx_time2);
-
-	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,0);
-	/*
-	if (trace_cnt++<10) 
-	  printf("TRX: t1 %llu (trx_read), t2 %llu (trx_write)\n",(long long unsigned int)(trx_time1.tv_nsec  - trx_time0.tv_nsec), (long long unsigned int)(trx_time2.tv_nsec - trx_time1.tv_nsec));
-	*/
-#else
-	rt_sleep_ns(1000000);
-#endif
-	if ((tx_launched == 0) && 
-	    (rx_pos >=(((2*hw_subframe)+1)*PHY_vars_eNB_g[0][0]->lte_frame_parms.samples_per_tti>>1))) {
-	  tx_launched = 1;
-	  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-	    if (pthread_mutex_lock(&PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].mutex_tx) != 0) {
-	      LOG_E(PHY,"[eNB] ERROR pthread_mutex_lock for eNB TX thread %d (IC %d)\n",hw_subframe,PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].instance_cnt_tx);   
-	    }
-	    else {
-	      //	      LOG_I(PHY,"[eNB] Waking up eNB process %d (IC %d,rx_cnt %d)\n",hw_subframe,PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].instance_cnt_tx,rx_cnt); 
-	      PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].instance_cnt_tx++;
-	      pthread_mutex_unlock(&PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].mutex_tx);
-	      if (PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].instance_cnt_tx == 0) {
-		if (pthread_cond_signal(&PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].cond_tx) != 0) {
-		  LOG_E(PHY,"[eNB] ERROR pthread_cond_signal for eNB TX thread %d\n",hw_subframe);
-		}
-	      }
-	      else {
-		LOG_W(PHY,"[eNB] Frame %d, eNB TX thread %d busy!! (rx_cnt %d)\n",PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].frame_tx,hw_subframe,rx_pos);
-		exit_fun("nothing to add");
-	      }
-	    }
-	  }
-	}
-	rx_pos += spp;
-	tx_pos += spp;
-
-
-	if(tx_pos >= samples_per_frame)
-	  tx_pos -= samples_per_frame;
+      if (frame > 50) {
+        openair0.trx_write_func(&openair0,
+                                (timestamp+(tx_delay*spp)-tx_forward_nsamps),
+                                txp,
+                                spp,
+                                PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_tx,
+            1);
       }
 
-      if (rx_pos >= samples_per_frame)
-	rx_pos -= samples_per_frame; 
-      
+      vcd_signal_dumper_dump_variable_by_name( VCD_SIGNAL_DUMPER_VARIABLES_TRX_TS, timestamp&0xffffffff );
+      vcd_signal_dumper_dump_variable_by_name( VCD_SIGNAL_DUMPER_VARIABLES_TRX_TST, (timestamp+(tx_delay*spp)-tx_forward_nsamps)&0xffffffff );
+
+      stop_meas( &softmodem_stats_mt );
+      clock_gettime( CLOCK_MONOTONIC, &trx_time2 );
+
+      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,0);
+#else
+      // USRP_DEBUG is active
+      rt_sleep_ns(1000000);
+#endif
+
+      if ((tx_launched == 0) &&
+          (rx_pos >= (((2*hw_subframe)+1)*PHY_vars_eNB_g[0][0]->lte_frame_parms.samples_per_tti>>1))) {
+        tx_launched = 1;
+        for (int CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
+          if (pthread_mutex_lock(&PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].mutex_tx) != 0) {
+            LOG_E( PHY, "[eNB] ERROR pthread_mutex_lock for eNB TX thread %d (IC %d)\n", hw_subframe, PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].instance_cnt_tx );
+            exit_fun( "error locking mutex_tx" );
+            break;
+          }
+
+          int cnt_tx = ++PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].instance_cnt_tx;
+
+          pthread_mutex_unlock( &PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].mutex_tx );
+
+          if (cnt_tx == 0) {
+            // the thread was presumably waiting where it should and can now be woken up
+            if (pthread_cond_signal(&PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].cond_tx) != 0) {
+              LOG_E( PHY, "[eNB] ERROR pthread_cond_signal for eNB TX thread %d\n", hw_subframe );
+              exit_fun( "ERROR pthread_cond_signal" );
+              break;
+            }
+          } else {
+            LOG_W( PHY,"[eNB] Frame %d, eNB TX thread %d busy!! (rx_cnt %u, cnt_tx %i)\n", PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].frame_tx, hw_subframe, rx_pos, cnt_tx );
+            exit_fun( "TX thread busy" );
+            break;
+          }
+        }
+      }
+
+      rx_pos += spp;
+      tx_pos += spp;
+
+      if (tx_pos >= samples_per_frame)
+        tx_pos -= samples_per_frame;
+    }
+
+    if (rx_pos >= samples_per_frame)
+      rx_pos -= samples_per_frame;
+
 
 #endif // USRP
-     
-      if (oai_exit) break;
 
+    if (oai_exit) break;
 
-      
-      timing_info.time_last = timing_info.time_now;
-      timing_info.time_now = rt_get_time_ns();
-      
-      if (timing_info.n_samples>0) {
-	time_diff = timing_info.time_now - timing_info.time_last;
-	if (time_diff < timing_info.time_min)
-	  timing_info.time_min = time_diff;
-	if (time_diff > timing_info.time_max)
-	  timing_info.time_max = time_diff;
-	timing_info.time_avg += time_diff;
-      }
-      
-      timing_info.n_samples++;
-      /*
-	if ((timing_info.n_samples%2000)==0) {
-	LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d: diff=%llu, min=%llu, max=%llu, avg=%llu (n_samples %d)\n",
-	frame, PHY_vars_eNB_g[0]->frame, slot, hw_slot,time_diff,
-	timing_info.time_min,timing_info.time_max,timing_info.time_avg/timing_info.n_samples,timing_info.n_samples);
-	timing_info.n_samples = 0;
-	timing_info.time_avg = 0;
-	}
+    timing_info.time_last = timing_info.time_now;
+    timing_info.time_now = rt_get_time_ns();
+
+    if (timing_info.n_samples>0) {
+      RTIME time_diff = timing_info.time_now - timing_info.time_last;
+      if (time_diff < timing_info.time_min)
+        timing_info.time_min = time_diff;
+      if (time_diff > timing_info.time_max)
+        timing_info.time_max = time_diff;
+      timing_info.time_avg += time_diff;
+    }
+
+    timing_info.n_samples++;
+    /*
+  if ((timing_info.n_samples%2000)==0) {
+  LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d: diff=%llu, min=%llu, max=%llu, avg=%llu (n_samples %d)\n",
+  frame, PHY_vars_eNB_g[0]->frame, slot, hw_slot,time_diff,
+  timing_info.time_min,timing_info.time_max,timing_info.time_avg/timing_info.n_samples,timing_info.n_samples);
+  timing_info.n_samples = 0;
+  timing_info.time_avg = 0;
+  }
       */
-      //}
-    
-      if ((slot&1) == 1) {
+    //}
+
+    if ((slot&1) == 1) {
 #ifdef EXMIMO
-	sf = ((slot>>1)+1)%10;
+      int sf = ((slot>>1)+1)%10;
 #else
-	sf = hw_subframe;
+      int sf = hw_subframe;
 #endif
-	//		    LOG_I(PHY,"[eNB] Multithread slot %d (IC %d)\n",slot,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt);
-	
-	for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+      //		    LOG_I(PHY,"[eNB] Multithread slot %d (IC %d)\n",slot,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt);
+
+      for (int CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
 #ifdef EXMIMO 
-	  if (pthread_mutex_lock(&PHY_vars_eNB_g[0][CC_id]->proc[sf].mutex_tx) != 0) {
-	    LOG_E(PHY,"[eNB] ERROR pthread_mutex_lock for eNB TX thread %d (IC %d)\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_tx);   
-	  }
-	  else {
-	    //		      LOG_I(PHY,"[eNB] Waking up eNB process %d (IC %d)\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt); 
-	    PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_tx++;
-	    pthread_mutex_unlock(&PHY_vars_eNB_g[0][CC_id]->proc[sf].mutex_tx);
-	    if (PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_tx == 0) {
-	      if (pthread_cond_signal(&PHY_vars_eNB_g[0][CC_id]->proc[sf].cond_tx) != 0) {
-		LOG_E(PHY,"[eNB] ERROR pthread_cond_signal for eNB TX thread %d\n",sf);
-	      }
-	    }
-	    else {
-	      LOG_W(PHY,"[eNB] Frame %d, eNB TX thread %d busy!!\n",PHY_vars_eNB_g[0][CC_id]->proc[sf].frame_tx,sf);
-	      exit_fun("nothing to add");
-	    }
-	  }
-#endif	    
-	  if (pthread_mutex_lock(&PHY_vars_eNB_g[0][CC_id]->proc[sf].mutex_rx) != 0) {
-	    LOG_E(PHY,"[eNB] ERROR pthread_mutex_lock for eNB RX thread %d (IC %d)\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx);   
-	  }
-	  else {
-	    //		      LOG_I(PHY,"[eNB] Waking up eNB process %d (IC %d) CC_id %d rx_cnt %d\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx,CC_id,rx_cnt); 
-	    PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx++;
-	    pthread_mutex_unlock(&PHY_vars_eNB_g[0][CC_id]->proc[sf].mutex_rx);
-	    if (PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx == 0) {
-	      if (pthread_cond_signal(&PHY_vars_eNB_g[0][CC_id]->proc[sf].cond_rx) != 0) {
-		LOG_E(PHY,"[eNB] ERROR pthread_cond_signal for eNB RX thread %d\n",sf);
-	      }
-              //else
-	      // LOG_I(PHY,"[eNB] pthread_cond_signal for eNB RX thread %d instance_cnt_rx %d\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx);
-	    }
-	    else {
-	      LOG_W(PHY,"[eNB] Frame %d, eNB RX thread %d busy!! instance_cnt %d CC_id %d\n",PHY_vars_eNB_g[0][CC_id]->proc[sf].frame_rx,sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx,CC_id);
-	      exit_fun("nothing to add");
-	    }
-	  }
-	    
-	}
-      }
-	  
-      
-#ifndef RTAI
-      //pthread_mutex_lock(&tti_mutex);
+        if (pthread_mutex_lock(&PHY_vars_eNB_g[0][CC_id]->proc[sf].mutex_tx) != 0) {
+          LOG_E(PHY,"[eNB] ERROR pthread_mutex_lock for eNB TX thread %d (IC %d)\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_tx);
+        }
+        else {
+          //		      LOG_I(PHY,"[eNB] Waking up eNB process %d (IC %d)\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt);
+          PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_tx++;
+          pthread_mutex_unlock(&PHY_vars_eNB_g[0][CC_id]->proc[sf].mutex_tx);
+          if (PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_tx == 0) {
+            if (pthread_cond_signal(&PHY_vars_eNB_g[0][CC_id]->proc[sf].cond_tx) != 0) {
+              LOG_E(PHY,"[eNB] ERROR pthread_cond_signal for eNB TX thread %d\n",sf);
+            }
+          }
+          else {
+            LOG_W(PHY,"[eNB] Frame %d, eNB TX thread %d busy!!\n",PHY_vars_eNB_g[0][CC_id]->proc[sf].frame_tx,sf);
+            exit_fun("nothing to add");
+          }
+        }
 #endif
 
+        if (pthread_mutex_lock(&PHY_vars_eNB_g[0][CC_id]->proc[sf].mutex_rx) != 0) {
+          LOG_E( PHY, "[eNB] ERROR pthread_mutex_lock for eNB RX thread %d (IC %d)\n", sf, PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx );
+          exit_fun( "error locking mutex_rx" );
+          break;
+        }
 
+        int cnt_rx = ++PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx;
 
+        pthread_mutex_unlock( &PHY_vars_eNB_g[0][CC_id]->proc[sf].mutex_rx );
+
+        if (cnt_rx == 0) {
+          // the thread was presumably waiting where it should and can now be woken up
+          if (pthread_cond_signal(&PHY_vars_eNB_g[0][CC_id]->proc[sf].cond_rx) != 0) {
+            LOG_E( PHY, "[eNB] ERROR pthread_cond_signal for eNB RX thread %d\n", sf );
+            exit_fun( "ERROR pthread_cond_signal" );
+            break;
+          }
+        } else {
+          LOG_W( PHY, "[eNB] Frame %d, eNB RX thread %d busy!! instance_cnt %d CC_id %d\n", PHY_vars_eNB_g[0][CC_id]->proc[sf].frame_rx, sf, PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx, CC_id );
+          exit_fun( "RX thread busy" );
+          break;
+        }
+      }
+    }
 
 #ifdef EXMIMO
-      slot++;
-      if (slot == 20) {
-	frame++;
-	slot = 0;
-      }
+    slot++;
+    if (slot == 20) {
+      frame++;
+      slot = 0;
+    }
 #else
-      hw_subframe++;
-      slot+=2;
-      if(hw_subframe==10) {
-	hw_subframe = 0;
-	frame++;
-	slot = 1;
-      }
+    hw_subframe++;
+    slot += 2;
+    if (hw_subframe == NUM_ENB_THREADS) {
+      hw_subframe = 0;
+      frame++;
+      slot = 1;
+    }
 #endif     
 
-
 #if defined(ENABLE_ITTI)
-      itti_update_lte_time(frame, slot);
+    itti_update_lte_time(frame, slot);
 #endif
-    }
   }
+
+eNB_thread_cleanup:
 #ifdef DEBUG_THREADS
-  printf("eNB_thread: finished, ran %d times.\n",frame);
+  printf( "eNB_thread: finished, ran %d times.\n", frame );
 #endif
   
 #ifdef HARD_RT
   rt_make_soft_real_time();
 #endif
 
-
 #ifdef DEBUG_THREADS
-  printf("Exiting eNB_thread ...");
+  printf( "Exiting eNB_thread ..." );
 #endif
   // clean task
 #ifdef RTAI
   rt_task_delete(task);
-#endif
-#ifdef DEBUG_THREADS
-  printf("eNB_thread deleted. returning\n");
 #endif
 
   eNB_thread_status = 0;
