@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <pthread.h>
 #include <mysql/mysql.h>
 
 #include <netinet/in.h> /* To provide internet addresses strings helpers */

@@ -136,13 +136,13 @@ int sgw_lite_init(char* config_file_name_pP)
     spgw_system("iptables -t filter -F", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
     spgw_system("iptables -t raw -F", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
     spgw_system("ip route flush cache", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
-    spgw_system("rmmod iptable_raw > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
+    spgw_system("rmmod iptable_raw    > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
     spgw_system("rmmod iptable_mangle > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
-    spgw_system("rmmod iptable_nat > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
+    spgw_system("rmmod iptable_nat    > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
     spgw_system("rmmod iptable_filter > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
-    spgw_system("rmmod ip_tables > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
+    spgw_system("rmmod ip_tables      > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
     spgw_system("rmmod xt_state xt_mark xt_GTPUAH xt_GTPURH xt_tcpudp xt_connmark ipt_LOG ipt_MASQUERADE > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
-    spgw_system("rmmod x_tables > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
+    spgw_system("rmmod x_tables       > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
     spgw_system("rmmod nf_conntrack_netlink nfnetlink nf_nat nf_conntrack_ipv4 nf_conntrack  > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
     spgw_system("modprobe ip_tables", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
     spgw_system("modprobe x_tables", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
@@ -152,6 +152,7 @@ int sgw_lite_init(char* config_file_name_pP)
     spgw_system("sysctl -w net.ipv4.conf.all.log_martians=1",SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
     spgw_system("sysctl -w net.ipv4.conf.all.route_localnet=1",SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
     spgw_system("sysctl -w net.ipv4.conf.all.rp_filter=0",SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
+    spgw_system("sync",                    SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
 #endif
     spgw_config_init(config_file_name_pP, &spgw_config);
     pgw_lite_load_pool_ip_addresses();

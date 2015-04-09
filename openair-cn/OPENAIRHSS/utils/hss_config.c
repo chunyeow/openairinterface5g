@@ -42,15 +42,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <errno.h>
 #include <getopt.h>
 
 #include "hss_config.h"
 #include "hss_parser.h"
 
+
+#ifndef PACKAGE_NAME
+#define PACKAGE_NAME "OPENAIR-HSS"
+#endif
+#ifndef PACKAGE_VERSION
+#define PACKAGE_VERSION "UNKNOWN-EXPERIMENTAL"
+#endif
+#ifndef PACKAGE_BUGREPORT
+#define PACKAGE_BUGREPORT "openair4G-devel@eurecom.fr"
+#endif
+
+// LG TODO fd_g_debug_lvl
+int fd_g_debug_lvl = 1;
+
 /* YACC forward declarations */
 extern int  yyparse (struct hss_config_s *hss_config_p);
-
+extern uint8_t OP[16];
 static int config_parse_command_line(int argc, char *argv[],
                                      hss_config_t *hss_config_p);
 static int config_parse_file(hss_config_t *hss_config_p);
@@ -82,7 +97,37 @@ int config_init(int argc, char *argv[], hss_config_t *hss_config_p)
         abort();
     }
     config_display(hss_config_p);
-    return ret;
+
+    // post processing for op key
+    if (hss_config_p->operator_key) {
+        if (strlen(hss_config_p->operator_key) == 32) {
+            ret = sscanf(hss_config_p->operator_key,
+                    "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+                    (unsigned int*)&OP[0],(unsigned int*)&OP[1],
+                    (unsigned int*)&OP[2],(unsigned int*)&OP[3],
+                    (unsigned int*)&OP[4],(unsigned int*)&OP[5],
+                    (unsigned int*)&OP[6],(unsigned int*)&OP[7],
+                    (unsigned int*)&OP[8],(unsigned int*)&OP[9],
+                    (unsigned int*)&OP[10],(unsigned int*)&OP[11],
+                    (unsigned int*)&OP[12],(unsigned int*)&OP[13],
+                    (unsigned int*)&OP[14],(unsigned int*)&OP[15]);
+            if (ret != 16) {
+                fprintf(stderr,
+                        "Error in configuration file: operator key: %s\n",
+                        hss_config_p->operator_key);
+                abort();
+            }
+        } else {
+            fprintf(stderr,
+                    "Error in configuration file: operator key length != 32 (16 hex bytes): %s\n",
+                    hss_config_p->operator_key);
+            abort();
+        }
+    } else {
+        fprintf(stderr, "Error in configuration file: operator key is null\n");
+        abort();
+    }
+    return 0;
 }
 
 static void display_banner(void)
@@ -119,6 +164,9 @@ static void config_display(hss_config_t *hss_config_p)
     fprintf(stdout, "* FreeDiameter:\n");
     fprintf(stdout, "\t- Conf file ........: %s\n",
             hss_config_p->freediameter_config);
+    fprintf(stdout, "* Security:\n");
+    fprintf(stdout, "\t- Operator key......: %s\n",
+            hss_config_p->operator_key);
 }
 
 static int config_parse_command_line(int argc, char *argv[],

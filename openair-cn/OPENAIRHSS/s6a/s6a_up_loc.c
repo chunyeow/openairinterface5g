@@ -34,6 +34,8 @@
  * \version 0.1
  */
 
+#include <freeDiameter/freeDiameter-host.h>
+#include <freeDiameter/libfdproto.h>
 #include "hss_config.h"
 #include "db_proto.h"
 #include "s6a_proto.h"

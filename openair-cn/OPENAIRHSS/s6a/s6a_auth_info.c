@@ -34,9 +34,12 @@
  * \version 0.1
  */
 
+#include <freeDiameter/freeDiameter-host.h>
+#include <freeDiameter/libfdproto.h>
 #include <stdint.h>
 #include <string.h>
 #include <inttypes.h>
+#include <pthread.h>
 
 #include "hss_config.h"
 #include "db_proto.h"

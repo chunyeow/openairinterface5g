@@ -31,7 +31,7 @@
 #include "db_proto.h"
 #include "s6a_proto.h"
 
-inline char *experimental_retcode_2_string(int ret_code)
+char *experimental_retcode_2_string(int ret_code)
 {
     switch(ret_code) {
         /* Experimental-Result-Codes */
@@ -55,7 +55,7 @@ inline char *experimental_retcode_2_string(int ret_code)
     return "DIAMETER_AVP_UNSUPPORTED";
 }
 
-inline char *retcode_2_string(int ret_code)
+char *retcode_2_string(int ret_code)
 {
     switch(ret_code) {
         case ER_DIAMETER_SUCCESS:

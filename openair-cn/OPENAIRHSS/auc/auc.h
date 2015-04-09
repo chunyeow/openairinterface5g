@@ -92,11 +92,9 @@ void generate_autn(u8 sqn[6], u8 ak[6], u8 amf[2], u8 mac_a[8], u8 autn[16]);
 int generate_vector(uint64_t imsi, uint8_t key[16], uint8_t plmn[3],
                     uint8_t sqn[6], auc_vector_t *vector);
 
-inline
 void kdf(uint8_t *key, uint16_t key_len, uint8_t *s, uint16_t s_len, uint8_t *out,
          uint16_t out_len);
 
-inline
 void derive_kasme(uint8_t ck[16], uint8_t ik[16], uint8_t plmn[3], uint8_t sqn[6],
                   uint8_t ak[6], uint8_t kasme[32]);
 

@@ -38,6 +38,7 @@
 
 // From http://www.itu.int/pub/T-SP-E.212B-2014
 const mcc_mnc_list_t mcc_mnc_list[] = {
+        {001, "01"},
         {412, "01"},
         {412, "20"},
         {412, "40"},

@@ -35,6 +35,9 @@ typedef struct hss_config_s {
     char *mysql_password;
     char *mysql_database;
 
+
+    char *operator_key;
+
     /* The freediameter configuration file */
     char *freediameter_config;
 

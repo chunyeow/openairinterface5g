@@ -51,7 +51,7 @@ echo "Creating HSS certificate for user '$HOSTNAME'.'$REALM'"
 # openssl ca -cert cacert.pem -keyfile cakey.pem -in hss.csr.pem -out hss.cert.pem -outdir . -batch
 
 # Create a Root Certification Authority Certificate
-openssl req  -new -batch -x509 -days 3650 -nodes -newkey rsa:1024 -out cacert.pem -keyout cakey.pem -subj /CN=$REALM/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
+openssl req  -new -batch -x509 -days 3650 -nodes -newkey rsa:1024 -out hss.cacert.pem -keyout hss.cakey.pem -subj /CN=$REALM/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
 
 # Generate a Private Key
 openssl genrsa -out hss.key.pem 1024
@@ -60,7 +60,7 @@ openssl genrsa -out hss.key.pem 1024
 openssl req -new -batch -out hss.csr.pem -key hss.key.pem -subj /CN=$HOSTNAME.$REALM/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
 
 # Certification authority
-openssl ca -cert cacert.pem -keyfile cakey.pem -in hss.csr.pem -out hss.cert.pem -outdir . -batch
+openssl ca -cert hss.cacert.pem -keyfile hss.cakey.pem -in hss.csr.pem -out hss.cert.pem -outdir . -batch
 
 if [ ! -d /usr/local/etc/freeDiameter ]
 then
@@ -68,7 +68,7 @@ then
     sudo mkdir /usr/local/etc/freeDiameter/
 fi
 
-sudo cp -upv cakey.pem hss.cert.pem cacert.pem hss.key.pem /usr/local/etc/freeDiameter/
+sudo cp -upv hss.cakey.pem hss.cert.pem hss.cacert.pem hss.key.pem /usr/local/etc/freeDiameter/
 
 # openssl genrsa -out $hss.key.pem 1024
 # openssl req -new -batch -out $hss.csr.pem -key $hss.key.pem -subj /CN=$hss.test.fr/C=FR/ST=Biot/L=Aix/O=test.fr/OU=mobiles

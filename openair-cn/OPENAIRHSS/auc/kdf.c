@@ -140,7 +140,6 @@ int generate_vector(uint64_t imsi, uint8_t key[16], uint8_t plmn[3],
     uint8_t ck[16];
     uint8_t ik[16];
     uint8_t ak[6];
-    int i;
 
     if (vector == NULL) {
         return EINVAL;

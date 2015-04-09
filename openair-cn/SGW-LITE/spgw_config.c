@@ -619,7 +619,6 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                                   STAILQ_INSERT_TAIL(&config_pP->pgw_config.pgw_lite_ipv4_pool_list, ip4_ref, ipv4_entries);
                                   counter64 = counter64 - 1;
                               } while (counter64 > 0);
-
                               //---------------
                               if (config_pP->pgw_config.pgw_masquerade_SGI) {
                                   in_addr_var.s_addr = config_pP->pgw_config.ipv4.pgw_ipv4_address_for_SGI;
@@ -636,7 +635,6 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
                                       SPGW_APP_ERROR("Masquerade SGI\n");
                                   }
                               }
-
                           } else {
                               SPGW_APP_ERROR("CONFIG POOL ADDR IPV4: BAD MASQ: %s\n", atoken2);
                           }

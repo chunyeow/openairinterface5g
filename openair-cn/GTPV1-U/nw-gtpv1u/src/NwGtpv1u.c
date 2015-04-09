@@ -46,6 +46,7 @@
 #include "NwGtpv1uLog.h"
 
 #include "assertions.h"
+#include "intertask_interface.h"
 
 #include "gtpv1u.h"
 #if defined(ENB_MODE)
@@ -573,9 +574,10 @@ nwGtpv1uHandleEchoReq(NW_IN NwGtpv1uStackT *thiz,
                       NW_IN NwU16T peerPort,
                       NW_IN NwU32T peerIp)
 {
-    NwGtpv1uRcT           rc = NW_GTPV1U_FAILURE;
+    NwGtpv1uRcT           rc     = NW_GTPV1U_FAILURE;
     NwU16T                seqNum = 0;
-    NwGtpv1uMsgHandleT    hMsg = 0;
+    NwGtpv1uMsgHandleT    hMsg   = 0;
+    int                   bufLen = 0;
 
     seqNum = ntohs(*(NwU16T *) (msgBuf + (((*msgBuf) & 0x02) ? 8 : 4)));
 
@@ -592,6 +594,13 @@ nwGtpv1uHandleEchoReq(NW_IN NwGtpv1uStackT *thiz,
                          0,
                          (&hMsg));
 
+    bufLen = sizeof(NwGtpv1uIeTv1T)+ ((NwGtpv1uMsgT*)hMsg)->msgLen;
+
+    ((NwGtpv1uMsgT*)hMsg)->msgBuf = itti_malloc(
+            TASK_GTPV1_U,
+            TASK_UDP,
+            bufLen);
+    ((NwGtpv1uMsgT*)hMsg)->msgBufLen    = bufLen;
     NW_ASSERT(NW_GTPV1U_OK == rc);
 
     /*

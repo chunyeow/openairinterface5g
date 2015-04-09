@@ -51,7 +51,7 @@ static struct session_handler *s6a_reg = NULL;
 static struct disp_hdl *handle;
 s6a_cnf_t s6a_cnf;
 
-#if !defined(FREEDIAMETER_VERSION_1_2_0)
+#if FREEDIAMETER_VERSION < 120
 void s6a_cli_sess_cleanup(void * arg, char * sid, void * opaque);
 
 void s6a_cli_sess_cleanup(void * arg, char * sid, void * opaque)
@@ -311,7 +311,7 @@ int s6a_init(hss_config_t *hss_config_p)
     }
 
     /* Create handler for sessions */
-#if !defined(FREEDIAMETER_VERSION_1_2_0)
+#if FREEDIAMETER_VERSION < 120
     CHECK_FCT(fd_sess_handler_create(&s6a_reg, s6a_cli_sess_cleanup, NULL));
 #else
     session_state_dump dumper;

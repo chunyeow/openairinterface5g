@@ -377,7 +377,6 @@ int hss_mysql_push_rand_sqn(const char *imsi, uint8_t *rand_p, uint8_t *sqn)
 {
     int status = 0, i;
     MYSQL_RES *res;
-    MYSQL_ROW row;
     char query[255];
     int query_length = 0;
     uint64_t sqn_decimal = 0;

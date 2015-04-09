@@ -69,7 +69,7 @@ void generate_random(uint8_t *random_p, ssize_t length)
 //    pthread_mutex_unlock(&random_state.lock);
 
 //    mpz_export(random_p, NULL, 1, length, 0, 0, random_nb);
-    int r = 0, i, mask = 0, shift;
+    int i;//r = 0,  mask = 0, shift;
 
     for (i = 0; i < length; i ++) {
 //        if ((i % sizeof(i)) == 0)

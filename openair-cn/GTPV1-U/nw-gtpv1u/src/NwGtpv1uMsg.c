@@ -104,6 +104,9 @@ nwGtpv1uMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
                                 4 : 0);
         //NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE : (NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE - 4));
 
+        pMsg->msgBuf       = NULL;
+        pMsg->msgBufLen    = 0;
+        pMsg->msgBufOffset = 0;
         *phMsg = (NwGtpv1uMsgHandleT) pMsg;
         return NW_GTPV1U_OK;
     }

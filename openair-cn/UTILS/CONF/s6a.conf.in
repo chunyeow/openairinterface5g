@@ -1,31 +1,55 @@
 # -------- Local ---------
 
 # Uncomment if the framework cannot resolv it.
-Identity = "@HOSTNAME@.pft";
-Realm = "pft";
+Identity = "@MME_FQDN@";
+Realm = "@REALM@";
 
 # TLS configuration (see previous section)
-TLS_Cred = "/usr/local/etc/freeDiameter/user.cert.pem",
-           "/usr/local/etc/freeDiameter/user.key.pem";
-TLS_CA   = "/usr/local/etc/freeDiameter/cacert.pem";
+TLS_Cred = "${FREEDIAMETER_PATH}/../etc/freeDiameter/mme.cert.pem",
+           "${FREEDIAMETER_PATH}/../etc/freeDiameter/mme.key.pem";
+TLS_CA   = "${FREEDIAMETER_PATH}/../etc/freeDiameter/mme.cacert.pem";
 
 # Disable use of TCP protocol (only listen and connect in SCTP)
 # Default : TCP enabled
-No_TCP;
-#No_SCTP;
+@TRANSPORT_option@;
+
+# This option is ignored if freeDiameter is compiled with DISABLE_SCTP option.
+# Prefer TCP instead of SCTP for establishing new connections.
+# This setting may be overwritten per peer in peer configuration blocs.
+# Default : SCTP is attempted first.
+@TRANSPORT_PREFER_TCP_option@;
+
+
 No_IPv6;
 
+# Overwrite the number of SCTP streams. This value should be kept low, 
+# especially if you are using TLS over SCTP, because it consumes a lot of 
+# resources in that case. See tickets 19 and 27 for some additional details on 
+# this.
 # Limit the number of SCTP streams
-SCTP_streams = 15;
+SCTP_streams = 3;
 
+
+# By default, freeDiameter acts as a Diameter Relay Agent by forwarding all 
+# messages it cannot handle locally. This parameter disables this behavior.
 NoRelay;
+
+
 TLS_old_method;
+
+
 AppServThreads = 1;
 
-#ListenOn = "192.168.57.100";
+# Specify the addresses on which to bind the listening server. This must be 
+# specified if the framework is unable to auto-detect these addresses, or if the
+# auto-detected values are incorrect. Note that the list of addresses is sent 
+# in CER or CEA message, so one should pay attention to this parameter if some 
+# adresses should be kept hidden. 
+@ListenOn@
 
-#Port = 3870;
-#SecPort = 3871;
+@DIAMETER_PORT@;
+@DIAMETER_SEC_PORT@;
+
 # -------- Extensions ---------
 
 # Uncomment (and create rtd.conf) to specify routing table for this peer.
@@ -62,5 +86,12 @@ LoadExtension = "dict_s6a.fdx";
 # with the peers listed here.
 # For only accepting incoming connections, see the acl_wl.fx extension.
 
-# ConnectPeer = "hss.test.fr" { ConnectTo = "192.168.56.101"; No_IPv6; No_TCP; Port = 3868; Realm = "test.fr"; };
-#ConnectPeer = "hss.pft" { ConnectTo = "192.168.14.17"; No_IPv6; Port = 3868; };
+# ConnectPeer
+# Declare a remote peer to which this peer must maintain a connection. 
+# In addition, this allows specifying non-default parameters for this peer only
+# (for example disable SCTP with this peer, or use RFC3588-flavour TLS). 
+# Note that by default, if a peer is not listed as a ConnectPeer entry, an 
+# incoming connection from this peer will be rejected. If you want to accept 
+# incoming connections from other peers, see the acl_wl.fdx? extension which 
+# allows exactly this. 
+@ConnectPeer@ = "@HSS_FQDN@" { ConnectTo = "@HSS_IP@"; No_IPv6; No_TLS ; port = 3868; Realm = "@REALM@"; };

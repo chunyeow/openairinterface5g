@@ -232,7 +232,7 @@ int s6a_add_result_code(struct msg *ans, struct avp *failed_avp,
 
 int s6a_add_ipv4_address(struct avp *avp, const char *ipv4_addr);
 int s6a_add_ipv6_address(struct avp *avp, const char *ipv6_addr);
-inline char *experimental_retcode_2_string(int ret_code);
-inline char *retcode_2_string(int ret_code);
+char *experimental_retcode_2_string(int ret_code);
+char *retcode_2_string(int ret_code);
 
 #endif /* S6A_PROTO_H_ */

@@ -45,11 +45,11 @@ HOSTNAME=$(hostname -f)
 echo "Creating MME certificate for user '$HOSTNAME'.'$REALM'"
 
 # CA self certificate
-openssl req  -new -batch -x509 -days 3650 -nodes -newkey rsa:1024 -out cacert.pem -keyout cakey.pem -subj /CN=$REALM/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
+openssl req  -new -batch -x509 -days 3650 -nodes -newkey rsa:1024 -out mme.cacert.pem -keyout mme.cakey.pem -subj /CN=$REALM/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
 
-openssl genrsa -out user.key.pem 1024
-openssl req -new -batch -out user.csr.pem -key user.key.pem -subj /CN=$HOSTNAME.$REALM/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
-openssl ca -cert cacert.pem -keyfile cakey.pem -in user.csr.pem -out user.cert.pem -outdir . -batch
+openssl genrsa -out mme.key.pem 1024
+openssl req -new -batch -out mme.csr.pem -key mme.key.pem -subj /CN=$HOSTNAME.$REALM/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
+openssl ca -cert mme.cacert.pem -keyfile mme.cakey.pem -in mme.csr.pem -out mme.cert.pem -outdir . -batch
 
 if [ ! -d /usr/local/etc/freeDiameter ]
 then
@@ -57,7 +57,7 @@ then
     sudo mkdir /usr/local/etc/freeDiameter/
 fi
 
-sudo cp -uv user.key.pem user.cert.pem cacert.pem cakey.pem /usr/local/etc/freeDiameter/
+sudo cp -uv mme.key.pem mme.cert.pem mme.cacert.pem mme.cakey.pem /usr/local/etc/freeDiameter/
 
 # openssl genrsa -out ubuntu.key.pem 1024
 # openssl req -new -batch -x509 -out ubuntu.csr.pem -key ubuntu.key.pem -subj /CN=ubuntu.localdomain/C=FR/ST=BdR/L=Aix/O=fD/OU=Tests
