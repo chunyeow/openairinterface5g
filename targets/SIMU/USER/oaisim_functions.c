@@ -965,8 +965,20 @@ void init_openair2(void) {
 void init_ocm(void) {
   module_id_t UE_id, eNB_id;
   int CC_id;
+
   /* Added for PHY abstraction */
-  LOG_I(OCM,"Running with frame_type %d, Nid_cell %d, N_RB_DL %d, EP %d, mode %d, target dl_mcs %d, rate adaptation %d, nframes %d, abstraction %d, channel %s\n", oai_emulation.info.frame_type[0], Nid_cell, oai_emulation.info.N_RB_DL[0], oai_emulation.info.extended_prefix_flag[0], oai_emulation.info.transmission_mode[0],target_dl_mcs,rate_adaptation_flag,oai_emulation.info.n_frames,abstraction_flag,oai_emulation.environment_system_config.fading.small_scale.selected_option);
+
+  char* frame_type = "unknown";
+  switch (oai_emulation.info.frame_type[0]) {
+  case FDD:
+    frame_type = "FDD";
+    break;
+  case TDD:
+    frame_type = "FDD";
+    break;
+  }
+  LOG_I(OCM,"Running with frame_type %d (%s), Nid_cell %d, N_RB_DL %d, EP %d, mode %d, target dl_mcs %d, rate adaptation %d, nframes %d, abstraction %d, channel %s\n",
+        oai_emulation.info.frame_type[0], frame_type, Nid_cell, oai_emulation.info.N_RB_DL[0], oai_emulation.info.extended_prefix_flag[0], oai_emulation.info.transmission_mode[0],target_dl_mcs,rate_adaptation_flag,oai_emulation.info.n_frames,abstraction_flag,oai_emulation.environment_system_config.fading.small_scale.selected_option);
 
   if (abstraction_flag) {
 

@@ -756,7 +756,7 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     // phy related params
     unsigned int n_frames;
     unsigned int n_frames_flag;	// if set, then let the emulation goes to infinity
-    unsigned char frame_type[MAX_NUM_CCs];
+    unsigned char frame_type[MAX_NUM_CCs]; //! LTE frame type (TDD=1, FDD=0). \note this should be converted to \ref lte_frame_type_t (header file reorganization needed)
     char * frame_type_name[MAX_NUM_CCs];
     unsigned char tdd_config[MAX_NUM_CCs];
     unsigned char tdd_config_S[MAX_NUM_CCs];
