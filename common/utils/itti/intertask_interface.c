@@ -389,7 +389,7 @@ MessageDef *itti_alloc_new_message(task_id_t origin_task_id, MessagesIds message
 int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, MessageDef *message)
 {
     thread_id_t destination_thread_id;
-    thread_id_t origin_task_id;
+    task_id_t origin_task_id;
     message_list_t *new;
     uint32_t priority;
     message_number_t message_number;
