@@ -39,8 +39,8 @@
 #include "omg.h"
 
 /*!A global variable used to store all the nodes information. It is an array in which every cell stocks the nodes information for a given mobility type. Its length is equal to the maximum number of mobility models that can exist in a single simulation scenario */
-node_list* node_vector[MAX_NUM_NODE_TYPES];
-node_list* node_vector_end[MAX_NUM_NODE_TYPES];
+node_list* node_vector[MAX_NUM_NODE_TYPES + 10 /*FIXME bad workaround for indexing node_vector with SUMO*/];
+node_list* node_vector_end[MAX_NUM_NODE_TYPES + 10 /*FIXME bad workaround for indexing node_vector_end with SUMO*/];
 
 /*! A global variable which represents the length of the Node_Vector */
 int node_vector_len[MAX_NUM_NODE_TYPES];
