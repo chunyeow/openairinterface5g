@@ -52,33 +52,36 @@ typedef enum {
 
 
 typedef struct {
-  /* Module ID for this configuration */
+  //! Module ID for this configuration
   int Mod_id;
-  /* the sample rate for both transmit and receive. */
+  //! the sample rate for both transmit and receive.
   double sample_rate;
-  /* number of samples per RX/TX packet (USRP + Ethernet) */
+  //! number of samples per RX/TX packet (USRP + Ethernet)
   int samples_per_packet;
-  /* number of RX channels (=RX antennas) */
+  //! number of RX channels (=RX antennas)
   int rx_num_channels;
-  /* number of TX channels (=TX antennas) */
+  //! number of TX channels (=TX antennas)
   int tx_num_channels;
-  /* center frequency in Hz for RX */
+  //! \brief Center frequency in Hz for RX.
+  //! index: [0..rx_num_channels[
   double rx_freq[4];
-  /* center frequency in Hz for TX */
+  //! \brief Center frequency in Hz for TX.
+  //! index: [0..rx_num_channels[ !!! see lte-ue.c:427 FIXME iterates over rx_num_channels
   double tx_freq[4];
-  /* mode for rxgain (ExpressMIMO2)*/
+  //! mode for rxgain (ExpressMIMO2)
   rx_gain_t rxg_mode[4];
-  /* gain for RX in dB */
+  //! \brief Gain for RX in dB.
+  //! index: [0..rx_num_channels[
   double rx_gain[4];
-  /* gain for TX in dB */
+  //! gain for TX in dB
   double tx_gain[4];
-  /* RX bandwidth in Hz */
+  //! RX bandwidth in Hz
   double rx_bw;
-  /* TX bandwidth in Hz */
+  //! TX bandwidth in Hz
   double tx_bw;
-  /* RRH IP addr for Ethernet interface */
+  //! RRH IP addr for Ethernet interface
   char *rrh_ip;
-  /* RRH port number for Ethernet interface */
+  //! RRH port number for Ethernet interface
   int rrh_port;
 } openair0_config_t;
 

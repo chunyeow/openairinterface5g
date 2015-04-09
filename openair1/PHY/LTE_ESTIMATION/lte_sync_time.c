@@ -256,7 +256,9 @@ void lte_sync_time_free(void) {
   sync_corr_ue0 = NULL;
   sync_corr_ue1 = NULL;
   sync_corr_ue2 = NULL;
-
+  primary_synch0_time = NULL;
+  primary_synch1_time = NULL;
+  primary_synch2_time = NULL;
 }
 
 static inline int abs32(int x) {

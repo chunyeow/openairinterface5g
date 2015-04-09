@@ -412,8 +412,8 @@ static void *UE_thread_synch(void *arg) {
 	if (abs(openair_daq_vars.freq_offset) > 7500) {
 	  LOG_I(PHY,"[initial_sync] No cell synchronization found, abandoning\n");
 	  mac_xface->macphy_exit("No cell synchronization found, abandoning");
+          return; // not reached
 	}
-	else {
 	  LOG_I(PHY,"[initial_sync] trying carrier off %d Hz, rxgain %d (DL %u, UL %u)\n",openair_daq_vars.freq_offset,
 		UE->rx_total_gain_dB,
 		downlink_frequency[0][0]+openair_daq_vars.freq_offset,
@@ -461,7 +461,6 @@ static void *UE_thread_synch(void *arg) {
 	    
 	      //	      rt_sleep_ns(FRAME_PERIOD);
 
-	} // freq_offset
       } // initial_sync=0
       break;
     case si:
@@ -623,6 +622,9 @@ static void *UE_thread_tx(void *arg) {
   return(0);
 }
 
+//! \brief .
+//! This is a pthread.
+//! \param arg expects a pointer to \ref PHY_VARS_UE.
 static void *UE_thread_rx(void *arg) {
   
   PHY_VARS_UE *UE = (PHY_VARS_UE*)arg;
@@ -685,15 +687,17 @@ static void *UE_thread_rx(void *arg) {
     if (pthread_mutex_lock(&UE->mutex_rx) != 0) {
       LOG_E(PHY,"[SCHED][eNB] error locking mutex for UE RX\n");
       exit_fun("nothing to add");
+      break;
     }
-    else {
       
       while (UE->instance_cnt_rx < 0) {
 	pthread_cond_wait(&UE->cond_rx,&UE->mutex_rx);
       }
+
       if (pthread_mutex_unlock(&UE->mutex_rx) != 0) {	
 	LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for UE RX\n");
 	exit_fun("nothing to add");
+        break;
       }
       
       for (i=0;i<2;i++) {
@@ -727,7 +731,6 @@ static void *UE_thread_rx(void *arg) {
 		  UE->frame_rx,UE->slot_tx>>1);
 	    UE->UE_mode[0] = RESYNCH;
 	    //     mac_xface->macphy_exit("Connection lost");
-	    //exit(-1);
 	  } 
 	  else if (ret == PHY_HO_PRACH) {
 	    LOG_I(PHY,"[UE %d] Frame %d, subframe %d, return to PRACH and perform a contention-free access\n",
@@ -759,9 +762,10 @@ static void *UE_thread_rx(void *arg) {
 	  }
 	}
 	//    printf("UE_thread_rx done\n");
-    }
-  }      
-  return(0);
+  }
+
+  // thread finished
+  return 0;
 }
     
 
