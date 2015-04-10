@@ -47,7 +47,7 @@ HASHTABLE_DIR = $(COMMON_UTILS_DIR)/collection/hashtable
 HASHTABLE_OBJS =  $(HASHTABLE_DIR)/hashtable.o
 HASHTABLE_OBJS += $(HASHTABLE_DIR)/obj_hashtable.o
 
-UTILS_OBJS = $(ITTI_OBJS) $(HASHTABLE_OBJS)  $(COMMON_UTILS_DIR)/backtrace.o
+UTILS_OBJS = $(ITTI_OBJS) $(HASHTABLE_OBJS)  
 
 UTILS_incl = 				\
     -I$(COMMON_UTILS_DIR)   \
