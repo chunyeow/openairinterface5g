@@ -95,7 +95,7 @@ function main()
         exe_arguments="$exe_arguments -K $itti_dump_file"
         shift 1;
         ;;     
-      -l | ----local-enb)
+      -l | --local-enb)
         epc_local=1
         shift;
         ;;
