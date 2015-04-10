@@ -68,17 +68,21 @@ int netlink_init(void)
 
   if (nas_sock_fd == -1) {
     printf("[NETLINK] Error opening socket %d (%d:%s)\n",nas_sock_fd,errno, strerror(errno));
-    //        exit(1);
+#if defined(LINK_ENB_PDCP_TO_IP_DRIVER)
+    exit(1);
+#endif
   }
 
   printf("[NETLINK]Opened socket with fd %d\n",nas_sock_fd);
 
-#if !defined(ENABLE_PDCP_NETLINK_FIFO)
+#if !defined(USE_PDCP_NETLINK_QUEUES)
   ret = fcntl(nas_sock_fd,F_SETFL,O_NONBLOCK);
 
   if (ret == -1) {
     printf("[NETLINK] Error fcntl (%d:%s)\n",errno, strerror(errno));
-    //      exit(1);
+#if defined(LINK_ENB_PDCP_TO_IP_DRIVER)
+    exit(1);
+#endif
   }
 
 #endif

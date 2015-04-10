@@ -2545,7 +2545,7 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
   phy_procedures_emos_eNB_TX(subframe, phy_vars_eNB);
 #endif
 
-#if !(defined(EXMIMO) || defined(USRP) || defined (CPRIGW))
+#if !(defined(EXMIMO) || defined(OAI_USRP) || defined (CPRIGW))
 
   if (abstraction_flag==0)
   {

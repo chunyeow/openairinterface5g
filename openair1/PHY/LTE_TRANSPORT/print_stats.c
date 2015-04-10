@@ -46,10 +46,11 @@
 
 #ifdef OPENAIR2
 #include "../openair2/LAYER2/MAC/proto.h"
+#include "../openair2/RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
 #endif
 
 extern int mac_get_rrc_status(uint8_t Mod_id,uint8_t eNB_flag,uint8_t index);
-#if defined(USRP) || defined(EXMIMO)
+#if defined(OAI_USRP) || defined(EXMIMO)
 #include "common_lib.h"
 extern openair0_config_t openair0_cfg[];
 #endif
@@ -86,7 +87,7 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 #ifdef EXMIMO
     len += sprintf(&buffer[len], "[UE PROC] RX Gain %d dB (LNA %d, vga %d dB)\n",phy_vars_ue->rx_total_gain_dB, openair0_cfg[0].rxg_mode[0],(int)openair0_cfg[0].rx_gain[0]);
 #endif
-#ifdef USRP
+#ifdef OAI_USRP
     len += sprintf(&buffer[len], "[UE PROC] RX Gain %d dB\n",phy_vars_ue->rx_total_gain_dB);
 #endif
 
@@ -451,7 +452,7 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
       }
 
 #ifdef OPENAIR2
-      RRC_status = mac_get_rrc_status(phy_vars_ue->Mod_id,0,0);
+      RRC_status = mac_UE_get_rrc_status(phy_vars_ue->Mod_id, 0);
       len += sprintf(&buffer[len],"[UE PROC] RRC status = %d\n",RRC_status);
 #endif
       len += sprintf(&buffer[len],"[UE PROC] RSRP[0] %.2f dBm/RE, RSSI %.2f, RSRQ[0] %.2f\n",
@@ -661,7 +662,7 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length)
       UE_id_mac = find_UE_id(phy_vars_eNB->Mod_id,phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->rnti);
 
       if (UE_id_mac != -1) {
-        RRC_status = mac_get_rrc_status(phy_vars_eNB->Mod_id,1,UE_id_mac);
+        RRC_status = mac_eNB_get_rrc_status(phy_vars_eNB->Mod_id,phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->rnti);
         len += sprintf(&buffer[len],"[eNB PROC] UE_id_mac = %d, RRC status = %d\n",UE_id_mac,RRC_status);
       } else
         len += sprintf(&buffer[len],"[eNB PROC] UE_id_mac = -1\n");
