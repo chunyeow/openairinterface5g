@@ -78,9 +78,7 @@ typedef u_int16_t                                                             MI
 /*! \struct  MIH_C_BITMAP24_T
  * \ingroup MIH_C_F1_BASIC_DATA_TYPES
  */
-typedef struct MIH_C_BITMAP24 {
-  u_int8_t val[3];
-} __attribute__((__packed__))   MIH_C_BITMAP24_T;
+typedef struct MIH_C_BITMAP24 {u_int8_t val[3];}__attribute__((__packed__))   MIH_C_BITMAP24_T;
 /*! \var typedef u_int32_t                             MIH_C_BITMAP32_T;
  * \ingroup MIH_C_F1_BASIC_DATA_TYPES
  * \brief A type definition for u_int32_t.
@@ -93,22 +91,18 @@ typedef u_int64_t                                                             MI
 /*! \struct  MIH_C_BITMAP128_T
  * \ingroup MIH_C_F1_BASIC_DATA_TYPES
  */
-typedef struct MIH_C_BITMAP128 {
-  u_int64_t val[2];
-} __attribute__((__packed__)) MIH_C_BITMAP128_T;
+typedef struct MIH_C_BITMAP128 {u_int64_t val[2];}__attribute__((__packed__)) MIH_C_BITMAP128_T;
 /*! \struct  MIH_C_BITMAP256_T
  * \ingroup MIH_C_F1_BASIC_DATA_TYPES
  */
-typedef struct MIH_C_BITMAP256 {
-  u_int64_t val[4];
-} __attribute__((__packed__)) MIH_C_BITMAP256_T;
+typedef struct MIH_C_BITMAP256 {u_int64_t val[4];}__attribute__((__packed__)) MIH_C_BITMAP256_T;
 
 #ifdef MIH_C_F1_BASIC_DATA_TYPES_CODEC_C
-/*! \def TYPEDEF_BITMAP6(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP8_T.
- */
-#define TYPEDEF_BITMAP6(DATA_TYPE_NAME)             typedef MIH_C_BITMAP8_T  DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_BITMAP6(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP8_T.
+     */
+    #define TYPEDEF_BITMAP6(DATA_TYPE_NAME)             typedef MIH_C_BITMAP8_T  DATA_TYPE_NAME  ## _T;\
         void MIH_C_BITMAP8_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP8_T* dataP);\
         void MIH_C_BITMAP8_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP8_T* dataP);\
         inline unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP) {\
@@ -118,11 +112,11 @@ typedef struct MIH_C_BITMAP256 {
             MIH_C_BITMAP8_encode(bbP, bitmapP);};\
         void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP8_decode(bbP, bitmapP);};
 
-/*! \def TYPEDEF_BITMAP8(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP8_T.
- */
-#define TYPEDEF_BITMAP8(DATA_TYPE_NAME)             typedef MIH_C_BITMAP8_T  DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_BITMAP8(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP8_T.
+     */
+    #define TYPEDEF_BITMAP8(DATA_TYPE_NAME)             typedef MIH_C_BITMAP8_T  DATA_TYPE_NAME  ## _T;\
         void MIH_C_BITMAP8_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP8_T* dataP);\
         void MIH_C_BITMAP8_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP8_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP) {\
@@ -132,11 +126,11 @@ typedef struct MIH_C_BITMAP256 {
             MIH_C_BITMAP8_encode(bbP, bitmapP);};\
         void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP8_decode(bbP, bitmapP);};
 
-/*! \def TYPEDEF_BITMAP16(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP16_T.
- */
-#define TYPEDEF_BITMAP16(DATA_TYPE_NAME)            typedef MIH_C_BITMAP16_T DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_BITMAP16(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP16_T.
+     */
+    #define TYPEDEF_BITMAP16(DATA_TYPE_NAME)            typedef MIH_C_BITMAP16_T DATA_TYPE_NAME  ## _T;\
         void MIH_C_BITMAP16_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP16_T* dataP);\
         void MIH_C_BITMAP16_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP16_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP) {\
@@ -146,11 +140,11 @@ typedef struct MIH_C_BITMAP256 {
             MIH_C_BITMAP16_encode(bbP, bitmapP);};\
         void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP16_decode(bbP, bitmapP);};
 
-/*! \def TYPEDEF_BITMAP20(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP24_T.
- */
-#define TYPEDEF_BITMAP20(DATA_TYPE_NAME)            typedef MIH_C_BITMAP24_T DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_BITMAP20(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP24_T.
+     */
+    #define TYPEDEF_BITMAP20(DATA_TYPE_NAME)            typedef MIH_C_BITMAP24_T DATA_TYPE_NAME  ## _T;\
         void MIH_C_BITMAP24_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP24_T* dataP);\
         void MIH_C_BITMAP24_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP24_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP) {\
@@ -160,11 +154,11 @@ typedef struct MIH_C_BITMAP256 {
             MIH_C_BITMAP24_encode(bbP, bitmapP);};\
         void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP24_decode(bbP, bitmapP);};
 
-/*! \def TYPEDEF_BITMAP32(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP32_T.
- */
-#define TYPEDEF_BITMAP32(DATA_TYPE_NAME)            typedef MIH_C_BITMAP32_T DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_BITMAP32(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP32_T.
+     */
+    #define TYPEDEF_BITMAP32(DATA_TYPE_NAME)            typedef MIH_C_BITMAP32_T DATA_TYPE_NAME  ## _T;\
         void MIH_C_BITMAP32_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP32_T* dataP);\
         void MIH_C_BITMAP32_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP32_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP) {\
@@ -174,11 +168,11 @@ typedef struct MIH_C_BITMAP256 {
             MIH_C_BITMAP32_encode(bbP, bitmapP);};\
         void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP32_decode(bbP, bitmapP);};
 
-/*! \def TYPEDEF_BITMAP64(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP64_T.
- */
-#define TYPEDEF_BITMAP64(DATA_TYPE_NAME)            typedef MIH_C_BITMAP64_T DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_BITMAP64(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP64_T.
+     */
+    #define TYPEDEF_BITMAP64(DATA_TYPE_NAME)            typedef MIH_C_BITMAP64_T DATA_TYPE_NAME  ## _T;\
         void MIH_C_BITMAP64_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP64_T* dataP);\
         void MIH_C_BITMAP64_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP64_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP) {\
@@ -191,62 +185,62 @@ typedef struct MIH_C_BITMAP256 {
             MIH_C_BITMAP64_encode(bbP, bitmapP);};\
         void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP64_decode(bbP, bitmapP);};
 
-/*! \def TYPEDEF_BITMAP128(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP128_T.
- */
-#define TYPEDEF_BITMAP128(DATA_TYPE_NAME)           typedef MIH_C_BITMAP128_T DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_BITMAP128(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP128_T.
+     */
+    #define TYPEDEF_BITMAP128(DATA_TYPE_NAME)           typedef MIH_C_BITMAP128_T DATA_TYPE_NAME  ## _T;\
         void MIH_C_BITMAP128_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP128_T* dataP);\
         void MIH_C_BITMAP128_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP128_T* dataP);\
         void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP128_encode(bbP, bitmapP);};\
         void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP128_decode(bbP, bitmapP);};
 
-/*! \def TYPEDEF_BITMAP256(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP256_T.
- */
-#define TYPEDEF_BITMAP256(DATA_TYPE_NAME)           typedef MIH_C_BITMAP256_T DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_BITMAP256(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_BITMAP256_T.
+     */
+    #define TYPEDEF_BITMAP256(DATA_TYPE_NAME)           typedef MIH_C_BITMAP256_T DATA_TYPE_NAME  ## _T;\
         void MIH_C_BITMAP256_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP256_T* dataP);\
         void MIH_C_BITMAP256_decode(Bit_Buffer_t* bbP, MIH_C_BITMAP256_T* dataP);\
         void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP256_encode(bbP, bitmapP);};\
         void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP256_decode(bbP, bitmapP);};
 
 #else
-#define TYPEDEF_BITMAP6(DATA_TYPE_NAME)             typedef MIH_C_BITMAP8_T  DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_BITMAP6(DATA_TYPE_NAME)             typedef MIH_C_BITMAP8_T  DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP);\
         void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
         void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 
-#define TYPEDEF_BITMAP8(DATA_TYPE_NAME)             typedef MIH_C_BITMAP8_T  DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_BITMAP8(DATA_TYPE_NAME)             typedef MIH_C_BITMAP8_T  DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP);\
         void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
         void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 
-#define TYPEDEF_BITMAP16(DATA_TYPE_NAME)            typedef MIH_C_BITMAP16_T DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_BITMAP16(DATA_TYPE_NAME)            typedef MIH_C_BITMAP16_T DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP);\
         void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
         void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 
-#define TYPEDEF_BITMAP20(DATA_TYPE_NAME)            typedef MIH_C_BITMAP24_T DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_BITMAP20(DATA_TYPE_NAME)            typedef MIH_C_BITMAP24_T DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP);\
         void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
         void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 
-#define TYPEDEF_BITMAP32(DATA_TYPE_NAME)            typedef MIH_C_BITMAP32_T DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_BITMAP32(DATA_TYPE_NAME)            typedef MIH_C_BITMAP32_T DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP);\
         void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
         void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 
-#define TYPEDEF_BITMAP64(DATA_TYPE_NAME)            typedef MIH_C_BITMAP64_T DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_BITMAP64(DATA_TYPE_NAME)            typedef MIH_C_BITMAP64_T DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *bitmapP, char* buffP);\
         void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
         void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 
-#define TYPEDEF_BITMAP128(DATA_TYPE_NAME)           typedef MIH_C_BITMAP128_T DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_BITMAP128(DATA_TYPE_NAME)           typedef MIH_C_BITMAP128_T DATA_TYPE_NAME  ## _T;\
         void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
         void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 
-#define TYPEDEF_BITMAP256(DATA_TYPE_NAME)           typedef MIH_C_BITMAP256_T DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_BITMAP256(DATA_TYPE_NAME)           typedef MIH_C_BITMAP256_T DATA_TYPE_NAME  ## _T;\
         void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);\
         void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T* bitmapP);
 #endif
@@ -291,11 +285,11 @@ typedef int32_t                            MIH_C_INTEGER4_T;
 typedef int64_t                            MIH_C_INTEGER8_T;
 
 #ifdef MIH_C_F1_BASIC_DATA_TYPES_CODEC_C
-/*! \def TYPEDEF_INTEGER1(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_INTEGER1_T.
- */
-#define TYPEDEF_INTEGER1(DATA_TYPE_NAME)            typedef MIH_C_INTEGER1_T   DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_INTEGER1(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_INTEGER1_T.
+     */
+    #define TYPEDEF_INTEGER1(DATA_TYPE_NAME)            typedef MIH_C_INTEGER1_T   DATA_TYPE_NAME  ## _T;\
         void MIH_C_INTEGER1_encode(Bit_Buffer_t* bbP, MIH_C_INTEGER1_T* dataP);\
         void MIH_C_INTEGER1_decode(Bit_Buffer_t* bbP, MIH_C_INTEGER1_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
@@ -307,11 +301,11 @@ typedef int64_t                            MIH_C_INTEGER8_T;
             MIH_C_INTEGER1_decode(bbP, (MIH_C_INTEGER1_T*)dataP);\
         };
 
-/*! \def TYPEDEF_INTEGER2(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_INTEGER2_T.
- */
-#define TYPEDEF_INTEGER2(DATA_TYPE_NAME)            typedef MIH_C_INTEGER2_T   DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_INTEGER2(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_INTEGER2_T.
+     */
+    #define TYPEDEF_INTEGER2(DATA_TYPE_NAME)            typedef MIH_C_INTEGER2_T   DATA_TYPE_NAME  ## _T;\
         void MIH_C_INTEGER2_encode(Bit_Buffer_t* bbP, MIH_C_INTEGER2_T* dataP);\
         void MIH_C_INTEGER2_decode(Bit_Buffer_t* bbP, MIH_C_INTEGER2_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
@@ -323,11 +317,11 @@ typedef int64_t                            MIH_C_INTEGER8_T;
             MIH_C_INTEGER2_decode(bbP, (MIH_C_INTEGER2_T*)dataP);\
         };
 
-/*! \def TYPEDEF_INTEGER4(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_INTEGER4_T.
- */
-#define TYPEDEF_INTEGER4(DATA_TYPE_NAME)            typedef MIH_C_INTEGER4_T   DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_INTEGER4(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_INTEGER4_T.
+     */
+    #define TYPEDEF_INTEGER4(DATA_TYPE_NAME)            typedef MIH_C_INTEGER4_T   DATA_TYPE_NAME  ## _T;\
         void MIH_C_INTEGER4_encode(Bit_Buffer_t* bbP, MIH_C_INTEGER4_T* dataP);\
         void MIH_C_INTEGER4_decode(Bit_Buffer_t* bbP, MIH_C_INTEGER4_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
@@ -339,11 +333,11 @@ typedef int64_t                            MIH_C_INTEGER8_T;
             MIH_C_INTEGER4_decode(bbP, (MIH_C_INTEGER4_T*)dataP);\
         };
 
-/*! \def TYPEDEF_INTEGER8(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_INTEGER48T.
- */
-#define TYPEDEF_INTEGER8(DATA_TYPE_NAME)            typedef MIH_C_INTEGER8_T   DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_INTEGER8(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_INTEGER48T.
+     */
+    #define TYPEDEF_INTEGER8(DATA_TYPE_NAME)            typedef MIH_C_INTEGER8_T   DATA_TYPE_NAME  ## _T;\
         void MIH_C_INTEGER8_encode(Bit_Buffer_t* bbP, MIH_C_INTEGER8_T* dataP);\
         void MIH_C_INTEGER8_decode(Bit_Buffer_t* bbP, MIH_C_INTEGER8_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
@@ -358,22 +352,22 @@ typedef int64_t                            MIH_C_INTEGER8_T;
             MIH_C_INTEGER8_decode(bbP, (MIH_C_INTEGER8_T*)dataP);\
         };
 #else
-#define TYPEDEF_INTEGER1(DATA_TYPE_NAME)            typedef MIH_C_INTEGER1_T   DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_INTEGER1(DATA_TYPE_NAME)            typedef MIH_C_INTEGER1_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int  DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
         void   DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
         void   DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 
-#define TYPEDEF_INTEGER2(DATA_TYPE_NAME)            typedef MIH_C_INTEGER2_T   DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_INTEGER2(DATA_TYPE_NAME)            typedef MIH_C_INTEGER2_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int  DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
         void   DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
         void   DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 
-#define TYPEDEF_INTEGER4(DATA_TYPE_NAME)            typedef MIH_C_INTEGER4_T   DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_INTEGER4(DATA_TYPE_NAME)            typedef MIH_C_INTEGER4_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
         void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
         void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 
-#define TYPEDEF_INTEGER8(DATA_TYPE_NAME)            typedef MIH_C_INTEGER8_T   DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_INTEGER8(DATA_TYPE_NAME)            typedef MIH_C_INTEGER8_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int  DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
         void   DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
         void   DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
@@ -420,11 +414,11 @@ typedef u_int32_t                          MIH_C_UNSIGNED_INT4_T;
 typedef u_int64_t                          MIH_C_UNSIGNED_INT8_T;
 
 #ifdef MIH_C_F1_BASIC_DATA_TYPES_CODEC_C
-/*! \def TYPEDEF_UNSIGNED_INT1(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_UNSIGNED_INT1_T.
- */
-#define TYPEDEF_UNSIGNED_INT1(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT1_T   DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_UNSIGNED_INT1(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_UNSIGNED_INT1_T.
+     */
+    #define TYPEDEF_UNSIGNED_INT1(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT1_T   DATA_TYPE_NAME  ## _T;\
         void MIH_C_UNSIGNED_INT1_encode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT1_T* dataP);\
         void MIH_C_UNSIGNED_INT1_decode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT1_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
@@ -436,11 +430,11 @@ typedef u_int64_t                          MIH_C_UNSIGNED_INT8_T;
             MIH_C_UNSIGNED_INT1_decode(bbP, dataP);\
         };
 
-/*! \def TYPEDEF_UNSIGNED_INT2(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_UNSIGNED_INT2_T.
- */
-#define TYPEDEF_UNSIGNED_INT2(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT2_T   DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_UNSIGNED_INT2(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_UNSIGNED_INT2_T.
+     */
+    #define TYPEDEF_UNSIGNED_INT2(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT2_T   DATA_TYPE_NAME  ## _T;\
         void MIH_C_UNSIGNED_INT2_encode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT2_T* dataP);\
         void MIH_C_UNSIGNED_INT2_decode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT2_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
@@ -452,11 +446,11 @@ typedef u_int64_t                          MIH_C_UNSIGNED_INT8_T;
             MIH_C_UNSIGNED_INT2_decode(bbP, dataP);\
         };
 
-/*! \def TYPEDEF_UNSIGNED_INT4(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_UNSIGNED_INT4_T.
- */
-#define TYPEDEF_UNSIGNED_INT4(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT4_T   DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_UNSIGNED_INT4(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_UNSIGNED_INT4_T.
+     */
+    #define TYPEDEF_UNSIGNED_INT4(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT4_T   DATA_TYPE_NAME  ## _T;\
         void MIH_C_UNSIGNED_INT4_encode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT4_T* dataP);\
         void MIH_C_UNSIGNED_INT4_decode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT4_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
@@ -468,11 +462,11 @@ typedef u_int64_t                          MIH_C_UNSIGNED_INT8_T;
             MIH_C_UNSIGNED_INT4_decode(bbP, dataP);\
         };
 
-/*! \def TYPEDEF_UNSIGNED_INT8(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a MIH_C_UNSIGNED_INT8_T.
- */
-#define TYPEDEF_UNSIGNED_INT8(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT8_T   DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_UNSIGNED_INT8(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a MIH_C_UNSIGNED_INT8_T.
+     */
+    #define TYPEDEF_UNSIGNED_INT8(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT8_T   DATA_TYPE_NAME  ## _T;\
         void MIH_C_UNSIGNED_INT8_encode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT8_T* dataP);\
         void MIH_C_UNSIGNED_INT8_decode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT8_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP) {\
@@ -484,22 +478,22 @@ typedef u_int64_t                          MIH_C_UNSIGNED_INT8_T;
             MIH_C_UNSIGNED_INT8_decode(bbP, dataP);\
         };
 #else
-#define TYPEDEF_UNSIGNED_INT1(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT1_T   DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_UNSIGNED_INT1(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT1_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
         void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
         void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 
-#define TYPEDEF_UNSIGNED_INT2(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT2_T   DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_UNSIGNED_INT2(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT2_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
         void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
         void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 
-#define TYPEDEF_UNSIGNED_INT4(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT4_T   DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_UNSIGNED_INT4(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT4_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
         void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
         void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 
-#define TYPEDEF_UNSIGNED_INT8(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT8_T   DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_UNSIGNED_INT8(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT8_T   DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* buffP);\
         void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
         void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
@@ -532,10 +526,10 @@ void      MIH_C_LIST_LENGTH_decode(Bit_Buffer_t *bbP, u_int16_t *lengthP);
 u_int16_t MIH_C_LIST_LENGTH_get_encode_length(u_int16_t lengthP);
 
 #ifdef MIH_C_F1_BASIC_DATA_TYPES_CODEC_C
-/*! \def TYPEDEF_LIST(DATA_TYPE_NAME, MAX_LENGTH)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a LIST of MAX_LENGTH elements of DATA_TYPE_NAME type, and its functions for de/serializing this type.
- */
+    /*! \def TYPEDEF_LIST(DATA_TYPE_NAME, MAX_LENGTH)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a LIST of MAX_LENGTH elements of DATA_TYPE_NAME type, and its functions for de/serializing this type.
+     */
 #define TYPEDEF_LIST(DATA_TYPE_NAME, MAX_LENGTH)    typedef  struct DATA_TYPE_NAME ## _LIST { u_int16_t length; DATA_TYPE_NAME ## _T val[MAX_LENGTH];} DATA_TYPE_NAME ## _LIST_T;\
     extern void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *val);\
     extern void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *val);\
@@ -593,10 +587,10 @@ u_int16_t MIH_C_LIST_LENGTH_get_encode_length(u_int16_t lengthP);
 
 //----------------------- OCTET(size) -----------------------------------------
 #ifdef MIH_C_F1_BASIC_DATA_TYPES_CODEC_C
-/*! \def TYPEDEF_OCTET(DATA_TYPE_NAME, MAX_LENGTH)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a LIST of MAX_LENGTH octet elements, and its functions for de/serializing this type.
- */
+    /*! \def TYPEDEF_OCTET(DATA_TYPE_NAME, MAX_LENGTH)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a LIST of MAX_LENGTH octet elements, and its functions for de/serializing this type.
+     */
 #define TYPEDEF_OCTET(DATA_TYPE_NAME, LENGTH)       typedef struct DATA_TYPE_NAME {u_int8_t val[LENGTH];} DATA_TYPE_NAME  ## _T;\
     unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* bufP) {\
         int index = 0;\
@@ -626,18 +620,18 @@ u_int16_t MIH_C_LIST_LENGTH_get_encode_length(u_int16_t lengthP);
 TYPEDEF_UNSIGNED_INT1(MIH_C_ENUMERATED)
 
 #ifdef MIH_C_F2_GENERAL_DATA_TYPES_CODEC_C
-/*! \def TYPEDEF_ENUMERATED(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as MIH_C_ENUMERATED_T, and its functions for de/serializing this type.
- */
-#define TYPEDEF_ENUMERATED(DATA_TYPE_NAME)          typedef MIH_C_ENUMERATED_T  DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_ENUMERATED(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as MIH_C_ENUMERATED_T, and its functions for de/serializing this type.
+     */
+    #define TYPEDEF_ENUMERATED(DATA_TYPE_NAME)          typedef MIH_C_ENUMERATED_T  DATA_TYPE_NAME  ## _T;\
         void MIH_C_ENUMERATED_encode(Bit_Buffer_t* bbP, MIH_C_ENUMERATED_T* dataP);\
         void MIH_C_ENUMERATED_decode(Bit_Buffer_t* bbP, MIH_C_ENUMERATED_T* dataP);\
         void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_ENUMERATED_encode(bbP, dataP);};\
         void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {MIH_C_ENUMERATED_decode(bbP, dataP);};
 #else
-#define TYPEDEF_ENUMERATED(DATA_TYPE_NAME)          typedef MIH_C_ENUMERATED_T  DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_ENUMERATED(DATA_TYPE_NAME)          typedef MIH_C_ENUMERATED_T  DATA_TYPE_NAME  ## _T;\
         void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
         void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
 #endif
@@ -655,11 +649,11 @@ TYPEDEF_ENUMERATED(MIH_C_BOOLEAN)
 #define MIH_C_BOOLEAN_TRUE       (MIH_C_ENUMERATED_T)1
 #define MIH_C_BOOLEAN_FALSE      (MIH_C_ENUMERATED_T)0
 #ifdef MIH_C_F2_GENERAL_DATA_TYPES_CODEC_C
-/*! \def TYPEDEF_BOOLEAN(DATA_TYPE_NAME)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as MIH_C_BOOLEAN_T, and its functions for de/serializing this type.
- */
-#define TYPEDEF_BOOLEAN(DATA_TYPE_NAME)          typedef MIH_C_BOOLEAN_T  DATA_TYPE_NAME  ## _T;\
+    /*! \def TYPEDEF_BOOLEAN(DATA_TYPE_NAME)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as MIH_C_BOOLEAN_T, and its functions for de/serializing this type.
+     */
+    #define TYPEDEF_BOOLEAN(DATA_TYPE_NAME)          typedef MIH_C_BOOLEAN_T  DATA_TYPE_NAME  ## _T;\
         void MIH_C_BOOLEAN_encode(Bit_Buffer_t* bbP, MIH_C_BOOLEAN_T* dataP);\
         void MIH_C_BOOLEAN_decode(Bit_Buffer_t* bbP, MIH_C_BOOLEAN_T* dataP);\
         unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* bufP) {\
@@ -675,7 +669,7 @@ TYPEDEF_ENUMERATED(MIH_C_BOOLEAN)
             MIH_C_BOOLEAN_encode(bbP, dataP);};\
         void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {MIH_C_ENUMERATED_decode(bbP, dataP);};
 #else
-#define TYPEDEF_BOOLEAN(DATA_TYPE_NAME)          typedef MIH_C_BOOLEAN_T  DATA_TYPE_NAME  ## _T;\
+    #define TYPEDEF_BOOLEAN(DATA_TYPE_NAME)          typedef MIH_C_BOOLEAN_T  DATA_TYPE_NAME  ## _T;\
         extern unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *dataP, char* bufP);\
         void  DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);\
         void  DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP);
@@ -690,10 +684,10 @@ TYPEDEF_ENUMERATED(MIH_C_BOOLEAN)
 
 //----------------------- OCTET_STRING ----------------------------------------
 #ifdef MIH_C_F2_GENERAL_DATA_TYPES_CODEC_C
-/*! \def TYPEDEF_OCTET_STRING(DATA_TYPE_NAME, MAX_LENGTH)
- * \ingroup MIH_C_F1_BASIC_DATA_TYPES
- * \brief Defines DATA_TYPE_NAME as a LIST of MAX_LENGTH char elements, and its functions for de/serializing this type.
- */
+    /*! \def TYPEDEF_OCTET_STRING(DATA_TYPE_NAME, MAX_LENGTH)
+     * \ingroup MIH_C_F1_BASIC_DATA_TYPES
+     * \brief Defines DATA_TYPE_NAME as a LIST of MAX_LENGTH char elements, and its functions for de/serializing this type.
+     */
 #define TYPEDEF_OCTET_STRING(DATA_TYPE_NAME, MAX_LENGTH)    typedef  struct DATA_TYPE_NAME { u_int16_t length; u_int8_t val[MAX_LENGTH];} DATA_TYPE_NAME ## _T;\
     unsigned int DATA_TYPE_NAME ## 2String(DATA_TYPE_NAME ## _T *listP, char* bufP) {\
         memcpy(bufP, listP->val, listP->length);\
@@ -794,9 +788,9 @@ TYPEDEF_OCTET(MIH_C_LAC, 2)
 * \brief A data type to represent a 3GPP 2G cell identifier.
 */
 typedef struct MIH_C_3GPP_2G_CELL_ID {
-  MIH_C_PLMN_ID_T        plmn_id;
-  MIH_C_LAC_T            lac;
-  MIH_C_CI_T             ci;
+    MIH_C_PLMN_ID_T        plmn_id;
+    MIH_C_LAC_T            lac;
+    MIH_C_CI_T             ci;
 } MIH_C_3GPP_2G_CELL_ID_T;
 
 //-------------------------------------------
@@ -805,8 +799,8 @@ typedef struct MIH_C_3GPP_2G_CELL_ID {
 * \brief A data type to represent a 3GPP 3G cell identifier.
 */
 typedef struct MIH_C_3GPP_3G_CELL_ID {
-  MIH_C_PLMN_ID_T        plmn_id;
-  MIH_C_CELL_ID_T        cell_id;
+    MIH_C_PLMN_ID_T        plmn_id;
+    MIH_C_CELL_ID_T        cell_id;
 } MIH_C_3GPP_3G_CELL_ID_T;
 //-------------------------------------------
 /*! \struct  MIH_C_3GPP_ADDR
@@ -889,28 +883,28 @@ TYPEDEF_OCTET_STRING(MIH_C_OTHER_L2_ADDR, MIH_C_OTHER_L2_ADDR_LENGTH)
 //-------------------------------------------
 
 typedef enum  {
-  MIH_C_CHOICE_MAC_ADDR = 0,
-  MIH_C_CHOICE_3GPP_3G_CELL_ID,
-  MIH_C_CHOICE_3GPP_2G_CELL_ID,
-  MIH_C_CHOICE_3GPP_ADDR,
-  MIH_C_CHOICE_3GPP2_ADDR,
-  MIH_C_CHOICE_OTHER_L2_ADDR
-} MIH_C_LINK_ADDR_CHOICE_ENUM_T;
+                  MIH_C_CHOICE_MAC_ADDR = 0,
+                  MIH_C_CHOICE_3GPP_3G_CELL_ID,
+                  MIH_C_CHOICE_3GPP_2G_CELL_ID,
+                  MIH_C_CHOICE_3GPP_ADDR,
+                  MIH_C_CHOICE_3GPP2_ADDR,
+                  MIH_C_CHOICE_OTHER_L2_ADDR
+              } MIH_C_LINK_ADDR_CHOICE_ENUM_T;
 //-------------------------------------------
 /*! \struct MIH_C_LINK_ADDR
 * \ingroup MIH_C_F3_DATA_TYPES_FOR_ADDRESS_CODEC
 * \brief A data type to represent an address of any link layer.
 */
 typedef struct MIH_C_LINK_ADDR {
-  MIH_C_CHOICE_T               choice;
-  union  {
-    MIH_C_MAC_ADDR_T         mac_addr;
-    MIH_C_3GPP_3G_CELL_ID_T  _3gpp_3g_cell_id;
-    MIH_C_3GPP_2G_CELL_ID_T  _3gpp_2g_cell_id;
-    MIH_C_3GPP_ADDR_T        _3gpp_addr;
-    MIH_C_3GPP2_ADDR_T       _3gpp2_addr;
-    MIH_C_OTHER_L2_ADDR_T    other_l2_addr;
-  } _union;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_MAC_ADDR_T         mac_addr;
+        MIH_C_3GPP_3G_CELL_ID_T  _3gpp_3g_cell_id;
+        MIH_C_3GPP_2G_CELL_ID_T  _3gpp_2g_cell_id;
+        MIH_C_3GPP_ADDR_T        _3gpp_addr;
+        MIH_C_3GPP2_ADDR_T       _3gpp2_addr;
+        MIH_C_OTHER_L2_ADDR_T    other_l2_addr;
+    } _union;
 } MIH_C_LINK_ADDR_T;
 
 
@@ -969,11 +963,11 @@ TYPEDEF_BITMAP16(MIH_C_DEV_STATES_REQ)
 * \brief Represents a device status.
 */
 typedef struct MIH_C_DEV_STATE_RSP {
-  MIH_C_CHOICE_T          choice;
-  union  {
-    MIH_C_DEVICE_INFO_T      device_info;
-    MIH_C_BATT_LEVEL_T       batt_level;
-  } _union;
+    MIH_C_CHOICE_T          choice;
+    union  {
+        MIH_C_DEVICE_INFO_T      device_info;
+        MIH_C_BATT_LEVEL_T       batt_level;
+    } _union;
 } MIH_C_DEV_STATE_RSP_T;
 //-------------------------------------------
 /*!
@@ -1078,8 +1072,8 @@ TYPEDEF_UNSIGNED_INT1(MIH_C_LINK_TYPE)
 *        The LINK_ADDR contains the address of this link.
 */
 typedef struct MIH_C_LINK_ID {
-  MIH_C_LINK_TYPE_T           link_type;
-  MIH_C_LINK_ADDR_T           link_addr;
+    MIH_C_LINK_TYPE_T           link_type;
+    MIH_C_LINK_ADDR_T           link_addr;
 } MIH_C_LINK_ID_T;
 //-------------------------------------------
 #ifdef MIH_C_MEDIEVAL_EXTENSIONS
@@ -1094,8 +1088,8 @@ TYPEDEF_OCTET(MIH_C_PORT, 2)
 * \brief Tuple consisting on an IP address and the port
 */
 typedef struct MIH_C_IP_TUPLE {
-  MIH_C_IP_ADDR_T              ip_addr;
-  MIH_C_PORT_T                 port;
+    MIH_C_IP_ADDR_T              ip_addr;
+    MIH_C_PORT_T                 port;
 } MIH_C_IP_TUPLE_T;
 //-------------------------------------------
 /*! \var MIH_C_PROTO_T
@@ -1126,11 +1120,11 @@ TYPEDEF_UNSIGNED_INT4(MIH_C_FLOW_ID)
 * or Flow Label field of IPv4/v6 header.
 */
 typedef struct MIH_C_MARK {
-  MIH_C_CHOICE_T          choice;
-  union  {
-    BITMAP6(dscp_mask);
-    BITMAP20(flow_label_mask);
-  } _union;
+    MIH_C_CHOICE_T          choice;
+    union  {
+        BITMAP6(dscp_mask);
+        BITMAP20(flow_label_mask);
+    } _union;
 } MIH_C_MARK_T;
 //-------------------------------------------
 /*! \var MIH_C_MAX_DELAY_T
@@ -1207,16 +1201,16 @@ TYPEDEF_UNSIGNED_INT4(MIH_C_LINK_DATA_RATE)
 *  signalled through the MIH_SAP, the COS parameter is used after being processed by the WP3 AQM.
 */
 typedef struct MIH_C_QOS {
-  MIH_C_CHOICE_T          choice;
-  union  {
-    struct {
-      MIH_C_MAX_DELAY_T      max_delay;
-      MIH_C_BITRATE_T        bitrate;
-      MIH_C_JITTER_T         jitter;
-      MIH_C_PKT_LOSS_RATE_T  pkt_loss;
-    }                          mark_qos;
-    MIH_C_COS_T                cos;
-  } _union;
+    MIH_C_CHOICE_T          choice;
+    union  {
+        struct {
+            MIH_C_MAX_DELAY_T      max_delay;
+            MIH_C_BITRATE_T        bitrate;
+            MIH_C_JITTER_T         jitter;
+            MIH_C_PKT_LOSS_RATE_T  pkt_loss;
+        }                          mark_qos;
+        MIH_C_COS_T                cos;
+    } _union;
 } MIH_C_QOS_T;
 //-------------------------------------------
 /*! \struct MIH_C_RESOURCE_DESC_T
@@ -1226,28 +1220,28 @@ typedef struct MIH_C_QOS {
 * configure the flow subject to action
 */
 typedef struct MIH_C_RESOURCE_DESC {
-  MIH_C_LINK_ID_T         link_id;
-  MIH_C_FLOW_ID_T         flow_id;
-  MIH_C_CHOICE_T          choice_link_data_rate;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_LINK_DATA_RATE_T   link_data_rate;
-  } _union_link_data_rate;
-  MIH_C_CHOICE_T          choice_qos;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_QOS_T          qos;
-  } _union_qos;
-  MIH_C_CHOICE_T          choice_jumbo_enable;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_JUMBO_ENABLE_T     jumbo_enable;
-  } _union_jumbo_enable;
-  MIH_C_CHOICE_T          choice_multicast_enable;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_MULTICAST_ENABLE_T multicast_enable;
-  } _union_multicast_enable;
+    MIH_C_LINK_ID_T         link_id;
+    MIH_C_FLOW_ID_T         flow_id;
+    MIH_C_CHOICE_T          choice_link_data_rate;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_LINK_DATA_RATE_T   link_data_rate;
+    } _union_link_data_rate;
+    MIH_C_CHOICE_T          choice_qos;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_QOS_T          qos;
+    } _union_qos;
+    MIH_C_CHOICE_T          choice_jumbo_enable;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_JUMBO_ENABLE_T     jumbo_enable;
+    } _union_jumbo_enable;
+    MIH_C_CHOICE_T          choice_multicast_enable;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_MULTICAST_ENABLE_T multicast_enable;
+    } _union_multicast_enable;
 } MIH_C_RESOURCE_DESC_T;
 //-------------------------------------------
 /*! \struct MIH_C_FLOW_ATTRIBUTE_T
@@ -1257,28 +1251,28 @@ typedef struct MIH_C_RESOURCE_DESC {
 * to be set up for the flow.
 */
 typedef struct MIH_C_FLOW_ATTRIBUTE {
-  MIH_C_FLOW_ID_T         flow_id;
-  MIH_C_CHOICE_T          choice_multicast_enable;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_MULTICAST_ENABLE_T multicast_enable;
-  } _union_multicast_enable;
-  MIH_C_CHOICE_T          choice_mark_qos;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    struct {
-      MIH_C_MARK_T         mark;
-      MIH_C_QOS_T          qos;
-    }                        mark_qos;
-  } _union_mark_qos;
-  MIH_C_CHOICE_T                      choice_mark_drop_eligibility;
-  union  {
-    MIH_C_NULL_T                    null_attr;
-    struct {
-      MIH_C_MARK_T                mark;
-      MIH_C_DROP_ELIGIBILITY_T    drop_eligibility;
-    }                               mark_drop_eligibility;
-  } _union_mark_drop_eligibility;
+    MIH_C_FLOW_ID_T         flow_id;
+    MIH_C_CHOICE_T          choice_multicast_enable;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_MULTICAST_ENABLE_T multicast_enable;
+    } _union_multicast_enable;
+    MIH_C_CHOICE_T          choice_mark_qos;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        struct {
+            MIH_C_MARK_T         mark;
+            MIH_C_QOS_T          qos;
+        }                        mark_qos;
+    } _union_mark_qos;
+    MIH_C_CHOICE_T                      choice_mark_drop_eligibility;
+    union  {
+        MIH_C_NULL_T                    null_attr;
+        struct {
+            MIH_C_MARK_T                mark;
+            MIH_C_DROP_ELIGIBILITY_T    drop_eligibility;
+        }                               mark_drop_eligibility;
+    } _union_mark_drop_eligibility;
 
 } MIH_C_FLOW_ATTRIBUTE_T;
 //-------------------------------------------
@@ -1290,12 +1284,12 @@ typedef struct MIH_C_FLOW_ATTRIBUTE {
 *  LINK_DEACTIVATE_RESOURCES actions are used.
 */
 typedef struct MIH_C_LINK_AC_PARAM {
-  MIH_C_CHOICE_T          choice;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_FLOW_ATTRIBUTE_T   flow_attribute;
-    MIH_C_RESOURCE_DESC_T    resource_desc;
-  } _union;
+    MIH_C_CHOICE_T          choice;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_FLOW_ATTRIBUTE_T   flow_attribute;
+        MIH_C_RESOURCE_DESC_T    resource_desc;
+    } _union;
 } MIH_C_LINK_AC_PARAM_T;
 #endif
 //-------------------------------------------
@@ -1304,10 +1298,10 @@ typedef struct MIH_C_LINK_AC_PARAM {
 * \brief Link action.
 */
 typedef struct MIH_C_LINK_ACTION {
-  MIH_C_LINK_AC_TYPE_T           link_ac_type;
-  MIH_C_LINK_AC_ATTR_T           link_ac_attr;
+    MIH_C_LINK_AC_TYPE_T           link_ac_type;
+    MIH_C_LINK_AC_ATTR_T           link_ac_attr;
 #ifdef MIH_C_MEDIEVAL_EXTENSIONS
-  MIH_C_LINK_AC_PARAM_T          link_ac_param; /*!<  \brief extension of MEDIEVAL PROJECT  */
+    MIH_C_LINK_AC_PARAM_T          link_ac_param; /*!<  \brief extension of MEDIEVAL PROJECT  */
 #endif
 } MIH_C_LINK_ACTION_T;
 //-------------------------------------------
@@ -1317,15 +1311,15 @@ typedef struct MIH_C_LINK_ACTION {
 *        provide PoA address information when the LINK_ACTION contains the attribute for  DATA_FWD_REQ.
 */
 typedef struct MIH_C_LINK_ACTION_REQ {
-  MIH_C_LINK_ID_T              link_id;
-  MIH_C_CHOICE_T               choice;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_LINK_ADDR_T        link_addr;
-  } _union;
+    MIH_C_LINK_ID_T              link_id;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_LINK_ADDR_T        link_addr;
+    } _union;
 
-  MIH_C_LINK_ACTION_T          link_action;
-  MIH_C_LINK_AC_EX_TIME_T      link_action_ex_time;
+    MIH_C_LINK_ACTION_T          link_action;
+    MIH_C_LINK_AC_EX_TIME_T      link_action_ex_time;
 } MIH_C_LINK_ACTION_REQ_T;
 //-------------------------------------------
 /*! \struct  MIH_C_SIG_STRENGTH_T
@@ -1333,11 +1327,11 @@ typedef struct MIH_C_LINK_ACTION_REQ {
 * \brief Represents the signal strength in dBm unit or its relative value in an arbitrary percentage scale.
 */
 typedef struct MIH_C_SIG_STRENGTH {
-  MIH_C_CHOICE_T               choice;
-  union  {
-    INTEGER1(dbm)
-    PERCENTAGE(percentage)
-  } _union;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        INTEGER1(dbm)
+        PERCENTAGE(percentage)
+    } _union;
 } MIH_C_SIG_STRENGTH_T;
 #define MIH_C_SIG_STRENGTH_CHOICE_DBM        (MIH_C_CHOICE_T)0
 #define MIH_C_SIG_STRENGTH_CHOICE_PERCENTAGE (MIH_C_CHOICE_T)1
@@ -1355,9 +1349,9 @@ TYPEDEF_OCTET_STRING(MIH_C_NETWORK_ID, 253)
 *        The PoA belongs to the NETWORK_ID with the given SIG_STRENGTH.
 */
 typedef struct MIH_C_LINK_SCAN_RSP {
-  MIH_C_LINK_ADDR_T            link_addr;
-  MIH_C_NETWORK_ID_T           network_id;
-  MIH_C_SIG_STRENGTH_T         sig_strength;
+    MIH_C_LINK_ADDR_T            link_addr;
+    MIH_C_NETWORK_ID_T           network_id;
+    MIH_C_SIG_STRENGTH_T         sig_strength;
 } MIH_C_LINK_SCAN_RSP_T;
 //-------------------------------------------
 /*! \var MIH_C_LINK_SCAN_RSP_T
@@ -1370,13 +1364,13 @@ TYPEDEF_LIST(MIH_C_LINK_SCAN_RSP, MIH_C_LINK_SCAN_RSP_LENGTH)
 * \brief A set of link action returned results.
 */
 typedef struct MIH_C_LINK_ACTION_RSP {
-  MIH_C_LINK_ID_T              link_id;
-  MIH_C_LINK_AC_RESULT_T       link_ac_result;
-  MIH_C_CHOICE_T               choice;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    LIST(MIH_C_LINK_SCAN_RSP, link_scan_rsp)
-  } _union;
+    MIH_C_LINK_ID_T              link_id;
+    MIH_C_LINK_AC_RESULT_T       link_ac_result;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        LIST(MIH_C_LINK_SCAN_RSP, link_scan_rsp)
+    } _union;
 } MIH_C_LINK_ACTION_RSP_T;
 //-------------------------------------------
 #define MIH_C_BIT_LINK_EVENT_SUBSCRIBE      MIH_C_BIT_1_VALUE
@@ -1438,8 +1432,8 @@ TYPEDEF_UNSIGNED_INT1(MIH_C_THRESHOLD_XDIR)
 *        link parameter passes the threshold in the specified direction.
 */
 typedef struct MIH_C_THRESHOLD {
-  MIH_C_THRESHOLD_VAL_T        threshold_val;
-  MIH_C_THRESHOLD_XDIR_T       threshold_xdir;
+    MIH_C_THRESHOLD_VAL_T        threshold_val;
+    MIH_C_THRESHOLD_XDIR_T       threshold_xdir;
 } MIH_C_THRESHOLD_T;
 //-------------------------------------------
 /*! \var MIH_C_TIMER_INTERVAL_T
@@ -1641,22 +1635,22 @@ TYPEDEF_UNSIGNED_INT1(MIH_C_LINK_PARAM_LTE)
 #define MIH_C_LINK_PARAM_TYPE_CHOICE_LTE    (MIH_C_CHOICE_T)12
 
 typedef struct MIH_C_LINK_PARAM_TYPE {
-  MIH_C_CHOICE_T               choice;
-  union  {
-    MIH_C_LINK_PARAM_GEN_T      link_param_gen;
-    MIH_C_LINK_PARAM_QOS_T      link_param_qos;
-    MIH_C_LINK_PARAM_GG_T       link_param_gg;
-    MIH_C_LINK_PARAM_EDGE_T     link_param_edge;
-    MIH_C_LINK_PARAM_ETH_T      link_param_eth;
-    MIH_C_LINK_PARAM_802_11_T   link_param_802_11;
-    MIH_C_LINK_PARAM_C2K_T      link_param_c2k;
-    MIH_C_LINK_PARAM_FDD_T      link_param_fdd;
-    MIH_C_LINK_PARAM_HRPD_T     link_param_hrpd;
-    MIH_C_LINK_PARAM_802_16_T   link_param_802_16;
-    MIH_C_LINK_PARAM_802_20_T   link_param_802_20;
-    MIH_C_LINK_PARAM_802_22_T   link_param_802_22;
-    MIH_C_LINK_PARAM_LTE_T      link_param_lte;
-  } _union;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_LINK_PARAM_GEN_T      link_param_gen;
+        MIH_C_LINK_PARAM_QOS_T      link_param_qos;
+        MIH_C_LINK_PARAM_GG_T       link_param_gg;
+        MIH_C_LINK_PARAM_EDGE_T     link_param_edge;
+        MIH_C_LINK_PARAM_ETH_T      link_param_eth;
+        MIH_C_LINK_PARAM_802_11_T   link_param_802_11;
+        MIH_C_LINK_PARAM_C2K_T      link_param_c2k;
+        MIH_C_LINK_PARAM_FDD_T      link_param_fdd;
+        MIH_C_LINK_PARAM_HRPD_T     link_param_hrpd;
+        MIH_C_LINK_PARAM_802_16_T   link_param_802_16;
+        MIH_C_LINK_PARAM_802_20_T   link_param_802_20;
+        MIH_C_LINK_PARAM_802_22_T   link_param_802_22;
+        MIH_C_LINK_PARAM_LTE_T      link_param_lte;
+    } _union;
 } MIH_C_LINK_PARAM_TYPE_T;
 //-------------------------------------------
 /*! \var MIH_C_THRESHOLD_LIST_T
@@ -1676,17 +1670,17 @@ TYPEDEF_LIST(MIH_C_THRESHOLD, MIH_C_THRESHOLD_LIST_LENGTH)
 *        the threshold is cancelled as soon as it is crossed for the first time.
 */
 typedef struct MIH_C_LINK_CFG_PARAM {
-  MIH_C_LINK_PARAM_TYPE_T      link_param_type;
-  MIH_C_CHOICE_T               choice;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_TIMER_INTERVAL_T   timer_interval;
+    MIH_C_LINK_PARAM_TYPE_T      link_param_type;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_TIMER_INTERVAL_T   timer_interval;
 #ifdef RAL_SAME_AS_MEDIEVAL_PROJECT_BUT_I_THINK_THIS_IS_AN_ERROR
-    LIST(MIH_C_LINK_SCAN_RSP, link_scan_rsp)
+        LIST(MIH_C_LINK_SCAN_RSP, link_scan_rsp)
 #endif
-  } _union;
-  MIH_C_TH_ACTION_T             th_action;
-  LIST(MIH_C_THRESHOLD, threshold)
+    } _union;
+    MIH_C_TH_ACTION_T             th_action;
+    LIST(MIH_C_THRESHOLD, threshold)
 } MIH_C_LINK_CFG_PARAM_T;
 //-------------------------------------------
 /*! \struct  MIH_C_LINK_CFG_STATUS_T
@@ -1694,9 +1688,9 @@ typedef struct MIH_C_LINK_CFG_PARAM {
 * \brief The status of link parameter configuration for each threshold specified in the THRESHOLD.
 */
 typedef struct MIH_C_LINK_CFG_STATUS {
-  MIH_C_LINK_PARAM_TYPE_T      link_param_type;
-  MIH_C_THRESHOLD_T            threshold;
-  MIH_C_CONFIG_STATUS_T        config_status;
+    MIH_C_LINK_PARAM_TYPE_T      link_param_type;
+    MIH_C_THRESHOLD_T            threshold;
+    MIH_C_CONFIG_STATUS_T        config_status;
 } MIH_C_LINK_CFG_STATUS_T;
 //-------------------------------------------
 #define MIH_C_BIT_NUMBER_OF_CLASSES_OF_SERVICE_SUPPORTED    MIH_C_BIT_0_VALUE
@@ -1730,11 +1724,11 @@ TYPEDEF_UNSIGNED_INT1(MIH_C_NUM_QUEUE)
 * \brief Descriptors of a link.
 */
 typedef struct MIH_C_LINK_DESC_RSP {
-  MIH_C_CHOICE_T               choice;
-  union  {
-    MIH_C_NUM_COS_T          num_cos;
-    MIH_C_NUM_QUEUE_T        num_queue;
-  } _union;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_NUM_COS_T          num_cos;
+        MIH_C_NUM_QUEUE_T        num_queue;
+    } _union;
 } MIH_C_LINK_DESC_RSP_T;
 //-------------------------------------------
 /*! \var MIH_C_LINK_DN_REASON_T
@@ -1819,8 +1813,8 @@ TYPEDEF_UNSIGNED_INT1(MIH_C_COS_ID)
 * \brief A type to represent the minimum packet transfer delay in ms for the specific CoS specified by the COS_ID.
 */
 typedef struct MIH_C_MIN_PK_TX_DELAY {
-  MIH_C_COS_ID_T               cos_id;
-  UNSIGNED_INT2(value)
+    MIH_C_COS_ID_T               cos_id;
+    UNSIGNED_INT2(value)
 } MIH_C_MIN_PK_TX_DELAY_T;
 //-------------------------------------------
 /*! \struct  MIH_C_AVG_PK_TX_DELAY_T
@@ -1828,8 +1822,8 @@ typedef struct MIH_C_MIN_PK_TX_DELAY {
 * \brief A type to represent the average packet transfer delay in ms for the specific CoS specified by the COS_ID.
 */
 typedef struct MIH_C_AVG_PK_TX_DELAY {
-  MIH_C_COS_ID_T               cos_id;
-  UNSIGNED_INT2(value)
+    MIH_C_COS_ID_T               cos_id;
+    UNSIGNED_INT2(value)
 } MIH_C_AVG_PK_TX_DELAY_T;
 //-------------------------------------------
 /*! \struct  MIH_C_MAX_PK_TX_DELAY_T
@@ -1837,8 +1831,8 @@ typedef struct MIH_C_AVG_PK_TX_DELAY {
 * \brief A type to represent the maximum packet transfer delay in ms for the specific CoS specified by the COS_ID.
 */
 typedef struct MIH_C_MAX_PK_TX_DELAY {
-  MIH_C_COS_ID_T               cos_id;
-  UNSIGNED_INT2(value)
+    MIH_C_COS_ID_T               cos_id;
+    UNSIGNED_INT2(value)
 } MIH_C_MAX_PK_TX_DELAY_T;
 //-------------------------------------------
 /*! \struct  MIH_C_PK_DELAY_JITTER_T
@@ -1846,8 +1840,8 @@ typedef struct MIH_C_MAX_PK_TX_DELAY {
 * \brief A type to represent the packet transfer delay jitter in ms for the specific CoS specified by the COS_ID.
 */
 typedef struct MIH_C_PK_DELAY_JITTER {
-  MIH_C_COS_ID_T               cos_id;
-  UNSIGNED_INT2(value)
+    MIH_C_COS_ID_T               cos_id;
+    UNSIGNED_INT2(value)
 } MIH_C_PK_DELAY_JITTER_T;
 //-------------------------------------------
 /*! \struct  MIH_C_PK_LOSS_RATE_T
@@ -1857,8 +1851,8 @@ typedef struct MIH_C_PK_DELAY_JITTER {
 *        ber of packets lost and the total number of packets transmitted in the class population of interest.
 */
 typedef struct MIH_C_PK_LOSS_RATE {
-  MIH_C_COS_ID_T               cos_id;
-  UNSIGNED_INT2(value)
+    MIH_C_COS_ID_T               cos_id;
+    UNSIGNED_INT2(value)
 } MIH_C_PK_LOSS_RATE_T;
 //-------------------------------------------
 /*! \var MIH_C_MIN_PK_TX_DELAY_LIST_T
@@ -1894,15 +1888,15 @@ TYPEDEF_UNSIGNED_INT1(MIH_C_NUM_COS_TYPES)
 * \brief A choice of Class of Service (CoS) parameters.
 */
 typedef struct MIH_C_QOS_PARAM_VAL {
-  MIH_C_CHOICE_T               choice;
-  union  {
-    MIH_C_NUM_COS_TYPES_T    num_qos_types;
-    LIST(MIH_C_MIN_PK_TX_DELAY, min_pk_tx_delay)
-    LIST(MIH_C_AVG_PK_TX_DELAY, avg_pk_tx_delay)
-    LIST(MIH_C_MAX_PK_TX_DELAY, max_pk_tx_delay)
-    LIST(MIH_C_PK_DELAY_JITTER, pk_delay_jitter)
-    LIST(MIH_C_PK_LOSS_RATE,    pk_loss_rate)
-  } _union;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_NUM_COS_TYPES_T    num_qos_types;
+        LIST(MIH_C_MIN_PK_TX_DELAY, min_pk_tx_delay)
+        LIST(MIH_C_AVG_PK_TX_DELAY, avg_pk_tx_delay)
+        LIST(MIH_C_MAX_PK_TX_DELAY, max_pk_tx_delay)
+        LIST(MIH_C_PK_DELAY_JITTER, pk_delay_jitter)
+        LIST(MIH_C_PK_LOSS_RATE,    pk_loss_rate)
+    } _union;
 } MIH_C_QOS_PARAM_VAL_T;
 #define MIH_C_QOS_PARAM_VAL_CHOICE_NUM_QOS_TYPES    (MIH_C_CHOICE_T)0
 #define MIH_C_QOS_PARAM_VAL_CHOICE_MIN_PK_TX_DELAY  (MIH_C_CHOICE_T)1
@@ -1917,12 +1911,12 @@ typedef struct MIH_C_QOS_PARAM_VAL {
 * \brief A list of Class of Service (CoS) parameters.
 */
 typedef struct MIH_C_QOS_LIST {
-  MIH_C_NUM_COS_TYPES_T              num_qos_types;
-  LIST(MIH_C_MIN_PK_TX_DELAY, min_pk_tx_delay)
-  LIST(MIH_C_AVG_PK_TX_DELAY, avg_pk_tx_delay)
-  LIST(MIH_C_MAX_PK_TX_DELAY, max_pk_tx_delay)
-  LIST(MIH_C_PK_DELAY_JITTER, pk_delay_jitter)
-  LIST(MIH_C_PK_LOSS_RATE,    pk_loss_rate)
+    MIH_C_NUM_COS_TYPES_T              num_qos_types;
+    LIST(MIH_C_MIN_PK_TX_DELAY, min_pk_tx_delay)
+    LIST(MIH_C_AVG_PK_TX_DELAY, avg_pk_tx_delay)
+    LIST(MIH_C_MAX_PK_TX_DELAY, max_pk_tx_delay)
+    LIST(MIH_C_PK_DELAY_JITTER, pk_delay_jitter)
+    LIST(MIH_C_PK_LOSS_RATE,    pk_loss_rate)
 } MIH_C_QOS_LIST_T;
 
 
@@ -1933,12 +1927,12 @@ typedef struct MIH_C_QOS_LIST {
 * \brief Represents a link parameter type and value pair.
 */
 typedef struct MIH_C_LINK_PARAM {
-  MIH_C_LINK_PARAM_TYPE_T      link_param_type;
-  MIH_C_CHOICE_T               choice;
-  union  {
-    MIH_C_LINK_PARAM_VAL_T   link_param_val;
-    MIH_C_QOS_PARAM_VAL_T    qos_param_val;
-  } _union;
+    MIH_C_LINK_PARAM_TYPE_T      link_param_type;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_LINK_PARAM_VAL_T   link_param_val;
+        MIH_C_QOS_PARAM_VAL_T    qos_param_val;
+    } _union;
 } MIH_C_LINK_PARAM_T;
 #define MIH_C_LINK_PARAM_CHOICE_LINK_PARAM_VAL (MIH_C_CHOICE_T)0
 #define MIH_C_LINK_PARAM_CHOICE_QOS_PARAM_VAL  (MIH_C_CHOICE_T)1
@@ -1950,12 +1944,12 @@ typedef struct MIH_C_LINK_PARAM {
 *        If no THRESHOLD is included, then this is a periodic report.
 */
 typedef struct MIH_C_LINK_PARAM_RPT {
-  MIH_C_LINK_PARAM_T           link_param;
-  MIH_C_CHOICE_T               choice;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_THRESHOLD_T        threshold;
-  } _union;
+    MIH_C_LINK_PARAM_T           link_param;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_THRESHOLD_T        threshold;
+    } _union;
 } MIH_C_LINK_PARAM_RPT_T;
 #define MIH_C_LINK_PARAM_RPT_CHOICE_NULL      0
 #define MIH_C_LINK_PARAM_RPT_CHOICE_THRESHOLD 1
@@ -1970,8 +1964,8 @@ TYPEDEF_LIST(MIH_C_LINK_ADDR, MIH_C_LINK_ADDR_LIST_LENGTH)
 *        link addresses and is sorted from most preferred first to least preferred last.
 */
 typedef struct MIH_C_LINK_POA_LIST {
-  MIH_C_LINK_ID_T              link_id;
-  LIST(MIH_C_LINK_ADDR, link_addr)
+    MIH_C_LINK_ID_T              link_id;
+    LIST(MIH_C_LINK_ADDR, link_addr)
 } MIH_C_LINK_POA_LIST_T;
 //-------------------------------------------
 #define MIH_C_LINK_RES_STATUS_AVAILABLE          MIH_C_MIH_C_BOOLEAN_TRUE
@@ -2012,11 +2006,11 @@ TYPEDEF_UNSIGNED_INT1(MIH_C_OPMODE)
 * \brief The operation mode or the channel ID of the link.
 */
 typedef struct MIH_C_LINK_STATES_RSP {
-  MIH_C_CHOICE_T               choice;
-  union  {
-    MIH_C_OPMODE_T           op_mode;
-    MIH_C_CHANNEL_ID_T       channel_id;
-  } _union;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_OPMODE_T           op_mode;
+        MIH_C_CHANNEL_ID_T       channel_id;
+    } _union;
 } MIH_C_LINK_STATES_RSP_T;
 //-------------------------------------------
 /*! \var MIH_C_LINK_PARAM_TYPE_LIST_T
@@ -2028,9 +2022,9 @@ TYPEDEF_LIST(MIH_C_LINK_PARAM_TYPE, MIH_C_LINK_STATUS_REQ_LIST_LENGTH)
 * \brief Represents the possible information to request from a link.
 */
 typedef struct MIH_C_LINK_STATUS_REQ {
-  MIH_C_LINK_STATES_REQ_T      link_states_req;
-  LIST(MIH_C_LINK_PARAM_TYPE, link_param_type)
-  MIH_C_LINK_DESC_RSP_T        link_desc_rsp;
+    MIH_C_LINK_STATES_REQ_T      link_states_req;
+    LIST(MIH_C_LINK_PARAM_TYPE, link_param_type)
+    MIH_C_LINK_DESC_RSP_T        link_desc_rsp;
 } MIH_C_LINK_STATUS_REQ_T;
 //-------------------------------------------
 /*! \var MIH_C_LINK_STATES_RSP_LIST_T
@@ -2050,9 +2044,9 @@ TYPEDEF_LIST(MIH_C_LINK_DESC_RSP, MIH_C_LINK_STATUS_REQ_LIST_LENGTH)
 * \brief A set of link status parameter values correspond to the LINK_STATUS_REQ.
 */
 typedef struct MIH_C_LINK_STATUS_RSP {
-  LIST(MIH_C_LINK_STATES_RSP,  link_states_rsp)
-  LIST(MIH_C_LINK_PARAM,       link_param)
-  LIST(MIH_C_LINK_DESC_RSP,    link_desc_rsp)
+    LIST(MIH_C_LINK_STATES_RSP,  link_states_rsp)
+    LIST(MIH_C_LINK_PARAM,       link_param)
+    LIST(MIH_C_LINK_DESC_RSP,    link_desc_rsp)
 } MIH_C_LINK_STATUS_RSP_T;
 //-------------------------------------------
 /*! \struct  MIH_C_LINK_TUPLE_ID_T
@@ -2061,12 +2055,12 @@ typedef struct MIH_C_LINK_STATUS_RSP {
 *        The optional LINK_ADDR contains a link address of PoA.
 */
 typedef struct MIH_C_LINK_TUPLE_ID {
-  MIH_C_LINK_ID_T              link_id;
-  MIH_C_CHOICE_T               choice;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_LINK_ADDR_T        link_addr;
-  } _union;
+    MIH_C_LINK_ID_T              link_id;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_LINK_ADDR_T        link_addr;
+    } _union;
 } MIH_C_LINK_TUPLE_ID_T;
 #define MIH_C_LINK_TUPLE_ID_CHOICE_NULL      0
 #define MIH_C_LINK_TUPLE_ID_CHOICE_LINK_ADDR 1
@@ -2218,8 +2212,8 @@ TYPEDEF_BOOLEAN(MIH_C_IP_RENEWAL_FLAG)
 *         belongs.
 */
 typedef struct MIH_C_IP_SUBNET_INFO {
-  MIH_C_IP_PREFIX_LEN_T              ip_prefix_len;
-  MIH_C_IP_ADDR_T                    ip_addr;
+    MIH_C_IP_PREFIX_LEN_T              ip_prefix_len;
+    MIH_C_IP_ADDR_T                    ip_addr;
 } MIH_C_IP_SUBNET_INFO_T;
 
 
@@ -2277,8 +2271,8 @@ TYPEDEF_BITMAP256(MIH_C_UP_BP)
 * \brief Burst profile.
 */
 typedef struct MIH_C_BURST_PROF {
-  MIH_C_DOWN_BP_T              down_bp;
-  MIH_C_UP_BP_T                up_bp;
+    MIH_C_DOWN_BP_T              down_bp;
+    MIH_C_UP_BP_T                up_bp;
 } MIH_C_BURST_PROF_T;
 //-------------------------------------------
 /*! \struct  MIH_C_CH_RANGE_T
@@ -2290,8 +2284,8 @@ typedef struct MIH_C_BURST_PROF {
 *        than or equal to the second unsigned integer.
 */
 typedef struct MIH_C_CH_RANGE {
-  UNSIGNED_INT4(low_range);
-  UNSIGNED_INT4(high_range);
+    UNSIGNED_INT4(low_range);
+    UNSIGNED_INT4(high_range);
 } MIH_C_CH_RANGE_T;
 //-------------------------------------------
 #define MIH_C_COST_UNIT_SECOND    0
@@ -2331,8 +2325,8 @@ TYPEDEF_UNSIGNED_INT1(MIH_C_COST_UNIT)
 *             zero and the fraction part is 500.
 */
 typedef struct MIH_C_COST_VALUE {
-  UNSIGNED_INT4(cost_integer_part);
-  UNSIGNED_INT2(cost_fraction_part);
+    UNSIGNED_INT4(cost_integer_part);
+    UNSIGNED_INT2(cost_fraction_part);
 } MIH_C_COST_VALUE_T;
 //-------------------------------------------
 /*! \var  MIH_C_COST_CURR_T
@@ -2348,9 +2342,9 @@ TYPEDEF_OCTET_STRING(MIH_C_COST_CURR, 3)
 * \brief A type to represent a cost.
 */
 typedef struct MIH_C_COST {
-  MIH_C_COST_UNIT_T              cost_unit;
-  MIH_C_COST_VALUE_T             cost_value;
-  MIH_C_COST_CURR_T              cost_curr;
+    MIH_C_COST_UNIT_T              cost_unit;
+    MIH_C_COST_VALUE_T             cost_value;
+    MIH_C_COST_CURR_T              cost_curr;
 } MIH_C_COST_T;
 //-------------------------------------------
 /*! \var MIH_C_CNTRY_CODE_T
@@ -2384,9 +2378,10 @@ TYPEDEF_INTEGER4(MIH_C_EIRP)
 *        The UNSIGNED_INT(2) is used for the TTG - transmit/receive transition gap.
 *        The UNSIGNED_INT(1) is used for the RTG - receive/transmit transition gap.
 */
-typedef struct MIH_C_GAP {
-  UNSIGNED_INT2(ttg);
-  UNSIGNED_INT1(rtg);
+typedef struct MIH_C_GAP
+ {
+    UNSIGNED_INT2(ttg);
+    UNSIGNED_INT1(rtg);
 } MIH_C_GAP_T;
 //-------------------------------------------
 /*! \var MIH_C_HO_CODE_T
@@ -2408,8 +2403,8 @@ TYPEDEF_INTEGER1(MIH_C_INIT_CODE)
 * \brief A set of CDMA ranging codes.
 */
 typedef struct MIH_C_CDMA_CODES {
-  MIH_C_INIT_CODE_T            init_code;
-  MIH_C_HO_CODE_T              ho_code;
+    MIH_C_INIT_CODE_T            init_code;
+    MIH_C_HO_CODE_T              ho_code;
 } MIH_C_CDMA_CODES_T;
 //-------------------------------------------
 /*! \struct  MIH_C_DCD_UCD_T
@@ -2417,13 +2412,13 @@ typedef struct MIH_C_CDMA_CODES {
 * \brief A type to represent the downlink channel descriptor and the uplink channel descriptor.
 */
 typedef struct MIH_C_DCD_UCD {
-  MIH_C_BASE_ID_T          base_id;
-  MIH_C_BANDWIDTH_T        bandwidth;
-  MIH_C_DU_CTR_FREQ_T      du_ctr_freq;
-  MIH_C_EIRP_T             eirp;
-  MIH_C_GAP_T              gap;
-  MIH_C_BURST_PROF_T       burst_prof;
-  MIH_C_CDMA_CODES_T       cdma_codes;
+    MIH_C_BASE_ID_T          base_id;
+    MIH_C_BANDWIDTH_T        bandwidth;
+    MIH_C_DU_CTR_FREQ_T      du_ctr_freq;
+    MIH_C_EIRP_T             eirp;
+    MIH_C_GAP_T              gap;
+    MIH_C_BURST_PROF_T       burst_prof;
+    MIH_C_CDMA_CODES_T       cdma_codes;
 } MIH_C_DCD_UCD_T;
 //-------------------------------------------
 /*! \var  MIH_C_FQDN_T
@@ -2479,23 +2474,24 @@ typedef MIH_C_IP_ADDR_T MIH_C_ACC_RTR_T;
 * \ingroup MIH_C_F13_DATA_TYPES_FOR_INFORMATION_ELEMENTS
 * \brief IP Configuration Methods supported by the access network.
 */
-typedef struct MIH_C_IP_CONFIG {
-  MIH_C_IP_CFG_MTHDS_T         ip_cfg_mthds;
-  MIH_C_CHOICE_T               choice_dhcp_serv;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_DHCP_SERV_T        dhcp_serv;
-  } _union_dhcp_serv;
-  MIH_C_CHOICE_T               choice_fn_agnt;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_FN_AGNT_T          fn_agnt;
-  } _union_fn_agnt;
-  MIH_C_CHOICE_T               choice_acc_rtr;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_ACC_RTR_T          acc_rtr;
-  } _union_acc_rtr;
+typedef struct MIH_C_IP_CONFIG
+ {
+    MIH_C_IP_CFG_MTHDS_T         ip_cfg_mthds;
+    MIH_C_CHOICE_T               choice_dhcp_serv;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_DHCP_SERV_T        dhcp_serv;
+    } _union_dhcp_serv;
+    MIH_C_CHOICE_T               choice_fn_agnt;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_FN_AGNT_T          fn_agnt;
+    } _union_fn_agnt;
+    MIH_C_CHOICE_T               choice_acc_rtr;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_ACC_RTR_T          acc_rtr;
+    } _union_acc_rtr;
 } MIH_C_IP_CONFIG_T;
 //-------------------------------------------
 #define MIH_C_BIT_NET_CAPS_SECURITY                MIH_C_BIT_0_VALUE
@@ -2539,22 +2535,23 @@ TYPEDEF_BITMAP64(MIH_C_SUBTYPE)
 * \brief A type to represent a network type and its subtype.
 *        See Table F.14 for details.
 */
-typedef struct MIH_C_NETWORK_TYPE {
-  MIH_C_CHOICE_T               choice_link_type;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_LINK_TYPE_T        link_type;
-  } _union_link_type;
-  MIH_C_CHOICE_T               choice_subtype;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_SUBTYPE_T          subtype;
-  } _union_subtype;
-  MIH_C_CHOICE_T               choice_type_ext;
-  union  {
-    MIH_C_NULL_T             null_attr;
-    MIH_C_TYPE_EXT_T         type_ext;
-  } _union_type_ext;
+typedef struct MIH_C_NETWORK_TYPE
+ {
+    MIH_C_CHOICE_T               choice_link_type;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_LINK_TYPE_T        link_type;
+    } _union_link_type;
+    MIH_C_CHOICE_T               choice_subtype;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_SUBTYPE_T          subtype;
+    } _union_subtype;
+    MIH_C_CHOICE_T               choice_type_ext;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_TYPE_EXT_T         type_ext;
+    } _union_type_ext;
 } MIH_C_NETWORK_TYPE_T;
 //-------------------------------------------
 /*! \var  MIH_C_OP_NAME_T
@@ -2584,8 +2581,8 @@ TYPEDEF_UNSIGNED_INT1(MIH_C_OP_NAMESPACE)
 * \brief A type to represent an operator identifier.
 */
 typedef struct MIH_C_OPERATOR_ID {
-  MIH_C_OP_NAME_T               opname;
-  MIH_C_OP_NAMESPACE_T          opnamespace;
+    MIH_C_OP_NAME_T               opname;
+    MIH_C_OP_NAMESPACE_T          opnamespace;
 } MIH_C_OPERATOR_ID_T;
 //-------------------------------------------
 /*! \struct  MIH_C_SIB_T
@@ -2593,8 +2590,8 @@ typedef struct MIH_C_OPERATOR_ID {
 * \brief A type to represent UMTS system information block (SIB).
 */
 typedef struct MIH_C_SIB {
-  MIH_C_CELL_ID_T               cell_id;
-  MIH_C_FQ_CODE_NUM_T           fq_code_num;
+    MIH_C_CELL_ID_T               cell_id;
+    MIH_C_FQ_CODE_NUM_T           fq_code_num;
 } MIH_C_SIB_T;
 //-------------------------------------------
 /*! \var MIH_C_PILOT_PN_T
@@ -2608,10 +2605,10 @@ TYPEDEF_INTEGER2(MIH_C_PILOT_PN)
 * \brief CDMA2000 system parameters.
 */
 typedef struct MIH_C_SYS_PARAMS {
-  MIH_C_BASE_ID_T               base_id;
-  MIH_C_PILOT_PN_T              pilot_pn;
-  MIH_C_FREQ_ID_T               freq_id;
-  MIH_C_BAND_CLASS_T            band_class;
+    MIH_C_BASE_ID_T               base_id;
+    MIH_C_PILOT_PN_T              pilot_pn;
+    MIH_C_FREQ_ID_T               freq_id;
+    MIH_C_BAND_CLASS_T            band_class;
 } MIH_C_SYS_PARAMS_T;
 //-------------------------------------------
 /*! \struct  MIH_C_MIH_C_PARAMETERS_T
@@ -2622,12 +2619,12 @@ typedef struct MIH_C_SYS_PARAMS {
 *        SYS_PARAMS: cdma2000
 */
 typedef struct MIH_C_PARAMETERS {
-  MIH_C_CHOICE_T               choice;
-  union  {
-    MIH_C_DCD_UCD_T          dcd_ucd;
-    MIH_C_SIB_T              sib;
-    MIH_C_SYS_PARAMS_T       sys_params;
-  } _union;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_DCD_UCD_T          dcd_ucd;
+        MIH_C_SIB_T              sib;
+        MIH_C_SYS_PARAMS_T       sys_params;
+    } _union;
 } MIH_C_MIH_C_PARAMETERS_T;
 //-------------------------------------------
 /*! \struct  MIH_C_PROXY_ADDR_T
@@ -2635,12 +2632,12 @@ typedef struct MIH_C_PARAMETERS {
 * \brief L3 address of a proxy server.
 */
 typedef struct MIH_C_PROXY_ADDR {
-  MIH_C_CHOICE_T               choice;
-  union  {
-    MIH_C_IP4_ADDR_T         ip4_addr;
-    MIH_C_IP6_ADDR_T         ip6_addr;
-    MIH_C_FQDN_T             fqdn;
-  } _union;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_IP4_ADDR_T         ip4_addr;
+        MIH_C_IP6_ADDR_T         ip6_addr;
+        MIH_C_FQDN_T             fqdn;
+    } _union;
 } MIH_C_PROXY_ADDR_T;
 //-------------------------------------------
 // TBD REGU_DOMAIN
@@ -2699,21 +2696,21 @@ TYPEDEF_OCTET_STRING(MIH_C_MIHF_ID, 253)
 * \brief A data type for configuring link detected event trigger.
 */
 typedef struct MIH_C_LINK_DET_CFG  {
-  MIH_C_CHOICE_T                choice_network_id;
-  union  {
-    MIH_C_NULL_T              null_attr;
-    MIH_C_NETWORK_ID_T        network_id;
-  } _union_network_id;
-  MIH_C_CHOICE_T                choice_sig_strength;
-  union  {
-    MIH_C_NULL_T              null_attr;
-    MIH_C_SIG_STRENGTH_T      sig_strength;
-  } _union_sig_strength;
-  MIH_C_CHOICE_T                choice_link_data_rate;
-  union  {
-    MIH_C_NULL_T              null_attr;
-    MIH_C_LINK_DATA_RATE_T    link_data_rate;
-  } _union_link_data_rate;
+    MIH_C_CHOICE_T                choice_network_id;
+    union  {
+        MIH_C_NULL_T              null_attr;
+        MIH_C_NETWORK_ID_T        network_id;
+    } _union_network_id;
+    MIH_C_CHOICE_T                choice_sig_strength;
+    union  {
+        MIH_C_NULL_T              null_attr;
+        MIH_C_SIG_STRENGTH_T      sig_strength;
+    } _union_sig_strength;
+    MIH_C_CHOICE_T                choice_link_data_rate;
+    union  {
+        MIH_C_NULL_T              null_attr;
+        MIH_C_LINK_DATA_RATE_T    link_data_rate;
+    } _union_link_data_rate;
 } MIH_C_LINK_DET_CFG_T;
 //-------------------------------------------
 /*! \struct  MIH_C_EVT_CFG_INFO_T
@@ -2726,11 +2723,11 @@ typedef struct MIH_C_LINK_DET_CFG  {
 *        events.
 */
 typedef struct MIH_C_EVT_CFG_INFO {
-  MIH_C_CHOICE_T                choice;
-  union  {
-    MIH_C_LINK_DET_CFG_T      link_det_cfg;
-    MIH_C_LINK_CFG_PARAM_T    link_cfg_param;
-  } _union;
+    MIH_C_CHOICE_T                choice;
+    union  {
+        MIH_C_LINK_DET_CFG_T      link_det_cfg;
+        MIH_C_LINK_CFG_PARAM_T    link_cfg_param;
+    } _union;
 } MIH_C_EVT_CFG_INFO_T;
 //-------------------------------------------
 /*! \struct  MIH_C_LINK_DET_INFO_T
@@ -2745,14 +2742,14 @@ typedef struct MIH_C_EVT_CFG_INFO {
 *        NET_CAPS is the network capability supported by the network link.
 */
 typedef struct MIH_C_LINK_DET_INFO {
-  MIH_C_LINK_TUPLE_ID_T         link_tuple_id;
-  MIH_C_NETWORK_ID_T            network_id;
-  MIH_C_NET_AUX_ID_T            net_aux_id;
-  MIH_C_SIG_STRENGTH_T          sig_strength;
-  UNSIGNED_INT2(sinr)
-  MIH_C_LINK_DATA_RATE_T        link_data_rate;
-  MIH_C_LINK_MIHCAP_FLAG_T      link_mihcap_flag;
-  MIH_C_NET_CAPS_T              net_caps;
+    MIH_C_LINK_TUPLE_ID_T         link_tuple_id;
+    MIH_C_NETWORK_ID_T            network_id;
+    MIH_C_NET_AUX_ID_T            net_aux_id;
+    MIH_C_SIG_STRENGTH_T          sig_strength;
+    UNSIGNED_INT2(sinr)
+    MIH_C_LINK_DATA_RATE_T        link_data_rate;
+    MIH_C_LINK_MIHCAP_FLAG_T      link_mihcap_flag;
+    MIH_C_NET_CAPS_T              net_caps;
 } MIH_C_LINK_DET_INFO_T;
 //-------------------------------------------
 /*! \struct  MIH_C_MBB_HO_SUPP_T
@@ -2762,9 +2759,9 @@ typedef struct MIH_C_LINK_DET_INFO {
 *        False: Make before break is not supported.
 */
 typedef struct MIH_C_MBB_HO_SUPP {
-  MIH_C_NETWORK_TYPE_T          from;
-  MIH_C_NETWORK_TYPE_T          to;
-  BOOLEAN(supported)
+    MIH_C_NETWORK_TYPE_T          from;
+    MIH_C_NETWORK_TYPE_T          to;
+    BOOLEAN(supported)
 } MIH_C_MBB_HO_SUPP_T;
 //-------------------------------------------
 #define MIH_C_BIT_MIH_CMD_MIH_LINK_GET_PARAMETERS       MIH_C_BIT_0_VALUE
@@ -2902,8 +2899,8 @@ TYPEDEF_BITMAP16(MIH_C_MIH_TRANS_LST)
 * \brief Represent a link address of a specific network type.
 */
 typedef struct MIH_C_NET_TYPE_ADDR {
-  MIH_C_NETWORK_TYPE_T          network_type;
-  MIH_C_LINK_ADDR_T             link_addr;
+    MIH_C_NETWORK_TYPE_T          network_type;
+    MIH_C_LINK_ADDR_T             link_addr;
 } MIH_C_NET_TYPE_ADDR_T;
 //-------------------------------------------
 /** @}*/
