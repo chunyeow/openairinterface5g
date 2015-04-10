@@ -194,7 +194,7 @@ void dump_dlsch_SI(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe)
   exit(-1);
 }
 
-#if defined(EXMIMO) || defined(USRP)
+#if defined(EXMIMO) || defined(OAI_USRP)
 unsigned int prach_gain_table[31] = {100,112,126,141,158,178,200,224,251,282,316,359,398,447,501,562,631,708,794,891,1000,1122,1258,1412,1585,1778,1995,2239,2512,2818,3162};
 
 unsigned int get_tx_amp(int power_dBm, int power_max_dBm)
