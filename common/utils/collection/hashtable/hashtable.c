@@ -30,12 +30,13 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
 #include "hashtable.h"
 #include "assertions.h"
 
 
 //-------------------------------------------------------------------------------------------------------------------------------
-char* hashtble_rc_code2string(hashtable_rc_t rcP)
+char* hashtable_rc_code2string(hashtable_rc_t rcP)
 //-------------------------------------------------------------------------------------------------------------------------------
 {
     switch (rcP) {
@@ -74,7 +75,7 @@ static hash_size_t def_hashfunc(const uint64_t keyP)
  * The user can also specify a hash function. If the hashfunc argument is NULL, a default hash function is used.
  * If an error occurred, NULL is returned. All other values in the returned hash_table_t pointer should be released with hashtable_destroy().
  */
-hash_table_t *hashtable_create(hash_size_t sizeP, hash_size_t (*hashfuncP)(const hash_key_t ), void (*freefuncP)(void*))
+hash_table_t *hashtable_create(const hash_size_t sizeP, hash_size_t (*hashfuncP)(const hash_key_t ), void (*freefuncP)(void*))
 {
     hash_table_t *hashtbl = NULL;
 
@@ -102,7 +103,7 @@ hash_table_t *hashtable_create(hash_size_t sizeP, hash_size_t (*hashfuncP)(const
  * Cleanup
  * The hashtable_destroy() walks through the linked lists for each possible hash value, and releases the elements. It also releases the nodes array and the hash_table_t.
  */
-hashtable_rc_t hashtable_destroy(hash_table_t *hashtblP)
+hashtable_rc_t hashtable_destroy(hash_table_t * const hashtblP)
 {
     hash_size_t n;
     hash_node_t *node, *oldnode;
@@ -127,7 +128,7 @@ hashtable_rc_t hashtable_destroy(hash_table_t *hashtblP)
     return HASH_TABLE_OK;
 }
 //-------------------------------------------------------------------------------------------------------------------------------
-hashtable_rc_t hashtable_is_key_exists (hash_table_t *hashtblP, const hash_key_t keyP)
+hashtable_rc_t hashtable_is_key_exists (const hash_table_t * const hashtblP, const hash_key_t keyP)
 //-------------------------------------------------------------------------------------------------------------------------------
 {
     hash_node_t *node = NULL;
@@ -148,7 +149,7 @@ hashtable_rc_t hashtable_is_key_exists (hash_table_t *hashtblP, const hash_key_t
     return HASH_TABLE_KEY_NOT_EXISTS;
 }
 //-------------------------------------------------------------------------------------------------------------------------------
-hashtable_rc_t hashtable_apply_funct_on_elements (hash_table_t *hashtblP, void functP(hash_key_t keyP, void* dataP, void* parameterP), void* parameterP)
+hashtable_rc_t hashtable_apply_funct_on_elements (hash_table_t *const hashtblP, void functP(hash_key_t keyP, void* dataP, void* parameterP), void* parameterP)
 //-------------------------------------------------------------------------------------------------------------------------------
 {
     hash_node_t  *node         = NULL;
@@ -171,11 +172,43 @@ hashtable_rc_t hashtable_apply_funct_on_elements (hash_table_t *hashtblP, void f
     return HASH_TABLE_OK;
 }
 //-------------------------------------------------------------------------------------------------------------------------------
+hashtable_rc_t hashtable_dump_content (const hash_table_t * const hashtblP, char * const buffer_pP, int * const remaining_bytes_in_buffer_pP )
+//-------------------------------------------------------------------------------------------------------------------------------
+{
+    hash_node_t  *node         = NULL;
+    unsigned int  i            = 0;
+    unsigned int  num_elements = 0;
+    if (hashtblP == NULL) {
+        *remaining_bytes_in_buffer_pP = snprintf(
+                buffer_pP,
+                *remaining_bytes_in_buffer_pP,
+                "HASH_TABLE_BAD_PARAMETER_HASHTABLE");
+        return HASH_TABLE_BAD_PARAMETER_HASHTABLE;
+    }
+    while ((i < hashtblP->size) && (*remaining_bytes_in_buffer_pP > 0)) {
+        if (hashtblP->nodes[i] != NULL) {
+            node=hashtblP->nodes[i];
+            while(node) {
+                *remaining_bytes_in_buffer_pP = snprintf(
+                                buffer_pP,
+                                *remaining_bytes_in_buffer_pP,
+                                "Key 0x%"PRIx64" Element %p\n",
+                                node->key,
+                                node->data);
+                node=node->next;
+            }
+        }
+        i += 1;
+    }
+    return HASH_TABLE_OK;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------
 /*
  * Adding a new element
  * To make sure the hash value is not bigger than size, the result of the user provided hash function is used modulo size.
  */
-hashtable_rc_t hashtable_insert(hash_table_t *hashtblP, const hash_key_t keyP, void *dataP)
+hashtable_rc_t hashtable_insert(hash_table_t * const hashtblP, const hash_key_t keyP, void *dataP)
 {
     hash_node_t *node = NULL;
     hash_size_t  hash = 0;
@@ -212,7 +245,7 @@ hashtable_rc_t hashtable_insert(hash_table_t *hashtblP, const hash_key_t keyP, v
  * To remove an element from the hash table, we just search for it in the linked list for that hash value,
  * and remove it if it is found. If it was not found, it is an error and -1 is returned.
  */
-hashtable_rc_t hashtable_remove(hash_table_t *hashtblP, const hash_key_t keyP)
+hashtable_rc_t hashtable_remove(hash_table_t * const hashtblP, const hash_key_t keyP)
 {
     hash_node_t *node, *prevnode=NULL;
     hash_size_t  hash = 0;
@@ -243,7 +276,7 @@ hashtable_rc_t hashtable_remove(hash_table_t *hashtblP, const hash_key_t keyP)
  * Searching for an element is easy. We just search through the linked list for the corresponding hash value.
  * NULL is returned if we didn't find it.
  */
-hashtable_rc_t hashtable_get(hash_table_t *hashtblP, const hash_key_t keyP, void** dataP)
+hashtable_rc_t hashtable_get(const hash_table_t * const hashtblP, const hash_key_t keyP, void** dataP)
 {
     hash_node_t *node = NULL;
     hash_size_t  hash = 0;
@@ -279,7 +312,7 @@ hashtable_rc_t hashtable_get(hash_table_t *hashtblP, const hash_key_t keyP, void
  * After that, we can just free the old table and copy the elements from newtbl to hashtbl.
  */
 
-hashtable_rc_t hashtable_resize(hash_table_t *hashtblP, hash_size_t sizeP)
+hashtable_rc_t hashtable_resize(hash_table_t * const hashtblP, const hash_size_t sizeP)
 {
     hash_table_t       newtbl;
     hash_size_t        n;

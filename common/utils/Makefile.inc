@@ -4,14 +4,15 @@ CCC=gcc
 linux := $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
 
 
-#CFLAGS += -std=gnu99 
-CFLAGS += -Wall -g -ggdb -Wstrict-prototypes -fno-strict-aliasing  -rdynamic
+CFLAGS += -std=gnu99 
+#CFLAGS += -Wall -g -ggdb -Wstrict-prototypes -fno-strict-aliasing 
 
 # Need to force this option because default kernel module builder is wrong
 CFLAGS += $(call cc-option,-mpreferred-stack-boundary=4)
 
 #For performance, if some option doesn't exist in all gcc versions, use $(call cc-option,MY_OPTION)
-CFLAGS += -O2 -funroll-loops 
+CFLAGS += -O2
+CFLAGS +=  -funroll-loops 
 CFLAGS += -Wno-packed-bitfield-compat 
 
 # This is the minimum CPU faetures for OAI
@@ -46,7 +47,7 @@ HASHTABLE_DIR = $(COMMON_UTILS_DIR)/collection/hashtable
 HASHTABLE_OBJS =  $(HASHTABLE_DIR)/hashtable.o
 HASHTABLE_OBJS += $(HASHTABLE_DIR)/obj_hashtable.o
 
-UTILS_OBJS = $(ITTI_OBJS) $(HASHTABLE_OBJS) 
+UTILS_OBJS = $(ITTI_OBJS) $(HASHTABLE_OBJS)  $(COMMON_UTILS_DIR)/backtrace.o
 
 UTILS_incl = 				\
     -I$(COMMON_UTILS_DIR)   \

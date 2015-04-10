@@ -32,6 +32,13 @@
 #include <stdarg.h>
 
 typedef enum {
+    MSC_E_UTRAN = 0,
+    MSC_EPC,
+    MAX_MSC_ENV
+} msc_env_t;
+
+
+typedef enum {
     MIN_MSC_PROTOS = 0,
     MSC_NAS_UE = MIN_MSC_PROTOS,
     MSC_RRC_UE,
@@ -48,11 +55,16 @@ typedef enum {
     MSC_GTPU_ENB,
     MSC_GTPU_SGW,
     MSC_S1AP_MME,
+    MSC_MMEAPP_MME,
     MSC_NAS_MME,
+    MSC_NAS_EMM_MME,
+    MSC_NAS_ESM_MME,
     MSC_S6A_MME,
     MSC_HSS,
     MAX_MSC_PROTOS,
 } msc_proto_t;
+
+
 
 // Access stratum
 #define MSC_AS_TIME_FMT "%05u:%02u"
@@ -61,7 +73,7 @@ typedef enum {
     (CTXT_Pp)->frame, \
     (CTXT_Pp)->subframe
 
-int msc_init(void);
+int msc_init(msc_env_t envP);
 void msc_end(void);
 void msc_log_declare_proto(const msc_proto_t  protoP);
 void msc_log_event(const msc_proto_t  protoP,char *format, ...);
