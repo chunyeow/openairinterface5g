@@ -207,16 +207,16 @@ function main()
       echo "Cleaning EPC"
     fi
     rm -Rf build 2>&1
-    rm -Rf $OPENAIR_TARGETS/CMAKE/EPC/MME_GW/build  2>&1
-    rm -f /usr/local/etc/freeDiameter/mme*    2>&1
-    rm -f /usr/local/etc/freeDiameter/epc*    2>&1
-    rm -f /usr/etc/freeDiameter/mme*    2>&1
-    rm -f /usr/etc/freeDiameter/epc*    2>&1
-    rm -f $OPENAIR_DIR/targets/bin/xt_GTPU*.ko    2>&1
-    (cd $OPENAIRCN_DIR/GTPV1-U/GTPUAH && make clean)
-    (cd $OPENAIRCN_DIR/GTPV1-U/GTPURH && make clean)
-    rm -f $OPENAIRCN_DIR/GTPV1-U/GTPUAH/Bin/* 2>&1
-    rm -f /lib/xtables/libxt_GTPU*.so             2>&1
+    $SUDO rm -Rf $OPENAIR_TARGETS/CMAKE/EPC/MME_GW/build  2>&1
+    $SUDO rm -f /usr/local/etc/freeDiameter/mme*    2>&1
+    $SUDO rm -f /usr/local/etc/freeDiameter/epc*    2>&1
+    $SUDO rm -f /usr/etc/freeDiameter/mme*    2>&1
+    $SUDO rm -f /usr/etc/freeDiameter/epc*    2>&1
+    $SUDO rm -f $OPENAIR_DIR/targets/bin/xt_GTPU*.ko    2>&1
+    ($SUDO cd $OPENAIRCN_DIR/GTPV1-U/GTPUAH && make clean)
+    ($SUDO cd $OPENAIRCN_DIR/GTPV1-U/GTPURH && make clean)
+    $SUDO rm -f $OPENAIRCN_DIR/GTPV1-U/GTPUAH/Bin/* 2>&1
+    $SUDO rm -f /lib/xtables/libxt_GTPU*.so             2>&1
     mkdir -m 777 -p -v build
   fi
   

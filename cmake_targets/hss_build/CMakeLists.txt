@@ -38,7 +38,10 @@ ENABLE_LANGUAGE(C)
 
 ADD_DEFINITIONS(-D_GNU_SOURCE)
 
-set(OPENAIR_DIR           $ENV{OPENAIR_DIR})
+if( NOT DEFINED OPENAIR_DIR)
+  message(SEND_ERROR "OPENAIR_DIR not set: ${OPENAIR_DIR}")
+endif( NOT DEFINED OPENAIR_DIR)
+
 set(OPENAIR1_DIR          ${OPENAIR_DIR}/openair1)
 set(OPENAIR2_DIR          ${OPENAIR_DIR}/openair2)
 set(OPENAIR3_DIR          ${OPENAIR_DIR}/openair3)
@@ -49,8 +52,7 @@ set(OPENAIRHSS_DIR        ${OPENAIRCN_DIR}/OPENAIRHSS)
 set(OPENAIR_BIN_DIR       ${OPENAIR_TARGETS}/bin)
 
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${OPENAIR_CMAKE_SCRIPTS}/MODULES")
-include(cmake_useful)
+set(CMAKE_MODULE_PATH "${OPENAIR_DIR}/cmake_targets/tools/MODULES" "${CMAKE_MODULE_PATH}")
 
 macro(add_option name val helpstr)
   if(DEFINED ${name})
@@ -265,46 +267,60 @@ target_link_libraries (openair-hss
                        ${CMAKE_THREAD_LIBS_INIT} )
 
 # Default parameters
-site_name(SITE_HSS_FQDN)
+# Does not work on simple install (fqdn in /etc/hosts 127.0.1.1)
+cmake_host_system_information(RESULT SITE_HSS_FQDN QUERY FQDN)
 add_option(HSS_FQDN          ${SITE_HSS_FQDN} "HSS Fully qualified domain name")
-add_option(REALM             openair4G.eur    "HSS realm TODO: extract this default value from SITE_HSS_FQDN")
-add_option(MYSQL_server      "127.0.0.1"      "Database server IP address")
-add_option(MYSQL_admin       "root"           "Database admin login")
-add_option(MYSQL_admin_pass  "linux"          "Database admin password")
-add_option(MYSQL_user        "hssadmin"       "Database username login")
-add_option(MYSQL_pass        "admin"          "Database username password")
-add_option(MYSQL_db          "oai_db"         "Database name")
-add_option(TRANSPORT_option  "#No_TCP"        "No_TCP or No_SCTP or comment string, FreeDiameter config option")
-add_option(TRANSPORT_PREFER_TCP_option  "#Prefer_TCP"   "Prefer_TCP or comment string, FreeDiameter config option")
-add_option(AppServThreads    2                "FreeDiameter AppServThreads config option")
-add_option(OPERATOR_key      "11111111111111111111111111111111" "LTE operator clear text key (hex bytes)")
-add_option(REMOTE_PEER_WHITELIST "*.${REALM}" "Remote peer whitlist (separeted by spaces), for freediameter acl.conf config file")
+IF( NOT DEFINED REALM )
+  string(FIND ${HSS_FQDN} "." pos)
+  math(EXPR pos1 "${pos}+1")
+  string(SUBSTRING ${HSS_FQDN} ${pos1} -1 realm_string)
+  message("REALM extracted from HSS FQDN is ${realm_string}")
+  set(REALM             ${realm_string}    CACHE STRING  "HSS realm")
+ENDIF( NOT DEFINED REALM )
+set(MYSQL_server      "127.0.0.1"      CACHE STRING  "Database server IP address")
+set(MYSQL_admin       root             CACHE STRING  "Database admin login")
+set(MYSQL_admin_pass  linux            CACHE STRING  "Database admin password")
+set(MYSQL_user        hssadmin         CACHE STRING  "Database username login")
+set(MYSQL_pass        admin            CACHE STRING  "Database username password")
+set(MYSQL_db          oai_db           CACHE STRING  "Database name")
+set(TRANSPORT_option  "#No_TCP"        CACHE STRING  "No_TCP or No_SCTP or comment string, FreeDiameter config option")
+set(TRANSPORT_PREFER_TCP_option  "#Prefer_TCP"   CACHE STRING  "Prefer_TCP or comment string, FreeDiameter config option")
+set(AppServThreads    2                CACHE STRING  "FreeDiameter AppServThreads config option")
+set(OPERATOR_key      "11111111111111111111111111111111" CACHE STRING  "LTE operator clear text key (hex bytes)")
+set(REMOTE_PEER_WHITELIST "*.${REALM}" CACHE STRING  "Remote peer whitelist (separated by spaces), for freediameter acl.conf config file")
 IF( FD_SERVER_IP_BIND_LIST )
-    set(ListenOn          "ListenOn=\"${FD_SERVER_IP_BIND_LIST}\"" "//FreeDiameter server IP bind addresses list")
+    set(ListenOn          "ListenOn = \"${FD_SERVER_IP_BIND_LIST}\"" CACHE STRING  "FreeDiameter server IP bind addresses list")
 ELSE( FD_SERVER_IP_BIND_LIST )
-    set(ListenOn          "#ListenOn=\"\"" "//FreeDiameter server IP bind addresses list")
+    set(ListenOn          "#ListenOn = \"\"" CACHE STRING  "FreeDiameter server IP bind addresses list")
 ENDIF( FD_SERVER_IP_BIND_LIST )
 
 IF( HSS_CONNECT_TO_MME )
-  add_option(ConnectPeer        "ConnectPeer"     "HSS connect to MME")
-  add_option(DIAMETER_PORT      "#Port = 3868"    "Diameter bind port")
-  add_option(DIAMETER_SEC_PORT  "#SecPort = 3869"    "Diameter bind sec port")
+  set(ConnectPeer        "ConnectPeer"     CACHE STRING  "HSS connect to MME")
+  set(DIAMETER_PORT      "#Port = 3868"    CACHE STRING  "Diameter bind port")
+  set(DIAMETER_SEC_PORT  "#SecPort = 3869" CACHE STRING  "Diameter bind sec port")
 ELSE( HSS_CONNECT_TO_MME )
-  add_option(ConnectPeer        "#ConnectPeer"    "HSS act as a server")
-  add_option(DIAMETER_PORT      "Port = 3868"     "Diameter bind port")
-  add_option(DIAMETER_SEC_PORT  "SecPort = 3869"     "Diameter bind sec port")
+  set(ConnectPeer        "#ConnectPeer"    CACHE STRING  "HSS act as a server")
+  set(DIAMETER_PORT      "Port = 3868"     CACHE STRING  "Diameter bind port")
+  set(DIAMETER_SEC_PORT  "SecPort = 3869"  CACHE STRING  "Diameter bind sec port")
 ENDIF( HSS_CONNECT_TO_MME )
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/hss_fd.conf.in  
-  ${CMAKE_CURRENT_BINARY_DIR}/hss_fd.conf)
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/hss.conf.in  
-  ${CMAKE_CURRENT_BINARY_DIR}/hss.conf)
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/acl.conf.in  
-  ${CMAKE_CURRENT_BINARY_DIR}/acl.conf)
-                
 
-install (TARGETS openair-hss 
-  DESTINATION ${OPENAIR_TARGETS}/bin)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/hss_fd.conf.in ${CMAKE_CURRENT_BINARY_DIR}/hss_fd.conf)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/hss.conf.in    ${CMAKE_CURRENT_BINARY_DIR}/hss.conf)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/acl.conf.in    ${CMAKE_CURRENT_BINARY_DIR}/acl.conf)
+
+execute_process(COMMAND sudo ${OPENAIR_CMAKE_SCRIPTS}/check_hss_s6a_certificate ${FREEDIAMETER_PATH}/.. ${HSS_FQDN} WORKING_DIRECTORY ${OPENAIR_CMAKE_SCRIPTS} TIMEOUT 3)
+
+# This does not overwrite database if it exist
+execute_process(COMMAND ${OPENAIR_CMAKE_SCRIPTS}/create_hss_database
+                ${MYSQL_admin} ${MYSQL_admin_pass} ${MYSQL_user} ${MYSQL_pass} ${MYSQL_db}
+                 WORKING_DIRECTORY ${OPENAIR_CMAKE_SCRIPTS} 
+                 ERROR_VARIABLE ERROR_DB
+                 TIMEOUT 5)
+
+IF( ERROR_DB )
+  MESSAGE( SEND_ERROR "Database setup failed: ${ERROR_DB}" )
+ENDIF( ERROR_DB )
+                
+install (TARGETS openair-hss DESTINATION ${OPENAIR_TARGETS}/bin)
 

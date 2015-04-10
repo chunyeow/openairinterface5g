@@ -103,4 +103,4 @@ LoadExtension = "dict_s6a.fdx";
 # For only accepting incoming connections, see the acl_wl.fx extension.
 
 #ConnectPeer = "ubuntu.localdomain" { ConnectTo = "127.0.0.1"; No_TLS; };
-@ConnectPeer@ = "@MME_FQDN@"  { ConnectTo = "@MME_IP@"; No_IPv6; No_TLS ; port = 3870; };
+@ConnectPeer@ = "@MME_FQDN@"  { ConnectTo = "@MME_IP@"; Realm = "@REALM@"; No_IPv6; No_TLS ; port = 3870; };

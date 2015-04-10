@@ -5,9 +5,9 @@ Identity = "@MME_FQDN@";
 Realm = "@REALM@";
 
 # TLS configuration (see previous section)
-TLS_Cred = "${FREEDIAMETER_PATH}/../etc/freeDiameter/mme.cert.pem",
-           "${FREEDIAMETER_PATH}/../etc/freeDiameter/mme.key.pem";
-TLS_CA   = "${FREEDIAMETER_PATH}/../etc/freeDiameter/mme.cacert.pem";
+TLS_Cred = "@FREEDIAMETER_PATH@/../etc/freeDiameter/mme.cert.pem",
+           "@FREEDIAMETER_PATH@/../etc/freeDiameter/mme.key.pem";
+TLS_CA   = "@FREEDIAMETER_PATH@/../etc/freeDiameter/mme.cacert.pem";
 
 # Disable use of TCP protocol (only listen and connect in SCTP)
 # Default : TCP enabled

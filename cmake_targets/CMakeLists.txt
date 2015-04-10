@@ -205,7 +205,7 @@ endif (${RTAI})
 # (so creating new asn.1 objects instead of modifying the object attributes)
 # New C code source file, cmake must be re-run (instead of re-running make only) 
 #############
-set(asn1c_call "${OPENAIR_CMAKE}/tools/generate_asn1.bash")
+set(asn1c_call "${OPENAIR_CMAKE}/tools/generate_asn1")
 set(asn1_generated_dir ${OPENAIR_BIN_DIR})
 
 # RRC
@@ -325,7 +325,7 @@ add_list1_option(NB_ANTENNAS_RX "2" "Number of antennas in reception" "1" "2" "4
 add_list1_option(NB_ANTENNAS_TX "2" "Number of antennas in transmission" "1" "2" "4")
 add_list1_option(NB_ANTENNAS_TXRX "2" "Number of antennas in ????" "1" "2" "4")
 
-add_list2_option(RF_BOARD "EXMIMO" "RF head type" "False" "EXMIMO" "USRP" "ETHERNET" "CPRIGW")
+add_list2_option(RF_BOARD "EXMIMO" "RF head type" "False" "EXMIMO" "OAI_USRP" "ETHERNET" "CPRIGW")
 
 if (${RF_BOARD} STREQUAL "EXMIMO")
   set(DRIVER2013)
@@ -335,7 +335,7 @@ if (${RF_BOARD} STREQUAL "EXMIMO")
     ${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.c 
     ${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB/gain_control.c)   
 
-elseif (${RF_BOARD} STREQUAL "USRP")
+elseif (${RF_BOARD} STREQUAL "OAI_USRP")
   include_directories("${OPENAIR_TARGETS}/ARCH/USRP/USERSPACE/LIB/")
   include_directories("/opt/include/uhd")
   set(HW_SOURCE ${HW_SOURCE}
@@ -376,7 +376,6 @@ add_boolean_option(ENABLE_USE_NETFILTER_FOR_SGI False "SGI option")
 add_boolean_option(ENABLE_USE_PCAP_FOR_SGI False "SGI option")
 add_boolean_option(ENABLE_USE_RAW_SOCKET_FOR_SGI False "As per name")
 add_boolean_option(EPC_BUILD False "???")
-add_boolean_option(LINK_PDCP_TO_GTPV1U True "????")
 add_boolean_option(LOWLATENCY  True "Use the Linux scheduler SCHED_DEADLINE: kernel >= 3.14")
 add_boolean_option(NAS_ADDRESS_FIX False "specific to oaisim: for nasmesh driver")
 add_boolean_option(NAS_NETLINK False "???? Must be True to compile nasmesh driver without rtai")
@@ -385,6 +384,7 @@ add_boolean_option(OAI_NW_DRIVER_USE_NETLINK True "????")
 add_boolean_option(UE_BUILD False "????")
 add_boolean_option(USE_MME False "this flag is used only one time in lte-softmodem.c")
 add_list_string_option(PACKAGE_NAME "NotDefined" "As per attribute name")
+add_boolean_option(MESSAGE_CHART_GENERATOR False "For generating sequence diagrams")
 
 ########################
 # Include order
@@ -608,6 +608,11 @@ add_library(HASHTABLE
 )
 include_directories(${OPENAIRCN_DIR}/UTILS/HASHTABLE)
 
+add_library(MSC
+  ${OPENAIR_DIR}/common/utils/msc/msc.c
+)
+include_directories(${OPENAIR_DIR}/common/utils/msc)
+
 set(UTIL_SRC 
   ${OPENAIR2_DIR}/UTIL/CLI/cli.c
   ${OPENAIR2_DIR}/UTIL/CLI/cli_cmd.c
@@ -818,7 +823,7 @@ set(L2_SRC
   ${RRC_DIR}/rrc_UE.c
   ${RRC_DIR}/rrc_eNB.c
   ${RRC_DIR}/rrc_eNB_S1AP.c
-  #${RRC_DIR}/rrc_eNB_UE_context.c
+  ${RRC_DIR}/rrc_eNB_UE_context.c
   ${RRC_DIR}/rrc_common.c
   ${RRC_DIR}/L2_interface.c
   )
@@ -1395,10 +1400,10 @@ pkg_search_module(CRYPTO libcrypto REQUIRED)
 include_directories(${CRYPTO_INCLUDE_DIRS})
 
 #use native cmake method as this package is not in pkg-config
-if (${RF_BOARD} STREQUAL "USRP")
+if (${RF_BOARD} STREQUAL "OAI_USRP")
   find_package(Boost REQUIRED)
   include_directories(${LIBBOOST_INCLUDE_DIR})
-endif (${RF_BOARD} STREQUAL "USRP")
+endif (${RF_BOARD} STREQUAL "OAI_USRP")
 
 pkg_search_module(OPENPGM openpgm-5.1)
 if(NOT ${OPENPGM_FOUND})
@@ -1440,6 +1445,9 @@ if (${XFORMS})
   set(XFORMS_LIBRARIES "forms")
 endif (${XFORMS})
 
+set(CMAKE_MODULE_PATH "${OPENAIR_DIR}/cmake_targets/tools/MODULES" "${CMAKE_MODULE_PATH}")
+
+
 # Hack on a test of asn1c version (already dirty)
 add_definitions(-DASN1_MINIMUM_VERSION=924)
 
@@ -1470,7 +1478,7 @@ add_executable(lte-softmodem
   )
 target_link_libraries (lte-softmodem 
   -Wl,--start-group 
-  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN SECU_OSA UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} ${ITTI_LIB} ${MIH_LIB}
+  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN SECU_OSA UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 MSC ${RAL_LIB} ${NAS_LIB} ${ITTI_LIB} ${MIH_LIB}
   -Wl,--end-group )
 target_link_libraries (lte-softmodem ${LIBXML2_LIBRARIES})
 target_link_libraries (lte-softmodem pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} sctp ${option_HW_lib} ${XFORMS_LIBRARIES} )
@@ -1488,32 +1496,82 @@ add_executable(mme_gw
   )
 target_link_libraries (mme_gw
   -Wl,--start-group 
-   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA SGI S6A SGW MME_APP LFDS ${ITTI_LIB} CN_UTILS HASHTABLE
+   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA SGI S6A SGW MME_APP LFDS MSC ${ITTI_LIB} CN_UTILS HASHTABLE
   -Wl,--end-group 
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
   )
 
 # Default parameters
-site_name(SITE_HSS_HOSTNAME)
-site_name(SITE_MME_HOSTNAME)
-add_option(MME_HOSTNAME      ${SITE_MME_HOSTNAME} "HSS Fully qualified domain name")
-add_option(HSS_HOSTNAME      ${SITE_HSS_HOSTNAME} "HSS Fully qualified domain name")
-add_option(HSS_IP            127.0.1.1            "HSS IP address, default is local")
-add_option(REALM             openair4G.eur     "Realm TODO: extract this default value from SITE_MME_FQDN")
-add_option(MME_FQDN          ${SITE_MME_HOSTNAME}.${REALM} "MME Fully qualified domain name")
-add_option(HSS_FQDN          ${SITE_HSS_HOSTNAME}.${REALM} "HSS Fully qualified domain name")
-add_option(TRANSPORT_option  No_SCTP     "No_TCP or No_SCTP")
-add_option(TRANSPORT_PREFER_TCP_option  Prefer_TCP "Prefer_TCP or null string ")
+# Does not work on simple install (fqdn in /etc/hosts 127.0.1.1)
+#cmake_host_system_information(RESULT HSS_FQDN_STR QUERY FQDN)
+#cmake_host_system_information(RESULT MME_FQDN_STR QUERY FQDN)
+IF( EPC_BUILD )
+  INCLUDE(FindFreeDiameter)
+  # if standalone eNB or UE no need for FreeDiameter
+  IF( FREEDIAMETER_FOUND )
+    IF( NOT FREEDIAMETER_HSS_S6A_ENABLED )
+      MESSAGE( SEND_ERROR "FreeDiameter is not enabled for OPENAIRHSS" )
+    ENDIF( NOT FREEDIAMETER_HSS_S6A_ENABLED )
+  ENDIF( FREEDIAMETER_FOUND )
 
-configure_file(
-  ${OPENAIR_CMAKE}/tools/s6a.conf.in 
-  ${CMAKE_CURRENT_BINARY_DIR}/epc_s6a.conf)
-configure_file(
-  ${OPENAIR_CMAKE}/tools/epc.local.enb.conf.in 
-  ${CMAKE_CURRENT_BINARY_DIR}/epc.local.enb.conf)
-configure_file(
-  ${OPENAIR_CMAKE}/tools/epc.conf.in 
-  ${CMAKE_CURRENT_BINARY_DIR}/epc.conf)
+
+  execute_process(COMMAND hostname --fqdn OUTPUT_VARIABLE HSS_FQDN_STR TIMEOUT 3)
+  execute_process(COMMAND hostname --fqdn OUTPUT_VARIABLE MME_FQDN_STR TIMEOUT 3)
+  string(STRIP ${HSS_FQDN_STR} HSS_FQDN_STR)
+  string(STRIP ${MME_FQDN_STR} MME_FQDN_STR)
+
+  set(HSS_IP                       127.0.1.1                 CACHE STRING     "HSS IP address, default is local")
+  set(MME_FQDN                     ${MME_FQDN_STR}           CACHE STRING     "MME Fully qualified domain name")
+  set(HSS_FQDN                     ${HSS_FQDN_STR}           CACHE STRING     "HSS Fully qualified domain name")
+  set(TRANSPORT_option             "#No_TCP"                 CACHE STRING     "No_TCP or No_SCTP or comment string, FreeDiameter config option")
+  set(TRANSPORT_PREFER_TCP_option  "#Prefer_TCP"             CACHE STRING     "Prefer_TCP or comment string, FreeDiameter config option")
+  IF( NOT DEFINED REALM )
+    string(FIND ${MME_FQDN} "." pos)
+    math(EXPR pos1 "${pos}+1")
+    string(SUBSTRING ${MME_FQDN} ${pos1} -1 realm_string)
+    message("REALM extracted from MME FQDN is ${realm_string}")
+    set(REALM                      ${realm_string}           CACHE STRING     "EPC realm")
+  ENDIF( NOT DEFINED REALM )
+  message("REALM is ${REALM}")
+  IF( NOT DEFINED MME_HOSTNAME )
+    string(FIND ${MME_FQDN} "." pos)
+    string(SUBSTRING ${MME_FQDN} 0 ${pos} mme_hostname_string)
+    message("MME_HOSTNAME extracted from MME FQDN is ${mme_hostname_string}")
+    set(MME_HOSTNAME         ${mme_hostname_string}           CACHE STRING     "MME hostname")
+  ENDIF( NOT DEFINED MME_HOSTNAME )
+  IF( NOT DEFINED HSS_HOSTNAME )
+    string(FIND ${HSS_FQDN} "." pos)
+    string(SUBSTRING ${HSS_FQDN} 0 ${pos} hss_hostname_string)
+    message("HSS_HOSTNAME extracted from HSS FQDN is ${hss_hostname_string}")
+    set(HSS_HOSTNAME         ${hss_hostname_string}           CACHE STRING     "HSS hostname")
+  ENDIF( NOT DEFINED HSS_HOSTNAME )
+
+  if ( ${MME_HOSTNAME} STREQUAL ${HSS_HOSTNAME} )
+    set(MME_S6A_IS_SERVER      1 )
+  endif( ${MME_HOSTNAME} STREQUAL ${HSS_HOSTNAME} )
+
+  IF( MME_S6A_IS_SERVER )
+    set(ConnectPeer        "#ConnectPeer"     CACHE STRING   "HSS connect to MME")
+    set(DIAMETER_PORT      "Port = 3870"      CACHE STRING   "Diameter bind port, 3868 is always used by default by HSS, even if HSS client")
+    set(DIAMETER_SEC_PORT  "SecPort = 3871"   CACHE STRING   "Diameter bind sec port")
+  ELSE( MME_S6A_IS_SERVER )
+    set(ConnectPeer        "#ConnectPeer"     CACHE STRING   "HSS act as a server")
+    set(DIAMETER_PORT      "#Port = 3870"     CACHE STRING   "Diameter bind port")
+    set(DIAMETER_SEC_PORT  "#SecPort = 3871"  CACHE STRING   "Diameter bind sec port")
+  ENDIF( MME_S6A_IS_SERVER )
+
+  execute_process(COMMAND sudo ${OPENAIR_CMAKE}/tools/check_mme_s6a_certificate ${FREEDIAMETER_PATH}/.. ${MME_FQDN} WORKING_DIRECTORY ${OPENAIR_CMAKE})
+
+  configure_file(
+    ${OPENAIR_CMAKE}/tools/s6a.conf.in 
+    ${CMAKE_CURRENT_BINARY_DIR}/mme_fd.conf)
+  configure_file(
+    ${OPENAIR_CMAKE}/tools/epc.local.enb.conf.in 
+    ${CMAKE_CURRENT_BINARY_DIR}/epc.local.enb.conf)
+  configure_file(
+    ${OPENAIR_CMAKE}/tools/epc.conf.in 
+    ${CMAKE_CURRENT_BINARY_DIR}/epc.conf)
+ENDIF( EPC_BUILD )
 
 # oai_sgw is SGW  node implementation
 ################################
@@ -1524,7 +1582,7 @@ add_executable(oai_sgw
   )
 target_link_libraries (oai_sgw
   -Wl,--start-group 
-  GTPV1U SECU_CN SECU_OSA SGI S6A SGW CN_UTILS LFDS ${ITTI_LIB}
+  GTPV1U SECU_CN SECU_OSA SGI S6A SGW CN_UTILS LFDS MSC ${ITTI_LIB}
   -Wl,--end-group  
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
   )
@@ -1572,7 +1630,7 @@ add_executable(oaisim
 target_include_directories(oaisim PUBLIC  ${OPENAIR_TARGETS}/SIMU/USER)
 target_link_libraries (oaisim
   -Wl,--start-group 
-  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
+  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 MSC ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
   -Wl,--end-group )
 target_link_libraries (oaisim ${LIBXML2_LIBRARIES} ${LAPACK_LIBRARIES})
 target_link_libraries (oaisim pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES}  ${NETTLE_LIBRARIES} sctp ${option_HW_lib} 
@@ -1631,7 +1689,7 @@ add_executable(oaisim_mme
 )
 target_link_libraries (oaisim_mme
   -Wl,--start-group 
-   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA SGI S6A S11 SGW MME_APP LFDS ${ITTI_LIB} CN_UTILS HASHTABLE
+   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA SGI S6A S11 SGW MME_APP LFDS MSC ${ITTI_LIB} CN_UTILS HASHTABLE
   -Wl,--end-group 
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
 )
