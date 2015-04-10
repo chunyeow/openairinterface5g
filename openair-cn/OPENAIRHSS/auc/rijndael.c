@@ -79,7 +79,7 @@ u8 Xtime[256] = {
  * Rijndael key schedule function. Takes 16-byte key and creates
  * all Rijndael's internal subkeys ready for encryption.
  *-----------------------------------------------------------------*/
-void RijndaelKeySchedule( u8 key[16] )
+void RijndaelKeySchedule( const u8 const key[16] )
 {
   u8 roundConst;
   int i, j;
@@ -188,7 +188,7 @@ void MixColumn(u8 state[4][4])
  * 16-byte output (using round keys already derived from 16-byte
  * key).
  *-----------------------------------------------------------------*/
-void RijndaelEncrypt( u8 input[16], u8 output[16] )
+void RijndaelEncrypt( const u8 const input[16], u8 output[16] )
 {
   u8 state[4][4];
   int i, r;

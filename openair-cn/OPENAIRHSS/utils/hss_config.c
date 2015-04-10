@@ -65,7 +65,7 @@ int fd_g_debug_lvl = 1;
 
 /* YACC forward declarations */
 extern int  yyparse (struct hss_config_s *hss_config_p);
-extern uint8_t OP[16];
+extern uint8_t opc[16];
 static int config_parse_command_line(int argc, char *argv[],
                                      hss_config_t *hss_config_p);
 static int config_parse_file(hss_config_t *hss_config_p);
@@ -107,14 +107,14 @@ int config_init(int argc, char *argv[], hss_config_t *hss_config_p)
     if (strlen(hss_config_p->operator_key) == 32) {
       ret = sscanf(hss_config_p->operator_key,
                    "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-                   (unsigned int*)&OP[0],(unsigned int*)&OP[1],
-                   (unsigned int*)&OP[2],(unsigned int*)&OP[3],
-                   (unsigned int*)&OP[4],(unsigned int*)&OP[5],
-                   (unsigned int*)&OP[6],(unsigned int*)&OP[7],
-                   (unsigned int*)&OP[8],(unsigned int*)&OP[9],
-                   (unsigned int*)&OP[10],(unsigned int*)&OP[11],
-                   (unsigned int*)&OP[12],(unsigned int*)&OP[13],
-                   (unsigned int*)&OP[14],(unsigned int*)&OP[15]);
+                   (unsigned int*)&opc[0],(unsigned int*)&opc[1],
+                   (unsigned int*)&opc[2],(unsigned int*)&opc[3],
+                   (unsigned int*)&opc[4],(unsigned int*)&opc[5],
+                   (unsigned int*)&opc[6],(unsigned int*)&opc[7],
+                   (unsigned int*)&opc[8],(unsigned int*)&opc[9],
+                   (unsigned int*)&opc[10],(unsigned int*)&opc[11],
+                   (unsigned int*)&opc[12],(unsigned int*)&opc[13],
+                   (unsigned int*)&opc[14],(unsigned int*)&opc[15]);
 
       if (ret != 16) {
         fprintf(stderr,

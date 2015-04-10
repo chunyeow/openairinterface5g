@@ -60,8 +60,8 @@ typedef struct {
   uint8_t kasme[32];
 } auc_vector_t;
 
-void RijndaelKeySchedule(u8 key[16]);
-void RijndaelEncrypt(u8 in[16], u8 out[16]);
+void RijndaelKeySchedule(const u8 const key[16]);
+void RijndaelEncrypt(const u8 const in[16], u8 out[16]);
 
 /* Sequence number functions */
 struct sqn_ue_s;
@@ -77,18 +77,18 @@ struct random_state_s;
 void random_init(void);
 void generate_random(uint8_t *random, ssize_t length);
 
-void SetOPc(u8 op_c[16]);
+void SetOPc(const u8 const op_c[16]);
 
-void f1 ( u8 k[16], u8 rand[16], u8 sqn[6], u8 amf[2],
+void f1 ( const u8 const k[16], const u8 const rand[16], const u8 const sqn[6], const u8 const amf[2],
           u8 mac_a[8] );
-void f1star( u8 k[16], u8 rand[16], u8 sqn[6], u8 amf[2],
+void f1star( const u8 const k[16], const u8 const rand[16], const u8 const sqn[6], const u8 const amf[2],
              u8 mac_s[8] );
-void f2345 ( u8 k[16], u8 rand[16],
+void f2345 ( const u8 const k[16], const u8 const rand[16],
              u8 res[8], u8 ck[16], u8 ik[16], u8 ak[6] );
-void f5star( u8 k[16], u8 rand[16],
+void f5star( const u8 const k[16], const u8 const rand[16],
              u8 ak[6] );
 
-void generate_autn(u8 sqn[6], u8 ak[6], u8 amf[2], u8 mac_a[8], u8 autn[16]);
+void generate_autn(const u8 const sqn[6], const u8 const ak[6], const u8 const amf[2], const u8 const mac_a[8], u8 autn[16]);
 int generate_vector(uint64_t imsi, uint8_t key[16], uint8_t plmn[3],
                     uint8_t sqn[6], auc_vector_t *vector);
 

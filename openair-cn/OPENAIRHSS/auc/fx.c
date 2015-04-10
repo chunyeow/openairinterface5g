@@ -32,12 +32,15 @@ u8 OP[16]= {
 /*--------------------------- prototypes --------------------------*/
 void ComputeOPc( u8 op_c[16] );
 
-void SetOPc(u8 op_c[16])
+void SetOPc(const u8 const op_c[16])
 {
   memcpy(OP, op_c, 16);
+  printf("SetOPc: OP : %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X ",
+         OP[0],OP[1],OP[2],OP[3],OP[4],OP[5],OP[6],OP[7],
+         OP[8],OP[9],OP[10],OP[11],OP[12],OP[13],OP[14],OP[15]);
 }
 
-void generate_autn(u8 sqn[6], u8 ak[6], u8 amf[2], u8 mac_a[8], u8 autn[16])
+void generate_autn(const u8 const sqn[6], const u8 const ak[6], const u8 const amf[2], const u8 const mac_a[8], u8 autn[16])
 {
   int i;
 
@@ -58,7 +61,7 @@ void generate_autn(u8 sqn[6], u8 ak[6], u8 amf[2], u8 mac_a[8], u8 autn[16])
  * field AMF.
  *
  *-----------------------------------------------------------------*/
-void f1 ( u8 k[16], u8 _rand[16], u8 sqn[6], u8 amf[2],
+void f1 ( const u8 const k[16], const u8 const _rand[16], const u8 const sqn[6], const u8 const amf[2],
           u8 mac_a[8] )
 {
   u8 op_c[16];
@@ -113,7 +116,7 @@ void f1 ( u8 k[16], u8 _rand[16], u8 sqn[6], u8 amf[2],
  * confidentiality key CK, integrity key IK and anonymity key AK.
  *
  *-----------------------------------------------------------------*/
-void f2345 ( u8 k[16], u8 _rand[16],
+void f2345 ( const u8 const k[16], const u8 const _rand[16],
              u8 res[8], u8 ck[16], u8 ik[16], u8 ak[6] )
 {
   u8 op_c[16];
@@ -190,7 +193,7 @@ void f2345 ( u8 k[16], u8 _rand[16],
  * field AMF.
  *
  *-----------------------------------------------------------------*/
-void f1star( u8 k[16], u8 _rand[16], u8 sqn[6], u8 amf[2],
+void f1star( const u8 const k[16], const u8 const _rand[16], const u8 const sqn[6], const u8 const amf[2],
              u8 mac_s[8] )
 {
   u8 op_c[16];
@@ -245,7 +248,7 @@ void f1star( u8 k[16], u8 _rand[16], u8 sqn[6], u8 amf[2],
  * anonymity key AK.
  *
  *-----------------------------------------------------------------*/
-void f5star( u8 k[16], u8 _rand[16],
+void f5star( const u8 const k[16], const u8 const _rand[16],
              u8 ak[6] )
 {
   u8 op_c[16];
