@@ -263,7 +263,7 @@ typedef struct {
  * EPS Mobility Management sublayer
  */
 typedef int (*emm_indication_callback_t) (Stat_t, tac_t, ci_t, AcT_t,
-    const char *, size_t);
+    const char*, size_t);
 
 typedef enum eps_protocol_discriminator_e {
   /* Protocol discriminator identifier for EPS Mobility Management */

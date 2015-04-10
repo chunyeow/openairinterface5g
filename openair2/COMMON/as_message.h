@@ -175,7 +175,7 @@ typedef struct as_stmsi_s {
 /* Dedicated NAS information */
 typedef struct as_nas_info_s {
   UInt32_t length;    /* Length of the NAS information data       */
-  Byte_t *data;   /* Dedicated NAS information data container */
+  Byte_t* data;   /* Dedicated NAS information data container */
 } as_nas_info_t;
 
 /* Radio Access Bearer identity */
@@ -567,11 +567,11 @@ typedef struct as_message_s {
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
 
-int as_message_decode(const char *buffer, as_message_t *msg, int length);
+int as_message_decode(const char* buffer, as_message_t* msg, int length);
 
-int as_message_encode(char *buffer, as_message_t *msg, int length);
+int as_message_encode(char* buffer, as_message_t* msg, int length);
 
 /* Implemented in the network_api.c body file */
-int as_message_send(as_message_t *as_msg);
+int as_message_send(as_message_t* as_msg);
 
 #endif /* __AS_MESSAGE_H__*/

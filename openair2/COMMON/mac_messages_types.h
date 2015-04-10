@@ -95,6 +95,7 @@ typedef struct RrcMacCcchDataCnf_s {
 
 typedef struct RrcMacCcchDataInd_s {
   uint32_t  frame;
+  uint16_t  rnti;
   uint32_t  sdu_size;
   uint8_t   sdu[CCCH_SDU_SIZE];
   uint8_t   enb_index;

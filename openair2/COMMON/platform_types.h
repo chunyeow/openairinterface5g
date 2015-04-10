@@ -42,6 +42,9 @@
 #include <stdint.h>
 #endif
 
+#if defined(ENABLE_ITTI)
+#include "itti_types.h"
+#endif
 //-----------------------------------------------------------------------------
 // GENERIC TYPES
 //-----------------------------------------------------------------------------
@@ -109,6 +112,7 @@ typedef sdu_size_t         tbs_size_t;
 typedef sdu_size_t         tb_size_t;
 typedef unsigned int       logical_chan_id_t;
 typedef unsigned int       num_tb_t;
+typedef uint8_t            mac_enb_index_t;
 
 //-----------------------------------------------------------------------------
 // RLC TYPES
@@ -121,6 +125,8 @@ typedef uint16_t           rlc_usn_t;
 typedef int32_t            rlc_buffer_occupancy_t;
 typedef signed int         rlc_op_status_t;
 
+#define  SDU_CONFIRM_NO          FALSE
+#define  SDU_CONFIRM_YES         TRUE
 //-----------------------------------------------------------------------------
 // PDCP TYPES
 //-----------------------------------------------------------------------------
@@ -155,6 +161,20 @@ typedef enum  ip_traffic_type_e {
 typedef uint32_t           mbms_session_id_t;
 typedef uint16_t           mbms_service_id_t;
 typedef uint16_t           rnti_t;
+typedef uint8_t            rrc_enb_index_t;
+
+#if ! defined(NOT_A_RNTI)
+#define NOT_A_RNTI (rnti_t)0
+#endif
+#if ! defined(M_RNTI)
+#define M_RNTI     (rnti_t)0xFFFD
+#endif
+#if ! defined(P_RNTI)
+#define P_RNTI     (rnti_t)0xFFFE
+#endif
+#if ! defined(SI_RNTI)
+#define SI_RNTI    (rnti_t)0xFFFF
+#endif
 typedef enum config_action_e {
   CONFIG_ACTION_NULL              = 0,
   CONFIG_ACTION_ADD               = 1,
@@ -176,16 +196,93 @@ typedef uint8_t            ebi_t;  // eps bearer id
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
+// may be ITTI not enabled, but type instance is useful also for OTG,
+#if !defined(instance_t)
+typedef uint16_t instance_t;
+#endif
 typedef struct protocol_ctxt_s {
-  module_id_t enb_module_id; /*!< \brief  Virtualized enb module identifier, Not used if eNB_flagP = 0. */
-  module_id_t ue_module_id;  /*!< \brief  Virtualized ue module identifier */
-  frame_t     frame;         /*!< \brief  LTE Frame number.*/
+  module_id_t module_id;     /*!< \brief  Virtualized module identifier      */
   eNB_flag_t  enb_flag;      /*!< \brief  Flag to indicate eNB (1) or UE (0) */
+  instance_t  instance;      /*!< \brief  ITTI or OTG module identifier      */
+  rnti_t      rnti;
+  frame_t     frame;         /*!< \brief  LTE frame number.*/
+  sub_frame_t subframe;      /*!< \brief  LTE sub frame number.*/
 } protocol_ctxt_t;
-#define PROTOCOL_CTXT_FMT "[FRAME %05u][%s][MOD %02u/%02u]"
+// warning time hardcoded
+#define PROTOCOL_CTXT_TIME_MILLI_SECONDS(CtXt_h) ((CtXt_h)->frame*10+(CtXt_h)->subframe)
+
+#define UE_MODULE_ID_TO_INSTANCE( mODULE_iD ) mODULE_iD + NB_eNB_INST
+#define ENB_MODULE_ID_TO_INSTANCE( mODULE_iD ) mODULE_iD
+#define UE_INSTANCE_TO_MODULE_ID( iNSTANCE ) iNSTANCE - NB_eNB_INST
+#define ENB_INSTANCE_TO_MODULE_ID( iNSTANCE )iNSTANCE
+
+
+#define MODULE_ID_TO_INSTANCE(mODULE_iD, iNSTANCE, eNB_fLAG) \
+    if(eNB_fLAG == ENB_FLAG_YES) \
+        iNSTANCE = ENB_MODULE_ID_TO_INSTANCE(mODULE_iD); \
+    else \
+        iNSTANCE = UE_MODULE_ID_TO_INSTANCE(mODULE_iD)
+
+#define INSTANCE_TO_MODULE_ID(iNSTANCE, mODULE_iD, eNB_fLAG) \
+    if(eNB_fLAG == ENB_FLAG_YES) \
+        mODULE_iD = ENB_INSTANCE_TO_MODULE_ID(iNSTANCE); \
+    else \
+        mODULE_iD = UE_INSTANCE_TO_MODULE_ID(iNSTANCE)
+
+#define PROTOCOL_CTXT_COMPUTE_MODULE_ID(CtXt_h) \
+    INSTANCE_TO_MODULE_ID( (CtXt_h)->instance , (CtXt_h)->module_id , (CtXt_h)->enb_flag )
+
+
+#define PROTOCOL_CTXT_COMPUTE_INSTANCE(CtXt_h) \
+    MODULE_ID_TO_INSTANCE( (CtXt_h)->module_id , (CtXt_h)->instance , (CtXt_h)->enb_flag )
+
+
+#define PROTOCOL_CTXT_SET_BY_MODULE_ID(Ctxt_Pp, mODULE_iD, eNB_fLAG, rNTI, fRAME, sUBfRAME) \
+    (Ctxt_Pp)->module_id = mODULE_iD; \
+    (Ctxt_Pp)->enb_flag  = eNB_fLAG; \
+    (Ctxt_Pp)->rnti      = rNTI; \
+    (Ctxt_Pp)->frame     = fRAME; \
+    (Ctxt_Pp)->subframe  = sUBfRAME; \
+    PROTOCOL_CTXT_COMPUTE_INSTANCE(Ctxt_Pp)
+
+#define PROTOCOL_CTXT_SET_BY_INSTANCE(Ctxt_Pp, iNSTANCE, eNB_fLAG, rNTI, fRAME, sUBfRAME) \
+    (Ctxt_Pp)->instance  = iNSTANCE; \
+    (Ctxt_Pp)->enb_flag  = eNB_fLAG; \
+    (Ctxt_Pp)->rnti      = rNTI; \
+    (Ctxt_Pp)->frame     = fRAME; \
+    (Ctxt_Pp)->subframe  = sUBfRAME; \
+    PROTOCOL_CTXT_COMPUTE_MODULE_ID(Ctxt_Pp)
+
+#define PROTOCOL_CTXT_FMT "[FRAME %05u][%s][MOD %02u][RNTI %"PRIx16"]"
 #define PROTOCOL_CTXT_ARGS(CTXT_Pp) \
-        CTXT_Pp->frame, \
-        (CTXT_Pp->enb_flag == ENB_FLAG_YES) ? "eNB":" UE", \
-        CTXT_Pp->enb_module_id, \
-        CTXT_Pp->ue_module_id
+    (CTXT_Pp)->frame, \
+    ((CTXT_Pp)->enb_flag == ENB_FLAG_YES) ? "eNB":" UE", \
+    (CTXT_Pp)->module_id, \
+    (CTXT_Pp)->rnti
+
+#ifdef OAI_EMU
+#define CHECK_CTXT_ARGS(CTXT_Pp) \
+    if ((CTXT_Pp)->enb_flag) {\
+        AssertFatal (((CTXT_Pp)->module_id >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),\
+                     "eNB module id is too low (%u/%d/%d)!\n",\
+                     (CTXT_Pp)->module_id,\
+                     oai_emulation.info.first_enb_local,\
+                     oai_emulation.info.nb_enb_local);\
+        AssertFatal (((CTXT_Pp)->module_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),\
+                     "eNB module id is too high (%u/%d)!\n",\
+                     (CTXT_Pp)->module_id,\
+                     oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);\
+    } else {\
+        AssertFatal ((CTXT_Pp)->module_id  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),\
+                     "UE module id is too high (%u/%d)!\n",\
+                     (CTXT_Pp)->module_id,\
+                     oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);\
+        AssertFatal ((CTXT_Pp)->module_id  >= oai_emulation.info.first_ue_local,\
+                     "UE module id is too low (%u/%d)!\n",\
+                     (CTXT_Pp)->module_id,\
+                     oai_emulation.info.first_ue_local);\
+    }
+#else
+#define CHECK_CTXT_ARGS(CTXT_Pp)
+#endif
 #endif

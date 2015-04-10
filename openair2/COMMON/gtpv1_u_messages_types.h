@@ -44,7 +44,7 @@
 #define GTPV1U_ALL_TUNNELS_TEID (teid_t)0xFFFFFFFF
 
 typedef struct gtpv1u_enb_create_tunnel_req_s {
-  module_id_t            ue_index;
+  rnti_t                 rnti;
   int                    num_tunnels;
   teid_t                 sgw_S1u_teid[GTPV1U_MAX_BEARERS_PER_UE];  ///< Tunnel Endpoint Identifier
   ebi_t                  eps_bearer_id[GTPV1U_MAX_BEARERS_PER_UE];
@@ -53,7 +53,7 @@ typedef struct gtpv1u_enb_create_tunnel_req_s {
 
 typedef struct gtpv1u_enb_create_tunnel_resp_s {
   uint8_t                status;               ///< Status of S1U endpoint creation (Failed = 0xFF or Success = 0x0)
-  uint8_t                ue_index;
+  rnti_t                 rnti;
   int                    num_tunnels;
   teid_t                 enb_S1u_teid[GTPV1U_MAX_BEARERS_PER_UE];  ///< Tunnel Endpoint Identifier
   ebi_t                  eps_bearer_id[GTPV1U_MAX_BEARERS_PER_UE];
@@ -61,7 +61,7 @@ typedef struct gtpv1u_enb_create_tunnel_resp_s {
 } gtpv1u_enb_create_tunnel_resp_t;
 
 typedef struct gtpv1u_enb_update_tunnel_req_s {
-  uint8_t                ue_index;
+  rnti_t                 rnti;
   teid_t                 enb_S1u_teid;         ///< eNB S1U Tunnel Endpoint Identifier
   teid_t                 sgw_S1u_teid;         ///< SGW S1U local Tunnel Endpoint Identifier
   transport_layer_addr_t sgw_addr;
@@ -69,7 +69,7 @@ typedef struct gtpv1u_enb_update_tunnel_req_s {
 } gtpv1u_enb_update_tunnel_req_t;
 
 typedef struct gtpv1u_enb_update_tunnel_resp_s {
-  uint8_t                ue_index;
+  rnti_t                 rnti;
   uint8_t                status;               ///< Status (Failed = 0xFF or Success = 0x0)
   teid_t                 enb_S1u_teid;         ///< eNB S1U Tunnel Endpoint Identifier
   teid_t                 sgw_S1u_teid;         ///< SGW S1U local Tunnel Endpoint Identifier
@@ -77,20 +77,20 @@ typedef struct gtpv1u_enb_update_tunnel_resp_s {
 } gtpv1u_enb_update_tunnel_resp_t;
 
 typedef struct gtpv1u_enb_delete_tunnel_req_s {
-  module_id_t            ue_index;
+  rnti_t                 rnti;
   uint8_t                num_erab;
   ebi_t                  eps_bearer_id[GTPV1U_MAX_BEARERS_PER_UE];
   //teid_t                 enb_S1u_teid;         ///< local SGW S11 Tunnel Endpoint Identifier
 } gtpv1u_enb_delete_tunnel_req_t;
 
 typedef struct gtpv1u_enb_delete_tunnel_resp_s {
-  uint8_t                ue_index;
+  rnti_t                 rnti;
   uint8_t                status;               ///< Status of S1U endpoint deleteion (Failed = 0xFF or Success = 0x0)
   teid_t                 enb_S1u_teid;         ///< local S1U Tunnel Endpoint Identifier to be deleted
 } gtpv1u_enb_delete_tunnel_resp_t;
 
 typedef struct gtpv1u_enb_tunnel_data_ind_s {
-  uint8_t                ue_index;
+  rnti_t                 rnti;
   uint8_t               *buffer;
   uint32_t               length;
   uint32_t               offset;               ///< start of message offset in buffer
@@ -101,7 +101,7 @@ typedef struct gtpv1u_enb_tunnel_data_req_s {
   uint8_t               *buffer;
   uint32_t               length;
   uint32_t               offset;               ///< start of message offset in buffer
-  uint8_t                ue_index;
+  rnti_t                 rnti;
   rb_id_t                rab_id;
 } gtpv1u_enb_tunnel_data_req_t;
 
