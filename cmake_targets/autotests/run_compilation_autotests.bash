@@ -16,7 +16,7 @@ test_compile() {
 	make -j4 $2
     } > $tdir/log/$1.txt 2>&1
     if [ -s $3 ] ; then
-     cp $3 $tdir/bin/$3.$1
+     cp $3 $tdir/bin/`basename $3`.$1
      echo_success "$1 test compiled"
   else
      echo_error "$1 test compilation failed"

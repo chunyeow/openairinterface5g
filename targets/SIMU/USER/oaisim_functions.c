@@ -1275,7 +1275,7 @@ void update_otg_eNB(module_id_t enb_module_idP, unsigned int ctime)
       for_times += 1;
 
       // generate traffic if the ue is rrc reconfigured state
-      if (mac_get_rrc_status(enb_module_idP, ENB_FLAG_YES, dst_id) > 2 /*RRC_CONNECTED*/ ) {
+      if (mac_eNB_get_rrc_status(enb_module_idP, dst_id) > 2 /*RRC_CONNECTED*/ ) {
         if_times += 1;
 
         for (app_id=0; app_id<MAX_NUM_APPLICATION; app_id++) {
@@ -1415,7 +1415,7 @@ void update_otg_UE(module_id_t ue_mod_idP, unsigned int ctime)
 
     for (dst_id=0; dst_id<NB_SIG_CNX_UE; dst_id++) {
       // only consider the first attached eNB
-      if (mac_get_rrc_status(ue_mod_idP, 0, dst_id ) > 2 /*RRC_CONNECTED*/) {
+      if (mac_UE_get_rrc_status(ue_mod_idP, dst_id ) > 2 /*RRC_CONNECTED*/) {
         Packet_otg_elt_t *otg_pkt = malloc (sizeof(Packet_otg_elt_t));
 
         if (otg_pkt!=NULL)
