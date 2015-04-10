@@ -59,8 +59,10 @@
 #include "UTIL/OPT/opt.h"
 #include "UTIL/OTG/otg_config.h"
 #include "UTIL/OTG/otg_tx.h"
+#if defined (ENABLE_RAL)
 #include "lteRALenb.h"
 #include "lteRALue.h"
+#endif
 
 #include "cor_SF_sim.h"
 #include "enb_config.h"
