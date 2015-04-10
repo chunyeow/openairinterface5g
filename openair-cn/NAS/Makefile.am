@@ -33,7 +33,7 @@ libnas_la_LDFLAGS = -all-static
 AM_CFLAGS =											\
 	@ADD_CFLAGS@									\
 	-DNAS_MME										\
-	-DEPC_BUILD										\
+	-DNAS_BUILT_IN_EPC										\
 	-DENABLE_ITTI									\
 	-I$(top_srcdir)/COMMON							\
 	-I$(top_srcdir)/SECU							\

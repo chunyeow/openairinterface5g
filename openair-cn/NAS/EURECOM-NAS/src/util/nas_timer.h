@@ -81,7 +81,7 @@ int nas_timer_start(long sec, nas_timer_callback_t cb, void *args);
 int nas_timer_stop(int id);
 int nas_timer_restart(int id);
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 void nas_timer_handle_signal_expiry(long timer_id, void *arg_p);
 #endif
 

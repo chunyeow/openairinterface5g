@@ -80,6 +80,9 @@ int decode_ue_network_capability(UeNetworkCapability *uenetworkcapability, uint8
         uenetworkcapability->gprs_present =1;
         LOG_TRACE(INFO, "uenetworkcapability decoded GPRS\n");
       }
+
+#warning "Force GPRS present if UMTS present"
+      uenetworkcapability->gprs_present =1;
     }
   }
 

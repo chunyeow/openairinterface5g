@@ -349,6 +349,10 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
             }
           }
         };
+        /*pr_info("GTPUAH: PACKET -> NF_HOOK NF_INET_POST_ROUTING/%s encapsulated src: %u.%u.%u.%u dst: %u.%u.%u.%u\n",
+                gtpuah_tg_reg[0].table,
+                NIPADDR(old_iph_p->saddr),
+                NIPADDR(old_iph_p->daddr));*/
 
 
         rt = ip_route_output_key(&init_net, &fl.u.ip4);

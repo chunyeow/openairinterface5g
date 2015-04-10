@@ -112,7 +112,7 @@ int emm_fsm_set_status(emm_fsm_state_t status);
 emm_fsm_state_t emm_fsm_get_status(void);
 #endif
 #ifdef NAS_MME
-struct emm_data_context_t;
+//LG 2015-03-13 struct emm_data_context_t;
 int emm_fsm_set_status(unsigned int ueid, void *ctx, emm_fsm_state_t status);
 emm_fsm_state_t emm_fsm_get_status(unsigned int ueid, void *ctx);
 #endif

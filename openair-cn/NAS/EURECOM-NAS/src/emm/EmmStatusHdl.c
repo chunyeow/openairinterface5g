@@ -147,7 +147,7 @@ int emm_proc_status(unsigned int ueid, int emm_cause)
 #endif
 #ifdef NAS_MME
   emm_sap.u.emm_as.u.status.guti = NULL;
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
   ctx = emm_data_context_get(&_emm_data, ueid);
 # else
   ctx = _emm_data.ctx[ueid];

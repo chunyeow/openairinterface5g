@@ -58,7 +58,7 @@ typedef enum {
 typedef struct gtpv1u_teid_data_s {
   /* UE identifier for oaisim stack */
   module_id_t  enb_id;
-  module_id_t  ue_id;
+  rnti_t       ue_id;
   ebi_t        eps_bearer_id;
 } gtpv1u_teid_data_t;
 
@@ -76,7 +76,7 @@ typedef struct gtpv1u_bearer_s {
 
 typedef struct gtpv1u_ue_data_s {
   /* UE identifier for oaisim stack */
-  module_id_t  ue_id;
+  rnti_t   ue_id;
 
   /* Unique identifier used between PDCP and GTP-U to distinguish UEs */
   uint32_t instance_id;
@@ -121,12 +121,13 @@ typedef struct gtpv1u_data_s {
 
 int
 gtpv1u_new_data_req(
-  uint8_t enb_id,
-  uint8_t ue_id,
-  uint8_t rab_id,
-  uint8_t *buffer,
-  uint32_t buf_len,
-  uint32_t buf_offset);
+  uint8_t  enb_module_idP,
+  rnti_t   ue_rntiP,
+  uint8_t  rab_idP,
+  uint8_t *buffer_pP,
+  uint32_t buf_lenP,
+  uint32_t buf_offsetP
+);
 
 int
 gtpv1u_initial_req(

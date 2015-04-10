@@ -54,7 +54,9 @@
 //static NwGtpv1uStackHandleT gtpv1u_stack = 0;
 static gtpv1u_data_t        gtpv1u_sgw_data;
 
+#if !defined(ENABLE_USE_GTPU_IN_KERNEL)
 static int gtpv1u_send_init_udp(uint16_t port_number);
+#endif
 static int gtpv1u_create_s1u_tunnel(Gtpv1uCreateTunnelReq *create_tunnel_reqP);
 static int gtpv1u_delete_s1u_tunnel(Teid_t context_teidP, Teid_t S1U_teidP);
 static int gtpv1u_update_s1u_tunnel(Gtpv1uUpdateTunnelReq *reqP);
@@ -147,6 +149,7 @@ void gtpu_print_hex_octets(unsigned char* dataP, unsigned long sizeP)
 }
 
 
+#if !defined(ENABLE_USE_GTPU_IN_KERNEL)
 static int gtpv1u_send_init_udp(uint16_t port_number)
 {
   // Create and alloc new message
@@ -168,6 +171,7 @@ static int gtpv1u_send_init_udp(uint16_t port_number)
 
   return itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
 }
+#endif
 
 NwGtpv1uRcT gtpv1u_log_request(NwGtpv1uLogMgrHandleT hLogMgr,
                                NwU32T logLevel,
@@ -179,6 +183,7 @@ NwGtpv1uRcT gtpv1u_log_request(NwGtpv1uLogMgrHandleT hLogMgr,
   return NW_GTPV1U_OK;
 }
 
+#if !defined(ENABLE_USE_GTPU_IN_KERNEL)
 NwGtpv1uRcT gtpv1u_send_udp_msg(
   NwGtpv1uUdpHandleT udpHandle,
   NwU8T *buffer,
@@ -203,7 +208,7 @@ NwGtpv1uRcT gtpv1u_send_udp_msg(
 
   return itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
 }
-
+#endif
 /* Callback called when a gtpv1u message arrived on UDP interface */
 NwGtpv1uRcT gtpv1u_process_stack_req(
   NwGtpv1uUlpHandleT hUlp,

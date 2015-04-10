@@ -251,14 +251,14 @@ static int _mme_api_pdn_id = 0;
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 int mme_api_get_emm_config(mme_api_emm_config_t *config,
                            mme_config_t *mme_config_p)
 #else
 int mme_api_get_emm_config(mme_api_emm_config_t *config)
 #endif
 {
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
   int i;
 #endif
   LOG_FUNC_IN;
@@ -285,7 +285,7 @@ int mme_api_get_emm_config(mme_api_emm_config_t *config)
 
   config->gummei.MMEgid = mme_config_p->gummei.mme_gid[0];
   config->gummei.MMEcode = mme_config_p->gummei.mmec[0];
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
   /* SR: this config param comes from MME global config */
   if (mme_config_p->emergency_attach_supported != 0) {

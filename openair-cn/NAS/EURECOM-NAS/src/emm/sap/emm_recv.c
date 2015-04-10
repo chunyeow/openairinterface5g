@@ -510,7 +510,8 @@ int emm_recv_security_mode_command(security_mode_command_msg *msg,
 int emm_recv_attach_request(unsigned int ueid, const attach_request_msg *msg,
                             int *emm_cause)
 {
-  int rc;
+  int                    rc;
+  uint8_t                gea = 0;
   emm_proc_attach_type_t type;
 
   LOG_FUNC_IN;
@@ -639,6 +640,16 @@ int emm_recv_attach_request(unsigned int ueid, const attach_request_msg *msg,
   }
 
   /* Execute the requested UE attach procedure */
+#warning " TODO gea to be review"
+
+  if (msg->msnetworkcapability.msnetworkcapabilityvalue.length > 0) {
+    gea = (msg->msnetworkcapability.msnetworkcapabilityvalue.value[0] & 0x80) >> 1;
+
+    if ((gea) && (msg->msnetworkcapability.msnetworkcapabilityvalue.length >= 2)) {
+      gea |= ((msg->msnetworkcapability.msnetworkcapabilityvalue.value[1] & 0x60) >> 1);
+    }
+  }
+
   rc = emm_proc_attach_request(ueid, type,
                                msg->naskeysetidentifier.tsc != NAS_KEY_SET_IDENTIFIER_MAPPED,
                                msg->naskeysetidentifier.naskeysetidentifier,
@@ -648,13 +659,7 @@ int emm_recv_attach_request(unsigned int ueid, const attach_request_msg *msg,
                                msg->uenetworkcapability.ucs2,
                                msg->uenetworkcapability.uea,
                                msg->uenetworkcapability.uia,
-                               0x00 |
-                               //((msg->uenetworkcapability.spare & 0x7) << 5) | // spare coded as zero
-                               ((msg->uenetworkcapability.csfb  & 0x1) << 4) |
-                               ((msg->uenetworkcapability.lpp   & 0x1) << 3) |
-                               ((msg->uenetworkcapability.lcs   & 0x1) << 2) |
-                               ((msg->uenetworkcapability.srvcc & 0x1) << 1) |
-                               (msg->uenetworkcapability.nf     & 0x1),
+                               gea,
                                msg->uenetworkcapability.umts_present,
                                msg->uenetworkcapability.gprs_present,
                                &msg->esmmessagecontainer.esmmessagecontainercontents);

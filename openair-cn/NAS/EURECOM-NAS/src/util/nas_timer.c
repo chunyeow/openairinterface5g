@@ -278,7 +278,7 @@ int nas_timer_start(long sec, nas_timer_callback_t cb, void *args)
   /* Insert the new entry into the timer queue */
   _nas_timer_db_insert_entry(id, te);
 #if defined(ENABLE_ITTI)
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
   ret = timer_setup(sec, 0, TASK_NAS_MME, INSTANCE_DEFAULT, TIMER_PERIODIC, args, &timer_id);
 # else
   ret = timer_setup(sec, 0, TASK_NAS_UE, INSTANCE_DEFAULT, TIMER_PERIODIC, args, &timer_id);

@@ -200,7 +200,6 @@ typedef struct {
  * \param imsi Imsi to find in UE map
  * @returns an UE context matching the IMSI or NULL if the context doesn't exists
  **/
-inline
 ue_context_t *mme_ue_context_exists_imsi(mme_ue_context_t *mme_ue_context,
     mme_app_imsi_t imsi);
 
@@ -208,7 +207,6 @@ ue_context_t *mme_ue_context_exists_imsi(mme_ue_context_t *mme_ue_context,
  * \param teid The tunnel endpoint identifier used between MME and S-GW
  * @returns an UE context matching the teid or NULL if the context doesn't exists
  **/
-inline
 ue_context_t *mme_ue_context_exists_s11_teid(mme_ue_context_t *mme_ue_context,
     uint32_t teid);
 
@@ -216,7 +214,6 @@ ue_context_t *mme_ue_context_exists_s11_teid(mme_ue_context_t *mme_ue_context,
  * \param mme_ue_s1ap_id The UE id identifier used in S1AP MME (and NAS)
  * @returns an UE context matching the mme_ue_s1ap_id or NULL if the context doesn't exists
  **/
-inline
 ue_context_t *mme_ue_context_exists_mme_ue_s1ap_id(mme_ue_context_t *mme_ue_context,
     uint32_t mme_ue_s1ap_id);
 
@@ -224,7 +221,6 @@ ue_context_t *mme_ue_context_exists_mme_ue_s1ap_id(mme_ue_context_t *mme_ue_cont
  * \param nas_ue_id The UE id identifier used in S1AP MME and NAS
  * @returns an UE context matching the nas_ue_id or NULL if the context doesn't exists
  **/
-inline
 ue_context_t *mme_ue_context_exists_nas_ue_id(mme_ue_context_t *mme_ue_context,
     uint32_t nas_ue_id);
 
@@ -232,7 +228,6 @@ ue_context_t *mme_ue_context_exists_nas_ue_id(mme_ue_context_t *mme_ue_context,
  * \param guti The GUTI used by the UE
  * @returns an UE context matching the guti or NULL if the context doesn't exists
  **/
-inline
 ue_context_t *mme_ue_context_exists_guti(mme_ue_context_t *mme_ue_context,
     GUTI_t guti);
 

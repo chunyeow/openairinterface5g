@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(EPC_BUILD) && defined(NAS_MME)
+#if defined(NAS_BUILT_IN_EPC) && defined(NAS_MME)
 #include "assertions.h"
 #include "tree.h"
 #include "emmData.h"

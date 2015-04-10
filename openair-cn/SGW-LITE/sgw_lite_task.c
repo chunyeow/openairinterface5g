@@ -155,6 +155,15 @@ int sgw_lite_init(char* config_file_name_pP)
   spgw_system("rmmod x_tables       > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
   spgw_system("rmmod nf_conntrack_netlink nfnetlink nf_nat nf_conntrack_ipv4 nf_conntrack  > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
   spgw_system("modprobe ip_tables", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+  spgw_system("modprobe iptable_filter", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+  spgw_system("modprobe iptable_mangle", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+  spgw_system("modprobe iptable_nat",    SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+  spgw_system("modprobe iptable_raw",    SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+  spgw_system("modprobe ipt_MASQUERADE", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+  spgw_system("modprobe ipt_LOG",        SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+  spgw_system("modprobe nf_conntrack",   SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+  spgw_system("modprobe nf_conntrack_ipv4",   SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+  spgw_system("modprobe nf_nat",         SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
   spgw_system("modprobe x_tables", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
   spgw_system("sysctl -w net.ipv4.netfilter.ip_conntrack_max=16000", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
   spgw_system("sysctl -w net.ipv4.ip_forward=1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);

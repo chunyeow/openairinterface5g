@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
+
 #include "s1ap_common.h"
 #include "s1ap_ies_defs.h"
 #include "s1ap_mme_encoder.h"
@@ -211,7 +212,7 @@ int s1ap_generate_downlink_nas_transport(const uint32_t ue_id, void * const data
     /* If the UE-associated logical S1-connection is not established,
      * the MME shall allocate a unique MME UE S1AP ID to be used for the UE.
      */
-    DevMessage("This case is not handled right now\n");
+    S1AP_DEBUG("Unknown UE MME ID %08X, This case is not handled right now\n", ue_id);
 
     return -1;
   } else {
@@ -580,8 +581,8 @@ void s1ap_handle_conn_est_cnf(const mme_app_connection_establishment_cnf_t * con
   initialContextSetupRequest_p->eNB_UE_S1AP_ID = (unsigned long)ue_ref->eNB_ue_s1ap_id;
 
   /* uEaggregateMaximumBitrateDL and uEaggregateMaximumBitrateUL expressed in term of bits/sec */
-  initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL = conn_est_cnf_pP->ambr.br_dl;
-  initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL = conn_est_cnf_pP->ambr.br_ul;
+  asn_uint642INTEGER(&initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL, conn_est_cnf_pP->ambr.br_dl);
+  asn_uint642INTEGER(&initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL, conn_est_cnf_pP->ambr.br_ul);
 
   e_RABToBeSetup.e_RAB_ID                    = conn_est_cnf_pP->eps_bearer_id; //5;
   e_RABToBeSetup.e_RABlevelQoSParameters.qCI = conn_est_cnf_pP->bearer_qos_qci;

@@ -52,7 +52,7 @@ Description Defines the EPS Mobility Management procedures executed at
 #include "mme_api.h"
 #include "emmData.h"
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 # include "assertions.h"
 #endif
 
@@ -229,7 +229,7 @@ static const emm_fsm_handler_t _emm_fsm_handlers[EMM_STATE_MAX] = {
  * -----------------------------------------------------------------------------
  */
 
-#if !defined(EPC_BUILD)
+#if !defined(NAS_BUILT_IN_EPC)
 emm_fsm_state_t _emm_fsm_status[EMM_FSM_NB_UE_MAX];
 #endif
 
@@ -260,7 +260,7 @@ void emm_fsm_initialize(void)
   _emm_fsm_status[0] = EMM_NULL;
 #endif
 
-#if defined(NAS_MME) && !defined(EPC_BUILD)
+#if defined(NAS_MME) && !defined(NAS_BUILT_IN_EPC)
 
   for (ueid = 0; ueid < EMM_FSM_NB_UE_MAX; ueid++) {
     _emm_fsm_status[ueid] = EMM_DEREGISTERED;
@@ -299,7 +299,7 @@ int emm_fsm_set_status(
   unsigned int ueid = 0;
 #endif
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
   emm_data_context_t *emm_ctx = (emm_data_context_t *)ctx;
 
   DevAssert(emm_ctx != NULL);
@@ -360,7 +360,7 @@ emm_fsm_state_t emm_fsm_get_status(void)
 #ifdef NAS_MME
 emm_fsm_state_t emm_fsm_get_status(unsigned int ueid, void *ctx)
 {
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
   emm_data_context_t *emm_ctx = (emm_data_context_t *)ctx;
 
   if (emm_ctx != NULL) {
@@ -406,7 +406,7 @@ int emm_fsm_process(const emm_reg_t *evt)
   status = _emm_fsm_status[0];
 #endif
 #ifdef NAS_MME
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
   emm_data_context_t *emm_ctx = (emm_data_context_t *)evt->ctx;
 
   DevAssert(emm_ctx != NULL);
@@ -426,7 +426,7 @@ int emm_fsm_process(const emm_reg_t *evt)
             _emm_fsm_event_str[primitive - _EMMREG_START - 1], primitive,
             _emm_fsm_status_str[status]);
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
   DevAssert(status != EMM_INVALID);
 #endif
 

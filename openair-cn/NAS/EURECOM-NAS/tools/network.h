@@ -52,6 +52,7 @@ Description Defines a list of PLMN network operators
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
 
+#define TEST_PLMN {0,0,0x0f,1,1,0}  // 00101
 #define SFR_PLMN_1  {0,2,0x0f,8,0,1}  // 20810
 #define SFR_PLMN_2  {0,2,0x0f,8,1,1}  // 20811
 #define SFR_PLMN_3  {0,2,0x0f,8,3,1}  // 20813
@@ -71,7 +72,8 @@ Description Defines a list of PLMN network operators
  * PLMN network operator record index
  */
 enum {
-  SFR1=0,
+  TEST1=0,
+  SFR1,
   SFR2,
   SFR3,
   TM1,
@@ -104,6 +106,7 @@ typedef struct {
  * The list of PLMN network operator records
  */
 network_record_t network_records[] = {
+  {00101, TEST_PLMN, "Test network",     "OAI4G",     0x0001, 0xfffd},
   {20810, SFR_PLMN_1, "SFR France",      "SFR",       0x0001, 0xfffd},
   {20811, SFR_PLMN_2, "SFR France",      "SFR",       0x0001, 0xfffd},
   {20813, SFR_PLMN_3, "SFR France",      "SFR",       0x0001, 0xfffd},

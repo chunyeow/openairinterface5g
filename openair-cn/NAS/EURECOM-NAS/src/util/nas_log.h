@@ -45,7 +45,7 @@ Description Usefull logging functions
 #ifndef __NAS_LOG_H__
 #define __NAS_LOG_H__
 
-#if defined(UE_BUILD) && defined(NAS_UE)
+#if defined(NAS_BUILT_IN_UE) && defined(NAS_UE)
 # include "UTIL/LOG/log.h"
 # undef LOG_TRACE
 #endif
@@ -102,7 +102,7 @@ typedef enum {
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
 
-#if defined(UE_BUILD) && defined(NAS_UE)
+#if defined(NAS_BUILT_IN_UE) && defined(NAS_UE)
 # define LOG_TRACE(s, x, args...)                               \
 do {                                                            \
     switch (s) {                                                \

@@ -456,7 +456,7 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
             _emm_detach_type_str[type], type, ueid);
 
   /* Get the UE context */
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
   if (ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, ueid);
@@ -513,7 +513,7 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
     }
 
     /* Release the EMM context */
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
     emm_data_context_remove(&_emm_data, emm_ctx);
     free(emm_ctx);
 #else

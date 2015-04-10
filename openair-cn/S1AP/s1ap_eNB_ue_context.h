@@ -78,7 +78,7 @@ typedef struct s1ap_eNB_ue_context_s {
   s1ap_eNB_instance_t *eNB_instance;
 } s1ap_eNB_ue_context_t;
 
-inline int s1ap_eNB_compare_eNB_ue_s1ap_id(
+int s1ap_eNB_compare_eNB_ue_s1ap_id(
   struct s1ap_eNB_ue_context_s *p1, struct s1ap_eNB_ue_context_s *p2);
 
 /* Generate the tree management functions prototypes */

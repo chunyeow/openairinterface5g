@@ -44,7 +44,7 @@ Description
 
 *****************************************************************************/
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 #include "intertask_interface.h"
 #endif
 
@@ -53,7 +53,7 @@ Description
 
 typedef enum emmcn_primitive_s {
   _EMMCN_START = 400,
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
   _EMMCN_AUTHENTICATION_PARAM_RES,
   _EMMCN_AUTHENTICATION_PARAM_FAIL,
   _EMMCN_DEREGISTER_UE,
@@ -63,7 +63,7 @@ typedef enum emmcn_primitive_s {
   _EMMCN_END
 } emm_cn_primitive_t;
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 typedef nas_auth_param_rsp_t        emm_cn_auth_res_t;
 typedef nas_auth_param_fail_t       emm_cn_auth_fail_t;
 typedef nas_pdn_connectivity_rsp_t  emm_cn_pdn_res_t;

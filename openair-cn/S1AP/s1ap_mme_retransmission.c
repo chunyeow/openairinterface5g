@@ -55,7 +55,7 @@ RB_PROTOTYPE(s1ap_timer_map, s1ap_timer_map_s, entries,
 RB_GENERATE(s1ap_timer_map, s1ap_timer_map_s, entries,
             s1ap_mme_timer_map_compare_id);
 
-inline int s1ap_mme_timer_map_compare_id(
+int s1ap_mme_timer_map_compare_id(
   struct s1ap_timer_map_s *p1, struct s1ap_timer_map_s *p2)
 {
   if (p1->mme_ue_s1ap_id > 0) {

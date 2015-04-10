@@ -96,18 +96,32 @@ int encode_ue_security_capability(UeSecurityCapability *uesecuritycapability, ui
   *(buffer + encoded) =  uesecuritycapability->eia;
   encoded++;
 
+  // From ETSI TS 124 301 V10.15.0 (2014-10) 9.9.3.36 Security capability:
+  // Octets 5, 6, and 7 are optional. If octet 5 is included, then also octet 6 shall be included and octet 7 may be included.
+  // If a UE did not indicate support of any security algorithm for Gb mode, octet 7 shall not be included. If the UE did not
+  // indicate support of any security algorithm for Iu mode and Gb mode, octets 5, 6, and 7 shall not be included.
+  // If the UE did not indicate support of any security algorithm for Iu mode but indicated support of a security algorithm for
+  // Gb mode, octets 5, 6, and 7 shall be included. In this case octets 5 and 6 are filled with the value of zeroes.
   if (uesecuritycapability->umts_present) {
     *(buffer + encoded) = uesecuritycapability->uea;
     encoded++;
     *(buffer + encoded) = 0x00 |
                           (uesecuritycapability->uia & 0x7f);
     encoded++;
-#warning "force gea to 0x60 if umts security capability present"
-    //if (uesecuritycapability->gprs_present) {
-    *(buffer + encoded) = 0x00 | 0x60;
-    //(uesecuritycapability->gea & 0x7f);
-    encoded++;
-    //}
+
+    if (uesecuritycapability->gprs_present) {
+      *(buffer + encoded) = 0x00 | (uesecuritycapability->gea & 0x7f);
+      encoded++;
+    }
+  } else {
+    if (uesecuritycapability->gprs_present) {
+      *(buffer + encoded) = 0x00;
+      encoded++;
+      *(buffer + encoded) = 0x00;
+      encoded++;
+      *(buffer + encoded) = 0x00 | (uesecuritycapability->gea & 0x7f);
+      encoded++;
+    }
   }
 
   *lenPtr = encoded - 1 - ((iei > 0) ? 1 : 0);

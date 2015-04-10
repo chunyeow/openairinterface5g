@@ -128,6 +128,7 @@ nwGtpv1uGpduMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
 {
   NwGtpv1uStackT *pStack = (NwGtpv1uStackT *) hGtpuStackHandle;
   NwGtpv1uMsgT   *pMsg;
+  //NwU32T          header_len  = 0;
   NwU32T          msgExtraLen = 0;
 
   if(gpGtpv1uMsgPool) {

@@ -85,7 +85,9 @@ int main(int argc, char *argv[])
   CHECK_INIT_RETURN(mme_app_init(&mme_config));
   CHECK_INIT_RETURN(s6a_init(&mme_config));
   CHECK_INIT_RETURN(sgw_lite_init(mme_config.config_file));
+#if ! defined(ENABLE_USE_GTPU_IN_KERNEL)
   CHECK_INIT_RETURN(sgi_init(&spgw_config.pgw_config));
+#endif
   /* Handle signals here */
   itti_wait_tasks_end();
 

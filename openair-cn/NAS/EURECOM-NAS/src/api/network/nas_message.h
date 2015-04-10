@@ -49,7 +49,7 @@ Description Defines the layer 3 messages supported by the NAS sublayer
 
 #include "commonDef.h"
 #include "emm_msg.h"
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 #include "emmData.h"
 #endif
 #include "esm_msg.h"

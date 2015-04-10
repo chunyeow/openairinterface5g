@@ -226,7 +226,7 @@ typedef struct {
   uint16_t global_cnx_id;
 } s1ap_eNB_internal_data_t;
 
-inline int s1ap_eNB_compare_assoc_id(
+int s1ap_eNB_compare_assoc_id(
   struct s1ap_eNB_mme_data_s *p1, struct s1ap_eNB_mme_data_s *p2);
 
 /* Generate the tree management functions */

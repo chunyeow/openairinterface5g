@@ -39,7 +39,7 @@ typedef struct s1ap_timer_map_s {
   RB_ENTRY(s1ap_timer_map_s) entries;
 } s1ap_timer_map_t;
 
-inline int s1ap_mme_timer_map_compare_id(
+int s1ap_mme_timer_map_compare_id(
   struct s1ap_timer_map_s *p1, struct s1ap_timer_map_s *p2);
 
 int s1ap_handle_timer_expiry(timer_has_expired_t *timer_has_expired);

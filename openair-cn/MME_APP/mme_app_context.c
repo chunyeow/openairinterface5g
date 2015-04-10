@@ -50,8 +50,8 @@
 #include "mme_app_ue_context.h"
 #include "mme_app_defs.h"
 
-static inline int ue_context_compare_identifiers(struct ue_context_s *p1,
-    struct ue_context_s *p2);
+int ue_context_compare_identifiers(struct ue_context_s *p1,
+                                   struct ue_context_s *p2);
 
 RB_PROTOTYPE(ue_context_map, ue_context_s, rb_entry,
              ue_context_compare_identifiers);
@@ -59,7 +59,7 @@ RB_PROTOTYPE(ue_context_map, ue_context_s, rb_entry,
 RB_GENERATE(ue_context_map, ue_context_s, rb_entry,
             ue_context_compare_identifiers);
 
-static inline int ue_context_compare_identifiers(
+extern inline int ue_context_compare_identifiers(
   struct ue_context_s *p1, struct ue_context_s *p2)
 {
   MME_APP_DEBUG(" ue_context_compare_identifiers IMSI           %"SCNu64"\n", p1->imsi);
@@ -68,6 +68,8 @@ static inline int ue_context_compare_identifiers(
   MME_APP_DEBUG(" ue_context_compare_identifiers ue_id          %08x\n"       , p1->ue_id);
 
   if (p1->imsi > 0) {
+    MME_APP_DEBUG(" with IMSI          %"SCNu64"\n", p2->imsi);
+
     /* if IMSI provided */
     if (p1->imsi > p2->imsi) {
       return 1;
@@ -77,6 +79,8 @@ static inline int ue_context_compare_identifiers(
       return -1;
     }
   } else if (p1->mme_s11_teid > 0) {
+    MME_APP_DEBUG(" with mme_s11_teid          %08x\n", p2->mme_s11_teid);
+
     /* if s11 teid provided */
     if (p1->mme_s11_teid > p2->mme_s11_teid) {
       return 1;
@@ -86,7 +90,7 @@ static inline int ue_context_compare_identifiers(
       return -1;
     }
   } else if (p1->mme_ue_s1ap_id > 0) {
-    MME_APP_DEBUG(" with mme_ue_s1ap_id          %d\n"       , p2->mme_ue_s1ap_id);
+    MME_APP_DEBUG(" with mme_ue_s1ap_id          %08x\n", p2->mme_ue_s1ap_id);
 
     /* if s1ap ue id provided */
     if (p1->mme_ue_s1ap_id > p2->mme_ue_s1ap_id) {
@@ -97,6 +101,8 @@ static inline int ue_context_compare_identifiers(
       return -1;
     }
   }  else if (p1->ue_id > 0) {
+    MME_APP_DEBUG(" with ue_id          %08x\n", p2->ue_id);
+
     /* if nas ue_id provided */
     if (p1->ue_id > p2->ue_id) {
       return 1;
@@ -152,7 +158,7 @@ ue_context_t *mme_create_new_ue_context(void)
   return new_p;
 }
 
-inline
+
 struct ue_context_s *mme_ue_context_exists_imsi(mme_ue_context_t *mme_ue_context,
     mme_app_imsi_t imsi)
 {
@@ -166,7 +172,7 @@ struct ue_context_s *mme_ue_context_exists_imsi(mme_ue_context_t *mme_ue_context
                  &reference);
 }
 
-inline
+
 struct ue_context_s *mme_ue_context_exists_s11_teid(mme_ue_context_t *mme_ue_context,
     uint32_t teid)
 {
@@ -180,7 +186,8 @@ struct ue_context_s *mme_ue_context_exists_s11_teid(mme_ue_context_t *mme_ue_con
                  &reference);
 }
 
-inline
+
+
 ue_context_t *mme_ue_context_exists_mme_ue_s1ap_id(
   mme_ue_context_t *mme_ue_context,
   uint32_t mme_ue_s1ap_id)
@@ -195,7 +202,8 @@ ue_context_t *mme_ue_context_exists_mme_ue_s1ap_id(
                  &reference);
 }
 
-inline
+
+
 ue_context_t *mme_ue_context_exists_nas_ue_id(
   mme_ue_context_t *mme_ue_context,
   uint32_t nas_ue_id)
@@ -211,7 +219,8 @@ ue_context_t *mme_ue_context_exists_nas_ue_id(
 }
 
 
-inline
+
+
 ue_context_t *mme_ue_context_exists_guti(mme_ue_context_t *mme_ue_context,
     GUTI_t guti)
 {

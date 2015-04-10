@@ -384,7 +384,7 @@ int emm_proc_identification_complete(unsigned int ueid, const imsi_t *imsi,
   }
 
   /* Get the UE context */
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
   if (ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, ueid);
@@ -551,7 +551,7 @@ int _identification_request(identification_data_t *data)
   emm_sap.u.emm_as.u.security.msgType = EMM_AS_MSG_TYPE_IDENT;
   emm_sap.u.emm_as.u.security.identType = data->type;
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
   if (data->ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, data->ueid);

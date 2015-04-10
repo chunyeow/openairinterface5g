@@ -123,27 +123,27 @@ int s1ap_mme_init(const mme_config_t *mme_config);
  * \param eNB_id The unique eNB id to search in list
  * @returns NULL if no eNB matchs the eNB id, or reference to the eNB element in list if matches
  **/
-eNB_description_t* s1ap_is_eNB_id_in_list(uint32_t eNB_id);
+eNB_description_t* s1ap_is_eNB_id_in_list(const uint32_t eNB_id);
 
 /** \brief Look for given eNB SCTP assoc id in the list
  * \param eNB_id The unique sctp assoc id to search in list
  * @returns NULL if no eNB matchs the sctp assoc id, or reference to the eNB element in list if matches
  **/
-eNB_description_t* s1ap_is_eNB_assoc_id_in_list(uint32_t sctp_assoc_id);
+eNB_description_t* s1ap_is_eNB_assoc_id_in_list(const uint32_t sctp_assoc_id);
 
 /** \brief Look for given ue eNB id in the list
  * \param eNB_id The unique ue_eNB_id to search in list
  * @returns NULL if no UE matchs the ue_eNB_id, or reference to the ue element in list if matches
  **/
 ue_description_t* s1ap_is_ue_eNB_id_in_list(eNB_description_t *eNB_ref,
-    uint32_t eNB_ue_s1ap_id);
+    const uint32_t eNB_ue_s1ap_id);
 
 /** \brief Look for given ue mme id in the list
  * \param eNB_id The unique ue_mme_id to search in list
  * @returns NULL if no UE matchs the ue_mme_id, or reference to the ue element in list if matches
  **/
-ue_description_t* s1ap_is_ue_mme_id_in_list(uint32_t ue_mme_id);
-ue_description_t* s1ap_is_teid_in_list(uint32_t teid);
+ue_description_t* s1ap_is_ue_mme_id_in_list(const uint32_t ue_mme_id);
+ue_description_t* s1ap_is_teid_in_list(const uint32_t teid);
 
 /** \brief Allocate and add to the list a new eNB descriptor
  * @returns Reference to the new eNB element in list
@@ -154,7 +154,7 @@ eNB_description_t* s1ap_new_eNB(void);
  * \param sctp_assoc_id association ID over SCTP
  * @returns Reference to the new UE element in list
  **/
-ue_description_t* s1ap_new_ue(uint32_t sctp_assoc_id);
+ue_description_t* s1ap_new_ue(const uint32_t sctp_assoc_id);
 
 /** \brief Dump the eNB list
  * Calls dump_eNB for each eNB in list

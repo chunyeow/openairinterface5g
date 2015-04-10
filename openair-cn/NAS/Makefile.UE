@@ -307,7 +307,7 @@ CFLAGS =                                       \
     -g                                         \
     -Wall                                      \
 	-DNAS_UE                                   \
-	-DUE_BUILD                                 \
+	-DNAS_BUILT_IN_UE                                 \
 	-Wuninitialized                            \
 	-Werror=implicit-function-declaration      \
 	$(UENAS_CFLAGS)                            \

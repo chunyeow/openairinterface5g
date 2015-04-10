@@ -48,6 +48,9 @@
 #include "s1ap_eNB_nas_procedures.h"
 #include "s1ap_eNB_management_procedures.h"
 #include "s1ap_eNB_context_management_procedures.h"
+#ifdef MESSAGE_CHART_GENERATOR
+#include "msc.h"
+#endif
 
 
 int s1ap_ue_context_release_complete(instance_t instance,
@@ -98,6 +101,18 @@ int s1ap_ue_context_release_complete(instance_t instance,
     return -1;
   }
 
+#ifdef MESSAGE_CHART_GENERATOR
+  msc_log_tx_message(
+    MSC_S1AP_ENB,
+    MSC_S1AP_MME,
+    buffer,
+    length,
+    MSC_AS_TIME_FMT" UEContextRelease successfulOutcome eNB_ue_s1ap_id %u mme_ue_s1ap_id %u",
+    0,0, //MSC_AS_TIME_ARGS(ctxt_pP),
+    ue_ctxt_release_complete_ies_p->eNB_UE_S1AP_ID,
+    ue_ctxt_release_complete_ies_p->mme_ue_s1ap_id);
+#endif
+
   /* UE associated signalling -> use the allocated stream */
   s1ap_eNB_itti_send_sctp_data_req(s1ap_eNB_instance_p->instance,
                                    ue_context_p->mme_ref->assoc_id, buffer,
@@ -114,7 +129,12 @@ int s1ap_ue_context_release_complete(instance_t instance,
 
   if ((ue_context2_p = RB_REMOVE(s1ap_ue_map, &s1ap_eNB_instance_p->s1ap_ue_head, ue_context_p))
       == NULL) {
+    S1AP_WARN("Removed UE context eNB_ue_s1ap_id %u\n",
+              ue_context2_p->eNB_ue_s1ap_id);
     s1ap_eNB_free_ue_context(ue_context2_p);
+  } else {
+    S1AP_WARN("Removing UE context eNB_ue_s1ap_id %u: did not find context\n",
+              ue_context_p->eNB_ue_s1ap_id);
   }
 
   return ret;
@@ -194,6 +214,18 @@ int s1ap_ue_context_release_req(instance_t instance,
     S1AP_ERROR("Failed to encode UE context release complete\n");
     return -1;
   }
+
+#ifdef MESSAGE_CHART_GENERATOR
+  msc_log_tx_message(
+    MSC_S1AP_ENB,
+    MSC_S1AP_MME,
+    buffer,
+    length,
+    MSC_AS_TIME_FMT" UEContextReleaseRequest initiatingMessage eNB_ue_s1ap_id %u mme_ue_s1ap_id %u",
+    0,0,//MSC_AS_TIME_ARGS(ctxt_pP),
+    ue_ctxt_release_request_ies_p->eNB_UE_S1AP_ID,
+    ue_ctxt_release_request_ies_p->mme_ue_s1ap_id);
+#endif
 
   /* UE associated signalling -> use the allocated stream */
   s1ap_eNB_itti_send_sctp_data_req(s1ap_eNB_instance_p->instance,

@@ -666,7 +666,7 @@ int esm_proc_pdn_connectivity_request(emm_data_context_t *ctx, int pti,
             (apn) ? (char *)(apn->value) : "null",
             (pdn_addr) ? (char *)(pdn_addr->value) : "null");
 
-#if !defined(EPC_BUILD)
+#if !defined(NAS_BUILT_IN_EPC)
 
   /* UE identifier sanity check */
   if (ctx->ueid >= ESM_DATA_NB_UE_MAX) {

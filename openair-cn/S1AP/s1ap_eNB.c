@@ -55,6 +55,9 @@
 
 #include "s1ap_eNB_itti_messaging.h"
 
+#include "s1ap_eNB_ue_context.h" // test, to be removed
+
+
 #include "assertions.h"
 #include "conversions.h"
 
@@ -322,8 +325,22 @@ void *s1ap_eNB_task(void *arg)
     break;
 
     case S1AP_UE_CONTEXT_RELEASE_REQ: {
+      s1ap_eNB_instance_t               *s1ap_eNB_instance_p           = NULL; // test
+      struct s1ap_eNB_ue_context_s      *ue_context_p                  = NULL; // test
+
       s1ap_ue_context_release_req(ITTI_MESSAGE_GET_INSTANCE(received_msg),
                                   &S1AP_UE_CONTEXT_RELEASE_REQ(received_msg));
+
+
+      s1ap_eNB_instance_p = s1ap_eNB_get_instance(ITTI_MESSAGE_GET_INSTANCE(received_msg)); // test
+      DevAssert(s1ap_eNB_instance_p != NULL); // test
+
+      if ((ue_context_p = s1ap_eNB_get_ue_context(s1ap_eNB_instance_p,
+                          S1AP_UE_CONTEXT_RELEASE_REQ(received_msg).eNB_ue_s1ap_id)) == NULL) { // test
+        /* The context for this eNB ue s1ap id doesn't exist in the map of eNB UEs */
+        S1AP_ERROR("Failed to find ue context associated with eNB ue s1ap id: %u\n",
+                   S1AP_UE_CONTEXT_RELEASE_REQ(received_msg).eNB_ue_s1ap_id); // test
+      }  // test
     }
     break;
 

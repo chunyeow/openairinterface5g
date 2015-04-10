@@ -27,20 +27,20 @@
 
  *******************************************************************************/
 /*****************************************************************************
- Source   usim_data.c
+Source    usim_data.c
 
- Version    0.1
+Version   0.1
 
- Date   2012/10/31
+Date    2012/10/31
 
- Product    USIM data generator
+Product   USIM data generator
 
- Subsystem  USIM data generator main process
+Subsystem USIM data generator main process
 
- Author   Frederic Maurel
+Author    Frederic Maurel
 
- Description  Implements the utility used to generate data stored in the
- USIM application
+Description Implements the utility used to generate data stored in the
+    USIM application
 
  *****************************************************************************/
 
@@ -53,7 +53,7 @@
 #include <stdlib.h> // exit
 #include <string.h> // memset, memcpy, strncpy
 
-#define SELECTED_PLMN SFR1
+#define SELECTED_PLMN TEST1
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -104,7 +104,6 @@ int main (int argc, const char* argv[])
 {
   int rc;
   usim_data_t usim_data;
-  int i;
 
   unsigned char gen_data;
 
@@ -115,12 +114,12 @@ int main (int argc, const char* argv[])
     fprintf(stderr, "Invalid parameter\n");
     _display_usage(argv[0]);
     exit(EXIT_FAILURE);
-  } else if ((strcmp(argv[1], "--gen") == 0)
-             || (strcmp(argv[1], "-g") == 0)) {
+  } else if ( (strcmp(argv[1], "--gen") == 0) ||
+              (strcmp(argv[1], "-g") == 0) ) {
     /* Generate USIM data files */
     gen_data = TRUE;
-  } else if ((strcmp(argv[1], "--print") == 0)
-             || (strcmp(argv[1], "-p") == 0)) {
+  } else if ( (strcmp(argv[1], "--print") == 0) ||
+              (strcmp(argv[1], "-p") == 0) ) {
     /* Display content of USIM data files */
     gen_data = FALSE;
   } else {
@@ -164,31 +163,31 @@ int main (int argc, const char* argv[])
      * International Mobile Subscriber Identity
      * IMSI = MCC + MNC + MSIN = 208 (France) + 10 (SFR) + 00001234
      */
-#warning "IMSI 208.10.00001234"
+    //#warning "IMSI 208.10.00001234"
     /*  usim_data.imsi.length = 8;
-     usim_data.imsi.u.num.parity = EVEN_PARITY;      // Parity: even
-     usim_data.imsi.u.num.digit1 = 2;                // MCC digit 1
-     usim_data.imsi.u.num.digit2 = 0;                // MCC digit 2
-     usim_data.imsi.u.num.digit3 = 8;                // MCC digit 3
-     usim_data.imsi.u.num.digit4 = 1;                // MNC digit 1
-     usim_data.imsi.u.num.digit5 = 0;                // MNC digit 2
-     usim_data.imsi.u.num.digit6 = 0b1111;     // MNC digit 3
-     usim_data.imsi.u.num.digit7 = 0;
-     usim_data.imsi.u.num.digit8 = 0;
-     usim_data.imsi.u.num.digit9 = 0;
-     usim_data.imsi.u.num.digit10 = 0;
-     usim_data.imsi.u.num.digit11 = 1;
-     usim_data.imsi.u.num.digit12 = 2;
-     usim_data.imsi.u.num.digit13 = 3;
-     usim_data.imsi.u.num.digit14 = 4;
-     usim_data.imsi.u.num.digit15 = 0b1111;*/
+    usim_data.imsi.u.num.parity = EVEN_PARITY;      // Parity: even
+    usim_data.imsi.u.num.digit1 = 2;                // MCC digit 1
+    usim_data.imsi.u.num.digit2 = 0;                // MCC digit 2
+    usim_data.imsi.u.num.digit3 = 8;                // MCC digit 3
+    usim_data.imsi.u.num.digit4 = 1;                // MNC digit 1
+    usim_data.imsi.u.num.digit5 = 0;                // MNC digit 2
+    usim_data.imsi.u.num.digit6 = 0b1111;     // MNC digit 3
+    usim_data.imsi.u.num.digit7 = 0;
+    usim_data.imsi.u.num.digit8 = 0;
+    usim_data.imsi.u.num.digit9 = 0;
+    usim_data.imsi.u.num.digit10 = 0;
+    usim_data.imsi.u.num.digit11 = 1;
+    usim_data.imsi.u.num.digit12 = 2;
+    usim_data.imsi.u.num.digit13 = 3;
+    usim_data.imsi.u.num.digit14 = 4;
+    usim_data.imsi.u.num.digit15 = 0b1111;*/
     usim_data.imsi.length = 8;
     usim_data.imsi.u.num.parity = 0x0;  // Type of identity = IMSI, even
-    usim_data.imsi.u.num.digit1 = 2;// MCC digit 1
-    usim_data.imsi.u.num.digit2 = 0;// MCC digit 2
-    usim_data.imsi.u.num.digit3 = 8;// MCC digit 3
-    usim_data.imsi.u.num.digit4 = 1;// MNC digit 1
-    usim_data.imsi.u.num.digit5 = 0;// MNC digit 2
+    usim_data.imsi.u.num.digit1 = 0;    // MCC digit 1
+    usim_data.imsi.u.num.digit2 = 0;    // MCC digit 2
+    usim_data.imsi.u.num.digit3 = 1;    // MCC digit 3
+    usim_data.imsi.u.num.digit4 = 0;    // MNC digit 1
+    usim_data.imsi.u.num.digit5 = 1;    // MNC digit 2
     usim_data.imsi.u.num.digit6 = 0;
     usim_data.imsi.u.num.digit7 = 0;
     usim_data.imsi.u.num.digit8 = 0;
@@ -210,12 +209,12 @@ int main (int argc, const char* argv[])
     /*
      * Higher Priority PLMN search period
      */
-    usim_data.hpplmn = 0x00; /* Disable timer */
+    usim_data.hpplmn = 0x00;  /* Disable timer */
 
     /*
      * List of Forbidden PLMNs
      */
-    for (i = 0; i < USIM_FPLMN_MAX; i++) {
+    for (int i = 0; i < USIM_FPLMN_MAX; i++) {
       memset(&usim_data.fplmn[i], 0xff, sizeof(plmn_t));
     }
 
@@ -292,21 +291,21 @@ int main (int argc, const char* argv[])
     usim_data.msisdn.number.digit[8].lsb = 0xf;
     usim_data.msisdn.number.digit[9].msb = 0xf;
     usim_data.msisdn.number.digit[9].lsb = 0xf;
-    usim_data.msisdn.conf1_record_id = 0xff; /* Not used */
-    usim_data.msisdn.ext1_record_id = 0xff; /* Not used */
+    usim_data.msisdn.conf1_record_id = 0xff;  /* Not used */
+    usim_data.msisdn.ext1_record_id = 0xff;   /* Not used */
 
     /*
      * PLMN Network Name and Operator PLMN List
      */
-    for (i = SFR1; i < VDF2; i++) {
+    for (int i = TEST1; i < VDF1; i++) {
       network_record_t record = network_records[i];
       usim_data.pnn[i].fullname.type = USIM_PNN_FULLNAME_TAG;
       usim_data.pnn[i].fullname.length = strlen(record.fullname);
-      strncpy((char*) usim_data.pnn[i].fullname.value, record.fullname,
+      strncpy((char*)usim_data.pnn[i].fullname.value, record.fullname,
               usim_data.pnn[i].fullname.length);
       usim_data.pnn[i].shortname.type = USIM_PNN_SHORTNAME_TAG;
       usim_data.pnn[i].shortname.length = strlen(record.shortname);
-      strncpy((char*) usim_data.pnn[i].shortname.value, record.shortname,
+      strncpy((char*)usim_data.pnn[i].shortname.value, record.shortname,
               usim_data.pnn[i].shortname.length);
       usim_data.opl[i].plmn = record.plmn;
       usim_data.opl[i].start = record.tac_start;
@@ -314,7 +313,7 @@ int main (int argc, const char* argv[])
       usim_data.opl[i].record_id = i;
     }
 
-    for (i = VDF2; i < USIM_OPL_MAX; i++) {
+    for (int i = VDF2; i < USIM_OPL_MAX; i++) {
       memset(&usim_data.opl[i].plmn, 0xff, sizeof(plmn_t));
     }
 
@@ -332,7 +331,7 @@ int main (int argc, const char* argv[])
     /*
      * List of user controlled PLMN selector with Access Technology
      */
-    for (i = 0; i < USIM_PLMN_MAX; i++) {
+    for (int i = 0; i < USIM_PLMN_MAX; i++) {
       memset(&usim_data.plmn[i], 0xff, sizeof(plmn_t));
     }
 
@@ -340,30 +339,24 @@ int main (int argc, const char* argv[])
      * List of operator controlled PLMN selector with Access Technology
      */
     usim_data.oplmn[0].plmn = network_records[VDF1].plmn;
-    usim_data.oplmn[0].AcT = (USIM_ACT_GSM | USIM_ACT_UTRAN
-                              | USIM_ACT_EUTRAN);
+    usim_data.oplmn[0].AcT = (USIM_ACT_GSM | USIM_ACT_UTRAN | USIM_ACT_EUTRAN);
     usim_data.oplmn[1].plmn = network_records[VDF2].plmn;
-    usim_data.oplmn[1].AcT = (USIM_ACT_GSM | USIM_ACT_UTRAN
-                              | USIM_ACT_EUTRAN);
+    usim_data.oplmn[1].AcT = (USIM_ACT_GSM | USIM_ACT_UTRAN | USIM_ACT_EUTRAN);
     usim_data.oplmn[2].plmn = network_records[VDF3].plmn;
-    usim_data.oplmn[2].AcT = (USIM_ACT_GSM | USIM_ACT_UTRAN
-                              | USIM_ACT_EUTRAN);
+    usim_data.oplmn[2].AcT = (USIM_ACT_GSM | USIM_ACT_UTRAN | USIM_ACT_EUTRAN);
     usim_data.oplmn[3].plmn = network_records[VDF4].plmn;
-    usim_data.oplmn[3].AcT = (USIM_ACT_GSM | USIM_ACT_UTRAN
-                              | USIM_ACT_EUTRAN);
+    usim_data.oplmn[3].AcT = (USIM_ACT_GSM | USIM_ACT_UTRAN | USIM_ACT_EUTRAN);
     usim_data.oplmn[4].plmn = network_records[VDF5].plmn;
-    usim_data.oplmn[4].AcT = (USIM_ACT_GSM | USIM_ACT_UTRAN
-                              | USIM_ACT_EUTRAN);
+    usim_data.oplmn[4].AcT = (USIM_ACT_GSM | USIM_ACT_UTRAN | USIM_ACT_EUTRAN);
 
-    for (i = 5; i < USIM_OPLMN_MAX; i++) {
+    for (int i = 5; i < USIM_OPLMN_MAX; i++) {
       memset(&usim_data.oplmn[i], 0xff, sizeof(plmn_t));
     }
 
     /*
      * EPS Location Information
      */
-    usim_data.epsloci.guti.gummei.plmn =
-      network_records[SELECTED_PLMN].plmn;
+    usim_data.epsloci.guti.gummei.plmn = network_records[SELECTED_PLMN].plmn;
     usim_data.epsloci.guti.gummei.MMEgid = DEFAULT_MME_ID;
     usim_data.epsloci.guti.gummei.MMEcode = DEFAULT_MME_CODE;
     usim_data.epsloci.guti.m_tmsi = DEFAULT_M_TMSI;
@@ -373,8 +366,7 @@ int main (int argc, const char* argv[])
     /*
      * Non-Access Stratum configuration
      */
-    usim_data.nasconfig.NAS_SignallingPriority.type =
-      USIM_NAS_SIGNALLING_PRIORITY_TAG;
+    usim_data.nasconfig.NAS_SignallingPriority.type = USIM_NAS_SIGNALLING_PRIORITY_TAG;
     usim_data.nasconfig.NAS_SignallingPriority.length = 1;
     usim_data.nasconfig.NAS_SignallingPriority.value[0] = 0x00;
     usim_data.nasconfig.NMO_I_Behaviour.type = USIM_NMO_I_BEHAVIOUR_TAG;
@@ -387,16 +379,13 @@ int main (int argc, const char* argv[])
 #else
     usim_data.nasconfig.AttachWithImsi.value[0] = 0x01;
 #endif
-    usim_data.nasconfig.MinimumPeriodicSearchTimer.type =
-      USIM_MINIMUM_PERIODIC_SEARCH_TIMER_TAG;
+    usim_data.nasconfig.MinimumPeriodicSearchTimer.type = USIM_MINIMUM_PERIODIC_SEARCH_TIMER_TAG;
     usim_data.nasconfig.MinimumPeriodicSearchTimer.length = 1;
     usim_data.nasconfig.MinimumPeriodicSearchTimer.value[0] = 0x00;
-    usim_data.nasconfig.ExtendedAccessBarring.type =
-      USIM_EXTENDED_ACCESS_BARRING_TAG;
+    usim_data.nasconfig.ExtendedAccessBarring.type = USIM_EXTENDED_ACCESS_BARRING_TAG;
     usim_data.nasconfig.ExtendedAccessBarring.length = 1;
     usim_data.nasconfig.ExtendedAccessBarring.value[0] = 0x00;
-    usim_data.nasconfig.Timer_T3245_Behaviour.type =
-      USIM_TIMER_T3245_BEHAVIOUR_TAG;
+    usim_data.nasconfig.Timer_T3245_Behaviour.type = USIM_TIMER_T3245_BEHAVIOUR_TAG;
     usim_data.nasconfig.Timer_T3245_Behaviour.length = 1;
     usim_data.nasconfig.Timer_T3245_Behaviour.value[0] = 0x00;
 
@@ -449,8 +438,7 @@ static void _display_usage(const char* command)
 {
   fprintf(stderr, "usage: %s [OPTION]\n", command);
   fprintf(stderr, "\t[--gen|-g]\tGenerate the USIM data file\n");
-  fprintf(stderr,
-          "\t[--print|-p]\tDisplay the content of the USIM data file\n");
+  fprintf(stderr, "\t[--print|-p]\tDisplay the content of the USIM data file\n");
   fprintf(stderr, "\t[--help|-h]\tDisplay this usage\n");
   const char* path = getenv("USIM_DIR");
 
@@ -467,7 +455,6 @@ static void _display_usage(const char* command)
 static void _display_usim_data(const usim_data_t* data)
 {
   int digits;
-  int i;
 
   printf("Administrative Data:\n");
   printf("\tUE_Operation_Mode\t= 0x%.2x\n", data->ad.UE_Operation_Mode);
@@ -476,10 +463,8 @@ static void _display_usim_data(const usim_data_t* data)
 
   printf("IMSI:\n");
   printf("\tlength\t= %d\n", data->imsi.length);
-  printf("\tparity\t= %s\n",
-         data->imsi.u.num.parity == EVEN_PARITY ? "Even" : "Odd");
-  digits = (data->imsi.length * 2) - 1
-           - (data->imsi.u.num.parity == EVEN_PARITY ? 1 : 0);
+  printf("\tparity\t= %s\n", data->imsi.u.num.parity == EVEN_PARITY ? "Even" : "Odd");
+  digits = (data->imsi.length * 2) - 1 - (data->imsi.u.num.parity == EVEN_PARITY ? 1 : 0);
   printf("\tdigits\t= %d\n", digits);
   printf("\tdigits\t= %u%u%u%u%u%x%u%u%u%u",
          data->imsi.u.num.digit1, // MCC digit 1
@@ -488,8 +473,10 @@ static void _display_usim_data(const usim_data_t* data)
          data->imsi.u.num.digit4, // MNC digit 1
          data->imsi.u.num.digit5, // MNC digit 2
          data->imsi.u.num.digit6, // MNC digit 3
-         data->imsi.u.num.digit7, data->imsi.u.num.digit8,
-         data->imsi.u.num.digit9, data->imsi.u.num.digit10);
+         data->imsi.u.num.digit7,
+         data->imsi.u.num.digit8,
+         data->imsi.u.num.digit9,
+         data->imsi.u.num.digit10);
 
   if (digits >= 11)
     printf("%x", data->imsi.u.num.digit11);
@@ -524,32 +511,37 @@ static void _display_usim_data(const usim_data_t* data)
   memcpy(kasme, data->securityctx.Kasme.value, USIM_K_ASME_SIZE);
   printf("\tKasme\t: \"%s\"\n", kasme);
   printf("\tulNAScount\t: 0x%.8x\n",
-         *(UInt32_t*) data->securityctx.ulNAScount.value);
+         *(UInt32_t*)data->securityctx.ulNAScount.value);
   printf("\tdlNAScount\t: 0x%.8x\n",
-         *(UInt32_t*) data->securityctx.dlNAScount.value);
+         *(UInt32_t*)data->securityctx.dlNAScount.value);
   printf("\talgorithmID\t: 0x%.2x\n\n",
          data->securityctx.algorithmID.value[0]);
 
   printf("MSISDN\t= %u%u%u %u%u%u%u %u%u%u%u\n\n",
-         data->msisdn.number.digit[0].msb, data->msisdn.number.digit[0].lsb,
-         data->msisdn.number.digit[1].msb, data->msisdn.number.digit[1].lsb,
-         data->msisdn.number.digit[2].msb, data->msisdn.number.digit[2].lsb,
-         data->msisdn.number.digit[3].msb, data->msisdn.number.digit[3].lsb,
-         data->msisdn.number.digit[4].msb, data->msisdn.number.digit[4].lsb,
+         data->msisdn.number.digit[0].msb,
+         data->msisdn.number.digit[0].lsb,
+         data->msisdn.number.digit[1].msb,
+         data->msisdn.number.digit[1].lsb,
+         data->msisdn.number.digit[2].msb,
+         data->msisdn.number.digit[2].lsb,
+         data->msisdn.number.digit[3].msb,
+         data->msisdn.number.digit[3].lsb,
+         data->msisdn.number.digit[4].msb,
+         data->msisdn.number.digit[4].lsb,
          data->msisdn.number.digit[5].msb);
 
-  for (i = 0; i < USIM_PNN_MAX; i++) {
-    printf("PNN[%d]\t= {%s, %s}\n", i, data->pnn[i].fullname.value,
-           data->pnn[i].shortname.value);
+  for (int i = 0; i < USIM_PNN_MAX; i++) {
+    printf("PNN[%d]\t= {%s, %s}\n", i,
+           data->pnn[i].fullname.value, data->pnn[i].shortname.value);
   }
 
   printf("\n");
 
-  for (i = 0; i < USIM_OPL_MAX; i++) {
+  for (int i = 0; i < USIM_OPL_MAX; i++) {
     printf("OPL[%d]\t= ", i);
     PRINT_PLMN(data->opl[i].plmn);
-    printf(", TAC = [%.4x - %.4x], record_id = %d\n", data->opl[i].start,
-           data->opl[i].end, data->opl[i].record_id);
+    printf(", TAC = [%.4x - %.4x], record_id = %d\n",
+           data->opl[i].start, data->opl[i].end, data->opl[i].record_id);
   }
 
   printf("\n");
@@ -558,7 +550,7 @@ static void _display_usim_data(const usim_data_t* data)
   PRINT_PLMN(data->hplmn.plmn);
   printf(", AcT = 0x%x\n\n", data->hplmn.AcT);
 
-  for (i = 0; i < USIM_FPLMN_MAX; i++) {
+  for (int i = 0; i < USIM_FPLMN_MAX; i++) {
     printf("FPLMN[%d]\t= ", i);
     PRINT_PLMN(data->fplmn[i]);
     printf("\n");
@@ -566,7 +558,7 @@ static void _display_usim_data(const usim_data_t* data)
 
   printf("\n");
 
-  for (i = 0; i < USIM_EHPLMN_MAX; i++) {
+  for (int i = 0; i < USIM_EHPLMN_MAX; i++) {
     printf("EHPLMN[%d]\t= ", i);
     PRINT_PLMN(data->ehplmn[i]);
     printf("\n");
@@ -574,7 +566,7 @@ static void _display_usim_data(const usim_data_t* data)
 
   printf("\n");
 
-  for (i = 0; i < USIM_PLMN_MAX; i++) {
+  for (int i = 0; i < USIM_PLMN_MAX; i++) {
     printf("PLMN[%d]\t\t= ", i);
     PRINT_PLMN(data->plmn[i].plmn);
     printf(", AcTPLMN = 0x%x", data->plmn[i].AcT);
@@ -583,7 +575,7 @@ static void _display_usim_data(const usim_data_t* data)
 
   printf("\n");
 
-  for (i = 0; i < USIM_OPLMN_MAX; i++) {
+  for (int i = 0; i < USIM_OPLMN_MAX; i++) {
     printf("OPLMN[%d]\t= ", i);
     PRINT_PLMN(data->oplmn[i].plmn);
     printf(", AcTPLMN = 0x%x", data->oplmn[i].AcT);
@@ -603,12 +595,14 @@ static void _display_usim_data(const usim_data_t* data)
 
   printf("PSLOCI:\n");
   printf("\tP-TMSI = 0x%.4x\n", data->psloci.p_tmsi);
-  printf("\tsignature = 0x%x 0x%x 0x%x\n", data->psloci.signature[0],
-         data->psloci.signature[1], data->psloci.signature[2]);
+  printf("\tsignature = 0x%x 0x%x 0x%x\n",
+         data->psloci.signature[0],
+         data->psloci.signature[1],
+         data->psloci.signature[2]);
   printf("\tRAI\t: PLMN = ");
   PRINT_PLMN(data->psloci.rai.plmn);
-  printf(", LAC = 0x%.2x, RAC = 0x%.1x\n", data->psloci.rai.lac,
-         data->psloci.rai.rac);
+  printf(", LAC = 0x%.2x, RAC = 0x%.1x\n",
+         data->psloci.rai.lac, data->psloci.rai.rac);
   printf("\tstatus\t= %d\n\n", data->psloci.status);
 
   printf("EPSLOCI:\n");
@@ -620,7 +614,8 @@ static void _display_usim_data(const usim_data_t* data)
   printf(", M-TMSI = 0x%.4x\n", data->epsloci.guti.m_tmsi);
   printf("\tTAI\t: PLMN = ");
   PRINT_PLMN(data->epsloci.tai.plmn);
-  printf(", TAC = 0x%.2x\n", data->epsloci.tai.tac);
+  printf(", TAC = 0x%.2x\n",
+         data->epsloci.tai.tac);
   printf("\tstatus\t= %d\n\n", data->epsloci.status);
 
   printf("NASCONFIG:\n");

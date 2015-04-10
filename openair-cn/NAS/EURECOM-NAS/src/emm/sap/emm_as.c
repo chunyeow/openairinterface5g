@@ -63,7 +63,7 @@ Description Defines the EMMAS Service Access Point that provides
 #include <string.h> // memset
 #include <stdlib.h> // malloc, free
 
-#if (defined(EPC_BUILD) && defined(NAS_MME)) || (defined(UE_BUILD) && defined(NAS_UE))
+#if (defined(NAS_BUILT_IN_EPC) && defined(NAS_MME)) || (defined(NAS_BUILT_IN_UE) && defined(NAS_UE))
 # include "nas_itti_messaging.h"
 #endif
 
@@ -356,11 +356,11 @@ static int _emm_as_recv(unsigned int ueid, const char *msg, int len,
 
   emm_security_context_t       *security = NULL;    /* Current EPS NAS security context     */
 #if defined(NAS_MME)
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
   emm_data_context_t           *emm_ctx  = NULL;
 #endif
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
   emm_ctx = emm_data_context_get(&_emm_data, ueid);
 
   if (emm_ctx) {
@@ -552,7 +552,7 @@ static int _emm_as_data_ind(const emm_as_data_t *msg, int *emm_cause)
         /* Decrypt the received security protected message */
 #if defined(NAS_MME)
         emm_data_context_t           *emm_ctx  = NULL;
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
         if (msg->ueid > 0) {
           emm_ctx = emm_data_context_get(&_emm_data, msg->ueid);
@@ -825,7 +825,7 @@ static int _emm_as_establish_req(const emm_as_establish_t *msg, int *emm_cause)
   memset(&nas_msg, 0 , sizeof(nas_message_t));
 
 #if defined(NAS_MME)
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
   emm_ctx = emm_data_context_get(&_emm_data, msg->ueid);
 #else
 
@@ -1279,7 +1279,7 @@ static int _emm_as_send(const emm_as_t *msg)
 
   /* Send the message to the Access Stratum or S1AP in case of MME */
   if (as_msg.msgID > 0) {
-#if defined(EPC_BUILD) && defined(NAS_MME)
+#if defined(NAS_BUILT_IN_EPC) && defined(NAS_MME)
     LOG_TRACE(DEBUG, "EMMAS-SAP - "
               "Sending msg with id 0x%x, primitive %s (%d) to S1AP layer for transmission",
               as_msg.msgID,
@@ -1330,7 +1330,7 @@ static int _emm_as_send(const emm_as_t *msg)
     }
 
 #else
-# if defined(UE_BUILD) && defined(NAS_UE)
+# if defined(NAS_BUILT_IN_UE) && defined(NAS_UE)
     LOG_TRACE(DEBUG, "EMMAS-SAP - "
               "Sending msg with id 0x%x, primitive %s (%d) to RRC layer for transmission",
               as_msg.msgID,
@@ -1467,7 +1467,7 @@ static int _emm_as_data_req(const emm_as_data_t *msg,
     emm_security_context_t    *emm_security_context   = NULL;
 #if defined(NAS_MME)
     struct emm_data_context_s *emm_ctx                = NULL;
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
     emm_ctx = emm_data_context_get(&_emm_data, msg->ueid);
 #else
 
@@ -1573,7 +1573,7 @@ static int _emm_as_status_ind(const emm_as_status_t *msg,
     emm_security_context_t    *emm_security_context   = NULL;
 #if defined(NAS_MME)
     struct emm_data_context_s *emm_ctx                = NULL;
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
     emm_ctx = emm_data_context_get(&_emm_data, msg->ueid);
 #else
 
@@ -1914,7 +1914,7 @@ static int _emm_as_security_req(const emm_as_security_t *msg,
   if (size > 0) {
     struct emm_data_context_s *emm_ctx                = NULL;
     emm_security_context_t    *emm_security_context   = NULL;
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
     emm_ctx = emm_data_context_get(&_emm_data, msg->ueid);
 #else
 
@@ -2004,7 +2004,7 @@ static int _emm_as_security_rej(const emm_as_security_t *msg,
   if (size > 0) {
     struct emm_data_context_s *emm_ctx                = NULL;
     emm_security_context_t    *emm_security_context   = NULL;
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
     emm_ctx = emm_data_context_get(&_emm_data, msg->ueid);
 #else
 
@@ -2099,7 +2099,7 @@ static int _emm_as_establish_cnf(const emm_as_establish_t *msg,
   if (size > 0) {
     struct emm_data_context_s *emm_ctx                = NULL;
     emm_security_context_t    *emm_security_context   = NULL;
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
     emm_ctx = emm_data_context_get(&_emm_data, msg->ueid);
 #else
 
@@ -2217,7 +2217,7 @@ static int _emm_as_establish_rej(const emm_as_establish_t *msg,
   if (size > 0) {
     struct emm_data_context_s *emm_ctx                = NULL;
     emm_security_context_t    *emm_security_context   = NULL;
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
     emm_ctx = emm_data_context_get(&_emm_data, msg->ueid);
 #else
 

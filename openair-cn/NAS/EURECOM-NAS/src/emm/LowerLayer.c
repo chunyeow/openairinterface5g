@@ -236,7 +236,7 @@ int lowerlayer_data_ind(unsigned int ueid, const OctetString *data)
 
   LOG_FUNC_IN;
 
-#if defined(EPC_BUILD) && defined(NAS_MME)
+#if defined(NAS_BUILT_IN_EPC) && defined(NAS_MME)
 
   if (ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, ueid);
@@ -290,7 +290,7 @@ int lowerlayer_data_req(unsigned int ueid, const OctetString *data)
 #ifdef NAS_MME
   emm_sap.u.emm_as.u.data.guti = NULL;
   emm_sap.u.emm_as.u.data.ueid = ueid;
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
 
   if (ueid > 0) {
     ctx = emm_data_context_get(&_emm_data, ueid);

@@ -37,7 +37,7 @@
 #ifndef NAS_ITTI_MESSAGING_H_
 #define NAS_ITTI_MESSAGING_H_
 
-# if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
+# if ((defined(NAS_BUILT_IN_EPC) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(NAS_BUILT_IN_UE) && defined(NAS_UE)))
 int nas_itti_plain_msg(
   const char *buffer,
   const nas_message_t *msg,
@@ -51,7 +51,7 @@ int nas_itti_protected_msg(
   const int instance);
 # endif
 
-# if defined(EPC_BUILD) && defined(NAS_MME)
+# if defined(NAS_BUILT_IN_EPC) && defined(NAS_MME)
 #include "conversions.h"
 
 int nas_itti_dl_data_req(
@@ -223,7 +223,7 @@ static inline void nas_itti_establish_rej(
 }
 # endif
 
-# if defined(UE_BUILD) && defined(NAS_UE)
+# if defined(NAS_BUILT_IN_UE) && defined(NAS_UE)
 int nas_itti_cell_info_req(const plmn_t plmnID, const Byte_t rat);
 
 int nas_itti_nas_establish_req(as_cause_t cause, as_call_type_t type, as_stmsi_t s_tmsi, plmn_t plmnID, Byte_t *data_pP, UInt32_t lengthP);

@@ -46,7 +46,7 @@ Description
 
 #include <string.h>
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
 #include "nas_log.h"
 #include "commonDef.h"

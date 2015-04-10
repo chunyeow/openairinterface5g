@@ -123,7 +123,7 @@ int emm_proc_tracking_area_update_reject(unsigned int ueid, int emm_cause)
   ue_ctx.ueid = ueid;
 
   /* Update the EMM cause code */
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
   if (ueid > 0)
 #else

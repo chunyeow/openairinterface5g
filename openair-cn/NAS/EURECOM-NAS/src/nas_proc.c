@@ -140,7 +140,7 @@ void nas_proc_initialize(emm_indication_callback_t emm_cb,
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
 void nas_proc_initialize(mme_config_t *mme_config_p)
 {
   LOG_FUNC_IN;
@@ -1482,7 +1482,7 @@ int nas_proc_ul_transfer_ind(UInt32_t ueid, const Byte_t *data, UInt32_t len)
   LOG_FUNC_RETURN (rc);
 }
 
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
 int nas_proc_auth_param_res(emm_cn_auth_res_t *emm_cn_auth_res)
 {
   int rc = RETURNerror;

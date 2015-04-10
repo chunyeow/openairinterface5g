@@ -135,7 +135,7 @@ void esm_main_initialize(void)
     LOG_TRACE(ERROR, "ESM-MAIN  - Failed to get MME configuration data");
   }
 
-# if !defined(EPC_BUILD)
+# if !defined(NAS_BUILT_IN_EPC)
 
   /* Initialize ESM contexts */
   for (i = 0; i < ESM_DATA_NB_UE_MAX; i++) {

@@ -58,7 +58,7 @@ Description Defines internal private data handled by EPS Mobility
 #ifdef NAS_MME
 #include "emm_fsm.h"
 #include "mme_api.h"
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
 #   include "tree.h"
 # endif
 #endif
@@ -356,7 +356,7 @@ typedef struct {
  * ---------------------------------------------------------------------------
  */
 typedef struct emm_data_context_s {
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
   RB_ENTRY(emm_data_context_s) entries;
 #endif
 
@@ -409,7 +409,7 @@ typedef struct {
    * EMM contexts
    * ------------
    */
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
   /* Use a tree for ue data context within MME */
   RB_HEAD(emm_data_context_map, emm_data_context_s) ctx_map;
 # else

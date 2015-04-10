@@ -45,7 +45,7 @@ Description NAS procedure call manager
 #ifndef __NAS_PROC_H__
 #define __NAS_PROC_H__
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 # include "mme_config.h"
 # include "emm_cnDef.h"
 #endif
@@ -74,7 +74,7 @@ void nas_proc_initialize(emm_indication_callback_t emm_cb,
                          esm_indication_callback_t esm_cb, const char *imei);
 #endif
 #ifdef NAS_MME
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
 void nas_proc_initialize(mme_config_t *mme_config_p);
 # else
 void nas_proc_initialize(void);
@@ -159,7 +159,7 @@ int nas_proc_ul_transfer_ind(UInt32_t ueid, const Byte_t *data, UInt32_t len);
  *      NAS procedures triggered by the mme applicative layer
  * --------------------------------------------------------------------------
  */
-#if defined(NAS_MME) && defined(EPC_BUILD)
+#if defined(NAS_MME) && defined(NAS_BUILT_IN_EPC)
 int nas_proc_auth_param_res(emm_cn_auth_res_t *emm_cn_auth_res);
 int nas_proc_auth_param_fail(emm_cn_auth_fail_t *emm_cn_auth_fail);
 int nas_proc_deregister_ue(UInt32_t ue_id);

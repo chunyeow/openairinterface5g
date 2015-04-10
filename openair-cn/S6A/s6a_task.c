@@ -89,8 +89,7 @@ void *s6a_thread(void *args)
       itti_exit_task();
     } break;
     default: {
-      S6A_DEBUG("Unkwnon message ID %d:
-                %s\n",
+      S6A_DEBUG("Unkwnon message ID %d: %s\n",
                 ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));
     } break;
     }
@@ -121,8 +120,7 @@ int s6a_init(const mme_config_t *mme_config_p)
   S6A_DEBUG("Initializing freeDiameter core...\n");
   ret = fd_core_initialize();
   if (ret != 0) {
-    S6A_ERROR("An error occurred during freeDiameter core library initialization:
-              %d\n",ret);
+    S6A_ERROR("An error occurred during freeDiameter core library initialization: %d\n",ret);
     return ret;
   } else {
     S6A_DEBUG("Initializing freeDiameter core done\n");
@@ -130,13 +128,11 @@ int s6a_init(const mme_config_t *mme_config_p)
 
 
 
-  S6A_DEBUG("Default ext path:
-            %s\n", DEFAULT_EXTENSIONS_PATH);
+  S6A_DEBUG("Default ext path: %s\n", DEFAULT_EXTENSIONS_PATH);
 
   ret = fd_core_parseconf(mme_config_p->s6a_config.conf_file);
   if (ret != 0) {
-    S6A_ERROR("An error occurred during fd_core_parseconf file :
-              %s.\n", mme_config_p->s6a_config.conf_file);
+    S6A_ERROR("An error occurred during fd_core_parseconf file : %s.\n", mme_config_p->s6a_config.conf_file);
     return ret;
   } else {
     S6A_DEBUG("fd_core_parseconf done\n");
@@ -183,8 +179,7 @@ int s6a_init(const mme_config_t *mme_config_p)
     S6A_ERROR("s6a create task\n");
     return -1;
   }
-  S6A_DEBUG("Initializing S6a interface:
-            DONE\n");
+  S6A_DEBUG("Initializing S6a interface: DONE\n");
 
   return 0;
 }

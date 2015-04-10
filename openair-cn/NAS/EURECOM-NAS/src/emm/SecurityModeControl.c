@@ -446,7 +446,7 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi,
             "KSI = %d EEA = %d EIA = %d",
             ksi, eea, eia);
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
   if (ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, ueid);
@@ -638,7 +638,7 @@ int emm_proc_security_mode_complete(unsigned int ueid)
   }
 
   /* Get the UE context */
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
   if (ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, ueid);
@@ -721,7 +721,7 @@ int emm_proc_security_mode_reject(unsigned int ueid)
   }
 
   /* Get the UE context */
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
   if (ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, ueid);
@@ -1074,7 +1074,7 @@ int _security_request(security_data_t *data, int is_new)
   emm_sap.u.emm_as.u.security.selected_eea = data->selected_eea;
   emm_sap.u.emm_as.u.security.selected_eia = data->selected_eia;
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
   if (data->ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, data->ueid);

@@ -44,7 +44,7 @@ Description Usefull logging functions
 *****************************************************************************/
 
 #include "nas_log.h"
-#if defined(UE_BUILD) && defined(NAS_UE)
+#if defined(NAS_BUILT_IN_UE) && defined(NAS_UE)
 int nas_log_func_indent;
 #else
 #include <stdio.h>  // stderr, sprintf, fprintf, vfprintf

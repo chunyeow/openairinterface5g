@@ -291,14 +291,14 @@ void s1ap_dump_ue(ue_description_t *ue_ref)
 #endif
 }
 
-eNB_description_t* s1ap_is_eNB_id_in_list(uint32_t eNB_id)
+eNB_description_t* s1ap_is_eNB_id_in_list(const uint32_t eNB_id)
 {
 
   eNB_description_t *eNB_ref;
 
   STAILQ_FOREACH(eNB_ref, &eNB_list_head, eNB_entries) {
     if (eNB_ref->eNB_id == eNB_id) {
-      /* We fount a matching reference, return it */
+      /* We found a matching reference, return it */
       return eNB_ref;
     }
   }
@@ -306,14 +306,14 @@ eNB_description_t* s1ap_is_eNB_id_in_list(uint32_t eNB_id)
   return eNB_ref;
 }
 
-eNB_description_t* s1ap_is_eNB_assoc_id_in_list(uint32_t sctp_assoc_id)
+eNB_description_t* s1ap_is_eNB_assoc_id_in_list(const uint32_t sctp_assoc_id)
 {
 
   eNB_description_t *eNB_ref;
 
   STAILQ_FOREACH(eNB_ref, &eNB_list_head, eNB_entries) {
     if (eNB_ref->sctp_assoc_id == sctp_assoc_id) {
-      /* We fount a matching reference, return it */
+      /* We found a matching reference, return it */
       return eNB_ref;
     }
   }
@@ -322,7 +322,7 @@ eNB_description_t* s1ap_is_eNB_assoc_id_in_list(uint32_t sctp_assoc_id)
 }
 
 ue_description_t *s1ap_is_ue_eNB_id_in_list(eNB_description_t *eNB_ref,
-    uint32_t eNB_ue_s1ap_id)
+    const uint32_t eNB_ue_s1ap_id)
 {
   ue_description_t *ue_ref;
 
@@ -337,7 +337,7 @@ ue_description_t *s1ap_is_ue_eNB_id_in_list(eNB_description_t *eNB_ref,
   return NULL;
 }
 
-ue_description_t* s1ap_is_ue_mme_id_in_list(uint32_t mme_ue_s1ap_id)
+ue_description_t* s1ap_is_ue_mme_id_in_list(const uint32_t mme_ue_s1ap_id)
 {
 
   ue_description_t *ue_ref;
@@ -345,7 +345,7 @@ ue_description_t* s1ap_is_ue_mme_id_in_list(uint32_t mme_ue_s1ap_id)
 
   STAILQ_FOREACH(eNB_ref, &eNB_list_head, eNB_entries) {
     STAILQ_FOREACH(ue_ref, &eNB_ref->ue_list_head, ue_entries) {
-      // We fount a matching reference, return it
+      // We found a matching reference, return it
       if (ue_ref->mme_ue_s1ap_id == mme_ue_s1ap_id) {
         return ue_ref;
       }
@@ -355,7 +355,7 @@ ue_description_t* s1ap_is_ue_mme_id_in_list(uint32_t mme_ue_s1ap_id)
   return NULL;
 }
 
-ue_description_t* s1ap_is_teid_in_list(uint32_t teid)
+ue_description_t* s1ap_is_teid_in_list(const uint32_t teid)
 {
 
   ue_description_t *ue_ref;
@@ -363,7 +363,7 @@ ue_description_t* s1ap_is_teid_in_list(uint32_t teid)
 
   STAILQ_FOREACH(eNB_ref, &eNB_list_head, eNB_entries) {
     STAILQ_FOREACH(ue_ref, &eNB_ref->ue_list_head, ue_entries) {
-      // We fount a matching reference, return it
+      // We found a matching reference, return it
       if (ue_ref->teid == teid) {
         return ue_ref;
       }
@@ -397,7 +397,7 @@ eNB_description_t* s1ap_new_eNB(void)
   return eNB_ref;
 }
 
-ue_description_t* s1ap_new_ue(uint32_t sctp_assoc_id)
+ue_description_t* s1ap_new_ue(const uint32_t sctp_assoc_id)
 {
 
   eNB_description_t *eNB_ref = NULL;
@@ -438,6 +438,7 @@ void s1ap_remove_ue(ue_description_t *ue_ref)
 
   /* Freeing memory */
   free(ue_ref);
+  ue_ref = NULL;
 }
 
 void s1ap_remove_eNB(eNB_description_t *eNB_ref)
@@ -456,6 +457,7 @@ void s1ap_remove_eNB(eNB_description_t *eNB_ref)
   STAILQ_REMOVE(&eNB_list_head, eNB_ref, eNB_description_s, eNB_entries);
 
   free(eNB_ref);
+  eNB_ref = NULL;
   nb_eNB_associated--;
 }
 

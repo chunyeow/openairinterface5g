@@ -128,7 +128,7 @@ int esm_ebr_context_create(
   esm_ctx = &_esm_data;
 #endif
 #ifdef NAS_MME
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
   esm_ctx = &ctx->esm_data_ctx;
 # else
 
@@ -369,7 +369,7 @@ int esm_ebr_context_release(
 #endif
 
 #ifdef NAS_MME
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
   esm_ctx = &ctx->esm_data_ctx;
 # else
 

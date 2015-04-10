@@ -54,7 +54,7 @@ Description Defines the layer 3 messages supported by the NAS sublayer
 #include <stdlib.h> // malloc, free
 #include <string.h> // memcpy
 
-#if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
+#if ((defined(NAS_BUILT_IN_EPC) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(NAS_BUILT_IN_UE) && defined(NAS_UE)))
 # include "nas_itti_messaging.h"
 #endif
 #include "secu_defs.h"
@@ -313,7 +313,6 @@ int nas_message_decrypt(
 #endif
                      emm_security_context);
 
-
     /* Check NAS message integrity */
     if (mac != header->message_authentication_code) {
       LOG_TRACE(DEBUG,
@@ -425,6 +424,24 @@ int nas_message_decode(
                      emm_security_context
                    );
 
+#define NAS_CODE_TO_BE_MODIFIED 1
+#ifdef NAS_CODE_TO_BE_MODIFIED
+
+    // According to 3GPP TS 24.301 version 10.15.0 Release 10, 4.4.4.3 Integrity checking of NAS signalling messages in the MME
+    if ((!emm_security_context) && (mac == 0) && (msg->header.message_authentication_code != 0)) {
+      // force mac to be the same, but we should check for message types.
+      // TODO Reverse order of processing in NAS code: decode message type then check MAC
+      LOG_TRACE(DEBUG,
+                "Forced computed MAC to be the MSG MAC %04x",
+                msg->header.message_authentication_code);
+      mac = msg->header.message_authentication_code;
+      LOG_TRACE(DEBUG,
+                "Forced computed MAC to be the same as MAC in message %04x",
+                msg->header.message_authentication_code);
+    }
+
+#endif
+
     /* Check NAS message integrity */
     if (mac != msg->header.message_authentication_code) {
       LOG_TRACE(DEBUG,
@@ -434,7 +451,7 @@ int nas_message_decode(
       LOG_FUNC_RETURN (TLV_DECODE_MAC_MISMATCH);
     }
 
-#if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
+#if ((defined(NAS_BUILT_IN_EPC) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(NAS_BUILT_IN_UE) && defined(NAS_UE)))
     /* Log message header */
 #endif
 
@@ -566,7 +583,7 @@ int nas_message_encode(
       }
     }
 
-#if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
+#if ((defined(NAS_BUILT_IN_EPC) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(NAS_BUILT_IN_UE) && defined(NAS_UE)))
     /* Log message header */
 #endif
   } else {
@@ -970,7 +987,9 @@ static int _nas_message_decrypt(
               "No decryption of message length %u according to security header type 0x%02x",
               length, security_header_type);
     memcpy(dest, src, length);
-    LOG_FUNC_RETURN (length);
+    DECODE_U8(dest, *(UInt8_t*)(&header), size);
+    LOG_FUNC_RETURN (header.protocol_discriminator);
+    //LOG_FUNC_RETURN (length);
     break;
 
   case SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_CYPHERED:
@@ -1268,7 +1287,7 @@ static UInt32_t _nas_message_get_mac(
   if (!emm_security_context) {
     LOG_TRACE(DEBUG,
               "No security context set for integrity protection algorithm");
-#if defined(EPC_BUILD) || defined(UE_BUILD)
+#if defined(NAS_BUILT_IN_EPC) || defined(NAS_BUILT_IN_UE)
     LOG_FUNC_RETURN (0);
 #else
     LOG_FUNC_RETURN (0xabababab);
@@ -1398,7 +1417,7 @@ static UInt32_t _nas_message_get_mac(
               (direction == SECU_DIRECTION_UPLINK) ? emm_security_context->ul_count.seq_num:emm_security_context->dl_count.seq_num
              );
 
-#if defined(EPC_BUILD) || defined(UE_BUILD)
+#if defined(NAS_BUILT_IN_EPC) || defined(NAS_BUILT_IN_UE)
     LOG_FUNC_RETURN (0);
 #else
     LOG_FUNC_RETURN (0xabababab);

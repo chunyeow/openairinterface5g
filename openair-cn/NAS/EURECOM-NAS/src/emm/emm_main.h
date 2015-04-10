@@ -46,7 +46,7 @@ Description Defines the EPS Mobility Management procedure call manager,
 #ifndef __EMM_MAIN_H__
 #define __EMM_MAIN_H__
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 # include "mme_config.h"
 #endif
 
@@ -73,7 +73,7 @@ Description Defines the EPS Mobility Management procedure call manager,
 void emm_main_initialize(emm_indication_callback_t cb, const char *imei);
 #endif
 #ifdef NAS_MME
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
 void emm_main_initialize(mme_config_t *mme_config_p);
 # else
 void emm_main_initialize(void);

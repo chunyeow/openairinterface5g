@@ -77,7 +77,7 @@ s1ap_message_decoded_callback messages_callback[][3] = {
   { 0, 0, 0 }, /* ErrorIndication */
   { s1ap_mme_handle_nas_non_delivery, 0, 0 }, /* NASNonDeliveryIndication */
   { s1ap_mme_handle_s1_setup_request, 0, 0 }, /* S1Setup */
-  { 0, 0, 0 }, /* UEContextReleaseRequest */
+  { s1ap_mme_handle_ue_context_release_request, 0, 0 }, /* UEContextReleaseRequest */
   { 0, 0, 0 }, /* DownlinkS1cdma2000tunneling */
   { 0, 0, 0 }, /* UplinkS1cdma2000tunneling */
   { 0, 0, 0 }, /* UEContextModification */
@@ -586,6 +586,9 @@ int s1ap_mme_handle_ue_context_release_request(uint32_t assoc_id,
     /* MME doesn't know the MME UE S1AP ID provided.
      * TODO
      */
+    S1AP_DEBUG("UE_CONTEXT_RELEASE_REQUEST ignored cause could not get context with mme_ue_s1ap_id 0x%08x %u(10)\n",
+               ueContextReleaseRequest_p->mme_ue_s1ap_id,
+               ueContextReleaseRequest_p->mme_ue_s1ap_id);
     return -1;
   } else {
     if (ue_ref->eNB_ue_s1ap_id == (ueContextReleaseRequest_p->eNB_UE_S1AP_ID &
@@ -594,6 +597,8 @@ int s1ap_mme_handle_ue_context_release_request(uint32_t assoc_id,
        * -> Send a UE context Release Command to eNB.
        * TODO
        */
+      s1ap_mme_generate_ue_context_release_command(ue_ref);
+      // UE context will be removed when receiving UE_CONTEXT_RELEASE_COMPLETE
     } else {
       // TODO
       return -1;
@@ -888,15 +893,15 @@ int s1ap_handle_create_session_response(SgwCreateSessionResponse
   initialContextSetupRequest_p->eNB_UE_S1AP_ID = ue_ref->eNB_ue_s1ap_id;
 
   /* uEaggregateMaximumBitrateDL and uEaggregateMaximumBitrateUL expressed in term of bits/sec */
-  //     asn_int642INTEGER(
-  //         &initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL,
-  //         100000000UL);
-  //     asn_int642INTEGER(
-  //         &initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL,
-  //         50000000UL);
+  asn_int642INTEGER(
+    &initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL,
+    100000000UL);
+  asn_int642INTEGER(
+    &initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL,
+    50000000UL);
 
-  initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL = 100000000UL;
-  initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL = 50000000UL;
+  //initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL = 100000000UL;
+  //initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL = 50000000UL;
 
   e_RABToBeSetup.e_RAB_ID =
     session_response_p->bearer_context_created.eps_bearer_id; /* ??? */

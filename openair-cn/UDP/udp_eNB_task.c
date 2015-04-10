@@ -168,7 +168,7 @@ int udp_eNB_create_socket(int port, char *ip_addr, task_id_t task_id)
   sin.sin_port        = htons(port);
 
   if (ip_addr == NULL) {
-    sin.sin_addr.s_addr = INADDR_ANY;
+    sin.sin_addr.s_addr = inet_addr(INADDR_ANY);
   } else {
     sin.sin_addr.s_addr = inet_addr(ip_addr);
   }

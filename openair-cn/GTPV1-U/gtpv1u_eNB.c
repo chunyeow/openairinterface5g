@@ -68,6 +68,7 @@ extern boolean_t pdcp_data_req(
   unsigned char *const sdu_buffer_pP,
   const pdcp_transmission_mode_t modeP);
 
+extern unsigned char NB_eNB_INST;
 
 static int
 gtpv1u_eNB_send_init_udp(
@@ -132,19 +133,23 @@ gtpv1u_initial_req(
 
 int
 gtpv1u_new_data_req(
-  uint8_t  enb_idP,
-  uint8_t  ue_idP,
+  uint8_t  enb_module_idP,
+  rnti_t   ue_rntiP,
   uint8_t  rab_idP,
   uint8_t *buffer_pP,
   uint32_t buf_lenP,
-  uint32_t buf_offsetP);
+  uint32_t buf_offsetP
+);
 
 static int
 gtpv1u_create_s1u_tunnel(
-  gtpv1u_enb_create_tunnel_req_t *create_tunnel_req_pP);
+  const instance_t instanceP,
+  const gtpv1u_enb_create_tunnel_req_t * const create_tunnel_req_pP);
 
 static int
-gtpv1u_delete_s1u_tunnel(gtpv1u_enb_delete_tunnel_req_t *req_pP);
+gtpv1u_delete_s1u_tunnel(
+  const instance_t instanceP,
+  const gtpv1u_enb_delete_tunnel_req_t * const req_pP);
 
 static int
 gtpv1u_eNB_init(void);
@@ -322,17 +327,14 @@ NwGtpv1uRcT gtpv1u_eNB_process_stack_req(
 #endif
 
 #warning "LG eps bearer mapping to DRB id to do (offset -4)"
-      ctxt.enb_module_id = gtpv1u_teid_data_p->enb_id;
-      ctxt.ue_module_id  = gtpv1u_teid_data_p->ue_id;
-      ctxt.frame         = 0;
-      ctxt.enb_flag      = ENB_FLAG_YES;
+      PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, gtpv1u_teid_data_p->enb_id, ENB_FLAG_YES,  gtpv1u_teid_data_p->ue_id, 0, 0);
 
       result = pdcp_data_req(
                  &ctxt,
                  SRB_FLAG_NO,
                  (gtpv1u_teid_data_p->eps_bearer_id) ? gtpv1u_teid_data_p->eps_bearer_id - 4: 5-4,
                  0, // mui
-                 FALSE, // confirm
+                 SDU_CONFIRM_NO, // confirm
                  buffer_len,
                  buffer,
                  PDCP_TRANSMISSION_MODE_DATA);
@@ -551,8 +553,8 @@ gtpv1u_initial_req(
 //-----------------------------------------------------------------------------
 int
 gtpv1u_new_data_req(
-  uint8_t  enb_idP,
-  uint8_t  ue_idP,
+  uint8_t  enb_module_idP,
+  rnti_t   ue_rntiP,
   uint8_t  rab_idP,
   uint8_t *buffer_pP,
   uint32_t buf_lenP,
@@ -569,18 +571,18 @@ gtpv1u_new_data_req(
   gtpv1u_data_t           *gtpv1u_data_p = NULL;
 
   memset(&ue, 0, sizeof(struct gtpv1u_ue_data_s));
-  ue.ue_id = ue_idP;
+  ue.ue_id = ue_rntiP;
 
-  AssertFatal(enb_idP >=0, "Bad parameter enb module id %u\n", enb_idP);
+  AssertFatal(enb_module_idP >=0, "Bad parameter enb module id %u\n", enb_module_idP);
   AssertFatal((rab_idP - GTPV1U_BEARER_OFFSET)< GTPV1U_MAX_BEARERS_ID, "Bad parameter rab id %u\n", rab_idP);
   AssertFatal((rab_idP - GTPV1U_BEARER_OFFSET) >= 0 , "Bad parameter rab id %u\n", rab_idP);
 
   gtpv1u_data_p = &gtpv1u_data_g;
   /* Check that UE context is present in ue map. */
-  hash_rc = hashtable_get(gtpv1u_data_p->ue_mapping, (uint64_t)ue_idP, (void**)&ue_inst_p);
+  hash_rc = hashtable_get(gtpv1u_data_p->ue_mapping, (uint64_t)ue_rntiP, (void**)&ue_inst_p);
 
   if (hash_rc ==  HASH_TABLE_KEY_NOT_EXISTS ) {
-    LOG_E(GTPU, "[UE %d] Trying to send data on non-existing UE context\n", ue_idP);
+    LOG_E(GTPU, "[UE %d] Trying to send data on non-existing UE context\n", ue_rntiP);
     return -1;
   }
 
@@ -643,7 +645,8 @@ gtpv1u_new_data_req(
 //-----------------------------------------------------------------------------
 static int
 gtpv1u_create_s1u_tunnel(
-  gtpv1u_enb_create_tunnel_req_t *create_tunnel_req_pP)
+  const instance_t instanceP,
+  const gtpv1u_enb_create_tunnel_req_t * const create_tunnel_req_pP)
 {
   /* Create a new nw-gtpv1-u stack req using API */
   NwGtpv1uUlpApiT          stack_req;
@@ -662,15 +665,15 @@ gtpv1u_create_s1u_tunnel(
   int                      addrs_length_in_bytes= 0;
 
   message_p = itti_alloc_new_message(TASK_GTPV1_U, GTPV1U_ENB_CREATE_TUNNEL_RESP);
-  GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).ue_index    = create_tunnel_req_pP->ue_index;
+  GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).rnti        = create_tunnel_req_pP->rnti;
   GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).status      = 0;
   GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).num_tunnels = 0;
 
   for (i = 0; i < create_tunnel_req_pP->num_tunnels; i++) {
     ip_offset               = 0;
     eps_bearer_id = create_tunnel_req_pP->eps_bearer_id[i];
-    LOG_D(GTPU, "Rx GTPV1U_ENB_CREATE_TUNNEL_REQ ue_index %u eps bearer id %u\n",
-          create_tunnel_req_pP->ue_index, eps_bearer_id);
+    LOG_D(GTPU, "Rx GTPV1U_ENB_CREATE_TUNNEL_REQ ue rnti %x eps bearer id %u\n",
+          create_tunnel_req_pP->rnti, eps_bearer_id);
     memset(&stack_req, 0, sizeof(NwGtpv1uUlpApiT));
 
     stack_req.apiType = NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT;
@@ -689,17 +692,17 @@ gtpv1u_create_s1u_tunnel(
     //-----------------------
     // PDCP->GTPV1U mapping
     //-----------------------
-    hash_rc = hashtable_get(gtpv1u_data_g.ue_mapping, create_tunnel_req_pP->ue_index, (void **)&gtpv1u_ue_data_p);
+    hash_rc = hashtable_get(gtpv1u_data_g.ue_mapping, create_tunnel_req_pP->rnti, (void **)&gtpv1u_ue_data_p);
 
     if ((hash_rc == HASH_TABLE_KEY_NOT_EXISTS) || (hash_rc == HASH_TABLE_OK)) {
 
       if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
         gtpv1u_ue_data_p = calloc (1, sizeof(gtpv1u_ue_data_t));
-        hash_rc = hashtable_insert(gtpv1u_data_g.ue_mapping, create_tunnel_req_pP->ue_index, gtpv1u_ue_data_p);
+        hash_rc = hashtable_insert(gtpv1u_data_g.ue_mapping, create_tunnel_req_pP->rnti, gtpv1u_ue_data_p);
         AssertFatal(hash_rc == HASH_TABLE_OK, "Error inserting ue_mapping in GTPV1U hashtable");
       }
 
-      gtpv1u_ue_data_p->ue_id       = create_tunnel_req_pP->ue_index;
+      gtpv1u_ue_data_p->ue_id       = create_tunnel_req_pP->rnti;
       gtpv1u_ue_data_p->instance_id = 0; // TO DO
       memcpy(&GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).enb_addr.buffer,
              &gtpv1u_data_g.enb_ip_address_for_S1u_S12_S4_up,
@@ -748,7 +751,7 @@ gtpv1u_create_s1u_tunnel(
     if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
       gtpv1u_teid_data_p = calloc (1, sizeof(gtpv1u_teid_data_t));
       gtpv1u_teid_data_p->enb_id        = 0; // TO DO
-      gtpv1u_teid_data_p->ue_id         = create_tunnel_req_pP->ue_index;
+      gtpv1u_teid_data_p->ue_id         = create_tunnel_req_pP->rnti;
       gtpv1u_teid_data_p->eps_bearer_id = eps_bearer_id;
       hash_rc = hashtable_insert(gtpv1u_data_g.teid_mapping, s1u_teid, gtpv1u_teid_data_p);
       AssertFatal(hash_rc == HASH_TABLE_OK, "Error inserting teid mapping in GTPV1U hashtable");
@@ -758,16 +761,18 @@ gtpv1u_create_s1u_tunnel(
     }
   }
 
-  LOG_D(GTPU, "Tx GTPV1U_ENB_CREATE_TUNNEL_RESP ue_index %u status %d\n",
-        create_tunnel_req_pP->ue_index,
+  LOG_D(GTPU, "Tx GTPV1U_ENB_CREATE_TUNNEL_RESP ue rnti %x status %d\n",
+        create_tunnel_req_pP->rnti,
         GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).status);
-  return itti_send_msg_to_task(TASK_RRC_ENB, INSTANCE_DEFAULT, message_p);
+  return itti_send_msg_to_task(TASK_RRC_ENB, instanceP, message_p);
 }
 
 
 
 //-----------------------------------------------------------------------------
-static int gtpv1u_delete_s1u_tunnel(gtpv1u_enb_delete_tunnel_req_t *req_pP)
+static int gtpv1u_delete_s1u_tunnel(
+  const instance_t                             instanceP,
+  const gtpv1u_enb_delete_tunnel_req_t * const req_pP)
 {
   NwGtpv1uUlpApiT          stack_req;
   NwGtpv1uRcT              rc                   = NW_GTPV1U_FAILURE;
@@ -779,18 +784,18 @@ static int gtpv1u_delete_s1u_tunnel(gtpv1u_enb_delete_tunnel_req_t *req_pP)
 
   message_p = itti_alloc_new_message(TASK_GTPV1_U, GTPV1U_ENB_DELETE_TUNNEL_RESP);
 
-  GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).ue_index     = req_pP->ue_index;
+  GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).rnti     = req_pP->rnti;
   GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).status       = 0;
 
 
-  hash_rc = hashtable_get(gtpv1u_data_g.ue_mapping, req_pP->ue_index, (void**)&gtpv1u_ue_data_p);
+  hash_rc = hashtable_get(gtpv1u_data_g.ue_mapping, req_pP->rnti, (void**)&gtpv1u_ue_data_p);
 
   if (hash_rc == HASH_TABLE_OK) {
 
     for (erab_index = 0; erab_index < req_pP->num_erab; erab_index++) {
       teid_eNB = gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id[erab_index] - GTPV1U_BEARER_OFFSET].teid_eNB;
-      LOG_D(GTPU, "Rx GTPV1U_ENB_DELETE_TUNNEL user index %u eNB S1U teid %u eps bearer id %u\n",
-            req_pP->ue_index, teid_eNB, req_pP->eps_bearer_id[erab_index]);
+      LOG_D(GTPU, "Rx GTPV1U_ENB_DELETE_TUNNEL user rnti %x eNB S1U teid %u eps bearer id %u\n",
+            req_pP->rnti, teid_eNB, req_pP->eps_bearer_id[erab_index]);
 
       {
         memset(&stack_req, 0, sizeof(NwGtpv1uUlpApiT));
@@ -821,8 +826,8 @@ static int gtpv1u_delete_s1u_tunnel(gtpv1u_enb_delete_tunnel_req_t *req_pP)
       gtpv1u_ue_data_p->num_bearers -= 1;
 
       if (gtpv1u_ue_data_p->num_bearers == 0) {
-        hash_rc = hashtable_remove(gtpv1u_data_g.ue_mapping, req_pP->ue_index);
-        LOG_D(GTPU, "Removed user index %u,no more bearers configured\n", req_pP->ue_index);
+        hash_rc = hashtable_remove(gtpv1u_data_g.ue_mapping, req_pP->rnti);
+        LOG_D(GTPU, "Removed user rnti %x,no more bearers configured\n", req_pP->rnti);
       }
 
       //-----------------------
@@ -831,17 +836,17 @@ static int gtpv1u_delete_s1u_tunnel(gtpv1u_enb_delete_tunnel_req_t *req_pP)
       hash_rc = hashtable_remove(gtpv1u_data_g.teid_mapping, teid_eNB);
 
       if (hash_rc != HASH_TABLE_OK) {
-        LOG_D(GTPU, "Removed user index %u , enb S1U teid %u not found\n", req_pP->ue_index, teid_eNB);
+        LOG_D(GTPU, "Removed user rnti %x , enb S1U teid %u not found\n", req_pP->rnti, teid_eNB);
       }
     }
   }// else silently do nothing
 
 
-  LOG_D(GTPU, "Tx GTPV1U_ENB_DELETE_TUNNEL_RESP user index %u eNB S1U teid %u status %u\n",
-        GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).ue_index,
+  LOG_D(GTPU, "Tx GTPV1U_ENB_DELETE_TUNNEL_RESP user rnti %x eNB S1U teid %u status %u\n",
+        GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).rnti,
         GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).enb_S1u_teid,
         GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).status);
-  return itti_send_msg_to_task(TASK_RRC_ENB, INSTANCE_DEFAULT, message_p);
+  return itti_send_msg_to_task(TASK_RRC_ENB, instanceP, message_p);
 }
 
 //-----------------------------------------------------------------------------
@@ -947,7 +952,10 @@ static int gtpv1u_eNB_init(void)
 //-----------------------------------------------------------------------------
 void *gtpv1u_eNB_task(void *args)
 {
-  int rc = 0;
+  int                       rc = 0;
+  instance_t                instance;
+  const char               *msg_name_p;
+
   rc = gtpv1u_eNB_init();
   AssertFatal(rc == 0, "gtpv1u_eNB_init Failed");
   itti_mark_task_ready(TASK_GTPV1_U);
@@ -962,14 +970,17 @@ void *gtpv1u_eNB_task(void *args)
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_ENB_TASK, VCD_FUNCTION_IN);
     DevAssert(received_message_p != NULL);
 
+    instance = ITTI_MSG_INSTANCE(received_message_p);
+    msg_name_p = ITTI_MSG_NAME(received_message_p);
+
     switch (ITTI_MSG_ID(received_message_p)) {
     case GTPV1U_ENB_CREATE_TUNNEL_REQ: {
-      gtpv1u_create_s1u_tunnel(&received_message_p->ittiMsg.Gtpv1uCreateTunnelReq);
+      gtpv1u_create_s1u_tunnel(instance, &received_message_p->ittiMsg.Gtpv1uCreateTunnelReq);
     }
     break;
 
     case GTPV1U_ENB_DELETE_TUNNEL_REQ: {
-      gtpv1u_delete_s1u_tunnel(&received_message_p->ittiMsg.Gtpv1uDeleteTunnelReq);
+      gtpv1u_delete_s1u_tunnel(instance, &received_message_p->ittiMsg.Gtpv1uDeleteTunnelReq);
     }
     break;
 
@@ -989,7 +1000,7 @@ void *gtpv1u_eNB_task(void *args)
     // DATA TO BE SENT TO UDP
     case GTPV1U_ENB_TUNNEL_DATA_REQ: {
       gtpv1u_enb_tunnel_data_req_t *data_req_p           = NULL;
-      NwGtpv1uUlpApiT          stack_req;
+      NwGtpv1uUlpApiT               stack_req;
       NwGtpv1uRcT                   rc                   = NW_GTPV1U_FAILURE;
       hashtable_rc_t                hash_rc              = HASH_TABLE_KEY_NOT_EXISTS;
       gtpv1u_ue_data_t             *gtpv1u_ue_data_p     = NULL;
@@ -1005,10 +1016,10 @@ void *gtpv1u_eNB_task(void *args)
 #endif
       memset(&stack_req, 0, sizeof(NwGtpv1uUlpApiT));
 
-      hash_rc = hashtable_get(gtpv1u_data_g.ue_mapping, (uint64_t)data_req_p->ue_index, (void**)&gtpv1u_ue_data_p);
+      hash_rc = hashtable_get(gtpv1u_data_g.ue_mapping, (uint64_t)data_req_p->rnti, (void**)&gtpv1u_ue_data_p);
 
       if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
-        LOG_E(GTPU, "nwGtpv1uProcessUlpReq failed: while getting ue_index %u in hashtable ue_mapping\n", data_req_p->ue_index);
+        LOG_E(GTPU, "nwGtpv1uProcessUlpReq failed: while getting ue rnti %x in hashtable ue_mapping\n", data_req_p->rnti);
       } else {
         if ((data_req_p->rab_id >= GTPV1U_BEARER_OFFSET) && (data_req_p->rab_id <= max_val_DRB_Identity)) {
           enb_s1u_teid                        = gtpv1u_ue_data_p->bearers[data_req_p->rab_id - GTPV1U_BEARER_OFFSET].teid_eNB;

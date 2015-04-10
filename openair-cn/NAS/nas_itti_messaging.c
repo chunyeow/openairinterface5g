@@ -31,15 +31,15 @@
 #include "intertask_interface.h"
 #include "nas_itti_messaging.h"
 
-#if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(UE_BUILD) && defined(NAS_UE)))
-# if (defined(EPC_BUILD) && defined(NAS_MME))
+#if ((defined(NAS_BUILT_IN_EPC) && defined(NAS_MME)) || (defined(NAS_BUILT_IN_UE) && defined(NAS_UE)))
+# if (defined(NAS_BUILT_IN_EPC) && defined(NAS_MME))
 #   define TASK_ORIGIN  TASK_NAS_MME
 # else
 #   define TASK_ORIGIN  TASK_NAS_UE
 # endif
 #endif
 
-#if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
+#if ((defined(NAS_BUILT_IN_EPC) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(NAS_BUILT_IN_UE) && defined(NAS_UE)))
 static const UInt8_t emm_message_ids[] = {
   ATTACH_REQUEST,
   ATTACH_ACCEPT,
@@ -188,7 +188,7 @@ int nas_itti_protected_msg(const char *buffer, const nas_message_t *msg, const i
 }
 #endif
 
-#if defined(EPC_BUILD) && defined(NAS_MME)
+#if defined(NAS_BUILT_IN_EPC) && defined(NAS_MME)
 int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
                          const uint32_t length)
 {
@@ -205,7 +205,7 @@ int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
 
 #endif
 
-#if defined(UE_BUILD) && defined(NAS_UE)
+#if defined(NAS_BUILT_IN_UE) && defined(NAS_UE)
 extern unsigned char NB_eNB_INST;
 
 int nas_itti_cell_info_req(const plmn_t plmnID, const Byte_t rat)

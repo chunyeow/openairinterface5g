@@ -76,7 +76,7 @@ Description Defines the attach related EMM procedure executed by the
 #ifdef NAS_MME
 #include "mme_api.h"
 #include "mme_config.h"
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
 #   include "nas_itti_messaging.h"
 # endif
 #endif
@@ -1075,13 +1075,18 @@ int emm_proc_attach_set_detach(void)
  **      Others:    _emm_data                                  **
  **                                                                        **
  ***************************************************************************/
-int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
-                            int native_ksi, int ksi, int native_guti,
-                            GUTI_t *guti, imsi_t *imsi, imei_t *imei,
-                            tai_t *tai,
-                            int eea, int eia, int ucs2, int uea, int uia, int gea,
-                            int umts_present, int gprs_present,
-                            const OctetString *esm_msg)
+int emm_proc_attach_request(
+  unsigned int ueid,
+  emm_proc_attach_type_t type,
+  int native_ksi, int ksi,
+  int native_guti,
+  GUTI_t *guti,
+  imsi_t *imsi,
+  imei_t *imei,
+  tai_t    *tai,
+  int eea, int eia, int ucs2, int uea, int uia, int gea,
+  int umts_present, int gprs_present,
+  const OctetString *esm_msg)
 {
   LOG_FUNC_IN;
 
@@ -1098,7 +1103,7 @@ int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
   ue_ctx.is_dynamic = FALSE;
   ue_ctx.ueid = ueid;
 
-#if !defined(EPC_BUILD)
+#if !defined(NAS_BUILT_IN_EPC)
 
   /* UE identifier sanity check */
   if (ueid >= EMM_DATA_NB_UE_MAX) {
@@ -1126,7 +1131,7 @@ int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
   /* Get the UE's EMM context if it exists */
   emm_data_context_t **emm_ctx = NULL;
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
   emm_data_context_t *temp = NULL;
 
   temp    = emm_data_context_get(&_emm_data, ueid);
@@ -1197,7 +1202,7 @@ int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
     (*emm_ctx)->ueid = ueid;
 
     emm_fsm_set_status(ueid, *emm_ctx, EMM_DEREGISTERED);
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
     emm_data_context_add(&_emm_data, *(emm_ctx));
 #endif
 
@@ -1265,7 +1270,7 @@ int emm_proc_attach_reject(unsigned int ueid, int emm_cause)
   ue_ctx.ueid = ueid;
 
   /* Update the EMM cause code */
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
   if (ueid > 0)
 #else
@@ -1333,7 +1338,7 @@ int emm_proc_attach_complete(unsigned int ueid, const OctetString *esm_msg)
 
   /* Get the UE context */
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
   if (ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, ueid);
@@ -1670,7 +1675,7 @@ static void *_emm_attach_t3450_handler(void *args)
   /* Get the UE's EMM context */
   emm_data_context_t *emm_ctx = NULL;
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
   emm_ctx = emm_data_context_get(&_emm_data, data->ueid);
 #else
   emm_ctx = _emm_data.ctx[data->ueid];
@@ -1768,7 +1773,7 @@ static int _emm_attach_release(void *args)
     }
 
     /* Release the EMM context */
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
     emm_data_context_remove(&_emm_data, emm_ctx);
 #else
     free(_emm_data.ctx[ueid]);
@@ -1903,7 +1908,7 @@ static int _emm_attach_abort(void *args)
 
     free(data);
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
     ctx = emm_data_context_get(&_emm_data, ueid);
 #else
     ctx = _emm_data.ctx[ueid];
@@ -1979,7 +1984,7 @@ static int _emm_attach_identify(void *args)
    */
   if (emm_ctx->imsi) {
     /* The UE identifies itself using an IMSI */
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
     if (!emm_ctx->security) {
       /* Ask upper layer to fetch new security context */
       nas_itti_auth_info_req(emm_ctx->ueid, emm_ctx->imsi, 1, NULL);
@@ -2096,7 +2101,7 @@ static int _emm_attach_identify(void *args)
       rc = _emm_attach_security(emm_ctx);
     }
 
-#if !defined(EPC_BUILD)
+#if !defined(NAS_BUILT_IN_EPC)
     else {
       /* 3GPP TS 24.401, Figure 5.3.2.1-1, point 5a
        * No EMM context exists for the UE in the network; authentication
@@ -2145,7 +2150,7 @@ static int _emm_attach_identify(void *args)
  **                  Others:    _emm_data                                  **
  **                                                                        **
  ***************************************************************************/
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 int emm_attach_security(void *args)
 {
   return _emm_attach_security(args);

@@ -76,7 +76,7 @@ Description Defines the authentication EMM procedure executed by the
 #endif
 
 #ifdef NAS_MME
-# if defined(EPC_BUILD)
+# if defined(NAS_BUILT_IN_EPC)
 #   include "nas_itti_messaging.h"
 # endif
 #endif
@@ -710,7 +710,7 @@ int emm_proc_authentication_complete(unsigned int ueid, int emm_cause,
   /* Get the UE context */
   emm_data_context_t *emm_ctx = NULL;
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
   if (ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, ueid);
@@ -739,7 +739,7 @@ int emm_proc_authentication_complete(unsigned int ueid, int emm_cause,
   if (emm_cause != EMM_CAUSE_SUCCESS) {
     switch (emm_cause) {
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
 
     case EMM_CAUSE_SYNCH_FAILURE:
       /* USIM has detected a mismatch in SQN.
@@ -1408,7 +1408,7 @@ int _authentication_request(authentication_data_t *data)
   emm_sap.u.emm_as.u.security.autn = &data->autn;
 
   /* TODO: check for pointer validity */
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
   emm_ctx = emm_data_context_get(&_emm_data, data->ueid);
 #else
   emm_ctx = _emm_data.ctx[data->ueid];
@@ -1467,7 +1467,7 @@ static int _authentication_reject(unsigned int ueid)
   emm_sap.u.emm_as.u.security.ueid = ueid;
   emm_sap.u.emm_as.u.security.msgType = EMM_AS_MSG_TYPE_AUTH;
 
-#if defined(EPC_BUILD)
+#if defined(NAS_BUILT_IN_EPC)
   emm_ctx = emm_data_context_get(&_emm_data, ueid);
 #else
   emm_ctx = _emm_data.ctx[ueid];
