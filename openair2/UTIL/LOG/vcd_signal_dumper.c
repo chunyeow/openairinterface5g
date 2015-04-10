@@ -227,6 +227,7 @@ const char* eurecomFunctionsNames[] = {
   "pdcp_apply_security",
   "pdcp_validate_security",
   /* RRC signals  */
+  "rrc_rx_tx",
   "rrc_mac_config_req",
   "rrc_ue_decode_sib1",
   "rrc_ue_decode_si",

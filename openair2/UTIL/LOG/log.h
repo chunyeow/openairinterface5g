@@ -335,6 +335,7 @@ typedef enum log_instance_type_e {
 
 void log_set_instance_type (log_instance_type_t instance);
 #endif
+int logInit (void);
 
 /*--- INCLUDES ---------------------------------------------------------------*/
 #    include "log_if.h"
