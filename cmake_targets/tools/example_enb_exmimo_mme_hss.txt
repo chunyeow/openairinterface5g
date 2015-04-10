@@ -57,7 +57,7 @@ yang@yang:~/openair4G/branches/LG_PRE_RELEASE_0.3/cmake_targets$ sudo tools/run_
 
 
 Building the MME-GW:
-yang@yang:~/openair4G/branches/LG_PRE_RELEASE_0.3/cmake_targets/tools$ sudo ./build_epc -c -d -t -T --s6a-server
+yang@yang:~/openair4G/branches/LG_PRE_RELEASE_0.3/cmake_targets/tools$ ./build_epc -c -d -t -T --s6a-server
 
 Running the MME-GW:
 yang@yang:~/openair4G/branches/LG_PRE_RELEASE_0.3/cmake_targets/tools$ sudo ./run_epc -l -g  -K
