@@ -43,11 +43,11 @@ rlc_am_init(
 //-----------------------------------------------------------------------------
 {
   if (rlc_pP->initialized == TRUE) {
-    LOG_D(RLC, PROTOCOL_CTXT_FMT"[AM INIT] INITIALIZATION ALREADY DONE, DOING NOTHING\n",
-          PROTOCOL_CTXT_ARGS(ctxt_pP));
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[AM INIT] INITIALIZATION ALREADY DONE, DOING NOTHING\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
   } else {
-    LOG_D(RLC, PROTOCOL_CTXT_FMT"[AM INIT] INITIALIZATION: STATE VARIABLES, BUFFERS, LISTS\n",
-          PROTOCOL_CTXT_ARGS(ctxt_pP));
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[AM INIT] INITIALIZATION: STATE VARIABLES, BUFFERS, LISTS\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
     memset(rlc_pP, 0, sizeof(rlc_am_entity_t));
 
     list2_init(&rlc_pP->receiver_buffer,      "RX BUFFER");
@@ -60,13 +60,14 @@ rlc_am_init(
     rlc_pP->input_sdus               = calloc(1, RLC_AM_SDU_CONTROL_BUFFER_SIZE*sizeof(rlc_am_tx_sdu_management_t));
 #warning "cast the rlc retrans buffer to uint32"
     //        rlc_pP->pdu_retrans_buffer       = calloc(1, (uint16_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
-    rlc_pP->pdu_retrans_buffer       = calloc(1, (uint32_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
-    LOG_D(RLC, PROTOCOL_CTXT_FMT"[AM INIT] input_sdus[] = %p  element size=%d\n",
-          PROTOCOL_CTXT_ARGS(ctxt_pP),
+    rlc_pP->pdu_retrans_buffer       = calloc(1, (uint32_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(
+                                         rlc_am_tx_data_pdu_management_t)));
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[AM INIT] input_sdus[] = %p  element size=%d\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           rlc_pP->input_sdus,
           sizeof(rlc_am_tx_sdu_management_t));
-    LOG_D(RLC, PROTOCOL_CTXT_FMT"[AM INIT] pdu_retrans_buffer[] = %p element size=%d\n",
-          PROTOCOL_CTXT_ARGS(ctxt_pP),
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[AM INIT] pdu_retrans_buffer[] = %p element size=%d\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           rlc_pP->pdu_retrans_buffer,
           sizeof(rlc_am_tx_data_pdu_management_t));
 
@@ -112,8 +113,8 @@ rlc_am_reestablish(
    *    - stop and reset all timers;
    *    - reset all state variables to their initial values.
    */
-  LOG_D(RLC, PROTOCOL_CTXT_FMT"[AM REESTABLISH] RE-INIT STATE VARIABLES, BUFFERS, LISTS\n",
-        PROTOCOL_CTXT_ARGS(ctxt_pP));
+  LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[AM REESTABLISH] RE-INIT STATE VARIABLES, BUFFERS, LISTS\n",
+        PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
 
 #warning TODO when possible reassemble RLC SDUs from any byte segments of AMD PDUs with SN inf VR(MR)
   list2_free(&rlc_pP->receiver_buffer);
@@ -154,10 +155,6 @@ rlc_am_cleanup(
 )
 //-----------------------------------------------------------------------------
 {
-  LOG_I(RLC, RB_AM_FMT"[CLEANUP %p]\n",
-        RB_AM_ARGS(rlc_pP),
-        rlc_pP);
-
   list2_free(&rlc_pP->receiver_buffer);
   list_free(&rlc_pP->pdus_to_mac_layer);
   list_free(&rlc_pP->control_pdu_list);
@@ -213,9 +210,8 @@ rlc_am_configure(
 //-----------------------------------------------------------------------------
 {
   if (rlc_pP->configured == TRUE) {
-    LOG_I(RLC, PROTOCOL_CTXT_FMT"[RB AM %u][RECONFIGURE] max_retx_threshold %d poll_pdu %d poll_byte %d t_poll_retransmit %d t_reordering %d t_status_prohibit %d\n",
-          PROTOCOL_CTXT_ARGS(ctxt_pP),
-          rlc_pP->rb_id,
+    LOG_I(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[RECONFIGURE] max_retx_threshold %d poll_pdu %d poll_byte %d t_poll_retransmit %d t_reordering %d t_status_prohibit %d\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           max_retx_thresholdP,
           poll_pduP,
           poll_byteP,
@@ -227,14 +223,13 @@ rlc_am_configure(
     rlc_pP->poll_pdu           = poll_pduP;
     rlc_pP->poll_byte          = poll_byteP;
     rlc_pP->protocol_state     = RLC_DATA_TRANSFER_READY_STATE;
+    rlc_pP->t_poll_retransmit.ms_duration   = t_poll_retransmitP;
+    rlc_pP->t_reordering.ms_duration        = t_reorderingP;
+    rlc_pP->t_status_prohibit.ms_duration   = t_status_prohibitP;
 
-    rlc_pP->t_poll_retransmit.time_out   = t_poll_retransmitP;
-    rlc_pP->t_reordering.time_out        = t_reorderingP;
-    rlc_pP->t_status_prohibit.time_out   = t_status_prohibitP;
   } else {
-    LOG_I(RLC, PROTOCOL_CTXT_FMT"[RB AM %u][CONFIGURE] max_retx_threshold %d poll_pdu %d poll_byte %d t_poll_retransmit %d t_reordering %d t_status_prohibit %d\n",
-          PROTOCOL_CTXT_ARGS(ctxt_pP),
-          rlc_pP->rb_id,
+    LOG_I(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[CONFIGURE] max_retx_threshold %d poll_pdu %d poll_byte %d t_poll_retransmit %d t_reordering %d t_status_prohibit %d\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           max_retx_thresholdP,
           poll_pduP,
           poll_byteP,
@@ -274,8 +269,7 @@ rlc_am_set_debug_infos(
     rlc_pP->is_data_plane = 1;
   }
 
-  LOG_D(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT "[SET DEBUG INFOS]\n",
-        PROTOCOL_CTXT_ARGS(ctxt_pP),
-        RB_AM_ARGS(rlc_pP));
+  LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SET DEBUG INFOS]\n",
+        PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
 
 }

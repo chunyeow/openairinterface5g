@@ -70,6 +70,7 @@ RRC_OBJS +=  $(RRC_DIR)/rrc_eNB_ral.o
 endif
 
 RRC_OBJS += $(RRC_DIR)/rrc_eNB.o
+RRC_OBJS += $(RRC_DIR)/rrc_eNB_UE_context.o
 RRC_OBJS += $(RRC_DIR)/rrc_eNB_S1AP.o
 ifdef USE_MME
 RRC_OBJS += $(RRC_DIR)/rrc_eNB_GTPV1U.o

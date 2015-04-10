@@ -34,16 +34,14 @@
 #include "UTIL/LOG/log_extern.h"
 #endif
 
-void gain_control_all (unsigned int rx_power_fil_dB, unsigned int card)
-{
+void gain_control_all (unsigned int rx_power_fil_dB, unsigned int card) {
   unsigned int ant;
 
   for (ant=0; ant<4; ant++)
     gain_control (rx_power_fil_dB,ant,card);
 }
 
-void gain_control (unsigned int rx_power_fil_dB, unsigned int ant, unsigned int card)
-{
+void gain_control (unsigned int rx_power_fil_dB, unsigned int ant, unsigned int card) {
 
   exmimo_config_t *p_exmimo_config = openair0_exmimo_pci[card].exmimo_config_ptr;
   unsigned int rf_mode, rx_gain, LNA;

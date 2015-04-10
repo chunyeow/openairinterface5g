@@ -152,11 +152,13 @@ int send_msg_sock(
   struct  iovec     iov;
   int         taille  = sizeof(msg_head_t)  ;
 
-  if ( smsg == NULL )
+  if ( smsg == NULL ) {
     return -1 ;
+  }
 
-  if ( smsg->data != NULL )
+  if ( smsg->data != NULL ) {
     taille += smsg->head.size ;
+  }
 
   //buf = RRM_MALLOC(char, taille);
   //if (buf ==NULL)
@@ -211,8 +213,9 @@ char *recv_msg(
 
   buf         = RRM_CALLOC( char,taille);
 
-  if ( buf == NULL )
+  if ( buf == NULL ) {
     return NULL ;
+  }
 
   iov.iov_base      = (void *)buf;
   iov.iov_len       = taille ;
@@ -243,8 +246,9 @@ char *recv_msg(
 
   smsg    = RRM_CALLOC(char , size_msg ) ;
 
-  if ( smsg != NULL )
+  if ( smsg != NULL ) {
     memcpy( smsg , buf , size_msg ) ;
+  }
 
   RRM_FREE( buf ) ;
 
@@ -259,8 +263,9 @@ int send_msg_fifo(int *s, msg_t *fmsg)
   int  taille = sizeof(msg_head_t)  ;
   msg("write on fifos %d, msg %p\n",*s,fmsg);
 
-  if ( fmsg == NULL )
+  if ( fmsg == NULL ) {
     return -1 ;
+  }
 
   // envoi le header
 

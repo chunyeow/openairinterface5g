@@ -38,7 +38,7 @@
 //#include "nas_common.h"
 #include "local.h"
 #include "proto_extern.h"
-#ifndef NAS_NETLINK
+#ifdef RTAI
 #include "rtai_fifos.h"
 #endif
 
@@ -402,7 +402,7 @@ void nas_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct class
   pdcph.inst       = inst;
 
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
   bytes_wrote = nas_netlink_send((char *)&pdcph,NAS_PDCPH_SIZE);
 #ifdef NAS_DEBUG_SEND
   printk("[NAS] Wrote %d bytes (header for %d byte skb) to PDCP via netlink\n",
@@ -414,22 +414,22 @@ void nas_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct class
   printk("[NAS] Wrote %d bytes (header for %d byte skb) to PDCP fifo\n",
          bytes_wrote,skb->len);
 #endif
-#endif //NAS_NETLINK
+#endif //PDCP_USE_NETLINK
 
   if (bytes_wrote != NAS_PDCPH_SIZE) {
     printk("NAS_COMMON_QOS_SEND: problem while writing PDCP's header (bytes wrote = %d )\n",bytes_wrote);
     printk("rb_id %d, Wrote %d, Header Size %lu\n", pdcph.rb_id , bytes_wrote, NAS_PDCPH_SIZE);
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
     rtf_reset(NAS2PDCP_FIFO);
-#endif //NAS_NETLINK
+#endif //PDCP_USE_NETLINK
     return;
   }
 
-#ifdef  NAS_NETLINK
+#ifdef  PDCP_USE_NETLINK
   bytes_wrote += nas_netlink_send((char *)skb->data,skb->len);
 #else
   bytes_wrote += rtf_put(NAS2PDCP_FIFO, skb->data, skb->len);
-#endif //NAS_NETLINK
+#endif //PDCP_USE_NETLINK
 
   if (bytes_wrote != skb->len+NAS_PDCPH_SIZE) {
     printk("NAS_COMMON_QOS_SEND: Inst %d, RB_ID %d: problem while writing PDCP's data, bytes_wrote = %d, Data_len %d, PDCPH_SIZE %lu\n",
@@ -438,9 +438,9 @@ void nas_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct class
            bytes_wrote,
            skb->len,
            NAS_PDCPH_SIZE); // congestion
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
     rtf_reset(NAS2PDCP_FIFO);
-#endif //NAS_NETLINK
+#endif //PDCP_USE_NETLINK
     return;
   }
 
@@ -460,7 +460,7 @@ void nas_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct class
 #endif
 }
 
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
 //---------------------------------------------------------------------------
 void nas_COMMON_QOS_receive()
 {
@@ -479,7 +479,7 @@ void nas_COMMON_QOS_receive()
 
   // End debug information
 
-  bytes_read =  rtf_get(PDCP2NAS_FIFO,&pdcph, NAS_PDCPH_SIZE);
+  bytes_read =  rtf_get(PDCP2PDCP_USE_RT_FIFO,&pdcph, NAS_PDCPH_SIZE);
 
   while (bytes_read>0) {
     if (bytes_read != NAS_PDCPH_SIZE) {
@@ -490,7 +490,7 @@ void nas_COMMON_QOS_receive()
     priv=netdev_priv(nasdev[pdcph.inst]);
     rclass = nas_COMMON_search_class_for_rb(pdcph.rb_id,priv);
 
-    bytes_read+= rtf_get(PDCP2NAS_FIFO,
+    bytes_read+= rtf_get(PDCP2PDCP_USE_RT_FIFO,
                          data_buffer,
                          pdcph.data_size);
 
@@ -512,7 +512,7 @@ void nas_COMMON_QOS_receive()
                          pdcph.rb_id);
     }
 
-    bytes_read =  rtf_get(PDCP2NAS_FIFO, &pdcph, NAS_PDCPH_SIZE);
+    bytes_read =  rtf_get(PDCP2PDCP_USE_RT_FIFO, &pdcph, NAS_PDCPH_SIZE);
   }
 
 
@@ -553,7 +553,7 @@ void nas_COMMON_QOS_receive(struct nlmsghdr *nlh)
   }
 
 }
-#endif //NAS_NETLINK
+#endif //PDCP_USE_NETLINK
 
 //---------------------------------------------------------------------------
 struct cx_entity *nas_COMMON_search_cx(nasLocalConnectionRef_t lcr,struct nas_priv *priv)

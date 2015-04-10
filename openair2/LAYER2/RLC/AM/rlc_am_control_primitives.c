@@ -47,15 +47,15 @@
 #include "rrm_config_structs.h"
 #include "LAYER2/MAC/extern.h"
 //-----------------------------------------------------------------------------
-void            config_req_rlc_am (struct rlc_am_entity *rlcP, module_id_t module_idP, rlc_am_info_t * config_amP, uint8_t rb_idP, rb_type_t rb_typeP);
-void            send_rlc_am_control_primitive (struct rlc_am_entity *rlcP, module_id_t module_idP, mem_block_t * cprimitiveP);
-void            init_rlc_am (struct rlc_am_entity *rlcP);
-void            rlc_am_reset_state_variables (struct rlc_am_entity *rlcP);
-void            rlc_am_alloc_buffers_after_establishment (struct rlc_am_entity *rlcP);
-void            rlc_am_discard_all_pdus (struct rlc_am_entity *rlcP);
-void            rlc_am_stop_all_timers (struct rlc_am_entity *rlcP);
-void            rlc_am_free_all_resources (struct rlc_am_entity *rlcP);
-void            rlc_am_set_configured_parameters (struct rlc_am_entity *rlcP, mem_block_t * cprimitiveP);
+void            config_req_rlc_am (struct rlc_am_entity* rlcP, module_id_t module_idP, rlc_am_info_t* config_amP, uint8_t rb_idP, rb_type_t rb_typeP);
+void            send_rlc_am_control_primitive (struct rlc_am_entity* rlcP, module_id_t module_idP, mem_block_t* cprimitiveP);
+void            init_rlc_am (struct rlc_am_entity* rlcP);
+void            rlc_am_reset_state_variables (struct rlc_am_entity* rlcP);
+void            rlc_am_alloc_buffers_after_establishment (struct rlc_am_entity* rlcP);
+void            rlc_am_discard_all_pdus (struct rlc_am_entity* rlcP);
+void            rlc_am_stop_all_timers (struct rlc_am_entity* rlcP);
+void            rlc_am_free_all_resources (struct rlc_am_entity* rlcP);
+void            rlc_am_set_configured_parameters (struct rlc_am_entity* rlcP, mem_block_t* cprimitiveP);
 //void            rlc_am_probing_get_buffer_occupancy_measurements (struct rlc_am_entity *rlcP, probing_report_traffic_rb_parameters *reportP, int measurement_indexP);
 //-----------------------------------------------------------------------------
 /*void
@@ -70,51 +70,48 @@ rlc_am_probing_get_buffer_occupancy_measurements (struct rlc_am_entity *rlcP, pr
 }*/
 //-----------------------------------------------------------------------------
 void
-config_req_rlc_am (struct rlc_am_entity *rlcP, module_id_t module_idP, rlc_am_info_t * config_amP, uint8_t rb_idP, rb_type_t rb_typeP)
+config_req_rlc_am (struct rlc_am_entity* rlcP, module_id_t module_idP, rlc_am_info_t* config_amP, uint8_t rb_idP, rb_type_t rb_typeP)
 {
   //-----------------------------------------------------------------------------
-  mem_block_t      *mb;
-
+  mem_block_t*      mb;
   mb = get_free_mem_block (sizeof (struct crlc_primitive));
-  ((struct crlc_primitive *) mb->data)->type = CRLC_CONFIG_REQ;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.e_r = RLC_E_R_ESTABLISHMENT;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.stop = 0;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.cont = 1;
-
+  ((struct crlc_primitive*) mb->data)->type = CRLC_CONFIG_REQ;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.e_r = RLC_E_R_ESTABLISHMENT;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.stop = 0;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.cont = 1;
   // timers
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_poll = config_amP->timer_poll;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_poll_prohibit = config_amP->timer_poll_prohibit;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_discard = config_amP->timer_discard;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_poll_periodic = config_amP->timer_poll_periodic;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_status_prohibit = config_amP->timer_status_prohibit;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_status_periodic = config_amP->timer_status_periodic;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_rst = config_amP->timer_rst;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.max_rst = config_amP->max_rst;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_mrw = config_amP->timer_mrw;
-
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_poll = config_amP->timer_poll;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_poll_prohibit = config_amP->timer_poll_prohibit;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_discard = config_amP->timer_discard;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_poll_periodic = config_amP->timer_poll_periodic;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_status_prohibit = config_amP->timer_status_prohibit;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_status_periodic = config_amP->timer_status_periodic;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_rst = config_amP->timer_rst;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.max_rst = config_amP->max_rst;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.timer_mrw = config_amP->timer_mrw;
   // protocol_parameters
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.pdu_size = config_amP->pdu_size;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.max_dat = config_amP->max_dat;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.poll_pdu = config_amP->poll_pdu;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.poll_sdu = config_amP->poll_sdu;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.poll_window = config_amP->poll_window;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.configured_tx_window_size = config_amP->tx_window_size;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.configured_rx_window_size = config_amP->rx_window_size;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.max_mrw = config_amP->max_mrw;
-
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.last_transmission_pdu_poll_trigger = config_amP->last_transmission_pdu_poll_trigger;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.last_retransmission_pdu_poll_trigger = config_amP->last_retransmission_pdu_poll_trigger;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.sdu_discard_mode = config_amP->sdu_discard_mode;
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.send_mrw = config_amP->send_mrw;
-
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.frame_tick_milliseconds = &mac_xface->frame;
-
-  ((struct crlc_primitive *) mb->data)->primitive.c_config_req.parameters.am_parameters.rb_id = rb_idP;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.pdu_size = config_amP->pdu_size;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.max_dat = config_amP->max_dat;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.poll_pdu = config_amP->poll_pdu;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.poll_sdu = config_amP->poll_sdu;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.poll_window = config_amP->poll_window;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.configured_tx_window_size = config_amP->tx_window_size;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.configured_rx_window_size = config_amP->rx_window_size;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.max_mrw = config_amP->max_mrw;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.last_transmission_pdu_poll_trigger =
+    config_amP->last_transmission_pdu_poll_trigger;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.last_retransmission_pdu_poll_trigger =
+    config_amP->last_retransmission_pdu_poll_trigger;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.sdu_discard_mode = config_amP->sdu_discard_mode;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.send_mrw = config_amP->send_mrw;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.frame_tick_milliseconds = &mac_xface->frame;
+  ((struct crlc_primitive*) mb->data)->primitive.c_config_req.parameters.am_parameters.rb_id = rb_idP;
   send_rlc_am_control_primitive (rlcP, module_idP, mb);
 
   if (rb_typeP != SIGNALLING_RADIO_BEARER) {
     rlcP->data_plane = 1;
     msg ("[RLC AM][RB %d] DATA PLANE\n", rlcP->rb_id);
+
   } else {
     rlcP->data_plane = 0;
     msg ("[RLC AM][RB %d] CONTROL PLANE\n", rlcP->rb_id);
@@ -122,16 +119,14 @@ config_req_rlc_am (struct rlc_am_entity *rlcP, module_id_t module_idP, rlc_am_in
 }
 //-----------------------------------------------------------------------------
 void
-send_rlc_am_control_primitive (struct rlc_am_entity *rlcP, module_id_t module_idP, mem_block_t * cprimitiveP)
+send_rlc_am_control_primitive (struct rlc_am_entity* rlcP, module_id_t module_idP, mem_block_t* cprimitiveP)
 {
   //-----------------------------------------------------------------------------
   rlcP->module_id = module_idP;
 
-  switch (((struct crlc_primitive *) cprimitiveP->data)->type) {
+  switch (((struct crlc_primitive*) cprimitiveP->data)->type) {
   case CRLC_CONFIG_REQ:
-
-    switch (((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.e_r) {
-
+    switch (((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.e_r) {
     case RLC_E_R_ESTABLISHMENT:
       if (rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
         rlc_am_set_configured_parameters (rlcP, cprimitiveP);   // the order of the calling of procedures...
@@ -191,7 +186,6 @@ send_rlc_am_control_primitive (struct rlc_am_entity *rlcP, module_id_t module_id
     // -      not send AMD PDUs with sequence number SNVT(S)+N.
     if (rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_CRLC_SUSPEND_REQ_EVENT)) {
       if ((rlcP->protocol_state == RLC_LOCAL_SUSPEND_STATE) || (rlcP->protocol_state == RLC_LOCAL_SUSPEND_STATE)) {
-
         // TO DO IN FUTURE, BUT IT SEEMS THERE IS NO NEED TO IMPLEMENT THIS FUNCTION IN THE CURRENTLY DEFINED ARCHITECTURE
         // SO DISPLAY ERROR MESSAGE
         msg ("[RLC_AM[RB %d] ERROR RECEIVED CRLC_SUSPEND_REQ NOT IMPLEMENTED AT ALL, RLC_AM MAY NOT WORK AS EXPECTED IN THE 3GPP SPECIFICATION\n", rlcP->rb_id);
@@ -211,7 +205,6 @@ send_rlc_am_control_primitive (struct rlc_am_entity *rlcP, module_id_t module_id
     // -      resume the RLC reset procedure according to subclause 11.4.
     if (rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_CRLC_RESUME_REQ_EVENT)) {
       if ((rlcP->protocol_state == RLC_RESET_PENDING_STATE) || (rlcP->protocol_state == RLC_DATA_TRANSFER_READY_STATE)) {
-
         // TO DO IN FUTURE, BUT IT SEEMS THERE IS NO NEED TO IMPLEMENT THIS FUNCTION IN THE CURRENTLY DEFINED ARCHITECTURE
         // SO DISPLAY ERROR MESSAGE
         msg ("[RLC_AM][RB %d] ERROR RECEIVED CRLC_RESUME_REQ NOT IMPLEMENTED AT ALL, RLC_AM MAY NOT WORK AS EXPECTED IN THE 3GPP SPECIFICATION\n", rlcP->rb_id);
@@ -229,12 +222,10 @@ send_rlc_am_control_primitive (struct rlc_am_entity *rlcP, module_id_t module_id
 
 //-----------------------------------------------------------------------------
 void
-init_rlc_am (struct rlc_am_entity *rlcP)
+init_rlc_am (struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
   memset (rlcP, 0, sizeof (struct rlc_am_entity));
-
-
   list2_init (&rlcP->retransmission_buffer_to_send, NULL);
   list_init  (&rlcP->pdus_to_mac_layer_ch1, NULL);
   list_init  (&rlcP->pdus_to_mac_layer_ch2, NULL);
@@ -245,17 +236,13 @@ init_rlc_am (struct rlc_am_entity *rlcP)
   list2_init (&rlcP->sdu_discard_segmented, NULL);
   list2_init (&rlcP->sdu_discarded, NULL);
   list2_init (&rlcP->rlc_am_timer_list, NULL);
-
   rlcP->protocol_state = RLC_NULL_STATE;
-
   rlcP->next_sdu_index = 0;
   rlcP->current_sdu_index = 0;
   rlcP->last_received_rsn = 0xFF;
-
   //--------------------------------------------------------------------------
   rlcP->discard_reassembly_after_li = RLC_AM_DISCARD_REASSEMBLY_AT_LI_INDEX_0;
   rlcP->discard_reassembly_start_sn = RLC_AM_SN_INVALID;        // =>not activated
-
   rlcP->stat_tx_pdcp_sdu                           = 0;
   rlcP->stat_tx_pdcp_sdu_discarded           = 0;
   rlcP->stat_tx_retransmit_pdu_unblock      = 0;
@@ -271,7 +258,7 @@ init_rlc_am (struct rlc_am_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_alloc_buffers_after_establishment (struct rlc_am_entity *rlcP)
+rlc_am_alloc_buffers_after_establishment (struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
   rlcP->recomputed_configured_tx_window_size = 1;
@@ -280,37 +267,34 @@ rlc_am_alloc_buffers_after_establishment (struct rlc_am_entity *rlcP)
     rlcP->recomputed_configured_tx_window_size = rlcP->recomputed_configured_tx_window_size << 1;
   }
 
-  rlcP->retransmission_buffer_alloc = get_free_mem_block (rlcP->recomputed_configured_tx_window_size * sizeof (mem_block_t *));
-  rlcP->retransmission_buffer = (mem_block_t **) (rlcP->retransmission_buffer_alloc->data);
+  rlcP->retransmission_buffer_alloc = get_free_mem_block (rlcP->recomputed_configured_tx_window_size * sizeof (mem_block_t*));
+  rlcP->retransmission_buffer = (mem_block_t**) (rlcP->retransmission_buffer_alloc->data);
   //memset (rlcP->retransmission_buffer, 0, rlcP->recomputed_configured_tx_window_size * sizeof (mem_block_t *));
-
   rlcP->recomputed_configured_rx_window_size = 1;
 
   while (rlcP->recomputed_configured_rx_window_size < rlcP->configured_rx_window_size) {
     rlcP->recomputed_configured_rx_window_size = rlcP->recomputed_configured_rx_window_size << 1;
   }
 
-  rlcP->receiver_buffer_alloc = get_free_mem_block (rlcP->recomputed_configured_rx_window_size * sizeof (mem_block_t *));
-  rlcP->receiver_buffer = (mem_block_t **) (rlcP->receiver_buffer_alloc->data);
+  rlcP->receiver_buffer_alloc = get_free_mem_block (rlcP->recomputed_configured_rx_window_size * sizeof (mem_block_t*));
+  rlcP->receiver_buffer = (mem_block_t**) (rlcP->receiver_buffer_alloc->data);
   msg("[RLC AM][RB %d] Window size %d\n",rlcP->rb_id,rlcP->recomputed_configured_rx_window_size);
   //memset (rlcP->receiver_buffer, 0, rlcP->recomputed_configured_rx_window_size * sizeof (mem_block_t *));
-
   rlcP->holes_alloc = get_free_mem_block ((rlcP->recomputed_configured_rx_window_size * sizeof (struct rlc_am_hole)) >> 1);
-  rlcP->holes = (struct rlc_am_hole *) (rlcP->holes_alloc->data);
+  rlcP->holes = (struct rlc_am_hole*) (rlcP->holes_alloc->data);
   //memset (rlcP->holes_alloc->data, 0, (rlcP->recomputed_configured_rx_window_size * sizeof (mem_block_t *)) >> 1);
-
   rlcP->size_input_sdus_buffer = rlcP->recomputed_configured_tx_window_size * 4;
 
   if ((rlcP->input_sdus_alloc == NULL)) {
-    rlcP->input_sdus_alloc = get_free_mem_block (rlcP->size_input_sdus_buffer * sizeof (void *));
-    rlcP->input_sdus = (mem_block_t **) (rlcP->input_sdus_alloc->data);
+    rlcP->input_sdus_alloc = get_free_mem_block (rlcP->size_input_sdus_buffer * sizeof (void*));
+    rlcP->input_sdus = (mem_block_t**) (rlcP->input_sdus_alloc->data);
     //memset (rlcP->input_sdus, 0, rlcP->size_input_sdus_buffer * sizeof (void *));
   }
 }
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_reset_state_variables (struct rlc_am_entity *rlcP)
+rlc_am_reset_state_variables (struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
   rlcP->vt_s = 0;
@@ -351,13 +335,12 @@ rlc_am_reset_state_variables (struct rlc_am_entity *rlcP)
   rlcP->current_sdu_index = 0;
   rlcP->nb_pdu_requested_by_mac_on_ch1 = 0;
   rlcP->nb_pdu_requested_by_mac_on_ch2 = 0;
-
   rlcP->running_timer_status_prohibit = rlcP->timer_status_prohibit/10;
 }
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_stop_all_timers (struct rlc_am_entity *rlcP)
+rlc_am_stop_all_timers (struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
   list2_free (&rlcP->rlc_am_timer_list);
@@ -365,11 +348,10 @@ rlc_am_stop_all_timers (struct rlc_am_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_discard_all_pdus (struct rlc_am_entity *rlcP)
+rlc_am_discard_all_pdus (struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
   uint16_t             index;
-
   index = 0;
 
   while (index < rlcP->recomputed_configured_rx_window_size) {
@@ -405,7 +387,7 @@ rlc_am_discard_all_pdus (struct rlc_am_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_free_all_resources (struct rlc_am_entity *rlcP)
+rlc_am_free_all_resources (struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
   int             index;
@@ -444,54 +426,57 @@ rlc_am_free_all_resources (struct rlc_am_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_set_configured_parameters (struct rlc_am_entity *rlcP, mem_block_t * cprimitiveP)
+rlc_am_set_configured_parameters (struct rlc_am_entity* rlcP, mem_block_t* cprimitiveP)
 {
   //-----------------------------------------------------------------------------
   // timers
   //rlcP->timer_poll_trigger = ((struct crlc_primitive *)cprimitiveP->data)->cprimitive.c_config_req.parameters.am_parameters.timer_poll;
   //rlcP-> = ((struct crlc_primitive *)cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.timer_poll_prohibit;
-  rlcP->timer_discard_init = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.timer_discard;
-  rlcP->timer_poll_periodic_init = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.timer_poll_periodic;
-  rlcP-> timer_status_prohibit    = ((struct crlc_primitive *)cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.timer_status_prohibit;
-  rlcP->timer_status_periodic = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.timer_status_periodic;
-  rlcP->timer_rst_init = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.timer_rst;
-  rlcP->max_rst = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.max_rst;
-  rlcP->timer_mrw_init = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.timer_mrw;
-
+  rlcP->timer_discard_init = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.timer_discard;
+  rlcP->timer_poll_periodic_init = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.timer_poll_periodic;
+  rlcP-> timer_status_prohibit    = ((struct crlc_primitive*)cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.timer_status_prohibit;
+  rlcP->timer_status_periodic = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.timer_status_periodic;
+  rlcP->timer_rst_init = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.timer_rst;
+  rlcP->max_rst = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.max_rst;
+  rlcP->timer_mrw_init = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.timer_mrw;
   // protocol_parameters
-  rlcP->pdu_size = (((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.pdu_size + 7) >> 3;
-  rlcP->max_dat = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.max_dat;
-  rlcP->missing_pdu_indicator = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.missing_pdu_indicator;
-  rlcP->poll_pdu_trigger = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.poll_pdu;
-  rlcP->poll_sdu_trigger = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.poll_sdu;
-  rlcP->last_transmission_pdu_poll_trigger = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.last_transmission_pdu_poll_trigger;
-  rlcP->last_retransmission_pdu_poll_trigger = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.last_retransmission_pdu_poll_trigger;
-  rlcP->poll_window_trigger = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.poll_window;
-  rlcP->configured_tx_window_size = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.configured_tx_window_size;
-  rlcP->configured_rx_window_size = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.configured_rx_window_size;
-  rlcP->max_mrw = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.max_mrw;
-  rlcP->sdu_discard_mode = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.sdu_discard_mode;
-  rlcP->send_mrw = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.send_mrw;
-
+  rlcP->pdu_size = (((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.pdu_size + 7) >> 3;
+  rlcP->max_dat = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.max_dat;
+  rlcP->missing_pdu_indicator = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.missing_pdu_indicator;
+  rlcP->poll_pdu_trigger = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.poll_pdu;
+  rlcP->poll_sdu_trigger = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.poll_sdu;
+  rlcP->last_transmission_pdu_poll_trigger = ((struct crlc_primitive*)
+      cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.last_transmission_pdu_poll_trigger;
+  rlcP->last_retransmission_pdu_poll_trigger = ((struct crlc_primitive*)
+      cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.last_retransmission_pdu_poll_trigger;
+  rlcP->poll_window_trigger = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.poll_window;
+  rlcP->configured_tx_window_size = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.configured_tx_window_size;
+  rlcP->configured_rx_window_size = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.configured_rx_window_size;
+  rlcP->max_mrw = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.max_mrw;
+  rlcP->sdu_discard_mode = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.sdu_discard_mode;
+  rlcP->send_mrw = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.send_mrw;
   // SPARE : not 3GPP
-  rlcP->rb_id = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.rb_id;
-  rlcP->frame_tick_milliseconds = ((struct crlc_primitive *) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.frame_tick_milliseconds;
+  rlcP->rb_id = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.rb_id;
+  rlcP->frame_tick_milliseconds = ((struct crlc_primitive*) cprimitiveP->data)->primitive.c_config_req.parameters.am_parameters.frame_tick_milliseconds;
   rlcP->nb_logical_channels_per_rlc =1;
 
   if (rlcP->pdu_size > 126) {
     rlcP->rlc_segment = rlc_am_segment_15;
+
   } else {
     rlcP->rlc_segment = rlc_am_segment_7;
   }
 
   if (rlcP->sdu_discard_mode == SDU_DISCARD_MODE_RESET) {
     msg ("[RLC AM][RB %d] SDU DISCARD RESET CONFIGURED\n", rlcP->rb_id);
+
   } else if (rlcP->sdu_discard_mode == SDU_DISCARD_MODE_TIMER_BASED_EXPLICIT) {
     msg ("[RLC AM][RB %d] SDU DISCARD TIMER BASED EXPLICIT SIGNALING CONFIGURED\n", rlcP->rb_id);
+
   } else if (rlcP->sdu_discard_mode == SDU_DISCARD_MODE_MAX_DAT_RETRANSMISSION) {
     msg ("[RLC AM][RB %d] SDU DISCARD MAX RETRANSMISSION CONFIGURED\n", rlcP->rb_id);
+
   } else if (rlcP->sdu_discard_mode == SDU_DISCARD_MODE_NOT_CONFIGURED) {
     msg ("[RLC AM][RB %d] SDU DISCARD NOT CONFIGURED\n", rlcP->rb_id);
   }
-
 }

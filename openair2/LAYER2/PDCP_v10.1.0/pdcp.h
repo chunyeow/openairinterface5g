@@ -89,6 +89,11 @@ extern pthread_mutex_t pdcp_mutex;
 extern pthread_cond_t  pdcp_cond;
 extern int             pdcp_instance_cnt;
 
+#define PROTOCOL_PDCP_CTXT_FMT PROTOCOL_CTXT_FMT"[%s %02u] "
+
+#define PROTOCOL_PDCP_CTXT_ARGS(CTXT_Pp, pDCP_Pp) PROTOCOL_CTXT_ARGS(CTXT_Pp),\
+          (pDCP_Pp->is_srb) ? "SRB" : "DRB",\
+          pDCP_Pp->rb_id
 int init_pdcp_thread(void);
 void cleanup_pdcp_thread(void);
 
@@ -102,7 +107,7 @@ public_pdcp(unsigned int Pdcp_stats_rx_bytes[NB_MODULES_MAX][NB_CNX_CH][NB_RAB_M
 public_pdcp(unsigned int Pdcp_stats_rx_bytes_last[NB_MODULES_MAX][NB_CNX_CH][NB_RAB_MAX]);
 public_pdcp(unsigned int Pdcp_stats_rx_rate[NB_MODULES_MAX][NB_CNX_CH][NB_RAB_MAX]);
 
-typedef struct pdcp_stats_t {
+typedef struct pdcp_stats_s {
   time_stats_t pdcp_run;
   time_stats_t data_req;
   time_stats_t data_ind;
@@ -113,8 +118,8 @@ typedef struct pdcp_stats_t {
 } pdcp_stats_t; // common to eNB and UE
 
 
-typedef struct pdcp_t {
-  boolean_t instanciated_instance;
+typedef struct pdcp_s {
+  //boolean_t     instanciated_instance;
   uint16_t       header_compression_profile;
 
   /* SR: added this flag to distinguish UE/eNB instance as pdcp_run for virtual
@@ -183,7 +188,7 @@ typedef struct pdcp_t {
 } pdcp_t;
 
 #if defined(Rel10)
-typedef struct pdcp_mbms_t {
+typedef struct pdcp_mbms_s {
   boolean_t instanciated_instance;
   rb_id_t   rb_id;
 } pdcp_mbms_t;
@@ -355,10 +360,12 @@ public_pdcp(int pdcp_module_init     (void);)
 public_pdcp(void pdcp_module_cleanup (void);)
 public_pdcp(void pdcp_layer_init     (void);)
 public_pdcp(void pdcp_layer_cleanup  (void);)
+#if defined(USE_PDCP_NETLINK_QUEUES)
 public_pdcp(int pdcp_netlink_init    (void);)
 
-#define PDCP2NAS_FIFO 21
-#define NAS2PDCP_FIFO 22
+#endif
+#define PDCP2NW_DRIVER_FIFO 21
+#define NW_DRIVER2PDCP_FIFO 22
 
 protected_pdcp_fifo(int pdcp_fifo_flush_sdus                      (
                       const protocol_ctxt_t* const  ctxt_pP);)
@@ -433,10 +440,13 @@ typedef struct pdcp_missing_pdu_info_t {
 protected_pdcp(signed int             pdcp_2_nas_irq;)
 public_pdcp(pdcp_stats_t              UE_pdcp_stats[NUMBER_OF_UE_MAX];)
 public_pdcp(pdcp_stats_t              eNB_pdcp_stats[NUMBER_OF_eNB_MAX];)
-protected_pdcp(pdcp_t                 pdcp_array_srb_ue[NUMBER_OF_UE_MAX][2];)
-protected_pdcp(pdcp_t                 pdcp_array_drb_ue[NUMBER_OF_UE_MAX][maxDRB];)
-public_pdcp(pdcp_t                    pdcp_array_srb_eNB[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][2];)
-protected_pdcp(pdcp_t                 pdcp_array_drb_eNB[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][maxDRB];)
+//protected_pdcp(pdcp_t                 pdcp_array_srb_ue[NUMBER_OF_UE_MAX][2];)
+//protected_pdcp(pdcp_t                 pdcp_array_drb_ue[NUMBER_OF_UE_MAX][maxDRB];)
+//public_pdcp(pdcp_t                    pdcp_array_srb_eNB[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][2];)
+//protected_pdcp(pdcp_t                 pdcp_array_drb_eNB[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][maxDRB];)
+
+// for UE code conly
+protected_pdcp(rnti_t                 pdcp_UE_UE_module_id_to_rnti[NUMBER_OF_UE_MAX];)
 #if defined(Rel10)
 public_pdcp(pdcp_mbms_t               pdcp_mbms_array_ue[NUMBER_OF_UE_MAX][maxServiceCount][maxSessionPerPMCH];)   // some constants from openair2/RRC/LITE/MESSAGES/asn1_constants.h
 public_pdcp(pdcp_mbms_t               pdcp_mbms_array_eNB[NUMBER_OF_eNB_MAX][maxServiceCount][maxSessionPerPMCH];) // some constants from openair2/RRC/LITE/MESSAGES/asn1_constants.h
@@ -450,5 +460,23 @@ protected_pdcp(unsigned char          pdcp_input_sdu_buffer[MAX_IP_PACKET_SIZE];
 protected_pdcp(sdu_size_t             pdcp_input_index_header;)
 protected_pdcp(sdu_size_t             pdcp_input_sdu_size_read;)
 protected_pdcp(sdu_size_t             pdcp_input_sdu_remaining_size_to_read;)
+#define PDCP_COLL_KEY_VALUE(mODULE_iD, rNTI, iS_eNB, rB_iD, iS_sRB) \
+   ((hash_key_t)mODULE_iD          | \
+    (((hash_key_t)(rNTI))   << 8)  | \
+    (((hash_key_t)(iS_eNB)) << 24) | \
+    (((hash_key_t)(rB_iD))  << 25) | \
+    (((hash_key_t)(iS_sRB)) << 33))
+
+// service id max val is maxServiceCount = 16 (asn1_constants.h)
+
+#define PDCP_COLL_KEY_MBMS_VALUE(mODULE_iD, rNTI, iS_eNB, sERVICE_ID, sESSION_ID) \
+   ((hash_key_t)mODULE_iD              | \
+    (((hash_key_t)(rNTI))       << 8)  | \
+    (((hash_key_t)(iS_eNB))     << 24) | \
+    (((hash_key_t)(sERVICE_ID)) << 32) | \
+    (((hash_key_t)(sESSION_ID)) << 37) | \
+    (((hash_key_t)(0x0000000000000001))  << 63))
+
+public_pdcp(hash_table_t  *pdcp_coll_p;)
 
 #endif

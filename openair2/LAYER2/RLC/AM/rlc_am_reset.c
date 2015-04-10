@@ -61,14 +61,14 @@ The RESET PDUs and the RESET ACK PDUs have higher priority than AMD PDUs.
 #include  "LAYER2/MAC/extern.h"
 #define DEBUG_RESET
 //-----------------------------------------------------------------------------
-void            send_reset_ack_pdu (uint8_t rsnP, struct rlc_am_entity *rlcP);
-void            send_reset_pdu (struct rlc_am_entity *rlcP);
-void            reset_rlc_am (struct rlc_am_entity *rlcP);
-void            process_reset_ack (mem_block_t * pduP, struct rlc_am_reset_header *controlP, struct rlc_am_entity *rlcP);
-void            process_reset (mem_block_t * pduP, struct rlc_am_reset_header *controlP, struct rlc_am_entity *rlcP);
+void            send_reset_ack_pdu (uint8_t rsnP, struct rlc_am_entity* rlcP);
+void            send_reset_pdu (struct rlc_am_entity* rlcP);
+void            reset_rlc_am (struct rlc_am_entity* rlcP);
+void            process_reset_ack (mem_block_t* pduP, struct rlc_am_reset_header* controlP, struct rlc_am_entity* rlcP);
+void            process_reset (mem_block_t* pduP, struct rlc_am_reset_header* controlP, struct rlc_am_entity* rlcP);
 //-----------------------------------------------------------------------------
 void
-rlc_am_reset_time_out (struct rlc_am_entity *rlcP, mem_block_t * not_usedP)
+rlc_am_reset_time_out (struct rlc_am_entity* rlcP, mem_block_t* not_usedP)
 {
   //-----------------------------------------------------------------------------
   /* from 3GPP TS 25.322 V5.0.0 (2002-03)
@@ -94,6 +94,7 @@ rlc_am_reset_time_out (struct rlc_am_entity *rlcP, mem_block_t * not_usedP)
     if (rlcP->vt_rst < rlcP->max_rst - 1) {
       send_reset_pdu (rlcP);
       rlcP->vt_rst += 1;
+
     } else {
       //rrc_indication_unrecoverable_error_from_rlc_am(rlcP);
       // notification not raised to RRC, continue. (TO DO)
@@ -101,7 +102,6 @@ rlc_am_reset_time_out (struct rlc_am_entity *rlcP, mem_block_t * not_usedP)
       msg ("[RLC_AM][RB %d]  RESET TIME OUT VT(RST) >= max_rst frame %d REPORT TO RRC\n", rlcP->rb_id, Mac_rlc_xface->frame);
       msg ("\n******************************************************************\n");
       send_reset_pdu (rlcP);
-
       rlcP->vt_rst += 1;
       rlc_data_conf (0, rlcP->rb_id, 0,RLC_TX_CONFIRM_FAILURE, rlcP->data_plane);    // mui, rb_ib, status
 #ifdef NODE_MT
@@ -114,11 +114,11 @@ rlc_am_reset_time_out (struct rlc_am_entity *rlcP, mem_block_t * not_usedP)
 
 //-----------------------------------------------------------------------------
 void
-send_reset_pdu (struct rlc_am_entity *rlcP)
+send_reset_pdu (struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
-  mem_block_t      *pdu;
-  struct rlc_am_reset_header *header;
+  mem_block_t*      pdu;
+  struct rlc_am_reset_header* header;
 
   /* From TS 25.322 V5.0.0 (2002-03)
      RESET PDU contents to set
@@ -130,7 +130,6 @@ send_reset_pdu (struct rlc_am_entity *rlcP)
      a new RESET PDU is transmitted, but not when a RESET PDU is retransmitted.
    */
   if (!(rlcP->timer_rst)) {
-
     if (rlcP->vt_rst == 0) {    // first transmission of reset PDU
       rlcP->reset_sequence_number ^= 1;
     }
@@ -139,11 +138,9 @@ send_reset_pdu (struct rlc_am_entity *rlcP)
     pdu = get_free_mem_block (rlcP->pdu_size + sizeof (struct rlc_am_tx_control_pdu_allocation) + GUARD_CRC_LIH_SIZE);
 
     if ((pdu)) {
-      ((struct rlc_am_tx_control_pdu_management *) (pdu->data))->rlc_tb_type = RLC_AM_RESET_PDU_TYPE;
-      header = (struct rlc_am_reset_header *) (&pdu->data[sizeof (struct rlc_am_tx_control_pdu_allocation)]);
+      ((struct rlc_am_tx_control_pdu_management*) (pdu->data))->rlc_tb_type = RLC_AM_RESET_PDU_TYPE;
+      header = (struct rlc_am_reset_header*) (&pdu->data[sizeof (struct rlc_am_tx_control_pdu_allocation)]);
       header->byte1 = RLC_PDU_TYPE_RESET | (rlcP->reset_sequence_number << 3);
-
-
 #ifdef DEBUG_RESET
       msg ("\n******************************************************************\n");
       msg ("[RLC_AM][RB %d] TX RESET  RSN %d VT(RST) %d frame %d\n", rlcP->rb_id, rlcP->reset_sequence_number, rlcP->vt_rst, Mac_rlc_xface->frame);
@@ -154,9 +151,9 @@ send_reset_pdu (struct rlc_am_entity *rlcP)
          header->hfni[1] = 0;
          header->hfni[2] = 0;
        */
-
       list_add_head (pdu, &rlcP->control);
       rlc_am_fsm_notify_event (rlcP, RLC_AM_TRANSMIT_RESET_EVENT);      // not yet submitted to lower layers
+
     } else {
       msg ("[RLC_AM][RB %d] ERROR SEND RESET OUT OF MEMORY ERROR\n", rlcP->rb_id);
     }
@@ -165,11 +162,11 @@ send_reset_pdu (struct rlc_am_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-send_reset_ack_pdu (uint8_t rsnP, struct rlc_am_entity *rlcP)
+send_reset_ack_pdu (uint8_t rsnP, struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
-  mem_block_t      *pdu;
-  struct rlc_am_reset_header *header;
+  mem_block_t*      pdu;
+  struct rlc_am_reset_header* header;
 
   /* From 3GPP TS 25.322 V5.0.0 (2002-03)
      RESET ACK PDU contents to set
@@ -184,14 +181,14 @@ send_reset_ack_pdu (uint8_t rsnP, struct rlc_am_entity *rlcP)
     msg ("[RLC_AM][RB %d] TX RESET ACK RSN %d frame %d\n", rlcP->rb_id, rsnP, Mac_rlc_xface->frame);
     msg ("\n******************************************************************\n");
 #endif
-    ((struct rlc_am_tx_control_pdu_management *) (pdu->data))->rlc_tb_type = RLC_AM_RESET_ACK_PDU_TYPE;
-    header = (struct rlc_am_reset_header *) (&pdu->data[sizeof (struct rlc_am_tx_control_pdu_allocation)]);
+    ((struct rlc_am_tx_control_pdu_management*) (pdu->data))->rlc_tb_type = RLC_AM_RESET_ACK_PDU_TYPE;
+    header = (struct rlc_am_reset_header*) (&pdu->data[sizeof (struct rlc_am_tx_control_pdu_allocation)]);
     header->byte1 = RLC_PDU_TYPE_RESET_ACK | (rsnP << 3);
-
     list_add_head (pdu, &rlcP->control);
   }
 
 #ifdef DEBUG_RESET
+
   else {
     msg ("[RLC_AM][RB %d] SEND RESET ACK OUT OF MEMORY ERROR\n", rlcP->rb_id);
   }
@@ -201,10 +198,9 @@ send_reset_ack_pdu (uint8_t rsnP, struct rlc_am_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-process_reset_ack (mem_block_t * pduP, struct rlc_am_reset_header *controlP, struct rlc_am_entity *rlcP)
+process_reset_ack (mem_block_t* pduP, struct rlc_am_reset_header* controlP, struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
-
   /* from 3GPP TS 25.322 V5.0.0 (2002-03)
      Upon reception of a RESET ACK PDU, the Sender shall:
      - if the Sender has already transmitted a RESET PDU which has not been yet acknowledged by a RESET ACK
@@ -233,7 +229,6 @@ process_reset_ack (mem_block_t * pduP, struct rlc_am_reset_header *controlP, str
    */
   if (rlc_am_fsm_notify_event (rlcP, RLC_AM_RECEIVE_RESET_ACK_EVENT)) {
     if (((controlP->byte1 & RLC_AM_RESET_SEQUENCE_NUMBER_MASK) >> 3) == rlcP->reset_sequence_number) {
-
 #ifdef DEBUG_RESET
       msg ("\n******************************************************************\n");
       msg ("[RLC_AM][RB %d] RX RESET ACK RSN %d frame %d\n", rlcP->rb_id, ((controlP->byte1 & RLC_AM_RESET_SEQUENCE_NUMBER_MASK) >> 3), Mac_rlc_xface->frame);
@@ -246,9 +241,11 @@ process_reset_ack (mem_block_t * pduP, struct rlc_am_reset_header *controlP, str
     }
 
 #ifdef DEBUG_RESET
+
     else {
       msg ("\n******************************************************************\n");
-      msg ("[RLC_AM][RB %d] RX RESET ACK WRONG RSN %d != %d frame %d\n", rlcP->rb_id, (controlP->byte1 & RLC_AM_RESET_SEQUENCE_NUMBER_MASK) >> 3, rlcP->reset_sequence_number, Mac_rlc_xface->frame);
+      msg ("[RLC_AM][RB %d] RX RESET ACK WRONG RSN %d != %d frame %d\n", rlcP->rb_id, (controlP->byte1 & RLC_AM_RESET_SEQUENCE_NUMBER_MASK) >> 3,
+           rlcP->reset_sequence_number, Mac_rlc_xface->frame);
       msg ("\n******************************************************************\n");
     }
 
@@ -256,6 +253,7 @@ process_reset_ack (mem_block_t * pduP, struct rlc_am_reset_header *controlP, str
   }
 
 #ifdef DEBUG_RESET
+
   else {
     msg ("\n******************************************************************\n");
     msg ("[RLC_AM][RB %d] RX RESET ACK NOT EXPECTED frame %d\n", rlcP->rb_id, Mac_rlc_xface->frame);
@@ -268,12 +266,11 @@ process_reset_ack (mem_block_t * pduP, struct rlc_am_reset_header *controlP, str
 
 //-----------------------------------------------------------------------------
 void
-process_reset (mem_block_t * pduP, struct rlc_am_reset_header *controlP, struct rlc_am_entity *rlcP)
+process_reset (mem_block_t* pduP, struct rlc_am_reset_header* controlP, struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
   uint8_t              rsn;
   uint8_t              saved_vt_rst;
-
   /* From 25.322 V5.0.0 (2002-03)
      Reception of the RESET PDU by the Receiver
        Upon reception of a RESET PDU the Receiver shall:
@@ -336,9 +333,11 @@ process_reset (mem_block_t * pduP, struct rlc_am_reset_header *controlP, struct 
     if (!(rlcP->timer_rst)) {
       umts_stop_all_timers (&rlcP->rlc_am_timer_list);
       rlc_am_reset_time_out (rlcP, NULL);
+
     } else {
       umts_stop_all_timers_except (&rlcP->rlc_am_timer_list, rlc_am_reset_time_out);
     }
+
   } else {
     // receiver
 #ifdef DEBUG_RESET
@@ -370,19 +369,18 @@ process_reset (mem_block_t * pduP, struct rlc_am_reset_header *controlP, struct 
 
 //-----------------------------------------------------------------------------
 void
-reset_rlc_am (struct rlc_am_entity *rlcP)
+reset_rlc_am (struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
   int             index;
 
   for (index = 0; index < rlcP->size_input_sdus_buffer; index++) {
     if (rlcP->input_sdus[index]) {
-
       if (!(rlcP->data_plane)) {
 #ifdef DEBUG_RLC_AM_SEND_CONFIRM
-        msg ("[RLC_AM][RB %d][CONFIRM] SDU MUI %d LOST IN RESET\n", rlcP->rb_id, ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[index]->data))->mui);
+        msg ("[RLC_AM][RB %d][CONFIRM] SDU MUI %d LOST IN RESET\n", rlcP->rb_id, ((struct rlc_am_tx_sdu_management*) (rlcP->input_sdus[index]->data))->mui);
 #endif
-        rlc_data_conf (0, rlcP->rb_id, ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[index]->data))->mui, RLC_TX_CONFIRM_FAILURE, rlcP->data_plane);
+        rlc_data_conf (0, rlcP->rb_id, ((struct rlc_am_tx_sdu_management*) (rlcP->input_sdus[index]->data))->mui, RLC_TX_CONFIRM_FAILURE, rlcP->data_plane);
       }
 
       free_mem_block (rlcP->input_sdus[index]);

@@ -75,7 +75,7 @@ typedef struct ue_ip_priv_s {
   uint32_t                   timer_release;
   struct sock               *nl_sk;
   uint8_t                    nlmsg[UE_IP_PRIMITIVE_MAX_LENGTH+sizeof(struct nlmsghdr)];
-  uint8_t                    xbuffer[UE_IP_PRIMITIVE_MAX_LENGTH]; // transmition buffer
+  uint8_t                    xbuffer[UE_IP_PRIMITIVE_MAX_LENGTH]; // transmission buffer
   uint8_t                    rbuffer[UE_IP_PRIMITIVE_MAX_LENGTH]; // reception buffer
 } ue_ip_priv_t;
 

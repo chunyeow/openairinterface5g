@@ -27,7 +27,7 @@
 
  *******************************************************************************/
 
-/*! \file eNB_scheduler_RAs.c
+/*! \file eNB_scheduler_RA.c
  * \brief primitives used for random access
  * \author  Navid Nikaein and Raymond Knopp
  * \date 2010 - 2014
@@ -38,6 +38,7 @@
  */
 
 #include "assertions.h"
+#include "platform_types.h"
 #include "PHY/defs.h"
 #include "PHY/extern.h"
 
@@ -108,9 +109,10 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
             // Get RRCConnectionSetup for Piggyback
             rrc_sdu_length = mac_rrc_data_req(module_idP,
                                               frameP,
-                                              CCCH,1,
+                                              CCCH,
+                                              1, // 1 transport block
                                               &eNB->common_channels[CC_id].CCCH_pdu.payload[0],
-                                              1,
+                                              ENB_FLAG_YES,
                                               module_idP,
                                               0); // not used in this case
 
@@ -381,8 +383,9 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
             memcpy((void*)&eNB->UE_list.DLSCH_pdu[CC_id][0][(unsigned char)UE_id].payload[0][(unsigned char)offset],
                    &eNB->common_channels[CC_id].CCCH_pdu.payload[0],
                    rrc_sdu_length);
+#if defined(USER_MODE) && defined(OAI_EMU)
 
-            if (opt_enabled==1) {
+            if (oai_emulation.info.opt_enabled) {
               trace_pdu(1, (uint8_t *)eNB->UE_list.DLSCH_pdu[CC_id][0][(unsigned char)UE_id].payload[0],
                         rrc_sdu_length, UE_id, 3, UE_RNTI(module_idP, UE_id),
                         eNB->subframe,0,0);
@@ -390,6 +393,7 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
                     module_idP, frameP, UE_RNTI(module_idP,UE_id), rrc_sdu_length);
             }
 
+#endif
             nprb[CC_id]= nprb[CC_id] + 3;
             nCCE[CC_id] = nCCE[CC_id] + 4;
           }
@@ -416,7 +420,8 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
   stop_meas(&eNB->schedule_ra);
 }
 
-void initiate_ra_proc(module_id_t module_idP, int CC_id,frame_t frameP, uint16_t preamble_index,int16_t timing_offset,uint8_t sect_id,sub_frame_t subframeP,uint8_t f_id)
+void initiate_ra_proc(module_id_t module_idP, int CC_id,frame_t frameP, uint16_t preamble_index,int16_t timing_offset,uint8_t sect_id,sub_frame_t subframeP,
+                      uint8_t f_id)
 {
 
   uint8_t i;

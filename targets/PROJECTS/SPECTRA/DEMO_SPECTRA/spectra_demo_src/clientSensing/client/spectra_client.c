@@ -33,8 +33,7 @@
  * @param id messsage identificatior
  * @return example message
  */
-SpectraMessage createTestMessageClient(int id, int type, int nSamples)
-{
+SpectraMessage createTestMessageClient(int id, int type, int nSamples) {
   SpectraMessage msg;
 
   msg.type = type;
@@ -53,8 +52,7 @@ SpectraMessage createTestMessageClient(int id, int type, int nSamples)
  *
  * @return - the socket descriptor
  */
-int createsSocket(int argc, char *argv[])
-{
+int createsSocket(int argc, char *argv[]) {
   int sock;
   struct sockaddr_in server;
   //Create socket
@@ -101,8 +99,7 @@ int createsSocket(int argc, char *argv[])
  * @param argv
  * @return
  */
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   char server_reply[MAX_PACKET_SIZE];
   int nSamples = 10;
 

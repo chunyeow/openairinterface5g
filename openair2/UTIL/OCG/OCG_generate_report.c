@@ -55,8 +55,6 @@ int generate_report(char dst_dir[DIR_LENGTH_MAX], char filename[FILENAME_LENGTH_
   // for the xml writer, refer to http://xmlsoft.org/html/libxml-xmlwriter.html
 
   char dst_file[FILENAME_LENGTH_MAX + DIR_LENGTH_MAX] = "";
-  //strcat(dst_file, dst_dir);
-  //strcat(dst_file, filename);
   strncat(dst_file, dst_dir, FILENAME_LENGTH_MAX + DIR_LENGTH_MAX - strlen(dst_file) - 1);
   strncat(dst_file, filename, FILENAME_LENGTH_MAX + DIR_LENGTH_MAX - strlen(dst_file) - 1);
 

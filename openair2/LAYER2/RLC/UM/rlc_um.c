@@ -33,36 +33,36 @@
   EMAIL   : Lionel.Gauthier@eurecom.fr
 *******************************************************************************/
 #ifndef USER_MODE
-#    define __NO_VERSION__
+#define __NO_VERSION__
 
-#    include "rt_compat.h"
+#include "rt_compat.h"
 
-#    ifdef RTAI
-#        include <rtai.h>
-#        include <rtai_posix.h>
-#        include <rtai_fifos.h>
-#    else
+#ifdef RTAI
+#include <rtai.h>
+#include <rtai_posix.h>
+#include <rtai_fifos.h>
+#else
 /* RTLINUX */
-#        include <rtl.h>
-#        include <time.h>
-#        include <rtl_sched.h>
-#        include <rtl_sync.h>
-#        include <pthread.h>
-#        include <rtl_debug.h>
-#        include <rtl_core.h>
-#        include <rtl_fifo.h>
-#    endif
+#include <rtl.h>
+#include <time.h>
+#include <rtl_sched.h>
+#include <rtl_sync.h>
+#include <pthread.h>
+#include <rtl_debug.h>
+#include <rtl_core.h>
+#include <rtl_fifo.h>
+#endif
 
-#    include <asm/page.h>
+#include <asm/page.h>
 
 #else
-#    include <stdlib.h>
-#    include <stdio.h>
-#    include <fcntl.h>
-#    include <signal.h>
-#    include <sys/types.h>
-#    include <sys/stat.h>
-#    include <pthread.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <pthread.h>
 #endif
 
 #include "print.h"
@@ -79,16 +79,16 @@
 #include "LAYER2/MAC/extern.h"
 #define DEBUG_RLC_UM_DISPLAY_ASCII_DATA
 //-----------------------------------------------------------------------------
-uint32_t             rlc_um_get_buffer_occupancy (struct rlc_um_entity *rlcP);
-void            rlc_um_get_pdus (void *argP);
-void            rlc_um_rx (void *argP, struct mac_data_ind data_indP);
-struct mac_status_resp rlc_um_mac_status_indication (void *rlcP, uint16_t no_tbP, uint16_t tb_sizeP, struct mac_status_ind tx_statusP);
-struct mac_data_req rlc_um_mac_data_request (void *rlcP);
-void            rlc_um_mac_data_indication (void *rlcP, struct mac_data_ind data_indP);
-void            rlc_um_data_req (void *rlcP, struct mem_block *sduP);
+uint32_t             rlc_um_get_buffer_occupancy (struct rlc_um_entity* rlcP);
+void            rlc_um_get_pdus (void* argP);
+void            rlc_um_rx (void* argP, struct mac_data_ind data_indP);
+struct mac_status_resp rlc_um_mac_status_indication (void* rlcP, uint16_t no_tbP, uint16_t tb_sizeP, struct mac_status_ind tx_statusP);
+struct mac_data_req rlc_um_mac_data_request (void* rlcP);
+void            rlc_um_mac_data_indication (void* rlcP, struct mac_data_ind data_indP);
+void            rlc_um_data_req (void* rlcP, struct mem_block* sduP);
 //-----------------------------------------------------------------------------
 uint32_t
-rlc_um_get_buffer_occupancy (struct rlc_um_entity *rlcP)
+rlc_um_get_buffer_occupancy (struct rlc_um_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
   return rlcP->buffer_occupancy;
@@ -96,13 +96,12 @@ rlc_um_get_buffer_occupancy (struct rlc_um_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_get_pdus (void *argP)
+rlc_um_get_pdus (void* argP)
 {
   //-----------------------------------------------------------------------------
-  struct rlc_um_entity *rlc = (struct rlc_um_entity *) argP;
+  struct rlc_um_entity* rlc = (struct rlc_um_entity*) argP;
 
   switch (rlc->protocol_state) {
-
   case RLC_NULL_STATE:
     // from 3GPP TS 25.322 V4.2.0
     // In the NULL state the RLC entity does not exist and therefore it is not possible to transfer any data through it.
@@ -129,6 +128,7 @@ rlc_um_get_pdus (void *argP)
 
     if (rlc->data_pdu_size > 125) {
       rlc_um_segment_15 (rlc);
+
     } else {
       rlc_um_segment_7 (rlc);
     }
@@ -147,7 +147,6 @@ rlc_um_get_pdus (void *argP)
     // Upon reception of a CRLC-CONFIG-Req from upper layer indicating modification, the RLC entity:
     // -      stays in the LOCAL_SUSPEND state;
     // -      modifies only the protocol parameters and timers as indicated by upper layers.
-
     // TO DO TAKE CARE OF SN : THE IMPLEMENTATION OF THIS FUNCTIONNALITY IS NOT CRITICAL
     break;
 
@@ -158,14 +157,12 @@ rlc_um_get_pdus (void *argP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_rx (void *argP, struct mac_data_ind data_indP)
+rlc_um_rx (void* argP, struct mac_data_ind data_indP)
 {
   //-----------------------------------------------------------------------------
-
-  struct rlc_um_entity *rlc = (struct rlc_um_entity *) argP;
+  struct rlc_um_entity* rlc = (struct rlc_um_entity*) argP;
 
   switch (rlc->protocol_state) {
-
   case RLC_NULL_STATE:
     // from 3GPP TS 25.322 V4.2.0
     // In the NULL state the RLC entity does not exist and therefore it is not possible to transfer any data through it.
@@ -191,6 +188,7 @@ rlc_um_rx (void *argP, struct mac_data_ind data_indP)
 
     if (data_indP.tb_size <= 125) {
       rlc_um_receive_7 (rlc, data_indP);
+
     } else {
       rlc_um_receive_15 (rlc, data_indP);
     }
@@ -216,29 +214,27 @@ rlc_um_rx (void *argP, struct mac_data_ind data_indP)
 
 //-----------------------------------------------------------------------------
 struct mac_status_resp
-rlc_um_mac_status_indication (void *rlcP, uint16_t no_tbP, uint16_t tb_sizeP, struct mac_status_ind tx_statusP)
+rlc_um_mac_status_indication (void* rlcP, uint16_t no_tbP, uint16_t tb_sizeP, struct mac_status_ind tx_statusP)
 {
   //-----------------------------------------------------------------------------
   struct mac_status_resp status_resp;
+  ((struct rlc_um_entity*) rlcP)->nb_pdu_requested_by_mac = no_tbP - ((struct rlc_um_entity*) rlcP)->pdus_to_mac_layer.nb_elements;
+  ((struct rlc_um_entity*) rlcP)->data_pdu_size = (tb_sizeP + 7) >> 3;
+  ((struct rlc_um_entity*) rlcP)->data_pdu_size_in_bits = tb_sizeP;
+  status_resp.buffer_occupancy_in_bytes = rlc_um_get_buffer_occupancy ((struct rlc_um_entity*) rlcP);
+  status_resp.buffer_occupancy_in_pdus = status_resp.buffer_occupancy_in_bytes / ((struct rlc_um_entity*) rlcP)->data_pdu_size;
+  status_resp.rlc_info.rlc_protocol_state = ((struct rlc_um_entity*) rlcP)->protocol_state;
+#ifdef TRACE_RLC_UM_TX_STATUS
 
-  ((struct rlc_um_entity *) rlcP)->nb_pdu_requested_by_mac = no_tbP - ((struct rlc_um_entity *) rlcP)->pdus_to_mac_layer.nb_elements;
-  ((struct rlc_um_entity *) rlcP)->data_pdu_size = (tb_sizeP + 7) >> 3;
-  ((struct rlc_um_entity *) rlcP)->data_pdu_size_in_bits = tb_sizeP;
-
-  status_resp.buffer_occupancy_in_bytes = rlc_um_get_buffer_occupancy ((struct rlc_um_entity *) rlcP);
-  status_resp.buffer_occupancy_in_pdus = status_resp.buffer_occupancy_in_bytes / ((struct rlc_um_entity *) rlcP)->data_pdu_size;
-  status_resp.rlc_info.rlc_protocol_state = ((struct rlc_um_entity *) rlcP)->protocol_state;
-#ifdef DEBUG_RLC_UM_TX_STATUS
-
-  if (((struct rlc_um_entity *) rlcP)->rb_id > 0) {
-    msg ("[RLC_UM][RB %d] MAC_STATUS_INDICATION (DATA) %d TBs -> %d TBs\n", ((struct rlc_um_entity *) rlcP)->rb_id, no_tbP, status_resp.buffer_occupancy_in_pdus);
+  if (((struct rlc_um_entity*) rlcP)->rb_id > 0) {
+    msg ("[RLC_UM][RB %d] MAC_STATUS_INDICATION (DATA) %d TBs -> %d TBs\n", ((struct rlc_um_entity*) rlcP)->rb_id, no_tbP, status_resp.buffer_occupancy_in_pdus);
 
     if ((tx_statusP.tx_status == MAC_TX_STATUS_SUCCESSFUL) && (tx_statusP.no_pdu)) {
-      msg ("[RLC_UM][RB %d] MAC_STATUS_INDICATION  TX STATUS   SUCCESSFUL %d PDUs\n", ((struct rlc_um_entity *) rlcP)->rb_id, tx_statusP.no_pdu);
+      msg ("[RLC_UM][RB %d] MAC_STATUS_INDICATION  TX STATUS   SUCCESSFUL %d PDUs\n", ((struct rlc_um_entity*) rlcP)->rb_id, tx_statusP.no_pdu);
     }
 
     if ((tx_statusP.tx_status == MAC_TX_STATUS_UNSUCCESSFUL) && (tx_statusP.no_pdu)) {
-      msg ("[RLC_UM][RB %d] MAC_STATUS_INDICATION  TX STATUS UNSUCCESSFUL %d PDUs\n", ((struct rlc_um_entity *) rlcP)->rb_id, tx_statusP.no_pdu);
+      msg ("[RLC_UM][RB %d] MAC_STATUS_INDICATION  TX STATUS UNSUCCESSFUL %d PDUs\n", ((struct rlc_um_entity*) rlcP)->rb_id, tx_statusP.no_pdu);
     }
   }
 
@@ -248,35 +244,32 @@ rlc_um_mac_status_indication (void *rlcP, uint16_t no_tbP, uint16_t tb_sizeP, st
 
 //-----------------------------------------------------------------------------
 struct mac_data_req
-rlc_um_mac_data_request (void *rlcP)
+rlc_um_mac_data_request (void* rlcP)
 {
   //-----------------------------------------------------------------------------
   struct mac_data_req data_req;
-
   rlc_um_get_pdus (rlcP);
-
   init_cnt_up (&data_req.data, NULL);
-  add_cnt_up (&((struct rlc_um_entity *) rlcP)->pdus_to_mac_layer, &data_req.data);
+  add_cnt_up (&((struct rlc_um_entity*) rlcP)->pdus_to_mac_layer, &data_req.data);
 #ifdef DEBUG_RLC_STATS
-  ((struct rlc_um_entity *) rlcP)->tx_pdus += data_req.data.nb_elements;
+  ((struct rlc_um_entity*) rlcP)->tx_pdus += data_req.data.nb_elements;
 #endif
-
 #ifdef DEBUG_RLC_UM_MAC_DATA_REQUEST
 
-  if (((struct rlc_um_entity *) rlcP)->rb_id > 0) {
+  if (((struct rlc_um_entity*) rlcP)->rb_id > 0) {
     // msg ("[RLC_UM][RB %d] MAC_DATA_REQUEST %d TBs\n", ((struct rlc_um_entity *) rlcP)->rb_id, data_req.data.nb_elements);
   }
 
 #endif
-  data_req.buffer_occupancy_in_bytes = rlc_um_get_buffer_occupancy ((struct rlc_um_entity *) rlcP);
-  data_req.buffer_occupancy_in_pdus = data_req.buffer_occupancy_in_bytes / ((struct rlc_um_entity *) rlcP)->data_pdu_size;
-  data_req.rlc_info.rlc_protocol_state = ((struct rlc_um_entity *) rlcP)->protocol_state;
+  data_req.buffer_occupancy_in_bytes = rlc_um_get_buffer_occupancy ((struct rlc_um_entity*) rlcP);
+  data_req.buffer_occupancy_in_pdus = data_req.buffer_occupancy_in_bytes / ((struct rlc_um_entity*) rlcP)->data_pdu_size;
+  data_req.rlc_info.rlc_protocol_state = ((struct rlc_um_entity*) rlcP)->protocol_state;
   return data_req;
 }
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_mac_data_indication (void *rlcP, struct mac_data_ind data_indP)
+rlc_um_mac_data_indication (void* rlcP, struct mac_data_ind data_indP)
 {
   //-----------------------------------------------------------------------------
   rlc_um_rx (rlcP, data_indP);
@@ -284,10 +277,10 @@ rlc_um_mac_data_indication (void *rlcP, struct mac_data_ind data_indP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_data_req (void *rlcP, struct mem_block *sduP)
+rlc_um_data_req (void* rlcP, struct mem_block* sduP)
 {
   //-----------------------------------------------------------------------------
-  struct rlc_um_entity *rlc = (struct rlc_um_entity *) rlcP;
+  struct rlc_um_entity* rlc = (struct rlc_um_entity*) rlcP;
   uint8_t              use_special_li;
   uint8_t              insert_sdu = 0;
 #ifdef DEBUG_RLC_UM_DISCARD_SDU
@@ -297,11 +290,9 @@ rlc_um_data_req (void *rlcP, struct mem_block *sduP)
   int             index;
 #    endif
 #endif
-
 #ifndef NO_THREAD_SAFE
   pthread_mutex_lock (&rlc->mutex_input_buffer);
 #endif
-
 #ifdef DEBUG_RLC_UM_DATA_REQUEST
   //msg ("[RLC_UM][RB  %d] RLC_UM_DATA_REQ size %d Bytes, BO %ld , NB SDU %d current_sdu_index=%d next_sdu_index=%d\n",
   //   rlc->rb_id, ((struct rlc_um_data_req *) (sduP->data))->data_size, rlc->buffer_occupancy, rlc->nb_sdu, rlc->current_sdu_index, rlc->next_sdu_index);
@@ -309,6 +300,7 @@ rlc_um_data_req (void *rlcP, struct mem_block *sduP)
 
   if (rlc->input_sdus[rlc->next_sdu_index] == NULL) {
     insert_sdu = 1;
+
   } else {
     // from 3GPP TS 25.322 V4.2.0
     // If SDU discard has not been configured for an unacknowledged mode RLC entity, SDUs in the
@@ -324,17 +316,18 @@ rlc_um_data_req (void *rlcP, struct mem_block *sduP)
         msg ("[RLC_UM][RB %d] SDU DISCARDED : BUFFER OVERFLOW, BO %ld , NB SDU %d\n", rlc->rb_id, rlc->buffer_occupancy, rlc->nb_sdu);
 #endif
 
-        if (((struct rlc_um_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index]->data))->sdu_remaining_size !=
-            ((struct rlc_um_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index]->data))->sdu_size) {
+        if (((struct rlc_um_tx_sdu_management*) (rlc->input_sdus[rlc->current_sdu_index]->data))->sdu_remaining_size !=
+            ((struct rlc_um_tx_sdu_management*) (rlc->input_sdus[rlc->current_sdu_index]->data))->sdu_size) {
 #ifdef DEBUG_RLC_UM_VT_US
           msg ("[RLC_UM][RB %d] Inc VT(US) in rlc_um_data_req()/discarding SDU\n", rlc->rb_id);
 #endif
           rlc->vt_us = (rlc->vt_us + 1) & 0x7F;
           rlc->li_one_byte_short_to_add_in_next_pdu = 0;
           rlc->li_exactly_filled_to_add_in_next_pdu = 1;
-          rlc->buffer_occupancy -= ((struct rlc_um_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index]->data))->sdu_remaining_size;
+          rlc->buffer_occupancy -= ((struct rlc_um_tx_sdu_management*) (rlc->input_sdus[rlc->current_sdu_index]->data))->sdu_remaining_size;
+
         } else {
-          rlc->buffer_occupancy -= ((struct rlc_um_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index]->data))->sdu_size;
+          rlc->buffer_occupancy -= ((struct rlc_um_tx_sdu_management*) (rlc->input_sdus[rlc->current_sdu_index]->data))->sdu_size;
         }
 
         rlc->nb_sdu -= 1;
@@ -351,6 +344,7 @@ rlc_um_data_req (void *rlcP, struct mem_block *sduP)
         }
 
 #endif
+
       } else {
 #ifdef DEBUG_RLC_UM_DISCARD_SDU
         msg ("[RLC_UM][RB %d] DISCARD : BUFFER OVERFLOW ERROR : SHOULD FIND A SDU\n", rlc->rb_id);
@@ -367,25 +361,25 @@ rlc_um_data_req (void *rlcP, struct mem_block *sduP)
 
   if ((insert_sdu)) {
 #ifdef BENCH_QOS_L2
-    fprintf (bench_l2, "[SDU REQUEST] FRAME %d SIZE %d RB %d RLC-UM %p\n", mac_xface->frame, ((struct rlc_um_data_req *) (sduP->data))->data_size, rlc->rb_id, rlc);
+    fprintf (bench_l2, "[SDU REQUEST] FRAME %d SIZE %d RB %d RLC-UM %p\n", mac_xface->frame, ((struct rlc_um_data_req*) (sduP->data))->data_size, rlc->rb_id, rlc);
 #endif
     rlc->input_sdus[rlc->next_sdu_index] = sduP;
     // IMPORTANT : do not change order of affectations
-    use_special_li = ((struct rlc_um_data_req *) (sduP->data))->use_special_li;
-    ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_size = ((struct rlc_um_data_req *) (sduP->data))->data_size;
-    ((struct rlc_um_tx_sdu_management *) (sduP->data))->use_special_li = use_special_li;
-    rlc->buffer_occupancy += ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_size;
+    use_special_li = ((struct rlc_um_data_req*) (sduP->data))->use_special_li;
+    ((struct rlc_um_tx_sdu_management*) (sduP->data))->sdu_size = ((struct rlc_um_data_req*) (sduP->data))->data_size;
+    ((struct rlc_um_tx_sdu_management*) (sduP->data))->use_special_li = use_special_li;
+    rlc->buffer_occupancy += ((struct rlc_um_tx_sdu_management*) (sduP->data))->sdu_size;
     rlc->nb_sdu += 1;
-    ((struct rlc_um_tx_sdu_management *) (sduP->data))->first_byte = &sduP->data[sizeof (struct rlc_um_data_req_alloc)];
-    ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_remaining_size = ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_size;
-    ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_segmented_size = 0;
-    ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_creation_time = *rlc->frame_tick_milliseconds;
+    ((struct rlc_um_tx_sdu_management*) (sduP->data))->first_byte = &sduP->data[sizeof (struct rlc_um_data_req_alloc)];
+    ((struct rlc_um_tx_sdu_management*) (sduP->data))->sdu_remaining_size = ((struct rlc_um_tx_sdu_management*) (sduP->data))->sdu_size;
+    ((struct rlc_um_tx_sdu_management*) (sduP->data))->sdu_segmented_size = 0;
+    ((struct rlc_um_tx_sdu_management*) (sduP->data))->sdu_creation_time = *rlc->frame_tick_milliseconds;
     rlc->next_sdu_index = (rlc->next_sdu_index + 1) % rlc->size_input_sdus_buffer;
 #ifdef DEBUG_RLC_UM_DISPLAY_ASCII_DATA
 
     //msg ("[RLC_UM][RB %d]SDU REQUEST DATA :", rlc->rb_id);
-    for (index = 0; index < ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_remaining_size; index++) {
-      msg ("%02X-", ((struct rlc_um_tx_sdu_management *) (sduP->data))->first_byte[index]);
+    for (index = 0; index < ((struct rlc_um_tx_sdu_management*) (sduP->data))->sdu_remaining_size; index++) {
+      msg ("%02X-", ((struct rlc_um_tx_sdu_management*) (sduP->data))->first_byte[index]);
     }
 
     msg ("\n");

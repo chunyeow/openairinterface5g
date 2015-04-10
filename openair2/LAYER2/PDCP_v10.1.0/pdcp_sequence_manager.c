@@ -45,8 +45,9 @@
  */
 boolean_t pdcp_init_seq_numbers(pdcp_t* pdcp_entity)
 {
-  if (pdcp_entity == NULL)
+  if (pdcp_entity == NULL) {
     return FALSE;
+  }
 
   /* Sequence number state variables */
 
@@ -67,8 +68,9 @@ boolean_t pdcp_init_seq_numbers(pdcp_t* pdcp_entity)
 
 boolean_t pdcp_is_seq_num_size_valid(pdcp_t* pdcp_entity)
 {
-  if (pdcp_entity == NULL)
+  if (pdcp_entity == NULL) {
     return FALSE;
+  }
 
   // Check if the size of SN is valid (see 3GPP TS 36.323 v10.1.0 item 6.3.2)
   if (pdcp_entity->seq_num_size != 5 && pdcp_entity->seq_num_size != 7 && pdcp_entity->seq_num_size != 12) {
@@ -84,8 +86,9 @@ boolean_t pdcp_is_seq_num_size_valid(pdcp_t* pdcp_entity)
  */
 boolean_t pdcp_is_seq_num_valid(uint16_t seq_num, uint8_t seq_num_size)
 {
-  if (seq_num >= 0 && seq_num <= pdcp_calculate_max_seq_num_for_given_size(seq_num_size))
+  if (seq_num >= 0 && seq_num <= pdcp_calculate_max_seq_num_for_given_size(seq_num_size)) {
     return TRUE;
+  }
 
   return FALSE;
 }
@@ -101,8 +104,9 @@ uint16_t pdcp_calculate_max_seq_num_for_given_size(uint8_t seq_num_size)
 
 uint16_t pdcp_get_next_tx_seq_number(pdcp_t* pdcp_entity)
 {
-  if (pdcp_is_seq_num_size_valid(pdcp_entity) == FALSE)
+  if (pdcp_is_seq_num_size_valid(pdcp_entity) == FALSE) {
     return -1;
+  }
 
   // Sequence number should be incremented after it is assigned for a PDU
   uint16_t pdcp_seq_num = pdcp_entity->next_pdcp_tx_sn;
@@ -124,8 +128,9 @@ uint16_t pdcp_get_next_tx_seq_number(pdcp_t* pdcp_entity)
 
 boolean_t pdcp_advance_rx_window(pdcp_t* pdcp_entity)
 {
-  if (pdcp_is_seq_num_size_valid(pdcp_entity) == FALSE)
+  if (pdcp_is_seq_num_size_valid(pdcp_entity) == FALSE) {
     return FALSE;
+  }
 
   /*
    * Update sequence numbering state and Hyper Frame Number if SN has already reached
@@ -159,8 +164,9 @@ boolean_t pdcp_is_rx_seq_number_valid(uint16_t seq_num, pdcp_t* pdcp_entity,srb_
   LOG_D(PDCP, "Incoming RX Sequence number is %04d\n", seq_num);
 #endif
 
-  if (pdcp_is_seq_num_size_valid(pdcp_entity) == FALSE || pdcp_is_seq_num_valid(seq_num, pdcp_entity->seq_num_size) == FALSE)
+  if (pdcp_is_seq_num_size_valid(pdcp_entity) == FALSE || pdcp_is_seq_num_valid(seq_num, pdcp_entity->seq_num_size) == FALSE) {
     return FALSE;
+  }
 
   /*
    * Mark received sequence numbers to keep track of missing ones
@@ -196,8 +202,9 @@ boolean_t pdcp_is_rx_seq_number_valid(uint16_t seq_num, pdcp_t* pdcp_entity,srb_
     pdcp_entity->next_pdcp_rx_sn_before_integrity = pdcp_entity->next_pdcp_rx_sn;
 #if 0
 
-    if (seq_num != pdcp_entity->next_pdcp_rx_sn)
+    if (seq_num != pdcp_entity->next_pdcp_rx_sn) {
       LOG_D(PDCP,"Re-adjusting the sequence number to %d\n", seq_num);
+    }
 
 #endif
     //set Next_PDCP_RX_SN to the received PDCP SN +1 ;
@@ -206,10 +213,11 @@ boolean_t pdcp_is_rx_seq_number_valid(uint16_t seq_num, pdcp_t* pdcp_entity,srb_
 
   } else { // DRB
 
-    if (pdcp_entity->seq_num_size == PDCP_SN_7BIT)
+    if (pdcp_entity->seq_num_size == PDCP_SN_7BIT) {
       reordering_window = REORDERING_WINDOW_SN_7BIT;
-    else
+    } else {
       reordering_window = REORDERING_WINDOW_SN_12BIT;
+    }
 
     switch (pdcp_entity->rlc_mode) {
     case RLC_MODE_AM:
@@ -232,7 +240,6 @@ boolean_t pdcp_is_rx_seq_number_valid(uint16_t seq_num, pdcp_t* pdcp_entity,srb_
         // discard this PDCP SDU;
         LOG_W(PDCP, "Out of the reordering window (Incoming SN:%d, Expected SN:%d): discard this PDCP SDU\n",
               seq_num, pdcp_entity->next_pdcp_rx_sn);
-
         return FALSE;
       } else if (pdcp_entity->next_pdcp_rx_sn - seq_num > reordering_window) {
         pdcp_entity->rx_hfn++;
@@ -259,8 +266,9 @@ boolean_t pdcp_is_rx_seq_number_valid(uint16_t seq_num, pdcp_t* pdcp_entity,srb_
       break;
 
     case RLC_MODE_UM :
-      if (seq_num <  pdcp_entity->next_pdcp_rx_sn)
+      if (seq_num <  pdcp_entity->next_pdcp_rx_sn) {
         pdcp_entity->rx_hfn++;
+      }
 
       // decipher the PDCP Data PDU using COUNT based on RX_HFN and the received PDCP SN as specified in the subclause 5.6;
       //set Next_PDCP_RX_SN to the received PDCP SN +1 ;

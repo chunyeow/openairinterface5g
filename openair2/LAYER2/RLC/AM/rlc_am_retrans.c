@@ -57,23 +57,25 @@
 //#define DEBUG_BITMAP
 //#define DEBUG_LIST
 //-----------------------------------------------------------------------------
-inline int16_t      retransmission_buffer_management_ack (struct rlc_am_entity *rlcP, uint8_t * sufiP, uint8_t byte_alignedP, int16_t * first_error_indicated_snP);
-inline uint8_t      *retransmission_buffer_management_bitmap (struct rlc_am_entity *rlcP, uint8_t * bitmap_sufiP, uint8_t byte_alignedP, int16_t * first_error_indicated_snP);
-inline uint8_t      *retransmission_buffer_management_list (struct rlc_am_entity *rlcP, uint8_t * bitmap_sufiP, uint8_t byte_alignedP, int16_t * first_error_indicated_snP);
-inline void     free_retransmission_buffer (struct rlc_am_entity *rlcP, uint16_t indexP);
-inline void     free_retransmission_buffer_no_confirmation (struct rlc_am_entity *rlcP, uint16_t indexP);
-inline void     insert_into_retransmission_buffer (struct rlc_am_entity *rlcP, uint16_t indexP, mem_block_t * pduP);
-inline uint8_t       retransmit_pdu (struct rlc_am_entity *rlcP, uint16_t snP);
-inline uint8_t       add_to_transmission_buffer_unack_pdu (struct rlc_am_entity *rlcP, int16_t * nb_pdu_to_transmit);
+inline int16_t      retransmission_buffer_management_ack (struct rlc_am_entity* rlcP, uint8_t* sufiP, uint8_t byte_alignedP,
+    int16_t* first_error_indicated_snP);
+inline uint8_t*      retransmission_buffer_management_bitmap (struct rlc_am_entity* rlcP, uint8_t* bitmap_sufiP, uint8_t byte_alignedP,
+    int16_t* first_error_indicated_snP);
+inline uint8_t*      retransmission_buffer_management_list (struct rlc_am_entity* rlcP, uint8_t* bitmap_sufiP, uint8_t byte_alignedP,
+    int16_t* first_error_indicated_snP);
+inline void     free_retransmission_buffer (struct rlc_am_entity* rlcP, uint16_t indexP);
+inline void     free_retransmission_buffer_no_confirmation (struct rlc_am_entity* rlcP, uint16_t indexP);
+inline void     insert_into_retransmission_buffer (struct rlc_am_entity* rlcP, uint16_t indexP, mem_block_t* pduP);
+inline uint8_t       retransmit_pdu (struct rlc_am_entity* rlcP, uint16_t snP);
+inline uint8_t       add_to_transmission_buffer_unack_pdu (struct rlc_am_entity* rlcP, int16_t* nb_pdu_to_transmit);
 //-----------------------------------------------------------------------------
 /*
  * remove all mem_block_t(s) having sn <= snP
  */
 int16_t
-retransmission_buffer_management_ack (struct rlc_am_entity *rlcP, uint8_t * sufiP, uint8_t byte_alignedP, int16_t * first_error_indicated_snP)
+retransmission_buffer_management_ack (struct rlc_am_entity* rlcP, uint8_t* sufiP, uint8_t byte_alignedP, int16_t* first_error_indicated_snP)
 {
   //-----------------------------------------------------------------------------
-
   uint16_t             lsn;          // sequence number acknowledged
   uint16_t             current_sn;
   uint16_t             upper_bound;
@@ -86,6 +88,7 @@ retransmission_buffer_management_ack (struct rlc_am_entity *rlcP, uint8_t * sufi
     lsn = (*sufiP++ & 0x0F);
     lsn = lsn << 8;
     lsn += *sufiP;
+
   } else {
     // get next 12 bits;
     sufiP++;
@@ -98,8 +101,8 @@ retransmission_buffer_management_ack (struct rlc_am_entity *rlcP, uint8_t * sufi
 #ifdef DEBUG_ACK
   msg ("[RLC_AM][RB %d][ACK] RX SUFI ACK  0x%04X VT(A) 0x%04X VT(S) 0x%04X VT(MS) 0x%04X\n", rlcP->rb_id, lsn, rlcP->vt_a, rlcP->vt_s, rlcP->vt_ms);
 #endif
-
   current_sn = rlcP->vt_a;
+
   // From 3GPP TS 25.322 V4.3.0
   // LSN acknowledges the reception of all PDUs with "Sequence Number" < LSN (Last Sequence Number)
   // that are not indicated to be erroneous in earlier parts of the STATUS PDU.
@@ -111,26 +114,26 @@ retransmission_buffer_management_ack (struct rlc_am_entity *rlcP, uint8_t * sufi
   // otherwise VT(A) will be updated according to the first error indicated in the STATUS PDU.
   // VT(A) is only updated based on STATUS PDUs where ACK SUFI (or MRW_ACK SUFI) is included.
   // The LSN shall not be set to a value > VR(H) nor < VR(R).
-
   //-------------------------;
   // if ack lsn <= first error => vt_a = lsn;
   // else vt_a = first error indicated;
-
   // check lsn is valid
   if (rlc_am_comp_sn (rlcP, rlcP->vt_a, lsn, rlcP->vt_a) >= 0) {
-
     if (*first_error_indicated_snP >= 0) {
       if (rlc_am_comp_sn (rlcP, rlcP->vt_a, lsn, (uint16_t) * first_error_indicated_snP) <= 0) {
 #ifdef DEBUG_ACK
         msg ("[RLC_AM][RB %d][ACK] VT(A) 0x%04X -> 0x%04X    VT(S) 0x%04X CASE LSN <= FIRST PDU IN ERROR IN STATUS PDU\n", rlcP->rb_id, rlcP->vt_a, lsn, rlcP->vt_s);
 #endif
         rlcP->vt_a = lsn;
+
       } else {
 #ifdef DEBUG_ACK
-        msg ("[RLC_AM][RB %d][ACK] VT(A) 0x%04X -> 0x%04X    VT(S) 0x%04X CASE LSN > FIRST PDU IN ERROR IN STATUS PDU \n", rlcP->rb_id, rlcP->vt_a, (uint16_t) * first_error_indicated_snP, rlcP->vt_s);
+        msg ("[RLC_AM][RB %d][ACK] VT(A) 0x%04X -> 0x%04X    VT(S) 0x%04X CASE LSN > FIRST PDU IN ERROR IN STATUS PDU \n", rlcP->rb_id, rlcP->vt_a,
+             (uint16_t) * first_error_indicated_snP, rlcP->vt_s);
 #endif
         rlcP->vt_a = (uint16_t) * first_error_indicated_snP;
       }
+
     } else {
 #ifdef DEBUG_ACK
       msg ("[RLC_AM][RB %d][ACK] VT(A) 0x%04X -> 0x%04X    VT(S) 0x%04X CASE SUFI ACK ALONE IN CONTROL PDU\n", rlcP->rb_id, rlcP->vt_a, lsn, rlcP->vt_s);
@@ -139,7 +142,6 @@ retransmission_buffer_management_ack (struct rlc_am_entity *rlcP, uint8_t * sufi
     }
 
     rlcP->vt_ms = (rlcP->vt_a + rlcP->vt_ws - 1) & SN_12BITS_MASK;
-
     current_index = current_sn % (uint16_t) rlcP->recomputed_configured_tx_window_size;
     upper_bound = lsn % (uint16_t) rlcP->recomputed_configured_tx_window_size;
 
@@ -147,18 +149,20 @@ retransmission_buffer_management_ack (struct rlc_am_entity *rlcP, uint8_t * sufi
     while (upper_bound != current_index) {
       // free all pdus that have not been stamped as missing;
       if (rlcP->retransmission_buffer[current_index] != NULL) {
-        if (((struct rlc_am_tx_data_pdu_management *) (rlcP->retransmission_buffer[current_index]->data))->ack != RLC_AM_PDU_NACK_EVENT) {
+        if (((struct rlc_am_tx_data_pdu_management*) (rlcP->retransmission_buffer[current_index]->data))->ack != RLC_AM_PDU_NACK_EVENT) {
 #ifdef DEBUG_ACK
           msg ("[RLC_AM][RB %d][ACK]  FREE PDU SN 0x%04X BECAUSE FIELD ACK=%d\n", rlcP->rb_id, current_sn,
-               ((struct rlc_am_tx_data_pdu_management *) (rlcP->retransmission_buffer[current_index]->data))->ack);
+               ((struct rlc_am_tx_data_pdu_management*) (rlcP->retransmission_buffer[current_index]->data))->ack);
 #endif
           free_retransmission_buffer (rlcP, (uint16_t) current_index);
+
         } else {
 #ifdef DEBUG_ACK
-          msg ("[RLC_AM][RB %d][ACK] CLEAR NACK EVENT (%d) PDU SN 0x%04X\n", rlcP->rb_id, ((struct rlc_am_tx_data_pdu_management *) (rlcP->retransmission_buffer[current_index]->data))->ack,
+          msg ("[RLC_AM][RB %d][ACK] CLEAR NACK EVENT (%d) PDU SN 0x%04X\n", rlcP->rb_id,
+               ((struct rlc_am_tx_data_pdu_management*) (rlcP->retransmission_buffer[current_index]->data))->ack,
                current_sn);
 #endif
-          ((struct rlc_am_tx_data_pdu_management *) (rlcP->retransmission_buffer[current_index]->data))->ack = RLC_AM_PDU_ACK_NO_EVENT;
+          ((struct rlc_am_tx_data_pdu_management*) (rlcP->retransmission_buffer[current_index]->data))->ack = RLC_AM_PDU_ACK_NO_EVENT;
         }
       }
 
@@ -195,18 +199,16 @@ retransmission_buffer_management_ack (struct rlc_am_entity *rlcP, uint8_t * sufi
  * @param bitmap_sufiP pointer on byte containing field "sufi type"
  * @param byte_alignedP tells if sufi type quartet is on MSByte (1) or LSByte (0)
  */
-inline uint8_t      *
-retransmission_buffer_management_bitmap (struct rlc_am_entity * rlcP, uint8_t * bitmap_sufiP, uint8_t byte_alignedP, int16_t * first_error_indicated_snP)
+inline uint8_t*
+retransmission_buffer_management_bitmap (struct rlc_am_entity* rlcP, uint8_t* bitmap_sufiP, uint8_t byte_alignedP, int16_t* first_error_indicated_snP)
 {
   //-----------------------------------------------------------------------------
-
   uint16_t             id_index;
   uint16_t             fsn;
   uint8_t              length, tmp;
   uint8_t              one_pdu_removed = 0;  //optim: update vt_a only at the end of the proc
   uint8_t              bit_mask;
   uint8_t              end_bit;
-
 
   if (byte_alignedP) {
     // get next 4 bits : length
@@ -217,6 +219,7 @@ retransmission_buffer_management_bitmap (struct rlc_am_entity * rlcP, uint8_t * 
     tmp = *bitmap_sufiP;
     fsn += tmp >> 4;
     bit_mask = 8;
+
   } else {
     bitmap_sufiP++;
     // get 4 bits length
@@ -226,20 +229,16 @@ retransmission_buffer_management_bitmap (struct rlc_am_entity * rlcP, uint8_t * 
     fsn = fsn << 8;
     fsn = fsn + *bitmap_sufiP;
     bitmap_sufiP++;
-
     bit_mask = 128;
   }
 
   end_bit = length << 3;        // *8
-
 #ifdef DEBUG_BITMAP
   msg ("[RLC_AM][RB %d][BITMAP] SUFI BITMAP fsn 0x%04X length 0x%04X\n", rlcP->rb_id, fsn, length);
 #endif
 
   if (rlc_am_comp_sn (rlcP, rlcP->vt_a, fsn, rlcP->vt_a) >= 0) {
-
     while (end_bit) {
-
       id_index = fsn % (uint16_t) (rlcP->recomputed_configured_tx_window_size);
 
       // found a matching pdu
@@ -247,11 +246,11 @@ retransmission_buffer_management_bitmap (struct rlc_am_entity * rlcP, uint8_t * 
         // pdu correctly received
         // remove it from retransmission buffer
         free_retransmission_buffer (rlcP, id_index);
-
         one_pdu_removed = 1;
 #ifdef DEBUG_BITMAP
         msg ("[RLC_AM][RB %d][BITMAP] SUFI BITMAP  ACK 0x%04x \n", rlcP->rb_id, fsn);
 #endif
+
       } else {
         // pdu not correctly received;
         // retransmit it;
@@ -260,7 +259,7 @@ retransmission_buffer_management_bitmap (struct rlc_am_entity * rlcP, uint8_t * 
 #endif
 
         if (rlcP->retransmission_buffer[id_index]) {
-          ((struct rlc_am_tx_data_pdu_management *) (rlcP->retransmission_buffer[id_index]->data))->ack = RLC_AM_PDU_NACK_EVENT;
+          ((struct rlc_am_tx_data_pdu_management*) (rlcP->retransmission_buffer[id_index]->data))->ack = RLC_AM_PDU_NACK_EVENT;
           retransmit_pdu (rlcP, fsn);
           rlcP->stat_tx_retransmit_pdu_by_status += 1;
           /*
@@ -281,9 +280,7 @@ retransmission_buffer_management_bitmap (struct rlc_am_entity * rlcP, uint8_t * 
       // inc searched sequence number
       fsn++;
       fsn = fsn & SN_12BITS_MASK;
-
       bit_mask = bit_mask >> 1;
-
       // remaining nb bits to process
       end_bit--;
 
@@ -294,6 +291,7 @@ retransmission_buffer_management_bitmap (struct rlc_am_entity * rlcP, uint8_t * 
     }
 
     return bitmap_sufiP;
+
   } else {
 #ifdef DEBUG_RESET
     msg ("[RLC_AM][RB %d][BITMAP] ERROR SUFI BITMAP INVALID sn 0x%02X  vt(a) 0x%04X vt(s) 0x%04X send RESET requested\n", rlcP->rb_id, fsn, rlcP->vt_a, rlcP->vt_s);
@@ -310,18 +308,15 @@ retransmission_buffer_management_bitmap (struct rlc_am_entity * rlcP, uint8_t * 
  * @param bitmap_sufiP pointer on byte containing field "sufi type"
  * @param byte_alignedP tells if sufi type quartet is on MSByte (1) or LSByte (0)
  */
-inline uint8_t      *
-retransmission_buffer_management_list (struct rlc_am_entity * rlcP, uint8_t * bitmap_sufiP, uint8_t byte_alignedP, int16_t * first_error_indicated_snP)
+inline uint8_t*
+retransmission_buffer_management_list (struct rlc_am_entity* rlcP, uint8_t* bitmap_sufiP, uint8_t byte_alignedP, int16_t* first_error_indicated_snP)
 {
   //-----------------------------------------------------------------------------
-
-  uint8_t             *p8;
+  uint8_t*             p8;
   uint16_t             start_marking_sn;
   uint8_t              nb_missing_pdu;
   uint8_t              nb_pairs;
-
   p8 = bitmap_sufiP;
-
 
   if (byte_alignedP) {
     nb_pairs = *p8++ & 0X0F;    // number of (SNi, Li) pairs in the sufi type LIST the value 0000
@@ -338,6 +333,7 @@ retransmission_buffer_management_list (struct rlc_am_entity * rlcP, uint8_t * bi
 #endif
       return p8;
       return p8;
+
     } else {
       while (nb_pairs) {
         start_marking_sn = ((uint16_t) (*p8++)) << 4;
@@ -352,25 +348,28 @@ retransmission_buffer_management_list (struct rlc_am_entity * rlcP, uint8_t * bi
         }
 
 #ifdef DEBUG_LIST
-        msg ("[RLC_AM][RB %d][LIST] SUFI LIST SN 0x%04X MISSING %d  VT(A) 0x%04X VT(S) 0x%04X\n", rlcP->rb_id, start_marking_sn, nb_missing_pdu, rlcP->vt_a, rlcP->vt_s);
+        msg ("[RLC_AM][RB %d][LIST] SUFI LIST SN 0x%04X MISSING %d  VT(A) 0x%04X VT(S) 0x%04X\n", rlcP->rb_id, start_marking_sn, nb_missing_pdu, rlcP->vt_a,
+             rlcP->vt_s);
 #endif
 
         while (nb_missing_pdu) {
           if (rlc_am_comp_sn (rlcP, rlcP->vt_a, start_marking_sn, rlcP->vt_a) >= 0) {
-
             if (rlcP->retransmission_buffer[start_marking_sn % rlcP->recomputed_configured_tx_window_size] != NULL) {
-
 #ifdef DEBUG_LIST
-              msg ("[RLC_AM][RB %d][LIST] MARK SN 0x%04X INDEX 0x%04X TO RLC_AM_PDU_NACK_EVENT\n", rlcP->rb_id, start_marking_sn, start_marking_sn % rlcP->recomputed_configured_tx_window_size);
+              msg ("[RLC_AM][RB %d][LIST] MARK SN 0x%04X INDEX 0x%04X TO RLC_AM_PDU_NACK_EVENT\n", rlcP->rb_id, start_marking_sn,
+                   start_marking_sn % rlcP->recomputed_configured_tx_window_size);
 #endif
-              ((struct rlc_am_tx_data_pdu_management *) (rlcP->retransmission_buffer[start_marking_sn % rlcP->recomputed_configured_tx_window_size]->data))->ack = RLC_AM_PDU_NACK_EVENT;
+              ((struct rlc_am_tx_data_pdu_management*) (rlcP->retransmission_buffer[start_marking_sn % rlcP->recomputed_configured_tx_window_size]->data))->ack =
+                RLC_AM_PDU_NACK_EVENT;
               retransmit_pdu (rlcP, start_marking_sn);
               rlcP->stat_tx_retransmit_pdu_by_status += 1;
             }
+
           } else {
             send_reset_pdu (rlcP);
 #ifdef DEBUG_RESET
-            msg ("[RLC_AM][RB %d][LIST] ERROR SUFI LIST INVALID SN 0x%02X  VT(A) 0x%04X VT(S) 0x%04X send RESET requested \n", rlcP->rb_id, start_marking_sn, rlcP->vt_a, rlcP->vt_s);
+            msg ("[RLC_AM][RB %d][LIST] ERROR SUFI LIST INVALID SN 0x%02X  VT(A) 0x%04X VT(S) 0x%04X send RESET requested \n", rlcP->rb_id, start_marking_sn, rlcP->vt_a,
+                 rlcP->vt_s);
 #endif
 #ifdef  DEBUG_LIST
             display_protocol_vars_rlc_am (rlcP);
@@ -387,6 +386,7 @@ retransmission_buffer_management_list (struct rlc_am_entity * rlcP, uint8_t * bi
 
       return p8;
     }
+
   } else {
     p8++;
     nb_pairs = *p8 >> 4;        // number of (SNi, Li) pairs in the sufi type LIST the value 0000
@@ -401,8 +401,8 @@ retransmission_buffer_management_list (struct rlc_am_entity * rlcP, uint8_t * bi
 #ifdef DEBUG_LIST
       display_protocol_vars_rlc_am (rlcP);
 #endif
-
       return p8;
+
     } else {
       while (nb_pairs) {
         start_marking_sn = ((uint16_t) (*p8++) & 0x0F) << 8;
@@ -417,25 +417,28 @@ retransmission_buffer_management_list (struct rlc_am_entity * rlcP, uint8_t * bi
         }
 
 #ifdef  DEBUG_LIST
-        msg ("[RLC_AM][RB %d][RETRANSMISSION] SUFI LIST SN 0x%04X  MISSING %d VT(A) 0x%04X VT(S) 0x%04X\n", rlcP->rb_id, start_marking_sn, nb_missing_pdu, rlcP->vt_a, rlcP->vt_s);
+        msg ("[RLC_AM][RB %d][RETRANSMISSION] SUFI LIST SN 0x%04X  MISSING %d VT(A) 0x%04X VT(S) 0x%04X\n", rlcP->rb_id, start_marking_sn, nb_missing_pdu, rlcP->vt_a,
+             rlcP->vt_s);
 #endif
 
         while (nb_missing_pdu) {
           if (rlc_am_comp_sn (rlcP, rlcP->vt_a, start_marking_sn, rlcP->vt_a) >= 0) {
-
             if (rlcP->retransmission_buffer[start_marking_sn % rlcP->recomputed_configured_tx_window_size] != NULL) {
 #ifdef DEBUG_LIST
-              msg ("[RLC_AM][RB %d][LIST] MARK SN 0x%04X INDEX 0x%04X TO RLC_AM_PDU_NACK_EVENT\n", rlcP->rb_id, start_marking_sn, start_marking_sn % rlcP->recomputed_configured_tx_window_size);
+              msg ("[RLC_AM][RB %d][LIST] MARK SN 0x%04X INDEX 0x%04X TO RLC_AM_PDU_NACK_EVENT\n", rlcP->rb_id, start_marking_sn,
+                   start_marking_sn % rlcP->recomputed_configured_tx_window_size);
 #endif
-              ((struct rlc_am_tx_data_pdu_management *) (rlcP->retransmission_buffer[start_marking_sn % rlcP->recomputed_configured_tx_window_size]->data))->ack = RLC_AM_PDU_NACK_EVENT;
-
+              ((struct rlc_am_tx_data_pdu_management*) (rlcP->retransmission_buffer[start_marking_sn % rlcP->recomputed_configured_tx_window_size]->data))->ack =
+                RLC_AM_PDU_NACK_EVENT;
               retransmit_pdu (rlcP, start_marking_sn);
               rlcP->stat_tx_retransmit_pdu_by_status += 1;
             }
+
           } else {
             send_reset_pdu (rlcP);
 #ifdef DEBUG_RESET
-            msg ("[RLC_AM][RB %d][LIST] ERROR SUFI LIST invalid sn  0x%02X send RESET requested vt(a) 0x%04X vt(s) 0x%04X\n", rlcP->rb_id, start_marking_sn, rlcP->vt_a, rlcP->vt_s);
+            msg ("[RLC_AM][RB %d][LIST] ERROR SUFI LIST invalid sn  0x%02X send RESET requested vt(a) 0x%04X vt(s) 0x%04X\n", rlcP->rb_id, start_marking_sn, rlcP->vt_a,
+                 rlcP->vt_s);
 #endif
 #ifdef  DEBUG_LIST
             display_protocol_vars_rlc_am (rlcP);
@@ -457,44 +460,39 @@ retransmission_buffer_management_list (struct rlc_am_entity * rlcP, uint8_t * bi
 
 //-----------------------------------------------------------------------------
 inline void
-free_retransmission_buffer (struct rlc_am_entity *rlcP, uint16_t indexP)
+free_retransmission_buffer (struct rlc_am_entity* rlcP, uint16_t indexP)
 {
   //-----------------------------------------------------------------------------
-
-  mem_block_t      *sdu_confirm;
-  struct rlc_am_tx_data_pdu_management *pdu;
-  mem_block_t      *le = NULL;
-
+  mem_block_t*      sdu_confirm;
+  struct rlc_am_tx_data_pdu_management* pdu;
+  mem_block_t*      le = NULL;
   unsigned int    index;
   unsigned int    sdu_index;
-
   index = indexP;
 
   if (index < (uint16_t) rlcP->recomputed_configured_tx_window_size) {
-
     le = rlcP->retransmission_buffer[index];
 
     if (le != NULL) {
       // ???
-      pdu = (struct rlc_am_tx_data_pdu_management *) (le->data);
+      pdu = (struct rlc_am_tx_data_pdu_management*) (le->data);
 
       // test if the sender of the sdu requested a confirmation of the reception of the sdu by the receiving RLC
       // or if mode discard is on
       for (sdu_index = 0; sdu_index < pdu->nb_sdu; sdu_index++) {
         if (pdu->sdu[sdu_index] != -1) {        // may be discarded
-          ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->nb_pdus_ack += 1;
+          ((struct rlc_am_tx_sdu_management*) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->nb_pdus_ack += 1;
 
-          if ((((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->nb_pdus_ack ==
-               ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->nb_pdus) &&
-              (((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->segmented)) {
-
-            if (((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->confirm) {
+          if ((((struct rlc_am_tx_sdu_management*) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->nb_pdus_ack ==
+               ((struct rlc_am_tx_sdu_management*) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->nb_pdus) &&
+              (((struct rlc_am_tx_sdu_management*) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->segmented)) {
+            if (((struct rlc_am_tx_sdu_management*) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->confirm) {
               // send confirmation to upper layers
-
 #ifdef DEBUG_RLC_AM_SEND_CONFIRM
-              msg ("[RLC_AM][RB %d][CONFIRM] SDU MUI %d ACK BY PEER\n", rlcP->rb_id, ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->mui);
+              msg ("[RLC_AM][RB %d][CONFIRM] SDU MUI %d ACK BY PEER\n", rlcP->rb_id, ((struct rlc_am_tx_sdu_management*) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->mui);
 #endif
-              rlc_data_conf (0, rlcP->rb_id, ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->mui, RLC_TX_CONFIRM_SUCCESSFULL, rlcP->data_plane);
+              rlc_data_conf (0, rlcP->rb_id, ((struct rlc_am_tx_sdu_management*) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->mui, RLC_TX_CONFIRM_SUCCESSFULL,
+                             rlcP->data_plane);
             }
 
             // FREE SDU : we can remove the sdu if timer based discard and all pdus submitted to lower layers and no confirm running
@@ -538,33 +536,30 @@ free_retransmission_buffer (struct rlc_am_entity *rlcP, uint16_t indexP)
 
 //-----------------------------------------------------------------------------
 inline void
-free_retransmission_buffer_no_confirmation (struct rlc_am_entity *rlcP, uint16_t indexP)
+free_retransmission_buffer_no_confirmation (struct rlc_am_entity* rlcP, uint16_t indexP)
 {
   //-----------------------------------------------------------------------------
-  struct rlc_am_tx_data_pdu_management *pdu;
-  mem_block_t      *le = NULL;
+  struct rlc_am_tx_data_pdu_management* pdu;
+  mem_block_t*      le = NULL;
   unsigned int    index;
   unsigned int    sdu_index;
-
   index = indexP;
 
   if (index < (uint16_t) rlcP->recomputed_configured_tx_window_size) {
-
     le = rlcP->retransmission_buffer[index];
 
     if (le != NULL) {
-      pdu = (struct rlc_am_tx_data_pdu_management *) (le->data);
+      pdu = (struct rlc_am_tx_data_pdu_management*) (le->data);
 
       // test if the sender of the sdu requested a confirmation of the reception of the sdu by the receiving RLC
       // or if mode discard is on
       for (sdu_index = 0; sdu_index < pdu->nb_sdu; sdu_index++) {
         if (pdu->sdu[sdu_index] != -1) {        // may be discarded
-          ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->nb_pdus_ack += 1;
+          ((struct rlc_am_tx_sdu_management*) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->nb_pdus_ack += 1;
 
-          if ((((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->nb_pdus_ack ==
-               ((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->nb_pdus) &&
-              (((struct rlc_am_tx_sdu_management *) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->segmented)) {
-
+          if ((((struct rlc_am_tx_sdu_management*) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->nb_pdus_ack ==
+               ((struct rlc_am_tx_sdu_management*) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->nb_pdus) &&
+              (((struct rlc_am_tx_sdu_management*) (rlcP->input_sdus[pdu->sdu[sdu_index]]->data))->segmented)) {
             // FREE SDU : we can remove the sdu if timer based discard and all pdus submitted to lower layers and no confirm running
 #ifdef DEBUG_RLC_AM_FREE_SDU
             msg ("[RLC_AM][RB %d][RETRANS] FREE PDU NO_CONF INDEX 0x%04X FREE_SDU INDEX %d\n", rlcP->rb_id, indexP, pdu->sdu[sdu_index]);
@@ -606,7 +601,7 @@ free_retransmission_buffer_no_confirmation (struct rlc_am_entity *rlcP, uint16_t
 
 //-----------------------------------------------------------------------------
 inline void
-insert_into_retransmission_buffer (struct rlc_am_entity *rlcP, uint16_t indexP, mem_block_t * pduP)
+insert_into_retransmission_buffer (struct rlc_am_entity* rlcP, uint16_t indexP, mem_block_t* pduP)
 {
   //-----------------------------------------------------------------------------
   uint16_t             index;
@@ -636,11 +631,11 @@ insert_into_retransmission_buffer (struct rlc_am_entity *rlcP, uint16_t indexP, 
 
 //-----------------------------------------------------------------------------
 inline          uint8_t
-retransmit_pdu (struct rlc_am_entity * rlcP, uint16_t snP)
+retransmit_pdu (struct rlc_am_entity* rlcP, uint16_t snP)
 {
   //-----------------------------------------------------------------------------
-  mem_block_t      *pdu, *copy;
-  struct rlc_am_tx_data_pdu_management *pdu_mngt;
+  mem_block_t*      pdu, *copy;
+  struct rlc_am_tx_data_pdu_management* pdu_mngt;
   uint16_t             index;
 
   if ((rlcP->protocol_state & RLC_DATA_TRANSFER_READY_STATE)) {
@@ -648,7 +643,7 @@ retransmit_pdu (struct rlc_am_entity * rlcP, uint16_t snP)
     pdu = rlcP->retransmission_buffer[index];
 
     if (pdu) {
-      pdu_mngt = (struct rlc_am_tx_data_pdu_management *) (pdu->data);
+      pdu_mngt = (struct rlc_am_tx_data_pdu_management*) (pdu->data);
       pdu_mngt->vt_dat += 1;
 
       // if first retransmission, add to buffer occupancy
@@ -657,7 +652,6 @@ retransmit_pdu (struct rlc_am_entity * rlcP, uint16_t snP)
       }
 
       if ((pdu_mngt->vt_dat < rlcP->max_dat) || ((rlcP->sdu_discard_mode & SDU_DISCARD_MODE_TIMER_BASED_EXPLICIT))) {
-
         // now check if a copy of the pdu is not already present in the retransmission buffer
         if (pdu_mngt->copy == NULL) {
           copy = get_free_mem_block (rlcP->pdu_size + sizeof (struct rlc_am_tx_data_pdu_allocation) + GUARD_CRC_LIH_SIZE);
@@ -667,35 +661,37 @@ retransmit_pdu (struct rlc_am_entity * rlcP, uint16_t snP)
             list2_add_tail (copy, &rlcP->retransmission_buffer_to_send);
             // make link between the original pdu and its copy
             pdu_mngt->copy = copy;
-            ((struct rlc_am_tx_data_pdu_management *) (copy->data))->copy = pdu;
-
-
+            ((struct rlc_am_tx_data_pdu_management*) (copy->data))->copy = pdu;
 #ifdef BENCH_QOS_L2
             fprintf (bench_l2, "[PDU RETRANS] FRAME %d SN %d VT_DAT %d RLC-AM %p\n", Mac_rlc_xface->frame, snP, pdu_mngt->vt_dat, rlcP);
 #endif
-
 #ifdef DEBUG_RETRANSMISSION
             msg ("[RLC_AM][RB %d][RETRANSMISSION] PDU SN = 0x%04X hex VT(DAT) %d  frame %d\n", rlcP->rb_id, snP, pdu_mngt->vt_dat, Mac_rlc_xface->frame);
 #endif
             return 0;
+
           } else {
             msg ("[RLC_AM][RB %d][RETRANSMISSION] ERROR retransmit_pdu() retransmited copy of pdu is NULL index in array %04X\n", rlcP->rb_id, index);
             return RLC_AM_OUT_OF_MEMORY_ERROR;
           }
+
         } else {
 #ifdef DEBUG_RETRANSMISSION
           msg ("[RLC_AM][RB %d][RETRANSMISSION] PDU SN = 0x%04X hex VT(DAT) %d already in retransmission buffer to send\n", rlcP->rb_id, snP, pdu_mngt->vt_dat);
 #endif
           return RLC_AM_RETRANS_REQ_PDU_DONE_BEFORE;
         }
+
       } else {
         if ((rlcP->sdu_discard_mode & SDU_DISCARD_MODE_TIMER_BASED_EXPLICIT)) {
           // DO NOTHING
         } else if ((rlcP->sdu_discard_mode & RLC_SDU_DISCARD_MAX_DAT_RETRANSMISSION)) {
 #ifdef DEBUG_RETRANSMISSION
-          msg ("[RLC_AM][RB %d][RETRANSMISSION]  VT(DAT) %d REACHED MAX_DAT, DISCARD PROCEDURE WILL BE STARTED frame %d\n", rlcP->rb_id, pdu_mngt->vt_dat, Mac_rlc_xface->frame);
+          msg ("[RLC_AM][RB %d][RETRANSMISSION]  VT(DAT) %d REACHED MAX_DAT, DISCARD PROCEDURE WILL BE STARTED frame %d\n", rlcP->rb_id, pdu_mngt->vt_dat,
+               Mac_rlc_xface->frame);
 #endif
           rlc_am_discard_notify_max_dat_pdu (rlcP, pdu);
+
         } else {                // if No_discard after MaxDat number of retransmissions is used, the sender shall initiate the
           // RLC reset procedure when VT(DAT) >= MaxDAT (from 3GPP TS 25.322 V5.0.0 )
           // max transmission reached for this PDU, reset RLC entities
@@ -707,6 +703,7 @@ retransmit_pdu (struct rlc_am_entity * rlcP, uint16_t snP)
 
         return -1;
       }
+
     } else {
       return RLC_AM_RETRANS_REQ_PDU_NULL;
     }
@@ -717,15 +714,14 @@ retransmit_pdu (struct rlc_am_entity * rlcP, uint16_t snP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_get_not_acknowledged_pdu_optimized (struct rlc_am_entity *rlcP)
+rlc_am_get_not_acknowledged_pdu_optimized (struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
   uint16_t             vt_dat_min = 255;
   uint16_t             sn;
   uint16_t             sn_min;
-  mem_block_t      *pdu;
-  struct rlc_am_tx_data_pdu_management *pdu_mngt;
-
+  mem_block_t*      pdu;
+  struct rlc_am_tx_data_pdu_management* pdu_mngt;
   sn   = rlcP->vt_s;
   sn_min = sn;
 
@@ -734,7 +730,7 @@ rlc_am_get_not_acknowledged_pdu_optimized (struct rlc_am_entity *rlcP)
     pdu = rlcP->retransmission_buffer[sn % rlcP->recomputed_configured_tx_window_size];
 
     if ((pdu)) {
-      pdu_mngt = (struct rlc_am_tx_data_pdu_management *) (pdu->data);
+      pdu_mngt = (struct rlc_am_tx_data_pdu_management*) (pdu->data);
 
       if (pdu_mngt->vt_dat < vt_dat_min) {
         sn_min = sn;
@@ -752,7 +748,7 @@ rlc_am_get_not_acknowledged_pdu_optimized (struct rlc_am_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_get_not_acknowledged_pdu (struct rlc_am_entity *rlcP)
+rlc_am_get_not_acknowledged_pdu (struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
   uint16_t             sn;
@@ -771,7 +767,7 @@ rlc_am_get_not_acknowledged_pdu (struct rlc_am_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_get_not_acknowledged_pdu_vt_s_minus_1 (struct rlc_am_entity *rlcP)
+rlc_am_get_not_acknowledged_pdu_vt_s_minus_1 (struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
   if (rlcP->retransmission_buffer[((rlcP->vt_s - 1) & SN_12BITS_MASK) % rlcP->recomputed_configured_tx_window_size]) {

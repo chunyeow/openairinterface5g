@@ -49,8 +49,9 @@ char bcmp(void *x, void *y,int Size )
   unsigned char i;
 
   for(i=0; i<Size; i++)
-    if(*(char*)(x+i)!= *(char *)(y+i))
+    if(*(char*)(x+i)!= *(char*)(y+i)) {
       return 1;
+    }
 
   return 0;
 }
@@ -62,16 +63,18 @@ uint16_t find_free_dtch_position(uint8_t Mod_id, uint16_t UE_CH_index)
 {
   uint16_t i,j;
 
-  if(UE_CH_index==0)
+  if(UE_CH_index==0) {
     j=0;
-  else
+  } else {
     j=1;
+  }
 
   for(i=j; i<NB_RAB_MAX; i++) { //first RAB IS BROADCAST DTCH
 
     //msg("i=%d\n",i);
-    if(CH_rrc_inst[Mod_id].Rab[i][UE_CH_index].Active==0)
+    if(CH_rrc_inst[Mod_id].Rab[i][UE_CH_index].Active==0) {
       return( i);
+    }
   }
 
   msg("NO FREE DTCH LCHAN, exit... \n");
@@ -92,8 +95,9 @@ uint8_t rrc_find_free_ue_index(uint8_t Mod_id)
          (CH_rrc_inst[Mod_id].Info.UE_list[i][1] == 0) &&
          (CH_rrc_inst[Mod_id].Info.UE_list[i][2] == 0) &&
          (CH_rrc_inst[Mod_id].Info.UE_list[i][3] == 0) &&
-         (CH_rrc_inst[Mod_id].Info.UE_list[i][4] == 0))
+         (CH_rrc_inst[Mod_id].Info.UE_list[i][4] == 0)) {
       return i;
+    }
 
   return 0xff;
 }

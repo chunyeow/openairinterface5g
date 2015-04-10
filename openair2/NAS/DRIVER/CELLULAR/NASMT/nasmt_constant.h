@@ -203,7 +203,7 @@
 /**********************************************************/
 /* Constants related with Netlink sockets                 */
 /**********************************************************/
-#define NAS_NETLINK_ID 31
+#define OAI_IP_DRIVER_NETLINK_ID 31
 #define NL_DEST_PID 1
 
 // defined in rrc_nas_sap.h

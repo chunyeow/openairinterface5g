@@ -1272,10 +1272,8 @@ void characters(void *user_data, const xmlChar *xmlch, int xmllen)   // called o
       } else if (trace_file_) {
         oai_emulation.info.opt_enabled = 1;
 
-        //  if (strcmp(strndup(ch, len), "wireshark") == 0) {
         if (strncmp(ch, "wireshark", len) == 0) {
           opt_type = OPT_WIRESHARK;
-          //  } else if (strcmp(strndup(ch, len), "pcap") == 0) {
         } else if (strncmp(ch, "pcap", len) == 0) {
           opt_type = OPT_PCAP;
         } else {

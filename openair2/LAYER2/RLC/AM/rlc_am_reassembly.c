@@ -52,7 +52,7 @@
 
 //-----------------------------------------------------------------------------
 void
-reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_am_entity *rlcP)
+reassembly (uint8_t* srcP, uint16_t lengthP, struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
   int             sdu_max_size_allowed;
@@ -65,6 +65,7 @@ reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_am_entity *rlcP)
 
   if ((rlcP->data_plane)) {
     sdu_max_size_allowed = RLC_SDU_MAX_SIZE_DATA_PLANE;
+
   } else {
     sdu_max_size_allowed = RLC_SDU_MAX_SIZE_CONTROL_PLANE;
   }
@@ -92,19 +93,20 @@ reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_am_entity *rlcP)
 
     // OOOPS
     if ((lengthP + rlcP->output_sdu_size_to_write) <= sdu_max_size_allowed) {
-
       memcpy (&rlcP->output_sdu_in_construction->data[rlcP->output_sdu_size_to_write], srcP, lengthP);
       rlcP->output_sdu_size_to_write += lengthP;
+
     } else {
       rlcP->output_sdu_size_to_write = 0;
 #ifdef DEBUG_REASSEMBLY
-      msg ("[RLC_AM %p][REASSEMBLY] ERROR SDU IN CONSTRUCTION TOO BIG %d Bytes MAX SIZE ALLOWED %d\n", rlcP, lengthP + rlcP->output_sdu_size_to_write, sdu_max_size_allowed);
+      msg ("[RLC_AM %p][REASSEMBLY] ERROR SDU IN CONSTRUCTION TOO BIG %d Bytes MAX SIZE ALLOWED %d\n", rlcP, lengthP + rlcP->output_sdu_size_to_write,
+           sdu_max_size_allowed);
 #endif
     }
-
   }
 
 #ifdef DEBUG_REASSEMBLY
+
   else {
     msg ("[RLC_AM %p][REASSEMBLY] ERROR  OUTPUT SDU IS NULL\n", rlcP);
   }
@@ -114,22 +116,16 @@ reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_am_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-send_sdu (struct rlc_am_entity *rlcP)
+send_sdu (struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
   if ((rlcP->output_sdu_in_construction) && (rlcP->output_sdu_size_to_write)) {
-
 #ifdef DEBUG_RLC_AM_SEND_SDU
     msg ("[RLC_AM][RB %d][SEND_SDU] send_SDU()  %d bytes\n", rlcP->rb_id, rlcP->output_sdu_size_to_write);
 #endif
-
-
-
-
 #ifdef BENCH_QOS_L2
     fprintf (bench_l2, "[SDU DELIVERY] FRAME %d SIZE %d RB %d RLC-AM %p\n", Mac_rlc_xface->frame, rlcP->output_sdu_size_to_write, rlcP->rb_id, rlcP);
 #endif
-
     rlc_data_ind (rlcP->module_id, rlcP->rb_id, rlcP->output_sdu_size_to_write, rlcP->output_sdu_in_construction, rlcP->data_plane);
     rlcP->output_sdu_in_construction = NULL;
     rlcP->output_sdu_size_to_write = 0;

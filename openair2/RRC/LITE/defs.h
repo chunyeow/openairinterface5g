@@ -46,9 +46,11 @@
 #include <string.h>
 #endif
 
+#include "collection/tree.h"
 #include "rrc_types.h"
 #include "PHY/defs.h"
 #include "COMMON/platform_constants.h"
+#include "COMMON/platform_types.h"
 
 #include "COMMON/mac_rrc_primitives.h"
 #include "LAYER2/MAC/defs.h"
@@ -117,6 +119,22 @@
 # include "collection/hashtable/obj_hashtable.h"
 #endif
 
+//--------
+typedef unsigned int uid_t;
+#define UID_LINEAR_ALLOCATOR_BITMAP_SIZE (((NUMBER_OF_UE_MAX/8)/sizeof(unsigned int)) + 1)
+typedef struct uid_linear_allocator_s {
+  unsigned int   bitmap[UID_LINEAR_ALLOCATOR_BITMAP_SIZE];
+} uid_allocator_t;
+
+//--------
+
+
+
+#define PROTOCOL_RRC_CTXT_UE_FMT           PROTOCOL_CTXT_FMT
+#define PROTOCOL_RRC_CTXT_UE_ARGS(CTXT_Pp) PROTOCOL_CTXT_ARGS(CTXT_Pp)
+
+#define PROTOCOL_RRC_CTXT_FMT           PROTOCOL_CTXT_FMT
+#define PROTOCOL_RRC_CTXT_ARGS(CTXT_Pp) PROTOCOL_CTXT_ARGS(CTXT_Pp)
 /** @defgroup _rrc_impl_ RRC Layer Reference Implementation
  * @ingroup _ref_implementation_
  * @{
@@ -190,6 +208,7 @@ typedef struct UE_RRC_INFO_s {
   uint32_t T310_cnt;
   uint32_t N310_cnt;
   uint32_t N311_cnt;
+  rnti_t   rnti;
 } __attribute__ ((__packed__)) UE_RRC_INFO;
 
 typedef struct UE_S_TMSI_s {
@@ -211,60 +230,10 @@ typedef struct e_rab_param_s {
 } __attribute__ ((__packed__)) e_rab_param_t;
 #endif
 
-typedef struct eNB_RRC_UE_INFO_s {
-  uint8_t Status;
-
-#if defined(ENABLE_ITTI)
-  /* Information from UE RRC ConnectionRequest */
-  UE_S_TMSI Initialue_identity_s_TMSI;
-  EstablishmentCause_t establishment_cause;
-
-  /* Information from UE RRC ConnectionReestablishmentRequest */
-
-  ReestablishmentCause_t reestablishment_cause;
 
 
-  /* UE id for initial connection to S1AP */
-  uint16_t ue_initial_id;
 
-  /* Information from S1AP initial_context_setup_req */
-  uint32_t eNB_ue_s1ap_id :24;
-
-  security_capabilities_t security_capabilities;
-
-  /* Number of e_rab to be setup in the list */
-  uint8_t nb_of_e_rabs;
-  /* list of e_rab to be setup by RRC layers */
-  e_rab_param_t e_rab[S1AP_MAX_E_RAB];
-
-  // LG: For GTPV1 TUNNELS
-  uint32_t                enb_gtp_teid[S1AP_MAX_E_RAB];
-  transport_layer_addr_t  enb_gtp_addrs[S1AP_MAX_E_RAB];
-  rb_id_t                 enb_gtp_ebi[S1AP_MAX_E_RAB];
-
-#endif
-} __attribute__ ((__packed__)) eNB_RRC_UE_INFO;
-
-typedef struct eNB_RRC_INFO_s {
-  /* Number of UE handle by the eNB */
-  uint8_t Nb_ue;
-
-  /* UE list for UE index allocation */
-  uint64_t UE_list[NUMBER_OF_UE_MAX];
-
-  /* Information on UE */
-  eNB_RRC_UE_INFO UE[NUMBER_OF_UE_MAX];
-} __attribute__ ((__packed__)) eNB_RRC_INFO;
-
-typedef struct RRC_INFO_s {
-  int Status;
-  union {
-    UE_RRC_INFO UE_info;
-    eNB_RRC_INFO CH_info;
-  } Info;
-} RRC_INFO;
-
-/* Intermediate structure for Hanodver management. Associated per-UE in eNB_RRC_INST */
+/* Intermediate structure for Handover management. Associated per-UE in eNB_RRC_INST */
 typedef struct HANDOVER_INFO_s {
   uint8_t ho_prepare;
   uint8_t ho_complete;
@@ -326,6 +295,87 @@ typedef struct HANDOVER_INFO_UE_s {
   PhysCellId_t targetCellId;
   uint8_t measFlag;
 } HANDOVER_INFO_UE;
+typedef struct eNB_RRC_UE_s {
+#ifdef Rel10
+  SCellToAddMod_r10_t                sCell_config[2];
+#endif
+  SRB_ToAddModList_t*                SRB_configList;
+  DRB_ToAddModList_t*                DRB_configList;
+  uint8_t                            DRB_active[8];
+  struct PhysicalConfigDedicated*    physicalConfigDedicated;
+  struct SPS_Config*                 sps_Config;
+  MeasObjectToAddMod_t*              MeasObj[MAX_MEAS_OBJ];
+  struct ReportConfigToAddMod*       ReportConfig[MAX_MEAS_CONFIG];
+  struct QuantityConfig*             QuantityConfig;
+  struct MeasIdToAddMod*             MeasId[MAX_MEAS_ID];
+  MAC_MainConfig_t*                  mac_MainConfig;
+  MeasGapConfig_t*                   measGapConfig;
+  SRB_INFO                           SI;
+  SRB_INFO                           Srb0;
+  SRB_INFO_TABLE_ENTRY               Srb1;
+  SRB_INFO_TABLE_ENTRY               Srb2;
+  MeasConfig_t*                      measConfig;
+  HANDOVER_INFO*                     handover_info;
+
+
+#if defined(ENABLE_SECURITY)
+  /* KeNB as derived from KASME received from EPC */
+  uint8_t kenb[32];
+#endif
+  /* Used integrity/ciphering algorithms */
+  e_SecurityAlgorithmConfig__cipheringAlgorithm     ciphering_algorithm;
+  e_SecurityAlgorithmConfig__integrityProtAlgorithm integrity_algorithm;
+
+
+
+  uint8_t                            Status;
+  rnti_t                             rnti;
+  uint64_t                           random_ue_identity;
+
+#if defined(ENABLE_ITTI)
+  /* Information from UE RRC ConnectionRequest */
+  UE_S_TMSI                          Initialue_identity_s_TMSI;
+  EstablishmentCause_t               establishment_cause;
+
+  /* Information from UE RRC ConnectionReestablishmentRequest */
+  ReestablishmentCause_t             reestablishment_cause;
+
+  /* UE id for initial connection to S1AP */
+  uint16_t                           ue_initial_id;
+
+  /* Information from S1AP initial_context_setup_req */
+  uint32_t                           eNB_ue_s1ap_id :24;
+
+  security_capabilities_t            security_capabilities;
+
+  /* Number of e_rab to be setup in the list */
+  uint8_t                            nb_of_e_rabs;
+  /* list of e_rab to be setup by RRC layers */
+  e_rab_param_t                      e_rab[S1AP_MAX_E_RAB];
+
+  // LG: For GTPV1 TUNNELS
+  uint32_t                           enb_gtp_teid[S1AP_MAX_E_RAB];
+  transport_layer_addr_t             enb_gtp_addrs[S1AP_MAX_E_RAB];
+  rb_id_t                            enb_gtp_ebi[S1AP_MAX_E_RAB];
+#endif
+} eNB_RRC_UE_t;
+
+typedef uid_t ue_uid_t;
+typedef struct rrc_eNB_ue_context_s {
+  /* Tree related data */
+  RB_ENTRY(rrc_eNB_ue_context_s) entries;
+
+  /* Uniquely identifies the UE between MME and eNB within the eNB.
+   * This id is encoded on 24bits.
+   */
+  rnti_t         ue_id_rnti;
+
+  // an other key for protocol layers but should not be used as a key for RB tree
+  ue_uid_t       local_uid;
+
+  /* UE id for initial connection to S1AP */
+  struct eNB_RRC_UE_s   ue_context;
+} rrc_eNB_ue_context_t;
 
 typedef struct eNB_RRC_INST_s {
   uint8_t                           *SIB1;
@@ -333,9 +383,6 @@ typedef struct eNB_RRC_INST_s {
   uint8_t                           *SIB23;
   uint8_t                           sizeof_SIB23;
   uint16_t                          physCellId;
-#ifdef Rel10
-  SCellToAddMod_r10_t              sCell_config[NUMBER_OF_UE_MAX][2];
-#endif
   BCCH_BCH_Message_t                mib;
   BCCH_DL_SCH_Message_t             siblock1;
   BCCH_DL_SCH_Message_t             systemInformation;
@@ -357,35 +404,16 @@ typedef struct eNB_RRC_INST_s {
   uint8_t                        num_active_cba_groups;
   uint16_t                       cba_rnti[NUM_MAX_CBA_GROUP];
 #endif
-  SRB_ToAddModList_t                *SRB_configList[NUMBER_OF_UE_MAX];
-  DRB_ToAddModList_t                *DRB_configList[NUMBER_OF_UE_MAX];
-  uint8_t                           DRB_active[NUMBER_OF_UE_MAX][8];
-  struct PhysicalConfigDedicated    *physicalConfigDedicated[NUMBER_OF_UE_MAX];
-  struct SPS_Config                 *sps_Config[NUMBER_OF_UE_MAX];
-  MeasObjectToAddMod_t              *MeasObj[NUMBER_OF_UE_MAX][MAX_MEAS_OBJ];
-  struct ReportConfigToAddMod       *ReportConfig[NUMBER_OF_UE_MAX][MAX_MEAS_CONFIG];
-  struct QuantityConfig             *QuantityConfig[NUMBER_OF_UE_MAX];
-  struct MeasIdToAddMod             *MeasId[NUMBER_OF_UE_MAX][MAX_MEAS_ID];
-  MAC_MainConfig_t                  *mac_MainConfig[NUMBER_OF_UE_MAX];
-  MeasGapConfig_t                   *measGapConfig[NUMBER_OF_UE_MAX];
-  eNB_RRC_INFO                      Info;
+  uid_allocator_t                    uid_allocator; // for rrc_ue_head
+  RB_HEAD(rrc_ue_tree_s, rrc_eNB_ue_context_s)     rrc_ue_head; // ue_context tree key search by rnti
+  RB_HEAD(rrc_rnti_tree_s, rrc_ue_s1ap_ids_s)      rrc_rnti_head; // ue-rnti tree key search by S1AP ids
   SRB_INFO                          SI;
   SRB_INFO                          Srb0;
-  SRB_INFO_TABLE_ENTRY              Srb1[NUMBER_OF_UE_MAX+1];
-  SRB_INFO_TABLE_ENTRY              Srb2[NUMBER_OF_UE_MAX+1];
-  MeasConfig_t                      *measConfig[NUMBER_OF_UE_MAX];
-  HANDOVER_INFO                     *handover_info[NUMBER_OF_UE_MAX];
   uint8_t                           HO_flag;
+  uint8_t                            Nb_ue;
 #if defined(ENABLE_RAL)
   obj_hash_table_t                  *ral_meas_thresholds;
 #endif
-#if defined(ENABLE_SECURITY)
-  /* KeNB as derived from KASME received from EPC */
-  uint8_t kenb[NUMBER_OF_UE_MAX][32];
-#endif
-  /* Used integrity/ciphering algorithms */
-  e_SecurityAlgorithmConfig__cipheringAlgorithm     ciphering_algorithm[NUMBER_OF_UE_MAX];
-  e_SecurityAlgorithmConfig__integrityProtAlgorithm integrity_algorithm[NUMBER_OF_UE_MAX];
 #ifdef LOCALIZATION
   /// localization type, 0: power based, 1: time based
   uint8_t loc_type;

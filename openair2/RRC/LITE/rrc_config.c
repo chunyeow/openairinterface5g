@@ -292,18 +292,21 @@ void rrc_config_req(Instance_t Mod_id, void *smsg, unsigned char Action,Transact
         Mac_rlc_xface->rrc_rlc_config_req(Mod_id,CONFIG_ACTION_ADD,Idx,RADIO_ACCESS_BEARER,Rlc_info_um);
         CH_rrc_inst[Mod_id].IP_addr_type = p->L3_info_t;
 
-        if(CH_rrc_inst[Mod_id].IP_addr_type == IPv4_ADDR)
+        if(CH_rrc_inst[Mod_id].IP_addr_type == IPv4_ADDR) {
           memcpy(CH_rrc_inst[Mod_id].IP_addr,p->L3_info,4);
-        else
+        } else {
           memcpy(CH_rrc_inst[Mod_id].IP_addr,p->L3_info,16);
-      } else
+        }
+      } else {
         Mac_rlc_xface->rrc_rlc_config_req(Mod_id,CONFIG_ACTION_ADD,Idx,RADIO_ACCESS_BEARER,Rlc_info_am_config);
+      }
     }
 
-    if(p->Lchan_desc.Lchan_t==DTCH)
+    if(p->Lchan_desc.Lchan_t==DTCH) {
       send_msg(&S_rrc,msg_rrc_rb_establish_cfm(Mod_id,Idx,0,Trans_id));
-    else
+    } else {
       send_msg(&S_rrc,msg_rrc_rb_establish_cfm(Mod_id,Idx,1,Trans_id));
+    }
   }
   break;
 

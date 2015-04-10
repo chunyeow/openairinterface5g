@@ -98,7 +98,8 @@ rlc_am_get_buffer_occupancy_in_bytes_ch2 (struct rlc_am_entity * rlcP)
 {
   //-----------------------------------------------------------------------------
 #ifdef DEBUG_RLC_AM_BO
-  msg ("[RLC_AM][RB %d] DCCH BO: CONTROL %d DCCH %d\n", rlcP->rb_id, rlcP->control.nb_elements * rlcP->pdu_size, rlcP->pdus_to_mac_layer_ch2.nb_elements * rlcP->pdu_size);
+  msg ("[RLC_AM][RB %d] DCCH BO: CONTROL %d DCCH %d\n", rlcP->rb_id, rlcP->control.nb_elements * rlcP->pdu_size,
+       rlcP->pdus_to_mac_layer_ch2.nb_elements * rlcP->pdu_size);
 #endif
   return rlcP->control.nb_elements * rlcP->pdu_size + rlcP->pdus_to_mac_layer_ch2.nb_elements * rlcP->pdu_size;
 }
@@ -172,7 +173,8 @@ rlc_am_get_pdus (void *argP, uint8_t traffic_typeP)
       if (rlc_am_send_status (rlc) > 0) {
         rlc->send_status_pdu_requested = 0;
       }
-    } else if ((rlc->timer_status_periodic) && ((Mac_rlc_xface->frame % (rlc->timer_status_periodic / 10)) == 0) && (rlc->last_tx_status_frame != Mac_rlc_xface->frame)) {
+    } else if ((rlc->timer_status_periodic) && ((Mac_rlc_xface->frame % (rlc->timer_status_periodic / 10)) == 0)
+               && (rlc->last_tx_status_frame != Mac_rlc_xface->frame)) {
       // may be MAC can poll RLC more than once in a time frame
       //msg ("[RLC_AM][RB %d]  SEND STATUS PERIODIC frame %d\n", rlc->rb_id, Mac_rlc_xface->frame);
       if (rlc_am_send_status (rlc) > 0) {
@@ -390,7 +392,8 @@ rlc_am_mac_status_indication (void *rlcP, uint16_t no_tbP, uint16_t tb_sizeP, st
   status_resp.buffer_occupancy_in_bytes = status_resp.buffer_occupancy_in_pdus * (rlc)->pdu_size;
   status_resp.rlc_info.rlc_protocol_state = (rlc)->protocol_state;
 #ifdef DEBUG_RLC_AM_TX
-  msg ("[RLC_AM][RB %d] MAC_STATUS_INDICATION %d TBs -> MAC_STATUS_RESPONSE %d TBs FRAME %d\n", rlc->rb_id, no_tbP, status_resp.buffer_occupancy_in_pdus,Mac_rlc_xface->frame);
+  msg ("[RLC_AM][RB %d] MAC_STATUS_INDICATION %d TBs -> MAC_STATUS_RESPONSE %d TBs FRAME %d\n", rlc->rb_id, no_tbP, status_resp.buffer_occupancy_in_pdus,
+       Mac_rlc_xface->frame);
 #endif
   return status_resp;
 }
@@ -411,7 +414,8 @@ rlc_am_mac_status_indication_on_first_channel (void *rlcP, uint16_t no_tbP, uint
   status_resp.buffer_occupancy_in_bytes = status_resp.buffer_occupancy_in_pdus * ((struct rlc_am_entity *) rlcP)->pdu_size;
   status_resp.rlc_info.rlc_protocol_state = ((struct rlc_am_entity *) rlcP)->protocol_state;
 #ifdef DEBUG_RLC_AM_TX
-  msg ("[RLC_AM][RB %d] CHANNEL 1 MAC_STATUS_INDICATION (DATA) %d TBs -> MAC_STATUS_RESPONSE %d TBs\n", ((struct rlc_am_entity *) rlcP)->rb_id, no_tbP, status_resp.buffer_occupancy_in_pdus);
+  msg ("[RLC_AM][RB %d] CHANNEL 1 MAC_STATUS_INDICATION (DATA) %d TBs -> MAC_STATUS_RESPONSE %d TBs\n", ((struct rlc_am_entity*) rlcP)->rb_id, no_tbP,
+       status_resp.buffer_occupancy_in_pdus);
 #endif
   return status_resp;
 }
@@ -432,7 +436,8 @@ rlc_am_mac_status_indication_on_second_channel (void *rlcP, uint16_t no_tbP, uin
   status_resp.buffer_occupancy_in_bytes = status_resp.buffer_occupancy_in_pdus * ((struct rlc_am_entity *) rlcP)->pdu_size;
   status_resp.rlc_info.rlc_protocol_state = ((struct rlc_am_entity *) rlcP)->protocol_state;
 #ifdef DEBUG_RLC_AM_TX
-  msg ("[RLC_AM][RB %d] CHANNEL 2 MAC_STATUS_INDICATION (CONTROL) %d TBs -> MAC_STATUS_RESPONSE %d TBs\n", ((struct rlc_am_entity *) rlcP)->rb_id, no_tbP, status_resp.buffer_occupancy_in_pdus);
+  msg ("[RLC_AM][RB %d] CHANNEL 2 MAC_STATUS_INDICATION (CONTROL) %d TBs -> MAC_STATUS_RESPONSE %d TBs\n", ((struct rlc_am_entity*) rlcP)->rb_id, no_tbP,
+       status_resp.buffer_occupancy_in_pdus);
 #endif
   return status_resp;
 }

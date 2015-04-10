@@ -47,6 +47,9 @@
 #include "UTIL/LOG/log.h"
 #include "UL-AM-RLC.h"
 #include "DL-AM-RLC.h"
+#ifdef MESSAGE_CHART_GENERATOR
+#include "msc.h"
+#endif
 //#define TRACE_RLC_AM_DATA_REQUEST
 //#define TRACE_RLC_AM_TX_STATUS
 //#define TRACE_RLC_AM_TX
@@ -72,8 +75,7 @@ rlc_am_get_buffer_occupancy_in_bytes (
 
       if (((15  +  rlc_pP->num_nack_sn*(10+1)  +  rlc_pP->num_nack_so*(15+15+1) + 7) >> 3) > 0) {
         LOG_D(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT" BO : CONTROL PDU %d bytes \n",
-              PROTOCOL_CTXT_ARGS(ctxt_pP),
-              RB_AM_ARGS(rlc_pP),
+              PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
               ((15  +  rlc_pP->num_nack_sn*(10+1)  +  rlc_pP->num_nack_so*(15+15+1) + 7) >> 3));
       }
 
@@ -99,11 +101,10 @@ rlc_am_get_buffer_occupancy_in_bytes (
 #ifdef TRACE_RLC_AM_BO
 
   if ((rlc_pP->status_buffer_occupancy + rlc_pP->retransmission_buffer_occupancy + rlc_pP->sdu_buffer_occupancy + max_li_overhead + header_overhead) > 0) {
-    LOG_D(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT" BO : STATUS  BUFFER %d bytes \n", PROTOCOL_CTXT_ARGS(ctxt_pP), RB_AM_ARGS(rlc_pP), rlc_pP->status_buffer_occupancy);
-    LOG_D(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT" BO : RETRANS BUFFER %d bytes \n", PROTOCOL_CTXT_ARGS(ctxt_pP), RB_AM_ARGS(rlc_pP), rlc_pP->retransmission_buffer_occupancy);
-    LOG_D(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT" BO : SDU     BUFFER %d bytes + li_overhead %d bytes header_overhead %d bytes (nb sdu not segmented %d)\n",
-          PROTOCOL_CTXT_ARGS(ctxt_pP),
-          RB_AM_ARGS(rlc_pP),
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" BO : STATUS  BUFFER %d bytes \n", PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP), rlc_pP->status_buffer_occupancy);
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" BO : RETRANS BUFFER %d bytes \n", PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP), rlc_pP->retransmission_buffer_occupancy);
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" BO : SDU     BUFFER %d bytes + li_overhead %d bytes header_overhead %d bytes (nb sdu not segmented %d)\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           rlc_pP->sdu_buffer_occupancy,
           max_li_overhead,
           header_overhead,
@@ -135,7 +136,7 @@ config_req_rlc_am (
   //-----------------------------------------------------------------------------
   rlc_union_t       *rlc_union_p = NULL;
   rlc_am_entity_t *l_rlc_p         = NULL;
-  hash_key_t       key           = RLC_COLL_KEY_VALUE(ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, ctxt_pP->enb_flag, rb_idP, srb_flagP);
+  hash_key_t       key           = RLC_COLL_KEY_VALUE(ctxt_pP->module_id, ctxt_pP->rnti, ctxt_pP->enb_flag, rb_idP, srb_flagP);
   hashtable_rc_t   h_rc;
 
   h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
@@ -143,9 +144,8 @@ config_req_rlc_am (
   if (h_rc == HASH_TABLE_OK) {
     l_rlc_p = &rlc_union_p->rlc.am;
     LOG_D(RLC,
-          PROTOCOL_CTXT_FMT RB_AM_FMT" CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d)\n",
-          PROTOCOL_CTXT_ARGS(ctxt_pP),
-          RB_AM_ARGS(l_rlc_p),
+          PROTOCOL_RLC_AM_CTXT_FMT" CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d)\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p),
           config_am_pP->max_retx_threshold,
           config_am_pP->poll_pdu,
           config_am_pP->poll_byte,
@@ -162,8 +162,8 @@ config_req_rlc_am (
                      config_am_pP->t_reordering,
                      config_am_pP->t_status_prohibit);
   } else {
-    LOG_E(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT" CONFIG_REQ RLC NOT FOUND\n",
-          PROTOCOL_CTXT_ARGS(ctxt_pP) );
+    LOG_E(RLC, PROTOCOL_RLC_AM_CTXT_FMT" CONFIG_REQ RLC NOT FOUND\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p));
   }
 }
 uint32_t pollPDU_tab[PollPDU_pInfinity+1]= {4,8,16,32,64,128,256,1024}; // What is PollPDU_pInfinity??? 1024 for now
@@ -183,7 +183,7 @@ void config_req_rlc_am_asn1 (
   //-----------------------------------------------------------------------------
   rlc_union_t     *rlc_union_p   = NULL;
   rlc_am_entity_t *l_rlc_p         = NULL;
-  hash_key_t       key           = RLC_COLL_KEY_VALUE(ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, ctxt_pP->enb_flag, rb_idP, srb_flagP);
+  hash_key_t       key           = RLC_COLL_KEY_VALUE(ctxt_pP->module_id, ctxt_pP->rnti, ctxt_pP->enb_flag, rb_idP, srb_flagP);
   hashtable_rc_t   h_rc;
 
   h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
@@ -198,9 +198,21 @@ void config_req_rlc_am_asn1 (
         (config_am_pP->dl_AM_RLC.t_Reordering<T_Reordering_spare1) &&
         (config_am_pP->dl_AM_RLC.t_StatusProhibit<T_StatusProhibit_spare8) ) {
 
-      LOG_D(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT" CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d)\n",
-            PROTOCOL_CTXT_ARGS(ctxt_pP),
-            RB_AM_ARGS(l_rlc_p),
+#ifdef MESSAGE_CHART_GENERATOR
+      msc_log_rx_message(
+        (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+        (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RRC_ENB:MSC_RRC_UE,
+        NULL,
+        0,
+        MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" CONFIG-REQ t_PollRetx %u t_Reord %u t_StatusPro %u",
+        MSC_AS_TIME_ARGS(ctxt_pP),
+        PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p),
+        PollRetransmit_tab[config_am_pP->ul_AM_RLC.t_PollRetransmit],
+        am_t_Reordering_tab[config_am_pP->dl_AM_RLC.t_Reordering],
+        t_StatusProhibit_tab[config_am_pP->dl_AM_RLC.t_StatusProhibit]);
+#endif
+      LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d)\n",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p),
             maxRetxThreshold_tab[config_am_pP->ul_AM_RLC.maxRetxThreshold],
             pollPDU_tab[config_am_pP->ul_AM_RLC.pollPDU],
             pollByte_tab[config_am_pP->ul_AM_RLC.pollByte],
@@ -218,10 +230,19 @@ void config_req_rlc_am_asn1 (
                        am_t_Reordering_tab[config_am_pP->dl_AM_RLC.t_Reordering],
                        t_StatusProhibit_tab[config_am_pP->dl_AM_RLC.t_StatusProhibit]);
     } else {
+#ifdef MESSAGE_CHART_GENERATOR
+      msc_log_rx_discarded_message(
+        (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+        (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RRC_ENB:MSC_RRC_UE,
+        NULL,
+        0,
+        MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" CONFIG-REQ",
+        MSC_AS_TIME_ARGS(ctxt_pP),
+        PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p));
+#endif
       LOG_D(RLC,
-            PROTOCOL_CTXT_FMT RB_AM_FMT "ILLEGAL CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d), RLC-AM NOT CONFIGURED\n",
-            PROTOCOL_CTXT_ARGS(ctxt_pP),
-            RB_AM_ARGS(l_rlc_p),
+            PROTOCOL_RLC_AM_CTXT_FMT"ILLEGAL CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d), RLC-AM NOT CONFIGURED\n",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p),
             config_am_pP->ul_AM_RLC.maxRetxThreshold,
             config_am_pP->ul_AM_RLC.pollPDU,
             config_am_pP->ul_AM_RLC.pollByte,
@@ -230,8 +251,8 @@ void config_req_rlc_am_asn1 (
             config_am_pP->dl_AM_RLC.t_StatusProhibit);
     }
   } else {
-    LOG_E(RLC, PROTOCOL_CTXT_FMT RB_AM_FMT "CONFIG_REQ RLC NOT FOUND\n",
-          PROTOCOL_CTXT_ARGS(ctxt_pP) );
+    LOG_E(RLC, PROTOCOL_RLC_AM_CTXT_FMT"CONFIG_REQ RLC NOT FOUND\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p));
   }
 }
 
@@ -344,13 +365,9 @@ rlc_am_get_pdus (
           return;
         }
       } else {
-        LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] DELAYED SENT STATUS PDU BECAUSE T-STATUS-PROHIBIT RUNNING (TIME-OUT FRAME %5u)\n",
-              ctxt_pP->frame,
-              (ctxt_pP->enb_module_id) ? "eNB" : "UE",
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
-              rlc_pP->rb_id,
-              rlc_pP->t_status_prohibit.frame_time_out);
+        LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" DELAYED SENT STATUS PDU BECAUSE T-STATUS-PROHIBIT RUNNING (TIME-OUT %u)\n",
+              PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
+              rlc_pP->t_status_prohibit.ms_time_out);
       }
     }
 
@@ -382,15 +399,11 @@ rlc_am_get_pdus (
 
         tx_data_pdu_management = &rlc_pP->pdu_retrans_buffer[rlc_pP->first_retrans_pdu_sn];
 
-        if ((tx_data_pdu_management->header_and_payload_size <= rlc_pP->nb_bytes_requested_by_mac) && (tx_data_pdu_management->retx_count >= 0) && (tx_data_pdu_management->nack_so_start == 0)
-            && (tx_data_pdu_management->nack_so_stop == 0x7FFF)) {
+        if ((tx_data_pdu_management->header_and_payload_size <= rlc_pP->nb_bytes_requested_by_mac) && (tx_data_pdu_management->retx_count >= 0)
+            && (tx_data_pdu_management->nack_so_start == 0) && (tx_data_pdu_management->nack_so_stop == 0x7FFF)) {
           mem_block_t* copy = rlc_am_retransmit_get_copy(ctxt_pP, rlc_pP, rlc_pP->first_retrans_pdu_sn);
-          LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] RE-SEND DATA PDU SN %04d   %d BYTES\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_module_id) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                rlc_pP->rb_id,
+          LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" RE-SEND DATA PDU SN %04d   %d BYTES\n",
+                PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                 rlc_pP->first_retrans_pdu_sn,
                 tx_data_pdu_management->header_and_payload_size);
           rlc_pP->stat_tx_data_pdu                   += 1;
@@ -406,12 +419,8 @@ rlc_am_get_pdus (
           tx_data_pdu_management->retx_count += 1;
           return;
         } else if ((tx_data_pdu_management->retx_count >= 0) && (rlc_pP->nb_bytes_requested_by_mac >= RLC_AM_MIN_SEGMENT_SIZE_REQUEST)) {
-          LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] SEND SEGMENT OF DATA PDU SN %04d MAC BYTES %d SIZE %d RTX COUNT %d  nack_so_start %d nack_so_stop %04X(hex)\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_module_id) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                rlc_pP->rb_id,
+          LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" SEND SEGMENT OF DATA PDU SN %04d MAC BYTES %d SIZE %d RTX COUNT %d  nack_so_start %d nack_so_stop %04X(hex)\n",
+                PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                 rlc_pP->first_retrans_pdu_sn,
                 rlc_pP->nb_bytes_requested_by_mac,
                 tx_data_pdu_management->header_and_payload_size,
@@ -424,12 +433,8 @@ rlc_am_get_pdus (
                                 rlc_pP,
                                 rlc_pP->first_retrans_pdu_sn,
                                 &rlc_pP->nb_bytes_requested_by_mac);
-          LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] SEND SEGMENT OF DATA PDU SN %04d (NEW SO %05d)\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_module_id) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                rlc_pP->rb_id,
+          LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" SEND SEGMENT OF DATA PDU SN %04d (NEW SO %05d)\n",
+                PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                 rlc_pP->first_retrans_pdu_sn,
                 tx_data_pdu_management->nack_so_start);
 
@@ -448,12 +453,8 @@ rlc_am_get_pdus (
         while ((rlc_pP->first_retrans_pdu_sn != rlc_pP->vt_s) &&
                (!(rlc_pP->pdu_retrans_buffer[rlc_pP->first_retrans_pdu_sn].flags.retransmit))) {
           rlc_pP->first_retrans_pdu_sn = (rlc_pP->first_retrans_pdu_sn+1) & RLC_AM_SN_MASK;
-          LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] UPDATED first_retrans_pdu_sn SN %04d\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_module_id) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                rlc_pP->rb_id,
+          LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" UPDATED first_retrans_pdu_sn SN %04d\n",
+                PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                 rlc_pP->first_retrans_pdu_sn);
         };
 
@@ -463,21 +464,13 @@ rlc_am_get_pdus (
           // no more pdu to be retransmited
           rlc_pP->first_retrans_pdu_sn = -1;
           display_flag = 0;
-          LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] CLEAR first_retrans_pdu_sn\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_module_id) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                rlc_pP->rb_id);
+          LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" CLEAR first_retrans_pdu_sn\n",
+                PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
         }
 
         if (display_flag > 0) {
-          LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] UPDATED first_retrans_pdu_sn %04d\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_module_id) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                rlc_pP->rb_id,
+          LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" UPDATED first_retrans_pdu_sn %04d\n",
+                PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                 rlc_pP->first_retrans_pdu_sn);
         }
 
@@ -510,20 +503,16 @@ rlc_am_get_pdus (
       rlc_am_retransmit_any_pdu(ctxt_pP, rlc_pP);
       return;
     } else {
-      LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] COULD NOT RETRANSMIT ANY PDU BECAUSE ",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_module_id) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id);
+      LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" COULD NOT RETRANSMIT ANY PDU BECAUSE ",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
 
       if (rlc_pP->pdus_to_mac_layer.head != NULL) {
         LOG_D(RLC, "THERE ARE SOME PDUS READY TO TRANSMIT ");
       }
 
       if (!(rlc_am_is_timer_poll_retransmit_timed_out(ctxt_pP, rlc_pP))) {
-        LOG_D(RLC, "TIMER POLL DID NOT TIMED OUT (RUNNING = %d NUM PDUS TO RETRANS = %d  NUM BYTES TO RETRANS = %d) ", rlc_pP->t_poll_retransmit.running, rlc_pP->retrans_num_pdus,
-              rlc_pP->retrans_num_bytes_to_retransmit);
+        LOG_D(RLC, "TIMER POLL DID NOT TIMED OUT (RUNNING = %d NUM PDUS TO RETRANS = %d  NUM BYTES TO RETRANS = %d) ", rlc_pP->t_poll_retransmit.running,
+              rlc_pP->retrans_num_pdus, rlc_pP->retrans_num_bytes_to_retransmit);
       }
 
       if (rlc_pP->nb_bytes_requested_by_mac <= 2) {
@@ -536,12 +525,8 @@ rlc_am_get_pdus (
     break;
 
   default:
-    LOG_E(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] MAC_DATA_REQ UNKNOWN PROTOCOL STATE 0x%02X\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_module_id) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rlc_pP->rb_id,
+    LOG_E(RLC, PROTOCOL_RLC_AM_CTXT_FMT" MAC_DATA_REQ UNKNOWN PROTOCOL STATE 0x%02X\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           rlc_pP->protocol_state);
   }
 }
@@ -560,7 +545,7 @@ rlc_am_rx (
   switch (rlc->protocol_state) {
 
   case RLC_NULL_STATE:
-    LOG_N(RLC, "[RLC_AM %p] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", arg_pP);
+    LOG_N(RLC, PROTOCOL_RLC_AM_CTXT_FMT" ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", arg_pP);
     list_free (&data_indP.data);
     break;
 
@@ -569,7 +554,7 @@ rlc_am_rx (
     break;
 
   default:
-    LOG_E(RLC, "[RLC_AM %p] TX UNKNOWN PROTOCOL STATE 0x%02X\n", rlc, rlc->protocol_state);
+    LOG_E(RLC, PROTOCOL_RLC_AM_CTXT_FMT" TX UNKNOWN PROTOCOL STATE 0x%02X\n", rlc, rlc->protocol_state);
   }
 }
 
@@ -633,12 +618,8 @@ rlc_am_mac_status_indication (
 #ifdef TRACE_RLC_AM_TX_STATUS
 
   if (tb_sizeP > 0) {
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] MAC_STATUS_INDICATION (DATA) %d bytes -> %d bytes\n",
-          ctxt_pP->frame,
-          (rlc->is_enb) ? "eNB" : "UE",
-          rlc->enb_module_id,
-          rlc->ue_module_id,
-          rlc->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" MAC_STATUS_INDICATION (DATA) %d bytes -> %d bytes\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           tb_sizeP,
           status_resp.buffer_occupancy_in_bytes);
     /*if ((tx_statusP.tx_status == MAC_TX_STATUS_SUCCESSFUL) && (tx_statusP.no_pdu)) {
@@ -665,7 +646,7 @@ rlc_am_mac_data_request (
   struct mac_data_req data_req;
   rlc_am_entity_t *l_rlc_p = (rlc_am_entity_t *) rlc_pP;
   unsigned int nb_bytes_requested_by_mac = ((rlc_am_entity_t *) rlc_pP)->nb_bytes_requested_by_mac;
-#ifdef TRACE_RLC_AM_PDU
+#if defined(TRACE_RLC_AM_PDU) || defined(MESSAGE_CHART_GENERATOR)
   rlc_am_pdu_info_t   pdu_info;
   rlc_am_pdu_sn_10_t *rlc_am_pdu_sn_10_p;
   mem_block_t        *tb_p;
@@ -679,19 +660,14 @@ rlc_am_mac_data_request (
   int                 octet_index, index;
 #endif
 
-  rlc_am_get_pdus (ctxt_pP, rlc_pP);
-
   list_init (&data_req.data, NULL);
+  rlc_am_get_pdus (ctxt_pP, l_rlc_p);
   list_add_list (&l_rlc_p->pdus_to_mac_layer, &data_req.data);
 
   //((rlc_am_entity_t *) rlc_pP)->tx_pdus += data_req.data.nb_elements;
   if ((nb_bytes_requested_by_mac + data_req.data.nb_elements) > 0) {
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] MAC_DATA_REQUEST %05d BYTES REQUESTED -> %d TBs\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          l_rlc_p->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" MAC_DATA_REQUEST %05d BYTES REQUESTED -> %d TBs\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p),
           nb_bytes_requested_by_mac,
           data_req.data.nb_elements);
   }
@@ -699,7 +675,7 @@ rlc_am_mac_data_request (
   data_req.buffer_occupancy_in_bytes   = rlc_am_get_buffer_occupancy_in_bytes(ctxt_pP, l_rlc_p);
   data_req.rlc_info.rlc_protocol_state = l_rlc_p->protocol_state;
 
-#ifdef TRACE_RLC_AM_PDU
+#if defined(TRACE_RLC_AM_PDU) || defined(MESSAGE_CHART_GENERATOR)
 
   if (data_req.data.nb_elements > 0) {
 
@@ -711,8 +687,42 @@ rlc_am_mac_data_request (
       tb_size_in_bytes   = ((struct mac_tb_req *) (tb_p->data))->tb_size;
 
       if ((((struct mac_tb_req *) (tb_p->data))->data_ptr[0] & RLC_DC_MASK) == RLC_DC_DATA_PDU ) {
-        if (rlc_am_get_data_pdu_infos(ctxt_pP,rlc_am_pdu_sn_10_p, tb_size_in_bytes, &pdu_info) >= 0) {
+        if (rlc_am_get_data_pdu_infos(ctxt_pP,l_rlc_p,rlc_am_pdu_sn_10_p, tb_size_in_bytes, &pdu_info) >= 0) {
+#ifdef MESSAGE_CHART_GENERATOR
+          message_string_size = 0;
+          message_string_size += sprintf(&message_string[message_string_size],
+                                         MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" DATA SN %u size %u RF %u P %u FI %u",
+                                         MSC_AS_TIME_ARGS(ctxt_pP),
+                                         PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p),
+                                         pdu_info.sn,
+                                         tb_size_in_bytes,
+                                         pdu_info.rf,
+                                         pdu_info.p,
+                                         pdu_info.fi);
+
+          if (pdu_info.rf) {
+            message_string_size += sprintf(&message_string[message_string_size], " LSF %u\n", pdu_info.lsf);
+            message_string_size += sprintf(&message_string[message_string_size], " SO %u\n", pdu_info.so);
+          }
+
+          if (pdu_info.e) {
+            message_string_size += sprintf(&message_string[message_string_size], "| HE:");
+
+            for (index=0; index < pdu_info.num_li; index++) {
+              message_string_size += sprintf(&message_string[message_string_size], " LI %u\n", pdu_info.li_list[index]);
+            }
+          }
+
+          msc_log_tx_message(
+            (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+            (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_UE:MSC_RLC_ENB,
+            (char*)rlc_am_pdu_sn_10_p,
+            tb_size_in_bytes,
+            message_string);
+
+#endif
 #   if defined(ENABLE_ITTI)
+          message_string_size = 0;
           message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
           message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", tb_size_in_bytes);
           message_string_size += sprintf(&message_string[message_string_size], "Header size : %u\n", pdu_info.header_size);
@@ -781,11 +791,7 @@ rlc_am_mac_data_request (
           msg_p->ittiMsg.rlc_am_data_pdu_req.size = message_string_size;
           memcpy(&msg_p->ittiMsg.rlc_am_data_pdu_req.text, message_string, message_string_size);
 
-          if (ctxt_pP->enb_flag) {
-            itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->enb_module_id, msg_p);
-          } else {
-            itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->ue_module_id + NB_eNB_INST, msg_p);
-          }
+          itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->instance, msg_p);
 
 # else
           rlc_am_display_data_pdu_infos(ctxt_pP, l_rlc_p, &pdu_info);
@@ -794,8 +800,39 @@ rlc_am_mac_data_request (
       } else {
         if (rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_p, &tb_size_in_bytes, &g_rlc_am_control_pdu_info) >= 0) {
           tb_size_in_bytes   = ((struct mac_tb_req *) (tb_p->data))->tb_size; //tb_size_in_bytes modified by rlc_am_get_control_pdu_infos!
+#ifdef MESSAGE_CHART_GENERATOR
+          message_string_size = 0;
+          message_string_size += sprintf(&message_string[message_string_size],
+                                         MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" STATUS size %u D/C %u ACK_SN %u",
+                                         MSC_AS_TIME_ARGS(ctxt_pP),
+                                         PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p),
+                                         tb_size_in_bytes,
+                                         g_rlc_am_control_pdu_info.d_c,
+                                         g_rlc_am_control_pdu_info.ack_sn);
 
+          for (num_nack = 0; num_nack < g_rlc_am_control_pdu_info.num_nack; num_nack++) {
+            if (g_rlc_am_control_pdu_info.nack_list[num_nack].e2) {
+              message_string_size += sprintf(&message_string[message_string_size], "  NACK SN %u SO START %u SO END %u",
+                                             g_rlc_am_control_pdu_info.nack_list[num_nack].nack_sn,
+                                             g_rlc_am_control_pdu_info.nack_list[num_nack].so_start,
+                                             g_rlc_am_control_pdu_info.nack_list[num_nack].so_end);
+
+            } else {
+              message_string_size += sprintf(&message_string[message_string_size], "  NACK SN %u",
+                                             g_rlc_am_control_pdu_info.nack_list[num_nack].nack_sn);
+            }
+          }
+
+          msc_log_tx_message(
+            (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+            (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_UE:MSC_RLC_ENB,
+            (char*)rlc_am_pdu_sn_10_p,
+            tb_size_in_bytes,
+            message_string);
+
+#endif
 #   if defined(ENABLE_ITTI)
+          message_string_size = 0;
           message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
           message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", tb_size_in_bytes);
           message_string_size += sprintf(&message_string[message_string_size], "PDU type    : RLC AM DATA REQ: STATUS PDU\n\n");
@@ -820,11 +857,7 @@ rlc_am_mac_data_request (
           msg_p->ittiMsg.rlc_am_status_pdu_req.size = message_string_size;
           memcpy(&msg_p->ittiMsg.rlc_am_status_pdu_req.text, message_string, message_string_size);
 
-          if (ctxt_pP->enb_flag) {
-            itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->enb_module_id, msg_p);
-          } else {
-            itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->ue_module_id + NB_eNB_INST, msg_p);
-          }
+          itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->instance, msg_p);
 
 #   endif
         }
@@ -846,11 +879,11 @@ rlc_am_mac_data_indication (
 )
 {
   //-----------------------------------------------------------------------------
-  //    rlc_am_entity_t           *l_rlc_p = (rlc_am_entity_t *) rlc_pP;
+  rlc_am_entity_t*           l_rlc_p = (rlc_am_entity_t*) rlc_pP;
   /*rlc_am_control_pdu_info_t control_pdu_info;
   int                       num_li;
   int16_t                     tb_size;*/
-#ifdef TRACE_RLC_AM_PDU
+#if defined(TRACE_RLC_AM_PDU) || defined(MESSAGE_CHART_GENERATOR)
   rlc_am_pdu_info_t   pdu_info;
   rlc_am_pdu_sn_10_t *rlc_am_pdu_sn_10_p;
   mem_block_t        *tb_p;
@@ -864,7 +897,7 @@ rlc_am_mac_data_indication (
   int                 octet_index, index;
 #endif
 
-#ifdef TRACE_RLC_AM_PDU
+#if defined(TRACE_RLC_AM_PDU) || defined(MESSAGE_CHART_GENERATOR)
 
   if (data_indP.data.nb_elements > 0) {
 
@@ -876,8 +909,42 @@ rlc_am_mac_data_indication (
       tb_size_in_bytes   = ((struct mac_tb_ind *) (tb_p->data))->size;
 
       if ((((struct mac_tb_ind *) (tb_p->data))->data_ptr[0] & RLC_DC_MASK) == RLC_DC_DATA_PDU ) {
-        if (rlc_am_get_data_pdu_infos(ctxt_pP,rlc_am_pdu_sn_10_p, tb_size_in_bytes, &pdu_info) >= 0) {
-#   if defined(ENABLE_ITTI)
+        if (rlc_am_get_data_pdu_infos(ctxt_pP,l_rlc_p,rlc_am_pdu_sn_10_p, tb_size_in_bytes, &pdu_info) >= 0) {
+#ifdef MESSAGE_CHART_GENERATOR
+          message_string_size = 0;
+          message_string_size += sprintf(&message_string[message_string_size],
+                                         MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" DATA SN %u size %u RF %u P %u FI %u",
+                                         MSC_AS_TIME_ARGS(ctxt_pP),
+                                         PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p),
+                                         pdu_info.sn,
+                                         tb_size_in_bytes,
+                                         pdu_info.rf,
+                                         pdu_info.p,
+                                         pdu_info.fi);
+
+          if (pdu_info.rf) {
+            message_string_size += sprintf(&message_string[message_string_size], " LSF %u\n", pdu_info.lsf);
+            message_string_size += sprintf(&message_string[message_string_size], " SO %u\n", pdu_info.so);
+          }
+
+          if (pdu_info.e) {
+            message_string_size += sprintf(&message_string[message_string_size], "| HE:");
+
+            for (index=0; index < pdu_info.num_li; index++) {
+              message_string_size += sprintf(&message_string[message_string_size], " LI %u\n", pdu_info.li_list[index]);
+            }
+          }
+
+          msc_log_rx_message(
+            (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+            (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_UE:MSC_RLC_ENB,
+            (char*)rlc_am_pdu_sn_10_p,
+            tb_size_in_bytes,
+            message_string);
+
+#endif
+
+#   if defined(ENABLE_ITTI) && defined(TRACE_RLC_AM_PDU)
           message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
           message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", tb_size_in_bytes);
           message_string_size += sprintf(&message_string[message_string_size], "Header size : %u\n", pdu_info.header_size);
@@ -946,11 +1013,7 @@ rlc_am_mac_data_indication (
           msg_p->ittiMsg.rlc_am_data_pdu_ind.size = message_string_size;
           memcpy(&msg_p->ittiMsg.rlc_am_data_pdu_ind.text, message_string, message_string_size);
 
-          if (ctxt_pP->enb_flag) {
-            itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->enb_module_id, msg_p);
-          } else {
-            itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->ue_module_id + NB_eNB_INST, msg_p);
-          }
+          itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->instance, msg_p);
 
 # else
           rlc_am_display_data_pdu_infos(ctxt_pP, l_rlc_p, &pdu_info);
@@ -958,8 +1021,40 @@ rlc_am_mac_data_indication (
         }
       } else {
         if (rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_p, &tb_size_in_bytes, &g_rlc_am_control_pdu_info) >= 0) {
+#ifdef MESSAGE_CHART_GENERATOR
+          message_string_size = 0;
+          message_string_size += sprintf(&message_string[message_string_size],
+                                         MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" STATUS size %u D/C %u ACK_SN %u",
+                                         MSC_AS_TIME_ARGS(ctxt_pP),
+                                         PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p),
+                                         tb_size_in_bytes,
+                                         g_rlc_am_control_pdu_info.d_c,
+                                         g_rlc_am_control_pdu_info.ack_sn);
 
-#   if defined(ENABLE_ITTI)
+          for (num_nack = 0; num_nack < g_rlc_am_control_pdu_info.num_nack; num_nack++) {
+            if (g_rlc_am_control_pdu_info.nack_list[num_nack].e2) {
+              message_string_size += sprintf(&message_string[message_string_size], "  NACK SN %u SO START %u SO END %u",
+                                             g_rlc_am_control_pdu_info.nack_list[num_nack].nack_sn,
+                                             g_rlc_am_control_pdu_info.nack_list[num_nack].so_start,
+                                             g_rlc_am_control_pdu_info.nack_list[num_nack].so_end);
+
+            } else {
+              message_string_size += sprintf(&message_string[message_string_size], "  NACK SN %u",
+                                             g_rlc_am_control_pdu_info.nack_list[num_nack].nack_sn);
+            }
+          }
+
+          msc_log_rx_message(
+            (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+            (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_UE:MSC_RLC_ENB,
+            (char*)rlc_am_pdu_sn_10_p,
+            tb_size_in_bytes,
+            message_string);
+
+#endif
+
+#   if defined(ENABLE_ITTI) && defined(TRACE_RLC_AM_PDU)
+          message_string_size = 0;
           message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
           message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", ((struct mac_tb_ind *) (tb_p->data))->size);
           message_string_size += sprintf(&message_string[message_string_size], "PDU type    : RLC AM DATA IND: STATUS PDU\n\n");
@@ -984,11 +1079,7 @@ rlc_am_mac_data_indication (
           msg_p->ittiMsg.rlc_am_status_pdu_ind.size = message_string_size;
           memcpy(&msg_p->ittiMsg.rlc_am_status_pdu_ind.text, message_string, message_string_size);
 
-          if (ctxt_pP->enb_flag) {
-            itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->enb_module_id, msg_p);
-          } else {
-            itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->ue_module_id + NB_eNB_INST, msg_p);
-          }
+          itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->instance, msg_p);
 
 #   endif
         }
@@ -1038,6 +1129,18 @@ rlc_am_data_req (
     data_offset = ((struct rlc_am_data_req *) (sdu_pP->data))->data_offset;
     data_size   = ((struct rlc_am_data_req *) (sdu_pP->data))->data_size;
     conf        = ((struct rlc_am_data_req *) (sdu_pP->data))->conf;
+#ifdef MESSAGE_CHART_GENERATOR
+    msc_log_rx_message(
+      (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+      (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+      (const char*)(&sdu_pP->data[data_offset]),
+      data_size,
+      MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" DATA-REQ size %u mui %u",
+      MSC_AS_TIME_ARGS(ctxt_pP),
+      PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p),
+      data_size,
+      mui);
+#endif
 
 #if defined(TRACE_RLC_AM_PDU)
     message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
@@ -1082,11 +1185,7 @@ rlc_am_data_req (
     msg_p->ittiMsg.rlc_am_sdu_req.size = message_string_size;
     memcpy(&msg_p->ittiMsg.rlc_am_sdu_req.text, message_string, message_string_size);
 
-    if (ctxt_pP->enb_flag) {
-      itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->enb_module_id, msg_p);
-    } else {
-      itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->ue_module_id + NB_eNB_INST, msg_p);
-    }
+    itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->instance, msg_p);
 
 #   else
     LOG_T(RLC, "%s", message_string);
@@ -1118,12 +1217,8 @@ rlc_am_data_req (
     l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].flags.no_new_sdu_segmented_in_last_pdu = 0;
     //l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].li_index_for_discard = -1;
     l_rlc_p->next_sdu_index = (l_rlc_p->next_sdu_index + 1) % RLC_AM_SDU_CONTROL_BUFFER_SIZE;
-    LOG_I(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] RLC_AM_DATA_REQ size %d Bytes,  NB SDU %d current_sdu_index=%d next_sdu_index=%d conf %d mui %d\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          l_rlc_p->rb_id,
+    LOG_I(RLC, PROTOCOL_RLC_AM_CTXT_FMT" RLC_AM_DATA_REQ size %d Bytes,  NB SDU %d current_sdu_index=%d next_sdu_index=%d conf %d mui %d\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p),
           data_size,
           l_rlc_p->nb_sdu,
           l_rlc_p->current_sdu_index,
@@ -1131,28 +1226,35 @@ rlc_am_data_req (
           conf,
           mui);
   } else {
-    LOG_W(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] RLC_AM_DATA_REQ BUFFER FULL, NB SDU %d current_sdu_index=%d next_sdu_index=%d size_input_sdus_buffer=%d\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          l_rlc_p->rb_id,
+#ifdef MESSAGE_CHART_GENERATOR
+    mui         = ((struct rlc_am_data_req*) (sdu_pP->data))->mui;
+    data_offset = ((struct rlc_am_data_req*) (sdu_pP->data))->data_offset;
+    data_size   = ((struct rlc_am_data_req*) (sdu_pP->data))->data_size;
+    msc_log_rx_discarded_message(
+      (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+      (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+      (const char*)(&sdu_pP->data[data_offset]),
+      data_size,
+      MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" DATA-REQ size %u mui %u",
+      MSC_AS_TIME_ARGS(ctxt_pP),
+      PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p),
+      data_size,
+      mui);
+#endif
+    LOG_W(RLC, PROTOCOL_RLC_AM_CTXT_FMT" RLC_AM_DATA_REQ BUFFER FULL, NB SDU %d current_sdu_index=%d next_sdu_index=%d size_input_sdus_buffer=%d\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p),
           l_rlc_p->nb_sdu,
           l_rlc_p->current_sdu_index,
           l_rlc_p->next_sdu_index,
           RLC_AM_SDU_CONTROL_BUFFER_SIZE);
-    LOG_W(RLC, "                                        input_sdus[].mem_block=%p next input_sdus[].flags.segmented=%d\n", l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].mem_block,
-          l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].flags.segmented);
+    LOG_W(RLC, "                                        input_sdus[].mem_block=%p next input_sdus[].flags.segmented=%d\n",
+          l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].mem_block, l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].flags.segmented);
     l_rlc_p->stat_tx_pdcp_sdu_discarded   += 1;
     l_rlc_p->stat_tx_pdcp_bytes_discarded += ((struct rlc_am_data_req *) (sdu_pP->data))->data_size;
     free_mem_block (sdu_pP);
 #if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
-    AssertFatal(0, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] RLC_AM_DATA_REQ size %d Bytes, SDU DROPPED, INPUT BUFFER OVERFLOW NB SDU %d current_sdu_index=%d next_sdu_index=%d \n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                l_rlc_p->rb_id,
+    AssertFatal(0, PROTOCOL_RLC_AM_CTXT_FMT" RLC_AM_DATA_REQ size %d Bytes, SDU DROPPED, INPUT BUFFER OVERFLOW NB SDU %d current_sdu_index=%d next_sdu_index=%d \n",
+                PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p),
                 data_size,
                 l_rlc_p->nb_sdu,
                 l_rlc_p->current_sdu_index,

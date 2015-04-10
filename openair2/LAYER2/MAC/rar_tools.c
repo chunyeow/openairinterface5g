@@ -56,12 +56,16 @@ extern unsigned short RIV2first_rb_LUT25[512];
 
 extern inline unsigned int taus(void);
 
-unsigned short fill_rar(module_id_t module_idP,
-                        int CC_id,
-                        frame_t frameP,
-                        uint8_t *dlsch_buffer,
-                        uint16_t N_RB_UL,
-                        uint8_t input_buffer_length)
+//------------------------------------------------------------------------------
+unsigned short fill_rar(
+  const module_id_t module_idP,
+  const int         CC_id,
+  const frame_t     frameP,
+  uint8_t*    const dlsch_buffer,
+  const uint16_t    N_RB_UL,
+  const uint8_t input_buffer_length
+)
+//------------------------------------------------------------------------------
 {
 
   RA_HEADER_RAPID *rarh = (RA_HEADER_RAPID *)dlsch_buffer;
@@ -70,6 +74,7 @@ unsigned short fill_rar(module_id_t module_idP,
   int i,ra_idx = -1;
   uint16_t rballoc;
   uint8_t mcs,TPC,ULdelay,cqireq;
+  AssertFatal(CC_id < MAX_NUM_CCs, "CC_id %u < MAX_NUM_CCs %u", CC_id, MAX_NUM_CCs);
 
   for (i=0; i<NB_RA_PROC_MAX; i++) {
     if (eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[i].generate_rar == 1) {
@@ -112,14 +117,16 @@ unsigned short fill_rar(module_id_t module_idP,
   rar[2] |= ((mcs&0x8)>>3);  // mcs 10
   rar[3] = (((mcs&0x7)<<5)) | ((TPC&7)<<2) | ((ULdelay&1)<<1) | (cqireq&1);
 
-  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Generating RAR (%02x|%02x.%02x.%02x.%02x.%02x.%02x) for ra_idx %d, CRNTI %x,preamble %d/%d,TIMING OFFSET %d\n",module_idP,frameP,
+  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Generating RAR (%02x|%02x.%02x.%02x.%02x.%02x.%02x) for ra_idx %d, CRNTI %x,preamble %d/%d,TIMING OFFSET %d\n",module_idP,
+        frameP,
         *(uint8_t*)rarh,rar[0],rar[1],rar[2],rar[3],rar[4],rar[5],
         ra_idx,
         eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[ra_idx].rnti,
         rarh->RAPID,eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[0].preamble_index,
         eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[ra_idx].timing_offset);
+#if defined(USER_MODE) && defined(OAI_EMU)
 
-  if (opt_enabled == 1) {
+  if (oai_emulation.info.opt_enabled) {
     trace_pdu(1, dlsch_buffer, input_buffer_length, module_idP, 2, 1,
               eNB_mac_inst[module_idP].subframe, 0, 0);
     LOG_D(OPT,"[eNB %d][RAPROC] RAR Frame %d trace pdu for rnti %x and  rapid %d size %d\n",
@@ -127,10 +134,21 @@ unsigned short fill_rar(module_id_t module_idP,
           rarh->RAPID, input_buffer_length);
   }
 
+#endif
   return(eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[ra_idx].rnti);
 }
 
-uint16_t ue_process_rar(module_id_t module_idP, int CC_id,frame_t frameP, uint8_t *dlsch_buffer,rnti_t *t_crnti,uint8_t preamble_index)
+//------------------------------------------------------------------------------
+uint16_t
+ue_process_rar(
+  const module_id_t module_idP,
+  const int CC_id,
+  const frame_t frameP,
+  uint8_t* const dlsch_buffer,
+  rnti_t* const t_crnti,
+  const uint8_t preamble_index
+)
+//------------------------------------------------------------------------------
 {
 
   RA_HEADER_RAPID *rarh = (RA_HEADER_RAPID *)dlsch_buffer;

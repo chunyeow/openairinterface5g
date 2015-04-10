@@ -277,10 +277,11 @@ msg_t * msg_rrc_cx_establish_ind(
   P_cx_est_ind.DTCH_id      = DTCH_id   ;
   P_cx_est_ind.L3_info_t    = L3_info_t ;
 
-  if ( L3_info_t == IPv4_ADDR )
+  if ( L3_info_t == IPv4_ADDR ) {
     memcpy( P_cx_est_ind.L3_info, L3_info, 4 );
-  else if ( L3_info_t == IPv6_ADDR )
+  } else if ( L3_info_t == IPv6_ADDR ) {
     memcpy( P_cx_est_ind.L3_info, L3_info, 16 );
+  }
 
   mesg.data = (char *) &P_cx_est_ind ;
   return &mesg ;

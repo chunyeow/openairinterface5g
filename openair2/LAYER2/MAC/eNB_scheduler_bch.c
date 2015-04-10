@@ -67,7 +67,15 @@
 #define DEBUG_eNB_SCHEDULER 1
 
 
-void schedule_SI(module_id_t module_idP,frame_t frameP, unsigned int *nprbP,unsigned int *nCCEP)
+//------------------------------------------------------------------------------
+void
+schedule_SI(
+  module_id_t   module_idP,
+  frame_t       frameP,
+  unsigned int* nprbP,
+  unsigned int* nCCEP
+)
+//------------------------------------------------------------------------------
 {
 
 
@@ -96,24 +104,25 @@ void schedule_SI(module_id_t module_idP,frame_t frameP, unsigned int *nprbP,unsi
       LOG_D(MAC,"[eNB %d] Frame %d : BCCH->DLSCH CC_id %d, Received %d bytes \n",module_idP,CC_id,frameP,bcch_sdu_length);
 
 
-      if (bcch_sdu_length <= (mac_xface->get_TBS_DL(0,3)))
+      if (bcch_sdu_length <= (mac_xface->get_TBS_DL(0,3))) {
         mcs=0;
-      else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(1,3)))
+      } else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(1,3))) {
         mcs=1;
-      else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(2,3)))
+      } else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(2,3))) {
         mcs=2;
-      else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(3,3)))
+      } else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(3,3))) {
         mcs=3;
-      else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(4,3)))
+      } else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(4,3))) {
         mcs=4;
-      else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(5,3)))
+      } else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(5,3))) {
         mcs=5;
-      else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(6,3)))
+      } else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(6,3))) {
         mcs=6;
-      else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(7,3)))
+      } else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(7,3))) {
         mcs=7;
-      else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(8,3)))
+      } else if (bcch_sdu_length <= (mac_xface->get_TBS_DL(8,3))) {
         mcs=8;
+      }
 
       if (PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.frame_type == TDD) {
         switch (PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.N_RB_DL) {
@@ -132,8 +141,8 @@ void schedule_SI(module_id_t module_idP,frame_t frameP, unsigned int *nprbP,unsi
         case 100:
           ((DCI1A_20MHz_TDD_1_6_t*)BCCH_alloc_pdu)->mcs = mcs;
           break;
-
         }
+
       } else {
         switch (PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.N_RB_DL) {
         case 6:
@@ -155,7 +164,9 @@ void schedule_SI(module_id_t module_idP,frame_t frameP, unsigned int *nprbP,unsi
         }
       }
 
-      if (opt_enabled == 1) {
+#if defined(USER_MODE) && defined(OAI_EMU)
+
+      if (oai_emulation.info.opt_enabled) {
         trace_pdu(1,
                   &eNB->common_channels[CC_id].BCCH_pdu.payload[0],
                   bcch_sdu_length,
@@ -165,9 +176,10 @@ void schedule_SI(module_id_t module_idP,frame_t frameP, unsigned int *nprbP,unsi
                   eNB->subframe,
                   0,
                   0);
+      }
         LOG_D(OPT,"[eNB %d][BCH] Frame %d trace pdu for rnti %x with size %d\n",
               module_idP, frameP, 0xffff, bcch_sdu_length);
-      }
+#endif
 
       if (PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.frame_type == TDD) {
         LOG_D(MAC,"[eNB] Frame %d : Scheduling BCCH->DLSCH (TDD) for SI %d bytes (mcs %d, rb 3, TBS %d)\n",

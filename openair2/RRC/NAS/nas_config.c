@@ -65,7 +65,7 @@ void setBaseNetAddress (char* baseAddr)
   strcpy(baseNetAddress,baseAddr);
 }
 
-char* getBaseNetAddress ()
+char* getBaseNetAddress (void)
 {
   return baseNetAddress;
 }
@@ -75,7 +75,7 @@ void setNetMask (char* baseAddr)
   strcpy(netMask,baseAddr);
 }
 
-char* getNetMask  ()
+char* getNetMask  (void)
 {
   return netMask;
 }
@@ -85,7 +85,7 @@ void setBroadcastAddress (char* baseAddr)
   strcpy(broadcastAddr, baseAddr);
 }
 
-char* getBroadcastAddress ()
+char* getBroadcastAddress (void)
 {
   return broadcastAddr;
 }

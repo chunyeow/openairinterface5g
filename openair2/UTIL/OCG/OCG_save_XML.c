@@ -55,12 +55,9 @@ int save_XML(int copy_or_move, char *src_file, char *output_dir, char *filename)
   char dst_file[FILENAME_LENGTH_MAX + DIR_LENGTH_MAX + 32] = "";
   char XML_saving_dir[FILENAME_LENGTH_MAX + DIR_LENGTH_MAX + 32] = "";
 
-  //strcpy(dst_file, output_dir);
   strncpy(dst_file, output_dir, sizeof(dst_file));
   dst_file[sizeof(dst_file) - 1] = 0; // terminate string
   //strcat(dst_file, "SCENARIO/XML/");
-  //strcpy(XML_saving_dir, dst_file);
-  //strcat(dst_file, filename);
   strncpy(XML_saving_dir, dst_file, sizeof(XML_saving_dir));
   XML_saving_dir[sizeof(XML_saving_dir) - 1] = 0; // terminate string
   strncat(dst_file, filename, sizeof(dst_file) - strlen(dst_file) - 1);

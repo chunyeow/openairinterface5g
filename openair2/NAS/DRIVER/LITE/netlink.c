@@ -52,7 +52,7 @@
 //#define NETLINK_DEBUG 1
 
 
-#define NAS_NETLINK_ID 31
+#define OAI_IP_DRIVER_NETLINK_ID 31
 #define NL_DEST_PID 1
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
@@ -110,7 +110,7 @@ int oai_nw_drv_netlink_init(void)
 
   nas_nl_sk = netlink_kernel_create(
                 &init_net,
-                NAS_NETLINK_ID,
+                OAI_IP_DRIVER_NETLINK_ID,
 # if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
                 THIS_MODULE,
 # endif
@@ -118,7 +118,7 @@ int oai_nw_drv_netlink_init(void)
 #else /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0) */
   nas_nl_sk = netlink_kernel_create(
                 &init_net,
-                NAS_NETLINK_ID,
+                OAI_IP_DRIVER_NETLINK_ID,
                 0,
                 nas_nl_data_ready,
                 &nasmesh_mutex, // NULL

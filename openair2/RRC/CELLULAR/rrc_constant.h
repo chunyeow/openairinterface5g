@@ -52,8 +52,8 @@
 /* **** */
 // Case 1 : simulation = USER_MODE defined + RRC_NETLINK commented
 // Case 2 : netlink sockets = USER_MODE defined +
-#define RRC_NETLINK NAS_NETLINK
-// (TEMP: should be placed in Makefile, but currently, NAS_NETLINK is default in USER_MODE)
+#define RRC_NETLINK PDCP_USE_NETLINK
+// (TEMP: should be placed in Makefile, but currently, PDCP_USE_NETLINK is default in USER_MODE)
 // Case 3 : RT_FIFOS = USER_MODE undefined
 
 /* **** */

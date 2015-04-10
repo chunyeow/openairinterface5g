@@ -97,6 +97,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
   DCI_PDU *DCI_pdu[MAX_NUM_CCs];
   int CC_id,i,next_i;
   UE_list_t *UE_list=&eNB_mac_inst[module_idP].UE_list;
+  rnti_t rnti;
 
   LOG_D(MAC,"[eNB %d] Frame %d, Subframe %d, entering MAC scheduler (UE_list->head %d)\n",module_idP, frameP, subframeP,UE_list->head);
 
@@ -112,12 +113,18 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
   }
 
   // refresh UE list based on UEs dropped by PHY in previous subframe
-  for (i=UE_list->head; i>=0; i=i=next_i) {
-    LOG_D(MAC,"UE %d: rnti %x (%p)\n",i,UE_RNTI(module_idP,i),mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i)));
+  i = UE_list->head;
+
+  while (i>=0) {
+
+    rnti = UE_RNTI(module_idP,i);
+    LOG_D(MAC,"UE %d: rnti %x (%p)\n",i,rnti,mac_xface->get_eNB_UE_stats(module_idP,0,rnti));
     next_i= UE_list->next[i];
 
-    if (mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i))==NULL)
-      mac_remove_ue(module_idP,i,frameP);
+    if (mac_xface->get_eNB_UE_stats(module_idP,0,rnti)==NULL) {
+      mac_remove_ue(module_idP,i,frameP, subframeP);
+    }
+    i = next_i;
   }
 
 #if defined(ENABLE_ITTI)
@@ -190,18 +197,13 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
 
   //if (subframeP%5 == 0)
   //#ifdef EXMIMO
-  ctxt.enb_module_id = module_idP;
-  ctxt.ue_module_id  = 0;
-  ctxt.frame         = frameP;
-  ctxt.enb_flag      = ENB_FLAG_YES;
+  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, module_idP, ENB_FLAG_YES, NOT_A_RNTI, frameP, 0);
   pdcp_run(&ctxt);
   //#endif
 
   // check HO
-  rrc_rx_tx(module_idP,
-            frameP,
-            1,
-            module_idP,
+  rrc_rx_tx(&ctxt,
+            0, // eNB index, unused in eNB
             CC_id);
 
 #ifdef Rel10
@@ -235,7 +237,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
     // Schedule ULSCH for FDD or subframeP 4 (TDD config 0,3,6)
     // Schedule Normal DLSCH
 
-    //
+    schedule_RA(module_idP,frameP,subframeP,2,nprb,nCCE);
 
     if (mac_xface->lte_frame_parms->frame_type == FDD) {  //FDD
       schedule_ulsch(module_idP,frameP,cooperation_flag,0,4,nCCE);//,calibration_flag);
@@ -247,8 +249,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
 
     // schedule_ue_spec(module_idP,frameP,subframeP,nprb,nCCE,mbsfn_status);
 
-    //schedule_RA(module_idP,frameP,subframeP,2,nprb,nCCE);
-    //fill_DLSCH_dci(module_idP,frameP,subframeP,RBalloc,1,mbsfn_status);
+    fill_DLSCH_dci(module_idP,frameP,subframeP,RBalloc,1,mbsfn_status);
 
     break;
 
@@ -531,8 +532,9 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
 
   }
 
-  for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++)
+  for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
     DCI_pdu[CC_id]->nCCE = nCCE[CC_id];
+  }
 
   LOG_D(MAC,"frameP %d, subframeP %d nCCE %d\n",frameP,subframeP,nCCE[0]);
 

@@ -57,7 +57,7 @@ uint32_t             counters[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
  * initialize all ures
  */
 void           *
-pool_buffer_init ()
+pool_buffer_init (void)
 {
   //-----------------------------------------------------------------------------
 
@@ -189,20 +189,19 @@ free_mem_block (mem_block_t * leP)
 
 //-----------------------------------------------------------------------------
 mem_block_t      *
-get_free_mem_block (uint16_t sizeP)
+get_free_mem_block (uint32_t sizeP)
 {
   //-----------------------------------------------------------------------------
   mem_block_t      *le = NULL;
   int             pool_selected;
   int             size;
 
-  // next block commented, because sizeP > MEM_MNGT_MB12_BLOCK_SIZE can never be true.
-  //  if (sizeP > MEM_MNGT_MB12_BLOCK_SIZE) {
-  //    msg ("[MEM_MNGT][ERROR][FATAL] size requested %d out of bounds\n", sizeP);
-  //    display_mem_load ();
-  //    mac_xface->macphy_exit("[MEM_MNGT][ERROR][FATAL] get_free_mem_block size requested out of bounds");
-  //    return NULL;
-  //  }
+  if (sizeP > MEM_MNGT_MB12_BLOCK_SIZE) {
+    msg ("[MEM_MNGT][ERROR][FATAL] size requested %d out of bounds\n", sizeP);
+    display_mem_load ();
+    mac_xface->macphy_exit("[MEM_MNGT][ERROR][FATAL] get_free_mem_block size requested out of bounds");
+    return NULL;
+  }
   size = sizeP >> 6;
   pool_selected = 0;
 
@@ -332,7 +331,8 @@ check_mem_area (void)
   mb_index = MEM_MNGT_MB0_NB_BLOCKS;
 
   for (index = 0; index < MEM_MNGT_MB1_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool1[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID1)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool1[index][0]))
+        && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID1)) {
       msg ("[MEM] ERROR POOL1 block index %d\n", index);
     }
   }
@@ -340,7 +340,8 @@ check_mem_area (void)
   mb_index += MEM_MNGT_MB1_NB_BLOCKS;
 
   for (index = 0; index < MEM_MNGT_MB2_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool2[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID2)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool2[index][0]))
+        && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID2)) {
       msg ("[MEM] ERROR POOL2 block index %d\n", index);
     }
   }
@@ -348,7 +349,8 @@ check_mem_area (void)
   mb_index += MEM_MNGT_MB2_NB_BLOCKS;
 
   for (index = 0; index < MEM_MNGT_MB3_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool3[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID3)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool3[index][0]))
+        && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID3)) {
       msg ("[MEM] ERROR POOL3 block index %d\n", index);
     }
   }
@@ -356,7 +358,8 @@ check_mem_area (void)
   mb_index += MEM_MNGT_MB3_NB_BLOCKS;
 
   for (index = 0; index < MEM_MNGT_MB4_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool4[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID4)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool4[index][0]))
+        && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID4)) {
       msg ("[MEM] ERROR POOL4 block index %d\n", index);
     }
   }
@@ -364,7 +367,8 @@ check_mem_area (void)
   mb_index += MEM_MNGT_MB4_NB_BLOCKS;
 
   for (index = 0; index < MEM_MNGT_MB5_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool5[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID5)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool5[index][0]))
+        && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID5)) {
       msg ("[MEM] ERROR POOL5 block index %d\n", index);
     }
   }
@@ -372,7 +376,8 @@ check_mem_area (void)
   mb_index += MEM_MNGT_MB5_NB_BLOCKS;
 
   for (index = 0; index < MEM_MNGT_MB6_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool6[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID6)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool6[index][0]))
+        && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID6)) {
       msg ("[MEM] ERROR POOL6 block index %d\n", index);
     }
   }
@@ -380,7 +385,8 @@ check_mem_area (void)
   mb_index += MEM_MNGT_MB6_NB_BLOCKS;
 
   for (index = 0; index < MEM_MNGT_MB7_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool7[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID7)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool7[index][0]))
+        && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID7)) {
       msg ("[MEM] ERROR POOL7 block index %d\n", index);
     }
   }
@@ -388,7 +394,8 @@ check_mem_area (void)
   mb_index += MEM_MNGT_MB7_NB_BLOCKS;
 
   for (index = 0; index < MEM_MNGT_MB8_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool8[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID8)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool8[index][0]))
+        && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID8)) {
       msg ("[MEM] ERROR POOL8 block index %d\n", index);
     }
   }
@@ -396,7 +403,8 @@ check_mem_area (void)
   mb_index += MEM_MNGT_MB8_NB_BLOCKS;
 
   for (index = 0; index < MEM_MNGT_MB9_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool9[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID9)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool9[index][0]))
+        && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID9)) {
       msg ("[MEM] ERROR POOL9 block index %d\n", index);
     }
   }
@@ -404,7 +412,8 @@ check_mem_area (void)
   mb_index += MEM_MNGT_MB9_NB_BLOCKS;
 
   for (index = mb_index; index < MEM_MNGT_MB10_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool10[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID10)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool10[index][0]))
+        && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID10)) {
       msg ("[MEM] ERROR POOL10 block index %d\n", index);
     }
   }
@@ -412,7 +421,8 @@ check_mem_area (void)
   mb_index += MEM_MNGT_MB10_NB_BLOCKS;
 
   for (index = mb_index; index < MEM_MNGT_MB11_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool11[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID11)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool11[index][0]))
+        && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID11)) {
       msg ("[MEM] ERROR POOL11 block index %d\n", index);
     }
   }
@@ -420,7 +430,8 @@ check_mem_area (void)
   mb_index += MEM_MNGT_MB11_NB_BLOCKS;
 
   for (index = mb_index; index < MEM_MNGT_MB12_NB_BLOCKS; index++) {
-    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool12[index][0])) && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID12)) {
+    if ((memory->mem_blocks[mb_index + index].data != (unsigned char*)&(memory->mem_pool12[index][0]))
+        && (memory->mem_blocks[mb_index + index].pool_id != MEM_MNGT_POOL_ID12)) {
       msg ("[MEM] ERROR POOL12 block index %d\n", index);
     }
   }

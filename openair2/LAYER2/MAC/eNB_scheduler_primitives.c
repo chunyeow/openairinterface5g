@@ -68,7 +68,9 @@
 #define DEBUG_eNB_SCHEDULER 1
 
 
+//------------------------------------------------------------------------------
 void init_ue_sched_info(void)
+//------------------------------------------------------------------------------
 {
   module_id_t i,j,k;
 
@@ -91,21 +93,27 @@ void init_ue_sched_info(void)
 
 
 
+//------------------------------------------------------------------------------
 unsigned char get_ue_weight(module_id_t module_idP, int CC_id, int ue_idP)
+//------------------------------------------------------------------------------
 {
 
   return(eNB_dlsch_info[module_idP][CC_id][ue_idP].weight);
 
 }
 
+//------------------------------------------------------------------------------
 DCI_PDU *get_dci_sdu(module_id_t module_idP, int CC_id,frame_t frameP, sub_frame_t subframeP)
+//------------------------------------------------------------------------------
 {
 
   return(&eNB_mac_inst[module_idP].common_channels[CC_id].DCI_pdu);
 
 }
 
+//------------------------------------------------------------------------------
 int find_UE_id(module_id_t mod_idP, rnti_t rntiP)
+//------------------------------------------------------------------------------
 {
 
   int UE_id;
@@ -121,30 +129,39 @@ int find_UE_id(module_id_t mod_idP, rnti_t rntiP)
 
 }
 
+//------------------------------------------------------------------------------
 int UE_num_active_CC(UE_list_t *listP,int ue_idP)
+//------------------------------------------------------------------------------
 {
   return(listP->numactiveCCs[ue_idP]);
 }
 
+//------------------------------------------------------------------------------
 int UE_PCCID(module_id_t mod_idP,int ue_idP)
+//------------------------------------------------------------------------------
 {
   return(eNB_mac_inst[mod_idP].UE_list.pCC_id[ue_idP]);
 }
 
+//------------------------------------------------------------------------------
 rnti_t UE_RNTI(module_id_t mod_idP, int ue_idP)
+//------------------------------------------------------------------------------
 {
 
   rnti_t rnti = eNB_mac_inst[mod_idP].UE_list.UE_template[UE_PCCID(mod_idP,ue_idP)][ue_idP].rnti;
 
-  if (rnti>0)
+  if (rnti>0) {
     return (rnti);
+  }
 
-  LOG_W(MAC,"[eNB %d] Couldn't find RNTI for UE %d\n",mod_idP,ue_idP);
-  //mac_xface->macphy_exit("UE_RNTI: Couldn't find RNTI for UE");
-  return(0);
+  LOG_E(MAC,"[eNB %d] Couldn't find RNTI for UE %d\n",mod_idP,ue_idP);
+  //display_backtrace();
+  return(NOT_A_RNTI);
 }
 
+//------------------------------------------------------------------------------
 boolean_t is_UE_active(module_id_t mod_idP, int ue_idP)
+//------------------------------------------------------------------------------
 {
   return(eNB_mac_inst[mod_idP].UE_list.active[ue_idP]);
 }
@@ -235,6 +252,7 @@ int add_new_ue(module_id_t mod_idP, int cc_idP, rnti_t rntiP,int harq_pidP)
 
   if (UE_list->avail>=0) {
     UE_id = UE_list->avail;
+    AssertFatal( UE_id < NUMBER_OF_UE_MAX, "BAD UE_id %u > NUMBER_OF_UE_MAX",UE_id );
     UE_list->avail = UE_list->next[UE_list->avail];
     UE_list->next[UE_id] = UE_list->head;
     UE_list->next_ul[UE_id] = UE_list->head_ul;
@@ -267,15 +285,19 @@ int add_new_ue(module_id_t mod_idP, int cc_idP, rnti_t rntiP,int harq_pidP)
   return(-1);
 }
 
-int mac_remove_ue(module_id_t mod_idP, int ue_idP, int frameP)
+//------------------------------------------------------------------------------
+int mac_remove_ue(module_id_t mod_idP, int ue_idP, int frameP, sub_frame_t subframeP)
+//------------------------------------------------------------------------------
 {
 
   int prev,i, ret=-1;
 
+  rnti_t  rnti;
   UE_list_t *UE_list = &eNB_mac_inst[mod_idP].UE_list;
   int pCC_id = UE_PCCID(mod_idP,ue_idP);
 
-  LOG_I(MAC,"Removing UE %d from Primary CC_id %d (rnti %x)\n",ue_idP,pCC_id, UE_list->UE_template[pCC_id][ue_idP].rnti);
+  rnti = UE_list->UE_template[pCC_id][ue_idP].rnti;
+  LOG_I(MAC,"Removing UE %d from Primary CC_id %d (rnti %x)\n",ue_idP,pCC_id, rnti);
   dump_ue_list(UE_list,0);
 
   // clear all remaining pending transmissions
@@ -285,14 +307,18 @@ int mac_remove_ue(module_id_t mod_idP, int ue_idP, int frameP)
   UE_list->UE_template[pCC_id][ue_idP].bsr_info[LCGID3]  = 0;
 
   UE_list->UE_template[pCC_id][ue_idP].ul_SR             = 0;
-  UE_list->UE_template[pCC_id][ue_idP].rnti              = 0;
+  UE_list->UE_template[pCC_id][ue_idP].rnti              = NOT_A_RNTI;
   UE_list->UE_template[pCC_id][ue_idP].ul_active         = FALSE;
-  eNB_ulsch_info[mod_idP][pCC_id][ue_idP].rnti                        = 0;
+  eNB_ulsch_info[mod_idP][pCC_id][ue_idP].rnti                        = NOT_A_RNTI;
   eNB_ulsch_info[mod_idP][pCC_id][ue_idP].status                      = S_UL_NONE;
-  eNB_dlsch_info[mod_idP][pCC_id][ue_idP].rnti                        = 0;
+  eNB_dlsch_info[mod_idP][pCC_id][ue_idP].rnti                        = NOT_A_RNTI;
   eNB_dlsch_info[mod_idP][pCC_id][ue_idP].status                      = S_DL_NONE;
 
-  rrc_eNB_free_UE_index(mod_idP,ue_idP,frameP);
+  rrc_eNB_free_UE(
+    mod_idP,
+    rnti,
+    frameP,
+    subframeP);
 
   prev = UE_list->head;
 
@@ -300,10 +326,11 @@ int mac_remove_ue(module_id_t mod_idP, int ue_idP, int frameP)
     if (i == ue_idP) {
       // link prev to next in Active list
       //if (prev==UE_list->head)
-      if (i==UE_list->head)
+      if (i==UE_list->head) {
         UE_list->head = UE_list->next[i];
-      else
+      } else {
         UE_list->next[prev] = UE_list->next[i];
+      }
 
       // add UE id (i)to available
       UE_list->next[i] = UE_list->avail;
@@ -323,10 +350,11 @@ int mac_remove_ue(module_id_t mod_idP, int ue_idP, int frameP)
   for (i=UE_list->head_ul; i>=0; i=UE_list->next_ul[i]) {
     if (i == ue_idP) {
       // link prev to next in Active list
-      if (prev==UE_list->head_ul)
+      if (prev==UE_list->head_ul) {
         UE_list->head_ul = UE_list->next_ul[i];
-      else
+      } else {
         UE_list->next_ul[prev] = UE_list->next_ul[i];
+      }
 
       // add UE id (i)to available
       UE_list->next_ul[i] = UE_list->avail;
@@ -337,8 +365,9 @@ int mac_remove_ue(module_id_t mod_idP, int ue_idP, int frameP)
     prev=i;
   }
 
-  if (ret == 0)
+  if (ret == 0) {
     return (0);
+  }
 
   LOG_E(MAC,"error in mac_remove_ue(), could not find previous to %d in UE_list, should never happen, Dumping UE list\n",ue_idP);
   dump_ue_list(UE_list,0);
@@ -354,24 +383,26 @@ int prev(UE_list_t *listP, int nodeP, int ul_flag)
   int j;
 
   if (ul_flag == 0 ) {
-    if (nodeP==listP->head)
+    if (nodeP==listP->head) {
       return(nodeP);
+    }
 
     for (j=listP->head; j>=0; j=listP->next[j]) {
-      if (listP->next[j]==nodeP)
+      if (listP->next[j]==nodeP) {
         return(j);
+    }
     }
   } else {
-    if (nodeP==listP->head_ul)
+    if (nodeP==listP->head_ul) {
       return(nodeP);
+    }
 
     for (j=listP->head_ul; j>=0; j=listP->next_ul[j]) {
-      if (listP->next_ul[j]==nodeP)
+      if (listP->next_ul[j]==nodeP) {
         return(j);
+      }
     }
   }
-
-
 
   LOG_E(MAC,"error in prev(), could not find previous to %d in UE_list %s, should never happen, Dumping UE list\n",
         nodeP, (ul_flag == 0)? "DL" : "UL");
@@ -417,21 +448,22 @@ void swap_UEs(UE_list_t *listP,int nodeiP, int nodejP, int ul_flag)
       listP->next[nodeiP] = next_j;
       listP->next[nodejP] = nodeiP;
 
-      if (nodeiP==listP->head)  // case i j n(j)
+      if (nodeiP==listP->head) { // case i j n(j)
         listP->head = nodejP;
-      else
+      } else {
         listP->next[prev_i] = nodejP;
+      }
     } else if (next_j == nodeiP) {  // case ... p(j) j i n(i) ... => ... p(i) i j n(j) ...
       LOG_T(MAC,"Case ... p(j) j i n(i) ... => ... p(i) i j n(j) ...\n");
       listP->next[nodejP] = next_i;
       listP->next[nodeiP] = nodejP;
 
-      if (nodejP==listP->head)  // case j i n(i)
+      if (nodejP==listP->head) { // case j i n(i)
         listP->head = nodeiP;
-      else
+      } else {
         listP->next[prev_j] = nodeiP;
+      }
     } else {  // case ...  p(i) i n(i) ... p(j) j n(j) ...
-
       listP->next[nodejP] = next_i;
       listP->next[nodeiP] = next_j;
 
@@ -457,19 +489,21 @@ void swap_UEs(UE_list_t *listP,int nodeiP, int nodejP, int ul_flag)
       listP->next_ul[nodeiP] = next_j;
       listP->next_ul[nodejP] = nodeiP;
 
-      if (nodeiP==listP->head_ul)  // case i j n(j)
+      if (nodeiP==listP->head_ul) { // case i j n(j)
         listP->head_ul = nodejP;
-      else
+      } else {
         listP->next_ul[prev_i] = nodejP;
+      }
     } else if (next_j == nodeiP) {  // case ... p(j) j i n(i) ... => ... p(i) i j n(j) ...
       LOG_T(MAC,"[UL]Case ... p(j) j i n(i) ... => ... p(i) i j n(j) ...\n");
       listP->next_ul[nodejP] = next_i;
       listP->next_ul[nodeiP] = nodejP;
 
-      if (nodejP==listP->head_ul)  // case j i n(i)
+      if (nodejP==listP->head_ul) { // case j i n(i)
         listP->head_ul = nodeiP;
-      else
+      } else {
         listP->next_ul[prev_j] = nodeiP;
+      }
     } else {  // case ...  p(i) i n(i) ... p(j) j n(j) ...
 
       listP->next_ul[nodejP] = next_i;
@@ -681,10 +715,11 @@ uint8_t UE_is_to_be_scheduled(module_id_t module_idP,int CC_id,uint8_t UE_id)
       (UE_template->bsr_info[LCGID1]>0) ||
       (UE_template->bsr_info[LCGID2]>0) ||
       (UE_template->bsr_info[LCGID3]>0) ||
-      (UE_template->ul_SR>0)) // uplink scheduling request
+      (UE_template->ul_SR>0)) { // uplink scheduling request
     return(1);
-  else
+  } else {
     return(0);
+  }
 }
 
 
@@ -704,8 +739,9 @@ uint32_t allocate_prbs(int UE_id,unsigned char nb_rb, uint32_t *rballoc)
       nb_rb_alloc+=2;
     }
 
-    if (nb_rb_alloc==nb_rb)
+    if (nb_rb_alloc==nb_rb) {
       return(rballoc_dci);
+    }
   }
 
   if ((mac_xface->lte_frame_parms->N_RB_DL&1)==1) {
@@ -771,18 +807,20 @@ uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc)
         break;
 
       case 25:
-        if (check == mac_xface->lte_frame_parms->N_RBG-1)
+        if ((check == mac_xface->lte_frame_parms->N_RBG-1)) {
           nb_rb--;
-        else
+        } else {
           nb_rb-=2;
+        }
 
         break;
 
       case 50:
-        if (check == mac_xface->lte_frame_parms->N_RBG-1)
+        if ((check == mac_xface->lte_frame_parms->N_RBG-1)) {
           nb_rb-=2;
-        else
+        } else {
           nb_rb-=3;
+        }
 
         break;
 

@@ -288,7 +288,7 @@ int nas_mesh_DC_send_cx_establish_request(struct cx_entity *cx,struct nas_priv *
     nas_tool_print_buffer((char *)p,p->length);
 #endif
     ++cx->retry;
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 #else
     //    bytes_wrote = rtf_put(cx->sap[NAS_DC_INPUT_SAPI], p, p->length);
 #endif
@@ -348,7 +348,7 @@ int nas_mesh_DC_send_cx_release_request(struct cx_entity *cx,
     p->length =  NAS_TL_SIZE + sizeof(struct NASConnReleaseReq);
     p->nasUEDCPrimitive.conn_release_req.localConnectionRef = cx->lcr;
     p->nasUEDCPrimitive.conn_release_req.releaseCause = NAS_CX_RELEASE_UNDEF_CAUSE;
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 
 #else
     //      bytes_wrote = rtf_put(cx->sap[NAS_DC_INPUT_SAPI], p, p->length);
@@ -435,7 +435,7 @@ void nas_mesh_DC_send_sig_data_request(struct sk_buff *skb,
   p->nasUEDCPrimitive.data_transfer_req.localConnectionRef = cx->lcr;
   p->nasUEDCPrimitive.data_transfer_req.priority = 3;  // TBD
   p->nasUEDCPrimitive.data_transfer_req.nasDataLength = (skb->len)+1; //adds category character
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 #else
   //  bytes_wrote = rtf_put(cx->sap[NAS_DC_INPUT_SAPI], p, p->length);
 #endif
@@ -445,7 +445,7 @@ void nas_mesh_DC_send_sig_data_request(struct sk_buff *skb,
     return;
   }
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 #else
   //  bytes_wrote += rtf_put(cx->sap[NAS_DC_INPUT_SAPI], &data_type, 1);
   //  bytes_wrote += rtf_put(cx->sap[NAS_DC_INPUT_SAPI], skb->data, skb->len);
@@ -505,7 +505,7 @@ void nas_mesh_DC_send_peer_sig_data_request(struct cx_entity *cx, uint8_t sig_ca
   p->nasUEDCPrimitive.data_transfer_req.localConnectionRef = cx->lcr;
   p->nasUEDCPrimitive.data_transfer_req.priority = 3;  // TBD
   p->nasUEDCPrimitive.data_transfer_req.nasDataLength = (nas_length)+1; //adds category character
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 #else
   //  bytes_wrote = rtf_put(cx->sap[NAS_DC_INPUT_SAPI], p, p->length);
 #endif
@@ -515,7 +515,7 @@ void nas_mesh_DC_send_peer_sig_data_request(struct cx_entity *cx, uint8_t sig_ca
     return;
   }
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 #else
   //  bytes_wrote += rtf_put(cx->sap[NAS_DC_INPUT_SAPI], &data_type, 1);
   //  bytes_wrote += rtf_put(cx->sap[NAS_DC_INPUT_SAPI], (char *)nas_data, nas_length);
@@ -659,7 +659,7 @@ void nas_mesh_DC_decode_sig_data_ind(struct cx_entity *cx, struct nas_ue_dc_elem
   }
 
   // End debug information
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
   //  nas_COMMON_receive(p->length, p->nasUEDCPrimitive.data_transfer_ind.nasDataLength, cx->sap[NAS_DC_OUTPUT_SAPI]);
 #endif
 #ifdef NAS_DEBUG_DC
@@ -836,7 +836,7 @@ int nas_mesh_DC_receive(struct cx_entity *cx,struct nas_priv *gpriv)
   }
 
   // End debug information
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 #else
   //  bytes_read = rtf_get(cx->sap[NAS_DC_OUTPUT_SAPI] , gpriv->rbuffer, NAS_TL_SIZE);
 #endif
@@ -846,7 +846,7 @@ int nas_mesh_DC_receive(struct cx_entity *cx,struct nas_priv *gpriv)
 
     p= (struct nas_ue_dc_element *)(gpriv->rbuffer);
     //get the rest of the primitive
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 #else
     //    bytes_read += rtf_get(cx->sap[NAS_DC_OUTPUT_SAPI], (uint8_t *)p+NAS_TL_SIZE, p->length-NAS_TL_SIZE);
 #endif
@@ -975,7 +975,7 @@ int nas_mesh_GC_receive(struct nas_priv *gpriv)
 #ifdef NAS_DEBUG_GC
   printk("NAS_MESH_GC_RECEIVE - begin \n");
 #endif
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 #else
   //  bytes_read = rtf_get(gpriv->sap[NAS_GC_SAPI], gpriv->rbuffer, NAS_TL_SIZE);
 #endif
@@ -984,7 +984,7 @@ int nas_mesh_GC_receive(struct nas_priv *gpriv)
     struct nas_ue_gc_element *p;
     p= (struct nas_ue_gc_element *)(gpriv->rbuffer);
     //get the rest of the primitive
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 #else
     //      bytes_read += rtf_get(gpriv->sap[NAS_GC_SAPI], (uint8_t *)p+NAS_TL_SIZE, p->length-NAS_TL_SIZE);
 #endif
@@ -997,7 +997,7 @@ int nas_mesh_GC_receive(struct nas_priv *gpriv)
     // start decoding message
     switch (p->type) {
     case INFO_BROADCAST_IND :
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 #else
       //    bytes_read += rtf_get(gpriv->sap[NAS_GC_SAPI], (uint8_t *)p+p->length, p->nasUEGCPrimitive.broadcast_ind.nasDataLength);
 #endif

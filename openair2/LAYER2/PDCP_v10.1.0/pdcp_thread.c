@@ -149,10 +149,11 @@ void cleanup_pdcp_thread(void)
 
   pdcp_instance_cnt = 0;
 
-  if (pthread_cond_signal(&pdcp_cond) != 0)
+  if (pthread_cond_signal(&pdcp_cond) != 0) {
     LOG_I(PDCP,"ERROR pthread_cond_signal\n");
-  else
+  } else {
     LOG_I(PDCP,"Signalled PDCP thread to exit\n");
+  }
 
   pthread_join(pdcp_thread,&status_p);
   LOG_I(PDCP,"PDCP thread exited\n");

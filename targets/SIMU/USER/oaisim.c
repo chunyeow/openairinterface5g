@@ -163,25 +163,16 @@ time_stats_t dl_chan_stats;
 time_stats_t ul_chan_stats;
 
 // this should reflect the channel models in openair1/SIMULATION/TOOLS/defs.h
-mapping small_scale_names[] = { { "custom", custom }, { "SCM_A", SCM_A }, {
-    "SCM_B", SCM_B
-  }, { "SCM_C", SCM_C }, { "SCM_D", SCM_D }, {
-    "EPA", EPA
-  }, { "EVA", EVA }, { "ETU", ETU },
-  { "MBSFN", MBSFN }, { "Rayleigh8", Rayleigh8 }, {
-    "Rayleigh1",
-    Rayleigh1
-  }, { "Rayleigh1_800", Rayleigh1_800 },
-  { "Rayleigh1_corr", Rayleigh1_corr }, {
-    "Rayleigh1_anticorr",
-    Rayleigh1_anticorr
-  }, { "Rice8", Rice8 }, {
-    "Rice1", Rice1
-  }, { "Rice1_corr", Rice1_corr },
-  { "Rice1_anticorr", Rice1_anticorr }, { "AWGN", AWGN }, {
-    NULL,
-    -1
-  }
+mapping small_scale_names[] = { 
+  { "custom", custom }, { "SCM_A", SCM_A },
+  { "SCM_B", SCM_B   }, { "SCM_C", SCM_C },
+  { "SCM_D", SCM_D   }, { "EPA",   EPA   },
+  { "EVA",   EVA     }, { "ETU",   ETU   },
+  { "MBSFN", MBSFN },   { "Rayleigh8", Rayleigh8 },
+  { "Rayleigh1", Rayleigh1 }, { "Rayleigh1_800", Rayleigh1_800 },
+  { "Rayleigh1_corr", Rayleigh1_corr }, { "Rayleigh1_anticorr", Rayleigh1_anticorr },
+  { "Rice8", Rice8 }, { "Rice1", Rice1 }, { "Rice1_corr", Rice1_corr },
+  { "Rice1_anticorr", Rice1_anticorr }, { "AWGN", AWGN }, { NULL,-1 }
 };
 #if !defined(ENABLE_ITTI)
 static void *
@@ -747,7 +738,7 @@ l2l1_task (void *args_p)
                     PHY_vars_eNB_g[eNB_inst][0]->lte_frame_parms.Nid_cell);
 
 #ifdef OPENAIR2
-            //Appliation: traffic gen
+                        //Application: traffic gen
             update_otg_eNB (eNB_inst, oai_emulation.info.time_ms);
 
             //IP/OTG to PDCP and PDCP to IP operation
@@ -837,10 +828,7 @@ l2l1_task (void *args_p)
                   update_otg_UE (UE_inst, oai_emulation.info.time_ms);
 
                   //Access layer
-                  ctxt.enb_module_id = 0;
-                  ctxt.ue_module_id  = UE_inst;
-                  ctxt.frame         = frame;
-                  ctxt.enb_flag      = ENB_FLAG_NO;
+                                    PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, UE_inst, ENB_FLAG_NO, NOT_A_RNTI, frame, next_slot);
                   pdcp_run (&ctxt);
 #endif
 

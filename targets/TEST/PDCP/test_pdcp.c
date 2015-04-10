@@ -153,7 +153,7 @@ BOOL init_pdcp_entity(pdcp_t *pdcp_entity)
   return TRUE;
 }
 
-BOOL test_tx_window()
+BOOL test_tx_window(void)
 {
   unsigned long index = 0;
 
@@ -171,7 +171,7 @@ BOOL test_tx_window()
   return TRUE;
 }
 
-BOOL test_rx_window()
+BOOL test_rx_window(void)
 {
   unsigned long index = 0;
 
@@ -190,7 +190,7 @@ BOOL test_rx_window()
   return TRUE;
 }
 
-BOOL test_pdcp_data_req()
+BOOL test_pdcp_data_req(void)
 {
   unsigned char* pdcp_test_pdu_buffer = NULL;
   unsigned char pdcp_test_pdu_buffer_size = DUMMY_BUFFER_SIZE + PDCP_USER_PLANE_DATA_PDU_LONG_SN_HEADER_SIZE;
@@ -288,7 +288,7 @@ BOOL test_pdcp_data_req()
   return TRUE;
 }
 
-BOOL test_pdcp_data_ind()
+BOOL test_pdcp_data_ind(void)
 {
   /*
    * This is the list that pdcp_data_ind() takes to put pdcp_data_ind_header_t

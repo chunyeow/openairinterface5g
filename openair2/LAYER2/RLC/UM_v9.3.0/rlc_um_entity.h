@@ -46,9 +46,9 @@
 #        include "rlc_def.h"
 
 typedef struct rlc_um_timer_s {
-  uint32_t  frame_time_out;/*!< \brief When set, indicate the frame number the timer will time-out. */
-  uint32_t  frame_start;   /*!< \brief indicate the frame number the timer has been started. */
-  uint32_t  time_out;      /*!< \brief Configured timer duration in frames. */
+  uint32_t  ms_time_out;   /*!< \brief When set, indicate the time the timer will time-out. */
+  uint32_t  ms_start;      /*!< \brief indicate the time the timer has been started. */
+  uint32_t  ms_duration;   /*!< \brief Configured timer duration in frames. */
   uint32_t  running:1;     /*!< \brief The timer is running. */
   uint32_t  timed_out:1;   /*!< \brief The timer has timed-out. */
   uint32_t  dummy:30;      /*!< \brief Bits not used. */
@@ -60,8 +60,6 @@ typedef struct rlc_um_timer_s {
 */
 
 typedef struct rlc_um_entity_s {
-  //module_id_t          enb_module_id;      /*!< \brief eNB Virtualization index for this protocol instance. */
-  //module_id_t          ue_module_id;       /*!< \brief UE Virtualization index for this protocol instance. */
   boolean_t            initialized;        /*!< \brief Boolean for rlc_am_entity_t struct initialization. */
   boolean_t            is_uplink_downlink; /*!< \brief Is this instance is a transmitter, a receiver or both? */
   rlc_protocol_state_t protocol_state;     /*!< \brief Protocol state, can be RLC_NULL_STATE, RLC_DATA_TRANSFER_READY_STATE, RLC_LOCAL_SUSPEND_STATE. */

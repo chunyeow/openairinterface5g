@@ -44,10 +44,9 @@
 #include "LAYER2/MAC/extern.h"
 //-----------------------------------------------------------------------------
 int
-rlc_am_fsm_notify_event (struct rlc_am_entity *rlcP, uint8_t eventP)
+rlc_am_fsm_notify_event (struct rlc_am_entity* rlcP, uint8_t eventP)
 {
   //-----------------------------------------------------------------------------
-
   switch (rlcP->protocol_state) {
     //-------------------------------
     // RLC_NULL_STATE
@@ -105,7 +104,8 @@ rlc_am_fsm_notify_event (struct rlc_am_entity *rlcP, uint8_t eventP)
       break;
 
     default:
-      msg ("[RLC_AM][RB %d][FSM] WARNING PROTOCOL ERROR - EVENT 0x%02X NOT EXPECTED FROM DATA_TRANSFER_READY_STATE frame %d\n", rlcP->rb_id, eventP, Mac_rlc_xface->frame);
+      msg ("[RLC_AM][RB %d][FSM] WARNING PROTOCOL ERROR - EVENT 0x%02X NOT EXPECTED FROM DATA_TRANSFER_READY_STATE frame %d\n", rlcP->rb_id, eventP,
+           Mac_rlc_xface->frame);
       return 0;
     }
 
@@ -148,7 +148,8 @@ rlc_am_fsm_notify_event (struct rlc_am_entity *rlcP, uint8_t eventP)
       break;
 
     default:
-      msg ("[RLC_AM][RB %d][FSM] WARNING PROTOCOL ERROR - EVENT 0x%02X NOT EXPECTED FROM RLC_RESET_PENDING_STATE frame %d\n", rlcP->rb_id, eventP, Mac_rlc_xface->frame);
+      msg ("[RLC_AM][RB %d][FSM] WARNING PROTOCOL ERROR - EVENT 0x%02X NOT EXPECTED FROM RLC_RESET_PENDING_STATE frame %d\n", rlcP->rb_id, eventP,
+           Mac_rlc_xface->frame);
       return 0;
     }
 
@@ -184,7 +185,8 @@ rlc_am_fsm_notify_event (struct rlc_am_entity *rlcP, uint8_t eventP)
       break;
 
     default:
-      msg ("[RLC_AM][RB %d][FSM] WARNING PROTOCOL ERROR - EVENT 0x%02X NOT EXPECTED FROM RLC_RESET_AND_SUSPEND_STATE frame %d\n", rlcP->rb_id, eventP, Mac_rlc_xface->frame);
+      msg ("[RLC_AM][RB %d][FSM] WARNING PROTOCOL ERROR - EVENT 0x%02X NOT EXPECTED FROM RLC_RESET_AND_SUSPEND_STATE frame %d\n", rlcP->rb_id, eventP,
+           Mac_rlc_xface->frame);
       return 0;
     }
 
@@ -220,7 +222,8 @@ rlc_am_fsm_notify_event (struct rlc_am_entity *rlcP, uint8_t eventP)
       break;
 
     default:
-      msg ("[RLC_AM][RB %d][FSM] WARNING PROTOCOL ERROR - EVENT 0x%02X NOT EXPECTED FROM RLC_LOCAL_SUSPEND_STATE frame %d\n", rlcP->rb_id, eventP, Mac_rlc_xface->frame);
+      msg ("[RLC_AM][RB %d][FSM] WARNING PROTOCOL ERROR - EVENT 0x%02X NOT EXPECTED FROM RLC_LOCAL_SUSPEND_STATE frame %d\n", rlcP->rb_id, eventP,
+           Mac_rlc_xface->frame);
       return 0;
     }
 

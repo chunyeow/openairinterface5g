@@ -52,7 +52,9 @@ rlc_tm_send_sdu (
   int             index;
 #endif
 #ifdef DEBUG_RLC_TM_REASSEMBLY
-  msg ("[RLC_TM %p][SEND_SDU] %d bits\n", rlc_pP, length_in_bitsP);
+  LOG_D(RLC, PROTOCOL_RLC_TM_CTXT_FMT"[SEND_SDU] %d bits\n",
+        PROTOCOL_RLC_TM_CTXT_ARGS(ctxt_pP, rlc_pP),
+        length_in_bitsP);
 #endif
   length_in_bytes = (length_in_bitsP + 7) >> 3;
 
@@ -62,7 +64,8 @@ rlc_tm_send_sdu (
 
   if ((rlc_pP->output_sdu_in_construction)) {
 #ifdef DEBUG_RLC_TM_DISPLAY_ASCII_DATA
-    msg ("[RLC_TM %p][SEND_SDU] DATA :", rlc_pP);
+    LOG_D(RLC, PROTOCOL_RLC_TM_CTXT_FMT"[SEND_SDU] DATA :",
+          PROTOCOL_RLC_TM_CTXT_ARGS(ctxt_pP, rlc_pP));
 
     for (index = 0; index < length_in_bytes; index++) {
       msg ("%c", srcP[index]);
@@ -102,10 +105,10 @@ rlc_tm_no_segment (
   while ((rlc_pP->input_sdus[rlc_pP->current_sdu_index]) && (nb_pdu_to_transmit > 0)) {
 
     sdu_mngt_p = ((struct rlc_tm_tx_sdu_management *) (rlc_pP->input_sdus[rlc_pP->current_sdu_index]->data));
-    //PRINT_RLC_TM_SEGMENT("[RLC_TM %p] SEGMENT GET NEW SDU %p AVAILABLE SIZE %d Bytes\n", rlc_pP, sdu_mngt_p, sdu_mngt_p->sdu_remaining_size);
 
     if (!(pdu_p = get_free_mem_block (((rlc_pP->rlc_pdu_size + 7) >> 3) + sizeof (struct rlc_tm_tx_data_pdu_struct) + GUARD_CRC_LIH_SIZE))) {
-      msg ("[RLC_TM %p][SEGMENT] ERROR COULD NOT GET NEW PDU, EXIT\n", rlc_pP);
+      LOG_D(RLC, PROTOCOL_RLC_TM_CTXT_FMT"[SEGMENT] ERROR COULD NOT GET NEW PDU, EXIT\n",
+            PROTOCOL_RLC_TM_CTXT_ARGS(ctxt_pP, rlc_pP));
       return;
     }
 
@@ -179,24 +182,19 @@ rlc_tm_mac_data_request (
   void * const rlc_pP)
 {
   //-----------------------------------------------------------------------------
-  rlc_tm_entity_t    *l_rlc_p = (rlc_tm_entity_t *) rlc_pP;
+  rlc_tm_entity_t*    rlc_p = (rlc_tm_entity_t*) rlc_pP;
   struct mac_data_req data_req;
 
-  rlc_tm_no_segment (ctxt_pP, l_rlc_p);
+  rlc_tm_no_segment (ctxt_pP, rlc_p);
   list_init (&data_req.data, NULL);
-  list_add_list (&l_rlc_p->pdus_to_mac_layer, &data_req.data);
-
-  data_req.buffer_occupancy_in_bytes = l_rlc_p->buffer_occupancy;
-  data_req.buffer_occupancy_in_pdus = data_req.buffer_occupancy_in_bytes / l_rlc_p->rlc_pdu_size;
-  data_req.rlc_info.rlc_protocol_state = l_rlc_p->protocol_state;
+  list_add_list (&rlc_p->pdus_to_mac_layer, &data_req.data);
+  data_req.buffer_occupancy_in_bytes = rlc_p->buffer_occupancy;
+  data_req.buffer_occupancy_in_pdus = data_req.buffer_occupancy_in_bytes / rlc_p->rlc_pdu_size;
+  data_req.rlc_info.rlc_protocol_state = rlc_p->protocol_state;
 
   if (data_req.data.nb_elements > 0) {
-    LOG_D(RLC, "[RLC_TM][%s][MOD %02u/%02u][RB %d][FRAME %05d] MAC_DATA_REQUEST %d TBs\n",
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          l_rlc_p->rb_id,
-          ctxt_pP->frame,
+    LOG_D(RLC, PROTOCOL_RLC_TM_CTXT_FMT" MAC_DATA_REQUEST %d TBs\n",
+          PROTOCOL_RLC_TM_CTXT_ARGS(ctxt_pP, rlc_p),
           data_req.data.nb_elements);
   }
 
@@ -211,15 +209,11 @@ rlc_tm_mac_data_indication (
   struct mac_data_ind data_indP)
 {
   //-----------------------------------------------------------------------------
-  rlc_tm_entity_t *l_rlc_p = (rlc_tm_entity_t *) rlc_pP;
+  rlc_tm_entity_t* rlc_p = (rlc_tm_entity_t*) rlc_pP;
 
   if (data_indP.data.nb_elements > 0) {
-    LOG_D(RLC, "[RLC_TM][%s][MOD %02u/%02u][RB %d][FRAME %05d] MAC_DATA_IND %d TBs\n",
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          l_rlc_p->rb_id,
-          ctxt_pP->frame,
+    LOG_D(RLC, PROTOCOL_RLC_TM_CTXT_FMT" MAC_DATA_IND %d TBs\n",
+          PROTOCOL_RLC_TM_CTXT_ARGS(ctxt_pP, rlc_p),
           data_indP.data.nb_elements);
   }
 
@@ -237,10 +231,8 @@ rlc_tm_data_req (
   rlc_tm_entity_t *rlc_p = (rlc_tm_entity_t *) rlc_pP;
 
 #ifdef DEBUG_RLC_TM_DATA_REQUEST
-  LOG_D (RLC, "[RLC_TM][%s][MOD %02u/%02u] RLC_TM_DATA_REQ size %d Bytes, BO %ld , NB SDU %d current_sdu_index=%d next_sdu_index=%d\n",
-         (ctxt_pP->enb_flag) ? "eNB" : "UE",
-         ctxt_pP->enb_module_id,
-         ctxt_pP->ue_module_id,
+  LOG_D (RLC, PROTOCOL_RLC_TM_CTXT_FMT" RLC_TM_DATA_REQ size %d Bytes, BO %ld , NB SDU %d current_sdu_index=%d next_sdu_index=%d\n",
+         PROTOCOL_RLC_TM_CTXT_ARGS(ctxt_pP, rlc_p),
          ((struct rlc_um_data_req *) (sdu_pP->data))->data_size,
          rlc_p->buffer_occupancy,
          rlc_p->nb_sdu,

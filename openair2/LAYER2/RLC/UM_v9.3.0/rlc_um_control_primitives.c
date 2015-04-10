@@ -51,23 +51,18 @@ void config_req_rlc_um (
   //-----------------------------------------------------------------------------
   rlc_union_t     *rlc_union_p  = NULL;
   rlc_um_entity_t *rlc_p        = NULL;
-  hash_key_t       key          = RLC_COLL_KEY_VALUE(ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, ctxt_pP->enb_flag, rb_idP, srb_flagP);
+  hash_key_t       key          = RLC_COLL_KEY_VALUE(ctxt_pP->module_id, ctxt_pP->rnti, ctxt_pP->enb_flag, rb_idP, srb_flagP);
   hashtable_rc_t   h_rc;
 
   h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
 
   if (h_rc == HASH_TABLE_OK) {
     rlc_p = &rlc_union_p->rlc.um;
-    LOG_D(RLC, "[FRAME %05d][%s][RRC][MOD %u/%u][][--- CONFIG_REQ timer_reordering=%d sn_field_length=%d is_mXch=%d --->][RLC_UM][MOD %u/%u][RB %u]    \n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
+    LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" CONFIG_REQ timer_reordering=%d sn_field_length=%d is_mXch=%d RB %u\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_p),
           config_um_pP->timer_reordering,
           config_um_pP->sn_field_length,
           config_um_pP->is_mXch,
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
           rb_idP);
 
     rlc_um_init(ctxt_pP, rlc_p);
@@ -83,18 +78,13 @@ void config_req_rlc_um (
         config_um_pP->is_mXch);
     }
   } else {
-    LOG_E(RLC, "[FRAME %05d][%s][RRC][MOD %u/%u][][--- CONFIG_REQ --->][RLC_UM][MOD %u/%u][RB %u]  RLC NOT FOUND\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
+    LOG_E(RLC, PROTOCOL_RLC_UM_CTXT_FMT"  CONFIG_REQ RB %u  RLC UM NOT FOUND\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_p),
           rb_idP);
   }
 }
 //-----------------------------------------------------------------------------
-const uint32_t t_Reordering_tab[T_Reordering_spare1] = {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200};
+const uint32_t const t_Reordering_tab[T_Reordering_spare1] = {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200};
 
 void config_req_rlc_um_asn1 (
   const protocol_ctxt_t* const ctxt_pP,
@@ -111,7 +101,7 @@ void config_req_rlc_um_asn1 (
   uint32_t         t_Reordering        = 0;
   rlc_union_t     *rlc_union_p         = NULL;
   rlc_um_entity_t *rlc_p               = NULL;
-  hash_key_t       key                 = RLC_COLL_KEY_VALUE(ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, ctxt_pP->enb_flag, rb_idP, srb_flagP);
+  hash_key_t       key                 = RLC_COLL_KEY_VALUE(ctxt_pP->module_id, ctxt_pP->rnti, ctxt_pP->enb_flag, rb_idP, srb_flagP);
   hashtable_rc_t   h_rc;
 
 #if defined(Rel10)
@@ -119,11 +109,11 @@ void config_req_rlc_um_asn1 (
   if (mbms_flagP) {
     AssertFatal(dl_rlc_pP, "No RLC UM DL config");
     AssertFatal(ul_rlc_pP == NULL, "RLC UM UL config present");
-    key = RLC_COLL_KEY_MBMS_VALUE(ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, ctxt_pP->enb_flag, mbms_service_idP, mbms_session_idP);
+    key = RLC_COLL_KEY_MBMS_VALUE(ctxt_pP->module_id, ctxt_pP->rnti, ctxt_pP->enb_flag, mbms_service_idP, mbms_session_idP);
     h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
-    AssertFatal (h_rc == HASH_TABLE_OK, "RLC NOT FOUND enb id %u ue id %i enb flag %u service id %u, session id %u",
-                 ctxt_pP->enb_module_id,
-                 ctxt_pP->ue_module_id,
+    AssertFatal (h_rc == HASH_TABLE_OK, "RLC NOT FOUND enb id %u rnti %i enb flag %u service id %u, session id %u",
+                 ctxt_pP->module_id,
+                 ctxt_pP->rnti,
                  ctxt_pP->enb_flag,
                  mbms_service_idP,
                  mbms_session_idP);
@@ -131,11 +121,11 @@ void config_req_rlc_um_asn1 (
   } else
 #endif
   {
-    key  = RLC_COLL_KEY_VALUE(ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, ctxt_pP->enb_flag, rb_idP, srb_flagP);
+    key  = RLC_COLL_KEY_VALUE(ctxt_pP->module_id, ctxt_pP->rnti, ctxt_pP->enb_flag, rb_idP, srb_flagP);
     h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
     AssertFatal (h_rc == HASH_TABLE_OK, "RLC NOT FOUND enb id %u ue id %i enb flag %u rb id %u, srb flag %u",
-                 ctxt_pP->enb_module_id,
-                 ctxt_pP->ue_module_id,
+                 ctxt_pP->module_id,
+                 ctxt_pP->rnti,
                  ctxt_pP->enb_flag,
                  rb_idP,
                  srb_flagP);
@@ -143,14 +133,9 @@ void config_req_rlc_um_asn1 (
   }
 
   //-----------------------------------------------------------------------------
-  LOG_D(RLC, "[FRAME %05d][%s][RRC][MOD %u/%u][][--- CONFIG_REQ timer_reordering=%dms sn_field_length=  --->][RLC_UM][MOD %u/%u][RB %u]    \n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
+  LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT"  CONFIG_REQ timer_reordering=%dms sn_field_length=   RB %u \n",
+        PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_p),
         (dl_rlc_pP && dl_rlc_pP->t_Reordering<31)?t_Reordering_tab[dl_rlc_pP->t_Reordering]:-1,
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
         rb_idP);
 
   rlc_um_init(ctxt_pP, rlc_p);
@@ -169,11 +154,8 @@ void config_req_rlc_um_asn1 (
         break;
 
       default:
-        LOG_E(RLC,"[FRAME %05d][%s][RLC_UM][MOD %u/%u][RB %u][CONFIGURE] INVALID Uplink sn_FieldLength %d, RLC NOT CONFIGURED\n",
-              ctxt_pP->frame,
-              (ctxt_pP->enb_flag) ? "eNB" : "UE",
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
+        LOG_E(RLC,PROTOCOL_RLC_UM_CTXT_FMT" [CONFIGURE] RB %u INVALID Uplink sn_FieldLength %d, RLC NOT CONFIGURED\n",
+              PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_p),
               rlc_p->rb_id,
               ul_rlc_pP->sn_FieldLength);
         return;
@@ -191,11 +173,8 @@ void config_req_rlc_um_asn1 (
         break;
 
       default:
-        LOG_E(RLC,"[FRAME %05d][%s][RLC_UM][MOD %u/%u][RB %u][CONFIGURE] INVALID Downlink sn_FieldLength %d, RLC NOT CONFIGURED\n",
-              ctxt_pP->frame,
-              (ctxt_pP->enb_flag) ? "eNB" : "UE",
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
+        LOG_E(RLC,PROTOCOL_RLC_UM_CTXT_FMT" [CONFIGURE] RB %u INVALID Downlink sn_FieldLength %d, RLC NOT CONFIGURED\n",
+              PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_p),
               rlc_p->rb_id,
               dl_rlc_pP->sn_FieldLength);
         return;
@@ -204,11 +183,8 @@ void config_req_rlc_um_asn1 (
       if (dl_rlc_pP->t_Reordering<T_Reordering_spare1) {
         t_Reordering = t_Reordering_tab[dl_rlc_pP->t_Reordering];
       } else {
-        LOG_E(RLC,"[FRAME %05d][%s][RLC_UM][MOD %u/%u][RB %u][CONFIGURE] INVALID T_Reordering %d, RLC NOT CONFIGURED\n",
-              ctxt_pP->frame,
-              (ctxt_pP->enb_flag) ? "eNB" : "UE",
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
+        LOG_E(RLC,PROTOCOL_RLC_UM_CTXT_FMT" [CONFIGURE] RB %u INVALID T_Reordering %d, RLC NOT CONFIGURED\n",
+              PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_p),
               rlc_p->rb_id,
               dl_rlc_pP->t_Reordering);
         return;
@@ -242,9 +218,11 @@ rlc_um_init (
   AssertFatal(rlc_pP, "Bad RLC UM pointer (NULL)");
 
   if (rlc_pP->initialized) {
-    LOG_D(RLC, "[FRAME XXXXX][RLC_UM][MOD XX][RB XX][INIT] ALREADY DONE, DOING NOTHING\n");
+    LOG_D(RLC,PROTOCOL_RLC_UM_CTXT_FMT" [INIT] ALREADY DONE, DOING NOTHING\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP));
   } else {
-    LOG_D(RLC, "[FRAME XXXXX][RLC_UM][MOD XX][RB XX][INIT] STATE VARIABLES, BUFFERS, LISTS\n");
+    LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" [INIT] STATE VARIABLES, BUFFERS, LISTS\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP));
     memset (rlc_pP, 0, sizeof (rlc_um_entity_t));
     // TX SIDE
     list_init (&rlc_pP->pdus_to_mac_layer, NULL);
@@ -351,11 +329,8 @@ void rlc_um_configure(
     rlc_pP->rx_um_window_size             = RLC_UM_WINDOW_SIZE_SN_5_BITS;
     rlc_pP->rx_header_min_length_in_bytes = 1;
   } else if (rx_sn_field_lengthP != 0) {
-    LOG_E(RLC, "[FRAME %05d][%s][RLC_UM][MOD %u/%u][RB %u][CONFIGURE] INVALID RX SN LENGTH %d BITS NOT IMPLEMENTED YET, RLC NOT CONFIGURED\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
+    LOG_E(RLC, PROTOCOL_RLC_UM_CTXT_FMT" [CONFIGURE] RB %u INVALID RX SN LENGTH %d BITS NOT IMPLEMENTED YET, RLC NOT CONFIGURED\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP),
           rlc_pP->rb_id,
           rx_sn_field_lengthP);
     return;
@@ -372,11 +347,8 @@ void rlc_um_configure(
     rlc_pP->tx_um_window_size             = RLC_UM_WINDOW_SIZE_SN_5_BITS;
     rlc_pP->tx_header_min_length_in_bytes = 1;
   } else if (tx_sn_field_lengthP != 0) {
-    LOG_E(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02d/%02][RB %u][CONFIGURE] INVALID RX SN LENGTH %d BITS NOT IMPLEMENTED YET, RLC NOT CONFIGURED\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
+    LOG_E(RLC, PROTOCOL_RLC_UM_CTXT_FMT" [CONFIGURE] RB %u INVALID RX SN LENGTH %d BITS NOT IMPLEMENTED YET, RLC NOT CONFIGURED\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP),
           rlc_pP->rb_id,
           tx_sn_field_lengthP);
     return;
@@ -407,11 +379,8 @@ void rlc_um_set_debug_infos(
   const rb_id_t          rb_idP)
 //-----------------------------------------------------------------------------
 {
-  LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][SET DEBUG INFOS] enb_module_id %u ue_module_id %u rb_id %d srb_flag %d\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
+  LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" [SET DEBUG INFOS] rb_id %d srb_flag %d\n",
+        PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP),
         rb_idP,
         srb_flagP);
   rlc_pP->rb_id         = rb_idP;

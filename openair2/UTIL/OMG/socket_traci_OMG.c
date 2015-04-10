@@ -196,8 +196,6 @@ storage * receiveExact()
   storage* temp = writePacket(buf, NN);
   free( buf );
   return temp;
-  //return writePacket(buf, NN);
-
 }
 
 

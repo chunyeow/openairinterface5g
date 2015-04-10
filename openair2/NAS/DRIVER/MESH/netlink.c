@@ -52,7 +52,7 @@
 //#define NETLINK_DEBUG 1
 
 
-#define NAS_NETLINK_ID 31
+#define OAI_IP_DRIVER_NETLINK_ID 31
 #define NL_DEST_PID 1
 
 
@@ -113,7 +113,7 @@ int nas_netlink_init()
 
   nas_nl_sk = netlink_kernel_create(
                 &init_net,
-                NAS_NETLINK_ID,
+                OAI_IP_DRIVER_NETLINK_ID,
 # if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
                 THIS_MODULE,
 # endif
@@ -121,7 +121,7 @@ int nas_netlink_init()
 #else /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0) */
   nas_nl_sk = netlink_kernel_create(
                 &init_net,
-                NAS_NETLINK_ID,
+                OAI_IP_DRIVER_NETLINK_ID,
                 0,
                 nas_nl_data_ready,
                 &nasmesh_mutex, // NULL
@@ -185,9 +185,9 @@ int nas_netlink_send(unsigned char *data,unsigned int len)
 #endif
 
 #ifdef NETLINK_DEBUG
-  printk("[NAS][NETLINK] In nas_netlink_send, nl_skb %p, nl_sk %x, nlh %p, nlh->nlmsg_len %d (NAS_NETLINK_ID %d)\n",
+  printk("[NAS][NETLINK] In nas_netlink_send, nl_skb %p, nl_sk %x, nlh %p, nlh->nlmsg_len %d (OAI_IP_DRIVER_NETLINK_ID %d)\n",
          nl_skb,nas_nl_sk,nlh,nlh->nlmsg_len,
-         NAS_NETLINK_ID);
+         OAI_IP_DRIVER_NETLINK_ID);
 #endif //DEBUG_NETLINK
 
   if (nas_nl_sk) {

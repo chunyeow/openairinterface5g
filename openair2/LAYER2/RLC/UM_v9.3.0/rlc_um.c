@@ -43,16 +43,13 @@
 #include "mac_primitives.h"
 #include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
+#ifdef MESSAGE_CHART_GENERATOR
+#include "msc.h"
+#endif
 
 
 #include "rlc_um_very_simple_test.h"
 
-//#define DEBUG_RLC_UM_TX_STATUS 1
-
-
-#ifdef TRACE_RLC_UM_PDU
-char  message_string[10000];
-#endif
 //-----------------------------------------------------------------------------
 void rlc_um_stat_req     (rlc_um_entity_t *rlc_pP,
                           unsigned int* stat_tx_pdcp_sdu,
@@ -173,13 +170,8 @@ rlc_um_get_pdus (const protocol_ctxt_t* const ctxt_pP, void *argP)
     break;
 
   default:
-    LOG_E(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_DATA_REQ UNKNOWN PROTOCOL STATE %02X hex\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          (rlc_p->is_data_plane) ? "DRB" : "SRB",
-          rlc_p->rb_id,
+    LOG_E(RLC, PROTOCOL_RLC_UM_CTXT_FMT" MAC_DATA_REQ UNKNOWN PROTOCOL STATE %02X hex\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_p),
           rlc_p->protocol_state);
   }
 }
@@ -190,15 +182,19 @@ rlc_um_rx (const protocol_ctxt_t* const ctxt_pP, void *argP, struct mac_data_ind
 {
   //-----------------------------------------------------------------------------
   rlc_um_entity_t    *l_rlc_p = (rlc_um_entity_t *) argP;
-#ifdef TRACE_RLC_UM_PDU
+#if defined(TRACE_RLC_UM_PDU) || defined(MESSAGE_CHART_GENERATOR)
+  char  message_string[10000];
   mem_block_t        *tb_p;
   int16_t               tb_size_in_bytes;
   size_t              message_string_size = 0;
+  rlc_um_pdu_info_t   pdu_info;
+  int index;
+#endif
+#if defined(TRACE_RLC_UM_PDU)
+  int                 octet_index;
 #   if defined(ENABLE_ITTI)
   MessageDef         *msg_p;
 #   endif
-  rlc_um_pdu_info_t   pdu_info;
-  int                 octet_index, index;
 #endif
 
   switch (l_rlc_p->protocol_state) {
@@ -211,33 +207,45 @@ rlc_um_rx (const protocol_ctxt_t* const ctxt_pP, void *argP, struct mac_data_ind
     // establishment, the RLC entity:
     //   - is created; and
     //   - enters the DATA_TRANSFER_READY state.
-    LOG_N(RLC, "[RLC_UM][MOD %02u/%02u] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", ctxt_pP->enb_module_id, ctxt_pP->ue_module_id);
+    LOG_N(RLC, PROTOCOL_RLC_UM_CTXT_FMT" ERROR MAC_DATA_IND IN RLC_NULL_STATE\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,l_rlc_p));
+#if defined(MESSAGE_CHART_GENERATOR)
 
-    /*if (data_indP.data.nb_elements > 0) {
-        LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, ctxt_pP->frame, data_indP.data.nb_elements);
-        rlc_p[l_rlc_p->module_id].m_mscgen_trace_length = sprintf(rlc_p[l_rlc_p->module_id].m_mscgen_trace, "[MSC_MSG][FRAME %05d][MAC_%s][MOD %02d][][--- MAC_DATA_IND/ %d TB(s) ",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB":"UE",
-            l_rlc_p->module_id,
-            data_indP.data.nb_elements);
+    if (data_indP.data.nb_elements > 0) {
+      tb_p = data_indP.data.head;
 
-        tb = data_indP.data.head;
-        while (tb != NULL) {
-            rlc_p[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc_p[l_rlc_p->module_id].m_mscgen_trace[rlc_p[l_rlc_p->module_id].m_mscgen_trace_length], " SN %d %c%c%c %d Bytes ",
-                                                                (((struct mac_tb_ind *) (tb->data))->data_ptr[1]) +  (((uint16_t)((((struct mac_tb_ind *) (tb->data))->data_ptr[0]) & 0x03)) << 8),
-                                                                (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x10) ?  '}':'{',
-                                                                (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x08) ?  '{':'}',
-                                                                (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x04) ?  'E':'_',
-                                                                ((struct mac_tb_ind *) (tb->data))->size);
-            tb = tb->next;
+      while (tb_p != NULL) {
+        tb_size_in_bytes   = ((struct mac_tb_ind*) (tb_p->data))->size;
+        rlc_um_get_pdu_infos(ctxt_pP,l_rlc_p,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_ind*) (tb_p->data))->data_ptr, tb_size_in_bytes, &pdu_info, l_rlc_p->rx_sn_length);
+        message_string_size = 0;
+        message_string_size += sprintf(&message_string[message_string_size],
+                                       MSC_AS_TIME_FMT" "PROTOCOL_RLC_UM_MSC_FMT"DATA SN %u size %u FI %u",
+                                       MSC_AS_TIME_ARGS(ctxt_pP),
+                                       PROTOCOL_RLC_UM_MSC_ARGS(ctxt_pP, l_rlc_p),
+                                       pdu_info.sn,
+                                       tb_size_in_bytes,
+                                       pdu_info.fi);
+
+        if (pdu_info.e) {
+          message_string_size += sprintf(&message_string[message_string_size], "| HE:");
+
+          for (index=0; index < pdu_info.num_li; index++) {
+            message_string_size += sprintf(&message_string[message_string_size], " LI  %u\n", pdu_info.li_list[index]);
         }
-        rlc_p[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc_p[l_rlc_p->module_id].m_mscgen_trace[rlc_p[l_rlc_p->module_id].m_mscgen_trace_length], " DROPPED RLC NULL STATE ---X][RLC_UM][MOD %02d][RB %02d]\n",
-            l_rlc_p->module_id,
-            l_rlc_p->rb_id);
+        }
 
-        rlc_p[l_rlc_p->module_id].m_mscgen_trace[rlc_p[l_rlc_p->module_id].m_mscgen_trace_length] = 0;
-        LOG_D(RLC, "%s", rlc_p[l_rlc_p->module_id].m_mscgen_trace);
-    }*/
+        msc_log_rx_discarded_message(
+          (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+          (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_UE:MSC_RLC_ENB,
+          (const char*)pdu_info.payload,
+          tb_size_in_bytes,
+          message_string);
+
+        tb_p = tb_p->next;
+      }
+    }
+
+#endif
     list_free (&data_indP.data);
     break;
 
@@ -259,24 +267,51 @@ rlc_um_rx (const protocol_ctxt_t* const ctxt_pP, void *argP, struct mac_data_ind
     // - enters the LOCAL_SUSPEND state.
     data_indP.tb_size = data_indP.tb_size >> 3;
 
-#ifdef TRACE_RLC_UM_PDU
+#if defined(TRACE_RLC_UM_PDU) || defined(MESSAGE_CHART_GENERATOR)
 
     if (data_indP.data.nb_elements > 0) {
-      LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_DATA_IND %d TBs\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (l_rlc_p->is_data_plane) ? "DRB" : "SRB",
-            l_rlc_p->rb_id,
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" MAC_DATA_IND %d TBs\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,l_rlc_p),
             data_indP.data.nb_elements);
 
       tb_p = data_indP.data.head;
 
       while (tb_p != NULL) {
         tb_size_in_bytes   = ((struct mac_tb_ind *) (tb_p->data))->size;
+        rlc_um_get_pdu_infos(ctxt_pP,
+                             l_rlc_p,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_ind*) (tb_p->data))->data_ptr,
+                             tb_size_in_bytes,
+                             &pdu_info,
+                             l_rlc_p->rx_sn_length);
 
-        rlc_um_get_pdu_infos(ctxt_pP->frame,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_ind *) (tb_p->data))->data_ptr, tb_size_in_bytes, &pdu_info, l_rlc_p->rx_sn_length);
+#if defined(MESSAGE_CHART_GENERATOR)
+        message_string_size = 0;
+        message_string_size += sprintf(&message_string[message_string_size],
+                                       MSC_AS_TIME_FMT" "PROTOCOL_RLC_UM_MSC_FMT"DATA SN %u size %u FI %u",
+                                       MSC_AS_TIME_ARGS(ctxt_pP),
+                                       PROTOCOL_RLC_UM_MSC_ARGS(ctxt_pP, l_rlc_p),
+                                       pdu_info.sn,
+                                       tb_size_in_bytes,
+                                       pdu_info.fi);
+
+        if (pdu_info.e) {
+          message_string_size += sprintf(&message_string[message_string_size], "| HE:");
+
+          for (index=0; index < pdu_info.num_li; index++) {
+            message_string_size += sprintf(&message_string[message_string_size], " LI  %u\n", pdu_info.li_list[index]);
+          }
+        }
+
+        msc_log_rx_message(
+          (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+          (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_UE:MSC_RLC_ENB,
+          (char*)pdu_info.payload,
+          tb_size_in_bytes,
+          message_string);
+
+#endif
+#if defined(TRACE_RLC_UM_PDU)
+        message_string_size = 0;
         message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
         message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", tb_size_in_bytes);
         message_string_size += sprintf(&message_string[message_string_size], "Header size : %u\n", pdu_info.header_size);
@@ -333,15 +368,12 @@ rlc_um_rx (const protocol_ctxt_t* const ctxt_pP, void *argP, struct mac_data_ind
         msg_p->ittiMsg.rlc_um_data_pdu_ind.size = message_string_size;
         memcpy(&msg_p->ittiMsg.rlc_um_data_pdu_ind.text, message_string, message_string_size);
 
-        if (ctxt_pP->enb_flag) {
-          itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->enb_module_id, msg_p);
-        } else {
-          itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->ue_module_id + NB_eNB_INST, msg_p);
-        }
+        itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->instance, msg_p);
 
 # else
         LOG_T(RLC, "%s", message_string);
-# endif
+# endif // defined(ENABLE_ITTI)
+#endif // defined(TRACE_RLC_UM_PDU)
 
         tb_p = tb_p->next;
       }
@@ -368,13 +400,8 @@ rlc_um_rx (const protocol_ctxt_t* const ctxt_pP, void *argP, struct mac_data_ind
     // - stays in the LOCAL_SUSPEND state;
     // - modifies only the protocol parameters and timers as indicated by
     //   upper layers.
-    LOG_N(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] RLC_LOCAL_SUSPEND_STATE\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          (l_rlc_p->is_data_plane) ? "DRB" : "SRB",
-          l_rlc_p->rb_id);
+    LOG_N(RLC, PROTOCOL_RLC_UM_CTXT_FMT" RLC_LOCAL_SUSPEND_STATE\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,l_rlc_p));
     /*if (data_indP.data.nb_elements > 0) {
         LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, ctxt_pP->frame, data_indP.data.nb_elements);
         rlc_p[l_rlc_p->module_id].m_mscgen_trace_length = sprintf(rlc_p[l_rlc_p->module_id].m_mscgen_trace, "[MSC_MSG][FRAME %05d][MAC_%s][MOD %02d][][--- MAC_DATA_IND/ %d TB(s) ",
@@ -404,13 +431,8 @@ rlc_um_rx (const protocol_ctxt_t* const ctxt_pP, void *argP, struct mac_data_ind
     break;
 
   default:
-    LOG_E(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] TX UNKNOWN PROTOCOL STATE %02X hex\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          (l_rlc_p->is_data_plane) ? "DRB" : "SRB",
-          l_rlc_p->rb_id,
+    LOG_E(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TX UNKNOWN PROTOCOL STATE %02X hex\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,l_rlc_p),
           l_rlc_p->protocol_state);
   }
 }
@@ -434,9 +456,9 @@ rlc_um_mac_status_indication (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP
   status_resp.head_sdu_is_segmented            = 0;
 
   if (rlc_pP) {
-    status_resp.rlc_info.rlc_protocol_state      = ((rlc_um_entity_t *) rlc_pP)->protocol_state;
 
     rlc_p = (rlc_um_entity_t *) rlc_pP;
+    status_resp.rlc_info.rlc_protocol_state      = rlc_p->protocol_state;
     rlc_um_check_timer_dar_time_out(ctxt_pP, rlc_p);
 
     rlc_p->nb_bytes_requested_by_mac = tbs_sizeP;
@@ -469,38 +491,23 @@ rlc_um_mac_status_indication (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP
     //msg("[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_STATUS_INDICATION BO = %d\n", ((rlc_um_entity_t *) rlc_pP)->module_id, ((rlc_um_entity_t *) rlc_pP)->rb_id, status_resp.buffer_occupancy_in_bytes);
 
     status_resp.rlc_info.rlc_protocol_state = ((rlc_um_entity_t *) rlc_pP)->protocol_state;
-#ifdef DEBUG_RLC_UM_TX_STATUS
+#ifdef TRACE_RLC_UM_TX_STATUS
 
     if ((((rlc_um_entity_t *) rlc_pP)->rb_id > 0) && (status_resp.buffer_occupancy_in_bytes > 0)) {
-      LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_STATUS_INDICATION (DATA) %d bytes requested -> %d bytes available\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_p->is_data_plane) ? "DRB" : "SRB",
-            rlc_p->rb_id,
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" MAC_STATUS_INDICATION (DATA) %d bytes requested -> %d bytes available\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP),
             tbs_sizeP,
             status_resp.buffer_occupancy_in_bytes);
 
       if ((tx_statusP.tx_status == MAC_TX_STATUS_SUCCESSFUL) && (tx_statusP.no_pdu)) {
-        LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_STATUS_INDICATION  TX STATUS   SUCCESSFUL %d PDUs\n",
-              ctxt_pP->frame,
-              (ctxt_pP->enb_flag) ? "eNB" : "UE",
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
-              (rlc_p->is_data_plane) ? "DRB" : "SRB",
-              rlc_p->rb_id,
+        LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" MAC_STATUS_INDICATION  TX STATUS   SUCCESSFUL %d PDUs\n",
+              PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP),
               tx_statusP.no_pdu);
       }
 
       if ((tx_statusP.tx_status == MAC_TX_STATUS_UNSUCCESSFUL) && (tx_statusP.no_pdu)) {
-        LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_STATUS_INDICATION  TX STATUS UNSUCCESSFUL %d PDUs\n",
-              ctxt_pP->frame,
-              (ctxt_pP->enb_flag) ? "eNB" : "UE",
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
-              (rlc_p->is_data_plane) ? "DRB" : "SRB",
-              rlc_p->rb_id,
+        LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" MAC_STATUS_INDICATION  TX STATUS UNSUCCESSFUL %d PDUs\n",
+              PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP),
               tx_statusP.no_pdu);
       }
     }
@@ -521,7 +528,8 @@ rlc_um_mac_data_request (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP)
   struct mac_data_req data_req;
   int16_t               tb_size_in_bytes;
   mem_block_t        *tb_p;
-#ifdef TRACE_RLC_UM_PDU
+#if defined(TRACE_RLC_UM_PDU) || defined(MESSAGE_CHART_GENERATOR)
+  char  message_string[10000];
   size_t              message_string_size = 0;
 #   if defined(ENABLE_ITTI)
   MessageDef         *msg_p;
@@ -531,7 +539,7 @@ rlc_um_mac_data_request (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP)
 #endif
   rlc_um_entity_t *l_rlc_p = (rlc_um_entity_t *) rlc_pP;
 
-  rlc_um_get_pdus (ctxt_pP, rlc_pP);
+  rlc_um_get_pdus(ctxt_pP, l_rlc_p);
 
   list_init (&data_req.data, NULL);
   list_add_list (&l_rlc_p->pdus_to_mac_layer, &data_req.data);
@@ -551,21 +559,44 @@ rlc_um_mac_data_request (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP)
     while (tb_p != NULL) {
       tb_size_in_bytes   = ((struct mac_tb_req *) (tb_p->data))->tb_size;
 
-      LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] MAC_DATA_REQUEST  TB SIZE %u\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (l_rlc_p->is_data_plane) ? "DRB" : "SRB",
-            l_rlc_p->rb_id,
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" MAC_DATA_REQUEST  TB SIZE %u\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,l_rlc_p),
             ((struct mac_tb_req *) (tb_p->data))->tb_size);
       l_rlc_p->stat_tx_data_pdu   += 1;
       l_rlc_p->stat_tx_data_bytes += tb_size_in_bytes;
 
       AssertFatal( tb_size_in_bytes > 0 , "RLC UM PDU LENGTH %d", tb_size_in_bytes);
+#if defined(TRACE_RLC_UM_PDU) || defined(MESSAGE_CHART_GENERATOR)
+      rlc_um_get_pdu_infos(ctxt_pP, l_rlc_p,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_req*) (tb_p->data))->data_ptr, tb_size_in_bytes, &pdu_info, l_rlc_p->rx_sn_length);
+#endif
+#ifdef MESSAGE_CHART_GENERATOR
+      message_string_size = 0;
+      message_string_size += sprintf(&message_string[message_string_size],
+                                     MSC_AS_TIME_FMT" "PROTOCOL_RLC_UM_MSC_FMT" DATA SN %u size %u FI %u",
+                                     MSC_AS_TIME_ARGS(ctxt_pP),
+                                     PROTOCOL_RLC_UM_MSC_ARGS(ctxt_pP, l_rlc_p),
+                                     pdu_info.sn,
+                                     tb_size_in_bytes,
+                                     pdu_info.fi);
 
+      if (pdu_info.e) {
+        message_string_size += sprintf(&message_string[message_string_size], "|HE:");
+
+        for (index=0; index < pdu_info.num_li; index++) {
+          message_string_size += sprintf(&message_string[message_string_size], " LI %u\n", pdu_info.li_list[index]);
+        }
+      }
+
+      msc_log_tx_message(
+        (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+        (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_UE:MSC_RLC_ENB,
+        (const char*)pdu_info.payload,
+        pdu_info.payload_size,
+        message_string);
+
+#endif
 #ifdef TRACE_RLC_UM_PDU
-      rlc_um_get_pdu_infos(ctxt_pP->frame,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_req *) (tb_p->data))->data_ptr, tb_size_in_bytes, &pdu_info, l_rlc_p->rx_sn_length);
+      message_string_size = 0;
       message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
       message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", tb_size_in_bytes);
       message_string_size += sprintf(&message_string[message_string_size], "Header size : %u\n", pdu_info.header_size);
@@ -622,11 +653,7 @@ rlc_um_mac_data_request (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP)
       msg_p->ittiMsg.rlc_um_data_pdu_req.size = message_string_size;
       memcpy(&msg_p->ittiMsg.rlc_um_data_pdu_req.text, message_string, message_string_size);
 
-      if (ctxt_pP->enb_flag) {
-        itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->enb_module_id, msg_p);
-      } else {
-        itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->ue_module_id + NB_eNB_INST, msg_p);
-      }
+      itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->instance, msg_p);
 
 # else
       LOG_T(RLC, "%s", message_string);
@@ -659,22 +686,19 @@ rlc_um_data_req (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP, mem_block_t
   unsigned long int rlc_um_time_us;
   int min, sec, usec;
 #endif
+#if defined(TRACE_RLC_UM_PDU)
 #if defined(ENABLE_ITTI)
-  char                 message_string[7000];
-  size_t               message_string_size = 0;
   MessageDef          *msg_p;
-  int                  octet_index, index;
+#   endif
   uint16_t             data_offset;
   uint16_t             data_size;
+  size_t               message_string_size = 0;
+  int                  octet_index, index;
+  char                 message_string[7000];
 #endif
 
-  LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][%s %02d] RLC_UM_DATA_REQ size %d Bytes, BO %d , NB SDU %d\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        (rlc_p->is_data_plane) ? "DRB" : "SRB",
-        rlc_p->rb_id,
+  LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" RLC_UM_DATA_REQ size %d Bytes, BO %d , NB SDU %d\n",
+        PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_p),
         ((struct rlc_um_data_req *) (sdu_pP->data))->data_size,
         rlc_p->buffer_occupancy,
         rlc_p->input_sdus.nb_elements);
@@ -696,6 +720,17 @@ rlc_um_data_req (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP, mem_block_t
 
   rlc_p->stat_tx_pdcp_sdu   += 1;
   rlc_p->stat_tx_pdcp_bytes += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
+#ifdef MESSAGE_CHART_GENERATOR
+  msc_log_rx_message(
+    (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+    (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+    (const char *)((struct rlc_um_tx_sdu_management*) (sdu_pP->data))->first_byte,
+    ((struct rlc_um_tx_sdu_management*) (sdu_pP->data))->sdu_size,
+    MSC_AS_TIME_FMT" "PROTOCOL_RLC_UM_MSC_FMT" DATA-REQ size %u",
+    MSC_AS_TIME_ARGS(ctxt_pP),
+    PROTOCOL_RLC_UM_MSC_ARGS(ctxt_pP, rlc_p),
+    ((struct rlc_um_tx_sdu_management*) (sdu_pP->data))->sdu_size);
+#endif
 #   if defined(TRACE_RLC_UM_PDU)
   data_offset = sizeof (struct rlc_um_data_req_alloc);
   data_size   = ((struct rlc_um_tx_sdu_management *)(sdu_pP->data))->sdu_size;
@@ -739,11 +774,7 @@ rlc_um_data_req (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP, mem_block_t
   msg_p->ittiMsg.rlc_um_sdu_req.size = message_string_size;
   memcpy(&msg_p->ittiMsg.rlc_um_sdu_req.text, message_string, message_string_size);
 
-  if (ctxt_pP->enb_flag) {
-    itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->enb_module_id, msg_p);
-  } else {
-    itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->ue_module_id + NB_eNB_INST, msg_p);
-  }
+  itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->instance, msg_p);
 
 #else
   LOG_T(RLC, "%s", message_string);

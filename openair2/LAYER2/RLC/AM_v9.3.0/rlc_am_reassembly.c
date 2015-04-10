@@ -39,6 +39,9 @@
 #include "list.h"
 #include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
+#ifdef MESSAGE_CHART_GENERATOR
+#include "msc.h"
+#endif
 
 //#define TRACE_RLC_AM_RX_DECODE
 //-----------------------------------------------------------------------------
@@ -59,12 +62,8 @@ rlc_am_reassembly (
   const int32_t lengthP)
 //-----------------------------------------------------------------------------
 {
-  LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][REASSEMBLY PAYLOAD] reassembly()  %d bytes\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        rlc_pP->rb_id,
+  LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[REASSEMBLY PAYLOAD] reassembly()  %d bytes\n",
+        PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
         lengthP);
 
   if (rlc_pP->output_sdu_in_construction == NULL) {
@@ -78,40 +77,23 @@ rlc_am_reassembly (
     // check if no overflow in size
     if ((rlc_pP->output_sdu_size_to_write + lengthP) <= RLC_SDU_MAX_SIZE) {
       memcpy (&rlc_pP->output_sdu_in_construction->data[rlc_pP->output_sdu_size_to_write], src_pP, lengthP);
-
       rlc_pP->output_sdu_size_to_write += lengthP;
     } else {
-      LOG_E(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][REASSEMBLY PAYLOAD] ERROR  SDU SIZE OVERFLOW SDU GARBAGED\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id);
+      LOG_E(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[REASSEMBLY PAYLOAD] ERROR  SDU SIZE OVERFLOW SDU GARBAGED\n",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
 #if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
-      AssertFatal(0, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] RLC_AM_DATA_IND, SDU SIZE OVERFLOW SDU GARBAGED\n",
-                  ctxt_pP->frame,
-                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                  ctxt_pP->enb_module_id,
-                  ctxt_pP->ue_module_id,
-                  rlc_pP->rb_id);
+      AssertFatal(0, PROTOCOL_RLC_AM_CTXT_FMT" RLC_AM_DATA_IND, SDU SIZE OVERFLOW SDU GARBAGED\n",
+                  PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
 #endif
       // erase  SDU
       rlc_pP->output_sdu_size_to_write = 0;
     }
   } else {
-    LOG_E(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][REASSEMBLY PAYLOAD] ERROR  OUTPUT SDU IS NULL\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rlc_pP->rb_id);
+    LOG_E(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[REASSEMBLY PAYLOAD] ERROR  OUTPUT SDU IS NULL\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
 #if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
-    AssertFatal(0, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] RLC_AM_DATA_IND, SDU DROPPED, OUT OF MEMORY\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                rlc_pP->rb_id);
+    AssertFatal(0, PROTOCOL_RLC_AM_CTXT_FMT" RLC_AM_DATA_IND, SDU DROPPED, OUT OF MEMORY\n",
+                PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
 #endif
   }
 }
@@ -125,17 +107,15 @@ rlc_am_send_sdu (
 #   if defined(TRACE_RLC_UM_PDU)
   char                 message_string[7000];
   size_t               message_string_size = 0;
+#if defined(ENABLE_ITTI)
   MessageDef          *msg_p;
+#endif
   int                  octet_index, index;
 #endif
 
   if ((rlc_pP->output_sdu_in_construction)) {
-    LOG_D(RLC, "\n\n\n[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND_SDU] %d bytes sdu %p\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND_SDU] %d bytes sdu %p\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           rlc_pP->output_sdu_size_to_write,
           rlc_pP->output_sdu_in_construction);
 
@@ -186,6 +166,18 @@ rlc_am_send_sdu (
 
       message_string_size += sprintf(&message_string[message_string_size], " |\n");
 
+#ifdef MESSAGE_CHART_GENERATOR
+      msc_log_tx_message(
+        (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+        (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+        (const char*)(rlc_pP->output_sdu_in_construction->data),
+        rlc_pP->output_sdu_size_to_write,
+        MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" DATA-IND size %u",
+        MSC_AS_TIME_ARGS(ctxt_pP),
+        PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP,rlc_pP),
+        rlc_pP->output_sdu_size_to_write
+      );
+#endif
 #      if defined(ENABLE_ITTI)
       msg_p = itti_alloc_new_message_sized (ctxt_pP->enb_flag > 0 ? TASK_RLC_ENB:TASK_RLC_UE ,
                                             RLC_AM_SDU_IND,
@@ -193,41 +185,34 @@ rlc_am_send_sdu (
       msg_p->ittiMsg.rlc_am_sdu_ind.size = message_string_size;
       memcpy(&msg_p->ittiMsg.rlc_am_sdu_ind.text, message_string, message_string_size);
 
-      if (ctxt_pP->enb_flag) {
-        itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->enb_module_id, msg_p);
-      } else {
-        itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->ue_module_id + NB_eNB_INST, msg_p);
-      }
+      itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->instance, msg_p);
 
 #      else
       LOG_T(RLC, "%s", message_string);
 #      endif
 #   endif
+#if !defined(ENABLE_ITTI)
+      pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
+#endif
       rlc_data_ind (ctxt_pP,
                     BOOL_NOT(rlc_pP->is_data_plane),
                     MBMS_FLAG_NO,
                     rlc_pP->rb_id,
                     rlc_pP->output_sdu_size_to_write,
                     rlc_pP->output_sdu_in_construction);
+#if !defined(ENABLE_ITTI)
+      pthread_mutex_lock(&rlc_pP->lock_input_sdus);
+#endif
 #endif
       rlc_pP->output_sdu_in_construction = NULL;
     } else {
-      LOG_E(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND_SDU] ERROR SIZE <= 0 ... DO NOTHING, SET SDU SIZE TO 0\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id);
+      LOG_E(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND_SDU] ERROR SIZE <= 0 ... DO NOTHING, SET SDU SIZE TO 0\n",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
       //msg("[RLC_AM][MOD %d] Freeing mem_block ...\n", rlc_pP->module_id);
       //free_mem_block (rlc_pP->output_sdu_in_construction);
       AssertFatal(3==4,
-                  "[FRAME %5u][%s][RLC_AM][MOD %u/%u][%s %u] SEND SDU REQUESTED %d bytes",
-                  ctxt_pP->frame,
-                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                  ctxt_pP->enb_module_id,
-                  ctxt_pP->ue_module_id,
-                  (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                  rlc_pP->rb_id,
+                  PROTOCOL_RLC_AM_CTXT_FMT" SEND SDU REQUESTED %d bytes",
+                  PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                   rlc_pP->output_sdu_size_to_write);
     }
 
@@ -245,12 +230,8 @@ rlc_am_reassemble_pdu(
   int i,j;
 
   rlc_am_pdu_info_t* pdu_info        = &((rlc_am_rx_pdu_management_t*)(tb_pP->data))->pdu_info;
-  LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][REASSEMBLY PDU] TRY REASSEMBLY PDU SN=%03d\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        rlc_pP->rb_id,
+  LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[REASSEMBLY PDU] TRY REASSEMBLY PDU SN=%03d\n",
+        PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
         pdu_info->sn);
 #ifdef TRACE_RLC_AM_RX_DECODE
   rlc_am_display_data_pdu_infos(ctxt_pP, rlc_pP, pdu_info);
@@ -259,12 +240,8 @@ rlc_am_reassemble_pdu(
   if (pdu_info->e == RLC_E_FIXED_PART_DATA_FIELD_FOLLOW) {
     switch (pdu_info->fi) {
     case RLC_FI_1ST_BYTE_DATA_IS_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_LAST_BYTE_SDU:
-      LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][REASSEMBLY PDU] TRY REASSEMBLY PDU NO E_LI FI=11 (00)\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id);
+      LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[REASSEMBLY PDU] TRY REASSEMBLY PDU NO E_LI FI=11 (00)\n",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
       // one complete SDU
       rlc_am_send_sdu(ctxt_pP, rlc_pP); // may be not necessary
       rlc_am_reassembly (ctxt_pP, rlc_pP, pdu_info->payload, pdu_info->payload_size);
@@ -273,12 +250,8 @@ rlc_am_reassemble_pdu(
       break;
 
     case RLC_FI_1ST_BYTE_DATA_IS_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_NOT_LAST_BYTE_SDU:
-      LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][REASSEMBLY PDU] TRY REASSEMBLY PDU NO E_LI FI=10 (01)\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id);
+      LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[REASSEMBLY PDU] TRY REASSEMBLY PDU NO E_LI FI=10 (01)\n",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
       // one beginning segment of SDU in PDU
       rlc_am_send_sdu(ctxt_pP, rlc_pP); // may be not necessary
       rlc_am_reassembly (ctxt_pP, rlc_pP,pdu_info->payload, pdu_info->payload_size);
@@ -286,12 +259,8 @@ rlc_am_reassemble_pdu(
       break;
 
     case RLC_FI_1ST_BYTE_DATA_IS_NOT_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_LAST_BYTE_SDU:
-      LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][REASSEMBLY PDU] TRY REASSEMBLY PDU NO E_LI FI=01 (10)\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id);
+      LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[REASSEMBLY PDU] TRY REASSEMBLY PDU NO E_LI FI=01 (10)\n",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
       // one last segment of SDU
       //if (rlc_pP->reassembly_missing_sn_detected == 0) {
       rlc_am_reassembly (ctxt_pP, rlc_pP, pdu_info->payload, pdu_info->payload_size);
@@ -301,12 +270,8 @@ rlc_am_reassemble_pdu(
       break;
 
     case RLC_FI_1ST_BYTE_DATA_IS_NOT_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_NOT_LAST_BYTE_SDU:
-      LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][REASSEMBLY PDU] TRY REASSEMBLY PDU NO E_LI FI=00 (11)\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id);
+      LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[REASSEMBLY PDU] TRY REASSEMBLY PDU NO E_LI FI=00 (11)\n",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
       //if (rlc_pP->reassembly_missing_sn_detected == 0) {
       // one whole segment of SDU in PDU
       rlc_am_reassembly (ctxt_pP, rlc_pP, pdu_info->payload, pdu_info->payload_size);
@@ -324,12 +289,8 @@ rlc_am_reassemble_pdu(
   } else {
     switch (pdu_info->fi) {
     case RLC_FI_1ST_BYTE_DATA_IS_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_LAST_BYTE_SDU:
-      LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][REASSEMBLY PDU] TRY REASSEMBLY PDU FI=11 (00) Li=",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id);
+      LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[REASSEMBLY PDU] TRY REASSEMBLY PDU FI=11 (00) Li=",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
 
       for (i=0; i < pdu_info->num_li; i++) {
         LOG_D(RLC, "%d ",pdu_info->li_list[i]);
@@ -357,12 +318,8 @@ rlc_am_reassemble_pdu(
       break;
 
     case RLC_FI_1ST_BYTE_DATA_IS_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_NOT_LAST_BYTE_SDU:
-      LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][REASSEMBLY PDU] TRY REASSEMBLY PDU FI=10 (01) Li=",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id);
+      LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[REASSEMBLY PDU] TRY REASSEMBLY PDU FI=10 (01) Li=",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
 
       for (i=0; i < pdu_info->num_li; i++) {
         LOG_D(RLC, "%d ",pdu_info->li_list[i]);
@@ -389,12 +346,8 @@ rlc_am_reassemble_pdu(
       break;
 
     case RLC_FI_1ST_BYTE_DATA_IS_NOT_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_LAST_BYTE_SDU:
-      LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][REASSEMBLY PDU] TRY REASSEMBLY PDU FI=01 (10) Li=",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id);
+      LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[REASSEMBLY PDU] TRY REASSEMBLY PDU FI=01 (10) Li=",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
 
       for (i=0; i < pdu_info->num_li; i++) {
         LOG_D(RLC, "%d ",pdu_info->li_list[i]);
@@ -421,12 +374,8 @@ rlc_am_reassemble_pdu(
       break;
 
     case RLC_FI_1ST_BYTE_DATA_IS_NOT_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_NOT_LAST_BYTE_SDU:
-      LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][REASSEMBLY PDU] TRY REASSEMBLY PDU FI=00 (11) Li=",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id);
+      LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[REASSEMBLY PDU] TRY REASSEMBLY PDU FI=00 (11) Li=",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
 
       for (i=0; i < pdu_info->num_li; i++) {
         LOG_D(RLC, "%d ",pdu_info->li_list[i]);

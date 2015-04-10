@@ -100,9 +100,9 @@ void* rt_realloc(void* oldptr, int size)
 
   printk("rt_mem.c: reallocating %p with %d bytes\n",oldptr,size);
 
-  if (oldptr==NULL)
+  if (oldptr==NULL) {
     newptr = rt_malloc(size);
-  else {
+  } else {
     newptr = rt_malloc(size);
     memcpy(newptr,oldptr,size);
     rt_free(oldptr);

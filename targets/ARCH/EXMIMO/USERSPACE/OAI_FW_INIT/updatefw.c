@@ -86,8 +86,7 @@ struct option updatefw_longopts[LONGOPTIONS_NB+1] = {
 #define TRUE  1
 #define FALSE 0
 
-void show_usage(char* pgname)
-{
+void show_usage(char* pgname) {
   unsigned int i;
   fprintf(stderr, "  %s : Tool to update firmware of Cardbus-MIMO-1/Leon3 card through the PCI interface,\n", pgname);
   fprintf(stderr, "    ");
@@ -152,8 +151,7 @@ void show_usage(char* pgname)
   fprintf(stderr, "  [-h|--help]          Displays this help.\n");
 }
 
-int get_elf_header(Elf32_Ehdr* p_Elf32_hdr, FILE* p_file)
-{
+int get_elf_header(Elf32_Ehdr* p_Elf32_hdr, FILE* p_file) {
   int nbread;
   nbread = fread(p_Elf32_hdr, sizeof(elf_Ehdr), 1, p_file);
 
@@ -183,8 +181,7 @@ int get_elf_header(Elf32_Ehdr* p_Elf32_hdr, FILE* p_file)
          && (p_Elf32_hdr->e_ident[EI_VERSION] == EV_CURRENT);
 }
 
-int get_elf_section_header(Elf32_Shdr* p_Elf32_Shdr, FILE* p_file, unsigned int section_ndx)
-{
+int get_elf_section_header(Elf32_Shdr* p_Elf32_Shdr, FILE* p_file, unsigned int section_ndx) {
   int nbread;
   /* retrieve the position of the section header table */
   fseek(p_file, Shdr_pos + (section_ndx * elf_Ehdr.e_shentsize), 0);
@@ -213,8 +210,7 @@ int get_elf_section_header(Elf32_Shdr* p_Elf32_Shdr, FILE* p_file, unsigned int 
   return nbread;
 }
 
-void find_and_transfer_section(char* section_name, unsigned int verboselevel)
-{
+void find_and_transfer_section(char* section_name, unsigned int verboselevel) {
   /* Interface with driver */
   int ioctlretval;
   int ifile;
@@ -310,8 +306,7 @@ void find_and_transfer_section(char* section_name, unsigned int verboselevel)
   } /* for secnb */
 }
 
-void find_and_clear_section_bss(unsigned int verboselevel)
-{
+void find_and_clear_section_bss(unsigned int verboselevel) {
   /* Interface with driver */
   int ioctlretval;
   int ifile;
@@ -361,8 +356,7 @@ void find_and_clear_section_bss(unsigned int verboselevel)
   } /* for secnb */
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   /* Interface with driver */
   int ioctlretval;
   int ifile;

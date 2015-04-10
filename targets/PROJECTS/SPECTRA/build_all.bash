@@ -108,8 +108,8 @@ b2 --boost-root=$BOOST_ROOT linkflags=-lrt linkflags=-lpthread
 echo_success "\n###############################"
 echo_success "# COMPILE ITTI ANALYSER"
 echo_success "###############################"
-cd  $OPENAIR_HOME/common/utils/itti_analyzer
-if [ ! -f $OPENAIR_HOME/common/utils/itti_analyzer/Makefile ]
+cd  $OPENAIR_DIR/common/utils/itti_analyzer
+if [ ! -f $OPENAIR_DIR/common/utils/itti_analyzer/Makefile ]
     then
         autoreconf -i
         mkdir -m 777 objs

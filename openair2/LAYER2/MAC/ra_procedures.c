@@ -70,16 +70,17 @@ int8_t get_DELTA_PREAMBLE(module_id_t module_idP,int CC_id)
   uint8_t preambleformat;
 
   if (UE_mac_inst[module_idP].tdd_Config) { // TDD
-    if (prachConfigIndex < 20)
+    if (prachConfigIndex < 20) {
       preambleformat = 0;
-    else if (prachConfigIndex < 30)
+    } else if (prachConfigIndex < 30) {
       preambleformat = 1;
-    else if (prachConfigIndex < 40)
+    } else if (prachConfigIndex < 40) {
       preambleformat = 2;
-    else if (prachConfigIndex < 48)
+    } else if (prachConfigIndex < 48) {
       preambleformat = 3;
-    else
+    } else {
       preambleformat = 4;
+    }
   } else { // FDD
     preambleformat = prachConfigIndex>>2;
   }
@@ -127,8 +128,9 @@ void get_prach_resources(module_id_t module_idP,
     return;
   }
 
-  if (UE_mac_inst[module_idP].radioResourceConfigCommon)
+  if (UE_mac_inst[module_idP].radioResourceConfigCommon) {
     rach_ConfigCommon = &UE_mac_inst[module_idP].radioResourceConfigCommon->rach_ConfigCommon;
+  }
   else {
     LOG_E(MAC,"[UE %d] FATAL  radioResourceConfigCommon is NULL !!!\n",module_idP);
     mac_xface->macphy_exit("MAC FATAL  radioResourceConfigCommon is NULL");
@@ -148,8 +150,9 @@ void get_prach_resources(module_id_t module_idP,
 
   } else {
     if (rach_ConfigCommon->preambleInfo.preamblesGroupAConfig->sizeOfRA_PreamblesGroupA ==
-        rach_ConfigCommon->preambleInfo.numberOfRA_Preambles)
+        rach_ConfigCommon->preambleInfo.numberOfRA_Preambles) {
       noGroupB = 1;
+    }
   }
 
   if (first_Msg3 == 1) {
@@ -176,10 +179,11 @@ void get_prach_resources(module_id_t module_idP,
     UE_mac_inst[module_idP].RA_prach_resources.ra_PREAMBLE_RECEIVED_TARGET_POWER = get_Po_NOMINAL_PUSCH(module_idP,CC_id);
   } else { // Msg3 is being retransmitted
     if (UE_mac_inst[module_idP].RA_usedGroupA == 1) {
-      if (rach_ConfigCommon->preambleInfo.preamblesGroupAConfig)
+      if (rach_ConfigCommon->preambleInfo.preamblesGroupAConfig) {
         UE_mac_inst[module_idP].RA_prach_resources.ra_PreambleIndex  = (taus())%rach_ConfigCommon->preambleInfo.preamblesGroupAConfig->sizeOfRA_PreamblesGroupA;
-      else
+      } else {
         UE_mac_inst[module_idP].RA_prach_resources.ra_PreambleIndex  = (taus())&0x3f;
+      }
 
       UE_mac_inst[module_idP].RA_prach_resources.ra_RACH_MaskIndex = 0;
     } else {
@@ -195,8 +199,9 @@ void get_prach_resources(module_id_t module_idP,
   if (UE_mac_inst[module_idP].tdd_Config) {
     num_prach = mac_xface->get_num_prach_tdd(mac_xface->lte_frame_parms);
 
-    if ((num_prach>0) && (num_prach<6))
+    if ((num_prach>0) && (num_prach<6)) {
       UE_mac_inst[module_idP].RA_prach_resources.ra_TDD_map_index = (taus()%num_prach);
+    }
 
     f_id = mac_xface->get_fid_prach_tdd(mac_xface->lte_frame_parms,
                                         UE_mac_inst[module_idP].RA_prach_resources.ra_TDD_map_index);
@@ -217,14 +222,16 @@ void Msg1_tx(module_id_t module_idP,uint8_t CC_id,frame_t frameP, uint8_t eNB_id
 
   // start contention resolution timer
   UE_mac_inst[module_idP].RA_attempt_number++;
+#if defined(USER_MODE) && defined(OAI_EMU)
 
-  if (opt_enabled == 1) {
+  if (oai_emulation.info.opt_enabled) {
     trace_pdu(0, NULL, 0, module_idP, 3, UE_mac_inst[module_idP].RA_prach_resources.ra_PreambleIndex,
               UE_mac_inst[module_idP].subframe, 0, UE_mac_inst[module_idP].RA_attempt_number);
     LOG_D(OPT,"[UE %d][RAPROC] TX MSG1 Frame %d trace pdu for rnti %x  with size %d\n",
           module_idP, frameP, 1, UE_mac_inst[module_idP].RA_Msg3_size);
   }
 
+#endif
 }
 
 
@@ -241,15 +248,16 @@ void Msg3_tx(module_id_t module_idP,uint8_t CC_id,frame_t frameP, uint8_t eNB_id
   LOG_I(MAC,"[UE %d][RAPROC] Frame %d : Msg3_tx: Setting contention resolution timer\n",module_idP,frameP);
   UE_mac_inst[module_idP].RA_contention_resolution_cnt = 0;
   UE_mac_inst[module_idP].RA_contention_resolution_timer_active = 1;
+#if defined(USER_MODE) && defined(OAI_EMU)
 
-  // msg3
-  if (opt_enabled == 1 ) {
+  if (oai_emulation.info.opt_enabled) { // msg3
     trace_pdu(0, &UE_mac_inst[module_idP].CCCH_pdu.payload[0], UE_mac_inst[module_idP].RA_Msg3_size,
               module_idP, 3, UE_mac_inst[module_idP].crnti, UE_mac_inst[module_idP].subframe, 0, 0);
     LOG_D(OPT,"[UE %d][RAPROC] MSG3 Frame %d trace pdu Preamble %d   with size %d\n",
           module_idP, frameP, UE_mac_inst[module_idP].crnti /*UE_mac_inst[module_idP].RA_prach_resources.ra_PreambleIndex*/, UE_mac_inst[module_idP].RA_Msg3_size);
   }
 
+#endif
 }
 
 
@@ -275,9 +283,9 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP, 
   }
 
   if (UE_mode == PRACH) {
-    if (UE_mac_inst[module_idP].radioResourceConfigCommon)
+    if (UE_mac_inst[module_idP].radioResourceConfigCommon) {
       rach_ConfigCommon = &UE_mac_inst[module_idP].radioResourceConfigCommon->rach_ConfigCommon;
-    else {
+    } else {
       return(NULL);
     }
 
@@ -311,8 +319,9 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP, 
           if (rach_ConfigCommon) {
             UE_mac_inst[module_idP].RA_window_cnt                    = 2+ rach_ConfigCommon->ra_SupervisionInfo.ra_ResponseWindowSize;
 
-            if (UE_mac_inst[module_idP].RA_window_cnt == 9)
+            if (UE_mac_inst[module_idP].RA_window_cnt == 9) {
               UE_mac_inst[module_idP].RA_window_cnt = 10;  // Note: 9 subframe window doesn't exist, after 8 is 10!
+            }
           } else {
             LOG_D(MAC,"[UE %d] FATAL Frame %d: rach_ConfigCommon is NULL !!!\n",module_idP,frameP);
             mac_xface->macphy_exit("MAC rach_ConfigCommon is NULL");
@@ -336,8 +345,8 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP, 
                                 NULL, // short bsr
                                 NULL, // long_bsr
                                 1); //post_padding
-
           return(&UE_mac_inst[module_idP].RA_prach_resources);
+
         } else if (UE_mac_inst[module_idP].scheduling_info.BSR_bytes[DCCH] > 0) {
           // This is for triggering a transmission on DCCH using PRACH (during handover, or sending SR for example)
           dcch_header_len = 2 + 2;  /// SHORT Subheader + C-RNTI control element
@@ -346,7 +355,8 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP, 
                                           6);
 
           if (UE_mac_inst[module_idP].crnti_before_ho)
-            LOG_D(MAC,"[UE %d] Frame %d : UL-DCCH -> ULSCH, HO RRCConnectionReconfigurationComplete (%x, %x), RRC message has %d bytes to send throug PRACH (mac header len %d)\n",
+            LOG_D(MAC,
+                  "[UE %d] Frame %d : UL-DCCH -> ULSCH, HO RRCConnectionReconfigurationComplete (%x, %x), RRC message has %d bytes to send throug PRACH (mac header len %d)\n",
                   module_idP,frameP, UE_mac_inst[module_idP].crnti,UE_mac_inst[module_idP].crnti_before_ho, rlc_status.bytes_in_buffer,dcch_header_len);
           else
             LOG_D(MAC,"[UE %d] Frame %d : UL-DCCH -> ULSCH, RRC message has %d bytes to send through PRACH(mac header len %d)\n",
@@ -369,8 +379,9 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP, 
           if (rach_ConfigCommon) {
             UE_mac_inst[module_idP].RA_window_cnt                    = 2+ rach_ConfigCommon->ra_SupervisionInfo.ra_ResponseWindowSize;
 
-            if (UE_mac_inst[module_idP].RA_window_cnt == 9)
+            if (UE_mac_inst[module_idP].RA_window_cnt == 9) {
               UE_mac_inst[module_idP].RA_window_cnt = 10;  // Note: 9 subframe window doesn't exist, after 8 is 10!
+            }
           } else {
             LOG_D(MAC,"[UE %d] FATAL Frame %d: rach_ConfigCommon is NULL !!!\n",module_idP,frameP);
             mac_xface->macphy_exit("MAC rach_ConfigCommon is NULL");
@@ -405,8 +416,9 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP, 
         if (UE_mac_inst[module_idP].RA_backoff_cnt>0) {
           frame_diff = (sframe_t)frameP - UE_mac_inst[module_idP].RA_backoff_frame;
 
-          if (frame_diff < 0)
+          if (frame_diff < 0) {
             frame_diff = -frame_diff;
+          }
 
           UE_mac_inst[module_idP].RA_backoff_cnt -= ((10*frame_diff) + (subframeP-UE_mac_inst[module_idP].RA_backoff_subframe));
 
@@ -418,8 +430,9 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP, 
         if (UE_mac_inst[module_idP].RA_window_cnt>0) {
           frame_diff = (frame_t)frameP - UE_mac_inst[module_idP].RA_tx_frame;
 
-          if (frame_diff < 0)
+          if (frame_diff < 0) {
             frame_diff = -frame_diff;
+          }
 
           UE_mac_inst[module_idP].RA_window_cnt -= ((10*frame_diff) + (subframeP-UE_mac_inst[module_idP].RA_tx_subframe));
           LOG_D(MAC,"[MAC][UE %d][RAPROC] frameP %d, subframe %d: RA Active, adjusted window cnt %d\n",module_idP,
@@ -432,7 +445,8 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP, 
           UE_mac_inst[module_idP].RA_tx_frame    = frameP;
           UE_mac_inst[module_idP].RA_tx_subframe = subframeP;
           UE_mac_inst[module_idP].RA_PREAMBLE_TRANSMISSION_COUNTER++;
-          UE_mac_inst[module_idP].RA_prach_resources.ra_PREAMBLE_RECEIVED_TARGET_POWER += (rach_ConfigCommon->powerRampingParameters.powerRampingStep<<1);  // 2dB increments in ASN.1 definition
+          UE_mac_inst[module_idP].RA_prach_resources.ra_PREAMBLE_RECEIVED_TARGET_POWER +=
+            (rach_ConfigCommon->powerRampingParameters.powerRampingStep<<1);  // 2dB increments in ASN.1 definition
 
           if (UE_mac_inst[module_idP].RA_PREAMBLE_TRANSMISSION_COUNTER == rach_ConfigCommon->ra_SupervisionInfo.preambleTransMax) {
             LOG_D(MAC,"[UE %d] Frame %d: Maximum number of RACH attempts (%d)\n",module_idP,frameP,rach_ConfigCommon->ra_SupervisionInfo.preambleTransMax);

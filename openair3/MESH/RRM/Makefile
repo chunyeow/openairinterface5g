@@ -1,4 +1,4 @@
-include $(OPENAIR_HOME)/common/utils/Makefile.inc
+include $(OPENAIR_DIR)/common/utils/Makefile.inc
 OSTYPE		= $(shell uname -o )
 
 #AAA: if rrc emulated remove comment from next line

@@ -1,5 +1,6 @@
 
 export OPENAIR_HOME=$(pwd)
+export OPENAIR_DIR=$(pwd)
 export OPENAIR1_DIR=$OPENAIR_HOME/openair1
 export OPENAIR2_DIR=$OPENAIR_HOME/openair2
 export OPENAIR3_DIR=$OPENAIR_HOME/openair3

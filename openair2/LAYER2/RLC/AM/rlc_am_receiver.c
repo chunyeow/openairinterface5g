@@ -50,20 +50,18 @@
 //#define DEBUG_REASSEMBLY
 //#define DEBUG_STATUS
 //-----------------------------------------------------------------------------
-void            receiver_retransmission_management (struct rlc_am_entity *rlcP, mem_block_t * pduP, struct rlc_am_pdu_header *rlc_headerP);
-void            free_receiver_buffer (struct rlc_am_entity *rlcP, uint16_t indexP);
-void            insert_into_receiver_buffer (struct rlc_am_entity *rlcP, uint16_t indexP, mem_block_t * pduP);
-void            process_receiver_buffer_15 (struct rlc_am_entity *rlcP);
-void            process_receiver_buffer_7 (struct rlc_am_entity *rlcP);
+void            receiver_retransmission_management (struct rlc_am_entity* rlcP, mem_block_t* pduP, struct rlc_am_pdu_header* rlc_headerP);
+void            free_receiver_buffer (struct rlc_am_entity* rlcP, uint16_t indexP);
+void            insert_into_receiver_buffer (struct rlc_am_entity* rlcP, uint16_t indexP, mem_block_t* pduP);
+void            process_receiver_buffer_15 (struct rlc_am_entity* rlcP);
+void            process_receiver_buffer_7 (struct rlc_am_entity* rlcP);
 //-----------------------------------------------------------------------------
 void
-receiver_retransmission_management (struct rlc_am_entity *rlcP, mem_block_t * pduP, struct rlc_am_pdu_header *rlc_headerP)
+receiver_retransmission_management (struct rlc_am_entity* rlcP, mem_block_t* pduP, struct rlc_am_pdu_header* rlc_headerP)
 {
   //-----------------------------------------------------------------------------
-
   uint16_t             id;
   uint16_t             id_index;
-
   /* From TS25.3222 V5.0.0
      Upon reception of an AMD PDU, the Receiver shall:
      - update VR(R), VR(H) and VR(MR) state variables for each received AMD PDU (see clause 9.4);
@@ -76,19 +74,14 @@ receiver_retransmission_management (struct rlc_am_entity *rlcP, mem_block_t * pd
      the peer entity) to upper layers through the AM-SAP.
      - otherwise:  (NOT IMPLEMENTED)
      - deliver the RLC SDUs in arbitrary order to upper layers through the AM-SAP. */
-
 #ifdef DEBUG_RECEIVER_BUFFER
   msg("[RLC_AM][DEBUG] receiver_retransmission_management() received PDU %p\n", pduP);
   display_protocol_vars_rlc_am(rlcP);
 #endif
-
   id = (((uint16_t) (rlc_headerP->byte1 & RLC_AM_SN_1ST_PART_MASK)) << 5) | ((rlc_headerP->byte2 & RLC_AM_SN_2ND_PART_MASK) >> 3);
-
   // general case
-  ((struct rlc_am_rx_pdu_management *) (pduP->data))->sn = id;
-
+  ((struct rlc_am_rx_pdu_management*) (pduP->data))->sn = id;
   id_index = id % rlcP->recomputed_configured_rx_window_size;
-
 #ifdef DEBUG_RECEIVER_BUFFER
   msg("[RLC][RB %d][DEBUG] receiver_retransmission_management() received PDU %04X :\n", rlcP->rb_id, id);
   //display_protocol_vars_rlc_am(rlcP);
@@ -103,7 +96,6 @@ receiver_retransmission_management (struct rlc_am_entity *rlcP, mem_block_t * pd
   }
 
   if (id == rlcP->vr_r) {
-
 #ifdef DEBUG_RECEIVER_BUFFER
     msg ("[RLC_AM][RB %d][RECEIVER_BUFFER] RECEIVED %p VR(R)=0x%04X id_index=0x%02X VR(H)=0x%04X\n", rlcP->rb_id, pduP, rlcP->vr_r, id_index, rlcP->vr_h);
 #endif
@@ -115,11 +107,12 @@ receiver_retransmission_management (struct rlc_am_entity *rlcP, mem_block_t * pd
     }
 
     adjust_vr_r_mr (rlcP);
-  } else {
 
+  } else {
     rlcP->send_status_pdu_requested = 1;
 #ifdef DEBUG_RECEIVER_BUFFER
-    msg ("[RLC_AM][RB %d][RECEIVER_BUFFER] RECEIVED %p sn=0x%04X id_index=0x%02X VR(R)=0x%04X VR(H)=0x%04X WILL SEND STATUS\n", rlcP->rb_id, pduP, id, id_index, rlcP->vr_r, rlcP->vr_h);
+    msg ("[RLC_AM][RB %d][RECEIVER_BUFFER] RECEIVED %p sn=0x%04X id_index=0x%02X VR(R)=0x%04X VR(H)=0x%04X WILL SEND STATUS\n", rlcP->rb_id, pduP, id, id_index,
+         rlcP->vr_r, rlcP->vr_h);
 #endif
 
     //------------------------------------;
@@ -140,8 +133,9 @@ receiver_retransmission_management (struct rlc_am_entity *rlcP, mem_block_t * pd
       // CASE id<VR(MR)<VR(R)<VR(H);
       //------------------------------------;
       // CASE VR(MR)<VR(R)<VR(H)<id;
-    } else if (((rlcP->vr_mr < rlcP->vr_r) && (rlcP->vr_h >= rlcP->vr_r) && (id < rlcP->vr_mr)) || ((rlcP->vr_mr < rlcP->vr_r) && (rlcP->vr_h >= rlcP->vr_r) && (id > rlcP->vr_r))) {
 
+    } else if (((rlcP->vr_mr < rlcP->vr_r) && (rlcP->vr_h >= rlcP->vr_r) && (id < rlcP->vr_mr)) || ((rlcP->vr_mr < rlcP->vr_r) && (rlcP->vr_h >= rlcP->vr_r)
+               && (id > rlcP->vr_r))) {
 #ifdef DEBUG_RECEIVER_BUFFER
       msg ("[RLC_AM][RB %d][RECEIVER_BUFFER] RECEIVED %p sn 0x%04X IN REVERSED WINDOW\n", rlcP->rb_id, pduP, id);
 #endif
@@ -154,6 +148,7 @@ receiver_retransmission_management (struct rlc_am_entity *rlcP, mem_block_t * pd
       //------------------------------------;
       // CASE VR(H)<VR(MR)<VR(R);
       //------------------------------------;
+
     } else if ((rlcP->vr_h <= rlcP->vr_mr) && (rlcP->vr_mr < rlcP->vr_r)) {
       if (id < rlcP->vr_mr) {
 #ifdef DEBUG_RECEIVER_BUFFER
@@ -164,11 +159,13 @@ receiver_retransmission_management (struct rlc_am_entity *rlcP, mem_block_t * pd
         if (id >= rlcP->vr_h) {
           rlcP->vr_h = (id + 1) & SN_12BITS_MASK;
         }
+
       } else if (id > rlcP->vr_r) {
 #ifdef DEBUG_RECEIVER_BUFFER
         msg ("[RLC_AM][RB %d][RECEIVER_BUFFER] RECEIVED %p sn 0x%04X IN REVERSED WINDOW\n", rlcP->rb_id, pduP, id);
 #endif
         insert_into_receiver_buffer (rlcP, id_index, pduP);
+
       } else {
         // discard this PDU;
 #ifdef DEBUG_RECEIVER_BUFFER
@@ -181,6 +178,7 @@ receiver_retransmission_management (struct rlc_am_entity *rlcP, mem_block_t * pd
       //------------------------------------;
       // REJECT;
       //------------------------------------;
+
     } else {
       // discard this PDU;
 #ifdef DEBUG_RECEIVER_BUFFER
@@ -194,7 +192,7 @@ receiver_retransmission_management (struct rlc_am_entity *rlcP, mem_block_t * pd
 
 //-----------------------------------------------------------------------------
 void
-free_receiver_buffer (struct rlc_am_entity *rlcP, uint16_t indexP)
+free_receiver_buffer (struct rlc_am_entity* rlcP, uint16_t indexP)
 {
   //-----------------------------------------------------------------------------
   if (indexP < rlcP->recomputed_configured_rx_window_size) {
@@ -214,7 +212,7 @@ free_receiver_buffer (struct rlc_am_entity *rlcP, uint16_t indexP)
 
 //-----------------------------------------------------------------------------
 void
-insert_into_receiver_buffer (struct rlc_am_entity *rlcP, uint16_t indexP, mem_block_t * pduP)
+insert_into_receiver_buffer (struct rlc_am_entity* rlcP, uint16_t indexP, mem_block_t* pduP)
 {
   //-----------------------------------------------------------------------------
   if (pduP) {
@@ -246,46 +244,39 @@ insert_into_receiver_buffer (struct rlc_am_entity *rlcP, uint16_t indexP, mem_bl
 
 //-----------------------------------------------------------------------------
 void
-process_receiver_buffer_15 (struct rlc_am_entity *rlcP)
+process_receiver_buffer_15 (struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
-
-  struct rlc_am_pdu_header *rlc_header;
-  mem_block_t      *pdu;
+  struct rlc_am_pdu_header* rlc_header;
+  mem_block_t*      pdu;
   uint16_t             vr_r;
   uint16_t             working_sn;
   uint16_t             working_sn_index;     // index in buffer
-  uint8_t             *data_pdu;
+  uint8_t*             data_pdu;
   uint16_t             li[RLC_AM_SEGMENT_NB_MAX_LI_PER_PDU];
   uint16_t             remaining_data_size;
   uint8_t              nb_li;
   uint8_t              li_index;
   uint8_t              li_start_index;
   uint8_t              reassembly_after_discard;
-
-
   // should start reassembly with sn working_sn
   working_sn = (rlcP->last_reassemblied_sn + 1) & SN_12BITS_MASK;
   working_sn_index = working_sn % rlcP->recomputed_configured_rx_window_size;
-
   vr_r = rlcP->vr_r;
   reassembly_after_discard = 0;
 
   while (rlcP->receiver_buffer[working_sn_index]) {
-
     pdu = rlcP->receiver_buffer[working_sn_index];
     nb_li = 0;
     li_index = 0;
-    rlc_header = (struct rlc_am_pdu_header *) (((struct rlc_am_rx_pdu_management *) (pdu->data))->first_byte);
+    rlc_header = (struct rlc_am_pdu_header*) (((struct rlc_am_rx_pdu_management*) (pdu->data))->first_byte);
 
-    if ((rlcP->discard_reassembly_start_sn == ((struct rlc_am_rx_pdu_management *) (pdu->data))->sn)) {
-
+    if ((rlcP->discard_reassembly_start_sn == ((struct rlc_am_rx_pdu_management*) (pdu->data))->sn)) {
       rlcP->output_sdu_size_to_write = 0;
       reassembly_after_discard = 1;     // keep trace of entering in this block
 
       if (!(rlc_header->byte2 & RLC_HE_MASK) == RLC_HE_SUCC_BYTE_CONTAINS_DATA) {
         while ((li[nb_li] = ((((uint16_t) rlc_header->li_data_7[nb_li << 1]) << 8) + rlc_header->li_data_7[(nb_li << 1) + 1])) & RLC_E_NEXT_FIELD_IS_LI_E) {
-
           li[nb_li] = li[nb_li] & (~(uint16_t) RLC_E_NEXT_FIELD_IS_LI_E);
           nb_li++;
         }
@@ -298,10 +289,8 @@ process_receiver_buffer_15 (struct rlc_am_entity *rlcP)
       li_start_index = rlcP->discard_reassembly_after_li;       // reassembly will start at this index
       // after reception of sufi mrw the starting index for li will be 0
       rlcP->discard_reassembly_after_li = RLC_AM_DISCARD_REASSEMBLY_AT_LI_INDEX_0;      // =-1
-
-
       remaining_data_size = rlcP->pdu_size - 2 - (nb_li << 1);
-      data_pdu = (uint8_t *) (&rlc_header->li_data_7[nb_li << 1]);
+      data_pdu = (uint8_t*) (&rlc_header->li_data_7[nb_li << 1]);
 
       while (li_index < nb_li) {
         switch (li[li_index]) {
@@ -333,7 +322,7 @@ process_receiver_buffer_15 (struct rlc_am_entity *rlcP)
             send_sdu (rlcP);
           }
 
-          data_pdu = (uint8_t *) ((uint32_t) data_pdu + (li[li_index] >> 1));
+          data_pdu = (uint8_t*) ((uint32_t) data_pdu + (li[li_index] >> 1));
         }
 
         li_index++;
@@ -343,7 +332,6 @@ process_receiver_buffer_15 (struct rlc_am_entity *rlcP)
         reassembly (data_pdu, remaining_data_size, rlcP);
         remaining_data_size = 0;
       }
-
 
       free_receiver_buffer (rlcP, working_sn_index);
       rlcP->discard_reassembly_start_sn = RLC_AM_SN_INVALID;
@@ -363,7 +351,8 @@ process_receiver_buffer_15 (struct rlc_am_entity *rlcP)
     } else {
       // exploit HE field info
       if ((rlc_header->byte2 & RLC_HE_MASK) == RLC_HE_SUCC_BYTE_CONTAINS_DATA) {
-        reassembly ((uint8_t *) (rlc_header->li_data_7), rlcP->pdu_size - 2, rlcP);
+        reassembly ((uint8_t*) (rlc_header->li_data_7), rlcP->pdu_size - 2, rlcP);
+
       } else {
         while ((li[nb_li] = ((((uint16_t) rlc_header->li_data_7[nb_li << 1]) << 8) + rlc_header->li_data_7[(nb_li << 1) + 1])) & RLC_E_NEXT_FIELD_IS_LI_E) {
           //while ((li[nb_li] = (rlc_header->li.li_data_15[nb_li].optional)) & RLC_E_NEXT_FIELD_IS_LI_E) {
@@ -372,9 +361,8 @@ process_receiver_buffer_15 (struct rlc_am_entity *rlcP)
         }
 
         nb_li++;
-
         remaining_data_size = rlcP->pdu_size - 2 - (nb_li << 1);
-        data_pdu = (uint8_t *) (&rlc_header->li_data_7[nb_li << 1]);
+        data_pdu = (uint8_t*) (&rlc_header->li_data_7[nb_li << 1]);
 
         while (li_index < nb_li) {
           switch (li[li_index]) {
@@ -395,7 +383,7 @@ process_receiver_buffer_15 (struct rlc_am_entity *rlcP)
           default:         // li is length
             remaining_data_size = remaining_data_size - (li[li_index] >> 1);
             reassembly (data_pdu, (li[li_index] >> 1), rlcP);
-            data_pdu = (uint8_t *) ((uint32_t) data_pdu + (li[li_index] >> 1));
+            data_pdu = (uint8_t*) ((uint32_t) data_pdu + (li[li_index] >> 1));
             send_sdu (rlcP);
           }
 
@@ -422,7 +410,6 @@ process_receiver_buffer_15 (struct rlc_am_entity *rlcP)
 #ifdef DEBUG_REASSEMBLY
           msg ("[RLC_AM][RB %d][REASSEMBLY] DETECTED PDU AFTER DISCARD ADJUST VR(R) 0x%04X\n", rlcP->rb_id, rlcP->vr_r);
 #endif
-
           rlcP->vr_mr = (rlcP->vr_r + rlcP->configured_rx_window_size - 1) & SN_12BITS_MASK;
         }
       }
@@ -432,15 +419,15 @@ process_receiver_buffer_15 (struct rlc_am_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-process_receiver_buffer_7 (struct rlc_am_entity *rlcP)
+process_receiver_buffer_7 (struct rlc_am_entity* rlcP)
 {
   //-----------------------------------------------------------------------------
-  struct rlc_am_pdu_header *rlc_header;
-  mem_block_t      *pdu;
+  struct rlc_am_pdu_header* rlc_header;
+  mem_block_t*      pdu;
   uint16_t             vr_r;
   uint16_t             working_sn;
   uint16_t             working_sn_index;     // index in buffer
-  uint8_t             *data_pdu;
+  uint8_t*             data_pdu;
   uint8_t              li[RLC_AM_SEGMENT_NB_MAX_LI_PER_PDU];
   uint16_t             remaining_data_size;
   int8_t              nb_li;
@@ -448,27 +435,22 @@ process_receiver_buffer_7 (struct rlc_am_entity *rlcP)
   int8_t              li_start_index;
   uint8_t              reassembly_after_discard;
   uint8_t              sdu_sent=0;
-
   // should start reassembly with sn working_sn
   working_sn = (rlcP->last_reassemblied_sn + 1) & SN_12BITS_MASK;
   working_sn_index = working_sn % rlcP->recomputed_configured_rx_window_size;
-
   vr_r = rlcP->vr_r;
-
   reassembly_after_discard = 0;
 
   while (rlcP->receiver_buffer[working_sn_index]) {
-
     pdu = rlcP->receiver_buffer[working_sn_index];
     nb_li = 0;
     li_index = 0;
-    rlc_header = (struct rlc_am_pdu_header *) (((struct rlc_am_rx_pdu_management *) (pdu->data))->first_byte);
-
+    rlc_header = (struct rlc_am_pdu_header*) (((struct rlc_am_rx_pdu_management*) (pdu->data))->first_byte);
 #ifdef DEBUG_REASSEMBLY
     msg ("[RLC_AM][RB %d][REASSEMBLY] PDU %p SN 0x%04X (sdu_sent %d)\n", rlcP->rb_id, pdu, working_sn,sdu_sent);
 #endif
 
-    if ((rlcP->discard_reassembly_start_sn == ((struct rlc_am_rx_pdu_management *) (pdu->data))->sn)) {
+    if ((rlcP->discard_reassembly_start_sn == ((struct rlc_am_rx_pdu_management*) (pdu->data))->sn)) {
       rlcP->output_sdu_size_to_write = 0;
       reassembly_after_discard = 1;     // keep trace of entering in this block
 
@@ -482,24 +464,23 @@ process_receiver_buffer_7 (struct rlc_am_entity *rlcP)
       }
 
 #ifdef DEBUG_REASSEMBLY
-      msg ("[RLC_AM][RB %d][REASSEMBLY] DETECTED PDU TO BE REASSEMBLIED AFTER DISCARD, START SN 0x%04X hex VR(R) 0x%04X\n", rlcP->rb_id, rlcP->discard_reassembly_start_sn, rlcP->vr_r);
+      msg ("[RLC_AM][RB %d][REASSEMBLY] DETECTED PDU TO BE REASSEMBLIED AFTER DISCARD, START SN 0x%04X hex VR(R) 0x%04X\n", rlcP->rb_id,
+           rlcP->discard_reassembly_start_sn, rlcP->vr_r);
 #endif
-
       // this variable may be changed by the reception of a mrw sufi
       //li_start_index = rlcP->discard_reassembly_after_li + 1; // reassembly will start at this index
       li_start_index = rlcP->discard_reassembly_after_li;       // reassembly will start at this index
       // after reception of sufi mrw the starting index for li will be 0
       rlcP->discard_reassembly_after_li = RLC_AM_DISCARD_REASSEMBLY_AT_LI_INDEX_0;      // =-1
-
       remaining_data_size = rlcP->pdu_size - 2 - (nb_li);
-      data_pdu = (uint8_t *) (&rlc_header->li_data_7[nb_li]);
+      data_pdu = (uint8_t*) (&rlc_header->li_data_7[nb_li]);
 
       while (li_index < nb_li) {
         switch (li[li_index]) {
         case (uint8_t) RLC_LI_LAST_PDU_EXACTLY_FILLED:
 #ifdef DEBUG_REASSEMBLY
-          msg ("[RLC_AM][RB %d][REASSEMBLY] PDU SN 0x%04X GET LI RLC_LI_LAST_PDU_EXACTLY_FILLED REMAINING DATA SIZE %d, li_index %d, li_start_index %d\n", rlcP->rb_id, working_sn, remaining_data_size, li_index,
-               li_start_index);
+          msg ("[RLC_AM][RB %d][REASSEMBLY] PDU SN 0x%04X GET LI RLC_LI_LAST_PDU_EXACTLY_FILLED REMAINING DATA SIZE %d, li_index %d, li_start_index %d\n", rlcP->rb_id,
+               working_sn, remaining_data_size, li_index, li_start_index);
 #endif
 
           if (li_index >= li_start_index) {
@@ -529,7 +510,7 @@ process_receiver_buffer_7 (struct rlc_am_entity *rlcP)
             sdu_sent=1;
           }
 
-          data_pdu = (uint8_t *) ((uint32_t) data_pdu + (li[li_index] >> 1));
+          data_pdu = (uint8_t*) ((uint32_t) data_pdu + (li[li_index] >> 1));
         }
 
         li_index++;
@@ -554,7 +535,6 @@ process_receiver_buffer_7 (struct rlc_am_entity *rlcP)
 #ifdef DEBUG_REASSEMBLY
         msg ("[RLC_AM][RB %d][REASSEMBLY] DETECTED PDU AFTER DISCARD ADJUST VR(R) 0x%04X hex\n", rlcP->rb_id, rlcP->vr_r);
 #endif
-
         rlcP->vr_mr = (rlcP->vr_r + rlcP->configured_rx_window_size - 1) & SN_12BITS_MASK;
       }
 
@@ -566,7 +546,8 @@ process_receiver_buffer_7 (struct rlc_am_entity *rlcP)
       // exploit HE field info
       if ((rlc_header->byte2 & RLC_HE_MASK) == RLC_HE_SUCC_BYTE_CONTAINS_DATA) {
         msg("WILL REASSEMBLY INDEX %04X\n", working_sn_index);
-        reassembly ((uint8_t *) (rlc_header->li_data_7), rlcP->pdu_size - 2, rlcP);
+        reassembly ((uint8_t*) (rlc_header->li_data_7), rlcP->pdu_size - 2, rlcP);
+
       } else {
         while ((li[nb_li] = (rlc_header->li_data_7[nb_li])) & RLC_E_NEXT_FIELD_IS_LI_E) {
           li[nb_li] = li[nb_li] & (~(uint8_t) RLC_E_NEXT_FIELD_IS_LI_E);
@@ -574,19 +555,16 @@ process_receiver_buffer_7 (struct rlc_am_entity *rlcP)
         }
 
         nb_li++;
-
         remaining_data_size = rlcP->pdu_size - 2 - nb_li;
-        data_pdu = (uint8_t *) (&rlc_header->li_data_7[nb_li]);
+        data_pdu = (uint8_t*) (&rlc_header->li_data_7[nb_li]);
 
         while (li_index < nb_li) {
-
           switch (li[li_index]) {
           case (uint8_t) RLC_LI_LAST_PDU_EXACTLY_FILLED:
 #ifdef DEBUG_REASSEMBLY
             msg ("[RLC_AM][RB %d][REASSEMBLY] PDU SN 0x%04X GET LI RLC_LI_LAST_PDU_EXACTLY_FILLED NUM LI %d\n", rlcP->rb_id, working_sn,nb_li);
 #endif
             send_sdu (rlcP);
-
             sdu_sent=1;
             break;
 
@@ -603,9 +581,8 @@ process_receiver_buffer_7 (struct rlc_am_entity *rlcP)
             msg ("[RLC_AM][RB %d][REASSEMBLY] PDU SN 0x%04X GET LI SIZE %d Bytes\n", rlcP->rb_id, working_sn, li[li_index] >> 1);
 #endif
             remaining_data_size = remaining_data_size - (li[li_index] >> 1);
-
             reassembly (data_pdu, (li[li_index] >> 1), rlcP);
-            data_pdu = (uint8_t *) ((uint32_t) data_pdu + (li[li_index] >> 1));
+            data_pdu = (uint8_t*) ((uint32_t) data_pdu + (li[li_index] >> 1));
             send_sdu (rlcP);
             sdu_sent=1;
           }
@@ -634,7 +611,6 @@ process_receiver_buffer_7 (struct rlc_am_entity *rlcP)
 #ifdef DEBUG_REASSEMBLY
           msg ("[RLC_AM][RB %d][REASSEMBLY] DETECTED PDU AFTER DISCARD ADJUST VR(R) 0x%04X\n", rlcP->rb_id, rlcP->vr_r);
 #endif
-
           rlcP->vr_mr = (rlcP->vr_r + rlcP->configured_rx_window_size - 1) & SN_12BITS_MASK;
         }
       }

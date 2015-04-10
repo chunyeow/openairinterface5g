@@ -35,12 +35,12 @@
 * \email: michelle.wetterwald@eurecom.fr, raymond.knopp@eurecom.fr, navid.nikaein@eurecom.fr,  lionel.gauthier@eurecom.fr
 */
 /*******************************************************************************/
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
 #ifdef RTAI
 #include "rtai_posix.h"
 #define RTAI_IRQ 30 //try to get this irq with RTAI
 #endif // RTAI
-#endif // NAS_NETLINK
+#endif // PDCP_USE_NETLINK
 //:::::::::::::::::::::::::::::::::::::::;;
 #include "nasmt_variables.h"
 #include "nasmt_proto.h"
@@ -81,14 +81,14 @@ static unsigned char nas_IMEI[14];
 static int m_arg=0;
 
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 extern void nasmt_netlink_release(void);
 extern int nasmt_netlink_init(void);
 #endif
 extern void nasmt_ASCTL_timer(unsigned long data);
 
 
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
 //---------------------------------------------------------------------------
 //void nasmt_interrupt(void){
 void *nasmt_interrupt(void)
@@ -121,7 +121,7 @@ int nasmt_open(struct net_device *dev)
   gpriv=netdev_priv(dev);
 
   // Address has already been set at init
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
 
   if (gpriv->irq==-EBUSY) {
     printk("nasmt_open: irq failure\n");
@@ -169,26 +169,26 @@ void nasmt_teardown(struct net_device *dev)
 {
   //---------------------------------------------------------------------------
   int cxi;
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
   struct nas_priv *priv = netdev_priv(dev);
-#endif //NAS_NETLINK
+#endif //PDCP_USE_NETLINK
 
   printk("nasmt_teardown: begin\n");
   //  priv=(struct nas_priv *)(gdev.priv);
 
   if (dev) {
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
 
     if (priv->irq!=-EBUSY) {
       *pt_nas_ue_irq=-1;
       rt_free_srq(priv->irq);
     }
 
-#endif //NAS_NETLINK
+#endif //PDCP_USE_NETLINK
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
     nasmt_netlink_release();
-#endif //NAS_NETLINK
+#endif //PDCP_USE_NETLINK
     //  for (sapi=0; sapi<NAS_SAPI_MAX; ++sapi)
     //    close(priv->sap[sapi]);
     nasmt_CLASS_flush_rclassifier();
@@ -395,7 +395,7 @@ void nasmt_init(struct net_device *dev)
 
     //gpriv->sap[NAS_CO_INPUT_SAPI] = QOS_DEVICE_CONVERSATIONAL_INPUT;
     //gpriv->sap[NAS_CO_OUTPUT_SAPI] = QOS_DEVICE_CONVERSATIONAL_OUTPUT;
-    gpriv->sap[NAS_DRB_INPUT_SAPI]  = PDCP2NAS_FIFO;//QOS_DEVICE_CONVERSATIONAL_INPUT;
+    gpriv->sap[NAS_DRB_INPUT_SAPI]  = PDCP2PDCP_USE_RT_FIFO;//QOS_DEVICE_CONVERSATIONAL_INPUT;
     gpriv->sap[NAS_DRB_OUTPUT_SAPI] = NAS2PDCP_FIFO;//QOS_DEVICE_STREAMING_INPUT;
 
     gpriv->retry_limit = NAS_RETRY_LIMIT_DEFAULT;
@@ -469,7 +469,7 @@ int init_module (void)
   printk("\n");
 
 
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
 
   // Initialize parameters shared with RRC (done first to avoid going further)
   if (pt_nas_ue_irq==NULL) {
@@ -491,7 +491,7 @@ int init_module (void)
 #endif
   priv = netdev_priv(gdev);
   ////
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
   priv->irq=rt_request_srq(0, nasmt_interrupt, NULL);
 
   if (priv->irq == -EBUSY || priv->irq == -EINVAL) {
@@ -514,7 +514,7 @@ int init_module (void)
 
 #endif
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 
   if ((err=nasmt_netlink_init()) == -1)
     printk("init_module: NETLINK failed\n");

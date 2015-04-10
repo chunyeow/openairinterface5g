@@ -36,12 +36,12 @@
 */
 /*******************************************************************************/
 
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
 #ifdef RTAI
 #include "rtai_posix.h"
 #define RTAI_IRQ 30 //try to get this irq with RTAI
 #endif // RTAI
-#endif // NAS_NETLINK
+#endif // PDCP_USE_NETLINK
 
 #include "constant.h"
 #include "local.h"
@@ -68,7 +68,7 @@
 
 struct net_device *nasdev[NB_INSTANCES_MAX];
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 extern void nas_netlink_release(void);
 extern int nas_netlink_init(void);
 #endif
@@ -97,7 +97,7 @@ int find_inst(struct net_device *dev)
 
 //---------------------------------------------------------------------------
 
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
 //void interrupt(void){
 void *nas_interrupt(void)
 {
@@ -116,7 +116,7 @@ void *nas_interrupt(void)
   cxi=0;
   //  mesh_GC_receive();
   //  mesh_DC_receive(naspriv->cx+cxi);
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
   nas_COMMON_QOS_receive();
 #endif
   //  spin_unlock_irqrestore(&priv->lock,flags);
@@ -138,14 +138,14 @@ int nas_open(struct net_device *dev)
   //  MOD_INC_USE_COUNT;
 
   // Address has already been set at init
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
 
   if (pdcp_2_nas_irq==-EBUSY) {
     printk("OPEN: irq failure\n");
     return -EBUSY;
   }
 
-#endif //NAS_NETLINK
+#endif //PDCP_USE_NETLINK
 
   /*
   netif_start_queue(dev);
@@ -366,7 +366,7 @@ void nas_init(struct net_device *dev)
     // Initialize private structure
     //  priv->sap[NAS_GC_SAPI] = RRC_DEVICE_GC;
     //  priv->sap[NAS_NT_SAPI] = RRC_DEVICE_NT;
-    priv->sap[NAS_RAB_INPUT_SAPI] = PDCP2NAS_FIFO;//QOS_DEVICE_CONVERSATIONAL_INPUT;
+    priv->sap[NAS_RAB_INPUT_SAPI] = PDCP2PDCP_USE_RT_FIFO;//QOS_DEVICE_CONVERSATIONAL_INPUT;
     priv->sap[NAS_RAB_OUTPUT_SAPI] = NAS2PDCP_FIFO;//QOS_DEVICE_STREAMING_INPUT;
 
     //  priv->retry_limit=RETRY_LIMIT_DEFAULT;
@@ -450,7 +450,7 @@ int init_module (void)
 
   printk("Starting NASMESH, number of IMEI paramters %d, IMEI %X%X\n",m_arg,nas_IMEI[0],nas_IMEI[1]);
 
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
 
 #ifdef RTAI //with RTAI you have to indicate which irq# you want
 
@@ -505,7 +505,7 @@ int init_module (void)
     }
   }
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 
   if ((err=nas_netlink_init()) == -1)
     printk("[NAS][INIT] NETLINK failed\n");
@@ -528,7 +528,7 @@ void cleanup_module(void)
 
   printk("[NAS][CLEANUP]nasmesh_cleanup_module: begin\n");
 
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
 
   if (pdcp_2_nas_irq!=-EBUSY) {
     pdcp_2_nas_irq=0;
@@ -559,9 +559,9 @@ void cleanup_module(void)
     free_netdev(nasdev[inst]);
   }
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
   nas_netlink_release();
-#endif //NAS_NETLINK
+#endif //PDCP_USE_NETLINK
   printk("nasmesh_cleanup_module: end\n");
 }
 

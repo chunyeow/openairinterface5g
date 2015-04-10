@@ -26,35 +26,63 @@
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
 *******************************************************************************/
-/*! \file rrc_eNB_GTPV1U.h
- * \brief rrc GTPV1U procedures for eNB
+
+/*! \file rrc_eNB_UE_context.h
+ * \brief rrc procedures for UE context
  * \author Lionel GAUTHIER
+ * \date 2015
  * \version 1.0
  * \company Eurecom
  * \email: lionel.gauthier@eurecom.fr
  */
+#ifndef __RRC_ENB_UE_CONTEXT_H__
+#include "collection/tree.h"
+#include "COMMON/platform_types.h"
+#include "defs.h"
 
-#ifndef RRC_ENB_GTPV1U_H_
-#define RRC_ENB_GTPV1U_H_
 
-# if defined(ENABLE_USE_MME)
-
-
-#   if defined(ENABLE_ITTI)
-
-/*! \fn rrc_eNB_process_GTPV1U_CREATE_TUNNEL_RESP(const protocol_ctxt_t* const ctxt_pP, MessageDef *msg_pP, const char *msg_name_pP)
- *\brief Process GTPV1U_ENB_CREATE_TUNNEL_RESP message received from GTPV1U, retrieve the enb teid created.
- *\param ctxt_pP Running context
- *\param msg_pP Message received by RRC.
- *\param msg_name_pP Message name.
- *\return 0 when successful, -1 if the UE index can not be retrieved. */
-int
-rrc_eNB_process_GTPV1U_CREATE_TUNNEL_RESP(
-  const protocol_ctxt_t* const ctxt_pP,
-  MessageDef* msg_pP,
-  const char* msg_name_pP
+void
+uid_linear_allocator_init(
+  uid_allocator_t* const uid_pP
 );
 
-#   endif
-# endif /* defined(ENABLE_USE_MME) */
-#endif /* RRC_ENB_GTPV1U_H_ */
+uid_t
+uid_linear_allocator_new(
+  eNB_RRC_INST* rrc_instance_pP
+);
+
+
+void
+uid_linear_allocator_free(
+  eNB_RRC_INST* rrc_instance_pP,
+  uid_t uidP
+);
+
+
+
+
+int rrc_eNB_compare_ue_rnti_id(
+  struct rrc_eNB_ue_context_s* c1_pP,
+  struct rrc_eNB_ue_context_s* c2_pP
+);
+
+RB_PROTOTYPE(rrc_ue_tree_s, rrc_eNB_ue_context_s, entries, rrc_eNB_compare_ue_rnti_id);
+
+struct rrc_eNB_ue_context_s*
+rrc_eNB_allocate_new_UE_context(
+  eNB_RRC_INST* rrc_instance_pP
+);
+
+struct rrc_eNB_ue_context_s*
+rrc_eNB_get_ue_context(
+  eNB_RRC_INST* rrc_instance_pP,
+  rnti_t rntiP
+);
+
+void rrc_eNB_remove_ue_context(
+  const protocol_ctxt_t* const ctxt_pP,
+  eNB_RRC_INST*                rrc_instance_pP,
+  struct rrc_eNB_ue_context_s* ue_context_pP
+);
+
+#endif

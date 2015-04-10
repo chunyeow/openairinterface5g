@@ -182,7 +182,7 @@ set_openair() {
     openair_path=${fullpath%/targets/*}
 
     export OPENAIR_DIR=$openair_path
-    export OPENAIR_HOME=$openair_path
+    export OPENAIR_DIR=$openair_path
     export OPENAIR1_DIR=$openair_path/openair1
     export OPENAIR2_DIR=$openair_path/openair2
     export OPENAIR3_DIR=$openair_path/openair3
@@ -701,7 +701,7 @@ declare -x OPENAIR_TARGETS=""
 
 set_openair
 cecho "OPENAIR_DIR     = $OPENAIR_DIR" $green
-cecho "OPENAIR_HOME    = $OPENAIR_HOME" $green
+cecho "OPENAIR_DIR    = $OPENAIR_DIR" $green
 cecho "OPENAIR1_DIR    = $OPENAIR1_DIR" $green
 cecho "OPENAIR2_DIR    = $OPENAIR2_DIR" $green
 cecho "OPENAIR3_DIR    = $OPENAIR3_DIR" $green

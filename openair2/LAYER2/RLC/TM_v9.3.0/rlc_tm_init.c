@@ -42,21 +42,16 @@ void config_req_rlc_tm (
   //-----------------------------------------------------------------------------
   rlc_union_t     *rlc_union_p  = NULL;
   rlc_tm_entity_t *rlc_p        = NULL;
-  hash_key_t       key          = RLC_COLL_KEY_VALUE(ctxt_pP->enb_module_id, ctxt_pP->ue_module_id, ctxt_pP->enb_flag, rb_idP, srb_flagP);
+  hash_key_t       key          = RLC_COLL_KEY_VALUE(ctxt_pP->module_id, ctxt_pP->rnti, ctxt_pP->enb_flag, rb_idP, srb_flagP);
   hashtable_rc_t   h_rc;
 
   h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
 
   if (h_rc == HASH_TABLE_OK) {
     rlc_p = &rlc_union_p->rlc.tm;
-    LOG_D(RLC, "[FRAME %05d][%s][RRC][MOD %u/%u][][--- CONFIG_REQ (is_uplink_downlink=%d) --->][RLC_TM][MOD %u/%u][RB %u]\n",
-          ctxt_pP->frame,
-          ( ctxt_pP->enb_flag > 0) ? "eNB":"UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
+    LOG_D(RLC, PROTOCOL_RLC_TM_CTXT_FMT" CONFIG_REQ (is_uplink_downlink=%d) RB %u\n",
+          PROTOCOL_RLC_TM_CTXT_ARGS(ctxt_pP, rlc_p),
           config_tmP->is_uplink_downlink,
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
           rb_idP);
 
     rlc_tm_init(ctxt_pP, rlc_p);
@@ -64,13 +59,8 @@ void config_req_rlc_tm (
     rlc_tm_set_debug_infos(ctxt_pP, rlc_p, rb_idP, srb_flagP);
     rlc_tm_configure(ctxt_pP, rlc_p, config_tmP->is_uplink_downlink);
   } else {
-    LOG_E(RLC, "[FRAME %05d][%s][RRC][MOD %u/%u][][--- CONFIG_REQ  --->][RLC_TM][MOD %u/%u][RB %u], RLC NOT FOUND\n",
-          ctxt_pP->frame,
-          ( ctxt_pP->enb_flag > 0) ? "eNB":"UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
+    LOG_E(RLC, PROTOCOL_RLC_TM_CTXT_FMT" CONFIG_REQ RB %u RLC NOT FOUND\n",
+          PROTOCOL_RLC_TM_CTXT_ARGS(ctxt_pP, rlc_p),
           rb_idP);
   }
 }
@@ -169,16 +159,6 @@ void rlc_tm_set_debug_infos(
   const rb_id_t     rb_idP)
 //-----------------------------------------------------------------------------
 {
-  msg ("[FRAME %05d][%s][RLC_TM][MOD %02u/%02u][RB %u][SET DEBUG INFOS] rb_id %d srb_flag %d\n",
-       ctxt_pP->frame,
-       (ctxt_pP->enb_flag) ? "eNB" : "UE",
-       ctxt_pP->enb_module_id,
-       ctxt_pP->ue_module_id,
-       rb_idP,
-       rb_idP,
-       srb_flagP);
-
-
   rlcP->rb_id     = rb_idP;
 
   if (srb_flagP) {

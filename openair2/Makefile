@@ -37,7 +37,7 @@
 
 #LM_LICENSE_FILE=
 #export LM_LICENSE_FILE
-include $(OPENAIR_HOME)/common/utils/Makefile.inc
+include $(OPENAIR_DIR)/common/utils/Makefile.inc
 
 KERNEL_NAME:=$(shell uname -r)
 NUM_CORES=$(shell getconf _NPROCESSORS_CONF)
@@ -143,40 +143,40 @@ nasmesh.ko:
 
 # automatically detect the linux header files for driver compilation
 nasmesh_netlink.ko:
-	(cd NAS/DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
+	(cd NAS/DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) PDCP_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
 
 naslite_netlink_ether.ko:
-	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
+	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 PDCP_USE_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
 
 oai_nw_ether.ko:
-	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
+	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 PDCP_USE_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
 
 oai_nw_drv.ko:
-	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
+	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 PDCP_USE_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
 
 nasmesh_netlink_address_fix.ko:
-	(cd NAS/DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_NETLINK=1 ADDRESS_FIX=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
+	(cd NAS/DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) PDCP_USE_NETLINK=1 ADDRESS_FIX=1  V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
 
 
 nasmesh_netlink_loopback.ko:
-	(cd NAS/DRIVER/MESH && $(MAKE) $(SET_UM) NAS_NETLINK=1 LOOPBACK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
+	(cd NAS/DRIVER/MESH && $(MAKE) $(SET_UM) PDCP_USE_NETLINK=1 LOOPBACK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
 
 # drivers cellular version
 nascellmt_netlink.ko:
-	(cd NAS/DRIVER/CELLULAR/NASMT && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
+	(cd NAS/DRIVER/CELLULAR/NASMT && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 PDCP_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
 
 nascellmt_clean.ko:
-	(cd NAS/DRIVER/CELLULAR/NASMT && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` clean)
+	(cd NAS/DRIVER/CELLULAR/NASMT && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 PDCP_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` clean)
 
 nascellrg_netlink.ko:
-	(cd NAS/DRIVER/CELLULAR/NASRG && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
+	(cd NAS/DRIVER/CELLULAR/NASRG && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 PDCP_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
 
 nascellrg_clean.ko:
-	(cd NAS/DRIVER/CELLULAR/NASRG && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` clean)
+	(cd NAS/DRIVER/CELLULAR/NASRG && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 PDCP_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` clean)
 
 # Driver for UE using LTE core network (MME, S+P-GW)
 ue_ip.ko:
-	(cd NETWORK_DRIVER/UE_IP && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
+	(cd NETWORK_DRIVER/UE_IP && $(MAKE) -j$(NUM_CORES) $(SET_UM) PDCP_USE_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
 
 
 rt_emul:

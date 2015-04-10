@@ -45,11 +45,10 @@
 #include "umts_timer_proto_extern.h"
 //-----------------------------------------------------------------------------
 void
-rlc_am_status_report_from_mac (void *rlcP, uint16_t eventP)
+rlc_am_status_report_from_mac (void* rlcP, uint16_t eventP)
 {
   //-----------------------------------------------------------------------------
-
-  struct rlc_am_entity *rlc = (struct rlc_am_entity *) rlcP;
+  struct rlc_am_entity* rlc = (struct rlc_am_entity*) rlcP;
 
   //----------------------------------------
   // STATUS
@@ -83,11 +82,11 @@ rlc_am_status_report_from_mac (void *rlcP, uint16_t eventP)
   //----------------------------------------
   if ((eventP & RLC_AM_RESET_PDU_TYPE)) {
 #ifdef DEBUG_RESET
-    msg ("[RLC_AM %p][MAC_STATUS]  EVENT RLC_AM_RESET_PDU_TYPE SENT ARMING RESET TIMER %d frames frame %d\n", rlcP, (uint32_t) rlc->timer_rst_init, *rlc->frame_tick_milliseconds);
+    msg ("[RLC_AM %p][MAC_STATUS]  EVENT RLC_AM_RESET_PDU_TYPE SENT ARMING RESET TIMER %d frames frame %d\n", rlcP, (uint32_t) rlc->timer_rst_init,
+         *rlc->frame_tick_milliseconds);
 #endif
-
-    rlc->timer_rst = umts_add_timer_list_up (&rlc->rlc_am_timer_list, rlc_am_reset_time_out, rlcP, NULL, (uint32_t) rlc->timer_rst_init, *rlc->frame_tick_milliseconds);
-
+    rlc->timer_rst = umts_add_timer_list_up (&rlc->rlc_am_timer_list, rlc_am_reset_time_out, rlcP, NULL, (uint32_t) rlc->timer_rst_init,
+                     *rlc->frame_tick_milliseconds);
     return;
   }
 
@@ -101,5 +100,4 @@ rlc_am_status_report_from_mac (void *rlcP, uint16_t eventP)
     rlc_am_fsm_notify_event (rlc, RLC_AM_TRANSMIT_RESET_ACK_EVENT);
     return;
   }
-
 }

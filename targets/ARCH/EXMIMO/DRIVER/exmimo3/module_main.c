@@ -63,18 +63,13 @@ module_param(irq,int,S_IRUSR|S_IWUSR);
 
 static struct file_operations openair_fops = {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)
-unlocked_ioctl:
-  openair_device_ioctl,
+    unlocked_ioctl:openair_device_ioctl,
 #else
-ioctl:
-  openair_device_ioctl,
+    ioctl:  openair_device_ioctl,
 #endif
-open:
-  openair_device_open,
-release:
-  openair_device_release,
-mmap:
-  openair_device_mmap
+    open:   openair_device_open,
+    release:openair_device_release,
+    mmap:   openair_device_mmap
 };
 
 static int __init openair_init_module( void )

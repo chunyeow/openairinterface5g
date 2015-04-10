@@ -76,6 +76,7 @@ extern struct iovec nas_iov_rx;
 extern int nas_sock_fd;
 extern struct msghdr nas_msg_rx;
 
+#if defined(USE_PDCP_NETLINK_QUEUES)
 static pthread_t pdcp_netlink_thread;
 
 /* We use lock-free queues between the User-plane driver running in kernel-space
@@ -91,7 +92,12 @@ time_stats_t ip_pdcp_stats_tmp;
 
 static void *pdcp_netlink_thread_fct(void *arg);
 
-int pdcp_netlink_init(void)
+//-----------------------------------------------------------------------------
+int
+pdcp_netlink_init(
+  void
+)
+//-----------------------------------------------------------------------------
 {
 
   int                i;
@@ -109,10 +115,11 @@ int pdcp_netlink_init(void)
   nb_inst_ue  = 1;
 #endif
 
-#if defined(LINK_PDCP_TO_GTPV1U)
+#if defined(LINK_ENB_PDCP_TO_GTPV1U)
   nb_inst_enb = 0;
   LOG_I(PDCP, "[NETLINK] Creating 0 queues for eNB Netlink -> PDCP communication\n");
 #else
+#warning " LG: When there will be handover in, there will problems because dim is based on local nums of ues"
   pdcp_netlink_queue_enb      = calloc(nb_inst_enb, sizeof(struct lfds611_queue_state*));
   pdcp_netlink_nb_element_enb = malloc(nb_inst_enb * sizeof(uint32_t));
   LOG_I(PDCP, "[NETLINK] Creating %d queues for eNB Netlink -> PDCP communication\n", nb_inst_enb);
@@ -172,36 +179,43 @@ int pdcp_netlink_init(void)
   return 0;
 }
 
-int pdcp_netlink_dequeue_element(const protocol_ctxt_t* const  ctxt_pP,
-                                 struct pdcp_netlink_element_s **data_ppP)
+//-----------------------------------------------------------------------------
+int
+pdcp_netlink_dequeue_element(
+  const protocol_ctxt_t* const  ctxt_pP,
+  struct pdcp_netlink_element_s** data_ppP
+)
+//-----------------------------------------------------------------------------
 {
   int ret = 0;
 
   if (ctxt_pP->enb_flag) {
-    ret = lfds611_queue_dequeue(pdcp_netlink_queue_enb[ctxt_pP->enb_module_id], (void **)data_ppP);
+    ret = lfds611_queue_dequeue(pdcp_netlink_queue_enb[ctxt_pP->module_id], (void**)data_ppP);
 
     if (ret != 0) {
-      LOG_D(PDCP,"[NETLINK]De-queueing packet for eNB instance %d\n", ctxt_pP->enb_module_id);
+      LOG_D(PDCP,"[NETLINK]De-queueing packet for eNB instance %d\n", ctxt_pP->module_id);
     }
   } else {
-    ret = lfds611_queue_dequeue(pdcp_netlink_queue_ue[ctxt_pP->ue_module_id], (void **)data_ppP);
+    ret = lfds611_queue_dequeue(pdcp_netlink_queue_ue[ctxt_pP->module_id], (void**)data_ppP);
 
     if (ret != 0) {
-      LOG_D(PDCP, "[NETLINK]De-queueing packet for UE instance %d\n", ctxt_pP->ue_module_id);
+      LOG_D(PDCP, "[NETLINK]De-queueing packet for UE instance %d\n", ctxt_pP->module_id);
     }
   }
 
   return ret;
 }
 
+//-----------------------------------------------------------------------------
 static
 void *pdcp_netlink_thread_fct(void *arg)
+//-----------------------------------------------------------------------------
 {
   int                            len             = 0;
   struct pdcp_netlink_element_s *new_data_p      = NULL;
   uint8_t                        pdcp_thread_read_state ;
   eNB_flag_t                     eNB_flag        = 0;
-
+  module_id_t                    module_id       = 0;
   pdcp_thread_read_state = 0;
   memset(nl_rx_buf, 0, NL_MAX_PAYLOAD);
   LOG_I(PDCP, "[NETLINK_THREAD] binding to fd  %d\n",nas_sock_fd);
@@ -254,50 +268,51 @@ void *pdcp_netlink_thread_fct(void *arg)
 
 #ifdef OAI_EMU
 
+          // LG: new_data_p->pdcp_read_header.inst will contain in fact a module id
           if (new_data_p->pdcp_read_header.inst >= oai_emulation.info.nb_enb_local) {
-            new_data_p->pdcp_read_header.inst = new_data_p->pdcp_read_header.inst
+            module_id = new_data_p->pdcp_read_header.inst
                                                 - oai_emulation.info.nb_enb_local +
                                                 + oai_emulation.info.first_ue_local;
             eNB_flag = 0;
           } else {
-            new_data_p->pdcp_read_header.inst = new_data_p->pdcp_read_header.inst
+            module_id = new_data_p->pdcp_read_header.inst
                                                 + oai_emulation.info.first_enb_local;
             eNB_flag = 1;
           }
 
 #else
-          new_data_p->pdcp_read_header.inst = 0;
+          module_id = 0;
 #endif
           new_data_p->data = malloc(sizeof(uint8_t) * new_data_p->pdcp_read_header.data_size);
           /* Copy the data */
           memcpy(new_data_p->data, NLMSG_DATA(nas_nlh_rx), new_data_p->pdcp_read_header.data_size);
 
           if (eNB_flag) {
-            if (pdcp_netlink_nb_element_enb[new_data_p->pdcp_read_header.inst]
+            if (pdcp_netlink_nb_element_enb[module_id]
                 > PDCP_QUEUE_NB_ELEMENTS) {
-              LOG_E(PDCP, "[NETLINK_THREAD][Inst %02x] We reached maximum number of elements in eNB pdcp queue (%d)\n",
-                    new_data_p->pdcp_read_header.inst, pdcp_netlink_nb_element_enb);
+              LOG_E(PDCP, "[NETLINK_THREAD][Mod %02x] We reached maximum number of elements in eNB pdcp queue (%d)\n",
+                    module_id, pdcp_netlink_nb_element_enb);
             }
 
-            LOG_I(PDCP,"[NETLINK_THREAD] IP->PDCP : En-queueing packet for eNB instance  %d\n", new_data_p->pdcp_read_header.inst);
+            LOG_I(PDCP,"[NETLINK_THREAD] IP->PDCP : En-queueing packet for eNB module id %d\n", module_id);
 
             /* Enqueue the element in the right queue */
-            lfds611_queue_guaranteed_enqueue(pdcp_netlink_queue_enb[new_data_p->pdcp_read_header.inst], new_data_p);
+            lfds611_queue_guaranteed_enqueue(pdcp_netlink_queue_enb[module_id], new_data_p);
             stop_meas(&ip_pdcp_stats_tmp);
-            copy_meas(&eNB_pdcp_stats[new_data_p->pdcp_read_header.inst].pdcp_ip,&ip_pdcp_stats_tmp);
+            copy_meas(&eNB_pdcp_stats[module_id].pdcp_ip,&ip_pdcp_stats_tmp);
           } else {
-            if (pdcp_netlink_nb_element_ue[new_data_p->pdcp_read_header.inst]
+            if (pdcp_netlink_nb_element_ue[module_id]
                 > PDCP_QUEUE_NB_ELEMENTS) {
-              LOG_E(PDCP, "[NETLINK_THREAD][Inst %02x] We reached maximum number of elements in UE pdcp queue (%d)\n",
-                    new_data_p->pdcp_read_header.inst, pdcp_netlink_nb_element_ue);
+              LOG_E(PDCP, "[NETLINK_THREAD][Mod %02x] We reached maximum number of elements in UE pdcp queue (%d)\n",
+                    module_id, pdcp_netlink_nb_element_ue);
             }
 
-            LOG_I(PDCP,"[NETLINK_THREAD] IP->PDCP : En-queueing packet for UE instance  %d\n", new_data_p->pdcp_read_header.inst);
+            LOG_I(PDCP,"[NETLINK_THREAD] IP->PDCP : En-queueing packet for UE module id  %d\n", module_id);
 
             /* Enqueue the element in the right queue */
-            lfds611_queue_guaranteed_enqueue(pdcp_netlink_queue_ue[new_data_p->pdcp_read_header.inst], new_data_p);
+            lfds611_queue_guaranteed_enqueue(pdcp_netlink_queue_ue[module_id], new_data_p);
             stop_meas(&ip_pdcp_stats_tmp);
-            copy_meas(&UE_pdcp_stats[new_data_p->pdcp_read_header.inst].pdcp_ip,&ip_pdcp_stats_tmp);
+            copy_meas(&UE_pdcp_stats[module_id].pdcp_ip,&ip_pdcp_stats_tmp);
           }
         }
       }
@@ -306,3 +321,4 @@ void *pdcp_netlink_thread_fct(void *arg)
 
   return NULL;
 }
+#endif

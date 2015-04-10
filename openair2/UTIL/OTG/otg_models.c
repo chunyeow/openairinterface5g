@@ -43,6 +43,7 @@
 #include "otg_models.h"
 #include "UTIL/LOG/log.h"
 
+double backgroundRateRnd(void);
 
 
 /*all the TARMA stuff:

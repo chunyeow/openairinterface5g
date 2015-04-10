@@ -133,7 +133,7 @@ int nasmt_netlink_init(void)
   //---------------------------------------------------------------------------
   printk("nasmt_netlink_init - begin \n");
 
-  nas_nl_sk = netlink_kernel_create(&init_net,NAS_NETLINK_ID, 0, nasmt_nl_data_ready,
+  nas_nl_sk = netlink_kernel_create(&init_net,OAI_IP_DRIVER_NETLINK_ID, 0, nasmt_nl_data_ready,
                                     &nasmt_mutex, // NULL
                                     THIS_MODULE);
 

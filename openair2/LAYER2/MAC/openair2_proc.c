@@ -107,8 +107,9 @@ int openair2_stats_read(char *buffer, char **my_buffer, off_t off, int length)
           len+=sprintf(&buffer[len],"CH %d: Subband SINR (dB) :",
                        CH_index);
 
-          for (fg=0; fg<NUMBER_OF_MEASUREMENT_SUBBANDS; fg++)
+          for (fg=0; fg<NUMBER_OF_MEASUREMENT_SUBBANDS; fg++) {
             len+=sprintf(&buffer[len],"%d ",UE_mac_inst[Mod_id].Def_meas[CH_index].Sinr_meas[0][fg]);
+          }
 
           len+=sprintf(&buffer[len],"\n");
 
@@ -141,7 +142,9 @@ int openair2_stats_read(char *buffer, char **my_buffer, off_t off, int length)
               if(Overhead<0) {
                 Overhead=-Overhead;
                 Sign=-1;
-              } else Sign=1;
+              } else {
+                Sign=1;
+              }
 
               len+=sprintf(&buffer[len],"[PDCP]LCHAN %d: NB_TX = %d ,Tx_rate =(%d bits/TTI ,%d Kbits/s), NB_RX = %d ,Rx_rate =(%d bits/TTI ,%d Kbits/s) , LAYER2 TX OVERHEAD: %d Kbits/s\n",
                            UE_mac_inst[Mod_id].Dtch_lchan[i][CH_index].Lchan_info.Lchan_id.Index,
@@ -215,8 +218,9 @@ int openair2_stats_read(char *buffer, char **my_buffer, off_t off, int length)
                            UE_mac_inst[Mod_id].Dtch_lchan[i][CH_index].Lchan_info.NB_RX_ERRORS);
               len+=sprintf(&buffer[len],"        TX per TB: ");
 
-              for(kk=0; kk<MAX_NUMBER_TB_PER_LCHAN/2; kk++)
+              for(kk=0; kk<MAX_NUMBER_TB_PER_LCHAN/2; kk++) {
                 len+=sprintf(&buffer[len],"%d . ",UE_mac_inst[Mod_id].Dtch_lchan[i][CH_index].Lchan_info.NB_TX_TB[kk]);
+              }
 
               len+=sprintf(&buffer[len],"\n");
               len+=sprintf(&buffer[len],"        RXerr per TB: ");
@@ -241,7 +245,8 @@ int openair2_stats_read(char *buffer, char **my_buffer, off_t off, int length)
     else if(Mac_rlc_xface->Is_cluster_head[k] ==1) {
 
       Mod_id=k;
-      len+=sprintf(&buffer[len],"-------------------------------------------------------------------CH %d: TTI: %d------------------------------------------------------------------\n",
+      len+=sprintf(&buffer[len],
+                   "-------------------------------------------------------------------CH %d: TTI: %d------------------------------------------------------------------\n",
                    NODE_ID[Mod_id],Mac_rlc_xface->frame);
 
       for(i=1; i<=NB_CNX_CH; i++) {
@@ -251,7 +256,8 @@ int openair2_stats_read(char *buffer, char **my_buffer, off_t off, int length)
                        CH_mac_inst[Mod_id].Def_meas[i].Wideband_sinr);
           //print_cqi(CH_mac_inst[Mod_id].Def_meas[i].cqi));
 
-          len+=sprintf(&buffer[len],"[MAC] LCHAN %d (DCCH), NB_TX_MAC= %d (%d bits/TTI, %d kbits/s), NB_RX_MAC= %d (errors %d, sacch errors %d, sach errors %d, sach_missing %d)\n\n",
+          len+=sprintf(&buffer[len],
+                       "[MAC] LCHAN %d (DCCH), NB_TX_MAC= %d (%d bits/TTI, %d kbits/s), NB_RX_MAC= %d (errors %d, sacch errors %d, sach errors %d, sach_missing %d)\n\n",
                        CH_mac_inst[Mod_id].Dcch_lchan[i].Lchan_info.Lchan_id.Index,
                        CH_mac_inst[Mod_id].Dcch_lchan[i].Lchan_info.NB_TX,
                        CH_mac_inst[Mod_id].Dcch_lchan[i].Lchan_info.output_rate,
@@ -269,9 +275,12 @@ int openair2_stats_read(char *buffer, char **my_buffer, off_t off, int length)
               if(Overhead<0) {
                 Overhead=-Overhead;
                 Sign=-1;
-              } else Sign=1;
+              } else {
+                Sign=1;
+              }
 
-              len+=sprintf(&buffer[len],"[PDCP]LCHAN %d: NB_TX = %d ,Tx_rate =(%d bits/TTI ,%d Kbits/s), NB_RX = %d ,Rx_rate =(%d bits/TTI ,%d Kbits/s), LAYER2 TX OVERHEAD= %d Kbits/s\n",
+              len+=sprintf(&buffer[len],
+                           "[PDCP]LCHAN %d: NB_TX = %d ,Tx_rate =(%d bits/TTI ,%d Kbits/s), NB_RX = %d ,Rx_rate =(%d bits/TTI ,%d Kbits/s), LAYER2 TX OVERHEAD= %d Kbits/s\n",
                            CH_mac_inst[Mod_id].Dtch_lchan[j][i].Lchan_info.Lchan_id.Index,
                            Pdcp_stats_tx[k][i][j],
                            Pdcp_stats_tx_rate[k][i][j],
@@ -317,7 +326,8 @@ int openair2_stats_read(char *buffer, char **my_buffer, off_t off, int length)
                    rx_error_pdu);
               }
               */
-              len+=sprintf(&buffer[len],"[MAC]LCHAN %d (CNX %d,RAB %d), NB_TX_MAC= %d (%d bits/TTI, %d kbit/s), NB_RX_MAC= %d (errors %d, sacch_errors %d, sach_errors %d, sach_missing %d)\n",
+              len+=sprintf(&buffer[len],
+                           "[MAC]LCHAN %d (CNX %d,RAB %d), NB_TX_MAC= %d (%d bits/TTI, %d kbit/s), NB_RX_MAC= %d (errors %d, sacch_errors %d, sach_errors %d, sach_missing %d)\n",
                            CH_mac_inst[Mod_id].Dtch_lchan[j][i].Lchan_info.Lchan_id.Index,
                            i,j,
                            CH_mac_inst[Mod_id].Dtch_lchan[j][i].Lchan_info.NB_TX,
@@ -373,8 +383,9 @@ int add_openair2_stats()
   // pde = proc_create_entry("lchan_stats", S_IFREG | S_IRUGO, proc_openair2_root);
   pde = create_proc_read_entry("lchan_stats", S_IFREG | S_IRUGO, proc_openair2_root, (read_proc_t*)&openair2_stats_read, NULL);
 
-  if (!pde)
+  if (!pde) {
     printk("[OPENAIR][ERROR] can't create proc entry !\n");
+  }
 
   //#else
   //create_proc_info_entry("lchan_stats", S_IFREG | S_IRUGO, proc_openair2_root, openair2_stats_read);

@@ -51,8 +51,9 @@ int8_t get_Po_NOMINAL_PUSCH(module_id_t module_idP,uint8_t CC_id)
     return 0; // not reached
   }
 
-  if (UE_mac_inst[module_idP].radioResourceConfigCommon)
+  if (UE_mac_inst[module_idP].radioResourceConfigCommon) {
     rach_ConfigCommon = &UE_mac_inst[module_idP].radioResourceConfigCommon->rach_ConfigCommon;
+  }
   else {
     LOG_E(MAC,"[UE %d] CCid %d FATAL radioResourceConfigCommon is NULL !!!\n",module_idP,CC_id);
     mac_xface->macphy_exit("FATAL radioResourceConfigCommon is NULL");

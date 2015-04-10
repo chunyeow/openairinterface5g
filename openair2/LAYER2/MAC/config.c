@@ -88,7 +88,12 @@ void ue_mac_reset(module_id_t module_idP,uint8_t eNB_index)
 
 }
 
-int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,uint8_t eNB_index,
+int
+rrc_mac_config_req(
+  module_id_t                      Mod_id,
+  eNB_flag_t                       eNB_flagP,
+  rnti_t                           rntiP,
+  uint8_t                          eNB_index,
                        RadioResourceConfigCommonSIB_t  *radioResourceConfigCommon,
                        struct PhysicalConfigDedicated  *physicalConfigDedicated,
 #ifdef Rel10
@@ -122,14 +127,17 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
 
   int i,CC_id=0;
 
+  int UE_id = -1;
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_MAC_CONFIG, VCD_FUNCTION_IN);
 
   if (eNB_flagP==0) {
     LOG_I(MAC,"[CONFIG][UE %d] Configuring MAC/PHY from eNB %d\n",Mod_id,eNB_index);
 
-    if (tdd_Config != NULL)
+    if (tdd_Config != NULL) {
       UE_mac_inst[Mod_id].tdd_Config = tdd_Config;
+    }
   } else {
+    UE_id = find_UE_id(Mod_id, rntiP);
     if (physicalConfigDedicated == NULL) {
       LOG_I(MAC,"[CONFIG][eNB %d] Configuring MAC/PHY\n",Mod_id);
     } else {
@@ -138,10 +146,11 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
   }
 
   if (tdd_Config && SIwindowsize && SIperiod) {
-    if (eNB_flagP == ENB_FLAG_YES)
+    if (eNB_flagP == ENB_FLAG_YES) {
       mac_xface->phy_config_sib1_eNB(Mod_id,0,tdd_Config,*SIwindowsize,*SIperiod);
-    else
+    } else {
       mac_xface->phy_config_sib1_ue(Mod_id,0,eNB_index,tdd_Config,*SIwindowsize,*SIperiod);
+    }
   }
 
   if (radioResourceConfigCommon!=NULL) {
@@ -189,28 +198,32 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
 
       if (mac_MainConfig->ul_SCH_Config) {
 
-        if (mac_MainConfig->ul_SCH_Config->periodicBSR_Timer)
+        if (mac_MainConfig->ul_SCH_Config->periodicBSR_Timer) {
           UE_mac_inst[Mod_id].scheduling_info.periodicBSR_Timer = (uint16_t) *mac_MainConfig->ul_SCH_Config->periodicBSR_Timer;
-        else
+        } else {
           UE_mac_inst[Mod_id].scheduling_info.periodicBSR_Timer = (uint16_t) MAC_MainConfig__ul_SCH_Config__periodicBSR_Timer_infinity;
+        }
 
-        if (mac_MainConfig->ul_SCH_Config->maxHARQ_Tx)
+        if (mac_MainConfig->ul_SCH_Config->maxHARQ_Tx) {
           UE_mac_inst[Mod_id].scheduling_info.maxHARQ_Tx     = (uint16_t) *mac_MainConfig->ul_SCH_Config->maxHARQ_Tx;
-        else
+        } else {
           UE_mac_inst[Mod_id].scheduling_info.maxHARQ_Tx     = (uint16_t) MAC_MainConfig__ul_SCH_Config__maxHARQ_Tx_n5;
+        }
 
-        if (mac_MainConfig->ul_SCH_Config->retxBSR_Timer)
+        if (mac_MainConfig->ul_SCH_Config->retxBSR_Timer) {
           UE_mac_inst[Mod_id].scheduling_info.retxBSR_Timer     = (uint16_t) mac_MainConfig->ul_SCH_Config->retxBSR_Timer;
-        else
+        } else {
           UE_mac_inst[Mod_id].scheduling_info.retxBSR_Timer     = (uint16_t)MAC_MainConfig__ul_SCH_Config__retxBSR_Timer_sf2560;
+      }
       }
 
 #ifdef Rel10
 
-      if (mac_MainConfig->sr_ProhibitTimer_r9)
+      if (mac_MainConfig->sr_ProhibitTimer_r9) {
         UE_mac_inst[Mod_id].scheduling_info.sr_ProhibitTimer  = (uint16_t) *mac_MainConfig->sr_ProhibitTimer_r9;
-      else
+      } else {
         UE_mac_inst[Mod_id].scheduling_info.sr_ProhibitTimer  = (uint16_t) 0;
+      }
 
 #endif
       UE_mac_inst[Mod_id].scheduling_info.periodicBSR_SF  = get_sf_periodicBSRTimer(UE_mac_inst[Mod_id].scheduling_info.periodicBSR_Timer);
@@ -485,8 +498,9 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
       eNB_mac_inst[Mod_id].common_channels[CC_id].num_active_cba_groups=num_active_cba_groups;
 
       for (i=0; i < num_active_cba_groups; i ++) {
-        if (eNB_mac_inst[Mod_id].common_channels[CC_id].cba_rnti[i] != cba_rnti + i)
+        if (eNB_mac_inst[Mod_id].common_channels[CC_id].cba_rnti[i] != cba_rnti + i) {
           eNB_mac_inst[Mod_id].common_channels[CC_id].cba_rnti[i] = cba_rnti + i;
+        }
 
         //only configure UE ids up to num_active_cba_groups
         //we use them as candidates for the transmission of dci format0)
@@ -505,28 +519,32 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
   return(0);
 }
 #ifdef LOCALIZATION
+//------------------------------------------------------------------------------
 double
-rrc_get_estimated_ue_distance(module_id_t Mod_id, const frame_t frameP,  uint8_t UE_id, int CC_id, uint8_t loc_type)
+rrc_get_estimated_ue_distance(
+  const protocol_ctxt_t* const ctxt_pP,
+  const int         CC_idP,
+  const uint8_t     loc_typeP
+)
+//------------------------------------------------------------------------------
 {
   // localization types:
   // 0: power based
   // 1: time based
   LTE_eNB_UE_stats     *eNB_UE_stats     = NULL;
-  UE_list_t            *UE_list = &eNB_mac_inst[Mod_id].UE_list;
+  UE_list_t*            UE_list = &eNB_mac_inst[ctxt_pP->module_id].UE_list;
   int                   pCCid;
+  int                   UE_id;
 
-  uint16_t rnti;
-
-  //for (UE_id=UE_list->head;UE_id>=0;UE_id=UE_list->next[UE_id]) {
-  pCCid = UE_PCCID(Mod_id,UE_id);
-  rnti = UE_list->UE_template[pCCid][UE_id].rnti;
-
-  if(rnti == 0)
+  if(ctxt_pP->rnti == NOT_A_RNTI) {
     return -1;
+  }
 
-  eNB_UE_stats = mac_xface->get_eNB_UE_stats(Mod_id,pCCid,rnti);
+  UE_id = find_UE_id(ctxt_pP->module_id,ctxt_pP->rnti);
+  pCCid = UE_PCCID(ctxt_pP->module_id,UE_id);
+  eNB_UE_stats = mac_xface->get_eNB_UE_stats(ctxt_pP->module_id,pCCid,ctxt_pP->rnti);
 
-  switch (loc_type) {
+  switch (loc_typeP) {
   case 0:
     return eNB_UE_stats->distance.power_based;
     break;
@@ -539,7 +557,7 @@ rrc_get_estimated_ue_distance(module_id_t Mod_id, const frame_t frameP,  uint8_t
     return  eNB_UE_stats->distance.power_based;
   }
 
-  //    LOG_D(LOCALIZE, "DEBUG ME, dist = %d\n", &eNB_mac_inst[Mod_id].UE_list.UE_template[CC_id][UE_id].distance.power_based);
+  //    LOG_D(LOCALIZE, "DEBUG ME, dist = %d\n", &eNB_mac_inst[ctxt_pP->module_id].UE_list.UE_template[CC_id][UE_id].distance.power_based);
 
 }
 

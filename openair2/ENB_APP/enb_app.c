@@ -68,7 +68,7 @@ extern unsigned char NB_eNB_INST;
 # endif
 
 /*------------------------------------------------------------------------------*/
-static void configure_phy(uint32_t enb_id, const Enb_properties_array_t *enb_properties)
+static void configure_phy(module_id_t enb_id, const Enb_properties_array_t* enb_properties)
 {
   MessageDef *msg_p;
   int CC_id;
@@ -86,7 +86,7 @@ static void configure_phy(uint32_t enb_id, const Enb_properties_array_t *enb_pro
     PHY_CONFIGURATION_REQ (msg_p).rx_gain[CC_id]                 = enb_properties->properties[enb_id]->rx_gain[CC_id];
   }
 
-  itti_send_msg_to_task (TASK_PHY_ENB, enb_id, msg_p);
+  itti_send_msg_to_task (TASK_PHY_ENB, ENB_MODULE_ID_TO_INSTANCE(enb_id), msg_p);
 }
 
 /*------------------------------------------------------------------------------*/
@@ -189,7 +189,7 @@ static void configure_rrc(uint32_t enb_id, const Enb_properties_array_t *enb_pro
     RRC_CONFIGURATION_REQ (msg_p).ue_TimersAndConstants_n311[CC_id]               = enb_properties->properties[enb_id]->ue_TimersAndConstants_n311[CC_id];
   }
 
-  itti_send_msg_to_task (TASK_RRC_ENB, enb_id, msg_p);
+  itti_send_msg_to_task (TASK_RRC_ENB, ENB_MODULE_ID_TO_INSTANCE(enb_id), msg_p);
 }
 
 /*------------------------------------------------------------------------------*/
@@ -231,7 +231,8 @@ static uint32_t eNB_app_register(uint32_t enb_id_start, uint32_t enb_id_end, con
       s1ap_register_eNB->default_drx      = enb_properties->properties[enb_id]->pcch_defaultPagingCycle[0];
 
       s1ap_register_eNB->nb_mme =         enb_properties->properties[enb_id]->nb_mme;
-      AssertFatal (s1ap_register_eNB->nb_mme <= S1AP_MAX_NB_MME_IP_ADDRESS, "Too many MME for eNB %d (%d/%d)!", enb_id, s1ap_register_eNB->nb_mme, S1AP_MAX_NB_MME_IP_ADDRESS);
+      AssertFatal (s1ap_register_eNB->nb_mme <= S1AP_MAX_NB_MME_IP_ADDRESS, "Too many MME for eNB %d (%d/%d)!", enb_id, s1ap_register_eNB->nb_mme,
+                   S1AP_MAX_NB_MME_IP_ADDRESS);
 
       for (mme_id = 0; mme_id < s1ap_register_eNB->nb_mme; mme_id++) {
         s1ap_register_eNB->mme_ip_address[mme_id].ipv4 = enb_properties->properties[enb_id]->mme_ip_address[mme_id].ipv4;
@@ -250,7 +251,7 @@ static uint32_t eNB_app_register(uint32_t enb_id_start, uint32_t enb_id_end, con
       str = inet_ntoa(addr);
       strcpy(s1ap_register_eNB->enb_ip_address.ipv4_address, str);
 
-      itti_send_msg_to_task (TASK_S1AP, enb_id, msg_p);
+      itti_send_msg_to_task (TASK_S1AP, ENB_MODULE_ID_TO_INSTANCE(enb_id), msg_p);
 
       register_enb_pending++;
     }

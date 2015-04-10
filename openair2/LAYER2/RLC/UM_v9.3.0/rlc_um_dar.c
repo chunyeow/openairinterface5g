@@ -45,6 +45,7 @@
 //-----------------------------------------------------------------------------
 signed int rlc_um_get_pdu_infos(
   const protocol_ctxt_t* const ctxt_pP,
+  const rlc_um_entity_t* const rlc_pP,
   rlc_um_pdu_sn_10_t   * const header_pP,
   const sdu_size_t             total_sizeP,
   rlc_um_pdu_info_t    * const pdu_info_pP,
@@ -103,8 +104,8 @@ signed int rlc_um_get_pdu_infos(
       }
 
       AssertFatal( pdu_info_pP->num_li <= RLC_UM_SEGMENT_NB_MAX_LI_PER_PDU,
-                   "[FRAME %05u][RLC_UM][MOD XX][RB XX][GET PDU INFO]  SN %04d TOO MANY LIs ",
-                   ctxt_pP->frame,
+                   PROTOCOL_RLC_UM_CTXT_FMT"[GET PDU INFO]  SN %04d TOO MANY LIs ",
+                   PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
                    pdu_info_pP->sn);
 
       sum_li += pdu_info_pP->li_list[pdu_info_pP->num_li];
@@ -199,22 +200,22 @@ rlc_um_try_reassembly(
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_TRY_REASSEMBLY,VCD_FUNCTION_IN);
 
-  if (end_snP < 0)   end_snP   = end_snP   + rlc_pP->rx_sn_modulo;
+  if (end_snP < 0)   {
+    end_snP   = end_snP   + rlc_pP->rx_sn_modulo;
+  }
 
-  if (start_snP < 0) start_snP = start_snP + rlc_pP->rx_sn_modulo;
+  if (start_snP < 0) {
+    start_snP = start_snP + rlc_pP->rx_sn_modulo;
+  }
 
 #if defined (TRACE_RLC_UM_DAR)
-  LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY FROM PDU SN=%03d+1  TO  PDU SN=%03d   SN Length = %d bits\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-        rlc_pP->rb_id,
-        __LINE__,
+  LOG_D(RLC,  PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY FROM PDU SN=%03d+1  TO  PDU SN=%03d   SN Length = %d bits (%s:%u)\n",
+        PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
         rlc_pP->last_reassemblied_sn,
         end_snP,
-        rlc_pP->rx_sn_length);
+        rlc_pP->rx_sn_length,
+        __FILE__,
+        __LINE__);
 #endif
 
   // nothing to be reassemblied
@@ -234,16 +235,13 @@ rlc_um_try_reassembly(
 
       if ((rlc_pP->last_reassemblied_sn+1)%rlc_pP->rx_sn_modulo != sn) {
 #if defined (TRACE_RLC_UM_DAR)
-        LOG_W(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u FINDING a HOLE in RLC UM SN: CLEARING OUTPUT SDU BECAUSE NEW SN (%03d) TO REASSEMBLY NOT CONTIGUOUS WITH LAST REASSEMBLIED SN (%03d)\n",
-              ctxt_pP->frame,
-              (ctxt_pP->enb_flag) ? "eNB" : "UE",
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
-              (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-              rlc_pP->rb_id,
-              __LINE__,
+        LOG_W(RLC,
+              PROTOCOL_RLC_UM_CTXT_FMT" FINDING a HOLE in RLC UM SN: CLEARING OUTPUT SDU BECAUSE NEW SN (%03d) TO REASSEMBLY NOT CONTIGUOUS WITH LAST REASSEMBLIED SN (%03d) (%s:%u)\n",
+              PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
               sn,
-              rlc_pP->last_reassemblied_sn);
+              rlc_pP->last_reassemblied_sn,
+              __FILE__,
+              __LINE__);
 #endif
         rlc_um_clear_rx_sdu(ctxt_pP, rlc_pP);
       }
@@ -253,15 +251,11 @@ rlc_um_try_reassembly(
 
       if (rlc_pP->rx_sn_length == 10) {
 #if defined (TRACE_RLC_UM_DAR)
-        LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY 10 PDU SN=%03d\n",
-              ctxt_pP->frame,
-              (ctxt_pP->enb_flag) ? "eNB" : "UE",
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
-              (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-              rlc_pP->rb_id,
-              __LINE__,
-              sn);
+        LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY 10 PDU SN=%03d\n (%s:%u)",
+              PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+              sn,
+              __FILE__,
+              __LINE__);
 #endif
         e  = (((rlc_um_pdu_sn_10_t*)(tb_ind_p->data_ptr))->b1 & 0x04) >> 2;
         fi = (((rlc_um_pdu_sn_10_t*)(tb_ind_p->data_ptr))->b1 & 0x18) >> 3;
@@ -270,16 +264,12 @@ rlc_um_try_reassembly(
         data_p = &tb_ind_p->data_ptr[2];
       } else {
 #if defined (TRACE_RLC_UM_DAR)
-        LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line TRY REASSEMBLY 5 PDU SN=%03d Byte 0=%02X\n",
-              ctxt_pP->frame,
-              (ctxt_pP->enb_flag) ? "eNB" : "UE",
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
-              (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-              rlc_pP->rb_id,
-              __LINE__,
+        LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY 5 PDU SN=%03d Byte 0=%02X (%s:%u)\n",
+              PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
               sn,
-              ((rlc_um_pdu_sn_5_t*)(tb_ind_p->data_ptr))->b1);
+              ((rlc_um_pdu_sn_5_t*)(tb_ind_p->data_ptr))->b1,
+              __FILE__,
+              __LINE__);
 #endif
         e  = (((rlc_um_pdu_sn_5_t*)(tb_ind_p->data_ptr))->b1 & 0x00000020) >> 5;
         fi = (((rlc_um_pdu_sn_5_t*)(tb_ind_p->data_ptr))->b1 & 0x000000C0) >> 6;
@@ -287,16 +277,12 @@ rlc_um_try_reassembly(
         size   = tb_ind_p->size - 1;
         data_p = &tb_ind_p->data_ptr[1];
 #if defined (TRACE_RLC_UM_DAR)
-        LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u e=%01X fi=%01X\n",
-              ctxt_pP->frame,
-              (ctxt_pP->enb_flag) ? "eNB" : "UE",
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
-              (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-              rlc_pP->rb_id,
-              __LINE__,
+        LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" e=%01X fi=%01X\n",
+              PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
               e,
-              fi);
+              fi,
+              __FILE__,
+              __LINE__);
 #endif
       }
 
@@ -304,13 +290,9 @@ rlc_um_try_reassembly(
         switch (fi) {
         case RLC_FI_1ST_BYTE_DATA_IS_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-          LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU NO E_LI FI=11 (00)\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                rlc_pP->rb_id,
+          LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU NO E_LI FI=11 (00) (%s:%u)\n",
+                PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+                __FILE__,
                 __LINE__);
 #endif
           // one complete SDU
@@ -324,13 +306,9 @@ rlc_um_try_reassembly(
 
         case RLC_FI_1ST_BYTE_DATA_IS_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_NOT_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-          LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU NO E_LI FI=10 (01)\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                rlc_pP->rb_id,
+          LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU NO E_LI FI=10 (01) (%s:%u)\n",
+                PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+                __FILE__,
                 __LINE__);
 #endif
           // one beginning segment of SDU in PDU
@@ -342,13 +320,9 @@ rlc_um_try_reassembly(
 
         case RLC_FI_1ST_BYTE_DATA_IS_NOT_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-          LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU NO E_LI FI=01 (10)\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                rlc_pP->rb_id,
+          LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU NO E_LI FI=01 (10) (%s:%u)\n",
+                PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+                __FILE__,
                 __LINE__);
 #endif
 
@@ -367,13 +341,9 @@ rlc_um_try_reassembly(
 
         case RLC_FI_1ST_BYTE_DATA_IS_NOT_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_NOT_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-          LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU NO E_LI FI=00 (11)\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                rlc_pP->rb_id,
+          LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU NO E_LI FI=00 (11) (%s:%u)\n",
+                PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+                __FILE__,
                 __LINE__);
 #endif
 
@@ -382,13 +352,9 @@ rlc_um_try_reassembly(
             rlc_um_reassembly (ctxt_pP, rlc_pP, data_p, size);
           } else {
 #if defined (TRACE_RLC_UM_DAR)
-            LOG_W(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU NO E_LI FI=00 (11) MISSING SN DETECTED\n",
-                  ctxt_pP->frame,
-                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                  ctxt_pP->enb_module_id,
-                  ctxt_pP->ue_module_id,
-                  (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                  rlc_pP->rb_id,
+            LOG_W(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU NO E_LI FI=00 (11) MISSING SN DETECTED (%s:%u)\n",
+                  PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+                  __FILE__,
                   __LINE__);
 #endif
             //LOG_D(RLC, "[MSC_NBOX][FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u][Missing SN detected][RLC_UM][MOD %u/%u][RB %u]\n",
@@ -398,40 +364,28 @@ rlc_um_try_reassembly(
             rlc_pP->stat_rx_data_bytes_dropped += tb_ind_p->size;
 #if defined(RLC_STOP_ON_LOST_PDU)
             AssertFatal( rlc_pP->reassembly_missing_sn_detected == 1,
-                         "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] MISSING PDU DETECTED\n",
-                         ctxt_pP->frame,
-                         (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                         ctxt_pP->enb_module_id,
-                         ctxt_pP->ue_module_id,
-                         (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                         rlc_pP->rb_id);
+                         PROTOCOL_RLC_UM_CTXT_FMT" MISSING PDU DETECTED (%s:%u)\n",
+                         PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+                         __FILE__,
+                         __LINE__);
 #endif
           }
 
           break;
 
         default:
-          AssertFatal( 0 , "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TRY REASSEMBLY SHOULD NOT GO HERE\n",
-                       ctxt_pP->frame,
-                       (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                       ctxt_pP->enb_module_id,
-                       ctxt_pP->ue_module_id,
-                       (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                       rlc_pP->rb_id);
+          AssertFatal( 0 , PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY SHOULD NOT GO HERE (%s:%u)\n",
+                       PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+                       __FILE__,
+                       __LINE__);
         }
       } else {
         if (rlc_um_read_length_indicators(&data_p, e_li_p, li_array, &num_li, &size ) >= 0) {
           switch (fi) {
           case RLC_FI_1ST_BYTE_DATA_IS_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU FI=11 (00) Li=",
-                  ctxt_pP->frame,
-                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                  ctxt_pP->enb_module_id,
-                  ctxt_pP->ue_module_id,
-                  (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                  rlc_pP->rb_id,
-                  __LINE__);
+            LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU FI=11 (00) Li=",
+                  PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP));
 
             for (i=0; i < num_li; i++) {
               LOG_D(RLC, "%d ",li_array[i]);
@@ -460,14 +414,8 @@ rlc_um_try_reassembly(
 
           case RLC_FI_1ST_BYTE_DATA_IS_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_NOT_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU FI=10 (01) Li=",
-                  ctxt_pP->frame,
-                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                  ctxt_pP->enb_module_id,
-                  ctxt_pP->ue_module_id,
-                  (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                  rlc_pP->rb_id,
-                  __LINE__);
+            LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU FI=10 (01) Li=",
+                  PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP));
 
             for (i=0; i < num_li; i++) {
               LOG_D(RLC, "%d ",li_array[i]);
@@ -495,14 +443,8 @@ rlc_um_try_reassembly(
 
           case RLC_FI_1ST_BYTE_DATA_IS_NOT_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU FI=01 (10) Li=",
-                  ctxt_pP->frame,
-                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                  ctxt_pP->enb_module_id,
-                  ctxt_pP->ue_module_id,
-                  (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                  rlc_pP->rb_id,
-                  __LINE__);
+            LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU FI=01 (10) Li=",
+                  PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP));
 
             for (i=0; i < num_li; i++) {
               LOG_D(RLC, "%d ",li_array[i]);
@@ -538,14 +480,8 @@ rlc_um_try_reassembly(
 
           case RLC_FI_1ST_BYTE_DATA_IS_NOT_1ST_BYTE_SDU_LAST_BYTE_DATA_IS_NOT_LAST_BYTE_SDU:
 #if defined (TRACE_RLC_UM_DAR)
-            LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRY REASSEMBLY PDU FI=00 (11) Li=",
-                  ctxt_pP->frame,
-                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                  ctxt_pP->enb_module_id,
-                  ctxt_pP->ue_module_id,
-                  (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                  rlc_pP->rb_id,
-                  __LINE__);
+            LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRY REASSEMBLY PDU FI=00 (11) Li=",
+                  PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP));
 
             for (i=0; i < num_li; i++) {
               LOG_D(RLC, "%d ",li_array[i]);
@@ -556,15 +492,11 @@ rlc_um_try_reassembly(
 
             if (rlc_pP->reassembly_missing_sn_detected) {
 #if defined (TRACE_RLC_UM_DAR)
-              LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u DISCARD FIRST LI %d",
-                    ctxt_pP->frame,
-                    (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                    ctxt_pP->enb_module_id,
-                    ctxt_pP->ue_module_id,
-                    (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                    rlc_pP->rb_id,
-                    __LINE__,
-                    li_array[0]);
+              LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" DISCARD FIRST LI %d (%s:%u)",
+                    PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+                    li_array[0],
+                    __FILE__,
+                    __LINE__);
 #endif
               reassembly_start_index = 1;
               data_p = &data_p[li_array[0]];
@@ -584,13 +516,10 @@ rlc_um_try_reassembly(
               // data_p is already ok, done by last loop above
               rlc_um_reassembly (ctxt_pP, rlc_pP, data_p, size);
             } else {
-              AssertFatal( 0 !=0, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] SHOULD NOT GO HERE\n",
-                           ctxt_pP->frame,
-                           (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                           ctxt_pP->enb_module_id,
-                           ctxt_pP->ue_module_id,
-                           (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                           rlc_pP->rb_id);
+              AssertFatal( 0 !=0, PROTOCOL_RLC_UM_CTXT_FMT" SHOULD NOT GO HERE (%s:%u)\n",
+                           PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+                           __FILE__,
+                           __LINE__);
               //rlc_pP->stat_rx_data_pdu_dropped += 1;
               rlc_pP->stat_rx_data_bytes_dropped += size;
             }
@@ -600,13 +529,9 @@ rlc_um_try_reassembly(
 
           default:
 #if defined (TRACE_RLC_UM_DAR)
-            LOG_W(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u Missing SN detected\n",
-                  ctxt_pP->frame,
-                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                  ctxt_pP->enb_module_id,
-                  ctxt_pP->ue_module_id,
-                  (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                  rlc_pP->rb_id,
+            LOG_W(RLC, PROTOCOL_RLC_UM_CTXT_FMT" Missing SN detected (%s:%u)\n",
+                  PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+                  __FILE__,
                   __LINE__);
 #endif
             rlc_pP->stat_rx_data_pdu_dropped += 1;
@@ -615,55 +540,41 @@ rlc_um_try_reassembly(
             rlc_pP->reassembly_missing_sn_detected = 1;
 #if defined(RLC_STOP_ON_LOST_PDU)
             AssertFatal( rlc_pP->reassembly_missing_sn_detected == 1,
-                         "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] MISSING PDU DETECTED\n",
-                         ctxt_pP->frame,
-                         (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                         ctxt_pP->enb_module_id,
-                         ctxt_pP->ue_module_id,
-                         (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                         rlc_pP->rb_id);
+                         PROTOCOL_RLC_UM_CTXT_FMT" MISSING PDU DETECTED (%s:%u)\n",
+                         PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+                         __FILE__,
+                         __LINE__);
 #endif
           }
         }
       }
 
 #if defined (TRACE_RLC_UM_DAR)
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u REMOVE PDU FROM DAR BUFFER  SN=%03d\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id,
-            __LINE__,
-            sn);
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" REMOVE PDU FROM DAR BUFFER  SN=%03d (%s:%u)\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+            sn,
+            __FILE__,
+            __LINE__);
 #endif
       free_mem_block(rlc_pP->dar_buffer[sn]);
       rlc_pP->dar_buffer[sn] = NULL;
     } else {
       rlc_pP->last_reassemblied_missing_sn = sn;
 #if defined (TRACE_RLC_UM_DAR)
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u Missing SN %04d detected, clearing RX SDU\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id,
-            __LINE__,
-            sn);
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" Missing SN %04d detected, clearing RX SDU (%s:%u)\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+            sn,
+            __FILE__,
+            __LINE__);
 #endif
       rlc_pP->reassembly_missing_sn_detected = 1;
       rlc_um_clear_rx_sdu(ctxt_pP, rlc_pP);
 #if defined(RLC_STOP_ON_LOST_PDU)
       AssertFatal( rlc_pP->reassembly_missing_sn_detected == 1,
-                   "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] MISSING PDU DETECTED\n",
-                   ctxt_pP->frame,
-                   (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                   ctxt_pP->enb_module_id,
-                   ctxt_pP->ue_module_id,
-                   (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                   rlc_pP->rb_id);
+                   PROTOCOL_RLC_UM_CTXT_FMT" MISSING PDU DETECTED (%s:%u)\n",
+                   PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
+                   __FILE__,
+                   __LINE__);
 #endif
     }
 
@@ -675,17 +586,13 @@ rlc_um_try_reassembly(
   }
 
 #if defined (TRACE_RLC_UM_DAR)
-  LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] Line %u TRIED REASSEMBLY VR(UR)=%03d VR(UX)=%03d VR(UH)=%03d\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-        rlc_pP->rb_id,
-        __LINE__,
+  LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TRIED REASSEMBLY VR(UR)=%03d VR(UX)=%03d VR(UH)=%03d (%s:%u)\n",
+        PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
         rlc_pP->vr_ur,
         rlc_pP->vr_ux,
-        rlc_pP->vr_uh);
+        rlc_pP->vr_uh,
+        __FILE__,
+        __LINE__);
 #endif
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_TRY_REASSEMBLY,VCD_FUNCTION_OUT);
@@ -698,17 +605,12 @@ rlc_um_stop_and_reset_timer_reordering(
 //-----------------------------------------------------------------------------
 {
 #if defined (TRACE_RLC_UM_DAR)
-  LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u][T-REORDERING] STOPPED AND RESET\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-        rlc_pP->rb_id);
+  LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" [T-REORDERING] STOPPED AND RESET\n",
+        PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP));
 #endif
   rlc_pP->t_reordering.running         = 0;
-  rlc_pP->t_reordering.frame_time_out  = 0;
-  rlc_pP->t_reordering.frame_start     = 0;
+  rlc_pP->t_reordering.ms_time_out     = 0;
+  rlc_pP->t_reordering.ms_start        = 0;
   rlc_pP->t_reordering.timed_out       = 0;
 }
 //-----------------------------------------------------------------------------
@@ -718,33 +620,34 @@ rlc_um_start_timer_reordering(
   rlc_um_entity_t *            rlc_pP)
 //-----------------------------------------------------------------------------
 {
-  rlc_pP->t_reordering.running         = 1;
-  rlc_pP->t_reordering.frame_time_out  = ctxt_pP->frame + rlc_pP->t_reordering.time_out;
-  rlc_pP->t_reordering.frame_start     = ctxt_pP->frame;
   rlc_pP->t_reordering.timed_out       = 0;
+
+  if (rlc_pP->t_reordering.ms_duration > 0) {
+  rlc_pP->t_reordering.running         = 1;
+    rlc_pP->t_reordering.ms_time_out      = PROTOCOL_CTXT_TIME_MILLI_SECONDS(ctxt_pP) + rlc_pP->t_reordering.ms_duration;
+    rlc_pP->t_reordering.ms_start        = PROTOCOL_CTXT_TIME_MILLI_SECONDS(ctxt_pP);
 #if defined (TRACE_RLC_UM_DAR)
-  LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u][T-REORDERING] STARTED (TIME-OUT = FRAME %05u)\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-        rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" [T-REORDERING] STARTED (TIME-OUT = FRAME %05u)\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
         rlc_pP->t_reordering.frame_time_out);
 #endif
+  } else {
+    LOG_T(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[T-REORDERING] NOT STARTED, CAUSE CONFIGURED 0 ms\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP));
+  }
 }
 //-----------------------------------------------------------------------------
 void
 rlc_um_init_timer_reordering(
   const protocol_ctxt_t* const ctxt_pP,
   rlc_um_entity_t * const rlc_pP,
-  uint32_t time_outP)
+  const uint32_t  ms_durationP)
 //-----------------------------------------------------------------------------
 {
   rlc_pP->t_reordering.running         = 0;
-  rlc_pP->t_reordering.frame_time_out  = 0;
-  rlc_pP->t_reordering.frame_start     = 0;
-  rlc_pP->t_reordering.time_out        = time_outP;
+  rlc_pP->t_reordering.ms_time_out     = 0;
+  rlc_pP->t_reordering.ms_start        = 0;
+  rlc_pP->t_reordering.ms_duration     = ms_durationP;
   rlc_pP->t_reordering.timed_out       = 0;
 }
 //-----------------------------------------------------------------------------
@@ -766,16 +669,17 @@ void rlc_um_check_timer_dar_time_out(
       //        |           |******************|          |
       //        +-----------+------------------+----------+
       //FRAME # 0                                     FRAME MAX
-      ((rlc_pP->t_reordering.frame_start < rlc_pP->t_reordering.frame_time_out) &&
-       ((ctxt_pP->frame >= rlc_pP->t_reordering.frame_time_out) ||
-        (ctxt_pP->frame < rlc_pP->t_reordering.frame_start)))                                   ||
+      ((rlc_pP->t_reordering.ms_start < rlc_pP->t_reordering.ms_time_out) &&
+       ((PROTOCOL_CTXT_TIME_MILLI_SECONDS(ctxt_pP) >= rlc_pP->t_reordering.ms_time_out) ||
+        (PROTOCOL_CTXT_TIME_MILLI_SECONDS(ctxt_pP) < rlc_pP->t_reordering.ms_start)))                                   ||
       // CASE 2:        time out            start
       //        +-----------+------------------+----------+
       //        |***********|                  |**********|
       //        +-----------+------------------+----------+
       //FRAME # 0                                     FRAME MAX VALUE
-      ((rlc_pP->t_reordering.frame_start > rlc_pP->t_reordering.frame_time_out) &&
-       (ctxt_pP->frame < rlc_pP->t_reordering.frame_start) && (ctxt_pP->frame >= rlc_pP->t_reordering.frame_time_out))
+      ((rlc_pP->t_reordering.ms_start > rlc_pP->t_reordering.ms_time_out) &&
+       (PROTOCOL_CTXT_TIME_MILLI_SECONDS(ctxt_pP) < rlc_pP->t_reordering.ms_start) &&
+       (PROTOCOL_CTXT_TIME_MILLI_SECONDS(ctxt_pP) >= rlc_pP->t_reordering.ms_time_out))
     ) {
 
       //if ((uint32_t)((uint32_t)rlc_pP->timer_reordering  + (uint32_t)rlc_pP->timer_reordering_init)   <= ctxt_pP->frame) {
@@ -788,51 +692,21 @@ void rlc_um_check_timer_dar_time_out(
       //      -set VR(UX) to VR(UH).
       rlc_pP->stat_timer_reordering_timed_out += 1;
 #if defined (TRACE_RLC_UM_DAR)
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u]*****************************************************\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id);
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u]*    T I M E  -  O U T                              *\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id);
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u]*****************************************************\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id);
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] TIMER t-Reordering expiration\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id);
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] timer_reordering=%d ctxt_pP->frame=%d expire ctxt_pP->frame %d\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id,
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT"*****************************************************\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP));
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT"*    T I M E  -  O U T                              *\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP));
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT"*****************************************************\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP));
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" TIMER t-Reordering expiration\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP));
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" timer_reordering=%d frame=%d expire ms %d\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
             rlc_pP->t_reordering.time_out,
-            rlc_pP->t_reordering.frame_time_out,
-            ctxt_pP->frame);
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] set VR(UR)=%03d to",
             ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id,
+            rlc_pP->t_reordering.ms_time_out);
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" set VR(UR)=%03d to",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
             rlc_pP->vr_ur);
 #endif
 
@@ -857,24 +731,14 @@ void rlc_um_check_timer_dar_time_out(
           rlc_um_start_timer_reordering(ctxt_pP, rlc_pP);
           rlc_pP->vr_ux = rlc_pP->vr_uh;
 #if defined (TRACE_RLC_UM_DAR)
-          LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] restarting t-Reordering set VR(UX) to %d (VR(UH)>VR(UR))\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                rlc_pP->rb_id,
+          LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" restarting t-Reordering set VR(UX) to %d (VR(UH)>VR(UR))\n",
+                PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
                 rlc_pP->vr_ux);
 #endif
         } else {
 #if defined (TRACE_RLC_UM_DAR)
-          LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] STOP t-Reordering VR(UX) = %03d\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                rlc_pP->rb_id,
+          LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" STOP t-Reordering VR(UX) = %03d\n",
+                PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
                 rlc_pP->vr_ux);
 #endif
           rlc_um_stop_and_reset_timer_reordering(ctxt_pP, rlc_pP);
@@ -888,7 +752,7 @@ void rlc_um_check_timer_dar_time_out(
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_CHECK_TIMER_DAR_TIME_OUT,VCD_FUNCTION_OUT);
 }
 //-----------------------------------------------------------------------------
-inline mem_block_t *
+mem_block_t*
 rlc_um_remove_pdu_from_dar_buffer(
   const protocol_ctxt_t* const ctxt_pP,
   rlc_um_entity_t * const rlc_pP,
@@ -897,26 +761,22 @@ rlc_um_remove_pdu_from_dar_buffer(
   //-----------------------------------------------------------------------------
   mem_block_t * pdu_p     = rlc_pP->dar_buffer[snP];
 #if defined (TRACE_RLC_UM_DAR)
-  LOG_D(RLC, "[FRAME ?????][%s][RLC_UM][MOD %u/%u][%s %u] REMOVE PDU FROM DAR BUFFER  SN=%03d\n",
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-        rlc_pP->rb_id,
+  LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" REMOVE PDU FROM DAR BUFFER  SN=%03d\n",
+        PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
         snP);
 #endif
   rlc_pP->dar_buffer[snP] = NULL;
   return pdu_p;
 }
 //-----------------------------------------------------------------------------
-inline mem_block_t *
+mem_block_t*
 rlc_um_get_pdu_from_dar_buffer(const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP, rlc_usn_t snP)
 {
   //-----------------------------------------------------------------------------
   return rlc_pP->dar_buffer[snP];
 }
 //-----------------------------------------------------------------------------
-static inline void
+void
 rlc_um_store_pdu_in_dar_buffer(
   const protocol_ctxt_t* const ctxt_pP,
   rlc_um_entity_t * const rlc_pP,
@@ -925,13 +785,8 @@ rlc_um_store_pdu_in_dar_buffer(
 {
   //-----------------------------------------------------------------------------
 #if defined (TRACE_RLC_UM_DAR)
-  LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] STORE PDU IN DAR BUFFER  SN=%03d  VR(UR)=%03d VR(UX)=%03d VR(UH)=%03d\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-        rlc_pP->rb_id,
+  LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" STORE PDU IN DAR BUFFER  SN=%03d  VR(UR)=%03d VR(UX)=%03d VR(UH)=%03d\n",
+        PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
         snP,
         rlc_pP->vr_ur,
         rlc_pP->vr_ux,
@@ -946,7 +801,7 @@ rlc_um_store_pdu_in_dar_buffer(
 // returns  1 if lower_bound  == sn
 // returns  2 if higher_bound == sn
 // returns  3 if higher_bound == sn == lower_bound
-inline signed int
+signed int
 rlc_um_in_window(
   const protocol_ctxt_t* const ctxt_pP,
   rlc_um_entity_t * const rlc_pP,
@@ -968,13 +823,8 @@ rlc_um_in_window(
 
   if ( lower_boundP > snP) {
 #ifdef TRACE_RLC_UM_RX
-    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] %d not in WINDOW[%03d:%03d] (SN<LOWER BOUND)\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" %d not in WINDOW[%03d:%03d] (SN<LOWER BOUND)\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
           sn,
           lower_bound,
           higher_bound);
@@ -984,13 +834,8 @@ rlc_um_in_window(
 
   if ( higher_boundP < snP) {
 #ifdef TRACE_RLC_UM_RX
-    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] %d not in WINDOW[%03d:%03d] (SN>HIGHER BOUND) <=> %d not in WINDOW[%03d:%03d]\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" %d not in WINDOW[%03d:%03d] (SN>HIGHER BOUND) <=> %d not in WINDOW[%03d:%03d]\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
           sn,
           lower_bound,
           higher_bound,
@@ -1004,13 +849,8 @@ rlc_um_in_window(
   if ( lower_boundP == snP) {
     if ( higher_boundP == snP) {
 #ifdef TRACE_RLC_UM_RX
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] %d  in WINDOW[%03d:%03d] (SN=HIGHER BOUND=LOWER BOUND)\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id,
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" %d  in WINDOW[%03d:%03d] (SN=HIGHER BOUND=LOWER BOUND)\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
             sn,
             lower_bound,
             higher_bound);
@@ -1019,13 +859,8 @@ rlc_um_in_window(
     }
 
 #ifdef TRACE_RLC_UM_RX
-    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] %d  in WINDOW[%03d:%03d] (SN=LOWER BOUND)\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" %d  in WINDOW[%03d:%03d] (SN=LOWER BOUND)\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
           sn,
           lower_bound,
           higher_bound);
@@ -1035,13 +870,8 @@ rlc_um_in_window(
 
   if ( higher_boundP == snP) {
 #ifdef TRACE_RLC_UM_RX
-    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] %d  in WINDOW[%03d:%03d] (SN=HIGHER BOUND)\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" %d  in WINDOW[%03d:%03d] (SN=HIGHER BOUND)\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
           sn,
           lower_bound,
           higher_bound);
@@ -1053,7 +883,7 @@ rlc_um_in_window(
 
 }
 //-----------------------------------------------------------------------------
-inline signed int
+signed int
 rlc_um_in_reordering_window(
   const protocol_ctxt_t* const ctxt_pP,
   rlc_um_entity_t * const rlc_pP,
@@ -1066,13 +896,8 @@ rlc_um_in_reordering_window(
   if ( 0 <= sn_mod) {
     if (sn_mod < rlc_pP->rx_um_window_size) {
 #if defined (TRACE_RLC_UM_DAR)
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] %d IN REORDERING WINDOW[%03d:%03d[ SN %d IN [%03d:%03d[ VR(UR)=%03d VR(UH)=%03d\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id,
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" %d IN REORDERING WINDOW[%03d:%03d[ SN %d IN [%03d:%03d[ VR(UR)=%03d VR(UH)=%03d\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
             sn_mod,
             0,
             rlc_pP->rx_um_window_size,
@@ -1089,13 +914,8 @@ rlc_um_in_reordering_window(
 #if defined (TRACE_RLC_UM_DAR)
 
   if (modulus < 0) {
-    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] %d NOT IN REORDERING WINDOW[%03d:%03d[ SN %d NOT IN [%03d:%03d[ VR(UR)=%03d VR(UH)=%03d\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" %d NOT IN REORDERING WINDOW[%03d:%03d[ SN %d NOT IN [%03d:%03d[ VR(UR)=%03d VR(UH)=%03d\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
           sn_mod,
           modulus + 1024,
           rlc_pP->rx_um_window_size,
@@ -1105,13 +925,8 @@ rlc_um_in_reordering_window(
           rlc_pP->vr_ur,
           rlc_pP->vr_uh);
   } else {
-    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] %d NOT IN REORDERING WINDOW[%03d:%03d[ SN %d NOT IN [%03d:%03d[ VR(UR)=%03d VR(UH)=%03d\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" %d NOT IN REORDERING WINDOW[%03d:%03d[ SN %d NOT IN [%03d:%03d[ VR(UR)=%03d VR(UH)=%03d\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
           sn_mod,
           modulus,
           rlc_pP->rx_um_window_size,
@@ -1172,7 +987,7 @@ rlc_um_receive_process_dar (
 
   in_window = rlc_um_in_window(ctxt_pP, rlc_pP, rlc_pP->vr_uh - rlc_pP->rx_um_window_size, sn, rlc_pP->vr_ur);
 
-#if defined(DEBUG_RLC_PAYLOAD)
+#if defined(TRACE_RLC_PAYLOAD)
   rlc_util_print_hex_octets(RLC, &pdu_pP->b1, tb_sizeP);
 #endif
 
@@ -1184,13 +999,8 @@ rlc_um_receive_process_dar (
   // rlc_um_in_window() returns  3 if higher_bound == sn == lower_bound
   if ((in_window == 1) || (in_window == 0)) {
 #if defined (TRACE_RLC_UM_DAR)
-    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] RX PDU  VR(UH) – UM_Window_Size) <= SN %d < VR(UR) -> GARBAGE\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" RX PDU  VR(UH) – UM_Window_Size) <= SN %d < VR(UR) -> GARBAGE\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
           sn);
 #endif
     rlc_pP->stat_rx_data_pdu_out_of_window   += 1;
@@ -1207,13 +1017,8 @@ rlc_um_receive_process_dar (
 
     if (in_window == 0) {
 #if defined (TRACE_RLC_UM_DAR)
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] RX PDU  VR(UR) < SN %d < VR(UH) and RECEIVED BEFORE-> GARBAGE\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id,
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" RX PDU  VR(UR) < SN %d < VR(UH) and RECEIVED BEFORE-> GARBAGE\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
             sn);
 #endif
       //discard the PDU
@@ -1230,13 +1035,8 @@ rlc_um_receive_process_dar (
     rlc_pP->stat_rx_data_pdus_duplicate  += 1;
     rlc_pP->stat_rx_data_bytes_duplicate += tb_sizeP;
 #if defined (TRACE_RLC_UM_DAR)
-    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] RX PDU SN %03d REMOVE OLD PDU BEFORE STORING NEW PDU\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" RX PDU SN %03d REMOVE OLD PDU BEFORE STORING NEW PDU\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
           sn);
 #endif
     mem_block_t *pdu = rlc_um_remove_pdu_from_dar_buffer(ctxt_pP, rlc_pP, sn);
@@ -1257,13 +1057,8 @@ rlc_um_receive_process_dar (
   //          -set VR(UR) to (VR(UH) – UM_Window_Size);
   if (rlc_um_in_reordering_window(ctxt_pP, rlc_pP, sn) < 0) {
 #if defined (TRACE_RLC_UM_DAR)
-    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] RX PDU  SN %d OUTSIDE REORDERING WINDOW VR(UH)=%d UM_Window_Size=%d\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" RX PDU  SN %d OUTSIDE REORDERING WINDOW VR(UH)=%d UM_Window_Size=%d\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
           sn,
           rlc_pP->vr_uh,
           rlc_pP->rx_um_window_size);
@@ -1283,13 +1078,8 @@ rlc_um_receive_process_dar (
 
     if (rlc_um_in_reordering_window(ctxt_pP, rlc_pP, rlc_pP->vr_ur) < 0) {
 #if defined (TRACE_RLC_UM_DAR)
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] VR(UR) %d OUTSIDE REORDERING WINDOW SET TO VR(UH) – UM_Window_Size = %d\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id,
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" VR(UR) %d OUTSIDE REORDERING WINDOW SET TO VR(UH) – UM_Window_Size = %d\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
             rlc_pP->vr_ur,
             in_window);
 #endif
@@ -1325,13 +1115,8 @@ rlc_um_receive_process_dar (
       if (in_window < 0) {
 #if defined (TRACE_RLC_UM_DAR)
         LOG_D(RLC,
-              "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] STOP and RESET t-Reordering because VR(UX) falls outside of the reordering window and VR(UX)=%d is not equal to VR(UH)=%d -or- VR(UX) <= VR(UR)\n",
-              ctxt_pP->frame,
-              (ctxt_pP->enb_flag) ? "eNB" : "UE",
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
-              (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-              rlc_pP->rb_id,
+              PROTOCOL_RLC_UM_CTXT_FMT" STOP and RESET t-Reordering because VR(UX) falls outside of the reordering window and VR(UX)=%d is not equal to VR(UH)=%d -or- VR(UX) <= VR(UR)\n",
+              PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
               rlc_pP->vr_ux,
               rlc_pP->vr_uh);
 #endif
@@ -1345,13 +1130,9 @@ rlc_um_receive_process_dar (
 
     if ((in_window == -2) || (in_window == 1)) {
 #if defined (TRACE_RLC_UM_DAR)
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] STOP and RESET t-Reordering because VR(UX) falls outside of the reordering window and VR(UX)=%d is not equal to VR(UH)=%d\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id,
+      LOG_D(RLC,
+            PROTOCOL_RLC_UM_CTXT_FMT" STOP and RESET t-Reordering because VR(UX) falls outside of the reordering window and VR(UX)=%d is not equal to VR(UH)=%d\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
             rlc_pP->vr_ux,
             rlc_pP->vr_uh);
 #endif
@@ -1371,13 +1152,8 @@ rlc_um_receive_process_dar (
       rlc_um_start_timer_reordering(ctxt_pP, rlc_pP);
       rlc_pP->vr_ux = rlc_pP->vr_uh;
 #if defined (TRACE_RLC_UM_DAR)
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] RESTART t-Reordering set VR(UX) to VR(UH) =%d\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id,
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" RESTART t-Reordering set VR(UX) to VR(UH) =%d\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
             rlc_pP->vr_ux);
 #endif
     }

@@ -53,8 +53,9 @@ uint8_t pdcp_get_dc_filed(unsigned char* pdu_buffer)
 {
   uint8_t dc = 0x00;
 
-  if (pdu_buffer == NULL)
+  if (pdu_buffer == NULL) {
     return 0;
+  }
 
   dc = (uint8_t)pdu_buffer[0] & 0xF0; // Reset D/C field
   dc >>= 8; // FIXME this is broken!!! returns 0 all the time
@@ -73,8 +74,9 @@ uint16_t pdcp_get_sequence_number_of_pdu_with_long_sn(unsigned char* pdu_buffer)
 {
   uint16_t sequence_number = 0x00;
 
-  if (pdu_buffer == NULL)
+  if (pdu_buffer == NULL) {
     return 0;
+  }
 
   /*
    * First octet carries the first 4 bits of SN (see 6.2.3)
@@ -98,8 +100,9 @@ uint16_t pdcp_get_sequence_number_of_pdu_with_long_sn(unsigned char* pdu_buffer)
  */
 uint8_t pdcp_get_sequence_number_of_pdu_with_short_sn(unsigned char* pdu_buffer)
 {
-  if (pdu_buffer == NULL)
+  if (pdu_buffer == NULL) {
     return 0;
+  }
 
   /*
    * First octet carries all 7 bits of SN (see 6.2.4)
@@ -115,8 +118,9 @@ uint8_t pdcp_get_sequence_number_of_pdu_with_short_sn(unsigned char* pdu_buffer)
  */
 uint8_t pdcp_get_sequence_number_of_pdu_with_SRB_sn(unsigned char* pdu_buffer)
 {
-  if (pdu_buffer == NULL)
+  if (pdu_buffer == NULL) {
     return 0;
+  }
 
   /*
    * First octet carries all 5 bits of SN (see 6.2.4)
@@ -132,8 +136,9 @@ uint8_t pdcp_get_sequence_number_of_pdu_with_SRB_sn(unsigned char* pdu_buffer)
 boolean_t pdcp_serialize_control_plane_data_pdu_with_SRB_sn_buffer(unsigned char* pdu_buffer, \
     pdcp_control_plane_data_pdu_header* pdu)
 {
-  if (pdu_buffer == NULL || pdu == NULL)
+  if (pdu_buffer == NULL || pdu == NULL) {
     return FALSE;
+  }
 
   /*
    * Fill the Sequence Number field
@@ -153,8 +158,9 @@ boolean_t pdcp_serialize_control_plane_data_pdu_with_SRB_sn_buffer(unsigned char
 boolean_t pdcp_serialize_user_plane_data_pdu_with_long_sn_buffer(unsigned char* pdu_buffer, \
     pdcp_user_plane_data_pdu_header_with_long_sn* pdu)
 {
-  if (pdu_buffer == NULL || pdu == NULL)
+  if (pdu_buffer == NULL || pdu == NULL) {
     return FALSE;
+  }
 
   /*
    * Fill the Sequence Number field
@@ -185,8 +191,9 @@ boolean_t pdcp_serialize_user_plane_data_pdu_with_long_sn_buffer(unsigned char* 
 boolean_t pdcp_serialize_control_pdu_for_pdcp_status_report(unsigned char* pdu_buffer, \
     uint8_t bitmap[512], pdcp_control_pdu_for_pdcp_status_report* pdu)
 {
-  if (pdu_buffer == NULL || pdu == NULL)
+  if (pdu_buffer == NULL || pdu == NULL) {
     return FALSE;
+  }
 
   /*
    * Data or Control field and PDU type (already 0x00, noop)

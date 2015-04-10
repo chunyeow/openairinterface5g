@@ -86,8 +86,9 @@ int init_module( void )
   if( Mac_rlc_xface == NULL ) {
     printk("[OPENAIR][RRC][INIT] Could not get RRC descriptor\n");
     return -1;
-  } else
+  } else {
     printk("[OPENAIR][RRC][INIT] Got RRC descriptor , Rcc_xface %p,Mac_rlc_xface=%p \n",Rrc_xface,Mac_rlc_xface);
+  }
 
   if(rrc_init_global_param()==-1) {
     printk("[OPENAIR][RRC][INIT] FATAL ERROR: INIT_GLOBAL_PARAM_NOK\n");

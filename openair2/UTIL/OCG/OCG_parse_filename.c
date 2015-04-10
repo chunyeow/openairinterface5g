@@ -50,14 +50,12 @@
 int parse_filename(char filename[FILENAME_LENGTH_MAX])
 {
   char *delim = "._";
-  //char *result;
   char tmp_filename[FILENAME_LENGTH_MAX];
   char *fd_tmp;
   char *un_tmp;
   char *ex_tmp;
 
   //delim = "._";
-  //  strcpy(tmp_filename, filename);
   strncpy(tmp_filename, filename, FILENAME_LENGTH_MAX);
   tmp_filename[FILENAME_LENGTH_MAX - 1] = 0; // terminate string
 
@@ -70,8 +68,6 @@ int parse_filename(char filename[FILENAME_LENGTH_MAX])
           "Please use .xml file for configuration with the format \"user_name.file_date.xml\"\nfile_date = \"year month day hour minute second\" without space, \ne.g. 20100201193045 represents in the year 2010, February 1st, 19:30:45\n");
     return MODULE_ERROR;
   } else {
-    //strcpy(file_date, fd_tmp);
-    //strcpy(user_name, un_tmp);
     strncpy(file_date, fd_tmp, sizeof(file_date));
     file_date[sizeof(file_date) - 1] = 0; // terminate string
     strncpy(user_name, un_tmp, sizeof(user_name));

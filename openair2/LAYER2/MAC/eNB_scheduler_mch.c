@@ -75,8 +75,9 @@ int8_t get_mbsfn_sf_alloction (module_id_t module_idP, uint8_t CC_id, uint8_t mb
   if (mbsfn_sync_area > MAX_MBSFN_AREA) {
     LOG_W(MAC,"[eNB %d] MBSFN synchronization area %d out of range\n ", module_idP, mbsfn_sync_area);
     return -1;
-  } else if (eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[mbsfn_sync_area] != NULL)
+  } else if (eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[mbsfn_sync_area] != NULL) {
     return mbsfn_sync_area;
+  }
   else {
     LOG_W(MAC,"[eNB %d] MBSFN Subframe Config pattern %d not found \n ", module_idP, mbsfn_sync_area);
     return -1;
@@ -108,8 +109,9 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
        i< eNB_mac_inst[module_idP].common_channels[CC_id].num_active_mbsfn_area;
        i++ ) {
     // assume, that there is always a mapping
-    if ((j=get_mbsfn_sf_alloction(module_idP,CC_id,i)) == -1)
+    if ((j=get_mbsfn_sf_alloction(module_idP,CC_id,i)) == -1) {
       return 0;
+    }
 
     mbsfn_period = 1<<(eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[j]->radioframeAllocationPeriod);
     mcch_period = 32<<(eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_RepetitionPeriod_r9);
@@ -158,12 +160,14 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
         case 1:
           if (mac_xface->lte_frame_parms->frame_type == FDD) {
             if ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF1) == MBSFN_FDD_SF1) {
-              if (msi_pos == 1)
+              if (msi_pos == 1) {
                 msi_flag = 1;
+              }
 
               if ( (frameP % mcch_period == eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) &&
-                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF1) == MBSFN_FDD_SF1) )
+                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF1) == MBSFN_FDD_SF1) ) {
                 mcch_flag = 1;
+              }
 
               mtch_flag = 1;
             }
@@ -174,12 +178,14 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
         case 2:
           if (mac_xface->lte_frame_parms->frame_type == FDD) {
             if ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF2) == MBSFN_FDD_SF2) {
-              if (msi_pos == 2)
+              if (msi_pos == 2) {
                 msi_flag = 1;
+              }
 
               if ( (frameP % mcch_period == eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) &&
-                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF2) == MBSFN_FDD_SF2) )
+                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF2) == MBSFN_FDD_SF2) ) {
                 mcch_flag = 1;
+              }
 
               mtch_flag = 1;
             }
@@ -190,23 +196,27 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
         case 3:
           if (mac_xface->lte_frame_parms->frame_type == TDD) { // TDD
             if ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF3) == MBSFN_TDD_SF3) {
-              if (msi_pos == 1)
+              if (msi_pos == 1) {
                 msi_flag = 1;
+              }
 
               if ( (frameP % mcch_period == eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) &&
-                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF3) == MBSFN_TDD_SF3) )
+                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF3) == MBSFN_TDD_SF3) ) {
                 mcch_flag = 1;
+              }
 
               mtch_flag = 1;
             }
           } else { // FDD
             if ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF3) == MBSFN_FDD_SF3) {
-              if (msi_pos == 3)
+              if (msi_pos == 3) {
                 msi_flag = 1;
+              }
 
               if ( (frameP % mcch_period == eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) &&
-                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF3) == MBSFN_FDD_SF3) )
+                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF3) == MBSFN_FDD_SF3) ) {
                 mcch_flag = 1;
+              }
 
               mtch_flag = 1;
             }
@@ -217,12 +227,14 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
         case 4:
           if (mac_xface->lte_frame_parms->frame_type == TDD) {
             if ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF4) == MBSFN_TDD_SF4) {
-              if (msi_pos == 2)
+              if (msi_pos == 2) {
                 msi_flag = 1;
+              }
 
               if ( (frameP % mcch_period == eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) &&
-                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF4) == MBSFN_TDD_SF4) )
+                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF4) == MBSFN_TDD_SF4) ) {
                 mcch_flag = 1;
+              }
 
               mtch_flag = 1;
             }
@@ -233,12 +245,14 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
         case 6:
           if (mac_xface->lte_frame_parms->frame_type == FDD) {
             if ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF6) == MBSFN_FDD_SF6) {
-              if (msi_pos == 4)
+              if (msi_pos == 4) {
                 msi_flag = 1;
+              }
 
               if ( (frameP % mcch_period == eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) &&
-                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF6) == MBSFN_FDD_SF6) )
+                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF6) == MBSFN_FDD_SF6) ) {
                 mcch_flag = 1;
+              }
 
               mtch_flag = 1;
             }
@@ -249,23 +263,27 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
         case 7:
           if (mac_xface->lte_frame_parms->frame_type == TDD) { // TDD
             if ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF7) == MBSFN_TDD_SF7) {
-              if (msi_pos == 3)
+              if (msi_pos == 3) {
                 msi_flag = 1;
+              }
 
               if ( (frameP % mcch_period == eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) &&
-                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF7) == MBSFN_TDD_SF7) )
+                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF7) == MBSFN_TDD_SF7) ) {
                 mcch_flag = 1;
+              }
 
               mtch_flag = 1;
             }
           } else { // FDD
             if ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF7) == MBSFN_FDD_SF7) {
-              if (msi_pos == 5)
+              if (msi_pos == 5) {
                 msi_flag = 1;
+              }
 
               if ( (frameP % mcch_period == eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) &&
-                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF7) == MBSFN_FDD_SF7) )
+                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF7) == MBSFN_FDD_SF7) ) {
                 mcch_flag = 1;
+              }
 
               mtch_flag = 1;
             }
@@ -276,23 +294,27 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
         case 8:
           if (mac_xface->lte_frame_parms->frame_type == TDD) { //TDD
             if ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF8) == MBSFN_TDD_SF8) {
-              if (msi_pos == 4)
+              if (msi_pos == 4) {
                 msi_flag = 1;
+              }
 
               if ( (frameP % mcch_period == eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) &&
-                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF8) == MBSFN_TDD_SF8) )
+                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF8) == MBSFN_TDD_SF8) ) {
                 mcch_flag = 1;
+              }
 
               mtch_flag = 1;
             }
           } else { // FDD
             if ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF8) == MBSFN_FDD_SF8) {
-              if (msi_pos == 6)
+              if (msi_pos == 6) {
                 msi_flag = 1;
+              }
 
               if ( (frameP % mcch_period == eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) &&
-                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF8) == MBSFN_FDD_SF8) )
+                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF8) == MBSFN_FDD_SF8) ) {
                 mcch_flag = 1;
+              }
 
               mtch_flag = 1;
             }
@@ -303,12 +325,14 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
         case 9:
           if (mac_xface->lte_frame_parms->frame_type == TDD) {
             if ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF9) == MBSFN_TDD_SF9) {
-              if (msi_pos == 5)
+              if (msi_pos == 5) {
                 msi_flag = 1;
+              }
 
               if ( (frameP % mcch_period == eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) &&
-                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF9) == MBSFN_TDD_SF9) )
+                   ((eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF9) == MBSFN_TDD_SF9) ) {
                 mcch_flag = 1;
+              }
 
               mtch_flag = 1;
             }
@@ -372,10 +396,11 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
 
     msi_length = msi_ptr-msi_control_element;
 
-    if (msi_length<128)
+    if (msi_length<128) {
       header_len_msi = 2;
-    else
+    } else {
       header_len_msi = 3;
+    }
 
     LOG_D(MAC,"[eNB %d] Frame %d : MSI->MCH, length of MSI is %d bytes \n",module_idP,frameP,msi_length);
     //LOG_D(MAC,"Scheduler: MSI is transmitted in this subframeP \n" );
@@ -434,8 +459,9 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
       sdu_lcids[num_sdus] = MCCH_LCHANID;
       sdu_lengths[num_sdus] = mcch_sdu_length;
 
-      if (sdu_lengths[num_sdus]>128)
+      if (sdu_lengths[num_sdus]>128) {
         header_len_mcch = 3;
+      }
 
       sdu_length_total += sdu_lengths[num_sdus];
       LOG_D(MAC,"[eNB %d] Got %d bytes for MCCH from RRC \n",module_idP,sdu_lengths[num_sdus]);
@@ -505,8 +531,9 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
       sdu_lcids[num_sdus] = MTCH;
       sdu_length_total += sdu_lengths[num_sdus];
 
-      if (sdu_lengths[num_sdus] < 128)
+      if (sdu_lengths[num_sdus] < 128) {
         header_len_mtch = 2;
+      }
 
       num_sdus++;
     } else {
@@ -532,11 +559,13 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
     header_len_mcch_temp = header_len_mcch;
     header_len_msi_temp = header_len_msi;
 
-    if (header_len_mtch>0)
+    if (header_len_mtch>0) {
       header_len_mtch=1;         // remove Length field in the  subheader for the last PDU
-    else if (header_len_mcch>0)
+    } else if (header_len_mcch>0) {
       header_len_mcch=1;
-    else header_len_msi=1;
+    } else {
+      header_len_msi=1;
+    }
 
     // Calculate the padding
     if ((TBS - header_len_mtch - header_len_mcch - header_len_msi - sdu_length_total) < 0) {
@@ -549,11 +578,13 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
     } else { // using post_padding, give back the Length field of subheader  for the last PDU
       padding = 0;
 
-      if (header_len_mtch>0)
+      if (header_len_mtch>0) {
         header_len_mtch = header_len_mtch_temp;
-      else if (header_len_mcch>0)
+      } else if (header_len_mcch>0) {
         header_len_mcch = header_len_mcch_temp;
-      else header_len_msi = header_len_msi_temp;
+      } else {
+        header_len_msi = header_len_msi_temp;
+      }
 
       post_padding = TBS - sdu_length_total - header_len_msi - header_len_mcch - header_len_mtch;
     }
@@ -579,23 +610,26 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
           eNB_mac_inst[module_idP].common_channels[CC_id].MCH_pdu.mcch_active,eNB_mac_inst[module_idP].common_channels[CC_id].MCH_pdu.mtch_active );
     LOG_I(MAC,
           "[eNB %d][MBMS USER-PLANE ] Generate header : sdu_length_total %d, num_sdus %d, sdu_lengths[0] %d, sdu_lcids[0] %d => payload offset %d,padding %d,post_padding %d (mcs %d, TBS %d), header MTCH %d, header MCCH %d, header MSI %d\n",
-          module_idP,sdu_length_total,num_sdus,sdu_lengths[0],sdu_lcids[0],offset,padding,post_padding,eNB_mac_inst[module_idP].common_channels[CC_id].MCH_pdu.mcs,TBS,header_len_mtch, header_len_mcch,
-          header_len_msi);
+          module_idP,sdu_length_total,num_sdus,sdu_lengths[0],sdu_lcids[0],offset,padding,post_padding,eNB_mac_inst[module_idP].common_channels[CC_id].MCH_pdu.mcs,TBS,
+          header_len_mtch, header_len_mcch, header_len_msi);
     // copy SDU to mch_pdu after the MAC Header
     memcpy(&eNB_mac_inst[module_idP].common_channels[CC_id].MCH_pdu.payload[offset],mch_buffer,sdu_length_total);
 
     // filling remainder of MCH with random data if necessery
-    for (j=0; j<(TBS-sdu_length_total-offset); j++)
+    for (j=0; j<(TBS-sdu_length_total-offset); j++) {
       eNB_mac_inst[module_idP].common_channels[CC_id].MCH_pdu.payload[offset+sdu_length_total+j] = (char)(taus()&0xff);
+    }
+
+#if defined(USER_MODE) && defined(OAI_EMU)
 
     /* Tracing of PDU is done on UE side */
-    if (opt_enabled ==1 ) {
+    if (oai_emulation.info.opt_enabled)
       trace_pdu(1, (uint8_t *)eNB_mac_inst[module_idP].common_channels[CC_id].MCH_pdu.payload,
                 TBS, module_idP, 6, 0xffff,  // M_RNTI = 6 in wirehsark
                 eNB_mac_inst[module_idP].subframe,0,0);
       LOG_D(OPT,"[eNB %d][MCH] Frame %d : MAC PDU with size %d\n",
             module_idP, frameP, TBS);
-    }
+#endif
 
     /*
     for (j=0;j<sdu_length_total;j++)

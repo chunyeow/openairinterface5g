@@ -232,9 +232,6 @@ int OCG_main(char is_local_server[FILENAME_LENGTH_MAX])
     case STATE_GENERATE_REPORT :
       if (create_dir_OK != MODULE_OK) {
         // a temp folder is required when the output folder could not be correctly generated
-        //strcpy(output_dir, OPENAIR_TARGETS);
-        //strcat(output_dir, "SIMU/EXAMPLES/OSD/");
-        //strcat(output_dir, TEMP_OUTPUT_DIR);
         strncpy(output_dir, OPENAIR_TARGETS, sizeof(output_dir));
         output_dir[sizeof(output_dir) - 1] = 0; // terminate string
         strncat(output_dir, "SIMU/EXAMPLES/OSD/", sizeof(output_dir) - strlen(output_dir) - 1);

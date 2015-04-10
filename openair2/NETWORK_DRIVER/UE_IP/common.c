@@ -115,8 +115,9 @@ ue_ip_common_class_wireless2ip(
 #ifdef OAI_DRV_DEBUG_RECEIVE
   printk("[UE_IP_DRV][%s] Receiving packet of size %d from PDCP \n",__FUNCTION__, skb_p->len);
 
-  for (i=0; i<skb_p->len; i++)
+  for (i=0; i<skb_p->len; i++) {
     printk("%2x ",((unsigned char *)(skb_p->data))[i]);
+  }
 
   printk("\n");
 #endif
@@ -131,7 +132,7 @@ ue_ip_common_class_wireless2ip(
   skb_p->ip_summed = CHECKSUM_UNNECESSARY;
 
 
-  ipv_p = (ipversion_t *)((void*)&(skb_p->data[hard_header_len]));
+  ipv_p = (struct ipversion*)((void*)&(skb_p->data[hard_header_len]));
 
   switch (ipv_p->version) {
 
@@ -224,8 +225,9 @@ ue_ip_common_class_wireless2ip(
 #ifdef OAI_DRV_DEBUG_RECEIVE
   printk("[UE_IP_DRV][%s] sending packet of size %d to kernel\n",__FUNCTION__,skb_p->len);
 
-  for (i=0; i<skb_p->len; i++)
+  for (i=0; i<skb_p->len; i++) {
     printk("%2x ",((unsigned char *)(skb_p->data))[i]);
+  }
 
   printk("\n");
 #endif //OAI_DRV_DEBUG_RECEIVE
@@ -318,8 +320,9 @@ ue_ip_common_ip2wireless(
 #ifdef OAI_DRV_DEBUG_SEND
   printk("[UE_IP_DRV][%s] Sending packet of size %d to PDCP \n",__FUNCTION__,skb_pP->len);
 
-  for (j=0; j<skb_pP->len; j++)
+  for (j=0; j<skb_pP->len; j++) {
     printk("%2x ",((unsigned char *)(skb_pP->data))[j]);
+  }
 
   printk("\n");
 #endif

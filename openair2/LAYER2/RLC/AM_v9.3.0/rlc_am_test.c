@@ -668,11 +668,12 @@ void rlc_am_v9_3_0_test_data_ind (module_id_t module_idP, rb_id_t rb_idP, sdu_si
 
       if (g_send_sdu_ids[g_send_id_read_index[rb_idP]][rb_idP^1] != i) {
 
-        printf("[FRAME %05d][RLC][MOD %d][RB %d][DATA-IND] g_send_sdu_ids[%d] = %d\n",g_frame,module_idP, rb_idP,  g_send_id_read_index[rb_idP]-2, g_send_sdu_ids[g_send_id_read_index[rb_idP]-2][rb_idP^1]);
-
-        printf("[FRAME %05d][RLC][MOD %d][RB %d][DATA-IND] g_send_sdu_ids[%d] = %d\n",g_frame,module_idP, rb_idP,  g_send_id_read_index[rb_idP]-1, g_send_sdu_ids[g_send_id_read_index[rb_idP]-1][rb_idP^1]);
-
-        printf("[FRAME %05d][RLC][MOD %d][RB %d][DATA-IND] g_send_sdu_ids[%d] = %d\n",g_frame,module_idP, rb_idP,  g_send_id_read_index[rb_idP], g_send_sdu_ids[g_send_id_read_index[rb_idP]][rb_idP^1]);
+        printf("[FRAME %05d][RLC][MOD %d][RB %d][DATA-IND] g_send_sdu_ids[%d] = %d\n",g_frame,module_idP, rb_idP,  g_send_id_read_index[rb_idP]-2,
+               g_send_sdu_ids[g_send_id_read_index[rb_idP]-2][rb_idP^1]);
+        printf("[FRAME %05d][RLC][MOD %d][RB %d][DATA-IND] g_send_sdu_ids[%d] = %d\n",g_frame,module_idP, rb_idP,  g_send_id_read_index[rb_idP]-1,
+               g_send_sdu_ids[g_send_id_read_index[rb_idP]-1][rb_idP^1]);
+        printf("[FRAME %05d][RLC][MOD %d][RB %d][DATA-IND] g_send_sdu_ids[%d] = %d\n",g_frame,module_idP, rb_idP,  g_send_id_read_index[rb_idP],
+               g_send_sdu_ids[g_send_id_read_index[rb_idP]][rb_idP^1]);
 
         printf("[FRAME %05d][RLC][MOD %d][RB %d][DATA-IND] g_send_id_read_index = %d sdu sent = %d\n",g_frame,module_idP, rb_idP,  g_send_id_read_index[rb_idP], i);
       }
@@ -894,8 +895,9 @@ void rlc_am_v9_3_0_test_tx_rx()
   rlc_am_v9_3_0_test_exchange_pdus(&g_am_tx, &g_am_rx, 300, 200);
   rlc_am_v9_3_0_test_exchange_pdus(&g_am_tx, &g_am_rx, 300, 200);
 
-  for (i = 0; i < 30; i++)
+  for (i = 0; i < 30; i++) {
     rlc_am_v9_3_0_test_exchange_pdus(&g_am_tx, &g_am_rx, 500, 200);
+  }
 
   // Purge
   for (i = 0; i < 24; i++) {
@@ -1108,7 +1110,8 @@ void rlc_am_v9_3_0_test_tx_rx()
         rlc_am_rx_list_display(&g_am_tx, "RLC-AM TX:");
         rlc_am_rx_list_display(&g_am_rx, "RLC-AM RX:");
         assert (g_send_id_read_index[1] == g_send_id_write_index[0]);
-        printf("REAL BLER TX=%d (TARGET=%d) BLER RX=%d (TARGET=%d) \n",(g_dropped_tx_packets*100)/g_tx_packets, g_target_tx_error_rate, (g_dropped_rx_packets*100)/g_rx_packets, g_target_rx_error_rate);
+        printf("REAL BLER TX=%d (TARGET=%d) BLER RX=%d (TARGET=%d) \n",(g_dropped_tx_packets*100)/g_tx_packets, g_target_tx_error_rate,
+               (g_dropped_rx_packets*100)/g_rx_packets, g_target_rx_error_rate);
       }
     }
 
@@ -1180,7 +1183,8 @@ void rlc_am_v9_3_0_test_tx_rx()
         rlc_am_rx_list_display(&g_am_rx, "RLC-AM RX:");
         assert (g_send_id_read_index[1] == g_send_id_write_index[0]);
         assert (g_send_id_read_index[0] == g_send_id_write_index[1]);
-        printf("REAL BLER TX=%d (TARGET=%d) BLER RX=%d (TARGET=%d) \n",(g_dropped_tx_packets*100)/g_tx_packets, g_target_tx_error_rate, (g_dropped_rx_packets*100)/g_rx_packets, g_target_rx_error_rate);
+        printf("REAL BLER TX=%d (TARGET=%d) BLER RX=%d (TARGET=%d) \n",(g_dropped_tx_packets*100)/g_tx_packets, g_target_tx_error_rate,
+               (g_dropped_rx_packets*100)/g_rx_packets, g_target_rx_error_rate);
 
       }
     }
@@ -1202,8 +1206,9 @@ void rlc_am_v9_3_0_test_print_trace (void)
 
   printf ("Obtained %d stack frames.\n", size);
 
-  for (i = 0; i < size; i++)
+  for (i = 0; i < size; i++) {
     printf ("%s\n", strings[i]);
+  }
 
   free (strings);
 }

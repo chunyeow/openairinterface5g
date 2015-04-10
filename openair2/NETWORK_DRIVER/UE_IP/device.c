@@ -77,8 +77,9 @@ int ue_ip_find_inst(struct net_device *dev_pP)
   int i;
 
   for (i=0; i<UE_IP_NB_INSTANCES_MAX; i++)
-    if (ue_ip_dev[i] == dev_pP)
+    if (ue_ip_dev[i] == dev_pP) {
       return(i);
+    }
 
   return(-1);
 }
@@ -145,10 +146,11 @@ int ue_ip_open(struct net_device *dev_pP)
 
 #endif //OAI_NW_DRIVER_USE_NETLINK
 
-  if(!netif_queue_stopped(dev_pP))
+  if(!netif_queue_stopped(dev_pP)) {
     netif_start_queue(dev_pP);
-  else
+  } else {
     netif_wake_queue(dev_pP);
+  }
 
   init_timer(&priv_p->timer);
   (priv_p->timer).expires   = jiffies+UE_IP_TIMER_TICK;
@@ -206,16 +208,18 @@ int ue_ip_set_config(struct net_device *dev_pP, struct ifmap *map_pP)
   //---------------------------------------------------------------------------
   printk("[UE_IP_DRV][%s] Begin\n", __FUNCTION__);
 
-  if (dev_pP->flags & IFF_UP)
+  if (dev_pP->flags & IFF_UP) {
     return -EBUSY;
+  }
 
   if (map_pP->base_addr != dev_pP->base_addr) {
     printk(KERN_WARNING "[UE_IP_DRV][%s] Can't change I/O address\n", __FUNCTION__);
     return -EOPNOTSUPP;
   }
 
-  if (map_pP->irq != dev_pP->irq)
+  if (map_pP->irq != dev_pP->irq) {
     dev_pP->irq = map_pP->irq;
+  }
 
   printk("[UE_IP_DRV][%s] End\n", __FUNCTION__);
   return 0;
@@ -293,8 +297,9 @@ int ue_ip_change_mtu(struct net_device *dev_pP, int mtuP)
   //---------------------------------------------------------------------------
   printk("[UE_IP_DRV][%s] CHANGE MTU %d bytes\n", __FUNCTION__, mtuP);
 
-  if ((mtuP<50) || (mtuP>1500))
+  if ((mtuP<50) || (mtuP>1500)) {
     return -EINVAL;
+  }
 
   dev_pP->mtu = mtuP;
   return 0;
@@ -397,8 +402,9 @@ int init_module (void)
 
   printk("[UE_IP_DRV][%s] NETLINK INIT\n", __FUNCTION__);
 
-  if ((err=ue_ip_netlink_init()) == -1)
+  if ((err=ue_ip_netlink_init()) == -1) {
     printk("[UE_IP_DRV][%s] NETLINK failed\n", __FUNCTION__);
+  }
 
   return err;
 
@@ -410,11 +416,11 @@ void cleanup_module(void)
   //---------------------------------------------------------------------------
   int inst;
 
-  printk("[UE_IP_DRV][CLEANUP]nasmesh_cleanup_module: begin\n");
+  printk("[UE_IP_DRV][CLEANUP] begin\n");
 
   for (inst=0; inst<UE_IP_NB_INSTANCES_MAX; inst++) {
 #ifdef OAI_DRV_DEBUG_DEVICE
-    printk("nasmesh_cleanup_module: unregister and free net device instance %d\n",inst);
+    printk("[UE_IP_DRV][CLEANUP]  unregister and free net device instance %d\n",inst);
 #endif
 
     if (ue_ip_dev[inst]) {
@@ -425,7 +431,7 @@ void cleanup_module(void)
   }
 
   ue_ip_netlink_release();
-  printk("nasmesh_cleanup_module: end\n");
+  printk("[UE_IP_DRV][CLEANUP] end\n");
 }
 
 #define DRV_NAME        "ue_ip"

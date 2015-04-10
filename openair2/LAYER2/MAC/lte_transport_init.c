@@ -115,10 +115,11 @@ void init_transport_channels(unsigned char transmission_mode)
   DLSCH_alloc_pdu1.rv1              = 0;
 
   // Forget second codeword
-  if (transmission_mode == 6)
+  if (transmission_mode == 6) {
     DLSCH_alloc_pdu1.tpmi           = 5;  // PUSCH_PRECODING0
-  else
+  } else {
     DLSCH_alloc_pdu1.tpmi             = 0;
+  }
 
   DLSCH_alloc_pdu2.rah              = 0;
   DLSCH_alloc_pdu2.rballoc          = DLSCH_RB_ALLOC;
@@ -131,9 +132,9 @@ void init_transport_channels(unsigned char transmission_mode)
   DLSCH_alloc_pdu2.rv1              = 0;
 
   // Forget second codeword
-  if (transmission_mode == 6)
+  if (transmission_mode == 6) {
     DLSCH_alloc_pdu2.tpmi           = 5;  // PUSCH_PRECODING0
-  else
+  } else {
     DLSCH_alloc_pdu2.tpmi             = 0;
-
+  }
 }

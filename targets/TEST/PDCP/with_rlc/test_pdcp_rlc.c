@@ -91,8 +91,7 @@ int pdcp_fifo_read_input_sdus () {}
 BOOL init_pdcp_entity(pdcp_t *pdcp_entity);
 
 //-----------------------------------------------------------------------------
-void pdcp_rlc_test_mac_rlc_loop (struct mac_data_ind *data_indP,  struct mac_data_req *data_requestP, int* drop_countP, int *tx_packetsP,
-                                 int* dropped_tx_packetsP) //-----------------------------------------------------------------------------
+void pdcp_rlc_test_mac_rlc_loop (struct mac_data_ind *data_indP,  struct mac_data_req *data_requestP, int* drop_countP, int *tx_packetsP, int* dropped_tx_packetsP) //-----------------------------------------------------------------------------
 {
   mem_block_t* tb_src;
   mem_block_t* tb_dst;

@@ -102,7 +102,6 @@ void schedule_delayed(Operation_Type_t op, Event_Type_t type, char * key, void* 
   intps=time(NULL);
   pdh = localtime(&intps);
   char *date_cpy = malloc (sizeof (char) * 256);
-  //strcpy(date_cpy,date);
   strncpy( date_cpy, date, 256 );
   date_cpy[255] = 0; // terminate string
   // second count the frame to reach the time
@@ -435,7 +434,7 @@ void update_mac(Event_t event)
 
       if((Mac_config *) event.value !=NULL && validate_mac(event)) {
 
-        Mac_config* mac_config;// = malloc(sizeof(Mac_config)*16);
+        Mac_config* mac_config;
         mac_config = (Mac_config *) event.value;
         LOG_I(EMU,"update complete mac params \n");
 
@@ -462,7 +461,6 @@ void update_mac(Event_t event)
             if(mac_config[i].priority !=NULL) {
               LOG_I(EMU,"update priority \n");
               int j;
-
               for(j=0; j<MAX_NUM_LCID; j++) {
 
                 if(&mac_config[i].priority[j]!=NULL) {
@@ -674,7 +672,6 @@ void update_mac(Event_t event)
       mac_config = (Mac_config *) event.value;
       int j=0;
       LOG_I(EMU,"priority update \n");
-
       if(event.ue == -1) {
         for(i=0; i<MAX_NUM_LCID; i++) {
           for(j=0; j<MAX_NUM_LCID; j++) {

@@ -71,12 +71,8 @@ void rlc_am_free_in_sdu(
   }
 
 #ifdef TRACE_RLC_AM_FREE_SDU
-  LOG_D(RLC, "[FRAME %05d][%s][RLC_AM][MOD %u/%u][RB %u][FREE SDU] SDU INDEX %03d current_sdu_index=%d next_sdu_index=%d nb_sdu_no_segmented=%d\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        rlcP->rb_id,
+  LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[FREE SDU] SDU INDEX %03u current_sdu_index=%u next_sdu_index=%u nb_sdu_no_segmented=%u\n",
+        PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlcP),
         index_in_bufferP,
         rlcP->current_sdu_index,
         rlcP->next_sdu_index,

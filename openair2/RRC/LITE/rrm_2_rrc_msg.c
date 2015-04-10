@@ -85,7 +85,9 @@ void  fn_rrc (void)
 #ifdef USER_MODE
     Header = (msg_head_t *) recv_msg(&S_rrc) ;
 
-    if(Header==NULL) break;
+    if(Header==NULL) {
+      break;
+    }
 
     Data_to_read=Header->size;
 #else
@@ -93,8 +95,9 @@ void  fn_rrc (void)
     if(Header_read_idx < Header_size) {
       bytes_read = rtf_get (RRM2RRC_FIFO,&Header_buf[Header_read_idx],Header_size-Header_read_idx);
 
-      if(bytes_read >0)
+      if(bytes_read >0) {
         msg("RRC: GET FIFOS RETURNS %d bytes, header %d\n",bytes_read,Header_read_idx);
+      }
 
       Header_read_idx+=bytes_read;
 
@@ -104,8 +107,9 @@ void  fn_rrc (void)
         msg("RRC: Header read completed, data size %d\n",Data_to_read);
       }
       //msg("[fn_rrc]TTI %d: rcv_msg return Null\n",Rrc_xface->Frame_index);
-      else
+      else {
         break;
+      }
     }
 
 #endif
@@ -116,13 +120,16 @@ void  fn_rrc (void)
 #else
       bytes_read = rtf_get (RRM2RRC_FIFO,&Data[Data_read_idx],Data_to_read);
 
-      if(bytes_read >0)
+      if(bytes_read >0) {
         msg("RRC: GET FIFOS RETURNS %d bytes, Data_to_read %d\n",bytes_read,Data_to_read);
+      }
 
       Data_to_read-=bytes_read;
       Data_read_idx+=bytes_read;
 
-      if(Data_to_read > 0 ) break;
+      if(Data_to_read > 0 ) {
+        break;
+      }
 
       msg("RRC: DATA read completed, data size %d\n",Data_to_read);
       Header_read_idx=0;
@@ -185,10 +192,13 @@ void  fn_rrc (void)
 
       UE_rrc_inst[Header->inst-NB_CH_INST].Srb2[CH_index].Srb_info.IP_addr_type=p->L3_info_t;
 
-      if(p->L3_info_t == IPv4_ADDR)
+      if(p->L3_info_t == IPv4_ADDR) {
         memcpy(&UE_rrc_inst[Header->inst-NB_CH_INST].Srb2[CH_index].Srb_info.IP_addr,p->L3_info,4);
-      else
+      }
+
+      else {
         memcpy(&UE_rrc_inst[Header->inst-NB_CH_INST].Srb2[CH_index].Srb_info.IP_addr,p->L3_info,16);
+      }
     }
     break ;
 

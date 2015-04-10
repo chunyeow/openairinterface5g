@@ -40,7 +40,15 @@ g_display_color  = ['\"teal\"',
                     '\"indigo\"',
                     '\"indigo\"',
                     '\"indigo\"',
-                    '\"purple\"']
+                    '\"black\"',
+                    '\"black\"',
+                    '\"black\"',
+                    '\"black\"',
+                    '\"black\"',
+                    '\"black\"',
+                    '\"black\"',
+                    '\"black\"',
+                    '\"black\"']
 
 
 
@@ -61,19 +69,23 @@ def parse_oai_log_files():
     global g_final_display_order_list
     #open TXT file that contain OAI filtered traces for mscgen
     filenames = [
-        '/tmp/openair.msc.gtpu_enb.log',
-        '/tmp/openair.msc.mac_enb.log',
-        '/tmp/openair.msc.mac_ue.log',
         '/tmp/openair.msc.nas_ue.log',
-        '/tmp/openair.msc.pdcp_enb.log',
         '/tmp/openair.msc.pdcp_ue.log',
-        '/tmp/openair.msc.phy_enb.log',
-        '/tmp/openair.msc.phy_ue.log',
-        '/tmp/openair.msc.rlc_enb.log',
-        '/tmp/openair.msc.rlc_ue.log',
-        '/tmp/openair.msc.rrc_enb.log',
         '/tmp/openair.msc.rrc_ue.log',
-        '/tmp/openair.msc.s1ap_enb.log']
+        '/tmp/openair.msc.rlc_ue.log',
+        '/tmp/openair.msc.mac_ue.log',
+        '/tmp/openair.msc.phy_ue.log',
+        '/tmp/openair.msc.phy_enb.log',
+        '/tmp/openair.msc.mac_enb.log',
+        '/tmp/openair.msc.rlc_enb.log',
+        '/tmp/openair.msc.pdcp_enb.log',
+        '/tmp/openair.msc.rrc_enb.log',
+        '/tmp/openair.msc.s1ap_enb.log',
+        '/tmp/openair.msc.gtpu_enb.log',
+        '/tmp/openair.msc.nas_mme.log',
+        '/tmp/openair.msc.gtpu_sgw.log',
+        '/tmp/openair.msc.s1ap_mme.log']
+
     for filename in filenames:
         fhandle  = open(filename, 'r')
         fcontent = fhandle.read()
@@ -82,71 +94,72 @@ def parse_oai_log_files():
         # split file content in lines
         lines = fcontent.splitlines()
         for line in lines:
-            print ("INPUT LINE:  %s " % line)
-            partition = line.split(' ',3)
-            event_id = int(partition[0])
-            event_type = partition[1]
-            entity_id = int(partition[2])
-            if MSC_NEW_STR == event_type:
-                entity_name = partition[3]
-                if len(g_proto_names) < (entity_id +1):
-                    for i in range(len(g_proto_names),(entity_id +1)):
-                        g_proto_names.append(None)
-                g_proto_names[entity_id] = entity_name
+            if line.strip() != "":
+                print ("INPUT LINE:  %s " % line)
+                partition = line.split(' ',3)
+                event_id = int(partition[0])
+                event_type = partition[1]
+                entity_id = int(partition[2])
+                if MSC_NEW_STR == event_type:
+                    entity_name = partition[3]
+                    if len(g_proto_names) <= entity_id:
+                        for i in range(len(g_proto_names),(entity_id +1)):
+                            g_proto_names.append("NotDeclared")
+                    g_proto_names[entity_id] = entity_name
 
-            # if line is a trace of a message between 2 protocol entities or layers
-            elif MSC_MSG_STR == event_type:
-                print ("partition[3]:%s" % partition[3])
-                sub_partition = partition[3].split(' ',4)
-                arrow   = sub_partition[0]
-                entity2_id = int(sub_partition[1])
-                mac     = int(sub_partition[2])
-                time    = sub_partition[3]
-                message = sub_partition[4]
-                Message = {}
-                Message['mac'] = mac
-                Message['time'] = time
-                Message['message'] = message
-                Message['line_color'] = g_display_color[entity_id]
-                Message['text_color'] = g_display_color[entity_id]
-                if arrow == '<-':
-                  Message['type'] = "rx"
-                  Message['tx'] = entity2_id
-                  Message['rx'] = entity_id
-                  Message['discarded'] = False
-                  g_messages[event_id] = Message
-                elif arrow == '->':
-                  Message['type'] = "tx"
-                  Message['tx'] = entity_id
-                  Message['rx'] = entity2_id
-                  Message['discarded'] = False
-                  g_messages[event_id] = Message
-                elif arrow == 'x-':
-                  Message['type'] = "rx"
-                  Message['tx'] = entity2_id
-                  Message['rx'] = entity_id
-                  Message['discarded'] = True
-                  g_messages[event_id] = Message
-                elif arrow == '-x':
-                  Message['type'] = "tx"
-                  Message['tx'] = entity_id
-                  Message['rx'] = entity2_id
-                  Message['discarded'] = True
-                  g_messages[event_id] = Message
+                # if line is a trace of a message between 2 protocol entities or layers
+                elif MSC_MSG_STR == event_type:
+                    print ("partition[3]:%s" % partition[3])
+                    sub_partition = partition[3].split(' ',4)
+                    arrow   = sub_partition[0]
+                    entity2_id = int(sub_partition[1])
+                    mac     = int(sub_partition[2])
+                    time    = sub_partition[3]
+                    message = sub_partition[4]
+                    Message = {}
+                    Message['mac'] = mac
+                    Message['time'] = time
+                    Message['message'] = message
+                    Message['line_color'] = g_display_color[entity_id]
+                    Message['text_color'] = g_display_color[entity_id]
+                    if arrow == '<-':
+                      Message['type'] = "rx"
+                      Message['tx'] = entity2_id
+                      Message['rx'] = entity_id
+                      Message['discarded'] = False
+                      g_messages[event_id] = Message
+                    elif arrow == '->':
+                      Message['type'] = "tx"
+                      Message['tx'] = entity_id
+                      Message['rx'] = entity2_id
+                      Message['discarded'] = False
+                      g_messages[event_id] = Message
+                    elif arrow == 'x-':
+                      Message['type'] = "rx"
+                      Message['tx'] = entity2_id
+                      Message['rx'] = entity_id
+                      Message['discarded'] = True
+                      g_messages[event_id] = Message
+                    elif arrow == '-x':
+                      Message['type'] = "tx"
+                      Message['tx'] = entity_id
+                      Message['rx'] = entity2_id
+                      Message['discarded'] = True
+                      g_messages[event_id] = Message
 
-            elif MSC_BOX_STR == event_type:
-                message = partition[3]
-                Message = {}
-                Message['type'] = "box"
-                Message['tx'] = entity_id
-                Message['rx'] = entity_id
-                Message['discarded'] = False
-                Message['mac'] = mac
-                Message['time'] = time
-                Message['message'] = message
-                Message['line_color'] = g_display_color[entity_id]
-                Message['text_color'] = g_display_color[entity_id]
-                g_messages[event_id] = Message
+                elif MSC_BOX_STR == event_type:
+                    message = partition[3]
+                    Message = {}
+                    Message['type'] = "box"
+                    Message['tx'] = entity_id
+                    Message['rx'] = entity_id
+                    Message['discarded'] = False
+                    Message['mac'] = mac
+                    Message['time'] = time
+                    Message['message'] = message
+                    Message['line_color'] = g_display_color[entity_id]
+                    Message['text_color'] = g_display_color[entity_id]
+                    g_messages[event_id] = Message
 
   
     #print("------------------------------------")
@@ -162,6 +175,7 @@ def msc_chart_write_header(fileP):
     fileP.write("width = \"2048\";\n")
 
     entity_line_list_str = ''
+    print ("  %s " % ( g_proto_names ) )
     for entity in g_proto_names:
         entity_line_list_str = entity_line_list_str + ' ' + entity + ','
 
@@ -170,7 +184,7 @@ def msc_chart_write_header(fileP):
 
 
 def msc_chart_write_footer(fileP):
-    fileP.write("}\n")
+    fileP.write("\n}\n")
 
 def msc_chart_generate(file_nameP):
     global  MSCGEN_OUTPUT_TYPE
@@ -206,7 +220,6 @@ g_file = get_new_file_descriptor()
 msc_chart_write_header(g_file)
 
 for event_id_int in sorted(g_messages.iterkeys()):
-#for message in g_messages:
     message = g_messages[event_id_int]
     if 'tx' in message['type']:
         g_file.write("  %s=>%s [ label = \"(%d|%s) %s\", linecolour=%s , textcolour=%s ] ;\n" % (g_proto_names[message['tx']], g_proto_names[message['rx']], event_id_int, message['time'], message['message'], message['line_color'], message['text_color']))

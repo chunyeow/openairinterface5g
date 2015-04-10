@@ -142,11 +142,12 @@ int mac_top_init(int eMBMS_active, char *uecap_xer, uint8_t cba_group_active, ui
 
     bzero(UE_mac_inst,NB_UE_INST*sizeof(UE_MAC_INST));
 
-    for(i=0; i<NB_UE_INST; i++)
+    for(i=0; i<NB_UE_INST; i++) {
       ue_init_mac(i);
-
-  } else
+    }
+  } else {
     UE_mac_inst = NULL;
+  }
 
   LOG_I(MAC,"[MAIN] Init function start:Nb_eNB_INST=%d\n",NB_eNB_INST);
 
@@ -160,8 +161,9 @@ int mac_top_init(int eMBMS_active, char *uecap_xer, uint8_t cba_group_active, ui
       LOG_D(MAC,"[MAIN] ALLOCATE %d Bytes for %d eNB_MAC_INST @ %p\n",sizeof(eNB_MAC_INST),NB_eNB_INST,eNB_mac_inst);
       bzero(eNB_mac_inst,NB_eNB_INST*sizeof(eNB_MAC_INST));
     }
-  } else
+  } else {
     eNB_mac_inst = NULL;
+  }
 
   // Initialize Linked-List for Active UEs
   for(Mod_id=0; Mod_id<NB_eNB_INST; Mod_id++) {
@@ -335,8 +337,9 @@ int mac_top_init(int eMBMS_active, char *uecap_xer, uint8_t cba_group_active, ui
       eNB_mac_inst[j][CC_id].sbmap_conf.sb_size=SB_size;
       eNB_mac_inst[j][CC_id].sbmap_conf.nb_active_sb=1;
 
-      for(i=0; i<NUMBER_OF_SUBBANDS; i++)
+      for(i=0; i<NUMBER_OF_SUBBANDS; i++) {
         eNB_mac_inst[j][CC_id].sbmap_conf.sbmap[i]=1;
+      }
 
       eNB_mac_inst[j][CC_id].sbmap_conf.sbmap[rand()%NUMBER_OF_SUBBANDS]=0;
 
@@ -359,8 +362,9 @@ int mac_init_global_param(void)
   Mac_rlc_xface = NULL;
   LOG_I(MAC,"[MAIN] CALLING RLC_MODULE_INIT...\n");
 
-  if (rlc_module_init()!=0)
+  if (rlc_module_init()!=0) {
     return(-1);
+  }
 
   LOG_I(MAC,"[MAIN] RLC_MODULE_INIT OK, malloc16 for mac_rlc_xface...\n");
 
@@ -421,11 +425,13 @@ void mac_top_cleanup(void)
   pdcp_module_cleanup ();
 #endif
 
-  if (NB_UE_INST>0)
+  if (NB_UE_INST>0) {
     free (UE_mac_inst);
+  }
 
-  if (NB_eNB_INST>0)
+  if (NB_eNB_INST>0) {
     free(eNB_mac_inst);
+  }
 
   free( Mac_rlc_xface);
 }

@@ -58,6 +58,9 @@
 #undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
 
 #include "assertions.h"
+#ifdef MESSAGE_CHART_GENERATOR
+#include "msc.h"
+#endif
 
 #ifdef EMOS
 #include <gps.h>
@@ -120,7 +123,7 @@ unsigned short config_frames[4] = {2,9,11,13};
 # include "create_tasks.h"
 # if defined(ENABLE_USE_MME)
 #   include "s1ap_eNB.h"
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 #   include "SIMULATION/ETH_TRANSPORT/proto.h"
 #endif
 # endif
@@ -139,10 +142,10 @@ unsigned short config_frames[4] = {2,9,11,13};
 //#define USRP_DEBUG 1
 
 struct timing_info_t {
-  //unsigned int frame, hw_slot, last_slot, next_slot;
-  RTIME time_min, time_max, time_avg, time_last, time_now;
-  //unsigned int mbox0, mbox1, mbox2, mbox_target;
-  unsigned int n_samples;
+    //unsigned int frame, hw_slot, last_slot, next_slot;
+    RTIME time_min, time_max, time_avg, time_last, time_now;
+    //unsigned int mbox0, mbox1, mbox2, mbox_target;
+    unsigned int n_samples;
 } timing_info;
 
 
@@ -157,7 +160,7 @@ int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_c
 void fill_ue_band_info(void);
 #ifdef XFORMS
 // current status is that every UE has a DL scope for a SINGLE eNB (eNB_id=0)
-// at eNB 0, an UL scope for every UE
+// at eNB 0, an UL scope for every UE 
 FD_lte_phy_scope_ue  *form_ue[NUMBER_OF_UE_MAX];
 FD_lte_phy_scope_enb *form_enb[NUMBER_OF_UE_MAX];
 FD_stats_form                  *form_stats=NULL,*form_stats_l2=NULL;
@@ -249,14 +252,19 @@ runmode_t mode = normal_txrx;
 
 
 #ifdef EXMIMO
+#if MAX_NUM_CCs == 1
+double tx_gain[MAX_NUM_CCs][4] = {{20,20,0,0}};
+double rx_gain[MAX_NUM_CCs][4] = {{20,20,0,0}};
+#else
 double tx_gain[MAX_NUM_CCs][4] = {{20,20,0,0},{20,20,0,0}};
 double rx_gain[MAX_NUM_CCs][4] = {{20,20,0,0},{20,20,0,0}};
+#endif
 // these are for EXMIMO2 target only
 /*
   static unsigned int             rxg_max[4] =    {133,133,133,133};
   static unsigned int             rxg_med[4] =    {127,127,127,127};
   static unsigned int             rxg_byp[4] =    {120,120,120,120};
-*/
+ */
 // these are for EXMIMO2 card 39
 unsigned int             rxg_max[4] =    {128,128,128,126};
 unsigned int             rxg_med[4] =    {122,123,123,120};
@@ -264,7 +272,11 @@ unsigned int             rxg_byp[4] =    {116,117,116,116};
 unsigned int             nf_max[4] =    {7,9,16,12};
 unsigned int             nf_med[4] =    {12,13,22,17};
 unsigned int             nf_byp[4] =    {15,20,29,23};
+#if MAX_NUM_CCs == 1
+rx_gain_t                rx_gain_mode[MAX_NUM_CCs][4] = {{max_gain,max_gain,max_gain,max_gain}};
+#else
 rx_gain_t                rx_gain_mode[MAX_NUM_CCs][4] = {{max_gain,max_gain,max_gain,max_gain},{max_gain,max_gain,max_gain,max_gain}};
+#endif
 #else
 double tx_gain[MAX_NUM_CCs][4] = {{20,0,0,0}};
 double rx_gain[MAX_NUM_CCs][4] = {{110,0,0,0}};

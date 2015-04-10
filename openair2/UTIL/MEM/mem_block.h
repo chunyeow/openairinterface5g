@@ -39,6 +39,9 @@
 #ifndef __MEM_BLOCK_H__
 #    define __MEM_BLOCK_H__
 
+#ifdef USER_MODE
+#include <stdint.h>
+#endif
 #ifdef MEM_BLOCK_C
 #    define public_mem_block(x) x
 #    define private_mem_block(x) x
@@ -61,7 +64,7 @@ typedef struct mem_block_t {
 public_mem_block(void        *pool_buffer_init (void);)
 public_mem_block(void        *pool_buffer_clean (void *arg);)
 public_mem_block(void         free_mem_block (mem_block_t * leP);)
-public_mem_block(mem_block_t *get_free_mem_block (unsigned short sizeP);)
+public_mem_block(mem_block_t* get_free_mem_block (uint32_t sizeP);)
 public_mem_block(mem_block_t *get_free_copy_mem_block (void);)
 public_mem_block(mem_block_t *get_free_copy_mem_block_up (void);)
 public_mem_block(mem_block_t *copy_mem_block (mem_block_t * leP, mem_block_t * destP);)

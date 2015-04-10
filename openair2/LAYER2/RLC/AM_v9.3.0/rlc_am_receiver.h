@@ -56,15 +56,21 @@
 #                define public_rlc_am_receiver(x)     extern x
 #            endif
 #        endif
-/*! \fn signed int rlc_am_get_data_pdu_infos( const protocol_ctxt_t* const ctxt_pP, rlc_am_pdu_sn_10_t* headerP, int16_t sizeP, rlc_am_pdu_info_t* pdu_infoP)
+/*! \fn signed int rlc_am_get_data_pdu_infos( const protocol_ctxt_t* const ctxt_pP, const rlc_am_entity_t * const rlc_pP,rlc_am_pdu_sn_10_t* headerP, int16_t sizeP, rlc_am_pdu_info_t* pdu_infoP)
 * \brief    Extract PDU informations (header fields, data size, etc) from the serialized PDU.
 * \param[in]  ctxt_pP          Running context.
+* \param[in]  rlc_pP         RLC AM protocol instance pointer.
 * \param[in]  headerP        RLC AM header PDU pointer.
 * \param[in]  sizeP          Size of RLC AM PDU.
 * \param[in]  pdu_infoP      Structure containing extracted informations from PDU.
 * \return     0 if no error was encountered during the parsing of the PDU, else -1;
 */
-protected_rlc_am_receiver( signed int rlc_am_get_data_pdu_infos(const protocol_ctxt_t* const ctxt_pP, rlc_am_pdu_sn_10_t* headerP, int16_t sizeP, rlc_am_pdu_info_t* pdu_infoP));
+protected_rlc_am_receiver( signed int rlc_am_get_data_pdu_infos(
+                             const protocol_ctxt_t* const ctxt_pP,
+                             const rlc_am_entity_t * const rlc_pP,
+                             rlc_am_pdu_sn_10_t* headerP,
+                             int16_t sizeP,
+                             rlc_am_pdu_info_t* pdu_infoP));
 
 /*! \fn void rlc_am_display_data_pdu_infos(const protocol_ctxt_t* const ctxt_pP, rlc_am_entity_t * const rlc_pP,  rlc_am_pdu_info_t* pdu_infoP)
 * \brief      Display RLC AM PDU informations.

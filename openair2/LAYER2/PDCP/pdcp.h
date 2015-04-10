@@ -69,8 +69,8 @@ public_pdcp(void pdcp_module_cleanup ();)
 public_pdcp(void pdcp_layer_init ();)
 public_pdcp(void pdcp_layer_cleanup ();)
 
-#define PDCP2NAS_FIFO 21
-#define NAS2PDCP_FIFO 22
+#define PDCP2NW_DRIVER_FIFO 21
+#define NW_DRIVER2PDCP_FIFO 22
 
 protected_pdcp_fifo(int pdcp_fifo_flush_sdus ();)
 protected_pdcp_fifo(int pdcp_fifo_read_input_sdus_remaining_bytes ();)

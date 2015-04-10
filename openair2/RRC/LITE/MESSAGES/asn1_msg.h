@@ -121,16 +121,24 @@ uint8_t do_RRCConnectionRequest(uint8_t Mod_id, uint8_t *buffer,uint8_t *rv);
 /** \brief Generate an RRCConnectionSetupComplete UL-DCCH-Message (UE)
 @param buffer Pointer to PER-encoded ASN.1 description of UL-DCCH-Message PDU
 @returns Size of encoded bit stream in bytes*/
-uint8_t do_RRCConnectionSetupComplete(uint8_t Mod_id, uint8_t *buffer, const uint8_t Transaction_id, const int dedicatedInfoNASLength, const char *dedicatedInfoNAS);
+uint8_t do_RRCConnectionSetupComplete(uint8_t Mod_id, uint8_t* buffer, const uint8_t Transaction_id, const int dedicatedInfoNASLength,
+                                      const char* dedicatedInfoNAS);
 
 /** \brief Generate an RRCConnectionReconfigurationComplete UL-DCCH-Message (UE)
 @param buffer Pointer to PER-encoded ASN.1 description of UL-DCCH-Message PDU
 @returns Size of encoded bit stream in bytes*/
-uint8_t do_RRCConnectionReconfigurationComplete(uint8_t Mod_id, uint8_t *buffer, const uint8_t Transaction_id);
+uint8_t
+do_RRCConnectionReconfigurationComplete(
+  const protocol_ctxt_t* const ctxt_pP,
+  uint8_t* buffer,
+  const uint8_t Transaction_id
+);
 
 /**
 \brief Generate an RRCConnectionSetup DL-CCCH-Message (eNB).  This routine configures SRB_ToAddMod (SRB1/SRB2) and
 PhysicalConfigDedicated IEs.  The latter does not enable periodic CQI reporting (PUCCH format 2/2a/2b) or SRS.
+@param ctxt_pP Running context
+@param ue_context_pP UE context
 @param buffer Pointer to PER-encoded ASN.1 description of DL-CCCH-Message PDU
 @param transmission_mode Transmission mode for UE (1-9)
 @param UE_id UE index for this message
@@ -138,21 +146,23 @@ PhysicalConfigDedicated IEs.  The latter does not enable periodic CQI reporting 
 @param SRB_configList Pointer (returned) to SRB1_config/SRB2_config(later) IEs for this UE
 @param physicalConfigDedicated Pointer (returned) to PhysicalConfigDedicated IE for this UE
 @returns Size of encoded bit stream in bytes*/
-uint8_t do_RRCConnectionSetup(uint8_t Mod_id,
-                              uint8_t *buffer,
-                              uint8_t transmission_mode,
-                              uint8_t UE_id,
-                              uint8_t Transaction_id,
-                              LTE_DL_FRAME_PARMS *frame_parms,
-                              SRB_ToAddModList_t **SRB1_configList,
-                              struct PhysicalConfigDedicated  **physicalConfigDedicated);
+uint8_t
+do_RRCConnectionSetup(
+  const protocol_ctxt_t*     const ctxt_pP,
+  rrc_eNB_ue_context_t*      const ue_context_pP,
+  uint8_t*                   const buffer,
+  const uint8_t                    transmission_mode,
+  const uint8_t                    Transaction_id,
+  const LTE_DL_FRAME_PARMS* const frame_parms,
+  SRB_ToAddModList_t**             SRB_configList,
+  struct PhysicalConfigDedicated** physicalConfigDedicated
+);
 
 /**
 \brief Generate an RRCConnectionReconfiguration DL-DCCH-Message (eNB).  This routine configures SRBToAddMod (SRB2) and one DRBToAddMod
 (DRB3).  PhysicalConfigDedicated is not updated.
-@param Mod_id Module ID of this eNB Instance
+@param ctxt_pP Running context
 @param buffer Pointer to PER-encoded ASN.1 description of DL-CCCH-Message PDU
-@param UE_id UE index for this message
 @param Transaction_id Transaction_ID for this message
 @param SRB_list Pointer to SRB List to be added/modified (NULL if no additions/modifications)
 @param DRB_list Pointer to DRB List to be added/modified (NULL if no additions/modifications)
@@ -170,9 +180,10 @@ uint8_t do_RRCConnectionSetup(uint8_t Mod_id,
 @param cba_rnti RNTI for the cba transmission
 @returns Size of encoded bit stream in bytes*/
 
-uint16_t do_RRCConnectionReconfiguration(uint8_t                             Mod_id,
+uint16_t
+do_RRCConnectionReconfiguration(
+  const protocol_ctxt_t*        const ctxt_pP,
     uint8_t                            *buffer,
-    uint8_t                             UE_id,
     uint8_t                             Transaction_id,
     SRB_ToAddModList_t                 *SRB_list,
     DRB_ToAddModList_t                 *DRB_list,
@@ -189,8 +200,7 @@ uint16_t do_RRCConnectionReconfiguration(uint8_t                             Mod
     struct MeasConfig__speedStatePars  *speedStatePars,
     RSRP_Range_t                       *rsrp,
     C_RNTI_t                           *cba_rnti,
-    struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList
-    *dedicatedInfoNASList
+  struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList* dedicatedInfoNASList
 #ifdef Rel10
     , SCellToAddMod_r10_t  *SCell_config
 #endif
@@ -234,14 +244,16 @@ uint8_t do_ULInformationTransfer(uint8_t **buffer, uint32_t pdu_length, uint8_t 
 
 OAI_UECapability_t *fill_ue_capability(char *UE_EUTRA_Capability_xer);
 
-uint8_t do_UECapabilityEnquiry(uint8_t Mod_id,
-                               uint8_t *buffer,
-                               uint8_t UE_id,
-                               uint8_t Transaction_id);
+uint8_t
+do_UECapabilityEnquiry(
+  const protocol_ctxt_t* const ctxt_pP,
+  uint8_t*               const buffer,
+  const uint8_t                Transaction_id
+);
 
-uint8_t do_SecurityModeCommand(uint8_t Mod_id,
-                               uint8_t *buffer,
-                               uint8_t UE_id,
-                               uint8_t Transaction_id,
-                               uint8_t cipheringAlgorithm,
-                               uint8_t integrityProtAlgorithm);
+uint8_t do_SecurityModeCommand(
+  const protocol_ctxt_t* const ctxt_pP,
+  uint8_t* const buffer,
+  const uint8_t Transaction_id,
+  const uint8_t cipheringAlgorithm,
+  const uint8_t integrityProtAlgorithm);

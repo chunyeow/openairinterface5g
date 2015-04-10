@@ -42,7 +42,7 @@
 #include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
 
-//#define TRACE_STATUS_CREATION 1
+//#define TRACE_RLC_AM_STATUS_CREATION 1
 
 rlc_am_control_pdu_info_t  g_rlc_am_control_pdu_info;
 
@@ -82,11 +82,7 @@ rlc_am_itti_display_status_ind_infos(
     msg_p->ittiMsg.rlc_am_status_pdu_ind.size = message_string_size;
     memcpy(&msg_p->ittiMsg.rlc_am_status_pdu_ind.text, message_string, message_string_size);
 
-    if (ctxt_pP->enb_flag) {
-      itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->enb_module_id, msg_p);
-    } else {
-      itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->ue_module_id + NB_eNB_INST, msg_p);
-    }
+    itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->instance, msg_p);
   }
 }
 
@@ -199,7 +195,9 @@ rlc_am_get_control_pdu_infos(
   if (!pdu_info_pP->d_c) {
     pdu_info_pP->cpt    = (header_pP->b1 >> 4) & 0x07;
 
-    if (pdu_info_pP->cpt != 0x00) return -3;
+    if (pdu_info_pP->cpt != 0x00) {
+      return -3;
+    }
 
     pdu_info_pP->ack_sn = ((header_pP->b2 >> 2) & 0x3F) | (((uint16_t)(header_pP->b1 & 0x0F)) << 6);
     pdu_info_pP->e1     = (header_pP->b2 >> 1) & 0x01;
@@ -293,12 +291,8 @@ rlc_am_receive_process_control_pdu(
   if (rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_p, tb_size_in_bytes_pP, &g_rlc_am_control_pdu_info) >= 0) {
 
     rlc_am_tx_buffer_display(ctxt_pP, rlc_pP, " TX BUFFER BEFORE PROCESS OF STATUS PDU");
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] RX CONTROL PDU VT(A) %04d VT(S) %04d POLL_SN %04d ACK_SN %04d\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" RX CONTROL PDU VT(A) %04d VT(S) %04d POLL_SN %04d ACK_SN %04d\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           rlc_pP->vt_a,
           rlc_pP->vt_s,
           rlc_pP->poll_sn,
@@ -385,20 +379,12 @@ rlc_am_receive_process_control_pdu(
         }
       }
     } else {
-      LOG_N(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] WARNING CONTROL PDU ACK SN OUT OF WINDOW\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id);
+      LOG_N(RLC, PROTOCOL_RLC_AM_CTXT_FMT" WARNING CONTROL PDU ACK SN OUT OF WINDOW\n",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
     }
   } else {
-    LOG_W(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] ERROR IN DECODING CONTROL PDU\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rlc_pP->rb_id);
+    LOG_W(RLC, PROTOCOL_RLC_AM_CTXT_FMT" ERROR IN DECODING CONTROL PDU\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
   }
 
   *first_byte_ppP = (uint8_t*)((uint64_t)*first_byte_ppP + initial_pdu_size - *tb_size_in_bytes_pP);
@@ -447,9 +433,10 @@ rlc_am_write_status_pdu(
     num_bytes += 1;
   }
 
-#ifdef TRACE_STATUS_CREATION
-  LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX] WROTE STATUS PDU %d BYTES\n",
-        ctxt_pP->frame, num_bytes);
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+  LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" WROTE STATUS PDU %d BYTES\n",
+        PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
+        num_bytes);
 #endif
   return num_bytes;
 }
@@ -497,13 +484,9 @@ rlc_am_send_status_pdu(
   memset(&control_pdu_info, 0, sizeof(rlc_am_control_pdu_info_t));
   // header size
   nb_bits_to_transmit = nb_bits_to_transmit - 15;
-#ifdef TRACE_STATUS_CREATION
-  LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] nb_bits_to_transmit %d (15 already allocated for header)\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+  LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] nb_bits_to_transmit %d (15 already allocated for header)\n",
+        PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
         nb_bits_to_transmit);
   rlc_am_rx_list_display(rlc_pP, " DISPLAY BEFORE CONSTRUCTION OF STATUS REPORT");
 #endif
@@ -518,13 +501,9 @@ rlc_am_send_status_pdu(
 
       pdu_info_cursor_p       = &((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info;
       sn_cursor             = pdu_info_cursor_p->sn;
-#ifdef TRACE_STATUS_CREATION
-      LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d FIND VR(R) <= SN sn_cursor %04d -> %04d\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+      LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d FIND VR(R) <= SN sn_cursor %04d -> %04d\n",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
             __LINE__,
             previous_sn_cursor,
             sn_cursor);
@@ -537,13 +516,9 @@ rlc_am_send_status_pdu(
       pdu_info_cursor_p       = &((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info;
       all_segments_received = ((rlc_am_rx_pdu_management_t*)(cursor_p->data))->all_segments_received;
       sn_cursor             = pdu_info_cursor_p->sn;
-#ifdef TRACE_STATUS_CREATION
-      LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d LOOPING sn_cursor %04d previous sn_cursor %04d \n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+      LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d LOOPING sn_cursor %04d previous sn_cursor %04d \n",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
             __LINE__,
             sn_cursor,
             previous_sn_cursor);
@@ -560,38 +535,26 @@ rlc_am_send_status_pdu(
             pdu_info_cursor_p       = &((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info;
             all_segments_received = ((rlc_am_rx_pdu_management_t*)(cursor_p->data))->all_segments_received;
             sn_cursor             = pdu_info_cursor_p->sn;
-#ifdef TRACE_STATUS_CREATION
-            LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d NOW sn_cursor %04d \n",
-                  ctxt_pP->frame,
-                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                  ctxt_pP->enb_module_id,
-                  ctxt_pP->ue_module_id,
-                  rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+            LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d NOW sn_cursor %04d \n",
+                  PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                   __LINE__,
                   sn_cursor);
 #endif
           } else {
             if (all_segments_received) {
               control_pdu_info.ack_sn = (sn_cursor + 1) & RLC_AM_SN_MASK;
-#ifdef TRACE_STATUS_CREATION
-              LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d PREPARE SENDING ACK SN %04d \n",
-                    ctxt_pP->frame,
-                    (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                    ctxt_pP->enb_module_id,
-                    ctxt_pP->ue_module_id,
-                    rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+              LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d PREPARE SENDING ACK SN %04d \n",
+                    PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                     __LINE__,
                     control_pdu_info.ack_sn);
 #endif
             } else {
               control_pdu_info.ack_sn = (previous_sn_cursor + 1) & RLC_AM_SN_MASK;
-#ifdef TRACE_STATUS_CREATION
-              LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d PREPARE SENDING ACK SN %04d (CASE PREVIOUS SN)\n",
-                    ctxt_pP->frame,
-                    (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                    ctxt_pP->enb_module_id,
-                    ctxt_pP->ue_module_id,
-                    rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+              LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d PREPARE SENDING ACK SN %04d (CASE PREVIOUS SN)\n",
+                    PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                     __LINE__,
                     control_pdu_info.ack_sn);
 #endif
@@ -615,25 +578,17 @@ rlc_am_send_status_pdu(
           control_pdu_info.nack_list[control_pdu_info.num_nack].e2        = 0;
           control_pdu_info.num_nack += 1;
           nb_bits_to_transmit = nb_bits_to_transmit - 12;
-#ifdef TRACE_STATUS_CREATION
-          LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d PREPARE SENDING NACK %04d\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+          LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d PREPARE SENDING NACK %04d\n",
+                PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                 __LINE__,
                 previous_sn_cursor);
 #endif
         } else {
           control_pdu_info.ack_sn = (previous_sn_cursor + 1) & RLC_AM_SN_MASK;
-#ifdef TRACE_STATUS_CREATION
-          LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d NO MORE BITS FOR SENDING NACK %04d -> ABORT AND SET FINAL ACK %04d\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+          LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d NO MORE BITS FOR SENDING NACK %04d -> ABORT AND SET FINAL ACK %04d\n",
+                PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                 __LINE__,
                 previous_sn_cursor,
                 control_pdu_info.ack_sn);
@@ -647,13 +602,9 @@ rlc_am_send_status_pdu(
       // -------------------------------------------------------------------------------
       if (all_segments_received == 0) {
         waited_so = 0;
-#ifdef TRACE_STATUS_CREATION
-        LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] if (all_segments_received == 0) \n",
-              ctxt_pP->frame,
-              (ctxt_pP->enb_flag) ? "eNB" : "UE",
-              ctxt_pP->enb_module_id,
-              ctxt_pP->ue_module_id,
-              rlc_pP->rb_id);
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+        LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] if (all_segments_received == 0) \n",
+              PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
 #endif
 
         do {
@@ -666,13 +617,9 @@ rlc_am_send_status_pdu(
               control_pdu_info.nack_list[control_pdu_info.num_nack].e2        = 1;
               control_pdu_info.num_nack += 1;
               nb_bits_to_transmit = nb_bits_to_transmit - 42;
-#ifdef TRACE_STATUS_CREATION
-              LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d PREPARE SENDING NACK %04d SO START %05d SO END %05d (CASE SO %d > WAITED SO %d)\n",
-                    ctxt_pP->frame,
-                    (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                    ctxt_pP->enb_module_id,
-                    ctxt_pP->ue_module_id,
-                    rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+              LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d PREPARE SENDING NACK %04d SO START %05d SO END %05d (CASE SO %d > WAITED SO %d)\n",
+                    PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                     __LINE__,
                     sn_cursor,
                     waited_so,
@@ -684,25 +631,17 @@ rlc_am_send_status_pdu(
               if (pdu_info_cursor_p->lsf == 1) { // last segment flag
                 //waited_so = 0x7FF;
                 waited_so = 0x7FFF;
-#ifdef TRACE_STATUS_CREATION
-                LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d SN %04d SET WAITED SO 0x7FFF)\n",
-                      ctxt_pP->frame,
-                      (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                      ctxt_pP->enb_module_id,
-                      ctxt_pP->ue_module_id,
-                      rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+                LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d SN %04d SET WAITED SO 0x7FFF)\n",
+                      PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                       __LINE__, sn_cursor);
 #endif
                 //break;
               } else {
                 waited_so = pdu_info_cursor_p->so + pdu_info_cursor_p->payload_size;
-#ifdef TRACE_STATUS_CREATION
-                LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d SN %04d SET WAITED SO %d @1\n",
-                      ctxt_pP->frame,
-                      (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                      ctxt_pP->enb_module_id,
-                      ctxt_pP->ue_module_id,
-                      rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+                LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d SN %04d SET WAITED SO %d @1\n",
+                      PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                       __LINE__,
                       sn_cursor,
                       waited_so);
@@ -720,13 +659,9 @@ rlc_am_send_status_pdu(
               waited_so = 0x7FFF;
             }
 
-#ifdef TRACE_STATUS_CREATION
-            LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d SN %04d SET WAITED SO %d @2\n",
-                  ctxt_pP->frame,
-                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                  ctxt_pP->enb_module_id,
-                  ctxt_pP->ue_module_id,
-                  rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+            LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d SN %04d SET WAITED SO %d @2\n",
+                  PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                   __LINE__,
                   sn_cursor, waited_so);
 #endif
@@ -758,13 +693,9 @@ rlc_am_send_status_pdu(
             control_pdu_info.nack_list[control_pdu_info.num_nack].e2        = 1;
             control_pdu_info.num_nack += 1;
             nb_bits_to_transmit = nb_bits_to_transmit - 42;
-#ifdef TRACE_STATUS_CREATION
-            LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d PREPARE SENDING NACK %04d SO START %05d SO END %05d\n",
-                  ctxt_pP->frame,
-                  (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                  ctxt_pP->enb_module_id,
-                  ctxt_pP->ue_module_id,
-                  rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+            LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d PREPARE SENDING NACK %04d SO START %05d SO END %05d\n",
+                  PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                   __LINE__,
                   previous_sn_cursor,
                   waited_so,
@@ -787,13 +718,9 @@ rlc_am_send_status_pdu(
     control_pdu_info.ack_sn = (previous_sn_cursor + 1) & RLC_AM_SN_MASK;
   } else {
     control_pdu_info.ack_sn = rlc_pP->vr_r;
-#ifdef TRACE_STATUS_CREATION
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d PREPARE SENDING ACK %04d  = VR(R)\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d PREPARE SENDING ACK %04d  = VR(R)\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           __LINE__,
           control_pdu_info.ack_sn);
 #endif
@@ -808,13 +735,9 @@ end_push_nack:
   //msg ("[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] nb_bits_to_transmit %d\n",
   //     rlc_pP->module_id, rlc_pP->rb_id, ctxt_pP->frame,nb_bits_to_transmit);
 
-#ifdef TRACE_STATUS_CREATION
-  LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d PREPARE SENDING ACK %04d NUM NACK %d\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+  LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d PREPARE SENDING ACK %04d NUM NACK %d\n",
+        PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
         __LINE__,
         control_pdu_info.ack_sn,
         control_pdu_info.num_nack);
@@ -822,13 +745,9 @@ end_push_nack:
   // encode the control pdu
   pdu_size = rlc_pP->nb_bytes_requested_by_mac - ((nb_bits_to_transmit - 7 )>> 3);
 
-#ifdef TRACE_STATUS_CREATION
-  LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] LINE %d forecast pdu_size %d\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+  LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] LINE %d forecast pdu_size %d\n",
+        PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
         __LINE__,
         pdu_size);
 #endif
@@ -842,13 +761,9 @@ end_push_nack:
   ((struct mac_tb_req*)(tb_p->data))->tb_size  = pdu_size;
   //assert((((struct mac_tb_req*)(tb_p->data))->tb_size) < 3000);
 
-#ifdef TRACE_STATUS_CREATION
-  LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND-STATUS] SEND STATUS PDU SIZE %d, rlc_pP->nb_bytes_requested_by_mac %d, nb_bits_to_transmit>>3 %d\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        rlc_pP->rb_id,
+#ifdef TRACE_RLC_AM_STATUS_CREATION
+  LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEND-STATUS] SEND STATUS PDU SIZE %d, rlc_pP->nb_bytes_requested_by_mac %d, nb_bits_to_transmit>>3 %d\n",
+        PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
         pdu_size,
         rlc_pP->nb_bytes_requested_by_mac,
         nb_bits_to_transmit >> 3);

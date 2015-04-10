@@ -40,7 +40,7 @@ void foo( int sig )
 }
 
 
-#define NAS_NETLINK_ID 31
+#define OAI_IP_DRIVER_NETLINK_ID 31
 
 void main()
 {
@@ -56,7 +56,7 @@ void main()
   if ( sigaction( SIGINT, &newaction, NULL ) == -1)
     perror("Could not install the new signal handler");
 
-  sock_fd = socket(PF_NETLINK, SOCK_RAW,NAS_NETLINK_ID);
+  sock_fd = socket(PF_NETLINK, SOCK_RAW,OAI_IP_DRIVER_NETLINK_ID);
 
   printf("Opened socket with fd %d\n",sock_fd);
 

@@ -1,6 +1,6 @@
 # NASMESH Driver makefile
 #
-include $(OPENAIR_HOME)/common/utils/Makefile.inc
+include $(OPENAIR_DIR)/common/utils/Makefile.inc
 NAS_UPDIR	:= $(shell /bin/pwd)
 
 KERNEL_ARCH:=$(shell echo `uname -m`)
@@ -54,7 +54,7 @@ endif
 ####################################################
 
 #netlink.ko:
-	#make $(x)$(y) NAS_NETLINK=1 V=1 -C $(KERNEL_DIR) M=`pwd` modules
+	#make $(x)$(y) PDCP_USE_NETLINK=1 V=1 -C $(KERNEL_DIR) M=`pwd` modules
 
 #oai_nw_drv.ko:
 #	make  V=1 -C $(KERNEL_DIR) M=`pwd` modules

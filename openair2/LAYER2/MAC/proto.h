@@ -253,12 +253,14 @@ void initiate_ra_proc(module_id_t module_idP,int CC_id,frame_t frameP, uint16_t 
 @param N_RB_UL Number of UL resource blocks
 @returns t_CRNTI
 */
-uint16_t  fill_rar(module_id_t module_idP,
-                   int CC_id,
-                   frame_t frameP,
-                   uint8_t *dlsch_buffer,
-                   uint16_t N_RB_UL,
-                   uint8_t input_buffer_length);
+unsigned short fill_rar(
+  const module_id_t module_idP,
+  const int         CC_id,
+  const frame_t     frameP,
+  uint8_t   * const dlsch_buffer,
+  const uint16_t    N_RB_UL,
+  const uint8_t input_buffer_length
+);
 
 /* \brief Function to indicate a failed RA response.  It removes all temporary variables related to the initial connection of a UE
 @param Mod_id Instance ID of eNB
@@ -420,7 +422,15 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP,u
 random-access procedure
 @returns timing advance or 0xffff if preamble doesn't match
 */
-uint16_t ue_process_rar(module_id_t module_idP, int CC_id,frame_t frameP,uint8_t *dlsch_buffer,uint16_t *t_crnti,uint8_t preamble_index);
+uint16_t
+ue_process_rar(
+  const module_id_t module_idP,
+  const int CC_id,
+  const frame_t frameP,
+  uint8_t * const dlsch_buffer,
+  rnti_t * const t_crnti,
+  const uint8_t preamble_index
+);
 
 
 /* \brief Generate header for UL-SCH.  This function parses the desired control elements and sdus and generates the header as described
@@ -474,7 +484,7 @@ uint8_t *parse_ulsch_header(uint8_t *mac_header,
 int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, char *uecap_xer, uint8_t cba_group_active, uint8_t HO_active);
 int mac_init(void);
 int add_new_ue(module_id_t Mod_id, int CC_id, rnti_t rnti,int harq_pid);
-int mac_remove_ue(module_id_t Mod_id, int UE_id,int frameP);
+int mac_remove_ue(module_id_t Mod_id, int UE_id,int frameP, sub_frame_t subframeP);
 
 
 int maxround(module_id_t Mod_id,uint16_t rnti,int frame,sub_frame_t subframe,uint8_t ul_flag);
@@ -492,7 +502,7 @@ void sort_ue_ul (module_id_t module_idP,int frameP, sub_frame_t subframeP);
 void assign_max_mcs_min_rb(module_id_t module_idP,int frameP, sub_frame_t subframeP,uint16_t *first_rb);
 void adjust_bsr_info(int buffer_occupancy, uint16_t TBS, UE_TEMPLATE *UE_template);
 
-/*! \fn  UE_L2_state_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t subframe, lte_subframe_t direction,uint8_t eNB_index)
+/*! \fn  UE_L2_state_t ue_scheduler(const module_id_t module_idP,const frame_t frameP, const sub_frame_t subframe, const lte_subframe_t direction,const uint8_t eNB_index)
    \brief UE scheduler where all the ue background tasks are done.  This function performs the following:  1) Trigger PDCP every 5ms 2) Call RRC for link status return to PHY3) Perform SR/BSR procedures for scheduling feedback 4) Perform PHR procedures.
 \param[in] module_idP instance of the UE
 \param[in] subframe t the subframe number
@@ -500,7 +510,13 @@ void adjust_bsr_info(int buffer_occupancy, uint16_t TBS, UE_TEMPLATE *UE_templat
 \param[in] eNB_index  instance of eNB
 @returns L2 state (CONNETION_OK or CONNECTION_LOST or PHY_RESYNCH)
 */
-UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t subframe, lte_subframe_t direction,uint8_t eNB_index,int CC_id);
+UE_L2_STATE_t ue_scheduler(
+  const module_id_t module_idP,
+  const frame_t frameP,
+  const sub_frame_t subframe,
+  const lte_subframe_t direction,
+  const uint8_t eNB_index,
+  const int CC_id);
 
 /*! \fn  int cba_access(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint8_t eNB_index,uint16_t buflen);
 \brief determine whether to use cba resource to transmit or not
@@ -685,7 +701,7 @@ unsigned char generate_dlsch_header(unsigned char *mac_header,
 /** \brief RRC Configuration primitive for PHY/MAC.  Allows configuration of PHY/MAC resources based on System Information (SI), RRCConnectionSetup and RRCConnectionReconfiguration messages.
 @param Mod_id Instance ID of eNB
 @param eNB_flag Indicates if this is a eNB or UE configuration
-@param UE_id Index of UE if this is an eNB configuration
+@param rntiP id of UE if this is an eNB configuration
 @param eNB_id Index of eNB if this is a UE configuration
 @param radioResourceConfigCommon Structure from SIB2 for common radio parameters (if NULL keep existing configuration)
 @param physcialConfigDedicated Structure from RRCConnectionSetup or RRCConnectionReconfiguration for dedicated PHY parameters (if NULL keep existing configuration)
@@ -705,7 +721,7 @@ unsigned char generate_dlsch_header(unsigned char *mac_header,
 */
 int rrc_mac_config_req(module_id_t     module_idP,
                        eNB_flag_t eNB_flag,
-                       uint8_t         UE_id,
+                       rnti_t          rntiP,
                        uint8_t         eNB_index,
                        RadioResourceConfigCommonSIB_t *radioResourceConfigCommon,
                        struct PhysicalConfigDedicated *physicalConfigDedicated,
@@ -748,11 +764,10 @@ int rrc_mac_config_req(module_id_t     module_idP,
 @return the estimated distance in meters
  */
 double
-rrc_get_estimated_ue_distance(module_id_t Mod_id,
-                              const frame_t frameP,
-                              uint8_t UE_id,
-                              int CC_id,
-                              uint8_t loc_type);
+rrc_get_estimated_ue_distance(
+  const protocol_ctxt_t * const ctxt_pP,
+  const int         CC_idP,
+  const uint8_t     loc_typeP);
 
 
 #endif

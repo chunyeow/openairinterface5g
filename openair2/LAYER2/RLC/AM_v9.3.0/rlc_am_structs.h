@@ -218,9 +218,9 @@ typedef struct rlc_am_pdu_info {
 * \brief Generic structure for implementing a timer.
 */
 typedef struct rlc_am_timer {
-  frame_t  frame_time_out;/*!< \brief When set, indicate the frame number the timer will time-out. */
-  frame_t  frame_start;   /*!< \brief indicate the frame number the timer has been started. */
-  frame_t  time_out;      /*!< \brief Configured timer duration in frames. */
+  uint32_t    ms_time_out;   /*!< \brief When set, indicate the time in milliseconds the timer will time-out. */
+  uint32_t    ms_start;      /*!< \brief indicate the time in milliseconds the timer has been started. */
+  uint32_t    ms_duration;   /*!< \brief Configured timer duration in milliseconds. */
   uint32_t    running:1;     /*!< \brief The timer is running. */
   uint32_t    timed_out:1;   /*!< \brief The timer has timed-out. */
   uint32_t    dummy:30;      /*!< \brief Bits not used. */

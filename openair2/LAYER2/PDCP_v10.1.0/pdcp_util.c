@@ -79,8 +79,9 @@ void util_print_hex_octets(comp_name_t component, unsigned char* data, unsigned 
    */
   unsigned char index;
 
-  for (index = octet_index; index < 16; ++index)
+  for (index = octet_index; index < 16; ++index) {
     LOG_T(component, "   ");
+  }
 
   LOG_T(component, " \n");
 }

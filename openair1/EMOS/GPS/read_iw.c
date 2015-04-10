@@ -150,8 +150,9 @@ int main(int argc, char *argv[])
            iw_field.rx_gi2);
 
     //printf("read set %d, time %d:%d:%d\n",i,iw_field.hour,iw_field.min,iw_field.sec);
-    if (i==0)
+    if (i==0) {
       printf("num, date; inactive_time; rx_bytes; rx_packets; tx_bytes; tx_packets; tx_retries; tx_failed; signal; signal0; signal1; tx_bitrate; tx_mcs; rx_bitrate; rx_mcs\n");
+    }
 
     printf("%d; %d-%s-%d %d:%d:%d; %d; %d; %d; %d; %d; %d; %d; %d; %d; %d; %e; %d; %e; %d\n",
            i,

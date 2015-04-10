@@ -91,12 +91,8 @@ void rlc_am_remove_hole (
   int i;
 #ifdef TRACE_RLC_AM_HOLE
   LOG_D(RLC,
-        "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][HOLE] REMOVE HOLE SN %04d  so_startP %05d so_stopP %05d rlc_pP->pdu_retrans_buffer[snP].nack_so_start %05d rlc_pP->pdu_retrans_buffer[snP].nack_so_stop %05d\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        rlc_pP->rb_id,
+        PROTOCOL_RLC_AM_CTXT_FMT"[HOLE] REMOVE HOLE SN %04d  so_startP %05d so_stopP %05d rlc_pP->pdu_retrans_buffer[snP].nack_so_start %05d rlc_pP->pdu_retrans_buffer[snP].nack_so_stop %05d\n",
+        PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
         snP,
         so_startP,
         so_stopP,
@@ -109,12 +105,8 @@ void rlc_am_remove_hole (
     assert(so_startP == rlc_pP->pdu_retrans_buffer[snP].nack_so_start);
     assert(so_stopP  <= rlc_pP->pdu_retrans_buffer[snP].nack_so_stop);
 #ifdef TRACE_RLC_AM_HOLE
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][HOLE] REMOVE HOLE SN %04d  MODIFIED nack_so_start %05d->%05d\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[HOLE] REMOVE HOLE SN %04d  MODIFIED nack_so_start %05d->%05d\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           snP,
           rlc_pP->pdu_retrans_buffer[snP].nack_so_start,
           so_stopP+1);
@@ -144,12 +136,8 @@ void rlc_am_remove_hole (
           }
 
 #ifdef TRACE_RLC_AM_HOLE
-          LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][HOLE] REMOVE HOLE SN %04d  NOW nack_so_start %05d nack_so_stop %05d num holes %d\n",
-                ctxt_pP->frame,
-                (ctxt_pP->enb_flag) ? "eNB" : "UE",
-                ctxt_pP->enb_module_id,
-                ctxt_pP->ue_module_id,
-                rlc_pP->rb_id,
+          LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[HOLE] REMOVE HOLE SN %04d  NOW nack_so_start %05d nack_so_stop %05d num holes %d\n",
+                PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
                 snP,
                 rlc_pP->pdu_retrans_buffer[snP].nack_so_start,
                 rlc_pP->pdu_retrans_buffer[snP].nack_so_stop,
@@ -164,7 +152,6 @@ void rlc_am_remove_hole (
             rlc_am_shift_up_holes(ctxt_pP, rlc_pP, snP, i+1);
             rlc_pP->pdu_retrans_buffer[snP].hole_so_start[i+1] = so_startP+1;
             rlc_pP->pdu_retrans_buffer[snP].hole_so_stop[i+1] = rlc_pP->pdu_retrans_buffer[snP].hole_so_stop[i];
-
             rlc_pP->pdu_retrans_buffer[snP].hole_so_stop[i] = so_startP - 1;
           } else {
             rlc_pP->pdu_retrans_buffer[snP].hole_so_stop[i] = so_startP;
@@ -183,12 +170,8 @@ void rlc_am_remove_hole (
   }
 
 #ifdef TRACE_RLC_AM_HOLE
-  LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][HOLE] REMOVE HOLE SN %04d  NOW nack_so_start %05d nack_so_stop %05d num holes %d\n",
-        ctxt_pP->frame,
-        (ctxt_pP->enb_flag) ? "eNB" : "UE",
-        ctxt_pP->enb_module_id,
-        ctxt_pP->ue_module_id,
-        rlc_pP->rb_id,
+  LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[HOLE] REMOVE HOLE SN %04d  NOW nack_so_start %05d nack_so_stop %05d num holes %d\n",
+        PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
         snP,
         rlc_pP->pdu_retrans_buffer[snP].nack_so_start,
         rlc_pP->pdu_retrans_buffer[snP].nack_so_stop,
@@ -209,12 +192,8 @@ void rlc_am_get_next_hole (
     *so_startP = rlc_pP->pdu_retrans_buffer[snP].nack_so_start;
     *so_stopP  = rlc_pP->pdu_retrans_buffer[snP].nack_so_stop;
 #ifdef TRACE_RLC_AM_HOLE
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][HOLE] rlc_am_get_next_hole(SN %04d) %05d->%05d (NUM HOLES == 0)\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[HOLE] rlc_am_get_next_hole(SN %04d) %05d->%05d (NUM HOLES == 0)\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           snP,
           *so_startP,
           *so_stopP);
@@ -223,12 +202,8 @@ void rlc_am_get_next_hole (
     *so_startP = rlc_pP->pdu_retrans_buffer[snP].hole_so_start[0];
     *so_stopP  = rlc_pP->pdu_retrans_buffer[snP].hole_so_stop[0];
 #ifdef TRACE_RLC_AM_HOLE
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][HOLE] rlc_am_get_next_hole(SN %04d) %05d->%05d (NUM HOLES == %d)\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[HOLE] rlc_am_get_next_hole(SN %04d) %05d->%05d (NUM HOLES == %d)\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           snP,
           *so_startP,
           *so_stopP,
@@ -258,12 +233,8 @@ void rlc_am_add_hole (
     rlc_pP->pdu_retrans_buffer[snP].nack_so_start = so_startP;
     rlc_pP->pdu_retrans_buffer[snP].nack_so_stop  = so_stopP;
 #ifdef TRACE_RLC_AM_HOLE
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][HOLE] SN %04d GLOBAL NACK 0->%05d\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[HOLE] SN %04d GLOBAL NACK 0->%05d\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           snP,
           so_stopP);
 #endif
@@ -285,12 +256,8 @@ void rlc_am_add_hole (
     rlc_pP->pdu_retrans_buffer[snP].nack_so_start = so_startP;
     rlc_pP->pdu_retrans_buffer[snP].nack_so_stop  = so_stopP;
 #ifdef TRACE_RLC_AM_HOLE
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][HOLE] FIRST HOLE SN %04d GLOBAL NACK %05d->%05d\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[HOLE] FIRST HOLE SN %04d GLOBAL NACK %05d->%05d\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           snP,
           so_startP,
           so_stopP);
@@ -324,12 +291,8 @@ void rlc_am_add_hole (
 
       rlc_pP->pdu_retrans_buffer[snP].num_holes += 1;
 #ifdef TRACE_RLC_AM_HOLE
-      LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][HOLE] INSERT %d th HOLE SN %04d GLOBAL NACK %05d->%05d\n",
-            ctxt_pP->frame,
-            (ctxt_pP->enb_flag) ? "eNB" : "UE",
-            ctxt_pP->enb_module_id,
-            ctxt_pP->ue_module_id,
-            rlc_pP->rb_id,
+      LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[HOLE] INSERT %d th HOLE SN %04d GLOBAL NACK %05d->%05d\n",
+            PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
             rlc_pP->pdu_retrans_buffer[snP].num_holes,
             snP,
             so_startP,
@@ -352,12 +315,8 @@ void rlc_am_add_hole (
     // update nack "window" vars nack_so_start, nack_so_stop
     rlc_pP->pdu_retrans_buffer[snP].nack_so_stop = so_stopP;
 #ifdef TRACE_RLC_AM_HOLE
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][HOLE] INSERT THE %d th LAST HOLE SN %04d GLOBAL NACK %05d->%05d\n",
-          ctxt_pP->frame,
-          (ctxt_pP->enb_flag) ? "eNB" : "UE",
-          ctxt_pP->enb_module_id,
-          ctxt_pP->ue_module_id,
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[HOLE] INSERT THE %d th LAST HOLE SN %04d GLOBAL NACK %05d->%05d\n",
+          PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           rlc_pP->pdu_retrans_buffer[snP].num_holes,
           snP,
           so_startP,

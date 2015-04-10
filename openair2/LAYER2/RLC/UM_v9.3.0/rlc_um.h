@@ -74,6 +74,17 @@
 //#        include "rlc_um_very_simple_test.h"
 #endif
 
+#define PROTOCOL_RLC_UM_CTXT_FMT PROTOCOL_CTXT_FMT"[%s %02u] %s()"
+#define PROTOCOL_RLC_UM_CTXT_ARGS(CTXT_Pp, rLC_Pp) PROTOCOL_CTXT_ARGS(CTXT_Pp),\
+          (rLC_Pp->is_data_plane) ? "DRB UM" : "SRB UM",\
+          rLC_Pp->rb_id,\
+          __FUNCTION__
+
+#define PROTOCOL_RLC_UM_MSC_FMT "[%s %02u]"
+#define PROTOCOL_RLC_UM_MSC_ARGS(CTXT_Pp, rLC_Pp) \
+        CTXT_Pp->rnti,\
+          (rLC_Pp->is_data_plane) ? "DRB UM" : "SRB UM",\
+          rLC_Pp->rb_id
 
 /*! \fn void     rlc_um_stat_req     (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP,
                         unsigned int* stat_tx_pdcp_sdu,

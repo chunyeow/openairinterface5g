@@ -39,12 +39,12 @@
 #include "MAC_INTERFACE/extern.h"
 #include "UTIL/LOG/log.h"
 
-//#define DEBUG_RLC_UM_RX               1
+//#define TRACE_RLC_UM_RX               1
 
 //-----------------------------------------------------------------------------
 void
 rlc_um_display_rx_window(
-  const protocol_ctxt_t* const ctxtP,
+  const protocol_ctxt_t* const ctxt_pP,
   rlc_um_entity_t * const rlc_pP
 )
 //-----------------------------------------------------------------------------
@@ -59,7 +59,7 @@ rlc_um_display_rx_window(
   LOG_T(RLC, "\n");
   LOG_T(RLC, "+-------------------------------------------------------------------------------------------------------+");
   LOG_T(RLC, "\n");
-  sprintf(time_out_str, "%010d", rlc_pP->t_reordering.frame_time_out);
+  sprintf(time_out_str, "%010d", rlc_pP->t_reordering.ms_duration);
   time_out_str[10] = 0;
   LOG_T(RLC, "| RLC UM RB %02d    VR(UR)=%03d    VR(UX)=%03d    VR(UH)=%03d    t-Reordering: %s %s %s             |",
         rlc_pP->rb_id, rlc_pP->vr_ur, rlc_pP->vr_ux, rlc_pP->vr_uh,
@@ -114,9 +114,11 @@ rlc_um_display_rx_window(
       strcpy(color, RLC_FG_COLOR_RED);
     }
 
-    if (rlc_um_get_pdu_from_dar_buffer(ctxtP, rlc_pP, sn)) {
+    if (rlc_um_get_pdu_from_dar_buffer(ctxt_pP, rlc_pP, sn)) {
       // test RLC_REVERSE_VIDEO
-      if (str_index <= 2) str[str_index] = '.';
+      if (str_index <= 2) {
+        str[str_index] = '.';
+      }
 
       LOG_T(RLC, "%s%s%s", color, RLC_REVERSE_VIDEO, str);
     } else {
@@ -133,7 +135,7 @@ rlc_um_display_rx_window(
 //-----------------------------------------------------------------------------
 void
 rlc_um_receive (
-  const protocol_ctxt_t* const ctxtP,
+  const protocol_ctxt_t* const ctxt_pP,
   rlc_um_entity_t * const rlc_pP,
   struct mac_data_ind data_indP)
 {
@@ -152,15 +154,10 @@ rlc_um_receive (
     rlc_pP->stat_rx_data_pdu   += 1;
 
     if (tb_size_in_bytes > 0) {
-      rlc_um_receive_process_dar (ctxtP, rlc_pP, tb_p, (rlc_um_pdu_sn_10_t *)first_byte_p, tb_size_in_bytes);
-#if defined(DEBUG_RLC_UM_RX)
-      LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] VR(UR)=%03d VR(UX)=%03d VR(UH)=%03d\n",
-            frameP,
-            (rlc_pP->is_enb) ? "eNB" : "UE",
-            rlc_pP->enb_module_id,
-            rlc_pP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id,
+      rlc_um_receive_process_dar (ctxt_pP, rlc_pP, tb_p, (rlc_um_pdu_sn_10_t*)first_byte_p, tb_size_in_bytes);
+#if defined(TRACE_RLC_UM_RX)
+      LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" VR(UR)=%03d VR(UX)=%03d VR(UH)=%03d\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP),
             rlc_pP->vr_ur,
             rlc_pP->vr_ux,
             rlc_pP->vr_uh);

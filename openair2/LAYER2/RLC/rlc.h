@@ -66,7 +66,7 @@
 
 #ifdef CMAKER
 typedef uint64_t hash_key_t;
-#define HASHTABLE_QUESTIONABLE_KEY_VALUE ((uint64_t)-1)
+#define HASHTABLE_NOT_A_KEY_VALUE ((uint64_t)-1)
 #endif
 //-----------------------------------------------------------------------------
 #    ifdef RLC_MAC_C
@@ -262,21 +262,21 @@ public_rlc(logical_chan_id_t    rlc_mbms_rbid2lcid_ue [NUMBER_OF_UE_MAX][NB_RB_M
 public_rlc(logical_chan_id_t    rlc_mbms_rbid2lcid_eNB[NUMBER_OF_eNB_MAX][NB_RB_MBMS_MAX];)              /*!< \brief Pairing logical channel identifier with radio bearer identifer. */
 
 
-#define RLC_COLL_KEY_VALUE(eNB_iD, uE_iD, iS_eNB, rB_iD, iS_sRB) \
+#define RLC_COLL_KEY_VALUE(eNB_iD, rNTI, iS_eNB, rB_iD, iS_sRB) \
    ((hash_key_t)eNB_iD             | \
-    (((hash_key_t)(uE_iD))  <<  8) | \
-    (((hash_key_t)(iS_eNB)) << 16) | \
-    (((hash_key_t)(rB_iD))  << 17) | \
-    (((hash_key_t)(iS_sRB)) << 25))
+    (((hash_key_t)(rNTI))   << 8)  | \
+    (((hash_key_t)(iS_eNB)) << 24) | \
+    (((hash_key_t)(rB_iD))  << 25) | \
+    (((hash_key_t)(iS_sRB)) << 33))
 
 // service id max val is maxServiceCount = 16 (asn1_constants.h)
 
-#define RLC_COLL_KEY_MBMS_VALUE(eNB_iD, uE_iD, iS_eNB, sERVICE_ID, sESSION_ID) \
+#define RLC_COLL_KEY_MBMS_VALUE(eNB_iD, rNTI, iS_eNB, sERVICE_ID, sESSION_ID) \
    ((hash_key_t)eNB_iD             | \
-    (((hash_key_t)(uE_iD))  <<  8) | \
-    (((hash_key_t)(iS_eNB)) << 16) | \
-    (((hash_key_t)(sERVICE_ID)) << 24) | \
-    (((hash_key_t)(sESSION_ID)) << 29) | \
+    (((hash_key_t)(rNTI))       << 8)  | \
+    (((hash_key_t)(iS_eNB))     << 24) | \
+    (((hash_key_t)(sERVICE_ID)) << 32) | \
+    (((hash_key_t)(sESSION_ID)) << 37) | \
     (((hash_key_t)(0x0000000000000001))  << 63))
 
 public_rlc(hash_table_t  *rlc_coll_p;)
@@ -422,10 +422,10 @@ public_rlc_rrc(void rrc_rlc_register_rrc (rrc_data_ind_cb_t rrc_data_indP, rrc_d
 //-----------------------------------------------------------------------------
 //   PUBLIC INTERFACE WITH MAC
 //-----------------------------------------------------------------------------
-/*! \fn tbs_size_t mac_rlc_data_req     (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const  MBMS_flag_t MBMS_flagP, logical_chan_id_t rb_idP, char* bufferP)
+/*! \fn tbs_size_t mac_rlc_data_req     (const module_id_t mod_idP, const rnti_t rntiP, const frame_t frameP, const  MBMS_flag_t MBMS_flagP, logical_chan_id_t rb_idP, char* bufferP)
 * \brief    Interface with MAC layer, map data request to the RLC corresponding to the radio bearer.
-* \param [in]     enb_mod_idP      Virtualized enb module identifier, Not used if eNB_flagP = 0.
-* \param [in]     ue_mod_idP       Virtualized ue module identifier.
+* \param [in]     mod_idP          Virtualized module identifier.
+* \param [in]     rntiP            UE identifier.
 * \param [in]     frameP            Frame index
 * \param [in]     eNB_flagP        Flag to indicate eNB (1) or UE (0)
 * \param [in]     MBMS_flagP       Flag to indicate whether this is the MBMS service (1) or not (0)
@@ -433,12 +433,12 @@ public_rlc_rrc(void rrc_rlc_register_rrc (rrc_data_ind_cb_t rrc_data_indP, rrc_d
 * \param [in,out] bufferP          Memory area to fill with the bytes requested by MAC.
 * \return     A status about the processing, OK or error code.
 */
-public_rlc_mac(tbs_size_t            mac_rlc_data_req     (const module_id_t, const module_id_t, const frame_t, const  eNB_flag_t, const  MBMS_flag_t, logical_chan_id_t, char*);)
+public_rlc_mac(tbs_size_t            mac_rlc_data_req     (const module_id_t, const rnti_t, const frame_t, const  eNB_flag_t, const  MBMS_flag_t, logical_chan_id_t, char*);)
 
-/*! \fn void mac_rlc_data_ind     (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const  MBMS_flag_t MBMS_flagP, logical_chan_id_t rb_idP, uint32_t frameP, char* bufferP, tb_size_t tb_sizeP, num_tb_t num_tbP, crc_t *crcs)
+/*! \fn void mac_rlc_data_ind     (const module_id_t mod_idP, const rnti_t rntiP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const  MBMS_flag_t MBMS_flagP, logical_chan_id_t rb_idP, uint32_t frameP, char* bufferP, tb_size_t tb_sizeP, num_tb_t num_tbP, crc_t *crcs)
 * \brief    Interface with MAC layer, deserialize the transport blocks sent by MAC, then map data indication to the RLC instance corresponding to the radio bearer identifier.
-* \param[in]  enb_mod_idP      Virtualized enb module identifier, Not used if eNB_flagP = 0.
-* \param[in]  ue_mod_idP       Virtualized ue module identifier.
+* \param[in]  mod_idP          Virtualized module identifier.
+* \param[in]  rntiP            UE identifier.
 * \param[in]  frameP            Frame index
 * \param[in]  eNB_flagP        Flag to indicate eNB (1) or UE (0)
 * \param[in]  MBMS_flagP       Flag to indicate whether this is the MBMS service (1) or not (0)
@@ -448,13 +448,13 @@ public_rlc_mac(tbs_size_t            mac_rlc_data_req     (const module_id_t, co
 * \param[in]  num_tbP          Number of transport blocks.
 * \param[in]  crcs             Array of CRC decoding.
 */
-public_rlc_mac(void                  mac_rlc_data_ind     (const module_id_t, const module_id_t, const frame_t, const  eNB_flag_t, const  MBMS_flag_t, logical_chan_id_t, char*, tb_size_t, num_tb_t,
+public_rlc_mac(void                  mac_rlc_data_ind     (const module_id_t, const rnti_t, const frame_t, const  eNB_flag_t, const  MBMS_flag_t, logical_chan_id_t, char*, tb_size_t, num_tb_t,
                crc_t* );)
 
-/*! \fn mac_rlc_status_resp_t mac_rlc_status_ind     (const module_id_t enb_mod_idP, const module_id_t ue_mod_idP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const  MBMS_flag_t MBMS_flagP, logical_chan_id_t rb_idP, tb_size_t tb_sizeP)
+/*! \fn mac_rlc_status_resp_t mac_rlc_status_ind     (const module_id_t mod_idP, const rnti_t rntiP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const  MBMS_flag_t MBMS_flagP, logical_chan_id_t rb_idP, tb_size_t tb_sizeP)
 * \brief    Interface with MAC layer, request and set the number of bytes scheduled for transmission by the RLC instance corresponding to the radio bearer identifier.
-* \param[in]  enb_mod_idP      Virtualized enb module identifier, Not used if eNB_flagP = 0.
-* \param[in]  ue_mod_idP       Virtualized ue module identifier.
+* \param[in]  mod_idP          Virtualized module identifier.
+* \param[in]  rntiP            UE identifier.
 * \param[in]  frameP            Frame index.
 * \param[in]  eNB_flagP         Flag to indicate eNB operation (1 true, 0 false)
 * \param[in]  MBMS_flagP       Flag to indicate whether this is the MBMS service (1) or not (0)
@@ -462,7 +462,7 @@ public_rlc_mac(void                  mac_rlc_data_ind     (const module_id_t, co
 * \param[in]  tb_sizeP         Size of a transport block set in bytes.
 * \return     The maximum number of bytes that the RLC instance can send in the next transmission sequence.
 */
-public_rlc_mac(mac_rlc_status_resp_t mac_rlc_status_ind   (const module_id_t, const module_id_t, const frame_t, const  eNB_flag_t, const  MBMS_flag_t, logical_chan_id_t, tb_size_t );)
+public_rlc_mac(mac_rlc_status_resp_t mac_rlc_status_ind   (const module_id_t, const rnti_t, const frame_t, const  eNB_flag_t, const  MBMS_flag_t, logical_chan_id_t, tb_size_t );)
 //-----------------------------------------------------------------------------
 //   RLC methods
 //-----------------------------------------------------------------------------

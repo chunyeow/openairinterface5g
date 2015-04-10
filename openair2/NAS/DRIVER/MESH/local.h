@@ -63,7 +63,7 @@
 //#include "rrc_nas_primitives.h"
 //#include "rrc_sap.h"
 
-#define PDCP2NAS_FIFO 21
+#define PDCP2PDCP_USE_RT_FIFO 21
 #define NAS2PDCP_FIFO 22
 
 #include "constant.h"
@@ -185,7 +185,7 @@ extern struct net_device *nasdev[NB_INSTANCES_MAX];
 extern uint8_t NAS_NULL_IMEI[14];
 
 //global variables shared with RRC
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
 extern int pdcp_2_nas_irq;
 #endif
 //extern uint8_t nas_IMEI[14];

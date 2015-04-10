@@ -101,7 +101,9 @@ void nas_COMMON_receive(unsigned short dlen,
 @param gc pointer to classifier entity for SDU
 @param inst device instance
  */
-void nas_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc,int inst);
+void nas_COMMON_QOS_send(struct sk_buff *skb,
+                         struct cx_entity *cx,
+                         struct classifier_entity *gc,int inst);
 
 /**
 \fn void nas_COMMON_del_send(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc,int inst)
@@ -111,15 +113,17 @@ void nas_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct class
 @param gc pointer to classifier entity for SDU
 @param inst device instance
  */
-void nas_COMMON_del_send(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc,int inst);
+void nas_COMMON_del_send(struct sk_buff *skb,
+                         struct cx_entity *cx,
+                         struct classifier_entity *gc,int inst);
 
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
 /**
 \fn void nas_COMMON_QOS_receive()
 \brief Retrieve PDU from PDCP for connection
  */
 void nas_COMMON_QOS_receive(void);
-#endif //NAS_NETLINK
+#endif //PDCP_USE_NETLINK
 
 /**
 \fn struct rb_entity *nas_COMMON_add_rb(struct cx_entity *cx, nasRadioBearerId_t rabi, nasQoSTrafficClass_t qos)
@@ -128,7 +132,9 @@ void nas_COMMON_QOS_receive(void);
 @param rabi radio-bearer index
 @param qos NAS QOS traffic class
  */
-struct rb_entity *nas_COMMON_add_rb(struct cx_entity *cx, nasRadioBearerId_t rabi, nasQoSTrafficClass_t qos);
+struct rb_entity *nas_COMMON_add_rb(
+  struct cx_entity *cx, nasRadioBearerId_t rabi,
+  nasQoSTrafficClass_t qos);
 
 /**
 \fn struct rb_entity *nas_COMMON_search_rb(struct cx_entity *cx, nasRadioBearerId_t rabi)
@@ -137,7 +143,8 @@ struct rb_entity *nas_COMMON_add_rb(struct cx_entity *cx, nasRadioBearerId_t rab
 @param rabi radio-bearer index
 @returns A pointer to the radio-bearer entity
  */
-struct rb_entity *nas_COMMON_search_rb(struct cx_entity *cx, nasRadioBearerId_t rabi);
+struct rb_entity *nas_COMMON_search_rb(
+  struct cx_entity *cx, nasRadioBearerId_t rabi);
 
 /**
 \fn struct cx_entity *nas_COMMON_search_cx(nasLocalConnectionRef_t lcr,struct nas_priv *gpriv)
@@ -146,7 +153,9 @@ struct rb_entity *nas_COMMON_search_rb(struct cx_entity *cx, nasRadioBearerId_t 
 @param gpriv pointer to nas_priv for device
 @returns A pointer to the connection entity
  */
-struct cx_entity *nas_COMMON_search_cx(nasLocalConnectionRef_t lcr,struct nas_priv *gpriv);
+struct cx_entity *nas_COMMON_search_cx(
+  nasLocalConnectionRef_t lcr,
+  struct nas_priv *gpriv);
 
 /**
 \fn struct classifier_entity *nas_COMMON_search_class_for_rb(nasRadioBearerId_t rab_id,struct nas_priv *priv)
@@ -155,7 +164,9 @@ struct cx_entity *nas_COMMON_search_cx(nasLocalConnectionRef_t lcr,struct nas_pr
 @param priv pointer to nas_priv for device
 @returns A pointer to the corresponding RX classifier entity
  */
-struct classifier_entity *nas_COMMON_search_class_for_rb(nasRadioBearerId_t rab_id,struct nas_priv *priv);
+struct classifier_entity
+*nas_COMMON_search_class_for_rb(nasRadioBearerId_t
+                                rab_id,struct nas_priv *priv);
 
 /**
 \fn void nas_COMMON_flush_rb(struct cx_entity *cx)
@@ -164,7 +175,7 @@ struct classifier_entity *nas_COMMON_search_class_for_rb(nasRadioBearerId_t rab_
  */
 void nas_COMMON_flush_rb(struct cx_entity *cx);
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 /**
 \fn int nas_netlink_send(unsigned char *data,unsigned int len)
 \brief Request the transfer of data by PDCP via netlink socket
@@ -181,7 +192,7 @@ int nas_netlink_send(unsigned char *data,unsigned int len);
  */
 void nas_COMMON_QOS_receive(struct nlmsghdr *nlh);
 
-#endif //NAS_NETLINK
+#endif //PDCP_USE_NETLINK
 //nasmesh.c
 
 /**
@@ -191,7 +202,8 @@ void nas_mesh_init(int inst   //!< Instance ID
 
                   );
 
-void nas_mesh_timer(unsigned long data,struct nas_priv *gpriv);
+void nas_mesh_timer(unsigned long data,
+                    struct nas_priv *gpriv);
 
 int  nas_mesh_DC_receive(struct cx_entity *cx,struct nas_priv *gpriv);
 int  nas_mesh_GC_receive(struct nas_priv *gpriv);
@@ -200,9 +212,12 @@ int  nas_mesh_DC_send_cx_release_request(struct cx_entity *cx,struct nas_priv *g
 void nas_mesh_DC_send_sig_data_request(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc,struct nas_priv *gpriv);
 
 // iocontrol.c
-void nas_CTL_send(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc);
+void nas_CTL_send(struct sk_buff *skb,
+                  struct cx_entity *cx,
+                  struct classifier_entity *gc);
 //int nas_CTL_receive_authentication(struct ipv6hdr *iph, struct cx-entity *cx, unsigned char sapi);
-int nas_CTL_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd);
+int nas_CTL_ioctl(struct net_device *dev,
+                  struct ifreq *ifr, int cmd);
 
 // classifier.c
 
@@ -220,7 +235,8 @@ struct classifier_entity *nas_CLASS_add_sclassifier(struct cx_entity *cx, unsign
 /**
   \brief Send a socket received from IP to classifier for a particular instance ID.
 */
-struct classifier_entity *nas_CLASS_add_fclassifier(struct cx_entity *cx,
+struct classifier_entity
+*nas_CLASS_add_fclassifier(struct cx_entity *cx,
     unsigned char dscp,
     unsigned short classref
                                                    );
@@ -228,7 +244,8 @@ struct classifier_entity *nas_CLASS_add_fclassifier(struct cx_entity *cx,
 /**
   \brief Send a socket received from IP to classifier for a particular instance ID.
 */
-struct classifier_entity *nas_CLASS_add_rclassifier(unsigned char dscp,
+struct classifier_entity
+*nas_CLASS_add_rclassifier(unsigned char dscp,
     unsigned short classref,
     struct nas_priv*
                                                    );
@@ -297,7 +314,7 @@ void nas_tool_print_buffer(char * buffer,int length);
 void nas_print_rb_entity(struct rb_entity *rb);
 void nas_print_classifier(struct classifier_entity *gc);
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
 // nas_netlink.c
 
 void nas_netlink_release(void);

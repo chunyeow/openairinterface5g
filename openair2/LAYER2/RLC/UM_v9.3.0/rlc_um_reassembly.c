@@ -43,12 +43,15 @@
 #include "list.h"
 #include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
+#ifdef MESSAGE_CHART_GENERATOR
+#include "msc.h"
+#endif
 
 //#define TRACE_RLC_UM_DISPLAY_ASCII_DATA 1
 
 //-----------------------------------------------------------------------------
 inline void
-rlc_um_clear_rx_sdu (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
+rlc_um_clear_rx_sdu (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t* rlc_pP)
 {
   //-----------------------------------------------------------------------------
   rlc_pP->output_sdu_size_to_write = 0;
@@ -56,18 +59,13 @@ rlc_um_clear_rx_sdu (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_reassembly (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP, uint8_t * src_pP, int32_t lengthP)
+rlc_um_reassembly (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t *rlc_pP, uint8_t * src_pP, int32_t lengthP)
 {
   //-----------------------------------------------------------------------------
   sdu_size_t      sdu_max_size;
 
-  LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u][REASSEMBLY] reassembly()  %d bytes %d bytes already reassemblied\n",
-        ctxtP->frame,
-        (ctxtP->enb_flag) ? "eNB" : "UE",
-        ctxtP->enb_module_id,
-        ctxtP->ue_module_id,
-        (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-        rlc_pP->rb_id,
+  LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT"[REASSEMBLY] reassembly()  %d bytes %d bytes already reassemblied\n",
+        PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP),
         lengthP,
         rlc_pP->output_sdu_size_to_write);
 
@@ -94,93 +92,70 @@ rlc_um_reassembly (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP, 
       rlc_pP->output_sdu_size_to_write += lengthP;
 #ifdef TRACE_RLC_UM_DISPLAY_ASCII_DATA
       rlc_pP->output_sdu_in_construction->data[rlc_pP->output_sdu_size_to_write] = 0;
-      LOG_T(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u][REASSEMBLY] DATA :",
-            ctxtP->frame
-            (ctxtP->enb_flag) ? "eNB" : "UE",
-            ctxtP->enb_module_id,
-            ctxtP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id);
+      LOG_T(RLC, PROTOCOL_RLC_UM_CTXT_FMT"[REASSEMBLY] DATA :",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP));
       rlc_util_print_hex_octets(RLC, (unsigned char*)rlc_pP->output_sdu_in_construction->data, rlc_pP->output_sdu_size_to_write);
 #endif
     } else {
 #if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
-      AssertFatal(0, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] RLC_UM_DATA_IND, SDU TOO BIG, DROPPED\n",
-                  ctxtP->frame,
-                  (ctxtP->enb_flag) ? "eNB" : "UE",
-                  ctxtP->enb_module_id,
-                  ctxtP->ue_module_id,
-                  (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                  rlc_pP->rb_id);
+      AssertFatal(0, PROTOCOL_RLC_UM_CTXT_FMT" RLC_UM_DATA_IND, SDU TOO BIG, DROPPED\n",
+                  PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP));
 #endif
-      LOG_E(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u][REASSEMBLY] [max_sdu size %d] ERROR  SDU SIZE OVERFLOW SDU GARBAGED\n",
-            ctxtP->frame,
-            (ctxtP->enb_flag) ? "eNB" : "UE",
-            ctxtP->enb_module_id,
-            ctxtP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id,
+      LOG_E(RLC, PROTOCOL_RLC_UM_CTXT_FMT"[REASSEMBLY] [max_sdu size %d] ERROR  SDU SIZE OVERFLOW SDU GARBAGED\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP),
             sdu_max_size);
       // erase  SDU
       rlc_pP->output_sdu_size_to_write = 0;
     }
   } else {
-    LOG_E(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u][REASSEMBLY]ERROR  OUTPUT SDU IS NULL\n",
-          ctxtP->frame,
-          (ctxtP->enb_flag) ? "eNB" : "UE",
-          ctxtP->enb_module_id,
-          ctxtP->ue_module_id,
-          (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-          rlc_pP->rb_id);
+    LOG_E(RLC, PROTOCOL_RLC_UM_CTXT_FMT"[REASSEMBLY]ERROR  OUTPUT SDU IS NULL\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP));
 #if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
-    AssertFatal(0, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] RLC_UM_DATA_IND, SDU DROPPED, OUT OF MEMORY\n",
-                ctxtP->frame,
-                (ctxtP->enb_flag) ? "eNB" : "UE",
-                ctxtP->enb_module_id,
-                ctxtP->ue_module_id,
-                (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-                rlc_pP->rb_id);
+    AssertFatal(0, PROTOCOL_RLC_UM_CTXT_FMT" RLC_UM_DATA_IND, SDU DROPPED, OUT OF MEMORY\n",
+                PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP));
 #endif
   }
 
 }
 //-----------------------------------------------------------------------------
 void
-rlc_um_send_sdu (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
+rlc_um_send_sdu (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t *rlc_pP)
 {
   //-----------------------------------------------------------------------------
 
   if ((rlc_pP->output_sdu_in_construction)) {
-    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u] SEND_SDU to upper layers %d bytes sdu %p\n",
-          ctxtP->frame,
-          (ctxtP->enb_flag) ? "eNB" : "UE",
-          ctxtP->enb_module_id,
-          ctxtP->ue_module_id,
-          (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-          rlc_pP->rb_id,
+    LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" SEND_SDU to upper layers %d bytes sdu %p\n",
+          PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP),
           rlc_pP->output_sdu_size_to_write,
           rlc_pP->output_sdu_in_construction);
 
     if (rlc_pP->output_sdu_size_to_write > 0) {
       rlc_pP->stat_rx_pdcp_sdu += 1;
       rlc_pP->stat_rx_pdcp_bytes += rlc_pP->output_sdu_size_to_write;
+#ifdef MESSAGE_CHART_GENERATOR
+      msc_log_tx_message(
+        (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+        (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+        (const char*)(rlc_pP->output_sdu_in_construction->data),
+        rlc_pP->output_sdu_size_to_write,
+        MSC_AS_TIME_FMT" "PROTOCOL_RLC_UM_CTXT_FMT" DATA-IND size %u",
+        MSC_AS_TIME_ARGS(ctxt_pP),
+        PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP),
+        rlc_pP->output_sdu_size_to_write
+      );
+#endif
 #ifdef TEST_RLC_UM
 #ifdef TRACE_RLC_UM_DISPLAY_ASCII_DATA
       rlc_pP->output_sdu_in_construction->data[rlc_pP->output_sdu_size_to_write] = 0;
-      LOG_T(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u][SEND_SDU] DATA :",
-            ctxtP->frame,
-            (ctxtP->enb_flag) ? "eNB" : "UE",
-            ctxtP->enb_module_id,
-            ctxtP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id);
+      LOG_T(RLC, PROTOCOL_RLC_UM_CTXT_FMT"[SEND_SDU] DATA :",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP));
       rlc_util_print_hex_octets(RLC, rlc_pP->output_sdu_in_construction->data, rlc_pP->output_sdu_size_to_write);
 #endif
       rlc_um_v9_3_0_test_data_ind (rlc_pP->module_id, rlc_pP->rb_id, rlc_pP->output_sdu_size_to_write, rlc_pP->output_sdu_in_construction);
 #else
-      // msg("[RLC] DATA IND ON MOD_ID %d RB ID %d, size %d\n",rlc_pP->module_id, rlc_pP->rb_id, ctxtP->frame,rlc_pP->output_sdu_size_to_write);
+      // msg("[RLC] DATA IND ON MOD_ID %d RB ID %d, size %d\n",rlc_pP->module_id, rlc_pP->rb_id, ctxt_pP->frame,rlc_pP->output_sdu_size_to_write);
       rlc_data_ind (
-        ctxtP,
+        ctxt_pP,
         BOOL_NOT(rlc_pP->is_data_plane),
         rlc_pP->is_mxch,
         rlc_pP->rb_id,
@@ -189,13 +164,8 @@ rlc_um_send_sdu (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
 #endif
       rlc_pP->output_sdu_in_construction = NULL;
     } else {
-      LOG_E(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][%s %u][SEND_SDU] ERROR SIZE <= 0 ... DO NOTHING, SET SDU SIZE TO 0\n",
-            ctxtP->frame,
-            (ctxtP->enb_flag) ? "eNB" : "UE",
-            ctxtP->enb_module_id,
-            ctxtP->ue_module_id,
-            (rlc_pP->is_data_plane) ? "DRB" : "SRB",
-            rlc_pP->rb_id);
+      LOG_E(RLC, PROTOCOL_RLC_UM_CTXT_FMT"[SEND_SDU] ERROR SIZE <= 0 ... DO NOTHING, SET SDU SIZE TO 0\n",
+            PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP));
     }
 
     rlc_pP->output_sdu_size_to_write = 0;

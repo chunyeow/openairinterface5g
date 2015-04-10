@@ -56,7 +56,7 @@ struct nlmsghdr *nlh = NULL;
 struct iovec iov;
 int sock_fd;
 struct msghdr msg;
-#define NAS_NETLINK_ID 31
+#define OAI_IP_DRIVER_NETLINK_ID 31
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
@@ -85,7 +85,7 @@ int main()
     perror("Could not install the new signal handler");
 
   // create both sockets
-  sock_fd = socket(PF_NETLINK, SOCK_RAW,NAS_NETLINK_ID);
+  sock_fd = socket(PF_NETLINK, SOCK_RAW,OAI_IP_DRIVER_NETLINK_ID);
   printf("Opened socket with fd %d\n",sock_fd);
   ret = fcntl(sock_fd,F_SETFL,O_NONBLOCK);
   printf("fcntl returns %d\n",ret);

@@ -59,7 +59,7 @@ int nasmt_ASCTL_write(int sap, unsigned char *data_buffer, unsigned int data_len
 {
   //---------------------------------------------------------------------------
   int bytes_wrote = 0;
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
   unsigned char xmit_buffer [NAS_MESSAGE_MAXLEN];
   //MT xmit on DC-SAP only
   xmit_buffer[0] = RRC_NAS_DC0_IN;
@@ -68,7 +68,7 @@ int nasmt_ASCTL_write(int sap, unsigned char *data_buffer, unsigned int data_len
 #else
   //bytes_wrote = rtf_put(cx->sap[NAS_DC_INPUT_SAPI], p, p->length);  //original version
   bytes_wrote = rtf_put(sap, data_buffer, data_length);
-#endif //NAS_NETLINK
+#endif //PDCP_USE_NETLINK
   return bytes_wrote;
 }
 
@@ -443,7 +443,7 @@ void nasmt_ASCTL_DC_send_sig_data_request(struct sk_buff *skb, struct cx_entity 
   struct nas_ue_dc_element *p;
   char data_type = 'A';
   int bytes_wrote = 0;
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
   unsigned char xbuffer[NAS_MESSAGE_MAXLEN];
   int count=0;
 #endif
@@ -472,7 +472,7 @@ void nasmt_ASCTL_DC_send_sig_data_request(struct sk_buff *skb, struct cx_entity 
   p->nasUEDCPrimitive.data_transfer_req.nasDataLength = (skb->len)+1; //adds category character
 
   //bytes_wrote = rtf_put(cx->sap[NAS_DC_INPUT_SAPI], p, p->length); //original version
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
   memcpy(xbuffer,(unsigned char *)p, p->length);
   count = p->length;
   bytes_wrote = count;
@@ -486,7 +486,7 @@ void nasmt_ASCTL_DC_send_sig_data_request(struct sk_buff *skb, struct cx_entity 
     return;
   }
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
   memcpy(&(xbuffer[count]),(unsigned char *)&data_type, 1);
   count += 1;
   bytes_wrote = count;
@@ -494,7 +494,7 @@ void nasmt_ASCTL_DC_send_sig_data_request(struct sk_buff *skb, struct cx_entity 
   bytes_wrote += nasmt_ASCTL_write(cx->sap[NAS_DC_INPUT_SAPI], (unsigned char *)&data_type, 1);
 #endif
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
   memcpy(&(xbuffer[count]),(unsigned char *)skb->data, skb->len);
   count += skb->len;
   bytes_wrote = nasmt_ASCTL_write(cx->sap[NAS_DC_INPUT_SAPI], xbuffer, count);
@@ -524,7 +524,7 @@ void nasmt_ASCTL_DC_send_peer_sig_data_request(struct cx_entity *cx, uint8_t sig
   unsigned int nasmt_length;
   char data_type = 'Z';
   int bytes_wrote = 0;
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
   unsigned char xbuffer[NAS_MESSAGE_MAXLEN];
   int count=0;
 #endif
@@ -559,7 +559,7 @@ void nasmt_ASCTL_DC_send_peer_sig_data_request(struct cx_entity *cx, uint8_t sig
   p->nasUEDCPrimitive.data_transfer_req.nasDataLength = (nasmt_length)+1; //adds category character
 
   //bytes_wrote = rtf_put(cx->sap[NAS_DC_INPUT_SAPI], p, p->length); //original version
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
   memcpy(xbuffer,(unsigned char *)p, p->length);
   count = p->length;
   bytes_wrote = count;
@@ -573,14 +573,14 @@ void nasmt_ASCTL_DC_send_peer_sig_data_request(struct cx_entity *cx, uint8_t sig
     return;
   }
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
   memcpy(&(xbuffer[count]),(unsigned char *)&data_type, 1);
   count += 1;
 #else
   bytes_wrote += nasmt_ASCTL_write(cx->sap[NAS_DC_INPUT_SAPI], (unsigned char *)&data_type, 1);
 #endif
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
   memcpy(&(xbuffer[count]),(unsigned char *)nasmt_data, nasmt_length);
   count += nasmt_length;
   bytes_wrote = nasmt_ASCTL_write(cx->sap[NAS_DC_INPUT_SAPI], xbuffer, count);
@@ -720,7 +720,7 @@ void nasmt_ASCTL_DC_decode_sig_data_ind(struct cx_entity *cx, struct nas_ue_dc_e
 #endif
 
   //nasmt_COMMON_receive(p->length, p->nasUEDCPrimitive.data_transfer_ind.nasDataLength, cx->sap[GRAAL_DC_OUTPUT_SAPI]); // original
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
   //void nasmt_COMMON_receive(uint16_t bytes_read, uint16_t payload_length, void *data_buffer, int rb_id, int sap);
   // data_buffer is NULL because FIFO should be read directly in the skbuff (LITE has an intermediary buffer)
   nasmt_COMMON_receive(p->length, p->nasUEDCPrimitive.data_transfer_ind.nasDataLength, NULL, 2, cx->sap[NAS_DC_OUTPUT_SAPI]);
@@ -945,7 +945,7 @@ int nasmt_ASCTL_DC_receive(struct cx_entity *cx, char *buffer)
 
   // End debug information
 
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
   bytes_read = rtf_get(cx->sap[NAS_DC_OUTPUT_SAPI] , gpriv->rbuffer, NAS_TL_SIZE);
 #else
   bytes_read = NAS_TL_SIZE;
@@ -955,7 +955,7 @@ int nasmt_ASCTL_DC_receive(struct cx_entity *cx, char *buffer)
   if (bytes_read>0) {
     struct nas_ue_dc_element *p;
 
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
     p= (struct nas_ue_dc_element *)(gpriv->rbuffer);
     //get the rest of the primitive
     bytes_read += rtf_get(cx->sap[NAS_DC_OUTPUT_SAPI], (uint8_t *)p+NAS_TL_SIZE, p->length-NAS_TL_SIZE);
@@ -1105,7 +1105,7 @@ int nasmt_ASCTL_GC_receive(char *buffer)
 #endif
   // End debug information
 
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
   bytes_read = rtf_get(gpriv->sap[NAS_GC_SAPI], gpriv->rbuffer, NAS_TL_SIZE);
 #else
   bytes_read = NAS_TL_SIZE;
@@ -1114,7 +1114,7 @@ int nasmt_ASCTL_GC_receive(char *buffer)
   //
   if (bytes_read>0) {
     struct nas_ue_gc_element *p;
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
     p= (struct nas_ue_gc_element *)(gpriv->rbuffer);
     //get the rest of the primitive
     bytes_read += rtf_get(gpriv->sap[NAS_GC_SAPI], (uint8_t *)p+NAS_TL_SIZE, p->length-NAS_TL_SIZE);
@@ -1132,7 +1132,7 @@ int nasmt_ASCTL_GC_receive(char *buffer)
     // start decoding message
     switch (p->type) {
     case INFO_BROADCAST_IND :
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
       bytes_read += rtf_get(gpriv->sap[NAS_GC_SAPI], (uint8_t *)p+p->length, p->nasUEGCPrimitive.broadcast_ind.nasDataLength);
 
       if (bytes_read!=p->length+p->nasUEGCPrimitive.broadcast_ind.nasDataLength) {

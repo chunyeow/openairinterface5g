@@ -47,7 +47,7 @@
 #include "proto_extern.h"
 
 
-#define NAS_NETLINK_ID 31
+#define OAI_IP_DRIVER_NETLINK_ID 31
 #define NL_DEST_PID 1
 
 /*******************************************************************************
@@ -106,18 +106,27 @@ int ue_ip_netlink_init(void)
 
   printk("[UE_IP_DRV][NETLINK] Running init ...\n");
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+  cfg.groups   = 0;
+  cfg.input    = nas_nl_data_ready;
+  cfg.cb_mutex = &nasmesh_mutex;
+  cfg.bind     = NULL;
   nas_nl_sk = netlink_kernel_create(
                 &init_net,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
-                NAS_NETLINK_ID,
+                OAI_IP_DRIVER_NETLINK_ID,
+# if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
+                THIS_MODULE,
+# endif
                 &cfg
-#else
-                NAS_NETLINK_ID,
+#else /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0) */
+  nas_nl_sk = netlink_kernel_create(
+                &init_net,
+                OAI_IP_DRIVER_NETLINK_ID,
                 0,
                 nas_nl_data_ready,
                 &nasmesh_mutex, // NULL
-                THIS_MODULE
-#endif
+                THIS_MODULE);
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0) */
               );
 
 

@@ -59,8 +59,8 @@ void
 pdcp_data_req (module_id_t module_idP, rb_id_t rab_idP, sdu_size_t data_sizeP, char* sduP)
 {
   //-----------------------------------------------------------------------------
+  mem_block_t*      new_sdu = NULL;
 
-  mem_block_t      *new_sdu = NULL;
   //    int i;
 
   if ((data_sizeP > 0)) {
@@ -89,10 +89,10 @@ pdcp_data_req (module_id_t module_idP, rb_id_t rab_idP, sdu_size_t data_sizeP, c
       if(Mac_rlc_xface->Is_cluster_head[module_idP]==1) {
         Pdcp_stats_tx[module_idP][(rab_idP & RAB_OFFSET2 )>> RAB_SHIFT2][(rab_idP & RAB_OFFSET)-DTCH]++;
         Pdcp_stats_tx_bytes[module_idP][(rab_idP & RAB_OFFSET2 )>> RAB_SHIFT2][(rab_idP & RAB_OFFSET)-DTCH]+=data_sizeP;
+
       } else {
         Pdcp_stats_tx[module_idP][(rab_idP & RAB_OFFSET2 )>> RAB_SHIFT2][(rab_idP & RAB_OFFSET)-DTCH]++;
         Pdcp_stats_tx_bytes[module_idP][(rab_idP & RAB_OFFSET2 )>> RAB_SHIFT2][(rab_idP & RAB_OFFSET)-DTCH]+=data_sizeP;
-
       }
 
     } else {
@@ -107,47 +107,45 @@ pdcp_data_req (module_id_t module_idP, rb_id_t rab_idP, sdu_size_t data_sizeP, c
 }
 //-----------------------------------------------------------------------------
 void
-pdcp_data_ind (module_id_t module_idP, rb_id_t rab_idP, sdu_size_t data_sizeP, mem_block_t * sduP)
+pdcp_data_ind (module_id_t module_idP, rb_id_t rab_idP, sdu_size_t data_sizeP, mem_block_t* sduP)
 {
   //-----------------------------------------------------------------------------
-  mem_block_t      *new_sdu = NULL;
+  mem_block_t*      new_sdu = NULL;
   int i;
 
   if ((data_sizeP > 0)) {
-
     //   if(Mac_rlc_xface->Is_cluster_head[0]==1 && Mac_rlc_xface->frame%10==0)
     //msg("[PDCP][RAB %d][INST %d] PDCP_DATA_IND size %d\n", rab_idP,module_idP,data_sizeP);
-
 #ifdef PDCP_DATA_IND_DEBUG
     msg("[PDCP][RAB %d][INST %d] TTI %d PDCP_DATA_IND size %d\n",
         rab_idP,module_idP,Mac_rlc_xface->frame,data_sizeP);
 
-    for (i=0; i<20; i++)
+    for (i=0; i<20; i++) {
       msg("%02X.",(unsigned char)sduP->data[i]);
+    }
 
     msg("\n");
-
 #endif //PDCP_DATA_IND_DEBUG
-
     new_sdu = get_free_mem_block (data_sizeP + sizeof (pdcp_data_ind_header_t));
 
     if (new_sdu) {
       memset (new_sdu->data, 0, sizeof (pdcp_data_ind_header_t));
-      ((pdcp_data_ind_header_t *) new_sdu->data)->rb_id     = rab_idP;
-      ((pdcp_data_ind_header_t *) new_sdu->data)->data_size = data_sizeP;
-
+      ((pdcp_data_ind_header_t*) new_sdu->data)->rb_id     = rab_idP;
+      ((pdcp_data_ind_header_t*) new_sdu->data)->data_size = data_sizeP;
       // Here there is no virtualization possible
 #ifdef IDROMEL_NEMO
 
-      if (Mac_rlc_xface->Is_cluster_head[module_idP] == 0)
-        ((pdcp_data_ind_header_t *) new_sdu->data)->inst = rab_idP/8;
-      else
-        ((pdcp_data_ind_header_t *) new_sdu->data)->inst = 0;
+      if (Mac_rlc_xface->Is_cluster_head[module_idP] == 0) {
+        ((pdcp_data_ind_header_t*) new_sdu->data)->inst = rab_idP/8;
+      }
+
+      else {
+        ((pdcp_data_ind_header_t*) new_sdu->data)->inst = 0;
+      }
 
 #else
-      ((pdcp_data_ind_header_t *) new_sdu->data)->inst = module_idP;
+      ((pdcp_data_ind_header_t*) new_sdu->data)->inst = module_idP;
 #endif
-
       // PROCESS OF DECOMPRESSION HERE:
       memcpy (&new_sdu->data[sizeof (pdcp_data_ind_header_t)], &sduP->data[0], data_sizeP);
       list_add_tail_eurecom (new_sdu, &pdcp_sdu_list);
@@ -158,10 +156,8 @@ pdcp_data_ind (module_id_t module_idP, rb_id_t rab_idP, sdu_size_t data_sizeP, m
       } else {
         Pdcp_stats_rx[module_idP][(rab_idP & RAB_OFFSET2 )>> RAB_SHIFT2][(rab_idP & RAB_OFFSET)-DTCH]++;
         Pdcp_stats_rx_bytes[module_idP][(rab_idP & RAB_OFFSET2 )>> RAB_SHIFT2][(rab_idP & RAB_OFFSET)-DTCH]+=data_sizeP;
-
       }
     }
-
 
     free_mem_block (sduP);
   }
@@ -172,16 +168,11 @@ pdcp_run (void)
 {
   //-----------------------------------------------------------------------------
   // NAS -> PDCP traffic
-
-#ifndef NAS_NETLINK
+#ifndef PDCP_USE_NETLINK
 #ifdef USER_MODE
   //#define PDCP_DUMMY_BUFFER_SIZE 38
   //  unsigned char pdcp_dummy_buffer[PDCP_DUMMY_BUFFER_SIZE];
-
-
   //msg("[PDCP] PDCP Run Id %d\n",modId);
-
-
   /*
   if(Mac_rlc_xface->frame %1 == 0 && (Mac_rlc_xface->frame > 30))  {
     if (Mac_rlc_xface->Is_cluster_head[0] ==0){
@@ -205,7 +196,6 @@ pdcp_run (void)
     //       pdcp_data_req(0,36,PDCP_DUMMY_BUFFER_SIZE,pdcp_dummy_buffer);
 
     }*/
-
 #endif
 #endif
   unsigned int diff,i,k,j;
@@ -218,20 +208,16 @@ pdcp_run (void)
           diff = Pdcp_stats_tx_bytes[i][j][k];
           Pdcp_stats_tx_bytes[i][j][k]=0;
           Pdcp_stats_tx_rate[i][j][k] = (diff*8)>>7;// (Pdcp_stats_tx_rate[i][k]*1+(7*diff*8)>>7)/8;
-
-
           diff = Pdcp_stats_rx_bytes[i][j][k];
           Pdcp_stats_rx_bytes[i][j][k]=0;
           Pdcp_stats_rx_rate[i][j][k] =(diff*8)>>7;//(Pdcp_stats_rx_rate[i][k]*1 + (7*diff*8)>>7)/8;
         }
   }
 
-
   // printf("[PDCP]Read sdus from NAS\n");
   pdcp_fifo_read_input_sdus();
   // PDCP -> NAS traffic
   pdcp_fifo_flush_sdus();
-
   /*printf("PDCP TTI %d\n", Mac_rlc_xface->frame);
   for (i = 0; i < 3; i++) {
       printf("[RLC_RRC][MOD ID %d] AM:",  i);
@@ -263,50 +249,45 @@ pdcp_config_release (module_id_t module_idP, rb_id_t rab_idP)
 int
 pdcp_module_init ()
 {
-
   //-----------------------------------------------------------------------------
 #ifndef USER_MODE
   int ret;
-
-  ret=rtf_create(PDCP2NAS_FIFO,32768);
+  ret=rtf_create(PDCP2NW_DRIVER_FIFO,32768);
 
   if (ret < 0) {
-    printk("[openair][MAC][INIT] Cannot create PDCP2NAS fifo %d (ERROR %d)\n",PDCP2NAS_FIFO,ret);
-
+    printk("[openair][MAC][INIT] Cannot create PDCP2NAS fifo %d (ERROR %d)\n",PDCP2NW_DRIVER_FIFO,ret);
     return(-1);
+
   } else {
-    printk("[openair][MAC][INIT] Created PDCP2NAS fifo %d\n",PDCP2NAS_FIFO);
-    rtf_reset(PDCP2NAS_FIFO);
+    printk("[openair][MAC][INIT] Created PDCP2NAS fifo %d\n",PDCP2NW_DRIVER_FIFO);
+    rtf_reset(PDCP2NW_DRIVER_FIFO);
   }
 
-  ret=rtf_create(NAS2PDCP_FIFO,32768);
+  ret=rtf_create(NW_DRIVER2PDCP_FIFO,32768);
 
   if (ret < 0) {
-    printk("[openair][MAC][INIT] Cannot create NAS2PDCP fifo %d (ERROR %d)\n",NAS2PDCP_FIFO,ret);
-
+    printk("[openair][MAC][INIT] Cannot create NAS2PDCP fifo %d (ERROR %d)\n",NW_DRIVER2PDCP_FIFO,ret);
     return(-1);
+
   } else {
-    printk("[openair][MAC][INIT] Created NAS2PDCP fifo %d\n",NAS2PDCP_FIFO);
-    rtf_reset(NAS2PDCP_FIFO);
+    printk("[openair][MAC][INIT] Created NAS2PDCP fifo %d\n",NW_DRIVER2PDCP_FIFO);
+    rtf_reset(NW_DRIVER2PDCP_FIFO);
   }
 
   pdcp_2_nas_irq = 0;
   pdcp_input_sdu_remaining_size_to_read=0;
   pdcp_input_sdu_size_read=0;
 #endif
-
   return(0);
-
 }
 //-----------------------------------------------------------------------------
 void
 pdcp_module_cleanup ()
 //-----------------------------------------------------------------------------
 {
-
 #ifndef USER_MODE
-  rtf_destroy(NAS2PDCP_FIFO);
-  rtf_destroy(PDCP2NAS_FIFO);
+  rtf_destroy(NW_DRIVER2PDCP_FIFO);
+  rtf_destroy(PDCP2NW_DRIVER_FIFO);
 #endif
 }
 //-----------------------------------------------------------------------------
@@ -316,7 +297,6 @@ pdcp_layer_init ()
   //-----------------------------------------------------------------------------
   unsigned int i,j,k;
   list_init (&pdcp_sdu_list, NULL);
-
   msg("[PDCP] pdcp_layer_init \n ");
   pdcp_output_sdu_bytes_to_write=0;
   pdcp_output_header_bytes_to_write=0;
@@ -330,13 +310,11 @@ pdcp_layer_init ()
         Pdcp_stats_tx_bytes[i][k][j]=0;
         Pdcp_stats_tx_bytes_last[i][k][j]=0;
         Pdcp_stats_tx_rate[i][k][j]=0;
-
         Pdcp_stats_rx[i][k][j]=0;
         Pdcp_stats_rx_bytes[i][k][j]=0;
         Pdcp_stats_rx_bytes_last[i][k][j]=0;
         Pdcp_stats_rx_rate[i][k][j]=0;
       }
-
 }
 //-----------------------------------------------------------------------------
 void

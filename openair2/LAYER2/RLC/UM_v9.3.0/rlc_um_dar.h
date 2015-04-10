@@ -62,9 +62,10 @@
 #                define public_rlc_um_dar(x)     extern x
 #            endif
 #        endif
-/*! \fn signed int rlc_um_get_pdu_infos(const protocol_ctxt_t* const ctxt_pP,rlc_um_pdu_sn_10_t* header_pP, int16_t total_sizeP, rlc_um_pdu_info_t* pdu_info_pP, uint8_t sn_lengthP)
+/*! \fn signed int rlc_um_get_pdu_infos(const protocol_ctxt_t* const ctxt_pP,const rlc_um_entity_t * const rlc_pP,rlc_um_pdu_sn_10_t* header_pP, int16_t total_sizeP, rlc_um_pdu_info_t* pdu_info_pP, uint8_t sn_lengthP)
 * \brief    Extract PDU informations (header fields, data size, etc) from the serialized PDU.
 * \param[in]  ctxt_pP              Running context.
+* \param[in]  rlc_pP             RLC UM protocol instance pointer..
 * \param[in]  header_pP          RLC UM header PDU pointer.
 * \param[in]  total_sizeP        Size of RLC UM PDU.
 * \param[in]  pdu_info_pP        Structure containing extracted informations from PDU.
@@ -73,6 +74,7 @@
 */
 protected_rlc_um_dar(  signed int rlc_um_get_pdu_infos(
                          const protocol_ctxt_t* const ctxt_pP,
+                         const rlc_um_entity_t * const rlc_pP,
                          rlc_um_pdu_sn_10_t  * const header_pP,
                          const sdu_size_t            total_sizeP,
                          rlc_um_pdu_info_t   * const pdu_info_pP,
@@ -123,13 +125,13 @@ protected_rlc_um_dar(void rlc_um_stop_and_reset_timer_reordering(const protocol_
 */
 protected_rlc_um_dar(void rlc_um_start_timer_reordering(const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP);)
 
-/*! \fn void rlc_um_init_timer_reordering(rlc_um_entity_t * const rlc_pP, uint32_t time_outP)
+/*! \fn void rlc_um_init_timer_reordering(rlc_um_entity_t * const rlc_pP, const uint32_t ms_durationP)
 * \brief      Initialize the timer reordering with RLC UM time-out config parameter.
 * \param[in]  ctxt_pP             Running context.
 * \param[in]  rlc_pP            RLC UM protocol instance pointer.
-* \param[in]  time_outP         Time-out in frameP units.
+* \param[in]  ms_durationP      Duration in milliseconds units.
 */
-protected_rlc_um_dar(void rlc_um_init_timer_reordering(const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP, const uint32_t time_outP);)
+protected_rlc_um_dar(void rlc_um_init_timer_reordering(const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP, const uint32_t ms_durationP);)
 
 /*! \fn void rlc_um_check_timer_dar_time_out(const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP,)
 * \brief    Check if t-Reordering expires and take the appropriate actions as described in 3GPP specifications.

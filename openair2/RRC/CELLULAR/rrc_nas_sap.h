@@ -72,7 +72,7 @@
 #endif  //NODE_RG
 #endif  //USER_MODE
 
-//#ifdef NAS_NETLINK
+//#ifdef PDCP_USE_NETLINK
 // For netlink, all SAPs are on the same socket
 // GC-NT - OUT=UE, IN=RG
 // DCx   - OUT/IN = UE + RG
@@ -87,7 +87,7 @@
 #define RRC_NAS_DC2_IN  8
 #define RRC_NAS_DC2_OUT 9
 // ToDo : continue with parameterization of the value (up to 250 MTs for 1 short int)
-//#endif //NAS_NETLINK
+//#endif //PDCP_USE_NETLINK
 
 #define NAS_RRCNL_ID 30
 #define NL_DEST_RRC_PID 1

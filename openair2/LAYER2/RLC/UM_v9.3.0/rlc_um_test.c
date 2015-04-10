@@ -171,8 +171,9 @@ void rlc_util_print_hex_octets(comp_name_t componentP, unsigned char* dataP, uns
   /*
    * Append enough spaces and put final pipe
    */
-  for (aindex = octet_index; aindex < 16; ++aindex)
+  for (aindex = octet_index; aindex < 16; ++aindex) {
     buffer_marker+=snprintf(&rlc_2_print_buffer[buffer_marker], RLC_2_PRINT_BUFFER_LEN - buffer_marker, "   ");
+  }
 
   // LOG_D(RLC, "   ");
   buffer_marker+=snprintf(&rlc_2_print_buffer[buffer_marker], RLC_2_PRINT_BUFFER_LEN - buffer_marker, " |\n");
@@ -387,7 +388,8 @@ void rlc_um_v9_3_0_buffer_delayed_tx_mac_data_ind(struct mac_data_ind* data_indP
 }
 
 //-----------------------------------------------------------------------------
-void rlc_um_v9_3_0_test_mac_rlc_loop (struct mac_data_ind *data_indP,  struct mac_data_req *data_requestP, int* drop_countP, int *tx_packetsP, int* dropped_tx_packetsP)
+void rlc_um_v9_3_0_test_mac_rlc_loop (struct mac_data_ind* data_indP,  struct mac_data_req* data_requestP, int* drop_countP, int* tx_packetsP,
+                                      int* dropped_tx_packetsP)
 //-----------------------------------------------------------------------------
 {
 
@@ -571,11 +573,12 @@ void rlc_um_v9_3_0_test_data_ind (module_id_t module_idP, rb_id_t rb_idP, sdu_si
 
         if (g_send_sdu_ids[g_send_id_read_index[rb_idP]][rb_idP^1] != i) {
 
-          printf("[FRAME %05d][RLC][MOD %d][RB %d][DATA-IND] g_send_sdu_ids[%d] = %d\n",g_frame,module_idP, rb_idP,  g_send_id_read_index[rb_idP]-2, g_send_sdu_ids[g_send_id_read_index[rb_idP]-2][rb_idP^1]);
-
-          printf("[FRAME %05d][RLC][MOD %d][RB %d][DATA-IND] g_send_sdu_ids[%d] = %d\n",g_frame,module_idP, rb_idP,  g_send_id_read_index[rb_idP]-1, g_send_sdu_ids[g_send_id_read_index[rb_idP]-1][rb_idP^1]);
-
-          printf("[FRAME %05d][RLC][MOD %d][RB %d][DATA-IND] g_send_sdu_ids[%d] = %d\n",g_frame,module_idP, rb_idP,  g_send_id_read_index[rb_idP], g_send_sdu_ids[g_send_id_read_index[rb_idP]][rb_idP^1]);
+          printf("[FRAME %05d][RLC][MOD %d][RB %d][DATA-IND] g_send_sdu_ids[%d] = %d\n",g_frame,module_idP, rb_idP,  g_send_id_read_index[rb_idP]-2,
+                 g_send_sdu_ids[g_send_id_read_index[rb_idP]-2][rb_idP^1]);
+          printf("[FRAME %05d][RLC][MOD %d][RB %d][DATA-IND] g_send_sdu_ids[%d] = %d\n",g_frame,module_idP, rb_idP,  g_send_id_read_index[rb_idP]-1,
+                 g_send_sdu_ids[g_send_id_read_index[rb_idP]-1][rb_idP^1]);
+          printf("[FRAME %05d][RLC][MOD %d][RB %d][DATA-IND] g_send_sdu_ids[%d] = %d\n",g_frame,module_idP, rb_idP,  g_send_id_read_index[rb_idP],
+                 g_send_sdu_ids[g_send_id_read_index[rb_idP]][rb_idP^1]);
 
           printf("[FRAME %05d][RLC][MOD %d][RB %d][DATA-IND] g_send_id_read_index = %d sdu sent = %d\n",g_frame,module_idP, rb_idP,  g_send_id_read_index[rb_idP], i);
         }
@@ -916,7 +919,8 @@ void rlc_um_v9_3_0_test_tx_rx_10(void)
       rlc_um_v9_3_0_test_exchange_pdus(&um_tx, &um_rx, 500, 500);
     }
 
-    printf("\n\n\n\n\n\n-----------------------------------------------------------------------------------------rlc_um_v9_3_0_test 3: END OF TEST RANDOM (SEED=%d ) TX ONLY :\n\n\n\n",r);
+    printf("\n\n\n\n\n\n-----------------------------------------------------------------------------------------rlc_um_v9_3_0_test 3: END OF TEST RANDOM (SEED=%d ) TX ONLY :\n\n\n\n",
+           r);
     assert (g_send_id_read_index[1] == g_send_id_write_index[0]);
 #endif
 #ifdef TEST4
@@ -1388,8 +1392,9 @@ void rlc_um_v9_3_0_test_print_trace (void)
 
   printf ("Obtained %d stack frames.\n", size);
 
-  for (i = 0; i < size; i++)
+  for (i = 0; i < size; i++) {
     printf ("%s\n", strings[i]);
+  }
 
   free (strings);
 }

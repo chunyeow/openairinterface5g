@@ -25,18 +25,18 @@
 
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
-*******************************************************************************/
+ *******************************************************************************/
 
 /*! \file otg_defs.h main used structures
-* \brief otg structure
-* \author N. Nikaein and A. Hafsaoui
-* \date 2011
-* \version 0.1
-* \company Eurecom
-* \email: navid.nikaein@eurecom.fr
-* \note
-* \warning
-*/
+ * \brief otg structure
+ * \author N. Nikaein and A. Hafsaoui
+ * \date 2011
+ * \version 0.1
+ * \company Eurecom
+ * \email: navid.nikaein@eurecom.fr
+ * \note
+ * \warning
+ */
 
 #ifndef __OTG_DEFS_H__
 # define __OTG_DEFS_H__
@@ -52,12 +52,12 @@
 #include "otg_config.h"
 
 /**
-* \enum Application
-* \brief OTG applications type
-*
-*
-* Application describes the class of traffic supported and can be pre-configured bu otg_tx
-*/
+ * \enum Application
+ * \brief OTG applications type
+ *
+ *
+ * Application describes the class of traffic supported and can be pre-configured bu otg_tx
+ */
 typedef enum {
   NO_PREDEFINED_MULTICAST_TRAFFIC =0,
   MSCBR,
@@ -70,12 +70,12 @@ typedef enum {
 } Multicast_Application;
 
 /**
-* \enum Application
-* \brief OTG applications type
-*
-*
-* Application describes the class of traffic supported and can be pre-configured bu otg_tx
-*/
+ * \enum Application
+ * \brief OTG applications type
+ *
+ *
+ * Application describes the class of traffic supported and can be pre-configured bu otg_tx
+ */
 typedef enum {
   NO_PREDEFINED_TRAFFIC =0,
   M2M, // 1
@@ -118,12 +118,12 @@ typedef enum {
 
 
 /**
-* \enum dist_type
-* \brief OTG implemented distribution for packet and inter departure time computation
-*
-*
-* dist_type presents the used distribition to generate inter departure time and packet size
-*/
+ * \enum dist_type
+ * \brief OTG implemented distribution for packet and inter departure time computation
+ *
+ *
+ * dist_type presents the used distribition to generate inter departure time and packet size
+ */
 
 typedef enum {
   NO_TRAFFIC=0,
@@ -144,12 +144,12 @@ typedef enum {
 
 
 /**
-* \enum trans_proto
-*
-* \brief trans_proto enmerates used transport protocol
-*
-*
-*/
+ * \enum trans_proto
+ *
+ * \brief trans_proto enmerates used transport protocol
+ *
+ *
+ */
 
 typedef enum {
   NO_PROTO=0,
@@ -159,11 +159,11 @@ typedef enum {
 
 
 /**
-* \enum ip_v
-*
-*\brief ip_v presents the used IP version to generate the packet
-*
-*/
+ * \enum ip_v
+ *
+ *\brief ip_v presents the used IP version to generate the packet
+ *
+ */
 typedef enum {
   NO_IP=0,
   IPV4=1,
@@ -171,11 +171,11 @@ typedef enum {
 } ip_v;
 
 /**
-* \enum ip_v
-*
-*\brief ip_v presents the used IP version to generate the packet
-*
-*/
+ * \enum ip_v
+ *
+ *\brief ip_v presents the used IP version to generate the packet
+ *
+ */
 /*
 typedef enum {
   OFF_STATE=0,
@@ -183,7 +183,7 @@ typedef enum {
   ACTIVE_STATE,
   MAX_NUM_STATE,
 }TRAFFIC_STATE;
-*/
+ */
 
 typedef enum {
   OFF_STATE=0,
@@ -198,11 +198,11 @@ typedef enum {
 } VOIP_STATE;
 
 /**
-* \enum ALPHABET
-*
-*\brief ALPHABET Alphabet type to generate random string
-*
-*/
+ * \enum ALPHABET
+ *
+ *\brief ALPHABET Alphabet type to generate random string
+ *
+ */
 typedef enum {
   REPEAT_STRING=0, // repeat the same set of characters
   SUBSTRACT_STRING, // substract the string from the know character string
@@ -217,11 +217,11 @@ typedef enum {
 
 
 /**
-* \enum HEADER_TYPE
-*
-* \brief HEADER_TYPE alows to identify the transport protocol and IP version
-*
-*/
+ * \enum HEADER_TYPE
+ *
+ * \brief HEADER_TYPE alows to identify the transport protocol and IP version
+ *
+ */
 
 typedef enum {
   NO_HEADER=0,
@@ -232,18 +232,18 @@ typedef enum {
 } HEADER_TYPE;
 
 /**
-* \enum TRAFFIC_TYPE
-*
-* \brief HEADER_TYPE alows to identify the traffic type no specific type, m2m,etc.
-*
-*/
+ * \enum TRAFFIC_TYPE
+ *
+ * \brief HEADER_TYPE alows to identify the traffic type no specific type, m2m,etc.
+ *
+ */
 
 /*
 typedef enum {
 NO_TYPE=0,
 M2M_TYPE,
 }TRAFFIC_TYPE;
-*/
+ */
 
 
 /*
@@ -339,11 +339,11 @@ typedef struct {
 
 
 /**
-* \struct otg_t
-*
-*\brief otg_t  define the traffic generator global parameters, it include a matrix of nodes (source, destination and state) parameters
-*
-*/
+ * \struct otg_t
+ *
+ *\brief otg_t  define the traffic generator global parameters, it include a matrix of nodes (source, destination and state) parameters
+ *
+ */
 typedef struct {
   int max_nb_frames; /*!< \brief  Max Number of frames*/
   int application_type[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_NUM_APPLICATION];  /*!\brief It identify the application of the simulated traffic, could be cbr, m2m, gaming,etc*/
@@ -425,14 +425,16 @@ typedef struct {
 
 typedef struct {
 
-  unsigned char flow_id;  /*!< \brief It identify the flow ID (we can have source and destination with several flows)  */
-  unsigned int time;    /*!< \brief simulation time at the tx, this is ctime */
-  unsigned int seq_num;   /*!< \brief Sequence Number, counter of data packets between tx and rx */
-  unsigned char state;  /*!< \brief state of node : on, off, or active */
-  unsigned char hdr_type;   /*!< \brief Header type: tcp/udp vs ipv4/ipv6 */
+  unsigned char flow_id;      /*!< \brief It identify the flow ID (we can have source and destination with several flows)  */
+  unsigned int time;          /*!< \brief simulation time at the tx, this is ctime */
+  unsigned int seq_num;       /*!< \brief Sequence Number, counter of data packets between tx and rx */
+  unsigned char state;        /*!< \brief state of node : on, off, or active */
+  unsigned char hdr_type;     /*!< \brief Header type: tcp/udp vs ipv4/ipv6 */
+  unsigned char src_instance; /*!< \brief traffic source instance */
+  unsigned char dst_instance; /*!< \brief traffic destination instance */
   unsigned short pkts_size;   /*!< \brief the size of payload + header */
-  unsigned short aggregation_level;   /*!< \brief packet aggregation level */
-  unsigned int traffic_type;    /*!< \brief to specify if it corresponds to an m2m traffic */
+  unsigned short aggregation_level;/*!< \brief packet aggregation level */
+  unsigned int traffic_type;       /*!< \brief to specify if it corresponds to an m2m traffic */
   //int payload_size; /*!< \brief the size of the payload to transmit */
   //int header_size;  /*!< \brief Header type: tcp/udp vs ipv4/ipv6 */
 } __attribute__((__packed__)) otg_hdr_t;
@@ -444,12 +446,12 @@ typedef struct {
 
 
 /**
-* \struct packet_t
-*
-* \brief packet_t corresponds to the global structure of the generated packet
-*
-*
-*/
+ * \struct packet_t
+ *
+ * \brief packet_t corresponds to the global structure of the generated packet
+ *
+ *
+ */
 
 
 typedef struct {
@@ -500,11 +502,11 @@ typedef struct {
 
 
 /**
-* \struct packet_t
-*
-* \brief The OTG information and KPI of the simulation structure
-*
-*/
+ * \struct packet_t
+ *
+ * \brief The OTG information and KPI of the simulation structure
+ *
+ */
 
 typedef struct {
   /*!< \brief  info part: */
@@ -536,9 +538,9 @@ typedef struct {
   float rx_owd_min_e2e[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_EMU_TRAFFIC];      /*!< \brief  One way delay min*/
   float rx_owd_max_e2e[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_EMU_TRAFFIC];    /*!< \brief  One way delay max*/
   float rx_pkt_owd_history[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][2];    /*!< \brief  One way delay histoy used for jitter calculation: rx_ctime - tx_ctime, [2] to keep the owd for the current and previous pkt */
-  float rx_pkt_owd_history_e2e[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][2];     /*!< \brief  One way delay histoy used for jitter calculation: rx_ctime - tx_ctime, [2] to keep the owd for the current and previous pkt */
+  float rx_pkt_owd_history_e2e[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][2];    /*!< \brief  One way delay histoy used for jitter calculation: rx_ctime - tx_ctime, [2] to keep the owd for the current and previous pkt */
   float rx_pkt_jitter[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];    /*!< \brief  One way delay: rx_ctime - tx_ctime */
-  float rx_jitter_min[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_EMU_TRAFFIC];      /*!< \brief  One way delay min*/
+  float rx_jitter_min[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_EMU_TRAFFIC];     /*!< \brief  One way delay min*/
   float rx_jitter_max[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_EMU_TRAFFIC];     /*!< \brief  One way delay max*/
   float rx_jitter_avg[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_EMU_TRAFFIC];     /*!< \brief  One way delay max*/
   float rx_pkt_jitter_e2e[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];    /*!< \brief  One way delay: rx_ctime - tx_ctime */

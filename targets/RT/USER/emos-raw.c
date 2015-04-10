@@ -1076,7 +1076,7 @@ int main(int argc, char **argv)
       vcd_signal_dumper_init("/tmp/openair_dump_eNB.vcd");
   }
 
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
   netlink_init();
 #endif
 

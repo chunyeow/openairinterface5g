@@ -39,40 +39,45 @@
 # include "extern.h"
 # include "RRC/LITE/MESSAGES/asn1_msg.h"
 # include "rrc_eNB_GTPV1U.h"
+# include "rrc_eNB_UE_context.h"
 
 # if defined(ENABLE_ITTI)
 #   include "asn1_conversions.h"
 #   include "intertask_interface.h"
 # endif
 
-int rrc_eNB_process_GTPV1U_CREATE_TUNNEL_RESP(MessageDef *msg_pP, const char *msg_name_pP, instance_t instanceP)
+int
+rrc_eNB_process_GTPV1U_CREATE_TUNNEL_RESP(
+  const protocol_ctxt_t* const ctxt_pP,
+  MessageDef* msg_pP,
+  const char* msg_name_pP
+)
 {
-  uint8_t                ue_index;
+  rnti_t                         rnti;
   int                    i;
+  struct rrc_eNB_ue_context_s*   ue_context_p = NULL;
 
   if (msg_pP) {
-    LOG_D(RRC, "[eNB] RX %s num tunnels %u \n",
+    LOG_D(RRC, PROTOCOL_RRC_CTXT_UE_FMT" RX %s num tunnels %u \n",
+          PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP),
           msg_name_pP,
           GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).num_tunnels);
 
-    ue_index = GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).ue_index;
-
-    // !!!
-    instanceP = 0;
+    rnti = GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).rnti;
+    ue_context_p = rrc_eNB_get_ue_context(
+                     &eNB_rrc_inst[ctxt_pP->module_id],
+                     ctxt_pP->rnti);
 
     for (i = 0; i < GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).num_tunnels; i++) {
-      LOG_D(RRC, "[eNB] instance %u ue index %u rrc_eNB_process_GTPV1U_CREATE_TUNNEL_RESP tunnel %u bearer index %u id %u\n",
-            instanceP,
-            ue_index,
+      LOG_D(RRC, PROTOCOL_RRC_CTXT_UE_FMT" rrc_eNB_process_GTPV1U_CREATE_TUNNEL_RESP tunnel %u bearer index %u id %u\n",
+            PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP),
             GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).enb_S1u_teid[i],
             i,
             GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).eps_bearer_id[i]);
-      eNB_rrc_inst[instanceP].Info.UE[ue_index].enb_gtp_teid[i]  = GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).enb_S1u_teid[i];
-      eNB_rrc_inst[instanceP].Info.UE[ue_index].enb_gtp_addrs[i] = GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).enb_addr;
-      eNB_rrc_inst[instanceP].Info.UE[ue_index].enb_gtp_ebi[i]   = GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).eps_bearer_id[i];
+      ue_context_p->ue_context.enb_gtp_teid[i]  = GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).enb_S1u_teid[i];
+      ue_context_p->ue_context.enb_gtp_addrs[i] = GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).enb_addr;
+      ue_context_p->ue_context.enb_gtp_ebi[i]   = GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).eps_bearer_id[i];
     }
-
-    LOG_D(RRC, "[eNB] RX %s END\n");
     return 0;
   } else {
     return -1;
