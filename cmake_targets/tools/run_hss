@@ -83,7 +83,7 @@ function main()
   check_for_root_rights
 
   set_openair_env 
-  cecho "OPENAIR_HOME    = $OPENAIR_HOME" $green
+  cecho "OPENAIR_DIR    = $OPENAIR_DIR" $green
   cecho "OPENAIR1_DIR    = $OPENAIR1_DIR" $green
   cecho "OPENAIR2_DIR    = $OPENAIR2_DIR" $green
   cecho "OPENAIR3_DIR    = $OPENAIR3_DIR" $green

@@ -26,7 +26,7 @@
 #  Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 #
 ################################################################################
-# file build_cmake.bash
+# file build_helper
 # brief
 # author Laurent Thomas
 #
@@ -65,53 +65,7 @@ echo_warning() { cecho "$*" $yellow       ;}
 echo_success() { cecho "$*" $green        ;}
 echo_info()    { cecho "$*" $blue         ;}
 
-print_help() {
-echo_info '
-This program installs OpenAirInterface Software
-You should have ubuntu 14.xx, updated, and the Linux kernel >= 3.14
-Options
--h
-   This help
--c | --clean
-   Erase all files made by previous compilation, installation" 
---clean-kernel
-   Erase previously installed features in kernel: iptables, drivers, ...
--I | --install-external-packages 
-   Installs required packages such as LibXML, asn1.1 compiler, freediameter, ...
-   This option will require root password
---install-optional-packages
-   Install useful but not mandatory packages such as valgrind
--g | --run-with-gdb
-   Add debugging symbols to compilation directives
---eNB
-   Makes the eNB LTE softmodem
---UE
-   Makes the UE softmodem
---EPC
-   Makes the EPC
--r | --3gpp-release
-   default is Rel10, 
-   Rel8 limits the implementation to 3GPP Release 8 version
--w | --hardware
-   EXMIMO (Default), USRP, None
-   Adds this RF board support (in external packages installation and in compilation)
---oaisim
-   Makes the oaisim simulator
---phy_simulators
-   Makes the unitary tests Layer 1 simulators
---core_simulators
-   Makes the core security features unitary simulators
--s | --check
-   runs a set of auto-tests based on simulators and several compilation tests
--V | --vcd
-   Adds a debgging facility to the binary files: GUI with major internal synchronization events
--x | --xforms
-   Adds a software oscilloscope feature to the produced binaries
---install-system-files
-   Install OpenArInterface required files in Linux system 
-   (will ask root password)
-Typical Options for a quick startup with a COTS UE and Eurecom RF board: build_oai.bash -I -g -eNB -EPC -x --install-system-files'
-}
+
 
 ###########################
 # Cleaners
@@ -141,7 +95,7 @@ clean_kernel() {
 clean_all_files() {
  set_openair_env
  dir=$OPENAIR_DIR/cmake_targets
- rm -rf $dir/log $OPENAIR_DIR/targets/bin 
+  rm -rf $dir/log $OPENAIR_DIR/targets/bin/* 
  rm -rf $dir/lte_build_oai $dir/lte-simulators/build
  rm -rf $dir/epc_build_oai/build $dir/epc_build_oai/CMakeLists.txt
  rm -rf $dir/oaisim_build_oai/build $dir/oaisim_build_oai/CMakeLists.txt
@@ -184,7 +138,7 @@ make_one_cert() {
 make_certs(){
     
     fqdn=$1
-    certs_dir=/usr/local/etc/freeDiameter
+  certs_dir=$FREEDIAMETER_PREFIX/freeDiameter
     # certificates are stored in diameter config directory
     if [ ! -d $certs_dir ];  then
         echo "Creating non existing directory: $certs_dir"
@@ -244,9 +198,9 @@ install_gnutls_from_source(){
     rm -rf /tmp/gnutls-3.1.23.tar.xz /tmp/gnutls-3.1.23
 }
 
-install_freediameter_from_source() {
+install_1.1.5_freediameter_from_source() {
     cd /tmp
-    echo "Downloading freeDiameter archive"
+  echo "Downloading 1.1.5 freeDiameter archive"
     rm -rf /tmp/1.1.5.tar.gz* /tmp/freeDiameter-1.1.5
     wget http://www.freediameter.net/hg/freeDiameter/archive/1.1.5.tar.gz 
     tar xzf 1.1.5.tar.gz
@@ -260,6 +214,24 @@ install_freediameter_from_source() {
     #make test 
     $SUDO make install 
     rm -rf /tmp/1.1.5.tar.gz /tmp/freeDiameter-1.1.5
+}
+
+install_freediameter_from_source() {
+  cd /tmp
+  echo "Downloading 1.2.0 freeDiameter archive"
+  rm -rf /tmp/1.2.0.tar.gz* /tmp/freeDiameter-1.2.0
+  wget http://www.freediameter.net/hg/freeDiameter/archive/1.2.0.tar.gz 
+  tar xzf 1.2.0.tar.gz
+  cd freeDiameter-1.2.0
+  patch -p1 < $OPENAIRCN_DIR/S6A/freediameter/freediameter-1.2.0.patch 
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ../ 
+  echo "Compiling freeDiameter"
+  make -j4
+  #make test 
+  $SUDO make install 
+  rm -rf /tmp/1.2.0.tar.gz /tmp/freeDiameter-1.2.0
 }
 
 check_install_usrp_uhd_driver(){
@@ -339,6 +311,7 @@ check_install_oai_software() {
 	libxml2 \
 	libxml2-dev  \
 	linux-headers-`uname -r` \
+    mscgen  \
 	mysql-client  \
 	mysql-server \
 	openssh-client \
@@ -456,7 +429,6 @@ set_openair_env(){
     openair_path=${openair_path%/openair-cn/*}
     openair_path=${openair_path%/openair[123]/*}    
     export OPENAIR_DIR=$openair_path
-    export OPENAIR_HOME=$openair_path
     export OPENAIR1_DIR=$openair_path/openair1
     export OPENAIR2_DIR=$openair_path/openair2
     export OPENAIR3_DIR=$openair_path/openair3

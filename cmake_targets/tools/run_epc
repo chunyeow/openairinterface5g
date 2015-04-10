@@ -115,30 +115,25 @@ function main()
 
   check_for_root_rights
   set_openair_env 
-  cecho "OPENAIR_HOME    = $OPENAIR_HOME" $green
-  cecho "OPENAIR1_DIR    = $OPENAIR1_DIR" $green
-  cecho "OPENAIR2_DIR    = $OPENAIR2_DIR" $green
-  cecho "OPENAIR3_DIR    = $OPENAIR3_DIR" $green
-  cecho "OPENAIRCN_DIR   = $OPENAIRCN_DIR" $green
-  cecho "OPENAIR_TARGETS = $OPENAIR_TARGETS" $green
+  cecho "OPENAIR_DIR    = $OPENAIR_DIR" $green
 
 
-  if [ ! -e $OPENAIR_TARGETS/bin/mme_gw ]; then
-    echo_fatal "Cannot find $OPENAIR_TARGETS/bin/mme_gw executable, have a look at the output of build_epc executable"
+  if [ ! -e $OPENAIR_DIR/targets/bin/mme_gw ]; then
+    echo_fatal "Cannot find $OPENAIR_DIR/targets/bin/mme_gw executable, have a look at the output of build_epc executable"
   fi
 
   if [ $epc_local -eq 1 ]; then
-    epc_config_file="$OPENAIR_TARGETS/bin/epc.local.enb.conf"
+    epc_config_file="$OPENAIR_DIR/targets/bin/epc.local.enb.conf"
   fi
 
   exe_arguments="-O $epc_config_file $exe_arguments"
 
   if [ $run_gdb -eq 0 ]; then 
-    exec $OPENAIR_TARGETS/bin/mme_gw  `echo $exe_arguments` 2>&1 
+    $OPENAIR_DIR/targets/bin/mme_gw  `echo $exe_arguments` 2>&1 
   else
     touch      ~/.gdb_mme_gw
     chmod 777  ~/.gdb_mme_gw
-    echo "file $OPENAIR_TARGETS/bin/mme_gw" > ~/.gdb_mme_gw
+    echo "file $OPENAIR_DIR/targets/bin/mme_gw" > ~/.gdb_mme_gw
     echo "set args $exe_arguments "        >> ~/.gdb_mme_gw
     echo "run"                             >> ~/.gdb_mme_gw
     cat ~/.gdb_mme_gw

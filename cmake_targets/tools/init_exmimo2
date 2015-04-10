@@ -1,5 +1,21 @@
 #!/bin/bash
 
+load_module() 
+{
+  mod_name=${1##*/}
+  mod_name=${mod_name%.*}
+  if awk "/$mod_name/ {found=1 ;exit} END {if (found!=1) exit 1}" /proc/modules
+    then
+      echo "module $mod_name already loaded: I remove it first"
+      sudo rmmod $mod_name
+  fi
+  echo loading $mod_name
+  sudo insmod $1
+}
+
+
+function main() 
+{
 PCI=`lspci -m | grep Xilinx`
 if [ -z "$PCI" ]; then
  echo "No card found. Stopping!"
@@ -12,17 +28,6 @@ SLOT_NUMBER=`echo $config_reg | awk -F\" '{print $1}'`
 sudo setpci -s $SLOT_NUMBER 60.b=10
 done
 
-load_module() {
-  mod_name=${1##*/}
-  mod_name=${mod_name%.*}
-  if awk "/$mod_name/ {found=1 ;exit} END {if (found!=1) exit 1}" /proc/modules
-    then
-      echo "module $mod_name already loaded: I remove it first"
-      sudo rmmod $mod_name
-  fi
-  echo loading $mod_name
-  sudo insmod $1
-}
 
 load_module $OPENAIR_DIR/targets/bin/openair_rf.ko
 sleep 1
@@ -41,3 +46,6 @@ else
    echo 'No corresponding firmware found'
    return
 fi
+}
+
+main "$@"

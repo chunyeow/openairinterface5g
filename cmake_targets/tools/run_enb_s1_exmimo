@@ -87,7 +87,7 @@ function main()
             echo_fatal "config file $CONFIG_FILE not found"
           fi
         fi
-        exe_arguments="$exe_arguments -O $CONFIG_FILE"
+        exe_arguments="$exe_arguments -O $CONFIG_FILE -F $THIS_SCRIPT_PATH/exmimo2_2arxg.lime"
         shift 2;
         ;;
       -g | --gdb)
@@ -105,10 +105,12 @@ function main()
         # can omit file name if last arg on the line
         if [ "x$ITTI_DUMP_FILE" = "x" ]; then
           ITTI_DUMP_FILE="/tmp/enb_s1_exmimo_itti.log"
+          shift 1;
+        else
+          shift 2;
         fi
         echo "setting ITTI dump file to: $ITTI_DUMP_FILE"
         exe_arguments="$exe_arguments -K $ITTI_DUMP_FILE"
-        shift 2;
         ;;      
       -M | --target-dl-mcs)
         echo "setting target dl MCS to $2"
@@ -143,25 +145,19 @@ function main()
     esac
   done
 
-  check_for_root_rights
 
   set_openair_env 
-  cecho "OPENAIR_HOME    = $OPENAIR_HOME" $green
-  cecho "OPENAIR1_DIR    = $OPENAIR1_DIR" $green
-  cecho "OPENAIR2_DIR    = $OPENAIR2_DIR" $green
-  cecho "OPENAIR3_DIR    = $OPENAIR3_DIR" $green
-  cecho "OPENAIRCN_DIR   = $OPENAIRCN_DIR" $green
-  cecho "OPENAIR_TARGETS = $OPENAIR_TARGETS" $green
+  cecho "OPENAIR_DIR    = $OPENAIR_DIR" $green
 
 
-  if [ ! -e $OPENAIR_TARGETS/bin/lte-softmodem ]; then
-    echo_fatal "Cannot find $OPENAIR_TARGETS/bin/lte-softmodem executable"
+  if [ ! -e $OPENAIR_DIR/targets/bin/lte-softmodem ]; then
+    echo_fatal "Cannot find $OPENAIR_DIR/targets/bin/lte-softmodem executable"
   fi
-  if [ ! -e $OPENAIR_TARGETS/bin/updatefw ]; then
-    echo_fatal "Cannot find $OPENAIR_TARGETS/bin/updatefw executable"
+  if [ ! -e $OPENAIR_DIR/targets/bin/updatefw ]; then
+    echo_fatal "Cannot find $OPENAIR_DIR/targets/bin/updatefw executable"
   fi
-  if [ ! -e $OPENAIR_TARGETS/bin/openair_rf.ko ]; then
-    echo_fatal "Cannot find $OPENAIR_TARGETS/bin/openair_rf.ko kernel module"
+  if [ ! -e $OPENAIR_DIR/targets/bin/openair_rf.ko ]; then
+    echo_fatal "Cannot find $OPENAIR_DIR/targets/bin/openair_rf.ko kernel module"
   fi
 
   for i in `seq 0 64`; do 
@@ -171,14 +167,14 @@ function main()
     fi;
   done
 
-  $THIS_SCRIPT_PATH/init_exmimo2.sh
+  $THIS_SCRIPT_PATH/init_exmimo2
 
   if [ $run_gdb -eq 0 ]; then 
-    exec $OPENAIR_TARGETS/bin/lte-softmodem  `echo $exe_arguments` 2>&1 > /tmp/gdb_lte_softmodem.stdout.txt
+    exec $OPENAIR_DIR/targets/bin/lte-softmodem  `echo $exe_arguments` 2>&1 > /tmp/lte_softmodem.stdout.txt
   else
     touch      ~/.gdb_lte_softmodem
     chmod 777  ~/.gdb_lte_softmodem
-    echo "file $OPENAIR_TARGETS/bin/lte-softmodem" > ~/.gdb_lte_softmodem
+    echo "file $OPENAIR_DIR/targets/bin/lte-softmodem" > ~/.gdb_lte_softmodem
     echo "set args $exe_arguments" >> ~/.gdb_lte_softmodem
     echo "run"                        >> ~/.gdb_lte_softmodem
     cat ~/.gdb_lte_softmodem

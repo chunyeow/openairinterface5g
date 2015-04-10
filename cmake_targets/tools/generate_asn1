@@ -1,4 +1,7 @@
+#!/bin/bash
 
+function main()
+{
 mkdir -p $1
 cd $1
 shift
@@ -26,3 +29,6 @@ awk '
   END {
      print "#endif ";
   } ' $1  > asn1_constants.h
+}
+
+main "$@"

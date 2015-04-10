@@ -26,7 +26,7 @@ MME :
 
     S6A :
     {
-        S6A_CONF                   = "@FREEDIAMETER_PATH@/../etc/freeDiameter/epc_s6a.conf";
+        S6A_CONF                   = "@FREEDIAMETER_PATH@/../etc/freeDiameter/mme_fd.conf";
         HSS_HOSTNAME               = "@HSS_HOSTNAME@";
     };
 
@@ -117,8 +117,8 @@ P-GW =
         PGW_INTERFACE_NAME_FOR_S5_S8          = "none";
         PGW_IPV4_ADDRESS_FOR_S5_S8            = "0.0.0.0/24";
 
-        PGW_INTERFACE_NAME_FOR_SGI            = "eth1";
-        PGW_IPV4_ADDRESS_FOR_SGI              = "192.168.13.82/24";
+        PGW_INTERFACE_NAME_FOR_SGI            = "eth0";
+        PGW_IPV4_ADDRESS_FOR_SGI              = "192.168.14.17/24";
         # Option available only if GTPU in kernel configured
         PGW_MASQUERADE_SGI                    = "yes";
     };
