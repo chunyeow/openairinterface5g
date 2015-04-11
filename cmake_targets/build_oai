@@ -53,12 +53,12 @@ Options
 -h
    This help
 -c | --clean
-   Erase all files to make a rebuild from start" 
+   Erase all files to make a rebuild from start"
 -C | --clean-all
-   Erase all files made by previous compilations, installations" 
+   Erase all files made by previous compilations, installations"
 --clean-kernel
    Erase previously installed features in kernel: iptables, drivers, ...
--I | --install-external-packages 
+-I | --install-external-packages
    Installs required packages such as LibXML, asn1.1 compiler, freediameter, ...
    This option will require root password
 --install-optional-packages
@@ -74,7 +74,7 @@ Options
 --EPC
    Makes the EPC (MME-SPGW, HSS)
 -r | --3gpp-release
-   default is Rel10, 
+   default is Rel10,
    Rel8 limits the implementation to 3GPP Release 8 version
 -w | --hardware
    EXMIMO (Default), USRP, None
@@ -92,7 +92,7 @@ Options
 -x | --xforms
    Adds a software oscilloscope feature to the produced binaries
 --install-system-files
-   Install OpenArInterface required files in Linux system 
+   Install OpenArInterface required files in Linux system
    (will ask root password)
 Typical Options for a quick startup with a COTS UE and Eurecom RF board: build_oai -I -g -eNB -EPC -x --install-system-files'
 }
@@ -137,7 +137,7 @@ function main() {
             echo_info "Will compile EPC"
             shift;;
        -r | --3gpp-release)
-            REL=$2 
+            REL=$2
             echo_info "setting release to: $REL"
             shift 2;;
        -w | --hardware)
@@ -179,7 +179,7 @@ function main() {
         -h | --help)
             print_help
             exit 1;;
-	*)   
+	*)
 	    print_help
             echo_fatal "Unknown option $1"
             break;;
@@ -189,10 +189,10 @@ function main() {
   ############################################
   # setting and printing OAI envs, we should check here
   ############################################
-    
+
   echo_info "2. Setting the OAI PATHS ..."
 
-  set_openair_env 
+  set_openair_env
   cecho "OPENAIR_DIR    = $OPENAIR_DIR" $green
 
   # for conf files copy in this bash script
@@ -237,7 +237,7 @@ function main() {
   DIR=$OPENAIR_DIR/cmake_targets
 
 
-  if [ "$eNB" = "1" -o "UE" = "1" ] ; then
+  if [ "$eNB" = "1" -o "$UE" = "1" ] ; then
     # LTE softmodem compilation
     mkdir -p $DIR/lte_build_oai/build
     cmake_file=$DIR/lte_build_oai/CMakeLists.txt
@@ -252,8 +252,8 @@ function main() {
     cmake ..
     echo_info "Compiling LTE softmodem"
     compilations \
-	lte_build_oai lte-softmodem \
-	lte-softmodem lte-softmodem.$REL 
+	  lte_build_oai lte-softmodem \
+	  lte-softmodem lte-softmodem.$REL
 
   fi
 
@@ -261,14 +261,14 @@ function main() {
     # ue_ip driver compilation
     echo_info "Compiling UE specific part"
     compilations \
-	lte_build_oai ue_ip \
-	CMakeFiles/ue_ip/ue_ip.ko $dbin/ue_ip.ko
+	  lte_build_oai ue_ip \
+	  CMakeFiles/ue_ip/ue_ip.ko $dbin/ue_ip.ko
     compilations \
-	lte_build_oai usim \
-	usim $dbin/usim
+	  lte_build_oai usim \
+	  usim $dbin/usim
     compilations \
-	lte_build_oai nvram \
-	nvram $dbin/nvram
+	  lte_build_oai nvram \
+	  nvram $dbin/nvram
   fi
 
   if [ "$SIMUS_PHY" = "1" -o "$SIMUS_CORE" = "1" ] ; then
@@ -291,7 +291,7 @@ function main() {
     done
   fi
 
-  # Core simulators 
+  # Core simulators
   #############
   if [ "$SIMUS_CORE" = "1" ] ; then
     # lte unitary simulators compilation
@@ -312,8 +312,8 @@ function main() {
         lte_build_oai openair_rf \
         CMakeFiles/openair_rf/openair_rf.ko $dbin/openair_rf.ko
     compilations \
-	lte_build_oai updatefw \
-	updatefw $dbin/updatefw 
+	  lte_build_oai updatefw \
+	  updatefw $dbin/updatefw
   fi
 
   if [ "$oaisim" = "1" ] ; then
@@ -361,7 +361,7 @@ function main() {
     cp $DIR/epc_build_oai/CMakeLists.template $cmake_file
     echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
     echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
-    
+
     [ "$CLEAN" = "1" ] && rm -rf $DIR/epc_build_oai/build
     mkdir -p $DIR/epc_build_oai/build
     cd $DIR/epc_build_oai/build
@@ -394,7 +394,7 @@ function main() {
       $OPENAIR_DIR/cmake_targets/tools/build_hss --debug --transport-tcp-only --transport-prefer-tcp --fqdn `hostname --fqdn` --connect-to-mme `hostname --fqdn`
     fi
     # example HHS and EPC run on separate hosts (can use SCTP)
-    # $OPENAIR_DIR/cmake_targets/tools/build_hss --debug 
+    # $OPENAIR_DIR/cmake_targets/tools/build_hss --debug
 
     echo_info "Copying iptables libraries into system directory: /lib/xtables"
     if [ -f  $dbin/libxt_GTPURH_lib.so ] ; then
@@ -414,7 +414,7 @@ function main() {
       install_nas_tools $dbin $dconf
     else
       echo_warning "not generated UE NAS files: binaries not found"
-    fi	
+    fi
 
 
     # Do EPC
@@ -425,11 +425,11 @@ function main() {
       echo_warning "not installed EPC config files: not found"
     fi
 
-    # Do HSS 
+    # Do HSS
     # bash doesn't like space char around = char
     cp -uv $DIR/hss_build/build/hss.conf $dbin
     $SUDO cp -uv $DIR/hss_build/build/hss_fd.conf $DIR/hss_build/build/acl.conf $FREEDIAMETER_PREFIX/etc/freeDiameter
-    
+
 #   if [ "$INSTALL_SYSTEM_FILES" = "1" ] ;then
 #    if [ -f $dbin/hss.conf ] ; then
 #      sed -e 's/ *= */=/' $dbin/hss.conf > $dconf/hss.conf.nospace
@@ -442,15 +442,15 @@ function main() {
 #  fi
 fi
 
-# Auto-tests 
-#####################
-if [ "$OAI_TEST" = "1" ]; then 
+  # Auto-tests
+  #####################
+  if [ "$OAI_TEST" = "1" ]; then
     echo_info "10. Running OAI pre commit tests (pre-ci) ..."
     $OPENAIR_DIR/cmake_targets/autotests/run_compilation_autotests.bash
     $OPENAIR_DIR/cmake_targets/autotests/run_exec_autotests.bash
-else 
+  else
     echo_info "10. Bypassing the Tests ..."
-fi 
+  fi
 }
 
 main "$@"
