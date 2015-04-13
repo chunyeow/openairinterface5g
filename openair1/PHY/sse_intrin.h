@@ -350,6 +350,9 @@ static inline __m128i ssp_cvtepi16_epi32_SSE2 ( __m128i a)
 }
 #endif // __SSE4_1__
 
+#elif defined(__arm__)
+#include <arm_neon.h>
+
 #endif // x86_64 || i386
 
 #endif // SSE_INTRIN_H
