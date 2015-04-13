@@ -263,12 +263,23 @@ function main() {
     compilations \
 	  lte_build_oai ue_ip \
 	  CMakeFiles/ue_ip/ue_ip.ko $dbin/ue_ip.ko
+
+    mkdir -p $DIR/nas_sim_tools/build
+    cd $DIR/nas_sim_tools/build
+    cmake ..
     compilations \
-	  lte_build_oai usim \
-	  usim $dbin/usim
+      nas_sim_tools usim \
+      usim $dbin/usim
     compilations \
-	  lte_build_oai nvram \
-	  nvram $dbin/nvram
+      nas_sim_tools nvram \
+      nvram $dbin/nvram
+
+    # generate USIM data
+    if [ -f $dbin/nvram ]; then
+      install_nas_tools $dbin $dconf
+    else
+      echo_warning "not generated UE NAS files: binaries not found"
+    fi
   fi
 
   if [ "$SIMUS_PHY" = "1" -o "$SIMUS_CORE" = "1" ] ; then
@@ -317,6 +328,8 @@ function main() {
   fi
 
   if [ "$oaisim" = "1" ] ; then
+    dconf=$OPENAIR_DIR/targets/bin
+
     echo_info "Compiling oaisim"
     cmake_file=$DIR/oaisim_build_oai/CMakeLists.txt
     cp $DIR/oaisim_build_oai/CMakeLists.template $cmake_file
@@ -328,17 +341,55 @@ function main() {
     cd $DIR/oaisim_build_oai/build
     cmake ..
     compilations \
-	oaisim_build_oai oaisim \
-	oaisim $dbin/oaisim.$REL
+	  oaisim_build_oai oaisim \
+	  oaisim $dbin/oaisim.$REL
+
+    # ue_ip driver compilation
+    echo_info "Compiling UE specific part (ue_ip driver and usim tools)"
+    compilations \
+	  oaisim_build_oai ue_ip \
+	  CMakeFiles/ue_ip/ue_ip.ko $dbin/ue_ip.ko
+
+    mkdir -p $DIR/nas_sim_tools/build
+    cd $DIR/nas_sim_tools/build
+    cmake ..
+    compilations \
+	  nas_sim_tools usim \
+	  usim $dbin/usim
+    compilations \
+	  nas_sim_tools nvram \
+	  nvram $dbin/nvram
+
+    # generate USIM data
+    if [ -f $dbin/nvram ]; then
+      install_nas_tools $dbin $dconf
+    else
+      echo_warning "not generated UE NAS files: binaries not found"
+    fi
+
+    echo_info "Compiling oaisim_nos1"
+    cmake_file=$DIR/oaisim_noS1_build_oai/CMakeLists.txt
+    cp $DIR/oaisim_noS1_build_oai/CMakeLists.template $cmake_file
+    echo "set(XFORMS $XFORMS )" >>  $cmake_file
+    echo "set(RRC_ASN1_VERSION \"${REL}\")" >>  $cmake_file
+    echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
+    echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
+    mkdir -p $DIR/oaisim_noS1_build_oai/build
+    cd $DIR/oaisim_noS1_build_oai/build
+    cmake ..
+    compilations \
+	  oaisim_noS1_build_oai oaisim_nos1 \
+	  oaisim_nos1 $dbin/oaisim_nos1.$REL
 
     # nasmesh driver compilation
     compilations \
-	oaisim_build_oai nasmesh \
-	CMakeFiles/nasmesh/nasmesh.ko $dbin/nasmesh.ko
+	  oaisim_noS1_build_oai nasmesh \
+	  CMakeFiles/nasmesh/nasmesh.ko $dbin/nasmesh.ko
     #oai_nw_drv
     compilations \
-	oaisim_build_oai oai_nw_drv \
-	CMakeFiles/oai_nw_drv/oai_nw_drv.ko $dbin/oai_nw_drv.ko
+	  oaisim_noS1_build_oai oai_nw_drv \
+	  CMakeFiles/oai_nw_drv/oai_nw_drv.ko $dbin/oai_nw_drv.ko
+
     cmake_file=$DIR/oaisim_mme_build_oai/CMakeLists.txt
     cp $DIR/oaisim_mme_build_oai/CMakeLists.template $cmake_file
     echo "set(XFORMS $XFORMS )" >>  $cmake_file
@@ -349,8 +400,8 @@ function main() {
     cd $DIR/oaisim_mme_build_oai/build
     cmake ..
     compilations \
-	oaisim_mme_build_oai oaisim_mme \
-	oaisim_mme $dbin/oaisim_mme.$REL
+	  oaisim_mme_build_oai oaisim_mme \
+	  oaisim_mme $dbin/oaisim_mme.$REL
   fi
 
   # EPC compilation
@@ -405,17 +456,9 @@ function main() {
       echo_warning "not installed GTP-U iptables: binaries not found"
     fi
 
-    dconf=$OPENAIR_TARGETS/bin
+    dconf=$OPENAIR_DIR/targets/bin
     mkdir -p $dconf
     #cp $ORIGIN_PATH/$CONFIG_FILE $dconf || echo_error "config file $ORIGIN_PATH/$CONFIG_FILE not found"
-
-    # generate USIM data
-    if [ -f $dbin/nvram ]; then
-      install_nas_tools $dbin $dconf
-    else
-      echo_warning "not generated UE NAS files: binaries not found"
-    fi
-
 
     # Do EPC
     if [ -f $DIR/epc_build_oai/build/mme_fd.conf ] ; then
