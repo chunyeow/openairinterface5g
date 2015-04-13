@@ -66,6 +66,15 @@ static inline unsigned long long rdtsc_oai(void)
   __asm__ volatile ("rdtsc" : "=a" (a), "=d" (d));
   return (d<<32) | a;
 }
+
+#elif defined(__arm__)
+static inline unsigned long long rdtsc_oai(void) __attribute__((always_inline));
+static inline unsigned long long rdtsc_oai(void)
+{
+        uint32_t r = 0;
+        asm volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(r) );
+        return (unsigned long long)r;
+}
 #endif
 
 static inline void start_meas(time_stats_t *ts)
