@@ -1087,12 +1087,12 @@ void dlsch_channel_compensation(int **rxdataF_ext,
 
     for (aatx=0; aatx<frame_parms->nb_antennas_tx_eNB; aatx++) {
         if (mod_order == 4) {
-            QAM_amp128  = vmovq_n_s16(QAM16_n1);  // 2/sqrt(10)
-            QAM_amp128b = vmovq_n_s16(0);
+            QAM_amp128  = vmov_n_s16(QAM16_n1);  // 2/sqrt(10)
+            QAM_amp128b = vmov_n_s16(0);
 
         } else if (mod_order == 6) {
-            QAM_amp128  = vmovq_n_s16(QAM64_n1); //
-            QAM_amp128b = vmovq_n_s16(QAM64_n2);
+            QAM_amp128  = vmov_n_s16(QAM64_n1); //
+            QAM_amp128b = vmov_n_s16(QAM64_n2);
         }
 
         //    printf("comp: rxdataF_comp %p, symbol %d\n",rxdataF_comp[0],symbol);
@@ -1112,22 +1112,22 @@ void dlsch_channel_compensation(int **rxdataF_ext,
 	      // get channel amplitude if not QPSK
 	      mmtmpD0 = vmull_s16(dl_ch128[0], dl_ch128[0]);
 	      // mmtmpD0 = [ch0*ch0,ch1*ch1,ch2*ch2,ch3*ch3];
-	      mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0),-output_shift));
+	      mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0)),-output_shift);
 	      // mmtmpD0 = [ch0*ch0 + ch1*ch1,ch0*ch0 + ch1*ch1,ch2*ch2 + ch3*ch3,ch2*ch2 + ch3*ch3]>>output_shift on 32-bits
 	      mmtmpD1 = vmull_s16(dl_ch128[1], dl_ch128[1]);
-	      mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1),-output_shift));
+	      mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1)),-output_shift);
 	      mmtmpD2 = vcombine_s16(vqmovn_s32(mmtmpD0),vwmovn_s32(mmtmpD1));
 	      // mmtmpD2 = [ch0*ch0 + ch1*ch1,ch0*ch0 + ch1*ch1,ch2*ch2 + ch3*ch3,ch2*ch2 + ch3*ch3,ch4*ch4 + ch5*ch5,ch4*ch4 + ch5*ch5,ch6*ch6 + ch7*ch7,ch6*ch6 + ch7*ch7]>>output_shift on 16-bits 
 	      mmtmpD0 = vmull_s16(dl_ch128[2], dl_ch128[2]);
-	      mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0),-output_shift));
+	      mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0)),-output_shift);
 	      mmtmpD1 = vmull_s16(dl_ch128[3], dl_ch128[3]);
-	      mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1),-output_shift));
+	      mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1)),-output_shift);
 	      mmtmpD3 = vcombine_s16(vqmovn_s32(mmtmpD0),vwmovn_s32(mmtmpD1));
 	      if (pilots==0) {
 		mmtmpD0 = vmull_s16(dl_ch128[4], dl_ch128[4]);
-		mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0),-output_shift));
+		mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0)),-output_shift);
 		mmtmpD1 = vmull_s16(dl_ch128[5], dl_ch128[5]);
-		mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1),-output_shift));
+		mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1)),-output_shift);
 		mmtmpD4 = vcombine_s16(vqmovn_s32(mmtmpD0),vwmovn_s32(mmtmpD1));
 
 
@@ -1682,12 +1682,12 @@ void dlsch_channel_compensation_TM56(int **rxdataF_ext,
 
 
     if (mod_order == 4) {
-      QAM_amp128  = vmovq_n_s16(QAM16_n1);  // 2/sqrt(10)
-      QAM_amp128b = vmovq_n_s16(0);
+      QAM_amp128  = vmov_n_s16(QAM16_n1);  // 2/sqrt(10)
+      QAM_amp128b = vmov_n_s16(0);
       
     } else if (mod_order == 6) {
-      QAM_amp128  = vmovq_n_s16(QAM64_n1); //
-      QAM_amp128b = vmovq_n_s16(QAM64_n2);
+      QAM_amp128  = vmov_n_s16(QAM64_n1); //
+      QAM_amp128b = vmov_n_s16(QAM64_n2);
     }
     
     //    printf("comp: rxdataF_comp %p, symbol %d\n",rxdataF_comp[0],symbol);
@@ -1718,23 +1718,23 @@ void dlsch_channel_compensation_TM56(int **rxdataF_ext,
 	  // get channel amplitude if not QPSK
 	  mmtmpD0 = vmull_s16(dl_ch128[0], dl_ch128[0]);
 	  // mmtmpD0 = [ch0*ch0,ch1*ch1,ch2*ch2,ch3*ch3];
-	  mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0),-output_shift));
+	  mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0)),-output_shift);
 	  // mmtmpD0 = [ch0*ch0 + ch1*ch1,ch0*ch0 + ch1*ch1,ch2*ch2 + ch3*ch3,ch2*ch2 + ch3*ch3]>>output_shift on 32-bits
 	  mmtmpD1 = vmull_s16(dl_ch128[1], dl_ch128[1]);
-	  mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1),-output_shift));
+	  mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1)),-output_shift);
 	  mmtmpD2 = vcombine_s16(vqmovn_s32(mmtmpD0),vwmovn_s32(mmtmpD1));
 	  // mmtmpD2 = [ch0*ch0 + ch1*ch1,ch0*ch0 + ch1*ch1,ch2*ch2 + ch3*ch3,ch2*ch2 + ch3*ch3,ch4*ch4 + ch5*ch5,ch4*ch4 + ch5*ch5,ch6*ch6 + ch7*ch7,ch6*ch6 + ch7*ch7]>>output_shift on 16-bits 
 	  mmtmpD0 = vmull_s16(dl_ch128[2], dl_ch128[2]);
-	  mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0),-output_shift));
+	  mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0)),-output_shift);
 	  mmtmpD1 = vmull_s16(dl_ch128[3], dl_ch128[3]);
-	  mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1),-output_shift));
+	  mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1)),-output_shift);
 	  mmtmpD3 = vcombine_s16(vqmovn_s32(mmtmpD0),vwmovn_s32(mmtmpD1));
 	  
 	  if (pilots==0) {
 	    mmtmpD0 = vmull_s16(dl_ch128[4], dl_ch128[4]);
-	    mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0),-output_shift));
+	    mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0)),-output_shift);
 	    mmtmpD1 = vmull_s16(dl_ch128[5], dl_ch128[5]);
-	    mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1),-output_shift));
+	    mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1)),-output_shift);
 	    mmtmpD4 = vcombine_s16(vqmovn_s32(mmtmpD0),vwmovn_s32(mmtmpD1));
 	    
 	    
@@ -2205,21 +2205,21 @@ void dlsch_channel_compensation_TM3(LTE_DL_FRAME_PARMS *frame_parms,
 
 
     if (mod_order0 == 4) {
-      QAM_amp0_128  = vmovq_n_s16(QAM16_n1);  // 2/sqrt(10)
-      QAM_amp0_128b = vmovq_n_s16(0);
+      QAM_amp0_128  = vmov_n_s16(QAM16_n1);  // 2/sqrt(10)
+      QAM_amp0_128b = vmov_n_s16(0);
       
     } else if (mod_order0 == 6) {
-      QAM_amp0_128  = vmovq_n_s16(QAM64_n1); //
-      QAM_amp0_128b = vmovq_n_s16(QAM64_n2);
+      QAM_amp0_128  = vmov_n_s16(QAM64_n1); //
+      QAM_amp0_128b = vmov_n_s16(QAM64_n2);
     }
 
     if (mod_order1 == 4) {
-      QAM_amp1_128  = vmovq_n_s16(QAM16_n1);  // 2/sqrt(10)
-      QAM_amp1_128b = vmovq_n_s16(0);
+      QAM_amp1_128  = vmov_n_s16(QAM16_n1);  // 2/sqrt(10)
+      QAM_amp1_128b = vmov_n_s16(0);
       
     } else if (mod_order1 == 6) {
-      QAM_amp1_128  = vmovq_n_s16(QAM64_n1); //
-      QAM_amp1_128b = vmovq_n_s16(QAM64_n2);
+      QAM_amp1_128  = vmov_n_s16(QAM64_n1); //
+      QAM_amp1_128b = vmov_n_s16(QAM64_n2);
     }
     
     //    printf("comp: rxdataF_comp %p, symbol %d\n",rxdataF_comp[0],symbol);
@@ -2255,23 +2255,23 @@ void dlsch_channel_compensation_TM3(LTE_DL_FRAME_PARMS *frame_parms,
 	  // get channel amplitude if not QPSK
 	  mmtmpD0 = vmull_s16(dl_ch0_128[0], dl_ch0_128[0]);
 	  // mmtmpD0 = [ch0*ch0,ch1*ch1,ch2*ch2,ch3*ch3];
-	  mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0),-output_shift));
+	  mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0)),-output_shift);
 	  // mmtmpD0 = [ch0*ch0 + ch1*ch1,ch0*ch0 + ch1*ch1,ch2*ch2 + ch3*ch3,ch2*ch2 + ch3*ch3]>>output_shift on 32-bits
 	  mmtmpD1 = vmull_s16(dl_ch0_128[1], dl_ch0_128[1]);
-	  mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1),-output_shift));
+	  mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1)),-output_shift);
 	  mmtmpD2 = vcombine_s16(vqmovn_s32(mmtmpD0),vwmovn_s32(mmtmpD1));
 	  // mmtmpD2 = [ch0*ch0 + ch1*ch1,ch0*ch0 + ch1*ch1,ch2*ch2 + ch3*ch3,ch2*ch2 + ch3*ch3,ch4*ch4 + ch5*ch5,ch4*ch4 + ch5*ch5,ch6*ch6 + ch7*ch7,ch6*ch6 + ch7*ch7]>>output_shift on 16-bits 
 	  mmtmpD0 = vmull_s16(dl_ch0_128[2], dl_ch0_128[2]);
-	  mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0),-output_shift));
+	  mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0)),-output_shift);
 	  mmtmpD1 = vmull_s16(dl_ch0_128[3], dl_ch0_128[3]);
-	  mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1),-output_shift));
+	  mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1)),-output_shift);
 	  mmtmpD3 = vcombine_s16(vqmovn_s32(mmtmpD0),vwmovn_s32(mmtmpD1));
 	  
 	  if (pilots==0) {
 	    mmtmpD0 = vmull_s16(dl_ch0_128[4], dl_ch0_128[4]);
-	    mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0),-output_shift));
+	    mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0)),-output_shift);
 	    mmtmpD1 = vmull_s16(dl_ch0_128[5], dl_ch0_128[5]);
-	    mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1),-output_shift));
+	    mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1)),-output_shift);
 	    mmtmpD4 = vcombine_s16(vqmovn_s32(mmtmpD0),vwmovn_s32(mmtmpD1));
 	    
 	    
@@ -2293,23 +2293,23 @@ void dlsch_channel_compensation_TM3(LTE_DL_FRAME_PARMS *frame_parms,
 	  // get channel amplitude if not QPSK
 	  mmtmpD0 = vmull_s16(dl_ch1_128[0], dl_ch1_128[0]);
 	  // mmtmpD0 = [ch0*ch0,ch1*ch1,ch2*ch2,ch3*ch3];
-	  mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0),-output_shift));
+	  mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0)),-output_shift);
 	  // mmtmpD0 = [ch0*ch0 + ch1*ch1,ch0*ch0 + ch1*ch1,ch2*ch2 + ch3*ch3,ch2*ch2 + ch3*ch3]>>output_shift on 32-bits
 	  mmtmpD1 = vmull_s16(dl_ch1_128[1], dl_ch1_128[1]);
-	  mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1),-output_shift));
+	  mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1)),-output_shift);
 	  mmtmpD2 = vcombine_s16(vqmovn_s32(mmtmpD0),vwmovn_s32(mmtmpD1));
 	  // mmtmpD2 = [ch0*ch0 + ch1*ch1,ch0*ch0 + ch1*ch1,ch2*ch2 + ch3*ch3,ch2*ch2 + ch3*ch3,ch4*ch4 + ch5*ch5,ch4*ch4 + ch5*ch5,ch6*ch6 + ch7*ch7,ch6*ch6 + ch7*ch7]>>output_shift on 16-bits 
 	  mmtmpD0 = vmull_s16(dl_ch1_128[2], dl_ch1_128[2]);
-	  mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0),-output_shift));
+	  mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0)),-output_shift);
 	  mmtmpD1 = vmull_s16(dl_ch1_128[3], dl_ch1_128[3]);
-	  mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1),-output_shift));
+	  mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1)),-output_shift);
 	  mmtmpD3 = vcombine_s16(vqmovn_s32(mmtmpD0),vwmovn_s32(mmtmpD1));
 	  
 	  if (pilots==0) {
 	    mmtmpD0 = vmull_s16(dl_ch1_128[4], dl_ch1_128[4]);
-	    mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0),-output_shift));
+	    mmtmpD0 = vqshlq_s32(vqaddq_s32(mmtmpD0,vrev64q_s32(mmtmpD0)),-output_shift);
 	    mmtmpD1 = vmull_s16(dl_ch1_128[5], dl_ch1_128[5]);
-	    mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1),-output_shift));
+	    mmtmpD1 = vqshlq_s32(vqaddq_s32(mmtmpD1,vrev64q_s32(mmtmpD1)),-output_shift);
 	    mmtmpD4 = vcombine_s16(vqmovn_s32(mmtmpD0),vwmovn_s32(mmtmpD1));
 	    
 	    
