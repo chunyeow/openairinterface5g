@@ -45,6 +45,7 @@
 #define SSE_INTRIN_H
 
 
+#if defined(__x86_64) || defined(__i386__)
 
 #ifndef __SSE2__
 #  error SSE2 processor intrinsics disabled
@@ -349,6 +350,7 @@ static inline __m128i ssp_cvtepi16_epi32_SSE2 ( __m128i a)
 }
 #endif // __SSE4_1__
 
+#endif // x86_64 || i386
 
 #endif // SSE_INTRIN_H
 
