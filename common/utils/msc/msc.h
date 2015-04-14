@@ -32,7 +32,8 @@
 #include <stdarg.h>
 
 typedef enum {
-    MSC_E_UTRAN = 0,
+	MIN_MSC_ENV = 0,
+    MSC_E_UTRAN = MIN_MSC_ENV,
     MSC_EPC,
     MAX_MSC_ENV
 } msc_env_t;
