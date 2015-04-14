@@ -61,9 +61,7 @@
 #include "SIMULATION/ETH_TRANSPORT/extern.h"
 #include "rrc_eNB_UE_context.h"
 #include "platform_types.h"
-#ifdef MESSAGE_CHART_GENERATOR
 #include "msc.h"
-#endif
 
 //#ifdef Rel10
 #include "MeasResults.h"
@@ -856,8 +854,8 @@ rrc_eNB_generate_SecurityModeCommand(
         size,
         rrc_eNB_mui,
         DCCH);
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+
+  MSC_LOG_TX_MESSAGE(
     MSC_RRC_ENB,
     MSC_RRC_UE,
     buffer,
@@ -867,7 +865,7 @@ rrc_eNB_generate_SecurityModeCommand(
     ue_context_pP->ue_context.rnti,
     rrc_eNB_mui,
     size);
-#endif
+
   pdcp_rrc_data_req(
     ctxt_pP,
     DCCH,
@@ -907,8 +905,8 @@ rrc_eNB_generate_UECapabilityEnquiry(
         size,
         rrc_eNB_mui,
         DCCH);
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+
+  MSC_LOG_TX_MESSAGE(
     MSC_RRC_ENB,
     MSC_RRC_UE,
     buffer,
@@ -918,7 +916,7 @@ rrc_eNB_generate_UECapabilityEnquiry(
     ue_context_pP->ue_context.rnti,
     rrc_eNB_mui,
     size);
-#endif
+
   pdcp_rrc_data_req(
     ctxt_pP,
     DCCH,
@@ -957,8 +955,8 @@ rrc_eNB_generate_RRCConnectionRelease(
         size,
         rrc_eNB_mui,
         DCCH);
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+
+  MSC_LOG_TX_MESSAGE(
     MSC_RRC_ENB,
     MSC_RRC_UE,
     buffer,
@@ -968,7 +966,7 @@ rrc_eNB_generate_RRCConnectionRelease(
     ue_context_pP->ue_context.rnti,
     rrc_eNB_mui,
     size);
-#endif
+
   pdcp_rrc_data_req(
     ctxt_pP,
     DCCH,
@@ -1577,8 +1575,8 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration(
   LOG_D(RRC,
         "[FRAME %05d][RRC_eNB][MOD %u][][--- PDCP_DATA_REQ/%d Bytes (rrcConnectionReconfiguration to UE %x MUI %d) --->][PDCP][MOD %u][RB %u]\n",
         ctxt_pP->frame, ctxt_pP->module_id, size, ue_context_pP->ue_context.rnti, rrc_eNB_mui, ctxt_pP->module_id, DCCH);
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+
+  MSC_LOG_TX_MESSAGE(
     MSC_RRC_ENB,
     MSC_RRC_UE,
     buffer,
@@ -1588,7 +1586,7 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     ue_context_pP->ue_context.rnti,
     rrc_eNB_mui,
     size);
-#endif
+
   pdcp_rrc_data_req(
     ctxt_pP,
     DCCH,
@@ -1655,8 +1653,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_SCell(
   LOG_I(RRC,"[eNB %d] Frame %d, Logical Channel DL-DCCH, Generate RRCConnectionReconfiguration (bytes %d, UE id %x)\n",
         ctxt_pP->module_id,ctxt_pP->frame, size, ue_context_pP->ue_context.rnti);
 
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+  MSC_LOG_TX_MESSAGE(
     MSC_RRC_ENB,
     MSC_RRC_UE,
     buffer,
@@ -1666,7 +1663,6 @@ rrc_eNB_generate_RRCConnectionReconfiguration_SCell(
     ue_context_pP->ue_context.rnti,
     rrc_eNB_mui,
     size);
-#endif
 
   pdcp_rrc_data_req(
     ctxt_pP,
@@ -3194,8 +3190,8 @@ rrc_eNB_generate_RRCConnectionSetup(
       }
     }
   }
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+
+  MSC_LOG_TX_MESSAGE(
     MSC_RRC_ENB,
     MSC_RRC_UE,
     eNB_rrc_inst[ctxt_pP->module_id].Srb0.Tx_buffer.Header, // LG WARNING
@@ -3204,7 +3200,7 @@ rrc_eNB_generate_RRCConnectionSetup(
     MSC_AS_TIME_ARGS(ctxt_pP),
     ue_context_pP->ue_context.rnti,
     eNB_rrc_inst[ctxt_pP->module_id].Srb0.Tx_buffer.payload_size);
-#endif
+
 
   LOG_I(RRC,
         PROTOCOL_RRC_CTXT_UE_FMT" [RAPROC] Logical Channel DL-CCCH, Generating RRCConnectionSetup (bytes %d)\n",
@@ -3497,8 +3493,8 @@ rrc_eNB_decode_ccch(
       if (ue_context_p != NULL) {
         // erase content
         rrc_eNB_free_mem_UE_context(ctxt_pP, ue_context_p);
-#ifdef MESSAGE_CHART_GENERATOR
-        msc_log_rx_discarded_message(
+
+        MSC_LOG_RX_DISCARDED_MESSAGE(
           MSC_RRC_ENB,
           MSC_RRC_UE,
           Srb_info->Rx_buffer.Payload,
@@ -3507,16 +3503,14 @@ rrc_eNB_decode_ccch(
           MSC_AS_TIME_ARGS(ctxt_pP),
           ue_context_p->ue_context.rnti,
           dec_rval.consumed);
-#endif
-
       } else {
-      rrcConnectionRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionRequest.criticalExtensions.choice.rrcConnectionRequest_r8;
-      {
+        rrcConnectionRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionRequest.criticalExtensions.choice.rrcConnectionRequest_r8;
+        {
           memcpy(((uint8_t*) & random_value) + 3,
                  rrcConnectionRequest->ue_Identity.choice.randomValue.buf,
                rrcConnectionRequest->ue_Identity.choice.randomValue.size);
           ue_context_p = rrc_eNB_get_next_free_ue_context(ctxt_pP, random_value);
-      }
+        }
         LOG_D(RRC,
               PROTOCOL_RRC_CTXT_UE_FMT" UE context: %X\n",
               PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP),
@@ -3538,8 +3532,8 @@ rrc_eNB_decode_ccch(
             BIT_STRING_to_uint8(&s_TMSI.mmec);
             ue_context_p->ue_context.Initialue_identity_s_TMSI.m_tmsi =
             BIT_STRING_to_uint32(&s_TMSI.m_TMSI);
-#ifdef MESSAGE_CHART_GENERATOR
-            msc_log_rx_discarded_message(
+
+            MSC_LOG_RX_DISCARDED_MESSAGE(
               MSC_RRC_ENB,
               MSC_RRC_UE,
               Srb_info->Rx_buffer.Payload,
@@ -3551,10 +3545,9 @@ rrc_eNB_decode_ccch(
               s_TMSI.mmec,
               s_TMSI.m_TMSI,
               ue_context_p->ue_context.random_ue_identity);
-#endif
+
           } else {
-#ifdef MESSAGE_CHART_GENERATOR
-            msc_log_rx_discarded_message(
+            MSC_LOG_RX_DISCARDED_MESSAGE(
               MSC_RRC_ENB,
               MSC_RRC_UE,
               Srb_info->Rx_buffer.Payload,
@@ -3564,7 +3557,6 @@ rrc_eNB_decode_ccch(
               ue_context_p->ue_context.rnti,
               dec_rval.consumed,
               ue_context_p->ue_context.random_ue_identity);
-#endif
         }
 
           ue_context_p->ue_context.establishment_cause =
@@ -3780,8 +3772,7 @@ rrc_eNB_decode_dcch(
 
       LOG_F(RRC,"\n");
 #endif
-#ifdef MESSAGE_CHART_GENERATOR
-      msc_log_rx_message(
+      MSC_LOG_RX_MESSAGE(
         MSC_RRC_ENB,
         MSC_RRC_UE,
         Rx_sdu,
@@ -3790,7 +3781,7 @@ rrc_eNB_decode_dcch(
         MSC_AS_TIME_ARGS(ctxt_pP),
         ue_context_p->ue_context.rnti,
         sdu_sizeP);
-#endif
+
       LOG_D(RRC,
             PROTOCOL_RRC_CTXT_UE_FMT" RLC RB %02d --- RLC_DATA_IND %d bytes "
             "(RRCConnectionReconfigurationComplete) ---> RRC_eNB]\n",
@@ -3837,8 +3828,8 @@ rrc_eNB_decode_dcch(
 
       LOG_F(RRC,"\n");
 #endif
-#ifdef MESSAGE_CHART_GENERATOR
-      msc_log_rx_message(
+
+      MSC_LOG_RX_MESSAGE(
         MSC_RRC_ENB,
         MSC_RRC_UE,
         Rx_sdu,
@@ -3847,7 +3838,7 @@ rrc_eNB_decode_dcch(
         MSC_AS_TIME_ARGS(ctxt_pP),
         ue_context_p->ue_context.rnti,
         sdu_sizeP);
-#endif
+
       LOG_I(RRC,
             PROTOCOL_RRC_CTXT_UE_FMT" RLC RB %02d --- RLC_DATA_IND %d bytes "
             "(rrcConnectionReestablishmentComplete) ---> RRC_eNB\n",
@@ -3866,8 +3857,8 @@ rrc_eNB_decode_dcch(
 
       LOG_F(RRC,"\n");
 #endif
-#ifdef MESSAGE_CHART_GENERATOR
-      msc_log_rx_message(
+
+      MSC_LOG_RX_MESSAGE(
         MSC_RRC_ENB,
         MSC_RRC_UE,
         Rx_sdu,
@@ -3876,7 +3867,7 @@ rrc_eNB_decode_dcch(
         MSC_AS_TIME_ARGS(ctxt_pP),
         ue_context_p->ue_context.rnti,
         sdu_sizeP);
-#endif
+
       LOG_D(RRC,
             PROTOCOL_RRC_CTXT_UE_FMT" RLC RB %02d --- RLC_DATA_IND %d bytes "
             "(RRCConnectionSetupComplete) ---> RRC_eNB\n",
@@ -3911,8 +3902,8 @@ rrc_eNB_decode_dcch(
 
       LOG_F(RRC,"\n");
 #endif
-#ifdef MESSAGE_CHART_GENERATOR
-      msc_log_rx_message(
+
+      MSC_LOG_RX_MESSAGE(
         MSC_RRC_ENB,
         MSC_RRC_UE,
         Rx_sdu,
@@ -3921,7 +3912,7 @@ rrc_eNB_decode_dcch(
         MSC_AS_TIME_ARGS(ctxt_pP),
         ue_context_p->ue_context.rnti,
         sdu_sizeP);
-#endif
+
       LOG_I(RRC,
             PROTOCOL_RRC_CTXT_UE_FMT" received securityModeComplete on UL-DCCH %d from UE\n",
             PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP),
@@ -3953,8 +3944,8 @@ rrc_eNB_decode_dcch(
 
       LOG_F(RRC,"\n");
 #endif
-#ifdef MESSAGE_CHART_GENERATOR
-      msc_log_rx_message(
+
+      MSC_LOG_RX_MESSAGE(
         MSC_RRC_ENB,
         MSC_RRC_UE,
         Rx_sdu,
@@ -3963,7 +3954,7 @@ rrc_eNB_decode_dcch(
         MSC_AS_TIME_ARGS(ctxt_pP),
         ue_context_p->ue_context.rnti,
         sdu_sizeP);
-#endif
+
       LOG_W(RRC,
             PROTOCOL_RRC_CTXT_UE_FMT" RLC RB %02d --- RLC_DATA_IND %d bytes "
             "(securityModeFailure) ---> RRC_eNB\n",
@@ -3990,8 +3981,8 @@ rrc_eNB_decode_dcch(
 
       LOG_F(RRC,"\n");
 #endif
-#ifdef MESSAGE_CHART_GENERATOR
-      msc_log_rx_message(
+
+      MSC_LOG_RX_MESSAGE(
         MSC_RRC_ENB,
         MSC_RRC_UE,
         Rx_sdu,
@@ -4000,7 +3991,7 @@ rrc_eNB_decode_dcch(
         MSC_AS_TIME_ARGS(ctxt_pP),
         ue_context_p->ue_context.rnti,
         sdu_sizeP);
-#endif
+
       LOG_I(RRC,
             PROTOCOL_RRC_CTXT_UE_FMT" received ueCapabilityInformation on UL-DCCH %d from UE\n",
             PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP),
@@ -4056,8 +4047,8 @@ rrc_eNB_decode_dcch(
       LOG_F(RRC,"\n");
 #endif
 
-#ifdef MESSAGE_CHART_GENERATOR
-      msc_log_rx_message(
+
+      MSC_LOG_RX_MESSAGE(
         MSC_RRC_ENB,
         MSC_RRC_UE,
         Rx_sdu,
@@ -4066,7 +4057,7 @@ rrc_eNB_decode_dcch(
         MSC_AS_TIME_ARGS(ctxt_pP),
         ue_context_p->ue_context.rnti,
         sdu_sizeP);
-#endif
+
 #if defined(ENABLE_USE_MME)
 
       if (EPC_MODE_ENABLED == 1) {

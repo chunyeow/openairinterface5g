@@ -43,9 +43,7 @@
 #include "list.h"
 #include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
-#ifdef MESSAGE_CHART_GENERATOR
 #include "msc.h"
-#endif
 
 //#define TRACE_RLC_UM_DISPLAY_ASCII_DATA 1
 
@@ -132,8 +130,8 @@ rlc_um_send_sdu (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t *rlc_pP)
     if (rlc_pP->output_sdu_size_to_write > 0) {
       rlc_pP->stat_rx_pdcp_sdu += 1;
       rlc_pP->stat_rx_pdcp_bytes += rlc_pP->output_sdu_size_to_write;
-#ifdef MESSAGE_CHART_GENERATOR
-      msc_log_tx_message(
+
+      MSC_LOG_TX_MESSAGE(
         (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
         (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
         (const char*)(rlc_pP->output_sdu_in_construction->data),
@@ -143,7 +141,7 @@ rlc_um_send_sdu (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t *rlc_pP)
         PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP),
         rlc_pP->output_sdu_size_to_write
       );
-#endif
+
 #ifdef TEST_RLC_UM
 #ifdef TRACE_RLC_UM_DISPLAY_ASCII_DATA
       rlc_pP->output_sdu_in_construction->data[rlc_pP->output_sdu_size_to_write] = 0;

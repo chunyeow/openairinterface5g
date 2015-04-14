@@ -72,7 +72,7 @@ typedef enum {
 #define MSC_AS_TIME_ARGS(CTXT_Pp) \
     (CTXT_Pp)->frame, \
     (CTXT_Pp)->subframe
-
+#if defined(MESSAGE_CHART_GENERATOR)
 int msc_init(msc_env_t envP);
 void msc_end(void);
 void msc_log_declare_proto(const msc_proto_t  protoP);
@@ -95,5 +95,18 @@ void msc_log_tx_message(
     const char*        bytesP,
     const unsigned int num_bytes,
     char *format, ...);
-
+#define MSC_INIT(mScPaRaMs)                                      msc_init(mScPaRaMs)
+#define MSC_END                                                  msc_end
+#define MSC_LOG_EVENT(mScPaRaMs, fORMAT, aRGS...)                msc_log_event(mScPaRaMs, fORMAT, ##aRGS)
+#define MSC_LOG_RX_MESSAGE(mScPaRaMs, fORMAT, aRGS...)           msc_log_rx_message(mScPaRaMs, fORMAT, ##aRGS)
+#define MSC_LOG_RX_DISCARDED_MESSAGE(mScPaRaMs, fORMAT, aRGS...) msc_log_rx_discarded_message(mScPaRaMs, fORMAT, ##aRGS)
+#define MSC_LOG_TX_MESSAGE(mScPaRaMs, fORMAT, aRGS...)           msc_log_tx_message(mScPaRaMs, fORMAT, ##aRGS)
+#else
+#define MSC_INIT(mScPaRaMs)
+#define MSC_END
+#define MSC_LOG_EVENT(mScPaRaMs, fORMAT, aRGS...)
+#define MSC_LOG_RX_MESSAGE(mScPaRaMs, fORMAT, aRGS...)
+#define MSC_LOG_RX_DISCARDED_MESSAGE(mScPaRaMs, fORMAT, aRGS...)
+#define MSC_LOG_TX_MESSAGE(mScPaRaMs, fORMAT, aRGS...)
+#endif
 #endif

@@ -57,9 +57,7 @@
 #if defined(ENABLE_SECURITY)
 #   include "UTIL/OSA/osa_defs.h"
 #endif
-#ifdef MESSAGE_CHART_GENERATOR
 #include "msc.h"
-#endif
 
 /* Value to indicate an invalid UE initial id */
 static const uint16_t UE_INITIAL_ID_INVALID = 0;
@@ -479,8 +477,8 @@ rrc_eNB_send_S1AP_INITIAL_CONTEXT_SETUP_RESP(
       // TODO add cause when it will be integrated
     }
   }
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+
+  MSC_LOG_TX_MESSAGE(
     MSC_RRC_ENB,
     MSC_S1AP_ENB,
     (const char *)&S1AP_INITIAL_CONTEXT_SETUP_RESP (msg_p),
@@ -490,7 +488,7 @@ rrc_eNB_send_S1AP_INITIAL_CONTEXT_SETUP_RESP(
     ue_context_pP->ue_id_rnti,
     S1AP_INITIAL_CONTEXT_SETUP_RESP (msg_p).eNB_ue_s1ap_id,
     e_rabs_done, e_rabs_failed);
-#endif
+
 
   S1AP_INITIAL_CONTEXT_SETUP_RESP (msg_p).nb_of_e_rabs = e_rabs_done;
   S1AP_INITIAL_CONTEXT_SETUP_RESP (msg_p).nb_of_e_rabs_failed = e_rabs_failed;
@@ -687,8 +685,8 @@ rrc_eNB_send_S1AP_NAS_FIRST_REQ(
 
         S1AP_NAS_FIRST_REQ (message_p).ue_identity.gummei.mme_code     = BIT_STRING_to_uint8 (&r_mme->mmec);
         S1AP_NAS_FIRST_REQ (message_p).ue_identity.gummei.mme_group_id = BIT_STRING_to_uint16 (&r_mme->mmegi);
-#ifdef MESSAGE_CHART_GENERATOR
-        msc_log_tx_message(
+
+        MSC_LOG_TX_MESSAGE(
           MSC_S1AP_ENB,
           MSC_S1AP_MME,
           (const char *)&message_p->ittiMsg.s1ap_nas_first_req,
@@ -697,7 +695,7 @@ rrc_eNB_send_S1AP_NAS_FIRST_REQ(
           MSC_AS_TIME_ARGS(ctxt_pP),
           ctxt_pP->module_id,
           ctxt_pP->rnti);
-#endif
+
         LOG_I(S1AP, "[eNB %d] Build S1AP_NAS_FIRST_REQ adding in s_TMSI: GUMMEI mme_code %u mme_group_id %u ue %x\n",
               ctxt_pP->module_id,
               S1AP_NAS_FIRST_REQ (message_p).ue_identity.gummei.mme_code,
@@ -748,8 +746,8 @@ rrc_eNB_process_S1AP_DOWNLINK_NAS(
         eNB_ue_s1ap_id);
 
   if (ue_context_p == NULL) {
-#ifdef MESSAGE_CHART_GENERATOR
-    msc_log_rx_message(
+
+    MSC_LOG_RX_MESSAGE(
       MSC_RRC_ENB,
       MSC_S1AP_ENB,
       NULL,
@@ -758,7 +756,7 @@ rrc_eNB_process_S1AP_DOWNLINK_NAS(
       0,0,//MSC_AS_TIME_ARGS(ctxt_pP),
       ue_initial_id,
       eNB_ue_s1ap_id);
-#endif
+
     /* Can not associate this message to an UE index, send a failure to S1AP and discard it! */
     MessageDef *msg_fail_p;
 
@@ -771,8 +769,8 @@ rrc_eNB_process_S1AP_DOWNLINK_NAS(
 
     // TODO add failure cause when defined!
 
-#ifdef MESSAGE_CHART_GENERATOR
-    msc_log_tx_message(
+
+    MSC_LOG_TX_MESSAGE(
       MSC_RRC_ENB,
       MSC_S1AP_ENB,
       (const char *)NULL,
@@ -781,7 +779,7 @@ rrc_eNB_process_S1AP_DOWNLINK_NAS(
       0,0,//MSC_AS_TIME_ARGS(ctxt_pP),
       ue_initial_id,
       eNB_ue_s1ap_id);
-#endif
+
     itti_send_msg_to_task (TASK_S1AP, instance, msg_fail_p);
     return (-1);
   } else {
@@ -790,8 +788,8 @@ rrc_eNB_process_S1AP_DOWNLINK_NAS(
     if (ue_context_p->ue_context.eNB_ue_s1ap_id == 0) {
       ue_context_p->ue_context.eNB_ue_s1ap_id = S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id;
     }
-#ifdef MESSAGE_CHART_GENERATOR
-    msc_log_rx_message(
+
+    MSC_LOG_RX_MESSAGE(
       MSC_RRC_ENB,
       MSC_S1AP_ENB,
       (const char *)NULL,
@@ -800,7 +798,7 @@ rrc_eNB_process_S1AP_DOWNLINK_NAS(
       0,0,//MSC_AS_TIME_ARGS(ctxt_pP),
       ue_initial_id,
       S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id);
-#endif
+
 
     /* Create message for PDCP (DLInformationTransfer_t) */
     length = do_DLInformationTransfer (

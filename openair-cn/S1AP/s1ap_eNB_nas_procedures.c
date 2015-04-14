@@ -47,9 +47,7 @@
 #include "s1ap_eNB_ue_context.h"
 #include "s1ap_eNB_nas_procedures.h"
 #include "s1ap_eNB_management_procedures.h"
-#ifdef MESSAGE_CHART_GENERATOR
 #include "msc.h"
-#endif
 
 //------------------------------------------------------------------------------
 int s1ap_eNB_handle_nas_first_req(
@@ -231,8 +229,7 @@ int s1ap_eNB_handle_nas_first_req(
 #endif
   ue_desc_p->stream = mme_desc_p->nextstream;
 
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+  MSC_LOG_TX_MESSAGE(
     MSC_S1AP_ENB,
     MSC_S1AP_MME,
     (const char *)NULL,
@@ -240,7 +237,7 @@ int s1ap_eNB_handle_nas_first_req(
     MSC_AS_TIME_FMT" initialUEMessage initiatingMessage eNB_ue_s1ap_id %u",
     0,0,//MSC_AS_TIME_ARGS(ctxt_pP),
     initial_ue_message_p->eNB_UE_S1AP_ID);
-#endif
+
   /* Send encoded message over sctp */
   s1ap_eNB_itti_send_sctp_data_req(instance_p->instance, mme_desc_p->assoc_id,
                                    buffer, length, ue_desc_p->stream);
@@ -282,8 +279,7 @@ int s1ap_eNB_handle_nas_downlink(const uint32_t               assoc_id,
 
   if ((ue_desc_p = s1ap_eNB_get_ue_context(s1ap_eNB_instance,
                    downlink_NAS_transport_p->eNB_UE_S1AP_ID)) == NULL) {
-#ifdef MESSAGE_CHART_GENERATOR
-    msc_log_rx_discarded_message(
+    MSC_LOG_RX_DISCARDED_MESSAGE(
       MSC_S1AP_ENB,
       MSC_S1AP_MME,
       (const char *)downlink_NAS_transport_p,
@@ -292,7 +288,6 @@ int s1ap_eNB_handle_nas_downlink(const uint32_t               assoc_id,
       0,0,//MSC_AS_TIME_ARGS(ctxt_pP),
       downlink_NAS_transport_p->eNB_UE_S1AP_ID,
       downlink_NAS_transport_p->mme_ue_s1ap_id);
-#endif
 
     S1AP_ERROR("[SCTP %d] Received NAS downlink message for non existing UE context eNB_UE_S1AP_ID: 0x%"PRIx32" %u\n",
                assoc_id,
@@ -317,8 +312,7 @@ int s1ap_eNB_handle_nas_downlink(const uint32_t               assoc_id,
     }
   }
 
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_rx_message(
+  MSC_LOG_RX_MESSAGE(
     MSC_S1AP_ENB,
     MSC_S1AP_MME,
     (const char *)downlink_NAS_transport_p,
@@ -327,7 +321,6 @@ int s1ap_eNB_handle_nas_downlink(const uint32_t               assoc_id,
     0,0,//MSC_AS_TIME_ARGS(ctxt_pP),
     downlink_NAS_transport_p->eNB_UE_S1AP_ID,
     downlink_NAS_transport_p->mme_ue_s1ap_id);
-#endif
 
   /* Forward the NAS PDU to RRC */
   s1ap_eNB_itti_send_nas_downlink_ind(s1ap_eNB_instance->instance,
@@ -417,8 +410,7 @@ int s1ap_eNB_nas_uplink(instance_t instance, s1ap_uplink_nas_t *s1ap_uplink_nas_
     return -1;
   }
 
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+  MSC_LOG_TX_MESSAGE(
     MSC_S1AP_ENB,
     MSC_S1AP_MME,
     (const char *)NULL,
@@ -427,7 +419,7 @@ int s1ap_eNB_nas_uplink(instance_t instance, s1ap_uplink_nas_t *s1ap_uplink_nas_
     0,0,//MSC_AS_TIME_ARGS(ctxt_pP),
     uplink_NAS_transport_p->eNB_UE_S1AP_ID,
     uplink_NAS_transport_p->mme_ue_s1ap_id);
-#endif
+
 
   /* UE associated signalling -> use the allocated stream */
   s1ap_eNB_itti_send_sctp_data_req(s1ap_eNB_instance_p->instance,
@@ -488,8 +480,8 @@ void s1ap_eNB_nas_non_delivery_ind(instance_t instance,
   /* Send a dummy cause */
   nas_non_delivery_p->cause.present = S1ap_Cause_PR_radioNetwork;
   nas_non_delivery_p->cause.choice.radioNetwork = S1ap_CauseRadioNetwork_radio_connection_with_ue_lost;
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+
+  MSC_LOG_TX_MESSAGE(
     MSC_S1AP_ENB,
     MSC_S1AP_MME,
     (const char *)s1ap_nas_non_delivery_ind,
@@ -498,7 +490,7 @@ void s1ap_eNB_nas_non_delivery_ind(instance_t instance,
     0,0,//MSC_AS_TIME_ARGS(ctxt_pP),
     nas_non_delivery_p->eNB_UE_S1AP_ID,
     nas_non_delivery_p->mme_ue_s1ap_id);
-#endif
+
 
   /* UE associated signalling -> use the allocated stream */
   s1ap_eNB_itti_send_sctp_data_req(s1ap_eNB_instance_p->instance,
@@ -580,8 +572,7 @@ int s1ap_eNB_initial_ctxt_resp(
     return -1;
   }
 
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+  MSC_LOG_TX_MESSAGE(
     MSC_S1AP_ENB,
     MSC_S1AP_MME,
     (const char *)buffer,
@@ -590,7 +581,6 @@ int s1ap_eNB_initial_ctxt_resp(
     0,0,//MSC_AS_TIME_ARGS(ctxt_pP),
     initial_ies_p->eNB_UE_S1AP_ID,
     initial_ies_p->mme_ue_s1ap_id);
-#endif
 
   /* UE associated signalling -> use the allocated stream */
   s1ap_eNB_itti_send_sctp_data_req(s1ap_eNB_instance_p->instance,
@@ -661,8 +651,7 @@ int s1ap_eNB_ue_capabilities(instance_t instance,
     return -1;
   }
 
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+  MSC_LOG_TX_MESSAGE(
     MSC_S1AP_ENB,
     MSC_S1AP_MME,
     (const char *)buffer,
@@ -671,7 +660,6 @@ int s1ap_eNB_ue_capabilities(instance_t instance,
     0,0,//MSC_AS_TIME_ARGS(ctxt_pP),
     ue_cap_info_ind_ies_p->eNB_UE_S1AP_ID,
     ue_cap_info_ind_ies_p->mme_ue_s1ap_id);
-#endif
 
   /* UE associated signalling -> use the allocated stream */
   s1ap_eNB_itti_send_sctp_data_req(s1ap_eNB_instance_p->instance,

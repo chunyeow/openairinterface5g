@@ -47,9 +47,7 @@
 #include "UTIL/LOG/log.h"
 #include "UL-AM-RLC.h"
 #include "DL-AM-RLC.h"
-#ifdef MESSAGE_CHART_GENERATOR
 #include "msc.h"
-#endif
 //#define TRACE_RLC_AM_DATA_REQUEST
 //#define TRACE_RLC_AM_TX_STATUS
 //#define TRACE_RLC_AM_TX
@@ -198,8 +196,7 @@ void config_req_rlc_am_asn1 (
         (config_am_pP->dl_AM_RLC.t_Reordering<T_Reordering_spare1) &&
         (config_am_pP->dl_AM_RLC.t_StatusProhibit<T_StatusProhibit_spare8) ) {
 
-#ifdef MESSAGE_CHART_GENERATOR
-      msc_log_rx_message(
+      MSC_LOG_RX_MESSAGE(
         (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
         (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RRC_ENB:MSC_RRC_UE,
         NULL,
@@ -210,7 +207,7 @@ void config_req_rlc_am_asn1 (
         PollRetransmit_tab[config_am_pP->ul_AM_RLC.t_PollRetransmit],
         am_t_Reordering_tab[config_am_pP->dl_AM_RLC.t_Reordering],
         t_StatusProhibit_tab[config_am_pP->dl_AM_RLC.t_StatusProhibit]);
-#endif
+
       LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d)\n",
             PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p),
             maxRetxThreshold_tab[config_am_pP->ul_AM_RLC.maxRetxThreshold],
@@ -230,8 +227,7 @@ void config_req_rlc_am_asn1 (
                        am_t_Reordering_tab[config_am_pP->dl_AM_RLC.t_Reordering],
                        t_StatusProhibit_tab[config_am_pP->dl_AM_RLC.t_StatusProhibit]);
     } else {
-#ifdef MESSAGE_CHART_GENERATOR
-      msc_log_rx_discarded_message(
+      MSC_LOG_RX_DISCARDED_MESSAGE(
         (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
         (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RRC_ENB:MSC_RRC_UE,
         NULL,
@@ -239,7 +235,7 @@ void config_req_rlc_am_asn1 (
         MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" CONFIG-REQ",
         MSC_AS_TIME_ARGS(ctxt_pP),
         PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p));
-#endif
+
       LOG_D(RLC,
             PROTOCOL_RLC_AM_CTXT_FMT"ILLEGAL CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d), RLC-AM NOT CONFIGURED\n",
             PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,l_rlc_p),
@@ -713,7 +709,7 @@ rlc_am_mac_data_request (
             }
           }
 
-          msc_log_tx_message(
+          MSC_LOG_TX_MESSAGE(
             (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
             (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_UE:MSC_RLC_ENB,
             (char*)rlc_am_pdu_sn_10_p,
@@ -803,11 +799,9 @@ rlc_am_mac_data_request (
 #ifdef MESSAGE_CHART_GENERATOR
           message_string_size = 0;
           message_string_size += sprintf(&message_string[message_string_size],
-                                         MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" STATUS size %u D/C %u ACK_SN %u",
+                                         MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" STATUS ACK_SN %u",
                                          MSC_AS_TIME_ARGS(ctxt_pP),
                                          PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p),
-                                         tb_size_in_bytes,
-                                         g_rlc_am_control_pdu_info.d_c,
                                          g_rlc_am_control_pdu_info.ack_sn);
 
           for (num_nack = 0; num_nack < g_rlc_am_control_pdu_info.num_nack; num_nack++) {
@@ -823,7 +817,7 @@ rlc_am_mac_data_request (
             }
           }
 
-          msc_log_tx_message(
+          MSC_LOG_TX_MESSAGE(
             (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
             (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_UE:MSC_RLC_ENB,
             (char*)rlc_am_pdu_sn_10_p,
@@ -935,7 +929,7 @@ rlc_am_mac_data_indication (
             }
           }
 
-          msc_log_rx_message(
+          MSC_LOG_RX_MESSAGE(
             (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
             (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_UE:MSC_RLC_ENB,
             (char*)rlc_am_pdu_sn_10_p,
@@ -1024,11 +1018,9 @@ rlc_am_mac_data_indication (
 #ifdef MESSAGE_CHART_GENERATOR
           message_string_size = 0;
           message_string_size += sprintf(&message_string[message_string_size],
-                                         MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" STATUS size %u D/C %u ACK_SN %u",
+                                         MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" STATUS size ACK_SN %u",
                                          MSC_AS_TIME_ARGS(ctxt_pP),
                                          PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p),
-                                         tb_size_in_bytes,
-                                         g_rlc_am_control_pdu_info.d_c,
                                          g_rlc_am_control_pdu_info.ack_sn);
 
           for (num_nack = 0; num_nack < g_rlc_am_control_pdu_info.num_nack; num_nack++) {
@@ -1044,7 +1036,7 @@ rlc_am_mac_data_indication (
             }
           }
 
-          msc_log_rx_message(
+          MSC_LOG_RX_MESSAGE(
             (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
             (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_UE:MSC_RLC_ENB,
             (char*)rlc_am_pdu_sn_10_p,
@@ -1129,8 +1121,8 @@ rlc_am_data_req (
     data_offset = ((struct rlc_am_data_req *) (sdu_pP->data))->data_offset;
     data_size   = ((struct rlc_am_data_req *) (sdu_pP->data))->data_size;
     conf        = ((struct rlc_am_data_req *) (sdu_pP->data))->conf;
-#ifdef MESSAGE_CHART_GENERATOR
-    msc_log_rx_message(
+
+    MSC_LOG_RX_MESSAGE(
       (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
       (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
       (const char*)(&sdu_pP->data[data_offset]),
@@ -1140,7 +1132,7 @@ rlc_am_data_req (
       PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p),
       data_size,
       mui);
-#endif
+
 
 #if defined(TRACE_RLC_AM_PDU)
     message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
@@ -1230,7 +1222,7 @@ rlc_am_data_req (
     mui         = ((struct rlc_am_data_req*) (sdu_pP->data))->mui;
     data_offset = ((struct rlc_am_data_req*) (sdu_pP->data))->data_offset;
     data_size   = ((struct rlc_am_data_req*) (sdu_pP->data))->data_size;
-    msc_log_rx_discarded_message(
+    MSC_LOG_RX_DISCARDED_MESSAGE(
       (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
       (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
       (const char*)(&sdu_pP->data[data_offset]),

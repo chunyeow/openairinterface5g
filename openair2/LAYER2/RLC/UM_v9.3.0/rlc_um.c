@@ -43,9 +43,7 @@
 #include "mac_primitives.h"
 #include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
-#ifdef MESSAGE_CHART_GENERATOR
 #include "msc.h"
-#endif
 
 
 #include "rlc_um_very_simple_test.h"
@@ -234,7 +232,7 @@ rlc_um_rx (const protocol_ctxt_t* const ctxt_pP, void *argP, struct mac_data_ind
         }
         }
 
-        msc_log_rx_discarded_message(
+        MSC_LOG_RX_DISCARDED_MESSAGE(
           (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
           (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_UE:MSC_RLC_ENB,
           (const char*)pdu_info.payload,
@@ -302,7 +300,7 @@ rlc_um_rx (const protocol_ctxt_t* const ctxt_pP, void *argP, struct mac_data_ind
           }
         }
 
-        msc_log_rx_message(
+        MSC_LOG_RX_MESSAGE(
           (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
           (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_UE:MSC_RLC_ENB,
           (char*)pdu_info.payload,
@@ -587,7 +585,7 @@ rlc_um_mac_data_request (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP)
         }
       }
 
-      msc_log_tx_message(
+      MSC_LOG_TX_MESSAGE(
         (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
         (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_UE:MSC_RLC_ENB,
         (const char*)pdu_info.payload,
@@ -720,8 +718,8 @@ rlc_um_data_req (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP, mem_block_t
 
   rlc_p->stat_tx_pdcp_sdu   += 1;
   rlc_p->stat_tx_pdcp_bytes += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_rx_message(
+
+  MSC_LOG_RX_MESSAGE(
     (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
     (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
     (const char *)((struct rlc_um_tx_sdu_management*) (sdu_pP->data))->first_byte,
@@ -730,7 +728,8 @@ rlc_um_data_req (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP, mem_block_t
     MSC_AS_TIME_ARGS(ctxt_pP),
     PROTOCOL_RLC_UM_MSC_ARGS(ctxt_pP, rlc_p),
     ((struct rlc_um_tx_sdu_management*) (sdu_pP->data))->sdu_size);
-#endif
+
+
 #   if defined(TRACE_RLC_UM_PDU)
   data_offset = sizeof (struct rlc_um_data_req_alloc);
   data_size   = ((struct rlc_um_tx_sdu_management *)(sdu_pP->data))->sdu_size;

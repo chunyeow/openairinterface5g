@@ -47,9 +47,7 @@
 #include "UTIL/LOG/log.h"
 #include "rrc_eNB_UE_context.h"
 #include "pdcp.h"
-#ifdef MESSAGE_CHART_GENERATOR
 #include "msc.h"
-#endif
 
 #ifdef PHY_EMUL
 #include "SIMULATION/simulation_defs.h"
@@ -505,8 +503,7 @@ rrc_lite_data_req(
 )
 //------------------------------------------------------------------------------
 {
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+  MSC_LOG_TX_MESSAGE(
     ctxt_pP->enb_flag ? MSC_RRC_ENB : MSC_RRC_UE,
     ctxt_pP->enb_flag ? MSC_PDCP_ENB : MSC_PDCP_UE,
     buffer_pP,
@@ -516,7 +513,7 @@ rrc_lite_data_req(
     ctxt_pP->rnti,
     muiP,
     sdu_sizeP);
-#endif
+
 #if defined(ENABLE_ITTI)
   {
     MessageDef *message_p;

@@ -48,9 +48,7 @@
 #include "s1ap_eNB_nas_procedures.h"
 #include "s1ap_eNB_management_procedures.h"
 #include "s1ap_eNB_context_management_procedures.h"
-#ifdef MESSAGE_CHART_GENERATOR
 #include "msc.h"
-#endif
 
 
 int s1ap_ue_context_release_complete(instance_t instance,
@@ -101,8 +99,7 @@ int s1ap_ue_context_release_complete(instance_t instance,
     return -1;
   }
 
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+  MSC_LOG_TX_MESSAGE(
     MSC_S1AP_ENB,
     MSC_S1AP_MME,
     buffer,
@@ -111,7 +108,6 @@ int s1ap_ue_context_release_complete(instance_t instance,
     0,0, //MSC_AS_TIME_ARGS(ctxt_pP),
     ue_ctxt_release_complete_ies_p->eNB_UE_S1AP_ID,
     ue_ctxt_release_complete_ies_p->mme_ue_s1ap_id);
-#endif
 
   /* UE associated signalling -> use the allocated stream */
   s1ap_eNB_itti_send_sctp_data_req(s1ap_eNB_instance_p->instance,
@@ -215,8 +211,7 @@ int s1ap_ue_context_release_req(instance_t instance,
     return -1;
   }
 
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_tx_message(
+  MSC_LOG_TX_MESSAGE(
     MSC_S1AP_ENB,
     MSC_S1AP_MME,
     buffer,
@@ -225,7 +220,6 @@ int s1ap_ue_context_release_req(instance_t instance,
     0,0,//MSC_AS_TIME_ARGS(ctxt_pP),
     ue_ctxt_release_request_ies_p->eNB_UE_S1AP_ID,
     ue_ctxt_release_request_ies_p->mme_ue_s1ap_id);
-#endif
 
   /* UE associated signalling -> use the allocated stream */
   s1ap_eNB_itti_send_sctp_data_req(s1ap_eNB_instance_p->instance,

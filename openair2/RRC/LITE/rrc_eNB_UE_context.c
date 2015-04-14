@@ -43,9 +43,7 @@
 
 #include "UTIL/LOG/log.h"
 #include "rrc_eNB_UE_context.h"
-#ifdef MESSAGE_CHART_GENERATOR
 #include "msc.h"
-#endif
 
 
 //------------------------------------------------------------------------------
@@ -185,12 +183,12 @@ void rrc_eNB_remove_ue_context(
   }
 
   RB_REMOVE(rrc_ue_tree_s, &rrc_instance_pP->rrc_ue_head, ue_context_pP);
-#ifdef MESSAGE_CHART_GENERATOR
-  msc_log_event(
+
+  MSC_LOG_EVENT(
     MSC_RRC_ENB,
     "Removed UE %x",
     ue_context_pP->ue_context.rnti);
-#endif
+
   rrc_eNB_free_mem_UE_context(ctxt_pP, ue_context_pP);
   uid_linear_allocator_free(rrc_instance_pP, ue_context_pP->local_uid);
   free(ue_context_pP);
