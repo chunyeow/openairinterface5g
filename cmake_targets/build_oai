@@ -261,9 +261,16 @@ function main() {
     # ue_ip driver compilation
     echo_info "Compiling UE specific part"
     compilations \
-	  lte_build_oai ue_ip \
-	  CMakeFiles/ue_ip/ue_ip.ko $dbin/ue_ip.ko
-
+      lte_build_oai ue_ip \
+      CMakeFiles/ue_ip/ue_ip.ko $dbin/ue_ip.ko
+      
+#    mkdir -p $DIR/at_commands/build
+#    cd $DIR/at_commands/build
+#    cmake ..
+#    compilations \
+#      at_commands at_nas_ue \
+#      at_nas_ue $dbin/at_nas_ue
+      
     mkdir -p $DIR/nas_sim_tools/build
     cd $DIR/nas_sim_tools/build
     cmake ..
@@ -329,6 +336,14 @@ function main() {
 
   if [ "$oaisim" = "1" ] ; then
     dconf=$OPENAIR_DIR/targets/bin
+
+#    echo_info "Compiling at_nas_ue"
+#    mkdir -p $DIR/at_commands/build
+#    cd $DIR/at_commands/build
+#    cmake ..
+#    compilations \
+#      at_commands at_nas_ue \
+#      at_nas_ue $dbin/at_nas_ue
 
     echo_info "Compiling oaisim"
     cmake_file=$DIR/oaisim_build_oai/CMakeLists.txt
