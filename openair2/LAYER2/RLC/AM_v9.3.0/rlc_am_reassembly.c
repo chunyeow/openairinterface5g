@@ -164,16 +164,7 @@ rlc_am_send_sdu (
 
       message_string_size += sprintf(&message_string[message_string_size], " |\n");
 
-      MSC_LOG_TX_MESSAGE(
-        (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
-        (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
-        (const char*)(rlc_pP->output_sdu_in_construction->data),
-        rlc_pP->output_sdu_size_to_write,
-        MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" DATA-IND size %u",
-        MSC_AS_TIME_ARGS(ctxt_pP),
-        PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP,rlc_pP),
-        rlc_pP->output_sdu_size_to_write
-      );
+
 
 #      if defined(ENABLE_ITTI)
       msg_p = itti_alloc_new_message_sized (ctxt_pP->enb_flag > 0 ? TASK_RLC_ENB:TASK_RLC_UE ,
@@ -191,6 +182,17 @@ rlc_am_send_sdu (
 #if !defined(ENABLE_ITTI)
       pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
 #endif
+      MSC_LOG_TX_MESSAGE(
+        (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+        (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+        (const char*)(rlc_pP->output_sdu_in_construction->data),
+        rlc_pP->output_sdu_size_to_write,
+        MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" DATA-IND size %u",
+        MSC_AS_TIME_ARGS(ctxt_pP),
+        PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP,rlc_pP),
+        rlc_pP->output_sdu_size_to_write
+      );
+
       rlc_data_ind (ctxt_pP,
                     BOOL_NOT(rlc_pP->is_data_plane),
                     MBMS_FLAG_NO,
