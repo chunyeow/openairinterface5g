@@ -90,6 +90,11 @@ void oai_nw_drv_common_class_wireless2ip(uint16_t dlen,
   unsigned char        protocol;
   struct iphdr        *network_header;
 
+#ifdef NAS_ADDRESS_FIX
+  uint32_t odaddr,osaddr;
+  unsigned char *addr,*daddr,*saddr,*ifaddr;
+  uint16_t *cksum,check;
+#endif // NAS_ADDRESS_FIX
 #ifdef OAI_DRV_DEBUG_RECEIVE
   printk("[OAI_IP_DRV][%s] begin RB %d Inst %d Length %d bytes\n",__FUNCTION__, rb_id,inst,dlen);
 #endif
