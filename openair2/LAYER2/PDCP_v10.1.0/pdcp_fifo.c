@@ -59,7 +59,7 @@ extern int otg_enabled;
 
 #include "../MAC/extern.h"
 #include "RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
-#include "NAS/DRIVER/LITE/constant.h"
+#include "NETWORK_DRIVER/LITE/constant.h"
 #include "SIMULATION/ETH_TRANSPORT/extern.h"
 #include "UTIL/OCG/OCG.h"
 #include "UTIL/OCG/OCG_extern.h"

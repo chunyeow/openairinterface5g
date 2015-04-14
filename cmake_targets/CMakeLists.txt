@@ -1826,7 +1826,7 @@ endif()
 if (OAI_NW_DRIVER_USE_NETLINK)
   list(APPEND nasmesh_src netlink.c)
 endif()
-make_driver(nasmesh  ${OPENAIR2_DIR}/NAS/DRIVER/MESH ${nasmesh_src})
+make_driver(nasmesh  ${OPENAIR2_DIR}/NETWORK_DRIVER/MESH ${nasmesh_src})
 
 # ???
 ####################
@@ -1834,7 +1834,7 @@ list(APPEND oai_nw_drv_src device.c common.c ioctl.c classifier.c tool.c)
 if(OAI_NW_DRIVER_USE_NETLINK)
   list(APPEND oai_nw_drv_src netlink.c)
 endif()
-make_driver(oai_nw_drv ${OPENAIR2_DIR}/NAS/DRIVER/LITE ${oai_nw_drv_src})
+make_driver(oai_nw_drv ${OPENAIR2_DIR}/NETWORK_DRIVER/LITE ${oai_nw_drv_src})
 
 # Exmimo board drivers
 #########################

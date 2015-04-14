@@ -124,7 +124,6 @@ int main (int argc, const char* argv[])
     _display_usage(argv[0]);
     exit(EXIT_SUCCESS);
   }
-
   /*
    * ----------------------
    * UE's non-volatile data

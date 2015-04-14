@@ -42,9 +42,9 @@
 #include "nas_config.h"
 #include "UTIL/LOG/log.h"
 
-#include "NAS/DRIVER/MESH/rrc_nas_primitives.h"
-#include "NAS/DRIVER/MESH/ioctl.h"
-#include "NAS/DRIVER/MESH/constant.h"
+#include "NETWORK_DRIVER/MESH/rrc_nas_primitives.h"
+#include "NETWORK_DRIVER/MESH/ioctl.h"
+#include "NETWORK_DRIVER/MESH/constant.h"
 
 
 #define BUF_SIZE      800
