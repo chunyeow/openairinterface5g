@@ -82,6 +82,7 @@ function help()
   echo_error "Options:"
   echo_error "Mandatory arguments to long options are mandatory for short options too."
   echo_error "  -c, -C, --config-file  eNB_config_file  eNB config file, (see $OPENAIR_DIR/targets/PROJECTS/GENERIC-LTE-EPC/CONF)"
+  echo_error "                                          Default eNB config file if not set is $1"
   echo_error "  -g, --gdb                               Run with GDB."
   echo_error "  -h, --help                              Print this help."
   echo_error "  -K, --itti-dump-file   filename         ITTI dump file containing all ITTI events occuring during EPC runtime.(can omit file name if last argument)"
@@ -93,10 +94,13 @@ function help()
 
 function main()
 {
+  set_openair_env
+  cecho "OPENAIR_DIR    = $OPENAIR_DIR" $green
 
   local -i run_gdb=0
   local    exe_arguments=""
-  local    CONFIG_FILE_ENB=$OPENAIR_DIR/targets/PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.generic.oaisim.local_mme.conf
+  local    DEFAULT_CONFIG_FILE_ENB=$OPENAIR_DIR/targets/PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.generic.oaisim.local_mme.conf
+  local    CONFIG_FILE_ENB=$DEFAULT_CONFIG_FILE_ENB
   
   until [ -z "$1" ]
     do
@@ -116,7 +120,6 @@ function main()
             echo_fatal "config file $CONFIG_FILE_ENB not found"
           fi
         fi
-        exe_arguments="$exe_arguments --enb-conf $CONFIG_FILE_ENB"
         shift 2;
         ;;
       -g | --gdb)
@@ -125,7 +128,7 @@ function main()
         shift;
         ;;
       -h | --help)
-        help
+        help $DEFAULT_CONFIG_FILE_ENB
         shift;
         exit 0
         ;;
@@ -155,8 +158,9 @@ function main()
     esac
   done
 
-  set_openair_env
-  cecho "OPENAIR_DIR    = $OPENAIR_DIR" $green
+  # may use default config file
+  exe_arguments="$exe_arguments --enb-conf $CONFIG_FILE_ENB"
+
 
 
   #######################################################
@@ -224,7 +228,7 @@ function main()
     echo "set args $exe_arguments" >> ~/.gdb_enb_ue_s1
     echo "run"                        >> ~/.gdb_enb_ue_s1
     cat ~/.gdb_enb_ue_s1
-    gdb -n -x ~/.gdb_enb_ue_s1 2>&1 
+    gdb -n -x ~/.gdb_enb_ue_s1 
   fi
 }
 
