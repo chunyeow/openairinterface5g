@@ -413,7 +413,7 @@ rrc_rx_tx(
   struct rrc_eNB_ue_context_s*   ue_context_p = NULL;
   protocol_ctxt_t                ctxt;
 #endif
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_RX_TX,VCD_FUNCTION_IN);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_RX_TX,VCD_FUNCTION_IN);
 
   if(ctxt_pP->enb_flag == ENB_FLAG_NO) {
     // check timers
@@ -429,7 +429,7 @@ rrc_rx_tx(
         // ALLOW CCCH to be used
         UE_rrc_inst[ctxt_pP->module_id].Srb0[enb_indexP].Tx_buffer.payload_size = 0;
         rrc_ue_generate_RRCConnectionRequest (ctxt_pP, enb_indexP);
-        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_RX_TX,VCD_FUNCTION_OUT);
+        VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_RX_TX,VCD_FUNCTION_OUT);
         return (RRC_ConnSetup_failed);
       }
 
@@ -444,7 +444,7 @@ rrc_rx_tx(
     } else { // in case we have not received SIB2 yet
       if (UE_rrc_inst[ctxt_pP->module_id].Info[enb_indexP].N310_cnt == 100) {
         UE_rrc_inst[ctxt_pP->module_id].Info[enb_indexP].N310_cnt = 0;
-        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_RX_TX,VCD_FUNCTION_OUT);
+        VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_RX_TX,VCD_FUNCTION_OUT);
         return RRC_PHY_RESYNCH;
       }
     }
@@ -463,7 +463,7 @@ rrc_rx_tx(
       if (UE_rrc_inst[ctxt_pP->module_id].Info[enb_indexP].T310_cnt    == T310[UE_rrc_inst[ctxt_pP->module_id].sib2[enb_indexP]->ue_TimersAndConstants.t310]) {
         UE_rrc_inst[ctxt_pP->module_id].Info[enb_indexP].T310_active = 0;
         rrc_t310_expiration (ctxt_pP, enb_indexP);
-        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_RX_TX,VCD_FUNCTION_OUT);
+        VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_RX_TX,VCD_FUNCTION_OUT);
         return (RRC_PHY_RESYNCH);
       }
 
@@ -480,7 +480,7 @@ rrc_rx_tx(
         UE_rrc_inst[ctxt_pP->module_id].HandoverInfoUe.measFlag = 1;
         LOG_E(RRC,"[UE %d] Handover failure..initiating connection re-establishment procedure... \n");
         //Implement 36.331, section 5.3.5.6 here
-        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_RX_TX,VCD_FUNCTION_OUT);
+        VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_RX_TX,VCD_FUNCTION_OUT);
         return(RRC_Handover_failed);
       }
 
@@ -501,7 +501,7 @@ rrc_rx_tx(
     if((UE_rrc_inst[ctxt_pP->module_id].Info[enb_indexP].State == RRC_HO_EXECUTION)   &&
         (UE_rrc_inst[ctxt_pP->module_id].HandoverInfoUe.targetCellId != 0xFF)) {
       UE_rrc_inst[ctxt_pP->module_id].Info[enb_indexP].State= RRC_IDLE;
-      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_RX_TX,VCD_FUNCTION_OUT);
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_RX_TX,VCD_FUNCTION_OUT);
       return(RRC_HO_STARTED);
     }
 
@@ -540,7 +540,7 @@ rrc_rx_tx(
 #endif
   }
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_RX_TX,VCD_FUNCTION_OUT);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_RX_TX,VCD_FUNCTION_OUT);
   return (RRC_OK);
 }
 

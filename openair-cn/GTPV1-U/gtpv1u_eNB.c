@@ -967,7 +967,7 @@ void *gtpv1u_eNB_task(void *args)
      */
     MessageDef *received_message_p = NULL;
     itti_receive_msg(TASK_GTPV1_U, &received_message_p);
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_ENB_TASK, VCD_FUNCTION_IN);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_ENB_TASK, VCD_FUNCTION_IN);
     DevAssert(received_message_p != NULL);
 
     instance = ITTI_MSG_INSTANCE(received_message_p);
@@ -1007,7 +1007,7 @@ void *gtpv1u_eNB_task(void *args)
       teid_t                        enb_s1u_teid         = 0;
       teid_t                        sgw_s1u_teid         = 0;
 
-      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_PROCESS_TUNNEL_DATA_REQ, VCD_FUNCTION_IN);
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_PROCESS_TUNNEL_DATA_REQ, VCD_FUNCTION_IN);
       data_req_p = &GTPV1U_ENB_TUNNEL_DATA_REQ(received_message_p);
       //ipv4_send_data(ipv4_data_p->sd, data_ind_p->buffer, data_ind_p->length);
 
@@ -1057,7 +1057,7 @@ void *gtpv1u_eNB_task(void *args)
         }
       }
 
-      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_PROCESS_TUNNEL_DATA_REQ, VCD_FUNCTION_OUT);
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_PROCESS_TUNNEL_DATA_REQ, VCD_FUNCTION_OUT);
       /* Buffer still needed, do not free it */
       //itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), data_req_p->buffer);
     }
@@ -1091,7 +1091,7 @@ void *gtpv1u_eNB_task(void *args)
     rc = itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);
     AssertFatal(rc == EXIT_SUCCESS, "Failed to free memory (%d)!\n", rc);
     received_message_p = NULL;
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_ENB_TASK, VCD_FUNCTION_OUT);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_GTPV1U_ENB_TASK, VCD_FUNCTION_OUT);
   }
 
   return NULL;

@@ -61,7 +61,7 @@ void dlsch_scrambling(LTE_DL_FRAME_PARMS *frame_parms,
   uint32_t x1, x2, s=0;
   uint8_t *e=dlsch->harq_processes[dlsch->current_harq_pid]->e;
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_SCRAMBLING, VCD_FUNCTION_IN);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_SCRAMBLING, VCD_FUNCTION_IN);
 
   //  reset = 1;
   // x1 is set in lte_gold_generic
@@ -91,7 +91,7 @@ void dlsch_scrambling(LTE_DL_FRAME_PARMS *frame_parms,
     s = lte_gold_generic(&x1, &x2, 0);
   }
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_SCRAMBLING, VCD_FUNCTION_OUT);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_SCRAMBLING, VCD_FUNCTION_OUT);
 
 }
 

@@ -263,7 +263,7 @@ uint32_t ulsch_encoding(uint8_t *a,
     return(-1);
   }
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_IN);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_IN);
 
   // fill CQI/PMI information
   if (ulsch->O>0) {
@@ -375,7 +375,7 @@ uint32_t ulsch_encoding(uint8_t *a,
           iind = 123 + ((Kr_bytes-256)>>3);
         else {
           LOG_E(PHY,"ulsch_coding: Illegal codeword size %d!!!\n",Kr_bytes);
-          vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
+          VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
           return(-1);
         }
 
@@ -423,7 +423,7 @@ uint32_t ulsch_encoding(uint8_t *a,
 
     if (ulsch->harq_processes[harq_pid]->C == 0) {
       LOG_E(PHY,"null segment\n");
-      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
       return(-1);
     }
 
@@ -510,7 +510,7 @@ uint32_t ulsch_encoding(uint8_t *a,
 
     if ((int)G < 0) {
       LOG_E(PHY,"FATAL: ulsch_coding.c G < 0 (%d) : Q_RI %d, Q_CQI %d, O %d, betaCQI_times8 %d)\n",G,Q_RI,Q_CQI,ulsch->O,ulsch->beta_offset_cqi_times8);
-      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
       return(-1);
     }
 
@@ -567,7 +567,7 @@ uint32_t ulsch_encoding(uint8_t *a,
   //  Do CQI coding
   if ((ulsch->O>1) && (ulsch->O < 12)) {
     LOG_E(PHY,"short CQI sizes not supported yet\n");
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
     return(-1);
   } else {
     // add 8-bit CRC
@@ -627,7 +627,7 @@ uint32_t ulsch_encoding(uint8_t *a,
     }
   } else if (ulsch->O_RI>1) {
     LOG_E(PHY,"RI cannot be more than 1 bit yet\n");
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
     return(-1);
   }
 
@@ -727,7 +727,7 @@ uint32_t ulsch_encoding(uint8_t *a,
 
   if (ulsch->harq_processes[harq_pid]->O_ACK > 2) {
     LOG_E(PHY,"ACK cannot be more than 2 bits yet\n");
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
     return(-1);
   }
 
@@ -924,11 +924,11 @@ uint32_t ulsch_encoding(uint8_t *a,
 
   if (j!=(H+Q_RI)) {
     LOG_E(PHY,"Error in output buffer length (j %d, H+Q_RI %d)\n",j,H+Q_RI);
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
     return(-1);
   }
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_ENCODING, VCD_FUNCTION_OUT);
   return(0);
 }
 

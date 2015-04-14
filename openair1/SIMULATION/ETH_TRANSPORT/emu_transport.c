@@ -136,7 +136,7 @@ void emu_transport(unsigned int frame, unsigned int last_slot,
     return;
   }
 
-  vcd_signal_dumper_dump_function_by_name(
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(
     VCD_SIGNAL_DUMPER_FUNCTIONS_EMU_TRANSPORT, VCD_FUNCTION_IN);
 
   if ((frame_type == 1) &&  (direction == SF_S)) {
@@ -163,7 +163,7 @@ void emu_transport(unsigned int frame, unsigned int last_slot,
 #if defined(ENABLE_PGM_TRANSPORT)
   pgm_would_block = 0;
 #endif
-  vcd_signal_dumper_dump_function_by_name(
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(
     VCD_SIGNAL_DUMPER_FUNCTIONS_EMU_TRANSPORT, VCD_FUNCTION_OUT);
 }
 

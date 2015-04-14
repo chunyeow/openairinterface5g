@@ -198,7 +198,7 @@ rlc_um_try_reassembly(
   int                 i                      = 0;
   int                 reassembly_start_index = 0;
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_TRY_REASSEMBLY,VCD_FUNCTION_IN);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_TRY_REASSEMBLY,VCD_FUNCTION_IN);
 
   if (end_snP < 0)   {
     end_snP   = end_snP   + rlc_pP->rx_sn_modulo;
@@ -220,7 +220,7 @@ rlc_um_try_reassembly(
 
   // nothing to be reassemblied
   if (start_snP == end_snP) {
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_TRY_REASSEMBLY,VCD_FUNCTION_OUT);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_TRY_REASSEMBLY,VCD_FUNCTION_OUT);
     return;
   }
 
@@ -595,7 +595,7 @@ rlc_um_try_reassembly(
         __LINE__);
 #endif
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_TRY_REASSEMBLY,VCD_FUNCTION_OUT);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_TRY_REASSEMBLY,VCD_FUNCTION_OUT);
 }
 //-----------------------------------------------------------------------------
 void
@@ -660,7 +660,7 @@ void rlc_um_check_timer_dar_time_out(
   rlc_usn_t      old_vr_ur;
 
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_CHECK_TIMER_DAR_TIME_OUT,VCD_FUNCTION_IN);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_CHECK_TIMER_DAR_TIME_OUT,VCD_FUNCTION_IN);
 
   if ((rlc_pP->t_reordering.running)) {
     if (
@@ -749,7 +749,7 @@ void rlc_um_check_timer_dar_time_out(
     }
   }
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_CHECK_TIMER_DAR_TIME_OUT,VCD_FUNCTION_OUT);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_CHECK_TIMER_DAR_TIME_OUT,VCD_FUNCTION_OUT);
 }
 //-----------------------------------------------------------------------------
 mem_block_t*
@@ -973,7 +973,7 @@ rlc_um_receive_process_dar (
   rlc_sn_t sn = -1;
   signed int in_window;
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_IN);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_IN);
 
   if (rlc_pP->rx_sn_length == 10) {
     sn = ((pdu_pP->b1 & 0x00000003) << 8) + pdu_pP->b2;
@@ -1008,7 +1008,7 @@ rlc_um_receive_process_dar (
     free_mem_block(pdu_mem_pP);
     pdu_mem_pP = NULL;
     pthread_mutex_unlock(&rlc_pP->lock_dar_buffer);
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
     return;
   }
 
@@ -1027,7 +1027,7 @@ rlc_um_receive_process_dar (
       free_mem_block(pdu_mem_pP);
       pdu_mem_pP = NULL;
       pthread_mutex_unlock(&rlc_pP->lock_dar_buffer);
-      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
       return;
     }
 
@@ -1160,5 +1160,5 @@ rlc_um_receive_process_dar (
   }
 
   pthread_mutex_unlock(&rlc_pP->lock_dar_buffer);
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
 }

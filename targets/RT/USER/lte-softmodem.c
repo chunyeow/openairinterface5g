@@ -1021,7 +1021,7 @@ static void* eNB_thread_tx( void* param )
 
   while (!oai_exit) {
 
-    vcd_signal_dumper_dump_function_by_name( VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe), 0 );
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe), 0 );
 
     if (pthread_mutex_lock(&proc->mutex_tx) != 0) {
       LOG_E( PHY, "[SCHED][eNB] error locking mutex for eNB TX proc %d\n", proc->subframe );
@@ -1041,8 +1041,8 @@ static void* eNB_thread_tx( void* param )
       break;
     }
 
-    vcd_signal_dumper_dump_function_by_name( VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe), 1 );
-    vcd_signal_dumper_dump_variable_by_name( VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER_TX_ENB, proc->frame_tx );
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe), 1 );
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER_TX_ENB, proc->frame_tx );
     start_meas( &softmodem_stats_tx_sf[proc->subframe] );
 
     if (oai_exit) break;
@@ -1083,7 +1083,7 @@ static void* eNB_thread_tx( void* param )
   }
 
   stop_meas( &softmodem_stats_tx_sf[proc->subframe] );
-  vcd_signal_dumper_dump_function_by_name( VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe), 0 );
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe), 0 );
 
 #ifdef HARD_RT
   rt_make_soft_real_time();
@@ -1169,7 +1169,7 @@ static void* eNB_thread_rx( void* param )
 
   while (!oai_exit) {
 
-    vcd_signal_dumper_dump_function_by_name( VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_RX0+(2*proc->subframe), 0 );
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_RX0+(2*proc->subframe), 0 );
 
     if (pthread_mutex_lock(&proc->mutex_rx) != 0) {
       LOG_E( PHY, "[SCHED][eNB] error locking mutex for eNB RX proc %d\n", proc->subframe );
@@ -1189,8 +1189,8 @@ static void* eNB_thread_rx( void* param )
       break;
     }
 
-    vcd_signal_dumper_dump_function_by_name( VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_RX0+(2*proc->subframe), 1 );
-    vcd_signal_dumper_dump_variable_by_name( VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER_RX_ENB, proc->frame_rx );
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_RX0+(2*proc->subframe), 1 );
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER_RX_ENB, proc->frame_rx );
     start_meas( &softmodem_stats_rx_sf[proc->subframe] );
 
     if (oai_exit) break;
@@ -1226,7 +1226,7 @@ static void* eNB_thread_rx( void* param )
   }
 
   stop_meas( &softmodem_stats_rx_sf[proc->subframe] );
-  vcd_signal_dumper_dump_function_by_name( VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_RX0+(2*proc->subframe), 0 );
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_RX0+(2*proc->subframe), 0 );
 
 #ifdef HARD_RT
   rt_make_soft_real_time();
@@ -1511,8 +1511,8 @@ static void* eNB_thread( void* arg )
 #ifdef EXMIMO
     hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
     //        LOG_D(HW,"eNB frame %d, time %llu: slot %d, hw_slot %d (mbox %d)\n",frame,rt_get_time_ns(),slot,hw_slot,((unsigned int *)DAQ_MBOX)[0]);
-    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_slot>>1);
-    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame);
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_slot>>1);
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame);
     //this is the mbox counter where we should be
     mbox_target = mbox_bounds[slot];
     //this is the mbox counter where we are
@@ -1555,8 +1555,8 @@ static void* eNB_thread( void* arg )
       LOG_D(HW,"eNB Frame %d, time %llu: skipped slot, waiting for hw to catch up (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, mbox_current,
             mbox_target, diff);
 
-    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *DAQ_MBOX);
-    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DIFF, diff);
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *DAQ_MBOX);
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_DIFF, diff);
 
     delay_cnt = 0;
 
@@ -1564,10 +1564,10 @@ static void* eNB_thread( void* arg )
       time_in = rt_get_time_ns();
       //LOG_D(HW,"eNB Frame %d delaycnt %d : hw_slot %d (%d), slot %d, (slot+1)*15=%d, diff %d, time %llu\n",frame,delay_cnt,hw_slot,((unsigned int *)DAQ_MBOX)[0],slot,(((slot+1)*15)>>1),diff,time_in);
       //LOG_D(HW,"eNB Frame %d, time %llu: sleeping for %llu (slot %d, hw_slot %d, diff %d, mbox %d, delay_cnt %d)\n", frame, time_in, diff*DAQ_PERIOD,slot,hw_slot,diff,((volatile unsigned int *)DAQ_MBOX)[0],delay_cnt);
-      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,1);
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,1);
       ret = rt_sleep_ns(diff*DAQ_PERIOD);
-      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,0);
-      vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *DAQ_MBOX);
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,0);
+      VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *DAQ_MBOX);
 
       if (ret)
         LOG_D(HW,"eNB Frame %d, time %llu: rt_sleep_ns returned %d\n",frame, time_in);
@@ -1593,17 +1593,17 @@ static void* eNB_thread( void* arg )
     }
 
 #else  // EXMIMO
-    vcd_signal_dumper_dump_variable_by_name( VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_subframe );
-    vcd_signal_dumper_dump_variable_by_name( VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame );
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_subframe );
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame );
     tx_launched = 0;
 
     while (rx_pos < ((1+hw_subframe)*PHY_vars_eNB_g[0][0]->lte_frame_parms.samples_per_tti)) {
 
       unsigned int rxs;
 #ifndef USRP_DEBUG
-      vcd_signal_dumper_dump_function_by_name( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ, 1 );
-      vcd_signal_dumper_dump_variable_by_name( VCD_SIGNAL_DUMPER_VARIABLES_TXCNT, tx_pos );
-      vcd_signal_dumper_dump_variable_by_name( VCD_SIGNAL_DUMPER_VARIABLES_RXCNT, rx_pos );
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ, 1 );
+      VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_TXCNT, tx_pos );
+      VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_RXCNT, rx_pos );
 
       clock_gettime( CLOCK_MONOTONIC, &trx_time0 );
 
@@ -1625,10 +1625,10 @@ static void* eNB_thread( void* arg )
       if (rxs != spp)
         exit_fun( "problem receiving samples" );
 
-      vcd_signal_dumper_dump_function_by_name( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ, 0 );
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ, 0 );
 
       // Transmit TX buffer based on timestamp from RX
-      vcd_signal_dumper_dump_function_by_name( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE, 1 );
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE, 1 );
 
       // prepare tx buffer pointers
       for (int i=0; i<PHY_vars_eNB_g[0][0]->lte_frame_parms.nb_antennas_tx; i++)
@@ -1643,13 +1643,13 @@ static void* eNB_thread( void* arg )
                                 1);
       }
 
-      vcd_signal_dumper_dump_variable_by_name( VCD_SIGNAL_DUMPER_VARIABLES_TRX_TS, timestamp&0xffffffff );
-      vcd_signal_dumper_dump_variable_by_name( VCD_SIGNAL_DUMPER_VARIABLES_TRX_TST, (timestamp+(tx_delay*spp)-tx_forward_nsamps)&0xffffffff );
+      VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_TRX_TS, timestamp&0xffffffff );
+      VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_TRX_TST, (timestamp+(tx_delay*spp)-tx_forward_nsamps)&0xffffffff );
 
       stop_meas( &softmodem_stats_mt );
       clock_gettime( CLOCK_MONOTONIC, &trx_time2 );
 
-      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,0);
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,0);
 #else
       // USRP_DEBUG is active
       rt_sleep_ns(1000000);
@@ -2340,9 +2340,9 @@ int main( int argc, char **argv )
 
   if (ouput_vcd) {
     if (UE_flag==1)
-      vcd_signal_dumper_init("/tmp/openair_dump_UE.vcd");
+      VCD_SIGNAL_DUMPER_INIT("/tmp/openair_dump_UE.vcd");
     else
-      vcd_signal_dumper_init("/tmp/openair_dump_eNB.vcd");
+      VCD_SIGNAL_DUMPER_INIT("/tmp/openair_dump_eNB.vcd");
   }
 
   if (opp_enabled ==1)
@@ -3163,7 +3163,7 @@ int main( int argc, char **argv )
 #endif
 
   if (ouput_vcd)
-    vcd_signal_dumper_close();
+    VCD_SIGNAL_DUMPER_CLOSE();
 
 #ifdef OPENAIR2
 

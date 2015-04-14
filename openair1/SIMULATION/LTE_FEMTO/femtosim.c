@@ -115,7 +115,7 @@ int main(int argc,char **argv)
   //Init LOG
 
   logInit();
-  //vcd_signal_dumper_init();
+  //VCD_SIGNAL_DUMPER_INIT();
   set_comp_log(PHY,LOG_DEBUG,LOG_LOW,1);
 
   //Parse options

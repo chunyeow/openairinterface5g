@@ -362,7 +362,7 @@ MessageDef *itti_alloc_new_message_sized(task_id_t origin_task_id, MessagesIds m
   AssertFatal (message_id < itti_desc.messages_id_max, "Message id (%d) is out of range (%d)!\n", message_id, itti_desc.messages_id_max);
 
 #if defined(OAI_EMU) || defined(RTAI)
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_ALLOC_MSG, size);
+  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_ALLOC_MSG, size);
 #endif
 
   if (origin_task_id == TASK_UNKNOWN) {
@@ -377,7 +377,7 @@ MessageDef *itti_alloc_new_message_sized(task_id_t origin_task_id, MessagesIds m
   temp->ittiMsgHeader.ittiMsgSize = size;
 
 #if defined(OAI_EMU) || defined(RTAI)
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_ALLOC_MSG, 0);
+  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_ALLOC_MSG, 0);
 #endif
 
   return temp;
@@ -398,7 +398,7 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
   uint32_t message_id;
 
 #if defined(OAI_EMU) || defined(RTAI)
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_SEND_MSG,
+  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_SEND_MSG,
                                           __sync_or_and_fetch (&itti_desc.vcd_send_msg, 1L << destination_task_id));
 #endif
 
@@ -425,7 +425,7 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
 
   if (destination_task_id != TASK_UNKNOWN) {
 #if defined(OAI_EMU) || defined(RTAI)
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_ENQUEUE_MESSAGE, VCD_FUNCTION_IN);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_ENQUEUE_MESSAGE, VCD_FUNCTION_IN);
 
     memory_pools_set_info (itti_desc.memory_pools_handle, message, 1, destination_task_id);
 #endif
@@ -460,7 +460,7 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
       lfds611_queue_enqueue(itti_desc.tasks[destination_task_id].message_queue, new);
 
 #if defined(OAI_EMU) || defined(RTAI)
-      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_ENQUEUE_MESSAGE, VCD_FUNCTION_OUT);
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_ENQUEUE_MESSAGE, VCD_FUNCTION_OUT);
 #endif
 
 #ifdef RTAI
@@ -498,7 +498,7 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
   }
 
 #if defined(OAI_EMU) || defined(RTAI)
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_SEND_MSG,
+  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_SEND_MSG,
                                           __sync_and_and_fetch (&itti_desc.vcd_send_msg, ~(1L << destination_task_id)));
 #endif
 
@@ -645,14 +645,14 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
 void itti_receive_msg(task_id_t task_id, MessageDef **received_msg)
 {
 #if defined(OAI_EMU) || defined(RTAI)
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_RECV_MSG,
+  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_RECV_MSG,
                                           __sync_and_and_fetch (&itti_desc.vcd_receive_msg, ~(1L << task_id)));
 #endif
 
   itti_receive_msg_internal_event_fd(task_id, 0, received_msg);
 
 #if defined(OAI_EMU) || defined(RTAI)
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_RECV_MSG,
+  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_RECV_MSG,
                                           __sync_or_and_fetch (&itti_desc.vcd_receive_msg, 1L << task_id));
 #endif
 }
@@ -664,7 +664,7 @@ void itti_poll_msg(task_id_t task_id, MessageDef **received_msg)
   *received_msg = NULL;
 
 #if defined(OAI_EMU) || defined(RTAI)
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_POLL_MSG,
+  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_POLL_MSG,
                                           __sync_or_and_fetch (&itti_desc.vcd_poll_msg, 1L << task_id));
 #endif
 
@@ -685,7 +685,7 @@ void itti_poll_msg(task_id_t task_id, MessageDef **received_msg)
   }
 
 #if defined(OAI_EMU) || defined(RTAI)
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_POLL_MSG,
+  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_POLL_MSG,
                                           __sync_and_and_fetch (&itti_desc.vcd_poll_msg, ~(1L << task_id)));
 #endif
 }
@@ -781,7 +781,7 @@ void itti_exit_task(void)
   task_id_t task_id = itti_get_current_task_id();
 
   if (task_id > TASK_UNKNOWN) {
-    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_RECV_MSG,
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_RECV_MSG,
                                             __sync_and_and_fetch (&itti_desc.vcd_receive_msg, ~(1L << task_id)));
   }
 
@@ -811,7 +811,7 @@ static void *itti_rt_relay_thread(void *arg)
     usleep (200); // Poll for messages a little more than 2 time by slot to get a small latency between RT and other tasks
 
 #if defined(OAI_EMU) || defined(RTAI)
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_RELAY_THREAD, VCD_FUNCTION_IN);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_RELAY_THREAD, VCD_FUNCTION_IN);
 #endif
 
     /* Checks for all non real time tasks if they have pending messages */
@@ -832,7 +832,7 @@ static void *itti_rt_relay_thread(void *arg)
     }
 
 #if defined(OAI_EMU) || defined(RTAI)
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_RELAY_THREAD, VCD_FUNCTION_OUT);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_RELAY_THREAD, VCD_FUNCTION_OUT);
 #endif
   }
 

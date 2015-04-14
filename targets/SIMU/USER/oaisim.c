@@ -1266,7 +1266,7 @@ main (int argc, char **argv)
   get_simulation_options (argc, argv); //Command-line options
 
   // Initialize VCD LOG module
-  vcd_signal_dumper_init (oai_emulation.info.vcd_file);
+  VCD_SIGNAL_DUMPER_INIT (oai_emulation.info.vcd_file);
 
 #if !defined(ENABLE_ITTI)
   pthread_t tid;
@@ -1907,7 +1907,7 @@ oai_shutdown (void)
 
   log_thread_finalize ();
   logClean ();
-  vcd_signal_dumper_close ();
+  VCD_SIGNAL_DUMPER_CLOSE ();
 
   done = 1; // prevent next invokation of this function
 

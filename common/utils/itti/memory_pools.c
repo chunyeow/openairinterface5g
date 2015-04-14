@@ -416,7 +416,7 @@ memory_pool_item_handle_t memory_pools_allocate (memory_pools_handle_t memory_po
   items_group_index_t         item_index = ITEMS_GROUP_INDEX_INVALID;
 
 #if defined(OAI_EMU) || defined(RTAI)
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_MP_ALLOC,
+  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLE_MP_ALLOC,
                                           __sync_or_and_fetch (&vcd_mp_alloc, 1L << info_0));
 #endif
 
@@ -466,7 +466,7 @@ memory_pool_item_handle_t memory_pools_allocate (memory_pools_handle_t memory_po
   }
 
 #if defined(OAI_EMU) || defined(RTAI)
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_MP_ALLOC,
+  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLE_MP_ALLOC,
                                           __sync_and_and_fetch (&vcd_mp_alloc, ~(1L << info_0)));
 #endif
 
@@ -495,7 +495,7 @@ int memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_it
   info_1 = memory_pool_item->start.info[1];
 
 #if defined(OAI_EMU) || defined(RTAI)
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_MP_FREE,
+  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLE_MP_FREE,
                                           __sync_or_and_fetch (&vcd_mp_free, 1L << info_1));
 #endif
 
@@ -533,7 +533,7 @@ int memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_it
   AssertError (result == EXIT_SUCCESS, {}, "Failed to free memory pool item (pool %u, item %d)!\n", pool, item_index);
 
 #if defined(OAI_EMU) || defined(RTAI)
-  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_MP_FREE,
+  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLE_MP_FREE,
                                           __sync_and_and_fetch (&vcd_mp_free, ~(1L << info_1)));
 #endif
 

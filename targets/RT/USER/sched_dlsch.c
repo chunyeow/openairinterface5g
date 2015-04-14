@@ -141,7 +141,7 @@ static void * dlsch_thread(void *param)
 
   while (!oai_exit) {
 
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_DLSCH_THREAD0+dlsch_thread_index,0);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_DLSCH_THREAD0+dlsch_thread_index,0);
 
     if (pthread_mutex_lock(&dlsch_mutex[dlsch_thread_index]) != 0) {
       LOG_E(PHY,"[SCHED][DLSCH] error locking mutex.\n");
@@ -156,7 +156,7 @@ static void * dlsch_thread(void *param)
       }
     }
 
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_DLSCH_THREAD0+dlsch_thread_index,1);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_DLSCH_THREAD0+dlsch_thread_index,1);
 
     if (oai_exit) break;
 
@@ -186,7 +186,7 @@ static void * dlsch_thread(void *param)
       LOG_I(PHY,"[UE %d] PDSCH Calling dlsch_decoding for subframe %d, harq_pid %d, G%d\n", phy_vars_ue->Mod_id,dlsch_subframe[dlsch_thread_index], harq_pid,
             phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->G);
 
-      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_DLSCH_DECODING0+dlsch_thread_index,1);
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_DLSCH_DECODING0+dlsch_thread_index,1);
       ret = dlsch_decoding(phy_vars_ue,
                            phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->llr[0],
                            &phy_vars_ue->lte_frame_parms,
@@ -196,7 +196,7 @@ static void * dlsch_thread(void *param)
                            harq_pid,
                            1, // is_crnti
                            0);  // llr8_flag
-      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_DLSCH_DECODING0+dlsch_thread_index,0);
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_DLSCH_DECODING0+dlsch_thread_index,0);
 
       LOG_D(PHY,"[UE  %d][PDSCH %x/%d] Frame %d subframe %d: PDSCH/DLSCH decoding iter %d (mcs %d, rv %d, TBS %d)\n",
             phy_vars_ue->Mod_id,

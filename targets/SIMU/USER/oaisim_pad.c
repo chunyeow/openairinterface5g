@@ -495,7 +495,7 @@ void run(int argc, char *argv[])
     schedule_end_of_simulation(FRAME, oai_emulation.info.n_frames);
   }
 
-  vcd_signal_dumper_init(); // Initialize VCD LOG module
+  VCD_SIGNAL_DUMPER_INIT(); // Initialize VCD LOG module
 
 #ifdef OPENAIR2
   init_omv();
@@ -1063,7 +1063,7 @@ void run(int argc, char *argv[])
   //bring oai if down
   terminate();
   logClean();
-  vcd_signal_dumper_close();
+  VCD_SIGNAL_DUMPER_CLOSE();
   //printf("FOR MAIN TIMES = %d &&&& OTG TIMES = %d <-> FOR TIMES = %d <-> IF TIMES = %d\n", for_main_times, otg_times, for_times, if_times);
 
 }

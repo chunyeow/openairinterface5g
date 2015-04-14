@@ -530,7 +530,7 @@ void logRecord_thread_safe(const char *file, const char *func,
   }
 
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_LOG_RECORD,
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_LOG_RECORD,
                                           VCD_FUNCTION_IN);
 
   // adjust syslog level for TRACE messages
@@ -616,7 +616,7 @@ void logRecord_thread_safe(const char *file, const char *func,
 
 #endif
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_LOG_RECORD,
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_LOG_RECORD,
                                           VCD_FUNCTION_OUT);
 }
 
@@ -697,7 +697,7 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
     return;
   }
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_LOG_RECORD,
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_LOG_RECORD,
                                           VCD_FUNCTION_IN);
 
   va_start(args, format);
@@ -936,7 +936,7 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
 
 #endif
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_LOG_RECORD,
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_LOG_RECORD,
                                           VCD_FUNCTION_OUT);
 }
 

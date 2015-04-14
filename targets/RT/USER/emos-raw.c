@@ -1071,9 +1071,9 @@ int main(int argc, char **argv)
 
   if (ouput_vcd) {
     if (UE_flag==1)
-      vcd_signal_dumper_init("/tmp/openair_dump_UE.vcd");
+      VCD_SIGNAL_DUMPER_INIT("/tmp/openair_dump_UE.vcd");
     else
-      vcd_signal_dumper_init("/tmp/openair_dump_eNB.vcd");
+      VCD_SIGNAL_DUMPER_INIT("/tmp/openair_dump_eNB.vcd");
   }
 
 #ifdef PDCP_USE_NETLINK
@@ -1513,7 +1513,7 @@ int main(int argc, char **argv)
 #endif
 
   if (ouput_vcd)
-    vcd_signal_dumper_close();
+    VCD_SIGNAL_DUMPER_CLOSE();
 
   logClean();
 

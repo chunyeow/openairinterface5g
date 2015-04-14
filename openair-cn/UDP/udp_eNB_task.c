@@ -307,7 +307,7 @@ void *udp_eNB_task(void *args_p)
 
   while(1) {
     itti_receive_msg(TASK_UDP, &received_message_p);
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UDP_ENB_TASK, VCD_FUNCTION_IN);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UDP_ENB_TASK, VCD_FUNCTION_IN);
 #if defined(LOG_UDP) && LOG_UDP > 0
     LOG_D(UDP_, "Got message %p\n", &received_message_p);
 #endif
@@ -425,7 +425,7 @@ on_error:
       udp_eNB_process_file_descriptors(events, nb_events);
     }
 
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UDP_ENB_TASK, VCD_FUNCTION_OUT);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UDP_ENB_TASK, VCD_FUNCTION_OUT);
   }
 
   LOG_N(UDP_, "Task UDP eNB exiting\n");

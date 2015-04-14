@@ -130,7 +130,7 @@ static void * rx_pdsch_thread(void *param)
 
 
   while (!oai_exit) {
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDSCH_THREAD, 0);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_PDSCH_THREAD, 0);
 
     if (pthread_mutex_lock(&rx_pdsch_mutex) != 0) {
       LOG_E(PHY,"[SCHED][RX_PDSCH] error locking mutex.\n");
@@ -144,7 +144,7 @@ static void * rx_pdsch_thread(void *param)
       }
     }
 
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDSCH_THREAD, 1);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_PDSCH_THREAD, 1);
 
     //      last_slot = rx_pdsch_slot;
     subframe = UE->slot_rx>>1;
@@ -208,7 +208,7 @@ static void * rx_pdsch_thread(void *param)
 
       if (pthread_mutex_lock (&dlsch_mutex[dlsch_thread_index]) != 0) {               // Signal MAC_PHY Scheduler
         LOG_E(PHY,"[UE  %d] ERROR pthread_mutex_lock\n",UE->Mod_id);     // lock before accessing shared resource
-        //  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_OUT);
+        //  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_OUT);
         //return(-1);
       }
 
@@ -219,12 +219,12 @@ static void * rx_pdsch_thread(void *param)
       if (dlsch_instance_cnt[dlsch_thread_index] == 0) {
         if (pthread_cond_signal(&dlsch_cond[dlsch_thread_index]) != 0) {
           LOG_E(PHY,"[UE  %d] ERROR pthread_cond_signal for dlsch_cond[%d]\n",UE->Mod_id,dlsch_thread_index);
-          //    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_OUT);
+          //    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_OUT);
           //return(-1);
         }
       } else {
         LOG_W(PHY,"[UE  %d] DLSCH thread for dlsch_thread_index %d busy!!!\n",UE->Mod_id,dlsch_thread_index);
-        //  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_OUT);
+        //  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_OUT);
         //return(-1);
       }
 
