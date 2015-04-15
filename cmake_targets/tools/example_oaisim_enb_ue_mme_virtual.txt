@@ -86,7 +86,7 @@ Configuring the eNB:
   The default configuration file for the eNB is trunk/targets/PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.generic.oaisim.local_mme.conf
 
 Running eNB:
-yang@yang:~/openair4G/trunk/cmake_targets$ sudo tools/run_enb_s1_exmimo -c /home/yang/openair4G/trunk/targets/PROJECTS/GENERIC-LTE-EPC/CONF/enb.yang.epc.eurecom.conf -S  -K
+yang@yang:~/openair4G/trunk/cmake_targets$ tools/run_enb_ue_virt_s1 -K /tmp/enb_ue_virt_s1_itti.log
 
 
 
