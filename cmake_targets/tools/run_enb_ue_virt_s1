@@ -218,7 +218,9 @@ function main()
   $SUDO ip route add default dev oip1 table lte
 
   exe_arguments="$exe_arguments -u1 -l9"
-      
+    
+  cd  $OPENAIR_DIR/targets/bin
+   
   if [ $run_gdb -eq 0 ]; then 
     exec $OPENAIR_DIR/targets/bin/oaisim $exe_arguments  
   else
