@@ -403,7 +403,7 @@ add_boolean_option(ENB_MODE True "Swap the include directories between openair2 
 add_boolean_option(ENABLE_PGM_TRANSPORT    False "specific to oaisim, emulation through ethernet, reliable multicast")
 add_boolean_option(ADDR_CONF               False "specific to oaisim, IP autoconf of user-plane IP interface")
 add_boolean_option(OPENAIR_EMU             False "specific to oaisim")
-add_boolean_option(OAI_EMU             False "specific to oaisim")
+add_boolean_option(OAI_EMU                 False "specific to oaisim")
 add_boolean_option(PHY_ABSTRACTION         False "specific to oaisim")
 
 ##########################
@@ -1615,6 +1615,7 @@ target_link_libraries (oai_sgw
 #  ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/util/nas_log.c
 #  )
 #target_link_libraries (nvram ${NAS_LIB} UTIL ${ITTI_LIB} LFDS pthread rt nettle crypto m)
+
 
 ###################################"
 # Addexecutables for tests
