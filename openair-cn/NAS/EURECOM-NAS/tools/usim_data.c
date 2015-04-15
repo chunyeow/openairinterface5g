@@ -48,12 +48,12 @@ Description Implements the utility used to generate data stored in the
 
 #include "usim_api.h"
 #include "memory.h"
+#include "network.h"
 
 #include <stdio.h>  // perror, printf
 #include <stdlib.h> // exit
 #include <string.h> // memset, memcpy, strncpy
 
-#define SELECTED_PLMN TEST1
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -134,8 +134,7 @@ int main (int argc, const char* argv[])
      */
     memset(&usim_data, 0, sizeof(usim_data_t));
 
-    //#if (SELECTED_PLMN == FCT1)
-#if 0
+#if (SELECTED_PLMN == FCT1)
     /*
      * International Mobile Subscriber Identity
      * IMSI = MCC + MNC + MSIN = 310 (USA) + 028 (UNKNOWN) + 90832150
@@ -158,20 +157,22 @@ int main (int argc, const char* argv[])
     usim_data.imsi.u.num.digit13 = 5;
     usim_data.imsi.u.num.digit14 = 0;
     usim_data.imsi.u.num.digit15 = 0b1111;
-#else
+#endif
+#if (SELECTED_PLMN == SFR1)
+#warning "IMSI 208.10.00001234"
     /*
      * International Mobile Subscriber Identity
      * IMSI = MCC + MNC + MSIN = 208 (France) + 10 (SFR) + 00001234
      */
-    //#warning "IMSI 208.10.00001234"
-    /*  usim_data.imsi.length = 8;
+    #warning "IMSI 208.10.00001234"
+    usim_data.imsi.length = 8;
     usim_data.imsi.u.num.parity = EVEN_PARITY;      // Parity: even
     usim_data.imsi.u.num.digit1 = 2;                // MCC digit 1
     usim_data.imsi.u.num.digit2 = 0;                // MCC digit 2
     usim_data.imsi.u.num.digit3 = 8;                // MCC digit 3
     usim_data.imsi.u.num.digit4 = 1;                // MNC digit 1
     usim_data.imsi.u.num.digit5 = 0;                // MNC digit 2
-    usim_data.imsi.u.num.digit6 = 0b1111;     // MNC digit 3
+    usim_data.imsi.u.num.digit6 = 0;//0b1111;     // MNC digit 3
     usim_data.imsi.u.num.digit7 = 0;
     usim_data.imsi.u.num.digit8 = 0;
     usim_data.imsi.u.num.digit9 = 0;
@@ -180,7 +181,10 @@ int main (int argc, const char* argv[])
     usim_data.imsi.u.num.digit12 = 2;
     usim_data.imsi.u.num.digit13 = 3;
     usim_data.imsi.u.num.digit14 = 4;
-    usim_data.imsi.u.num.digit15 = 0b1111;*/
+    usim_data.imsi.u.num.digit15 = 0b1111;
+#endif
+#if (SELECTED_PLMN == TEST1)
+#warning "IMSI 001.01.000001234"
     usim_data.imsi.length = 8;
     usim_data.imsi.u.num.parity = 0x0;  // Type of identity = IMSI, even
     usim_data.imsi.u.num.digit1 = 0;    // MCC digit 1

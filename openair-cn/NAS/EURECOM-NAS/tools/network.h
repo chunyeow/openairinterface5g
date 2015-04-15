@@ -51,6 +51,23 @@ Description Defines a list of PLMN network operators
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
+/*
+ * PLMN network operator record index
+ */
+#define TEST1 0
+#define SFR1  1
+#define SFR2  2
+#define SFR3  3
+#define TM1   4
+#define FCT1  5
+#define VDF1  6
+#define VDF2  7
+#define VDF3  8
+#define VDF4  9
+#define VDF5  10
+
+
+#define SELECTED_PLMN SFR1
 
 #define TEST_PLMN {0,0,0x0f,1,1,0}  // 00101
 #define SFR_PLMN_1  {0,2,0x0f,8,0,1}  // 20810
@@ -67,23 +84,6 @@ Description Defines a list of PLMN network operators
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/
 /****************************************************************************/
-
-/*
- * PLMN network operator record index
- */
-enum {
-  TEST1=0,
-  SFR1,
-  SFR2,
-  SFR3,
-  TM1,
-  FCT1,
-  VDF1,
-  VDF2,
-  VDF3,
-  VDF4,
-  VDF5,
-};
 
 /*
  * PLMN network operator record

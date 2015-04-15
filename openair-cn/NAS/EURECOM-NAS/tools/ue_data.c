@@ -48,12 +48,11 @@ Description Implements the utility used to generate data stored in the
 #include "memory.h"
 
 #include "emmData.h"
+#include "network.h"
 
 #include <stdio.h>  // perror, printf, fprintf, snprintf
 #include <stdlib.h> // exit, free
 #include <string.h> // memset, strncpy
-
-#define SELECTED_PLMN TEST1
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -292,8 +291,7 @@ static void _gen_user_data(user_nvdata_t* data)
  */
 static void _gen_emm_data(emm_nvdata_t* data)
 {
-  //#if (SELECTED_PLMN == FCT1)
-#if 0
+#if (SELECTED_PLMN == FCT1)
   /*
    * International Mobile Subscriber Identity
    * IMSI = MCC + MNC + MSIN = 310 (USA) + 028 (UNKNOWN) + 90832150
@@ -325,19 +323,20 @@ static void _gen_emm_data(emm_nvdata_t* data)
   data->rplmn.MNCdigit1 = 0;
   data->rplmn.MNCdigit2 = 2;
   data->rplmn.MNCdigit3 = 8;
-#else
+#endif
+#if (SELECTED_PLMN == SFR1)
   /*
    * International Mobile Subscriber Identity
    * IMSI = MCC + MNC + MSIN = 208 (France) + 10 (SFR) + 00001234
    */
-  /*    data->imsi.length = 8;
+     data->imsi.length = 8;
      data->imsi.u.num.parity = 0x0;  // Type of identity = IMSI, even
      data->imsi.u.num.digit1 = 2;  // MCC digit 1
      data->imsi.u.num.digit2 = 0;  // MCC digit 2
      data->imsi.u.num.digit3 = 8;  // MCC digit 3
      data->imsi.u.num.digit4 = 1;  // MNC digit 1
      data->imsi.u.num.digit5 = 0;  // MNC digit 2
-     data->imsi.u.num.digit6 = 0xF;  // MNC digit 3
+     data->imsi.u.num.digit6 = 0;//0xF;  // MNC digit 3
      data->imsi.u.num.digit7 = 0;
      data->imsi.u.num.digit8 = 0;
      data->imsi.u.num.digit9 = 0;
@@ -346,7 +345,16 @@ static void _gen_emm_data(emm_nvdata_t* data)
      data->imsi.u.num.digit12 = 2;
      data->imsi.u.num.digit13 = 3;
      data->imsi.u.num.digit14 = 4;
-     data->imsi.u.num.digit15 = 0xF;*/
+     data->imsi.u.num.digit15 = 0xF;
+
+     data->rplmn.MCCdigit1 = 2;
+     data->rplmn.MCCdigit2 = 0;
+     data->rplmn.MCCdigit3 = 8;
+     data->rplmn.MNCdigit1 = 1;
+     data->rplmn.MNCdigit2 = 0;
+     data->rplmn.MNCdigit3 = 0xf;
+#endif
+#if (SELECTED_PLMN == TEST1)
   /*
    * International Mobile Subscriber Identity
    * IMSI = MCC + MNC + MSIN = 001  + 01  + 00001234
