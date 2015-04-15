@@ -26,12 +26,12 @@
 #  Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 #
 ################################################################################
-# file example_enb_exmimo_mme_hss.txt
+# file example_oaisim_enb_ue_mme_virtual.txt
 # brief
 # author Lionel Gauthier
 
 TODO: a document file, PDF for example, with nice pictures, etc
-This example shows how to generate and launch enb, mme_gw, hss executables on the same host:
+This example shows how to generate and launch enb, 1 ue (NAS still not virtualized in UE) in virtualised mode, mme_gw, hss executables on the same host:
 
 ################
 Configuration
@@ -82,8 +82,12 @@ yang@yang:~/openair4G/trunk/cmake_targets/tools$ sudo ./run_epc -l -g  -K
 Building eNB:
 yang@yang:~/openair4G/trunk/cmake_targets$ ./build_oai --eNB
 
+Configuring the eNB:
+  The default configuration file for the eNB is trunk/targets/PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.generic.oaisim.local_mme.conf
+
 Running eNB:
 yang@yang:~/openair4G/trunk/cmake_targets$ sudo tools/run_enb_s1_exmimo -c /home/yang/openair4G/trunk/targets/PROJECTS/GENERIC-LTE-EPC/CONF/enb.yang.epc.eurecom.conf -S  -K
+
 
 
 ################
