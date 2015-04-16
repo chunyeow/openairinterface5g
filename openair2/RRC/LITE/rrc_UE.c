@@ -213,10 +213,7 @@ init_SI_UE(
   UE_rrc_inst[ctxt_pP->module_id].sib1[eNB_index] = (SystemInformationBlockType1_t*)malloc16(sizeof(SystemInformationBlockType1_t));
   UE_rrc_inst[ctxt_pP->module_id].SI[eNB_index] = (uint8_t*)malloc16(64);
 
-  // FIXME the structure member si is defined as si[NB_CNX_UE][8]
-  // FIXME the code at rrc_UE.c:2250 indexes si like this: UE_rrc_inst[ctxt_pP->module_id].si[eNB_index][si_window]
-  // FIXME for si_window = 2 (which can happen) this produces a SIGSEGV
-  for (i=0; i<NB_CNX_UE; i++) {
+  for (i=0; i<8; i++) {
     UE_rrc_inst[ctxt_pP->module_id].si[eNB_index][i] = (SystemInformation_t*)malloc16(sizeof(SystemInformation_t));
   }
 
