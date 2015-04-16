@@ -54,6 +54,7 @@
 #include <inttypes.h>
 #include "platform_constants.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
+#include "msc.h"
 
 #if defined(ENABLE_SECURITY)
 # include "UTIL/OSA/osa_defs.h"
@@ -1560,8 +1561,18 @@ pdcp_config_set_security(
 
     /* Activate security */
     pdcp_pP->security_activated = 1;
+	MSC_LOG_EVENT(
+	  (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+	  " Set security ciph %X integ %x UE %"PRIx16" ",
+	  pdcp_pP->cipheringAlgorithm,
+	  pdcp_pP->integrityProtAlgorithm,
+	  ctxt_pP->rnti);
   } else {
-    LOG_E(PDCP,PROTOCOL_PDCP_CTXT_FMT"  bad security mode %d",
+	  MSC_LOG_EVENT(
+	    (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+	    " Set security failed UE %"PRIx16" ",
+	    ctxt_pP->rnti);
+	  LOG_E(PDCP,PROTOCOL_PDCP_CTXT_FMT"  bad security mode %d",
           PROTOCOL_PDCP_CTXT_ARGS(ctxt_pP,pdcp_pP),
           security_modeP);
   }
