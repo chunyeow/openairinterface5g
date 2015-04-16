@@ -209,7 +209,7 @@ parse_oai_log_files()
 g_page_index    = 0
 g_message_index = 0
 g_now = datetime.datetime.now()
-g_now_formated = g_now.strftime("%Y-%m-%d_%H.%M.%S")
+g_now_formated = 'mscgen_' + g_now.strftime("%Y-%m-%d_%H.%M.%S")
 g_currentdir = os.curdir
 g_resultdir = os.path.join(g_currentdir, g_now_formated)
 os.mkdir(g_resultdir)
