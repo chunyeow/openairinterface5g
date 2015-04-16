@@ -2430,17 +2430,27 @@ decode_SIB1(
 
         plmn_Identity = &(*sib1)->cellAccessRelatedInfo.plmn_IdentityList.list.array[plmn]->plmn_Identity;
 
-        if (((plmn_Identity->mcc == NULL)
-             ||
-             ((UE_rrc_inst[ctxt_pP->module_id].plmnID.MCCdigit1 == *(plmn_Identity->mcc->list.array[0])) &&
-              (UE_rrc_inst[ctxt_pP->module_id].plmnID.MCCdigit2 == *(plmn_Identity->mcc->list.array[1])) &&
-              (UE_rrc_inst[ctxt_pP->module_id].plmnID.MCCdigit3 == *(plmn_Identity->mcc->list.array[2]))))
-            &&
-            (UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit1 == *(plmn_Identity->mnc.list.array[0])) &&
-            (UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit2 == *(plmn_Identity->mnc.list.array[1])) &&
-            (((UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit3 == 0xf) && (plmn_Identity->mnc.list.count == 2))
-             ||
-             (UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit3 == *(plmn_Identity->mnc.list.array[2])))) {
+       if (
+             (
+               (plmn_Identity->mcc == NULL)
+               ||
+               (
+                 (UE_rrc_inst[ctxt_pP->module_id].plmnID.MCCdigit1 == *(plmn_Identity->mcc->list.array[0])) &&
+                 (UE_rrc_inst[ctxt_pP->module_id].plmnID.MCCdigit2 == *(plmn_Identity->mcc->list.array[1])) &&
+                 (UE_rrc_inst[ctxt_pP->module_id].plmnID.MCCdigit3 == *(plmn_Identity->mcc->list.array[2]))
+               )
+             )
+             &&
+             (UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit1 == *(plmn_Identity->mnc.list.array[0]))
+             &&
+             (UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit2 == *(plmn_Identity->mnc.list.array[1]))
+             &&
+             (
+               ((UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit3 == 0xf) && (plmn_Identity->mnc.list.count == 2))
+               ||
+               (UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit3 == *(plmn_Identity->mnc.list.array[2]))
+             )
+           ) {
           /* PLMN match, send a confirmation to NAS */
           MessageDef  *msg_p;
 
@@ -3496,6 +3506,15 @@ void
       {
         UE_rrc_inst[ue_mod_id].plmnID = NAS_CELL_SELECTION_REQ (msg_p).plmnID;
         UE_rrc_inst[ue_mod_id].rat = NAS_CELL_SELECTION_REQ (msg_p).rat;
+        LOG_I(RRC, "[UE %d] Save cell selection criterion MCC %X%X%X MNC %X%X%X\n",
+        		ue_mod_id,
+        		UE_rrc_inst[ue_mod_id].plmnID.MCCdigit1,
+        		UE_rrc_inst[ue_mod_id].plmnID.MCCdigit2,
+        		UE_rrc_inst[ue_mod_id].plmnID.MCCdigit3,
+        		UE_rrc_inst[ue_mod_id].plmnID.MNCdigit1,
+        		UE_rrc_inst[ue_mod_id].plmnID.MNCdigit2,
+        		UE_rrc_inst[ue_mod_id].plmnID.MNCdigit3);
+
       }
 
       switch (rrc_get_state(ue_mod_id)) {
