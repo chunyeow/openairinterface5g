@@ -213,6 +213,9 @@ init_SI_UE(
   UE_rrc_inst[ctxt_pP->module_id].sib1[eNB_index] = (SystemInformationBlockType1_t*)malloc16(sizeof(SystemInformationBlockType1_t));
   UE_rrc_inst[ctxt_pP->module_id].SI[eNB_index] = (uint8_t*)malloc16(64);
 
+  // FIXME the structure member si is defined as si[NB_CNX_UE][8]
+  // FIXME the code at rrc_UE.c:2250 indexes si like this: UE_rrc_inst[ctxt_pP->module_id].si[eNB_index][si_window]
+  // FIXME for si_window = 2 (which can happen) this produces a SIGSEGV
   for (i=0; i<NB_CNX_UE; i++) {
     UE_rrc_inst[ctxt_pP->module_id].si[eNB_index][i] = (SystemInformation_t*)malloc16(sizeof(SystemInformation_t));
   }
@@ -2245,7 +2248,7 @@ decode_BCCH_DLSCH_Message(
           //                                                if ((frameP %8) == 1) {  // check only in odd frames for SI
           si_window = (ctxt_pP->frame%(UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIperiod/10))/
                       (UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIwindowsize/10);
-          memcpy((void*)si[si_window],
+          memcpy((void*)si[si_window], // FIXME check indexing (see line 219)
                  (void*)&bcch_message->message.choice.c1.choice.systemInformation,
                  sizeof(SystemInformation_t));
           LOG_D(RRC,"[UE %d] Decoding SI for frameP %d, si_window %d\n",
