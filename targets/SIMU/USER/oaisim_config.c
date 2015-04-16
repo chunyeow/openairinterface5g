@@ -54,6 +54,7 @@
 #include "UTIL/OTG/otg.h"
 #include "UTIL/OTG/otg_externs.h"
 #include "oml.h"
+#include "msc.h"
 #ifdef ENABLE_RAL
 #include "lteRALenb.h"
 #include "lteRALue.h"
@@ -351,6 +352,7 @@ void oaisim_config(void)
   }
 
   // init other comps
+  MSC_INIT(MSC_E_UTRAN);
 #ifdef ENABLE_RAL
   mRAL_init_default_values();
   eRAL_init_default_values();
@@ -390,7 +392,6 @@ int olg_config(void)
   oai_emulation.info.g_log_level     = ((oai_emulation.info.ocg_enabled == 1)  && (ocg_log_level != -1))     ? ocg_log_level : oai_emulation.info.g_log_level;
   oai_emulation.info.g_log_verbosity = (((oai_emulation.info.ocg_enabled == 1) && (ocg_log_verbosity != -1)) ? ocg_log_verbosity :
                                         map_str_to_int(log_verbosity_names, oai_emulation.info.g_log_verbosity_option));
-
   set_glog(oai_emulation.info.g_log_level, oai_emulation.info.g_log_verbosity ); //g_glog
 
   // component, log level, log interval
@@ -437,6 +438,7 @@ int olg_config(void)
   set_log(RAL_ENB,  LOG_DEBUG, 1);
   set_log(RAL_UE,  LOG_DEBUG, 1);
 #endif
+
   /*
    //set_log(OCG,  LOG_DEBUG, 1);
    //set_log(EMU,  LOG_INFO,  20);
@@ -459,6 +461,7 @@ int olg_config(void)
    set_comp_log(OMG,  LOG_ERR, 0x15,1);
    set_comp_log(OPT,  LOG_ERR, 0x15,1);
     */
+
   // set_comp_log(MAC, LOG_TRACE, LOG_FULL,1);
   return 1;
 }
