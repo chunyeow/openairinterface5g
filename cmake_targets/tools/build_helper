@@ -350,7 +350,7 @@ install_nas_tools() {
     echo_success "generate .ue_emm.nvram .ue.nvram"
     ./nvram --gen
   else
-    [ ./nvram -nt .ue.nvram  -o ./nvram -nt .ue_emm.nvram] && ./nvram --gen
+    [ ./nvram -nt .ue.nvram  -o ./nvram -nt .ue_emm.nvram ] && ./nvram --gen
   fi
 
   if [ ! -f .usim.nvram ]; then
