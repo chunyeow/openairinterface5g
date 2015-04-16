@@ -85,6 +85,7 @@
 
 #include "pdcp.h"
 #include "plmn_data.h"
+#include "msc.h"
 
 #if defined(ENABLE_ITTI)
 # include "intertask_interface.h"
@@ -422,7 +423,7 @@ rrc_ue_generate_RRCConnectionSetupComplete(
   LOG_I(RRC,"[UE %d][RAPROC] Frame %d : Logical Channel UL-DCCH (SRB1), Generating RRCConnectionSetupComplete (bytes%d, eNB %d)\n",
         ctxt_pP->module_id,ctxt_pP->frame, size, eNB_index);
   LOG_D(RLC,
-        "[MSC_MSG][FRAME %05d][RRC_UE][MOD %02d][][--- PDCP_DATA_REQ/%d Bytes (RRCConnectionSetupComplete to eNB %d MUI %d) --->][PDCP][MOD %02d][RB %02d]\n",
+        "[FRAME %05d][RRC_UE][MOD %02d][][--- PDCP_DATA_REQ/%d Bytes (RRCConnectionSetupComplete to eNB %d MUI %d) --->][PDCP][MOD %02d][RB %02d]\n",
         ctxt_pP->frame, ctxt_pP->module_id+NB_eNB_INST, size, eNB_index, rrc_mui, ctxt_pP->module_id+NB_eNB_INST, DCCH);
   pdcp_rrc_data_req (
     ctxt_pP,
@@ -449,7 +450,7 @@ rrc_ue_generate_RRCConnectionReconfigurationComplete(
   LOG_I(RRC,PROTOCOL_RRC_CTXT_UE_FMT" Logical Channel UL-DCCH (SRB1), Generating RRCConnectionReconfigurationComplete (bytes %d, eNB_index %d)\n",
         PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP), size, eNB_index);
   LOG_D(RLC,
-        "[MSC_MSG][FRAME %05d][RRC_UE][INST %02d][][--- PDCP_DATA_REQ/%d Bytes (RRCConnectionReconfigurationComplete to eNB %d MUI %d) --->][PDCP][INST %02d][RB %02d]\n",
+        "[FRAME %05d][RRC_UE][INST %02d][][--- PDCP_DATA_REQ/%d Bytes (RRCConnectionReconfigurationComplete to eNB %d MUI %d) --->][PDCP][INST %02d][RB %02d]\n",
         ctxt_pP->frame,
         UE_MODULE_ID_TO_INSTANCE(ctxt_pP->module_id),
         size,
@@ -1081,7 +1082,7 @@ rrc_ue_process_radioResourceConfigDedicated(
             SRB1_logicalChannelConfig = &SRB1_logicalChannelConfig_defaultValue;
           }
 
-          LOG_D(RRC, "[MSC_MSG][FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ  (SRB1 eNB %d) --->][MAC_UE][MOD %02d][]\n",
+          LOG_D(RRC, "[FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ  (SRB1 eNB %d) --->][MAC_UE][MOD %02d][]\n",
                 ctxt_pP->frame, ctxt_pP->module_id, eNB_index, ctxt_pP->module_id);
           rrc_mac_config_req(ctxt_pP->module_id,ENB_FLAG_NO,0,eNB_index,
                              (RadioResourceConfigCommonSIB_t *)NULL,
@@ -1136,7 +1137,7 @@ rrc_ue_process_radioResourceConfigDedicated(
             SRB2_logicalChannelConfig = &SRB2_logicalChannelConfig_defaultValue;
           }
 
-          LOG_D(RRC, "[MSC_MSG][FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ  (SRB2 eNB %d) --->][MAC_UE][MOD %02d][]\n",
+          LOG_D(RRC, "[FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ  (SRB2 eNB %d) --->][MAC_UE][MOD %02d][]\n",
                 ctxt_pP->frame,
                 ctxt_pP->module_id,
                 eNB_index,
@@ -1187,6 +1188,17 @@ rrc_ue_process_radioResourceConfigDedicated(
                       UE_rrc_inst[ctxt_pP->module_id].kenb, &kUPenc);
 #endif
 
+    MSC_LOG_TX_MESSAGE(
+      MSC_RRC_UE,
+      MSC_PDCP_UE,
+      NULL,
+      0,
+      MSC_AS_TIME_FMT" CONFIG_REQ UE %x DRB (security %X)",
+      MSC_AS_TIME_ARGS(ctxt_pP),
+      ctxt_pP->rnti,
+      UE_rrc_inst[ctxt_pP->module_id].ciphering_algorithm |
+        (UE_rrc_inst[ctxt_pP->module_id].integrity_algorithm << 4));
+
     // Refresh DRBs
     rrc_pdcp_config_asn1_req(ctxt_pP,
                              (SRB_ToAddModList_t*)NULL,
@@ -1223,7 +1235,7 @@ rrc_ue_process_radioResourceConfigDedicated(
         UE_rrc_inst[ctxt_pP->module_id].DRB_config[eNB_index][DRB_id] = radioResourceConfigDedicated->drb_ToAddModList->list.array[i];
         rrc_ue_establish_drb(ctxt_pP->module_id,ctxt_pP->frame,eNB_index,radioResourceConfigDedicated->drb_ToAddModList->list.array[i]);
         // MAC/PHY Configuration
-        LOG_D(RRC, "[MSC_MSG][FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (DRB %d eNB %d) --->][MAC_UE][MOD %02d][]\n",
+        LOG_D(RRC, "[FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (DRB %d eNB %d) --->][MAC_UE][MOD %02d][]\n",
               ctxt_pP->frame, ctxt_pP->module_id,
               radioResourceConfigDedicated->drb_ToAddModList->list.array[i]->drb_Identity,
               eNB_index,
@@ -1724,7 +1736,7 @@ rrc_ue_process_mobilityControlInfo(
    */
   //Synchronisation to DL of target cell
   LOG_D(RRC,
-        "HO: Reset PDCP and RLC for configured RBs.. \n[MSC_MSG][FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ  (SRB2 eNB %d) --->][MAC_UE][MOD %02d][]\n",
+        "HO: Reset PDCP and RLC for configured RBs.. \n[FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ  (SRB2 eNB %d) --->][MAC_UE][MOD %02d][]\n",
         ctxt_pP->frame, ctxt_pP->module_id, eNB_index, ctxt_pP->module_id);
 
   // Reset MAC and configure PHY
@@ -2376,7 +2388,7 @@ decode_SIB1(
 
   UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIperiod     = siPeriod_int[(*sib1)->schedulingInfoList.list.array[0]->si_Periodicity];
   UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIwindowsize = siWindowLength_int[(*sib1)->si_WindowLength];
-  LOG_D(RRC, "[MSC_MSG][FRAME unknown][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (SIB1 params eNB %d) --->][MAC_UE][MOD %02d][]\n",
+  LOG_D(RRC, "[FRAME unknown][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (SIB1 params eNB %d) --->][MAC_UE][MOD %02d][]\n",
         ctxt_pP->module_id, eNB_index, ctxt_pP->module_id);
   rrc_mac_config_req(ctxt_pP->module_id,ENB_FLAG_NO,0,eNB_index,
                      (RadioResourceConfigCommonSIB_t *)NULL,
@@ -2661,7 +2673,7 @@ decode_SI(
       UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index] = &typeandinfo->choice.sib2;
       LOG_D(RRC,"[UE %d] Frame %d Found SIB2 from eNB %d\n",ctxt_pP->module_id,ctxt_pP->frame,eNB_index);
       dump_sib2(UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index]);
-      LOG_D(RRC, "[MSC_MSG][FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (SIB2 params  eNB %d) --->][MAC_UE][MOD %02d][]\n",
+      LOG_D(RRC, "[FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (SIB2 params  eNB %d) --->][MAC_UE][MOD %02d][]\n",
             ctxt_pP->frame, ctxt_pP->module_id, eNB_index, ctxt_pP->module_id);
       rrc_mac_config_req(ctxt_pP->module_id,ENB_FLAG_NO,0,eNB_index,
                          &UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index]->radioResourceConfigCommon,
@@ -2797,7 +2809,7 @@ decode_SI(
       LOG_I(RRC,"[RRC][UE %d] Found SIB13 from eNB %d\n",ctxt_pP->module_id,eNB_index);
       dump_sib13(UE_rrc_inst[ctxt_pP->module_id].sib13[eNB_index]);
       // adding here function to store necessary parameters for using in decode_MCCH_Message + maybe transfer to PHY layer
-      LOG_D(RRC, "[MSC_MSG][FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (SIB13 params eNB %d) --->][MAC_UE][MOD %02d][]\n",
+      LOG_D(RRC, "[FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (SIB13 params eNB %d) --->][MAC_UE][MOD %02d][]\n",
             ctxt_pP->frame, ctxt_pP->module_id, eNB_index, ctxt_pP->module_id);
       rrc_mac_config_req(ctxt_pP->module_id,ENB_FLAG_NO,0,eNB_index,
                          (RadioResourceConfigCommonSIB_t *)NULL,
