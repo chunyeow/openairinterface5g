@@ -148,13 +148,14 @@ def parse_oai_log_files():
                       g_messages[event_id] = Message
 
                 elif MSC_BOX_STR == event_type:
-                    message = partition[3]
+                    sub_partition = partition[3].split(' ',1)
+                    time    = sub_partition[0]
+                    message = sub_partition[1]
                     Message = {}
                     Message['type'] = "box"
                     Message['tx'] = entity_id
                     Message['rx'] = entity_id
                     Message['discarded'] = False
-                    Message['mac'] = mac
                     Message['time'] = time
                     Message['message'] = message
                     Message['line_color'] = g_display_color[entity_id]
