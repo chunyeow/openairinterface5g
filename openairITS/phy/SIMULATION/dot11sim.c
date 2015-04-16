@@ -23,6 +23,8 @@ uint16_t rev64[64];
 
 #define RX_THRES_dB 26
 
+int opp_enabled=1;
+
 int main(int argc, char **argv) {
 
   char c;

@@ -43,6 +43,7 @@ ITTI_OBJS += $(ITTI_DIR)/timer.o
 
 
 HASHTABLE_DIR = $(COMMON_UTILS_DIR)/collection/hashtable
+MSC_DIR = $(COMMON_UTILS_DIR)/msc
 
 HASHTABLE_OBJS =  $(HASHTABLE_DIR)/hashtable.o
 HASHTABLE_OBJS += $(HASHTABLE_DIR)/obj_hashtable.o
@@ -52,6 +53,7 @@ UTILS_OBJS = $(ITTI_OBJS) $(HASHTABLE_OBJS)
 UTILS_incl = 				\
     -I$(COMMON_UTILS_DIR)   \
     -I$(HASHTABLE_DIR)      \
-    -I$(ITTI_DIR)
+    -I$(ITTI_DIR) \
+    -I$(MSC_DIR)
 
 print-%  : ; @echo $* = $($*)

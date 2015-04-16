@@ -41,6 +41,7 @@ RTIME dd_t1=0,dd_t2=0,dd_t3=0,dd_t4=0;
 #else
 long dd_t1=0,dd_t2=0,dd_t3=0,dd_t4=0;
 #endif
+#endif
 int dd_trials=0;
 
 #ifdef RTAI
@@ -59,6 +60,7 @@ int16_t Pseq_rx[127]     = { 1, 1, 1, 1,-1,-1,-1, 1,-1,-1,-1,-1, 1, 1,-1, 1,
 int32_t rxDATA_F_comp_aggreg2[48*1024];
 int32_t rxDATA_F_comp_aggreg3[48*1024];
 
+#ifdef EXECTIME
 void print_dd_stats() {
 
   if (dd_trials>0)

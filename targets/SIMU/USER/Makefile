@@ -472,6 +472,7 @@ print:
 
 showcflags:
 	@echo oaisim cflags: $(CFLAGS)
+	@echo oaisim includes: $(INCLUDES)
 	@if [ -d $(S1AP_DIR) ]; then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB showcflags; fi
 	@if [ -d $(X2AP_DIR) ]; then $(MAKE) -C $(X2AP_DIR) -f Makefile.inc showcflags; fi
 
