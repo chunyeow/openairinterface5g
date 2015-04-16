@@ -2915,6 +2915,15 @@ rrc_eNB_process_RRCConnectionReconfigurationComplete(
   }
 #endif
   // Refresh SRBs/DRBs
+  MSC_LOG_TX_MESSAGE(
+    MSC_RRC_ENB,
+    MSC_PDCP_ENB,
+    NULL,
+    0,
+    MSC_AS_TIME_FMT" CONFIG_REQ UE %x DRB (security unchanged)",
+    MSC_AS_TIME_ARGS(ctxt_pP),
+    ue_context_pP->ue_context.rnti);
+
   rrc_pdcp_config_asn1_req(
     ctxt_pP,
     NULL,  //LG-RK 14/05/2014 SRB_configList,
@@ -3613,6 +3622,16 @@ rrc_eNB_decode_ccch(
       LOG_I(RRC, PROTOCOL_RRC_CTXT_UE_FMT"CALLING RLC CONFIG SRB1 (rbid %d)\n",
             PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP),
             Idx);
+
+      MSC_LOG_TX_MESSAGE(
+        MSC_RRC_ENB,
+        MSC_PDCP_ENB,
+        NULL,
+        0,
+        MSC_AS_TIME_FMT" CONFIG_REQ UE %x SRB",
+        MSC_AS_TIME_ARGS(ctxt_pP),
+        ue_context_p->ue_context.rnti);
+
       rrc_pdcp_config_asn1_req(ctxt_pP,
                                ue_context_p->ue_context.SRB_configList,
                                  (DRB_ToAddModList_t *) NULL,
