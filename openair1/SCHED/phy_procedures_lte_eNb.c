@@ -111,8 +111,8 @@ static unsigned char I0_clear = 1;
 uint8_t is_SR_subframe(PHY_VARS_eNB *phy_vars_eNB,uint8_t UE_id,uint8_t sched_subframe)
 {
 
-  int subframe = phy_vars_eNB->proc[sched_subframe].subframe_rx;
-  int frame = phy_vars_eNB->proc[sched_subframe].frame_rx;
+  const int subframe = phy_vars_eNB->proc[sched_subframe].subframe_rx;
+  const int frame = phy_vars_eNB->proc[sched_subframe].frame_rx;
 
   LOG_D(PHY,"[eNB %d][SR %x] Frame %d subframe %d Checking for SR TXOp(sr_ConfigIndex %d)\n",
         phy_vars_eNB->Mod_id,phy_vars_eNB->ulsch_eNB[UE_id]->rnti,frame,subframe,
@@ -209,7 +209,7 @@ int8_t find_next_ue_index(PHY_VARS_eNB *phy_vars_eNB)
   return(-1);
 }
 
-int get_ue_active_harq_pid(uint8_t Mod_id,uint8_t CC_id,uint16_t rnti,int frame, uint8_t subframe,uint8_t *harq_pid,uint8_t *round,uint8_t ul_flag)
+int get_ue_active_harq_pid(const uint8_t Mod_id,const uint8_t CC_id,const uint16_t rnti, const int frame, const uint8_t subframe,uint8_t *harq_pid,uint8_t *round,const uint8_t ul_flag)
 {
 
   LTE_eNB_DLSCH_t *DLSCH_ptr;
@@ -290,7 +290,7 @@ void init_nCCE_table(void)
 }
 
 
-int get_nCCE_offset(unsigned char L, int nCCE, int common_dci, unsigned short rnti, unsigned char subframe)
+int get_nCCE_offset(const unsigned char L, const int nCCE, const int common_dci, const unsigned short rnti, const unsigned char subframe)
 {
 
   int search_space_free,m,nb_candidates = 0,l,i;
@@ -377,7 +377,7 @@ int get_nCCE_offset(unsigned char L, int nCCE, int common_dci, unsigned short rn
   }
 }
 
-int16_t get_target_ul_rx_power(module_id_t module_idP, uint8_t CC_id)
+int16_t get_target_ul_rx_power(const module_id_t module_idP, const uint8_t CC_id)
 {
   //return PHY_vars_eNB_g[module_idP][CC_id]->PHY_measurements_eNB[0].n0_power_tot_dBm;
   return PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.ul_power_control_config_common.p0_NominalPUSCH;
@@ -3102,7 +3102,7 @@ void ulsch_decoding_procedures(unsigned char subframe, unsigned int i, PHY_VARS_
 
 
 
-void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag,relaying_type_t r_type)
+void phy_procedures_eNB_RX(const unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_eNB,const uint8_t abstraction_flag,const relaying_type_t r_type)
 {
   //RX processing
   UNUSED(r_type);
@@ -3124,8 +3124,10 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
   uint16_t rnti=0;
   uint8_t access_mode;
   int num_active_cba_groups;
-  int subframe = phy_vars_eNB->proc[sched_subframe].subframe_rx;
-  int frame = phy_vars_eNB->proc[sched_subframe].frame_rx;
+  const int subframe = phy_vars_eNB->proc[sched_subframe].subframe_rx;
+  const int frame = phy_vars_eNB->proc[sched_subframe].frame_rx;
+
+  AssertFatal(sched_subframe < NUM_ENB_THREADS, "Bad sched_subframe %d", sched_subframe);
 
   VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_ENB_RX,1);
   start_meas(&phy_vars_eNB->phy_proc_rx);
