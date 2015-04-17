@@ -261,7 +261,7 @@ int esm_ebr_context_create(
              //            in_addr.s_addr);
              strcpy(ipv4_addr, tmp);
 
-             if (IN_CLASSA(in_addr.s_addr)) {
+             if (IN_CLASSA(ntohl(in_addr.s_addr))) {
                netmask = "255.0.0.0";
                in_addr.s_addr = pdn->ip_addr[0] << 24 |
                                 ((255  << 16) & 0x00FF0000) |
@@ -273,7 +273,7 @@ int esm_ebr_context_create(
                //                                        "error in PDN IPv4 address %x",
                //                                        in_addr.s_addr);
                strcpy(broadcast, tmp);
-             } else if (IN_CLASSB(in_addr.s_addr)) {
+             } else if (IN_CLASSB(ntohl(in_addr.s_addr))) {
                netmask = "255.255.0.0";
                in_addr.s_addr =  pdn->ip_addr[0] << 24 |
                                  ((pdn->ip_addr[1] << 16) & 0x00FF0000) |
@@ -285,7 +285,7 @@ int esm_ebr_context_create(
                //                                        "error in PDN IPv4 address %x",
                //                                        in_addr.s_addr);
                strcpy(broadcast, tmp);
-             } else if (IN_CLASSC(in_addr.s_addr)) {
+             } else if (IN_CLASSC(ntohl(in_addr.s_addr))) {
                netmask = "255.255.255.0";
                in_addr.s_addr = pdn->ip_addr[0] << 24 |
                                 ((pdn->ip_addr[1] << 16) & 0x00FF0000) |
