@@ -40,6 +40,7 @@
 # include "RRC/LITE/MESSAGES/asn1_msg.h"
 # include "rrc_eNB_GTPV1U.h"
 # include "rrc_eNB_UE_context.h"
+# include "msc.h"
 
 # if defined(ENABLE_ITTI)
 #   include "asn1_conversions.h"
@@ -78,6 +79,15 @@ rrc_eNB_process_GTPV1U_CREATE_TUNNEL_RESP(
       ue_context_p->ue_context.enb_gtp_addrs[i] = GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).enb_addr;
       ue_context_p->ue_context.enb_gtp_ebi[i]   = GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).eps_bearer_id[i];
     }
+	MSC_LOG_RX_MESSAGE(
+			  MSC_RRC_ENB,
+			  MSC_GTPU_ENB,
+			  NULL,0,
+			  MSC_AS_TIME_FMT" CREATE_TUNNEL_RESP RNTI %"PRIx16" ntuns %u ebid %u enb-s1u teid %u",
+			  0,0,rnti,
+			  GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).num_tunnels,
+			  ue_context_p->ue_context.enb_gtp_ebi[0],
+			  ue_context_p->ue_context.enb_gtp_teid[0]);
     return 0;
   } else {
     return -1;
