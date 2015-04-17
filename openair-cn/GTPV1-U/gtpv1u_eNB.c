@@ -41,6 +41,7 @@
 #include "assertions.h"
 #include "intertask_interface.h"
 #include "timer.h"
+#include "msc.h"
 
 #include "gtpv1u.h"
 #include "NwGtpv1u.h"
@@ -328,6 +329,16 @@ NwGtpv1uRcT gtpv1u_eNB_process_stack_req(
 
 #warning "LG eps bearer mapping to DRB id to do (offset -4)"
       PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, gtpv1u_teid_data_p->enb_id, ENB_FLAG_YES,  gtpv1u_teid_data_p->ue_id, 0, 0);
+
+      MSC_LOG_TX_MESSAGE(
+    		  MSC_GTPU_ENB,
+    		  MSC_PDCP_ENB,
+    		  NULL,
+    		  0,
+    		  MSC_AS_TIME_FMT" DATA-REQ rb %u size %u",
+    		  0,0,
+    		  (gtpv1u_teid_data_p->eps_bearer_id) ? gtpv1u_teid_data_p->eps_bearer_id - 4: 5-4,
+    		  buffer_len);
 
       result = pdcp_data_req(
                  &ctxt,
@@ -1040,11 +1051,27 @@ void *gtpv1u_eNB_task(void *args)
 
           if (rc != NW_GTPV1U_OK) {
             LOG_E(GTPU, "nwGtpv1uGpduMsgNew failed: 0x%x\n", rc);
+            MSC_LOG_EVENT(MSC_GTPU_ENB,"Failed send G-PDU ltid %u rtid %u size %u",
+            		enb_s1u_teid,sgw_s1u_teid,data_req_p->length);
           } else {
             rc = nwGtpv1uProcessUlpReq(gtpv1u_data_g.gtpv1u_stack, &stack_req);
 
             if (rc != NW_GTPV1U_OK) {
               LOG_E(GTPU, "nwGtpv1uProcessUlpReq failed: 0x%x\n", rc);
+              MSC_LOG_EVENT(MSC_GTPU_ENB,"Failed send G-PDU ltid %u rtid %u size %u",
+              		enb_s1u_teid,sgw_s1u_teid,data_req_p->length);
+            } else {
+            	  MSC_LOG_TX_MESSAGE(
+            			  MSC_GTPU_ENB,
+            			  MSC_GTPU_SGW,
+            			  NULL,
+            			  0,
+            			  MSC_AS_TIME_FMT" G-PDU ltid %u rtid %u size %u",
+            			  0,0,
+            			  enb_s1u_teid,
+            			  sgw_s1u_teid,
+            			  data_req_p->length);
+
             }
 
             rc = nwGtpv1uMsgDelete(gtpv1u_data_g.gtpv1u_stack,
