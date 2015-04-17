@@ -238,7 +238,7 @@ function main()
   cd  $OPENAIR_DIR/targets/bin
    
   if [ $run_gdb -eq 0 ]; then 
-    exec $OPENAIR_DIR/targets/bin/oaisim $exe_arguments | tee /tmp/enb_ue_s1.log.txt
+    exec $SUDO $OPENAIR_DIR/targets/bin/oaisim $exe_arguments | tee /tmp/enb_ue_s1.log.txt
   else
     touch      ~/.gdb_enb_ue_s1
     chmod 777  ~/.gdb_enb_ue_s1
@@ -246,7 +246,7 @@ function main()
     echo "set args $exe_arguments" >> ~/.gdb_enb_ue_s1
     echo "run"                        >> ~/.gdb_enb_ue_s1
     cat ~/.gdb_enb_ue_s1
-    gdb -n -x ~/.gdb_enb_ue_s1 
+    $SUDO gdb -n -x ~/.gdb_enb_ue_s1 
   fi
   
   if [ $run_mscgen -eq 1 ]; then 
