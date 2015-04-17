@@ -9,8 +9,8 @@ import subprocess
 import re
 import socket
 import datetime
-import os.path
 from datetime import date
+import os, errno
 
 MSCGEN_OUTPUT_TYPE       = "png"
 MAX_MESSAGES_PER_PAGE    = 36
@@ -69,6 +69,8 @@ def parse_oai_log_files():
     global g_final_display_order_list
     #open TXT file that contain OAI filtered traces for mscgen
     filenames = [
+        '/tmp/openair.msc.ip_ue.log',
+        '/tmp/openair.msc.ip_enb.log',
         '/tmp/openair.msc.nas_ue.log',
         '/tmp/openair.msc.pdcp_ue.log',
         '/tmp/openair.msc.rrc_ue.log',
@@ -87,82 +89,87 @@ def parse_oai_log_files():
         '/tmp/openair.msc.s1ap_mme.log']
 
     for filename in filenames:
-        fhandle  = open(filename, 'r')
-        fcontent = fhandle.read()
-        fhandle.close()
+        try:
+            fhandle  = open(filename, 'r')
+            fcontent = fhandle.read()
+            fhandle.close()
 
-        # split file content in lines
-        lines = fcontent.splitlines()
-        for line in lines:
-            if line.strip() != "":
-                print ("INPUT LINE:  %s " % line)
-                partition = line.split(' ',3)
-                event_id = int(partition[0])
-                event_type = partition[1]
-                entity_id = int(partition[2])
-                if MSC_NEW_STR == event_type:
-                    entity_name = partition[3]
-                    if len(g_proto_names) <= entity_id:
-                        for i in range(len(g_proto_names),(entity_id +1)):
-                            g_proto_names.append("NotDeclared")
-                    g_proto_names[entity_id] = entity_name
+            # split file content in lines
+            lines = fcontent.splitlines()
+            for line in lines:
+                if line.strip() != "":
+                    print ("INPUT LINE:  %s " % line)
+                    partition = line.split(' ',3)
+                    event_id = int(partition[0])
+                    event_type = partition[1]
+                    entity_id = int(partition[2])
+                    if MSC_NEW_STR == event_type:
+                        entity_name = partition[3]
+                        if len(g_proto_names) <= entity_id:
+                            for i in range(len(g_proto_names),(entity_id +1)):
+                                g_proto_names.append("NotDeclared")
+                        g_proto_names[entity_id] = entity_name
 
-                # if line is a trace of a message between 2 protocol entities or layers
-                elif MSC_MSG_STR == event_type:
-                    print ("partition[3]:%s" % partition[3])
-                    sub_partition = partition[3].split(' ',4)
-                    arrow   = sub_partition[0]
-                    entity2_id = int(sub_partition[1])
-                    mac     = int(sub_partition[2])
-                    time    = sub_partition[3]
-                    message = sub_partition[4]
-                    Message = {}
-                    Message['mac'] = mac
-                    Message['time'] = time
-                    Message['message'] = message
-                    Message['line_color'] = g_display_color[entity_id]
-                    Message['text_color'] = g_display_color[entity_id]
-                    if arrow == '<-':
-                      Message['type'] = "rx"
-                      Message['tx'] = entity2_id
-                      Message['rx'] = entity_id
-                      Message['discarded'] = False
-                      g_messages[event_id] = Message
-                    elif arrow == '->':
-                      Message['type'] = "tx"
-                      Message['tx'] = entity_id
-                      Message['rx'] = entity2_id
-                      Message['discarded'] = False
-                      g_messages[event_id] = Message
-                    elif arrow == 'x-':
-                      Message['type'] = "rx"
-                      Message['tx'] = entity2_id
-                      Message['rx'] = entity_id
-                      Message['discarded'] = True
-                      g_messages[event_id] = Message
-                    elif arrow == '-x':
-                      Message['type'] = "tx"
-                      Message['tx'] = entity_id
-                      Message['rx'] = entity2_id
-                      Message['discarded'] = True
-                      g_messages[event_id] = Message
+                    # if line is a trace of a message between 2 protocol entities or layers
+                    elif MSC_MSG_STR == event_type:
+                        print ("partition[3]:%s" % partition[3])
+                        sub_partition = partition[3].split(' ',4)
+                        arrow   = sub_partition[0]
+                        entity2_id = int(sub_partition[1])
+                        mac     = int(sub_partition[2])
+                        time    = sub_partition[3]
+                        message = sub_partition[4]
+                        Message = {}
+                        Message['mac'] = mac
+                        Message['time'] = time
+                        Message['message'] = message
+                        Message['line_color'] = g_display_color[entity_id]
+                        Message['text_color'] = g_display_color[entity_id]
+                        if arrow == '<-':
+                            Message['type'] = "rx"
+                            Message['tx'] = entity2_id
+                            Message['rx'] = entity_id
+                            Message['discarded'] = False
+                            g_messages[event_id] = Message
+                        elif arrow == '->':
+                            Message['type'] = "tx"
+                            Message['tx'] = entity_id
+                            Message['rx'] = entity2_id
+                            Message['discarded'] = False
+                            g_messages[event_id] = Message
+                        elif arrow == 'x-':
+                            Message['type'] = "rx"
+                            Message['tx'] = entity2_id
+                            Message['rx'] = entity_id
+                            Message['discarded'] = True
+                            g_messages[event_id] = Message
+                        elif arrow == '-x':
+                            Message['type'] = "tx"
+                            Message['tx'] = entity_id
+                            Message['rx'] = entity2_id
+                            Message['discarded'] = True
+                            g_messages[event_id] = Message
 
-                elif MSC_BOX_STR == event_type:
-                    sub_partition = partition[3].split(' ',1)
-                    time    = sub_partition[0]
-                    message = sub_partition[1]
-                    Message = {}
-                    Message['type'] = "box"
-                    Message['tx'] = entity_id
-                    Message['rx'] = entity_id
-                    Message['discarded'] = False
-                    Message['time'] = time
-                    Message['message'] = message
-                    Message['line_color'] = g_display_color[entity_id]
-                    Message['text_color'] = g_display_color[entity_id]
-                    g_messages[event_id] = Message
+                    elif MSC_BOX_STR == event_type:
+                        sub_partition = partition[3].split(' ',1)
+                        time    = sub_partition[0]
+                        message = sub_partition[1]
+                        Message = {}
+                        Message['type'] = "box"
+                        Message['tx'] = entity_id
+                        Message['rx'] = entity_id
+                        Message['discarded'] = False
+                        Message['time'] = time
+                        Message['message'] = message
+                        Message['line_color'] = g_display_color[entity_id]
+                        Message['text_color'] = g_display_color[entity_id]
+                        g_messages[event_id] = Message
 
-  
+        except IOError, e:  
+            print 'errno:', ioex.errno
+            print 'err code:', errno.errorcode[ioex.errno]
+            print 'err message:', os.strerror(ioex.errno)
+
     #print("------------------------------------")
     #print ("  %s " % ( g_messages ) )
 
