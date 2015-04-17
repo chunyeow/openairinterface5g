@@ -1350,9 +1350,10 @@ short TM3_prec[8]__attribute__((aligned(16))) = {1,1,-1,-1,1,1,-1,-1} ;
 
 #if defined(__x86_64__) || defined(__i386__)
 
-void prec2A_TM3_128(__m128i *ch0,__m128i *ch1)
-{
-
+static inline void prec2A_TM3_128(__m128i *ch0,__m128i *ch1) __attribute__((always_inline));
+static inline void prec2A_TM3_128(__m128i *ch0,__m128i *ch1)
+{ 
+ 
   //  __m128i amp = _mm_set1_epi16(ONE_OVER_SQRT2_Q15);
 
   __m128i tmp0,tmp1;
@@ -1379,8 +1380,6 @@ void prec2A_TM3_128(__m128i *ch0,__m128i *ch1)
   //  print_shorts("prec2A_TM3 ch0 (after):",ch0);
   //  print_shorts("prec2A_TM3 ch1 (after):",ch1);
 
-  _mm_empty();
-  _m_empty();
 }
 
 #elif defined(__arm__)
@@ -2155,12 +2154,13 @@ void dlsch_channel_compensation_TM3(LTE_DL_FRAME_PARMS *frame_parms,
 
       Nre = (pilots==0) ? 12 : 8;
 
-      precoded_signal_strength0 += ((signal_energy_nodc(&dl_ch_estimates_ext[aarx][symbol*frame_parms->N_RB_DL*Nre],
-                                     (nb_rb*Nre))*rx_power_correction) - (phy_measurements->n0_power[aarx]));
 
-      precoded_signal_strength1 += ((signal_energy_nodc(&dl_ch_estimates_ext[aarx+2][symbol*frame_parms->N_RB_DL*Nre],
-                                     (nb_rb*Nre))*rx_power_correction) - (phy_measurements->n0_power[aarx]));
     } // rb loop
+    precoded_signal_strength0 += ((signal_energy_nodc(&dl_ch_estimates_ext[aarx][symbol*frame_parms->N_RB_DL*Nre],
+						      (nb_rb*Nre))*rx_power_correction) - (phy_measurements->n0_power[aarx]));
+
+    precoded_signal_strength1 += ((signal_energy_nodc(&dl_ch_estimates_ext[aarx+2][symbol*frame_parms->N_RB_DL*Nre],
+						      (nb_rb*Nre))*rx_power_correction) - (phy_measurements->n0_power[aarx]));
   } // rx_antennas
 
   phy_measurements->precoded_cqi_dB[eNB_id][0] = dB_fixed2(precoded_signal_strength0,phy_measurements->n0_power_tot);
