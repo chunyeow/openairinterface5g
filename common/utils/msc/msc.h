@@ -41,7 +41,8 @@ typedef enum {
 
 typedef enum {
     MIN_MSC_PROTOS = 0,
-    MSC_NAS_UE = MIN_MSC_PROTOS,
+    MSC_IP_UE = MIN_MSC_PROTOS,
+    MSC_NAS_UE,
     MSC_RRC_UE,
     MSC_PDCP_UE,
     MSC_RLC_UE,
@@ -52,6 +53,7 @@ typedef enum {
     MSC_RLC_ENB,
     MSC_PDCP_ENB,
     MSC_RRC_ENB,
+    MSC_IP_ENB,
     MSC_S1AP_ENB,
     MSC_GTPU_ENB,
     MSC_GTPU_SGW,
@@ -102,6 +104,7 @@ void msc_log_tx_message(
 #define MSC_LOG_RX_MESSAGE(mScPaRaMs, fORMAT, aRGS...)           msc_log_rx_message(mScPaRaMs, fORMAT, ##aRGS)
 #define MSC_LOG_RX_DISCARDED_MESSAGE(mScPaRaMs, fORMAT, aRGS...) msc_log_rx_discarded_message(mScPaRaMs, fORMAT, ##aRGS)
 #define MSC_LOG_TX_MESSAGE(mScPaRaMs, fORMAT, aRGS...)           msc_log_tx_message(mScPaRaMs, fORMAT, ##aRGS)
+#define MSC_LOG_TX_MESSAGE_FAILED(mScPaRaMs, fORMAT, aRGS...)    msc_log_tx_message_failed(mScPaRaMs, fORMAT, ##aRGS)
 #else
 #define MSC_INIT(mScPaRaMs)
 #define MSC_END
@@ -109,5 +112,6 @@ void msc_log_tx_message(
 #define MSC_LOG_RX_MESSAGE(mScPaRaMs, fORMAT, aRGS...)
 #define MSC_LOG_RX_DISCARDED_MESSAGE(mScPaRaMs, fORMAT, aRGS...)
 #define MSC_LOG_TX_MESSAGE(mScPaRaMs, fORMAT, aRGS...)
+#define MSC_LOG_TX_MESSAGE_FAILED(mScPaRaMs, fORMAT, aRGS...)
 #endif
 #endif

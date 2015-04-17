@@ -57,14 +57,30 @@ int msc_init(msc_env_t envP)
   for (i = MIN_MSC_PROTOS; i < MAX_MSC_PROTOS; i++) {
 	  msc_fd[i] = NULL;
       switch (i) {
-        case MSC_NAS_UE:
-          rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "NAS_UE");
-          if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_E_UTRAN) {
-        	  msc_fd[i] = fopen("/tmp/openair.msc.nas_ue.log","w");
-          }
+      case MSC_IP_UE:
+        rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "IP_UE");
+        if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
+        if (envP == MSC_E_UTRAN) {
+          msc_fd[i] = fopen("/tmp/openair.msc.ip_ue.log","w");
           msc_log_declare_proto(i);
-          break;
+        }
+        break;
+      case MSC_IP_ENB:
+        rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "IP_ENB");
+        if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
+        if (envP == MSC_E_UTRAN) {
+          msc_fd[i] = fopen("/tmp/openair.msc.ip_enb.log","w");
+          msc_log_declare_proto(i);
+        }
+        break;
+      case MSC_NAS_UE:
+        rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "NAS_UE");
+        if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
+        if (envP == MSC_E_UTRAN) {
+      	  msc_fd[i] = fopen("/tmp/openair.msc.nas_ue.log","w");
+        }
+        msc_log_declare_proto(i);
+        break;
         case MSC_RRC_UE:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "RRC_UE");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
@@ -405,6 +421,48 @@ void msc_log_tx_message(
   }
   if (msc_fd[senderP] != NULL) {
       rv = fprintf(msc_fd[senderP], "%"PRIu64" [MESSAGE] %d -> %d %"PRIu64" ",
+                   local_msc_event_counter, senderP, receiverP, mac);
+      if (rv < 0) {
+         fprintf(stderr, "Error while logging MSC TX message : %s", &msc_proto2str[senderP][0]);
+      }
+      va_start(args, format);
+      rv = vfprintf(msc_fd[senderP], format, args);
+      va_end(args);
+      if (rv < 0) {
+         fprintf(stderr, "Error while logging MSC TX message : %s", &msc_proto2str[senderP][0]);
+      }
+      rv = fprintf(msc_fd[senderP], "\n");
+      if (rv < 0) {
+         fprintf(stderr, "Error while logging MSC TX message : %s", &msc_proto2str[senderP][0]);
+      }
+      if ((msc_event_counter & 0x000000000000000F) == 0x000000000000000F) {
+          fflush(msc_fd[senderP]);
+      }
+  }
+}
+
+//------------------------------------------------------------------------------
+void msc_log_tx_message_failed(
+    const msc_proto_t  senderP,
+    const msc_proto_t  receiverP,
+    const char*        bytesP,
+    const unsigned int num_bytes,
+    char *format, ...)
+//------------------------------------------------------------------------------
+{
+  va_list    args;
+  int        rv;
+  uint64_t   mac = 0;
+  uint64_t   local_msc_event_counter = msc_event_counter;
+
+  msc_event_counter++;
+
+  if ((receiverP < MIN_MSC_PROTOS) || (receiverP >= MAX_MSC_PROTOS) ||
+      (senderP < MIN_MSC_PROTOS)   || (senderP >= MAX_MSC_PROTOS)) {
+      return;
+  }
+  if (msc_fd[senderP] != NULL) {
+      rv = fprintf(msc_fd[senderP], "%"PRIu64" [MESSAGE] %d -x %d %"PRIu64" ",
                    local_msc_event_counter, senderP, receiverP, mac);
       if (rv < 0) {
          fprintf(stderr, "Error while logging MSC TX message : %s", &msc_proto2str[senderP][0]);
