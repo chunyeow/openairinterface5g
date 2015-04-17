@@ -67,6 +67,7 @@ extern int otg_enabled;
 #include "UTIL/OTG/otg_tx.h"
 #include "UTIL/FIFO/pad_list.h"
 #include "platform_constants.h"
+#include "msc.h"
 
 #include "assertions.h"
 
@@ -193,8 +194,27 @@ int pdcp_fifo_flush_sdus(const protocol_ctxt_t* const  ctxt_pP)
 
           if (ret<0) {
             LOG_D(PDCP, "[PDCP_FIFOS] sendmsg returns %d (errno: %d)\n", ret, errno);
-            mac_xface->macphy_exit("sendmsg failed for nas_sock_fd\n");
+      	    MSC_LOG_TX_MESSAGE_FAILED(
+      	      (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+      	      (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_IP_ENB:MSC_IP_UE,
+      	      NULL,
+      	      0,
+      	      MSC_AS_TIME_FMT" DATA-IND RNTI %"PRIx16" rb %u size %u",
+      	      MSC_AS_TIME_ARGS(ctxt_pP),
+      	      ((pdcp_data_ind_header_t *)(sdu_p->data))->rb_id,
+      	      ((pdcp_data_ind_header_t *)(sdu_p->data))->data_size);
+           mac_xface->macphy_exit("sendmsg failed for nas_sock_fd\n");
             break;
+          } else {
+        	  MSC_LOG_TX_MESSAGE(
+        	    (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+        	    (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_IP_ENB:MSC_IP_UE,
+        	    NULL,
+        	    0,
+        	    MSC_AS_TIME_FMT" DATA-IND RNTI %"PRIx16" rb %u size %u",
+        	    MSC_AS_TIME_ARGS(ctxt_pP),
+        	    ((pdcp_data_ind_header_t *)(sdu_p->data))->rb_id,
+        	    ((pdcp_data_ind_header_t *)(sdu_p->data))->data_size);
           }
 
 #endif // LINUX
@@ -504,6 +524,17 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
                       pdcp_read_header_g.rb_id);
 #endif
 
+          	    MSC_LOG_RX_MESSAGE(
+          	      (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+                  (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_IP_ENB:MSC_IP_UE,
+          	      NULL,
+          	      0,
+          	      MSC_AS_TIME_FMT" DATA-IND inst %u rb %u rab %u size %u",
+          	      MSC_AS_TIME_ARGS(ctxt_pP),
+                  pdcp_read_header_g.inst,
+          	      pdcp_read_header_g.rb_id,
+          	      rab_id,
+          	      pdcp_read_header_g.data_size);
                 LOG_D(PDCP, "[FRAME %5u][eNB][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %u]UE %u][RB %u]\n",
                       ctxt_cpy.frame,
                       pdcp_read_header_g.inst,
@@ -581,6 +612,17 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
                       ctxt.rnti,
                       rab_id);
 #endif
+          	    MSC_LOG_RX_MESSAGE(
+          	      (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+                  (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_IP_ENB:MSC_IP_UE,
+          	      NULL,
+          	      0,
+          	      MSC_AS_TIME_FMT" DATA-IND inst %u rb %u rab %u size %u",
+          	      MSC_AS_TIME_ARGS(ctxt_pP),
+                  pdcp_read_header_g.inst,
+          	      pdcp_read_header_g.rb_id,
+          	      rab_id,
+          	      pdcp_read_header_g.data_size);
 
                 pdcp_data_req(
                   &ctxt,
@@ -592,6 +634,17 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
                   (unsigned char *)NLMSG_DATA(nas_nlh_rx),
                   PDCP_TRANSMISSION_MODE_DATA);
               } else {
+            	MSC_LOG_RX_DISCARDED_MESSAGE(
+                  (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+                  (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_IP_ENB:MSC_IP_UE,
+                  NULL,
+                  0,
+                  MSC_AS_TIME_FMT" DATA-IND inst %u rb %u rab %u size %u",
+                  MSC_AS_TIME_ARGS(ctxt_pP),
+                  pdcp_read_header_g.inst,
+                  pdcp_read_header_g.rb_id,
+                  rab_id,
+                  pdcp_read_header_g.data_size);
                 LOG_D(PDCP,
                       "[FRAME %5u][UE][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ / %d Bytes ---X][PDCP][MOD %u][UE %u][RB %u] NON INSTANCIATED INSTANCE key 0x%"PRIx64", DROPPED\n",
                       ctxt.frame,
@@ -613,6 +666,17 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
                     ctxt.module_id,
                     ctxt.rnti,
                     DEFAULT_RAB_ID);
+          	  MSC_LOG_RX_MESSAGE(
+                (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
+                (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_IP_ENB:MSC_IP_UE,
+                NULL,0,
+                MSC_AS_TIME_FMT" DATA-IND inst %u rb %u default rab %u size %u",
+                MSC_AS_TIME_ARGS(ctxt_pP),
+                pdcp_read_header_g.inst,
+                pdcp_read_header_g.rb_id,
+                DEFAULT_RAB_ID,
+                pdcp_read_header_g.data_size);
+
               pdcp_data_req (
                 &ctxt,
                 SRB_FLAG_NO,
