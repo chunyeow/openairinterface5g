@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
    *  Create GTPv1u Stack Instance
    *--------------------------------------------------------------------------*/
 
-  rc = nwGtpv1uInitialize(&hGtpv1uStack);
+  rc = nwGtpv1uInitialize(&hGtpv1uStack, GTPU_STACK_ENB);
 
   if(rc != NW_GTPV1U_OK) {
     NW_LOG(NW_LOG_LEVEL_ERRO,

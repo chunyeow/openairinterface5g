@@ -47,6 +47,7 @@
 
 #include "assertions.h"
 #include "intertask_interface.h"
+#include "msc.h"
 
 #include "gtpv1u.h"
 #if defined(ENB_MODE)
@@ -556,9 +557,26 @@ nwGtpv1uProcessGpdu( NwGtpv1uStackT *thiz,
       GTPU_DEBUG("Received T-PDU over tunnel end-point '%x' of size %u (%u) (decapsulated %u)from "NW_IPV4_ADDR"\n",
                  ntohl(msgHdr->teid), gpduLen, pMsg->msgLen, pMsg->msgBufLen, NW_IPV4_ADDR_FORMAT((peerIp)));
 #endif
+	  MSC_LOG_RX_MESSAGE(
+        (thiz->stackType == GTPU_STACK_ENB) ? MSC_GTPU_ENB:MSC_GTPU_SGW,
+        (thiz->stackType == GTPU_STACK_ENB) ? MSC_GTPU_SGW:MSC_GTPU_ENB,
+        NULL,
+        0,
+        " G-PDU ltid %u size %u",
+        tunnelEndPointKey.teid,
+        gpduLen);
+
       rc = nwGtpSessionSendMsgApiToUlpEntity(pTunnelEndPoint, pMsg);
     }
   } else {
+	  MSC_LOG_RX_DISCARDED_MESSAGE(
+        (thiz->stackType == GTPU_STACK_ENB) ? MSC_GTPU_ENB:MSC_GTPU_SGW,
+        (thiz->stackType == GTPU_STACK_ENB) ? MSC_GTPU_SGW:MSC_GTPU_ENB,
+        NULL,
+        0,
+        " G-PDU ltid %u size %u",
+        tunnelEndPointKey.teid,
+        gpduLen);
     GTPU_ERROR("Received T-PDU over non-existent tunnel end-point '%x' from "NW_IPV4_ADDR"\n",
                ntohl(msgHdr->teid), NW_IPV4_ADDR_FORMAT((peerIp)));
   }
@@ -590,6 +608,13 @@ nwGtpv1uHandleEchoReq(NW_IN NwGtpv1uStackT *thiz,
 
   seqNum = ntohs(*(NwU16T *) (msgBuf + (((*msgBuf) & 0x02) ? 8 : 4)));
 
+  MSC_LOG_RX_MESSAGE(
+  	  (thiz->stackType == GTPU_STACK_ENB) ? MSC_GTPU_ENB:MSC_GTPU_SGW,
+  	  (thiz->stackType == GTPU_STACK_ENB) ? MSC_GTPU_SGW:MSC_GTPU_ENB,
+	  NULL,
+      0,
+	  MSC_AS_TIME_FMT" ECHO-REQ seq %u size %u",
+	  0,0,seqNum, msgBufLen);
   /* Send Echo Response */
 
   rc = nwGtpv1uMsgNew( (NwGtpv1uStackHandleT)thiz,
@@ -625,6 +650,13 @@ nwGtpv1uHandleEchoReq(NW_IN NwGtpv1uStackT *thiz,
             peerPort,
             seqNum);
 #endif
+  MSC_LOG_TX_MESSAGE(
+  	  (thiz->stackType == GTPU_STACK_ENB) ? MSC_GTPU_ENB:MSC_GTPU_SGW,
+  	  (thiz->stackType == GTPU_STACK_ENB) ? MSC_GTPU_SGW:MSC_GTPU_ENB,
+	  NULL,
+      0,
+	  MSC_AS_TIME_FMT" ECHO-RSP seq %u",
+	  0,0,seqNum);
   rc = nwGtpv1uCreateAndSendMsg(
          thiz,
          peerIp,
@@ -646,7 +678,7 @@ nwGtpv1uHandleEchoReq(NW_IN NwGtpv1uStackT *thiz,
  *--------------------------------------------------------------------------*/
 
 NwGtpv1uRcT
-nwGtpv1uInitialize( NW_INOUT NwGtpv1uStackHandleT *hGtpuStackHandle)
+nwGtpv1uInitialize( NW_INOUT NwGtpv1uStackHandleT *hGtpuStackHandle, NwU32T stackType)
 {
   NwGtpv1uRcT rc = NW_GTPV1U_FAILURE;
   NwGtpv1uStackT *thiz;
@@ -655,7 +687,8 @@ nwGtpv1uInitialize( NW_INOUT NwGtpv1uStackHandleT *hGtpuStackHandle)
   memset(thiz, 0, sizeof(NwGtpv1uStackT));
 
   if(thiz) {
-    thiz->id    = (NwU32T) thiz;
+	thiz->id    = (NwU32T) thiz;
+	thiz->stackType = (NwU32T) stackType;
     thiz->seq   = (NwU16T) ((NwU32T)thiz) ;
     RB_INIT(&(thiz->outstandingTxSeqNumMap));
     RB_INIT(&(thiz->outstandingRxSeqNumMap));

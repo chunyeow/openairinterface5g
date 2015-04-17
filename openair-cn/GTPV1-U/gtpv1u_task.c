@@ -601,7 +601,7 @@ int gtpv1u_init(const mme_config_t *mme_config_p)
   }
 
   /* Initializing GTPv1-U stack */
-  if ((rc = nwGtpv1uInitialize(&gtpv1u_sgw_data.gtpv1u_stack)) != NW_GTPV1U_OK) {
+  if ((rc = nwGtpv1uInitialize(&gtpv1u_sgw_data.gtpv1u_stack, GTPU_STACK_SGW)) != NW_GTPV1U_OK) {
     GTPU_ERROR("Failed to setup nwGtpv1u stack %x\n", rc);
     return -1;
   }

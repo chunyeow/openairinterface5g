@@ -675,6 +675,16 @@ gtpv1u_create_s1u_tunnel(
   in_addr_t                in_addr;
   int                      addrs_length_in_bytes= 0;
 
+
+  MSC_LOG_RX_MESSAGE(
+		  MSC_GTPU_ENB,
+		  MSC_RRC_ENB,
+		  NULL,0,
+		  MSC_AS_TIME_FMT" CREATE_TUNNEL_REQ RNTI %"PRIx16" inst %u ntuns %u ebid %u sgw-s1u teid %u",
+		  0,0,create_tunnel_req_pP->rnti, instanceP,
+		  create_tunnel_req_pP->num_tunnels, create_tunnel_req_pP->eps_bearer_id[0],
+		  create_tunnel_req_pP->sgw_S1u_teid[0]);
+
   message_p = itti_alloc_new_message(TASK_GTPV1_U, GTPV1U_ENB_CREATE_TUNNEL_RESP);
   GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).rnti        = create_tunnel_req_pP->rnti;
   GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).status      = 0;
@@ -891,7 +901,7 @@ static int gtpv1u_eNB_init(void)
   gtpv1u_data_g.restart_counter = 0;
 
   /* Initializing GTPv1-U stack */
-  if ((rc = nwGtpv1uInitialize(&gtpv1u_data_g.gtpv1u_stack)) != NW_GTPV1U_OK) {
+  if ((rc = nwGtpv1uInitialize(&gtpv1u_data_g.gtpv1u_stack, GTPU_STACK_ENB)) != NW_GTPV1U_OK) {
     LOG_E(GTPU, "Failed to setup nwGtpv1u stack %x\n", rc);
     return -1;
   }

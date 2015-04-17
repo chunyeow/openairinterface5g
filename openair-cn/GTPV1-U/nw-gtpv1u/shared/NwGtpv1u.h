@@ -381,10 +381,11 @@ extern "C" {
  Initialize the nw-gtpv1u stack.
 
  @param[in,out] phGtpv1uStackHandle : Pointer to stack handle
+ @param[in]     stackType : GTPU_STACK_ENB or GTPU_STACK_SGW
  */
 
 NwGtpv1uRcT
-nwGtpv1uInitialize( NW_INOUT NwGtpv1uStackHandleT* phGtpv1uStackHandle);
+nwGtpv1uInitialize( NW_INOUT NwGtpv1uStackHandleT* phGtpv1uStackHandle, NwU32T stackType);
 
 /*---------------------------------------------------------------------------
  * Destructor

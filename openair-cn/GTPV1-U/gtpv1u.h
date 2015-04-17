@@ -36,6 +36,9 @@
 #ifndef GTPV1_U_H_
 #define GTPV1_U_H_
 
+#define GTPU_STACK_ENB 0
+#define GTPU_STACK_SGW 1
+
 /* When gtpv1u is compiled for eNB use MACRO from UTILS/log.h,
  * otherwise use standard fprintf as logger.
  */
