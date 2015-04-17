@@ -69,7 +69,15 @@
 // This table holds the allowable PRB sizes for ULSCH transmissions
 uint8_t rb_table[33] = {1,2,3,4,5,6,8,9,10,12,15,16,18,20,24,25,27,30,32,36,40,45,48,50,54,60,72,75,80,81,90,96,100};
 
-void rx_sdu(module_id_t enb_mod_idP,int CC_idP,frame_t frameP,rnti_t rntiP,uint8_t *sduP, uint16_t sdu_lenP,int harq_pidP,uint8_t *msg3_flagP)
+void rx_sdu(
+         const module_id_t enb_mod_idP,
+         const int         CC_idP,
+         const frame_t     frameP,
+         const rnti_t      rntiP,
+         uint8_t          *sduP,
+         const uint16_t    sdu_lenP,
+         const int         harq_pidP,
+         uint8_t          *msg3_flagP)
 {
 
   unsigned char  rx_ces[MAX_NUM_CE],num_ce,num_sdu,i,*payload_ptr;

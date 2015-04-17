@@ -275,7 +275,7 @@ void cancel_ra_proc(module_id_t module_idP,int CC_id,frame_t frameP, uint16_t pr
 @param harq_pid Index of harq process corresponding to this sdu
 @param msg3_flag flag indicating that this sdu is msg3
 */
-void rx_sdu(module_id_t module_idP, int CC_id,frame_t frameP, rnti_t rnti, uint8_t *sdu, uint16_t sdu_len, int harq_pid,uint8_t *msg3_flag);
+void rx_sdu(const module_id_t module_idP, const int CC_id,const frame_t frameP, const rnti_t rnti, uint8_t *sdu, const uint16_t sdu_len, const int harq_pid,uint8_t *msg3_flag);
 
 /* \brief Function to indicate a scheduled schduling request (SR) was received by eNB.
 @param Mod_id Instance ID of eNB
