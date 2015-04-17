@@ -230,7 +230,7 @@ function main()
   if [ $? -ne 0 ]; then
     $SUDO echo "200 lte " >> /etc/iproute2/rt_tables
   fi
-  $SUDO ip rule add fwmark 5 table lte
+  $SUDO ip rule add fwmark 1 table lte
   $SUDO ip route add default dev oip1 table lte
 
   exe_arguments="$exe_arguments -s15 -AAWGN -y1 -b1 -u1 -Q0"
