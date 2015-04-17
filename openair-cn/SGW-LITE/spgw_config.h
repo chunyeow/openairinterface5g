@@ -100,6 +100,7 @@ typedef struct sgw_config_s {
 
   uint8_t       sgw_drop_uplink_traffic;
   uint8_t       sgw_drop_downlink_traffic;
+  uint8_t       local_to_eNB;
 } sgw_config_t;
 
 // may be more

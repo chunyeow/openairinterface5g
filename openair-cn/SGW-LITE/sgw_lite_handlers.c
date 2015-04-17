@@ -655,7 +655,6 @@ sgw_lite_handle_sgi_endpoint_updated(
   task_id_t                                          to_task;
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
   static uint8_t                                     iptable_uplink_remove_gtpu = FALSE;
-  char                                              *chain                  = NULL;
   char                                               cmd[256];
   int                                                ret;
 #endif
@@ -715,7 +714,8 @@ sgw_lite_handle_sgi_endpoint_updated(
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
       ret = snprintf(cmd,
                      256,
-                     "iptables -t mangle -I POSTROUTING -d %u.%u.%u.%u -m mark --mark %u -j GTPUAH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action add",
+                     "iptables -t mangle -I %s -d %u.%u.%u.%u -m mark --mark %u -j GTPUAH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action add",
+                     (spgw_config.sgw_config.local_to_eNB) ? "INPUT":"POSTROUTING",
                      eps_bearer_entry_p->paa.ipv4_address[0],
                      eps_bearer_entry_p->paa.ipv4_address[1],
                      eps_bearer_entry_p->paa.ipv4_address[2],
@@ -751,7 +751,8 @@ sgw_lite_handle_sgi_endpoint_updated(
       if ((resp_pP->eps_bearer_id == 5) && (spgw_config.pgw_config.pgw_masquerade_SGI == 0)) {
         ret = snprintf(cmd,
                        256,
-                       "iptables -t mangle -A POSTROUTING -d %u.%u.%u.%u -m mark --mark 0 -j GTPUAH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action add",
+                       "iptables -t mangle -A %s -d %u.%u.%u.%u -m mark --mark 0 -j GTPUAH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action add",
+                       (spgw_config.sgw_config.local_to_eNB) ? "INPUT":"POSTROUTING",
                        eps_bearer_entry_p->paa.ipv4_address[0],
                        eps_bearer_entry_p->paa.ipv4_address[1],
                        eps_bearer_entry_p->paa.ipv4_address[2],
@@ -778,16 +779,10 @@ sgw_lite_handle_sgi_endpoint_updated(
       }
 
       if (iptable_uplink_remove_gtpu == FALSE) {
-        if (strncasecmp("tun",spgw_config.sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up, strlen("tun")) == 0) {
-          chain = "OUTPUT";
-        } else {
-          chain = "PREROUTING";
-        }
-
         ret = snprintf(cmd,
                        256,
                        "iptables -t raw -I %s -s %u.%u.%u.%u -d %u.%u.%u.%u -p udp --dport 2152 -j GTPURH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action remove",
-                       chain,
+                       (spgw_config.sgw_config.local_to_eNB) ? "OUTPUT":"PREROUTING",
                        eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
                        eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[1],
                        eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[2],

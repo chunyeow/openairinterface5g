@@ -162,6 +162,7 @@ int spgw_config_process(spgw_config_t* config_pP)
   int               ret = 0;
 
   if (strncasecmp("tun",config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up, strlen("tun")) == 0) {
+	config_pP->sgw_config.local_to_eNB = TRUE;
     if (snprintf(system_cmd, 256,
                  "ip link set %s down ;sync;openvpn --rmtun --dev %s;sync",
                  config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up,
@@ -232,6 +233,7 @@ int spgw_config_process(spgw_config_t* config_pP)
       ret = -1;
     }
   } else {
+	config_pP->sgw_config.local_to_eNB = FALSE;
     if (snprintf(system_cmd, 256,
                  "insmod $OPENAIR_TARGETS/bin/xt_GTPUAH.ko tunnel_local=0 gtpu_port=%u mtu=%u",
                  config_pP->sgw_config.sgw_udp_port_for_S1u_S12_S4_up,
@@ -298,31 +300,41 @@ int spgw_config_process(spgw_config_t* config_pP)
   //    }
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
 
-  if (snprintf(system_cmd, 256,
+  if (config_pP->sgw_config.local_to_eNB) {
+	if (snprintf(system_cmd, 256,
+	             "iptables -I OUTPUT -t mangle -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark") > 0) {
+	  ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+	} else {
+	  SPGW_APP_ERROR("Save mark\n");
+	  ret = -1;
+	}
+	if (snprintf(system_cmd, 256,
+	               "iptables -I INPUT -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
+	               config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
+	  ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+	} else {
+	  SPGW_APP_ERROR("Restore mark\n");
+	  ret = -1;
+	}
+  } else {
+    if (snprintf(system_cmd, 256,
                "iptables -I POSTROUTING -t mangle -o %s -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
                config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
-    ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-  } else {
-    SPGW_APP_ERROR("Save mark\n");
-    ret = -1;
+      ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+    } else {
+      SPGW_APP_ERROR("Save mark\n");
+      ret = -1;
+    }
+    if (snprintf(system_cmd, 256,
+                 "iptables -I PREROUTING -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
+                 config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
+      ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+    } else {
+      SPGW_APP_ERROR("Restore mark\n");
+      ret = -1;
+    }
   }
 
-  if (snprintf(system_cmd, 256,
-               "iptables -I OUTPUT -t mangle -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark") > 0) {
-    ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-  } else {
-    SPGW_APP_ERROR("Save mark\n");
-    ret = -1;
-  }
-
-  if (snprintf(system_cmd, 256,
-               "iptables -I PREROUTING -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
-               config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
-    ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-  } else {
-    SPGW_APP_ERROR("Restore mark\n");
-    ret = -1;
-  }
 
 #endif
   return ret;
