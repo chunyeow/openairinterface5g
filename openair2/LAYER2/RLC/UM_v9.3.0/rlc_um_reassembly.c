@@ -136,9 +136,9 @@ rlc_um_send_sdu (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t *rlc_pP)
         (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
         (const char*)(rlc_pP->output_sdu_in_construction->data),
         rlc_pP->output_sdu_size_to_write,
-        MSC_AS_TIME_FMT" "PROTOCOL_RLC_UM_CTXT_FMT" DATA-IND size %u",
+        MSC_AS_TIME_FMT" "PROTOCOL_RLC_UM_MSC_FMT" DATA-IND size %u",
         MSC_AS_TIME_ARGS(ctxt_pP),
-        PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP),
+        PROTOCOL_RLC_UM_MSC_ARGS(ctxt_pP,rlc_pP),
         rlc_pP->output_sdu_size_to_write
       );
 
