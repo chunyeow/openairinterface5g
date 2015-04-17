@@ -80,7 +80,7 @@
           rLC_Pp->rb_id,\
           __FUNCTION__
 
-#define PROTOCOL_RLC_UM_MSC_FMT "[%s %02u]"
+#define PROTOCOL_RLC_UM_MSC_FMT "[RNTI %"PRIx16" %s %02u]"
 #define PROTOCOL_RLC_UM_MSC_ARGS(CTXT_Pp, rLC_Pp) \
         CTXT_Pp->rnti,\
           (rLC_Pp->is_data_plane) ? "DRB UM" : "SRB UM",\

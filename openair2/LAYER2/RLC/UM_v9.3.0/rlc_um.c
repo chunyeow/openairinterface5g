@@ -722,8 +722,8 @@ rlc_um_data_req (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP, mem_block_t
   MSC_LOG_RX_MESSAGE(
     (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
     (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
-    (const char *)((struct rlc_um_tx_sdu_management*) (sdu_pP->data))->first_byte,
-    ((struct rlc_um_tx_sdu_management*) (sdu_pP->data))->sdu_size,
+    NULL,
+    0,
     MSC_AS_TIME_FMT" "PROTOCOL_RLC_UM_MSC_FMT" DATA-REQ size %u",
     MSC_AS_TIME_ARGS(ctxt_pP),
     PROTOCOL_RLC_UM_MSC_ARGS(ctxt_pP, rlc_p),
