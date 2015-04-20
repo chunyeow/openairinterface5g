@@ -221,7 +221,7 @@ function main()
   $SUDO rmmod ue_ip > /dev/null 2>&1
 
   echo_success "Bringup UE interface..."
-  $SUDO insmod  $OPENAIR_DIR/targets/bin/ue_ip.ko
+  $SUDO insmod  $OPENAIR_DIR/targets/bin/ue_ip.ko 
 
   $SUDO ip route flush cache
 
