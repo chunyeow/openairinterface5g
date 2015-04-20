@@ -30,25 +30,29 @@ g_messages         = {}
 
 
 # Display color of messages of sending entities
-g_display_color  = ['\"teal\"',
-                    '\"red\"',
-                    '\"red\"',
-                    '\"blue\"',
-                    '\"navy\"',
-                    '\"navy\"',
-                    '\"navy\"',
-                    '\"indigo\"',
-                    '\"indigo\"',
-                    '\"indigo\"',
-                    '\"black\"',
-                    '\"black\"',
-                    '\"black\"',
-                    '\"black\"',
-                    '\"black\"',
-                    '\"black\"',
-                    '\"black\"',
-                    '\"black\"',
-                    '\"black\"']
+g_display_color  = ['\"teal\"',   # To check in msc.h: MSC_NAS_UE
+                    '\"red\"',    # To check in msc.h: MSC_RRC_UE
+                    '\"red\"',    # To check in msc.h: MSC_NAS_UE
+                    '\"red\"',    # To check in msc.h: MSC_PDCP_UE
+                    '\"red\"',    # To check in msc.h: MSC_RLC_UE
+                    '\"red\"',    # To check in msc.h: MSC_MAC_UE
+                    '\"red\"',    # To check in msc.h: MSC_PHY_UE
+                    '\"indigo\"', # To check in msc.h: MSC_PHY_ENB
+                    '\"indigo\"', # To check in msc.h: MSC_MAC_ENB
+                    '\"indigo\"', # To check in msc.h: MSC_RLC_ENB
+                    '\"indigo\"', # To check in msc.h: MSC_PDCP_ENB
+                    '\"orange\"', # To check in msc.h: MSC_RRC_ENB
+                    '\"black\"',  # To check in msc.h: MSC_IP_ENB
+                    '\"black\"',  # To check in msc.h: MSC_S1AP_ENB
+                    '\"black\"',  # To check in msc.h: MSC_GTPU_ENB
+                    '\"black\"',  # To check in msc.h: MSC_GTPU_SGW
+                    '\"black\"',  # To check in msc.h: MSC_S1AP_MME
+                    '\"black\"',  # To check in msc.h: MSC_MMEAPP_MME
+                    '\"black\"',  # To check in msc.h: MSC_NAS_MME
+                    '\"black\"',  # To check in msc.h: MSC_NAS_EMM_MME
+                    '\"black\"',  # To check in msc.h: MSC_NAS_ESM_MME
+                    '\"black\"',  # To check in msc.h: MSC_S6A_MME
+                    '\"black\"']  # To check in msc.h: MSC_HSS
 
 
 
