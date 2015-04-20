@@ -80,15 +80,18 @@ yang@yang:~/openair4G/trunk/cmake_targets/tools$ sudo ./run_epc -l -g  -K
 
 
 Building eNB:
-yang@yang:~/openair4G/trunk/cmake_targets$ ./build_oai --eNB
+yang@yang:~/openair4G/trunk/cmake_targets$ ./build_oai --oaisim
 
 Configuring the eNB:
   The default configuration file for the eNB is trunk/targets/PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.generic.oaisim.local_mme.conf
 
 Running eNB:
-yang@yang:~/openair4G/trunk/cmake_targets$ tools/run_enb_ue_virt_s1 -K /tmp/enb_ue_virt_s1_itti.log
+yang@yang:~/openair4G/trunk/cmake_targets$ tools/run_enb_ue_virt_s1 -m /tmp -K /tmp/enb_ue_virt_s1_itti.log
 
 
+Putting some IP UL/DL traffic in the bearer:
+ping -s 1000 -m 1 192.168.12.100 -I oip1
+ 
 
 ################
 Tools available:
