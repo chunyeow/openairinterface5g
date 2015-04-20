@@ -629,7 +629,7 @@ rlc_um_start_timer_reordering(
 #if defined (TRACE_RLC_UM_DAR)
     LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" [T-REORDERING] STARTED (TIME-OUT = FRAME %05u)\n",
           PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
-        rlc_pP->t_reordering.frame_time_out);
+        rlc_pP->t_reordering.ms_time_out);
 #endif
   } else {
     LOG_T(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[T-REORDERING] NOT STARTED, CAUSE CONFIGURED 0 ms\n",
@@ -702,7 +702,7 @@ void rlc_um_check_timer_dar_time_out(
             PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP));
       LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" timer_reordering=%d frame=%d expire ms %d\n",
             PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP, rlc_pP),
-            rlc_pP->t_reordering.time_out,
+            rlc_pP->t_reordering.ms_duration,
             ctxt_pP->frame,
             rlc_pP->t_reordering.ms_time_out);
       LOG_D(RLC, PROTOCOL_RLC_UM_CTXT_FMT" set VR(UR)=%03d to",
