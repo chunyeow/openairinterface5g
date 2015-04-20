@@ -99,6 +99,7 @@ L2_INTERFACE_OBJS = $(L2_INTERFACE_DIR)/openair_rrc_L2_interface.o
 L2_OBJS=$(addsuffix .o,$(basename $(SOURCES_L2))) $(PHY_INTERFACE_OBJS) $(MAC_OBJS) $(L2_INTERFACE_OBJS)
 
 L2_incl =  -I$(OPENAIR2_TOP)
+L2_incl =  -I$(OPENAIR_DIR)/common/utils/msc
 L2_incl += -I$(COMMON_DIR)
 L2_incl += -I$(RLC_DIR)
 L2_incl += -I$(RLC_AM_DIR)
