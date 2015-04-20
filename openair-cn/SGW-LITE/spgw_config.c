@@ -262,17 +262,7 @@ int spgw_config_process(spgw_config_t* config_pP)
     ret = -1;
   }
 
-  if (config_pP->sgw_config.sgw_drop_uplink_traffic) {
-    if (snprintf(system_cmd, 256,
-                 "iptables -t raw -I PREROUTING  -i %s --protocol udp --destination-port 2152  -j DROP",
-                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
-      SPGW_APP_INFO("Drop uplink traffic: %s\n",system_cmd);
-      ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    } else {
-      SPGW_APP_ERROR("Drop uplink traffic\n");
-      ret = -1;
-    }
-  }
+
 
   if (snprintf(system_cmd, 256,
                "ethtool -K %s tso off gso off gro off",
@@ -285,56 +275,43 @@ int spgw_config_process(spgw_config_t* config_pP)
   }
 
 
-  //    if (config_pP->pgw_config.pgw_masquerade_SGI) {
-  //        inaddr.s_addr = config_pP->pgw_config.ipv4.pgw_ipv4_address_for_SGI;
-  //        if (snprintf(system_cmd, 256,
-  //                     "iptables -t nat -I POSTROUTING  -o %s  ! --protocol sctp -j SNAT --to-source %s",
-  //                     config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI,
-  //                     inet_ntoa(inaddr)) > 0) {
-  //            SPGW_APP_INFO("Masquerade SGI: %s\n",system_cmd);
-  //            ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-  //        } else {
-  //            SPGW_APP_ERROR("Masquerade SGI\n");
-  //            ret = -1;
-  //        }
-  //    }
+
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
 
   if (config_pP->sgw_config.local_to_eNB) {
 	if (snprintf(system_cmd, 256,
-	             "iptables -I OUTPUT -t mangle -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark") > 0) {
+	             "iptables -I OUTPUT -t mangle -m mark ! --mark 0 -j CONNMARK --save-mark") > 0) {
 	  ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
 	} else {
 	  SPGW_APP_ERROR("Save mark\n");
 	  ret = -1;
 	}
-	if (snprintf(system_cmd, 256,
-	               "iptables -I INPUT -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
-	               config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
-	  ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-	} else {
-	  SPGW_APP_ERROR("Restore mark\n");
-	  ret = -1;
-	}
   } else {
     if (snprintf(system_cmd, 256,
-               "iptables -I POSTROUTING -t mangle -o %s -m mark ! --mark 0 ! --protocol sctp  -j CONNMARK --save-mark",
+               "iptables -I POSTROUTING -t mangle -o %s -m mark ! --mark 0   -j CONNMARK --save-mark",
                config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
       ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
     } else {
       SPGW_APP_ERROR("Save mark\n");
       ret = -1;
     }
-    if (snprintf(system_cmd, 256,
-                 "iptables -I PREROUTING -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
-                 config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
-      ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    } else {
-      SPGW_APP_ERROR("Restore mark\n");
-      ret = -1;
-    }
   }
-
+  if (snprintf(system_cmd, 256,
+	               "iptables -I INPUT -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
+	               config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
+    ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+  } else {
+	SPGW_APP_ERROR("Restore mark\n");
+	ret = -1;
+  }
+  if (snprintf(system_cmd, 256,
+               "iptables -I PREROUTING -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
+               config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
+    ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+  } else {
+    SPGW_APP_ERROR("Restore mark\n");
+    ret = -1;
+  }
 
 #endif
   return ret;
@@ -617,25 +594,6 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP)
                 SPGW_APP_ERROR("Add route: for %s\n", astring);
               }
 
-
-              if (config_pP->sgw_config.sgw_drop_downlink_traffic) {
-                if (snprintf(system_cmd, 128,
-                             "iptables -t filter -I FORWARD  -d %s/%s  -j DROP",
-                             astring, atoken2) > 0) {
-                  spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-                } else {
-                  SPGW_APP_ERROR("Drop downlink traffic\n");
-                }
-
-                if (snprintf(system_cmd, 128,
-                             "iptables -t filter -I OUTPUT  -d %s/%s  -j DROP",
-                             astring, atoken2) > 0) {
-                  spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-                } else {
-                  SPGW_APP_ERROR("Drop downlink traffic\n");
-                }
-              }
-
 #endif
               prefix_mask = atoi(atoken2);
 
@@ -667,10 +625,11 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP)
                   in_addr_var.s_addr = config_pP->pgw_config.ipv4.pgw_ipv4_address_for_SGI;
 
                   if (snprintf(system_cmd, 256,
-                               "iptables -t nat -I POSTROUTING -s %s/%s -o %s  ! --protocol sctp -j SNAT --to-source %s",
+                               //"iptables -t nat -I POSTROUTING -s %s/%s -o %s  ! --protocol sctp -j SNAT --to-source %s",
+                               "iptables -t nat -I POSTROUTING -s %s/%s  ! --protocol sctp -j SNAT --to-source %s",
                                astring,
                                atoken2,
-                               config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI,
+                               //config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI,
                                inet_ntoa(in_addr_var)) > 0) {
                     SPGW_APP_INFO("Masquerade SGI: %s\n",system_cmd);
                     spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);

@@ -712,6 +712,42 @@ sgw_lite_handle_sgi_endpoint_updated(
       modify_response_p->cause                                                = REQUEST_ACCEPTED;
       modify_response_p->trxn                                                 = new_bearer_ctxt_info_p->sgw_eps_bearer_context_information.trxn;
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
+      // if default bearer
+#warning "TODO define constant for default eps_bearer id"
+
+      //if ((resp_pP->eps_bearer_id == 5) && (spgw_config.pgw_config.pgw_masquerade_SGI == 0)) {
+      if (resp_pP->eps_bearer_id == 5) {
+        ret = snprintf(cmd,
+                       256,
+                       "iptables -t mangle -I %s -d %u.%u.%u.%u -m mark --mark 0 -j GTPUAH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action add",
+                       (spgw_config.sgw_config.local_to_eNB) ? "INPUT":"POSTROUTING",
+                       eps_bearer_entry_p->paa.ipv4_address[0],
+                       eps_bearer_entry_p->paa.ipv4_address[1],
+                       eps_bearer_entry_p->paa.ipv4_address[2],
+                       eps_bearer_entry_p->paa.ipv4_address[3],
+                       sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x000000FF,
+                       (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x0000FF00) >> 8,
+                       (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x00FF0000) >> 16,
+                       (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0xFF000000) >> 24,
+                       eps_bearer_entry_p->s_gw_teid_for_S1u_S12_S4_up,
+                       eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
+                       eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[1],
+                       eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[2],
+                       eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[3],
+                       eps_bearer_entry_p->enb_teid_for_S1u
+                      );
+
+        if ((ret < 0) || (ret > 256)) {
+          SPGW_APP_ERROR("ERROR in preparing default downlink tunnel, tune string length\n");
+          exit (-1);
+        }
+        //use API when prototype validated
+        ret = spgw_system(cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+        if (ret < 0) {
+          SPGW_APP_ERROR("ERROR in setting up default downlink TUNNEL\n");
+        }
+      }
+      //-------------------------
       ret = snprintf(cmd,
                      256,
                      "iptables -t mangle -I %s -d %u.%u.%u.%u -m mark --mark %u -j GTPUAH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action add",
@@ -745,38 +781,6 @@ sgw_lite_handle_sgi_endpoint_updated(
         SPGW_APP_ERROR("ERROR in setting up downlink TUNNEL\n");
       }
 
-      // if default bearer
-#warning "TODO define constant for default eps_bearer id"
-
-      if ((resp_pP->eps_bearer_id == 5) && (spgw_config.pgw_config.pgw_masquerade_SGI == 0)) {
-        ret = snprintf(cmd,
-                       256,
-                       "iptables -t mangle -A %s -d %u.%u.%u.%u -m mark --mark 0 -j GTPUAH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action add",
-                       (spgw_config.sgw_config.local_to_eNB) ? "INPUT":"POSTROUTING",
-                       eps_bearer_entry_p->paa.ipv4_address[0],
-                       eps_bearer_entry_p->paa.ipv4_address[1],
-                       eps_bearer_entry_p->paa.ipv4_address[2],
-                       eps_bearer_entry_p->paa.ipv4_address[3],
-                       sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x000000FF,
-                       (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x0000FF00) >> 8,
-                       (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0x00FF0000) >> 16,
-                       (sgw_app.sgw_ip_address_for_S1u_S12_S4_up & 0xFF000000) >> 24,
-                       eps_bearer_entry_p->s_gw_teid_for_S1u_S12_S4_up,
-                       eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[0],
-                       eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[1],
-                       eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[2],
-                       eps_bearer_entry_p->enb_ip_address_for_S1u.address.ipv4_address[3],
-                       eps_bearer_entry_p->enb_teid_for_S1u
-                      );
-
-        if ((ret < 0) || (ret > 256)) {
-          SPGW_APP_ERROR("ERROR in preparing downlink tunnel, tune string length\n");
-          exit (-1);
-        }
-
-        //use API when prototype validated
-        ret = spgw_system(cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-      }
 
       if (iptable_uplink_remove_gtpu == FALSE) {
         ret = snprintf(cmd,
