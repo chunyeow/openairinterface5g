@@ -380,6 +380,7 @@ set(emm_HDR
 add_library(emm ${emm_SRC} ${emm_HDR})
 
 target_include_directories(emm PRIVATE 
+                     ${OPENAIR_DIR}/common/utils/msc 
                      ${OPENAIR_NAS_DIR}/src/api/usim 
                      ${OPENAIR_NAS_DIR}/src/api/mme 
                      ${OPENAIR_NAS_DIR}/src/emm
@@ -653,6 +654,7 @@ target_include_directories(ies PRIVATE
 # EXECUTABLE at_nas_ue
 ################################################################################
 include_directories( 
+                     ${OPENAIR_DIR}/common/utils/msc 
                      ${OPENAIRCN_DIR}/COMMON 
                      ${OPENAIRCN_DIR}/SECU 
                      ${OPENAIR_NAS_DIR}/src 
