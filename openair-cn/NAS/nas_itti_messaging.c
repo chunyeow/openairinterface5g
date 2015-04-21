@@ -30,6 +30,7 @@
 
 #include "intertask_interface.h"
 #include "nas_itti_messaging.h"
+#include "msc.h"
 
 #if ((defined(NAS_BUILT_IN_EPC) && defined(NAS_MME)) || (defined(NAS_BUILT_IN_UE) && defined(NAS_UE)))
 # if (defined(NAS_BUILT_IN_EPC) && defined(NAS_MME))
@@ -200,6 +201,12 @@ int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
   NAS_DL_DATA_REQ(message_p).nasMsg.data   = data;
   NAS_DL_DATA_REQ(message_p).nasMsg.length = length;
 
+  MSC_LOG_TX_MESSAGE(
+  	  	MSC_NAS_MME,
+  	  	MSC_S1AP_MME,
+  	  	NULL,0,
+  	  	"0 NAS_DOWNLINK_DATA_REQ ue id %u len %u", ue_id, length);
+
   return itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
 }
 
@@ -217,6 +224,14 @@ int nas_itti_cell_info_req(const plmn_t plmnID, const Byte_t rat)
   NAS_CELL_SELECTION_REQ(message_p).plmnID    = plmnID;
   NAS_CELL_SELECTION_REQ(message_p).rat       = rat;
 
+  MSC_LOG_TX_MESSAGE(
+  	  MSC_NAS_UE,
+  	  MSC_RRC_UE,
+  	  NULL,0,
+  	  "0 NAS_CELL_SELECTION_REQ PLMN %X%X%X.%X%X%X",
+  	  plmnID.MCCdigit1, plmnID.MCCdigit2, plmnID.MCCdigit3,
+  	  plmnID.MNCdigit1, plmnID.MNCdigit2, plmnID.MNCdigit3);
+
   return itti_send_msg_to_task(TASK_RRC_UE, NB_eNB_INST + 0 /* TODO to be virtualized */, message_p);
 }
 
@@ -232,6 +247,15 @@ int nas_itti_nas_establish_req(as_cause_t cause, as_call_type_t type, as_stmsi_t
   NAS_CONN_ESTABLI_REQ(message_p).plmnID                      = plmnID;
   NAS_CONN_ESTABLI_REQ(message_p).initialNasMsg.data          = data;
   NAS_CONN_ESTABLI_REQ(message_p).initialNasMsg.length        = length;
+
+  MSC_LOG_TX_MESSAGE(
+		  MSC_NAS_UE,
+		  MSC_RRC_UE,
+  	      NULL,0,
+  	     "0 NAS_CONN_ESTABLI_REQ MME code %u m-TMSI %u PLMN %X%X%X.%X%X%X",
+  	     s_tmsi.MMEcode, s_tmsi.m_tmsi,
+  	     plmnID.MCCdigit1, plmnID.MCCdigit2, plmnID.MCCdigit3,
+  	     plmnID.MNCdigit1, plmnID.MNCdigit2, plmnID.MNCdigit3);
 
   return itti_send_msg_to_task(TASK_RRC_UE, NB_eNB_INST + 0 /* TODO to be virtualized */, message_p);
 }
@@ -259,6 +283,12 @@ int nas_itti_rab_establish_rsp(const as_stmsi_t s_tmsi, const as_rab_id_t rabID,
   NAS_RAB_ESTABLI_RSP(message_p).rabID        = rabID;
   NAS_RAB_ESTABLI_RSP(message_p).errCode      = errCode;
 
+  MSC_LOG_TX_MESSAGE(
+		  MSC_NAS_UE,
+		  MSC_RRC_UE,
+  	      NULL,0,
+  	     "0 NAS_RAB_ESTABLI_RSP MME code %u m-TMSI %u rb id %u status %u",
+  	     s_tmsi.MMEcode, s_tmsi.m_tmsi,rabID, errCode );
   return itti_send_msg_to_task(TASK_RRC_UE, NB_eNB_INST + 0 /* TODO to be virtualized */, message_p);
 }
 #endif

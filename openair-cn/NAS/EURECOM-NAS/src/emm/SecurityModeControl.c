@@ -72,6 +72,7 @@ Description Defines the security mode control EMM procedure executed by the
 # include "assertions.h"
 #endif
 #include "secu_defs.h"
+#include "msc.h"
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -582,6 +583,11 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi,
       /*
        * Notify EMM that common procedure has been initiated
        */
+      MSC_LOG_TX_MESSAGE(
+      	  		MSC_NAS_EMM_MME,
+      	  	  	MSC_NAS_EMM_MME,
+      	  	  	NULL,0,
+      	  	  	"0 EMMREG_COMMON_PROC_REQ ue id %u (security mode control)", ueid);
       emm_sap_t emm_sap;
       emm_sap.primitive = EMMREG_COMMON_PROC_REQ;
       emm_sap.u.emm_reg.ueid = ueid;
@@ -656,6 +662,11 @@ int emm_proc_security_mode_complete(unsigned int ueid)
     /*
      * Notify EMM that the authentication procedure successfully completed
      */
+    MSC_LOG_TX_MESSAGE(
+      	  		MSC_NAS_EMM_MME,
+      	  	  	MSC_NAS_EMM_MME,
+      	  	  	NULL,0,
+      	  	  	"0 EMMREG_COMMON_PROC_CNF ue id %u (security mode complete)", ueid);
     emm_sap.primitive = EMMREG_COMMON_PROC_CNF;
     emm_sap.u.emm_reg.ueid = ueid;
     emm_sap.u.emm_reg.ctx  = emm_ctx;
@@ -665,6 +676,11 @@ int emm_proc_security_mode_complete(unsigned int ueid)
     /*
      * Notify EMM that the authentication procedure failed
      */
+    MSC_LOG_TX_MESSAGE(
+      	  		MSC_NAS_EMM_MME,
+      	  	  	MSC_NAS_EMM_MME,
+      	  	  	NULL,0,
+      	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %u (security mode complete)", ueid);
     emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
     emm_sap.u.emm_reg.ueid = ueid;
     emm_sap.u.emm_reg.ctx  = emm_ctx;
@@ -750,6 +766,11 @@ int emm_proc_security_mode_reject(unsigned int ueid)
   /*
    * Notify EMM that the authentication procedure failed
    */
+  MSC_LOG_TX_MESSAGE(
+    	  		MSC_NAS_EMM_MME,
+    	  	  	MSC_NAS_EMM_MME,
+    	  	  	NULL,0,
+    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %u (security mode reject)", ueid);
   emm_sap_t emm_sap;
   emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
   emm_sap.u.emm_reg.ueid = ueid;
@@ -1091,6 +1112,11 @@ int _security_request(security_data_t *data, int is_new)
   /* Setup EPS NAS security data */
   emm_as_set_security_data(&emm_sap.u.emm_as.u.security.sctx,
                            emm_ctx->security, is_new, FALSE);
+  MSC_LOG_TX_MESSAGE(
+    	  		MSC_NAS_EMM_MME,
+    	  	  	MSC_NAS_EMM_MME,
+    	  	  	NULL,0,
+    	  	  	"0 EMMAS_SECURITY_REQ ue id %u", data->ueid);
   rc = emm_sap_send(&emm_sap);
 
   if (rc != RETURNerror) {
@@ -1152,6 +1178,11 @@ static int _security_abort(void *args)
      * Notify EMM that the security mode control procedure failed
      */
     if (notify_failure) {
+      MSC_LOG_TX_MESSAGE(
+    	    	  		MSC_NAS_EMM_MME,
+    	    	  	  	MSC_NAS_EMM_MME,
+    	    	  	  	NULL,0,
+    	    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %u (security abort)", data->ueid);
       emm_sap_t emm_sap;
       emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
       emm_sap.u.emm_reg.ueid = ueid;

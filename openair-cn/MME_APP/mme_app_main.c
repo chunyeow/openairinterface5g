@@ -42,6 +42,7 @@
 #include "mme_app_statistics.h"
 
 #include "assertions.h"
+#include "msc.h"
 
 mme_app_desc_t mme_app_desc;
 

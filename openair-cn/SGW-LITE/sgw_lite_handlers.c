@@ -53,6 +53,7 @@
 #include "sgw_lite.h"
 #include "pgw_lite_paa.h"
 #include "spgw_config.h"
+#include "msc.h"
 
 extern sgw_app_t     sgw_app;
 extern spgw_config_t spgw_config;
@@ -335,6 +336,19 @@ sgw_lite_handle_sgi_endpoint_created(
                  create_session_response_p->bearer_context_created.s1u_sgw_fteid.ipv4_address,
                  create_session_response_p->bearer_context_created.eps_bearer_id,
                  create_session_response_p->bearer_context_created.cause);
+
+  MSC_LOG_TX_MESSAGE(
+		MSC_SP_GWAPP_MME,
+		(to_task == TASK_MME_APP) ? MSC_MMEAPP_MME:MSC_S11_MME,
+  		NULL,0,
+  		"0 SGW_CREATE_SESSION_RESPONSE S11 MME teid %u S11 S-GW teid %u S1U teid %u S1U@ 0x%x ebi %u status %d",
+        create_session_response_p->teid,
+        create_session_response_p->s11_sgw_teid.teid,
+        create_session_response_p->bearer_context_created.s1u_sgw_fteid.teid,
+        create_session_response_p->bearer_context_created.s1u_sgw_fteid.ipv4_address,
+        create_session_response_p->bearer_context_created.eps_bearer_id,
+        create_session_response_p->bearer_context_created.cause);
+
   return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
 }
 
@@ -542,6 +556,13 @@ sgw_lite_handle_gtpv1uCreateTunnelResp(
     memset(create_session_response_p, 0, sizeof(SgwCreateSessionResponse));
     create_session_response_p->cause                        = CONTEXT_NOT_FOUND;
     create_session_response_p->bearer_context_created.cause = CONTEXT_NOT_FOUND;
+
+
+    MSC_LOG_TX_MESSAGE(
+    		MSC_SP_GWAPP_MME,
+    		(to_task == TASK_MME_APP) ? MSC_MMEAPP_MME:MSC_S11_MME,
+    		NULL,0,
+    		"0 SGW_CREATE_SESSION_RESPONSE teid %u CONTEXT_NOT_FOUND", endpoint_created_pP->context_teid);
     return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
   }
 }
@@ -635,6 +656,15 @@ sgw_lite_handle_gtpv1uUpdateTunnelResp(
     modify_response_p->bearer_choice.bearer_for_removal.cause         = CONTEXT_NOT_FOUND;
     modify_response_p->cause                                          = CONTEXT_NOT_FOUND;
     modify_response_p->trxn                                           = new_bearer_ctxt_info_p->sgw_eps_bearer_context_information.trxn;
+
+    MSC_LOG_TX_MESSAGE(
+    		MSC_SP_GWAPP_MME,
+    		(to_task == TASK_MME_APP) ? MSC_MMEAPP_MME:MSC_S11_MME,
+    		NULL,0,
+    		"0 SGW_MODIFY_BEARER_RESPONSE ebi %u CONTEXT_NOT_FOUND trxn %u",
+    		modify_response_p->bearer_choice.bearer_for_removal.eps_bearer_id,
+    		modify_response_p->trxn);
+
     return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
   }
 
@@ -699,6 +729,14 @@ sgw_lite_handle_sgi_endpoint_updated(
       modify_response_p->bearer_choice.bearer_for_removal.cause         = CONTEXT_NOT_FOUND;
       modify_response_p->cause                                          = CONTEXT_NOT_FOUND;
       modify_response_p->trxn                                           = 0;
+
+      MSC_LOG_TX_MESSAGE(
+    		MSC_SP_GWAPP_MME,
+    		(to_task == TASK_MME_APP) ? MSC_MMEAPP_MME:MSC_S11_MME,
+      		NULL,0,
+      		"0 SGW_MODIFY_BEARER_RESPONSE ebi %u CONTEXT_NOT_FOUND trxn %u",
+      		modify_response_p->bearer_choice.bearer_for_removal.eps_bearer_id,
+            modify_response_p->trxn);
 
       return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
     } else if (hash_rc == HASH_TABLE_OK) {
@@ -817,6 +855,13 @@ sgw_lite_handle_sgi_endpoint_updated(
 
 #endif
     }
+    MSC_LOG_TX_MESSAGE(
+  		MSC_SP_GWAPP_MME,
+  		(to_task == TASK_MME_APP) ? MSC_MMEAPP_MME:MSC_S11_MME,
+    	NULL,0,
+    	"0 SGW_MODIFY_BEARER_RESPONSE ebi %u  trxn %u",
+        modify_response_p->bearer_choice.bearer_contexts_modified.eps_bearer_id,
+        modify_response_p->trxn);
 
     return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
   } else {
@@ -829,6 +874,13 @@ sgw_lite_handle_sgi_endpoint_updated(
     modify_response_p->cause                                          = CONTEXT_NOT_FOUND;
     modify_response_p->trxn                                           = 0;
 
+    MSC_LOG_TX_MESSAGE(
+  		MSC_SP_GWAPP_MME,
+  		(to_task == TASK_MME_APP) ? MSC_MMEAPP_MME:MSC_S11_MME,
+    	NULL,0,
+    	"0 SGW_MODIFY_BEARER_RESPONSE ebi %u CONTEXT_NOT_FOUND trxn %u",
+        modify_response_p->bearer_choice.bearer_contexts_modified.eps_bearer_id,
+        modify_response_p->trxn);
     return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
   }
 }
@@ -890,6 +942,15 @@ sgw_lite_handle_modify_bearer_request(
       modify_response_p->trxn                                           = modify_bearer_pP->trxn;
       SPGW_APP_DEBUG("Rx MODIFY_BEARER_REQUEST, eps_bearer_id %u CONTEXT_NOT_FOUND\n",
                      modify_bearer_pP->bearer_context_to_modify.eps_bearer_id);
+
+      MSC_LOG_TX_MESSAGE(
+    		MSC_SP_GWAPP_MME,
+    		(to_task == TASK_MME_APP) ? MSC_MMEAPP_MME:MSC_S11_MME,
+      		NULL,0,
+      		"0 SGW_MODIFY_BEARER_RESPONSE ebi %u CONTEXT_NOT_FOUND trxn %u",
+      		modify_response_p->bearer_choice.bearer_for_removal.eps_bearer_id,
+            modify_response_p->trxn);
+
       return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
     } else if (hash_rc == HASH_TABLE_OK) {
       // TO DO
@@ -1015,6 +1076,16 @@ sgw_lite_handle_delete_session_request(
     delete_session_resp_p->trxn    = delete_session_req_pP->trxn;
     delete_session_resp_p->peer_ip = delete_session_req_pP->peer_ip;
 
+    MSC_LOG_TX_MESSAGE(
+  		MSC_SP_GWAPP_MME,
+  		(to_task == TASK_MME_APP) ? MSC_MMEAPP_MME:MSC_S11_MME,
+    	NULL,0,
+    	"0 SGW_DELETE_SESSION_RESPONSE teid %u cause %u trxn %u",
+    	delete_session_resp_p->teid,
+    	delete_session_resp_p->cause,
+        delete_session_resp_p->trxn);
+
+
     return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
   } else {
     /* Context not found... set the cause to CONTEXT_NOT_FOUND
@@ -1038,6 +1109,13 @@ sgw_lite_handle_delete_session_request(
     delete_session_resp_p->cause   = CONTEXT_NOT_FOUND;
     delete_session_resp_p->trxn    = delete_session_req_pP->trxn;
     delete_session_resp_p->peer_ip = delete_session_req_pP->peer_ip;
+
+    MSC_LOG_TX_MESSAGE(
+  		MSC_SP_GWAPP_MME,
+  		(to_task == TASK_MME_APP) ? MSC_MMEAPP_MME:MSC_S11_MME,
+    	NULL,0,
+    	"0 SGW_DELETE_SESSION_RESPONSE CONTEXT_NOT_FOUND trxn %u",
+        delete_session_resp_p->trxn);
 
     return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
   }

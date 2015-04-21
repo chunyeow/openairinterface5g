@@ -33,6 +33,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "msc.h"
 #include "intertask_interface.h"
 #include "mme_app_itti_messaging.h"
 
@@ -97,6 +98,13 @@ int mme_app_request_authentication_info(const char   *imsi,
     memset(auth_info_req->auts, 0, sizeof(auth_info_req->auts));
   }
 
+  MSC_LOG_TX_MESSAGE(
+  		MSC_MMEAPP_MME,
+  		MSC_S6A_MME,
+  		NULL,0,
+  		"0 S6A_AUTH_INFO_REQ IMSI %s visited_plmn %02X%02X%02X re_sync %u",
+  		imsi,ptr[0],ptr[1],ptr[2],auth_info_req->re_synchronization);
+
   return itti_send_msg_to_task(TASK_S6A, INSTANCE_DEFAULT, message_p);
 }
 
@@ -111,9 +119,13 @@ int mme_app_handle_nas_auth_resp(const nas_auth_resp_t * const nas_auth_resp_pP)
 
   MME_APP_DEBUG("Handling imsi %"IMSI_FORMAT"\n", imsi);
 
+
   if ((ue_context = mme_ue_context_exists_imsi(&mme_app_desc.mme_ue_contexts,
                     imsi)) == NULL) {
     MME_APP_ERROR("That's embarrassing as we don't know this IMSI\n");
+    MSC_LOG_EVENT(
+    		MSC_MMEAPP_MME,
+    		"NAS_AUTH_RESP Unknown imsi %"IMSI_FORMAT,imsi);
     AssertFatal(0, "That's embarrassing as we don't know this IMSI\n");
     return -1;
   }
@@ -142,6 +154,13 @@ int mme_app_handle_nas_auth_resp(const nas_auth_resp_t * const nas_auth_resp_pP)
     /* Check if we already have UE data */
     s6a_ulr->skip_subscriber_data = 0;
 
+    MSC_LOG_TX_MESSAGE(
+    		MSC_MMEAPP_MME,
+    		MSC_S6A_MME,
+    		NULL,0,
+    		" S6A_UPDATE_LOCATION_REQ IMSI %s RAT_EUTRAN",
+    		imsi);
+
     return itti_send_msg_to_task(TASK_S6A, INSTANCE_DEFAULT, message_p);
   }
   return -1;
@@ -160,9 +179,13 @@ mme_app_handle_authentication_info_answer(
 
   MME_APP_DEBUG("Handling imsi %"IMSI_FORMAT"\n", imsi);
 
+
   if ((ue_context = mme_ue_context_exists_imsi(&mme_app_desc.mme_ue_contexts,
                     imsi)) == NULL) {
     MME_APP_ERROR("That's embarrassing as we don't know this IMSI\n");
+    MSC_LOG_EVENT(
+    		MSC_MMEAPP_MME,
+    		"S6A_AUTH_INFO_ANS Unknown imsi %"IMSI_FORMAT,imsi);
     return -1;
   }
 
@@ -203,6 +226,11 @@ mme_app_handle_authentication_info_answer(
                           &s6a_auth_info_ans_pP->auth_info.eutran_vector);
   } else {
     MME_APP_ERROR("INFORMING NAS ABOUT AUTH RESP ERROR CODE\n");
+    MSC_LOG_EVENT(
+    		MSC_MMEAPP_MME,
+    		"S6A_AUTH_INFO_ANS S6A Failure imsi %"IMSI_FORMAT,imsi);
+
+
 
     /* Inform NAS layer with the right failure */
     if (s6a_auth_info_ans_pP->result.present == S6A_RESULT_BASE) {

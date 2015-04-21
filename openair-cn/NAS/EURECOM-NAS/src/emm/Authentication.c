@@ -79,6 +79,7 @@ Description Defines the authentication EMM procedure executed by the
 # if defined(NAS_BUILT_IN_EPC)
 #   include "nas_itti_messaging.h"
 # endif
+#include "msc.h"
 #endif
 
 /****************************************************************************/
@@ -642,6 +643,14 @@ int emm_proc_authentication(void *ctx, unsigned int ueid, int ksi,
       /*
        * Notify EMM that common procedure has been initiated
        */
+
+
+      MSC_LOG_TX_MESSAGE(
+    		MSC_NAS_EMM_MME,
+    	  	MSC_NAS_EMM_MME,
+    	  	NULL,0,
+    	  	"0 EMMREG_COMMON_PROC_REQ ue id %u (authentication)", ueid);
+
       emm_sap_t emm_sap;
       emm_sap.primitive = EMMREG_COMMON_PROC_REQ;
       emm_sap.u.emm_reg.ueid = ueid;
@@ -745,6 +754,10 @@ int emm_proc_authentication_complete(unsigned int ueid, int emm_cause,
       /* USIM has detected a mismatch in SQN.
        * Ask for a new vector.
        */
+      MSC_LOG_EVENT(
+      		MSC_NAS_EMM_MME,
+      	  	"SQN SYNCH_FAILURE ue id %u", ueid);
+
       LOG_TRACE(DEBUG, "EMM-PROC  - USIM has detected a mismatch in SQN Ask for a new vector");
       nas_itti_auth_info_req(ueid, emm_ctx->imsi, 0, res->value);
 
@@ -762,6 +775,13 @@ int emm_proc_authentication_complete(unsigned int ueid, int emm_cause,
       /*
        * Notify EMM that the authentication procedure failed
        */
+      MSC_LOG_TX_MESSAGE(
+    		MSC_NAS_EMM_MME,
+    	  	MSC_NAS_EMM_MME,
+    	  	NULL,0,
+    	  	"0 EMMREG_COMMON_PROC_REJ ue id %u", ueid);
+
+
       emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
       emm_sap.u.emm_reg.ueid = ueid;
       emm_sap.u.emm_reg.ctx  = emm_ctx;
@@ -771,6 +791,12 @@ int emm_proc_authentication_complete(unsigned int ueid, int emm_cause,
     /*
      * Notify EMM that the authentication procedure successfully completed
      */
+    MSC_LOG_TX_MESSAGE(
+    		MSC_NAS_EMM_MME,
+    	  	MSC_NAS_EMM_MME,
+    	  	NULL,0,
+    	  	"0 EMMREG_COMMON_PROC_CNF ue id %u", ueid);
+
     LOG_TRACE(DEBUG, "EMM-PROC  - Notify EMM that the authentication procedure successfully completed");
     emm_sap.primitive = EMMREG_COMMON_PROC_CNF;
     emm_sap.u.emm_reg.ueid = ueid;
@@ -1417,6 +1443,13 @@ int _authentication_request(authentication_data_t *data)
   /* Setup EPS NAS security data */
   emm_as_set_security_data(&emm_sap.u.emm_as.u.security.sctx,
                            emm_ctx->security, FALSE, TRUE);
+
+  MSC_LOG_TX_MESSAGE(
+		  MSC_NAS_EMM_MME,
+		  MSC_NAS_EMM_MME,
+		  NULL,0,
+		  "0 EMMAS_SECURITY_REQ ue id %u", data->ueid);
+
   rc = emm_sap_send(&emm_sap);
 
   if (rc != RETURNerror) {

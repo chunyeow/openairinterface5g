@@ -50,6 +50,7 @@
 
 #include "assertions.h"
 #include "common_types.h"
+#include "msc.h"
 
 
 int
@@ -89,6 +90,12 @@ mme_app_send_s6a_update_location_req(
   /* Check if we already have UE data */
   s6a_ulr_p->skip_subscriber_data = 0;
 
+  MSC_LOG_TX_MESSAGE(
+  		MSC_MMEAPP_MME,
+  		MSC_S6A_MME,
+  		NULL,0,
+  		"0 S6A_UPDATE_LOCATION_REQ imsi %"IMSI_FORMAT,imsi);
+
   return itti_send_msg_to_task(TASK_S6A, INSTANCE_DEFAULT, message_p);
 }
 
@@ -123,8 +130,12 @@ mme_app_handle_s6a_update_location_ans(
 
   MME_APP_DEBUG("%s Handling imsi %"IMSI_FORMAT"\n", __FUNCTION__, imsi);
 
+
   if ((ue_context_p = mme_ue_context_exists_imsi(&mme_app_desc.mme_ue_contexts, imsi)) == NULL) {
     MME_APP_ERROR("That's embarrassing as we don't know this IMSI\n");
+    MSC_LOG_EVENT(
+    		MSC_MMEAPP_MME,
+    		"0 S6A_UPDATE_LOCATION unknown imsi %"IMSI_FORMAT,imsi);
     return -1;
   }
 

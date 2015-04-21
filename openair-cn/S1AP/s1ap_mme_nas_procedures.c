@@ -47,6 +47,7 @@
 
 #include "assertions.h"
 #include "conversions.h"
+#include "msc.h"
 
 /* Every time a new UE is associated, increment this variable.
  * But care if it wraps to increment also the mme_ue_s1ap_id_has_wrapped
@@ -163,6 +164,15 @@ int s1ap_mme_handle_uplink_nas_transport(uint32_t assoc_id, uint32_t stream,
 
   uplinkNASTransport_p = &message->msg.s1ap_UplinkNASTransportIEs;
 
+  MSC_LOG_RX_MESSAGE(
+	  	MSC_S1AP_MME,
+	    MSC_S1AP_ENB,
+  		NULL,0,
+  		"0 UPLINK_NAS_TRANSPORT mme_ue_s1ap_id %u eNB_ue_s1ap_id %u nas len %u",
+  		uplinkNASTransport_p->mme_ue_s1ap_id,
+  		uplinkNASTransport_p->eNB_UE_S1AP_ID,
+  		uplinkNASTransport_p->nas_pdu.size);
+
   if ((ue_ref = s1ap_is_ue_mme_id_in_list(uplinkNASTransport_p->mme_ue_s1ap_id))
       == NULL) {
     S1AP_DEBUG("No UE is attached to this mme UE s1ap id: %d\n",
@@ -248,6 +258,16 @@ int s1ap_generate_downlink_nas_transport(const uint32_t ue_id, void * const data
                ue_id,
                downlinkNasTransport->mme_ue_s1ap_id,
                downlinkNasTransport->eNB_UE_S1AP_ID);
+
+    MSC_LOG_TX_MESSAGE(
+    		MSC_S1AP_MME,
+    		MSC_S1AP_ENB,
+    		NULL,0,
+    		"0 DOWNLINK_NAS_TRANSPORT ue_id %u mme_ue_s1ap_id %u eNB_ue_s1ap_id %u nas length %u",
+    		ue_id,
+    		downlinkNasTransport->mme_ue_s1ap_id,
+    		downlinkNasTransport->eNB_UE_S1AP_ID,
+    		size);
 
     s1ap_mme_itti_send_sctp_request(buffer_p, length,
                                     ue_ref->eNB->sctp_assoc_id,
@@ -685,6 +705,14 @@ void s1ap_handle_conn_est_cnf(const mme_app_connection_establishment_cnf_t * con
 
   free(conn_est_cnf_pP->nas_conn_est_cnf.nasMsg.data);
 
+  MSC_LOG_TX_MESSAGE(
+  		MSC_S1AP_MME,
+  		MSC_S1AP_ENB,
+  		NULL,0,
+  		"0 INITIAL_CONTEXT_SETUP mme_ue_s1ap_id %u eNB_ue_s1ap_id %u nas length %u",
+  		initialContextSetupRequest_p->mme_ue_s1ap_id,
+  		initialContextSetupRequest_p->eNB_UE_S1AP_ID,
+  		nas_pdu.size);
   s1ap_mme_itti_send_sctp_request(
     buffer_p,
     length,

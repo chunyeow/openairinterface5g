@@ -42,6 +42,7 @@
 #include <arpa/inet.h> /* To provide inet_addr */
 
 #include "assertions.h"
+#include "msc.h"
 #include "mme_config.h"
 #include "spgw_config.h"
 #include "intertask_interface_conf.h"
@@ -652,6 +653,8 @@ static void usage(void)
   fprintf(stdout, "-h      Print this help and return\n");
   fprintf(stdout, "-i<interface name>\n");
   fprintf(stdout, "        Set the network card to use for IPv4 forwarding\n");
+  fprintf(stdout, "-m\n");
+  fprintf(stdout, "        Use mscgen dump trace tool\n");
   fprintf(stdout, "-c<path>\n");
   fprintf(stdout, "        Set the configuration file for mme\n");
   fprintf(stdout, "        See template in UTILS/CONF\n");
@@ -672,7 +675,7 @@ int config_parse_opt_line(int argc, char *argv[], mme_config_t *mme_config_p)
   mme_config_init(mme_config_p);
 
   /* Parsing command line */
-  while ((c = getopt (argc, argv, "O:c:hi:K:v:V")) != -1) {
+  while ((c = getopt (argc, argv, "O:c:hi:K:m:v:V")) != -1) {
     switch (c) {
     case 'O':
     case 'c': {
@@ -684,6 +687,11 @@ int config_parse_opt_line(int argc, char *argv[], mme_config_t *mme_config_p)
       mme_config_p->config_file = malloc(sizeof(char) * (config_file_len + 1));
       memcpy(mme_config_p->config_file, optarg, config_file_len);
       mme_config_p->config_file[config_file_len] = '\0';
+    }
+    break;
+
+    case 'm': {
+      MSC_INIT(MSC_EPC);
     }
     break;
 

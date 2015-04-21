@@ -45,6 +45,7 @@
 
 #include "s1ap_mme.h"
 #include "s1ap_mme_ta.h"
+#include "msc.h"
 
 static int s1ap_generate_s1_setup_response(eNB_description_t *eNB_association);
 static int s1ap_mme_generate_ue_context_release_command(
@@ -211,7 +212,12 @@ int s1ap_mme_generate_s1_setup_failure(
     S1AP_ERROR("Failed to encode s1 setup failure\n");
     return -1;
   }
-
+  MSC_LOG_TX_MESSAGE(
+  		MSC_S1AP_MME,
+  		MSC_S1AP_ENB,
+  		NULL,0,
+  		"0 SETUP_FAILURE assoc_id %u cause %u value %u",
+  		assoc_id, cause_type, cause_value);
   return s1ap_mme_itti_send_sctp_request(buffer_p, length, assoc_id, 0);
 }
 
@@ -432,6 +438,12 @@ int s1ap_generate_s1_setup_response(eNB_description_t *eNB_association)
     eNB_association->s1_state = S1AP_READY;
   }
 
+  MSC_LOG_TX_MESSAGE(
+  		MSC_S1AP_MME,
+  		MSC_S1AP_ENB,
+  		NULL,0,
+  		"0 SETUP_RESPONSE assoc_id %u",
+  		eNB_association->sctp_assoc_id);
   /* Non-UE signalling -> stream 0 */
   return s1ap_mme_itti_send_sctp_request(buffer, length, eNB_association->sctp_assoc_id,
                                          0);
@@ -488,6 +500,15 @@ int s1ap_mme_handle_ue_cap_indication(uint32_t assoc_id, uint32_t stream,
            ue_cap_p->ueRadioCapability.size);
 
     ue_cap_ind_p->radio_capabilities_length = ue_cap_p->ueRadioCapability.size;
+
+    MSC_LOG_TX_MESSAGE(
+    		MSC_S1AP_MME,
+    		MSC_MMEAPP_MME,
+    		NULL,0,
+    		"0 S1AP_UE_CAPABILITIES_IND eNB_ue_s1ap_id %u mme_ue_s1ap_id %u len %u",
+    	    ue_cap_ind_p->eNB_ue_s1ap_id,
+    	    ue_cap_ind_p->mme_ue_s1ap_id,
+    	    ue_cap_ind_p->radio_capabilities_length);
 
     return itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
   }
@@ -558,6 +579,17 @@ int s1ap_mme_handle_initial_context_setup_response(
   memcpy(&MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).bearer_s1u_enb_fteid.ipv4_address,
          eRABSetupItemCtxtSURes_p->transportLayerAddress.buf,
          4);
+
+
+  MSC_LOG_TX_MESSAGE(
+  		MSC_S1AP_MME,
+  		MSC_MMEAPP_MME,
+  		NULL,0,
+  		"0 MME_APP_INITIAL_CONTEXT_SETUP_RSP mme_ue_s1ap_id %u ebi %u s1u enb teid %u",
+  		MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).mme_ue_s1ap_id,
+  		MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).eps_bearer_id,
+  		MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).bearer_s1u_enb_fteid.teid);
+
   return itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 }
 
@@ -760,6 +792,10 @@ int s1ap_handle_sctp_deconnection(uint32_t assoc_id)
                assoc_id);
     return -1;
   }
+  MSC_LOG_EVENT(
+  		MSC_S1AP_MME,
+  		"Event SCTP_CLOSE_ASSOCIATION assoc_id: %d",
+        assoc_id);
 
   STAILQ_FOREACH(ue_ref, &eNB_association->ue_list_head, ue_entries) {
     /* Ask for a release of each UE context associated to the eNB */
@@ -784,6 +820,13 @@ int s1ap_handle_sctp_deconnection(uint32_t assoc_id)
     for (i = current_ue_index; i < S1AP_ITTI_UE_PER_DEREGISTER_MESSAGE; i++) {
       S1AP_ENB_DEREGISTERED_IND(message_p).mme_ue_s1ap_id[current_ue_index] = 0;
     }
+
+    MSC_LOG_TX_MESSAGE(
+    		MSC_S1AP_MME,
+    		MSC_NAS_MME,
+    		NULL,0,
+    		"0 S1AP_ENB_DEREGISTERED_IND num ue to deregister %u",
+    		S1AP_ENB_DEREGISTERED_IND(message_p).nb_ue_to_deregister);
 
     itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
   }
@@ -830,6 +873,10 @@ int s1ap_handle_new_association(sctp_new_peer_t *sctp_new_peer_p)
    * ue associated signalling.
    */
   eNB_association->next_sctp_stream = 1;
+  MSC_LOG_EVENT(
+  		MSC_S1AP_MME,
+  		"Event SCTP_NEW_ASSOCIATION assoc_id: %d",
+  		eNB_association->sctp_assoc_id);
 
   return 0;
 }

@@ -39,6 +39,7 @@
 #include "security_types.h"
 #include "s6a_defs.h"
 #include "s6a_messages.h"
+#include "msc.h"
 
 static
 int s6a_parse_rand(struct avp_hdr *hdr, uint8_t *rand_p)
@@ -276,7 +277,12 @@ int s6a_aia_cb(struct msg **msg, struct avp *paramavp,
       DevMessage("We requested E-UTRAN vectors with an immediate response...\n");
     }
   }
-
+  MSC_LOG_TX_MESSAGE(
+	    MSC_S6A_MME,
+  		MSC_MMEAPP_MME,
+  		NULL,0,
+  		"0 S6A_AUTH_INFO_ANS imsi %s",
+  		s6a_auth_info_ans_p->imsi);
   itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 err:
   return 0;

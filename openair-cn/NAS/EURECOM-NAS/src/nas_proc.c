@@ -51,6 +51,7 @@ Description NAS procedure call manager
 
 #include "esm_main.h"
 #include "esm_sap.h"
+#include "msc.h"
 
 #include <stdio.h>  // sprintf
 
@@ -1353,6 +1354,12 @@ int nas_proc_establish_ind(UInt32_t ueid, tac_t tac,
 
   if (len > 0) {
     emm_sap_t emm_sap;
+
+    MSC_LOG_TX_MESSAGE(
+    		MSC_NAS_MME,
+    		MSC_NAS_EMM_MME,
+    		NULL,0,
+    		"0 EMMAS_ESTABLISH_REQ ue id %u tac %u", ueid, tac);
     /*
      * Notify the EMM procedure call manager that NAS signalling
      * connection establishment indication message has been received
@@ -1391,6 +1398,12 @@ int nas_proc_dl_transfer_cnf(UInt32_t ueid)
   emm_sap_t emm_sap;
   int rc;
 
+  MSC_LOG_TX_MESSAGE(
+  		MSC_NAS_MME,
+  		MSC_NAS_EMM_MME,
+  		NULL,0,
+  		"0 EMMAS_DATA_IND dl_transfer_conf ue id %u", ueid);
+
   /*
    * Notify the EMM procedure call manager that downlink NAS message
    * has been successfully delivered to the NAS sublayer on the
@@ -1427,6 +1440,12 @@ int nas_proc_dl_transfer_rej(UInt32_t ueid)
 
   emm_sap_t emm_sap;
   int rc;
+
+  MSC_LOG_TX_MESSAGE(
+  		MSC_NAS_MME,
+  		MSC_NAS_EMM_MME,
+  		NULL,0,
+  		"0 EMMAS_DATA_IND dl_transfer_reject ue id %u", ueid);
 
   /*
    * Notify the EMM procedure call manager that transmission
@@ -1471,6 +1490,12 @@ int nas_proc_ul_transfer_ind(UInt32_t ueid, const Byte_t *data, UInt32_t len)
      * Notify the EMM procedure call manager that data transfer
      * indication has been received from the Access-Stratum sublayer
      */
+    MSC_LOG_TX_MESSAGE(
+    		MSC_NAS_MME,
+    		MSC_NAS_EMM_MME,
+    		NULL,0,
+    		"0 EMMAS_DATA_IND ue id %u len %u", ueid, len);
+
     emm_sap.primitive = EMMAS_DATA_IND;
     emm_sap.u.emm_as.u.data.ueid = ueid;
     emm_sap.u.emm_as.u.data.delivered = TRUE;
@@ -1490,6 +1515,12 @@ int nas_proc_auth_param_res(emm_cn_auth_res_t *emm_cn_auth_res)
 
   LOG_FUNC_IN;
 
+  MSC_LOG_TX_MESSAGE(
+  		MSC_NAS_MME,
+  		MSC_NAS_EMM_MME,
+  		NULL,0,
+  		"0 EMMCN_AUTHENTICATION_PARAM_RES");
+
   emm_sap.primitive = EMMCN_AUTHENTICATION_PARAM_RES;
   emm_sap.u.emm_cn.u.auth_res = emm_cn_auth_res;
 
@@ -1504,6 +1535,12 @@ int nas_proc_auth_param_fail(emm_cn_auth_fail_t *emm_cn_auth_fail)
   emm_sap_t emm_sap;
 
   LOG_FUNC_IN;
+
+  MSC_LOG_TX_MESSAGE(
+  		MSC_NAS_MME,
+  		MSC_NAS_EMM_MME,
+  		NULL,0,
+  		"0 EMMCN_AUTHENTICATION_PARAM_FAIL");
 
   emm_sap.primitive = EMMCN_AUTHENTICATION_PARAM_FAIL;
   emm_sap.u.emm_cn.u.auth_fail = emm_cn_auth_fail;
@@ -1520,6 +1557,12 @@ int nas_proc_deregister_ue(UInt32_t ue_id)
 
   LOG_FUNC_IN;
 
+  MSC_LOG_TX_MESSAGE(
+  		MSC_NAS_MME,
+  		MSC_NAS_EMM_MME,
+  		NULL,0,
+  		"0 EMMCN_DEREGISTER_UE ue_id %u",ue_id);
+
   emm_sap.primitive = EMMCN_DEREGISTER_UE;
   emm_sap.u.emm_cn.u.deregister.UEid = ue_id;
 
@@ -1535,6 +1578,12 @@ int nas_proc_pdn_connectivity_res(emm_cn_pdn_res_t *emm_cn_pdn_res)
 
   LOG_FUNC_IN;
 
+  MSC_LOG_TX_MESSAGE(
+  		MSC_NAS_MME,
+  		MSC_NAS_EMM_MME,
+  		NULL,0,
+  		"0 EMMCN_PDN_CONNECTIVITY_RES");
+
   emm_sap.primitive = EMMCN_PDN_CONNECTIVITY_RES;
   emm_sap.u.emm_cn.u.emm_cn_pdn_res = emm_cn_pdn_res;
 
@@ -1549,6 +1598,12 @@ int nas_proc_pdn_connectivity_fail(emm_cn_pdn_fail_t *emm_cn_pdn_fail)
   emm_sap_t emm_sap;
 
   LOG_FUNC_IN;
+
+  MSC_LOG_TX_MESSAGE(
+  		MSC_NAS_MME,
+  		MSC_NAS_EMM_MME,
+  		NULL,0,
+  		"0 EMMCN_PDN_CONNECTIVITY_FAIL");
 
   emm_sap.primitive = EMMCN_PDN_CONNECTIVITY_FAIL;
   emm_sap.u.emm_cn.u.emm_cn_pdn_fail = emm_cn_pdn_fail;

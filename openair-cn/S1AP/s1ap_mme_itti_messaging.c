@@ -55,6 +55,14 @@ int s1ap_mme_itti_nas_uplink_ind(const uint32_t ue_id, uint8_t * const buffer,
   NAS_UL_DATA_IND(message_p).nasMsg.data   = buffer;
   NAS_UL_DATA_IND(message_p).nasMsg.length = length;
 
+  MSC_LOG_TX_MESSAGE(
+  		MSC_S1AP_MME,
+  		MSC_NAS_MME,
+  		NULL,0,
+  		"0 NAS_UPLINK_DATA_IND ue_id %u len %u",
+  		NAS_UL_DATA_IND(message_p).UEid,
+  		NAS_UL_DATA_IND(message_p).nasMsg.length);
+
   return itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
 }
 
@@ -67,6 +75,14 @@ int s1ap_mme_itti_nas_downlink_cnf(const uint32_t ue_id,
 
   NAS_DL_DATA_CNF(message_p).UEid = ue_id;
   NAS_DL_DATA_CNF(message_p).errCode = error_code;
+
+  MSC_LOG_TX_MESSAGE(
+  		MSC_S1AP_MME,
+  		MSC_NAS_MME,
+  		NULL,0,
+  		"0 NAS_DOWNLINK_DATA_CNF ue_id %u errCode %u",
+  		NAS_DL_DATA_CNF(message_p).UEid,
+  		NAS_DL_DATA_CNF(message_p).errCode);
 
   return itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
 }

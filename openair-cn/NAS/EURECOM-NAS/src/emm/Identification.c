@@ -55,6 +55,7 @@ Description Defines the identification EMM procedure executed by the
 #include "emmData.h"
 
 #include "emm_sap.h"
+#include "msc.h"
 
 #include <stdlib.h> // malloc, free
 #include <string.h> // memcpy
@@ -326,6 +327,12 @@ int emm_proc_identification(unsigned int                   ueid,
       /*
        * Notify EMM that common procedure has been initiated
        */
+      MSC_LOG_TX_MESSAGE(
+      		MSC_NAS_EMM_MME,
+      	  	MSC_NAS_EMM_MME,
+      	  	NULL,0,
+      	  	"0 EMMREG_COMMON_PROC_REQ ue id %u (identification)", ueid);
+
       emm_sap_t emm_sap;
       emm_sap.primitive = EMMREG_COMMON_PROC_REQ;
       emm_sap.u.emm_reg.ueid = ueid;
@@ -433,6 +440,12 @@ int emm_proc_identification_complete(unsigned int ueid, const imsi_t *imsi,
     /*
      * Notify EMM that the identification procedure successfully completed
      */
+    MSC_LOG_TX_MESSAGE(
+    		MSC_NAS_EMM_MME,
+    	  	MSC_NAS_EMM_MME,
+    	  	NULL,0,
+    	  	"0 EMMREG_COMMON_PROC_CNF ue id %u", ueid);
+
     emm_sap.primitive = EMMREG_COMMON_PROC_CNF;
     emm_sap.u.emm_reg.ueid = ueid;
     emm_sap.u.emm_reg.ctx  = emm_ctx;
@@ -442,6 +455,12 @@ int emm_proc_identification_complete(unsigned int ueid, const imsi_t *imsi,
     /*
      * Notify EMM that the identification procedure failed
      */
+    MSC_LOG_TX_MESSAGE(
+    		MSC_NAS_EMM_MME,
+    	  	MSC_NAS_EMM_MME,
+    	  	NULL,0,
+    	  	"0 EMMREG_COMMON_PROC_REJ ue id %u", ueid);
+
     emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
     emm_sap.u.emm_reg.ueid = ueid;
     emm_sap.u.emm_reg.ctx  = emm_ctx;
@@ -545,6 +564,12 @@ int _identification_request(identification_data_t *data)
    * Notify EMM-AS SAP that Identity Request message has to be sent
    * to the UE
    */
+  MSC_LOG_TX_MESSAGE(
+  		MSC_NAS_EMM_MME,
+  	  	MSC_NAS_EMM_MME,
+  	  	NULL,0,
+  	  	"0 EMMAS_SECURITY_REQ ue id %u", data->ueid);
+
   emm_sap.primitive = EMMAS_SECURITY_REQ;
   emm_sap.u.emm_as.u.security.guti = NULL;
   emm_sap.u.emm_as.u.security.ueid = data->ueid;
@@ -628,6 +653,11 @@ static int _identification_abort(void *args)
      * Notify EMM that the identification procedure failed
      */
     if (notify_failure) {
+      MSC_LOG_TX_MESSAGE(
+    	  		MSC_NAS_EMM_MME,
+    	  	  	MSC_NAS_EMM_MME,
+    	  	  	NULL,0,
+    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %u", ueid);
       emm_sap_t emm_sap;
       emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
       emm_sap.u.emm_reg.ueid = ueid;

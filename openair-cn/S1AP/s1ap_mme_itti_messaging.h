@@ -31,6 +31,7 @@
 #include <string.h>
 
 #include "intertask_interface.h"
+#include "msc.h"
 
 #ifndef S1AP_MME_ITTI_MESSAGING_H_
 #define S1AP_MME_ITTI_MESSAGING_H_
@@ -67,6 +68,16 @@ static inline void s1ap_mme_itti_mme_app_establish_ind(
   MME_APP_CONNECTION_ESTABLISHMENT_IND(message_p).nas.initialNasMsg.data   = malloc(sizeof(uint8_t) * nas_msg_length);
   memcpy(MME_APP_CONNECTION_ESTABLISHMENT_IND(message_p).nas.initialNasMsg.data, nas_msg, nas_msg_length);
 
+
+  MSC_LOG_TX_MESSAGE(
+  		MSC_S1AP_MME,
+  		MSC_MMEAPP_MME,
+  		NULL,0,
+  		"0 MME_APP_CONNECTION_ESTABLISHMENT_IND ue_id %u as cause %u  tac %u len %u",
+  		ue_id,
+  		MME_APP_CONNECTION_ESTABLISHMENT_IND(message_p).nas.asCause,
+  		MME_APP_CONNECTION_ESTABLISHMENT_IND(message_p).nas.tac,
+  		MME_APP_CONNECTION_ESTABLISHMENT_IND(message_p).nas.initialNasMsg.length);
   // should be sent to MME_APP, but this one would forward it to NAS_MME, so send it directly to NAS_MME
   // but let's see
   itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
@@ -90,6 +101,17 @@ static inline void s1ap_mme_itti_nas_establish_ind(
 
   NAS_CONN_EST_IND(message_p).nas.initialNasMsg.data = malloc(sizeof(uint8_t) * nas_msg_length);
   memcpy(NAS_CONN_EST_IND(message_p).nas.initialNasMsg.data, nas_msg, nas_msg_length);
+
+
+  MSC_LOG_TX_MESSAGE(
+  		MSC_S1AP_MME,
+  		MSC_NAS_MME,
+  		NULL,0,
+  		"0 NAS_CONNECTION_ESTABLISHMENT_IND ue_id %u as cause %u  tac %u len %u",
+  		ue_id,
+  		NAS_CONN_EST_IND(message_p).nas.asCause,
+  		NAS_CONN_EST_IND(message_p).nas.tac,
+  		NAS_CONN_EST_IND(message_p).nas.initialNasMsg.length);
 
   // should be sent to MME_APP, but this one would forward it to NAS_MME, so send it directly to NAS_MME
   // but let's see

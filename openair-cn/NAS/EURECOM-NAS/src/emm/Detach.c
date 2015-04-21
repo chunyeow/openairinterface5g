@@ -59,6 +59,7 @@ Description Defines the detach related EMM procedure executed by the
 
 #include "emm_sap.h"
 #include "esm_sap.h"
+#include "msc.h"
 
 #include <stdlib.h> // free
 
@@ -548,7 +549,12 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
      * Notify ESM that all EPS bearer contexts allocated for this UE have
      * to be locally deactivated
      */
-    esm_sap_t esm_sap;
+	MSC_LOG_TX_MESSAGE(
+	    		MSC_NAS_EMM_MME,
+	    	  	MSC_NAS_ESM_MME,
+	    	  	NULL,0,
+	    	  	"0 ESM_EPS_BEARER_CONTEXT_DEACTIVATE_REQ ue id %u", ueid);
+	esm_sap_t esm_sap;
     esm_sap.primitive = ESM_EPS_BEARER_CONTEXT_DEACTIVATE_REQ;
     esm_sap.ueid = ueid;
     esm_sap.ctx  = emm_ctx;
@@ -560,6 +566,11 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
       /*
        * Notify EMM that the UE has been implicitly detached
        */
+  	  MSC_LOG_TX_MESSAGE(
+  	    		MSC_NAS_EMM_MME,
+  	    		MSC_NAS_EMM_MME,
+  	    	  	NULL,0,
+  	    	  	"0 EMMREG_DETACH_REQ ue id %u", ueid);
       emm_sap.primitive = EMMREG_DETACH_REQ;
       emm_sap.u.emm_reg.ueid = ueid;
       emm_sap.u.emm_reg.ctx  = emm_ctx;
