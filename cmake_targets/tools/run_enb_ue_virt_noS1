@@ -77,7 +77,7 @@ function main()
   local -i run_gdb=0
   local -i run_mscgen=0
   local    exe_arguments=""
-  local    DEFAULT_CONFIG_FILE_ENB=$OPENAIR_DIR/targets/PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.generic.oaisim.local_mme.conf
+  local    DEFAULT_CONFIG_FILE_ENB=$OPENAIR_DIR/targets/PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.generic.oaisim.local_no_mme.conf
   local    CONFIG_FILE_ENB=$DEFAULT_CONFIG_FILE_ENB
   local    MSC_DIR="/tmp"
   
@@ -177,7 +177,7 @@ function main()
   $OPENAIR_DIR/targets/bin/rb_tool -a -c0 -i1 -z0 -s 10.0.2.2 -t 10.0.2.1 -r 1
 
 
-  exe_arguments="$exe_arguments -s15 -AAWGN -y1 -b1 -u1 -V"
+  exe_arguments="$exe_arguments -s15 -AAWGN -b1 -u1"
     
   cd  $OPENAIR_DIR/targets/bin
    
@@ -187,11 +187,11 @@ function main()
   fi
    
   if [ $run_gdb -eq 0 ]; then 
-    exec $SUDO $OPENAIR_DIR/targets/bin/oaisim $exe_arguments | tee /tmp/enb_ue_nos1.log.txt
+    exec $SUDO $OPENAIR_DIR/targets/bin/oaisim_nos1 $exe_arguments | tee /tmp/enb_ue_nos1.log.txt
   else
     touch      ~/.gdb_enb_ue_nos1
     chmod 777  ~/.gdb_enb_ue_nos1
-    echo "file $OPENAIR_DIR/targets/bin/oaisim" > ~/.gdb_enb_ue_nos1
+    echo "file $OPENAIR_DIR/targets/bin/oaisim_nos1" > ~/.gdb_enb_ue_nos1
     echo "set args $exe_arguments" >> ~/.gdb_enb_ue_nos1
     echo "run"                        >> ~/.gdb_enb_ue_nos1
     cat ~/.gdb_enb_ue_nos1
