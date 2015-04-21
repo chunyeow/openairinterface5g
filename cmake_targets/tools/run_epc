@@ -45,20 +45,21 @@ set_openair_env
 
 function help()
 {
-    echo_error " "
-    echo_error "Usage: run_epc [OPTION]..."
-    echo_error "Run the EPC executable (MME+SGW-LITE)."
-    echo_error " "
-    echo_error "Options:"
-    echo_error "Mandatory arguments to long options are mandatory for short options too."
-    echo_error "  -g, --gdb                  Run with GDB."
-    echo_error "  -h, --help                 Print this help."
-    echo_error "  -K, --itti-dump-file       ITTI dump file containing all ITTI events occuring during EPC runtime."
-    echo_error "  -l, --local-enb            EPC run on the same eNB host."
-    echo_error "  -v, --verbosity-level      Verbosity level (0,1,2)."
-    echo_error "                                 0 -> ASN1 XER printf off"
-    echo_error "                                 1 -> ASN1 XER printf on and ASN1 debug off"
-    echo_error "                                 2 -> ASN1 XER printf on and ASN1 debug on"
+  echo_error " "
+  echo_error "Usage: run_epc [OPTION]..."
+  echo_error "Run the EPC executable (MME+SGW-LITE)."
+  echo_error " "
+  echo_error "Options:"
+  echo_error "Mandatory arguments to long options are mandatory for short options too."
+  echo_error "  -g, --gdb                          Run with GDB."
+  echo_error "  -h, --help                         Print this help."
+  echo_error "  -K, --itti-dump-file               ITTI dump file containing all ITTI events occuring during EPC runtime."
+  echo_error "  -l, --local-enb                    EPC run on the same eNB host."
+  echo_error "  -m, --mscgen           directory   Generate mscgen output files in a directory"
+  echo_error "  -v, --verbosity-level              Verbosity level (0,1,2)."
+  echo_error "                                       0 -> ASN1 XER printf off"
+  echo_error "                                       1 -> ASN1 XER printf on and ASN1 debug off"
+  echo_error "                                       2 -> ASN1 XER printf on and ASN1 debug on"
 }
 
 
@@ -70,6 +71,7 @@ function main()
   local -i epc_local=0
   local -r epc_default_config_file="$OPENAIR_TARGETS/bin/epc.conf"
   local    epc_config_file=$epc_default_config_file
+  local    MSC_DIR="/tmp"
 
   until [ -z "$1" ]
     do
@@ -99,6 +101,19 @@ function main()
         epc_local=1
         shift;
         ;;
+      -m | --mscgen)
+        MSC_DIR=$2
+        # can omit file name if last arg on the line
+        if [ -d  "$MSC_DIR" ]; then
+          echo "setting mscgen log files to dir: $MSC_DIR"
+          run_mscgen=1
+          exe_arguments="-m $exe_arguments"
+          shift 2;
+        else
+          echo_error "Mscgen log dir does not exist"
+          exit -1
+        fi
+        ;;      
       -v | --verbosity-level)
         local verbosity_level=$2
         echo "setting verbosity level to: $verbosity_level"
@@ -125,6 +140,10 @@ function main()
     epc_config_file="$OPENAIR_DIR/targets/bin/epc.local.enb.conf"
   fi
 
+  if [ $run_mscgen -eq 1 ]; then 
+    $SUDO rm -f /tmp/openair.msc.*
+  fi
+
   exe_arguments="-O $epc_config_file $exe_arguments"
 
   if [ $run_gdb -eq 0 ]; then 
@@ -138,6 +157,21 @@ function main()
     cat ~/.gdb_mme_gw
     gdb -n -x ~/.gdb_mme_gw 
   fi
+  
+  if [ $run_mscgen -eq 1 ]; then 
+    cd $MSC_DIR
+    last_created_file=`ls -t mscgen* | head -1 | tr -d ':'`
+    $OPENAIR_DIR/targets/SCRIPTS/msc_gen.py
+    sync
+    last_created_file2=`ls -t mscgen* | head -1 | tr -d ':'`
+        
+    if [ x"$last_created_file" != x"$last_created_file2" ]; then
+      if [ -f ./$last_created_file2/oai_mscgen_page_0.png ]; then 
+        command -v eog 2>/dev/null &&  eog ./$last_created_file2/oai_mscgen_page_0.png
+      fi
+    fi 
+  fi
+
 }
 
 
