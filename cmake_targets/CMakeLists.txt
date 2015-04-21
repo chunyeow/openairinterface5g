@@ -1835,6 +1835,16 @@ if (OAI_NW_DRIVER_USE_NETLINK)
 endif()
 make_driver(nasmesh  ${OPENAIR2_DIR}/NETWORK_DRIVER/MESH ${nasmesh_src})
 
+# user space tool for configuring MESH IP driver
+################
+add_executable(rb_tool
+  ${OPENAIR2_DIR}/NETWORK_DRIVER/MESH/constant.h
+  ${OPENAIR2_DIR}/NETWORK_DRIVER/MESH/ioctl.h
+  ${OPENAIR2_DIR}/NETWORK_DRIVER/MESH/rrc_nas_primitives.h
+  ${OPENAIR2_DIR}/NETWORK_DRIVER/MESH/RB_TOOL/rb_tool.c
+)
+target_include_directories(rb_tool PRIVATE ${OPENAIR2_DIR}/NETWORK_DRIVER/MESH/)
+
 # ???
 ####################
 list(APPEND oai_nw_drv_src device.c common.c ioctl.c classifier.c tool.c)
