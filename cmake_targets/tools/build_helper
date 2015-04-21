@@ -100,7 +100,7 @@ clean_all_files() {
  rm -rf $dir/epc_build_oai/build $dir/epc_build_oai/CMakeLists.txt
  rm -rf $dir/oaisim_build_oai/build $dir/oaisim_build_oai/CMakeLists.txt
  rm -rf $dir/oaisim_mme_build_oai/build $dir/oaisim_mme_build_oai/CMakeLists.txt
- rm -rf $dir/hss_build/BUILD
+ rm -rf $dir/hss_build/build
  rm -rf $dir/autotests/bin $dir/autotests/log $dir/autotests/*/build 
 }
 
