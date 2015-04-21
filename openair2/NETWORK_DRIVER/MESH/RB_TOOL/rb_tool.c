@@ -158,21 +158,21 @@ void IAL_NAS_ioctl_init(int inst)
 int main(int argc,char **argv)
 //---------------------------------------------------------------------------
 {
-  int done, rc, meas_polling_counter;
+  int done = 0, rc = 0, meas_polling_counter = 0;
   fd_set readfds;
   struct timeval tv;
-  int i;
-  int err;
+  int i = 0;
+  int err = 0;
   char * buffer;
-  int c;
-  int action,rbset=0,cxset=0,instset=0,saddr_ipv4set=0,saddr_ipv6set=0,daddr_ipv4set=0,daddr_ipv6set=0,dscpset=0,mpls_outlabelset=0,mpls_inlabelset;
+  int c = 0;
+  int action=0,rbset=0,cxset=0,instset=0,saddr_ipv4set=0,saddr_ipv6set=0,daddr_ipv4set=0,daddr_ipv6set=0,dscpset=0,mpls_outlabelset=0,mpls_inlabelset=0;
   char rb[100],cx[100],dscp[100],inst[100],mpls_outgoinglabel[100],mpls_incominglabel[100];
-  int index;
-  struct nas_msg_rb_establishment_request *msgreq;
-  struct nas_msg_class_add_request *msgreq_class;
+  int index = 0;
+  struct nas_msg_rb_establishment_request *msgreq = NULL;
+  struct nas_msg_class_add_request *msgreq_class = NULL;
   in_addr_t saddr_ipv4,daddr_ipv4;
   struct in6_addr saddr_ipv6,daddr_ipv6;
-  unsigned int mpls_outlabel,mpls_inlabel;
+  unsigned int mpls_outlabel=0,mpls_inlabel=0;
 
   char addr_str[46];
 
