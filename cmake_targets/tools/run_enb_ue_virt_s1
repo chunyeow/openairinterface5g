@@ -237,6 +237,11 @@ function main()
     
   cd  $OPENAIR_DIR/targets/bin
    
+   
+  if [ $run_mscgen -eq 1 ]; then 
+    $SUDO rm -f /tmp/openair.msc.*
+  fi
+   
   if [ $run_gdb -eq 0 ]; then 
     exec $SUDO $OPENAIR_DIR/targets/bin/oaisim $exe_arguments | tee /tmp/enb_ue_s1.log.txt
   else
