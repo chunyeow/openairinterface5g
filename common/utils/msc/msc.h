@@ -34,7 +34,10 @@
 typedef enum {
 	MIN_MSC_ENV = 0,
     MSC_E_UTRAN = MIN_MSC_ENV,
+    MSC_E_UTRAN_LIPA,
     MSC_EPC,
+    MSC_MME,
+    MSC_SP_GW,
     MAX_MSC_ENV
 } msc_env_t;
 
@@ -62,6 +65,8 @@ typedef enum {
     MSC_NAS_MME,
     MSC_NAS_EMM_MME,
     MSC_NAS_ESM_MME,
+    MSC_SP_GWAPP_MME,
+    MSC_S11_MME,
     MSC_S6A_MME,
     MSC_HSS,
     MAX_MSC_PROTOS,

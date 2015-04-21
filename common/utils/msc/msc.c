@@ -60,7 +60,7 @@ int msc_init(msc_env_t envP)
       case MSC_IP_UE:
         rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "IP_UE");
         if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-        if (envP == MSC_E_UTRAN) {
+        if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
           msc_fd[i] = fopen("/tmp/openair.msc.ip_ue.log","w");
           msc_log_declare_proto(i);
         }
@@ -68,7 +68,7 @@ int msc_init(msc_env_t envP)
       case MSC_IP_ENB:
         rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "IP_ENB");
         if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-        if (envP == MSC_E_UTRAN) {
+        if (envP == MSC_E_UTRAN_LIPA) {
           msc_fd[i] = fopen("/tmp/openair.msc.ip_enb.log","w");
           msc_log_declare_proto(i);
         }
@@ -76,15 +76,15 @@ int msc_init(msc_env_t envP)
       case MSC_NAS_UE:
         rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "NAS_UE");
         if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-        if (envP == MSC_E_UTRAN) {
+        if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
       	  msc_fd[i] = fopen("/tmp/openair.msc.nas_ue.log","w");
+          msc_log_declare_proto(i);
         }
-        msc_log_declare_proto(i);
         break;
         case MSC_RRC_UE:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "RRC_UE");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_E_UTRAN) {
+          if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
         	  msc_fd[i] = fopen("/tmp/openair.msc.rrc_ue.log","w");
               msc_log_declare_proto(i);
           }
@@ -92,7 +92,7 @@ int msc_init(msc_env_t envP)
         case MSC_PDCP_UE:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "PDCP_UE");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_E_UTRAN) {
+          if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
         	  msc_fd[i] = fopen("/tmp/openair.msc.pdcp_ue.log","w");
         	  msc_log_declare_proto(i);
           }
@@ -100,7 +100,7 @@ int msc_init(msc_env_t envP)
         case MSC_RLC_UE:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "RLC_UE");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_E_UTRAN) {
+          if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
               msc_fd[i] = fopen("/tmp/openair.msc.rlc_ue.log","w");
               msc_log_declare_proto(i);
           }
@@ -108,7 +108,7 @@ int msc_init(msc_env_t envP)
         case MSC_MAC_UE:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "MAC_UE");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_E_UTRAN) {
+          if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
         	  msc_fd[i] = fopen("/tmp/openair.msc.mac_ue.log","w");
         	  msc_log_declare_proto(i);
           }
@@ -116,7 +116,7 @@ int msc_init(msc_env_t envP)
         case MSC_PHY_UE:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "PHY_UE");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_E_UTRAN) {
+          if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
         	  msc_fd[i] = fopen("/tmp/openair.msc.phy_ue.log","w");
         	  msc_log_declare_proto(i);
           }
@@ -124,7 +124,7 @@ int msc_init(msc_env_t envP)
         case MSC_PHY_ENB:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "PHY_ENB");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_E_UTRAN) {
+          if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
         	  msc_fd[i] = fopen("/tmp/openair.msc.phy_enb.log","w");
         	  msc_log_declare_proto(i);
           }
@@ -132,7 +132,7 @@ int msc_init(msc_env_t envP)
         case MSC_MAC_ENB:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "MAC_ENB");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_E_UTRAN) {
+          if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
         	  msc_fd[i] = fopen("/tmp/openair.msc.mac_enb.log","w");
         	  msc_log_declare_proto(i);
           }
@@ -140,13 +140,15 @@ int msc_init(msc_env_t envP)
         case MSC_RLC_ENB:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "RLC_ENB");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          msc_fd[i] = fopen("/tmp/openair.msc.rlc_enb.log","w");
-          msc_log_declare_proto(i);
+          if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
+            msc_fd[i] = fopen("/tmp/openair.msc.rlc_enb.log","w");
+            msc_log_declare_proto(i);
+          }
           break;
         case MSC_PDCP_ENB:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "PDCP_ENB");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_E_UTRAN) {
+          if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
         	  msc_fd[i] = fopen("/tmp/openair.msc.pdcp_enb.log","w");
         	  msc_log_declare_proto(i);
           }
@@ -154,7 +156,7 @@ int msc_init(msc_env_t envP)
         case MSC_RRC_ENB:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "RRC_ENB");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_E_UTRAN) {
+          if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
         	  msc_fd[i] = fopen("/tmp/openair.msc.rrc_enb.log","w");
         	  msc_log_declare_proto(i);
           }
@@ -162,31 +164,39 @@ int msc_init(msc_env_t envP)
         case MSC_S1AP_ENB:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "S1AP_ENB");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          msc_fd[i] = fopen("/tmp/openair.msc.s1ap_enb.log","w");
-          msc_log_declare_proto(i);
+          if ((envP == MSC_E_UTRAN) || (envP == MSC_EPC)  || (envP == MSC_MME)) {
+            msc_fd[i] = fopen("/tmp/openair.msc.s1ap_enb.log","w");
+            msc_log_declare_proto(i);
+          }
           break;
         case MSC_GTPU_ENB:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "GTPU_ENB");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          msc_fd[i] = fopen("/tmp/openair.msc.gtpu_enb.log","w");
-          msc_log_declare_proto(i);
+          if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA) || (envP == MSC_EPC)  || (envP == MSC_SP_GW)) {
+            msc_fd[i] = fopen("/tmp/openair.msc.gtpu_enb.log","w");
+            msc_log_declare_proto(i);
+          }
           break;
         case MSC_GTPU_SGW:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "GTPU_SGW");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          msc_fd[i] = fopen("/tmp/openair.msc.gtpu_sgw.log","w");
-          msc_log_declare_proto(i);
+          if ((envP == MSC_EPC) || (envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
+            msc_fd[i] = fopen("/tmp/openair.msc.gtpu_sgw.log","w");
+            msc_log_declare_proto(i);
+          }
           break;
         case MSC_S1AP_MME:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "S1AP_MME");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          msc_fd[i] = fopen("/tmp/openair.msc.s1ap_mme.log","w");
-          msc_log_declare_proto(i);
+          if ((envP == MSC_EPC) || (envP == MSC_MME) || (envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
+            msc_fd[i] = fopen("/tmp/openair.msc.s1ap_mme.log","w");
+            msc_log_declare_proto(i);
+          }
           break;
         case MSC_MMEAPP_MME:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "MME_APP");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_EPC) {
+          if ((envP == MSC_EPC) || (envP == MSC_MME)) {
         	  msc_fd[i] = fopen("/tmp/openair.msc.mme_app.log","w");
               msc_log_declare_proto(i);
           }
@@ -200,7 +210,7 @@ int msc_init(msc_env_t envP)
         case MSC_NAS_EMM_MME:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "NAS_EMM");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_EPC) {
+          if ((envP == MSC_EPC) || (envP == MSC_MME)) {
         	  msc_fd[i] = fopen("/tmp/openair.msc.nas_emm_mme.log","w");
               msc_log_declare_proto(i);
           }
@@ -208,23 +218,39 @@ int msc_init(msc_env_t envP)
         case MSC_NAS_ESM_MME:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "NAS_ESM");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_EPC) {
+          if ((envP == MSC_EPC) || (envP == MSC_MME)) {
         	  msc_fd[i] = fopen("/tmp/openair.msc.nas_esm_mme.log","w");
+              msc_log_declare_proto(i);
+          }
+          break;
+        case MSC_SP_GWAPP_MME:
+          rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "SP_GW_MME");
+          if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
+          if (envP == MSC_EPC) {
+        	  msc_fd[i] = fopen("/tmp/openair.msc.spgwapp_mme.log","w");
+              msc_log_declare_proto(i);
+          }
+          break;
+        case MSC_S11_MME:
+          rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "S11_MME");
+          if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
+          if (envP == MSC_MME) {
+        	  msc_fd[i] = fopen("/tmp/openair.msc.s11_mme.log","w");
               msc_log_declare_proto(i);
           }
           break;
         case MSC_S6A_MME:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "S6A");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_EPC) {
+          if ((envP == MSC_EPC) || (envP == MSC_MME)) {
         	  msc_fd[i] = fopen("/tmp/openair.msc.s6a_mme.log","w");
               msc_log_declare_proto(i);
           }
           break;
         case MSC_HSS:
-          rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "NAS_ESM");
+          rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "HSS");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if (envP == MSC_EPC) {
+          if ((envP == MSC_EPC) || (envP == MSC_MME)) {
         	  msc_fd[i] = fopen("/tmp/openair.msc.hss.log","w");
         	  msc_log_declare_proto(i);
           }
