@@ -51,8 +51,18 @@ g_display_color  = ['\"teal\"',   # To check in msc.h: MSC_NAS_UE
                     '\"black\"',  # To check in msc.h: MSC_NAS_MME
                     '\"black\"',  # To check in msc.h: MSC_NAS_EMM_MME
                     '\"black\"',  # To check in msc.h: MSC_NAS_ESM_MME
-                    '\"black\"',  # To check in msc.h: MSC_S6A_MME
-                    '\"black\"']  # To check in msc.h: MSC_HSS
+                    '\"black\"',  
+                    '\"black\"',  
+                    '\"black\"',  
+                    '\"black\"',  
+                    '\"black\"',  
+                    '\"black\"',  
+                    '\"black\"',  
+                    '\"black\"',  
+                    '\"black\"',  
+                    '\"black\"',  
+                    '\"black\"',  
+                    '\"black\"'] 
 
 
 
@@ -88,9 +98,16 @@ def parse_oai_log_files():
         '/tmp/openair.msc.rrc_enb.log',
         '/tmp/openair.msc.s1ap_enb.log',
         '/tmp/openair.msc.gtpu_enb.log',
+        '/tmp/openair.msc.mme_app.log',
         '/tmp/openair.msc.nas_mme.log',
+        '/tmp/openair.msc.nas_emm_mme.log',
+        '/tmp/openair.msc.nas_esm_mme.log',
+        '/tmp/openair.msc.spgwapp_mme.log',
+        '/tmp/openair.msc.s11_mme.log',
+        '/tmp/openair.msc.s6a_mme.log',
         '/tmp/openair.msc.gtpu_sgw.log',
-        '/tmp/openair.msc.s1ap_mme.log']
+        '/tmp/openair.msc.s1ap_mme.log',
+        '/tmp/openair.msc.hss.log']
 
     for filename in filenames:
         try:
@@ -170,9 +187,7 @@ def parse_oai_log_files():
                         g_messages[event_id] = Message
 
         except IOError, e:  
-            print 'errno:', ioex.errno
-            print 'err code:', errno.errorcode[ioex.errno]
-            print 'err message:', os.strerror(ioex.errno)
+            print 'err message'
 
     #print("------------------------------------")
     #print ("  %s " % ( g_messages ) )
@@ -189,10 +204,11 @@ def msc_chart_write_header(fileP):
     entity_line_list_str = ''
     print ("  %s " % ( g_proto_names ) )
     for entity in g_proto_names:
-        entity_line_list_str = entity_line_list_str + ' ' + entity + ','
+        if entity != 'NotDeclared':
+            entity_line_list_str = entity_line_list_str + ' ' + entity + ','
 
     entity_line_list_str = entity_line_list_str.rstrip().strip(',')
-    fileP.write("  %s;" % (entity_line_list_str))
+    fileP.write("  %s;\n" % (entity_line_list_str))
 
 
 def msc_chart_write_footer(fileP):
