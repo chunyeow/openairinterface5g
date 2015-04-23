@@ -55,6 +55,7 @@ function help()
   echo_error "  -f, --fqdn                     fqdn       HSS Fully Qualified Domain Name (if not specified default is `hostname --fqdn`)."
   echo_error "  -h, --help                                Print this help."
   echo_error "  -i, --check-installed-software            Check installed software packages necessary to build and run HSS (support Ubuntu 14.04)."
+  echo_error "  -I, --install-hss-files                   Install HSS database if necessary."
   echo_error "  -k, --operator-key             key        Operator key of the HSS (if not specified, default is 11111111111111111111111111111111, see CMakelists.txt)."
   echo_error "  -m, --connect-to-mme           fqdn       MME act as a S6A server, HSS as a client (reversed situation but allows MME and HSS be on the same host) ."
   echo_error "  -r, --realm                    realm      Realm of the HSS (optional parameter)."
