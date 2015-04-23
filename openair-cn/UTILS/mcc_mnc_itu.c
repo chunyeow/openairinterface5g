@@ -731,6 +731,13 @@ const mcc_mnc_list_t mcc_mnc_list[] = {
   {208, "90"},
   {208, "91"},
   {208, "92"}, // NON ITU, ADDED BY EURECOM
+  {208, "93"}, // NON ITU, ADDED BY EURECOM
+  {208, "94"}, // NON ITU, ADDED BY EURECOM
+  {208, "95"}, // NON ITU, ADDED BY EURECOM
+  {208, "96"}, // NON ITU, ADDED BY EURECOM
+  {208, "97"}, // NON ITU, ADDED BY EURECOM
+  {208, "98"}, // NON ITU, ADDED BY EURECOM
+  {208, "99"}, // NON ITU, ADDED BY EURECOM
   {647, "00"},
   {647, "02"},
   {647, "10"},
