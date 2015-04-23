@@ -67,6 +67,7 @@ function help()
 function main()
 {
   local -i run_gdb=0
+  local -i run_mscgen=0
   local    exe_arguments=" "
   local -i epc_local=0
   local -r epc_default_config_file="$OPENAIR_TARGETS/bin/epc.conf"
@@ -141,7 +142,7 @@ function main()
   fi
 
   if [ $run_mscgen -eq 1 ]; then 
-    $SUDO rm -f /tmp/openair.msc.*
+    rm -f /tmp/openair.msc.*
   fi
 
   exe_arguments="-O $epc_config_file $exe_arguments"
