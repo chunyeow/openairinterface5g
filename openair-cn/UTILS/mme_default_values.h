@@ -74,6 +74,7 @@
 #define MMEGID                  (0)
 #define PLMN_MCC                (208)
 #define PLMN_MNC                (34)
+#define PLMN_MNC_LEN            (2)
 #define PLMN_TAC                (0)
 
 #define RELATIVE_CAPACITY       (15)
