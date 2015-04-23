@@ -562,18 +562,18 @@ int init_opt(char *path, char *ip, char *port, radio_type_t radio_type_p)
       LOG_D(OPT, "Failed to open file \"%s\" for writing\n", in_path);
       return (-1);
     }
-
     /* Write the file header */
     fwrite(&file_header, sizeof(pcap_hdr_t), 1, file_fd);
     break;
 
   case OPT_TSHARK:
-    LOG_D(OPT, "Tshark is currently not supported\n");
+    LOG_W(OPT, "Tshark is currently not supported\n");
     opt_type = OPT_NONE;
     break;
 
   default:
     opt_type = OPT_NONE;
+    LOG_W(OPT, "supported Option\n");
     break;
   }
 

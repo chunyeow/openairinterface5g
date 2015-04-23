@@ -348,7 +348,6 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
                   ((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
                   TBsize = 57;
                 }
-
                 break;
               }
             }
@@ -383,17 +382,15 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
             memcpy((void*)&eNB->UE_list.DLSCH_pdu[CC_id][0][(unsigned char)UE_id].payload[0][(unsigned char)offset],
                    &eNB->common_channels[CC_id].CCCH_pdu.payload[0],
                    rrc_sdu_length);
-#if defined(USER_MODE) && defined(OAI_EMU)
 
-            if (oai_emulation.info.opt_enabled) {
-              trace_pdu(1, (uint8_t *)eNB->UE_list.DLSCH_pdu[CC_id][0][(unsigned char)UE_id].payload[0],
-                        rrc_sdu_length, UE_id, 3, UE_RNTI(module_idP, UE_id),
-                        eNB->subframe,0,0);
-              LOG_D(OPT,"[eNB %d][DLSCH] Frame %d trace pdu for rnti %x with size %d\n",
-                    module_idP, frameP, UE_RNTI(module_idP,UE_id), rrc_sdu_length);
-            }
+	    if (opt_enabled==1){
+	      trace_pdu(1, (uint8_t *)eNB->UE_list.DLSCH_pdu[CC_id][0][(unsigned char)UE_id].payload[0],
+			rrc_sdu_length, UE_id, 3, UE_RNTI(module_idP, UE_id),
+			eNB->subframe,0,0);
+	      LOG_D(OPT,"[eNB %d][DLSCH] Frame %d trace pdu for rnti %x with size %d\n",
+		    module_idP, frameP, UE_RNTI(module_idP,UE_id), rrc_sdu_length);
+	    }
 
-#endif
             nprb[CC_id]= nprb[CC_id] + 3;
             nCCE[CC_id] = nCCE[CC_id] + 4;
           }

@@ -164,9 +164,7 @@ schedule_SI(
         }
       }
 
-#if defined(USER_MODE) && defined(OAI_EMU)
-
-      if (oai_emulation.info.opt_enabled) {
+      if (opt_enabled == 1) {
         trace_pdu(1,
                   &eNB->common_channels[CC_id].BCCH_pdu.payload[0],
                   bcch_sdu_length,
@@ -176,11 +174,9 @@ schedule_SI(
                   eNB->subframe,
                   0,
                   0);
+	LOG_D(OPT,"[eNB %d][BCH] Frame %d trace pdu for rnti %x with size %d\n",
+	    module_idP, frameP, 0xffff, bcch_sdu_length);
       }
-        LOG_D(OPT,"[eNB %d][BCH] Frame %d trace pdu for rnti %x with size %d\n",
-              module_idP, frameP, 0xffff, bcch_sdu_length);
-#endif
-
       if (PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.frame_type == TDD) {
         LOG_D(MAC,"[eNB] Frame %d : Scheduling BCCH->DLSCH (TDD) for SI %d bytes (mcs %d, rb 3, TBS %d)\n",
               frameP,
