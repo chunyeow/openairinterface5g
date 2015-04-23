@@ -62,11 +62,15 @@ MME :
         # max values = 999.999:65535
         # maximum of 32 values, comma separated
         PLMN = ( 
-             {MCC="208" ; MNC="10";  TAC = "1"; },
              {MCC="208" ; MNC="92";  TAC = "1"; },
-             {MCC="209" ; MNC="130"; TAC = "4"; },
-             {MCC="209" ; MNC="012"; TAC = "2"; },
-             {MCC="208" ; MNC="35";  TAC = "8"; }
+             {MCC="208" ; MNC="93";  TAC = "4"; },
+             {MCC="208" ; MNC="94";  TAC = "8"; },
+             {MCC="208" ; MNC="95";  TAC = "8"; },
+             {MCC="208" ; MNC="96";  TAC = "1"; },
+             {MCC="208" ; MNC="97";  TAC = "1"; },
+             {MCC="208" ; MNC="98";  TAC = "1"; },
+             {MCC="208" ; MNC="99";  TAC = "1"; },
+             {MCC="208" ; MNC="10";  TAC = "1"; }
         );
     };
     
