@@ -455,6 +455,10 @@ void s1ap_eNB_nas_non_delivery_ind(instance_t instance,
     /* The context for this eNB ue s1ap id doesn't exist in the map of eNB UEs */
     S1AP_WARN("Failed to find ue context associated with eNB ue s1ap id: %06x\n",
               s1ap_nas_non_delivery_ind->eNB_ue_s1ap_id);
+    MSC_LOG_EVENT(
+      MSC_S1AP_ENB,
+      MSC_AS_TIME_FMT" Sent of NAS_NON_DELIVERY_IND to MME failed, no context for eNB_ue_s1ap_id %06x",
+      s1ap_nas_non_delivery_ind->eNB_ue_s1ap_id);
     return;
   }
 
@@ -465,13 +469,6 @@ void s1ap_eNB_nas_non_delivery_ind(instance_t instance,
   message.procedureCode = S1ap_ProcedureCode_id_NASNonDeliveryIndication;
 
   nas_non_delivery_p = &message.msg.s1ap_NASNonDeliveryIndication_IEs;
-
-  if (s1ap_eNB_encode_pdu(&message, &buffer, &length) < 0) {
-    S1AP_ERROR("Failed to encode NAS NON delivery indication\n");
-    /* Encode procedure has failed... */
-    return;
-  }
-
   nas_non_delivery_p->eNB_UE_S1AP_ID = ue_context_p->eNB_ue_s1ap_id;
   nas_non_delivery_p->mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
   nas_non_delivery_p->nas_pdu.buf    = s1ap_nas_non_delivery_ind->nas_pdu.buffer;
@@ -480,6 +477,16 @@ void s1ap_eNB_nas_non_delivery_ind(instance_t instance,
   /* Send a dummy cause */
   nas_non_delivery_p->cause.present = S1ap_Cause_PR_radioNetwork;
   nas_non_delivery_p->cause.choice.radioNetwork = S1ap_CauseRadioNetwork_radio_connection_with_ue_lost;
+
+  if (s1ap_eNB_encode_pdu(&message, &buffer, &length) < 0) {
+    S1AP_ERROR("Failed to encode NAS NON delivery indication\n");
+    /* Encode procedure has failed... */
+    MSC_LOG_EVENT(
+      MSC_S1AP_ENB,
+      MSC_AS_TIME_FMT" Sent of NAS_NON_DELIVERY_IND to MME failed (encoding)");
+    return;
+  }
+
 
   MSC_LOG_TX_MESSAGE(
     MSC_S1AP_ENB,
