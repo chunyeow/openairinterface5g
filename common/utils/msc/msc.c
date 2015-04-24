@@ -295,14 +295,16 @@ void msc_log_declare_proto(
   uint64_t local_msc_event_counter = msc_event_counter;
   msc_event_counter++;
   if ((protoP >= MIN_MSC_PROTOS) && (protoP < MAX_MSC_PROTOS)) {
+    if (msc_fd[protoP] != NULL) {
       rv = fprintf(msc_fd[protoP], "%"PRIu64" [PROTO] %d %s\n", local_msc_event_counter, protoP, &msc_proto2str[protoP][0]);
       if (rv < 0) {
-          fprintf(stderr, "Error while declaring new protocol in MSC log file: %s", strerror(errno));
+        fprintf(stderr, "Error while declaring new protocol in MSC log file: %s", strerror(errno));
       }
-	  rv = fflush(msc_fd[protoP]);
-	  if (rv != 0) {
-		  fprintf(stderr, "Error while flushing stream of MSC log file: %s", strerror(errno));
-	  }
+      rv = fflush(msc_fd[protoP]);
+      if (rv != 0) {
+        fprintf(stderr, "Error while flushing stream of MSC log file: %s", strerror(errno));
+      }
+    }
   }
 }
 //------------------------------------------------------------------------------
@@ -320,7 +322,7 @@ void msc_log_event(
   if ((protoP < MIN_MSC_PROTOS) || (protoP >= MAX_MSC_PROTOS)) {
       return;
   }
-  if (msc_fd != NULL) {
+  if (msc_fd[protoP] != NULL) {
       rv = fprintf(msc_fd[protoP], "%"PRIu64" [EVENT] %d ", local_msc_event_counter, protoP);
       if (rv < 0) {
          fprintf(stderr, "Error while logging MSC event : %s", &msc_proto2str[protoP][0]);
