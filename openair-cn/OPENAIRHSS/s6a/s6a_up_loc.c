@@ -83,6 +83,7 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
     CHECK_FCT(fd_msg_avp_hdr(avp, &hdr));
 
     if (hdr->avp_value->os.len > IMSI_LENGTH) {
+      fprintf(stdout, "IMSI_LENGTH ER_DIAMETER_INVALID_AVP_VALUE\n");
       result_code = ER_DIAMETER_INVALID_AVP_VALUE;
       goto out;
     }
@@ -105,6 +106,7 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
        * with the user unknown cause.
        */
       experimental = 1;
+      fprintf(stdout, "IMSI %s DIAMETER_ERROR_USER_UNKNOWN\n", mysql_push.imsi);
       result_code = DIAMETER_ERROR_USER_UNKNOWN;
       goto out;
     }
@@ -118,6 +120,7 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
   CHECK_FCT(fd_msg_search_avp(qry, s6a_cnf.dataobj_s6a_origin_host, &origin_host));
 
   if (!origin_host) {
+	fprintf(stderr, "origin_host ER_DIAMETER_MISSING_AVP\n");
     result_code = ER_DIAMETER_MISSING_AVP;
     goto out;
   }
@@ -126,6 +129,7 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
   CHECK_FCT(fd_msg_search_avp(qry, s6a_cnf.dataobj_s6a_origin_realm, &origin_realm));
 
   if (!origin_realm) {
+	fprintf(stderr, "origin_realm ER_DIAMETER_MISSING_AVP\n");
     result_code = ER_DIAMETER_MISSING_AVP;
     goto out;
   }
@@ -156,10 +160,12 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
     if ((hdr->avp_value->u32 != 1004) ||
         (FLAG_IS_SET(mysql_ans.access_restriction, E_UTRAN_NOT_ALLOWED))) {
       experimental = 1;
+      fprintf(stderr, "access_restriction DIAMETER_ERROR_RAT_NOT_ALLOWED\n");
       result_code = DIAMETER_ERROR_RAT_NOT_ALLOWED;
       goto out;
     }
   } else {
+      fprintf(stderr, "rat_type ER_DIAMETER_MISSING_AVP\n");
     result_code = ER_DIAMETER_MISSING_AVP;
     goto out;
   }
@@ -219,6 +225,7 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
                    origin_host_hdr->avp_value->os.len > strlen(mysql_ans.mme_identity.mme_host) ?
                    strlen(mysql_ans.mme_identity.mme_host) : origin_host_hdr->avp_value->os.len) != 0) {
           experimental = 1;
+          fprintf(stderr, "DIAMETER_ERROR_UNKOWN_SERVING_NODE (host)\n");
           result_code = DIAMETER_ERROR_UNKOWN_SERVING_NODE;
           goto out;
         }
@@ -227,6 +234,7 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
                    origin_realm_hdr->avp_value->os.len > strlen(mysql_ans.mme_identity.mme_realm) ?
                    strlen(mysql_ans.mme_identity.mme_realm) : origin_realm_hdr->avp_value->os.len) != 0) {
           experimental = 1;
+          fprintf(stderr, "DIAMETER_ERROR_UNKOWN_SERVING_NODE (realm)\n");
           result_code = DIAMETER_ERROR_UNKOWN_SERVING_NODE;
           goto out;
         }
@@ -235,6 +243,7 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
          * marked as an initial attach indication...
          */
         experimental = 1;
+        fprintf(stderr, "DIAMETER_ERROR_UNKOWN_SERVING_NODE\n");
         result_code = DIAMETER_ERROR_UNKOWN_SERVING_NODE;
         goto out;
       }
@@ -244,10 +253,12 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
       /* Padding is not zero'ed, may be the MME/SGSN supports newer
        * release. Inform it.
        */
+        fprintf(stderr, "ULR flags ER_DIAMETER_INVALID_AVP_VALUE\n");
       result_code = ER_DIAMETER_INVALID_AVP_VALUE;
       goto out;
     }
   } else {
+      fprintf(stderr, "ULR flags ER_DIAMETER_MISSING_AVP\n");
     result_code = ER_DIAMETER_MISSING_AVP;
     goto out;
   }
@@ -272,10 +283,12 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
       //                 goto out;
       //             }
     } else {
+        fprintf(stderr, "PLMN ID ER_DIAMETER_INVALID_AVP_VALUE\n");
       result_code = ER_DIAMETER_INVALID_AVP_VALUE;
       goto out;
     }
   } else {
+      fprintf(stderr, "PLMN ID ER_DIAMETER_MISSING_AVP\n");
     result_code = ER_DIAMETER_MISSING_AVP;
     goto out;
   }
@@ -297,6 +310,7 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
       case AVP_CODE_IMEI: {
         /* Check that we do not exceed the maximum size for IMEI */
         if (hdr->avp_value->os.len > IMEI_LENGTH) {
+          fprintf(stderr, "terminal info ER_DIAMETER_INVALID_AVP_VALUE\n");
           result_code = ER_DIAMETER_INVALID_AVP_VALUE;
           failed_avp  = child_avp;
           goto out;
@@ -311,6 +325,7 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
       case AVP_CODE_SOFTWARE_VERSION: {
         /* Check the size for SV */
         if (hdr->avp_value->os.len != SV_LENGTH) {
+            fprintf(stderr, "software version ER_DIAMETER_INVALID_AVP_VALUE\n");
           result_code = ER_DIAMETER_INVALID_AVP_VALUE;
           failed_avp  = child_avp;
           goto out;
@@ -325,6 +340,7 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
       default: /* Fall through */
       case AVP_CODE_3GPP2_MEID: {
         /* This AVP is not expected on s6a interface */
+          fprintf(stderr, "AVP_CODE_3GPP2_MEID ER_DIAMETER_AVP_UNSUPPORTED\n");
         result_code = ER_DIAMETER_AVP_UNSUPPORTED;
         failed_avp  = child_avp;
         goto out;
@@ -392,6 +408,7 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
   /* Only add the subscriber data if not marked as skipped by MME */
   if (!FLAG_IS_SET(ulr_flags, ULR_SKIP_SUBSCRIBER_DATA)) {
     if (s6a_add_subscription_data_avp(ans, &mysql_ans) != 0) {
+        fprintf(stderr, "ULR_SKIP_SUBSCRIBER_DATA DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION\n");
       result_code = DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION;
       experimental = 1;
       goto out;
