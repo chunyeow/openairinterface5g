@@ -45,7 +45,7 @@ int hss_mysql_query_mmeidentity(const int id_mme_identity,
 {
   MYSQL_RES *res;
   MYSQL_ROW row;
-  char query[255];
+  char query[1000];
 
   if ((db_desc->db_conn == NULL) || (mme_identity_p == NULL)) {
     return EINVAL;
@@ -99,7 +99,7 @@ int hss_mysql_check_epc_equipment(mysql_mme_identity_t *mme_identity_p)
 {
   MYSQL_RES *res;
   MYSQL_ROW row;
-  char query[255];
+  char query[1000];
 
   if ((db_desc->db_conn == NULL) || (mme_identity_p == NULL)) {
     return EINVAL;

@@ -46,7 +46,7 @@ int hss_mysql_query_pdns(const char   *imsi,
   int          ret;
   MYSQL_RES   *res = NULL;
   MYSQL_ROW    row;
-  char         query[255];
+  char         query[1000];
   mysql_pdn_t *pdn_array = NULL;
 
   if (db_desc->db_conn == NULL) {

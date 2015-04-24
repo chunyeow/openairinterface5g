@@ -116,7 +116,7 @@ int hss_mysql_update_loc(const char *imsi, mysql_ul_ans_t *mysql_ul_ans)
 {
   MYSQL_RES *res;
   MYSQL_ROW row;
-  char query[255];
+  char query[1000];
   int ret = 0;
 
   if ((db_desc->db_conn == NULL) || (mysql_ul_ans == NULL)) {
@@ -184,7 +184,7 @@ int hss_mysql_purge_ue(mysql_pu_req_t *mysql_pu_req,
 {
   MYSQL_RES *res;
   MYSQL_ROW row;
-  char query[255];
+  char query[1000];
   int ret = 0;
 
   if ((db_desc->db_conn == NULL) ||
@@ -243,7 +243,7 @@ int hss_mysql_get_user(const char *imsi)
 {
   MYSQL_RES *res;
   MYSQL_ROW row;
-  char query[255];
+  char query[1000];
 
   if (db_desc->db_conn == NULL) {
     return EINVAL;
@@ -282,7 +282,7 @@ int hss_mysql_get_user(const char *imsi)
 int mysql_push_up_loc(mysql_ul_push_t *ul_push_p)
 {
   MYSQL_RES *res;
-  char query[500];
+  char query[1000];
   int query_length = 0;
   int status;
 
@@ -378,7 +378,7 @@ int hss_mysql_push_rand_sqn(const char *imsi, uint8_t *rand_p, uint8_t *sqn)
 {
   int status = 0, i;
   MYSQL_RES *res;
-  char query[255];
+  char query[1000];
   int query_length = 0;
   uint64_t sqn_decimal = 0;
 
@@ -449,7 +449,7 @@ int hss_mysql_increment_sqn(const char *imsi)
 {
   int status;
   MYSQL_RES *res;
-  char query[255];
+  char query[1000];
 
   if (db_desc->db_conn == NULL) {
     return EINVAL;
@@ -509,7 +509,7 @@ int hss_mysql_auth_info(mysql_auth_info_req_t  *auth_info_req,
   int ret = 0;
   MYSQL_RES *res;
   MYSQL_ROW row;
-  char query[255];
+  char query[1000];
 
   if (db_desc->db_conn == NULL) {
     return EINVAL;
