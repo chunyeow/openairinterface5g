@@ -678,7 +678,7 @@ int config_parse_opt_line(int argc, char *argv[], mme_config_t *mme_config_p)
   mme_config_init(mme_config_p);
 
   /* Parsing command line */
-  while ((c = getopt (argc, argv, "O:c:hi:K:m:v:V")) != -1) {
+  while ((c = getopt (argc, argv, "O:c:hi:K:mv:V")) != -1) {
     switch (c) {
     case 'O':
     case 'c': {
