@@ -2644,7 +2644,7 @@ int main( int argc, char **argv )
 
 #ifdef ETHERNET
 
-  if (frame_parms[0]->N_RB_DL == 6) openair0_cfg[0].samples_per_packet = 256
+  if (frame_parms[0]->N_RB_DL == 6) openair0_cfg[0].samples_per_packet = 256;
         else openair0_cfg[0].samples_per_packet = 1536;
 
   printf("HW: samples_per_packet %d\n",openair0_cfg[0].samples_per_packet);
