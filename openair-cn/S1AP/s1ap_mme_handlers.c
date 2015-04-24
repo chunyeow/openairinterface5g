@@ -609,6 +609,11 @@ int s1ap_mme_handle_ue_context_release_request(uint32_t assoc_id,
   if (ueContextReleaseRequest_p->cause.present == S1ap_Cause_PR_radioNetwork) {
     if (ueContextReleaseRequest_p->cause.choice.radioNetwork ==
         S1ap_CauseRadioNetwork_user_inactivity) {
+      S1AP_DEBUG("UE_CONTEXT_RELEASE_REQUEST ignored, cause user inactivity\n");
+      MSC_LOG_EVENT(
+        		MSC_S1AP_MME,
+        		"0 UE_CONTEXT_RELEASE_REQUEST ignored, cause user inactivity",
+        		ueContextReleaseRequest_p->mme_ue_s1ap_id);
       return -1;
     }
   }
@@ -621,6 +626,10 @@ int s1ap_mme_handle_ue_context_release_request(uint32_t assoc_id,
     S1AP_DEBUG("UE_CONTEXT_RELEASE_REQUEST ignored cause could not get context with mme_ue_s1ap_id 0x%08x %u(10)\n",
                ueContextReleaseRequest_p->mme_ue_s1ap_id,
                ueContextReleaseRequest_p->mme_ue_s1ap_id);
+    MSC_LOG_EVENT(
+    		MSC_S1AP_MME,
+    		"0 UE_CONTEXT_RELEASE_REQUEST ignored, no context mme_ue_s1ap_id",
+    		ueContextReleaseRequest_p->mme_ue_s1ap_id);
     return -1;
   } else {
     if (ue_ref->eNB_ue_s1ap_id == (ueContextReleaseRequest_p->eNB_UE_S1AP_ID &
@@ -633,6 +642,12 @@ int s1ap_mme_handle_ue_context_release_request(uint32_t assoc_id,
       // UE context will be removed when receiving UE_CONTEXT_RELEASE_COMPLETE
     } else {
       // TODO
+      S1AP_DEBUG("UE_CONTEXT_RELEASE_REQUEST ignored, cause mismatch eNB_ue_s1ap_id: ctxt 0x%08x != request 0x%08x",
+          		ue_ref->eNB_ue_s1ap_id, ueContextReleaseRequest_p->eNB_UE_S1AP_ID);
+      MSC_LOG_EVENT(
+          		MSC_S1AP_MME,
+          		"0 UE_CONTEXT_RELEASE_REQUEST ignored, cause mismatch eNB_ue_s1ap_id: ctxt 0x%08x != request 0x%08x",
+          		ue_ref->eNB_ue_s1ap_id, ueContextReleaseRequest_p->eNB_UE_S1AP_ID);
       return -1;
     }
   }
