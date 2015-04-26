@@ -523,23 +523,27 @@ int main(int argc, char **argv)
                  &PHY_vars_eNb->lte_frame_parms,
                  (PHY_vars_eNb->lte_frame_parms.Ncp==NORMAL) ? 6 : 5,
                  0);
+    /*
     generate_sss(PHY_vars_eNb->lte_eNB_common_vars.txdataF[0],
                  AMP,
                  &PHY_vars_eNb->lte_frame_parms,
                  (PHY_vars_eNb->lte_frame_parms.Ncp==0) ? 5 : 4,
-                 0);
+                 0);*/
     generate_pss(PHY_vars_eNb->lte_eNB_common_vars.txdataF[0],
                  AMP,
                  &PHY_vars_eNb->lte_frame_parms,
                  (PHY_vars_eNb->lte_frame_parms.Ncp==0) ? 6 : 5,
                  10);
+    /*
     generate_sss(PHY_vars_eNb->lte_eNB_common_vars.txdataF[0],
                  AMP,
                  &PHY_vars_eNb->lte_frame_parms,
                  (PHY_vars_eNb->lte_frame_parms.Ncp==0) ? 5 : 4,
                  10);
+    */
 
   } else {
+
     generate_sss(PHY_vars_eNb->lte_eNB_common_vars.txdataF[0],
                  AMP,
                  &PHY_vars_eNb->lte_frame_parms,

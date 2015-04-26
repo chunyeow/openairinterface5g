@@ -141,7 +141,7 @@ set(CMAKE_C_FLAGS
 # these changes are related to hardcoded path to include .h files
 add_definitions(-DCMAKER)
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -ggdb -DMALLOC_CHECK_=3")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS} -ggdb -DMALLOC_CHECK_=3 -O3")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS} -ggdb -DMALLOC_CHECK_=3 -O2")
 
 # Below has been put in comment because does not work with
 # SVN authentication.
