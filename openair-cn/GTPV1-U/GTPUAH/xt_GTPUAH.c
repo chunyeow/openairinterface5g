@@ -268,7 +268,7 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
 
 
   /* Create a new copy of the original skb...can't avoid :-( */
-  if ((orig_iplen + headroom_reqd) <= mtu) {
+  if ((orig_iplen + sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(struct gtpuhdr)) <= mtu) {
 
     new_skb_p = alloc_skb(headroom_reqd + orig_iplen, GFP_ATOMIC);
 
@@ -325,7 +325,6 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
     new_iph_p->check    = 0;
     new_iph_p->check    = ip_fast_csum((unsigned char *)new_iph_p, new_iph_p->ihl);
     skb_reset_network_header(new_skb_p);
-
 
     // CHECKSUM_NONE, CHECKSUM_UNNECESSARY, CHECKSUM_COMPLETE, CHECKSUM_PARTIAL
     new_skb_p->ip_summed = CHECKSUM_NONE;
@@ -386,7 +385,8 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
                   NIPADDR(old_iph_p->saddr),
                   NIPADDR(old_iph_p->daddr),
                   NIPADDR(new_iph_p->saddr),
-                  NIPADDR(new_iph_p->daddr));
+                  NIPADDR(new_iph_p->daddr),
+                  new_skb_p->len);
 
 #if defined(TRACE_IN_KERN_LOG)
           _gtpuah_print_hex_octets(
