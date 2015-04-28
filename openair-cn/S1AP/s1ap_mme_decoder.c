@@ -114,6 +114,15 @@ static int s1ap_mme_decode_initiating(
   }
   break;
 
+  case S1ap_ProcedureCode_id_NASNonDeliveryIndication: {
+	ret = s1ap_decode_s1ap_nasnondeliveryindication_ies(
+	            &message->msg.s1ap_NASNonDeliveryIndication_IEs, &initiating_p->value);
+	s1ap_xer_print_s1ap_nasnondeliveryindication_(s1ap_xer__print2sp,
+	        message_string, message);
+	message_id = S1AP_NAS_NON_DELIVERY_IND_LOG;
+  }
+  break;
+
   default: {
     S1AP_ERROR("Unknown procedure ID (%d) for initiating message\n",
                (int)initiating_p->procedureCode);
