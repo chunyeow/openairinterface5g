@@ -205,7 +205,7 @@ void nas_COMMON_receive(uint16_t dlen,
 #ifdef NAS_ADDRESS_FIX
 
 #ifdef NAS_DEBUG_RECEIVE
-      printk("NAS_COMMON_RECEIVE: dumping the packet before the csum recalculation\n",skb->len);
+      printk("NAS_COMMON_RECEIVE: dumping the packet before the csum recalculation (len %d)\n",skb->len);
 
       for (i=0; i<skb->len; i++)
         printk("%2x ",((unsigned char *)(skb->data))[i]);
@@ -582,12 +582,12 @@ struct rb_entity *nas_COMMON_search_rb(struct cx_entity *cx, nasRadioBearerId_t 
   for (rb=cx->rb; rb!=NULL; rb=rb->next) {
 #ifdef NAS_DEBUG_CLASS
     printk("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS\n");
-    printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.rab_id %u \n", rb->rab_id);
-    printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.sapi %u \n", rb->sapi;
-           printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.qos %u \n", rb->qos;
-                  printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.state %u \n", rb->state;
-                         printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.retry %u \n", rb->retry;
-                                printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.countimer %u \n\n", rb->countimer;);
+    printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.rab_id %u \n", rb->rab_id, rab_id);
+    //printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.sapi %u \n", rb->sapi);
+    //printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.qos %u \n", rb->qos);
+    //printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.state %u \n", rb->state);
+    //printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.retry %u \n", rb->retry);
+    //printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.countimer %u \n\n", rb->countimer);
 #endif
 
                                 if (rb->rab_id==rab_id)
