@@ -210,17 +210,12 @@ int s1ap_mme_handle_nas_non_delivery(uint32_t assoc_id, uint32_t stream,
   }
 
   nasNonDeliveryIndication_p = &message->msg.s1ap_NASNonDeliveryIndication_IEs;
-/*
- *     S1ap_MME_UE_S1AP_ID_t mme_ue_s1ap_id;
-    S1ap_ENB_UE_S1AP_ID_t eNB_UE_S1AP_ID;
-    S1ap_NAS_PDU_t        nas_pdu;
-    S1ap_Cause_t          cause;
- */
+
   MSC_LOG_RX_MESSAGE(
 	  	MSC_S1AP_MME,
 	    MSC_S1AP_ENB,
   		NULL,0,
-  		"0 UPLINK_NAS_TRANSPORT mme_ue_s1ap_id %u eNB_ue_s1ap_id %u cause %u nas len %u",
+  		"0 NAS_NON_DELIVERY_IND mme_ue_s1ap_id %u eNB_ue_s1ap_id %u cause %u nas len %u",
   		nasNonDeliveryIndication_p->mme_ue_s1ap_id,
   		nasNonDeliveryIndication_p->eNB_UE_S1AP_ID,
   		nasNonDeliveryIndication_p->cause,
