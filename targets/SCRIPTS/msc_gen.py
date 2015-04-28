@@ -86,7 +86,8 @@ def sequence_number_generator():
     g_sequence_generator = g_sequence_generator + 1
     return l_seq
 
-
+def file_is_empty(fpath):  
+    return False if os.path.isfile(fpath) and os.path.getsize(fpath) > 0 else True
 
 def parse_oai_log_files():
     global g_entities_dic
@@ -124,6 +125,8 @@ def parse_oai_log_files():
     # we may insert diagnostic events
     event_id_offset = 0
     for filename in filenames:
+        if file_is_empty(filename):
+            continue
         try:
             fhandle  = open(filename, 'r')
             fcontent = fhandle.read()
@@ -224,7 +227,7 @@ def parse_oai_log_files():
                         g_messages[event_id + event_id_offset] = Message
 
         except IOError, e:  
-            print ("INPUT LINE:  %s " % line)
+            print ("File %s INPUT LINE:  %s " % (filename, line))
             print 'err message'
 
     #print("------------------------------------")
