@@ -200,14 +200,49 @@ int s1ap_mme_handle_uplink_nas_transport(uint32_t assoc_id, uint32_t stream,
 int s1ap_mme_handle_nas_non_delivery(uint32_t assoc_id, uint32_t stream,
                                      struct s1ap_message_s *message)
 {
+  S1ap_NASNonDeliveryIndication_IEs_t *nasNonDeliveryIndication_p = NULL;
+  ue_description_t *ue_ref = NULL;
+
   /* UE associated signalling on stream == 0 is not valid. */
   if (stream == 0) {
     S1AP_DEBUG("Received new nas non delivery on stream == 0\n");
     return -1;
   }
 
+  nasNonDeliveryIndication_p = &message->msg.s1ap_NASNonDeliveryIndication_IEs;
+/*
+ *     S1ap_MME_UE_S1AP_ID_t mme_ue_s1ap_id;
+    S1ap_ENB_UE_S1AP_ID_t eNB_UE_S1AP_ID;
+    S1ap_NAS_PDU_t        nas_pdu;
+    S1ap_Cause_t          cause;
+ */
+  MSC_LOG_RX_MESSAGE(
+	  	MSC_S1AP_MME,
+	    MSC_S1AP_ENB,
+  		NULL,0,
+  		"0 UPLINK_NAS_TRANSPORT mme_ue_s1ap_id %u eNB_ue_s1ap_id %u cause %u nas len %u",
+  		nasNonDeliveryIndication_p->mme_ue_s1ap_id,
+  		nasNonDeliveryIndication_p->eNB_UE_S1AP_ID,
+  		nasNonDeliveryIndication_p->cause,
+  		nasNonDeliveryIndication_p->nas_pdu.size);
+
+  if ((ue_ref = s1ap_is_ue_mme_id_in_list(nasNonDeliveryIndication_p->mme_ue_s1ap_id))
+      == NULL) {
+    S1AP_DEBUG("No UE is attached to this mme UE s1ap id: %d\n",
+               (int)nasNonDeliveryIndication_p->mme_ue_s1ap_id);
+    return -1;
+  }
+
+  if (ue_ref->s1_ue_state != S1AP_UE_CONNECTED) {
+    S1AP_DEBUG("Received uplink NASNonDeliveryIndication while UE in state != S1AP_UE_CONNECTED\n");
+    return -1;
+  }
+
   //TODO: forward NAS PDU to NAS
-  DevMessage("TODO: forward NAS PDU to NAS\n");
+  s1ap_mme_itti_nas_non_delivery_ind(
+		  nasNonDeliveryIndication_p->mme_ue_s1ap_id,
+		  nasNonDeliveryIndication_p->nas_pdu.buf,
+		  nasNonDeliveryIndication_p->nas_pdu.size);
   return 0;
 }
 

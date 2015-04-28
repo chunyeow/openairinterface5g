@@ -118,4 +118,33 @@ static inline void s1ap_mme_itti_nas_establish_ind(
   itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
 }
 
+static inline void s1ap_mme_itti_nas_non_delivery_ind(
+  const uint32_t ue_id, uint8_t * const nas_msg, const uint32_t nas_msg_length)
+{
+  MessageDef     *message_p;
+
+  message_p = itti_alloc_new_message(TASK_S1AP, NAS_DOWNLINK_DATA_REJ);
+
+  NAS_DL_DATA_REJ(message_p).UEid                 = ue_id;
+  /* Mapping between asn1 definition and NAS definition */
+  //NAS_NON_DELIVERY_IND(message_p).asCause              = cause + 1;
+  NAS_DL_DATA_REJ(message_p).nasMsg.length = nas_msg_length;
+
+  NAS_DL_DATA_REJ(message_p).nasMsg.data = malloc(sizeof(uint8_t) * nas_msg_length);
+  memcpy(NAS_DL_DATA_REJ(message_p).nasMsg.data, nas_msg, nas_msg_length);
+
+
+  MSC_LOG_TX_MESSAGE(
+  		MSC_S1AP_MME,
+  		MSC_NAS_MME,
+  		NULL,0,
+  		"0 NAS_DOWNLINK_DATA_REJ ue_id %u len %u",
+  		ue_id,
+  		NAS_DL_DATA_REJ(message_p).nasMsg.length);
+
+  // should be sent to MME_APP, but this one would forward it to NAS_MME, so send it directly to NAS_MME
+  // but let's see
+  itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
+}
+
 #endif /* S1AP_MME_ITTI_MESSAGING_H_ */

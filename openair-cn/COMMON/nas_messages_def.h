@@ -54,7 +54,7 @@ MESSAGE_DEF(NAS_CONNECTION_RELEASE_IND,         MESSAGE_PRIORITY_MED,   nas_conn
 MESSAGE_DEF(NAS_UPLINK_DATA_IND,                MESSAGE_PRIORITY_MED,   nas_ul_data_ind_t,          nas_ul_data_ind)
 MESSAGE_DEF(NAS_DOWNLINK_DATA_REQ,              MESSAGE_PRIORITY_MED,   nas_dl_data_req_t,          nas_dl_data_req)
 MESSAGE_DEF(NAS_DOWNLINK_DATA_CNF,              MESSAGE_PRIORITY_MED,   nas_dl_data_cnf_t,          nas_dl_data_cnf)
-MESSAGE_DEF(NAS_NON_DELIVERY_IND,               MESSAGE_PRIORITY_MED,   nas_non_del_ind_t,          nas_non_del_ind)
+MESSAGE_DEF(NAS_DOWNLINK_DATA_REJ,              MESSAGE_PRIORITY_MED,   nas_dl_data_rej_t,          nas_dl_data_rej)
 MESSAGE_DEF(NAS_RAB_ESTABLISHMENT_REQ,          MESSAGE_PRIORITY_MED,   nas_rab_est_req_t,          nas_rab_est_req)
 MESSAGE_DEF(NAS_RAB_ESTABLISHMENT_RESP,         MESSAGE_PRIORITY_MED,   nas_rab_est_rsp_t,          nas_rab_est_rsp)
 MESSAGE_DEF(NAS_RAB_RELEASE_REQ,                MESSAGE_PRIORITY_MED,   nas_rab_rel_req_t,          nas_rab_rel_req)

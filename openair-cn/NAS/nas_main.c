@@ -129,7 +129,7 @@ next_message:
       nas_proc_dl_transfer_cnf(NAS_DL_DATA_CNF(received_message_p).UEid);
     } break;
 
-    case NAS_NON_DELIVERY_IND: {
+    case NAS_DOWNLINK_DATA_REJ: {
       nas_proc_dl_transfer_rej(NAS_DL_DATA_REJ(received_message_p).UEid);
     } break;
 
