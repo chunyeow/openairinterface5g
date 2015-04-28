@@ -39,6 +39,14 @@
 #if !(defined KVERSION)
 #    error "Kernel version is not defined!!!! Exiting."
 #endif
+
+#define TRACE_IN_KERN_LOG 1
+
+#if defined(TRACE_IN_KERN_LOG)
+#define PR_INFO(fORMAT, aRGS...) pr_info(fORMAT, ##aRGS)
+#else
+#define PR_INFO(fORMAT, aRGS...)
+#endif
 #define INT_MODULE_PARM(n, v) static int n = v; module_param(n, int, 0444)
 //-----------------------------------------------------------------------------
 MODULE_LICENSE("GPL");
@@ -230,7 +238,7 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
   struct udphdr  *udph_p          = NULL;
   struct gtpuhdr *gtpuh_p         = NULL;
   struct sk_buff *new_skb_p       = NULL;
-  const uint16_t  headroom_reqd   =  ETH_HLEN + sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(struct gtpuhdr);
+  uint16_t  headroom_reqd         = LL_MAX_HEADER + sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(struct gtpuhdr);
   uint16_t        orig_iplen = 0, udp_len = 0, ip_len = 0;
   int             flags = 0, offset = 0;
   unsigned int    addr_type       = RTN_UNSPEC;
@@ -242,12 +250,12 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
   }
 
   if (skb_linearize(old_skb_pP) < 0) {
-    pr_info("GTPUAH: skb no linearize\n");
+	PR_INFO("GTPUAH: skb no linearize\n");
     return;
   }
 
   if (old_skb_pP->mark == 0) {
-    pr_info("GTPUAH: _gtpuah_target_add force info_pP mark %u to skb_pP mark %u\n",
+	PR_INFO("GTPUAH: _gtpuah_target_add force info_pP mark %u to skb_pP mark %u\n",
             old_skb_pP->mark,
             ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->rtun);
     old_skb_pP->mark = ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->rtun;
@@ -265,12 +273,12 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
     new_skb_p = alloc_skb(headroom_reqd + orig_iplen, GFP_ATOMIC);
 
     if (new_skb_p == NULL) {
-      pr_info("GTPUAH: alloc_skb returned NULL\n");
+      PR_INFO("GTPUAH: alloc_skb returned NULL\n");
       return;
     }
 
     if (skb_linearize(new_skb_p) < 0) {
-      pr_info("GTPUAH: skb no linearize\n");
+      PR_INFO("GTPUAH: skb no linearize\n");
       goto free_new_skb;
     }
 
@@ -297,7 +305,7 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
                                        udp_len,
                                        IPPROTO_UDP,
                                        csum_partial((char*)udph_p, udp_len, 0));
-    skb_set_transport_header(new_skb_p, 0);
+    skb_reset_transport_header(new_skb_p);
 
     /* Add IP header */
     ip_len = sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(struct gtpuhdr) + orig_iplen;
@@ -316,11 +324,7 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
     new_iph_p->daddr    = ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->raddr;
     new_iph_p->check    = 0;
     new_iph_p->check    = ip_fast_csum((unsigned char *)new_iph_p, new_iph_p->ihl);
-    skb_set_network_header(new_skb_p, 0);
-
-    skb_set_inner_network_header(new_skb_p, -ETH_HLEN);
-    skb_set_inner_transport_header(new_skb_p, -ETH_HLEN);
-
+    skb_reset_network_header(new_skb_p);
 
 
     // CHECKSUM_NONE, CHECKSUM_UNNECESSARY, CHECKSUM_COMPLETE, CHECKSUM_PARTIAL
@@ -358,7 +362,7 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
         rt = ip_route_output_key(&init_net, &fl.u.ip4);
 
         if (rt == NULL) {
-          pr_info("GTPURH: Failed to route packet to dst 0x%x.\n", fl.u.ip4.daddr);
+          PR_INFO("GTPURH: Failed to route packet to dst 0x%x.\n", fl.u.ip4.daddr);
           goto free_new_skb;
         }
 
@@ -366,7 +370,7 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
         skb_dst_drop(new_skb_p);
 
         if (rt->dst.dev) {
-          pr_info("GTPUAH: dst dev name %s\n", rt->dst.dev->name);
+          PR_INFO("GTPUAH: dst dev name %s\n", rt->dst.dev->name);
           skb_dst_set(new_skb_p, dst_clone(&rt->dst));
           new_skb_p->dev      = skb_dst(new_skb_p)->dev;
 
@@ -374,9 +378,9 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
             goto free_new_skb;
           }
 
-          nf_ct_attach(new_skb_p, old_skb_pP);
+          //LG TESTnf_ct_attach(new_skb_p, old_skb_pP);
 
-          pr_info("GTPUAH: PACKET -> NF_HOOK NF_INET_POST_ROUTING/%s mark %u encap src: %u.%u.%u.%u dst: %u.%u.%u.%u in src: %u.%u.%u.%u dst: %u.%u.%u.%u\n",
+          PR_INFO("GTPUAH: PACKET -> NF_HOOK NF_INET_POST_ROUTING/%s mark %u encap src: %u.%u.%u.%u dst: %u.%u.%u.%u in src: %u.%u.%u.%u dst: %u.%u.%u.%u\n",
                   gtpuah_tg_reg[0].table,
                   new_skb_p->mark,
                   NIPADDR(old_iph_p->saddr),
@@ -384,14 +388,16 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
                   NIPADDR(new_iph_p->saddr),
                   NIPADDR(new_iph_p->daddr));
 
+#if defined(TRACE_IN_KERN_LOG)
           _gtpuah_print_hex_octets(
             ip_hdr(new_skb_p),
             headroom_reqd);
+#endif
 
           ip_local_out(new_skb_p);
           return;
         } else {
-          pr_info("GTPURH: rt->dst.dev == NULL\n");
+          PR_INFO("GTPURH: rt->dst.dev == NULL\n");
           goto free_new_skb;
         }
       } else { // (tunnel_local)
@@ -418,7 +424,7 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
                 NIPADDR(old_iph_p->saddr),
                 NIPADDR(old_iph_p->daddr));*/
         if ( dev_forward_skb(old_skb_pP->dev, new_skb_p) != NET_RX_SUCCESS) {
-          pr_info("GTPUAH(tun): dev_forward_skb failed!!!\n");
+          PR_INFO("GTPUAH(tun): dev_forward_skb failed!!!\n");
         }
 
         return;
@@ -427,13 +433,13 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
     break;
 
     default:
-      pr_info("GTPUAH: NF_HOOK %u not processed\n", par_pP->hooknum);
+      PR_INFO("GTPUAH: NF_HOOK %u not processed\n", par_pP->hooknum);
       goto free_new_skb;
     }
 
     return;
   } else {
-    pr_info("GTPUAH: PACKET DROPPED because of mtu %u < (%u + %u)\n",
+	PR_INFO("GTPUAH: PACKET DROPPED because of mtu %u < (%u + %u)\n",
             mtu, orig_iplen, headroom_reqd);
   }
 
