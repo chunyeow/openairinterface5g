@@ -230,7 +230,7 @@ void nas_COMMON_receive(uint16_t dlen,
 
       case IPPROTO_TCP:
 
-        cksum  = (uint16_t*)&(((struct tcphdr*)((network_header + (network_header->ihl<<2))))->check);
+        cksum  = (uint16_t*)&(((struct tcphdr*)(((char *)network_header + (network_header->ihl<<2))))->check);
         //check  = csum_tcpudp_magic(((struct iphdr *)network_header)->saddr, ((struct iphdr *)network_header)->daddr, tcp_hdrlen(skb), IPPROTO_TCP, ~(*cksum));
 
 #ifdef NAS_DEBUG_RECEIVE
@@ -255,7 +255,7 @@ void nas_COMMON_receive(uint16_t dlen,
 
       case IPPROTO_UDP:
 
-        cksum  = (uint16_t*)&(((struct udphdr*)((network_header + (network_header->ihl<<2))))->check);
+        cksum  = (uint16_t*)&(((struct udphdr*)(((char *)network_header + (network_header->ihl<<2))))->check);
         // check = csum_tcpudp_magic(((struct iphdr *)network_header)->saddr, ((struct iphdr *)network_header)->daddr, udp_hdr(skb)->len, IPPROTO_UDP, ~(*cksum));
 #ifdef NAS_DEBUG_RECEIVE
         printk("[NAS][COMMON] Inst %d UDP packet CS = %x (before), SA (%x)%x, DA (%x)%x\n",
