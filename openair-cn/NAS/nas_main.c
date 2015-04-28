@@ -126,7 +126,11 @@ next_message:
     break;
 
     case NAS_DOWNLINK_DATA_CNF: {
-      //                 nas_proc_dl_transfer_cnf(NAS_DL_DATA_CNF(received_message_p).UEid);
+      nas_proc_dl_transfer_cnf(NAS_DL_DATA_CNF(received_message_p).UEid);
+    } break;
+
+    case NAS_NON_DELIVERY_IND: {
+      nas_proc_dl_transfer_rej(NAS_DL_DATA_REJ(received_message_p).UEid);
     } break;
 
     case NAS_AUTHENTICATION_PARAM_RSP: {
