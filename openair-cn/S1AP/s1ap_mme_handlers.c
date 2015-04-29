@@ -671,7 +671,7 @@ static int s1ap_mme_generate_ue_context_release_command(
   memset(&message, 0, sizeof(s1ap_message));
 
   message.procedureCode = S1ap_ProcedureCode_id_UEContextRelease;
-  message.direction     = S1AP_PDU_PR_successfulOutcome;
+  message.direction     = S1AP_PDU_PR_initiatingMessage;
 
   ueContextReleaseCommandIEs_p = &message.msg.s1ap_UEContextReleaseCommandIEs;
 
