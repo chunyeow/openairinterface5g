@@ -228,7 +228,7 @@ rlc_um_rx (const protocol_ctxt_t* const ctxt_pP, void *argP, struct mac_data_ind
           message_string_size += sprintf(&message_string[message_string_size], "| HE:");
 
           for (index=0; index < pdu_info.num_li; index++) {
-            message_string_size += sprintf(&message_string[message_string_size], " LI  %u\n", pdu_info.li_list[index]);
+            message_string_size += sprintf(&message_string[message_string_size], " LI %u", pdu_info.li_list[index]);
         }
         }
 
@@ -296,7 +296,7 @@ rlc_um_rx (const protocol_ctxt_t* const ctxt_pP, void *argP, struct mac_data_ind
           message_string_size += sprintf(&message_string[message_string_size], "| HE:");
 
           for (index=0; index < pdu_info.num_li; index++) {
-            message_string_size += sprintf(&message_string[message_string_size], " LI  %u\n", pdu_info.li_list[index]);
+            message_string_size += sprintf(&message_string[message_string_size], " LI  %u", pdu_info.li_list[index]);
           }
         }
 
@@ -581,7 +581,7 @@ rlc_um_mac_data_request (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP)
         message_string_size += sprintf(&message_string[message_string_size], "|HE:");
 
         for (index=0; index < pdu_info.num_li; index++) {
-          message_string_size += sprintf(&message_string[message_string_size], " LI %u\n", pdu_info.li_list[index]);
+          message_string_size += sprintf(&message_string[message_string_size], " LI %u", pdu_info.li_list[index]);
         }
       }
 

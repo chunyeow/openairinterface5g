@@ -705,7 +705,7 @@ rlc_am_mac_data_request (
             message_string_size += sprintf(&message_string[message_string_size], "| HE:");
 
             for (index=0; index < pdu_info.num_li; index++) {
-              message_string_size += sprintf(&message_string[message_string_size], " LI %u\n", pdu_info.li_list[index]);
+              message_string_size += sprintf(&message_string[message_string_size], " LI %u", pdu_info.li_list[index]);
             }
           }
 
@@ -925,7 +925,7 @@ rlc_am_mac_data_indication (
             message_string_size += sprintf(&message_string[message_string_size], "| HE:");
 
             for (index=0; index < pdu_info.num_li; index++) {
-              message_string_size += sprintf(&message_string[message_string_size], " LI %u\n", pdu_info.li_list[index]);
+              message_string_size += sprintf(&message_string[message_string_size], " LI %u", pdu_info.li_list[index]);
             }
           }
 
