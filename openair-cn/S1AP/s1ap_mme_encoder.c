@@ -151,7 +151,7 @@ int s1ap_mme_encode_successfull_outcome(s1ap_message *message_p,
     return s1ap_mme_encode_s1setupresponse(message_p, buffer, length);
 
   default:
-    S1AP_DEBUG("Unknown procedure ID (%d) for successfull outcome message_p\n",
+    S1AP_DEBUG("Unknown procedure ID (%d) for successfull outcome message\n",
                (int)message_p->procedureCode);
     break;
   }
@@ -168,7 +168,7 @@ int s1ap_mme_encode_unsuccessfull_outcome(s1ap_message *message_p,
     return s1ap_mme_encode_s1setupfailure(message_p, buffer, length);
 
   default:
-    S1AP_DEBUG("Unknown procedure ID (%d) for unsuccessfull outcome message_p\n",
+    S1AP_DEBUG("Unknown procedure ID (%d) for unsuccessfull outcome message\n",
                (int)message_p->procedureCode);
     break;
   }
