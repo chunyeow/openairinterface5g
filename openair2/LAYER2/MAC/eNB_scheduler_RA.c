@@ -41,6 +41,7 @@
 #include "platform_types.h"
 #include "PHY/defs.h"
 #include "PHY/extern.h"
+#include "msc.h"
 
 #include "SCHED/defs.h"
 #include "SCHED/extern.h"
@@ -451,6 +452,7 @@ void cancel_ra_proc(module_id_t module_idP, int CC_id, frame_t frameP, rnti_t rn
   unsigned char i;
   RA_TEMPLATE *RA_template = (RA_TEMPLATE *)&eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[0];
 
+  MSC_LOG_EVENT(MSC_PHY_ENB, "RA Cancelling procedure ue %"PRIx16" ", rnti);
   LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Cancelling RA procedure for UE rnti %x\n",module_idP,frameP,rnti);
 
   for (i=0; i<NB_RA_PROC_MAX; i++) {
