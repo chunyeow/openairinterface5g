@@ -2002,6 +2002,7 @@ static void get_options (int argc, char **argv)
       break;
 
     case 'r':
+      UE_scan = 0;
       for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
         switch(atoi(optarg)) {
         case 6:
@@ -2251,11 +2252,11 @@ int main( int argc, char **argv )
   for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
     frame_parms[CC_id] = (LTE_DL_FRAME_PARMS*) malloc(sizeof(LTE_DL_FRAME_PARMS));
     /* Set some default values that may be overwritten while reading options */
-    frame_parms[CC_id]->frame_type         = TDD; /* TDD */
+    frame_parms[CC_id]->frame_type         = FDD; /* TDD */
     frame_parms[CC_id]->tdd_config          = 3;
     frame_parms[CC_id]->tdd_config_S        = 0;
-    frame_parms[CC_id]->N_RB_DL             = 25;
-    frame_parms[CC_id]->N_RB_UL             = 25;
+    frame_parms[CC_id]->N_RB_DL             = 100;
+    frame_parms[CC_id]->N_RB_UL             = 100;
     frame_parms[CC_id]->Ncp                 = NORMAL;
     frame_parms[CC_id]->Ncp_UL              = NORMAL;
     frame_parms[CC_id]->Nid_cell            = Nid_cell;
@@ -2271,6 +2272,14 @@ int main( int argc, char **argv )
   //randominit (0);
   set_taus_seed (0);
 
+
+  for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
+    downlink_frequency[CC_id][0] = 2680000000; // Use float to avoid issue with frequency over 2^31.
+    downlink_frequency[CC_id][1] = downlink_frequency[CC_id][0];
+    downlink_frequency[CC_id][2] = downlink_frequency[CC_id][0];
+    downlink_frequency[CC_id][3] = downlink_frequency[CC_id][0];
+    printf("Downlink for CC_id %d frequency set to %u\n", CC_id, downlink_frequency[CC_id][0]);
+  }
 
   get_options (argc, argv); //Command-line options
   set_glog(glog_level, glog_verbosity);
@@ -2736,10 +2745,6 @@ int main( int argc, char **argv )
           0,// cba_group_active
           0); // HO flag
 
-  if (UE_flag == 1)
-    mac_xface->dl_phy_sync_success (0, 0, 0, 1);
-  else
-    mac_xface->mrbch_phy_sync_failure (0, 0, 0);
 
 #endif
 
@@ -2756,11 +2761,15 @@ int main( int argc, char **argv )
 #endif
 
 #ifdef OPENAIR2
+
   printf("Filling UE band info\n");
 
-  if (UE_flag==1)
+  if (UE_flag==1) {
     fill_ue_band_info();
-
+    mac_xface->dl_phy_sync_success (0, 0, 0, 1);
+  }
+  else
+    mac_xface->mrbch_phy_sync_failure (0, 0, 0);
 #endif
 
   /* #ifdef OPENAIR2
