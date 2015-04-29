@@ -62,15 +62,7 @@ MME :
         # max values = 999.999:65535
         # maximum of 32 values, comma separated
         PLMN = ( 
-             {MCC="208" ; MNC="92";  TAC = "1"; },
-             {MCC="208" ; MNC="93";  TAC = "4"; },
-             {MCC="208" ; MNC="94";  TAC = "8"; },
-             {MCC="208" ; MNC="95";  TAC = "8"; },
-             {MCC="208" ; MNC="96";  TAC = "1"; },
-             {MCC="208" ; MNC="97";  TAC = "1"; },
-             {MCC="208" ; MNC="98";  TAC = "1"; },
-             {MCC="208" ; MNC="99";  TAC = "1"; },
-             {MCC="208" ; MNC="10";  TAC = "1"; }
+             {MCC="208" ; MNC="93";  TAC = "1"; }
         );
     };
     
@@ -84,8 +76,8 @@ MME :
     
     NETWORK_INTERFACES : 
     {
-        MME_INTERFACE_NAME_FOR_S1_MME         = "eth0";
-        MME_IPV4_ADDRESS_FOR_S1_MME           = "192.168.13.17//24";
+        MME_INTERFACE_NAME_FOR_S1_MME         = "eth2";
+        MME_IPV4_ADDRESS_FOR_S1_MME           = "192.168.27.101//24";
 
         MME_INTERFACE_NAME_FOR_S11_MME        = "none";
         MME_IPV4_ADDRESS_FOR_S11_MME          = "0.0.0.0/24";
@@ -99,9 +91,9 @@ S-GW :
         SGW_INTERFACE_NAME_FOR_S11              = "none";
         SGW_IPV4_ADDRESS_FOR_S11                = "0.0.0.0/24";
 
-        SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP    = "eth0";
+        SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP    = "eth2";
         SGW_INTERFACE_MTU_FOR_S1U_S12_S4_UP     = 1564
-        SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP      = "192.168.13.17/24";
+        SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP      = "192.168.27.101/24";
         # TODO  PORT NUMBER
         SGW_IPV4_PORT_FOR_S1U_S12_S4_UP         = 2152;
 
@@ -121,17 +113,17 @@ P-GW =
         PGW_INTERFACE_NAME_FOR_S5_S8          = "none";
         PGW_IPV4_ADDRESS_FOR_S5_S8            = "0.0.0.0/24";
 
-        PGW_INTERFACE_NAME_FOR_SGI            = "eth1";
-        PGW_IPV4_ADDRESS_FOR_SGI              = "192.168.14.17/24";
+        PGW_INTERFACE_NAME_FOR_SGI            = "eth0";
+        PGW_IPV4_ADDRESS_FOR_SGI              = "192.168.12.101/24";
         # Option available only if GTPU in kernel configured
-        PGW_MASQUERADE_SGI                    = "no";
+        PGW_MASQUERADE_SGI                    = "yes";
     };
     
     IP_ADDRESS_POOL :
     {
         IPV4_LIST = (
-                      "192.168.0.0/24",
-                      "192.168.1.0/24"
+                      "192.188.0.0/24",
+                      "192.188.1.0/24"
                     );
         IPV6_LIST = (
                       "2014:02:26::0/120"
