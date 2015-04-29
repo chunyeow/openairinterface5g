@@ -315,12 +315,11 @@ int nas_message_decrypt(
 
     /* Check NAS message integrity */
     if (mac != header->message_authentication_code) {
+
       LOG_TRACE(DEBUG,
-                "MAC Failure MSG:%08X(%u) <> INT ALGO:%08X(%u)",
-                header->message_authentication_code,
-                header->message_authentication_code,
-                mac,
-                mac);
+                "MAC Failure MSG:%08X(%u) <> INT ALGO:%08X(%u) Type of security context %u",
+                header->message_authentication_code,header->message_authentication_code,
+                mac,mac, (emm_security_context!=NULL)?emm_security_context->type:88);
 #if defined(NAS_MME)
       LOG_FUNC_RETURN (TLV_DECODE_MAC_MISMATCH);
 #else

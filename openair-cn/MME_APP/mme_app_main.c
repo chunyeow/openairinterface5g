@@ -147,6 +147,11 @@ void *mme_app_thread(void *args)
     }
     break;
 
+    case S1AP_UE_CONTEXT_RELEASE_REQ: {
+        mme_app_handle_s1ap_ue_context_release_req(&received_message_p->ittiMsg.s1ap_ue_context_release_req);
+    }
+    break;
+
     default: {
       MME_APP_DEBUG("Unkwnon message ID %d:%s\n",
                     ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));

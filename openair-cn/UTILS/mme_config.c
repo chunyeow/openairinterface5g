@@ -694,6 +694,7 @@ int config_parse_opt_line(int argc, char *argv[], mme_config_t *mme_config_p)
     break;
 
     case 'm': {
+      fprintf(stdout, "Logging Message chart(mscgen)\n");
       MSC_INIT(MSC_EPC);
     }
     break;

@@ -598,8 +598,9 @@ int s1ap_mme_handle_initial_context_setup_response(
 int s1ap_mme_handle_ue_context_release_request(uint32_t assoc_id,
     uint32_t stream, struct s1ap_message_s *message)
 {
-  S1ap_UEContextReleaseRequestIEs_t *ueContextReleaseRequest_p;
-  ue_description_t *ue_ref = NULL;
+  S1ap_UEContextReleaseRequestIEs_t *ueContextReleaseRequest_p = NULL;
+  ue_description_t                  *ue_ref                    = NULL;
+  MessageDef                        *message_p                 = NULL;
 
   ueContextReleaseRequest_p = &message->msg.s1ap_UEContextReleaseRequestIEs;
 
@@ -638,8 +639,27 @@ int s1ap_mme_handle_ue_context_release_request(uint32_t assoc_id,
        * -> Send a UE context Release Command to eNB.
        * TODO
        */
-      s1ap_mme_generate_ue_context_release_command(ue_ref);
+      //s1ap_mme_generate_ue_context_release_command(ue_ref);
       // UE context will be removed when receiving UE_CONTEXT_RELEASE_COMPLETE
+
+      message_p = itti_alloc_new_message(TASK_S1AP, S1AP_UE_CONTEXT_RELEASE_REQ);
+
+      AssertFatal(message_p != NULL,"itti_alloc_new_message Failed");
+      memset((void*)&message_p->ittiMsg.mme_app_initial_context_setup_rsp,
+    	         0,
+    	         sizeof(mme_app_initial_context_setup_rsp_t));
+
+      S1AP_UE_CONTEXT_RELEASE_REQ(message_p).mme_ue_s1ap_id                      = ue_ref->mme_ue_s1ap_id;
+
+      MSC_LOG_TX_MESSAGE(
+    	  		MSC_S1AP_MME,
+    	  		MSC_MMEAPP_MME,
+    	  		NULL,0,
+    	  		"0 S1AP_UE_CONTEXT_RELEASE_REQ mme_ue_s1ap_id %u ",
+    	  		S1AP_UE_CONTEXT_RELEASE_REQ(message_p).mme_ue_s1ap_id);
+
+      return itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
+
     } else {
       // TODO
       S1AP_DEBUG("UE_CONTEXT_RELEASE_REQUEST ignored, cause mismatch eNB_ue_s1ap_id: ctxt 0x%08x != request 0x%08x",

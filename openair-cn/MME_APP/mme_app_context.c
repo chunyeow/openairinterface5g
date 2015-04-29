@@ -49,6 +49,7 @@
 #include "mme_app_extern.h"
 #include "mme_app_ue_context.h"
 #include "mme_app_defs.h"
+#include "msc.h"
 
 int ue_context_compare_identifiers(struct ue_context_s *p1,
                                    struct ue_context_s *p2);
@@ -59,8 +60,10 @@ RB_PROTOTYPE(ue_context_map, ue_context_s, rb_entry,
 RB_GENERATE(ue_context_map, ue_context_s, rb_entry,
             ue_context_compare_identifiers);
 
+//------------------------------------------------------------------------------
 extern inline int ue_context_compare_identifiers(
   struct ue_context_s *p1, struct ue_context_s *p2)
+//------------------------------------------------------------------------------
 {
   MME_APP_DEBUG(" ue_context_compare_identifiers IMSI           %"SCNu64"\n", p1->imsi);
   MME_APP_DEBUG(" ue_context_compare_identifiers mme_s11_teid   %08x\n"       , p1->mme_s11_teid);
@@ -144,7 +147,9 @@ extern inline int ue_context_compare_identifiers(
   return 0;
 }
 
+//------------------------------------------------------------------------------
 ue_context_t *mme_create_new_ue_context(void)
+//------------------------------------------------------------------------------
 {
   ue_context_t *new_p;
 
@@ -159,8 +164,10 @@ ue_context_t *mme_create_new_ue_context(void)
 }
 
 
+//------------------------------------------------------------------------------
 struct ue_context_s *mme_ue_context_exists_imsi(mme_ue_context_t *mme_ue_context,
     mme_app_imsi_t imsi)
+//------------------------------------------------------------------------------
 {
   struct ue_context_s  reference;
 
@@ -173,8 +180,10 @@ struct ue_context_s *mme_ue_context_exists_imsi(mme_ue_context_t *mme_ue_context
 }
 
 
+//------------------------------------------------------------------------------
 struct ue_context_s *mme_ue_context_exists_s11_teid(mme_ue_context_t *mme_ue_context,
     uint32_t teid)
+//------------------------------------------------------------------------------
 {
   struct ue_context_s  reference;
 
@@ -188,9 +197,11 @@ struct ue_context_s *mme_ue_context_exists_s11_teid(mme_ue_context_t *mme_ue_con
 
 
 
+//------------------------------------------------------------------------------
 ue_context_t *mme_ue_context_exists_mme_ue_s1ap_id(
   mme_ue_context_t *mme_ue_context,
   uint32_t mme_ue_s1ap_id)
+//------------------------------------------------------------------------------
 {
   struct ue_context_s  reference;
 
@@ -204,9 +215,11 @@ ue_context_t *mme_ue_context_exists_mme_ue_s1ap_id(
 
 
 
+//------------------------------------------------------------------------------
 ue_context_t *mme_ue_context_exists_nas_ue_id(
   mme_ue_context_t *mme_ue_context,
   uint32_t nas_ue_id)
+//------------------------------------------------------------------------------
 {
   struct ue_context_s  reference;
 
@@ -221,8 +234,10 @@ ue_context_t *mme_ue_context_exists_nas_ue_id(
 
 
 
+//------------------------------------------------------------------------------
 ue_context_t *mme_ue_context_exists_guti(mme_ue_context_t *mme_ue_context,
     GUTI_t guti)
+//------------------------------------------------------------------------------
 {
   struct ue_context_s  reference;
 
@@ -236,7 +251,9 @@ ue_context_t *mme_ue_context_exists_guti(mme_ue_context_t *mme_ue_context,
                  &reference);
 }
 
+//------------------------------------------------------------------------------
 int mme_insert_ue_context(mme_ue_context_t *mme_ue_context, struct ue_context_s *ue_context_p)
+//------------------------------------------------------------------------------
 {
   struct ue_context_s *collision_p = NULL;
 
@@ -258,7 +275,9 @@ int mme_insert_ue_context(mme_ue_context_t *mme_ue_context, struct ue_context_s 
   return 0;
 }
 
+//------------------------------------------------------------------------------
 void mme_app_dump_ue_contexts(mme_ue_context_t *mme_ue_context)
+//------------------------------------------------------------------------------
 {
   struct ue_context_s *context_p;
 
@@ -425,4 +444,28 @@ void mme_app_dump_ue_contexts(mme_ue_context_t *mme_ue_context)
     }
   }
   MME_APP_DEBUG("---------------------------------------------------------\n");
+}
+
+
+//------------------------------------------------------------------------------
+void mme_app_handle_s1ap_ue_context_release_req(const s1ap_ue_context_release_req_t const *s1ap_ue_context_release_req)
+//------------------------------------------------------------------------------
+{
+  struct ue_context_s                    *ue_context_p        = NULL;
+
+  MME_APP_DEBUG("Received S1AP_UE_CONTEXT_RELEASE_REQ from S1AP\n");
+
+  ue_context_p = mme_ue_context_exists_nas_ue_id(&mme_app_desc.mme_ue_contexts, s1ap_ue_context_release_req->mme_ue_s1ap_id);
+
+
+  if (ue_context_p == NULL) {
+	MSC_LOG_EVENT(
+   		MSC_MMEAPP_MME,
+   		"S1AP_UE_CONTEXT_RELEASE_REQ Unknown ue %u",s1ap_ue_context_release_req->mme_ue_s1ap_id);
+    MME_APP_ERROR("UE context doesn't exist for UE 0x%08X/dec%u\n",
+    		s1ap_ue_context_release_req->mme_ue_s1ap_id,
+    		s1ap_ue_context_release_req->mme_ue_s1ap_id);
+    return;
+  }
+  mme_app_send_s11_release_access_bearers_req(ue_context_p);
 }

@@ -189,6 +189,13 @@ static void *s11_mme_thread(void *args)
     }
     break;
 
+    case SGW_RELEASE_ACCESS_BEARERS_REQUEST: {
+        s11_mme_release_access_bearers_request(
+          &s11_mme_stack_handle,
+          &received_message_p->ittiMsg.sgwReleaseAccessBearersRequest);
+    }
+    break;
+
     case UDP_DATA_IND: {
       /* We received new data to handle from the UDP layer */
       NwRcT rc;

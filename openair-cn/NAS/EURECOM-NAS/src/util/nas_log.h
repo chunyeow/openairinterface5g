@@ -125,18 +125,18 @@ do {                                                                            
 # define LOG_FUNC_IN                                                            \
 do {                                                                            \
     LOG_D(NAS, " %s:%d %*sEntering %s()\n", __FILE__, __LINE__, nas_log_func_indent, "", __FUNCTION__);   \
-    nas_log_func_indent += 4;                                                   \
+    nas_log_func_indent += 2;                                                   \
 } while (0)
 
 # define LOG_FUNC_OUT                                                           \
 do {                                                                            \
-    nas_log_func_indent -= 4;                                                   \
+    nas_log_func_indent -= 2;                                                   \
     LOG_D(NAS, " %s:%d %*sLeaving %s()\n", __FILE__, __LINE__, nas_log_func_indent, "", __FUNCTION__);    \
 } while (0)
 
 # define LOG_FUNC_RETURN(rETURNcODE)                                            \
 do {                                                                            \
-    nas_log_func_indent -= 4;                                                   \
+    nas_log_func_indent -= 2;                                                   \
     LOG_D(NAS, " %s:%d %*sLeaving %s(rc = %ld)\n", __FILE__, __LINE__, nas_log_func_indent, "",           \
           __FUNCTION__, (long) rETURNcODE);                                     \
     return (rETURNcODE);                                                        \

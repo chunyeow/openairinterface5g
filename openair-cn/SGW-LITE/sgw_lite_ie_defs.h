@@ -464,6 +464,12 @@ typedef struct {
   /* TODO: add packet filter list as defined in 3GPP TS 29.274 Table 10.5.162 */
 } tft_t;
 
+typedef enum node_type_e {
+  NODE_TYPE_MME  = 0,
+  NODE_TYPE_SGSN = 1
+} node_type_t;
+
+
 /* Cause as defined in 3GPP TS 29.274 #8.4 */
 typedef enum SGWCause_e {
   /* Request / Initial message */

@@ -42,12 +42,14 @@
 #ifndef SGW_LITE_MESSAGES_TYPES_H_
 #define SGW_LITE_MESSAGES_TYPES_H_
 
-#define SGW_CREATE_SESSION_REQUEST(mSGpTR)  (mSGpTR)->ittiMsg.sgwCreateSessionRequest
-#define SGW_CREATE_SESSION_RESPONSE(mSGpTR) (mSGpTR)->ittiMsg.sgwCreateSessionResponse
-#define SGW_MODIFY_BEARER_REQUEST(mSGpTR)   (mSGpTR)->ittiMsg.sgwModifyBearerRequest
-#define SGW_MODIFY_BEARER_RESPONSE(mSGpTR)  (mSGpTR)->ittiMsg.sgwModifyBearerResponse
-#define SGW_DELETE_SESSION_REQUEST(mSGpTR)  (mSGpTR)->ittiMsg.sgwDeleteSessionRequest
-#define SGW_DELETE_SESSION_RESPONSE(mSGpTR) (mSGpTR)->ittiMsg.sgwDeleteSessionResponse
+#define SGW_CREATE_SESSION_REQUEST(mSGpTR)         (mSGpTR)->ittiMsg.sgwCreateSessionRequest
+#define SGW_CREATE_SESSION_RESPONSE(mSGpTR)        (mSGpTR)->ittiMsg.sgwCreateSessionResponse
+#define SGW_MODIFY_BEARER_REQUEST(mSGpTR)          (mSGpTR)->ittiMsg.sgwModifyBearerRequest
+#define SGW_MODIFY_BEARER_RESPONSE(mSGpTR)         (mSGpTR)->ittiMsg.sgwModifyBearerResponse
+#define SGW_DELETE_SESSION_REQUEST(mSGpTR)         (mSGpTR)->ittiMsg.sgwDeleteSessionRequest
+#define SGW_DELETE_SESSION_RESPONSE(mSGpTR)        (mSGpTR)->ittiMsg.sgwDeleteSessionResponse
+#define SGW_RELEASE_ACCESS_BEARERS_REQUEST(mSGpTR) (mSGpTR)->ittiMsg.sgwReleaseAccessBearersRequest
+#define SGW_RELEASE_ACCESS_BEARERS_RESPONSE(mSGpTR) (mSGpTR)->ittiMsg.sgwReleaseAccessBearersResponse
 
 
 /** @struct SgwCreateSessionRequest
@@ -866,5 +868,54 @@ typedef struct SgwDeleteSessionResponse_s {
   void       *trxn;
   uint32_t    peer_ip;
 } SgwDeleteSessionResponse;
+
+/** @struct SgwReleaseAccessBearersRequest
+ *  @brief Release AccessBearers Request
+ *
+ * The Release Access Bearers Request message shall sent on the S11 interface by
+ * the MME to the SGW as part of the S1 release procedure.
+ * The message shall also be sent on the S4 interface by the SGSN to the SGW as
+ * part of the procedures:
+ * -    RAB release using S4
+ * -    Iu Release using S4
+ * -    READY to STANDBY transition within the network
+ */
+typedef struct SgwReleaseAccessBearersRequest_s {
+	Teid_t     teid;                     ///< Tunnel Endpoint Identifier
+	uint32_t   num_rabs;
+	EBI_t      list_of_rabs[8]  ;        ///< Shall be present on S4 interface when this message is
+                                         ///< used to release a subset of all active RABs according to
+                                         ///< the RAB release procedure.
+                                         ///< Several IEs with this type and instance values shall be
+                                         ///< included as necessary to represent a list of RABs to be
+                                         ///< released.
+
+	node_type_t originating_node;        ///< This IE shall be sent on S11 interface, if ISR is active in the MME.
+                                         ///< This IE shall be sent on S4 interface, if ISR is active in the SGSN
+	// Private Extension Private Extension ///< optional
+
+} SgwReleaseAccessBearersRequest;
+
+/** @struct SgwReleaseAccessBearersResponse
+ *  @brief Release AccessBearers Response
+ *
+ * The Release Access Bearers Response message is sent on the S11 interface by the SGW to the MME as part of the S1
+ * release procedure.
+ * The message shall also be sent on the S4 interface by the SGW to the SGSN as part of the procedures:
+ * -  RAB release using S4
+ * -  Iu Release using S4
+ * -  READY to STANDBY transition within the network
+ * Possible Cause values are specified in Table 8.4-1. Message specific cause values are:
+ * - "Request accepted".
+ * - "Request accepted partially".
+ * - "Context not found
+ */
+typedef struct SgwReleaseAccessBearersResponse_s {
+	Teid_t      teid;                   ///< Tunnel Endpoint Identifier
+	SGWCause_t  cause;
+	// Recovery           ///< optional This IE shall be included if contacting the peer for the first time
+	// Private Extension  ///< optional
+
+} SgwReleaseAccessBearersResponse;
 
 #endif

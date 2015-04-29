@@ -78,6 +78,11 @@ static void *sgw_lite_intertask_interface(void *args_p)
     }
     break;
 
+    case SGW_RELEASE_ACCESS_BEARERS_REQUEST: {
+      sgw_lite_handle_release_access_bearers_request(&received_message_p->ittiMsg.sgwReleaseAccessBearersRequest);
+    }
+    break;
+
     case SGW_DELETE_SESSION_REQUEST: {
       sgw_lite_handle_delete_session_request(&received_message_p->ittiMsg.sgwDeleteSessionRequest);
     }

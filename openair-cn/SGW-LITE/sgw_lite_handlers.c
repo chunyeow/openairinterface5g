@@ -46,6 +46,7 @@
 #include "common_types.h"
 #include "intertask_interface.h"
 #include "mme_config.h"
+#include "msc.h"
 
 #include "sgw_lite_defs.h"
 #include "sgw_lite_handlers.h"
@@ -53,7 +54,6 @@
 #include "sgw_lite.h"
 #include "pgw_lite_paa.h"
 #include "spgw_config.h"
-#include "msc.h"
 
 extern sgw_app_t     sgw_app;
 extern spgw_config_t spgw_config;
@@ -1122,3 +1122,62 @@ sgw_lite_handle_delete_session_request(
 
   return -1;
 }
+
+
+int
+sgw_lite_handle_release_access_bearers_request(
+  const SgwReleaseAccessBearersRequest * const release_access_bearers_req_pP)
+{
+  task_id_t                                     to_task;
+  hashtable_rc_t                                hash_rc;
+  SgwReleaseAccessBearersResponse              *release_access_bearers_resp_p = NULL;
+  MessageDef                                   *message_p                     = NULL;
+  s_plus_p_gw_eps_bearer_context_information_t *ctx_p                         = NULL;
+
+#if defined(ENABLE_STANDALONE_EPC)
+  to_task = TASK_MME_APP;
+#else
+  to_task = TASK_S11;
+#endif
+  message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_RELEASE_ACCESS_BEARERS_RESPONSE);
+
+  if (message_p == NULL) {
+    return -1;
+  }
+
+  release_access_bearers_resp_p = &message_p->ittiMsg.sgwReleaseAccessBearersResponse;
+
+
+  hash_rc = hashtable_get(sgw_app.s11_bearer_context_information_hashtable,
+		  release_access_bearers_req_pP->teid,
+                          (void**)&ctx_p);
+
+  if (hash_rc == HASH_TABLE_OK) {
+	release_access_bearers_resp_p->cause = REQUEST_ACCEPTED;
+	release_access_bearers_resp_p->teid  = ctx_p->sgw_eps_bearer_context_information.mme_teid_for_S11;
+
+#warning "TODO Here the release (sgw_lite_handle_release_access_bearers_request)"
+
+    MSC_LOG_TX_MESSAGE(
+  		MSC_SP_GWAPP_MME,
+  		(to_task == TASK_MME_APP) ? MSC_MMEAPP_MME:MSC_S11_MME,
+    	NULL,0,
+    	"0 SGW_RELEASE_ACCESS_BEARERS_RESPONSE teid %u cause %u",
+    	release_access_bearers_resp_p->teid,
+    	release_access_bearers_resp_p->cause);
+
+    return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+  } else {
+	release_access_bearers_resp_p->cause   = CONTEXT_NOT_FOUND;
+	release_access_bearers_resp_p->teid    = 0;
+	MSC_LOG_TX_MESSAGE(
+	  		MSC_SP_GWAPP_MME,
+	  		(to_task == TASK_MME_APP) ? MSC_MMEAPP_MME:MSC_S11_MME,
+	    	NULL,0,
+	    	"0 SGW_RELEASE_ACCESS_BEARERS_RESPONSE CONTEXT_NOT_FOUND");
+
+	return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+  }
+  return -1;
+}
+

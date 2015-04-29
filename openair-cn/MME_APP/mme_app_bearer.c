@@ -51,6 +51,46 @@
 #include "msc.h"
 
 
+int
+mme_app_send_s11_release_access_bearers_req(
+  struct ue_context_s * const ue_context_pP)
+{
+  uint8_t                     i                 = 0;
+  task_id_t                   to_task           = TASK_UNKNOWN;
+  /* Keep the identifier to the default APN */
+  context_identifier_t        context_identifier;
+  MessageDef                 *message_p         = NULL;
+  SgwReleaseAccessBearersRequest    *release_access_bearers_request_p = NULL;
+
+
+  DevAssert(ue_context_pP != NULL);
+
+#if !defined(ENABLE_STANDALONE_EPC)
+  to_task = TASK_S11;
+#else
+  to_task = TASK_SPGW_APP;
+#endif
+
+  message_p = itti_alloc_new_message(TASK_MME_APP, SGW_RELEASE_ACCESS_BEARERS_REQUEST);
+  release_access_bearers_request_p = &message_p->ittiMsg.sgwReleaseAccessBearersRequest;
+  memset(release_access_bearers_request_p, 0, sizeof(SgwReleaseAccessBearersRequest));
+
+  release_access_bearers_request_p->teid             = ue_context_pP->sgw_s11_teid;
+  release_access_bearers_request_p->num_rabs         = 1;
+  release_access_bearers_request_p->list_of_rabs[0]  = ue_context_pP->default_bearer_id;
+  release_access_bearers_request_p->originating_node = NODE_TYPE_MME;
+
+  MSC_LOG_TX_MESSAGE(
+  		MSC_MMEAPP_MME,
+  		(to_task == TASK_S11) ? MSC_S11_MME:MSC_SP_GWAPP_MME,
+  		NULL,0,
+  		"0 SGW_RELEASE_ACCESS_BEARERS_REQUEST teid %u ebi %u",
+  		SGW_RELEASE_ACCESS_BEARERS_REQUEST(message_p).teid,
+  		release_access_bearers_request_p->list_of_rabs[0]);
+
+  itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+}
+
 
 int
 mme_app_send_s11_create_session_req(

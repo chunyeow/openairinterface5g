@@ -204,3 +204,20 @@ int s11_mme_handle_create_session_response(NwGtpv2cStackHandleT *stack_p,
 
   return itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 }
+
+
+int s11_mme_release_access_bearers_request(NwGtpv2cStackHandleT    *stack_p,
+		SgwReleaseAccessBearersRequest *release_access_bearers_p)
+{
+  NwGtpv2cUlpApiT ulp_req;
+
+  NwRcT   rc;
+  uint8_t restart_counter = 0;
+
+  DevAssert(stack_p          != NULL);
+  DevAssert(release_access_bearers_p != NULL);
+
+  memset(&ulp_req, 0, sizeof(NwGtpv2cUlpApiT));
+
+  AssertFatal(0 == 1, "TODO s11_mme_release_access_bearers_request()");
+}

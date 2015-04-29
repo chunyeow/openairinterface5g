@@ -42,6 +42,7 @@
 #include <inttypes.h>   /* For sscanf formats */
 #include <time.h>       /* to provide time_t */
 
+#include "s1ap_messages_types.h"
 #include "nas_messages_types.h"
 #include "s6a_messages_types.h"
 #include "security_types.h"
@@ -247,6 +248,9 @@ ue_context_t *mme_create_new_ue_context(void);
 /** \brief Dump the UE contexts present in the tree
  **/
 void mme_app_dump_ue_contexts(mme_ue_context_t *mme_ue_context);
+
+
+void mme_app_handle_s1ap_ue_context_release_req(const s1ap_ue_context_release_req_t const *s1ap_ue_context_release_req);
 
 #endif /* MME_APP_UE_CONTEXT_H_ */
 

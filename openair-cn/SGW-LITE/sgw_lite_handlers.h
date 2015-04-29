@@ -43,5 +43,5 @@ int sgw_lite_handle_gtpv1uCreateTunnelResp(const Gtpv1uCreateTunnelResp  * const
 int sgw_lite_handle_gtpv1uUpdateTunnelResp(const Gtpv1uUpdateTunnelResp  * const endpoint_updated_p);
 int sgw_lite_handle_modify_bearer_request (const SgwModifyBearerRequest  * const modify_bearer_p);
 int sgw_lite_handle_delete_session_request(const SgwDeleteSessionRequest * const delete_session_p);
-
+int sgw_lite_handle_release_access_bearers_request(const SgwReleaseAccessBearersRequest * const release_access_bearers_req_pP);
 #endif /* SGW_LITE_HANDLERS_H_ */
