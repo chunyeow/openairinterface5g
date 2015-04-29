@@ -146,13 +146,13 @@ nasmesh_netlink.ko:
 	(cd NETWORK_DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) PDCP_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
 
 naslite_netlink_ether.ko:
-	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 PDCP_USE_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
+	(cd NETWORK_DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 PDCP_USE_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
 
 oai_nw_ether.ko:
-	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 PDCP_USE_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
+	(cd NETWORK_DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 PDCP_USE_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
 
 oai_nw_drv.ko:
-	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 PDCP_USE_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
+	(cd NETWORK_DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 PDCP_USE_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
 
 nasmesh_netlink_address_fix.ko:
 	(cd NETWORK_DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) PDCP_USE_NETLINK=1 ADDRESS_FIX=1  V=1 -C $(KERNEL_DIR)/build M=`pwd` modules)
@@ -230,9 +230,9 @@ emul_rt:
 
 clean:
 	(cd NETWORK_DRIVER/MESH && $(MAKE) clean)
-	(cd NAS/DRIVER/LITE && $(MAKE) clean)
+	(cd NETWORK_DRIVER/LITE && $(MAKE) clean)
 	rm -rf NETWORK_DRIVER/MESH/RB_TOOL/rb_tool
-	rm -rf NAS/DRIVER/LITE/RB_TOOL/rb_tool
+	rm -rf NETWORK_DRIVER/LITE/RB_TOOL/rb_tool
 
 cleanall:
 	find -name *.o -delete -print
@@ -240,7 +240,7 @@ cleanall:
 	find -name *~ -delete -print
 	find -name *.bak -delete -print
 	rm -rf NETWORK_DRIVER/MESH/RB_TOOL/rb_tool
-	rm -rf NAS/DRIVER/LITE/RB_TOOL/rb_tool
+	rm -rf NETWORK_DRIVER/LITE/RB_TOOL/rb_tool
 
 
 cleansvn:

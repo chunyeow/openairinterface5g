@@ -2137,7 +2137,11 @@ uint8_t do_MBSFNAreaConfig(uint8_t Mod_id,
   pmch_Info_1 = CALLOC(1,sizeof(PMCH_Info_r9_t));
   memset((void*)pmch_Info_1,0,sizeof(PMCH_Info_r9_t));
 
-  pmch_Info_1->pmch_Config_r9.sf_AllocEnd_r9= 3;//take the value of last mbsfn subframe in this CSA period because there is only one PMCH in this mbsfn area
+  /*
+   * take the value of last mbsfn subframe in this CSA period because there is only one PMCH in this mbsfn area
+   * Note: this has to be set based on the subframeAllocation and CSA
+   */
+  pmch_Info_1->pmch_Config_r9.sf_AllocEnd_r9= 3;
   pmch_Info_1->pmch_Config_r9.dataMCS_r9= 7;
   pmch_Info_1->pmch_Config_r9.mch_SchedulingPeriod_r9= PMCH_Config_r9__mch_SchedulingPeriod_r9_rf16;
 

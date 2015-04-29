@@ -1312,7 +1312,7 @@ void update_otg_eNB(module_id_t enb_module_idP, unsigned int ctime)
     rb_id_t           rb_id;
 
     // MBSM multicast traffic
-    // if (frame >= 50) {// only generate when UE can receive MTCH (need to control this value)
+    if (ctime >= 500 ) {// only generate when UE can receive MTCH (need to control this value)
     for (service_id = 0; service_id < 2 ; service_id++) { //maxServiceCount
       for (session_id = 0; session_id < 2; session_id++) { // maxSessionPerPMCH
         if (pdcp_mbms_array_eNB[enb_module_idP][service_id][session_id].instanciated_instance == TRUE) { // this service/session is configured
@@ -1337,7 +1337,7 @@ void update_otg_eNB(module_id_t enb_module_idP, unsigned int ctime)
             free(otg_pkt);
             otg_pkt=NULL;
           }
-
+	
 
           // old version
           /*      // MBSM multicast traffic
@@ -1370,7 +1370,7 @@ void update_otg_eNB(module_id_t enb_module_idP, unsigned int ctime)
       }
     }
 
-    //    } // end multicast traffic
+    } // end multicast traffic
 #endif
   }
 

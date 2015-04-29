@@ -1493,8 +1493,8 @@ pdcp_config_req_asn1 (
 
   case CONFIG_ACTION_MBMS_ADD:
   case CONFIG_ACTION_MBMS_MODIFY:
-    LOG_D(PDCP,PROTOCOL_PDCP_CTXT_FMT" %s service_id/mch index %d, session_id/lcid %d, rbid %d configured\n",
-          PROTOCOL_PDCP_CTXT_ARGS(ctxt_pP,pdcp_pP),
+    LOG_D(PDCP," %s service_id/mch index %d, session_id/lcid %d, rbid %d configured\n",
+          //PROTOCOL_PDCP_CTXT_ARGS(ctxt_pP,pdcp_pP),
           actionP == CONFIG_ACTION_MBMS_ADD ? "CONFIG_ACTION_MBMS_ADD" : "CONFIG_ACTION_MBMS_MODIFY",
           mch_idP,
           lc_idP,

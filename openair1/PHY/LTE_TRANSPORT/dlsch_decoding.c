@@ -767,9 +767,9 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
 #ifdef DEBUG_DLSCH_DECODING
 
     for (i=0; i<dlsch_ue->harq_processes[0]->TBS>>3; i++)
-      LOG_T(PHY,"%x.",dlsch_eNB->harq_processes[0]->b[i]);
+      msg("%x.",dlsch_eNB->harq_processes[0]->b[i]);
 
-    LOG_T(PHY,"\n");
+    msg("\n");
 #endif
 
     /*

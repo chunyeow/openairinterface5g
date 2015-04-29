@@ -169,7 +169,8 @@ tbs_size_t mac_rlc_data_req(
 
 #ifdef OAI_EMU
   CHECK_CTXT_ARGS(&ctxt);
-    AssertFatal (MBMS_flagP == MBMS_FLAG_NO ," MBMS FLAG SHOULD NOT BE SET IN mac_rlc_data_req in UE\n");
+  //printf("MBMS_flagP %d, MBMS_FLAG_NO %d \n",MBMS_flagP, MBMS_FLAG_NO);
+  //  AssertFatal (MBMS_flagP == MBMS_FLAG_NO ," MBMS FLAG SHOULD NOT BE SET IN mac_rlc_data_req in UE\n");
 
 #endif
 

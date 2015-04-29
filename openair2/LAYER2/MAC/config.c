@@ -457,7 +457,7 @@ rrc_mac_config_req(
       for (i =0; i< pmch_InfoList->list.count; i++) {
         eNB_mac_inst[Mod_id].common_channels[0].pmch_Config[i] = &pmch_InfoList->list.array[i]->pmch_Config_r9;
 
-        LOG_I(MAC, "[CONFIG] PMCH[%d]: This PMCH stop at subframe  %ldth\n", i,
+        LOG_I(MAC, "[CONFIG] PMCH[%d]: This PMCH stop (sf_AllocEnd_r9) at subframe  %ldth\n", i,
               eNB_mac_inst[Mod_id].common_channels[0].pmch_Config[i]->sf_AllocEnd_r9);
         LOG_I(MAC, "[CONFIG] PMCH[%d]: mch_Scheduling_Period = %ld\n", i,
               eNB_mac_inst[Mod_id].common_channels[0].pmch_Config[i]->mch_SchedulingPeriod_r9);
