@@ -54,6 +54,7 @@ int msc_init(msc_env_t envP)
   int i;
   int rv;
 
+  fprintf(stderr, "Initializing MSC logs\n");
   for (i = MIN_MSC_PROTOS; i < MAX_MSC_PROTOS; i++) {
 	  msc_fd[i] = NULL;
       switch (i) {
