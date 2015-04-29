@@ -40,7 +40,7 @@
 #    error "Kernel version is not defined!!!! Exiting."
 #endif
 
-#define TRACE_IN_KERN_LOG 1
+//#define TRACE_IN_KERN_LOG 1
 
 #if defined(TRACE_IN_KERN_LOG)
 #define PR_INFO(fORMAT, aRGS...) pr_info(fORMAT, ##aRGS)

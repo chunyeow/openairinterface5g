@@ -31,6 +31,14 @@
 #if !(defined KVERSION)
 #error "Kernel version is not defined!!!! Exiting."
 #endif
+
+//#define TRACE_IN_KERN_LOG 1
+
+#if defined(TRACE_IN_KERN_LOG)
+#define PR_INFO(fORMAT, aRGS...) pr_info(fORMAT, ##aRGS)
+#else
+#define PR_INFO(fORMAT, aRGS...)
+#endif
 //-----------------------------------------------------------------------------
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Pradip Biswas <pradip_biswas@polarisnetworks.net>");
@@ -294,13 +302,13 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
   }
 
   skb_p->skb_iif  = orig_skb_pP->skb_iif;
-  pr_info("GTPURH: skb protocol %04X\n", orig_skb_pP->protocol);
+  PR_INFO("GTPURH: skb protocol %04X\n", orig_skb_pP->protocol);
   skb_p->protocol = orig_skb_pP->protocol;
 #else
   skb_p = orig_skb_pP;
 
   if (skb_linearize(skb_p) < 0) {
-    pr_info("GTPURH: skb DROPPED (no linearize)\n");
+	PR_INFO("GTPURH: skb DROPPED (no linearize)\n");
     return NF_DROP;
   }
 
@@ -309,7 +317,7 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
   //---------------------------
   // check if is GTPU TUNNEL
   if (iph_p->protocol != IPPROTO_UDP) {
-    pr_info("GTPURH: skb DROPPED Not GTPV1U packet (not UDP)\n");
+	PR_INFO("GTPURH: skb DROPPED Not GTPV1U packet (not UDP)\n");
     return NF_ACCEPT;
   }
 
@@ -318,7 +326,7 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
   // but should not happen since MTU should have been set bigger than 1500 + GTP encap.
   // TO DO later segment, but did not succeed in getting in this target all framents of an ip packet!
   if (_gtpurh_ip_is_fragment(iph_p)) {
-    pr_info("GTPURH: ip_is_fragment YES, FLAGS %04X & %04X = %04X\n",
+	PR_INFO("GTPURH: ip_is_fragment YES, FLAGS %04X & %04X = %04X\n",
             iph_p->frag_off,
             htons(IP_MF | IP_OFFSET),
             iph_p->frag_off & htons(IP_MF | IP_OFFSET));
@@ -326,7 +334,7 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
   }
 
   if (skb_p->len <= sizeof (struct udphdr) + sizeof (struct gtpuhdr) + sizeof (struct iphdr)) {
-    pr_info("GTPURH: Thought was GTPV1U packet but too short length\n");
+	PR_INFO("GTPURH: Thought was GTPV1U packet but too short length\n");
     return NF_ACCEPT;
   }
 
@@ -334,7 +342,7 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
   udph_p = (struct udphdr*)skb_pull(skb_p, (iph_p->ihl << 2));
 
   if (udph_p->dest != htons(GTPURH_PORT)) {
-    pr_info("GTPURH: Not GTPV1U packet (bad UDP dest port)\n");
+	PR_INFO("GTPURH: Not GTPV1U packet (bad UDP dest port)\n");
     skb_push(skb_p, (iph_p->ihl << 2));
     return NF_ACCEPT;
   }
@@ -349,7 +357,7 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
 
   /* If additional fields are present in header, remove them also */
   if (gtpuh_p->flags & GTPURH_ANY_EXT_HDR_BIT) {
-    pr_info("GTPURH: GTPURH_ANY_EXT_HDR_BIT found\n");
+	PR_INFO("GTPURH: GTPURH_ANY_EXT_HDR_BIT found\n");
     skb_pull(skb_p, sizeof(short) + sizeof(char) + sizeof(char)); /* #Seq, #N-PDU, #ExtHdr Type */
     gtp_payload_size = gtp_payload_size - sizeof(short) - sizeof(char) - sizeof(char);
   }
@@ -360,7 +368,7 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
 
 
   if ((iph2_p->version  != 4 ) && (iph2_p->version  != 6)) {
-    pr_info("\nGTPURH: Decapsulated packet dropped because not IPvx protocol see all GTPU packet here:\n");
+	PR_INFO("\nGTPURH: Decapsulated packet dropped because not IPvx protocol see all GTPU packet here:\n");
     _gtpurh_print_hex_octets((unsigned char*)iph_p, ntohs(iph_p->tot_len));
     return NF_DROP;
   }
@@ -417,20 +425,18 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
     rt = ip_route_output_key(&init_net, &fl.u.ip4);
 
     if (rt == NULL) {
-      pr_info("GTPURH: Failed to route packet to dst 0x%x. Error: (%d)\n", fl.u.ip4.daddr, err);
+      PR_INFO("GTPURH: Failed to route packet to dst 0x%x. Error: (%d)\n", fl.u.ip4.daddr, err);
       return NF_DROP;
     }
 
-#if 0
 
     if (rt->dst.dev) {
-      pr_info("GTPURH: dst dev name %s\n", rt->dst.dev->name);
+      PR_INFO("GTPURH: dst dev name %s\n", rt->dst.dev->name);
     } else {
       pr_info("GTPURH: dst dev NULL\n");
       return NF_DROP;
     }
 
-#endif
     skb_p->priority = rt_tos2priority(iph2_p->tos);
     skb_p->pkt_type = PACKET_OTHERHOST;
     skb_dst_drop(skb_p);
@@ -471,7 +477,7 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
     new_skb_p->ip_summed = CHECKSUM_NONE;
 
     if (new_skb_p->len > dst_mtu(skb_dst(new_skb_p))) {
-      pr_info("GTPURH: bad length\n");
+      PR_INFO("GTPURH: bad length\n");
       goto free_skb;
     }
 
