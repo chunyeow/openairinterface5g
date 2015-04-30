@@ -151,7 +151,7 @@ static inline void copy_meas(time_stats_t *dst_ts,time_stats_t *src_ts)
 static inline double get_cpu_freq_GHz(void)
 {
 
-  time_stats_t ts;
+  time_stats_t ts = {0};
   reset_meas(&ts);
   start_meas(&ts);
   sleep(1);
