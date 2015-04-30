@@ -2152,10 +2152,10 @@ void dlsch_channel_compensation_TM3(LTE_DL_FRAME_PARMS *frame_parms,
         rxdataF_comp1_128+=2;
       }
 
-      Nre = (pilots==0) ? 12 : 8;
-
-
     } // rb loop
+
+    Nre = (pilots==0) ? 12 : 8;
+
     precoded_signal_strength0 += ((signal_energy_nodc(&dl_ch_estimates_ext[aarx][symbol*frame_parms->N_RB_DL*Nre],
 						      (nb_rb*Nre))*rx_power_correction) - (phy_measurements->n0_power[aarx]));
 
