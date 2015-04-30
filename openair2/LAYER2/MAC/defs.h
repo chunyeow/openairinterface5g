@@ -917,7 +917,7 @@ typedef struct {
   /// power backoff due to power management (as allowed by P-MPRc) for this cell
   uint8_t power_backoff_db[NUMBER_OF_eNB_MAX];
   /// MBSFN_Subframe Configuration
-  struct MBSFN_SubframeConfig *mbsfn_SubframeConfig[8];
+  struct MBSFN_SubframeConfig *mbsfn_SubframeConfig[8]; // FIXME replace 8 by MAX_MBSFN_AREA?
   /// number of subframe allocation pattern available for MBSFN sync area
   uint8_t num_sf_allocation_pattern;
 #ifdef Rel10

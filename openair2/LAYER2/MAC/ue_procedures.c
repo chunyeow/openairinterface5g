@@ -628,14 +628,14 @@ void ue_send_mch_sdu(module_id_t module_idP, uint8_t CC_id, frame_t frameP, uint
 int8_t ue_get_mbsfn_sf_alloction (module_id_t module_idP, uint8_t mbsfn_sync_area, unsigned char eNB_index)
 {
   // currently there is one-to-one mapping between sf allocation pattern and sync area
-  if (mbsfn_sync_area > MAX_MBSFN_AREA) {
-    LOG_W(MAC,"[UE %d] MBSFN synchronization area %d out of range for eNB %d\n ", module_idP, mbsfn_sync_area, eNB_index);
+  if (mbsfn_sync_area >= MAX_MBSFN_AREA) {
+    LOG_W( MAC, "[UE %"PRIu8"] MBSFN synchronization area %"PRIu8" out of range for eNB %"PRIu8"\n", module_idP, mbsfn_sync_area, eNB_index );
     return -1;
   } else if (UE_mac_inst[module_idP].mbsfn_SubframeConfig[mbsfn_sync_area] != NULL) {
     return mbsfn_sync_area;
   }
   else {
-    LOG_W(MAC,"[UE %d] MBSFN Subframe Config pattern %d not found \n ", module_idP, mbsfn_sync_area);
+    LOG_W( MAC, "[UE %"PRIu8"] MBSFN Subframe Config pattern %"PRIu8" not found \n", module_idP, mbsfn_sync_area );
     return -1;
   }
 }
