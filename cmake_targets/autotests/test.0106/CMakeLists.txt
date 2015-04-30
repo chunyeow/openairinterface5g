@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
 set(ADDR_CONF False)
-set(ASSERT True)
 set(DEBUG_OMG False)
 set(DISABLE_XER_PRINT False)
 set(DRIVER2013 False)
