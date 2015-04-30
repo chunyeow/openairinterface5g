@@ -130,7 +130,7 @@ typedef struct omg_hash_table_s {
  * @returns hash_table_element_t object when success
  * @returns NULL when no memory
  */
-hash_table_element_t * hash_table_element_new();
+hash_table_element_t * hash_table_element_new(void);
 
 /**
  * Function to delete an hash table element

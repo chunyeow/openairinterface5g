@@ -51,7 +51,7 @@
  * @returns hash_table_element_t object when success
  * @returns NULL when no memory
  */
-hash_table_element_t * hash_table_element_new()
+hash_table_element_t * hash_table_element_new(void)
 {
   //INFO("creating a new hash table element");
   return calloc(1, hash_table_element_s);
