@@ -432,7 +432,7 @@ mac_rrc_lite_data_ind(
         message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_MCCH_DATA_IND);
         RRC_MAC_MCCH_DATA_IND (message_p).frame           = frameP;
         RRC_MAC_MCCH_DATA_IND (message_p).sdu_size        = sdu_lenP;
-        memset (RRC_MAC_CCCH_DATA_IND (message_p).sdu, 0, sizeof(RRC_MAC_CCCH_DATA_IND (message_p).sdu));
+        memset (RRC_MAC_MCCH_DATA_IND (message_p).sdu, 0, sizeof(RRC_MAC_MCCH_DATA_IND (message_p).sdu));
         memcpy (RRC_MAC_MCCH_DATA_IND (message_p).sdu, sduP, sdu_lenP);
         RRC_MAC_MCCH_DATA_IND (message_p).enb_index       = eNB_indexP;
         RRC_MAC_MCCH_DATA_IND (message_p).mbsfn_sync_area = mbsfn_sync_areaP;
