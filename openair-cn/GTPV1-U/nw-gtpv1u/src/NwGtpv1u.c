@@ -379,12 +379,12 @@ NwGtpv1uCreateTunnelEndPoint( NW_IN  NwGtpv1uStackT *thiz,
       pTunnelEndPoint = RB_FIND(NwGtpv1uTunnelEndPointIdentifierMap,
                                 &(thiz->teidMap), pTunnelEndPoint);
       NW_ASSERT(pTunnelEndPoint);
-      GTPU_DEBUG("Tunnel end-point 0x%x creation successful for teid 0x%x %u(dec)",
-                 (unsigned int)pTunnelEndPoint, teid, teid);
+      GTPU_DEBUG("Tunnel end-point 0x%p creation successful for teid 0x%x %u(dec)",
+                 pTunnelEndPoint, (unsigned int)teid, (unsigned int)teid);
     }
 
   } else {
-    *phStackSession = (NwGtpv1uStackSessionHandleT) 0;
+    *phStackSession = (NwGtpv1uStackSessionHandleT) NULL;
     rc = NW_GTPV1U_FAILURE;
   }
 
@@ -687,9 +687,9 @@ nwGtpv1uInitialize( NW_INOUT NwGtpv1uStackHandleT *hGtpuStackHandle, NwU32T stac
   memset(thiz, 0, sizeof(NwGtpv1uStackT));
 
   if(thiz) {
-	thiz->id    = (NwU32T) thiz;
-	thiz->stackType = (NwU32T) stackType;
-    thiz->seq   = (NwU16T) ((NwU32T)thiz) ;
+        thiz->id    = (NwPtrT)thiz;
+        thiz->stackType = stackType;
+    thiz->seq   = (NwU16T) ((NwU32T)thiz) ; // FIXME interesting casts... don't know what this is good for...
     RB_INIT(&(thiz->outstandingTxSeqNumMap));
     RB_INIT(&(thiz->outstandingRxSeqNumMap));
     RB_INIT(&(thiz->sessionMap));
@@ -982,8 +982,8 @@ nwGtpv1uProcessTimeout(void *timeoutInfo)
 #if defined(LOG_GTPU) && LOG_GTPU > 0
   NW_ENTER(thiz);
 #endif
-  GTPU_DEBUG("Received timeout event from ULP with timeoutInfo %x!\n",
-             (unsigned int)timeoutInfo);
+  GTPU_DEBUG("Received timeout event from ULP with timeoutInfo 0x%p!\n",
+             timeoutInfo);
 
   rc = (((NwGtpv1uTimeoutInfoT *) timeoutInfo)->timeoutCallbackFunc) (timeoutInfo);
 

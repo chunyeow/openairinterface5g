@@ -120,11 +120,11 @@ typedef enum {
  * Gtpv2 Stack API information elements definitions
  *--------------------------------------------------------------------------*/
 
-typedef NwU32T  NwGtpv1uStackSessionHandleT;/**< Gtpv2 Stack session Handle */
+typedef NwPtrT  NwGtpv1uStackSessionHandleT;/**< Gtpv2 Stack session Handle */
 typedef NwU8T   NwGtpv1uMsgTypeT;           /**< Gtpv2 Msg Type     */
-typedef NwU32T  NwGtpv1uTrxnHandleT;        /**< Gtpv2 Transaction Handle */
-typedef NwU32T  NwGtpv1uUlpTrxnHandleT;     /**< Gtpv2 Ulp Transaction Handle */
-typedef NwU32T  NwGtpv1uUlpSessionHandleT;  /**< Gtpv2 Ulp session Handle */
+typedef NwPtrT  NwGtpv1uTrxnHandleT;        /**< Gtpv2 Transaction Handle */
+typedef NwPtrT  NwGtpv1uUlpTrxnHandleT;     /**< Gtpv2 Ulp Transaction Handle */
+typedef NwPtrT  NwGtpv1uUlpSessionHandleT;  /**< Gtpv2 Ulp session Handle */
 
 /**
  * API information elements between ULP and Stack for

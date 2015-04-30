@@ -80,7 +80,7 @@ extern "C" {
 
 typedef struct NwGtpv1uStack {
   NwU32T                        stackType;/**< GTPU_STACK_ENB or GTPU_STACK_SGW   */
-  NwU32T                        id;
+  NwPtrT                        id;
   NwU32T                        seq;
   NwGtpv1uUlpEntityT            ulp;
   NwGtpv1uUdpEntityT            udp;
