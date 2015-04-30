@@ -618,7 +618,7 @@ rlc_module_init (void)
     }
 
     for (k=0; k < NB_RB_MBMS_MAX; k++) {
-      rlc_mbms_rbid2lcid_eNB[module_id1][k] = RLC_LC_UNALLOCATED;
+      rlc_mbms_rbid2lcid_ue[module_id1][k] = RLC_LC_UNALLOCATED;
     }
 
 #endif
@@ -633,7 +633,7 @@ rlc_module_init (void)
     }
 
     for (k=0; k < NB_RB_MBMS_MAX; k++) {
-      rlc_mbms_rbid2lcid_ue[module_id1][k] = RLC_LC_UNALLOCATED;
+      rlc_mbms_rbid2lcid_eNB[module_id1][k] = RLC_LC_UNALLOCATED;
     }
 
 #endif
