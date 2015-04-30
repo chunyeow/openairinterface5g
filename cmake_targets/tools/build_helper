@@ -150,7 +150,8 @@ make_certs(){
     echo_warning "erase all existing certificates as long as the CA is regenerated"
     $SUDO rm -f $certs_dir/*.pem
     $SUDO mkdir -p  $certs_dir/demoCA/
-    $SUDO sh -c "echo 01 > $certs_dir/demoCA/index.txt"
+    $SUDO touch $certs_dir/demoCA/index.txt
+    $SUDO sh -c "echo 01 > $certs_dir/demoCA/serial"
 
     # CA self certificate
     $SUDO openssl req  -new -batch -x509 -days 3650 -nodes -newkey rsa:1024 -out cacert.pem -keyout cakey.pem -subj /CN=$fqdn/C=FR/ST=PACA/L=Aix/O=Eurecom/OU=CM
