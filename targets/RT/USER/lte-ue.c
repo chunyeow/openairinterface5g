@@ -104,13 +104,6 @@ void cleanup_dlsch_threads(void);
 int32_t init_rx_pdsch_thread(void);
 void cleanup_rx_pdsch_thread(void);
 
-pthread_attr_t                  attr_UE_init_synch;
-pthread_attr_t                  attr_UE_thread_tx;
-pthread_attr_t                  attr_UE_thread_rx;
-struct sched_param              sched_param_UE_init_synch;
-struct sched_param              sched_param_UE_thread_tx;
-struct sched_param              sched_param_UE_thread_rx;
-
 extern pthread_cond_t sync_cond;
 extern pthread_mutex_t sync_mutex;
 extern int sync_var;
@@ -1534,26 +1527,7 @@ void *UE_thread(void *arg)
 
 void init_UE_threads(void)
 {
-
   PHY_VARS_UE *UE=PHY_vars_UE_g[0][0];
-
-  pthread_attr_init(&attr_UE_thread_tx);
-  pthread_attr_setstacksize(&attr_UE_thread_tx,16*PTHREAD_STACK_MIN);
-  sched_param_UE_thread_tx.sched_priority = sched_get_priority_max(SCHED_FIFO)-1;
-  pthread_attr_setschedparam  (&attr_UE_thread_tx, &sched_param_UE_thread_tx);
-  pthread_attr_setschedpolicy (&attr_UE_thread_tx, SCHED_FIFO);
-
-  pthread_attr_init(&attr_UE_thread_rx);
-  pthread_attr_setstacksize(&attr_UE_thread_rx,8*PTHREAD_STACK_MIN);
-  sched_param_UE_thread_rx.sched_priority = sched_get_priority_max(SCHED_FIFO)-1;
-  pthread_attr_setschedparam  (&attr_UE_thread_rx, &sched_param_UE_thread_rx);
-  pthread_attr_setschedpolicy (&attr_UE_thread_rx, SCHED_FIFO);
-
-  pthread_attr_init (&attr_UE_init_synch);
-  pthread_attr_setstacksize(&attr_UE_init_synch,8*PTHREAD_STACK_MIN);
-  sched_param_UE_init_synch.sched_priority = sched_get_priority_max(SCHED_FIFO); //OPENAIR_THREAD_PRIORITY;
-  pthread_attr_setschedparam  (&attr_UE_init_synch, &sched_param_UE_init_synch);
-  pthread_attr_setschedpolicy (&attr_UE_init_synch, SCHED_FIFO);
 
   UE->instance_cnt_tx=-1;
   UE->instance_cnt_rx=-1;
@@ -1565,12 +1539,13 @@ void init_UE_threads(void)
   pthread_cond_init(&UE->cond_rx,NULL);
   pthread_cond_init(&UE->cond_synch,NULL);
   pthread_create(&UE->thread_tx,NULL,UE_thread_tx,(void*)UE);
+  pthread_setname_np( UE->thread_tx, "UE_thread_tx" );
   pthread_create(&UE->thread_rx,NULL,UE_thread_rx,(void*)UE);
-  pthread_create(&UE->thread_rx,NULL,UE_thread_synch,(void*)UE);
+  pthread_setname_np( UE->thread_rx, "UE_thread_rx" );
+  pthread_create(&UE->thread_synch,NULL,UE_thread_synch,(void*)UE);
+  pthread_setname_np( UE->thread_synch, "UE_thread_synch" );
   UE->frame_tx = 0;
   UE->frame_rx = 0;
-
-
 }
 
 
