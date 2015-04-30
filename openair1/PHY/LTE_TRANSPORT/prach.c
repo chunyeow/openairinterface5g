@@ -853,15 +853,15 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
     if (prach_fmt == 4) {
       fft(prachF,prach2,twiddle_ifft256,rev256,8,4,0);
       //TODO: account for repeated format in fft output
-      memcpy((void*)prach,(void*)(prach+512),Ncp<<2);
-      prach_len=256+Ncp;
+      memmove( prach, prach+512, Ncp<<2 );
+      prach_len = 256+Ncp;
     } else {
       ifft1536(prachF,prach2);
-      memcpy((void*)prach,(void*)(prach+3072),Ncp<<2);
+      memmove( prach, prach+3072, Ncp<<2 );
       prach_len = 1536+Ncp;
 
       if (prach_fmt>1) {
-        memcpy((void*)(prach2+3072),(void*)prach2,6144);
+        memmove( prach2+3072, prach2, 6144 );
         prach_len = 2*1536+Ncp;
       }
     }
@@ -872,15 +872,15 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
     if (prach_fmt == 4) {
       fft(prachF,prach2,twiddle_ifft512,rev512,9,4,0);
       //TODO: account for repeated format in fft output
-      memcpy((void*)prach,(void*)(prach+1024),Ncp<<2);
+      memmove( prach, prach+1024, Ncp<<2 );
       prach_len = 512+Ncp;
     } else {
       ifft3072(prachF,prach2);
-      memcpy((void*)prach,(void*)(prach+6144),Ncp<<2);
+      memmove( prach, prach+6144, Ncp<<2 );
       prach_len = 3072+Ncp;
 
       if (prach_fmt>1) {
-        memcpy((void*)(prach2+6144),(void*)prach2,12288);
+        memmove( prach2+6144, prach2, 12288 );
         prach_len = 2*3072+Ncp;
       }
     }
@@ -892,17 +892,17 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
     if (prach_fmt == 4) {
       fft(prachF,prach2,twiddle_ifft1024,rev1024,10,5,0);
       //TODO: account for repeated format in fft output
-      memcpy((void*)prach,(void*)(prach+2048),Ncp<<2);
+      memmove( prach, prach+2048, Ncp<<2 );
       prach_len = 1024+Ncp;
     } else {
       ifft6144(prachF,prach2);
       /*for (i=0;i<6144*2;i++)
       prach2[i]<<=1;*/
-      memcpy((void*)prach,(void*)(prach+12288),Ncp<<2);
+      memmove( prach, prach+12288, Ncp<<2 );
       prach_len = 6144+Ncp;
 
       if (prach_fmt>1) {
-        memcpy((void*)(prach2+12288),(void*)prach2,24576);
+        memmove( prach2+12288, prach2, 24576 );
         prach_len = 2*6144+Ncp;
       }
     }
@@ -913,15 +913,15 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
     if (prach_fmt == 4) {
       fft(prachF,prach2,twiddle_ifft2048,rev2048,11,5,0);
       //TODO: account for repeated format in fft output
-      memcpy((void*)prach,(void*)(prach+4096),Ncp<<2);
+      memmove( prach, prach+4096, Ncp<<2 );
       prach_len = 2048+Ncp;
     } else {
       ifft12288(prachF,prach2);
-      memcpy((void*)prach,(void*)(prach+24576),Ncp<<2);
+      memmove( prach, prach+24576, Ncp<<2 );
       prach_len = 12288+Ncp;
 
       if (prach_fmt>1) {
-        memcpy((void*)(prach2+24576),(void*)prach2,49152);
+        memmove( prach2+24576, prach2, 49152 );
         prach_len = 2*12288+Ncp;
       }
     }
@@ -932,15 +932,15 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
     if (prach_fmt == 4) {
       ifft3072(prachF,prach2);
       //TODO: account for repeated format in fft output
-      memcpy((void*)prach,(void*)(prach+6144),Ncp<<2);
+      memmove( prach, prach+6144, Ncp<<2 );
       prach_len = 3072+Ncp;
     } else {
       ifft18432(prachF,prach2);
-      memcpy((void*)prach,(void*)(prach+36864),Ncp<<2);
+      memmove( prach, prach+36864, Ncp<<2 );
       prach_len = 18432+Ncp;
 
       if (prach_fmt>1) {
-        memmove(prach2+36834,prach2,73728);
+        memmove( prach2+36834, prach2, 73728 );
         prach_len = 2*18432+Ncp;
       }
     }
@@ -951,15 +951,15 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
     if (prach_fmt == 4) {
       fft(prachF,prach2,twiddle_ifft4096,rev4096,12,6,0);
       //TODO: account for repeated format in fft output
-      memcpy((void*)prach,(void*)(prach+8192),Ncp<<2);
+      memmove( prach, prach+8192, Ncp<<2 );
       prach_len = 4096+Ncp;
     } else {
       ifft24576(prachF,prach2);
-      memcpy((void*)prach,(void*)(prach+49152),Ncp<<2);
+      memmove( prach, prach+49152, Ncp<<2 );
       prach_len = 24576+Ncp;
 
       if (prach_fmt>1) {
-        memcpy((void*)(prach2+49152),(void*)prach2,98304);
+        memmove( prach2+49152, prach2, 98304 );
         prach_len = 2* 24576+Ncp;
       }
     }
