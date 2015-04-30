@@ -2418,14 +2418,12 @@ uint8_t do_ULInformationTransfer(uint8_t **buffer, uint32_t pdu_length, uint8_t 
   return encoded;
 }
 
-//OAI_UECapability_t *fill_ue_capability(void) {
 OAI_UECapability_t *fill_ue_capability(char *UE_EUTRA_Capability_xer_fname)
 {
   static OAI_UECapability_t UECapability; /* TODO declared static to allow returning this has an address should be allocated in a cleaner way. */
-  SupportedBandEUTRA_t Bandlist[4];
-  // BandInfoEUTRA_t BandInfo_meas[4];
-  InterFreqBandInfo_t InterFreqBandInfo[4][4];
-  BandInfoEUTRA_t BandInfoEUTRA[4];
+  static SupportedBandEUTRA_t Bandlist[4]; // the macro ASN_SEQUENCE_ADD() does not copy the source, but only stores a reference to it
+  static InterFreqBandInfo_t InterFreqBandInfo[4][4]; // the macro ASN_SEQUENCE_ADD() does not copy the source, but only stores a reference to it
+  static BandInfoEUTRA_t BandInfoEUTRA[4]; // the macro ASN_SEQUENCE_ADD() does not copy the source, but only stores a reference to it
 
   asn_enc_rval_t enc_rval;
   asn_dec_rval_t dec_rval;
@@ -2447,7 +2445,6 @@ OAI_UECapability_t *fill_ue_capability(char *UE_EUTRA_Capability_xer_fname)
     Bandlist[0].bandEUTRA  = 3;  // UL 1710-1785, DL 1805-1880 FDD
     Bandlist[0].halfDuplex = 0;
     Bandlist[1].bandEUTRA  = 20;  // UL 824-849 , DL 869-894 FDD
-
     Bandlist[1].halfDuplex = 0;
     Bandlist[2].bandEUTRA  = 7;   // UL 2500-2570, DL 2620-2690 FDD
     Bandlist[2].halfDuplex = 0;
