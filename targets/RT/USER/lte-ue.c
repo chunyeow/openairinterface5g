@@ -423,9 +423,9 @@ static void *UE_thread_synch(void *arg)
         }
 
         LOG_I( PHY, "[initial_sync] trying carrier off %d Hz, rxgain %d (DL %u, UL %u)\n", openair_daq_vars.freq_offset,
-              UE->rx_total_gain_dB,
-              downlink_frequency[0][0]+openair_daq_vars.freq_offset,
-              downlink_frequency[0][0]+uplink_frequency_offset[0][0]+openair_daq_vars.freq_offset );
+               UE->rx_total_gain_dB,
+               downlink_frequency[0][0]+openair_daq_vars.freq_offset,
+               downlink_frequency[0][0]+uplink_frequency_offset[0][0]+openair_daq_vars.freq_offset );
 
         for (card=0; card<MAX_CARDS; card++) {
           for (i=0; i<openair0_cfg[card].rx_num_channels; i++) {
@@ -451,6 +451,7 @@ static void *UE_thread_synch(void *arg)
               printf("Unknown number of RBs %d\n",UE->lte_frame_parms.N_RB_DL);
               break;
             }
+
 #endif
           }
         }
@@ -535,6 +536,7 @@ static void *UE_thread_tx(void *arg)
     perror("[SCHED] eNB tx thread: sched_setattr failed\n");
     return &UE_thread_tx_retval;
   }
+
 #endif
 #endif
 
@@ -596,15 +598,15 @@ static void *UE_thread_tx(void *arg)
 
       if (ret == CONNECTION_LOST) {
         LOG_E( PHY, "[UE %"PRIu8"] Frame %"PRIu32", subframe %u RRC Connection lost, returning to PRACH\n",
-              UE->Mod_id, UE->frame_rx /*FIXME really _rx?*/, UE->slot_tx>>1 );
+               UE->Mod_id, UE->frame_rx /*FIXME really _rx?*/, UE->slot_tx>>1 );
         UE->UE_mode[0] = PRACH;
       } else if (ret == PHY_RESYNCH) {
         LOG_E( PHY, "[UE %"PRIu8"] Frame %"PRIu32", subframe %u RRC Connection lost, trying to resynch\n",
-              UE->Mod_id, UE->frame_rx /*FIXME really _rx?*/, UE->slot_tx>>1 );
+               UE->Mod_id, UE->frame_rx /*FIXME really _rx?*/, UE->slot_tx>>1 );
         UE->UE_mode[0] = RESYNCH;
       } else if (ret == PHY_HO_PRACH) {
         LOG_I( PHY, "[UE %"PRIu8"] Frame %"PRIu32", subframe %u, return to PRACH and perform a contention-free access\n",
-              UE->Mod_id, UE->frame_rx /*FIXME really _rx?*/, UE->slot_tx>>1 );
+               UE->Mod_id, UE->frame_rx /*FIXME really _rx?*/, UE->slot_tx>>1 );
         UE->UE_mode[0] = PRACH;
       }
     }
@@ -745,15 +747,15 @@ static void *UE_thread_rx(void *arg)
 
         if (ret == CONNECTION_LOST) {
           LOG_E( PHY, "[UE %"PRIu8"] Frame %"PRIu32", subframe %u RRC Connection lost, returning to PRACH\n",
-                UE->Mod_id, UE->frame_rx, UE->slot_tx>>1 );
+                 UE->Mod_id, UE->frame_rx, UE->slot_tx>>1 );
           UE->UE_mode[0] = PRACH;
         } else if (ret == PHY_RESYNCH) {
           LOG_E( PHY, "[UE %"PRIu8"] Frame %"PRIu32", subframe %u RRC Connection lost, trying to resynch\n",
-                UE->Mod_id, UE->frame_rx, UE->slot_tx>>1 );
+                 UE->Mod_id, UE->frame_rx, UE->slot_tx>>1 );
           UE->UE_mode[0] = RESYNCH;
         } else if (ret == PHY_HO_PRACH) {
           LOG_I( PHY, "[UE %"PRIu8"] Frame %"PRIu32", subframe %u, return to PRACH and perform a contention-free access\n",
-                UE->Mod_id, UE->frame_rx, UE->slot_tx>>1 );
+                 UE->Mod_id, UE->frame_rx, UE->slot_tx>>1 );
           UE->UE_mode[0] = PRACH;
         }
       }
@@ -891,14 +893,15 @@ void *UE_thread(void *arg)
 
       DevAssert( UE->lte_frame_parms.nb_antennas_rx <= 2 );
       void* rxp[2];
+
       for (int i=0; i<UE->lte_frame_parms.nb_antennas_rx; i++)
         rxp[i] = (dummy_dump==0) ? (void*)&rxdata[i][rxpos] : (void*)dummy[i];
 
       unsigned int rxs = openair0.trx_read_func(&openair0,
-                                                &timestamp,
-                                                rxp,
-                                                spp - ((first_rx==1) ? rx_off_diff : 0),
-                                                UE->lte_frame_parms.nb_antennas_rx);
+                         &timestamp,
+                         rxp,
+                         spp - ((first_rx==1) ? rx_off_diff : 0),
+                         UE->lte_frame_parms.nb_antennas_rx);
 
       if (rxs != (spp- ((first_rx==1) ? rx_off_diff : 0))) {
         exit_fun("problem in rx");
@@ -914,6 +917,7 @@ void *UE_thread(void *arg)
 
         DevAssert( UE->lte_frame_parms.nb_antennas_tx <= 2 );
         void* txp[2];
+
         for (int i=0; i<UE->lte_frame_parms.nb_antennas_tx; i++)
           txp[i] = (void*)&txdata[i][txpos];
 
@@ -1068,6 +1072,7 @@ void *UE_thread(void *arg)
       int fail = pthread_mutex_lock(&UE->mutex_synch);
       int instance_cnt_synch = UE->instance_cnt_synch;
       fail = fail || pthread_mutex_unlock(&UE->mutex_synch);
+
       if (fail) {
         LOG_E( PHY, "[SCHED][UE] error (un-)locking mutex for UE synch\n" );
         exit_fun("noting to add");
@@ -1087,10 +1092,10 @@ void *UE_thread(void *arg)
 
 #ifndef USRP_DEBUG
             unsigned int rxs = openair0.trx_read_func(&openair0,
-                                                      &timestamp,
-                                                      (void**)rxdata,
-                                                      UE->rx_offset,
-                                                      UE->lte_frame_parms.nb_antennas_rx);
+                               &timestamp,
+                               (void**)rxdata,
+                               UE->rx_offset,
+                               UE->lte_frame_parms.nb_antennas_rx);
 #else
             rt_sleep_ns(10000000);
 #endif

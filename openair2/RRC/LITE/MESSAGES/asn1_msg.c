@@ -1385,8 +1385,8 @@ do_RRCConnectionSetup(
   const uint8_t                    transmission_mode,
   const uint8_t                    Transaction_id,
   const LTE_DL_FRAME_PARMS* const frame_parms,
-                              SRB_ToAddModList_t  **SRB_configList,
-                              struct PhysicalConfigDedicated  **physicalConfigDedicated)
+  SRB_ToAddModList_t  **SRB_configList,
+  struct PhysicalConfigDedicated  **physicalConfigDedicated)
 {
 
   asn_enc_rval_t enc_rval;
@@ -1421,6 +1421,7 @@ do_RRCConnectionSetup(
   if (*SRB_configList) {
     free(*SRB_configList);
   }
+
   *SRB_configList = CALLOC(1,sizeof(SRB_ToAddModList_t));
 
   /// SRB1
@@ -1626,8 +1627,7 @@ do_RRCConnectionSetup(
 
   if (frame_parms->frame_type == 0) { // FDD
     physicalConfigDedicated2->schedulingRequestConfig->choice.setup.sr_ConfigIndex = 5+(ue_context_pP->local_uid%10);  // Isr = 5 (every 10 subframes, offset=2+UE_id mod3)
-  }
-  else {
+  } else {
     switch (frame_parms->tdd_config) {
     case 1:
       physicalConfigDedicated2->schedulingRequestConfig->choice.setup.sr_ConfigIndex = 7+(ue_context_pP->local_uid&1)+((
@@ -1877,30 +1877,30 @@ do_UECapabilityEnquiry(
 uint16_t
 do_RRCConnectionReconfiguration(
   const protocol_ctxt_t*        const ctxt_pP,
-    uint8_t                            *buffer,
-    uint8_t                             Transaction_id,
-    SRB_ToAddModList_t                 *SRB_list,
-    DRB_ToAddModList_t                 *DRB_list,
-    DRB_ToReleaseList_t                *DRB_list2,
-    struct SPS_Config                  *sps_Config,
-    struct PhysicalConfigDedicated     *physicalConfigDedicated,
-    MeasObjectToAddModList_t           *MeasObj_list,
-    ReportConfigToAddModList_t         *ReportConfig_list,
-    QuantityConfig_t                   *quantityConfig,
-    MeasIdToAddModList_t               *MeasId_list,
-    MAC_MainConfig_t                   *mac_MainConfig,
-    MeasGapConfig_t                    *measGapConfig,
-    MobilityControlInfo_t              *mobilityInfo,
-    struct MeasConfig__speedStatePars  *speedStatePars,
-    RSRP_Range_t                       *rsrp,
-    C_RNTI_t                           *cba_rnti,
-    struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList
-    *dedicatedInfoNASList
+  uint8_t                            *buffer,
+  uint8_t                             Transaction_id,
+  SRB_ToAddModList_t                 *SRB_list,
+  DRB_ToAddModList_t                 *DRB_list,
+  DRB_ToReleaseList_t                *DRB_list2,
+  struct SPS_Config                  *sps_Config,
+  struct PhysicalConfigDedicated     *physicalConfigDedicated,
+  MeasObjectToAddModList_t           *MeasObj_list,
+  ReportConfigToAddModList_t         *ReportConfig_list,
+  QuantityConfig_t                   *quantityConfig,
+  MeasIdToAddModList_t               *MeasId_list,
+  MAC_MainConfig_t                   *mac_MainConfig,
+  MeasGapConfig_t                    *measGapConfig,
+  MobilityControlInfo_t              *mobilityInfo,
+  struct MeasConfig__speedStatePars  *speedStatePars,
+  RSRP_Range_t                       *rsrp,
+  C_RNTI_t                           *cba_rnti,
+  struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList
+  *dedicatedInfoNASList
 
 #ifdef Rel10
-    , SCellToAddMod_r10_t  *SCell_config
+  , SCellToAddMod_r10_t  *SCell_config
 #endif
-                                        )
+)
 //------------------------------------------------------------------------------
 {
 
