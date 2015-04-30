@@ -382,7 +382,7 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
   uint16_t                nb_rbs_required_remaining[MAX_NUM_CCs][NUMBER_OF_UE_MAX];
   uint16_t                nb_rbs_required_remaining_1[MAX_NUM_CCs][NUMBER_OF_UE_MAX];
   uint16_t                i1,i2,i3,r1=0;
-  uint16_t                average_rbs_per_user[MAX_NUM_CCs];
+  uint16_t                average_rbs_per_user[MAX_NUM_CCs] = {0};
   rnti_t             rnti,rnti1,rnti2;
   LTE_eNB_UE_stats  *eNB_UE_stats1 = NULL;
   LTE_eNB_UE_stats  *eNB_UE_stats2 = NULL;

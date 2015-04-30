@@ -63,12 +63,12 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq)
   __m128i tmp_t[256/4];
   int32_t *rxp;
   int16_t *sp;
-  __m128i *sp2;
+  __m128i *sp2 = NULL;
   __m128i s;
   int re,re256;
   __m128i mmtmp00,mmtmp01,mmtmp02,mmtmp10,mmtmp11,mmtmp12;
   int maxcorr[3],minamp,pos=0,pssind;
-  int16_t *pss6144_0,*pss6144_1,*pss6144_2;
+  int16_t *pss6144_0 = NULL, *pss6144_1 = NULL, *pss6144_2 = NULL;
 
   /*  char fname[100],vname[100];*/
 

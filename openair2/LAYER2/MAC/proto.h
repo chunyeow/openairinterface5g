@@ -293,7 +293,7 @@ uint8_t *get_dlsch_sdu(module_id_t module_idP,int CC_id,frame_t frameP,rnti_t rn
 @param mcs Pointer to mcs used by PHY (to be filled by MAC)
 @returns Pointer to MCH transport block and mcs for subframe
 */
-MCH_PDU *get_mch_sdu(uint8_t Mod_id,uint8_t CC_id, uint32_t frame,sub_frame_t subframe);
+MCH_PDU *get_mch_sdu( module_id_t Mod_id, int CC_id, frame_t frame, sub_frame_t subframe);
 
 
 //added for ALU icic purpose

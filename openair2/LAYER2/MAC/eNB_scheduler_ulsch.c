@@ -633,13 +633,13 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
   DCI_PDU           *DCI_pdu;
   uint8_t                 status         = 0;
   uint8_t                 rb_table_index = -1;
-  uint16_t                TBS,i;
+  uint16_t                TBS = 0,i;
   int32_t                buffer_occupancy=0;
   uint32_t                cqi_req,cshift,ndi,mcs,rballoc,tpc;
   int32_t                 normalized_rx_power, target_rx_power=-90;
   static int32_t          tpc_accumulated=0;
 
-  int n,CC_id;
+  int n,CC_id = 0;
   eNB_MAC_INST      *eNB=&eNB_mac_inst[module_idP];
   UE_list_t         *UE_list=&eNB->UE_list;
   UE_TEMPLATE       *UE_template;

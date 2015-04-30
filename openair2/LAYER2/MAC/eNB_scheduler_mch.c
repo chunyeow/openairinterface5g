@@ -655,7 +655,8 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
   return 0;
    */
 }
-MCH_PDU *get_mch_sdu(uint8_t module_idP, uint8_t CC_id, uint32_t frameP, sub_frame_t subframeP)
+
+MCH_PDU *get_mch_sdu(module_id_t module_idP, int CC_id, frame_t frameP, sub_frame_t subframeP)
 {
   //  eNB_mac_inst[module_idP].MCH_pdu.mcs=0;
   //LOG_D(MAC," MCH_pdu.mcs is %d\n", eNB_mac_inst[module_idP].MCH_pdu.mcs);
