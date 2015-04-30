@@ -688,10 +688,10 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
 
       if (prach_fmt<4) {
         // prach_root_sequence_map points to prach_root_sequence_map0_3
-        DevAssert( index < sizeof(prach_root_sequence_map0_3) );
+        DevAssert( index < sizeof(prach_root_sequence_map0_3) / sizeof(prach_root_sequence_map0_3[0]) );
       } else {
         // prach_root_sequence_map points to prach_root_sequence_map4
-        DevAssert( index < sizeof(prach_root_sequence_map4) );
+        DevAssert( index < sizeof(prach_root_sequence_map4) / sizeof(prach_root_sequence_map4[0]) );
       }
 
       u = prach_root_sequence_map[index];
