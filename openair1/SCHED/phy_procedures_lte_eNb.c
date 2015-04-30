@@ -3119,7 +3119,7 @@ void phy_procedures_eNB_RX(const unsigned char sched_subframe,PHY_VARS_eNB *phy_
   uint32_t l, ret=0,i,j,k;
   uint32_t sect_id=0;
   uint32_t harq_pid, harq_idx, round;
-  uint8_t SR_payload,*pucch_payload=NULL,pucch_payload0[2]= {0,0},pucch_payload1[2]= {0,0};
+  uint8_t SR_payload = 0,*pucch_payload=NULL,pucch_payload0[2]= {0,0},pucch_payload1[2]= {0,0};
   int16_t n1_pucch0,n1_pucch1,n1_pucch2,n1_pucch3;
   uint8_t do_SR = 0;
   uint8_t pucch_sel = 0;
