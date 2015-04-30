@@ -195,7 +195,7 @@ static const eutra_band_t eutra_bands[] = {
 
 /*!
  * \brief This is the UE synchronize thread.
- * It performs band scanning.
+ * It performs band scanning and synchonization.
  * \param arg is a pointer to a \ref PHY_VARS_UE structure.
  * \returns a pointer to an int. The storage is not on the heap and must not be freed.
  */
@@ -313,6 +313,7 @@ static void *UE_thread_synch(void *arg)
     }
 
     while (UE->instance_cnt_synch < 0) {
+      // the thread waits here most of the time
       pthread_cond_wait( &UE->cond_synch, &UE->mutex_synch );
     }
 
@@ -473,6 +474,7 @@ static void *UE_thread_synch(void *arg)
       return &UE_thread_synch_retval;
     }
 
+    // indicate readiness
     UE->instance_cnt_synch--;
 
     if (pthread_mutex_unlock(&UE->mutex_synch) != 0) {
@@ -795,42 +797,35 @@ static void *UE_thread_rx(void *arg)
 #define RX_OFF_MIN 5
 #define RX_OFF_MID ((RX_OFF_MAX+RX_OFF_MIN)/2)
 
+/*!
+ * \brief This is the main UE thread.
+ * This thread controls the other three UE threads:
+ * - UE_thread_rx
+ * - UE_thread_tx
+ * - UE_thread_synch
+ * \param arg unused
+ * \returns a pointer to an int. The storage is not on the heap and must not be freed.
+ */
 void *UE_thread(void *arg)
 {
-
-  PHY_VARS_UE *UE=PHY_vars_UE_g[0][0];
-  LTE_DL_FRAME_PARMS *frame_parms=&UE->lte_frame_parms;
+  UNUSED(arg)
+  static int UE_thread_retval;
+  PHY_VARS_UE *UE = PHY_vars_UE_g[0][0];
   int spp = openair0_cfg[0].samples_per_packet;
-
-  int slot=1,frame=0,hw_subframe=0,rxpos=0,txpos=0;
-  // unsigned int aa;
+  int slot=1, frame=0, hw_subframe=0, rxpos=0, txpos=0;
   int dummy[2][spp];
   int dummy_dump = 0;
-  int tx_enabled=0;
-  int start_rx_stream=0;
+  int tx_enabled = 0;
+  int start_rx_stream = 0;
   int rx_off_diff = 0;
   int rx_correction_timer = 0;
-  int i;
-  int first_rx=0;
+  int first_rx = 0;
   RTIME T0;
-#ifdef RTAI
-  RT_TASK *task;
-#endif
 
-  unsigned int rxs;
-  void *rxp[2],*txp[2];
   openair0_timestamp timestamp;
 
-
-#ifdef LOWLATENCY
-  struct sched_attr attr;
-  unsigned int flags = 0;
-#endif
-
-
-
 #ifdef RTAI
-  task = rt_task_init_schmod(nam2num("UE thread"), 0, 0, 0, SCHED_FIFO, 0xF);
+  RT_TASK *task = rt_task_init_schmod(nam2num("UE thread"), 0, 0, 0, SCHED_FIFO, 0xF);
 
   if (task==NULL) {
     LOG_E(PHY,"[SCHED][UE] Problem starting UE thread!!!!\n");
@@ -840,6 +835,9 @@ void *UE_thread(void *arg)
 #else
 
 #ifdef LOWLATENCY
+  struct sched_attr attr;
+  unsigned int flags = 0;
+
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
   attr.sched_nice = 0;
@@ -851,22 +849,19 @@ void *UE_thread(void *arg)
   attr.sched_deadline = 0.25 * 1000000;
   attr.sched_period   = 0.5 * 1000000;
 
-  // pin the UE main thread to CPU0
-  // if (pthread_setaffinity_np(pthread_self(), sizeof(mask),&mask) <0) {
-  //   perror("[MAIN_ENB_THREAD] pthread_setaffinity_np failed\n");
-  //   }
-
   if (sched_setattr(0, &attr, flags) < 0 ) {
     perror("[SCHED] main eNB thread: sched_setattr failed\n");
     exit_fun("Nothing to add");
-  } else {
-    LOG_I(HW,"[SCHED][eNB] eNB main deadline thread %ld started on CPU %d\n",
-          gettid(),sched_getcpu());
+    return &UE_thread_retval;
   }
 
+  LOG_I(HW,"[SCHED][eNB] eNB main deadline thread %lu started on CPU %d\n",
+        (unsigned long)gettid(), sched_getcpu());
+
 #endif
 #endif
 
+  // Lock memory from swapping. This is a process wide call (not constraint to this thread).
   mlockall(MCL_CURRENT | MCL_FUTURE);
 
   printf("waiting for sync (UE_thread)\n");
@@ -881,43 +876,45 @@ void *UE_thread(void *arg)
 
   printf("starting UE thread\n");
 
-
-
-
   T0 = rt_get_time_ns();
   first_rx = 1;
   rxpos=0;
 
   while (!oai_exit) {
-    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_subframe);
-    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame);
-
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_subframe );
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame );
 
     while (rxpos < (1+hw_subframe)*UE->lte_frame_parms.samples_per_tti) {
-      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,1);
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ, 1 );
 
 #ifndef USRP_DEBUG
 
-      for (i=0; i<UE->lte_frame_parms.nb_antennas_rx; i++)
+      DevAssert( UE->lte_frame_parms.nb_antennas_rx <= 2 );
+      void* rxp[2];
+      for (int i=0; i<UE->lte_frame_parms.nb_antennas_rx; i++)
         rxp[i] = (dummy_dump==0) ? (void*)&rxdata[i][rxpos] : (void*)dummy[i];
 
-      rxs = openair0.trx_read_func(&openair0,
-                                   &timestamp,
-                                   rxp,
-                                   spp - ((first_rx==1) ? rx_off_diff : 0),
-                                   UE->lte_frame_parms.nb_antennas_rx);
+      unsigned int rxs = openair0.trx_read_func(&openair0,
+                                                &timestamp,
+                                                rxp,
+                                                spp - ((first_rx==1) ? rx_off_diff : 0),
+                                                UE->lte_frame_parms.nb_antennas_rx);
 
-      if (rxs != (spp- ((first_rx==1) ? rx_off_diff : 0)))
+      if (rxs != (spp- ((first_rx==1) ? rx_off_diff : 0))) {
         exit_fun("problem in rx");
+        return &UE_thread_retval;
+      }
 
       rx_off_diff = 0;
-      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,0);
+      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ, 0 );
 
       // Transmit TX buffer based on timestamp from RX
       if (tx_enabled) {
-        VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,1);
+        VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE, 1 );
 
-        for (i=0; i<UE->lte_frame_parms.nb_antennas_tx; i++)
+        DevAssert( UE->lte_frame_parms.nb_antennas_tx <= 2 );
+        void* txp[2];
+        for (int i=0; i<UE->lte_frame_parms.nb_antennas_tx; i++)
           txp[i] = (void*)&txdata[i][txpos];
 
         openair0.trx_write_func(&openair0,
@@ -927,115 +924,134 @@ void *UE_thread(void *arg)
                                 UE->lte_frame_parms.nb_antennas_tx,
                                 1);
 
-        VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,0);
+        VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE, 0 );
       }
 
 #else
+      // define USRP_DEBUG is active
       rt_sleep_ns(1000000);
 #endif
-      rxpos+=spp;
-      txpos+=spp;
 
-      if(txpos >= 10*PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti)
+      rxpos += spp;
+      txpos += spp;
+
+      if (txpos >= 10*PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti)
         txpos -= 10*PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti;
     }
 
-    if(rxpos >= 10*PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti)
+    if (rxpos >= 10*PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti)
       rxpos -= 10*PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti;
 
-    if (UE->is_synchronized==1)  {
-      LOG_D(HW,"UE_thread: hw_frame %d, hw_subframe %d (time %llu)\n",frame,hw_subframe,rt_get_time_ns()-T0);
+    if (UE->is_synchronized == 1)  {
+      LOG_D( HW, "UE_thread: hw_frame %d, hw_subframe %d (time %lli)\n", frame, hw_subframe, rt_get_time_ns()-T0 );
 
-      if (start_rx_stream==1) {
-        //  printf("UE_thread: locking UE mutex_rx\n");
+      if (start_rx_stream == 1) {
         if (pthread_mutex_lock(&UE->mutex_rx) != 0) {
-          LOG_E(PHY,"[SCHED][UE] error locking mutex for UE RX thread\n");
+          LOG_E( PHY, "[SCHED][UE] error locking mutex for UE RX thread\n" );
           exit_fun("nothing to add");
-        } else {
+          return &UE_thread_retval;
+        }
 
-          UE->instance_cnt_rx++;
-          //    printf("UE_thread: Unlocking UE mutex_rx\n");
-          pthread_mutex_unlock(&UE->mutex_rx);
+        int instance_cnt_rx = ++UE->instance_cnt_rx;
 
-          if (UE->instance_cnt_rx == 0) {
-            // LOG_D(HW,"Scheduling UE RX for frame %d (hw frame %d), subframe %d (%d), mode %d\n",UE->frame_rx,frame,hw_subframe,UE->slot_rx>>1,mode);
-            if (pthread_cond_signal(&UE->cond_rx) != 0) {
-              LOG_E(PHY,"[SCHED][UE] ERROR pthread_cond_signal for UE RX thread\n");
-              exit_fun("nothing to add");
-            } else {
-              //        printf("UE_thread: cond_signal for RX ok (%p) @ %llu\n",(void*)&UE->cond_rx,rt_get_time_ns()-T0);
-            }
+        if (pthread_mutex_unlock(&UE->mutex_rx) != 0) {
+          LOG_E( PHY, "[SCHED][UE] error unlocking mutex for UE RX thread\n" );
+          exit_fun("nothing to add");
+          return &UE_thread_retval;
+        }
 
-            if (UE->mode == rx_calib_ue) {
-              if (frame == 10) {
-                LOG_D(PHY,
-                      "[SCHED][UE] Found cell with N_RB_DL %d, PHICH CONFIG (%d,%d), Nid_cell %d, NB_ANTENNAS_TX %d, initial frequency offset %d Hz, frequency offset %d Hz, RSSI (digital) %d dB, measured Gain %d dB, total_rx_gain %d dB, USRP rx gain %f dB\n",
-                      UE->lte_frame_parms.N_RB_DL,
-                      UE->lte_frame_parms.phich_config_common.phich_duration,
-                      UE->lte_frame_parms.phich_config_common.phich_resource,
-                      UE->lte_frame_parms.Nid_cell,
-                      UE->lte_frame_parms.nb_antennas_tx_eNB,
-                      openair_daq_vars.freq_offset,
-                      UE->lte_ue_common_vars.freq_offset,
-                      UE->PHY_measurements.rx_power_avg_dB[0],
-                      UE->PHY_measurements.rx_power_avg_dB[0] - rx_input_level_dBm,
-                      UE->rx_total_gain_dB,
-                      openair0_cfg[0].rx_gain[0]
-		      );
-                exit_fun("[HW][UE] UE in RX calibration mode, exiting");
-              }
-            }
-          } else {
-            LOG_E(PHY,"[SCHED][UE] UE RX thread busy!!\n");
+        if (instance_cnt_rx == 0) {
+          if (pthread_cond_signal(&UE->cond_rx) != 0) {
+            LOG_E( PHY, "[SCHED][UE] ERROR pthread_cond_signal for UE RX thread\n" );
             exit_fun("nothing to add");
+            return &UE_thread_retval;
           }
+
+          if (UE->mode == rx_calib_ue) {
+            if (frame == 10) {
+              LOG_D(PHY,
+                    "[SCHED][UE] Found cell with N_RB_DL %"PRIu8", PHICH CONFIG (%d,%d), Nid_cell %"PRIu16", NB_ANTENNAS_TX %"PRIu8", initial frequency offset %"PRIi32" Hz, frequency offset "PRIi32" Hz, RSSI (digital) %hu dB, measured Gain %d dB, total_rx_gain %"PRIu32" dB, USRP rx gain %f dB\n",
+                    UE->lte_frame_parms.N_RB_DL,
+                    UE->lte_frame_parms.phich_config_common.phich_duration,
+                    UE->lte_frame_parms.phich_config_common.phich_resource,
+                    UE->lte_frame_parms.Nid_cell,
+                    UE->lte_frame_parms.nb_antennas_tx_eNB,
+                    openair_daq_vars.freq_offset,
+                    UE->lte_ue_common_vars.freq_offset,
+                    UE->PHY_measurements.rx_power_avg_dB[0],
+                    UE->PHY_measurements.rx_power_avg_dB[0] - rx_input_level_dBm,
+                    UE->rx_total_gain_dB,
+                    openair0_cfg[0].rx_gain[0]
+		      );
+              exit_fun("[HW][UE] UE in RX calibration mode, exiting");
+              return &UE_thread_retval;
+            }
+          }
+        } else {
+          LOG_E( PHY, "[SCHED][UE] UE RX thread busy!!\n" );
+          exit_fun("nothing to add");
+          return &UE_thread_retval;
         }
 
         if (pthread_mutex_lock(&UE->mutex_tx) != 0) {
-          LOG_E(PHY,"[SCHED][UE] error locking mutex for UE TX thread\n");
+          LOG_E( PHY, "[SCHED][UE] error locking mutex for UE TX thread\n" );
           exit_fun("nothing to add");
-        } else {
-
-          if (tx_enabled == 1) {
-            UE->instance_cnt_tx++;
-            //printf("UE_thread: Unlocking UE mutex_rx\n");
-            pthread_mutex_unlock(&UE->mutex_tx);
-
-            if (UE->instance_cnt_tx == 0) {
-              if (pthread_cond_signal(&UE->cond_tx) != 0) {
-                LOG_E(PHY,"[SCHED][UE] ERROR pthread_cond_signal for UE TX thread\n");
-                exit_fun("nothing to add");
-              } else {
-                //        printf("UE_thread: cond_signal for RX ok (%p) @ %llu\n",(void*)&UE->cond_rx,rt_get_time_ns()-T0);
-              }
-            } else {
-              LOG_E(PHY,"[SCHED][UE] UE TX thread busy!!\n");
-              exit_fun("nothing to add");
-            }
-          }
+          return &UE_thread_retval;
         }
-      }
-    } else { // we are not yet synchronized
-      if ((hw_subframe == 9)&&(dummy_dump == 0)) {
-        // Wake up initial synch thread
-        if (pthread_mutex_lock(&UE->mutex_synch) != 0) {
-          LOG_E(PHY,"[SCHED][UE] error locking mutex for UE initial synch thread\n");
-          exit_fun("nothing to add");
-        } else {
 
-          UE->instance_cnt_synch++;
-          pthread_mutex_unlock(&UE->mutex_synch);
-          dummy_dump = 1;
+        if (tx_enabled) {
+          int instance_cnt_tx = ++UE->instance_cnt_tx;
 
-          if (UE->instance_cnt_synch == 0) {
-            if (pthread_cond_signal(&UE->cond_synch) != 0) {
-              LOG_E(PHY,"[SCHED][UE] ERROR pthread_cond_signal for UE sync thread\n");
+          if (pthread_mutex_unlock(&UE->mutex_tx) != 0) {
+            LOG_E( PHY, "[SCHED][UE] error unlocking mutex for UE TX thread\n" );
+            exit_fun("nothing to add");
+            return &UE_thread_retval;
+          }
+
+          if (instance_cnt_tx == 0) {
+            if (pthread_cond_signal(&UE->cond_tx) != 0) {
+              LOG_E( PHY, "[SCHED][UE] ERROR pthread_cond_signal for UE TX thread\n" );
               exit_fun("nothing to add");
+              return &UE_thread_retval;
             }
           } else {
-            LOG_E(PHY,"[SCHED][UE] UE sync thread busy!!\n");
+            LOG_E( PHY, "[SCHED][UE] UE TX thread busy!!\n" );
             exit_fun("nothing to add");
+            return &UE_thread_retval;
           }
+        }
+
+      }
+    } else {
+      // we are not yet synchronized
+      if ((hw_subframe == 9) && (dummy_dump == 0)) {
+        // Wake up initial synch thread
+        if (pthread_mutex_lock(&UE->mutex_synch) != 0) {
+          LOG_E( PHY, "[SCHED][UE] error locking mutex for UE initial synch thread\n" );
+          exit_fun("nothing to add");
+          return &UE_thread_retval;
+        }
+
+        int instance_cnt_synch = ++UE->instance_cnt_synch;
+
+        if (pthread_mutex_unlock(&UE->mutex_synch) != 0) {
+          LOG_E( PHY, "[SCHED][UE] error unlocking mutex for UE initial synch thread\n" );
+          exit_fun("nothing to add");
+          return &UE_thread_retval;
+        }
+
+        dummy_dump = 1;
+
+        if (instance_cnt_synch == 0) {
+          if (pthread_cond_signal(&UE->cond_synch) != 0) {
+            LOG_E( PHY, "[SCHED][UE] ERROR pthread_cond_signal for UE sync thread\n" );
+            exit_fun("nothing to add");
+            return &UE_thread_retval;
+          }
+        } else {
+          LOG_E( PHY, "[SCHED][UE] UE sync thread busy!!\n" );
+          exit_fun("nothing to add");
+          return &UE_thread_retval;
         }
       }
     }
@@ -1043,47 +1059,53 @@ void *UE_thread(void *arg)
     hw_subframe++;
     slot+=2;
 
-    if(hw_subframe==10) {
+    if (hw_subframe==10) {
       hw_subframe = 0;
       first_rx = 1;
       frame++;
       slot = 1;
 
-      if (UE->instance_cnt_synch < 0) {
-        if (UE->is_synchronized == 1) {
-          //    openair0_set_gains(&openair0,&openair0_cfg[0]);
-          rx_off_diff = 0;
+      int fail = pthread_mutex_lock(&UE->mutex_synch);
+      int instance_cnt_synch = UE->instance_cnt_synch;
+      fail = fail || pthread_mutex_unlock(&UE->mutex_synch);
+      if (fail) {
+        LOG_E( PHY, "[SCHED][UE] error (un-)locking mutex for UE synch\n" );
+        exit_fun("noting to add");
+        return &UE_thread_retval;
+      }
 
-          //    LOG_D(PHY,"HW RESYNC: hw_frame %d: rx_offset = %d\n",frame,UE->rx_offset);
-          if ((UE->rx_offset > RX_OFF_MAX)&&(start_rx_stream==0)) {
+      if (instance_cnt_synch < 0) {
+        // the UE_thread_synch is ready
+        if (UE->is_synchronized == 1) {
+          rx_off_diff = 0;
+          LTE_DL_FRAME_PARMS *frame_parms = &UE->lte_frame_parms; // for macro FRAME_LENGTH_COMPLEX_SAMPLES
+
+          if ((UE->rx_offset > RX_OFF_MAX) && (start_rx_stream == 0)) {
             start_rx_stream=1;
-            //LOG_D(PHY,"HW RESYNC: hw_frame %d: Resynchronizing sample stream\n");
             frame=0;
             // dump ahead in time to start of frame
 
 #ifndef USRP_DEBUG
-            rxs = openair0.trx_read_func(&openair0,
-                                         &timestamp,
-                                         (void**)rxdata,
-                                         UE->rx_offset,
-                                         UE->lte_frame_parms.nb_antennas_rx);
+            unsigned int rxs = openair0.trx_read_func(&openair0,
+                                                      &timestamp,
+                                                      (void**)rxdata,
+                                                      UE->rx_offset,
+                                                      UE->lte_frame_parms.nb_antennas_rx);
 #else
             rt_sleep_ns(10000000);
 #endif
             UE->rx_offset=0;
-            tx_enabled=1;
-          } else if ((UE->rx_offset < RX_OFF_MIN)&&(start_rx_stream==1) && (rx_correction_timer == 0)) {
+            tx_enabled = 1;
+          } else if ((UE->rx_offset < RX_OFF_MIN) && (start_rx_stream==1) && (rx_correction_timer == 0)) {
             rx_off_diff = -UE->rx_offset + RX_OFF_MIN;
             rx_correction_timer = 5;
-          } else if ((UE->rx_offset > (FRAME_LENGTH_COMPLEX_SAMPLES-RX_OFF_MAX)) &&(start_rx_stream==1) && (rx_correction_timer == 0)) {
+          } else if ((UE->rx_offset > (FRAME_LENGTH_COMPLEX_SAMPLES-RX_OFF_MAX)) && (start_rx_stream==1) && (rx_correction_timer == 0)) {
             rx_off_diff = FRAME_LENGTH_COMPLEX_SAMPLES-UE->rx_offset;
             rx_correction_timer = 5;
           }
 
           if (rx_correction_timer>0)
             rx_correction_timer--;
-
-          //    LOG_D(PHY,"HW RESYNC: hw_frame %d: (rx_offset %d) Correction: rx_off_diff %d (timer %d)\n",frame,UE->rx_offset,rx_off_diff,rx_correction_timer);
         }
 
         dummy_dump=0;
@@ -1095,7 +1117,7 @@ void *UE_thread(void *arg)
 #endif
   }
 
-  return(0);
+  return &UE_thread_retval;
 }
 #endif
 
@@ -1496,13 +1518,22 @@ void *UE_thread(void *arg)
 #endif
 
 
+/*!
+ * \brief Initialize the UE theads.
+ * Creates the UE threads:
+ * - UE_thread_tx
+ * - UE_thread_rx
+ * - UE_thread_synch
+ * and the locking between them.
+ */
 void init_UE_threads(void)
 {
-  PHY_VARS_UE *UE=PHY_vars_UE_g[0][0];
+  PHY_VARS_UE *UE = PHY_vars_UE_g[0][0];
 
-  UE->instance_cnt_tx=-1;
-  UE->instance_cnt_rx=-1;
-  UE->instance_cnt_synch=-1;
+  // the threads are not yet active, therefore access is allowed without locking
+  UE->instance_cnt_tx = -1;
+  UE->instance_cnt_rx = -1;
+  UE->instance_cnt_synch = -1;
   pthread_mutex_init(&UE->mutex_tx,NULL);
   pthread_mutex_init(&UE->mutex_rx,NULL);
   pthread_mutex_init(&UE->mutex_synch,NULL);
