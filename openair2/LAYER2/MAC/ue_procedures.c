@@ -73,6 +73,8 @@
 
 #include "assertions.h"
 
+#include "SIMULATION/TOOLS/defs.h" // for taus
+
 #define DEBUG_HEADER_PARSING 1
 #define ENABLE_MAC_PAYLOAD_DEBUG 1
 
@@ -89,8 +91,6 @@ mapping BSR_names[] = {
   {"PADDING BSR", 4},
   {NULL, -1}
 };
-
-extern inline unsigned int taus(void);
 
 
 void ue_init_mac(module_id_t module_idP)

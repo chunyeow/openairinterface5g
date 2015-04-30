@@ -68,8 +68,6 @@
   #endif
 */
 
-extern inline unsigned int taus(void);
-
 
 // This function stores the downlink buffer for all the logical channels
 void store_dlsch_buffer (module_id_t Mod_id,

@@ -77,7 +77,6 @@
 #define PUCCH1_THRES 15
 #define PUCCH1a_THRES 15
 
-extern inline unsigned int taus(void);
 extern int exit_openair;
 //extern void do_OFDM_mod(mod_sym_t **txdataF, int32_t **txdata, uint32_t frame, uint16_t next_slot, LTE_DL_FRAME_PARMS *frame_parms);
 

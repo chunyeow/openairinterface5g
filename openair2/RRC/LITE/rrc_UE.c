@@ -91,6 +91,9 @@
 # include "intertask_interface.h"
 #endif
 
+#include "SIMULATION/TOOLS/defs.h" // for taus
+
+
 #ifdef PHY_EMUL
 extern EMULATION_VARS *Emul_vars;
 #endif
@@ -102,7 +105,6 @@ extern void *bigphys_malloc(int);
 
 //#define XER_PRINT
 
-extern inline unsigned int taus(void);
 extern int8_t dB_fixed2(uint32_t x,uint32_t y);
 
 void

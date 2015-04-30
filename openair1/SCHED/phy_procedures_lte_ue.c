@@ -96,7 +96,6 @@ fifo_dump_emos_UE emos_dump_UE;
 
 #define NS_PER_SLOT 500000
 
-extern inline unsigned int taus(void);
 extern int oai_exit;
 
 uint8_t ulsch_input_buffer[2700] __attribute__ ((aligned(16)));

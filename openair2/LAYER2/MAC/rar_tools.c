@@ -54,8 +54,6 @@ extern unsigned int  distRIV2alloc_LUT25[512];
 extern unsigned short RIV2nb_rb_LUT25[512];
 extern unsigned short RIV2first_rb_LUT25[512];
 
-extern inline unsigned int taus(void);
-
 //------------------------------------------------------------------------------
 unsigned short fill_rar(
   const module_id_t module_idP,

@@ -97,6 +97,8 @@
 #   include "rrc_eNB_ral.h"
 #endif
 
+#include "SIMULATION/TOOLS/defs.h" // for taus
+
 //#define XER_PRINT
 
 #ifdef PHY_EMUL
@@ -109,7 +111,6 @@ extern void*                        bigphys_malloc(int);
 #endif
 
 extern uint16_t                     two_tier_hexagonal_cellIds[7];
-extern inline unsigned int          taus(void);
 
 /* TS 36.331: RRC-TransactionIdentifier ::= INTEGER (0..3) */
 static const uint8_t                RRC_TRANSACTION_IDENTIFIER_NUMBER = 4;

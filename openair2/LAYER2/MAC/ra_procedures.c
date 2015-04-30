@@ -55,7 +55,7 @@
 #include "SIMULATION/simulation_defs.h"
 #endif
 
-extern inline unsigned int taus(void);
+#include "SIMULATION/TOOLS/defs.h" // for taus
 
 int8_t get_DELTA_PREAMBLE(module_id_t module_idP,int CC_id)
 {

@@ -59,6 +59,8 @@
 //#include "LAYER2/MAC/pre_processor.c"
 #include "pdcp.h"
 
+#include "SIMULATION/TOOLS/defs.h" // for taus
+
 #if defined(ENABLE_ITTI)
 # include "intertask_interface.h"
 #endif
@@ -66,7 +68,6 @@
 #define ENABLE_MAC_PAYLOAD_DEBUG
 //#define DEBUG_eNB_SCHEDULER 1
 
-extern inline unsigned int taus(void);
 
 
 //------------------------------------------------------------------------------
