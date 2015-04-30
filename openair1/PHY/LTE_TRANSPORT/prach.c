@@ -1211,10 +1211,10 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
 
           if (prach_fmt<4) {
             // prach_root_sequence_map points to prach_root_sequence_map0_3
-            DevAssert( index < sizeof(prach_root_sequence_map0_3) );
+            DevAssert( index < sizeof(prach_root_sequence_map0_3) / sizeof(prach_root_sequence_map0_3[0]) );
           } else {
             // prach_root_sequence_map points to prach_root_sequence_map4
-            DevAssert( index < sizeof(prach_root_sequence_map4) );
+            DevAssert( index < sizeof(prach_root_sequence_map4) / sizeof(prach_root_sequence_map4[0]) );
           }
 
           u = prach_root_sequence_map[index];
@@ -1564,10 +1564,10 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
 
       if (prach_fmt<4) {
         // prach_root_sequence_map points to prach_root_sequence_map0_3
-        DevAssert( index < sizeof(prach_root_sequence_map0_3) );
+        DevAssert( index < sizeof(prach_root_sequence_map0_3) / sizeof(prach_root_sequence_map0_3[0]) );
       } else {
         // prach_root_sequence_map points to prach_root_sequence_map4
-        DevAssert( index < sizeof(prach_root_sequence_map4) );
+        DevAssert( index < sizeof(prach_root_sequence_map4) / sizeof(prach_root_sequence_map4[0]) );
       }
 
       u = prach_root_sequence_map[index];
@@ -1611,10 +1611,10 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
 
     if (prach_fmt<4) {
       // prach_root_sequence_map points to prach_root_sequence_map0_3
-      DevAssert( index < sizeof(prach_root_sequence_map0_3) );
+      DevAssert( index < sizeof(prach_root_sequence_map0_3) / sizeof(prach_root_sequence_map0_3[0]) );
     } else {
       // prach_root_sequence_map points to prach_root_sequence_map4
-      DevAssert( index < sizeof(prach_root_sequence_map4) );
+      DevAssert( index < sizeof(prach_root_sequence_map4) / sizeof(prach_root_sequence_map4[0]) );
     }
 
     u = prach_root_sequence_map[index];
