@@ -231,10 +231,10 @@ static void *UE_thread_synch(void *arg)
 
   if (UE->UE_scan == 0) {
     do  {
-    current_band = eutra_bands[ind].band;
-    printf( "Scanning band %d, dl_min %"PRIu32"\n", current_band, eutra_bands[ind].dl_min );
+      current_band = eutra_bands[ind].band;
+      printf( "Scanning band %d, dl_min %"PRIu32"\n", current_band, eutra_bands[ind].dl_min );
 
-    if ((eutra_bands[ind].dl_min <= downlink_frequency[0][0]) && (eutra_bands[ind].dl_max >= downlink_frequency[0][0])) {
+      if ((eutra_bands[ind].dl_min <= downlink_frequency[0][0]) && (eutra_bands[ind].dl_max >= downlink_frequency[0][0])) {
         for (card=0; card<MAX_NUM_CCs; card++)
           for (i=0; i<4; i++)
             uplink_frequency_offset[card][i] = eutra_bands[ind].ul_min - eutra_bands[ind].dl_min;
@@ -244,24 +244,26 @@ static void *UE_thread_synch(void *arg)
       }
 
       ind++;
-  } while (current_band < sizeof(eutra_bands) / sizeof(eutra_bands[0]));
+    } while (current_band < sizeof(eutra_bands) / sizeof(eutra_bands[0]));
 
     if (found == 0) {
       exit_fun("Can't find EUTRA band for frequency");
-    return &UE_thread_synch_retval;
+      return &UE_thread_synch_retval;
     }
 
 #ifdef OAI_USRP
-  // now we know the uplink_frequency_offset
-  // set the correct TX frequency
-  for (i=0; i<openair0_cfg[card].tx_num_channels; i++) {
-    openair0_cfg[0].tx_freq[i] = downlink_frequency[0][i] + uplink_frequency_offset[0][i];
-  }
-  openair0_set_frequencies( &openair0, &openair0_cfg[0] );
+
+    // now we know the uplink_frequency_offset
+    // set the correct TX frequency
+    for (i=0; i<openair0_cfg[card].tx_num_channels; i++) {
+      openair0_cfg[0].tx_freq[i] = downlink_frequency[0][i] + uplink_frequency_offset[0][i];
+    }
+
+    openair0_set_frequencies( &openair0, &openair0_cfg[0] );
 #endif
   }
 
-    else if  (UE->UE_scan == 1) {
+  else if  (UE->UE_scan == 1) {
     current_band=0;
 
     for (card=0; card<MAX_CARDS; card++) {
@@ -383,7 +385,7 @@ static void *UE_thread_synch(void *arg)
           printf("UE synch: setting RX gain (%d,%d) to %f\n",card,i,openair0_cfg[card].rx_gain[i]);
 #endif
 
-  }
+        }
 
 #ifdef EXMIMO
         //openair0_config(&openair0_cfg[card],1);
@@ -477,6 +479,7 @@ static void *UE_thread_synch(void *arg)
     default:
       break;
     }
+
     VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH, 0 );
 
     if (pthread_mutex_lock(&UE->mutex_synch) != 0) {
@@ -996,7 +999,7 @@ void *UE_thread(void *arg)
                     UE->PHY_measurements.rx_power_avg_dB[0] - rx_input_level_dBm,
                     UE->rx_total_gain_dB,
                     openair0_cfg[0].rx_gain[0]
-		      );
+                   );
               exit_fun("[HW][UE] UE in RX calibration mode, exiting");
               return &UE_thread_retval;
             }
@@ -1384,7 +1387,7 @@ void *UE_thread(void *arg)
                       UE->PHY_measurements.rx_power_avg_dB[0] - rx_input_level_dBm,
                       UE->rx_total_gain_dB,
                       openair0_cfg[0].rx_gain[0]
-		      );
+                     );
                 exit_fun("[HW][UE] UE in RX calibration mode, exiting");
               }
             }
@@ -1420,8 +1423,8 @@ void *UE_thread(void *arg)
       }
 
       /*
-	if ((slot%2000)<10)
-	LOG_D(HW,"fun0: doing very hard work\n");
+      if ((slot%2000)<10)
+      LOG_D(HW,"fun0: doing very hard work\n");
       */
       // now increment slot and frame counters
       slot++;

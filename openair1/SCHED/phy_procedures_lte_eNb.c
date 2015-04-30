@@ -153,7 +153,7 @@ int32_t add_ue(int16_t rnti, PHY_VARS_eNB *phy_vars_eNB)
       return(-1);
     } else {
       if (phy_vars_eNB->eNB_UE_stats[i].crnti==0) {
-    	MSC_LOG_EVENT(MSC_PHY_ENB, "Add ue %"PRIx16" ", rnti);
+        MSC_LOG_EVENT(MSC_PHY_ENB, "Add ue %"PRIx16" ", rnti);
         LOG_I(PHY,"UE_id %d associated with rnti %x\n",i, rnti);
         phy_vars_eNB->dlsch_eNB[i][0]->rnti = rnti;
         phy_vars_eNB->ulsch_eNB[i]->rnti = rnti;
@@ -192,6 +192,7 @@ int32_t remove_ue(uint16_t rnti, PHY_VARS_eNB *phy_vars_eNB, uint8_t abstraction
       }
     }
   }
+
   MSC_LOG_EVENT(MSC_PHY_ENB, "Failed remove ue %"PRIx16" (not found)", rnti);
   return(-1);
 }
@@ -2788,8 +2789,8 @@ void process_HARQ_feedback(uint8_t UE_id,
                     dlsch->rnti,dl_harq_pid[m]);
 #endif
               MSC_LOG_EVENT(MSC_PHY_ENB, "HARQ DLSCH Failed RNTI %"PRIx16" round %u",
-            		  dlsch->rnti,
-            		  dlsch_harq_proc->round);
+                            dlsch->rnti,
+                            dlsch_harq_proc->round);
 
               dlsch_harq_proc->round = 0;
               ue_stats->dlsch_l2_errors[dl_harq_pid[m]]++;

@@ -633,8 +633,7 @@ int8_t ue_get_mbsfn_sf_alloction (module_id_t module_idP, uint8_t mbsfn_sync_are
     return -1;
   } else if (UE_mac_inst[module_idP].mbsfn_SubframeConfig[mbsfn_sync_area] != NULL) {
     return mbsfn_sync_area;
-  }
-  else {
+  } else {
     LOG_W( MAC, "[UE %"PRIu8"] MBSFN Subframe Config pattern %"PRIu8" not found \n", module_idP, mbsfn_sync_area );
     return -1;
   }
@@ -1449,8 +1448,8 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
     trace_pdu(0, ulsch_buffer, buflen, module_idP, 3, UE_mac_inst[module_idP].crnti, subframe, 0, 0);
   }
 
-    LOG_D(OPT,"[UE %d][ULSCH] Frame %d trace pdu for rnti %x  with size %d\n",
-          module_idP, frameP, UE_mac_inst[module_idP].crnti, buflen);
+  LOG_D(OPT,"[UE %d][ULSCH] Frame %d trace pdu for rnti %x  with size %d\n",
+        module_idP, frameP, UE_mac_inst[module_idP].crnti, buflen);
 #endif
 
   LOG_D(MAC,"[UE %d][SR] Gave SDU to PHY, clearing any scheduling request\n",
@@ -1691,7 +1690,7 @@ ue_scheduler(
         UE_mac_inst[module_idP].PHR_reporting_active = 1;
       } else if (UE_mac_inst[module_idP].PHR_reporting_active == 0 ) {
         UE_mac_inst[module_idP].scheduling_info.periodicPHR_SF--;
-    }
+      }
     }
   } else {    // release / nothing
     UE_mac_inst[module_idP].PHR_reporting_active = 0; // release PHR

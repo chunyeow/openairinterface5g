@@ -691,6 +691,7 @@ int32_t generate_prach( PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id, uint8_t subfra
       u = prach_root_sequence_map[index];
 
       uint16_t n_group_ra = 0;
+
       if ( (du[u]<(N_ZC/3)) && (du[u]>=NCS) ) {
         n_shift_ra     = du[u]/NCS;
         d_start        = (du[u]<<1) + (n_shift_ra * NCS);
@@ -1218,6 +1219,7 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
           u = prach_root_sequence_map[index];
 
           uint16_t n_group_ra = 0;
+
           if ( (du[u]<(N_ZC/3)) && (du[u]>=NCS) ) {
             n_shift_ra     = du[u]/NCS;
             d_start        = (du[u]<<1) + (n_shift_ra * NCS);
@@ -1577,6 +1579,7 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
       u = prach_root_sequence_map[index];
 
       uint16_t n_group_ra = 0;
+
       if ( (du[u]<(N_ZC/3)) && (du[u]>=NCS) ) {
         n_shift_ra     = du[u]/NCS;
         d_start        = (du[u]<<1) + (n_shift_ra * NCS);

@@ -192,7 +192,7 @@ rrc_ue_process_measConfig(
 void rrc_ue_process_radioResourceConfigDedicated(
   const protocol_ctxt_t* const ctxt_pP,
   uint8_t eNB_index,
-    RadioResourceConfigDedicated_t *radioResourceConfigDedicated);
+  RadioResourceConfigDedicated_t *radioResourceConfigDedicated);
 
 // eNB/CH RRC Procedures
 
@@ -445,8 +445,8 @@ uint8_t check_trigger_meas_event(
   uint8_t eNB_index,
   uint8_t ue_cnx_index,
   uint8_t meas_index,
-                                 Q_OffsetRange_t ofn, Q_OffsetRange_t ocn, Hysteresis_t hys,
-                                 Q_OffsetRange_t ofs, Q_OffsetRange_t ocs, long a3_offset, TimeToTrigger_t ttt);
+  Q_OffsetRange_t ofn, Q_OffsetRange_t ocn, Hysteresis_t hys,
+  Q_OffsetRange_t ofs, Q_OffsetRange_t ocs, long a3_offset, TimeToTrigger_t ttt);
 
 //void rrc_ue_process_ueCapabilityEnquiry(uint8_t module_idP,uint32_t frame,UECapabilityEnquiry_t *UECapabilityEnquiry,uint8_t eNB_index);
 /*void

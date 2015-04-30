@@ -312,7 +312,7 @@ void sort_UEs (module_id_t Mod_idP,
 
     rnti1 = UE_RNTI(Mod_idP,i);
 
-    if(rnti1 == NOT_A_RNTI) 
+    if(rnti1 == NOT_A_RNTI)
       continue;
 
     UE_id1  = i;
@@ -409,16 +409,16 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
       // Initialize scheduling information for all active UEs
 
       dlsch_scheduler_pre_processor_reset(
-                                          UE_id,
-                                          CC_id,
-                                          N_RBG[CC_id],
-                                          dl_pow_off,
-                                          nb_rbs_required,
-                                          pre_nb_available_rbs,
-                                          nb_rbs_required_remaining,
-                                          rballoc_sub_UE,
-                                          rballoc_sub,
-                                          MIMO_mode_indicator);
+        UE_id,
+        CC_id,
+        N_RBG[CC_id],
+        dl_pow_off,
+        nb_rbs_required,
+        pre_nb_available_rbs,
+        nb_rbs_required_remaining,
+        rballoc_sub_UE,
+        rballoc_sub,
+        MIMO_mode_indicator);
 
     }
   }
@@ -494,6 +494,7 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
   // extend nb_rbs_required to capture per LCID RB required
   for(i=UE_list->head; i>=0; i=UE_list->next[i]) {
     rnti = UE_RNTI(Mod_id,i);
+
     for (ii=0; ii<UE_num_active_CC(UE_list,i); ii++) {
       CC_id = UE_list->ordered_CCids[ii][i];
 
@@ -846,7 +847,7 @@ void ulsch_scheduler_pre_processor(module_id_t module_idP,
 
     rnti = UE_RNTI(module_idP,i);
 
-    if (rnti==NOT_A_RNTI) 
+    if (rnti==NOT_A_RNTI)
       continue;
 
     UE_id = i;
@@ -872,12 +873,11 @@ void ulsch_scheduler_pre_processor(module_id_t module_idP,
       } else if (total_ue_count == 1 ) { // increase the available RBs, special case,
         average_rbs_per_user[CC_id] = frame_parms->N_RB_UL-first_rb[CC_id]+1;
       } else if( (total_ue_count <= (frame_parms->N_RB_DL-first_rb[CC_id])) &&
-               (total_ue_count <= max_num_ue_to_be_scheduled)) {
+                 (total_ue_count <= max_num_ue_to_be_scheduled)) {
         average_rbs_per_user[CC_id] = (uint16_t) floor((frame_parms->N_RB_UL-first_rb[CC_id])/total_ue_count);
       } else if (max_num_ue_to_be_scheduled > 0 ) {
         average_rbs_per_user[CC_id] = (uint16_t) floor((frame_parms->N_RB_UL-first_rb[CC_id])/max_num_ue_to_be_scheduled);
-      }
-      else {
+      } else {
         average_rbs_per_user[CC_id]=1;
         LOG_W(MAC,"[eNB %d] frame %d subframe %d: UE %d CC %d: can't get average rb per user (should not be here)\n",
               module_idP,frameP,subframeP,UE_id,CC_id);
@@ -922,7 +922,7 @@ void ulsch_scheduler_pre_processor(module_id_t module_idP,
     for (i=UE_list->head_ul; i>=0; i=UE_list->next_ul[i]) {
       rnti = UE_RNTI(module_idP,i);
 
-      if (rnti==NOT_A_RNTI) 
+      if (rnti==NOT_A_RNTI)
         continue;
 
       UE_id = i;
@@ -1035,6 +1035,7 @@ void assign_max_mcs_min_rb(module_id_t module_idP,int frameP, sub_frame_t subfra
     for (n=0; n<UE_list->numactiveULCCs[UE_id]; n++) {
       // This is the actual CC_id in the list
       CC_id = UE_list->ordered_ULCCids[n][UE_id];
+
       if (CC_id >= MAX_NUM_CCs) {
         LOG_E( MAC, "CC_id %u should be < %u, loop n=%u < numactiveULCCs[%u]=%u",
                CC_id,
@@ -1124,7 +1125,7 @@ void sort_ue_ul (module_id_t module_idP,int frameP, sub_frame_t subframeP)
 
     rnti1 = UE_RNTI(module_idP,i);
 
-    if(rnti1 == NOT_A_RNTI) 
+    if(rnti1 == NOT_A_RNTI)
       continue;
 
     UE_id1  = i;

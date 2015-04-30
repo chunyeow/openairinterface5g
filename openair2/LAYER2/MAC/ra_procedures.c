@@ -130,8 +130,7 @@ void get_prach_resources(module_id_t module_idP,
 
   if (UE_mac_inst[module_idP].radioResourceConfigCommon) {
     rach_ConfigCommon = &UE_mac_inst[module_idP].radioResourceConfigCommon->rach_ConfigCommon;
-  }
-  else {
+  } else {
     LOG_E(MAC,"[UE %d] FATAL  radioResourceConfigCommon is NULL !!!\n",module_idP);
     mac_xface->macphy_exit("MAC FATAL  radioResourceConfigCommon is NULL");
     return; // not reached

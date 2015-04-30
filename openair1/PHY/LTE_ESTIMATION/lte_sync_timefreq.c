@@ -73,10 +73,10 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq)
   /*  char fname[100],vname[100];*/
 
 
-  for (i=0;i<38400*4;i+=3072) {   // steps of 200 us with 100 us overlap, 0 to 5s
-  //  write_output("rxsig0.m","rxs0",ue->lte_ue_common_vars.rxdata[0],30720,1,1);
+  for (i=0; i<38400*4; i+=3072) { // steps of 200 us with 100 us overlap, 0 to 5s
+    //  write_output("rxsig0.m","rxs0",ue->lte_ue_common_vars.rxdata[0],30720,1,1);
 
-  //for (i = 15360-3072*2; i<15360+3072+1; i+=3072)  {
+    //for (i = 15360-3072*2; i<15360+3072+1; i+=3072)  {
 
 
     //compute frequency-domain representation of 6144-sample chunk
@@ -92,17 +92,17 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq)
 
 
       /*
-	printf("i %d: sp %p\n",i,sp);
-	if (i==12288) {
+      printf("i %d: sp %p\n",i,sp);
+      if (i==12288) {
         write_output("scan6144F.m","s6144F",sp,6144,1,1);
         write_output("scan6144.m","s6144",rxp,6144,1,1);
-	write_output("pss0_6144.m","pss0",pss6144_0_0,256,1,1);
-	}*/
+      write_output("pss0_6144.m","pss0",pss6144_0_0,256,1,1);
+      }*/
 
       for (f = -2000; f<2000; f++) { // this is -10MHz to 10 MHz in 5 kHz steps
 
         if ((f<-256)||(f>=0)) { // no split around DC
-	  //          printf("No split, f %d (%d)\n",f,f&3);
+          //          printf("No split, f %d (%d)\n",f,f&3);
 
           // align filters and input buffer pointer to 128-bit
           switch (f&3) {
@@ -138,7 +138,7 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq)
           re256=32;
 
           for (re = 0; re<256/4; re++) {  // loop over 256 points of upsampled PSS
-	    //	    printf("f %d, re %d\n",f,re);
+            //      printf("f %d, re %d\n",f,re);
             s = sp2[re];
             mmtmp00 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
             mmtmp01 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
@@ -158,7 +158,7 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq)
             re256 = (re256+1)&0x3f;
           }
         } else { // Split around DC, this is the negative frequencies
-	  //          printf("split around DC, f %d (f/4 %d, f&3 %d)\n",f,f>>2,f&3);
+          //          printf("split around DC, f %d (f/4 %d, f&3 %d)\n",f,f>>2,f&3);
 
           // align filters and input buffer pointer to 128-bit
           switch (f&3) {
@@ -195,9 +195,9 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq)
 
           for (re = 0; re<(-f+3)/4; re++) {  // loop over 256 points of upsampled PSS
             s = sp2[re];
-	    /*            printf("re %d, %p\n",re,&sp2[re]);
-            print_shorts("s",&s);
-            print_shorts("pss",&((__m128i*)pss6144_0)[re]);*/
+            /*            printf("re %d, %p\n",re,&sp2[re]);
+                  print_shorts("s",&s);
+                  print_shorts("pss",&((__m128i*)pss6144_0)[re]);*/
 
             mmtmp00 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
             mmtmp01 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
@@ -250,9 +250,9 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq)
 
           for (re = 0; re<(256+f)/4; re++) {  // loop over 256 points of upsampled PSS
             s = sp2[re];
-	    /*            printf("re %d %p\n",re,&sp2[re]);
-            print_shorts("s",&s);
-            print_shorts("pss",&((__m128i*)pss6144_0)[re]);*/
+            /*            printf("re %d %p\n",re,&sp2[re]);
+                  print_shorts("s",&s);
+                  print_shorts("pss",&((__m128i*)pss6144_0)[re]);*/
             mmtmp00 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_0)[re],s),15);
             mmtmp01 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_1)[re],s),15);
             mmtmp02 = _mm_srai_epi32(_mm_madd_epi16(((__m128i*)pss6144_2)[re],s),15);
@@ -275,15 +275,15 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq)
 
         // ifft, accumulate energy over two half-frames
         idft256((int16_t*)autocorr0,(int16_t*)tmp_t,1);
-	/*
-        if (i==12288) {
-	  sprintf(fname,"corr256F_%d.m",abs(f));
-	  sprintf(vname,"c256F_%d",abs(f));
-          write_output(fname,vname,autocorr0,256,1,1);
-	  sprintf(fname,"corr256_%d.m",abs(f));
-	  sprintf(vname,"c256_%d",abs(f));
-          write_output(fname,vname,tmp_t,256,1,1);
-	  }*/
+        /*
+              if (i==12288) {
+          sprintf(fname,"corr256F_%d.m",abs(f));
+          sprintf(vname,"c256F_%d",abs(f));
+                write_output(fname,vname,autocorr0,256,1,1);
+          sprintf(fname,"corr256_%d.m",abs(f));
+          sprintf(vname,"c256_%d",abs(f));
+                write_output(fname,vname,tmp_t,256,1,1);
+          }*/
 
         memset((void*)autocorr0_t,0,256*4);
         memset((void*)autocorr1_t,0,256*4);
@@ -335,7 +335,7 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq)
           if (maxcorr[pssind]>minamp) {
             scan_info->amp[pssind][pos]=maxcorr[pssind];
             scan_info->freq_offset_Hz[pssind][pos]=((f+128)*5000)+DL_freq;
-	    printf("pss %d, amp %d (%d>%d) freq %u (%d), i %d\n",pssind,dB_fixed(maxcorr[pssind]),maxcorr[pssind],minamp,((f+128)*5000)+DL_freq,f,i);
+            printf("pss %d, amp %d (%d>%d) freq %u (%d), i %d\n",pssind,dB_fixed(maxcorr[pssind]),maxcorr[pssind],minamp,((f+128)*5000)+DL_freq,f,i);
           }
         } // loop on pss index
       }
@@ -351,8 +351,10 @@ void lte_sync_timefreq(PHY_VARS_UE *ue,int band,unsigned int DL_freq)
 
   for (band_idx=0; band_idx<10; band_idx++)
     printf("pss 0: level %d dB, freq %u\n", dB_fixed(scan_info->amp[0][band_idx]),scan_info->freq_offset_Hz[0][band_idx]);
+
   for (band_idx=0; band_idx<10; band_idx++)
     printf("pss 1: level %d dB, freq %u\n", dB_fixed(scan_info->amp[1][band_idx]),scan_info->freq_offset_Hz[1][band_idx]);
+
   for (band_idx=0; band_idx<10; band_idx++)
     printf("pss 2: level %d dB, freq %u\n", dB_fixed(scan_info->amp[2][band_idx]),scan_info->freq_offset_Hz[2][band_idx]);
 

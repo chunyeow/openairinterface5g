@@ -123,15 +123,15 @@ schedule_next_dlue(
 //------------------------------------------------------------------------------
 unsigned char
 generate_dlsch_header(
-                      unsigned char* mac_header,
-                      unsigned char num_sdus,
-                      unsigned short *sdu_lengths,
-                      unsigned char *sdu_lcids,
-                      unsigned char drx_cmd,
-                      short timing_advance_cmd,
-                      unsigned char *ue_cont_res_id,
-                      unsigned char short_padding,
-                      unsigned short post_padding
+  unsigned char* mac_header,
+  unsigned char num_sdus,
+  unsigned short *sdu_lengths,
+  unsigned char *sdu_lcids,
+  unsigned char drx_cmd,
+  short timing_advance_cmd,
+  unsigned char *ue_cont_res_id,
+  unsigned char short_padding,
+  unsigned short post_padding
 )
 //------------------------------------------------------------------------------
 {
@@ -419,12 +419,12 @@ set_ul_DAI(
 //------------------------------------------------------------------------------
 void
 schedule_ue_spec(
-                module_id_t   module_idP,
-                frame_t       frameP,
-                sub_frame_t   subframeP,
-                unsigned int  *nb_rb_used0,
-                unsigned int  *nCCE_used,
-                int*           mbsfn_flag
+  module_id_t   module_idP,
+  frame_t       frameP,
+  sub_frame_t   subframeP,
+  unsigned int  *nb_rb_used0,
+  unsigned int  *nCCE_used,
+  int*           mbsfn_flag
 )
 //------------------------------------------------------------------------------
 {
@@ -1077,12 +1077,13 @@ schedule_ue_spec(
                                          NULL,                                  // contention res id
                                          padding,
                                          post_padding);
+
           //#ifdef DEBUG_eNB_SCHEDULER
           if (ta_update) {
             LOG_I(MAC,
-                "[eNB %d][DLSCH] Frame %d Generate header for UE_id %d on CC_id %d: sdu_length_total %d, num_sdus %d, sdu_lengths[0] %d, sdu_lcids[0] %d => payload offset %d,timing advance value : %d, padding %d,post_padding %d,(mcs %d, TBS %d, nb_rb %d),header_dcch %d, header_dtch %d\n",
-                module_idP,frameP, UE_id, CC_id, sdu_length_total,num_sdus,sdu_lengths[0],sdu_lcids[0],offset,
-                ta_update,padding,post_padding,mcs,TBS,nb_rb,header_len_dcch,header_len_dtch);
+                  "[eNB %d][DLSCH] Frame %d Generate header for UE_id %d on CC_id %d: sdu_length_total %d, num_sdus %d, sdu_lengths[0] %d, sdu_lcids[0] %d => payload offset %d,timing advance value : %d, padding %d,post_padding %d,(mcs %d, TBS %d, nb_rb %d),header_dcch %d, header_dtch %d\n",
+                  module_idP,frameP, UE_id, CC_id, sdu_length_total,num_sdus,sdu_lengths[0],sdu_lcids[0],offset,
+                  ta_update,padding,post_padding,mcs,TBS,nb_rb,header_len_dcch,header_len_dtch);
           }
 
           //#endif
@@ -1105,14 +1106,15 @@ schedule_ue_spec(
           }
 
           //eNB_mac_inst[0].DLSCH_pdu[0][0].payload[0][offset+sdu_lengths[0]+j] = (char)(taus()&0xff);
-	  if (opt_enabled == 1){
-	    trace_pdu(1, (uint8_t *)UE_list->DLSCH_pdu[CC_id][0][UE_id].payload[0],
-		      TBS, module_idP, 3, UE_RNTI(module_idP,UE_id),
-		      eNB->subframe,0,0);
-	    LOG_D(OPT,"[eNB %d][DLSCH] Frame %d  rnti %x  with size %d\n",
-		  module_idP, frameP, UE_RNTI(module_idP,UE_id), TBS);
-	  }
-	  aggregation = process_ue_cqi(module_idP,UE_id);
+          if (opt_enabled == 1) {
+            trace_pdu(1, (uint8_t *)UE_list->DLSCH_pdu[CC_id][0][UE_id].payload[0],
+                      TBS, module_idP, 3, UE_RNTI(module_idP,UE_id),
+                      eNB->subframe,0,0);
+            LOG_D(OPT,"[eNB %d][DLSCH] Frame %d  rnti %x  with size %d\n",
+                  module_idP, frameP, UE_RNTI(module_idP,UE_id), TBS);
+          }
+
+          aggregation = process_ue_cqi(module_idP,UE_id);
           nCCE[CC_id]-=(1<<aggregation); // adjust the remaining nCCE
           nCCE_used[CC_id]+=(1<<aggregation); // adjust the remaining nCCE
           UE_list->UE_template[CC_id][UE_id].nb_rb[harq_pid] = nb_rb;
@@ -2085,7 +2087,7 @@ fill_DLSCH_dci(
 
           if(rballoc_sub[i] == 1) {
             rballoc[CC_id] |= (0x0001<<i);  // TO be FIXED!!!!!!
-        }
+          }
 
         }
 
@@ -2408,9 +2410,9 @@ update_ul_dci(
 //------------------------------------------------------------------------------
 void set_ue_dai(
   sub_frame_t   subframeP,
-                uint8_t       tdd_config,
-                int           UE_id,
-                uint8_t       CC_id,
+  uint8_t       tdd_config,
+  int           UE_id,
+  uint8_t       CC_id,
   UE_list_t*     UE_list
 )
 //------------------------------------------------------------------------------

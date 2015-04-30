@@ -1903,11 +1903,13 @@ static void get_options (int argc, char **argv)
     case LONG_OPTION_RXGAIN:
       for (i=0; i<4; i++)
         rx_gain[0][i] = atof(optarg);
+
       break;
 
     case LONG_OPTION_TXGAIN:
       for (i=0; i<4; i++)
         tx_gain[0][i] = atof(optarg);
+
       break;
 
     case 'M':
@@ -2009,6 +2011,7 @@ static void get_options (int argc, char **argv)
 
     case 'r':
       UE_scan = 0;
+
       for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
         switch(atoi(optarg)) {
         case 6:
@@ -2665,7 +2668,7 @@ int main( int argc, char **argv )
 #ifdef ETHERNET
 
   if (frame_parms[0]->N_RB_DL == 6) openair0_cfg[0].samples_per_packet = 256;
-        else openair0_cfg[0].samples_per_packet = 1536;
+  else openair0_cfg[0].samples_per_packet = 1536;
 
   printf("HW: samples_per_packet %d\n",openair0_cfg[0].samples_per_packet);
 #endif
@@ -2778,9 +2781,9 @@ int main( int argc, char **argv )
   if (UE_flag==1) {
     fill_ue_band_info();
     mac_xface->dl_phy_sync_success (0, 0, 0, 1);
-  }
-  else
+  } else
     mac_xface->mrbch_phy_sync_failure (0, 0, 0);
+
 #endif
 
   /* #ifdef OPENAIR2

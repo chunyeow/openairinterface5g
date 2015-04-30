@@ -583,7 +583,7 @@ rrc_ue_decode_ccch(
         rrc_ue_process_radioResourceConfigDedicated(
           ctxt_pP,
           eNB_index,
-            &dl_ccch_msg->message.choice.c1.choice.rrcConnectionSetup.criticalExtensions.choice.c1.choice.rrcConnectionSetup_r8.radioResourceConfigDedicated);
+          &dl_ccch_msg->message.choice.c1.choice.rrcConnectionSetup.criticalExtensions.choice.c1.choice.rrcConnectionSetup_r8.radioResourceConfigDedicated);
 
         rrc_set_state (ctxt_pP->module_id, RRC_STATE_CONNECTED);
         rrc_set_sub_state (ctxt_pP->module_id, RRC_SUB_STATE_CONNECTED);
@@ -1199,7 +1199,7 @@ rrc_ue_process_radioResourceConfigDedicated(
       MSC_AS_TIME_ARGS(ctxt_pP),
       ctxt_pP->rnti,
       UE_rrc_inst[ctxt_pP->module_id].ciphering_algorithm |
-        (UE_rrc_inst[ctxt_pP->module_id].integrity_algorithm << 4));
+      (UE_rrc_inst[ctxt_pP->module_id].integrity_algorithm << 4));
 
     // Refresh DRBs
     rrc_pdcp_config_asn1_req(ctxt_pP,
@@ -1431,8 +1431,8 @@ rrc_ue_process_securityModeCommand(
         buffer,
         PDCP_TRANSMISSION_MODE_CONTROL);
     }
-    }
   }
+}
 
 //-----------------------------------------------------------------------------
 void
@@ -1546,7 +1546,7 @@ rrc_ue_process_ueCapabilityEnquiry(
 void
 rrc_ue_process_rrcConnectionReconfiguration(
   const protocol_ctxt_t* const       ctxt_pP,
-    RRCConnectionReconfiguration_t *rrcConnectionReconfiguration,
+  RRCConnectionReconfiguration_t *rrcConnectionReconfiguration,
   uint8_t eNB_index
 )
 //-----------------------------------------------------------------------------
@@ -1960,7 +1960,7 @@ rrc_ue_decode_dcch(
           rrc_ue_generate_RRCConnectionReconfigurationComplete(
             ctxt_pP,
             target_eNB_index,
-              dl_dcch_msg->message.choice.c1.choice.rrcConnectionReconfiguration.rrc_TransactionIdentifier);
+            dl_dcch_msg->message.choice.c1.choice.rrcConnectionReconfiguration.rrc_TransactionIdentifier);
           UE_rrc_inst[ctxt_pP->module_id].Info[eNB_indexP].State = RRC_HO_EXECUTION;
           UE_rrc_inst[ctxt_pP->module_id].Info[target_eNB_index].State = RRC_RECONFIGURED;
           LOG_I(RRC, "[UE %d] State = RRC_RECONFIGURED during HO (eNB %d)\n",
@@ -2017,7 +2017,7 @@ rrc_ue_decode_dcch(
           rrc_ue_generate_RRCConnectionReconfigurationComplete(
             ctxt_pP,
             eNB_indexP,
-              dl_dcch_msg->message.choice.c1.choice.rrcConnectionReconfiguration.rrc_TransactionIdentifier);
+            dl_dcch_msg->message.choice.c1.choice.rrcConnectionReconfiguration.rrc_TransactionIdentifier);
           UE_rrc_inst[ctxt_pP->module_id].Info[eNB_indexP].State = RRC_RECONFIGURED;
           LOG_I(RRC, "[UE %d] State = RRC_RECONFIGURED (eNB %d)\n",
                 ctxt_pP->module_id,
@@ -2444,27 +2444,27 @@ decode_SIB1(
 
         plmn_Identity = &(*sib1)->cellAccessRelatedInfo.plmn_IdentityList.list.array[plmn]->plmn_Identity;
 
-       if (
-             (
-               (plmn_Identity->mcc == NULL)
-               ||
-               (
-                 (UE_rrc_inst[ctxt_pP->module_id].plmnID.MCCdigit1 == *(plmn_Identity->mcc->list.array[0])) &&
-                 (UE_rrc_inst[ctxt_pP->module_id].plmnID.MCCdigit2 == *(plmn_Identity->mcc->list.array[1])) &&
-                 (UE_rrc_inst[ctxt_pP->module_id].plmnID.MCCdigit3 == *(plmn_Identity->mcc->list.array[2]))
-               )
-             )
-             &&
-             (UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit1 == *(plmn_Identity->mnc.list.array[0]))
-             &&
-             (UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit2 == *(plmn_Identity->mnc.list.array[1]))
-             &&
-             (
-               ((UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit3 == 0xf) && (plmn_Identity->mnc.list.count == 2))
-               ||
-               (UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit3 == *(plmn_Identity->mnc.list.array[2]))
-             )
-           ) {
+        if (
+          (
+            (plmn_Identity->mcc == NULL)
+            ||
+            (
+              (UE_rrc_inst[ctxt_pP->module_id].plmnID.MCCdigit1 == *(plmn_Identity->mcc->list.array[0])) &&
+              (UE_rrc_inst[ctxt_pP->module_id].plmnID.MCCdigit2 == *(plmn_Identity->mcc->list.array[1])) &&
+              (UE_rrc_inst[ctxt_pP->module_id].plmnID.MCCdigit3 == *(plmn_Identity->mcc->list.array[2]))
+            )
+          )
+          &&
+          (UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit1 == *(plmn_Identity->mnc.list.array[0]))
+          &&
+          (UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit2 == *(plmn_Identity->mnc.list.array[1]))
+          &&
+          (
+            ((UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit3 == 0xf) && (plmn_Identity->mnc.list.count == 2))
+            ||
+            (UE_rrc_inst[ctxt_pP->module_id].plmnID.MNCdigit3 == *(plmn_Identity->mnc.list.array[2]))
+          )
+        ) {
           /* PLMN match, send a confirmation to NAS */
           MessageDef  *msg_p;
 
@@ -3473,7 +3473,7 @@ void
         RRC_MAC_MCCH_DATA_IND (msg_p).enb_index,
         RRC_MAC_MCCH_DATA_IND (msg_p).sdu,
         RRC_MAC_MCCH_DATA_IND (msg_p).sdu_size,
-                           RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
+        RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
       break;
 # endif
 
@@ -3485,7 +3485,7 @@ void
             msg_name,
             RRC_DCCH_DATA_IND (msg_p).frame,
             RRC_DCCH_DATA_IND (msg_p).dcch_index,
-                          RRC_DCCH_DATA_IND (msg_p).eNB_index);
+            RRC_DCCH_DATA_IND (msg_p).eNB_index);
 
       LOG_I(RRC, PROTOCOL_RRC_CTXT_UE_FMT"Received %s DCCH %d, eNB %d",
             PROTOCOL_RRC_CTXT_UE_ARGS(&ctxt),
@@ -3521,13 +3521,13 @@ void
         UE_rrc_inst[ue_mod_id].plmnID = NAS_CELL_SELECTION_REQ (msg_p).plmnID;
         UE_rrc_inst[ue_mod_id].rat = NAS_CELL_SELECTION_REQ (msg_p).rat;
         LOG_I(RRC, "[UE %d] Save cell selection criterion MCC %X%X%X MNC %X%X%X\n",
-        		ue_mod_id,
-        		UE_rrc_inst[ue_mod_id].plmnID.MCCdigit1,
-        		UE_rrc_inst[ue_mod_id].plmnID.MCCdigit2,
-        		UE_rrc_inst[ue_mod_id].plmnID.MCCdigit3,
-        		UE_rrc_inst[ue_mod_id].plmnID.MNCdigit1,
-        		UE_rrc_inst[ue_mod_id].plmnID.MNCdigit2,
-        		UE_rrc_inst[ue_mod_id].plmnID.MNCdigit3);
+              ue_mod_id,
+              UE_rrc_inst[ue_mod_id].plmnID.MCCdigit1,
+              UE_rrc_inst[ue_mod_id].plmnID.MCCdigit2,
+              UE_rrc_inst[ue_mod_id].plmnID.MCCdigit3,
+              UE_rrc_inst[ue_mod_id].plmnID.MNCdigit1,
+              UE_rrc_inst[ue_mod_id].plmnID.MNCdigit2,
+              UE_rrc_inst[ue_mod_id].plmnID.MNCdigit3);
 
       }
 

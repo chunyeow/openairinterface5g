@@ -70,14 +70,14 @@
 uint8_t rb_table[33] = {1,2,3,4,5,6,8,9,10,12,15,16,18,20,24,25,27,30,32,36,40,45,48,50,54,60,72,75,80,81,90,96,100};
 
 void rx_sdu(
-         const module_id_t enb_mod_idP,
-         const int         CC_idP,
-         const frame_t     frameP,
-         const rnti_t      rntiP,
-         uint8_t          *sduP,
-         const uint16_t    sdu_lenP,
-         const int         harq_pidP,
-         uint8_t          *msg3_flagP)
+  const module_id_t enb_mod_idP,
+  const int         CC_idP,
+  const frame_t     frameP,
+  const rnti_t      rntiP,
+  uint8_t          *sduP,
+  const uint16_t    sdu_lenP,
+  const int         harq_pidP,
+  uint8_t          *msg3_flagP)
 {
 
   unsigned char  rx_ces[MAX_NUM_CE],num_ce,num_sdu,i,*payload_ptr;
@@ -274,11 +274,11 @@ void rx_sdu(
           frameP,
           ENB_FLAG_YES,
           MBMS_FLAG_NO,
-                         rx_lcids[i],
-                         (char *)payload_ptr,
-                         rx_lengths[i],
-                         1,
-                         NULL);//(unsigned int*)crc_status);
+          rx_lcids[i],
+          (char *)payload_ptr,
+          rx_lengths[i],
+          1,
+          NULL);//(unsigned int*)crc_status);
         UE_list->eNB_UE_stats[CC_idP][UE_id].num_pdu_rx[rx_lcids[i]]+=1;
         UE_list->eNB_UE_stats[CC_idP][UE_id].num_bytes_rx[rx_lcids[i]]+=rx_lengths[i];
 
@@ -310,11 +310,11 @@ void rx_sdu(
           frameP,
           ENB_FLAG_YES,
           MBMS_FLAG_NO,
-                         DTCH,
-                         (char *)payload_ptr,
-                         rx_lengths[i],
-                         1,
-                         NULL);//(unsigned int*)crc_status);
+          DTCH,
+          (char *)payload_ptr,
+          rx_lengths[i],
+          1,
+          NULL);//(unsigned int*)crc_status);
         UE_list->eNB_UE_stats[CC_idP][UE_id].num_pdu_rx[rx_lcids[i]]+=1;
         UE_list->eNB_UE_stats[CC_idP][UE_id].num_bytes_rx[rx_lcids[i]]+=rx_lengths[i];
       }
@@ -1116,7 +1116,7 @@ void schedule_ulsch_cba_rnti(module_id_t module_idP, unsigned char cooperation_f
         //weight[cba_group] = floor(total_UEs/active_groups);//find_num_active_UEs_in_cbagroup(module_idP, cba_group);
 
         for (UE_id=UE_list->head_ul; UE_id>=0; UE_id=UE_list->next_ul[UE_id]) {
-          if (UE_RNTI(module_idP,UE_id)==NOT_A_RNTI) 
+          if (UE_RNTI(module_idP,UE_id)==NOT_A_RNTI)
             continue;
 
           // simple UE identity based grouping

@@ -78,8 +78,7 @@ int8_t get_mbsfn_sf_alloction (module_id_t module_idP, uint8_t CC_id, uint8_t mb
     return -1;
   } else if (eNB_mac_inst[module_idP].common_channels[CC_id].mbsfn_SubframeConfig[mbsfn_sync_area] != NULL) {
     return mbsfn_sync_area;
-  }
-  else {
+  } else {
     LOG_W(MAC,"[eNB %d] MBSFN Subframe Config pattern %d not found \n ", module_idP, mbsfn_sync_area);
     return -1;
   }
@@ -620,14 +619,16 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
     for (j=0; j<(TBS-sdu_length_total-offset); j++) {
       eNB_mac_inst[module_idP].common_channels[CC_id].MCH_pdu.payload[offset+sdu_length_total+j] = (char)(taus()&0xff);
     }
+
     /* Tracing of PDU is done on UE side */
-    if (opt_enabled ==1 ){
+    if (opt_enabled ==1 ) {
       trace_pdu(1, (uint8_t *)eNB_mac_inst[module_idP].common_channels[CC_id].MCH_pdu.payload,
-		TBS, module_idP, 6, 0xffff,  // M_RNTI = 6 in wirehsark
-		eNB_mac_inst[module_idP].subframe,0,0);
+                TBS, module_idP, 6, 0xffff,  // M_RNTI = 6 in wirehsark
+                eNB_mac_inst[module_idP].subframe,0,0);
       LOG_D(OPT,"[eNB %d][MCH] Frame %d : MAC PDU with size %d\n",
-	    module_idP, frameP, TBS);
+            module_idP, frameP, TBS);
     }
+
     /*
     for (j=0;j<sdu_length_total;j++)
     printf("%2x.",eNB_mac_inst[module_idP].MCH_pdu.payload[j+offset]);

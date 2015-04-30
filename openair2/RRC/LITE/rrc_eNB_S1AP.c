@@ -102,10 +102,10 @@ rrc_eNB_S1AP_compare_ue_ids(
 
     if (c1_pP->ue_initial_id < c2_pP->ue_initial_id) {
       return -1;
-  }
+    }
 
     return 0;
-}
+  }
 
   if (c1_pP->eNB_ue_s1ap_id > c2_pP->eNB_ue_s1ap_id) {
     return 1;
@@ -138,7 +138,7 @@ rrc_eNB_S1AP_get_ue_ids(
   temp.ue_initial_id  = ue_initial_id;
   temp.eNB_ue_s1ap_id = eNB_ue_s1ap_id;
   return RB_FIND(rrc_rnti_tree_s, &rrc_instance_pP->rrc_rnti_head, &temp);
-      }
+}
 //------------------------------------------------------------------------------
 void
 rrc_eNB_S1AP_remove_ue_ids(
@@ -150,7 +150,8 @@ rrc_eNB_S1AP_remove_ue_ids(
   if (rrc_instance_pP == NULL) {
     LOG_E(RRC, "Bad RRC instance\n");
     return;
-    }
+  }
+
   if (ue_ids_pP == NULL) {
     LOG_E(RRC, "Trying to free a NULL S1AP UE IDs\n");
     return;
@@ -181,7 +182,7 @@ get_next_ue_initial_id(
   }
 
   return ue_initial_id[mod_id];
-      }
+}
 
 
 
@@ -212,7 +213,7 @@ rrc_eNB_get_ue_context_from_s1ap_ids(
     // found by ue_initial_id, fill now eNB_ue_s1ap_idP
     if (temp->eNB_ue_s1ap_id != eNB_ue_s1ap_idP) {
       temp->eNB_ue_s1ap_id = eNB_ue_s1ap_idP;
-  }
+    }
 
     return rrc_eNB_get_ue_context(
              &eNB_rrc_inst[ENB_INSTANCE_TO_MODULE_ID(instanceP)],
@@ -426,24 +427,25 @@ rrc_pdcp_config_security(
 
 
   if (h_rc == HASH_TABLE_OK) {
-  pdcp_config_set_security(
+    pdcp_config_set_security(
       ctxt_pP,
-    pdcp_p,
-    DCCH,
-    DCCH+2,
-    (send_security_mode_command == TRUE)  ?
+      pdcp_p,
+      DCCH,
+      DCCH+2,
+      (send_security_mode_command == TRUE)  ?
       0 | (ue_context_pP->ue_context.integrity_algorithm << 4) :
       (ue_context_pP->ue_context.ciphering_algorithm )         |
       (ue_context_pP->ue_context.integrity_algorithm << 4),
-    kRRCenc,
-    kRRCint,
-    kUPenc);
+      kRRCenc,
+      kRRCint,
+      kUPenc);
   } else {
     LOG_E(RRC,
           PROTOCOL_RRC_CTXT_UE_FMT"Could not get PDCP instance for SRB DCCH %u\n",
           PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP),
           DCCH);
   }
+
 #endif
 }
 
@@ -710,10 +712,10 @@ rrc_eNB_send_S1AP_NAS_FIRST_REQ(
     s1ap_eNB_new_data_request (
       ctxt_pP->module_id,
       ue_context_pP,
-    rrcConnectionSetupComplete->dedicatedInfoNAS.
-    buf,
-    rrcConnectionSetupComplete->dedicatedInfoNAS.
-    size);
+      rrcConnectionSetupComplete->dedicatedInfoNAS.
+      buf,
+      rrcConnectionSetupComplete->dedicatedInfoNAS.
+      size);
   }
 #endif
 }
@@ -784,6 +786,7 @@ rrc_eNB_process_S1AP_DOWNLINK_NAS(
     return (-1);
   } else {
     PROTOCOL_CTXT_SET_BY_INSTANCE(&ctxt, instance, ENB_FLAG_YES, ue_context_p->ue_context.rnti, 0, 0);
+
     /* Is it the first income from S1AP ? */
     if (ue_context_p->ue_context.eNB_ue_s1ap_id == 0) {
       ue_context_p->ue_context.eNB_ue_s1ap_id = S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id;
@@ -805,8 +808,8 @@ rrc_eNB_process_S1AP_DOWNLINK_NAS(
                instance,
                &buffer,
                rrc_eNB_get_next_transaction_identifier (instance),
-                                       S1AP_DOWNLINK_NAS (msg_p).nas_pdu.length,
-                                       S1AP_DOWNLINK_NAS (msg_p).nas_pdu.buffer);
+               S1AP_DOWNLINK_NAS (msg_p).nas_pdu.length,
+               S1AP_DOWNLINK_NAS (msg_p).nas_pdu.buffer);
 
 #ifdef RRC_MSG_PRINT
     int i=0;
@@ -894,7 +897,7 @@ int rrc_eNB_process_S1AP_INITIAL_CONTEXT_SETUP_REQ(MessageDef *msg_p, const char
 
     /* TODO parameters yet to process ... */
     {
-//      S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).ue_ambr;
+      //      S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).ue_ambr;
     }
 
     rrc_eNB_process_security (
@@ -970,7 +973,7 @@ int rrc_eNB_process_S1AP_UE_CTXT_MODIFICATION_REQ(MessageDef *msg_p, const char 
     /* TODO parameters yet to process ... */
     {
       if (S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).present & S1AP_UE_CONTEXT_MODIFICATION_UE_AMBR) {
-//        S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).ue_ambr;
+        //        S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).ue_ambr;
       }
     }
 

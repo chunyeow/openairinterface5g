@@ -71,9 +71,9 @@ static inline unsigned long long rdtsc_oai(void)
 static inline unsigned long long rdtsc_oai(void) __attribute__((always_inline));
 static inline unsigned long long rdtsc_oai(void)
 {
-        uint32_t r = 0;
-        asm volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(r) );
-        return (unsigned long long)r;
+  uint32_t r = 0;
+  asm volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(r) );
+  return (unsigned long long)r;
 }
 #endif
 
