@@ -487,16 +487,15 @@ static void *UE_thread_synch(void *arg)
   return &UE_thread_synch_retval;
 }
 
+/*!
+ * \brief This is the UE transmit thread.
+ * This thread performs the phy_procedures_UE_TX() on every transmit slot.
+ * \param arg is a pointer to a \ref PHY_VARS_UE structure.
+ * \returns a pointer to an int. The storage is not on the heap and must not be freed.
+ */
 static void *UE_thread_tx(void *arg)
 {
-
-#ifdef LOWLATENCY
-  struct sched_attr attr;
-  unsigned int flags = 0;
-#endif
-#ifdef RTAI
-  RT_TASK *task;
-#endif
+  static int UE_thread_tx_retval;
   int ret;
 
   PHY_VARS_UE *UE = (PHY_VARS_UE*)arg;
@@ -504,7 +503,7 @@ static void *UE_thread_tx(void *arg)
   UE->instance_cnt_tx=-1;
 
 #ifdef RTAI
-  task = rt_task_init_schmod(nam2num("UE TX Thread"), 0, 0, 0, SCHED_FIFO, 0xF);
+  RT_TASK *task = rt_task_init_schmod(nam2num("UE TX Thread"), 0, 0, 0, SCHED_FIFO, 0xF);
 
   if (task==NULL) {
     LOG_E(PHY,"[SCHED][UE] Problem starting UE TX thread!!!!\n");
@@ -515,6 +514,9 @@ static void *UE_thread_tx(void *arg)
 #else
 
 #ifdef LOWLATENCY
+  struct sched_attr attr;
+  unsigned int flags = 0;
+
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
   attr.sched_nice = 0;
@@ -529,11 +531,11 @@ static void *UE_thread_tx(void *arg)
 
   if (sched_setattr(0, &attr, flags) < 0 ) {
     perror("[SCHED] eNB tx thread: sched_setattr failed\n");
-    exit(-1);
+    return &UE_thread_tx_retval;
   }
+#endif
+#endif
 
-#endif
-#endif
   printf("waiting for sync (UE_thread_tx)\n");
 
   pthread_mutex_lock(&sync_mutex);
@@ -547,34 +549,36 @@ static void *UE_thread_tx(void *arg)
 
   printf("Starting UE TX thread\n");
 
+  // Lock memory from swapping. This is a process wide call (not constraint to this thread).
   mlockall(MCL_CURRENT | MCL_FUTURE);
 
   while (!oai_exit) {
 
     if (pthread_mutex_lock(&UE->mutex_tx) != 0) {
-      LOG_E(PHY,"[SCHED][eNB] error locking mutex for UE TX\n");
+      LOG_E( PHY, "[SCHED][UE] error locking mutex for UE TX\n" );
       exit_fun("nothing to add");
-    } else {
-
-      while (UE->instance_cnt_tx < 0) {
-        pthread_cond_wait(&UE->cond_tx,&UE->mutex_tx);
-      }
-
-      if (pthread_mutex_unlock(&UE->mutex_tx) != 0) {
-        LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for UE TX\n");
-        exit_fun("nothing to add");
-      }
+      return &UE_thread_tx_retval;
     }
 
+    while (UE->instance_cnt_tx < 0) {
+      // most of the time, the thread is waiting here
+      pthread_cond_wait( &UE->cond_tx, &UE->mutex_tx );
+    }
 
-    if ((subframe_select(&UE->lte_frame_parms,UE->slot_tx>>1)==SF_UL)||
+    if (pthread_mutex_unlock(&UE->mutex_tx) != 0) {
+      LOG_E( PHY, "[SCHED][UE] error unlocking mutex for UE TX\n" );
+      exit_fun("nothing to add");
+      return &UE_thread_tx_retval;
+    }
+
+    if ((subframe_select( &UE->lte_frame_parms, UE->slot_tx>>1 ) == SF_UL) ||
         (UE->lte_frame_parms.frame_type == FDD)) {
-      phy_procedures_UE_TX(UE,0,0,UE->mode,no_relay);
+      phy_procedures_UE_TX( UE, 0, 0, UE->mode, no_relay );
     }
 
-    if ((subframe_select(&UE->lte_frame_parms,UE->slot_tx>>1)==SF_S) &&
-        ((UE->slot_tx&1)==1)) {
-      phy_procedures_UE_S_TX(UE,0,0,no_relay);
+    if ((subframe_select( &UE->lte_frame_parms, UE->slot_tx>>1 ) == SF_S) &&
+        ((UE->slot_tx&1) == 1)) {
+      phy_procedures_UE_S_TX( UE, 0, 0, no_relay );
     }
 
 #ifdef OPENAIR2
@@ -589,49 +593,48 @@ static void *UE_thread_tx(void *arg)
                                     0/*FIXME CC_id*/);
 
       if (ret == CONNECTION_LOST) {
-        LOG_E(PHY,"[UE %d] Frame %d, subframe %d RRC Connection lost, returning to PRACH\n",UE->Mod_id,
-              UE->frame_rx,UE->slot_tx>>1);
+        LOG_E( PHY, "[UE %"PRIu8"] Frame %"PRIu32", subframe %u RRC Connection lost, returning to PRACH\n",
+              UE->Mod_id, UE->frame_rx /*FIXME really _rx?*/, UE->slot_tx>>1 );
         UE->UE_mode[0] = PRACH;
-        //      mac_xface->macphy_exit("Connection lost");
       } else if (ret == PHY_RESYNCH) {
-        LOG_E(PHY,"[UE %d] Frame %d, subframe %d RRC Connection lost, trying to resynch\n",
-              UE->Mod_id,
-              UE->frame_rx,UE->slot_tx>>1);
+        LOG_E( PHY, "[UE %"PRIu8"] Frame %"PRIu32", subframe %u RRC Connection lost, trying to resynch\n",
+              UE->Mod_id, UE->frame_rx /*FIXME really _rx?*/, UE->slot_tx>>1 );
         UE->UE_mode[0] = RESYNCH;
-        //     mac_xface->macphy_exit("Connection lost");
-        //exit(-1);
       } else if (ret == PHY_HO_PRACH) {
-        LOG_I(PHY,"[UE %d] Frame %d, subframe %d, return to PRACH and perform a contention-free access\n",
-              UE->Mod_id,UE->frame_rx,UE->slot_tx>>1);
+        LOG_I( PHY, "[UE %"PRIu8"] Frame %"PRIu32", subframe %u, return to PRACH and perform a contention-free access\n",
+              UE->Mod_id, UE->frame_rx /*FIXME really _rx?*/, UE->slot_tx>>1 );
         UE->UE_mode[0] = PRACH;
       }
     }
 
 #endif
 
-
     if (pthread_mutex_lock(&UE->mutex_tx) != 0) {
-      printf("[openair][SCHED][eNB] error locking mutex for UE TX thread\n");
-    } else {
-      UE->instance_cnt_tx--;
-
-      if (pthread_mutex_unlock(&UE->mutex_tx) != 0) {
-        printf("[openair][SCHED][eNB] error unlocking mutex for UE\n");
-      }
+      LOG_E( PHY, "[SCHED][UE] error locking mutex for UE TX thread\n" );
+      exit_fun("nothing to add");
+      return &UE_thread_tx_retval;
     }
 
-    UE->slot_tx+=2;
+    UE->instance_cnt_tx--;
 
-    if (UE->slot_tx>=20) {
-      UE->slot_tx-=20;
+    if (pthread_mutex_unlock(&UE->mutex_tx) != 0) {
+      LOG_E( PHY, "[SCHED][UE] error unlocking mutex for UE TX thread\n" );
+      exit_fun("nothing to add");
+      return &UE_thread_tx_retval;
+    }
+
+    UE->slot_tx += 2;
+
+    if (UE->slot_tx >= 20) {
+      UE->slot_tx -= 20;
       UE->frame_tx++;
-      VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER_TX_UE, UE->frame_tx);
+      VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER_TX_UE, UE->frame_tx );
     }
 
-    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_SUBFRAME_NUMBER_TX_UE, UE->slot_tx>>1);
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_SUBFRAME_NUMBER_TX_UE, UE->slot_tx>>1 );
   }
 
-  return(0);
+  return &UE_thread_tx_retval;
 }
 
 /*!
