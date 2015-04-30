@@ -894,7 +894,7 @@ int rrc_eNB_process_S1AP_INITIAL_CONTEXT_SETUP_REQ(MessageDef *msg_p, const char
 
     /* TODO parameters yet to process ... */
     {
-      S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).ue_ambr;
+//      S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).ue_ambr;
     }
 
     rrc_eNB_process_security (
@@ -970,7 +970,7 @@ int rrc_eNB_process_S1AP_UE_CTXT_MODIFICATION_REQ(MessageDef *msg_p, const char 
     /* TODO parameters yet to process ... */
     {
       if (S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).present & S1AP_UE_CONTEXT_MODIFICATION_UE_AMBR) {
-        S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).ue_ambr;
+//        S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).ue_ambr;
       }
     }
 

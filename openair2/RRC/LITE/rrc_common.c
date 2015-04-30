@@ -399,7 +399,7 @@ rrc_t310_expiration(
 //-----------------------------------------------------------------------------
 RRC_status_t
 rrc_rx_tx(
-  const protocol_ctxt_t* const ctxt_pP,
+  protocol_ctxt_t* const ctxt_pP,
   const uint8_t      enb_indexP,
   const int          CC_id
 )

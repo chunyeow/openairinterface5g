@@ -341,7 +341,7 @@ mac_rrc_lite_data_ind(
 {
   SRB_INFO *Srb_info;
   protocol_ctxt_t ctxt;
-  sdu_size_t      sdu_size;
+  sdu_size_t      sdu_size = 0;
   /*
   int si_window;
    */

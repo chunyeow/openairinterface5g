@@ -47,7 +47,7 @@ mac_rrc_data_req(
   const frame_t         frameP,
   const rb_id_t         srb_idP,
   const uint8_t         nb_tbP,
-  const uint8_t        *buffer_pP,
+  uint8_t* const        buffer_pP,
   const eNB_flag_t      eNB_flagP,
   const mac_enb_index_t eNB_indexP,
   const uint8_t         mbsfn_sync_areaP

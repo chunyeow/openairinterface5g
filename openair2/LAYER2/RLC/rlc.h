@@ -185,7 +185,7 @@ protected_rlc(void (*rlc_rrc_data_ind)(
                 const protocol_ctxt_t* const ctxtP,
                 const rb_id_t     rb_idP,
                 const sdu_size_t  sdu_sizeP,
-                uint8_t   * const sduP);)
+                const uint8_t   * const sduP);)
 
 protected_rlc(void (*rlc_rrc_data_conf)(
                 const protocol_ctxt_t* const ctxtP,
@@ -197,7 +197,7 @@ typedef void (rrc_data_ind_cb_t)(
   const protocol_ctxt_t* const ctxtP,
   const rb_id_t     rb_idP,
   const sdu_size_t  sdu_sizeP,
-  uint8_t   * const sduP);
+  const uint8_t   * const sduP);
 
 typedef void (rrc_data_conf_cb_t)(
   const protocol_ctxt_t* const ctxtP,

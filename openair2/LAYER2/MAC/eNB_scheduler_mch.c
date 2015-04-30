@@ -572,7 +572,7 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
     if ((TBS - header_len_mtch - header_len_mcch - header_len_msi - sdu_length_total) < 0) {
       LOG_E(MAC,"Error in building MAC PDU, TBS %d < PDU %d \n",
             TBS, header_len_mtch + header_len_mcch + header_len_msi + sdu_length_total);
-      return;
+      return 0;
     } else if ((TBS - header_len_mtch - header_len_mcch - header_len_msi - sdu_length_total) <= 2) {
       padding = (TBS - header_len_mtch - header_len_mcch - header_len_msi - sdu_length_total);
       post_padding = 0;

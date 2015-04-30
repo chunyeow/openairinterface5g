@@ -66,7 +66,7 @@ void rrc_top_cleanup(void);
 */
 RRC_status_t
 rrc_rx_tx(
-  const protocol_ctxt_t* const ctxt_pP,
+  protocol_ctxt_t* const ctxt_pP,
   const uint8_t      enb_index,
   const int          CC_id
 );
