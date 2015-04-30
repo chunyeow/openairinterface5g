@@ -461,7 +461,7 @@ int logInit (void)
 
 //log record: add to a list
 void logRecord(const char *file, const char *func, int line,  int comp,
-               int level, char *format, ...)
+               int level, const char *format, ...)
 {
   va_list    args;
   LOG_params log_params;
@@ -676,7 +676,7 @@ void *log_thread_function(void *list)
 
 //log record, format, and print:  executed in the main thread (mt)
 void logRecord_mt(const char *file, const char *func, int line, int comp,
-                  int level, char *format, ...)
+                  int level, const char *format, ...)
 {
   int len = 0;
   va_list args;
