@@ -1498,9 +1498,9 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration(
 
     /* TODO parameters yet to process ... */
     {
-      ue_context_pP->ue_context.e_rab[i].param.qos;
-      ue_context_pP->ue_context.e_rab[i].param.sgw_addr;
-      ue_context_pP->ue_context.e_rab[i].param.gtp_teid;
+//      ue_context_pP->ue_context.e_rab[i].param.qos;
+//      ue_context_pP->ue_context.e_rab[i].param.sgw_addr;
+//      ue_context_pP->ue_context.e_rab[i].param.gtp_teid;
     }
 
     /* TODO should test if e RAB are Ok before! */
