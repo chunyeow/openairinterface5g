@@ -260,7 +260,7 @@ remove_node (node_list * list, int nid, int node_type)
 {
 
   int found;
-  node_list *current, *previous;
+  node_list *current = NULL, *previous = NULL;
 
   //int cond=0;
   //int i=0;
