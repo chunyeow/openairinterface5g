@@ -248,7 +248,7 @@ int s1ap_eNB_handle_nas_first_req(
 //------------------------------------------------------------------------------
 int s1ap_eNB_handle_nas_downlink(const uint32_t               assoc_id,
                                  const uint32_t               stream,
-                                 const struct s1ap_message_s *const message_p)
+                                 struct s1ap_message_s* message_p)
 //------------------------------------------------------------------------------
 {
   const S1ap_DownlinkNASTransportIEs_t *downlink_NAS_transport_p = NULL;

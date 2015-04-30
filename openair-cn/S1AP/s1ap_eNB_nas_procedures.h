@@ -33,7 +33,7 @@
 int s1ap_eNB_handle_nas_downlink(
   const uint32_t               assoc_id,
   const uint32_t               stream,
-  const struct s1ap_message_s *const message_p);
+  struct s1ap_message_s* message_p);
 
 int s1ap_eNB_nas_uplink(instance_t instance, s1ap_uplink_nas_t *s1ap_uplink_nas_p);
 
