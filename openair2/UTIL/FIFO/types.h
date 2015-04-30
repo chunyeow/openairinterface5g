@@ -128,8 +128,8 @@ typedef struct Job_element_s {
 } Job_elt_t;
 
 typedef struct Event_element_s {
-  struct Event_element *next;
-  struct Event_element *previous;
+  struct Event_element_s *next;
+  struct Event_element_s *previous;
   Event_t               event;
 } Event_elt_t;
 #endif
