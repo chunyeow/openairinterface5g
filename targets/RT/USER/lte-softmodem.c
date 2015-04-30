@@ -1828,7 +1828,7 @@ static void get_options (int argc, char **argv)
   //  char                          line[1000];
   //  int                           l;
   int k,i;//,j,k;
-#if defined(USRP) || defined(CPRIGW)
+#if defined(OAI_USRP) || defined(CPRIGW)
   int clock_src;
 #endif
   int CC_id;
@@ -2034,7 +2034,7 @@ static void get_options (int argc, char **argv)
       break;
 
     case 's':
-#if defined(USRP) || defined(CPRIGW)
+#if defined(OAI_USRP) || defined(CPRIGW)
 
       clock_src = atoi(optarg);
 

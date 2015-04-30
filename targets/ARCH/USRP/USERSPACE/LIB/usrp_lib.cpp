@@ -32,12 +32,6 @@
  * Author: HongliangXU : hong-liang-xu@agilent.com
  */
 
-#ifdef USRP
-/* USRP is both an enum in ettus library and a define for OAI */
-/* This removes the define for OAI */
-#undef USRP
-#endif
-
 #include <string.h>
 #include <pthread.h>
 #include <unistd.h>
