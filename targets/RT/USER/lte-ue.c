@@ -261,9 +261,10 @@ static void *UE_thread_synch(void *arg)
 
     openair0_set_frequencies( &openair0, &openair0_cfg[0] );
 #endif
-  }
 
-  else if  (UE->UE_scan == 1) {
+    LOG_D( PHY, "[SCHED][UE] Check absolute frequency %"PRIu32" (oai_exit %d)\n", downlink_frequency[0][0], oai_exit );
+    sync_mode = pbch;
+  } else if  (UE->UE_scan == 1) {
     current_band=0;
 
     for (card=0; card<MAX_CARDS; card++) {
@@ -307,13 +308,6 @@ static void *UE_thread_synch(void *arg)
     openair0_set_frequencies( &openair0, &openair0_cfg[0] );
     openair0_set_gains( &openair0, &openair0_cfg[0] );
 #endif
-
-
-  } else {
-    // UE_scan == 0
-    LOG_D( PHY, "[SCHED][UE] Check absolute frequency %"PRIu32" (oai_exit %d)\n", downlink_frequency[0][0], oai_exit );
-
-    sync_mode = pbch;
   }
 
   while (oai_exit==0) {
