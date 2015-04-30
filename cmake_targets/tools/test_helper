@@ -1,0 +1,64 @@
+# source this file in a bash
+
+XUNIT_TESTSUITE_START=0
+XUNIT_START=0
+XUNIT_TOTAL=0
+XUNIT_FAILED=0
+XUNIT_SUCCESS=0
+XUNIT_TESTCASES_XML=""
+
+## Call this at the start of a testcase. 
+# \sa xUnit_fail()
+# \sa xUnit_success()
+xUnit_start() {
+  XUNIT_START=$(date +%s.%N)
+  if [ $XUNIT_TESTSUITE_START == 0 ]; then
+    # very first call: start of a testsuite
+    XUNIT_TESTSUITE_START=$XUNIT_START
+  fi
+}
+
+## Call this after the testcase finished with a failure.
+# \sa xUnit_success()
+# \pre xUnit_start() must have been called before
+# \param $1 classname
+# \param $2 testcase name
+xUnit_fail() {
+  currtime=$(date +%s.%N)
+  time=$(echo "$currtime - $XUNIT_START" | bc -l)
+  xml="<testcase classname='$1' name='$2' time='$time'><failure message='failed'/></testcase>"
+  XUNIT_TESTCASES_XML="$XUNIT_TESTCASES_XML $xml"
+  XUNIT_FAILED=$((XUNIT_FAILED+1))
+}
+
+## Call this after the testcase finished successfully.
+# \sa xUnit_fail()
+# \pre xUnit_start() must have been called before
+# \param $1 classname
+# \param $2 testcase name
+xUnit_success() {
+  currtime=$(date +%s.%N)
+  time=$(echo "$currtime - $XUNIT_START" | bc -l)
+  xml="<testcase classname='$1' name='$2' time='$time' />"
+  XUNIT_TESTCASES_XML="$XUNIT_TESTCASES_XML $xml"
+  XUNIT_SUCCESS=$((XUNIT_SUCCESS+1))
+}
+
+## Call this after all testcases have been completed.
+# This functions writes out the test report.
+# \param $1 filename
+xUnit_write() {
+  tests=$((XUNIT_FAILED+XUNIT_SUCCESS))
+  timestamp=$(date --iso-8601=seconds)
+  time=$(echo "$currtime - $XUNIT_TESTSUITE_START" | bc -l)
+  xml_header="<testsuites><testsuite errors='0' failures='$XUNIT_FAILED' hostname='$(hostname)' name='OAI' skipped='0' tests='$tests' time='$time' timestamp='$timestamp'>"
+  echo $xml_header > $1
+  echo $XUNIT_TESTCASES_XML >> $1
+  echo "</testsuite></testsuites>" >> $1
+  XUNIT_TESTSUITE_START=0
+  XUNIT_START=0
+  XUNIT_TOTAL=0
+  XUNIT_FAILED=0
+  XUNIT_SUCCESS=0
+  XUNIT_TESTCASES_XML=""
+}

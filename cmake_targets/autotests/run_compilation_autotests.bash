@@ -7,20 +7,26 @@ else
    exit 1
 fi
 
+# include the jUnit-like logging functions
+source $OPENAIR_DIR/cmake_targets/tools/test_helper
+
 test_compile() {
+    xUnit_start
     mkdir -p $tdir/$1/build
     cd $tdir/$1/build
     {
-	cmake ..
-	rm -f $3
-	make -j4 $2
+        cmake ..
+        rm -f $3
+        make -j4 $2
     } > $tdir/log/$1.txt 2>&1
     if [ -s $3 ] ; then
-     cp $3 $tdir/bin/`basename $3`.$1
-     echo_success "$1 test compiled"
-  else
-     echo_error "$1 test compilation failed"
-  fi
+        cp $3 $tdir/bin/`basename $3`.$1
+        echo_success "$1 test compiled"
+        xUnit_success "compilation" $1
+    else
+        echo_error "$1 test compilation failed"
+        xUnit_fail "compilation" $1
+    fi
 }
 
 tdir=$OPENAIR_DIR/cmake_targets/autotests
@@ -77,3 +83,5 @@ test_compile \
     test.0120 nasmesh \
     CMakeFiles/nasmesh/nasmesh.ko $tdir/bin/nasmesh.ko
 
+# write the test results into a file
+xUnit_write "$tdir/log/compilation_autotests.xml"
