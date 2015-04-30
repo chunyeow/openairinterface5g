@@ -3469,7 +3469,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
 {
 
   uint8_t harq_pid=0;
-  uint32_t rballoc=0,RIV_max;
+  uint32_t rballoc=0,RIV_max=0;
   uint8_t frame_type=frame_parms->frame_type;
   uint8_t vrb_type=0;
   uint8_t mcs=0,mcs1=0,mcs2=0;
