@@ -256,6 +256,8 @@ static int itti_dump_send_xml_definition(const int sd, const char *message_defin
 
 static void itti_dump_user_data_delete_function(void *user_data, void *user_state)
 {
+  (void)user_state; // UNUSED
+
   if (user_data != NULL) {
     itti_dump_queue_item_t *item;
     task_id_t task_id;
@@ -264,7 +266,6 @@ static void itti_dump_user_data_delete_function(void *user_data, void *user_stat
     item = (itti_dump_queue_item_t *)user_data;
 
     if (item->data != NULL) {
-
       task_id = ITTI_MSG_ORIGIN_ID(item->data);
       result = itti_free(task_id, item->data);
       AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
@@ -295,6 +296,7 @@ static int itti_dump_enqueue_message(itti_dump_queue_item_t *new, uint32_t messa
   new_queue_element = lfds611_ringbuffer_get_write_element (itti_dump_queue.itti_message_queue, &new_queue_element, &overwrite_flag);
 
   if (overwrite_flag != 0) {
+    // no free element available: overwrite a non read one => data loss!
     void *old = NULL;
 
     lfds611_freelist_get_user_data_from_element(new_queue_element, &old);
@@ -302,7 +304,7 @@ static int itti_dump_enqueue_message(itti_dump_queue_item_t *new, uint32_t messa
     itti_dump_user_data_delete_function (old, NULL);
   }
 
-  lfds611_freelist_set_user_data_in_element(new_queue_element, (void *) new);
+  lfds611_freelist_set_user_data_in_element(new_queue_element, new);
   lfds611_ringbuffer_put_write_element(itti_dump_queue.itti_message_queue, new_queue_element);
 
   if (overwrite_flag == 0) {
@@ -318,6 +320,7 @@ static int itti_dump_enqueue_message(itti_dump_queue_item_t *new, uint32_t messa
       AssertFatal (write_ret == sizeof(sem_counter), "Write to dump event failed (%d/%d)!\n", (int) write_ret, (int) sizeof(sem_counter));
     }
 #endif
+    // add one to pending_messages, atomically
     __sync_fetch_and_add (&pending_messages, 1);
   }
 
@@ -383,6 +386,7 @@ static int itti_dump_flush_ring_buffer(int flush_all)
       /* Acquire the ring element */
       lfds611_ringbuffer_get_read_element(itti_dump_queue.itti_message_queue, &element);
 
+      // subtract one from pending_messages, atomically
       __sync_fetch_and_sub (&pending_messages, 1);
 
       if (element == NULL) {
