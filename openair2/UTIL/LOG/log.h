@@ -320,7 +320,7 @@ typedef struct LOG_params {
   int line;
   int comp;
   int level;
-  char *format;
+  const char *format;
   char l_buff_info [MAX_LOG_INFO];
   int len;
 } LOG_params;
