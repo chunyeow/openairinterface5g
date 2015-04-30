@@ -617,9 +617,11 @@ add_library(HASHTABLE
 )
 include_directories(${OPENAIRCN_DIR}/UTILS/HASHTABLE)
 
-add_library(MSC
-  ${OPENAIR_DIR}/common/utils/msc/msc.c
-)
+if (MESSAGE_CHART_GENERATOR)
+  add_library(MSC
+    ${OPENAIR_DIR}/common/utils/msc/msc.c
+  )
+endif()
 include_directories(${OPENAIR_DIR}/common/utils/msc)
 
 set(UTIL_SRC
@@ -1486,11 +1488,14 @@ add_executable(lte-softmodem
   )
 target_link_libraries (lte-softmodem
   -Wl,--start-group
-  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN SECU_OSA UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 MSC ${RAL_LIB} ${NAS_LIB} ${ITTI_LIB} ${MIH_LIB}
+  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN SECU_OSA UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} ${ITTI_LIB} ${MIH_LIB}
   -Wl,--end-group )
 target_link_libraries (lte-softmodem ${LIBXML2_LIBRARIES})
 target_link_libraries (lte-softmodem pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} sctp ${option_HW_lib} ${XFORMS_LIBRARIES} )
 target_link_libraries (lte-softmodem ${LIBBOOST_LIBRARIES})
+if (MESSAGE_CHART_GENERATOR)
+  target_link_libraries (lte-softmodem MSC)
+endif()
 
 # EPC is ??? nodes implementation in one process
 ################################
@@ -1504,10 +1509,13 @@ add_executable(mme_gw
   )
 target_link_libraries (mme_gw
   -Wl,--start-group
-   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA SGI S6A SGW MME_APP LFDS MSC ${ITTI_LIB} CN_UTILS HASHTABLE
+   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA SGI S6A SGW MME_APP LFDS ${ITTI_LIB} CN_UTILS HASHTABLE
   -Wl,--end-group
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
   )
+if (MESSAGE_CHART_GENERATOR)
+  target_link_libraries (mme_gw MSC)
+endif()
 
 # Default parameters
 # Does not work on simple install (fqdn in /etc/hosts 127.0.1.1)
@@ -1590,10 +1598,13 @@ add_executable(oai_sgw
   )
 target_link_libraries (oai_sgw
   -Wl,--start-group
-  GTPV1U SECU_CN SECU_OSA SGI S6A SGW CN_UTILS LFDS MSC ${ITTI_LIB}
+  GTPV1U SECU_CN SECU_OSA SGI S6A SGW CN_UTILS LFDS ${ITTI_LIB}
   -Wl,--end-group
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
   )
+if (MESSAGE_CHART_GENERATOR)
+  target_link_libraries (oai_sgw MSC)
+endif()
 
 # USIM process
 #################
@@ -1647,13 +1658,16 @@ add_executable(oaisim
 target_include_directories(oaisim PUBLIC  ${OPENAIR_TARGETS}/SIMU/USER)
 target_link_libraries (oaisim
   -Wl,--start-group
-  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 MSC ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
+  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
   -Wl,--end-group )
 target_link_libraries (oaisim ${LIBXML2_LIBRARIES} ${LAPACK_LIBRARIES})
 target_link_libraries (oaisim pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES}  ${NETTLE_LIBRARIES} sctp ${option_HW_lib}
   ${ATLAS_LIBRARIES} ${XFORMS_LIBRARIES} ${OPENPGM_LIBRARIES})
 #Force link with forms, regardless XFORMS option
 target_link_libraries (oaisim forms)
+if (MESSAGE_CHART_GENERATOR)
+  target_link_libraries (oaisim MSC)
+endif()
 
 
 # A all in one network simulator
@@ -1680,13 +1694,16 @@ add_executable(oaisim_nos1
 target_include_directories(oaisim_nos1 PUBLIC  ${OPENAIR_TARGETS}/SIMU/USER)
 target_link_libraries (oaisim_nos1
   -Wl,--start-group
-  RRC_LIB    SECU_CN UTIL HASHTABLE  UDP SCHED_LIB PHY LFDS L2 MSC ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
+  RRC_LIB    SECU_CN UTIL HASHTABLE  UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
   -Wl,--end-group )
 target_link_libraries (oaisim_nos1 ${LIBXML2_LIBRARIES} ${LAPACK_LIBRARIES})
 target_link_libraries (oaisim_nos1 pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES}  ${NETTLE_LIBRARIES}  ${option_HW_lib}
   ${ATLAS_LIBRARIES} ${XFORMS_LIBRARIES} ${OPENPGM_LIBRARIES})
 #Force link with forms, regardless XFORMS option
 target_link_libraries (oaisim_nos1 forms)
+if (MESSAGE_CHART_GENERATOR)
+  target_link_libraries (oaisim_nos1 MSC)
+endif()
 
 
 # Unitary tests for each piece of L1: example, mbmssim is MBMS L1 simulator
@@ -1744,6 +1761,9 @@ target_link_libraries (oaisim_mme
   -Wl,--end-group
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
 )
+if (MESSAGE_CHART_GENERATOR)
+  target_link_libraries (oaisim_mme MSC)
+endif()
 
 ##################################################
 # Generated specific cases is not regular code
