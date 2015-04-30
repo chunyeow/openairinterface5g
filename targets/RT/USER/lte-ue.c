@@ -193,24 +193,27 @@ static const eutra_band_t eutra_bands[] = {
   {44, 703    * MHz, 803    * MHz, 703    * MHz, 803    * MHz, TDD},
 };
 
+/*!
+ * \brief This is the UE synchronize thread.
+ * It performs band scanning.
+ * \param arg is a pointer to a \ref PHY_VARS_UE structure.
+ * \returns a pointer to an int. The storage is not on the heap and must not be freed.
+ */
 static void *UE_thread_synch(void *arg)
 {
-
-  int i,hw_slot_offset;
-  PHY_VARS_UE *UE = arg;
+  static int UE_thread_synch_retval;
+  int i, hw_slot_offset;
+  PHY_VARS_UE *UE = (PHY_VARS_UE*) arg;
   int current_band = 0;
   int current_offset = 0;
   sync_mode_t sync_mode = pss;
   int card;
   int ind;
-  //  int CC_id;
-  //  int k;
   int found;
 
   UE->is_synchronized = 0;
   printf("UE_thread_sync in with PHY_vars_UE %p\n",arg);
   printf("waiting for sync (UE_thread_synch) \n");
-
 
   pthread_mutex_lock(&sync_mutex);
   printf("Locked sync_mutex, waiting (UE_sync_thread)\n");
@@ -224,14 +227,14 @@ static void *UE_thread_synch(void *arg)
   printf("starting UE synch thread\n");
   ind = 0;
   found = 0;
-  current_band = eutra_bands[ind].band;
 
 
   if (UE->UE_scan == 0) {
     do  {
-      printf("Scanning band %d, dl_min %u\n",current_band,eutra_bands[ind].dl_min);
+    current_band = eutra_bands[ind].band;
+    printf( "Scanning band %d, dl_min %"PRIu32"\n", current_band, eutra_bands[ind].dl_min );
 
-      if ((eutra_bands[ind].dl_min <= downlink_frequency[0][0]) && (eutra_bands[ind].dl_max>= downlink_frequency[0][0])) {
+    if ((eutra_bands[ind].dl_min <= downlink_frequency[0][0]) && (eutra_bands[ind].dl_max >= downlink_frequency[0][0])) {
         for (card=0; card<MAX_NUM_CCs; card++)
           for (i=0; i<4; i++)
             uplink_frequency_offset[card][i] = eutra_bands[ind].ul_min - eutra_bands[ind].dl_min;
@@ -241,12 +244,11 @@ static void *UE_thread_synch(void *arg)
       }
 
       ind++;
-      current_band = eutra_bands[ind].band;
-    } while (current_band < 44);
+  } while (current_band < sizeof(eutra_bands) / sizeof(eutra_bands[0]));
 
     if (found == 0) {
       exit_fun("Can't find EUTRA band for frequency");
-      oai_exit=1;
+    return &UE_thread_synch_retval;
     }
   }
 
@@ -276,11 +278,11 @@ static void *UE_thread_synch(void *arg)
           break;
 
         default:
-          printf("Unknown number of RBs %d\n",UE->lte_frame_parms.N_RB_DL);
+          printf( "Unknown number of RBs %d\n", UE->lte_frame_parms.N_RB_DL );
           break;
         }
 
-        printf("UE synch: setting RX gain (%d,%d) to %f\n",card,i,openair0_cfg[card].rx_gain[i]);
+        printf( "UE synch: setting RX gain (%d,%d) to %f\n", card, i, openair0_cfg[card].rx_gain[i] );
 #endif
       }
 
@@ -289,46 +291,43 @@ static void *UE_thread_synch(void *arg)
 #endif
     }
 
-#ifdef OAI_USRP
-#ifndef USRP_DEBUG
-    openair0_set_rx_frequencies(&openair0,&openair0_cfg[0]);
-    openair0_set_gains(&openair0,&openair0_cfg[0]);
+#if defined(OAI_USRP) && !defined(USRP_DEBUG)
+    openair0_set_rx_frequencies( &openair0, &openair0_cfg[0] );
+    openair0_set_gains( &openair0, &openair0_cfg[0] );
 #endif
-#endif
+
 
   } else {
-    LOG_D(PHY,"[SCHED][UE] Check absolute frequency %u (oai_exit %d)\n",downlink_frequency[0][0],oai_exit);
+    // UE_scan == 0
+    LOG_D( PHY, "[SCHED][UE] Check absolute frequency %"PRIu32" (oai_exit %d)\n", downlink_frequency[0][0], oai_exit );
 
-    sync_mode=pbch;
+    sync_mode = pbch;
   }
 
   while (oai_exit==0) {
 
     if (pthread_mutex_lock(&UE->mutex_synch) != 0) {
-      LOG_E(PHY,"[SCHED][UE] error locking mutex for UE initial synch thread\n");
+      LOG_E( PHY, "[SCHED][UE] error locking mutex for UE initial synch thread\n" );
       exit_fun("noting to add");
-    } else {
-      while (UE->instance_cnt_synch < 0) {
-        pthread_cond_wait(&UE->cond_synch,&UE->mutex_synch);
-      }
+      return &UE_thread_synch_retval;
+    }
 
-      if (pthread_mutex_unlock(&UE->mutex_synch) != 0) {
-        LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for UE Initial Synch thread\n");
-        exit_fun("nothing to add");
-      }
+    while (UE->instance_cnt_synch < 0) {
+      pthread_cond_wait( &UE->cond_synch, &UE->mutex_synch );
+    }
 
-    }  // mutex_lock
+    if (pthread_mutex_unlock(&UE->mutex_synch) != 0) {
+      LOG_E( PHY, "[SCHED][eNB] error unlocking mutex for UE Initial Synch thread\n" );
+      exit_fun("nothing to add");
+      return &UE_thread_synch_retval;
+    }
 
-    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,1);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH, 1 );
 
-    //printf("Sync_mode %d\n",sync_mode);
     switch (sync_mode) {
     case pss:
-
       LOG_I(PHY,"[SCHED][UE] Scanning band %d (%d), freq %u\n",bands_to_scan.band_info[current_band].band, current_band,bands_to_scan.band_info[current_band].dl_min+current_offset);
       lte_sync_timefreq(UE,current_band,bands_to_scan.band_info[current_band].dl_min+current_offset);
-
-
       current_offset += 20000000; // increase by 20 MHz
 
       if (current_offset > bands_to_scan.band_info[current_band].dl_max-bands_to_scan.band_info[current_band].dl_min) {
@@ -390,26 +389,11 @@ static void *UE_thread_synch(void *arg)
       break;
 
     case pbch:
-      //      printf("synch: Running initial sync\n");
       // This is a hack to fix a bug when using USRP
+      // FIXME is this necessary anymore? Which bug is fixed by this hack?
       memset(PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[0],0,1024);
 
-      if (initial_sync(UE,UE->mode)==0) {
-        /*
-          lte_adjust_synch(&PHY_vars_UE_g[0]->lte_frame_parms,
-          PHY_vars_UE_g[0],
-          0,
-          1,
-          16384);
-        */
-        //for better visualization afterwards
-        /*
-          for (aa=0; aa<PHY_vars_UE_g[0]->lte_frame_parms.nb_antennas_rx; aa++)
-          memset(PHY_vars_UE_g[0]->lte_ue_common_vars.rxdata[aa],0,
-          PHY_vars_UE_g[0]->lte_frame_parms.samples_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*sizeof(int));
-        */
-
-
+      if (initial_sync( UE, UE->mode ) == 0) {
         UE->is_synchronized = 1;
 #ifndef EXMIMO
         UE->slot_rx = 0;
@@ -419,10 +403,11 @@ static void *UE_thread_synch(void *arg)
         UE->slot_tx = 2;
 #endif
         hw_slot_offset = (UE->rx_offset<<1) / UE->lte_frame_parms.samples_per_tti;
-        LOG_I(HW,"Got synch: hw_slot_offset %d\n",hw_slot_offset);
+        LOG_I( HW, "Got synch: hw_slot_offset %d\n", hw_slot_offset );
 
-      } else { // intial_synch
-
+      } else {
+        // initial sync failed
+        // calculate new offset and try again
         if (openair_daq_vars.freq_offset >= 0) {
           openair_daq_vars.freq_offset += 100;
           openair_daq_vars.freq_offset *= -1;
@@ -431,22 +416,22 @@ static void *UE_thread_synch(void *arg)
         }
 
         if (abs(openair_daq_vars.freq_offset) > 7500) {
-          LOG_I(PHY,"[initial_sync] No cell synchronization found, abandoning\n");
+          LOG_I( PHY, "[initial_sync] No cell synchronization found, abandoning\n" );
           mac_xface->macphy_exit("No cell synchronization found, abandoning");
-          return 0; // not reached
+          return &UE_thread_synch_retval; // not reached
         }
 
-        LOG_I(PHY,"[initial_sync] trying carrier off %d Hz, rxgain %d (DL %u, UL %u)\n",openair_daq_vars.freq_offset,
+        LOG_I( PHY, "[initial_sync] trying carrier off %d Hz, rxgain %d (DL %u, UL %u)\n", openair_daq_vars.freq_offset,
               UE->rx_total_gain_dB,
               downlink_frequency[0][0]+openair_daq_vars.freq_offset,
-              downlink_frequency[0][0]+uplink_frequency_offset[0][0]+openair_daq_vars.freq_offset);
+              downlink_frequency[0][0]+uplink_frequency_offset[0][0]+openair_daq_vars.freq_offset );
 
         for (card=0; card<MAX_CARDS; card++) {
           for (i=0; i<openair0_cfg[card].rx_num_channels; i++) {
             openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i]+openair_daq_vars.freq_offset;
             openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i]+openair_daq_vars.freq_offset;
 #ifdef OAI_USRP
-            openair0_cfg[card].rx_gain[i] = UE->rx_total_gain_dB-USRP_GAIN_OFFSET;  // 65 calibrated for USRP B210 @ 2.6 GHz
+            openair0_cfg[card].rx_gain[i] = UE->rx_total_gain_dB-USRP_GAIN_OFFSET;
 
             switch(UE->lte_frame_parms.N_RB_DL) {
             case 6:
@@ -465,31 +450,13 @@ static void *UE_thread_synch(void *arg)
               printf("Unknown number of RBs %d\n",UE->lte_frame_parms.N_RB_DL);
               break;
             }
-
-            //        printf("UE synch: setting RX gain (%d,%d) to %d\n",card,i,openair0_cfg[card].rx_gain[i]);
 #endif
           }
-
-#ifdef EXMIMO
-          //openair0_config(&openair0_cfg[card],1);
-          //rt_sleep_ns(FRAME_PERIOD);
-#endif
         }
 
-#ifdef OAI_USRP
-#ifndef USRP_DEBUG
-        openair0_set_frequencies(&openair0,&openair0_cfg[0]);
-        //      openair0_set_gains(&openair0,&openair0_cfg[0]);
+#if defined(OAI_USRP) && !defined(USRP_DEBUG)
+        openair0_set_frequencies( &openair0, &openair0_cfg[0] );
 #endif
-
-#endif
-
-
-
-        //        openair0_dump_config(&openair0_cfg[0],UE_flag);
-
-        //        rt_sleep_ns(FRAME_PERIOD);
-
       } // initial_sync=0
 
       break;
@@ -498,22 +465,26 @@ static void *UE_thread_synch(void *arg)
     default:
       break;
     }
-    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,0);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH, 0 );
 
     if (pthread_mutex_lock(&UE->mutex_synch) != 0) {
-      printf("[openair][SCHED][eNB] error locking mutex for UE synch\n");
-    } else {
-      UE->instance_cnt_synch--;
-
-      if (pthread_mutex_unlock(&UE->mutex_synch) != 0) {
-        printf("[openair][SCHED][eNB] error unlocking mutex for UE synch\n");
-      }
+      LOG_E( PHY, "[SCHED][UE] error locking mutex for UE synch\n" );
+      exit_fun("noting to add");
+      return &UE_thread_synch_retval;
     }
 
-    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH,0);
+    UE->instance_cnt_synch--;
+
+    if (pthread_mutex_unlock(&UE->mutex_synch) != 0) {
+      LOG_E( PHY, "[SCHED][UE] error unlocking mutex for UE synch\n" );
+      exit_fun("noting to add");
+      return &UE_thread_synch_retval;
+    }
+
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH, 0 );
   }  // while !oai_exit
 
-  return(0);
+  return &UE_thread_synch_retval;
 }
 
 static void *UE_thread_tx(void *arg)

@@ -450,7 +450,6 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
       return NF_DROP;
     }
 
-
     skb_reserve(new_skb_p, LL_MAX_HEADER + ntohs(iph2_p->tot_len));
     new_skb_p->protocol = skb_p->protocol;
 

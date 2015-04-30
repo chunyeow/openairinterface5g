@@ -421,19 +421,23 @@ typedef struct {
   int instance_cnt_tx;
   /// \brief Instance count of RX processing thread (-1 means ready, 0 means busy)
   int instance_cnt_rx;
-  /// \brief Instance cound of initial synchronization thread (-1 means ready, 0 means busy)
+  /// \brief Instance count of initial synchronization thread (-1 means ready, 0 means busy).
+  /// Protected by mutex \ref mutex_synch and condition \ref cond_synch.
   int instance_cnt_synch;
   /// \brief Condition variable for TX processing thread
   pthread_cond_t cond_tx;
   /// \brief Condition variable for RX processing thread
   pthread_cond_t cond_rx;
-  /// \brief Condition variable for initial synchronization thread
+  /// \brief Condition variable for initial synchronization thread.
+  /// The corresponding mutex is \ref mutex_synch.
   pthread_cond_t cond_synch;
   /// \brief Mutex for TX processing thread
   pthread_mutex_t mutex_tx;
   /// \brief Mutex for RX processing thread
   pthread_mutex_t mutex_rx;
-  /// \brief Mutex for initial synchronization thread
+  /// \brief Mutex for initial synchronization thread.
+  /// Used to protect \ref instance_cnt_synch.
+  /// \sa cond_synch
   pthread_mutex_t mutex_synch;
   /// \brief Pthread structure for RX processing thread
   pthread_t       thread_rx;
