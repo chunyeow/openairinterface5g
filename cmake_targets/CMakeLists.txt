@@ -389,7 +389,6 @@ add_boolean_option(NAS_ADDRESS_FIX False "specific to oaisim: for nasmesh driver
 add_boolean_option(NAS_NETLINK False "???? Must be True to compile nasmesh driver without rtai")
 add_boolean_option(OAISIM False "specific to oaisim")
 add_boolean_option(OAI_NW_DRIVER_USE_NETLINK True "????")
-add_boolean_option(UE_BUILD False "????")
 add_boolean_option(USE_MME False "this flag is used only one time in lte-softmodem.c")
 add_list_string_option(PACKAGE_NAME "NotDefined" "As per attribute name")
 add_boolean_option(MESSAGE_CHART_GENERATOR False "For generating sequence diagrams")
@@ -423,7 +422,7 @@ add_boolean_option(OPENAIR_LTE             True "Seems legacy: keep it to true")
 ##########################
 # PHY options
 ##########################
-add_boolean_option(DRIVER2013              True "????")
+add_boolean_option(DRIVER2013              True "only relevant for EXMIMO")
 add_boolean_option(ENABLE_FXP              True "????")
 add_boolean_option(ENABLE_NEW_MULTICAST    False "specific to oaisim")
 add_boolean_option(EXMIMO_IOT              True "????")
