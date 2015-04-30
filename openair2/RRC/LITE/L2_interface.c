@@ -457,6 +457,8 @@ mac_rrc_lite_data_ind(
       if (sdu_lenP > msg_sdu_size) {
         LOG_E(RRC, "SDU larger than CCCH SDU buffer size (%d, %d)", sdu_lenP, msg_sdu_size);
         sdu_size = msg_sdu_size;
+      } else {
+        sdu_size = sdu_lenP;
       }
 
       message_p = itti_alloc_new_message (TASK_MAC_ENB, RRC_MAC_CCCH_DATA_IND);
@@ -464,7 +466,7 @@ mac_rrc_lite_data_ind(
       RRC_MAC_CCCH_DATA_IND (message_p).rnti  = rntiP;
       RRC_MAC_CCCH_DATA_IND (message_p).sdu_size = sdu_size;
       memset (RRC_MAC_CCCH_DATA_IND (message_p).sdu, 0, sizeof(RRC_MAC_CCCH_DATA_IND (message_p).sdu));
-      memcpy (RRC_MAC_CCCH_DATA_IND (message_p).sdu, sduP, sdu_lenP);
+      memcpy (RRC_MAC_CCCH_DATA_IND (message_p).sdu, sduP, sdu_size);
       itti_send_msg_to_task (TASK_RRC_ENB, ctxt.instance, message_p);
     }
 #else
