@@ -133,7 +133,7 @@ int prompt_usage(char *);
 int info(char *arg);
 
 int start(char *arg), set(char *arg);
-int start_usage(char *), set_usage(void);
+int start_usage(char *), set_usage(char *);
 
 /* Forward declarations. */
 char *stripwhite (char *string);

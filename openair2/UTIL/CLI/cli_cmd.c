@@ -162,7 +162,7 @@ int set(char *arg)
     return OK;
 
   if (valid_argument ("set", arg) == ERR) {
-    set_usage();
+    set_usage( NULL );
     return ERR;
   }
 
@@ -319,8 +319,9 @@ int start_usage(char *arg)
   return 0;
 }
 
-int set_usage(void)
+int set_usage( char *arg )
 {
+  (void)(arg); // unused
   sprintf(buffer, "Usage: set log [comp] [level:debug,info,warn,error][flag:none,low,med,full][intervale: 1-100] \n");
   send(cli_cfg->cfd, buffer, strlen(buffer), 0);
   sprintf(buffer, "Example 1: set log omg debug\n");
