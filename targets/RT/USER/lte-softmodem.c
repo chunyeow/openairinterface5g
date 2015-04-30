@@ -1851,7 +1851,8 @@ static void get_options (int argc, char **argv)
     LONG_OPTION_CALIB_UE_RX_BYP,
     LONG_OPTION_DEBUG_UE_PRACH,
     LONG_OPTION_NO_L2_CONNECT,
-    LONG_OPTION_RXGAIN
+    LONG_OPTION_RXGAIN,
+    LONG_OPTION_TXGAIN,
   };
 
   static const struct option long_options[] = {
@@ -1862,6 +1863,7 @@ static void get_options (int argc, char **argv)
     {"debug-ue-prach",  no_argument,        NULL, LONG_OPTION_DEBUG_UE_PRACH},
     {"no-L2-connect",   no_argument,        NULL, LONG_OPTION_NO_L2_CONNECT},
     {"ue_rxgain",   required_argument,  NULL, LONG_OPTION_RXGAIN},
+    {"ue_txgain",   required_argument,  NULL, LONG_OPTION_TXGAIN},
     {NULL, 0, NULL, 0}
   };
 
@@ -1901,7 +1903,11 @@ static void get_options (int argc, char **argv)
     case LONG_OPTION_RXGAIN:
       for (i=0; i<4; i++)
         rx_gain[0][i] = atof(optarg);
+      break;
 
+    case LONG_OPTION_TXGAIN:
+      for (i=0; i<4; i++)
+        tx_gain[0][i] = atof(optarg);
       break;
 
     case 'M':
