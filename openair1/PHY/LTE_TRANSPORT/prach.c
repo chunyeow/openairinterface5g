@@ -550,9 +550,7 @@ int is_prach_subframe(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame, uint8_t su
   return(2==1);
 }
 
-static short prach_tmp[45600*2] __attribute__((aligned(16)));
-
-int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe, uint16_t Nf)
+int32_t generate_prach( PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id, uint8_t subframe, uint16_t Nf )
 {
 
   lte_frame_type_t frame_type         = phy_vars_ue->lte_frame_parms.frame_type;
@@ -565,7 +563,8 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
   uint8_t preamble_index     = phy_vars_ue->prach_resources[eNB_id]->ra_PreambleIndex;
   uint8_t tdd_mapindex       = phy_vars_ue->prach_resources[eNB_id]->ra_TDD_map_index;
   int16_t *prachF           = phy_vars_ue->lte_ue_prach_vars[eNB_id]->prachF;
-  int16_t *prach            = (int16_t*)prach_tmp;
+  static int16_t prach_tmp[45600*2] __attribute__((aligned(16)));
+  int16_t *prach            = prach_tmp;
   int16_t *prach2;
   int16_t amp               = phy_vars_ue->lte_ue_prach_vars[eNB_id]->amp;
   int16_t Ncp;
@@ -574,7 +573,7 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
   uint16_t *prach_root_sequence_map;
   uint16_t preamble_offset,preamble_shift;
   uint16_t preamble_index0,n_shift_ra,n_shift_ra_bar;
-  uint16_t d_start,n_group_ra,numshift;
+  uint16_t d_start,numshift;
 
   uint8_t prach_fmt = get_prach_fmt(prach_ConfigIndex,frame_type);
   uint8_t Nsp=2;
@@ -587,13 +586,8 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
   int32_t Xu_re,Xu_im;
   uint16_t offset,offset2;
   int prach_start;
-#ifdef EXMIMO
-  int overflow,j;
-#endif
   int i, prach_len;
   uint16_t first_nonzero_root_idx=0;
-
-  //LOG_I(PHY,"[PRACH] prach_start=%d\n",prach_start);
 
 #ifdef BIT8_TX
   prach_start = ((subframe*phy_vars_ue->lte_frame_parms.samples_per_tti)<<1)-phy_vars_ue->N_TA_offset;
@@ -614,16 +608,16 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
 
   // First compute physical root sequence
   if (restricted_set == 0) {
-    if (Ncs_config>15) {
-      LOG_E(PHY,"[PHY] FATAL, Illegal Ncs_config for unrestricted format %d\n",Ncs_config);
+    if (Ncs_config > 15) {
+      LOG_E( PHY, "[PHY] FATAL, Illegal Ncs_config for unrestricted format %"PRIu8"\n", Ncs_config );
       mac_xface->macphy_exit("PRACH: Illegal Ncs_config for unrestricted format");
       return 0; // not reached
     }
 
     NCS = NCS_unrestricted[Ncs_config];
   } else {
-    if (Ncs_config>14) {
-      LOG_E(PHY,"[PHY] FATAL, Illegal Ncs_config for restricted format %d\n",Ncs_config);
+    if (Ncs_config > 14) {
+      LOG_E( PHY, "[PHY] FATAL, Illegal Ncs_config for restricted format %"PRIu8"\n", Ncs_config );
       mac_xface->macphy_exit("PRACH: Illegal Ncs_config for restricted format");
       return 0; // not reached
     }
@@ -637,7 +631,7 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
   if (frame_type == TDD) { // TDD
 
     if (tdd_preamble_map[prach_ConfigIndex][tdd_config].num_prach==0) {
-      LOG_E(PHY,"[PHY][UE %d] Illegal prach_ConfigIndex %d for ",phy_vars_ue->Mod_id,prach_ConfigIndex);
+      LOG_E( PHY, "[PHY][UE %"PRIu8"] Illegal prach_ConfigIndex %"PRIu8" for ", phy_vars_ue->Mod_id, prach_ConfigIndex );
     }
 
     // adjust n_ra_prboffset for frequency multiplexing (p.36 36.211)
@@ -696,6 +690,7 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
 
       u = prach_root_sequence_map[index];
 
+      uint16_t n_group_ra = 0;
       if ( (du[u]<(N_ZC/3)) && (du[u]>=NCS) ) {
         n_shift_ra     = du[u]/NCS;
         d_start        = (du[u]<<1) + (n_shift_ra * NCS);
@@ -971,7 +966,7 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
 
   if (prach_fmt==4) {
     //TODO: account for repeated format in fft output
-    LOG_E(PHY,"prach_fmt4 not fully implemented");
+    LOG_E( PHY, "prach_fmt4 not fully implemented" );
     mac_xface->macphy_exit("prach_fmt4 not fully implemented");
     return 0; // not reached
   } else {
@@ -984,8 +979,9 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
 
 #else
 #ifdef EXMIMO
-    overflow = prach_start + prach_len - LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*phy_vars_ue->lte_frame_parms.samples_per_tti;
-    LOG_D(PHY,"prach_start=%d, overflow=%d\n",prach_start,overflow);
+    int j;
+    int overflow = prach_start + prach_len - LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*phy_vars_ue->lte_frame_parms.samples_per_tti;
+    LOG_D( PHY, "prach_start=%d, overflow=%d\n", prach_start, overflow );
 
     for (i=prach_start,j=0; i<min(phy_vars_ue->lte_frame_parms.samples_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME,prach_start+prach_len); i++,j++) {
       ((int16_t*)phy_vars_ue->lte_ue_common_vars.txdata[0])[2*i] = prach[2*j]<<4;
@@ -1008,9 +1004,11 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
 #endif
   }
 
-  //  apply_625_Hz(phy_vars_ue,prach);
-  return(signal_energy((int*)prach,256));
+  return signal_energy( (int*)prach, 256 );
 }
+
+
+
 __m128i mmtmpX0,mmtmpX1,mmtmpX2,mmtmpX3;
 int16_t prach_ifft[4][1024*4];
 
@@ -1038,7 +1036,7 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
   int16_t preamble_shift=0;
   uint32_t preamble_shift2;
   uint16_t preamble_index0=0,n_shift_ra=0,n_shift_ra_bar;
-  uint16_t d_start=0,n_group_ra;
+  uint16_t d_start=0;
   uint16_t numshift=0;
   uint16_t *prach_root_sequence_map;
   uint8_t prach_fmt = get_prach_fmt(prach_ConfigIndex,frame_type);
@@ -1219,6 +1217,7 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
 
           u = prach_root_sequence_map[index];
 
+          uint16_t n_group_ra = 0;
           if ( (du[u]<(N_ZC/3)) && (du[u]>=NCS) ) {
             n_shift_ra     = du[u]/NCS;
             d_start        = (du[u]<<1) + (n_shift_ra * NCS);
@@ -1491,10 +1490,10 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
   // Compute DFT of x_u => X_u[k] = x_u(inv(u)*k)^* X_u[k] = exp(j\pi u*inv(u)*k*(inv(u)*k+1)/N_ZC)
   unsigned int k,inv_u,i,NCS=0,num_preambles;
   int N_ZC;
-  unsigned char prach_fmt = get_prach_fmt(prach_config_common->prach_ConfigInfo.prach_ConfigIndex,frame_type);
+  uint8_t prach_fmt = get_prach_fmt(prach_config_common->prach_ConfigInfo.prach_ConfigIndex,frame_type);
   uint16_t *prach_root_sequence_map;
   uint16_t u, preamble_offset;
-  uint16_t n_shift_ra,n_shift_ra_bar, d_start,n_group_ra,numshift;
+  uint16_t n_shift_ra,n_shift_ra_bar, d_start,numshift;
   uint8_t not_found;
 
   VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_UE_COMPUTE_PRACH, VCD_FUNCTION_IN);
@@ -1504,7 +1503,7 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
 #endif
 
   if (prach_fmt>=4) {
-    LOG_E(PHY, "PRACH sequence is only precomputed for prach_fmt<4 (have %d)\n");
+    LOG_E( PHY, "PRACH sequence is only precomputed for prach_fmt<4 (have %"PRIu8")\n", prach_fmt );
     mac_xface->macphy_exit("PRACH sequence is only precomputed for prach_fmt<4");
     return; // not reached
   }
@@ -1512,11 +1511,16 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
   N_ZC = (prach_fmt < 4) ? 839 : 139;
   //init_prach_tables(N_ZC); //moved to phy_init_lte_ue/eNB, since it takes to long in real-time
 
-  (prach_fmt < 4) ? (prach_root_sequence_map = prach_root_sequence_map0_3) : (prach_root_sequence_map = prach_root_sequence_map4);
+  if (prach_fmt < 4) {
+    prach_root_sequence_map = prach_root_sequence_map0_3;
+  } else {
+    // FIXME cannot be reached
+    prach_root_sequence_map = prach_root_sequence_map4;
+  }
 
 
 #ifdef PRACH_DEBUG
-  LOG_I(PHY,"compute_prach_seq: done init prach_tables\n");
+  LOG_I( PHY, "compute_prach_seq: done init prach_tables\n" );
 #endif
 
   if (prach_config_common->prach_ConfigInfo.highSpeedFlag== 0) {
@@ -1526,7 +1530,7 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
 #endif
 
     if (prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig>15) {
-      LOG_E(PHY,"FATAL, Illegal Ncs_config for unrestricted format %d\n",prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig);
+      LOG_E( PHY, "FATAL, Illegal Ncs_config for unrestricted format %"PRIu8"\n", prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig );
       mac_xface->macphy_exit("PRACH Illegal Ncs_config for unrestricted format");
       return; // not reached
     } else {
@@ -1541,11 +1545,11 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
   } else {
 
 #ifdef PRACH_DEBUG
-    LOG_I(PHY,"high speed prach : NCS_config %d\n",prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig);
+    LOG_I( PHY, "high speed prach : NCS_config %"PRIu8"\n", prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig );
 #endif
 
     if (prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig>14) {
-      LOG_E(PHY,"FATAL, Illegal Ncs_config for restricted format %d\n",prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig);
+      LOG_E( PHY, "FATAL, Illegal Ncs_config for restricted format %"PRIu8"\n", prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig );
       mac_xface->macphy_exit("PRACH Illegal Ncs_config for restricted format");
       return; // not reached
     } else {
@@ -1572,6 +1576,7 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
 
       u = prach_root_sequence_map[index];
 
+      uint16_t n_group_ra = 0;
       if ( (du[u]<(N_ZC/3)) && (du[u]>=NCS) ) {
         n_shift_ra     = du[u]/NCS;
         d_start        = (du[u]<<1) + (n_shift_ra * NCS);
@@ -1585,7 +1590,6 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
       } else {
         n_shift_ra     = 0;
         n_shift_ra_bar = 0;
-        n_group_ra     = 0;
       }
 
       // This is the number of cyclic shifts for the current root u
@@ -1602,7 +1606,8 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
 #ifdef PRACH_DEBUG
 
   if (NCS>0)
-    LOG_I(PHY,"Initializing %d preambles for PRACH (NCS_config %d, NCS %d, N_ZC/NCS %d)\n",num_preambles,prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig,NCS,N_ZC/NCS);
+    LOG_I( PHY, "Initializing %u preambles for PRACH (NCS_config %"PRIu8", NCS %u, N_ZC/NCS %u)\n",
+           num_preambles, prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig, NCS, N_ZC/NCS );
 
 #endif
 
