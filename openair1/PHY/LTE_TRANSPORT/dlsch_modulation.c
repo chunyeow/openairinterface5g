@@ -195,7 +195,6 @@ int allocate_REs_in_RB(LTE_DL_FRAME_PARMS *frame_parms,
   uint8_t first_re,last_re;
   int32_t tmp_sample1,tmp_sample2;
   int16_t tmp_amp=amp;
-  uint8_t layer;
   int s=1;
 
   gain_lin_QPSK = (int16_t)((amp*ONE_OVER_SQRT2_Q15)>>15);
@@ -883,7 +882,7 @@ int allocate_REs_in_RB(LTE_DL_FRAME_PARMS *frame_parms,
           case 2:  //QPSK
 
             //    printf("%d : %d,%d => ",tti_offset,((int16_t*)&txdataF[0][tti_offset])[0],((int16_t*)&txdataF[0][tti_offset])[1]);
-            for (layer=first_layer0; layer<=(first_layer0+Nlayers0); layer++) {
+            for (int layer=first_layer0; layer<=(first_layer0+Nlayers0); layer++) {
               ((int16_t*)&txdataF[layer][tti_offset])[0] = (x0[*jj]==1) ? (-gain_lin_QPSK) : gain_lin_QPSK; //I //b_i
               *jj = *jj + 1;
               ((int16_t*)&txdataF[layer][tti_offset])[1] = (x0[*jj]==1) ? (-gain_lin_QPSK) : gain_lin_QPSK; //Q //b_{i+1}
@@ -893,7 +892,7 @@ int allocate_REs_in_RB(LTE_DL_FRAME_PARMS *frame_parms,
             break;
 
           case 4:  //16QAM
-            if (is_not_UEspecRS(layer,re)) {
+            if (is_not_UEspecRS(0/*layer (FIXME uninitialized!)*/,re)) {
               qam16_table_offset_re = 0;
               qam16_table_offset_im = 0;
 
@@ -917,7 +916,7 @@ int allocate_REs_in_RB(LTE_DL_FRAME_PARMS *frame_parms,
 
               *jj = *jj + 1;
 
-              for (layer=first_layer0; layer<=(first_layer0+Nlayers0); layer++) {
+              for (int layer=first_layer0; layer<=(first_layer0+Nlayers0); layer++) {
                 ((int16_t*)&txdataF[layer][tti_offset])[0] = qam_table_s0[qam16_table_offset_re];
                 ((int16_t*)&txdataF[layer][tti_offset])[1] = qam_table_s0[qam16_table_offset_im];
               }
@@ -961,7 +960,7 @@ int allocate_REs_in_RB(LTE_DL_FRAME_PARMS *frame_parms,
 
             *jj = *jj + 1;
 
-            for (layer=first_layer0; layer<=(first_layer0+Nlayers0); layer++) {
+            for (int layer=first_layer0; layer<=(first_layer0+Nlayers0); layer++) {
               ((int16_t*)&txdataF[layer][tti_offset])[0] = qam_table_s0[qam64_table_offset_re];
               ((int16_t*)&txdataF[layer][tti_offset])[1] = qam_table_s0[qam64_table_offset_im];
             }
