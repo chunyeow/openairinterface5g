@@ -174,6 +174,7 @@ add_boolean_option(PDCP_MSG_PRINT False "print PDCP messages")
 add_boolean_option(TEST_OMG False "???")
 add_boolean_option(DEBUG_OMG False "???")
 add_boolean_option(XFORMS False "This adds the possibility to see the signal oscilloscope")
+add_boolean_option(DEBUG_CONSOLE False "makes debugging easier, disables stdout/stderr buffering")
 
 add_boolean_option(ENABLE_ITTI True "ITTI is internal messaging, should remain enabled for most targets")
 set (ITTI_DIR ${OPENAIR_DIR}/common/utils/itti)

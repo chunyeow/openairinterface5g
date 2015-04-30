@@ -2239,6 +2239,11 @@ int main( int argc, char **argv )
   int error_code;
 #endif
 
+#ifdef DEBUG_CONSOLE
+  setvbuf(stdout, NULL, _IONBF, 0);
+  setvbuf(stderr, NULL, _IONBF, 0);
+#endif
+
   PHY_VARS_UE *UE[MAX_NUM_CCs];
 
   mode = normal_txrx;
