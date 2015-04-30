@@ -250,10 +250,20 @@ static void *UE_thread_synch(void *arg)
       exit_fun("Can't find EUTRA band for frequency");
     return &UE_thread_synch_retval;
     }
+
+#ifdef OAI_USRP
+  // now we know the uplink_frequency_offset
+  // set the correct TX frequency
+  for (i=0; i<openair0_cfg[card].tx_num_channels; i++) {
+    openair0_cfg[0].tx_freq[i] = downlink_frequency[0][i] + uplink_frequency_offset[0][i];
+  }
+  openair0_set_frequencies( &openair0, &openair0_cfg[0] );
+#endif
   }
 
-  else if  (UE->UE_scan == 1) {
+    else if  (UE->UE_scan == 1) {
     current_band=0;
+
     for (card=0; card<MAX_CARDS; card++) {
       for (i=0; i<openair0_cfg[card].rx_num_channels; i++) {
         downlink_frequency[card][i] = bands_to_scan.band_info[0].dl_min;
@@ -292,7 +302,7 @@ static void *UE_thread_synch(void *arg)
     }
 
 #if defined(OAI_USRP) && !defined(USRP_DEBUG)
-    openair0_set_rx_frequencies( &openair0, &openair0_cfg[0] );
+    openair0_set_frequencies( &openair0, &openair0_cfg[0] );
     openair0_set_gains( &openair0, &openair0_cfg[0] );
 #endif
 
@@ -382,7 +392,7 @@ static void *UE_thread_synch(void *arg)
 
 #ifdef OAI_USRP
 #ifndef USRP_DEBUG
-      openair0_set_rx_frequencies(&openair0,&openair0_cfg[0]);
+      openair0_set_frequencies(&openair0,&openair0_cfg[0]);
       //  openair0_set_gains(&openair0,&openair0_cfg[0]);
 #endif
 #endif
