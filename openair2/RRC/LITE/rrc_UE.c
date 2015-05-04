@@ -3487,7 +3487,7 @@ void
             RRC_DCCH_DATA_IND (msg_p).dcch_index,
             RRC_DCCH_DATA_IND (msg_p).eNB_index);
 
-      LOG_I(RRC, PROTOCOL_RRC_CTXT_UE_FMT"Received %s DCCH %d, eNB %d",
+      LOG_I(RRC, PROTOCOL_RRC_CTXT_UE_FMT"Received %s DCCH %d, eNB %d\n",
             PROTOCOL_RRC_CTXT_UE_ARGS(&ctxt),
             msg_name,
             RRC_DCCH_DATA_IND (msg_p).dcch_index,
