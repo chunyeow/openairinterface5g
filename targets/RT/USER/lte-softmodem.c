@@ -2280,6 +2280,8 @@ int main( int argc, char **argv )
     frame_parms[CC_id]->nb_antennas_rx      = 1;
   }
 
+  // initialize mscgen log
+  MSC_INIT(MSC_E_UTRAN);
   // initialize the log (see log.h for details)
   logInit();
 
