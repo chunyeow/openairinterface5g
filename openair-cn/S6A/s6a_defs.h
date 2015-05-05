@@ -196,60 +196,8 @@ int s6a_parse_subscription_data(struct avp *avp_subscription_data,
                                 subscription_data_t *subscription_data);
 
 int s6a_parse_experimental_result(struct avp *avp, s6a_experimental_result_t *ptr);
-#ifndef CMAKER
-inline char *experimental_retcode_2_string(uint32_t ret_code);
-inline char *retcode_2_string(uint32_t ret_code);
-#else
-inline char *experimental_retcode_2_string(uint32_t ret_code)
-{
-  switch(ret_code) {
-    /* Experimental-Result-Codes */
-  case DIAMETER_ERROR_USER_UNKNOWN:
-    return "DIAMETER_ERROR_USER_UNKNOWN";
+char *experimental_retcode_2_string(uint32_t ret_code);
+char *retcode_2_string(uint32_t ret_code);
 
-  case DIAMETER_ERROR_ROAMING_NOT_ALLOWED:
-    return "DIAMETER_ERROR_ROAMING_NOT_ALLOWED";
-
-  case DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION:
-    return "DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION";
-
-  case DIAMETER_ERROR_RAT_NOT_ALLOWED:
-    return "DIAMETER_ERROR_RAT_NOT_ALLOWED";
-
-  case DIAMETER_ERROR_EQUIPMENT_UNKNOWN:
-    return "DIAMETER_ERROR_EQUIPMENT_UNKNOWN";
-
-  case DIAMETER_ERROR_UNKOWN_SERVING_NODE:
-    return "DIAMETER_ERROR_UNKOWN_SERVING_NODE";
-
-  case DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE:
-    return "DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE";
-
-  default:
-    break;
-  }
-
-  return "DIAMETER_AVP_UNSUPPORTED";
-}
-
-inline char *retcode_2_string(uint32_t ret_code)
-{
-  switch(ret_code) {
-  case ER_DIAMETER_SUCCESS:
-    return "DIAMETER_SUCCESS";
-
-  case ER_DIAMETER_MISSING_AVP:
-    return "DIAMETER_MISSING_AVP";
-
-  case ER_DIAMETER_INVALID_AVP_VALUE:
-    return "DIAMETER_INVALID_AVP_VALUE";
-
-  default:
-    break;
-  }
-
-  return "DIAMETER_AVP_UNSUPPORTED";
-}
-#endif
 
 #endif /* S6A_DEFS_H_ */

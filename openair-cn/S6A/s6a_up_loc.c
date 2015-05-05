@@ -38,6 +38,7 @@
 #include "intertask_interface.h"
 #include "s6a_defs.h"
 #include "s6a_messages.h"
+#include "msc.h"
 
 
 int s6a_ula_cb(
@@ -88,6 +89,14 @@ int s6a_ula_cb(
 
     s6a_update_location_ans_p->result.present = S6A_RESULT_BASE;
     s6a_update_location_ans_p->result.choice.base = hdr_p->avp_value->u32;
+
+    MSC_LOG_TX_MESSAGE(
+    		MSC_S6A_MME,
+    		MSC_MMEAPP_MME,
+    		NULL,0,
+    		"0 S6A_UPDATE_LOCATION_ANS imsi %SCNu64 %s",
+    		s6a_update_location_ans_p->imsi,
+    		retcode_2_string(hdr_p->avp_value->u32));
 
     if (hdr_p->avp_value->u32 != ER_DIAMETER_SUCCESS) {
       S6A_ERROR("Got error %u:%s\n", hdr_p->avp_value->u32,

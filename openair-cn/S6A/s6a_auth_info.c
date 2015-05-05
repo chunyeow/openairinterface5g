@@ -234,6 +234,14 @@ int s6a_aia_cb(struct msg **msg, struct avp *paramavp,
     s6a_auth_info_ans_p->result.present = S6A_RESULT_BASE;
     s6a_auth_info_ans_p->result.choice.base = hdr->avp_value->u32;
 
+    MSC_LOG_TX_MESSAGE(
+  	    MSC_S6A_MME,
+    	MSC_MMEAPP_MME,
+    	NULL,0,
+    	"0 S6A_AUTH_INFO_ANS imsi %s %s",
+    	s6a_auth_info_ans_p->imsi,
+    	retcode_2_string(s6a_auth_info_ans_p->result.choice.base));
+
     if (hdr->avp_value->u32 != ER_DIAMETER_SUCCESS) {
       S6A_ERROR("Got error %u:%s\n", hdr->avp_value->u32,
                 retcode_2_string(hdr->avp_value->u32));
@@ -257,11 +265,26 @@ int s6a_aia_cb(struct msg **msg, struct avp *paramavp,
       s6a_auth_info_ans_p->result.present = S6A_RESULT_EXPERIMENTAL;
       s6a_parse_experimental_result(avp, &s6a_auth_info_ans_p->result.choice.experimental);
 
+      MSC_LOG_TX_MESSAGE(
+    	    MSC_S6A_MME,
+      	MSC_MMEAPP_MME,
+      	NULL,0,
+      	"0 S6A_AUTH_INFO_ANS imsi %s %s",
+      	s6a_auth_info_ans_p->imsi,
+      	experimental_retcode_2_string(s6a_auth_info_ans_p->result.choice.experimental));
+
       skip_auth_res = 1;
     } else {
       /* Neither result-code nor experimental-result is present ->
        * totally incorrect behaviour here.
        */
+    	MSC_LOG_TX_MESSAGE_FAILED(
+      	    MSC_S6A_MME,
+        	MSC_MMEAPP_MME,
+        	NULL,0,
+        	"0 S6A_AUTH_INFO_ANS imsi %s",
+        	s6a_auth_info_ans_p->imsi);
+
       S6A_ERROR("Experimental-Result and Result-Code are absent: "
                 "This is not a correct behaviour\n");
       goto err;
@@ -277,12 +300,6 @@ int s6a_aia_cb(struct msg **msg, struct avp *paramavp,
       DevMessage("We requested E-UTRAN vectors with an immediate response...\n");
     }
   }
-  MSC_LOG_TX_MESSAGE(
-	    MSC_S6A_MME,
-  		MSC_MMEAPP_MME,
-  		NULL,0,
-  		"0 S6A_AUTH_INFO_ANS imsi %s",
-  		s6a_auth_info_ans_p->imsi);
   itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 err:
   return 0;
