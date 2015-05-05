@@ -36,6 +36,7 @@
 #include <assert.h>
 #endif
 #include "assertions.h"
+#include "msc.h"
 #include "list.h"
 #include "rlc_um.h"
 #include "rlc_primitives.h"
@@ -45,7 +46,7 @@
 //#define TRACE_RLC_UM_SEGMENT 1
 //-----------------------------------------------------------------------------
 void
-rlc_um_segment_10 (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
+rlc_um_segment_10 (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t *rlc_pP)
 {
   //-----------------------------------------------------------------------------
   list_t              pdus;
@@ -89,7 +90,7 @@ rlc_um_segment_10 (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
   pdu_mem_p = NULL;
 
   // not fine locking
-  pthread_mutex_lock(&rlc_pP->lock_input_sdus);
+  RLC_UM_MUTEX_LOCK(&rlc_pP->lock_input_sdus, ctxt_pP, rlc_pP);
 
   while ((list_get_head(&rlc_pP->input_sdus)) && (nb_bytes_to_transmit > 0)) {
 
@@ -129,7 +130,7 @@ rlc_um_segment_10 (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
         LOG_E(RLC, PROTOCOL_RLC_UM_CTXT_FMT" ERROR COULD NOT GET NEW PDU, EXIT\n",
               PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP));
 #endif
-        pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
+        RLC_UM_MUTEX_UNLOCK(&rlc_pP->lock_input_sdus);
         return;
       }
 
@@ -432,11 +433,11 @@ rlc_um_segment_10 (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
     nb_bytes_to_transmit = 0; // 1 PDU only
   }
 
-  pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
+  RLC_UM_MUTEX_UNLOCK(&rlc_pP->lock_input_sdus);
 }
 //-----------------------------------------------------------------------------
 void
-rlc_um_segment_5 (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
+rlc_um_segment_5 (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t *rlc_pP)
 {
   //-----------------------------------------------------------------------------
   list_t              pdus;
@@ -479,7 +480,7 @@ rlc_um_segment_5 (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
   list_init (&pdus, NULL);    // param string identifying the list is NULL
   pdu_mem_p = NULL;
 
-  pthread_mutex_lock(&rlc_pP->lock_input_sdus);
+  RLC_UM_MUTEX_LOCK(&rlc_pP->lock_input_sdus, ctxt_pP, rlc_pP);
 
   while ((list_get_head(&rlc_pP->input_sdus)) && (nb_bytes_to_transmit > 0)) {
 #if defined(TRACE_RLC_UM_SEGMENT)
@@ -518,7 +519,7 @@ rlc_um_segment_5 (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
         LOG_E(RLC, PROTOCOL_RLC_UM_CTXT_FMT" ERROR COULD NOT GET NEW PDU, EXIT\n",
               PROTOCOL_RLC_UM_CTXT_ARGS(ctxt_pP,rlc_pP));
 #endif
-        pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
+        RLC_UM_MUTEX_UNLOCK(&rlc_pP->lock_input_sdus);
         return;
       }
 
@@ -817,6 +818,6 @@ rlc_um_segment_5 (const protocol_ctxt_t* const ctxtP, rlc_um_entity_t *rlc_pP)
     nb_bytes_to_transmit = 0; // 1 PDU only
   }
 
-  pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
+  RLC_UM_MUTEX_UNLOCK(&rlc_pP->lock_input_sdus);
 }
 

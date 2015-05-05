@@ -36,6 +36,7 @@
 # include "intertask_interface.h"
 #endif
 #include "assertions.h"
+#include "msc.h"
 #include "hashtable.h"
 #include "rlc_am.h"
 #include "rlc_am_segment.h"
@@ -47,7 +48,6 @@
 #include "UTIL/LOG/log.h"
 #include "UL-AM-RLC.h"
 #include "DL-AM-RLC.h"
-#include "msc.h"
 //#define TRACE_RLC_AM_DATA_REQUEST
 //#define TRACE_RLC_AM_TX_STATUS
 //#define TRACE_RLC_AM_TX
@@ -1107,7 +1107,7 @@ rlc_am_data_req (
   int                  octet_index, index;
 #endif
 
-  pthread_mutex_lock(&l_rlc_p->lock_input_sdus);
+  RLC_AM_MUTEX_LOCK(&l_rlc_p->lock_input_sdus, ctxt_pP, l_rlc_p);
 
   if ((l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].mem_block == NULL) &&
       (l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].flags.segmented == 0) &&
@@ -1254,5 +1254,5 @@ rlc_am_data_req (
 #endif
   }
 
-  pthread_mutex_unlock(&l_rlc_p->lock_input_sdus);
+  RLC_AM_MUTEX_UNLOCK(&l_rlc_p->lock_input_sdus);
 }

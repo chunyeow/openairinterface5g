@@ -37,13 +37,13 @@
 # include "intertask_interface.h"
 #endif
 #include "assertions.h"
+#include "msc.h"
 #include "rlc_um.h"
 #include "list.h"
 #include "rlc_primitives.h"
 #include "mac_primitives.h"
 #include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
-#include "msc.h"
 
 
 #include "rlc_um_very_simple_test.h"
@@ -779,8 +779,8 @@ rlc_um_data_req (const protocol_ctxt_t* const ctxt_pP, void *rlc_pP, mem_block_t
   LOG_T(RLC, "%s", message_string);
 #endif
 #   endif
-  pthread_mutex_lock(&rlc_p->lock_input_sdus);
+  RLC_UM_MUTEX_LOCK(&rlc_p->lock_input_sdus, ctxt_pP, rlc_p);
   rlc_p->buffer_occupancy += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
   list_add_tail_eurecom(sdu_pP, &rlc_p->input_sdus);
-  pthread_mutex_unlock(&rlc_p->lock_input_sdus);
+  RLC_UM_MUTEX_UNLOCK(&rlc_p->lock_input_sdus);
 }

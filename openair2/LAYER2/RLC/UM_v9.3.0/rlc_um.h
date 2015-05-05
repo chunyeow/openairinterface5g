@@ -56,6 +56,7 @@
 #                define public_rlc_um(x)     extern x
 #            endif
 #        endif
+#        include <errno.h>
 #        include "platform_types.h"
 #        include "rlc_def.h"
 #        include "rlc_def_lte.h"
@@ -85,6 +86,31 @@
         CTXT_Pp->rnti,\
           (rLC_Pp->is_data_plane) ? "DRB UM" : "SRB UM",\
           rLC_Pp->rb_id
+
+#if defined(TRACE_RLC_MUTEX)
+#define RLC_UM_MUTEX_LOCK(mUTEX, cTXT, rLC) \
+	do {\
+      int pmtl_rc = pthread_mutex_trylock(mUTEX);\
+	  if (pmtl_rc != 0){\
+        if (pmtl_rc == EBUSY) {\
+          MSC_LOG_EVENT((cTXT->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,\
+                       PROTOCOL_RLC_UM_MSC_FMT" Warning try lock %s busy",\
+                       PROTOCOL_RLC_UM_MSC_ARGS(cTXT,rLC),\
+                       #mUTEX);\
+          pthread_mutex_lock(mUTEX);\
+        } else {\
+            MSC_LOG_EVENT((cTXT->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,\
+                       PROTOCOL_RLC_UM_MSC_FMT" Error try lock %s %d",\
+                       PROTOCOL_RLC_UM_MSC_ARGS(cTXT,rLC),\
+                       #mUTEX, pmtl_rc);\
+        }\
+      }\
+	} while (0);
+#else
+#define RLC_UM_MUTEX_LOCK(mUTEX, cTXT, rLC) pthread_mutex_lock(mUTEX)
+#endif
+
+#define RLC_UM_MUTEX_UNLOCK(mUTEX) pthread_mutex_unlock(mUTEX)
 
 /*! \fn void     rlc_um_stat_req     (const protocol_ctxt_t* const ctxt_pP, rlc_um_entity_t * const rlc_pP,
                         unsigned int* stat_tx_pdcp_sdu,

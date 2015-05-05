@@ -31,6 +31,7 @@
 #include "platform_types.h"
 #include "assertions.h"
 //-----------------------------------------------------------------------------
+#include "msc.h"
 #include "rlc.h"
 #include "rlc_um.h"
 #include "rlc_primitives.h"
@@ -744,7 +745,7 @@ void rlc_um_check_timer_dar_time_out(
           rlc_um_stop_and_reset_timer_reordering(ctxt_pP, rlc_pP);
         }
 
-        pthread_mutex_unlock(&rlc_pP->lock_dar_buffer);
+        RLC_UM_MUTEX_UNLOCK(&rlc_pP->lock_dar_buffer);
       }
     }
   }
@@ -983,7 +984,7 @@ rlc_um_receive_process_dar (
     free_mem_block(pdu_mem_pP);
   }
 
-  pthread_mutex_lock(&rlc_pP->lock_dar_buffer);
+  RLC_UM_MUTEX_LOCK(&rlc_pP->lock_dar_buffer, ctxt_pP, rlc_pP);
 
   in_window = rlc_um_in_window(ctxt_pP, rlc_pP, rlc_pP->vr_uh - rlc_pP->rx_um_window_size, sn, rlc_pP->vr_ur);
 
@@ -1007,7 +1008,7 @@ rlc_um_receive_process_dar (
     rlc_pP->stat_rx_data_bytes_out_of_window += tb_sizeP;
     free_mem_block(pdu_mem_pP);
     pdu_mem_pP = NULL;
-    pthread_mutex_unlock(&rlc_pP->lock_dar_buffer);
+    RLC_UM_MUTEX_UNLOCK(&rlc_pP->lock_dar_buffer);
     VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
     return;
   }
@@ -1026,7 +1027,7 @@ rlc_um_receive_process_dar (
       rlc_pP->stat_rx_data_bytes_duplicate += tb_sizeP;
       free_mem_block(pdu_mem_pP);
       pdu_mem_pP = NULL;
-      pthread_mutex_unlock(&rlc_pP->lock_dar_buffer);
+      RLC_UM_MUTEX_UNLOCK(&rlc_pP->lock_dar_buffer);
       VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
       return;
     }
@@ -1159,6 +1160,6 @@ rlc_um_receive_process_dar (
     }
   }
 
-  pthread_mutex_unlock(&rlc_pP->lock_dar_buffer);
+  RLC_UM_MUTEX_UNLOCK(&rlc_pP->lock_dar_buffer);
   VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RLC_UM_RECEIVE_PROCESS_DAR, VCD_FUNCTION_OUT);
 }

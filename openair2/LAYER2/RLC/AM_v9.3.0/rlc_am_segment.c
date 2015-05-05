@@ -36,6 +36,7 @@
 //#include "rtos_header.h"
 #include "platform_types.h"
 //-----------------------------------------------------------------------------
+#include "msc.h"
 #include "list.h"
 #include "rlc_am.h"
 #include "LAYER2/MAC/extern.h"
@@ -175,7 +176,7 @@ void rlc_am_segment_10 (
   pdu_mem_p = NULL;
 
 
-  pthread_mutex_lock(&rlc_pP->lock_input_sdus);
+  RLC_AM_MUTEX_LOCK(&rlc_pP->lock_input_sdus, ctxt_pP, rlc_pP);
 
   while ((rlc_pP->input_sdus[rlc_pP->current_sdu_index].mem_block) && (nb_bytes_to_transmit > 0) ) {
     LOG_T(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEGMENT] nb_bytes_to_transmit %d BO %d\n",
@@ -210,7 +211,7 @@ void rlc_am_segment_10 (
       if (!(pdu_mem_p = get_free_mem_block (data_pdu_size + sizeof(struct mac_tb_req)))) {
         LOG_C(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[SEGMENT] ERROR COULD NOT GET NEW PDU, EXIT\n",
               PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
-        pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
+        RLC_AM_MUTEX_UNLOCK(&rlc_pP->lock_input_sdus);
         return;
       }
 
@@ -543,5 +544,5 @@ void rlc_am_segment_10 (
 
   }
 
-  pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
+  RLC_AM_MUTEX_UNLOCK(&rlc_pP->lock_input_sdus);
 }

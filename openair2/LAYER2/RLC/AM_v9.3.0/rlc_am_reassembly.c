@@ -180,7 +180,7 @@ rlc_am_send_sdu (
 #      endif
 #   endif
 #if !defined(ENABLE_ITTI)
-      pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
+      RLC_AM_MUTEX_UNLOCK(&rlc_pP->lock_input_sdus);
 #endif
       MSC_LOG_TX_MESSAGE(
         (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
@@ -200,7 +200,7 @@ rlc_am_send_sdu (
                     rlc_pP->output_sdu_size_to_write,
                     rlc_pP->output_sdu_in_construction);
 #if !defined(ENABLE_ITTI)
-      pthread_mutex_lock(&rlc_pP->lock_input_sdus);
+      RLC_AM_MUTEX_LOCK(&rlc_pP->lock_input_sdus, ctxt_pP, rlc_pP);
 #endif
 #endif
       rlc_pP->output_sdu_in_construction = NULL;

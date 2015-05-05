@@ -96,6 +96,32 @@
           (rLC_Pp->is_data_plane) ? "DRB AM" : "SRB AM",\
           rLC_Pp->rb_id
 
+
+#if defined(TRACE_RLC_MUTEX)
+#define RLC_AM_MUTEX_LOCK(mUTEX, cTXT, rLC) \
+	do {\
+      int pmtl_rc = pthread_mutex_trylock(mUTEX);\
+	  if (pmtl_rc != 0){\
+        if (pmtl_rc == EBUSY) {\
+          MSC_LOG_EVENT((cTXT->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,\
+                       PROTOCOL_RLC_AM_MSC_FMT" Warning try lock %s busy",\
+                       PROTOCOL_RLC_AM_MSC_ARGS(cTXT,rLC),\
+                       #mUTEX);\
+          pthread_mutex_lock(mUTEX);\
+        } else {\
+            MSC_LOG_EVENT((cTXT->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,\
+            		PROTOCOL_RLC_AM_MSC_FMT" Error try lock %s %d",\
+                    PROTOCOL_RLC_AM_MSC_ARGS(cTXT,rLC),\
+                    #mUTEX, pmtl_rc);\
+        }\
+      }\
+	} while (0);
+#else
+#define RLC_AM_MUTEX_LOCK(mUTEX, cTXT, rLC) pthread_mutex_lock(mUTEX)
+#endif
+
+#define RLC_AM_MUTEX_UNLOCK(mUTEX) pthread_mutex_unlock(mUTEX)
+
 /*! \fn void     rlc_am_release (const protocol_ctxt_t* const ctxtP, rlc_am_entity_t * const rlc_pP)
 * \brief    Empty function, TO DO.
 * \param[in]  ctxt_pP          Running context.

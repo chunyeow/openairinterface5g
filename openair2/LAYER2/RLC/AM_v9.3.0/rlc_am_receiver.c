@@ -32,6 +32,7 @@
 #include "platform_types.h"
 //-----------------------------------------------------------------------------
 #include "assertions.h"
+#include "msc.h"
 #include "rlc.h"
 #include "rlc_am.h"
 #include "list.h"
@@ -271,7 +272,7 @@ rlc_am_receive_routing (
   mem_block_t           *tb_p             = NULL;
   uint8_t               *first_byte_p     = NULL;
   sdu_size_t             tb_size_in_bytes;
-  pthread_mutex_lock(&rlc_pP->lock_input_sdus);
+  RLC_AM_MUTEX_LOCK(&rlc_pP->lock_input_sdus, ctxt_pP, rlc_pP);
 
   while ((tb_p = list_remove_head (&data_indP.data))) {
     first_byte_p = ((struct mac_tb_ind *) (tb_p->data))->data_ptr;
@@ -298,7 +299,7 @@ rlc_am_receive_routing (
             rlc_pP->vr_mr);
     }
   } // end while
-  pthread_mutex_unlock(&rlc_pP->lock_input_sdus);
+  RLC_AM_MUTEX_UNLOCK(&rlc_pP->lock_input_sdus);
 }
 //-----------------------------------------------------------------------------
 void
