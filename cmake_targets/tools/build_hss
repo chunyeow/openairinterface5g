@@ -108,7 +108,7 @@ function main()
         ;;
       -i | --check-installed-software)
         echo "Check installed software packages necessary to build and run HSS (support Ubuntu 14.04):"
-        check_install_hss_software
+        check_install_oai_software
         exit 0
         ;;
       -I | --install-hss-files)
