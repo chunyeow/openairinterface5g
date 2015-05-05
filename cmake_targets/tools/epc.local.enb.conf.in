@@ -62,15 +62,7 @@ MME :
         # max values = 999.999:65535
         # maximum of 32 values, comma separated
         PLMN = ( 
-             {MCC="208" ; MNC="92";  TAC = "1"; },
-             {MCC="208" ; MNC="93";  TAC = "4"; },
-             {MCC="208" ; MNC="94";  TAC = "8"; },
-             {MCC="208" ; MNC="95";  TAC = "8"; },
-             {MCC="208" ; MNC="96";  TAC = "1"; },
-             {MCC="208" ; MNC="97";  TAC = "1"; },
-             {MCC="208" ; MNC="98";  TAC = "1"; },
-             {MCC="208" ; MNC="99";  TAC = "1"; },
-             {MCC="208" ; MNC="10";  TAC = "1"; }
+             {MCC="208" ; MNC="92";  TAC = "1"; }
         );
     };
     
@@ -122,7 +114,7 @@ P-GW =
         PGW_IPV4_ADDRESS_FOR_S5_S8            = "0.0.0.0/24";
 
         PGW_INTERFACE_NAME_FOR_SGI            = "eth0";
-        PGW_IPV4_ADDRESS_FOR_SGI              = "192.168.14.17/24";
+        PGW_IPV4_ADDRESS_FOR_SGI              = "192.168.12.213/24";
         # Option available only if GTPU in kernel configured
         PGW_MASQUERADE_SGI                    = "yes";
     };
@@ -130,8 +122,8 @@ P-GW =
     IP_ADDRESS_POOL :
     {
         IPV4_LIST = (
-                      "192.168.0.0/24",
-                      "192.168.1.0/24"
+                      "192.187.0.0/24",
+                      "192.187.1.0/24"
                     );
         IPV6_LIST = (
                       "2014:02:26::0/120"
