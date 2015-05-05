@@ -141,7 +141,7 @@ set(CMAKE_C_FLAGS
 # these changes are related to hardcoded path to include .h files
 add_definitions(-DCMAKER)
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -ggdb -DMALLOC_CHECK_=3")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS} -ggdb -DMALLOC_CHECK_=3 -O2")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS} -ggdb -DMALLOC_CHECK_=3 -O2") 
 
 # Below has been put in comment because does not work with
 # SVN authentication.
@@ -474,6 +474,7 @@ add_boolean_option(OPENAIR2                True  "Access Stratum layer 2 built i
 add_boolean_option(TRACE_RLC_PAYLOAD       False "Fatal assert in this case")
 add_boolean_option(RLC_STOP_ON_LOST_PDU    False "Fatal assert in this case")
 
+add_boolean_option(TRACE_RLC_MUTEX         True  "TRACE for RLC, possible problem in thread scheduling")
 add_boolean_option(TRACE_RLC_AM_BO         False "TRACE for RLC AM, TO BE CHANGED IN A MORE GENERAL FLAG")
 add_boolean_option(TRACE_RLC_AM_FREE_SDU   False "TRACE for RLC AM, TO BE CHANGED IN A MORE GENERAL FLAG")
 add_boolean_option(TRACE_RLC_AM_HOLE       False "TRACE for RLC AM, TO BE CHANGED IN A MORE GENERAL FLAG")
