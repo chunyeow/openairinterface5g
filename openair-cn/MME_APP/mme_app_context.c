@@ -462,7 +462,7 @@ void mme_app_handle_s1ap_ue_context_release_req(const s1ap_ue_context_release_re
 	MSC_LOG_EVENT(
    		MSC_MMEAPP_MME,
    		"S1AP_UE_CONTEXT_RELEASE_REQ Unknown ue %u",s1ap_ue_context_release_req->mme_ue_s1ap_id);
-    MME_APP_ERROR("UE context doesn't exist for UE 0x%08X/dec%u\n",
+    MME_APP_ERROR("UE context doesn't exist for UE 0x%06"PRIX32"/dec%u\n",
     		s1ap_ue_context_release_req->mme_ue_s1ap_id,
     		s1ap_ue_context_release_req->mme_ue_s1ap_id);
     return;

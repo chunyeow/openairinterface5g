@@ -156,6 +156,11 @@ void *s1ap_mme_thread(void *args)
     }
     break;
 
+    case S1AP_UE_CONTEXT_RELEASE_COMMAND: {
+        s1ap_handle_ue_context_release_command(&received_message_p->ittiMsg.s1ap_ue_context_release_command);
+    }
+    break;
+
 #if defined(DISABLE_USE_NAS)
 
     case NAS_ATTACH_ACCEPT: {
@@ -435,6 +440,9 @@ void s1ap_remove_ue(ue_description_t *ue_ref)
   eNB_ref->nb_ue_associated--;
   /* Remove any attached timer */
   //     s1ap_timer_remove_ue(ue_ref->mme_ue_s1ap_id);
+
+  STAILQ_REMOVE(&eNB_ref->ue_list_head, ue_ref, ue_description_s, ue_entries);
+  eNB_ref->nb_ue_associated--;
 
   /* Freeing memory */
   free(ue_ref);

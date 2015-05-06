@@ -87,6 +87,11 @@ void *mme_app_thread(void *args)
     }
     break;
 
+    case SGW_RELEASE_ACCESS_BEARERS_RESPONSE: {
+        mme_app_handle_release_access_bearers_resp(&received_message_p->ittiMsg.sgwReleaseAccessBearersResponse);
+    }
+    break;
+
 #if defined(DISABLE_USE_NAS)
 
     case NAS_ATTACH_REQ: {

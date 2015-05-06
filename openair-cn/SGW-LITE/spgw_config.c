@@ -296,14 +296,14 @@ int spgw_config_process(spgw_config_t* config_pP)
       ret = -1;
     }
   }
-  if (snprintf(system_cmd, 256,
+ /* if (snprintf(system_cmd, 256,
 	               "iptables -I INPUT -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
 	               config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
     ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
   } else {
 	SPGW_APP_ERROR("Restore mark\n");
 	ret = -1;
-  }
+  }*/
   if (snprintf(system_cmd, 256,
                "iptables -I PREROUTING -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
                config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {

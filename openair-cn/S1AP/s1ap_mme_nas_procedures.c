@@ -56,6 +56,7 @@
 static uint32_t mme_ue_s1ap_id = 0;
 static uint8_t  mme_ue_s1ap_id_has_wrapped = 0;
 
+extern const char *s1ap_direction2String[];
 
 
 int s1ap_mme_handle_initial_ue_message(uint32_t assoc_id, uint32_t stream,
@@ -68,6 +69,14 @@ int s1ap_mme_handle_initial_ue_message(uint32_t assoc_id, uint32_t stream,
 
   initialUEMessage_p = &message->msg.s1ap_InitialUEMessageIEs;
 
+  MSC_LOG_RX_MESSAGE(
+  		MSC_S1AP_MME,
+  		MSC_S1AP_ENB,
+  		NULL,0,
+  		"0 initialUEMessage/%s assoc_id %u stream %u "S1AP_UE_ID_FMT" ",
+  		s1ap_direction2String[message->direction],
+  		assoc_id, stream, initialUEMessage_p->eNB_UE_S1AP_ID);
+
   if ((eNB_ref = s1ap_is_eNB_assoc_id_in_list(assoc_id)) == NULL) {
     S1AP_DEBUG("Unkwnon eNB on assoc_id %d\n", assoc_id);
     return -1;
@@ -76,7 +85,7 @@ int s1ap_mme_handle_initial_ue_message(uint32_t assoc_id, uint32_t stream,
   // eNB UE S1AP ID is limited to 24 bits
   eNB_ue_s1ap_id = (uint32_t)(initialUEMessage_p->eNB_UE_S1AP_ID & 0x00ffffff);
 
-  S1AP_DEBUG("New Initial UE message received with eNB UE S1AP ID: 0x%06x\n",
+  S1AP_DEBUG("New Initial UE message received with eNB UE S1AP ID: "S1AP_UE_ID_FMT"\n",
              eNB_ue_s1ap_id);
 
   ue_ref = s1ap_is_ue_eNB_id_in_list(eNB_ref, eNB_ue_s1ap_id);
@@ -168,14 +177,15 @@ int s1ap_mme_handle_uplink_nas_transport(uint32_t assoc_id, uint32_t stream,
 	  	MSC_S1AP_MME,
 	    MSC_S1AP_ENB,
   		NULL,0,
-  		"0 UPLINK_NAS_TRANSPORT mme_ue_s1ap_id %u eNB_ue_s1ap_id %u nas len %u",
+  		"0 uplinkNASTransport/%s mme_ue_s1ap_id "S1AP_UE_ID_FMT" eNB_ue_s1ap_id "S1AP_UE_ID_FMT" nas len %u",
+  		s1ap_direction2String[message->direction],
   		uplinkNASTransport_p->mme_ue_s1ap_id,
   		uplinkNASTransport_p->eNB_UE_S1AP_ID,
   		uplinkNASTransport_p->nas_pdu.size);
 
   if ((ue_ref = s1ap_is_ue_mme_id_in_list(uplinkNASTransport_p->mme_ue_s1ap_id))
       == NULL) {
-    S1AP_DEBUG("No UE is attached to this mme UE s1ap id: %d\n",
+    S1AP_DEBUG("No UE is attached to this mme UE s1ap id: "S1AP_UE_ID_FMT"\n",
                (int)uplinkNASTransport_p->mme_ue_s1ap_id);
     return -1;
   }
@@ -215,7 +225,8 @@ int s1ap_mme_handle_nas_non_delivery(uint32_t assoc_id, uint32_t stream,
 	  	MSC_S1AP_MME,
 	    MSC_S1AP_ENB,
   		NULL,0,
-  		"0 NAS_NON_DELIVERY_IND mme_ue_s1ap_id %u eNB_ue_s1ap_id %u cause %u nas len %u",
+  		"0 NASNonDeliveryIndication/%s mme_ue_s1ap_id "S1AP_UE_ID_FMT" eNB_ue_s1ap_id "S1AP_UE_ID_FMT" cause %u nas len %u",
+  		s1ap_direction2String[message->direction],
   		nasNonDeliveryIndication_p->mme_ue_s1ap_id,
   		nasNonDeliveryIndication_p->eNB_UE_S1AP_ID,
   		nasNonDeliveryIndication_p->cause,
@@ -223,7 +234,7 @@ int s1ap_mme_handle_nas_non_delivery(uint32_t assoc_id, uint32_t stream,
 
   if ((ue_ref = s1ap_is_ue_mme_id_in_list(nasNonDeliveryIndication_p->mme_ue_s1ap_id))
       == NULL) {
-    S1AP_DEBUG("No UE is attached to this mme UE s1ap id: %d\n",
+    S1AP_DEBUG("No UE is attached to this mme UE s1ap id: "S1AP_UE_ID_FMT"\n",
                (int)nasNonDeliveryIndication_p->mme_ue_s1ap_id);
     return -1;
   }
@@ -252,7 +263,7 @@ int s1ap_generate_downlink_nas_transport(const uint32_t ue_id, void * const data
     /* If the UE-associated logical S1-connection is not established,
      * the MME shall allocate a unique MME UE S1AP ID to be used for the UE.
      */
-    S1AP_DEBUG("Unknown UE MME ID %08X, This case is not handled right now\n", ue_id);
+    S1AP_DEBUG("Unknown UE MME ID "S1AP_UE_ID_FMT", This case is not handled right now\n", ue_id);
 
     return -1;
   } else {
@@ -284,7 +295,7 @@ int s1ap_generate_downlink_nas_transport(const uint32_t ue_id, void * const data
       return -1;
     }
 
-    S1AP_DEBUG("Send S1ap_ProcedureCode_id_downlinkNASTransport ue_id = 0x%08X mme_ue_s1ap_id = 0x%08X eNB_UE_S1AP_ID = 0x%08X\n",
+    S1AP_DEBUG("Send S1ap_ProcedureCode_id_downlinkNASTransport ue_id = "S1AP_UE_ID_FMT" mme_ue_s1ap_id = "S1AP_UE_ID_FMT" eNB_UE_S1AP_ID = "S1AP_UE_ID_FMT"\n",
                ue_id,
                downlinkNasTransport->mme_ue_s1ap_id,
                downlinkNasTransport->eNB_UE_S1AP_ID);
@@ -293,7 +304,7 @@ int s1ap_generate_downlink_nas_transport(const uint32_t ue_id, void * const data
     		MSC_S1AP_MME,
     		MSC_S1AP_ENB,
     		NULL,0,
-    		"0 DOWNLINK_NAS_TRANSPORT ue_id %u mme_ue_s1ap_id %u eNB_ue_s1ap_id %u nas length %u",
+    		"0 downlinkNASTransport/initiatingMessage ue_id "S1AP_UE_ID_FMT" mme_ue_s1ap_id "S1AP_UE_ID_FMT" eNB_ue_s1ap_id"S1AP_UE_ID_FMT" nas length %u",
     		ue_id,
     		downlinkNasTransport->mme_ue_s1ap_id,
     		downlinkNasTransport->eNB_UE_S1AP_ID,
@@ -331,7 +342,7 @@ int s1ap_handle_attach_accepted(nas_attach_accept_t *attach_accept_p)
   initial_p = &attach_accept_p->transparent;
 
   if ((ue_ref = s1ap_is_ue_mme_id_in_list(initial_p->mme_ue_s1ap_id)) == NULL) {
-    S1AP_DEBUG("This mme ue s1ap id (%08x) is not attached to any UE context\n",
+    S1AP_DEBUG("This mme ue s1ap id ("S1AP_UE_ID_FMT") is not attached to any UE context\n",
                initial_p->mme_ue_s1ap_id);
     return -1;
   }
@@ -603,7 +614,7 @@ void s1ap_handle_conn_est_cnf(const mme_app_connection_establishment_cnf_t * con
   DevAssert(conn_est_cnf_pP != NULL);
 
   if ((ue_ref = s1ap_is_ue_mme_id_in_list(conn_est_cnf_pP->nas_conn_est_cnf.UEid)) == NULL) {
-    S1AP_DEBUG("This mme ue s1ap id (%08x) is not attached to any UE context\n",
+    S1AP_DEBUG("This mme ue s1ap id ("S1AP_UE_ID_FMT") is not attached to any UE context\n",
                conn_est_cnf_pP->nas_conn_est_cnf.UEid);
 
     DevParam(conn_est_cnf_pP->nas_conn_est_cnf.UEid, 0, 0);
@@ -739,10 +750,11 @@ void s1ap_handle_conn_est_cnf(const mme_app_connection_establishment_cnf_t * con
   		MSC_S1AP_MME,
   		MSC_S1AP_ENB,
   		NULL,0,
-  		"0 INITIAL_CONTEXT_SETUP mme_ue_s1ap_id %u eNB_ue_s1ap_id %u nas length %u",
+  		"0 InitialContextSetup/initiatingMessage mme_ue_s1ap_id "S1AP_UE_ID_FMT" eNB_ue_s1ap_id "S1AP_UE_ID_FMT" nas length %u",
   		initialContextSetupRequest_p->mme_ue_s1ap_id,
   		initialContextSetupRequest_p->eNB_UE_S1AP_ID,
   		nas_pdu.size);
+
   s1ap_mme_itti_send_sctp_request(
     buffer_p,
     length,

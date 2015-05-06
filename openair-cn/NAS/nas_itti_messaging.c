@@ -205,7 +205,7 @@ int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
   	  	MSC_NAS_MME,
   	  	MSC_S1AP_MME,
   	  	NULL,0,
-  	  	"0 NAS_DOWNLINK_DATA_REQ ue id %u len %u", ue_id, length);
+  	  	"0 NAS_DOWNLINK_DATA_REQ ue id %06"PRIX32" len %u", ue_id, length);
 
   return itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
 }

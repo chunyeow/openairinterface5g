@@ -397,6 +397,8 @@ inline void ASN_DEBUG(const char *fmt, ...);
 # define TRUE  (!FALSE)
 #endif
 
+#define S1AP_UE_ID_FMT  "0x%06"PRIX32
+
 extern int asn_debug;
 extern int asn1_xer_print;
 

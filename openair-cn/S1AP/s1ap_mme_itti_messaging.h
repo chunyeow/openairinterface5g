@@ -31,6 +31,7 @@
 #include <string.h>
 
 #include "intertask_interface.h"
+#include "s1ap_common.h"
 #include "msc.h"
 
 #ifndef S1AP_MME_ITTI_MESSAGING_H_
@@ -73,7 +74,7 @@ static inline void s1ap_mme_itti_mme_app_establish_ind(
   		MSC_S1AP_MME,
   		MSC_MMEAPP_MME,
   		NULL,0,
-  		"0 MME_APP_CONNECTION_ESTABLISHMENT_IND ue_id %u as cause %u  tac %u len %u",
+  		"0 MME_APP_CONNECTION_ESTABLISHMENT_IND ue_id "S1AP_UE_ID_FMT" as cause %u  tac %u len %u",
   		ue_id,
   		MME_APP_CONNECTION_ESTABLISHMENT_IND(message_p).nas.asCause,
   		MME_APP_CONNECTION_ESTABLISHMENT_IND(message_p).nas.tac,
@@ -107,7 +108,7 @@ static inline void s1ap_mme_itti_nas_establish_ind(
   		MSC_S1AP_MME,
   		MSC_NAS_MME,
   		NULL,0,
-  		"0 NAS_CONNECTION_ESTABLISHMENT_IND ue_id %u as cause %u  tac %u len %u",
+  		"0 NAS_CONNECTION_ESTABLISHMENT_IND ue_id "S1AP_UE_ID_FMT" as cause %u  tac %u len %u",
   		ue_id,
   		NAS_CONN_EST_IND(message_p).nas.asCause,
   		NAS_CONN_EST_IND(message_p).nas.tac,
@@ -138,7 +139,7 @@ static inline void s1ap_mme_itti_nas_non_delivery_ind(
   		MSC_S1AP_MME,
   		MSC_NAS_MME,
   		NULL,0,
-  		"0 NAS_DOWNLINK_DATA_REJ ue_id %u len %u",
+  		"0 NAS_DOWNLINK_DATA_REJ ue_id "S1AP_UE_ID_FMT" len %u",
   		ue_id,
   		NAS_DL_DATA_REJ(message_p).nasMsg.length);
 

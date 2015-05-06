@@ -39,7 +39,7 @@ mme_app_itti_auth_fail(
   MessageDef *message_p;
 
   MSC_LOG_TX_MESSAGE(MSC_MMEAPP_MME, MSC_NAS_MME,NULL,0,
-  		"NAS_AUTHENTICATION_PARAM_FAIL ue  %u cause %u",ue_id, cause);
+  		"NAS_AUTHENTICATION_PARAM_FAIL ue  %06"PRIX32" cause %u",ue_id, cause);
 
   message_p = itti_alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_PARAM_FAIL);
 
@@ -50,7 +50,7 @@ mme_app_itti_auth_fail(
   		MSC_MMEAPP_MME,
   		MSC_NAS_MME,
   		NULL,0,
-  		"0 NAS_AUTHENTICATION_PARAM_FAIL ue_id %u cause %u",
+  		"0 NAS_AUTHENTICATION_PARAM_FAIL ue_id %06"PRIX32" cause %u",
   		ue_id, cause);
 
   itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
@@ -75,7 +75,7 @@ static inline void mme_app_itti_auth_rsp(
   		MSC_MMEAPP_MME,
   		MSC_NAS_MME,
   		NULL,0,
-  		"0 NAS_AUTHENTICATION_PARAM_RSP ue_id %u nb_vectors %u",
+  		"0 NAS_AUTHENTICATION_PARAM_RSP ue_id %06"PRIX32" nb_vectors %u",
   		ue_id, nb_vectors);
   itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
 }

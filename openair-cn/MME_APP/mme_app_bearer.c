@@ -51,9 +51,11 @@
 #include "msc.h"
 
 
+//------------------------------------------------------------------------------
 int
 mme_app_send_s11_release_access_bearers_req(
   struct ue_context_s * const ue_context_pP)
+//------------------------------------------------------------------------------
 {
   uint8_t                     i                 = 0;
   task_id_t                   to_task           = TASK_UNKNOWN;
@@ -85,16 +87,19 @@ mme_app_send_s11_release_access_bearers_req(
   		(to_task == TASK_S11) ? MSC_S11_MME:MSC_SP_GWAPP_MME,
   		NULL,0,
   		"0 SGW_RELEASE_ACCESS_BEARERS_REQUEST teid %u ebi %u",
-  		SGW_RELEASE_ACCESS_BEARERS_REQUEST(message_p).teid,
+  		release_access_bearers_request_p->teid,
   		release_access_bearers_request_p->list_of_rabs[0]);
 
   itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
 }
 
 
+
+//------------------------------------------------------------------------------
 int
 mme_app_send_s11_create_session_req(
   struct ue_context_s * const ue_context_pP)
+//------------------------------------------------------------------------------
 {
   uint8_t                     i                 = 0;
   task_id_t                   to_task           = TASK_UNKNOWN;
@@ -266,9 +271,11 @@ mme_app_send_s11_create_session_req(
 
 
 
+//------------------------------------------------------------------------------
 int
 mme_app_handle_nas_pdn_connectivity_req(
   nas_pdn_connectivity_req_t * const nas_pdn_connectivity_req_pP)
+//------------------------------------------------------------------------------
 {
   struct ue_context_s *ue_context_p = NULL;
   uint64_t             imsi         = 0;
@@ -335,9 +342,11 @@ mme_app_handle_nas_pdn_connectivity_req(
 
 
 // sent by NAS
+//------------------------------------------------------------------------------
 void
 mme_app_handle_conn_est_cnf(
   const nas_conn_est_cnf_t * const nas_conn_est_cnf_pP)
+//------------------------------------------------------------------------------
 {
   struct ue_context_s                    *ue_context_p        = NULL;
   MessageDef                             *message_p           = NULL;
@@ -355,7 +364,7 @@ mme_app_handle_conn_est_cnf(
 	MSC_LOG_EVENT(
 	    		MSC_MMEAPP_MME,
 	    		"NAS_CONNECTION_ESTABLISHMENT_CNF Unknown ue %u",nas_conn_est_cnf_pP->UEid);
-	MME_APP_ERROR("UE context doesn't exist for UE 0x%08X/dec%u\n",
+	MME_APP_ERROR("UE context doesn't exist for UE %06"PRIX32"/dec%u\n",
                   nas_conn_est_cnf_pP->UEid,
                   nas_conn_est_cnf_pP->UEid);
     return;
@@ -427,9 +436,11 @@ mme_app_handle_conn_est_cnf(
 
 
 // sent by S1AP
+//------------------------------------------------------------------------------
 void
 mme_app_handle_conn_est_ind(
   const mme_app_connection_establishment_ind_t * const conn_est_ind_pP)
+//------------------------------------------------------------------------------
 {
   struct ue_context_s *ue_context_p  = NULL;
   MessageDef          *message_p     = NULL;
@@ -443,7 +454,7 @@ mme_app_handle_conn_est_ind(
 
 
   if (ue_context_p == NULL) {
-    MME_APP_DEBUG("We didn't find this mme_ue_s1ap_id in list of UE: 0x%08x/dec%u\n",
+    MME_APP_DEBUG("We didn't find this mme_ue_s1ap_id in list of UE: %06"PRIX32"/dec%u\n",
                   conn_est_ind_pP->mme_ue_s1ap_id,
                   conn_est_ind_pP->mme_ue_s1ap_id);
     MME_APP_DEBUG("UE context doesn't exist -> create one\n");
@@ -488,9 +499,11 @@ mme_app_handle_conn_est_ind(
 
 
 
+//------------------------------------------------------------------------------
 int
 mme_app_handle_create_sess_resp(
   const SgwCreateSessionResponse * const create_sess_resp_pP)
+//------------------------------------------------------------------------------
 {
   struct ue_context_s *ue_context_p     = NULL;
   bearer_context_t    *current_bearer_p = NULL;
@@ -763,9 +776,11 @@ mme_app_handle_create_sess_resp(
 
 
 
+//------------------------------------------------------------------------------
 void
 mme_app_handle_initial_context_setup_rsp(
   const mme_app_initial_context_setup_rsp_t * const initial_ctxt_setup_rsp_pP)
+//------------------------------------------------------------------------------
 {
   struct ue_context_s *ue_context_p  = NULL;
   MessageDef          *message_p     = NULL;
@@ -830,5 +845,44 @@ mme_app_handle_initial_context_setup_rsp(
 
 
   itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+}
+
+
+
+//------------------------------------------------------------------------------
+void mme_app_handle_release_access_bearers_resp(
+		const SgwReleaseAccessBearersResponse * const rel_access_bearers_rsp_pP)
+//------------------------------------------------------------------------------
+{
+	  MessageDef          *message_p     = NULL;
+	  struct ue_context_s *ue_context_p  = NULL;
+
+	  ue_context_p = mme_ue_context_exists_s11_teid(&mme_app_desc.mme_ue_contexts,
+			  rel_access_bearers_rsp_pP->teid);
+
+
+	  if (ue_context_p == NULL) {
+	    MME_APP_DEBUG("We didn't find this teid in list of UE: %06"PRIX32"\n",
+	    		rel_access_bearers_rsp_pP->teid);
+	    return;
+	  }
+
+	  message_p = itti_alloc_new_message(TASK_MME_APP, S1AP_UE_CONTEXT_RELEASE_COMMAND);
+
+	  AssertFatal(message_p != NULL, "itti_alloc_new_message Failed");
+	  memset((void*)&message_p->ittiMsg.s1ap_ue_context_release_command,
+	         0,
+	         sizeof(s1ap_ue_context_release_command_t));
+
+	  S1AP_UE_CONTEXT_RELEASE_COMMAND(message_p).mme_ue_s1ap_id       = ue_context_p->mme_ue_s1ap_id;
+	  MSC_LOG_TX_MESSAGE(
+	  		MSC_MMEAPP_MME,
+	  		MSC_S1AP_MME,
+	  		NULL,0,
+	  		"0 S1AP_UE_CONTEXT_RELEASE_COMMAND mme_ue_s1ap_id %06"PRIX32" ",
+	  		S1AP_UE_CONTEXT_RELEASE_COMMAND(message_p).mme_ue_s1ap_id);
+
+
+	  itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
 }
 

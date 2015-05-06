@@ -59,7 +59,7 @@ int s1ap_mme_itti_nas_uplink_ind(const uint32_t ue_id, uint8_t * const buffer,
   		MSC_S1AP_MME,
   		MSC_NAS_MME,
   		NULL,0,
-  		"0 NAS_UPLINK_DATA_IND ue_id %u len %u",
+  		"0 NAS_UPLINK_DATA_IND ue_id "S1AP_UE_ID_FMT" len %u",
   		NAS_UL_DATA_IND(message_p).UEid,
   		NAS_UL_DATA_IND(message_p).nasMsg.length);
 
@@ -80,7 +80,7 @@ int s1ap_mme_itti_nas_downlink_cnf(const uint32_t ue_id,
   		MSC_S1AP_MME,
   		MSC_NAS_MME,
   		NULL,0,
-  		"0 NAS_DOWNLINK_DATA_CNF ue_id %u errCode %u",
+  		"0 NAS_DOWNLINK_DATA_CNF ue_id "S1AP_UE_ID_FMT" errCode %u",
   		NAS_DL_DATA_CNF(message_p).UEid,
   		NAS_DL_DATA_CNF(message_p).errCode);
 

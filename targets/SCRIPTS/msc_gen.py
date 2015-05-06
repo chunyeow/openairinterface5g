@@ -19,8 +19,8 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--diag_rlc_um", "-u", type=str,help="Try to find RLC protocol diagnostics", default="no")
 parser.add_argument("--dir", "-d", type=str,help="Directory where msc logs can be found", default="/tmp")
+parser.add_argument("--profile", "-p", type=str,help="E_UTRAN, EPC", default="EPC")
 args = parser.parse_args()
-
 
 MSCGEN_OUTPUT_TYPE       = "png"
 MAX_MESSAGES_PER_PAGE    = 36
@@ -80,22 +80,10 @@ g_diag_rlc_sn = {}
 
 g_sequence_generator = 0
 
-def sequence_number_generator():
-    global g_sequence_generator
-    l_seq = g_sequence_generator
-    g_sequence_generator = g_sequence_generator + 1
-    return l_seq
 
-def file_is_empty(fpath):  
-    return False if os.path.isfile(fpath) and os.path.getsize(fpath) > 0 else True
-
-def parse_oai_log_files():
-    global g_entities_dic
-    global g_entities
-    global g_messages
-    global g_final_display_order_list
-    #open TXT file that contain OAI filtered traces for mscgen
-    filenames = [
+g_filenames = []
+if "E_UTRAN" == args.profile.strip():
+    g_filenames = [
         args.dir+'/openair.msc.ip_ue.log',
         args.dir+'/openair.msc.ip_enb.log',
         args.dir+'/openair.msc.nas_ue.log',
@@ -113,6 +101,14 @@ def parse_oai_log_files():
         args.dir+'/openair.msc.gtpu_enb.log',
         args.dir+'/openair.msc.mme_app.log',
         args.dir+'/openair.msc.nas_mme.log',
+        args.dir+'/openair.msc.gtpu_sgw.log',
+        args.dir+'/openair.msc.s1ap_mme.log']
+elif "EPC" == args.profile.strip():
+    g_filenames = [        
+        args.dir+'/openair.msc.s1ap_enb.log',
+        args.dir+'/openair.msc.gtpu_enb.log',
+        args.dir+'/openair.msc.mme_app.log',
+        args.dir+'/openair.msc.nas_mme.log',
         args.dir+'/openair.msc.nas_emm_mme.log',
         args.dir+'/openair.msc.nas_esm_mme.log',
         args.dir+'/openair.msc.spgwapp_mme.log',
@@ -122,9 +118,25 @@ def parse_oai_log_files():
         args.dir+'/openair.msc.s1ap_mme.log',
         args.dir+'/openair.msc.hss.log']
 
+def sequence_number_generator():
+    global g_sequence_generator
+    l_seq = g_sequence_generator
+    g_sequence_generator = g_sequence_generator + 1
+    return l_seq
+
+def file_is_empty(fpath):  
+    return False if os.path.isfile(fpath) and os.path.getsize(fpath) > 0 else True
+
+def parse_oai_log_files():
+    global g_entities_dic
+    global g_entities
+    global g_messages
+    global g_final_display_order_list
+    #open TXT file that contain OAI filtered traces for mscgen
+
     # we may insert diagnostic events
     event_id_offset = 0
-    for filename in filenames:
+    for filename in g_filenames:
         if file_is_empty(filename):
             continue
         try:
@@ -136,7 +148,7 @@ def parse_oai_log_files():
             lines = fcontent.splitlines()
             for line in lines:
                 if line.strip() != ""  and not line.strip().startswith('#'):
-                    #print ("INPUT LINE:  %s " % line)
+                    print ("INPUT LINE:  %s " % line)
                     partition = line.split(' ',3)
                     event_id = int(partition[0]) + event_id_offset
                     event_type = partition[1]

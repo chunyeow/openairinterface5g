@@ -113,7 +113,7 @@ int s1ap_handle_timer_expiry(timer_has_expired_t *timer_has_expired)
 
   if ((find = RB_FIND(s1ap_timer_map, &s1ap_timer_tree, &elm)) == NULL) {
     S1AP_WARN("Timer id 0x%lx has not been found in tree. Maybe the timer "
-              "reference has been removed before receiving tiemr signal\n",
+              "reference has been removed before receiving timer signal\n",
               timer_has_expired->timer_id);
     return 0;
   }
@@ -132,7 +132,7 @@ int s1ap_timer_remove_ue(uint32_t mme_ue_s1ap_id)
 {
   struct s1ap_timer_map_s *find;
 
-  S1AP_DEBUG("Removing timer associated with UE 0x%08x\n",
+  S1AP_DEBUG("Removing timer associated with UE "S1AP_UE_ID_FMT"\n",
              mme_ue_s1ap_id);
 
   DevAssert(mme_ue_s1ap_id != 0);

@@ -63,6 +63,9 @@ int s1ap_mme_handle_path_switch_request(uint32_t assoc_id, uint32_t stream,
 int s1ap_mme_handle_ue_context_release_request(uint32_t assoc_id,
     uint32_t stream, struct s1ap_message_s *message_p);
 
+int s1ap_handle_ue_context_release_command(
+		const s1ap_ue_context_release_command_t * const ue_context_release_command_pP);
+
 int s1ap_mme_handle_ue_context_release_complete(uint32_t assoc_id,
     uint32_t stream, struct s1ap_message_s *message_p);
 
