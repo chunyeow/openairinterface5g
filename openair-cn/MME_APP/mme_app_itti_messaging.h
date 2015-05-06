@@ -38,8 +38,6 @@ mme_app_itti_auth_fail(
 {
   MessageDef *message_p;
 
-  MSC_LOG_TX_MESSAGE(MSC_MMEAPP_MME, MSC_NAS_MME,NULL,0,
-  		"NAS_AUTHENTICATION_PARAM_FAIL ue  %06"PRIX32" cause %u",ue_id, cause);
 
   message_p = itti_alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_PARAM_FAIL);
 

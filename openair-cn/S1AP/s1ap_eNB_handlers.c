@@ -56,6 +56,7 @@
 
 #include "assertions.h"
 #include "conversions.h"
+#include "msc.h"
 
 static
 int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
@@ -130,7 +131,7 @@ s1ap_message_decoded_callback messages_callback[][3] = {
 #endif
 };
 
-static const char *direction2String[] = {
+static const char *s1ap_direction2String[] = {
   "", /* Nothing */
   "Originating message", /* originating message */
   "Successfull outcome", /* successfull outcome */
@@ -210,7 +211,7 @@ int s1ap_eNB_handle_message(uint32_t assoc_id, int32_t stream,
   if (messages_callback[message.procedureCode][message.direction-1] == NULL) {
     S1AP_ERROR("[SCTP %d] No handler for procedureCode %d in %s\n",
                assoc_id, message.procedureCode,
-               direction2String[message.direction]);
+               s1ap_direction2String[message.direction]);
     return -1;
   }
 
@@ -552,6 +553,15 @@ int s1ap_eNB_handle_ue_context_release_command(uint32_t               assoc_id,
     enb_ue_s1ap_id = ueContextReleaseCommand_p->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.eNB_UE_S1AP_ID;
     mme_ue_s1ap_id = ueContextReleaseCommand_p->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.mME_UE_S1AP_ID;
 
+    MSC_LOG_RX_MESSAGE(
+    		MSC_S1AP_ENB,
+    		MSC_S1AP_MME,
+    		NULL,0,
+    		"0 UEContextRelease/%s eNB_ue_s1ap_id "S1AP_UE_ID_FMT" mme_ue_s1ap_id "S1AP_UE_ID_FMT" len %u",
+  		s1ap_direction2String[s1ap_message_p->direction],
+  		enb_ue_s1ap_id,
+  		mme_ue_s1ap_id);
+
     if ((ue_desc_p = s1ap_eNB_get_ue_context(mme_desc_p->s1ap_eNB_instance,
                      enb_ue_s1ap_id)) == NULL) {
       S1AP_ERROR("[SCTP %d] Received UE context release command for non "
@@ -565,6 +575,13 @@ int s1ap_eNB_handle_ue_context_release_command(uint32_t               assoc_id,
       */
       return -1;
     } else {
+      MSC_LOG_TX_MESSAGE(
+    		  MSC_S1AP_ENB,
+    		  MSC_RRC_ENB,
+    		  NULL,0,
+    		  "0 S1AP_UE_CONTEXT_RELEASE_COMMAND/%s eNB_ue_s1ap_id "S1AP_UE_ID_FMT" ",
+    		  enb_ue_s1ap_id);
+
       message_p        = itti_alloc_new_message(TASK_S1AP, S1AP_UE_CONTEXT_RELEASE_COMMAND);
       S1AP_UE_CONTEXT_RELEASE_COMMAND(message_p).eNB_ue_s1ap_id = enb_ue_s1ap_id;
       itti_send_msg_to_task(TASK_RRC_ENB, ue_desc_p->eNB_instance->instance, message_p);

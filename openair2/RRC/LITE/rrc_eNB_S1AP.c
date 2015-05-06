@@ -1066,6 +1066,13 @@ void rrc_eNB_send_S1AP_UE_CONTEXT_RELEASE_REQ (
     LOG_W(RRC,
           "[eNB] In S1AP_UE_CONTEXT_RELEASE_COMMAND: invalid  UE\n");
   } else {
+	  MSC_LOG_TX_MESSAGE(
+			  MSC_RRC_ENB,
+	  		  MSC_S1AP_ENB,
+	  		  NULL,0,
+	  		  "0 S1AP_UE_CONTEXT_RELEASE_REQ eNB_ue_s1ap_id 0x%06"PRIX32" ",
+	  		  ue_context_pP->ue_context.eNB_ue_s1ap_id);
+
     MessageDef *msg_context_release_req_p = NULL;
     msg_context_release_req_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_UE_CONTEXT_RELEASE_REQ);
     S1AP_UE_CONTEXT_RELEASE_REQ(msg_context_release_req_p).eNB_ue_s1ap_id = ue_context_pP->ue_context.eNB_ue_s1ap_id;
@@ -1095,6 +1102,18 @@ int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_COMMAND (MessageDef *msg_p, const ch
           instance,
           eNB_ue_s1ap_id);
 
+    MSC_LOG_EVENT(
+          MSC_RRC_ENB,
+  		  "0 S1AP_UE_CONTEXT_RELEASE_COMPLETE eNB_ue_s1ap_id 0x%06"PRIX32" context not found",
+  		eNB_ue_s1ap_id);
+
+    MSC_LOG_TX_MESSAGE(
+          MSC_RRC_ENB,
+  		  MSC_S1AP_ENB,
+  		  NULL,0,
+  		  "0 S1AP_UE_CONTEXT_RELEASE_COMPLETE eNB_ue_s1ap_id 0x%06"PRIX32" ",
+  		eNB_ue_s1ap_id);
+
     msg_complete_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_UE_CONTEXT_RELEASE_COMPLETE);
     S1AP_UE_CONTEXT_RELEASE_COMPLETE(msg_complete_p).eNB_ue_s1ap_id = eNB_ue_s1ap_id;
     itti_send_msg_to_task(TASK_S1AP, instance, msg_complete_p);
@@ -1112,6 +1131,13 @@ int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_COMMAND (MessageDef *msg_p, const ch
       int      e_rab;
       int      mod_id = 0;
       MessageDef *msg_delete_tunnels_p = NULL;
+
+      MSC_LOG_TX_MESSAGE(
+            MSC_RRC_ENB,
+            MSC_GTPU_ENB,
+            NULL,0,
+            "0 GTPV1U_ENB_DELETE_TUNNEL_REQ rnti %x ",
+            eNB_ue_s1ap_id);
 
       msg_delete_tunnels_p = itti_alloc_new_message(TASK_RRC_ENB, GTPV1U_ENB_DELETE_TUNNEL_REQ);
       memset(&GTPV1U_ENB_DELETE_TUNNEL_REQ(msg_delete_tunnels_p),
@@ -1131,6 +1157,14 @@ int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_COMMAND (MessageDef *msg_p, const ch
       }
 
       itti_send_msg_to_task(TASK_GTPV1_U, instance, msg_delete_tunnels_p);
+
+
+      MSC_LOG_TX_MESSAGE(
+            MSC_RRC_ENB,
+            MSC_S1AP_ENB,
+            NULL,0,
+            "0 S1AP_UE_CONTEXT_RELEASE_COMPLETE eNB_ue_s1ap_id 0x%06"PRIX32" ",
+            eNB_ue_s1ap_id);
 
       MessageDef *msg_complete_p = NULL;
       msg_complete_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_UE_CONTEXT_RELEASE_COMPLETE);

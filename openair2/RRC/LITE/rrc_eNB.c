@@ -3990,7 +3990,7 @@ rrc_eNB_decode_dcch(
 
       // followup with the remaining procedure
 #warning "LG Removed rrc_eNB_generate_UECapabilityEnquiry after receiving securityModeFailure"
-      // LG commented rrc_eNB_generate_UECapabilityEnquiry(ctxt_pP, ue_context_p);
+      rrc_eNB_generate_UECapabilityEnquiry(ctxt_pP, ue_context_p);
       break;
 
     case UL_DCCH_MessageType__c1_PR_ueCapabilityInformation:

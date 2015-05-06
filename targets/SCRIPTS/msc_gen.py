@@ -99,14 +99,12 @@ if "E_UTRAN" == args.profile.strip():
         args.dir+'/openair.msc.rrc_enb.log',
         args.dir+'/openair.msc.s1ap_enb.log',
         args.dir+'/openair.msc.gtpu_enb.log',
-        args.dir+'/openair.msc.mme_app.log',
-        args.dir+'/openair.msc.nas_mme.log',
-        args.dir+'/openair.msc.gtpu_sgw.log',
-        args.dir+'/openair.msc.s1ap_mme.log']
+        args.dir+'/openair.msc.gtpu_sgw.utran.log',
+        args.dir+'/openair.msc.s1ap_mme.utran.log',
+        args.dir+'/openair.msc.nas_mme.utran.log']
 elif "EPC" == args.profile.strip():
     g_filenames = [        
-        args.dir+'/openair.msc.s1ap_enb.log',
-        args.dir+'/openair.msc.gtpu_enb.log',
+        args.dir+'/openair.msc.s1ap_enb.epc.log',
         args.dir+'/openair.msc.mme_app.log',
         args.dir+'/openair.msc.nas_mme.log',
         args.dir+'/openair.msc.nas_emm_mme.log',
@@ -289,13 +287,13 @@ parse_oai_log_files()
 g_page_index    = 0
 g_message_index = 0
 g_now = datetime.datetime.now()
-g_now_formated = 'mscgen_' + g_now.strftime("%Y-%m-%d_%H.%M.%S")
+g_now_formated = 'mscgen_' + args.profile.strip() + '_'+ g_now.strftime("%Y-%m-%d_%H.%M.%S")
 #g_currentdir = os.curdir
 g_resultdir = os.path.join(args.dir, g_now_formated)
 os.mkdir(g_resultdir)
 os.chdir(g_resultdir)
 
-g_base_file_name = 'oai_mscgen_page_'
+g_base_file_name = args.profile.strip() + '_mscgen_page_'
 
 g_file = get_new_file_descriptor()
 msc_chart_write_header(g_file)

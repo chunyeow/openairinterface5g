@@ -781,6 +781,13 @@ gtpv1u_create_s1u_tunnel(
       GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).status         = 0xFF;
     }
   }
+  MSC_LOG_TX_MESSAGE(
+		  MSC_GTPU_ENB,
+		  MSC_RRC_ENB,
+		  NULL,0,
+		  "0 GTPV1U_ENB_CREATE_TUNNEL_RESP rnti %x teid %x",
+		  GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).rnti,
+		  s1u_teid);
 
   LOG_D(GTPU, "Tx GTPV1U_ENB_CREATE_TUNNEL_RESP ue rnti %x status %d\n",
         create_tunnel_req_pP->rnti,
@@ -867,6 +874,15 @@ static int gtpv1u_delete_s1u_tunnel(
         GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).rnti,
         GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).enb_S1u_teid,
         GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).status);
+
+  MSC_LOG_TX_MESSAGE(
+		  MSC_GTPU_ENB,
+		  MSC_RRC_ENB,
+		  NULL,0,
+		  "0 GTPV1U_ENB_DELETE_TUNNEL_RESP rnti %x teid %x",
+		  GTPV1U_ENB_DELETE_TUNNEL_RESP(message_p).rnti,
+		  teid_eNB);
+
   return itti_send_msg_to_task(TASK_RRC_ENB, instanceP, message_p);
 }
 

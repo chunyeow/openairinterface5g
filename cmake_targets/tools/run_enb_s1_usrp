@@ -56,6 +56,7 @@ function help()
   echo_error "  -h, --help                          Print this help."
   echo_error "  -K, --itti-dump-file      filename  ITTI dump file containing all ITTI events occuring during EPC runtime.(can omit file name if last argument)"
   echo_error "  -M, --target-dl-mcs       mcs       Downlink target MCS."
+  echo_error "  -m, --mscgen              directory Generate mscgen output files in a directory"
   echo_error "  -V, --vcd                           Dump timings of processing in a GTKWave compliant file format."
   echo_error "  -S, --enable-missed-slot            Continue execution in case of missed slot."
   echo_error "  -T, --target-ul-mcs       mcs       Uplink target MCS."
@@ -67,7 +68,9 @@ function help()
 function main()
 {
   local -i run_gdb=0
+  local -i run_mscgen=0
   local    exe_arguments=""
+  local    MSC_DIR="/tmp"
   
   until [ -z "$1" ]
     do
@@ -111,6 +114,18 @@ function main()
         fi
         echo "setting ITTI dump file to: $ITTI_DUMP_FILE"
         exe_arguments="$exe_arguments -K $ITTI_DUMP_FILE"
+        ;;      
+      -m | --mscgen)
+        MSC_DIR=$2
+        # can omit file name if last arg on the line
+        if [ -d  "$MSC_DIR" ]; then
+          echo "setting mscgen log files to dir: $MSC_DIR"
+          run_mscgen=1
+          shift 2;
+        else
+          echo_error "Mscgen log dir does not exist"
+          exit -1
+        fi
         ;;      
       -M | --target-dl-mcs)
         echo "setting target dl MCS to $2"
@@ -166,6 +181,21 @@ function main()
     cat ~/.gdb_lte_softmodem
     gdb -n -x ~/.gdb_lte_softmodem 2>&1 > /tmp/gdb_lte_softmodem.stdout.txt
   fi
+  
+  if [ $run_mscgen -eq 1 ]; then 
+    cd $MSC_DIR
+    last_created_file=`ls -t mscgen* | head -1 | tr -d ':'`
+    $OPENAIR_DIR/targets/SCRIPTS/msc_gen.py  --profile E_UTRAN
+    sync
+    last_created_file2=`ls -t mscgen* | head -1 | tr -d ':'`
+        
+    if [ x"$last_created_file" != x"$last_created_file2" ]; then
+      if [ -f ./$last_created_file2/oai_mscgen_page_0.png ]; then 
+        command -v eog 2>/dev/null &&  eog ./$last_created_file2/oai_mscgen_page_0.png
+      fi
+    fi 
+  fi
+
 }
 
 

@@ -179,15 +179,20 @@ int msc_init(msc_env_t envP)
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "S1AP_ENB");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
           if ((envP == MSC_E_UTRAN) || (envP == MSC_EPC)  || (envP == MSC_MME)) {
-            msc_fd[i] = fopen("/tmp/openair.msc.s1ap_enb.log","w");
-      	    if (msc_fd[i] == NULL) fprintf(stderr, "Could not open MSC log file /tmp/openair.msc.s1ap_enb.log : %s", strerror(errno));
+            if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
+              msc_fd[i] = fopen("/tmp/openair.msc.s1ap_enb.log","w");
+      	      if (msc_fd[i] == NULL) fprintf(stderr, "Could not open MSC log file /tmp/openair.msc.s1ap_enb.log : %s", strerror(errno));
+            } else {
+              msc_fd[i] = fopen("/tmp/openair.msc.s1ap_enb.epc.log","w");
+        	  if (msc_fd[i] == NULL) fprintf(stderr, "Could not open MSC log file /tmp/openair.msc.s1ap_enb.epc.log : %s", strerror(errno));
+            }
             msc_log_declare_proto(i);
           }
           break;
         case MSC_GTPU_ENB:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "GTPU_ENB");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA) || (envP == MSC_EPC)  || (envP == MSC_SP_GW)) {
+          if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
             msc_fd[i] = fopen("/tmp/openair.msc.gtpu_enb.log","w");
       	    if (msc_fd[i] == NULL) fprintf(stderr, "Could not open MSC log file /tmp/openair.msc.gtpu_enb.log : %s", strerror(errno));
             msc_log_declare_proto(i);
@@ -197,8 +202,13 @@ int msc_init(msc_env_t envP)
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "GTPU_SGW");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
           if ((envP == MSC_EPC) || (envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
-            msc_fd[i] = fopen("/tmp/openair.msc.gtpu_sgw.log","w");
-      	    if (msc_fd[i] == NULL) fprintf(stderr, "Could not open MSC log file /tmp/openair.msc.gtpu_sgw.log : %s", strerror(errno));
+            if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
+                msc_fd[i] = fopen("/tmp/openair.msc.gtpu_sgw.utran.log","w");
+        	    if (msc_fd[i] == NULL) fprintf(stderr, "Could not open MSC log file /tmp/openair.msc.gtpu_sgw.utran.log : %s", strerror(errno));
+            } else {
+              msc_fd[i] = fopen("/tmp/openair.msc.gtpu_sgw.log","w");
+      	      if (msc_fd[i] == NULL) fprintf(stderr, "Could not open MSC log file /tmp/openair.msc.gtpu_sgw.log : %s", strerror(errno));
+            }
             msc_log_declare_proto(i);
           }
           break;
@@ -206,8 +216,13 @@ int msc_init(msc_env_t envP)
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "S1AP_MME");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
           if ((envP == MSC_EPC) || (envP == MSC_MME) || (envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
-            msc_fd[i] = fopen("/tmp/openair.msc.s1ap_mme.log","w");
-      	    if (msc_fd[i] == NULL) fprintf(stderr, "Could not open MSC log file /tmp/openair.msc.s1ap_mme.log : %s", strerror(errno));
+            if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
+              msc_fd[i] = fopen("/tmp/openair.msc.s1ap_mme.utran.log","w");
+      	      if (msc_fd[i] == NULL) fprintf(stderr, "Could not open MSC log file /tmp/openair.msc.s1ap_mme.utran.log : %s", strerror(errno));
+            } else {
+              msc_fd[i] = fopen("/tmp/openair.msc.s1ap_mme.log","w");
+        	  if (msc_fd[i] == NULL) fprintf(stderr, "Could not open MSC log file /tmp/openair.msc.s1ap_mme.log : %s", strerror(errno));
+            }
             msc_log_declare_proto(i);
           }
           break;
@@ -223,8 +238,13 @@ int msc_init(msc_env_t envP)
         case MSC_NAS_MME:
           rv = snprintf(&msc_proto2str[i][0], MSC_MAX_PROTO_NAME_LENGTH, "NAS_MME");
           if (rv >= MSC_MAX_PROTO_NAME_LENGTH) {msc_proto2str[i][MSC_MAX_PROTO_NAME_LENGTH-1] = 0;}
-          msc_fd[i] = fopen("/tmp/openair.msc.nas_mme.log","w");
-    	  if (msc_fd[i] == NULL) fprintf(stderr, "Could not open MSC log file /tmp/openair.msc.nas_mme.log : %s", strerror(errno));
+          if ((envP == MSC_E_UTRAN) || (envP == MSC_E_UTRAN_LIPA)) {
+            msc_fd[i] = fopen("/tmp/openair.msc.nas_mme.utran.log","w");
+    	    if (msc_fd[i] == NULL) fprintf(stderr, "Could not open MSC log file /tmp/openair.msc.nas_mme.utran.log : %s", strerror(errno));
+          } else {
+            msc_fd[i] = fopen("/tmp/openair.msc.nas_mme.log","w");
+      	    if (msc_fd[i] == NULL) fprintf(stderr, "Could not open MSC log file /tmp/openair.msc.nas_mme.log : %s", strerror(errno));
+          }
           msc_log_declare_proto(i);
           break;
         case MSC_NAS_EMM_MME:

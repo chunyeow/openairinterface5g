@@ -140,9 +140,9 @@ int s6a_init(const mme_config_t *mme_config_p)
 
   /* Set gnutls debug level ? */
   if (gnutls_debug) {
-    //gnutls_global_set_log_function((gnutls_log_func)fd_gnutls_debug);
-    //gnutls_global_set_log_level (gnutls_debug);
-    //S6A_DEBUG("Enabled GNUTLS debug at level %d", gnutls_debug);
+    gnutls_global_set_log_function((gnutls_log_func)fd_gnutls_debug);
+    gnutls_global_set_log_level (gnutls_debug);
+    S6A_DEBUG("Enabled GNUTLS debug at level %d", gnutls_debug);
   }
 
   /* Starting freeDiameter core */

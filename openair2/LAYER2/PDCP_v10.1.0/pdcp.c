@@ -906,7 +906,7 @@ pdcp_run (
                                 RRC_DCCH_DATA_REQ (msg_p).sdu_size,
                                 RRC_DCCH_DATA_REQ (msg_p).sdu_p,
                                 RRC_DCCH_DATA_REQ (msg_p).mode);
-        AssertFatal (result == TRUE, "PDCP data request failed!\n");
+        LOG_E(PDCP, "PDCP data request failed!\n");
 
         // Message buffer has been processed, free it now.
         result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), RRC_DCCH_DATA_REQ (msg_p).sdu_p);
