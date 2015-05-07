@@ -688,7 +688,7 @@ pdcp_data_ind(
     unsigned int dst_instance;
     int    ctime;
 
-    if (pdcp_p->rlc_mode == RLC_MODE_AM ) {
+    if ((pdcp_p->rlc_mode == RLC_MODE_AM)&&(MBMS_flagP==0) ) {
       pdcp_p->last_submitted_pdcp_rx_sn = sequence_number;
     }
 
@@ -699,11 +699,12 @@ pdcp_data_ind(
 #endif
 
     ctime = oai_emulation.info.time_ms; // avg current simulation time in ms : we may get the exact time through OCG?
-    LOG_D(PDCP,
-          PROTOCOL_PDCP_CTXT_FMT"Check received buffer :  (dst %d)\n",
-          PROTOCOL_PDCP_CTXT_ARGS(ctxt_pP, pdcp_p),
-          ctxt_pP->instance);
-
+    if (MBMS_flagP == 0){
+      LOG_D(PDCP,
+	    PROTOCOL_PDCP_CTXT_FMT"Check received buffer :  (dst %d)\n",
+	    PROTOCOL_PDCP_CTXT_ARGS(ctxt_pP, pdcp_p),
+	    ctxt_pP->instance);
+    }
     if (otg_rx_pkt(
           ctxt_pP->instance,
           ctime,
