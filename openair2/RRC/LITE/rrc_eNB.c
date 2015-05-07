@@ -3589,7 +3589,7 @@ rrc_eNB_decode_ccch(
           // no context available
           LOG_I(RRC, PROTOCOL_RRC_CTXT_UE_FMT" Can't create new context for UE random UE identity (0x%" PRIx64 ")\n",
                 PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP),
-                ue_context_p->ue_context.random_ue_identity);
+                random_value);
           return -1;
         }
       }
