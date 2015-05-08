@@ -66,8 +66,6 @@ void normal_prefix_mod(int32_t *txdataF,int32_t *txdata,uint8_t nsymb,LTE_DL_FRA
                  frame_parms->log2_symbol_size,                // log2_fft_size
                  1,                 // number of symbols
                  frame_parms->nb_prefix_samples0,               // number of prefix samples
-                 frame_parms->twiddle_ifft,  // IFFT twiddle factors
-                 frame_parms->rev,           // bit-reversal permutation
                  CYCLIC_PREFIX);
 #ifdef DEBUG_OFDM_MOD
     printf("slot i %d (txdata offset %d)\n",i,OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES0+(i*frame_parms->samples_per_tti>>1));
@@ -78,8 +76,6 @@ void normal_prefix_mod(int32_t *txdataF,int32_t *txdata,uint8_t nsymb,LTE_DL_FRA
                  frame_parms->log2_symbol_size,                // log2_fft_size
                  (short_offset==1) ? 1 :(frame_parms->symbols_per_tti>>1)-1,//6,                 // number of symbols
                  frame_parms->nb_prefix_samples,               // number of prefix samples
-                 frame_parms->twiddle_ifft,  // IFFT twiddle factors
-                 frame_parms->rev,           // bit-reversal permutation
                  CYCLIC_PREFIX);
 
 
@@ -91,8 +87,6 @@ void PHY_ofdm_mod(int *input,                       /// pointer to complex input
                   unsigned char log2fftsize,        /// log2(FFT_SIZE)
                   unsigned char nb_symbols,         /// number of OFDM symbols
                   unsigned short nb_prefix_samples,  /// cyclic prefix length
-                  short *twiddle_ifft,              /// pointer to precomputed twiddle table
-                  unsigned short *rev,              /// pointer to bit-reversal table
                   Extension_t etype                /// type of extension
                  )
 {
@@ -253,8 +247,6 @@ void do_OFDM_mod(mod_sym_t **txdataF, int32_t **txdata, uint32_t frame,uint16_t 
                      frame_parms->log2_symbol_size,                // log2_fft_size
                      12,                 // number of symbols
                      frame_parms->ofdm_symbol_size>>2,               // number of prefix samples
-                     frame_parms->twiddle_ifft,  // IFFT twiddle factors
-                     frame_parms->rev,           // bit-reversal permutation
                      CYCLIC_PREFIX);
 
         if (frame_parms->Ncp == EXTENDED)
@@ -263,8 +255,6 @@ void do_OFDM_mod(mod_sym_t **txdataF, int32_t **txdata, uint32_t frame,uint16_t 
                        frame_parms->log2_symbol_size,                // log2_fft_size
                        2,                 // number of symbols
                        frame_parms->nb_prefix_samples,               // number of prefix samples
-                       frame_parms->twiddle_ifft,  // IFFT twiddle factors
-                       frame_parms->rev,           // bit-reversal permutation
                        CYCLIC_PREFIX);
         else {
           LOG_D(PHY,"Frame %d, subframe %d: Doing PDCCH modulation\n",frame,next_slot>>1);
@@ -281,8 +271,6 @@ void do_OFDM_mod(mod_sym_t **txdataF, int32_t **txdata, uint32_t frame,uint16_t 
                      frame_parms->log2_symbol_size,                // log2_fft_size
                      6,                 // number of symbols
                      frame_parms->nb_prefix_samples,               // number of prefix samples
-                     frame_parms->twiddle_ifft,  // IFFT twiddle factors
-                     frame_parms->rev,           // bit-reversal permutation
                      CYCLIC_PREFIX);
       else {
         normal_prefix_mod(&txdataF[aa][slot_offset_F],

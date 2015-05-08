@@ -133,14 +133,28 @@ int lte_est_timing_advance(LTE_DL_FRAME_PARMS *frame_parms,
 
     for (aa=0; aa<frame_parms->nb_antennas_rx; aa++) {
       // do ifft of channel estimate
-      fft((short*) &lte_eNb_srs->srs_ch_estimates[ind][aa][0],
-          (short*) lte_eNb_srs->srs_ch_estimates_time[ind][aa],
-          frame_parms->twiddle_ifft,
-          frame_parms->rev,
-          frame_parms->log2_symbol_size,
-          frame_parms->log2_symbol_size/2,
-          0);
-
+      switch(frame_parms->N_RB_DL) {
+      case 6:
+	dft128((int16_t*) &lte_eNb_srs->srs_ch_estimates[ind][aa][0],
+	       (int16_t*) lte_eNb_srs->srs_ch_estimates_time[ind][aa],
+	       1);
+	break;
+      case 25:
+	dft512((int16_t*) &lte_eNb_srs->srs_ch_estimates[ind][aa][0],
+	       (int16_t*) lte_eNb_srs->srs_ch_estimates_time[ind][aa],
+	       1);
+	break;
+      case 50:
+	dft1024((int16_t*) &lte_eNb_srs->srs_ch_estimates[ind][aa][0],
+		(int16_t*) lte_eNb_srs->srs_ch_estimates_time[ind][aa],
+		1);
+	break;
+      case 100:
+	dft2048((int16_t*) &lte_eNb_srs->srs_ch_estimates[ind][aa][0],
+	       (int16_t*) lte_eNb_srs->srs_ch_estimates_time[ind][aa],
+	       1);
+	break;
+      }
 #ifdef USER_MODE
 #ifdef DEBUG_PHY
       sprintf(fname,"srs_ch_estimates_time_%d%d.m",ind,aa);
@@ -156,8 +170,8 @@ int lte_est_timing_advance(LTE_DL_FRAME_PARMS *frame_parms,
       temp = 0;
 
       for (aa=0; aa<frame_parms->nb_antennas_rx; aa++) {
-        Re = ((int16_t*)lte_eNb_srs->srs_ch_estimates_time[ind][aa])[(i<<2)];
-        Im = ((int16_t*)lte_eNb_srs->srs_ch_estimates_time[ind][aa])[1+(i<<2)];
+        Re = ((int16_t*)lte_eNb_srs->srs_ch_estimates_time[ind][aa])[(i<<1)];
+        Im = ((int16_t*)lte_eNb_srs->srs_ch_estimates_time[ind][aa])[1+(i<<1)];
         temp += (Re*Re/2) + (Im*Im/2);
       }
 

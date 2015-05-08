@@ -534,12 +534,6 @@ typedef struct {
   uint8_t nb_antennas_rx;
   /// Number of Transmit antennas in eNodeB
   uint8_t nb_antennas_tx_eNB;
-  /// Pointer to twiddle factors for FFT
-  int16_t *twiddle_fft;
-  ///pointer to twiddle factors for IFFT
-  int16_t *twiddle_ifft;
-  ///pointer to FFT permutation vector
-  uint16_t *rev;
   /// PRACH_CONFIG
   PRACH_CONFIG_COMMON prach_config_common;
   /// PUCCH Config Common (from 36-331 RRC spec)

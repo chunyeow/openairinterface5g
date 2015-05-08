@@ -124,18 +124,6 @@ int slot_fep_mbsfn(PHY_VARS_UE *phy_vars_ue,
           SOFFSET) % frame_length_samples],
           (int16_t *)&ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*l],1);
       stop_meas(&phy_vars_ue->rx_dft_stats);
-      /*
-          fft((short *)&ue_common_vars->rxdata[aa][sample_offset +
-                     nb_prefix_samples0 +
-                     subframe_offset -
-                     SOFFSET],
-        (short*)&ue_common_vars->rxdataF[aa][2*frame_parms->ofdm_symbol_size*l],
-        frame_parms->twiddle_fft,
-        frame_parms->rev,
-        frame_parms->log2_symbol_size,
-        frame_parms->log2_symbol_size>>1,
-        0);
-      */
     } else {
       if ((sample_offset +
            (frame_parms->ofdm_symbol_size+nb_prefix_samples0+nb_prefix_samples) +
@@ -154,26 +142,8 @@ int slot_fep_mbsfn(PHY_VARS_UE *phy_vars_ue,
           SOFFSET) % frame_length_samples],
           (int16_t *)&ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*l],1);
       stop_meas(&phy_vars_ue->rx_dft_stats);
-      /*
-          fft((short *)&ue_common_vars->rxdata[aa][sample_offset +
-                     (frame_parms->ofdm_symbol_size+nb_prefix_samples0+nb_prefix_samples) +
-                     (frame_parms->ofdm_symbol_size+nb_prefix_samples)*(l-1) +
-                     subframe_offset-
-                     SOFFSET],
-        (short*)&ue_common_vars->rxdataF[aa][2*frame_parms->ofdm_symbol_size*l],
-        frame_parms->twiddle_fft,
-        frame_parms->rev,
-        frame_parms->log2_symbol_size,
-        frame_parms->log2_symbol_size>>1,
-        0);
-          */
     }
 
-    /*
-    memcpy(&ue_common_vars->rxdataF2[aa][2*subframe_offset_F+2*frame_parms->ofdm_symbol_size*l],
-     &ue_common_vars->rxdataF[aa][2*frame_parms->ofdm_symbol_size*l],
-     2*frame_parms->ofdm_symbol_size*sizeof(int));
-    */
   }
 
   //if ((l==0) || (l==(4-frame_parms->Ncp))) {

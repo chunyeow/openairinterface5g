@@ -267,7 +267,7 @@ void init_lte_vars(LTE_DL_FRAME_PARMS *frame_parms[MAX_NUM_CCs],
   }
 
 
-  phy_init_top(frame_parms[0]);
+  //  phy_init_top(frame_parms[0]);
 
   phy_init_lte_top(frame_parms[0]);
 

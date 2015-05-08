@@ -100,12 +100,6 @@ void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmi
 
   //copy_lte_parms_to_phy_framing(lte_frame_parms, &(PHY_config->PHY_framing));
 
-  phy_init_top(lte_frame_parms); //allocation
-
-  lte_frame_parms->twiddle_fft      = twiddle_fft;
-  lte_frame_parms->twiddle_ifft     = twiddle_ifft;
-  lte_frame_parms->rev              = rev;
-
   PHY_vars_UE->is_secondary_ue = 0;
   PHY_vars_UE->lte_frame_parms = *lte_frame_parms;
   PHY_vars_eNB->lte_frame_parms = *lte_frame_parms;
@@ -480,8 +474,6 @@ int main(int argc, char **argv)
                    frame_parms->log2_symbol_size,                // log2_fft_size
                    LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*nsymb,                 // number of symbols
                    frame_parms->nb_prefix_samples,               // number of prefix samples
-                   frame_parms->twiddle_ifft,  // IFFT twiddle factors
-                   frame_parms->rev,           // bit-reversal permutation
                    CYCLIC_PREFIX);
 
       if (n_frames==1) {

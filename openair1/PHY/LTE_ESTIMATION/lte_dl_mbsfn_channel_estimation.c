@@ -752,14 +752,36 @@ int lte_dl_mbsfn_channel_estimation(PHY_VARS_UE *phy_vars_ue,
 
   // do ifft of channel estimate
   for (aa=0; aa<phy_vars_ue->lte_frame_parms.nb_antennas_rx*phy_vars_ue->lte_frame_parms.nb_antennas_tx; aa++) {
-    if (phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_offset][aa])
-      fft((short*) &phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_offset][aa][LTE_CE_OFFSET],
-          (short*) phy_vars_ue->lte_ue_common_vars.dl_ch_estimates_time[eNB_offset][aa],
-          phy_vars_ue->lte_frame_parms.twiddle_ifft,
-          phy_vars_ue->lte_frame_parms.rev,
-          phy_vars_ue->lte_frame_parms.log2_symbol_size,
-          phy_vars_ue->lte_frame_parms.log2_symbol_size/2,
-          0);
+    if (phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_offset][aa]) {
+      switch (phy_vars_ue->lte_frame_parms.N_RB_DL) {
+      case 6:
+	idft128((int16_t*) &phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_offset][aa][LTE_CE_OFFSET],
+		(int16_t*) phy_vars_ue->lte_ue_common_vars.dl_ch_estimates_time[eNB_offset][aa],
+		1);
+	break;
+      case 25:
+	idft512((int16_t*) &phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_offset][aa][LTE_CE_OFFSET],
+		(int16_t*) phy_vars_ue->lte_ue_common_vars.dl_ch_estimates_time[eNB_offset][aa],
+		1);
+	break;
+      case 50:
+	idft1024((int16_t*) &phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_offset][aa][LTE_CE_OFFSET],
+		(int16_t*) phy_vars_ue->lte_ue_common_vars.dl_ch_estimates_time[eNB_offset][aa],
+		1);
+	break;
+      case 75:
+	idft1536((int16_t*) &phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_offset][aa][LTE_CE_OFFSET],
+		(int16_t*) phy_vars_ue->lte_ue_common_vars.dl_ch_estimates_time[eNB_offset][aa]);
+	break;
+      case 100:
+	idft2048((int16_t*) &phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_offset][aa][LTE_CE_OFFSET],
+		(int16_t*) phy_vars_ue->lte_ue_common_vars.dl_ch_estimates_time[eNB_offset][aa],
+		1);
+	break;
+      default:
+	break;
+      }
+    }
   }
 
   return(0);

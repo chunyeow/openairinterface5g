@@ -42,22 +42,12 @@ char fmageren_name2[512];
 char* namepointer_log2;
 //PHY_CONFIG *PHY_config;
 
-#include "PHY/TOOLS/twiddle64.h"
-#include "PHY/TOOLS/twiddle128.h"
-#include "PHY/TOOLS/twiddle256.h"
-#include "PHY/TOOLS/twiddle512.h"
-#include "PHY/TOOLS/twiddle1024.h"
-#include "PHY/TOOLS/twiddle2048.h"
-#include "PHY/TOOLS/twiddle4096.h"
-#include "PHY/TOOLS/twiddle8192.h"
-#include "PHY/TOOLS/twiddle32768.h"
 
-#ifdef OPENAIR_LTE
 #include "PHY/LTE_REFSIG/primary_synch.h"
 int16_t *primary_synch0_time;
 int16_t *primary_synch1_time;
 int16_t *primary_synch2_time;
-#endif
+
 
 #include "PHY/CODING/vars.h"
 
@@ -67,25 +57,18 @@ PHY_VARS_eNB ***PHY_vars_eNB_g;
 PHY_VARS_RN **PHY_vars_RN_g;
 LTE_DL_FRAME_PARMS *lte_frame_parms_g;
 
-short *twiddle_ifft,*twiddle_fft,*twiddle_fft_times4,*twiddle_ifft_times4,*twiddle_fft_half,*twiddle_ifft_half;
-
-#ifndef OPENAIR_LTE
-CHBCH_RX_t rx_mode = ML;
-#endif //OPENAIR_LTE
 
 unsigned short rev[2048],rev_times4[8192],rev_half[1024];
 unsigned short rev256[256],rev512[512],rev1024[1024],rev4096[4096],rev2048[2048],rev8192[8192];
 
-#ifdef OPENAIR_LTE
+
 char mode_string[4][20] = {"NOT SYNCHED","PRACH","RAR","PUSCH"};
 #include "PHY/LTE_TRANSPORT/vars.h"
-#endif
 
-#include "PHY/CODING/scrambler.h"
 
-#ifdef USER_MODE
+
 #include "SIMULATION/ETH_TRANSPORT/vars.h"
-#endif
+
 
 #ifndef OPENAIR2
 unsigned char NB_eNB_INST=0;

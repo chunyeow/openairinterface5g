@@ -304,7 +304,7 @@ This function performs optimized fixed-point radix-2 FFT/IFFT.
 @param scale Total number of shifts (should be log2size/2 for normalized FFT)
 @param input_fmt (0 - input is in complex Q1.15 format, 1 - input is in complex redundant Q1.15 format)
 */
-void fft(int16_t *x,
+/*void fft(int16_t *x,
          int16_t *y,
          int16_t *twiddle,
          uint16_t *rev,
@@ -312,30 +312,31 @@ void fft(int16_t *x,
          uint8_t scale,
          uint8_t input_fmt
         );
+*/
 
-void ifft1536(int16_t *sigF,int16_t *sig);
+void idft1536(int16_t *sigF,int16_t *sig);
 
-void ifft6144(int16_t *sigF,int16_t *sig);
+void idft6144(int16_t *sigF,int16_t *sig);
 
-void ifft12288(int16_t *sigF,int16_t *sig);
+void idft12288(int16_t *sigF,int16_t *sig);
 
-void ifft18432(int16_t *sigF,int16_t *sig);
+void idft18432(int16_t *sigF,int16_t *sig);
 
-void ifft3072(int16_t *sigF,int16_t *sig);
+void idft3072(int16_t *sigF,int16_t *sig);
 
-void ifft24576(int16_t *sigF,int16_t *sig);
+void idft24576(int16_t *sigF,int16_t *sig);
 
-void fft1536(int16_t *sigF,int16_t *sig);
+void dft1536(int16_t *sigF,int16_t *sig);
 
-void fft6144(int16_t *sigF,int16_t *sig);
+void dft6144(int16_t *sigF,int16_t *sig);
 
-void fft12288(int16_t *sigF,int16_t *sig);
+void dft12288(int16_t *sigF,int16_t *sig);
 
-void fft18432(int16_t *sigF,int16_t *sig);
+void dft18432(int16_t *sigF,int16_t *sig);
 
-void fft3072(int16_t *sigF,int16_t *sig);
+void dft3072(int16_t *sigF,int16_t *sig);
 
-void fft24576(int16_t *sigF,int16_t *sig);
+void dft24576(int16_t *sigF,int16_t *sig);
 
 
 /*!\fn int rotate_cpx_vector(int16_t *x,int16_t *alpha,int16_t *y,uint32_t N,uint16_t output_shift, uint8_t format)
@@ -594,12 +595,16 @@ void dft256(int16_t *x,int16_t *y,int scale);
 void dft512(int16_t *x,int16_t *y,int scale);
 void dft1024(int16_t *x,int16_t *y,int scale);
 void dft2048(int16_t *x,int16_t *y,int scale);
+void dft4096(int16_t *x,int16_t *y,int scale);
+void dft8192(int16_t *x,int16_t *y,int scale);
 void idft64(int16_t *x,int16_t *y,int scale);
 void idft128(int16_t *x,int16_t *y,int scale);
 void idft256(int16_t *x,int16_t *y,int scale);
 void idft512(int16_t *x,int16_t *y,int scale);
 void idft1024(int16_t *x,int16_t *y,int scale);
 void idft2048(int16_t *x,int16_t *y,int scale);
+void idft4096(int16_t *x,int16_t *y,int scale);
+void idft8192(int16_t *x,int16_t *y,int scale);
 /** @} */
 
 

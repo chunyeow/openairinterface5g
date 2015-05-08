@@ -1033,10 +1033,11 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
           phy_vars_ue->tx_total_RE = 12;
 
           if (SR_payload>0) {
-            LOG_D(PHY,"[UE  %d][SR %x] Frame %d subframe %d Generating PUCCH 1a/1b (with SR for PUSCH), n1_pucch %d, Po_PUCCH, amp %d\n",
+            LOG_D(PHY,"[UE  %d][SR %x] Frame %d subframe %d Generating PUCCH 1a/1b payload %d,%d (with SR for PUSCH), n1_pucch %d, Po_PUCCH, amp %d\n",
                   Mod_id,
                   phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
                   frame_tx, subframe_tx,
+		  pucch_ack_payload[0],pucch_ack_payload[1],
                   phy_vars_ue->scheduling_request_config[eNB_id].sr_PUCCH_ResourceIndex,
                   Po_PUCCH,
 #if defined(EXMIMO) || defined(OAI_USRP)
@@ -1050,7 +1051,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
                   Mod_id,
                   phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
                   frame_tx, subframe_tx,
-                  n1_pucch,pucch_ack_payload[0],pucch_ack_payload[1],SR_payload,
+		  n1_pucch,pucch_ack_payload[0],pucch_ack_payload[1],SR_payload,
                   Po_PUCCH,
 #if defined(EXMIMO) || defined(OAI_USRP)
                   get_tx_amp(Po_PUCCH,phy_vars_ue->tx_power_max_dBm)
@@ -1229,8 +1230,6 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
                            frame_parms->log2_symbol_size,
                            nsymb,
                            frame_parms->nb_prefix_samples,
-                           frame_parms->twiddle_ifft,
-                           frame_parms->rev,
                            CYCLIC_PREFIX);
             else
               normal_prefix_mod(&phy_vars_ue->lte_ue_common_vars.txdataF[aa][subframe_tx*nsymb*frame_parms->ofdm_symbol_size],
@@ -2615,7 +2614,7 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
               phy_vars_ue->Mod_id,
               phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
               harq_pid,
-              frame_rx,subframe_prev);
+              (subframe_prev == 9) ? (frame_rx-1) : frame_rx,subframe_prev);
 #endif
 
         if (phy_vars_ue->dlsch_ue[eNB_id][0]) {

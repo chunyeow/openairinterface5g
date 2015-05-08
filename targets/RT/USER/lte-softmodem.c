@@ -2435,7 +2435,7 @@ int main( int argc, char **argv )
     frame_parms[CC_id]->pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH = 0;
     init_ul_hopping(frame_parms[CC_id]);
     init_frame_parms(frame_parms[CC_id],1);
-    phy_init_top(frame_parms[CC_id]);
+ //   phy_init_top(frame_parms[CC_id]);
   }
 
   phy_init_lte_top(frame_parms[0]);

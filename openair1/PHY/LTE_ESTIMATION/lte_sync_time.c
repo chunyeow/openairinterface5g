@@ -156,17 +156,46 @@ int lte_sync_time_init(LTE_DL_FRAME_PARMS *frame_parms )   // LTE_UE_COMMON *com
     }
   }
 
-  fft((short*)syncF_tmp,          /// complex input
-      (short*)sync_tmp,          /// complex output
+  switch (frame_parms->N_RB_DL) {
+  case 6:
+    idft128((short*)syncF_tmp,          /// complex input
+	   (short*)sync_tmp, /// complex output
+	   1);
+    break;
+  case 25:
+    idft512((short*)syncF_tmp,          /// complex input
+	   (short*)sync_tmp, /// complex output
+	   1);
+    break;
+  case 50:
+    idft1024((short*)syncF_tmp,          /// complex input
+	    (short*)sync_tmp, /// complex output
+	    1);
+    break;
+    
+  case 75:
+    idft1536((short*)syncF_tmp,          /// complex input
+	    (short*)sync_tmp); /// complex output
+    break;
+  case 100:
+    idft2048((short*)syncF_tmp,          /// complex input
+	    (short*)sync_tmp, /// complex output
+	    1);
+    break;
+  default:
+    LOG_E(PHY,"Unsupported N_RB_DL %d\n",frame_parms->N_RB_DL);
+    break;
+  }
+  /*
       frame_parms->twiddle_ifft,    /// complex twiddle factors
       frame_parms->rev,             /// bit reversed permutation vector
       frame_parms->log2_symbol_size,/// log2(FFT_SIZE)
       (frame_parms->log2_symbol_size/2),
       0);                            /// 0 - input is in complex Q1.15 format, 1 - input is in complex redundant Q1.15 format)
-
+  */
 
   for (i=0; i<frame_parms->ofdm_symbol_size; i++)
-    ((int32_t*)primary_synch0_time)[i] = sync_tmp[2*i];
+    ((int32_t*)primary_synch0_time)[i] = sync_tmp[i];
 
   k=frame_parms->ofdm_symbol_size-36;
 
@@ -181,16 +210,40 @@ int lte_sync_time_init(LTE_DL_FRAME_PARMS *frame_parms )   // LTE_UE_COMMON *com
     }
   }
 
-  fft((short*)syncF_tmp,          /// complex input
-      (short*)sync_tmp,          /// complex output
-      frame_parms->twiddle_ifft,    /// complex twiddle factors
-      frame_parms->rev,             /// bit reversed permutation vector
-      frame_parms->log2_symbol_size,/// log2(FFT_SIZE)
-      frame_parms->log2_symbol_size/2,
-      0) ;                           /// 0 - input is in complex Q1.15 format, 1 - input is in complex redundant Q1.15 format)
+  switch (frame_parms->N_RB_DL) {
+  case 6:
+    idft128((short*)syncF_tmp,          /// complex input
+	   (short*)sync_tmp, /// complex output
+	   1);
+    break;
+  case 25:
+    idft512((short*)syncF_tmp,          /// complex input
+	   (short*)sync_tmp, /// complex output
+	   1);
+    break;
+  case 50:
+    idft1024((short*)syncF_tmp,          /// complex input
+	    (short*)sync_tmp, /// complex output
+	    1);
+    break;
+    
+  case 75:
+    idft1536((short*)syncF_tmp,          /// complex input
+	    (short*)sync_tmp /// complex output
+	    );
+    break;
+  case 100:
+    idft2048((short*)syncF_tmp,          /// complex input
+	    (short*)sync_tmp, /// complex output
+	    1);
+    break;
+  default:
+    LOG_E(PHY,"Unsupported N_RB_DL %d\n",frame_parms->N_RB_DL);
+    break;
+  }
 
   for (i=0; i<frame_parms->ofdm_symbol_size; i++)
-    ((int32_t*)primary_synch1_time)[i] = sync_tmp[2*i];
+    ((int32_t*)primary_synch1_time)[i] = sync_tmp[i];
 
   k=frame_parms->ofdm_symbol_size-36;
 
@@ -205,16 +258,40 @@ int lte_sync_time_init(LTE_DL_FRAME_PARMS *frame_parms )   // LTE_UE_COMMON *com
     }
   }
 
-  fft((short*)syncF_tmp,          /// complex input
-      (short*)sync_tmp,          /// complex output
-      frame_parms->twiddle_ifft,    /// complex twiddle factors
-      frame_parms->rev,             /// bit reversed permutation vector
-      frame_parms->log2_symbol_size,/// log2(FFT_SIZE)
-      frame_parms->log2_symbol_size/2,
-      0);                            /// 0 - input is in complex Q1.15 format, 1 - input is in complex redundant Q1.15 format)
+  switch (frame_parms->N_RB_DL) {
+  case 6:
+    idft128((short*)syncF_tmp,          /// complex input
+	   (short*)sync_tmp, /// complex output
+	   1);
+    break;
+  case 25:
+    idft512((short*)syncF_tmp,          /// complex input
+	   (short*)sync_tmp, /// complex output
+	   1);
+    break;
+  case 50:
+    idft1024((short*)syncF_tmp,          /// complex input
+	    (short*)sync_tmp, /// complex output
+	    1);
+    break;
+    
+  case 75:
+    idft1536((short*)syncF_tmp,          /// complex input
+	    (short*)sync_tmp /// complex output
+	    );
+    break;
+  case 100:
+    idft2048((short*)syncF_tmp,          /// complex input
+	    (short*)sync_tmp, /// complex output
+	    1);
+    break;
+  default:
+    LOG_E(PHY,"Unsupported N_RB_DL %d\n",frame_parms->N_RB_DL);
+    break;
+  }
 
   for (i=0; i<frame_parms->ofdm_symbol_size; i++)
-    ((int32_t*)primary_synch2_time)[i] = sync_tmp[2*i];
+    ((int32_t*)primary_synch2_time)[i] = sync_tmp[i];
 
 
 

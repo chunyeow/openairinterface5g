@@ -840,19 +840,17 @@ int32_t generate_prach( PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id, uint8_t subfra
     break;
   }
 
-
   prach2 = prach+(Ncp<<1);
 
   // do IDFT
   switch (phy_vars_ue->lte_frame_parms.N_RB_UL) {
   case 6:
     if (prach_fmt == 4) {
-      fft(prachF,prach2,twiddle_ifft256,rev256,8,4,0);
-      //TODO: account for repeated format in fft output
+      idft256(prachF,prach2,1);
       memmove( prach, prach+512, Ncp<<2 );
       prach_len = 256+Ncp;
     } else {
-      ifft1536(prachF,prach2);
+      idft1536(prachF,prach2);
       memmove( prach, prach+3072, Ncp<<2 );
       prach_len = 1536+Ncp;
 
@@ -866,12 +864,12 @@ int32_t generate_prach( PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id, uint8_t subfra
 
   case 15:
     if (prach_fmt == 4) {
-      fft(prachF,prach2,twiddle_ifft512,rev512,9,4,0);
-      //TODO: account for repeated format in fft output
+      idft512(prachF,prach2,1);
+      //TODO: account for repeated format in dft output
       memmove( prach, prach+1024, Ncp<<2 );
       prach_len = 512+Ncp;
     } else {
-      ifft3072(prachF,prach2);
+      idft3072(prachF,prach2);
       memmove( prach, prach+6144, Ncp<<2 );
       prach_len = 3072+Ncp;
 
@@ -886,12 +884,11 @@ int32_t generate_prach( PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id, uint8_t subfra
   case 25:
   default:
     if (prach_fmt == 4) {
-      fft(prachF,prach2,twiddle_ifft1024,rev1024,10,5,0);
-      //TODO: account for repeated format in fft output
+      idft1024(prachF,prach2,1);
       memmove( prach, prach+2048, Ncp<<2 );
       prach_len = 1024+Ncp;
     } else {
-      ifft6144(prachF,prach2);
+      idft6144(prachF,prach2);
       /*for (i=0;i<6144*2;i++)
       prach2[i]<<=1;*/
       memmove( prach, prach+12288, Ncp<<2 );
@@ -907,12 +904,11 @@ int32_t generate_prach( PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id, uint8_t subfra
 
   case 50:
     if (prach_fmt == 4) {
-      fft(prachF,prach2,twiddle_ifft2048,rev2048,11,5,0);
-      //TODO: account for repeated format in fft output
+      idft2048(prachF,prach2,1);
       memmove( prach, prach+4096, Ncp<<2 );
       prach_len = 2048+Ncp;
     } else {
-      ifft12288(prachF,prach2);
+      idft12288(prachF,prach2);
       memmove( prach, prach+24576, Ncp<<2 );
       prach_len = 12288+Ncp;
 
@@ -926,12 +922,12 @@ int32_t generate_prach( PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id, uint8_t subfra
 
   case 75:
     if (prach_fmt == 4) {
-      ifft3072(prachF,prach2);
-      //TODO: account for repeated format in fft output
+      idft3072(prachF,prach2);
+      //TODO: account for repeated format in dft output
       memmove( prach, prach+6144, Ncp<<2 );
       prach_len = 3072+Ncp;
     } else {
-      ifft18432(prachF,prach2);
+      idft18432(prachF,prach2);
       memmove( prach, prach+36864, Ncp<<2 );
       prach_len = 18432+Ncp;
 
@@ -945,12 +941,11 @@ int32_t generate_prach( PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id, uint8_t subfra
 
   case 100:
     if (prach_fmt == 4) {
-      fft(prachF,prach2,twiddle_ifft4096,rev4096,12,6,0);
-      //TODO: account for repeated format in fft output
+      idft4096(prachF,prach2,1);
       memmove( prach, prach+8192, Ncp<<2 );
       prach_len = 4096+Ncp;
     } else {
-      ifft24576(prachF,prach2);
+      idft24576(prachF,prach2);
       memmove( prach, prach+49152, Ncp<<2 );
       prach_len = 24576+Ncp;
 
@@ -966,20 +961,11 @@ int32_t generate_prach( PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id, uint8_t subfra
   //LOG_D(PHY,"prach_len=%d\n",prach_len);
 
   if (prach_fmt==4) {
-    //TODO: account for repeated format in fft output
     LOG_E( PHY, "prach_fmt4 not fully implemented" );
     mac_xface->macphy_exit("prach_fmt4 not fully implemented");
     return 0; // not reached
   } else {
-#ifdef BIT8_TX
-
-    for (i=0; i<prach_len; i++) {
-      ((int8_t*)(&phy_vars_ue->lte_ue_common_vars.txdata[aa][prach_start]))[2*i] = (int8_t)(prach[2*i]);
-      ((int8_t*)(&phy_vars_ue->lte_ue_common_vars.txdata[aa][prach_start]))[2*i+1] = (int8_t)(prach[2*i+1]);
-    }
-
-#else
-#ifdef EXMIMO
+#if defined(EXMIMO) || defined(OAI_USRP)
     int j;
     int overflow = prach_start + prach_len - LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*phy_vars_ue->lte_frame_parms.samples_per_tti;
     LOG_D( PHY, "prach_start=%d, overflow=%d\n", prach_start, overflow );
@@ -1002,8 +988,13 @@ int32_t generate_prach( PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id, uint8_t subfra
     }
 
 #endif
-#endif
   }
+
+
+#ifdef PRACH_DEBUG
+  write_output("prach_txF0.m","prachtxF0",prachF,prach_len-Ncp,1,1);
+  write_output("prach_tx0.m","prachtx0",prach+(Ncp<<1),prach_len-Ncp,1,1);
+#endif
 
   return signal_energy( (int*)prach, 256 );
 }
@@ -1011,7 +1002,7 @@ int32_t generate_prach( PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id, uint8_t subfra
 
 
 __m128i mmtmpX0,mmtmpX1,mmtmpX2,mmtmpX3;
-int16_t prach_ifft[4][1024*4];
+int16_t prach_ifft[4][1024*2];
 
 
 void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_energy_list, uint16_t *preamble_delay_list, uint16_t Nf, uint8_t tdd_mapindex)
@@ -1288,24 +1279,24 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
         switch (phy_vars_eNB->lte_frame_parms.N_RB_UL) {
         case 6:
           if (prach_fmt == 4) {
-            fft(prach2,rxsigF[aa],twiddle_fft256,rev256,8,4,0);
+            dft256(prach2,rxsigF[aa],1);
           } else {
-            fft1536(prach2,rxsigF[aa]);
+            dft1536(prach2,rxsigF[aa]);
 
             if (prach_fmt>1)
-              fft1536(prach2+3072,rxsigF[aa]+3072);
+              dft1536(prach2+3072,rxsigF[aa]+3072);
           }
 
           break;
 
         case 15:
           if (prach_fmt == 4) {
-            fft(prach2,rxsigF[aa],twiddle_fft512,rev512,9,4,0);
+            dft256(prach2,rxsigF[aa],1);
           } else {
-            fft3072(prach2,rxsigF[aa]);
+            dft3072(prach2,rxsigF[aa]);
 
             if (prach_fmt>1)
-              fft3072(prach2+6144,rxsigF[aa]+6144);
+              dft3072(prach2+6144,rxsigF[aa]+6144);
           }
 
           break;
@@ -1313,13 +1304,13 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
         case 25:
         default:
           if (prach_fmt == 4) {
-            fft(prach2,rxsigF[aa],twiddle_fft1024,rev1024,10,5,0);
+            dft1024(prach2,rxsigF[aa],1);
             fft_size = 1024;
           } else {
-            fft6144(prach2,rxsigF[aa]);
+            dft6144(prach2,rxsigF[aa]);
 
             if (prach_fmt>1)
-              fft6144(prach2+12288,rxsigF[aa]+12288);
+              dft6144(prach2+12288,rxsigF[aa]+12288);
 
             fft_size = 6144;
           }
@@ -1328,48 +1319,47 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
 
         case 50:
           if (prach_fmt == 4) {
-            fft(prach2,rxsigF[aa],twiddle_fft2048,rev2048,11,5,0);
+            dft2048(prach2,rxsigF[aa],1);
           } else {
-            fft12288(prach2,rxsigF[aa]);
+            dft12288(prach2,rxsigF[aa]);
 
             if (prach_fmt>1)
-              fft12288(prach2+24576,rxsigF[aa]+24576);
+              dft12288(prach2+24576,rxsigF[aa]+24576);
           }
 
           break;
 
         case 75:
           if (prach_fmt == 4) {
-            fft3072(prach2,rxsigF[aa]);
+            dft3072(prach2,rxsigF[aa]);
           } else {
-            fft18432(prach2,rxsigF[aa]);
+            dft18432(prach2,rxsigF[aa]);
 
             if (prach_fmt>1)
-              fft18432(prach2+36864,rxsigF[aa]+36864);
+              dft18432(prach2+36864,rxsigF[aa]+36864);
           }
 
           break;
 
         case 100:
           if (prach_fmt == 4) {
-            fft(prach2,rxsigF[aa],twiddle_fft4096,rev4096,12,6,0);
+            dft4096(prach2,rxsigF[aa],1);
           } else {
-            fft24576(prach2,rxsigF[aa]);
+            dft24576(prach2,rxsigF[aa]);
 
             if (prach_fmt>1)
-              fft24576(prach2+49152,rxsigF[aa]+49152);
+              dft24576(prach2+49152,rxsigF[aa]+49152);
           }
 
           break;
         }
 
         memset( prachF, 0, sizeof(int16_t)*2*1024 );
-
-
-
-        // write_output("prach_rx0.m","prach_rx0",prach[0],6144+792,1,1);
+#ifdef PRACH_DEBUG
+	write_output("prach_rx0.m","prach_rx0",prach[0],6144+792,1,1);
+#endif
         // write_output("prach_rx1.m","prach_rx1",prach[1],6144+792,1,1);
-        //write_output("prach_rxF0.m","prach_rxF0",rxsigF[0],24576,1,1);
+	//       write_output("prach_rxF0.m","prach_rxF0",rxsigF[0],24576,1,1);
         // write_output("prach_rxF1.m","prach_rxF1",rxsigF[1],6144,1,1);
 
         // Do componentwise product with Xu*
@@ -1401,18 +1391,20 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
         // Now do IFFT of size 1024 (N_ZC=839) or 256 (N_ZC=139)
         if (N_ZC == 839) {
           log2_ifft_size = 10;
-          fft(prachF,prach_ifft[aa],twiddle_ifft1024,rev1024,10,10,0);
+          idft1024(prachF,prach_ifft[aa],1);
         } else {
-          fft(prachF,prach_ifft[aa],twiddle_ifft256,rev256,8,8,0);
+          idft256(prachF,prach_ifft[aa],1);
           log2_ifft_size = 8;
         }
-
-        // write_output("prach_rxF_comp0.m","prach_rxF_comp0",prachF,1024,1,1);
+#ifdef PRACH_DEBUG
+        write_output("prach_rxF_comp0.m","prach_rxF_comp0",prachF,1024,1,1);
+#endif
         // write_output("prach_rxF_comp1.m","prach_rxF_comp1",prachF,1024,1,1);
 
       }// antennas_rx
-
-      // write_output("prach_ifft0.m","prach_t0",prach_ifft[0],2048,1,1);
+#ifdef PRACH_DEBUG
+      write_output("prach_ifft0.m","prach_t0",prach_ifft[0],2048,1,1);
+#endif
       // write_output("prach_ifft1.m","prach_t1",prach_ifft[1],2048,1,1);
 
     } // new dft
@@ -1425,7 +1417,7 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
       lev = 0;
 
       for (aa=0; aa<nb_ant_rx; aa++) {
-        lev += (int32_t)prach_ifft[aa][(preamble_shift2+i)<<2]*prach_ifft[aa][(preamble_shift2+i)<<2] + (int32_t)prach_ifft[aa][1+((preamble_shift2+i)<<2)]*prach_ifft[aa][1+((preamble_shift2+i)<<2)];
+        lev += (int32_t)prach_ifft[aa][(preamble_shift2+i)<<1]*prach_ifft[aa][(preamble_shift2+i)<<1] + (int32_t)prach_ifft[aa][1+((preamble_shift2+i)<<1)]*prach_ifft[aa][1+((preamble_shift2+i)<<1)];
       }
 
       levdB = dB_fixed_times10(lev);

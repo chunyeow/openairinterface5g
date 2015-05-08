@@ -245,34 +245,37 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
       //copy MIMO channel estimates to temporary buffer for EMOS
       //memcpy(&ul_ch_estimates_0[aa][symbol_offset],&ul_ch_estimates[aa][symbol_offset],frame_parms->ofdm_symbol_size*sizeof(int32_t)*2);
 
-      memset(temp_in_ifft_0,0,frame_parms->ofdm_symbol_size*sizeof(int32_t)*2);
+      memset(temp_in_ifft_0,0,frame_parms->ofdm_symbol_size*sizeof(int32_t));
 
       // Convert to time domain for visualization
       for(i=0; i<Msc_RS; i++)
         ((int32_t*)temp_in_ifft_0)[i] = ul_ch_estimates[aa][symbol_offset+i];
-
-      fft( (int16_t*) temp_in_ifft_0,
-           (int16_t*) ul_ch_estimates_time[aa],
-           frame_parms->twiddle_ifft,
-           frame_parms->rev,
-           (frame_parms->log2_symbol_size),
-           (frame_parms->log2_symbol_size)/2,
-           0);
-
-      /*
-      // zero out second half of time domain channel estimate and transform back (-16 because of the cyclic pre-causal part of the channel estimate)
-      for(j=frame_parms->ofdm_symbol_size-16;j<frame_parms->ofdm_symbol_size*2-16;j++){
-      ul_ch_estimates_time[aa][j] = 0;
+      switch(frame_parms->N_RB_DL) {
+      case 6:
+	
+	dft128((int16_t*) temp_in_ifft_0,
+	       (int16_t*) ul_ch_estimates_time[aa],
+	       1);
+	break;
+      case 25:
+	
+	dft512((int16_t*) temp_in_ifft_0,
+	       (int16_t*) ul_ch_estimates_time[aa],
+	       1);
+	break;
+      case 50:
+	
+	dft1024((int16_t*) temp_in_ifft_0,
+	       (int16_t*) ul_ch_estimates_time[aa],
+	       1);
+	break;
+      case 100:
+	
+	dft2048((int16_t*) temp_in_ifft_0,
+	       (int16_t*) ul_ch_estimates_time[aa],
+	       1);
+	break;
       }
-
-      fft( (int16_t*) ul_ch_estimates_time[aa],
-      (int16_t*) &ul_ch_estimates[aa][symbol_offset],
-      frame_parms->twiddle_fft,
-      frame_parms->rev,
-      (frame_parms->log2_symbol_size),
-      (frame_parms->log2_symbol_size)/2,
-      1);
-      */
 
 #ifdef DEBUG_CH
 
@@ -336,25 +339,40 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
           i++;
         }
 
-
-        fft((int16_t*) &temp_in_ifft_0[0],                          // Performing IFFT on Combined Channel Estimates
-            temp_out_ifft_0,
-            frame_parms->twiddle_ifft,
-            frame_parms->rev,
-            (frame_parms->log2_symbol_size),
-            (frame_parms->log2_symbol_size)/2,
-            0);
-
-        fft((int16_t*) &temp_in_ifft_1[0],                          // Performing IFFT on Combined Channel Estimates
-            temp_out_ifft_1,
-            frame_parms->twiddle_ifft,
-            frame_parms->rev,
-            (frame_parms->log2_symbol_size),
-            (frame_parms->log2_symbol_size)/2,
-            0);
-
-
-
+	switch (frame_parms->N_RB_DL) {
+	case 6:
+	  idft128((int16_t*) &temp_in_ifft_0[0],                          // Performing IFFT on Combined Channel Estimates
+		  temp_out_ifft_0,
+		  1);
+	  idft128((int16_t*) &temp_in_ifft_1[0],                          // Performing IFFT on Combined Channel Estimates
+		  temp_out_ifft_1,
+		  1);
+	  break;
+	case 25:
+	  idft512((int16_t*) &temp_in_ifft_0[0],                          // Performing IFFT on Combined Channel Estimates
+		  temp_out_ifft_0,
+		  1);
+	  idft512((int16_t*) &temp_in_ifft_1[0],                          // Performing IFFT on Combined Channel Estimates
+		  temp_out_ifft_1,
+		  1);
+	  break;
+	case 50:
+	  idft1024((int16_t*) &temp_in_ifft_0[0],                          // Performing IFFT on Combined Channel Estimates
+		  temp_out_ifft_0,
+		  1);
+	  idft1024((int16_t*) &temp_in_ifft_1[0],                          // Performing IFFT on Combined Channel Estimates
+		  temp_out_ifft_1,
+		  1);
+	  break;
+	case 100:
+	  idft2048((int16_t*) &temp_in_ifft_0[0],                          // Performing IFFT on Combined Channel Estimates
+		  temp_out_ifft_0,
+		  1);
+	  idft2048((int16_t*) &temp_in_ifft_1[0],                          // Performing IFFT on Combined Channel Estimates
+		  temp_out_ifft_1,
+		  1);
+	  break;
+	}
 
         // because the ifft is not power preserving, we should apply the factor sqrt(power_correction) here, but we rather apply power_correction here and nothing after the next fft
         in_fft_ptr_0 = &temp_in_fft_0[0];
@@ -362,26 +380,44 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
 
         for(j=0; j<(1<<(frame_parms->log2_symbol_size))/12; j++) {
           if (j>19) {
-            ((int16_t*)in_fft_ptr_0)[-40+(2*j)] = ((int16_t*)temp_out_ifft_0)[-80+(4*j)]*rx_power_correction;
-            ((int16_t*)in_fft_ptr_0)[-40+(2*j)+1] = ((int16_t*)temp_out_ifft_0)[-80+(4*j+1)]*rx_power_correction;
-            ((int16_t*)in_fft_ptr_1)[-40+(2*j)] = ((int16_t*)temp_out_ifft_1)[-80+(4*j)]*rx_power_correction;
-            ((int16_t*)in_fft_ptr_1)[-40+(2*j)+1] = ((int16_t*)temp_out_ifft_1)[-80+(4*j)+1]*rx_power_correction;
+            ((int16_t*)in_fft_ptr_0)[-40+(2*j)] = ((int16_t*)temp_out_ifft_0)[-80+(2*j)]*rx_power_correction;
+            ((int16_t*)in_fft_ptr_0)[-40+(2*j)+1] = ((int16_t*)temp_out_ifft_0)[-80+(2*j+1)]*rx_power_correction;
+            ((int16_t*)in_fft_ptr_1)[-40+(2*j)] = ((int16_t*)temp_out_ifft_1)[-80+(2*j)]*rx_power_correction;
+            ((int16_t*)in_fft_ptr_1)[-40+(2*j)+1] = ((int16_t*)temp_out_ifft_1)[-80+(2*j)+1]*rx_power_correction;
           } else {
-            ((int16_t*)in_fft_ptr_0)[2*(frame_parms->ofdm_symbol_size-20+j)] = ((int16_t*)temp_out_ifft_0)[4*(frame_parms->ofdm_symbol_size-20+j)]*rx_power_correction;
-            ((int16_t*)in_fft_ptr_0)[2*(frame_parms->ofdm_symbol_size-20+j)+1] = ((int16_t*)temp_out_ifft_0)[4*(frame_parms->ofdm_symbol_size-20+j)+1]*rx_power_correction;
-            ((int16_t*)in_fft_ptr_1)[2*(frame_parms->ofdm_symbol_size-20+j)] = ((int16_t*)temp_out_ifft_1)[4*(frame_parms->ofdm_symbol_size-20+j)]*rx_power_correction;
-            ((int16_t*)in_fft_ptr_1)[2*(frame_parms->ofdm_symbol_size-20+j)+1] = ((int16_t*)temp_out_ifft_1)[4*(frame_parms->ofdm_symbol_size-20+j)+1]*rx_power_correction;
+            ((int16_t*)in_fft_ptr_0)[2*(frame_parms->ofdm_symbol_size-20+j)] = ((int16_t*)temp_out_ifft_0)[2*(frame_parms->ofdm_symbol_size-20+j)]*rx_power_correction;
+            ((int16_t*)in_fft_ptr_0)[2*(frame_parms->ofdm_symbol_size-20+j)+1] = ((int16_t*)temp_out_ifft_0)[2*(frame_parms->ofdm_symbol_size-20+j)+1]*rx_power_correction;
+            ((int16_t*)in_fft_ptr_1)[2*(frame_parms->ofdm_symbol_size-20+j)] = ((int16_t*)temp_out_ifft_1)[2*(frame_parms->ofdm_symbol_size-20+j)]*rx_power_correction;
+            ((int16_t*)in_fft_ptr_1)[2*(frame_parms->ofdm_symbol_size-20+j)+1] = ((int16_t*)temp_out_ifft_1)[2*(frame_parms->ofdm_symbol_size-20+j)+1]*rx_power_correction;
           }
         }
 
-
-        fft((int16_t*) &temp_in_fft_0[0],                        // Performing FFT to obtain the Channel Estimates for UE0 to eNB1
-            temp_out_fft_0,
-            frame_parms->twiddle_fft,
-            frame_parms->rev,
-            frame_parms->log2_symbol_size,
-            frame_parms->log2_symbol_size>>1,
-            0);
+	switch (frame_parms->N_RB_DL) {
+        case 6:
+	  dft128((int16_t*) &temp_in_fft_0[0],     
+		 // Performing FFT to obtain the Channel Estimates for UE0 to eNB1
+		 temp_out_fft_0,
+		 1);
+	  break;
+        case 25:
+	  dft512((int16_t*) &temp_in_fft_0[0],     
+		 // Performing FFT to obtain the Channel Estimates for UE0 to eNB1
+		 temp_out_fft_0,
+		 1);
+	  break;
+        case 50:
+	  dft1024((int16_t*) &temp_in_fft_0[0],     
+		 // Performing FFT to obtain the Channel Estimates for UE0 to eNB1
+		 temp_out_fft_0,
+		 1);
+	  break;
+        case 100:
+	  dft2048((int16_t*) &temp_in_fft_0[0],     
+		 // Performing FFT to obtain the Channel Estimates for UE0 to eNB1
+		 temp_out_fft_0,
+		 1);
+	  break;
+	}
 
         out_fft_ptr_0 = &ul_ch_estimates_0[aa][symbol_offset]; // CHANNEL ESTIMATES FOR UE0 TO eNB1
         temp_out_fft_0_ptr = (int32_t*) temp_out_fft_0;
@@ -389,17 +425,31 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
         i=0;
 
         for(j=0; j<frame_parms->N_RB_UL*12; j++) {
-          out_fft_ptr_0[i] = temp_out_fft_0_ptr[2*j];
+          out_fft_ptr_0[i] = temp_out_fft_0_ptr[j];
           i++;
         }
-
-        fft((int16_t*) &temp_in_fft_1[0],                          // Performing FFT to obtain the Channel Estimates for UE1 to eNB1
-            temp_out_fft_1,
-            frame_parms->twiddle_fft,
-            frame_parms->rev,
-            frame_parms->log2_symbol_size,
-            frame_parms->log2_symbol_size>>1,
-            0);
+	switch (frame_parms->N_RB_DL) {
+	case 6:
+	  dft128((int16_t*) &temp_in_fft_1[0],                          // Performing FFT to obtain the Channel Estimates for UE1 to eNB1
+		 temp_out_fft_1,
+		 1);
+	  break;
+	case 25:
+	  dft512((int16_t*) &temp_in_fft_1[0],                          // Performing FFT to obtain the Channel Estimates for UE1 to eNB1
+		 temp_out_fft_1,
+		 1);
+	  break;
+	case 50:
+	  dft1024((int16_t*) &temp_in_fft_1[0],                          // Performing FFT to obtain the Channel Estimates for UE1 to eNB1
+		 temp_out_fft_1,
+		 1);
+	  break;
+	case 100:
+	  dft2048((int16_t*) &temp_in_fft_1[0],                          // Performing FFT to obtain the Channel Estimates for UE1 to eNB1
+		 temp_out_fft_1,
+		 1);
+	  break;
+	}
 
         out_fft_ptr_1 = &ul_ch_estimates_1[aa][symbol_offset];   // CHANNEL ESTIMATES FOR UE1 TO eNB1
         temp_out_fft_1_ptr = (int32_t*) temp_out_fft_1;
@@ -407,7 +457,7 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
         i=0;
 
         for(j=0; j<frame_parms->N_RB_UL*12; j++) {
-          out_fft_ptr_1[i] = temp_out_fft_1_ptr[2*j];
+          out_fft_ptr_1[i] = temp_out_fft_1_ptr[j];
           i++;
         }
 
@@ -550,32 +600,8 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
           multadd_complex_vector_real_scalar((int16_t*) ul_ch2_1,SCALE,(int16_t*) ul_ch2_1,1,Msc_RS);
         }
 
-        //write_output("drs_est.m","drsest",ul_ch_estimates[0],300*12,1,1);
-        /*if(cooperation_flag == 2)// For Distributed Alamouti
-          {
-          write_output("drs_est.m","drsest",ul_ch_estimates[0],300*12,1,1);
-          write_output("drs_est0.m","drsest0",ul_ch_estimates_0[0],300*12,1,1);
-          write_output("drs_est1.m","drsest1",ul_ch_estimates_1[0],300*12,1,1);
-          }*/
-
 
       } //if (Ns&1)
-
-      /*
-      memset(temp_in_ifft_0,0,frame_parms->ofdm_symbol_size*sizeof(int32_t)*2);
-      // Convert to time domain for visualization
-      for(i=0;i<Msc_RS;i++)
-          ((int32_t*)temp_in_ifft_0)[i] = ul_ch_estimates[aa][symbol_offset+i];
-
-
-      fft( (int16_t*) temp_in_ifft_0,
-           (Ns%2) ? ((int16_t*) ul_ch_estimates_time[aa]) : ((int16_t*) &ul_ch_estimates_time[aa][2*frame_parms->ofdm_symbol_size]),
-      frame_parms->twiddle_ifft,
-      frame_parms->rev,
-      (frame_parms->log2_symbol_size),
-      (frame_parms->log2_symbol_size)/2,
-      0);
-      */
 
     } //for(aa=...
 
