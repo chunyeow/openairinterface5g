@@ -94,7 +94,7 @@ void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmi
 
   //copy_lte_parms_to_phy_framing(lte_frame_parms, &(PHY_config->PHY_framing));
 
-  phy_init_top(lte_frame_parms); //allocation
+//  phy_init_top(lte_frame_parms); //allocation
 
   PHY_vars_UE->lte_frame_parms = *lte_frame_parms;
 
