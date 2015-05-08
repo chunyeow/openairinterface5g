@@ -1715,7 +1715,7 @@ foreach(myExe dlsim ulsim pbchsim scansim mbmssim pdcchsim pucchsim prachsim syn
     ${XFORMS_SOURCE}
     )
   target_link_libraries (${myExe}
-    -Wl,--start-group SIMU UTIL SCHED_LIB PHY LFDS  ${ITTI_LIB} -Wl,--end-group
+    -Wl,--start-group SIMU UTIL SCHED_LIB PHY LFDS MSC ${ITTI_LIB} -Wl,--end-group
     pthread m rt ${CONFIG_LIBRARIES} ${ATLAS_LIBRARIES} ${XFORMS_LIBRARIES}
     )
 endforeach(myExe)
