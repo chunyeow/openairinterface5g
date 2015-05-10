@@ -1391,6 +1391,10 @@ ${OPENAIR1_DIR}/SIMULATION/ETH_TRANSPORT/emu_transport.c
 ${OPENAIR1_DIR}/SIMULATION/ETH_TRANSPORT/pgm_link.c
 )
 
+add_library(OPENAIR0_LIB
+  ${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.c
+)
+
 # System packages that are required
 # We use either the cmake buildin, in ubuntu are in: /usr/share/cmake*/Modules/
 # or cmake provide a generic interface to pkg-config that widely used
@@ -1902,3 +1906,37 @@ make_driver(xt_GTPURH ${OPENAIRCN_DIR}/GTPV1-U/GTPURH "")
 # add the install targets
 #install (TARGETS Tutorial DESTINATION bin)
 #install (FILES "${PROJECT_BIN_DIR}/TutorialConfig.h"        DESTINATION include)
+
+# OCTAVE tools
+###############
+set(OCT_INCL -I${OPENAIR_TARGETS}/ARCH/EXMIMO/DEFS -I${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/LIB -I${OPENAIR_TARGETS}/ARCH/COMMON)
+set(OCT_LIBS -L${CMAKE_CURRENT_BINARY_DIR} -lm -lOPENAIR0_LIB) 
+set(OCT_FLAGS -DEXMIMO)
+set(OCT_DIR ${OPENAIR_TARGETS}/ARCH/EXMIMO/USERSPACE/OCTAVE)
+set(OCT_FILES
+  oarf_config_exmimo.oct
+  oarf_config_exmimo.oct 
+  oarf_get_frame.oct 
+  oarf_stop.oct 
+  oarf_send_frame.oct 
+  oarf_get_num_detected_cards.oct 
+  oarf_stop_without_reset.oct
+)
+
+foreach(file IN ITEMS ${OCT_FILES})
+  string(REGEX REPLACE "oct *$" "cc" src ${file})
+  add_custom_command(
+    OUTPUT ${file}
+    DEPENDS ${OCT_DIR}/${src} OPENAIR0_LIB
+    COMMAND mkoctfile
+    ARGS ${OCT_FLAGS} ${OCT_INCL} ${OCT_LIBS} 
+    ARGS -o ${file} ${OCT_DIR}/${src}
+    COMMENT "Generating ${file}"
+    VERBATIM
+  )
+endforeach(file)
+
+ADD_CUSTOM_TARGET(oarf
+   DEPENDS ${OCT_FILES}
+)
+ 

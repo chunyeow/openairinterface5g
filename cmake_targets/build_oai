@@ -68,9 +68,9 @@ Options
 -h | --help
    Print this help
 --eNB
-   Makes the eNB LTE softmodem
+   Makes the LTE softmodem
 --UE
-   Makes the UE softmodem
+   Makes the UE specific parts (ue_ip, usim, nvram) 
 --EPC
    Makes the EPC (MME-SPGW, HSS)
 -r | --3gpp-release
@@ -142,7 +142,7 @@ function main() {
             shift 2;;
        -w | --hardware)
             HW="$2" #"${i#*=}"
-            # Use OAI_USRP  as the key work USRP is used inside UHD driver
+            # Use OAI_USRP  as the key word USRP is used inside UHD driver
             [ "$HW" == "USRP" ] && HW=OAI_USRP
             echo_info "setting hardware to: $HW"
             shift 2;;
@@ -327,7 +327,7 @@ function main() {
 
   # EXMIMO drivers & firmware loader
   ###############
-  if [ "$HW" = "EXMIMO" -a "$UE$eNB" != "" ] ; then
+  if [ "$HW" = "EXMIMO" ] ; then
     
     echo_info "Compiling Express MIMO 2 board drivers"
     compilations \
@@ -336,6 +336,10 @@ function main() {
     compilations \
 	  lte_build_oai updatefw \
 	  updatefw $dbin/updatefw
+    make -C $OPENAIR_DIR/cmake_targets/lte_build_oai/build oarf > $dlog/oarf.txt 2>&1
+    cp $OPENAIR_DIR/cmake_targets/lte_build_oai/build/*.oct $dbin
+    echo_success "oarf tools compiled"
+    cp $OPENAIR_DIR/cmake_targets/tools/init_exmimo2 $dbin
   fi
 
   if [ "$oaisim" = "1" ] ; then

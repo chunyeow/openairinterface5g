@@ -301,6 +301,7 @@ check_install_oai_software() {
 	libidn2-0-dev  \
         libidn11-dev \
 	libmysqlclient-dev  \
+	liboctave-dev \
 	libpgm-5.1 \
 	libpgm-dev \
 	libsctp1  \
@@ -312,9 +313,11 @@ check_install_oai_software() {
 	libxml2 \
 	libxml2-dev  \
 	linux-headers-`uname -r` \
-    mscgen  \
+	mscgen  \
 	mysql-client  \
 	mysql-server \
+	octave \
+	octave-signal \
 	openssh-client \
 	openssh-server \
 	openssl \
