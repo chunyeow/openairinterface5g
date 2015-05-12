@@ -904,16 +904,12 @@ void do_OFDM_mod_rt(int subframe,PHY_VARS_eNB *phy_vars_eNB)
                      phy_vars_eNB->lte_frame_parms.log2_symbol_size,
                      6,
                      phy_vars_eNB->lte_frame_parms.nb_prefix_samples,
-                     phy_vars_eNB->lte_frame_parms.twiddle_ifft,
-                     phy_vars_eNB->lte_frame_parms.rev,
                      CYCLIC_PREFIX);
         PHY_ofdm_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F+slot_sizeF],
                      dummy_tx_b+(phy_vars_eNB->lte_frame_parms.samples_per_tti>>1),
                      phy_vars_eNB->lte_frame_parms.log2_symbol_size,
                      6,
                      phy_vars_eNB->lte_frame_parms.nb_prefix_samples,
-                     phy_vars_eNB->lte_frame_parms.twiddle_ifft,
-                     phy_vars_eNB->lte_frame_parms.rev,
                      CYCLIC_PREFIX);
       } else {
         normal_prefix_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
