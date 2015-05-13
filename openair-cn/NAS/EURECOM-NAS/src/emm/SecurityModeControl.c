@@ -587,7 +587,7 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi,
       	  		MSC_NAS_EMM_MME,
       	  	  	MSC_NAS_EMM_MME,
       	  	  	NULL,0,
-      	  	  	"0 EMMREG_COMMON_PROC_REQ ue id %u (security mode control)", ueid);
+      	  	  	"0 EMMREG_COMMON_PROC_REQ ue id %06x (security mode control)", ueid);
       emm_sap_t emm_sap;
       emm_sap.primitive = EMMREG_COMMON_PROC_REQ;
       emm_sap.u.emm_reg.ueid = ueid;
@@ -666,7 +666,7 @@ int emm_proc_security_mode_complete(unsigned int ueid)
       	  		MSC_NAS_EMM_MME,
       	  	  	MSC_NAS_EMM_MME,
       	  	  	NULL,0,
-      	  	  	"0 EMMREG_COMMON_PROC_CNF ue id %u (security mode complete)", ueid);
+      	  	  	"0 EMMREG_COMMON_PROC_CNF ue id %06x (security mode complete)", ueid);
     emm_sap.primitive = EMMREG_COMMON_PROC_CNF;
     emm_sap.u.emm_reg.ueid = ueid;
     emm_sap.u.emm_reg.ctx  = emm_ctx;
@@ -680,7 +680,7 @@ int emm_proc_security_mode_complete(unsigned int ueid)
       	  		MSC_NAS_EMM_MME,
       	  	  	MSC_NAS_EMM_MME,
       	  	  	NULL,0,
-      	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %u (security mode complete)", ueid);
+      	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %06x (security mode complete)", ueid);
     emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
     emm_sap.u.emm_reg.ueid = ueid;
     emm_sap.u.emm_reg.ctx  = emm_ctx;
@@ -770,7 +770,7 @@ int emm_proc_security_mode_reject(unsigned int ueid)
     	  		MSC_NAS_EMM_MME,
     	  	  	MSC_NAS_EMM_MME,
     	  	  	NULL,0,
-    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %u (security mode reject)", ueid);
+    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %06x (security mode reject)", ueid);
   emm_sap_t emm_sap;
   emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
   emm_sap.u.emm_reg.ueid = ueid;
@@ -1116,7 +1116,7 @@ int _security_request(security_data_t *data, int is_new)
     	  		MSC_NAS_EMM_MME,
     	  	  	MSC_NAS_EMM_MME,
     	  	  	NULL,0,
-    	  	  	"0 EMMAS_SECURITY_REQ ue id %u", data->ueid);
+    	  	  	"0 EMMAS_SECURITY_REQ ue id %06x", data->ueid);
   rc = emm_sap_send(&emm_sap);
 
   if (rc != RETURNerror) {
@@ -1182,7 +1182,7 @@ static int _security_abort(void *args)
     	    	  		MSC_NAS_EMM_MME,
     	    	  	  	MSC_NAS_EMM_MME,
     	    	  	  	NULL,0,
-    	    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %u (security abort)", data->ueid);
+    	    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %06x (security abort)", data->ueid);
       emm_sap_t emm_sap;
       emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
       emm_sap.u.emm_reg.ueid = ueid;

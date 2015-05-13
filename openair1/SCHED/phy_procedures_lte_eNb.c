@@ -148,12 +148,12 @@ int32_t add_ue(int16_t rnti, PHY_VARS_eNB *phy_vars_eNB)
 
   for (i=0; i<NUMBER_OF_UE_MAX; i++) {
     if ((phy_vars_eNB->dlsch_eNB[i]==NULL) || (phy_vars_eNB->ulsch_eNB[i]==NULL)) {
-      MSC_LOG_EVENT(MSC_PHY_ENB, "Failed add ue %"PRIx16" (ENOMEM)", rnti);
+      MSC_LOG_EVENT(MSC_PHY_ENB, "0 Failed add ue %"PRIx16" (ENOMEM)", rnti);
       LOG_E(PHY,"Can't add UE, not enough memory allocated\n");
       return(-1);
     } else {
       if (phy_vars_eNB->eNB_UE_stats[i].crnti==0) {
-        MSC_LOG_EVENT(MSC_PHY_ENB, "Add ue %"PRIx16" ", rnti);
+        MSC_LOG_EVENT(MSC_PHY_ENB, "0 Add ue %"PRIx16" ", rnti);
         LOG_I(PHY,"UE_id %d associated with rnti %x\n",i, rnti);
         phy_vars_eNB->dlsch_eNB[i][0]->rnti = rnti;
         phy_vars_eNB->ulsch_eNB[i]->rnti = rnti;
@@ -176,12 +176,12 @@ int32_t remove_ue(uint16_t rnti, PHY_VARS_eNB *phy_vars_eNB, uint8_t abstraction
 
   for (i=0; i<NUMBER_OF_UE_MAX; i++) {
     if ((phy_vars_eNB->dlsch_eNB[i]==NULL) || (phy_vars_eNB->ulsch_eNB[i]==NULL)) {
-      MSC_LOG_EVENT(MSC_PHY_ENB, "Failed remove ue %"PRIx16" (ENOMEM)", rnti);
+      MSC_LOG_EVENT(MSC_PHY_ENB, "0 Failed remove ue %"PRIx16" (ENOMEM)", rnti);
       LOG_E(PHY,"Can't remove UE, not enough memory allocated\n");
       return(-1);
     } else {
       if (phy_vars_eNB->eNB_UE_stats[i].crnti==rnti) {
-        MSC_LOG_EVENT(MSC_PHY_ENB, "Removed ue %"PRIx16" ", rnti);
+        MSC_LOG_EVENT(MSC_PHY_ENB, "0 Removed ue %"PRIx16" ", rnti);
         //msg("[PHY] UE_id %d\n",i);
         clean_eNb_dlsch(phy_vars_eNB->dlsch_eNB[i][0], abstraction_flag);
         clean_eNb_ulsch(phy_vars_eNB->ulsch_eNB[i],abstraction_flag);
@@ -193,7 +193,7 @@ int32_t remove_ue(uint16_t rnti, PHY_VARS_eNB *phy_vars_eNB, uint8_t abstraction
     }
   }
 
-  MSC_LOG_EVENT(MSC_PHY_ENB, "Failed remove ue %"PRIx16" (not found)", rnti);
+  MSC_LOG_EVENT(MSC_PHY_ENB, "0 Failed remove ue %"PRIx16" (not found)", rnti);
   return(-1);
 }
 
@@ -2788,7 +2788,7 @@ void process_HARQ_feedback(uint8_t UE_id,
               LOG_W(PHY,"[eNB %d][PDSCH %x/%d] DLSCH retransmissions exhausted, dropping packet\n",phy_vars_eNB->Mod_id,
                     dlsch->rnti,dl_harq_pid[m]);
 #endif
-              MSC_LOG_EVENT(MSC_PHY_ENB, "HARQ DLSCH Failed RNTI %"PRIx16" round %u",
+              MSC_LOG_EVENT(MSC_PHY_ENB, "0 HARQ DLSCH Failed RNTI %"PRIx16" round %u",
                             dlsch->rnti,
                             dlsch_harq_proc->round);
 
@@ -3094,7 +3094,7 @@ void prach_procedures(PHY_VARS_eNB *phy_vars_eNB,uint8_t sched_subframe,uint8_t 
                                   0,subframe,0);
 #endif
     } else {
-      MSC_LOG_EVENT(MSC_PHY_ENB, "RA Failed add user, too many");
+      MSC_LOG_EVENT(MSC_PHY_ENB, "0 RA Failed add user, too many");
       LOG_I(PHY,"[eNB %d][RAPROC] frame %d, subframe %d: Unable to add user, max user count reached\n",
             phy_vars_eNB->Mod_id,frame, subframe);
     }

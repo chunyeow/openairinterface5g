@@ -331,7 +331,7 @@ int emm_proc_identification(unsigned int                   ueid,
       		MSC_NAS_EMM_MME,
       	  	MSC_NAS_EMM_MME,
       	  	NULL,0,
-      	  	"0 EMMREG_COMMON_PROC_REQ ue id %u (identification)", ueid);
+      	  	"0 EMMREG_COMMON_PROC_REQ ue id %06x (identification)", ueid);
 
       emm_sap_t emm_sap;
       emm_sap.primitive = EMMREG_COMMON_PROC_REQ;
@@ -444,7 +444,7 @@ int emm_proc_identification_complete(unsigned int ueid, const imsi_t *imsi,
     		MSC_NAS_EMM_MME,
     	  	MSC_NAS_EMM_MME,
     	  	NULL,0,
-    	  	"0 EMMREG_COMMON_PROC_CNF ue id %u", ueid);
+    	  	"0 EMMREG_COMMON_PROC_CNF ue id %06x", ueid);
 
     emm_sap.primitive = EMMREG_COMMON_PROC_CNF;
     emm_sap.u.emm_reg.ueid = ueid;
@@ -459,7 +459,7 @@ int emm_proc_identification_complete(unsigned int ueid, const imsi_t *imsi,
     		MSC_NAS_EMM_MME,
     	  	MSC_NAS_EMM_MME,
     	  	NULL,0,
-    	  	"0 EMMREG_COMMON_PROC_REJ ue id %u", ueid);
+    	  	"0 EMMREG_COMMON_PROC_REJ ue id %06x", ueid);
 
     emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
     emm_sap.u.emm_reg.ueid = ueid;
@@ -568,7 +568,7 @@ int _identification_request(identification_data_t *data)
   		MSC_NAS_EMM_MME,
   	  	MSC_NAS_EMM_MME,
   	  	NULL,0,
-  	  	"0 EMMAS_SECURITY_REQ ue id %u", data->ueid);
+  	  	"0 EMMAS_SECURITY_REQ ue id %06x", data->ueid);
 
   emm_sap.primitive = EMMAS_SECURITY_REQ;
   emm_sap.u.emm_as.u.security.guti = NULL;
@@ -657,7 +657,7 @@ static int _identification_abort(void *args)
     	  		MSC_NAS_EMM_MME,
     	  	  	MSC_NAS_EMM_MME,
     	  	  	NULL,0,
-    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %u", ueid);
+    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %06x", ueid);
       emm_sap_t emm_sap;
       emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
       emm_sap.u.emm_reg.ueid = ueid;

@@ -201,7 +201,7 @@ function main()
   if [ $run_mscgen -eq 1 ]; then 
     cd $MSC_DIR
     last_created_file=`ls -t mscgen* | head -1 | tr -d ':'`
-    $OPENAIR_DIR/targets/SCRIPTS/msc_gen.py
+    $OPENAIR_DIR/targets/SCRIPTS/msc_gen.py  --profile E_UTRAN
     sync
     last_created_file2=`ls -t mscgen* | head -1 | tr -d ':'`
         

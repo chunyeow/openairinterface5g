@@ -186,7 +186,7 @@ void rrc_eNB_remove_ue_context(
 
   MSC_LOG_EVENT(
     MSC_RRC_ENB,
-    "Removed UE %x",
+    "0 Removed UE %"PRIx16" ",
     ue_context_pP->ue_context.rnti);
 
   rrc_eNB_free_mem_UE_context(ctxt_pP, ue_context_pP);

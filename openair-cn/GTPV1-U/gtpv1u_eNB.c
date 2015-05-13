@@ -231,6 +231,11 @@ static int gtpv1u_eNB_send_init_udp(uint16_t port_number)
   UDP_INIT(message_p).address = inet_ntoa(addr);
   LOG_D(GTPU, "Tx UDP_INIT IP addr %s\n", UDP_INIT(message_p).address);
 
+  MSC_LOG_EVENT(
+	  MSC_GTPU_ENB,
+	  "0 UDP bind  %s:%u",
+	  UDP_INIT(message_p).address,
+	  UDP_INIT(message_p).port);
   return itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
 }
 
@@ -333,8 +338,7 @@ NwGtpv1uRcT gtpv1u_eNB_process_stack_req(
       MSC_LOG_TX_MESSAGE(
     		  MSC_GTPU_ENB,
     		  MSC_PDCP_ENB,
-    		  NULL,
-    		  0,
+    		  NULL,0,
     		  MSC_AS_TIME_FMT" DATA-REQ rb %u size %u",
     		  0,0,
     		  (gtpv1u_teid_data_p->eps_bearer_id) ? gtpv1u_teid_data_p->eps_bearer_id - 4: 5-4,

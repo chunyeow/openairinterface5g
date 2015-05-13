@@ -2011,7 +2011,7 @@ static int _emm_as_security_rej(const emm_as_security_t *msg,
       if (msg->guti) {
         MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send AUTHENTICATION_REJECT to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
       } else {
-        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send AUTHENTICATION_REJECT to ue id %u ", as_msg->UEid);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send AUTHENTICATION_REJECT to ue id %x ", as_msg->UEid);
       }
       size = emm_send_authentication_reject(
                &emm_msg->authentication_reject);
@@ -2037,10 +2037,16 @@ static int _emm_as_security_rej(const emm_as_security_t *msg,
 
     if (emm_ctx) {
       emm_security_context = emm_ctx->security;
+      if (emm_security_context) {
       nas_msg.header.sequence_number = emm_security_context->dl_count.seq_num;
       LOG_TRACE(DEBUG,
                 "Set nas_msg.header.sequence_number -> %u",
                 nas_msg.header.sequence_number);
+      } else {
+          LOG_TRACE(DEBUG,
+                  "No security context, not set nas_msg.header.sequence_number -> %u",
+                  nas_msg.header.sequence_number);
+      }
     }
 
     /* Encode the NAS security message */
@@ -2227,7 +2233,7 @@ static int _emm_as_establish_rej(const emm_as_establish_t *msg,
       if (msg->UEid.guti) {
         MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send ATTACH_REJECT to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
       } else {
-        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send ATTACH_REJECT to ue id %u ", as_msg->UEid);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send ATTACH_REJECT to ue id 0x%06"PRIX32" ", as_msg->UEid);
       }
       size = emm_send_attach_reject(msg, &emm_msg->attach_reject);
       break;
@@ -2236,7 +2242,7 @@ static int _emm_as_establish_rej(const emm_as_establish_t *msg,
         if (msg->UEid.guti) {
           MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send TRACKING_AREA_UPDATE_REJECT to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
         } else {
-          MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send TRACKING_AREA_UPDATE_REJECT to ue id %u ", as_msg->UEid);
+          MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send TRACKING_AREA_UPDATE_REJECT to ue id 0x%06"PRIX32" ", as_msg->UEid);
         }
       size = emm_send_tracking_area_update_reject(msg,
              &emm_msg->tracking_area_update_reject);

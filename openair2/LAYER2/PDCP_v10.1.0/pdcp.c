@@ -629,6 +629,13 @@ pdcp_data_ind(
 
 #endif
       //rrc_lite_data_ind(module_id, //Modified MW - L2 Interface
+  	MSC_LOG_TX_MESSAGE(
+  	    (ctxt_pP->enb_flag == ENB_FLAG_NO)? MSC_PDCP_UE:MSC_PDCP_ENB,
+        (ctxt_pP->enb_flag == ENB_FLAG_NO)? MSC_RRC_UE:MSC_RRC_ENB,
+        NULL,0,
+        PROTOCOL_PDCP_CTXT_FMT" DATA-IND len %u",
+        PROTOCOL_PDCP_CTXT_ARGS(ctxt_pP, pdcp_p),
+        sdu_buffer_sizeP - pdcp_header_len - pdcp_tailer_len);
       pdcp_rrc_data_ind(ctxt_pP,
                         rb_id,
                         sdu_buffer_sizeP - pdcp_header_len - pdcp_tailer_len,
@@ -753,6 +760,14 @@ pdcp_data_ind(
 #if defined(LINK_ENB_PDCP_TO_GTPV1U)
 
   if ((TRUE == ctxt_pP->enb_flag) && (FALSE == srb_flagP)) {
+    MSC_LOG_TX_MESSAGE(
+    		MSC_PDCP_ENB,
+    		MSC_GTPU_ENB,
+    		NULL,0,
+    		"0 GTPV1U_ENB_TUNNEL_DATA_REQ  ue %x rab %u len %u",
+    		ctxt_pP->rnti,
+    		rb_id + 4,
+    		sdu_buffer_sizeP - payload_offset);
     //LOG_T(PDCP,"Sending to GTPV1U %d bytes\n", sdu_buffer_sizeP - payload_offset);
     gtpu_buffer_p = itti_malloc(TASK_PDCP_ENB, TASK_GTPV1_U,
                                 sdu_buffer_sizeP - payload_offset + GTPU_HEADER_OVERHEAD_MAX);
@@ -1564,14 +1579,14 @@ pdcp_config_set_security(
     pdcp_pP->security_activated = 1;
 	MSC_LOG_EVENT(
 	  (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
-	  " Set security ciph %X integ %x UE %"PRIx16" ",
+	  "0 Set security ciph %X integ %x UE %"PRIx16" ",
 	  pdcp_pP->cipheringAlgorithm,
 	  pdcp_pP->integrityProtAlgorithm,
 	  ctxt_pP->rnti);
   } else {
 	  MSC_LOG_EVENT(
 	    (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_PDCP_ENB:MSC_PDCP_UE,
-	    " Set security failed UE %"PRIx16" ",
+	    "0 Set security failed UE %"PRIx16" ",
 	    ctxt_pP->rnti);
 	  LOG_E(PDCP,PROTOCOL_PDCP_CTXT_FMT"  bad security mode %d",
           PROTOCOL_PDCP_CTXT_ARGS(ctxt_pP,pdcp_pP),

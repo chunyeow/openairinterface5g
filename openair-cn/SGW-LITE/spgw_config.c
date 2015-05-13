@@ -161,49 +161,26 @@ int spgw_config_process(spgw_config_t* config_pP)
   struct in_addr    inaddr;
   int               ret = 0;
 
-  if (strncasecmp("tun",config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up, strlen("tun")) == 0) {
+  inaddr.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
+
+  if (strncasecmp("lo",config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up, strlen("lo")) == 0) {
 	config_pP->sgw_config.local_to_eNB = TRUE;
-    if (snprintf(system_cmd, 256,
-                 "ip link set %s down ;sync;openvpn --rmtun --dev %s;sync",
-                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up,
-                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up
-                ) > 0) {
-      ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+
     } else {
-      SPGW_APP_ERROR("Del %s\n", config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
-      ret = -1;
-    }
+	config_pP->sgw_config.local_to_eNB = FALSE;
 
     if (snprintf(system_cmd, 256,
-                 "openvpn --mktun --dev %s;sync",
-                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
+    		"insmod $OPENAIR_TARGETS/bin/xt_GTPUAH.ko gtpu_enb_port=2152 gtpu_sgw_port=%u sgw_addr=\"%s\" ",
+    		config_pP->sgw_config.sgw_udp_port_for_S1u_S12_S4_up,
+    		inet_ntoa(inaddr)) > 0) {
       ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
     } else {
-      SPGW_APP_ERROR("Create %s\n", config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
+      SPGW_APP_ERROR("GTPUAH kernel module\n");
       ret = -1;
     }
+  }
 
-    inaddr.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
-
-    if (snprintf(system_cmd, 256,
-                 "ip -4 addr add %s/%d  dev %s;sync",
-                 inet_ntoa(inaddr),
-                 config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S1u_S12_S4_up,
-                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
-      ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    } else {
-      SPGW_APP_ERROR("Set IPv4 address on %s\n", config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
-      ret = -1;
-    }
-
-    if (snprintf(system_cmd, 256,
-                 "sync;ifconfig  %s up;sync",
-                 config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
-      ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    } else {
-      SPGW_APP_ERROR("ifconfig up %s\n", config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
-      ret = -1;
-    }
+  if (config_pP->sgw_config.local_to_eNB == TRUE) {
 
     if (snprintf(system_cmd, 256,
                  "iptables -t filter -I INPUT -i lo -d %s --protocol sctp -j DROP",
@@ -224,20 +201,9 @@ int spgw_config_process(spgw_config_t* config_pP)
     }
 
     if (snprintf(system_cmd, 256,
-                 "insmod $OPENAIR_TARGETS/bin/xt_GTPUAH.ko tunnel_local=1 gtpu_port=%u mtu=%u",
+    		"insmod $OPENAIR_TARGETS/bin/xt_GTPUAH.ko gtpu_enb_port=2153 gtpu_sgw_port=%u sgw_addr=\"%s\" ",
                  config_pP->sgw_config.sgw_udp_port_for_S1u_S12_S4_up,
-                 config_pP->sgw_config.sgw_interface_mtu_for_S1u_S12_S4_up) > 0) {
-      ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    } else {
-      SPGW_APP_ERROR("GTPUAH kernel module\n");
-      ret = -1;
-    }
-  } else {
-	config_pP->sgw_config.local_to_eNB = FALSE;
-    if (snprintf(system_cmd, 256,
-                 "insmod $OPENAIR_TARGETS/bin/xt_GTPUAH.ko tunnel_local=0 gtpu_port=%u mtu=%u",
-                 config_pP->sgw_config.sgw_udp_port_for_S1u_S12_S4_up,
-                 config_pP->sgw_config.sgw_interface_mtu_for_S1u_S12_S4_up) > 0) {
+    		inet_ntoa(inaddr)) > 0) {
       ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
     } else {
       SPGW_APP_ERROR("GTPUAH kernel module\n");
@@ -245,23 +211,10 @@ int spgw_config_process(spgw_config_t* config_pP)
     }
   }
 
-  spgw_system("insmod $OPENAIR_TARGETS/bin/xt_GTPURH.ko", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
 
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
   ret += spgw_system("echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
 #endif
-
-  if (snprintf(system_cmd, 256,
-               "ip link set dev %s mtu %u",
-               config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up,
-               config_pP->sgw_config.sgw_interface_mtu_for_S1u_S12_S4_up) > 0) {
-    SPGW_APP_INFO("Set S1U interface MTU: %s\n",system_cmd);
-    ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-  } else {
-    SPGW_APP_ERROR("Set S1U interface MTU\n");
-    ret = -1;
-  }
-
 
 
   if (snprintf(system_cmd, 256,
@@ -274,46 +227,6 @@ int spgw_config_process(spgw_config_t* config_pP)
     ret = -1;
   }
 
-
-
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
-
-  if (config_pP->sgw_config.local_to_eNB) {
-	if (snprintf(system_cmd, 256,
-	             "iptables -I OUTPUT -t mangle -m mark ! --mark 0 -j CONNMARK --save-mark") > 0) {
-	  ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-	} else {
-	  SPGW_APP_ERROR("Save mark\n");
-	  ret = -1;
-	}
-  } else {
-    if (snprintf(system_cmd, 256,
-               "iptables -I POSTROUTING -t mangle -o %s -m mark ! --mark 0   -j CONNMARK --save-mark",
-               config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
-      ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-    } else {
-      SPGW_APP_ERROR("Save mark\n");
-      ret = -1;
-    }
-  }
- /* if (snprintf(system_cmd, 256,
-	               "iptables -I INPUT -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
-	               config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
-    ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-  } else {
-	SPGW_APP_ERROR("Restore mark\n");
-	ret = -1;
-  }*/
-  if (snprintf(system_cmd, 256,
-               "iptables -I PREROUTING -t mangle -i %s ! --protocol sctp   -j CONNMARK --restore-mark",
-               config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI) > 0) {
-    ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-  } else {
-    SPGW_APP_ERROR("Restore mark\n");
-    ret = -1;
-  }
-
-#endif
   return ret;
 }
 
@@ -331,7 +244,6 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP)
   char             *sgw_ipv4_address_for_S11             = NULL;
   char             *sgw_drop_uplink_s1u_traffic          = NULL;
   char             *sgw_drop_downlink_s1u_traffic        = NULL;
-  libconfig_int     sgw_interface_mtu_for_S1u_S12_S4_up  = 1500;
   libconfig_int     sgw_udp_port_for_S1u_S12_S4_up       = 2152;
 
   config_setting_t *setting_pgw                  = NULL;
@@ -364,9 +276,6 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP)
   pgw_lite_conf_ipv4_list_elm_t *ip4_ref = NULL;
   pgw_lite_conf_ipv6_list_elm_t *ip6_ref = NULL;
   char              system_cmd[256];
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
-  int               tun_id               = 21;
-#endif
 
   memset((char*)config_pP, 0 , sizeof(spgw_config_t));
   STAILQ_INIT(&config_pP->pgw_config.pgw_lite_ipv4_pool_list);
@@ -446,16 +355,6 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP)
                       config_pP->sgw_config.ipv4.sgw_interface_name_for_S11);
       }
 
-      // optional
-      if(config_setting_lookup_int(
-            subsetting,
-            SGW_CONFIG_STRING_SGW_INTERFACE_MTU_FOR_S1U_S12_S4_UP,
-            &sgw_interface_mtu_for_S1u_S12_S4_up)
-        ) {
-        config_pP->sgw_config.sgw_interface_mtu_for_S1u_S12_S4_up = sgw_interface_mtu_for_S1u_S12_S4_up;
-      } else {
-        config_pP->sgw_config.sgw_interface_mtu_for_S1u_S12_S4_up = sgw_interface_mtu_for_S1u_S12_S4_up;
-      }
 
       if(config_setting_lookup_int(
             subsetting,
@@ -577,25 +476,26 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP)
               memcpy (&addr_start, buf_in_addr, sizeof(struct in_addr));
               // valid address
               atoken2 = strtok(NULL, PGW_CONFIG_STRING_IPV4_PREFIX_DELIMITER);
+              prefix_mask = atoi(atoken2);
 #if defined (ENABLE_USE_GTPU_IN_KERNEL)
               in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
 
-              //                          if (snprintf(system_cmd, 128, "ip route add %s/%s via %s dev %s",
-              //                                       astring,
-              //                                       atoken2,
-              //                                       inet_ntoa(in_addr_var),
-              //                                       config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
-              if (snprintf(system_cmd, 128, "ip route add %s/%s dev %s",
-                           astring,
-                           atoken2,
-                           config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
-                spgw_system(system_cmd, SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
+              if (snprintf(system_cmd, 256,
+            	               "iptables -I PREROUTING -t mangle -i %s -d %s/%s ! --protocol sctp   -j CONNMARK --restore-mark",
+            	               config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI, astring, atoken2) > 0) {
+                spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
               } else {
-                SPGW_APP_ERROR("Add route: for %s\n", astring);
+            	SPGW_APP_ERROR("Restore mark\n");
               }
 
+              if (snprintf(system_cmd, 256,
+                  "iptables -I OUTPUT -t mangle -m mark -s %s/%s ! --mark 0 -j CONNMARK --save-mark",
+                  astring, atoken2) > 0) {
+                spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+              } else {
+          	    SPGW_APP_ERROR("Save mark\n");
+          	  }
 #endif
-              prefix_mask = atoi(atoken2);
 
               if ((prefix_mask >= 2)&&(prefix_mask < 32)) {
                 memcpy (&addr_start, buf_in_addr, sizeof(struct in_addr));

@@ -62,7 +62,7 @@ MME :
         # max values = 999.999:65535
         # maximum of 32 values, comma separated
         PLMN = ( 
-             {MCC="208" ; MNC="92";  TAC = "1"; }
+             {MCC="208" ; MNC="93";  TAC = "1"; }
         );
     };
     
@@ -91,9 +91,8 @@ S-GW :
         SGW_INTERFACE_NAME_FOR_S11              = "none";
         SGW_IPV4_ADDRESS_FOR_S11                = "0.0.0.0/24";
 
-        SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP    = "tun3";
-        SGW_INTERFACE_MTU_FOR_S1U_S12_S4_UP     = 1564
-        SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP      = "192.188.3.3/24";
+        SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP    = "lo";
+        SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP      = "127.0.0.1/24";
         # TODO  PORT NUMBER
         SGW_IPV4_PORT_FOR_S1U_S12_S4_UP         = 2152;
 

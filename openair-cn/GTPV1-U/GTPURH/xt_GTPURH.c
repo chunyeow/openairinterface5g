@@ -15,6 +15,8 @@
 #include <linux/init.h>
 #include <linux/skbuff.h>
 #include <linux/ip.h>
+#include <linux/in.h>
+#include <linux/icmp.h>
 #include <linux/if_ether.h>
 #include <linux/route.h>
 #include <net/checksum.h>
@@ -33,6 +35,7 @@
 #endif
 
 //#define TRACE_IN_KERN_LOG 1
+#define TRACE_ICMP_IN_KERN_LOG 1
 
 #if defined(TRACE_IN_KERN_LOG)
 #define PR_INFO(fORMAT, aRGS...) pr_info(fORMAT, ##aRGS)
@@ -107,9 +110,31 @@ struct gtpuhdr {
 
 //-----------------------------------------------------------------------------
 static char*
-_gtpurh_nf_inet_hook_2_string(int nf_inet_hookP)
+_gtpurh_icmph_type_2_string(uint8_t typeP)
+//-----------------------------------------------------------------------------
 {
-  //-----------------------------------------------------------------------------
+  switch (typeP) {
+    case ICMP_ECHOREPLY:return "ECHOREPLY";break;
+    case ICMP_DEST_UNREACH:return "DEST_UNREACH";break;
+    case ICMP_SOURCE_QUENCH:return "SOURCE_QUENCH";break;
+    case ICMP_REDIRECT:return "REDIRECT";break;
+    case ICMP_ECHO:return "ECHO";break;
+    case ICMP_TIME_EXCEEDED:return "TIME_EXCEEDED";break;
+    case ICMP_PARAMETERPROB:return "PARAMETERPROB";break;
+    case ICMP_TIMESTAMP:return "TIMESTAMP";break;
+    case ICMP_TIMESTAMPREPLY:return "TIMESTAMPREPLY";break;
+    case ICMP_INFO_REQUEST:return "INFO_REQUEST";break;
+    case ICMP_INFO_REPLY:return "INFO_REPLY";break;
+    case ICMP_ADDRESS:return "ADDRESS";break;
+    case ICMP_ADDRESSREPLY:return "ADDRESSREPLY";break;
+    default:return "TYPE?";
+  }
+}
+//-----------------------------------------------------------------------------
+static char*
+_gtpurh_nf_inet_hook_2_string(int nf_inet_hookP)
+//-----------------------------------------------------------------------------
+{
   switch (nf_inet_hookP) {
   case NF_INET_PRE_ROUTING:
     return "NF_INET_PRE_ROUTING";
@@ -290,6 +315,9 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
 #if defined(NEW_SKB)
   struct sk_buff *new_skb_p        = NULL;
   struct iphdr   *new_ip_p         = NULL;
+#endif
+#if defined(TRACE_ICMP_IN_KERN_LOG)
+  struct icmphdr *icmph_p          = NULL;
 #endif
   uint16_t        gtp_payload_size = 0;
 
@@ -487,6 +515,20 @@ _gtpurh_tg4_rem(struct sk_buff *orig_skb_pP, const struct xt_action_param *par_p
             (new_skb_p->dev == NULL) ? "NULL" : new_skb_p->dev->name,
             NIPADDR(new_ip_p->saddr),
             NIPADDR(new_ip_p->daddr));*/
+#if defined(TRACE_ICMP_IN_KERN_LOG)
+    if (new_ip_p->protocol == IPPROTO_ICMP) {
+      icmph_p = (struct icmphdr*)((uint8_t*)new_ip_p + (new_ip_p->ihl << 2));
+      if ((icmph_p->type == ICMP_ECHOREPLY) || (icmph_p->type == ICMP_ECHO)) {
+        pr_info("GTPURH: %s/%s ICMP src %u.%u.%u.%u dst  %u.%u.%u.%u  %s id %04X seq %u\n",
+                _gtpurh_nf_inet_hook_2_string(par_pP->hooknum),gtpurh_tg_reg[0].table,
+                NIPADDR(new_ip_p->saddr),
+                NIPADDR(new_ip_p->daddr),
+                _gtpurh_icmph_type_2_string(icmph_p->type),
+    	        ntohs(icmph_p->un.echo.id),
+    	        ntohs(icmph_p->un.echo.sequence));
+      }
+    }
+#endif
     ip_local_out(new_skb_p);
     return NF_DROP;
 free_skb:

@@ -176,6 +176,12 @@ typedef struct Enb_properties_s {
   long                    ue_TimersAndConstants_n311[1+MAX_NUM_CCs];
 
 
+  long                    srb1_timer_poll_retransmit;
+  long                    srb1_timer_reordering;
+  long                    srb1_timer_status_prohibit;
+  long                    srb1_poll_pdu;
+  long                    srb1_poll_byte;
+  long                    srb1_max_retx_threshold;
   /* Nb of MME to connect to */
   uint8_t             nb_mme;
   /* List of MME to connect to */

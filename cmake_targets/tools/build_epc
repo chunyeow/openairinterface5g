@@ -215,35 +215,12 @@ function main()
     $SUDO rm -f /usr/etc/freeDiameter/epc*    2>&1
     $SUDO rm -f $OPENAIR_DIR/targets/bin/xt_GTPU*.ko    2>&1
     (cd $OPENAIRCN_DIR/GTPV1-U/GTPUAH && $SUDO make clean)
-    (cd $OPENAIRCN_DIR/GTPV1-U/GTPURH && $SUDO make clean)
     $SUDO rm -f $OPENAIRCN_DIR/GTPV1-U/GTPUAH/Bin/* 2>&1
     $SUDO rm -f /lib/xtables/libxt_GTPU*.so             2>&1
     mkdir -m 777 -p -v build
   fi
   
-  ##############################################################################
-  # Compile kernel modules
-  ##############################################################################
-  # NO CMAKE FOR THAT, THIS CODE CAN DISAPEAR
-  #cd $OPENAIRCN_DIR/GTPV1-U/GTPUAH;
-  #make
-  #if [ $? -ne 0 ]; then
-  #  echo_error "Build GTPUAH module failed, exiting"
-  #  return 1
-  #else 
-  #  $SUDO cp -pfv ./Bin/libxt_*.so /lib/xtables
-  #  $SUDO cp -pfv ./Bin/*.ko $OPENAIR_TARGETS/bin
-  #fi
-    
-  #cd $OPENAIRCN_DIR/GTPV1-U/GTPURH;
-  #make
-  #if [ $? -ne 0 ]; then
-  #  echo_error "Build GTPURH module failed, exiting"
-  #  return 1
-  #else 
-  #  $SUDO cp -pfv ./Bin/libxt_*.so /lib/xtables
-  #  $SUDO cp -pfv ./Bin/*.ko $OPENAIR_TARGETS/bin
-  #fi
+
   
   
   
@@ -273,19 +250,12 @@ function main()
     epc_build_oai xt_GTPUAH_lib \
     libxt_GTPUAH_lib.so $dbin
   compilations \
-    epc_build_oai xt_GTPURH_lib \
-    libxt_GTPURH_lib.so $dbin
-  compilations \
-    epc_build_oai xt_GTPURH \
-    CMakeFiles/xt_GTPURH/xt_GTPURH.ko $dbin
-  compilations \
     epc_build_oai xt_GTPUAH \
     CMakeFiles/xt_GTPUAH/xt_GTPUAH.ko $dbin
     
   echo_info "Copying iptables libraries into system directory: /lib/xtables"
-  if [ -f  $dbin/libxt_GTPURH_lib.so ] ; then
-    $SUDO rm -f /lib/xtables/libxt_GTPURH.so /lib/xtables/libxt_GTPUAH.so
-    $SUDO ln -s $dbin/libxt_GTPURH_lib.so /lib/xtables/libxt_GTPURH.so
+  if [ -f  $dbin/libxt_GTPUAH_lib.so ] ; then
+    $SUDO rm -f /lib/xtables/libxt_GTPUAH.so
     $SUDO ln -s $dbin/libxt_GTPUAH_lib.so /lib/xtables/libxt_GTPUAH.so
   else
     echo_fatal "not installed GTP-U iptables: binaries not found"

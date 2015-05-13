@@ -553,7 +553,7 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
 	    		MSC_NAS_EMM_MME,
 	    	  	MSC_NAS_ESM_MME,
 	    	  	NULL,0,
-	    	  	"0 ESM_EPS_BEARER_CONTEXT_DEACTIVATE_REQ ue id %u", ueid);
+	    	  	"0 ESM_EPS_BEARER_CONTEXT_DEACTIVATE_REQ ue id %06x", ueid);
 	esm_sap_t esm_sap;
     esm_sap.primitive = ESM_EPS_BEARER_CONTEXT_DEACTIVATE_REQ;
     esm_sap.ueid = ueid;
@@ -570,7 +570,7 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
   	    		MSC_NAS_EMM_MME,
   	    		MSC_NAS_EMM_MME,
   	    	  	NULL,0,
-  	    	  	"0 EMMREG_DETACH_REQ ue id %u", ueid);
+  	    	  	"0 EMMREG_DETACH_REQ ue id %06x", ueid);
       emm_sap.primitive = EMMREG_DETACH_REQ;
       emm_sap.u.emm_reg.ueid = ueid;
       emm_sap.u.emm_reg.ctx  = emm_ctx;

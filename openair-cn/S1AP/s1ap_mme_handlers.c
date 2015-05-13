@@ -955,7 +955,7 @@ int s1ap_handle_sctp_deconnection(uint32_t assoc_id)
   }
   MSC_LOG_EVENT(
   		MSC_S1AP_MME,
-  		"Event SCTP_CLOSE_ASSOCIATION assoc_id: %d",
+  		"0 Event SCTP_CLOSE_ASSOCIATION assoc_id: %d",
         assoc_id);
 
   STAILQ_FOREACH(ue_ref, &eNB_association->ue_list_head, ue_entries) {
@@ -1038,7 +1038,7 @@ int s1ap_handle_new_association(sctp_new_peer_t *sctp_new_peer_p)
   eNB_association->next_sctp_stream = 1;
   MSC_LOG_EVENT(
   		MSC_S1AP_MME,
-  		"Event SCTP_NEW_ASSOCIATION assoc_id: %d",
+  		"0 Event SCTP_NEW_ASSOCIATION assoc_id: %d",
   		eNB_association->sctp_assoc_id);
 
   return 0;
