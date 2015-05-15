@@ -173,7 +173,7 @@ int spgw_config_process(spgw_config_t* config_pP)
     		"insmod $OPENAIR_TARGETS/bin/xt_GTPUAH.ko gtpu_enb_port=2152 gtpu_sgw_port=%u sgw_addr=\"%s\" ",
     		config_pP->sgw_config.sgw_udp_port_for_S1u_S12_S4_up,
     		inet_ntoa(inaddr)) > 0) {
-      ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+      ret += spgw_system(system_cmd, SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
     } else {
       SPGW_APP_ERROR("GTPUAH kernel module\n");
       ret = -1;
@@ -192,9 +192,9 @@ int spgw_config_process(spgw_config_t* config_pP)
     }
 
     if (snprintf(system_cmd, 256,
-                 "iptables -t filter -I INPUT -i lo -s %s --protocol sctp -j DROP",
-                 inet_ntoa(inaddr)) > 0) {
-      ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+    		"iptables -t filter -I INPUT -i lo -s %s --protocol sctp -j DROP",
+    		inet_ntoa(inaddr)) > 0) {
+	  ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
     } else {
       SPGW_APP_ERROR("Drop SCTP traffic on S1U\n");
       ret = -1;
@@ -204,7 +204,7 @@ int spgw_config_process(spgw_config_t* config_pP)
     		"insmod $OPENAIR_TARGETS/bin/xt_GTPUAH.ko gtpu_enb_port=2153 gtpu_sgw_port=%u sgw_addr=\"%s\" ",
                  config_pP->sgw_config.sgw_udp_port_for_S1u_S12_S4_up,
     		inet_ntoa(inaddr)) > 0) {
-      ret += spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
+      ret += spgw_system(system_cmd, SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
     } else {
       SPGW_APP_ERROR("GTPUAH kernel module\n");
       ret = -1;

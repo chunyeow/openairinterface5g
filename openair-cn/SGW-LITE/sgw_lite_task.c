@@ -155,7 +155,6 @@ int sgw_lite_init(char* config_file_name_pP)
   spgw_system("iptables -t filter -Z", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
   spgw_system("iptables -t raw    -Z", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
   spgw_system("ip route flush cache",  SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
-  spgw_system("rmmod xt_GTPUAH xt_GTPURH > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
   spgw_system("rmmod iptable_raw    > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
   spgw_system("rmmod iptable_mangle > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
   spgw_system("rmmod iptable_nat    > /dev/null 2>&1", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
