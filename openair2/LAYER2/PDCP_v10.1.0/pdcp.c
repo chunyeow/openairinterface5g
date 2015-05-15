@@ -475,7 +475,7 @@ pdcp_data_ind(
             sdu_buffer_sizeP,
             ctxt_pP->enb_flag);
 
-      } else {
+    } else {
       LOG_D(PDCP, "Data indication notification for PDCP entity from UE %x to eNB %u "
             "and radio bearer ID %d rlc sdu size %d ctxt_pP->enb_flag %d\n",
             ctxt_pP->rnti,
@@ -483,9 +483,9 @@ pdcp_data_ind(
             rb_idP,
             sdu_buffer_sizeP,
             ctxt_pP->enb_flag);
-      }
+    }
 
-    } else {
+  } else {
     rb_id = rb_idP % maxDRB;
     AssertError (rb_id < maxDRB, return FALSE, "RB id is too high (%u/%d) %u UE %x!\n",
                  rb_id,
