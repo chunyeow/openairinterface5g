@@ -495,6 +495,14 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP)
               } else {
           	    SPGW_APP_ERROR("Save mark\n");
           	  }
+              if (snprintf(system_cmd, 256,
+            	               "ip route add  %s/%s dev %s",
+            	               astring, atoken2, config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up) > 0) {
+                spgw_system(system_cmd, SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
+              } else {
+            	SPGW_APP_ERROR("Route for UEs\n");
+              }
+
 #endif
 
               if ((prefix_mask >= 2)&&(prefix_mask < 32)) {
