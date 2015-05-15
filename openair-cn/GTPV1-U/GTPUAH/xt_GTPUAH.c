@@ -52,7 +52,7 @@
 #    error "Kernel version is not defined!!!! Exiting."
 #endif
 
-#define THREAD_SOCK_NO_WAIT 1
+#undef  THREAD_SOCK_NO_WAIT
 #define TRACE_IN_KERN_LOG 1
 #define TRACE_ICMP_IN_KERN_LOG 1
 
