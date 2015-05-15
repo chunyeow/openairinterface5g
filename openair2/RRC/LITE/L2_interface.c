@@ -117,7 +117,7 @@ mac_rrc_lite_data_req(
           message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_BCCH_DATA_REQ);
           RRC_MAC_BCCH_DATA_REQ (message_p).frame    = frameP;
           RRC_MAC_BCCH_DATA_REQ (message_p).sdu_size = sib1_size;
-          memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
+          memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, BCCH_SDU_SIZE);
           memcpy (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, eNB_rrc_inst[Mod_idP].SIB1, sib1_size);
           RRC_MAC_BCCH_DATA_REQ (message_p).enb_index = eNB_index;
 
@@ -154,7 +154,7 @@ mac_rrc_lite_data_req(
           message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_BCCH_DATA_REQ);
           RRC_MAC_BCCH_DATA_REQ (message_p).frame = frameP;
           RRC_MAC_BCCH_DATA_REQ (message_p).sdu_size = sib23_size;
-          memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
+          memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, BCCH_SDU_SIZE);
           memcpy (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, eNB_rrc_inst[Mod_idP].SIB23, sib23_size);
           RRC_MAC_BCCH_DATA_REQ (message_p).enb_index = eNB_index;
 
@@ -205,7 +205,7 @@ mac_rrc_lite_data_req(
           message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_CCCH_DATA_REQ);
           RRC_MAC_CCCH_DATA_REQ (message_p).frame = frameP;
           RRC_MAC_CCCH_DATA_REQ (message_p).sdu_size = ccch_size;
-          memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
+          memset (RRC_MAC_CCCH_DATA_REQ (message_p).sdu, 0, CCCH_SDU_SIZE);
           memcpy (RRC_MAC_CCCH_DATA_REQ (message_p).sdu, Srb_info->Tx_buffer.Payload, ccch_size);
           RRC_MAC_CCCH_DATA_REQ (message_p).enb_index = eNB_index;
 
@@ -249,7 +249,7 @@ mac_rrc_lite_data_req(
         message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_MCCH_DATA_REQ);
         RRC_MAC_MCCH_DATA_REQ (message_p).frame = frameP;
         RRC_MAC_MCCH_DATA_REQ (message_p).sdu_size = mcch_size;
-        memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
+        memset (RRC_MAC_MCCH_DATA_REQ (message_p).sdu, 0, MCCH_SDU_SIZE);
         memcpy (RRC_MAC_MCCH_DATA_REQ (message_p).sdu, eNB_rrc_inst[Mod_idP].MCCH_MESSAGE[mbsfn_sync_area], mcch_size);
         RRC_MAC_MCCH_DATA_REQ (message_p).enb_index = eNB_index;
         RRC_MAC_MCCH_DATA_REQ (message_p).mbsfn_sync_area = mbsfn_sync_area;
@@ -301,7 +301,7 @@ mac_rrc_lite_data_req(
         message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_MAC_CCCH_DATA_REQ);
         RRC_MAC_CCCH_DATA_REQ (message_p).frame = frameP;
         RRC_MAC_CCCH_DATA_REQ (message_p).sdu_size = ccch_size;
-        memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
+        memset (RRC_MAC_CCCH_DATA_REQ (message_p).sdu, 0, CCCH_SDU_SIZE);
         memcpy (RRC_MAC_CCCH_DATA_REQ (message_p).sdu, UE_rrc_inst[Mod_idP].Srb0[eNB_index].Tx_buffer.Payload, ccch_size);
         RRC_MAC_CCCH_DATA_REQ (message_p).enb_index = eNB_index;
 
@@ -364,7 +364,7 @@ mac_rrc_lite_data_ind(
         }
 
         message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_BCCH_DATA_IND);
-        memset (RRC_MAC_BCCH_DATA_IND (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_IND (message_p).sdu));
+        memset (RRC_MAC_BCCH_DATA_IND (message_p).sdu, 0, BCCH_SDU_SIZE);
         RRC_MAC_BCCH_DATA_IND (message_p).frame = frameP;
         RRC_MAC_BCCH_DATA_IND (message_p).sdu_size = sdu_size;
         memcpy (RRC_MAC_BCCH_DATA_IND (message_p).sdu, sduP, sdu_size);
@@ -432,7 +432,7 @@ mac_rrc_lite_data_ind(
         message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_MCCH_DATA_IND);
         RRC_MAC_MCCH_DATA_IND (message_p).frame           = frameP;
         RRC_MAC_MCCH_DATA_IND (message_p).sdu_size        = sdu_lenP;
-        memset (RRC_MAC_MCCH_DATA_IND (message_p).sdu, 0, sizeof(RRC_MAC_MCCH_DATA_IND (message_p).sdu));
+        memset (RRC_MAC_MCCH_DATA_IND (message_p).sdu, 0, MCCH_SDU_SIZE);
         memcpy (RRC_MAC_MCCH_DATA_IND (message_p).sdu, sduP, sdu_lenP);
         RRC_MAC_MCCH_DATA_IND (message_p).enb_index       = eNB_indexP;
         RRC_MAC_MCCH_DATA_IND (message_p).mbsfn_sync_area = mbsfn_sync_areaP;
@@ -465,7 +465,7 @@ mac_rrc_lite_data_ind(
       RRC_MAC_CCCH_DATA_IND (message_p).frame = frameP;
       RRC_MAC_CCCH_DATA_IND (message_p).rnti  = rntiP;
       RRC_MAC_CCCH_DATA_IND (message_p).sdu_size = sdu_size;
-      memset (RRC_MAC_CCCH_DATA_IND (message_p).sdu, 0, sizeof(RRC_MAC_CCCH_DATA_IND (message_p).sdu));
+      memset (RRC_MAC_CCCH_DATA_IND (message_p).sdu, 0, CCCH_SDU_SIZE);
       memcpy (RRC_MAC_CCCH_DATA_IND (message_p).sdu, sduP, sdu_size);
       itti_send_msg_to_task (TASK_RRC_ENB, ctxt.instance, message_p);
     }
