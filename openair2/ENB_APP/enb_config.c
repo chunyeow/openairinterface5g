@@ -543,6 +543,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP)
   libconfig_int     ue_TimersAndConstants_n311    = 0;
 
 
+
   libconfig_int     srb1_timer_poll_retransmit    = 0;
   libconfig_int     srb1_timer_reordering         = 0;
   libconfig_int     srb1_timer_status_prohibit    = 0;
