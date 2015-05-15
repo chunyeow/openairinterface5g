@@ -340,7 +340,7 @@ rlc_op_status_t rlc_data_req     (const protocol_ctxt_t* const ctxt_pP,
   logical_chan_id_t      log_ch_id  = 0;
 #endif
 #ifdef DEBUG_RLC_DATA_REQ
-  LOG_D(RLC,PROTOCOL_CTXT_FMT"rlc_data_req:  rb_id %u (MAX %d), muip %d, confirmP %d, sud_sizeP %d, sdu_pP %p\n",
+  LOG_D(RLC,PROTOCOL_CTXT_FMT"rlc_data_req:  rb_id %u (MAX %d), muip %d, confirmP %d, sdu_sizeP %d, sdu_pP %p\n",
         PROTOCOL_CTXT_ARGS(ctxt_pP),
         rb_idP,
         NB_RAB_MAX,
@@ -410,7 +410,7 @@ rlc_op_status_t rlc_data_req     (const protocol_ctxt_t* const ctxt_pP,
 #endif
 
 #ifdef DEBUG_RLC_DATA_REQ
-    LOG_D(RLC,"RLC_TYPE : %d ",rlc_mode);
+    LOG_D(RLC,"RLC_TYPE : %d\n", rlc_mode);
 #endif
 
     switch (rlc_mode) {
