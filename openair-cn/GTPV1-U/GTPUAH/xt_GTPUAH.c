@@ -294,12 +294,15 @@ _gtpuah_print_hex_octets(unsigned char* data_pP, unsigned short sizeP)
   pr_info("%s",_gtpuah_print_buffer);
 }
 
+// for uplink GTPU traffic on S-GW
 //-----------------------------------------------------------------------------
 static int _udp_thread(void *data)
 //-----------------------------------------------------------------------------
 {
   int size, tx_size;
-  int bufsize = 8192;
+  int bufsize       = 8192;
+  int success_read  = 0;
+  int failed_read   = 0;
   unsigned char buf[bufsize+1];
   unsigned char gtp_resp[1024];
 
@@ -314,17 +317,22 @@ static int _udp_thread(void *data)
     	_gtpuah_sock.running = 0;
     	PR_INFO(MODULE_NAME": kthread_stop initiated exit at %lu \n", jiffies);
 		return -1; //Exit from the thread. Return value will be passed to kthread_stop()
-}
-#if defined(THREAD_SOCK_NO_WAIT)
-    usleep_range(500,2000);
-#endif
+    }
 	size = _gtpuah_ksocket_receive(_gtpuah_sock.sock, &_gtpuah_sock.addr, buf, bufsize);
 
 	if (size <= 0) {
+	  success_read  = 0;
+	  failed_read  += 1;
+	  if (failed_read > 10) failed_read = 10;
 	  if (size != -EAGAIN) {
         pr_info(MODULE_NAME": error getting datagram, sock_recvmsg error = %d\n", size);
 	  }
+#if defined(THREAD_SOCK_NO_WAIT)
+      usleep_range(failed_read*20,failed_read*200);
+#endif
     } else {
+      success_read += 1;
+      failed_read   = 0;
       PR_INFO(MODULE_NAME": received %d bytes\n", size);
 
       if ((tx_size = _gtpuah_ksocket_process_gtp(buf, size, gtp_resp)) > 0) {
@@ -578,7 +586,8 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
   if (skb_linearize(old_skb_pP) < 0) {
 	PR_INFO(MODULE_NAME": skb no linearize\n");
     return;
-    }
+  }
+  orig_iplen = ntohs(old_iph_p->tot_len);
 
   //----------------------------------------------------------------------------
   // CONNMARK
@@ -593,12 +602,11 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
     //XT_CONNMARK_RESTORE:
 	newmark          = old_skb_pP->mark ^ ct->mark;
 
-	PR_INFO(MODULE_NAME": _gtpuah_target_add restore mark %u (skb mark %u ct mark %u) sgw addr %x\n",
-			newmark, old_skb_pP->mark, ct->mark,
+	PR_INFO(MODULE_NAME": _gtpuah_target_add restore mark %u (skb mark %u ct mark %u) len %u sgw addr %x\n",
+			newmark, old_skb_pP->mark, ct->mark, orig_iplen,
 			((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->raddr);
   }
 
-  orig_iplen = ntohs(old_iph_p->tot_len);
   /* Add GTPu header */
   gtpuh.flags   = 0x30; /* v1 and Protocol-type=GTP */
   gtpuh.msgtype = 0xff; /* T-PDU */
@@ -696,10 +704,6 @@ __init gtpuah_tg_init(void)
     goto close_and_out;
   }
 
-  if ( (err = _gtpuah_sock.sock->ops->connect(_gtpuah_sock.sock, (struct sockaddr *)&_gtpuah_sock.addr_send, sizeof(struct sockaddr), 0)) < 0 ) {
-    pr_info(MODULE_NAME": Could not connect to socket, error = %d\n", -err);
-    goto close_and_out;
-  }
   // start kernel thread
   _gtpuah_sock.thread = kthread_run((void *)_udp_thread, NULL, MODULE_NAME);
   if (IS_ERR(_gtpuah_sock.thread)) {
