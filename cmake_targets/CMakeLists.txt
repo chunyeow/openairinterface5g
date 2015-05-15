@@ -973,17 +973,6 @@ IPTVERSION=${IPTVERSION} -DIPTABLES_VERSION_STRING=\"${IPTABLES_VERSION_STRING}\
 )
 
 
-add_library(xt_GTPURH_lib SHARED ${OPENAIRCN_DIR}/GTPV1-U/GTPURH/libxt_GTPURH.c)
-target_compile_definitions(xt_GTPURH_lib PRIVATE
--D_LARGEFILE_SOURCE=1
--D_LARGE_FILES
--D_FILE_OFFSET_BITS=64
--D_REENTRANT
--D_INIT=libxt_GTPURH_init
--DKVERSION=3
--DPIC
--DIPTVERSION=${IPTVERSION} -DIPTABLES_VERSION_STRING=${IPTABLES_VERSION_STRING}
-)
 
 set(SGI_DIR  ${OPENAIRCN_DIR}/SGI)
 set(SGI_SRC
@@ -1901,7 +1890,6 @@ make_driver(ue_ip ${OPENAIR2_DIR}/NETWORK_DRIVER/UE_IP ${ue_ip_src})
 # KVERSION is not used in the code, but required
 set(module_cc_opt "${module_cc_opt} -DKVERSION=3")
 make_driver(xt_GTPUAH ${OPENAIRCN_DIR}/GTPV1-U/GTPUAH "")
-make_driver(xt_GTPURH ${OPENAIRCN_DIR}/GTPV1-U/GTPURH "")
 
 # add the install targets
 #install (TARGETS Tutorial DESTINATION bin)
