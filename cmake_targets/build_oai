@@ -330,14 +330,17 @@ function main() {
   if [ "$HW" = "EXMIMO" ] ; then
     
     echo_info "Compiling Express MIMO 2 board drivers"
+    mkdir -p $DIR/lte_noS1_build_oai/build
+    cd $DIR/lte_noS1_build_oai/build
+    cmake ..
     compilations \
-        lte_build_oai openair_rf \
+        lte_noS1_build_oai openair_rf \
         CMakeFiles/openair_rf/openair_rf.ko $dbin/openair_rf.ko
     compilations \
-	  lte_build_oai updatefw \
+	  lte_noS1_build_oai updatefw \
 	  updatefw $dbin/updatefw
-    make -C $OPENAIR_DIR/cmake_targets/lte_build_oai/build oarf > $dlog/oarf.txt 2>&1
-    cp $OPENAIR_DIR/cmake_targets/lte_build_oai/build/*.oct $dbin
+    make -C $OPENAIR_DIR/cmake_targets/lte_noS1_build_oai/build oarf > $dlog/oarf.txt 2>&1
+    cp $OPENAIR_DIR/cmake_targets/lte_noS1_build_oai/build/*.oct $dbin
     echo_success "oarf tools compiled"
     cp $OPENAIR_DIR/cmake_targets/tools/init_exmimo2 $dbin
   fi
