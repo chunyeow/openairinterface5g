@@ -60,6 +60,10 @@
 
 #include "assertions.h"
 #include "conversions.h"
+#if defined(TEST_S1C_MME)
+#include "oaisim_mme_test_s1c.h"
+#endif
+
 
 #if !defined(OAI_EMU)
 s1ap_eNB_config_t s1ap_config;
@@ -239,10 +243,13 @@ void s1ap_eNB_handle_sctp_data_ind(sctp_data_ind_t *sctp_data_ind)
   int result;
 
   DevAssert(sctp_data_ind != NULL);
-
+#if defined(TEST_S1C_MME)
+  mme_test_s1_notify_sctp_data_ind(sctp_data_ind->assoc_id, sctp_data_ind->stream,
+          sctp_data_ind->buffer, sctp_data_ind->buffer_length);
+#else
   s1ap_eNB_handle_message(sctp_data_ind->assoc_id, sctp_data_ind->stream,
                           sctp_data_ind->buffer, sctp_data_ind->buffer_length);
-
+#endif
   result = itti_free(TASK_UNKNOWN, sctp_data_ind->buffer);
   AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
 }
