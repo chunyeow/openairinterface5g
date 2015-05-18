@@ -166,7 +166,7 @@ int spgw_config_process(spgw_config_t* config_pP)
   if (strncasecmp("lo",config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up, strlen("lo")) == 0) {
 	config_pP->sgw_config.local_to_eNB = TRUE;
 
-    } else {
+  } else {
 	config_pP->sgw_config.local_to_eNB = FALSE;
 
     if (snprintf(system_cmd, 256,
