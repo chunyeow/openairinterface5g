@@ -50,6 +50,8 @@ function help()
   echo_error "  -c, --clean                               Clean the build generated files (build from scratch)"
   echo_error "  -d, --debug                               Compile with debug informations."
   echo_error "  -h, --help                                Print this help."
+  echo_error "  -g, --gtpu-easy-module                    Used for debugging GTPU (kernel module can be easily removed)"
+  echo_error "  -G, --gtpu-full-speed                     Best GTPU throughput performance, but cannot be removed (default)."
   echo_error "  -H, --hss                       hostname  HSS hostname (with FQDN), default is this host (hostname)."
   echo_error "  -i, --check-installed-software            Check installed software packages necessary to build and run EPC (support Ubuntu 14.04)."
   echo_error "  -r, --realm                     realm     Realm of the MME (if not specified, is extracted from this host FQDN)."
@@ -70,6 +72,7 @@ function main()
   local    cmake_args=" "
   local    make_args="-j $NUM_CPU"
   local    realm=""
+  local    gtpu_cmake_arg="-DFLAG_GTPV1U_KERNEL_THREAD_SOCK_NO_WAIT=False"
   local    hss_fqdn=""
   local    hss_hostname=""
   local    hss_ip=""
@@ -87,6 +90,15 @@ function main()
       -d | --debug)
         cmake_args="$cmake_args -DDEBUG=1"
         echo "Compile with debug informations"
+        shift;
+        ;;
+      -g | --gtpu-easy-module)
+        gtpu_cmake_arg="-DFLAG_GTPV1U_KERNEL_THREAD_SOCK_NO_WAIT=True"
+        echo "Compile with not optimized GTPU kernel module option (but kernel module easy to remove)"
+        shift;
+        ;;
+      -G | --gtpu-full-speed)
+        echo "Compile with best performance GTPU kernel module option"
         shift;
         ;;
       -h | --help)
@@ -146,6 +158,8 @@ function main()
         ;;
     esac
   done
+  
+  cmake_args="$cmake_args $gtpu_cmake_arg"
 
   # extra arguments processing
   if [[ z$hss_fqdn = z ]]; then
@@ -197,7 +211,7 @@ function main()
   local dconf=$OPENAIR_DIR/targets/bin
   
   mkdir -m 777 -p $dbin $dlog
-
+  
   ##############################################################################
   # Compile userspace executable
   ##############################################################################
@@ -219,8 +233,6 @@ function main()
     $SUDO rm -f /lib/xtables/libxt_GTPU*.so             2>&1
     mkdir -m 777 -p -v build
   fi
-  
-
   
   
   
@@ -267,6 +279,8 @@ function main()
   else
     echo_fatal "not installed EPC config files: not found"
   fi
+
+
     
 }
 

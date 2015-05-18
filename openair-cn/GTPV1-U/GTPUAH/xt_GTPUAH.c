@@ -52,9 +52,7 @@
 #    error "Kernel version is not defined!!!! Exiting."
 #endif
 
-#undef  THREAD_SOCK_NO_WAIT
 #define TRACE_IN_KERN_LOG 1
-#define TRACE_ICMP_IN_KERN_LOG 1
 
 #if defined(TRACE_IN_KERN_LOG)
 #define PR_INFO(fORMAT, aRGS...) pr_info(fORMAT, ##aRGS)
@@ -301,8 +299,10 @@ static int _udp_thread(void *data)
 {
   int size, tx_size;
   int bufsize       = 8192;
+#if defined(FLAG_GTPV1U_KERNEL_THREAD_SOCK_NO_WAIT)
   int success_read  = 0;
   int failed_read   = 0;
+#endif
   unsigned char buf[bufsize+1];
   unsigned char gtp_resp[1024];
 
@@ -321,18 +321,20 @@ static int _udp_thread(void *data)
 	size = _gtpuah_ksocket_receive(_gtpuah_sock.sock, &_gtpuah_sock.addr, buf, bufsize);
 
 	if (size <= 0) {
-	  success_read  = 0;
-	  failed_read  += 1;
-	  if (failed_read > 10) failed_read = 10;
 	  if (size != -EAGAIN) {
         pr_info(MODULE_NAME": error getting datagram, sock_recvmsg error = %d\n", size);
 	  }
-#if defined(THREAD_SOCK_NO_WAIT)
+#if defined(FLAG_GTPV1U_KERNEL_THREAD_SOCK_NO_WAIT)
+	  success_read  = 0;
+	  failed_read  += 1;
+	  if (failed_read > 10) failed_read = 10;
       usleep_range(failed_read*20,failed_read*200);
 #endif
     } else {
+#if defined(FLAG_GTPV1U_KERNEL_THREAD_SOCK_NO_WAIT)
       success_read += 1;
       failed_read   = 0;
+#endif
       PR_INFO(MODULE_NAME": received %d bytes\n", size);
 
       if ((tx_size = _gtpuah_ksocket_process_gtp(buf, size, gtp_resp)) > 0) {
@@ -493,7 +495,7 @@ static int _gtpuah_ksocket_receive(struct socket* sock_pP, struct sockaddr_in* a
   iov.iov_base = buf_pP;
   iov.iov_len = lenP;
 
-#if defined(THREAD_SOCK_NO_WAIT)
+#if defined(FLAG_GTPV1U_KERNEL_THREAD_SOCK_NO_WAIT)
   msg.msg_flags = MSG_DONTWAIT;
 #else
   msg.msg_flags = 0;
