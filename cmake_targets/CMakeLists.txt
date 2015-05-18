@@ -23,7 +23,7 @@
 # OpenAirInterface Dev  : openair4g-devel@eurecom.fr
 #
 # Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
-# Author: laurent THOMAS, Lionel GAUTIER
+# Author: laurent THOMAS, Lionel GAUTHIER
 ###############################################################################
 
 cmake_minimum_required (VERSION 2.8)
@@ -1708,7 +1708,7 @@ foreach(myExe dlsim ulsim pbchsim scansim mbmssim pdcchsim pucchsim prachsim syn
     ${XFORMS_SOURCE}
     )
   target_link_libraries (${myExe}
-    -Wl,--start-group SIMU UTIL SCHED_LIB PHY LFDS ${ITTI_LIB} -Wl,--end-group
+    -Wl,--start-group SIMU UTIL SCHED_LIB PHY LFDS MSC ${ITTI_LIB} -Wl,--end-group
     pthread m rt ${CONFIG_LIBRARIES} ${ATLAS_LIBRARIES} ${XFORMS_LIBRARIES}
     )
 endforeach(myExe)
@@ -1733,6 +1733,19 @@ foreach(myExe s1ap
     -Wl,--start-group SECU_CN UTIL LFDS -Wl,--end-group m rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
     )
 endforeach(myExe)
+
+add_executable(test_s1c_mme
+  ${OPENAIRCN_DIR}/TEST/oaisim_mme_test_s1c.c
+  ${OPENAIRCN_DIR}/TEST/oaisim_mme_test_s1c_scenario.h
+  ${OPENAIRCN_DIR}/TEST/oaisim_mme_test_s1c_scenario1.c
+  ${OPENAIR2_DIR}/ENB_APP/enb_config.c
+  ${OPENAIR2_DIR}/ENB_APP/enb_config.h
+  ${s1ap_h}
+  ${OPENAIR_BIN_DIR}/messages_xml.h
+  )
+target_link_libraries (test_s1c_mme
+  -Wl,--start-group SECU_CN S1AP_LIB S1AP_ENB SCTP_CLIENT UTIL LFDS ${ITTI_LIB} -Wl,--end-group pthread m rt crypt sctp ${LIBXML2_LIBRARIES} ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
+  )
 
 
 # to be added
