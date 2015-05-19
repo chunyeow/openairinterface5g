@@ -263,7 +263,8 @@ check_install_additional_tools (){
 	uml-utilities \
 	unzip  \
 	valgrind  \
-	vlan
+	vlan	  \
+	ctags
 }
 
 check_install_oai_software() {
