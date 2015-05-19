@@ -89,6 +89,8 @@ function help()
   echo_error "  -m, --mscgen           directory        Generate mscgen output files in a directory"
   echo_error "  -V, --vcd                               Dump timings of processing in a GTKWave compliant file format."
   echo_error "  -x, --xforms                            Run XFORMS scope windows."
+  echo_error " "
+  echo_error " A simple data traffic test example: ping -m 1 -I oip1 192.168.12.100"
 }
 
 
