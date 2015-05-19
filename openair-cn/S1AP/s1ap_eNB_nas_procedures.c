@@ -224,8 +224,12 @@ int s1ap_eNB_handle_nas_first_req(
     mme_desc_p->nextstream += 1;
   }
 
-#if defined(S1AP_LIMIT_STREAM_ID_TO_1)
+#if defined(S1AP_LIMIT_STREAM_ID_TO_0)
+  mme_desc_p->nextstream = 0;
+#else
+#  if defined(S1AP_LIMIT_STREAM_ID_TO_1)
   mme_desc_p->nextstream = 1;
+#  endif
 #endif
   ue_desc_p->stream = mme_desc_p->nextstream;
 
