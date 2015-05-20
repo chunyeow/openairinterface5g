@@ -342,15 +342,13 @@ void process_timing_advance(uint8_t Mod_id,uint8_t CC_id,int16_t timing_advance)
 
   //  uint32_t frame = PHY_vars_UE_g[Mod_id]->frame;
 
-  if ((timing_advance>>5) & 1) //it is negative
-    timing_advance = timing_advance - (1<<6);
+  // timing advance has Q1.5 format
+  timing_advance = timing_advance - (1<<5);
 
   if (openair_daq_vars.manual_timing_advance == 0) {
     //if ( (frame % 100) == 0) {
     //if ((timing_advance > 3) || (timing_advance < -3) )
-    PHY_vars_UE_g[Mod_id][CC_id]->timing_advance = cmax(0,(int)PHY_vars_UE_g[Mod_id][CC_id]->timing_advance+timing_advance*4);
-
-    //}
+    PHY_vars_UE_g[Mod_id][CC_id]->timing_advance = PHY_vars_UE_g[Mod_id][CC_id]->timing_advance+timing_advance*4; //this is for 25RB only!!!
   }
 
   LOG_D(PHY,"[UE %d] Got timing advance %d from MAC, new value %d\n",Mod_id, timing_advance, PHY_vars_UE_g[Mod_id][CC_id]->timing_advance);
@@ -1203,15 +1201,17 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
                        openair_daq_vars.timing_advance-
                        phy_vars_ue->timing_advance-
                        phy_vars_ue->N_TA_offset+5)%(LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*frame_parms->samples_per_tti);
-        LOG_D(PHY,"[UE %d] Frame %d, subframe %d: ulsch_start = %d (rxoff %d, HW TA %d, TA %d, TA_offset %d\n",
+#else //this is the normal case
+        ulsch_start = (frame_parms->samples_per_tti*subframe_tx)-phy_vars_ue->N_TA_offset; //-phy_vars_ue->timing_advance;
+#endif //else EXMIMO
+        LOG_D(PHY,"[UE %d] Frame %d, subframe %d: ulsch_start = %d (rxoff %d, HW TA %d, timing advance %d, TA_offset %d\n",
+	      Mod_id,frame_tx,subframe_tx,
+	      ulsch_start,
               phy_vars_ue->rx_offset,
               openair_daq_vars.timing_advance,
               phy_vars_ue->timing_advance,
               phy_vars_ue->N_TA_offset);
 
-#else //this is the normal case
-        ulsch_start = (frame_parms->samples_per_tti*subframe_tx)-phy_vars_ue->N_TA_offset;
-#endif //else EXMIMO
 
         if (generate_ul_signal == 1 ) {
 

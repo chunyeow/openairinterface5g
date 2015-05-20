@@ -253,25 +253,25 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
       switch(frame_parms->N_RB_DL) {
       case 6:
 	
-	dft128((int16_t*) temp_in_ifft_0,
+	idft128((int16_t*) temp_in_ifft_0,
 	       (int16_t*) ul_ch_estimates_time[aa],
 	       1);
 	break;
       case 25:
 	
-	dft512((int16_t*) temp_in_ifft_0,
+	idft512((int16_t*) temp_in_ifft_0,
 	       (int16_t*) ul_ch_estimates_time[aa],
 	       1);
 	break;
       case 50:
 	
-	dft1024((int16_t*) temp_in_ifft_0,
+	idft1024((int16_t*) temp_in_ifft_0,
 	       (int16_t*) ul_ch_estimates_time[aa],
 	       1);
 	break;
       case 100:
 	
-	dft2048((int16_t*) temp_in_ifft_0,
+	idft2048((int16_t*) temp_in_ifft_0,
 	       (int16_t*) ul_ch_estimates_time[aa],
 	       1);
 	break;
@@ -283,9 +283,9 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
         if (Ns == 0) {
           write_output("rxdataF_ext.m","rxF_ext",&rxdataF_ext[aa][symbol_offset],512*2,2,1);
           write_output("tmpin_ifft.m","drs_in",temp_in_ifft_0,512,1,1);
-          write_output("drs_est0.m","drs0",ul_ch_estimates_time[aa],512*2,2,1);
+          write_output("drs_est0.m","drs0",ul_ch_estimates_time[aa],512,1,1);
         } else
-          write_output("drs_est1.m","drs1",ul_ch_estimates_time[aa],512*2,2,1);
+          write_output("drs_est1.m","drs1",ul_ch_estimates_time[aa],512,1,1);
       }
 
 #endif
@@ -467,7 +467,6 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
         if((aa == 0)&& (cooperation_flag == 2)) {
           write_output("test1.m","t1",temp_in_ifft_0,512,1,1);
           write_output("test2.m","t2",temp_out_ifft_0,512*2,2,1);
-          //      write_output("test2.m","t2",ul_ch_estimates_time[aa],512*2,2,1);
           write_output("test3.m","t3",temp_in_fft_0,512,1,1);
           write_output("test4.m","t4",temp_out_fft_0,512,1,1);
           write_output("test5.m","t5",temp_in_fft_1,512,1,1);

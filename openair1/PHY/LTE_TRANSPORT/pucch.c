@@ -42,8 +42,8 @@
 #include "LAYER2/MAC/extern.h"
 
 //uint8_t ncs_cell[20][7];
-#define DEBUG_PUCCH_TX
-#define DEBUG_PUCCH_RX
+//#define DEBUG_PUCCH_TX
+//#define DEBUG_PUCCH_RX
 
 int16_t cfo_pucch_np[24*7] = {20787,-25330,27244,-18205,31356,-9512,32767,0,31356,9511,27244,18204,20787,25329,
                               27244,-18205,30272,-12540,32137,-6393,32767,0,32137,6392,30272,12539,27244,18204,

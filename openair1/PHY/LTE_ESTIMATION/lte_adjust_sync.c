@@ -216,8 +216,8 @@ int lte_est_timing_advance_pusch(PHY_VARS_eNB* phy_vars_eNB,uint8_t UE_id,uint8_
     temp = 0;
 
     for (aa=0; aa<frame_parms->nb_antennas_rx; aa++) {
-      Re = ((int16_t*)ul_ch_estimates_time[aa])[(i<<2)];
-      Im = ((int16_t*)ul_ch_estimates_time[aa])[1+(i<<2)];
+      Re = ((int16_t*)ul_ch_estimates_time[aa])[(i<<1)];
+      Im = ((int16_t*)ul_ch_estimates_time[aa])[1+(i<<1)];
       temp += (Re*Re/2) + (Im*Im/2);
     }
 
@@ -227,6 +227,8 @@ int lte_est_timing_advance_pusch(PHY_VARS_eNB* phy_vars_eNB,uint8_t UE_id,uint8_
     }
   }
 
+  if (max_pos>frame_parms->ofdm_symbol_size/2)
+    max_pos = max_pos-frame_parms->ofdm_symbol_size;
 
   // filter position to reduce jitter
   if (first_run == 1) {
