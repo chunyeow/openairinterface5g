@@ -162,7 +162,6 @@ int32_t add_ue(int16_t rnti, PHY_VARS_eNB *phy_vars_eNB)
       }
     }
   }
-
   return(-1);
 }
 
@@ -2399,6 +2398,25 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
             phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->rvidx,
             phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->round);
 #endif
+#if defined(MESSAGE_CHART_GENERATOR_PHY)
+      MSC_LOG_TX_MESSAGE(
+        MSC_PHY_ENB,MSC_PHY_UE,
+        NULL,0,
+        "%05u:%02u PDSCH/DLSCH input size = %"PRIu16", G %d, nb_rb %"PRIu16", mcs %"PRIu8", pmi_alloc %"PRIx16", rv %"PRIu8" (round %"PRIu8")",
+        phy_vars_eNB->proc[sched_subframe].frame_tx, subframe,
+        input_buffer_length,
+        get_G(&phy_vars_eNB->lte_frame_parms,
+        		phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->nb_rb,
+        		phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->rb_alloc,
+        		get_Qm(phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->mcs),
+        		phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->Nl,
+        		num_pdcch_symbols,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe),
+        phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->nb_rb,
+        phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->mcs,
+        pmi2hex_2Ar1(phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->pmi_alloc),
+        phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->rvidx,
+        phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->round);
+#endif
 
       phy_vars_eNB->eNB_UE_stats[(uint8_t)UE_id].dlsch_sliding_cnt++;
 
@@ -2643,6 +2661,20 @@ void process_HARQ_feedback(uint8_t UE_id,
 
     LOG_D(PHY,"[eNB %d] Frame %d: Received ACK/NAK %d for subframe %d\n",phy_vars_eNB->Mod_id,
           frame,dlsch_ACK[0],subframe_m4);
+
+#if defined(MESSAGE_CHART_GENERATOR_PHY)
+    MSC_LOG_RX_MESSAGE(
+      MSC_PHY_ENB,MSC_PHY_UE,
+      NULL,0,
+      "%05u:%02u %s received %s  rnti %x harq id %u  tx SF %u",
+      frame,subframe,
+      (pusch_flag == 1)?"PUSCH":"PUCCH",
+      (dlsch_ACK[0])?"ACK":"NACK",
+      dlsch->rnti,
+      dl_harq_pid[0],
+      subframe_m4
+      );
+#endif
   } else { // TDD Handle M=1,2 cases only
 
     M=ul_ACK_subframe2_M(&phy_vars_eNB->lte_frame_parms,
@@ -2788,9 +2820,11 @@ void process_HARQ_feedback(uint8_t UE_id,
               LOG_W(PHY,"[eNB %d][PDSCH %x/%d] DLSCH retransmissions exhausted, dropping packet\n",phy_vars_eNB->Mod_id,
                     dlsch->rnti,dl_harq_pid[m]);
 #endif
+#if defined(MESSAGE_CHART_GENERATOR_PHY)
               MSC_LOG_EVENT(MSC_PHY_ENB, "0 HARQ DLSCH Failed RNTI %"PRIx16" round %u",
                             dlsch->rnti,
                             dlsch_harq_proc->round);
+#endif
 
               dlsch_harq_proc->round = 0;
               ue_stats->dlsch_l2_errors[dl_harq_pid[m]]++;
@@ -3529,6 +3563,16 @@ void phy_procedures_eNB_RX(const unsigned char sched_subframe,PHY_VARS_eNB *phy_
                 phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o_ACK[0],
                 phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->o_ACK[1]);
 
+#if defined(MESSAGE_CHART_GENERATOR_PHY)
+          MSC_LOG_RX_DISCARDED_MESSAGE(
+            MSC_PHY_ENB,MSC_PHY_UE,
+            NULL,0,
+            "%05u:%02u ULSCH received rnti %x harq id %u round %d",
+            frame,subframe,
+            phy_vars_eNB->ulsch_eNB[i]->rnti,harq_pid,
+            phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round-1
+            );
+#endif
           /*
           LOG_T(PHY,"[eNB] Frame %d, Subframe %d : ULSCH SDU (RX harq_pid %d) %d bytes:\n",frame,subframe,
           harq_pid,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3);
@@ -3562,6 +3606,15 @@ void phy_procedures_eNB_RX(const unsigned char sched_subframe,PHY_VARS_eNB *phy_
               phy_vars_eNB->Mod_id,harq_pid,
               frame,subframe);
 
+#if defined(MESSAGE_CHART_GENERATOR_PHY)
+        MSC_LOG_RX_MESSAGE(
+          MSC_PHY_ENB,MSC_PHY_UE,
+          NULL,0,
+          "%05u:%02u ULSCH received rnti %x harq id %u",
+          frame,subframe,
+          phy_vars_eNB->ulsch_eNB[i]->rnti,harq_pid
+          );
+#endif
         for (j=0; j<phy_vars_eNB->lte_frame_parms.nb_antennas_rx; j++)
           //this is the RSSI per RB
           phy_vars_eNB->eNB_UE_stats[i].UL_rssi[j] =
