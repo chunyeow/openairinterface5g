@@ -898,12 +898,14 @@ pdcp_run (
 
       switch (ITTI_MSG_ID(msg_p)) {
       case RRC_DCCH_DATA_REQ:
-        PROTOCOL_CTXT_SET_BY_MODULE_ID(
+	PROTOCOL_CTXT_SET_BY_MODULE_ID(
           &ctxt,
           RRC_DCCH_DATA_REQ (msg_p).module_id,
           RRC_DCCH_DATA_REQ (msg_p).enb_flag,
           RRC_DCCH_DATA_REQ (msg_p).rnti,
-          RRC_DCCH_DATA_REQ (msg_p).frame, 0);
+          RRC_DCCH_DATA_REQ (msg_p).frame, 
+	  0,
+	  RRC_DCCH_DATA_REQ (msg_p).eNB_index);
         LOG_D(PDCP, PROTOCOL_CTXT_FMT"Received %s from %s: instance %d, rb_id %d, muiP %d, confirmP %d, mode %d\n",
               PROTOCOL_CTXT_ARGS(&ctxt),
               msg_name,

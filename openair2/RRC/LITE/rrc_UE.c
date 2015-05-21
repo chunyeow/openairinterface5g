@@ -271,7 +271,7 @@ openair_rrc_lite_ue_init(
 //-----------------------------------------------------------------------------
 {
   protocol_ctxt_t ctxt;
-  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, ue_mod_idP, ENB_FLAG_NO, NOT_A_RNTI, 0, 0);
+  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, ue_mod_idP, ENB_FLAG_NO, NOT_A_RNTI, 0, 0,eNB_index);
   LOG_I(RRC,
         PROTOCOL_RRC_CTXT_FMT" Init...\n",
         PROTOCOL_RRC_CTXT_ARGS(&ctxt));
@@ -3332,7 +3332,7 @@ decode_MBSFNAreaConfiguration(
 
   UE_rrc_inst[ue_mod_idP].Info[eNB_index].MCCHStatus[mbsfn_sync_area] = 1;
 
-  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, ue_mod_idP, ENB_FLAG_NO, UE_rrc_inst[ue_mod_idP].Info[eNB_index].rnti, frameP, 0);
+  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, ue_mod_idP, ENB_FLAG_NO, UE_rrc_inst[ue_mod_idP].Info[eNB_index].rnti, frameP, 0,eNB_index);
 
   // Config Radio Bearer for MBMS user data (similar way to configure for eNB side in init_MBMS function)
   rrc_pdcp_config_asn1_req(&ctxt,
@@ -3425,7 +3425,8 @@ void
       LOG_D(RRC, "[UE %d] Received %s: frameP %d, eNB %d\n", ue_mod_id, msg_name,
             RRC_MAC_BCCH_DATA_IND (msg_p).frame, RRC_MAC_BCCH_DATA_IND (msg_p).enb_index);
 
-      PROTOCOL_CTXT_SET_BY_INSTANCE(&ctxt, instance, ENB_FLAG_NO, NOT_A_RNTI, RRC_MAC_BCCH_DATA_IND (msg_p).frame, 0);
+      //      PROTOCOL_CTXT_SET_BY_INSTANCE(&ctxt, instance, ENB_FLAG_NO, NOT_A_RNTI, RRC_MAC_BCCH_DATA_IND (msg_p).frame, 0);
+      PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, ue_mod_id, ENB_FLAG_NO, NOT_A_RNTI, RRC_MAC_BCCH_DATA_IND (msg_p).frame, 0,RRC_MAC_BCCH_DATA_IND (msg_p).enb_index);
       decode_BCCH_DLSCH_Message (&ctxt,
                                  RRC_MAC_BCCH_DATA_IND (msg_p).enb_index,
                                  RRC_MAC_BCCH_DATA_IND (msg_p).sdu,
@@ -3455,7 +3456,8 @@ void
       memcpy (srb_info_p->Rx_buffer.Payload, RRC_MAC_CCCH_DATA_IND (msg_p).sdu,
               RRC_MAC_CCCH_DATA_IND (msg_p).sdu_size);
       srb_info_p->Rx_buffer.payload_size = RRC_MAC_CCCH_DATA_IND (msg_p).sdu_size;
-      PROTOCOL_CTXT_SET_BY_INSTANCE(&ctxt, instance, ENB_FLAG_NO, RRC_MAC_CCCH_DATA_IND (msg_p).rnti, RRC_MAC_BCCH_DATA_IND (msg_p).frame, 0);
+      //      PROTOCOL_CTXT_SET_BY_INSTANCE(&ctxt, instance, ENB_FLAG_NO, RRC_MAC_CCCH_DATA_IND (msg_p).rnti, RRC_MAC_CCCH_DATA_IND (msg_p).frame, 0);
+      PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, ue_mod_id, ENB_FLAG_NO, RRC_MAC_CCCH_DATA_IND (msg_p).rnti, RRC_MAC_CCCH_DATA_IND (msg_p).frame, 0, RRC_MAC_CCCH_DATA_IND (msg_p).enb_index);
       rrc_ue_decode_ccch (&ctxt,
                           srb_info_p,
                           RRC_MAC_CCCH_DATA_IND (msg_p).enb_index);
@@ -3467,7 +3469,8 @@ void
       LOG_I(RRC, "[UE %d] Received %s: frameP %d, eNB %d, mbsfn SA %d\n", ue_mod_id, msg_name,
             RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index, RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
 
-      PROTOCOL_CTXT_SET_BY_INSTANCE(&ctxt, instance, ENB_FLAG_NO, M_RNTI, RRC_MAC_MCCH_DATA_IND (msg_p).frame, 0);
+      //PROTOCOL_CTXT_SET_BY_INSTANCE(&ctxt, instance, ENB_FLAG_NO, M_RNTI, RRC_MAC_MCCH_DATA_IND (msg_p).frame, 0);
+      PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, ue_mod_id, ENB_FLAG_NO, M_RNTI, RRC_MAC_MCCH_DATA_IND (msg_p).frame, 0,RRC_MAC_MCCH_DATA_IND (msg_p).enb_index);
       decode_MCCH_Message (
         &ctxt,
         RRC_MAC_MCCH_DATA_IND (msg_p).enb_index,
@@ -3479,7 +3482,7 @@ void
 
       /* PDCP messages */
     case RRC_DCCH_DATA_IND:
-      PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, RRC_DCCH_DATA_IND (msg_p).module_id, ENB_FLAG_NO, RRC_DCCH_DATA_IND (msg_p).rnti, RRC_DCCH_DATA_IND (msg_p).frame, 0);
+      PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, RRC_DCCH_DATA_IND (msg_p).module_id, ENB_FLAG_NO, RRC_DCCH_DATA_IND (msg_p).rnti, RRC_DCCH_DATA_IND (msg_p).frame, 0,RRC_DCCH_DATA_IND (msg_p).eNB_index);
       LOG_I(RRC, "[UE %d] Received %s: frameP %d, DCCH %d, eNB %d\n",
             RRC_DCCH_DATA_IND (msg_p).module_id,
             msg_name,
@@ -3575,7 +3578,9 @@ void
       LOG_I(RRC, "[UE %d] Received %s: cause %d, type %d, s_tmsi %d, plmnID %d\n", ue_mod_id, msg_name, NAS_CONN_ESTABLI_REQ (msg_p).cause,
             NAS_CONN_ESTABLI_REQ (msg_p).type, NAS_CONN_ESTABLI_REQ (msg_p).s_tmsi, NAS_CONN_ESTABLI_REQ (msg_p).plmnID);
 
-      PROTOCOL_CTXT_SET_BY_INSTANCE(&ctxt, instance, ENB_FLAG_NO, NOT_A_RNTI, 0, 0);
+      //PROTOCOL_CTXT_SET_BY_INSTANCE(&ctxt, instance, ENB_FLAG_NO, NOT_A_RNTI, 0, 0);
+      PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, ue_mod_id, ENB_FLAG_NO, NOT_A_RNTI, 0, 0, 0);
+
       UE_rrc_inst[ue_mod_id].initialNasMsg = NAS_CONN_ESTABLI_REQ (msg_p).initialNasMsg;
 
       switch (rrc_get_state(ue_mod_id)) {
@@ -3613,7 +3618,7 @@ void
       length = do_ULInformationTransfer(&buffer, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.length, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.data);
 
       /* Transfer data to PDCP */
-      PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, ue_mod_id, ENB_FLAG_NO, UE_rrc_inst[ue_mod_id].Info[0].rnti, 0, 0);
+      PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, ue_mod_id, ENB_FLAG_NO, UE_rrc_inst[ue_mod_id].Info[0].rnti, 0, 0,0);
       pdcp_rrc_data_req (&ctxt,
                          DCCH,
                          rrc_mui++,
@@ -3754,7 +3759,7 @@ void
       switch (rrc_get_state(ue_mod_id)) {
       case RRC_STATE_IDLE: {
         if (rrc_get_sub_state(ue_mod_id) == RRC_SUB_STATE_IDLE_SIB_COMPLETE) {
-          PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, ue_mod_id, ENB_FLAG_NO, UE_rrc_inst[ue_mod_id].Info[0].rnti, 0, 0);
+          PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, ue_mod_id, ENB_FLAG_NO, UE_rrc_inst[ue_mod_id].Info[0].rnti, 0, 0, 0);
           rrc_ue_generate_RRCConnectionRequest(&ctxt, 0);
           LOG_I(RRC, "not sending connection request\n");
           rrc_set_sub_state (ue_mod_id, RRC_SUB_STATE_IDLE_CONNECTING);

@@ -565,7 +565,7 @@ BSR_LONG * get_bsr_long(module_id_t module_idP, uint8_t bsr_len);
 \param[in] frame Frame index
 \param[in] lcid logical channel identifier
 */
-boolean_t update_bsr(module_id_t module_idP, frame_t frameP, uint8_t lcid, uint8_t lcgid);
+boolean_t update_bsr(module_id_t module_idP, frame_t frameP, eNB_index_t eNB_index, uint8_t lcid, uint8_t lcgid);
 
 /*! \fn  locate (int *table, int size, int value)
    \brief locate the BSR level in the table as defined in 36.321. This function requires that he values in table to be monotonic, either increasing or decreasing. The returned value is not less than 0, nor greater than n-1, where n is the size of table.

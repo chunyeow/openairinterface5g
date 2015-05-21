@@ -271,6 +271,7 @@ void rx_sdu(
         mac_rlc_data_ind(
           enb_mod_idP,
           rntiP,
+	  enb_mod_idP,
           frameP,
           ENB_FLAG_YES,
           MBMS_FLAG_NO,
@@ -307,6 +308,7 @@ void rx_sdu(
         mac_rlc_data_ind(
           enb_mod_idP,
           rntiP,
+          enb_mod_idP,
           frameP,
           ENB_FLAG_YES,
           MBMS_FLAG_NO,

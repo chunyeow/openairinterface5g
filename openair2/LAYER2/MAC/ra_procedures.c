@@ -349,7 +349,7 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP, 
         } else if (UE_mac_inst[module_idP].scheduling_info.BSR_bytes[DCCH] > 0) {
           // This is for triggering a transmission on DCCH using PRACH (during handover, or sending SR for example)
           dcch_header_len = 2 + 2;  /// SHORT Subheader + C-RNTI control element
-          rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
+          rlc_status = mac_rlc_status_ind(module_idP,UE_mac_inst[module_idP].crnti, eNB_indexP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
                                           DCCH,
                                           6);
 
@@ -361,12 +361,13 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP, 
             LOG_D(MAC,"[UE %d] Frame %d : UL-DCCH -> ULSCH, RRC message has %d bytes to send through PRACH(mac header len %d)\n",
                   module_idP,frameP, rlc_status.bytes_in_buffer,dcch_header_len);
 
-          sdu_lengths[0] = mac_rlc_data_req(eNB_indexP, module_idP,frameP,ENB_FLAG_NO, MBMS_FLAG_NO,
+          sdu_lengths[0] = mac_rlc_data_req(module_idP, UE_mac_inst[module_idP].crnti,
+					    eNB_indexP, frameP,ENB_FLAG_NO, MBMS_FLAG_NO,
                                             DCCH,
                                             (char *)&ulsch_buff[0]);
 
           LOG_D(MAC,"[UE %d] TX Got %d bytes for DCCH\n",module_idP,sdu_lengths[0]);
-          update_bsr(module_idP, frameP, DCCH,UE_mac_inst[module_idP].scheduling_info.LCGID[DCCH]);
+          update_bsr(module_idP, frameP, eNB_indexP,DCCH,UE_mac_inst[module_idP].scheduling_info.LCGID[DCCH]);
           //header_len +=2;
           UE_mac_inst[module_idP].RA_active                        = 1;
           UE_mac_inst[module_idP].RA_PREAMBLE_TRANSMISSION_COUNTER = 1;

@@ -434,6 +434,7 @@ ue_send_sdu(
       LOG_D(MAC,"[UE %d] Frame %d : DLSCH -> DL-DCCH%d, RRC message (eNB %d, %d bytes)\n", module_idP, frameP, rx_lcids[i],eNB_index,rx_lengths[i]);
       mac_rlc_data_ind(module_idP,
                        UE_mac_inst[module_idP].crnti,
+		       eNB_index,
                        frameP,
                        ENB_FLAG_NO,
                        MBMS_FLAG_NO,
@@ -446,7 +447,8 @@ ue_send_sdu(
       LOG_D(MAC,"[UE %d] Frame %d : DLSCH -> DL-DCCH%d, RRC message (eNB %d, %d bytes)\n", module_idP, frameP, rx_lcids[i], eNB_index,rx_lengths[i]);
       mac_rlc_data_ind(module_idP,
                        UE_mac_inst[module_idP].crnti,
-                       frameP,
+		       eNB_index,
+		       frameP,
                        ENB_FLAG_NO,
                        MBMS_FLAG_NO,
                        DCCH1,
@@ -469,7 +471,8 @@ ue_send_sdu(
 
       mac_rlc_data_ind(module_idP,
                        UE_mac_inst[module_idP].crnti,
-                       frameP,
+		       eNB_index,
+		       frameP,
                        ENB_FLAG_NO,
                        MBMS_FLAG_NO,
                        DTCH,
@@ -598,7 +601,8 @@ void ue_send_mch_sdu(module_id_t module_idP, uint8_t CC_id, frame_t frameP, uint
         mac_rlc_data_ind(
           module_idP,
           UE_mac_inst[module_idP].crnti,
-          frameP,
+          eNB_index,
+	  frameP,
           ENB_FLAG_NO,
           MBMS_FLAG_YES,
           MTCH, /*+ (maxDRB + 3),*/
@@ -1261,14 +1265,14 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
 
   if (UE_mac_inst[module_idP].scheduling_info.LCID_status[DCCH] == LCID_NOT_EMPTY) {
 
-    rlc_status = mac_rlc_status_ind(module_idP, UE_mac_inst[module_idP].crnti,frameP,ENB_FLAG_NO,MBMS_FLAG_NO, // eNB_index
+    rlc_status = mac_rlc_status_ind(module_idP, UE_mac_inst[module_idP].crnti, eNB_index, frameP,ENB_FLAG_NO,MBMS_FLAG_NO, // eNB_index
                                     DCCH,
                                     (buflen-dcch_header_len-bsr_len-phr_len));
     LOG_D(MAC, "[UE %d] Frame %d : UL-DCCH -> ULSCH, RRC message has %d bytes to "
           "send (Transport Block size %d, mac header len %d)\n",
           module_idP,frameP, rlc_status.bytes_in_buffer,buflen,dcch_header_len);
 
-    sdu_lengths[0] += mac_rlc_data_req(module_idP, UE_mac_inst[module_idP].crnti,frameP,ENB_FLAG_NO, MBMS_FLAG_NO,
+    sdu_lengths[0] += mac_rlc_data_req(module_idP, UE_mac_inst[module_idP].crnti,eNB_index,frameP,ENB_FLAG_NO, MBMS_FLAG_NO,
                                        DCCH,
                                        (char *)&ulsch_buff[sdu_lengths[0]]);
 
@@ -1276,7 +1280,7 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
     sdu_lcids[0] = DCCH;
     LOG_D(MAC,"[UE %d] TX Got %d bytes for DCCH\n",module_idP,sdu_lengths[0]);
     num_sdus = 1;
-    update_bsr(module_idP, frameP, DCCH, UE_mac_inst[module_idP].scheduling_info.LCGID[DCCH]);
+    update_bsr(module_idP, frameP, eNB_index, DCCH, UE_mac_inst[module_idP].scheduling_info.LCGID[DCCH]);
     //header_len +=2;
   } else {
     dcch_header_len=0;
@@ -1290,7 +1294,7 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
   // DCCH1
   if (UE_mac_inst[module_idP].scheduling_info.LCID_status[DCCH1] == LCID_NOT_EMPTY) {
 
-    rlc_status = mac_rlc_status_ind(module_idP, UE_mac_inst[module_idP].crnti,frameP,ENB_FLAG_NO,MBMS_FLAG_NO, // eNB_index
+    rlc_status = mac_rlc_status_ind(module_idP, UE_mac_inst[module_idP].crnti, eNB_index,frameP,ENB_FLAG_NO,MBMS_FLAG_NO, // eNB_index
                                     DCCH1,
                                     (buflen-bsr_len-phr_len-dcch_header_len-dcch1_header_len-sdu_length_total));
 
@@ -1298,7 +1302,7 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
           " send (Transport Block size %d, mac header len %d)\n",
           module_idP,frameP, rlc_status.bytes_in_buffer,buflen,dcch1_header_len);
 
-    sdu_lengths[num_sdus] = mac_rlc_data_req(module_idP, UE_mac_inst[module_idP].crnti,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
+    sdu_lengths[num_sdus] = mac_rlc_data_req(module_idP, UE_mac_inst[module_idP].crnti,eNB_index,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
                             DCCH1,
                             (char *)&ulsch_buff[sdu_lengths[0]]);
     sdu_length_total += sdu_lengths[num_sdus];
@@ -1323,7 +1327,7 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
     else
     dtch_header_len = 2;//sizeof(SCH_SUBHEADER_SHORT);
      */
-    rlc_status = mac_rlc_status_ind(module_idP, UE_mac_inst[module_idP].crnti,frameP,ENB_FLAG_NO,MBMS_FLAG_NO, // eNB_index
+    rlc_status = mac_rlc_status_ind(module_idP, UE_mac_inst[module_idP].crnti, eNB_index,frameP,ENB_FLAG_NO,MBMS_FLAG_NO, // eNB_index
                                     DTCH,
                                     buflen-bsr_len-phr_len-dcch_header_len-dcch1_header_len-dtch_header_len-sdu_length_total);
 
@@ -1331,7 +1335,7 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
           module_idP,frameP, rlc_status.bytes_in_buffer,buflen,dtch_header_len,
           UE_mac_inst[module_idP].scheduling_info.BSR_bytes[DTCH]);
 
-    sdu_lengths[num_sdus] = mac_rlc_data_req(module_idP,UE_mac_inst[module_idP].crnti,frameP, ENB_FLAG_NO, MBMS_FLAG_NO, // eNB_index
+    sdu_lengths[num_sdus] = mac_rlc_data_req(module_idP,UE_mac_inst[module_idP].crnti,eNB_index,frameP, ENB_FLAG_NO, MBMS_FLAG_NO, // eNB_index
                             DTCH,
                             (char *)&ulsch_buff[sdu_length_total]);
 
@@ -1341,7 +1345,7 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
     sdu_lcids[num_sdus] = DTCH;
     sdu_length_total += sdu_lengths[num_sdus];
     num_sdus++;
-    UE_mac_inst[module_idP].ul_active = update_bsr(module_idP, frameP, DTCH, UE_mac_inst[module_idP].scheduling_info.LCGID[DTCH]);
+    UE_mac_inst[module_idP].ul_active = update_bsr(module_idP, frameP, eNB_index,DTCH, UE_mac_inst[module_idP].scheduling_info.LCGID[DTCH]);
   } else { // no rlc pdu : generate the dummy header
     dtch_header_len = 0;
   }
@@ -1496,7 +1500,7 @@ ue_scheduler(
   start_meas(&UE_mac_inst[module_idP].ue_scheduler);
   VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SCHEDULER, VCD_FUNCTION_IN);
 
-  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, module_idP, ENB_FLAG_NO, UE_mac_inst[module_idP].crnti, frameP, subframeP);
+  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, module_idP, ENB_FLAG_NO, UE_mac_inst[module_idP].crnti, frameP, subframeP,eNB_indexP);
 #if defined(ENABLE_ITTI)
 
   do {
@@ -1633,7 +1637,7 @@ ue_scheduler(
         }
       }
 
-      if (update_bsr(module_idP,frameP, lcid, UE_mac_inst[module_idP].scheduling_info.LCGID[lcid])) {
+      if (update_bsr(module_idP,frameP, eNB_indexP, lcid, UE_mac_inst[module_idP].scheduling_info.LCGID[lcid])) {
         UE_mac_inst[module_idP].scheduling_info.SR_pending= 1;
         LOG_D(MAC,"[UE %d][SR] Frame %d subframe %d SR for PUSCH is pending for LCGID %d with BSR level %d (%d bytes in RLC)\n",
               module_idP, frameP,subframeP,UE_mac_inst[module_idP].scheduling_info.LCGID[lcid],
@@ -1911,7 +1915,7 @@ uint8_t get_bsr_len (module_id_t module_idP, uint16_t buflen)
 }
 
 
-boolean_t  update_bsr(module_id_t module_idP, frame_t frameP, uint8_t lcid, uint8_t lcg_id)
+boolean_t  update_bsr(module_id_t module_idP, frame_t frameP, eNB_index_t eNB_index, uint8_t lcid, uint8_t lcg_id)
 {
 
   mac_rlc_status_resp_t rlc_status;
@@ -1930,7 +1934,7 @@ boolean_t  update_bsr(module_id_t module_idP, frame_t frameP, uint8_t lcid, uint
 
   //  for (lcid =0 ; lcid < MAX_NUM_LCID; lcid++) {
   if (UE_mac_inst[module_idP].scheduling_info.LCGID[lcid] == lcg_id) {
-    rlc_status = mac_rlc_status_ind(module_idP, UE_mac_inst[module_idP].crnti,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
+    rlc_status = mac_rlc_status_ind(module_idP, UE_mac_inst[module_idP].crnti,eNB_index,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
                                     lcid,
                                     0);
 

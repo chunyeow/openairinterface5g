@@ -508,7 +508,7 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
           module_idP,frameP,MTCH,TBS,
           TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch);
 
-    rlc_status = mac_rlc_status_ind(module_idP,0,frameP,ENB_FLAG_YES,MBMS_FLAG_YES,MTCH,
+    rlc_status = mac_rlc_status_ind(module_idP,0,frameP,module_idP,ENB_FLAG_YES,MBMS_FLAG_YES,MTCH,
                                     TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch);
     LOG_D(MAC,"e-MBMS log channel %u frameP %d, subframeP %d,  rlc_status.bytes_in_buffer is %d\n",
           MTCH,frameP,subframeP, rlc_status.bytes_in_buffer);
@@ -520,6 +520,7 @@ int schedule_MBMS(module_id_t module_idP, uint8_t CC_id, frame_t frameP, sub_fra
       sdu_lengths[num_sdus] = mac_rlc_data_req(
                                 module_idP,
                                 0,
+				module_idP,
                                 frameP,
                                 ENB_FLAG_YES,
                                 MBMS_FLAG_YES,

@@ -456,7 +456,7 @@ static void init_MBMS(
   protocol_ctxt_t               ctxt;
 
   if (eNB_rrc_inst[enb_mod_idP].MBMS_flag > 0) {
-    PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, enb_mod_idP, ENB_FLAG_YES, NOT_A_RNTI, frameP, 0);
+    PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, enb_mod_idP, ENB_FLAG_YES, NOT_A_RNTI, frameP, 0,enb_mod_idP);
 
     LOG_D(RRC, "[eNB %d] Frame %d : Radio Bearer config request for MBMS\n", enb_mod_idP, frameP);   //check the lcid
     // Configuring PDCP and RLC for MBMS Radio Bearer
@@ -754,7 +754,7 @@ rrc_eNB_free_UE(
                  );
 
   if (NULL != ue_context_p) {
-    PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, enb_mod_idP, ENB_FLAG_YES, rntiP, frameP, subframeP);
+    PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, enb_mod_idP, ENB_FLAG_YES, rntiP, frameP, subframeP,enb_mod_idP);
     LOG_W(RRC, "[eNB %d] Removing UE RNTI %x\n", enb_mod_idP, rntiP);
 
 #if defined(ENABLE_USE_MME)
@@ -3249,7 +3249,7 @@ openair_rrc_lite_eNB_init(
 //-----------------------------------------------------------------------------
 {
   protocol_ctxt_t ctxt;
-  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, enb_mod_idP, ENB_FLAG_YES, NOT_A_RNTI, 0, 0);
+  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, enb_mod_idP, ENB_FLAG_YES, NOT_A_RNTI, 0, 0,enb_mod_idP);
   LOG_I(RRC,
         PROTOCOL_RRC_CTXT_FMT" Init...\n",
         PROTOCOL_RRC_CTXT_ARGS(&ctxt));

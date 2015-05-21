@@ -131,6 +131,7 @@ tbs_size_t mac_rlc_serialize_tb (char* buffer_pP, list_t transport_blocksP)
 tbs_size_t mac_rlc_data_req(
   const module_id_t       module_idP,
   const rnti_t            rntiP,
+  const eNB_index_t       eNB_index,
   const frame_t           frameP,
   const eNB_flag_t        enb_flagP,
   const MBMS_flag_t       MBMS_flagP,
@@ -149,7 +150,7 @@ tbs_size_t mac_rlc_data_req(
   tbs_size_t             ret_tb_size         = 0;
   protocol_ctxt_t     ctxt;
 
-  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, module_idP, enb_flagP, rntiP, frameP, 0);
+  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, module_idP, enb_flagP, rntiP, frameP, 0,eNB_index);
 
   VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_DATA_REQ,VCD_FUNCTION_IN);
 #ifdef DEBUG_MAC_INTERFACE
@@ -231,6 +232,7 @@ tbs_size_t mac_rlc_data_req(
 void mac_rlc_data_ind     (
   const module_id_t         module_idP,
   const rnti_t              rntiP,
+  const module_id_t         eNB_index,
   const frame_t             frameP,
   const eNB_flag_t          enb_flagP,
   const MBMS_flag_t         MBMS_flagP,
@@ -250,7 +252,7 @@ void mac_rlc_data_ind     (
   srb_flag_t             srb_flag        = (channel_idP <= 2) ? SRB_FLAG_YES : SRB_FLAG_NO;
   protocol_ctxt_t     ctxt;
 
-  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, module_idP, enb_flagP, rntiP, frameP, 0);
+  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, module_idP, enb_flagP, rntiP, frameP, 0, eNB_index);
 
   VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_DATA_IND,VCD_FUNCTION_IN);
 #ifdef DEBUG_MAC_INTERFACE
@@ -332,6 +334,7 @@ void mac_rlc_data_ind     (
 mac_rlc_status_resp_t mac_rlc_status_ind(
   const module_id_t       module_idP,
   const rnti_t            rntiP,
+  const eNB_index_t       eNB_index,
   const frame_t           frameP,
   const eNB_flag_t        enb_flagP,
   const MBMS_flag_t       MBMS_flagP,
@@ -351,7 +354,7 @@ mac_rlc_status_resp_t mac_rlc_status_ind(
   srb_flag_t             srb_flag    = (channel_idP <= 2) ? SRB_FLAG_YES : SRB_FLAG_NO;
   protocol_ctxt_t     ctxt;
 
-  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, module_idP, enb_flagP, rntiP, frameP, 0);
+  PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, module_idP, enb_flagP, rntiP, frameP, 0, eNB_index);
 
   VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_STATUS_IND,VCD_FUNCTION_IN);
   memset (&mac_rlc_status_resp, 0, sizeof(mac_rlc_status_resp_t));

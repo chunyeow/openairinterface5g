@@ -68,6 +68,7 @@ typedef uint32_t              frame_t;
 typedef int32_t               sframe_t;
 typedef uint32_t              sub_frame_t;
 typedef uint8_t               module_id_t;
+typedef uint8_t               eNB_index_t;
 typedef uint16_t              ue_id_t;
 typedef int16_t               smodule_id_t;
 typedef uint16_t              rb_id_t;
@@ -207,6 +208,7 @@ typedef struct protocol_ctxt_s {
   rnti_t      rnti;
   frame_t     frame;         /*!< \brief  LTE frame number.*/
   sub_frame_t subframe;      /*!< \brief  LTE sub frame number.*/
+  eNB_index_t eNB_index;     /*!< \brief  valid for UE indicating the index of connected eNB(s)      */
 } protocol_ctxt_t;
 // warning time hardcoded
 #define PROTOCOL_CTXT_TIME_MILLI_SECONDS(CtXt_h) ((CtXt_h)->frame*10+(CtXt_h)->subframe)
@@ -237,12 +239,13 @@ typedef struct protocol_ctxt_s {
     MODULE_ID_TO_INSTANCE( (CtXt_h)->module_id , (CtXt_h)->instance , (CtXt_h)->enb_flag )
 
 
-#define PROTOCOL_CTXT_SET_BY_MODULE_ID(Ctxt_Pp, mODULE_iD, eNB_fLAG, rNTI, fRAME, sUBfRAME) \
+#define PROTOCOL_CTXT_SET_BY_MODULE_ID(Ctxt_Pp, mODULE_iD, eNB_fLAG, rNTI, fRAME, sUBfRAME, eNB_iNDEX) \
     (Ctxt_Pp)->module_id = mODULE_iD; \
     (Ctxt_Pp)->enb_flag  = eNB_fLAG; \
     (Ctxt_Pp)->rnti      = rNTI; \
     (Ctxt_Pp)->frame     = fRAME; \
     (Ctxt_Pp)->subframe  = sUBfRAME; \
+    (Ctxt_Pp)->eNB_index  = eNB_iNDEX; \
     PROTOCOL_CTXT_COMPUTE_INSTANCE(Ctxt_Pp)
 
 #define PROTOCOL_CTXT_SET_BY_INSTANCE(Ctxt_Pp, iNSTANCE, eNB_fLAG, rNTI, fRAME, sUBfRAME) \

@@ -433,7 +433,7 @@ public_rlc_rrc(void rrc_rlc_register_rrc (rrc_data_ind_cb_t rrc_data_indP, rrc_d
 * \param [in,out] bufferP          Memory area to fill with the bytes requested by MAC.
 * \return     A status about the processing, OK or error code.
 */
-public_rlc_mac(tbs_size_t            mac_rlc_data_req     (const module_id_t, const rnti_t, const frame_t, const  eNB_flag_t, const  MBMS_flag_t, logical_chan_id_t, char*);)
+public_rlc_mac(tbs_size_t            mac_rlc_data_req     (const module_id_t, const rnti_t, const eNB_index_t, const frame_t, const  eNB_flag_t, const  MBMS_flag_t, logical_chan_id_t, char*);)
 
 /*! \fn void mac_rlc_data_ind     (const module_id_t mod_idP, const rnti_t rntiP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const  MBMS_flag_t MBMS_flagP, logical_chan_id_t rb_idP, uint32_t frameP, char* bufferP, tb_size_t tb_sizeP, num_tb_t num_tbP, crc_t *crcs)
 * \brief    Interface with MAC layer, deserialize the transport blocks sent by MAC, then map data indication to the RLC instance corresponding to the radio bearer identifier.
@@ -448,7 +448,7 @@ public_rlc_mac(tbs_size_t            mac_rlc_data_req     (const module_id_t, co
 * \param[in]  num_tbP          Number of transport blocks.
 * \param[in]  crcs             Array of CRC decoding.
 */
-public_rlc_mac(void                  mac_rlc_data_ind     (const module_id_t, const rnti_t, const frame_t, const  eNB_flag_t, const  MBMS_flag_t, logical_chan_id_t, char*, tb_size_t, num_tb_t,
+public_rlc_mac(void                  mac_rlc_data_ind     (const module_id_t, const rnti_t, const eNB_index_t,const frame_t, const  eNB_flag_t, const  MBMS_flag_t, logical_chan_id_t, char*, tb_size_t, num_tb_t,
                crc_t* );)
 
 /*! \fn mac_rlc_status_resp_t mac_rlc_status_ind     (const module_id_t mod_idP, const rnti_t rntiP, const frame_t frameP, const  eNB_flag_t eNB_flagP, const  MBMS_flag_t MBMS_flagP, logical_chan_id_t rb_idP, tb_size_t tb_sizeP)
@@ -462,7 +462,7 @@ public_rlc_mac(void                  mac_rlc_data_ind     (const module_id_t, co
 * \param[in]  tb_sizeP         Size of a transport block set in bytes.
 * \return     The maximum number of bytes that the RLC instance can send in the next transmission sequence.
 */
-public_rlc_mac(mac_rlc_status_resp_t mac_rlc_status_ind   (const module_id_t, const rnti_t, const frame_t, const  eNB_flag_t, const  MBMS_flag_t, logical_chan_id_t, tb_size_t );)
+public_rlc_mac(mac_rlc_status_resp_t mac_rlc_status_ind   (const module_id_t, const rnti_t, const eNB_index_t, const frame_t, const  eNB_flag_t, const  MBMS_flag_t, logical_chan_id_t, tb_size_t );)
 //-----------------------------------------------------------------------------
 //   RLC methods
 //-----------------------------------------------------------------------------

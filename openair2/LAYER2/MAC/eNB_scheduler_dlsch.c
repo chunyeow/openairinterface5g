@@ -829,6 +829,7 @@ schedule_ue_spec(
           rlc_status = mac_rlc_status_ind(
                          module_idP,
                          rnti,
+			 module_idP,
                          frameP,
                          ENB_FLAG_YES,
                          MBMS_FLAG_NO,
@@ -842,6 +843,7 @@ schedule_ue_spec(
             sdu_lengths[0] += mac_rlc_data_req(
                                 module_idP,
                                 rnti,
+				module_idP,
                                 frameP,
                                 ENB_FLAG_YES,
                                 MBMS_FLAG_NO,
@@ -874,6 +876,7 @@ schedule_ue_spec(
           rlc_status = mac_rlc_status_ind(
                          module_idP,
                          rnti,
+			 module_idP,
                          frameP,
                          ENB_FLAG_YES,
                          MBMS_FLAG_NO,
@@ -887,6 +890,7 @@ schedule_ue_spec(
             sdu_lengths[num_sdus] += mac_rlc_data_req(
                                        module_idP,
                                        rnti,
+				       module_idP,
                                        frameP,
                                        ENB_FLAG_YES,
                                        MBMS_FLAG_NO,
@@ -916,6 +920,7 @@ schedule_ue_spec(
           rlc_status = mac_rlc_status_ind(
                          module_idP,
                          rnti,
+			 module_idP,
                          frameP,
                          ENB_FLAG_YES,
                          MBMS_FLAG_NO,
@@ -929,6 +934,7 @@ schedule_ue_spec(
             sdu_lengths[num_sdus] = mac_rlc_data_req(
                                       module_idP,
                                       rnti,
+				      module_idP,
                                       frameP,
                                       ENB_FLAG_YES,
                                       MBMS_FLAG_NO,
