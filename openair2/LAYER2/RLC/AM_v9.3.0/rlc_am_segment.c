@@ -84,26 +84,25 @@ void rlc_am_pdu_polling (
     (rlc_pP->c_pdu_without_poll >= rlc_pP->poll_pdu) ||
     (rlc_pP->c_byte_without_poll >= rlc_pP->poll_byte) ||
     ((rlc_pP->sdu_buffer_occupancy == 0) && (rlc_pP->retrans_num_bytes_to_retransmit == 0)) ||
-    (rlc_pP->vt_s == rlc_pP->vt_ms)
+    (rlc_pP->vt_s == rlc_pP->vt_ms) ||
+    (rlc_pP->force_poll == TRUE)
   ) {
+	rlc_pP->force_poll = FALSE;
 
     if (rlc_pP->c_pdu_without_poll >= rlc_pP->poll_pdu) {
       LOG_T(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[POLL] SET POLL BECAUSE TX NUM PDU THRESHOLD %d  HAS BEEN REACHED\n",
             PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
             rlc_pP->poll_pdu);
-    }
-
+    } else
     if (rlc_pP->c_byte_without_poll >= rlc_pP->poll_byte) {
       LOG_T(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[POLL] SET POLL BECAUSE TX NUM BYTES THRESHOLD %d  HAS BEEN REACHED\n",
             PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
             rlc_pP->poll_byte);
-    }
-
+    } else
     if ((rlc_pP->sdu_buffer_occupancy == 0) && (rlc_pP->retrans_num_bytes_to_retransmit == 0)) {
       LOG_T(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[POLL] SET POLL BECAUSE TX BUFFERS ARE EMPTY\n",
             PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
-    }
-
+    } else
     if (rlc_pP->vt_s == rlc_pP->vt_ms) {
       LOG_T(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[POLL] SET POLL BECAUSE OF WINDOW STALLING\n",
             PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));

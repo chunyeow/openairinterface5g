@@ -35,10 +35,7 @@
 #include "rlc.h"
 #include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
-//#define TRACE_RLC_AM_RESEGMENT
-//#define TRACE_RLC_AM_FORCE_TRAFFIC
-//#define TRACE_RLC_AM_NACK
-//#define TRACE_RLC_AM_ACK
+#include "msc.h"
 //-----------------------------------------------------------------------------
 void rlc_am_nack_pdu (
   const protocol_ctxt_t* const  ctxt_pP,
@@ -122,7 +119,14 @@ void rlc_am_nack_pdu (
 #endif
           rlc_pP->stat_tx_pdcp_sdu_discarded   += 1;
           rlc_pP->stat_tx_pdcp_bytes_discarded += rlc_pP->input_sdus[sdu_index].sdu_size;
+          MSC_LOG_EVENT((ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,\
+                        "0 "PROTOCOL_RLC_AM_MSC_FMT" Dropped SDU mui %u cause max_retx %u reached",\
+                        PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP,rlc_pP),
+                        rlc_pP->input_sdus[sdu_index].mui,
+                        rlc_pP->max_retx_threshold);
+
           rlc_am_free_in_sdu(ctxt_pP, rlc_pP, sdu_index);
+
         }
       }
     }
@@ -843,6 +847,11 @@ void rlc_am_retransmit_any_pdu(
         LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[FORCE-TRAFFIC] RE-SEND DATA PDU SN %04d\n",
               PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
               sn);
+#if defined(MESSAGE_CHART_GENERATOR_RLC_MAC)
+        MSC_LOG_EVENT((ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,\
+                               "0 "PROTOCOL_RLC_AM_MSC_FMT" RTX any pdu found SN %u",\
+                               PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP,rlc_pP), sn);
+#endif
         rlc_am_nack_pdu (ctxt_pP, rlc_pP, sn, 0, 0x7FFF);
         // no need for update rlc_pP->nb_bytes_requested_by_mac
         pdu_p = rlc_am_retransmit_get_copy(ctxt_pP, rlc_pP, sn);
@@ -873,6 +882,11 @@ void rlc_am_retransmit_any_pdu(
           found_pdu_sn);
 
     if (rlc_pP->nb_bytes_requested_by_mac > 4) {
+#if defined(MESSAGE_CHART_GENERATOR_RLC_MAC)
+        MSC_LOG_EVENT((ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,\
+                               "0 "PROTOCOL_RLC_AM_MSC_FMT" RTX any pdu found SN %u (subseg)",\
+                               PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP,rlc_pP), found_pdu_sn);
+#endif
       rlc_am_nack_pdu (ctxt_pP, rlc_pP, found_pdu_sn, 0, 0x7FFF);
       pdu_p = rlc_am_retransmit_get_subsegment(ctxt_pP, rlc_pP, found_pdu_sn, &rlc_pP->nb_bytes_requested_by_mac);
       pdu_sn_10_p = (rlc_am_pdu_sn_10_t*) (&pdu_p->data[sizeof(struct mac_tb_req)]);

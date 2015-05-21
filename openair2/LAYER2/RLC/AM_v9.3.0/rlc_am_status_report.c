@@ -44,9 +44,6 @@
 
 //#define TRACE_RLC_AM_STATUS_CREATION 1
 
-rlc_am_control_pdu_info_t  g_rlc_am_control_pdu_info;
-
-
 #   if defined(ENABLE_ITTI)
 //-----------------------------------------------------------------------------
 void
@@ -288,7 +285,7 @@ rlc_am_receive_process_control_pdu(
   rlc_am_pdu_sn_10_t *rlc_am_pdu_sn_10_p = (rlc_am_pdu_sn_10_t*)*first_byte_ppP;
   sdu_size_t          initial_pdu_size   = *tb_size_in_bytes_pP;
 
-  if (rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_p, tb_size_in_bytes_pP, &g_rlc_am_control_pdu_info) >= 0) {
+  if (rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_p, tb_size_in_bytes_pP, &rlc_pP->control_pdu_info) >= 0) {
 
     rlc_am_tx_buffer_display(ctxt_pP, rlc_pP, " TX BUFFER BEFORE PROCESS OF STATUS PDU");
     LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT" RX CONTROL PDU VT(A) %04d VT(S) %04d POLL_SN %04d ACK_SN %04d\n",
@@ -296,10 +293,10 @@ rlc_am_receive_process_control_pdu(
           rlc_pP->vt_a,
           rlc_pP->vt_s,
           rlc_pP->poll_sn,
-          g_rlc_am_control_pdu_info.ack_sn);
-    rlc_am_display_control_pdu_infos(&g_rlc_am_control_pdu_info);
+          rlc_pP->control_pdu_info.ack_sn);
+    rlc_am_display_control_pdu_infos(&rlc_pP->control_pdu_info);
 
-    rlc_sn_t        ack_sn    = g_rlc_am_control_pdu_info.ack_sn;
+    rlc_sn_t        ack_sn    = rlc_pP->control_pdu_info.ack_sn;
     rlc_sn_t        sn_cursor = rlc_pP->vt_a;
     rlc_sn_t        nack_sn;
     unsigned int nack_index;
@@ -325,13 +322,13 @@ rlc_am_receive_process_control_pdu(
     //     - if t-PollRetransmit is running:
     //         - stop and reset t-PollRetransmit.
     assert(ack_sn < RLC_AM_SN_MODULO);
-    assert(g_rlc_am_control_pdu_info.num_nack < RLC_AM_MAX_NACK_IN_STATUS_PDU);
+    assert(rlc_pP->control_pdu_info.num_nack < RLC_AM_MAX_NACK_IN_STATUS_PDU);
 
     if (rlc_am_in_tx_window(ctxt_pP, rlc_pP, ack_sn) > 0) {
       rlc_pP->num_nack_so = 0;
       rlc_pP->num_nack_sn = 0;
 
-      if (g_rlc_am_control_pdu_info.num_nack == 0) {
+      if (rlc_pP->control_pdu_info.num_nack == 0) {
         while (sn_cursor != ack_sn) {
           if (sn_cursor == rlc_pP->poll_sn) {
             rlc_am_stop_and_reset_timer_poll_retransmit(ctxt_pP, rlc_pP);
@@ -342,7 +339,7 @@ rlc_am_receive_process_control_pdu(
         }
       } else {
         nack_index = 0;
-        nack_sn   = g_rlc_am_control_pdu_info.nack_list[nack_index].nack_sn;
+        nack_sn   = rlc_pP->control_pdu_info.nack_list[nack_index].nack_sn;
 
         while (sn_cursor != ack_sn) {
           if (sn_cursor == rlc_pP->poll_sn) {
@@ -357,20 +354,20 @@ rlc_am_receive_process_control_pdu(
             rlc_am_nack_pdu (ctxt_pP,
                              rlc_pP,
                              sn_cursor,
-                             g_rlc_am_control_pdu_info.nack_list[nack_index].so_start,
-                             g_rlc_am_control_pdu_info.nack_list[nack_index].so_end);
+                             rlc_pP->control_pdu_info.nack_list[nack_index].so_start,
+                             rlc_pP->control_pdu_info.nack_list[nack_index].so_end);
 
             nack_index = nack_index + 1;
 
-            if (nack_index == g_rlc_am_control_pdu_info.num_nack) {
+            if (nack_index == rlc_pP->control_pdu_info.num_nack) {
               nack_sn = 0xFFFF; // value never reached by sn
             } else {
-              nack_sn = g_rlc_am_control_pdu_info.nack_list[nack_index].nack_sn;
+              nack_sn = rlc_pP->control_pdu_info.nack_list[nack_index].nack_sn;
             }
           }
 
-          if ((nack_index <  g_rlc_am_control_pdu_info.num_nack) && (nack_index > 0)) {
-            if (g_rlc_am_control_pdu_info.nack_list[nack_index].nack_sn != g_rlc_am_control_pdu_info.nack_list[nack_index-1].nack_sn) {
+          if ((nack_index <  rlc_pP->control_pdu_info.num_nack) && (nack_index > 0)) {
+            if (rlc_pP->control_pdu_info.nack_list[nack_index].nack_sn != rlc_pP->control_pdu_info.nack_list[nack_index-1].nack_sn) {
               sn_cursor = (sn_cursor + 1)  & RLC_AM_SN_MASK;
             }
           } else {

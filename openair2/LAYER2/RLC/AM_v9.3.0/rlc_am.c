@@ -48,13 +48,9 @@
 #include "UTIL/LOG/log.h"
 #include "UL-AM-RLC.h"
 #include "DL-AM-RLC.h"
-//#define TRACE_RLC_AM_DATA_REQUEST
 //#define TRACE_RLC_AM_TX_STATUS
 //#define TRACE_RLC_AM_TX
-//#define TRACE_RLC_AM_RX
 //#define TRACE_RLC_AM_BO
-
-extern rlc_am_control_pdu_info_t  g_rlc_am_control_pdu_info;
 
 //-----------------------------------------------------------------------------
 uint32_t
@@ -514,7 +510,6 @@ rlc_am_get_pdus (
       if (rlc_pP->nb_bytes_requested_by_mac <= 2) {
         LOG_D(RLC, "NUM BYTES REQUESTED BY MAC = %d", rlc_pP->nb_bytes_requested_by_mac);
       }
-
       LOG_D(RLC, "\n");
     }
 
@@ -608,8 +603,52 @@ rlc_am_mac_status_indication (
     }
 
   } else {
-  }
+	  if (rlc_am_is_timer_poll_retransmit_timed_out(ctxt_pP, rlc)) {
+		  if ((status_resp.buffer_occupancy_in_bytes == 0) && (rlc->input_sdus[rlc->current_sdu_index].mem_block == NULL) && (rlc->nb_sdu > 0)) {
+			  // force BO to be > 0
+			  rlc_sn_t             sn           = (rlc->vt_s - 1) & RLC_AM_SN_MASK;
+			  rlc_sn_t             sn_end       = (rlc->vt_a - 1) & RLC_AM_SN_MASK;
+			  int                  found_pdu    = 0;
+			  rlc_sn_t             found_pdu_sn = 0; // avoid warning
 
+
+			  while (sn != sn_end) {
+			    if (rlc->pdu_retrans_buffer[sn].mem_block != NULL) {
+			      if (!found_pdu) {
+			        found_pdu = 1;
+			        found_pdu_sn = sn;
+			      }
+			      status_resp.buffer_occupancy_in_bytes = rlc->pdu_retrans_buffer[sn].header_and_payload_size;
+			      status_resp.buffer_occupancy_in_pdus  = rlc->nb_sdu;
+			      status_resp.head_sdu_remaining_size_to_send  = status_resp.buffer_occupancy_in_bytes;
+			      // TODO head_sdu_is_segmented
+			      break;
+			    }
+			  }
+		  }
+	  }
+  }
+#if defined(MESSAGE_CHART_GENERATOR_RLC_MAC)
+  MSC_LOG_RX_MESSAGE(
+    (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+    (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_MAC_ENB:MSC_MAC_UE,
+    NULL,0,
+    MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" STATUS-IND %u",
+    MSC_AS_TIME_ARGS(ctxt_pP),
+    PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, rlc),
+    tb_sizeP);
+  MSC_LOG_TX_MESSAGE(
+    (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,
+    (ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_MAC_ENB:MSC_MAC_UE,
+    NULL,0,
+    MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" STATUS-RESP BO:%u/n%u(%u)  %s sdu remain %u",
+    MSC_AS_TIME_ARGS(ctxt_pP),
+    PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, rlc),
+    status_resp.buffer_occupancy_in_bytes,
+    status_resp.buffer_occupancy_in_pdus,rlc->nb_sdu,
+    (status_resp.head_sdu_is_segmented)?"sdu seg":"sdu not seg",
+    status_resp.head_sdu_remaining_size_to_send);
+#endif
 
 #ifdef TRACE_RLC_AM_TX_STATUS
 
@@ -794,7 +833,7 @@ rlc_am_mac_data_request (
 # endif
         }
       } else {
-        if (rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_p, &tb_size_in_bytes, &g_rlc_am_control_pdu_info) >= 0) {
+        if (rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_p, &tb_size_in_bytes, &l_rlc_p->control_pdu_info) >= 0) {
           tb_size_in_bytes   = ((struct mac_tb_req *) (tb_p->data))->tb_size; //tb_size_in_bytes modified by rlc_am_get_control_pdu_infos!
 #ifdef MESSAGE_CHART_GENERATOR
           message_string_size = 0;
@@ -802,18 +841,18 @@ rlc_am_mac_data_request (
                                          MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" STATUS ACK_SN %u",
                                          MSC_AS_TIME_ARGS(ctxt_pP),
                                          PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p),
-                                         g_rlc_am_control_pdu_info.ack_sn);
+                                         l_rlc_p->control_pdu_info.ack_sn);
 
-          for (num_nack = 0; num_nack < g_rlc_am_control_pdu_info.num_nack; num_nack++) {
-            if (g_rlc_am_control_pdu_info.nack_list[num_nack].e2) {
+          for (num_nack = 0; num_nack < l_rlc_p->control_pdu_info.num_nack; num_nack++) {
+            if (l_rlc_p->control_pdu_info.nack_list[num_nack].e2) {
               message_string_size += sprintf(&message_string[message_string_size], "  NACK SN %u SO START %u SO END %u",
-                                             g_rlc_am_control_pdu_info.nack_list[num_nack].nack_sn,
-                                             g_rlc_am_control_pdu_info.nack_list[num_nack].so_start,
-                                             g_rlc_am_control_pdu_info.nack_list[num_nack].so_end);
+            		  l_rlc_p->control_pdu_info.nack_list[num_nack].nack_sn,
+                                             l_rlc_p->control_pdu_info.nack_list[num_nack].so_start,
+                                             l_rlc_p->control_pdu_info.nack_list[num_nack].so_end);
 
             } else {
               message_string_size += sprintf(&message_string[message_string_size], "  NACK SN %u",
-                                             g_rlc_am_control_pdu_info.nack_list[num_nack].nack_sn);
+            		  l_rlc_p->control_pdu_info.nack_list[num_nack].nack_sn);
             }
           }
 
@@ -831,19 +870,19 @@ rlc_am_mac_data_request (
           message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", tb_size_in_bytes);
           message_string_size += sprintf(&message_string[message_string_size], "PDU type    : RLC AM DATA REQ: STATUS PDU\n\n");
           message_string_size += sprintf(&message_string[message_string_size], "Header      :\n");
-          message_string_size += sprintf(&message_string[message_string_size], "  D/C       : %u\n", g_rlc_am_control_pdu_info.d_c);
-          message_string_size += sprintf(&message_string[message_string_size], "  CPT       : %u\n", g_rlc_am_control_pdu_info.cpt);
-          message_string_size += sprintf(&message_string[message_string_size], "  ACK_SN    : %u\n", g_rlc_am_control_pdu_info.ack_sn);
-          message_string_size += sprintf(&message_string[message_string_size], "  E1        : %u\n", g_rlc_am_control_pdu_info.e1);
+          message_string_size += sprintf(&message_string[message_string_size], "  D/C       : %u\n", l_rlc_p->control_pdu_info.d_c);
+          message_string_size += sprintf(&message_string[message_string_size], "  CPT       : %u\n", l_rlc_p->control_pdu_info.cpt);
+          message_string_size += sprintf(&message_string[message_string_size], "  ACK_SN    : %u\n", l_rlc_p->control_pdu_info.ack_sn);
+          message_string_size += sprintf(&message_string[message_string_size], "  E1        : %u\n", l_rlc_p->control_pdu_info.e1);
 
-          for (num_nack = 0; num_nack < g_rlc_am_control_pdu_info.num_nack; num_nack++) {
-            if (g_rlc_am_control_pdu_info.nack_list[num_nack].e2) {
+          for (num_nack = 0; num_nack < l_rlc_p->control_pdu_info.num_nack; num_nack++) {
+            if (l_rlc_p->control_pdu_info.nack_list[num_nack].e2) {
               message_string_size += sprintf(&message_string[message_string_size], "  NACK SN %04d SO START %05d SO END %05d",
-                                             g_rlc_am_control_pdu_info.nack_list[num_nack].nack_sn,
-                                             g_rlc_am_control_pdu_info.nack_list[num_nack].so_start,
-                                             g_rlc_am_control_pdu_info.nack_list[num_nack].so_end);
+                                             l_rlc_p->control_pdu_info.nack_list[num_nack].nack_sn,
+                                             l_rlc_p->control_pdu_info.nack_list[num_nack].so_start,
+                                             l_rlc_p->control_pdu_info.nack_list[num_nack].so_end);
             } else {
-              message_string_size += sprintf(&message_string[message_string_size], "  NACK SN %04d",  g_rlc_am_control_pdu_info.nack_list[num_nack].nack_sn);
+              message_string_size += sprintf(&message_string[message_string_size], "  NACK SN %04d",  l_rlc_p->control_pdu_info.nack_list[num_nack].nack_sn);
             }
           }
 
@@ -1014,25 +1053,25 @@ rlc_am_mac_data_indication (
 # endif
         }
       } else {
-        if (rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_p, &tb_size_in_bytes, &g_rlc_am_control_pdu_info) >= 0) {
+        if (rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_p, &tb_size_in_bytes, &l_rlc_p->control_pdu_info) >= 0) {
 #ifdef MESSAGE_CHART_GENERATOR
           message_string_size = 0;
           message_string_size += sprintf(&message_string[message_string_size],
                                          MSC_AS_TIME_FMT" "PROTOCOL_RLC_AM_MSC_FMT" STATUS size ACK_SN %u",
                                          MSC_AS_TIME_ARGS(ctxt_pP),
                                          PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP, l_rlc_p),
-                                         g_rlc_am_control_pdu_info.ack_sn);
+                                         l_rlc_p->control_pdu_info.ack_sn);
 
-          for (num_nack = 0; num_nack < g_rlc_am_control_pdu_info.num_nack; num_nack++) {
-            if (g_rlc_am_control_pdu_info.nack_list[num_nack].e2) {
+          for (num_nack = 0; num_nack < l_rlc_p->control_pdu_info.num_nack; num_nack++) {
+            if (l_rlc_p->control_pdu_info.nack_list[num_nack].e2) {
               message_string_size += sprintf(&message_string[message_string_size], "  NACK SN %u SO START %u SO END %u",
-                                             g_rlc_am_control_pdu_info.nack_list[num_nack].nack_sn,
-                                             g_rlc_am_control_pdu_info.nack_list[num_nack].so_start,
-                                             g_rlc_am_control_pdu_info.nack_list[num_nack].so_end);
+                                             l_rlc_p->control_pdu_info.nack_list[num_nack].nack_sn,
+                                             l_rlc_p->control_pdu_info.nack_list[num_nack].so_start,
+                                             l_rlc_p->control_pdu_info.nack_list[num_nack].so_end);
 
             } else {
               message_string_size += sprintf(&message_string[message_string_size], "  NACK SN %u",
-                                             g_rlc_am_control_pdu_info.nack_list[num_nack].nack_sn);
+                                             l_rlc_p->control_pdu_info.nack_list[num_nack].nack_sn);
             }
           }
 
@@ -1051,19 +1090,19 @@ rlc_am_mac_data_indication (
           message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", ((struct mac_tb_ind *) (tb_p->data))->size);
           message_string_size += sprintf(&message_string[message_string_size], "PDU type    : RLC AM DATA IND: STATUS PDU\n\n");
           message_string_size += sprintf(&message_string[message_string_size], "Header      :\n");
-          message_string_size += sprintf(&message_string[message_string_size], "  D/C       : %u\n", g_rlc_am_control_pdu_info.d_c);
-          message_string_size += sprintf(&message_string[message_string_size], "  CPT       : %u\n", g_rlc_am_control_pdu_info.cpt);
-          message_string_size += sprintf(&message_string[message_string_size], "  ACK_SN    : %u\n", g_rlc_am_control_pdu_info.ack_sn);
-          message_string_size += sprintf(&message_string[message_string_size], "  E1        : %u\n", g_rlc_am_control_pdu_info.e1);
+          message_string_size += sprintf(&message_string[message_string_size], "  D/C       : %u\n", l_rlc_p->control_pdu_info.d_c);
+          message_string_size += sprintf(&message_string[message_string_size], "  CPT       : %u\n", l_rlc_p->control_pdu_info.cpt);
+          message_string_size += sprintf(&message_string[message_string_size], "  ACK_SN    : %u\n", l_rlc_p->control_pdu_info.ack_sn);
+          message_string_size += sprintf(&message_string[message_string_size], "  E1        : %u\n", l_rlc_p->control_pdu_info.e1);
 
-          for (num_nack = 0; num_nack < g_rlc_am_control_pdu_info.num_nack; num_nack++) {
-            if (g_rlc_am_control_pdu_info.nack_list[num_nack].e2) {
+          for (num_nack = 0; num_nack < l_rlc_p->control_pdu_info.num_nack; num_nack++) {
+            if (l_rlc_p->control_pdu_info.nack_list[num_nack].e2) {
               message_string_size += sprintf(&message_string[message_string_size], "  NACK SN %04d SO START %05d SO END %05d",
-                                             g_rlc_am_control_pdu_info.nack_list[num_nack].nack_sn,
-                                             g_rlc_am_control_pdu_info.nack_list[num_nack].so_start,
-                                             g_rlc_am_control_pdu_info.nack_list[num_nack].so_end);
+                                             l_rlc_p->control_pdu_info.nack_list[num_nack].nack_sn,
+                                             l_rlc_p->control_pdu_info.nack_list[num_nack].so_start,
+                                             l_rlc_p->control_pdu_info.nack_list[num_nack].so_end);
             } else {
-              message_string_size += sprintf(&message_string[message_string_size], "  NACK SN %04d",  g_rlc_am_control_pdu_info.nack_list[num_nack].nack_sn);
+              message_string_size += sprintf(&message_string[message_string_size], "  NACK SN %04d",  l_rlc_p->control_pdu_info.nack_list[num_nack].nack_sn);
             }
           }
 

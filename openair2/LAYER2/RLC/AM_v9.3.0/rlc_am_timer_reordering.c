@@ -36,6 +36,7 @@
 #include "rlc_am.h"
 # include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
+#include "msc.h"
 //-----------------------------------------------------------------------------
 void
 rlc_am_check_timer_reordering(
@@ -72,6 +73,11 @@ rlc_am_check_timer_reordering(
       //         - start t-Reordering;
       //         - set VR(X) to VR(H).
 
+#if defined(MESSAGE_CHART_GENERATOR_RLC_MAC)
+      MSC_LOG_EVENT((ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,\
+                             "0 "PROTOCOL_RLC_AM_MSC_FMT" t_reordering timed out",\
+                             PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP,rlc_pP));
+#endif
 
       rlc_pP->t_reordering.running   = 0;
       rlc_pP->t_reordering.timed_out = 1;
@@ -128,6 +134,11 @@ rlc_am_stop_and_reset_timer_reordering(
   rlc_pP->t_reordering.ms_time_out     = 0;
   rlc_pP->t_reordering.ms_start        = 0;
   rlc_pP->t_reordering.timed_out       = 0;
+#if defined(MESSAGE_CHART_GENERATOR_RLC_MAC)
+    MSC_LOG_EVENT((ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,\
+                  "0 "PROTOCOL_RLC_AM_MSC_FMT" t_reordering stopped & reseted",\
+                  PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP,rlc_pP));
+#endif
 }
 //-----------------------------------------------------------------------------
 void
@@ -138,16 +149,23 @@ rlc_am_start_timer_reordering(
 {
   rlc_pP->t_reordering.timed_out       = 0;
 
-  if (rlc_pP->t_reordering.ms_duration > 0) {
-  rlc_pP->t_reordering.running         = 1;
-    rlc_pP->t_reordering.ms_time_out     = PROTOCOL_CTXT_TIME_MILLI_SECONDS(ctxt_pP) + rlc_pP->t_reordering.ms_duration;
-    rlc_pP->t_reordering.ms_start        = PROTOCOL_CTXT_TIME_MILLI_SECONDS(ctxt_pP);
-    LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[T-REORDERING] STARTED (TIME-OUT = FRAME %5u)\n",
+  if (rlc_pP->t_reordering.running == 0){
+    if (rlc_pP->t_reordering.ms_duration > 0) {
+      rlc_pP->t_reordering.running         = 1;
+      rlc_pP->t_reordering.ms_time_out     = PROTOCOL_CTXT_TIME_MILLI_SECONDS(ctxt_pP) + rlc_pP->t_reordering.ms_duration;
+      rlc_pP->t_reordering.ms_start        = PROTOCOL_CTXT_TIME_MILLI_SECONDS(ctxt_pP);
+      LOG_D(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[T-REORDERING] STARTED (TIME-OUT = %5u ms)\n",
           PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP),
           rlc_pP->t_reordering.ms_time_out);
-  } else {
+#if defined(MESSAGE_CHART_GENERATOR_RLC_MAC)
+      MSC_LOG_EVENT((ctxt_pP->enb_flag == ENB_FLAG_YES) ? MSC_RLC_ENB:MSC_RLC_UE,\
+                             "0 "PROTOCOL_RLC_AM_MSC_FMT" t_reordering started (TO %u ms)",\
+                             PROTOCOL_RLC_AM_MSC_ARGS(ctxt_pP,rlc_pP), rlc_pP->t_reordering.ms_time_out);
+#endif
+    } else {
     LOG_T(RLC, PROTOCOL_RLC_AM_CTXT_FMT"[T-REORDERING] NOT STARTED, CAUSE CONFIGURED 0 ms\n",
           PROTOCOL_RLC_AM_CTXT_ARGS(ctxt_pP,rlc_pP));
+    }
   }
 }
 //-----------------------------------------------------------------------------
