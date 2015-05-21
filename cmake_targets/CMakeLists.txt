@@ -394,7 +394,8 @@ add_boolean_option(OAI_NW_DRIVER_USE_NETLINK True "????")
 add_boolean_option(USE_MME False "this flag is used only one time in lte-softmodem.c")
 add_list_string_option(PACKAGE_NAME "NotDefined" "As per attribute name")
 add_boolean_option(MESSAGE_CHART_GENERATOR True "For generating sequence diagrams")
-
+add_boolean_option(MESSAGE_CHART_GENERATOR_RLC_MAC False "trace RLC-MAC exchanges in sequence diagrams")
+add_boolean_option(MESSAGE_CHART_GENERATOR_PHY     False "trace some PHY exchanges in sequence diagrams")
 ########################
 # Include order
 ##########################
