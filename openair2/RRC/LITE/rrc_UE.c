@@ -3482,7 +3482,6 @@ void
 
       /* PDCP messages */
     case RRC_DCCH_DATA_IND:
-//RRC_DCCH_DATA_IND (msg_p).eNB_index=0;
       PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, RRC_DCCH_DATA_IND (msg_p).module_id, ENB_FLAG_NO, RRC_DCCH_DATA_IND (msg_p).rnti, RRC_DCCH_DATA_IND (msg_p).frame, 0,RRC_DCCH_DATA_IND (msg_p).eNB_index);
       LOG_I(RRC, "[UE %d] Received %s: frameP %d, DCCH %d, eNB %d\n",
             RRC_DCCH_DATA_IND (msg_p).module_id,
