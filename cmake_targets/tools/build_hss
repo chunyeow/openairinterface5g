@@ -56,7 +56,10 @@ function help()
   echo_error "  -h, --help                                Print this help."
   echo_error "  -i, --check-installed-software            Check installed software packages necessary to build and run HSS (support Ubuntu 14.04)."
   echo_error "  -I, --install-hss-files                   Install HSS database if necessary."
-  echo_error "  -k, --operator-key             key        Operator key of the HSS (if not specified, default is 11111111111111111111111111111111, see CMakelists.txt)."
+  echo_error "  -k, --operator-key             key        Operator key of the HSS."
+  echo_error "                                            If not specified, default is 11111111111111111111111111111111 if operator ckey is not specified also."
+  echo_error "  -K, --operator-ckey            ciph. key  Operator ciphered key of the HSS (Could be 8E27B6AF0E692E750F32667A3B14605D=OPC(11111111111111111111111111111111))."
+  echo_error "                                            ( OPC()=RijndaelEncrypt(operator-key) Xor operator-key, LTE-K (prov database) scheduled in Rijndael algo before RijndaelEncrypt)."
   echo_error "  -m, --connect-to-mme           fqdn       MME act as a S6A server, HSS as a client (reversed situation but allows MME and HSS be on the same host) ."
   echo_error "  -r, --realm                    realm      Realm of the HSS (optional parameter)."
   echo_error "  -s, --transport-sctp-only                 Diameter use SCTP (TCP disabled)."
@@ -119,6 +122,11 @@ function main()
       -k | --operator-key)
         echo "Operator key of the HSS: $2"
         cmake_args="$cmake_args -DOPERATOR_key=$2"
+        shift 2;
+        ;;
+      -K | --operator-ckey)
+        echo "Operator ciphered key of the HSS: $2"
+        cmake_args="$cmake_args -DOPERATOR_ckey=$2"
         shift 2;
         ;;
       -m | --connect-to-mme)
