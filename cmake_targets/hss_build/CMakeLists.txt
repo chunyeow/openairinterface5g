@@ -286,6 +286,7 @@ set(TRANSPORT_option  "#No_TCP"        CACHE STRING  "No_TCP or No_SCTP or comme
 set(TRANSPORT_PREFER_TCP_option  "#Prefer_TCP"   CACHE STRING  "Prefer_TCP or comment string, FreeDiameter config option")
 set(AppServThreads    2                CACHE STRING  "FreeDiameter AppServThreads config option")
 set(OPERATOR_key      "11111111111111111111111111111111" CACHE STRING  "LTE operator clear text key (hex bytes)")
+set(OPERATOR_ckey      "HSS_CAN_DO_THE_JOB"   CACHE STRING  "LTE operator ciphered text key (hex bytes)")
 set(REMOTE_PEER_WHITELIST "*.${REALM}" CACHE STRING  "Remote peer whitelist (separated by spaces), for freediameter acl.conf config file")
 IF( FD_SERVER_IP_BIND_LIST )
     set(ListenOn          "ListenOn = \"${FD_SERVER_IP_BIND_LIST}\"" CACHE STRING  "FreeDiameter server IP bind addresses list")
