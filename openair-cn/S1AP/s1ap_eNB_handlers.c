@@ -579,7 +579,7 @@ int s1ap_eNB_handle_ue_context_release_command(uint32_t               assoc_id,
     		  MSC_S1AP_ENB,
     		  MSC_RRC_ENB,
     		  NULL,0,
-    		  "0 S1AP_UE_CONTEXT_RELEASE_COMMAND/%s eNB_ue_s1ap_id "S1AP_UE_ID_FMT" ",
+    		  "0 S1AP_UE_CONTEXT_RELEASE_COMMAND/%d eNB_ue_s1ap_id "S1AP_UE_ID_FMT" ",
     		  enb_ue_s1ap_id);
 
       message_p        = itti_alloc_new_message(TASK_S1AP, S1AP_UE_CONTEXT_RELEASE_COMMAND);
