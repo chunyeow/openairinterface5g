@@ -1445,7 +1445,7 @@ do_RRCConnectionSetup(
   SRB1_rlc_config->choice.explicitValue.choice.am.dl_AM_RLC.t_Reordering     = enb_properties.properties[ctxt_pP->module_id]->srb1_timer_reordering;
   SRB1_rlc_config->choice.explicitValue.choice.am.dl_AM_RLC.t_StatusProhibit = enb_properties.properties[ctxt_pP->module_id]->srb1_timer_status_prohibit;
 #else 
-  SRB1_rlc_config->choice.explicitValue.choice.am.ul_AM_RLC.t_PollRetransmit = T_PollRetransmit_ms80;;
+  SRB1_rlc_config->choice.explicitValue.choice.am.ul_AM_RLC.t_PollRetransmit = T_PollRetransmit_ms20;;
   SRB1_rlc_config->choice.explicitValue.choice.am.ul_AM_RLC.pollPDU          = PollPDU_p4;;
   SRB1_rlc_config->choice.explicitValue.choice.am.ul_AM_RLC.pollByte         = PollByte_kBinfinity;
   SRB1_rlc_config->choice.explicitValue.choice.am.ul_AM_RLC.maxRetxThreshold = UL_AM_RLC__maxRetxThreshold_t8;
