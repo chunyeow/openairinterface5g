@@ -66,6 +66,7 @@ int fd_g_debug_lvl = 1;
 /* YACC forward declarations */
 extern int  yyparse (struct hss_config_s *hss_config_p);
 extern uint8_t opc[16];
+extern uint8_t op [16];
 static int config_parse_command_line(int argc, char *argv[],
                                      hss_config_t *hss_config_p);
 static int config_parse_file(hss_config_t *hss_config_p);
@@ -89,6 +90,9 @@ int config_init(int argc, char *argv[], hss_config_t *hss_config_p)
     return EINVAL;
   }
 
+  hss_config_p->valid_op = 0;
+  hss_config_p->valid_opc = 0;
+
   if ((ret = config_parse_command_line(argc, argv, hss_config_p)) != 0) {
     return ret;
   }
@@ -107,6 +111,28 @@ int config_init(int argc, char *argv[], hss_config_t *hss_config_p)
     if (strlen(hss_config_p->operator_key) == 32) {
       ret = sscanf(hss_config_p->operator_key,
                    "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+                   (unsigned int*)&op[0],(unsigned int*)&op[1],
+                   (unsigned int*)&op[2],(unsigned int*)&op[3],
+                   (unsigned int*)&op[4],(unsigned int*)&op[5],
+                   (unsigned int*)&op[6],(unsigned int*)&op[7],
+                   (unsigned int*)&op[8],(unsigned int*)&op[9],
+                   (unsigned int*)&op[10],(unsigned int*)&op[11],
+                   (unsigned int*)&op[12],(unsigned int*)&op[13],
+                   (unsigned int*)&op[14],(unsigned int*)&op[15]);
+
+      if (ret != 16) {
+        fprintf(stderr,
+                "Error in configuration file: operator key: %s\n",
+                hss_config_p->operator_key);
+        abort();
+      }
+      hss_config_p->valid_op = 1;
+    }
+  }
+  if (hss_config_p->operator_ckey) {
+    if (strlen(hss_config_p->operator_ckey) == 32) {
+      ret = sscanf(hss_config_p->operator_ckey,
+                   "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
                    (unsigned int*)&opc[0],(unsigned int*)&opc[1],
                    (unsigned int*)&opc[2],(unsigned int*)&opc[3],
                    (unsigned int*)&opc[4],(unsigned int*)&opc[5],
@@ -118,21 +144,17 @@ int config_init(int argc, char *argv[], hss_config_t *hss_config_p)
 
       if (ret != 16) {
         fprintf(stderr,
-                "Error in configuration file: operator key: %s\n",
-                hss_config_p->operator_key);
+                "Error in configuration file: operator ckey: %s\n",
+                hss_config_p->operator_ckey);
         abort();
       }
-    } else {
-      fprintf(stderr,
-              "Error in configuration file: operator key length != 32 (16 hex bytes): %s\n",
-              hss_config_p->operator_key);
-      abort();
+      hss_config_p->valid_opc = 1;
     }
-  } else {
-    fprintf(stderr, "Error in configuration file: operator key is null\n");
+  }
+  if ((hss_config_p->valid_opc == 0) && (hss_config_p->valid_op ==0)) {
+    fprintf(stderr, "Error in configuration file: no valid OP or OPC key\n");
     abort();
   }
-
   return 0;
 }
 
@@ -173,6 +195,8 @@ static void config_display(hss_config_t *hss_config_p)
   fprintf(stdout, "* Security:\n");
   fprintf(stdout, "\t- Operator key......: %s\n",
           hss_config_p->operator_key);
+  fprintf(stdout, "\t- Operator ckey......: %s\n",
+          hss_config_p->operator_ckey);
 }
 
 static int config_parse_command_line(int argc, char *argv[],

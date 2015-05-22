@@ -77,7 +77,7 @@ struct random_state_s;
 void random_init(void);
 void generate_random(uint8_t *random, ssize_t length);
 
-void SetOPc(const u8 const op_c[16]);
+void SetOP(char *opP);
 
 void f1 ( const u8 const k[16], const u8 const rand[16], const u8 const sqn[6], const u8 const amf[2],
           u8 mac_a[8] );

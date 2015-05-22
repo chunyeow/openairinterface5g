@@ -32,6 +32,10 @@
 #include <string.h>
 
 #include "auc.h"
+#include "hss_config.h"
+
+extern hss_config_t hss_config;
+extern uint8_t op[16];
 
 uint8_t *sqn_ms_derive(uint8_t *key, uint8_t *auts, uint8_t *rand_p)
 {
@@ -52,7 +56,9 @@ uint8_t *sqn_ms_derive(uint8_t *key, uint8_t *auts, uint8_t *rand_p)
 
   sqn_ms = malloc(SQN_LENGTH_OCTEST);
 
-  SetOPc(opc);
+  if (hss_config.valid_opc == 0) {
+    SetOP(hss_config.operator_key);
+  }
 
   /* Derive AK from key and rand */
   f5star(key, rand_p, ak);

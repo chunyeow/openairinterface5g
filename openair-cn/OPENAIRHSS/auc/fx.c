@@ -21,23 +21,38 @@
 #include <string.h>
 
 #include "auc.h"
+#include "hss_config.h"
+
+extern hss_config_t hss_config;
 
 /*--------- Operator Variant Algorithm Configuration Field --------*/
 /*------- Insert your value of OP here -------*/
-u8 OP[16]= {
-  0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11,
-  0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11
-};
+extern uint8_t opc[16];
+extern uint8_t op[16];
 
 /*--------------------------- prototypes --------------------------*/
-void ComputeOPc( u8 op_c[16] );
+void ComputeOPc( u8 opP[16] );
 
-void SetOPc(const u8 const op_c[16])
+void SetOP(char *opP)
 {
-  memcpy(OP, op_c, 16);
-  printf("SetOPc: OP : %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X ",
-         OP[0],OP[1],OP[2],OP[3],OP[4],OP[5],OP[6],OP[7],
-         OP[8],OP[9],OP[10],OP[11],OP[12],OP[13],OP[14],OP[15]);
+    int ret = sscanf(opP,
+                 "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+                 (unsigned int*)&op[0],(unsigned int*)&op[1],
+                 (unsigned int*)&op[2],(unsigned int*)&op[3],
+                 (unsigned int*)&op[4],(unsigned int*)&op[5],
+                 (unsigned int*)&op[6],(unsigned int*)&op[7],
+                 (unsigned int*)&op[8],(unsigned int*)&op[9],
+                 (unsigned int*)&op[10],(unsigned int*)&op[11],
+                 (unsigned int*)&op[12],(unsigned int*)&op[13],
+                 (unsigned int*)&op[14],(unsigned int*)&op[15]);
+    if (ret != 16) {
+      fprintf(stderr,
+              "Error in operator key\n");
+      abort();
+    }
+    printf("SetOP: OP : %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X ",
+		  op[0],op[1],op[2],op[3],op[4],op[5],op[6],op[7],
+		  op[8],op[9],op[10],op[11],op[12],op[13],op[14],op[15]);
 }
 
 void generate_autn(const u8 const sqn[6], const u8 const ak[6], const u8 const amf[2], const u8 const mac_a[8], u8 autn[16])
@@ -64,17 +79,19 @@ void generate_autn(const u8 const sqn[6], const u8 const ak[6], const u8 const a
 void f1 ( const u8 const k[16], const u8 const _rand[16], const u8 const sqn[6], const u8 const amf[2],
           u8 mac_a[8] )
 {
-  u8 op_c[16];
   u8 temp[16];
   u8 in1[16];
   u8 out1[16];
   u8 rijndaelInput[16];
   u8 i;
   RijndaelKeySchedule( k );
-  ComputeOPc( op_c );
+  if (hss_config.valid_opc == 0) {
+	SetOP(hss_config.operator_key);
+    ComputeOPc( opc );
+  }
 
   for (i=0; i<16; i++)
-    rijndaelInput[i] = _rand[i] ^ op_c[i];
+    rijndaelInput[i] = _rand[i] ^ opc[i];
 
   RijndaelEncrypt( rijndaelInput, temp );
 
@@ -91,7 +108,7 @@ void f1 ( const u8 const k[16], const u8 const _rand[16], const u8 const sqn[6],
   /* XOR op_c and in1, rotate by r1=64, and XOR *
    * on the constant c1 (which is all zeroes) */
   for (i=0; i<16; i++)
-    rijndaelInput[(i+8) % 16] = in1[i] ^ op_c[i];
+    rijndaelInput[(i+8) % 16] = in1[i] ^ opc[i];
 
   /* XOR on the value temp computed before */
   for (i=0; i<16; i++)
@@ -100,7 +117,7 @@ void f1 ( const u8 const k[16], const u8 const _rand[16], const u8 const sqn[6],
   RijndaelEncrypt( rijndaelInput, out1 );
 
   for (i=0; i<16; i++)
-    out1[i] ^= op_c[i];
+    out1[i] ^= opc[i];
 
   for (i=0; i<8; i++)
     mac_a[i] = out1[i];
@@ -119,16 +136,18 @@ void f1 ( const u8 const k[16], const u8 const _rand[16], const u8 const sqn[6],
 void f2345 ( const u8 const k[16], const u8 const _rand[16],
              u8 res[8], u8 ck[16], u8 ik[16], u8 ak[6] )
 {
-  u8 op_c[16];
   u8 temp[16];
   u8 out[16];
   u8 rijndaelInput[16];
   u8 i;
   RijndaelKeySchedule( k );
-  ComputeOPc( op_c );
+  if (hss_config.valid_opc == 0) {
+    SetOP(hss_config.operator_key);
+    ComputeOPc( opc );
+  }
 
   for (i=0; i<16; i++)
-    rijndaelInput[i] = _rand[i] ^ op_c[i];
+    rijndaelInput[i] = _rand[i] ^ opc[i];
 
   RijndaelEncrypt( rijndaelInput, temp );
 
@@ -136,13 +155,13 @@ void f2345 ( const u8 const k[16], const u8 const _rand[16],
    * rotate by r2=0, and XOR on the constant c2 (which *
    * is all zeroes except that the last bit is 1). */
   for (i=0; i<16; i++)
-    rijndaelInput[i] = temp[i] ^ op_c[i];
+    rijndaelInput[i] = temp[i] ^ opc[i];
 
   rijndaelInput[15] ^= 1;
   RijndaelEncrypt( rijndaelInput, out );
 
   for (i=0; i<16; i++)
-    out[i] ^= op_c[i];
+    out[i] ^= opc[i];
 
   for (i=0; i<8; i++)
     res[i] = out[i+8];
@@ -155,13 +174,13 @@ void f2345 ( const u8 const k[16], const u8 const _rand[16],
    * is all zeroes except that the next to last bit is 1). */
 
   for (i=0; i<16; i++)
-    rijndaelInput[(i+12) % 16] = temp[i] ^ op_c[i];
+    rijndaelInput[(i+12) % 16] = temp[i] ^ opc[i];
 
   rijndaelInput[15] ^= 2;
   RijndaelEncrypt( rijndaelInput, out );
 
   for (i=0; i<16; i++)
-    out[i] ^= op_c[i];
+    out[i] ^= opc[i];
 
   for (i=0; i<16; i++)
     ck[i] = out[i];
@@ -170,13 +189,13 @@ void f2345 ( const u8 const k[16], const u8 const _rand[16],
    * rotate by r4=64, and XOR on the constant c4 (which *
    * is all zeroes except that the 2nd from last bit is 1). */
   for (i=0; i<16; i++)
-    rijndaelInput[(i+8) % 16] = temp[i] ^ op_c[i];
+    rijndaelInput[(i+8) % 16] = temp[i] ^ opc[i];
 
   rijndaelInput[15] ^= 4;
   RijndaelEncrypt( rijndaelInput, out );
 
   for (i=0; i<16; i++)
-    out[i] ^= op_c[i];
+    out[i] ^= opc[i];
 
   for (i=0; i<16; i++)
     ik[i] = out[i];
@@ -196,17 +215,23 @@ void f2345 ( const u8 const k[16], const u8 const _rand[16],
 void f1star( const u8 const k[16], const u8 const _rand[16], const u8 const sqn[6], const u8 const amf[2],
              u8 mac_s[8] )
 {
-  u8 op_c[16];
   u8 temp[16];
   u8 in1[16];
   u8 out1[16];
   u8 rijndaelInput[16];
   u8 i;
   RijndaelKeySchedule( k );
-  ComputeOPc( op_c );
+  if (hss_config.valid_opc == 0) {
+	SetOP(hss_config.operator_key);
+    ComputeOPc( opc );
+  } else {
+	  printf("Using opc:  %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
+		         opc[0],opc[1],opc[2],opc[3],opc[4],opc[5],opc[6],opc[7],
+		         opc[8],opc[9],opc[10],opc[11],opc[12],opc[13],opc[14],opc[15] );
+  }
 
   for (i=0; i<16; i++)
-    rijndaelInput[i] = _rand[i] ^ op_c[i];
+    rijndaelInput[i] = _rand[i] ^ opc[i];
 
   RijndaelEncrypt( rijndaelInput, temp );
 
@@ -223,7 +248,7 @@ void f1star( const u8 const k[16], const u8 const _rand[16], const u8 const sqn[
   /* XOR op_c and in1, rotate by r1=64, and XOR *
    * on the constant c1 (which is all zeroes) */
   for (i=0; i<16; i++)
-    rijndaelInput[(i+8) % 16] = in1[i] ^ op_c[i];
+    rijndaelInput[(i+8) % 16] = in1[i] ^ opc[i];
 
   /* XOR on the value temp computed before */
   for (i=0; i<16; i++)
@@ -232,7 +257,7 @@ void f1star( const u8 const k[16], const u8 const _rand[16], const u8 const sqn[
   RijndaelEncrypt( rijndaelInput, out1 );
 
   for (i=0; i<16; i++)
-    out1[i] ^= op_c[i];
+    out1[i] ^= opc[i];
 
   for (i=0; i<8; i++)
     mac_s[i] = out1[i+8];
@@ -251,16 +276,23 @@ void f1star( const u8 const k[16], const u8 const _rand[16], const u8 const sqn[
 void f5star( const u8 const k[16], const u8 const _rand[16],
              u8 ak[6] )
 {
-  u8 op_c[16];
   u8 temp[16];
   u8 out[16];
   u8 rijndaelInput[16];
   u8 i;
+
   RijndaelKeySchedule( k );
-  ComputeOPc( op_c );
+  if (hss_config.valid_opc == 0) {
+	SetOP(hss_config.operator_key);
+    ComputeOPc(opc);
+  } else {
+	  printf("Using OPc: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
+			  opc[0],opc[1],opc[2],opc[3],opc[4],opc[5],opc[6],opc[7],
+			  opc[8],opc[9],opc[10],opc[11],opc[12],opc[13],opc[14],opc[15]);
+  }
 
   for (i=0; i<16; i++)
-    rijndaelInput[i] = _rand[i] ^ op_c[i];
+    rijndaelInput[i] = _rand[i] ^ opc[i];
 
   RijndaelEncrypt( rijndaelInput, temp );
 
@@ -268,13 +300,13 @@ void f5star( const u8 const k[16], const u8 const _rand[16],
    * rotate by r5=96, and XOR on the constant c5 (which *
    * is all zeroes except that the 3rd from last bit is 1). */
   for (i=0; i<16; i++)
-    rijndaelInput[(i+4) % 16] = temp[i] ^ op_c[i];
+    rijndaelInput[(i+4) % 16] = temp[i] ^ opc[i];
 
   rijndaelInput[15] ^= 8;
   RijndaelEncrypt( rijndaelInput, out );
 
   for (i=0; i<16; i++)
-    out[i] ^= op_c[i];
+    out[i] ^= opc[i];
 
   for (i=0; i<6; i++)
     ak[i] = out[i];
@@ -286,17 +318,22 @@ void f5star( const u8 const k[16], const u8 const _rand[16],
  * Function to compute OPc from OP and K. Assumes key schedule has
  * already been performed.
  *-----------------------------------------------------------------*/
-void ComputeOPc( u8 op_c[16] )
+void ComputeOPc( u8 opcP[16] )
 {
   u8 i;
-  printf("ComputeOPc: OP : %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X ",
-         OP[0],OP[1],OP[2],OP[3],OP[4],OP[5],OP[6],OP[7],
-         OP[8],OP[9],OP[10],OP[11],OP[12],OP[13],OP[14],OP[15]);
 
-  RijndaelEncrypt( OP, op_c );
+  RijndaelEncrypt( op, opcP );
+  printf("Compute opc:\n\tIn:\t%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n\tRinj:\t%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
+		  op[0],op[1],op[2],op[3],op[4],op[5],op[6],op[7],
+		  op[8],op[9],op[10],op[11],op[12],op[13],op[14],op[15],
+	      opcP[0],opcP[1],opcP[2],opcP[3],opcP[4],opcP[5],opcP[6],opcP[7],
+	      opcP[8],opcP[9],opcP[10],opcP[11],opcP[12],opcP[13],opcP[14],opcP[15] );
 
   for (i=0; i<16; i++)
-    op_c[i] ^= OP[i];
+	  opcP[i] ^= op[i];
+  printf("\tOut:\t%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
+	         opcP[0],opcP[1],opcP[2],opcP[3],opcP[4],opcP[5],opcP[6],opcP[7],
+	         opcP[8],opcP[9],opcP[10],opcP[11],opcP[12],opcP[13],opcP[14],opcP[15] );
 
   return;
 } /* end of function ComputeOPc */

@@ -35,9 +35,10 @@
 #include "s6a_proto.h"
 #include "auc.h"
 
+hss_config_t hss_config;
+
 int main(int argc, char *argv[])
 {
-  hss_config_t hss_config;
 
   memset(&hss_config, 0, sizeof(hss_config_t));
 

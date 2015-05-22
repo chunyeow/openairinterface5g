@@ -70,6 +70,7 @@ int fddlex(YYSTYPE *lvalp, YYLTYPE *llocp);
 %token MYSQL_PASS
 %token MYSQL_DB
 %token OPERATOR_KEY
+%token OPERATOR_CKEY
 
 %%
 conffile:       /* Empty is OK -- for simplicity here, we reject in daemon later */
@@ -78,6 +79,7 @@ conffile:       /* Empty is OK -- for simplicity here, we reject in daemon later
     | conffile mysql_user
     | conffile mysql_pass
     | conffile operator_key
+    | conffile operator_ckey
     | conffile fdconf
     | conffile errors
     {
@@ -113,6 +115,12 @@ mysql_server: MYSQL_SERVER '=' QSTRING ';'
 operator_key: OPERATOR_KEY '=' QSTRING ';'
     {
         hss_config_p->operator_key = $3;
+    }
+    ;
+
+operator_ckey: OPERATOR_CKEY '=' QSTRING ';'
+    {
+        hss_config_p->operator_ckey = $3;
     }
     ;
 

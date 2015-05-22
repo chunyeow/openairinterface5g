@@ -84,6 +84,9 @@ void RijndaelKeySchedule( const u8 const key[16] )
   u8 roundConst;
   int i, j;
 
+  printf("RijndaelKeySchedule: K %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
+		  key[0],key[1],key[2],key[3],key[4],key[5],key[6],key[7],
+		  key[8],key[9],key[10],key[11],key[12],key[13],key[14],key[15] );
   /* first round key equals key */
   for (i=0; i<16; i++)
     roundKeys[0][i & 0x03][i>>2] = key[i];

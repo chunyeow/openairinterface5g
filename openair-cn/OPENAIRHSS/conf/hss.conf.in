@@ -6,6 +6,7 @@ MYSQL_db     = "@MYSQL_db@";
 
 ## HSS options
 OPERATOR_key = "@OPERATOR_key@";
+OPERATOR_ckey = "@OPERATOR_ckey@";
 
 ## Freediameter options
 FD_conf = "@FREEDIAMETER_PATH@/../etc/freeDiameter/hss_fd.conf";

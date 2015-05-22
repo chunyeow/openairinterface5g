@@ -37,6 +37,9 @@ typedef struct hss_config_s {
 
 
   char *operator_key;
+  int   valid_op;
+  char *operator_ckey;
+  int   valid_opc;
 
   /* The freediameter configuration file */
   char *freediameter_config;
