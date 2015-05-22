@@ -120,7 +120,8 @@ mui_t                               rrc_eNB_mui = 0;
 //-----------------------------------------------------------------------------
 static void
 init_SI(
-  const protocol_ctxt_t* const ctxt_pP
+  const protocol_ctxt_t* const ctxt_pP,
+  const int              CC_id
 #if defined(ENABLE_ITTI)
   ,
   RrcConfigurationReq * configuration
@@ -178,9 +179,9 @@ init_SI(
      exit(-1);
    */
 
-  eNB_rrc_inst[ctxt_pP->module_id].sizeof_SIB1 = 0;
-  eNB_rrc_inst[ctxt_pP->module_id].sizeof_SIB23 = 0;
-  eNB_rrc_inst[ctxt_pP->module_id].SIB1 = (uint8_t*) malloc16(32);
+  eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sizeof_SIB1 = 0;
+  eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sizeof_SIB23 = 0;
+  eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].SIB1 = (uint8_t*) malloc16(32);
 
   /*
      printf ("before SIB1 init : Nid_cell %d\n", mac_xface->lte_frame_parms->Nid_cell);
@@ -189,13 +190,14 @@ init_SI(
      mac_xface->lte_frame_parms->tdd_config);
    */
 
-  if (eNB_rrc_inst[ctxt_pP->module_id].SIB1)
-    eNB_rrc_inst[ctxt_pP->module_id].sizeof_SIB1 = do_SIB1(
+  if (eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].SIB1)
+    eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sizeof_SIB1 = do_SIB1(
           ctxt_pP->module_id,
+          CC_id,
           mac_xface->lte_frame_parms,
-          (uint8_t*)eNB_rrc_inst[ctxt_pP->module_id].SIB1,
-          &eNB_rrc_inst[ctxt_pP->module_id].siblock1,
-          &eNB_rrc_inst[ctxt_pP->module_id].sib1
+          (uint8_t*)eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].SIB1,
+          &eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].siblock1,
+          &eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib1
 #if defined(ENABLE_ITTI)
           , configuration
 #endif
@@ -212,23 +214,24 @@ init_SI(
      mac_xface->lte_frame_parms->frame_type,
      mac_xface->lte_frame_parms->tdd_config);
    */
-  if (eNB_rrc_inst[ctxt_pP->module_id].sizeof_SIB1 == 255) {
-    mac_xface->macphy_exit("[RRC][init_SI] FATAL, eNB_rrc_inst[enb_mod_idP].sizeof_SIB1 == 255");
+  if (eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sizeof_SIB1 == 255) {
+    mac_xface->macphy_exit("[RRC][init_SI] FATAL, eNB_rrc_inst[enb_mod_idP].carrier[CC_id].sizeof_SIB1 == 255");
   }
 
-  eNB_rrc_inst[ctxt_pP->module_id].SIB23 = (uint8_t*) malloc16(64);
+  eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].SIB23 = (uint8_t*) malloc16(64);
 
-  if (eNB_rrc_inst[ctxt_pP->module_id].SIB23) {
-    eNB_rrc_inst[ctxt_pP->module_id].sizeof_SIB23 = do_SIB23(
+  if (eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].SIB23) {
+    eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sizeof_SIB23 = do_SIB23(
           ctxt_pP->module_id,
+          CC_id,
           mac_xface->lte_frame_parms,
-          eNB_rrc_inst[ctxt_pP->module_id].SIB23,
-          &eNB_rrc_inst[ctxt_pP->module_id].systemInformation,
-          &eNB_rrc_inst[ctxt_pP->module_id].sib2,
-          &eNB_rrc_inst[ctxt_pP->module_id].sib3
+          eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].SIB23,
+          &eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].systemInformation,
+          &eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2,
+          &eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib3
 #ifdef Rel10
-          , &eNB_rrc_inst[ctxt_pP->module_id].sib13,
-          eNB_rrc_inst[ctxt_pP->module_id].MBMS_flag
+          , &eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib13,
+          eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].MBMS_flag
 #endif
 #if defined(ENABLE_ITTI)
           , configuration
@@ -245,73 +248,78 @@ init_SI(
        #endif
        );
      */
-    if (eNB_rrc_inst[ctxt_pP->module_id].sizeof_SIB23 == 255) {
-      mac_xface->macphy_exit("[RRC][init_SI] FATAL, eNB_rrc_inst[mod].sizeof_SIB23 == 255");
+    if (eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sizeof_SIB23 == 255) {
+      mac_xface->macphy_exit("[RRC][init_SI] FATAL, eNB_rrc_inst[mod].carrier[CC_id].sizeof_SIB23 == 255");
     }
 
     LOG_T(RRC, PROTOCOL_RRC_CTXT_FMT" SIB2/3 Contents (partial)\n",
           PROTOCOL_RRC_CTXT_ARGS(ctxt_pP));
     LOG_T(RRC, PROTOCOL_RRC_CTXT_FMT" pusch_config_common.n_SB = %ld\n",
           PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
-          eNB_rrc_inst[ctxt_pP->module_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.n_SB);
+          eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.
+          pusch_ConfigBasic.n_SB);
     LOG_T(RRC, PROTOCOL_RRC_CTXT_FMT" pusch_config_common.hoppingMode = %ld\n",
           PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
-          eNB_rrc_inst[ctxt_pP->module_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.hoppingMode);
+          eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.
+          pusch_ConfigBasic.hoppingMode);
     LOG_T(RRC, PROTOCOL_RRC_CTXT_FMT" pusch_config_common.pusch_HoppingOffset = %ld\n",
           PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
-          eNB_rrc_inst[ctxt_pP->module_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.
+          eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.
           pusch_ConfigBasic.pusch_HoppingOffset);
     LOG_T(RRC, PROTOCOL_RRC_CTXT_FMT" pusch_config_common.enable64QAM = %d\n",
           PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
-          (int)eNB_rrc_inst[ctxt_pP->module_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.
+          (int)eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.
           pusch_ConfigBasic.enable64QAM);
     LOG_T(RRC, PROTOCOL_RRC_CTXT_FMT" pusch_config_common.groupHoppingEnabled = %d\n",
           PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
-          (int)eNB_rrc_inst[ctxt_pP->module_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.
+          (int)eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.
           ul_ReferenceSignalsPUSCH.groupHoppingEnabled);
     LOG_T(RRC, PROTOCOL_RRC_CTXT_FMT" pusch_config_common.groupAssignmentPUSCH = %ld\n",
           PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
-          eNB_rrc_inst[ctxt_pP->module_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH);
+          eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.
+          ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH);
     LOG_T(RRC, PROTOCOL_RRC_CTXT_FMT" pusch_config_common.sequenceHoppingEnabled = %d\n",
           PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
-          (int)eNB_rrc_inst[ctxt_pP->module_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled);
+          (int)eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.
+          ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled);
     LOG_T(RRC, PROTOCOL_RRC_CTXT_FMT" pusch_config_common.cyclicShift  = %ld\n",
           PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
-          eNB_rrc_inst[ctxt_pP->module_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.cyclicShift);
+          eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->radioResourceConfigCommon.pusch_ConfigCommon.
+          ul_ReferenceSignalsPUSCH.cyclicShift);
 
 #ifdef Rel10
 
-    if (eNB_rrc_inst[ctxt_pP->module_id].MBMS_flag > 0) {
-      for (i = 0; i < eNB_rrc_inst[ctxt_pP->module_id].sib2->mbsfn_SubframeConfigList->list.count; i++) {
+    if (eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].MBMS_flag > 0) {
+      for (i = 0; i < eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->mbsfn_SubframeConfigList->list.count; i++) {
         // SIB 2
         //   LOG_D(RRC, "[eNB %d] mbsfn_SubframeConfigList.list.count = %ld\n", enb_mod_idP, eNB_rrc_inst[enb_mod_idP].sib2->mbsfn_SubframeConfigList->list.count);
         LOG_D(RRC, PROTOCOL_RRC_CTXT_FMT" SIB13 contents for MBSFN subframe allocation %d/%d(partial)\n",
               PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
               i,
-              eNB_rrc_inst[ctxt_pP->module_id].sib2->mbsfn_SubframeConfigList->list.count);
+              eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->mbsfn_SubframeConfigList->list.count);
         LOG_D(RRC, PROTOCOL_RRC_CTXT_FMT" mbsfn_Subframe_pattern is  = %x\n",
               PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
-              eNB_rrc_inst[ctxt_pP->module_id].sib2->mbsfn_SubframeConfigList->list.array[i]->subframeAllocation.choice.oneFrame.buf[0] >> 0);
+              eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->mbsfn_SubframeConfigList->list.array[i]->subframeAllocation.choice.oneFrame.buf[0] >> 0);
         LOG_D(RRC, PROTOCOL_RRC_CTXT_FMT" radioframe_allocation_period  = %ld (just index number, not the real value)\n",
               PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
-              eNB_rrc_inst[ctxt_pP->module_id].sib2->mbsfn_SubframeConfigList->list.array[i]->radioframeAllocationPeriod);   // need to display the real value, using array of char (like in dumping SIB2)
+              eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->mbsfn_SubframeConfigList->list.array[i]->radioframeAllocationPeriod);   // need to display the real value, using array of char (like in dumping SIB2)
         LOG_D(RRC, PROTOCOL_RRC_CTXT_FMT" radioframe_allocation_offset  = %ld\n",
               PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
-              eNB_rrc_inst[ctxt_pP->module_id].sib2->mbsfn_SubframeConfigList->list.array[i]->radioframeAllocationOffset);
+              eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->mbsfn_SubframeConfigList->list.array[i]->radioframeAllocationOffset);
       }
 
       //   SIB13
-      for (i = 0; i < eNB_rrc_inst[ctxt_pP->module_id].sib13->mbsfn_AreaInfoList_r9.list.count; i++) {
+      for (i = 0; i < eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib13->mbsfn_AreaInfoList_r9.list.count; i++) {
         LOG_D(RRC, PROTOCOL_RRC_CTXT_FMT" SIB13 contents for MBSFN sync area %d/2 (partial)\n",
               PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
               i,
-              eNB_rrc_inst[ctxt_pP->module_id].sib13->mbsfn_AreaInfoList_r9.list.count);
+              eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib13->mbsfn_AreaInfoList_r9.list.count);
         LOG_D(RRC, PROTOCOL_RRC_CTXT_FMT" MCCH Repetition Period: %d (just index number, not real value)\n",
               PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
-              eNB_rrc_inst[ctxt_pP->module_id].sib13->mbsfn_AreaInfoList_r9.list.array[i]->mcch_Config_r9.mcch_RepetitionPeriod_r9);
+              eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib13->mbsfn_AreaInfoList_r9.list.array[i]->mcch_Config_r9.mcch_RepetitionPeriod_r9);
         LOG_D(RRC, PROTOCOL_RRC_CTXT_FMT" MCCH Offset: %d\n",
               PROTOCOL_RRC_CTXT_ARGS(ctxt_pP),
-              eNB_rrc_inst[ctxt_pP->module_id].sib13->mbsfn_AreaInfoList_r9.list.array[i]->mcch_Config_r9.mcch_Offset_r9);
+              eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib13->mbsfn_AreaInfoList_r9.list.array[i]->mcch_Config_r9.mcch_Offset_r9);
       }
     }
 
@@ -322,7 +330,7 @@ init_SI(
           PROTOCOL_RRC_CTXT_ARGS(ctxt_pP));
     rrc_mac_config_req(ctxt_pP->module_id, ENB_FLAG_YES, 0, 0,
                        (RadioResourceConfigCommonSIB_t *) &
-                       eNB_rrc_inst[ctxt_pP->module_id].sib2->radioResourceConfigCommon,
+                       eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->radioResourceConfigCommon,
                        (struct PhysicalConfigDedicated *)NULL,
 #ifdef Rel10
                        (SCellToAddMod_r10_t *)NULL,
@@ -332,17 +340,17 @@ init_SI(
                        (MAC_MainConfig_t *) NULL, 0,
                        (struct LogicalChannelConfig *)NULL,
                        (MeasGapConfig_t *) NULL,
-                       eNB_rrc_inst[ctxt_pP->module_id].sib1->tdd_Config,
+                       eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib1->tdd_Config,
                        NULL,
                        &SIwindowsize, &SIperiod,
-                       eNB_rrc_inst[ctxt_pP->module_id].sib2->freqInfo.ul_CarrierFreq,
-                       eNB_rrc_inst[ctxt_pP->module_id].sib2->freqInfo.ul_Bandwidth,
-                       &eNB_rrc_inst[ctxt_pP->module_id].sib2->freqInfo.additionalSpectrumEmission,
-                       (MBSFN_SubframeConfigList_t*) eNB_rrc_inst[ctxt_pP->module_id].sib2->mbsfn_SubframeConfigList
+                       eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->freqInfo.ul_CarrierFreq,
+                       eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->freqInfo.ul_Bandwidth,
+                       &eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->freqInfo.additionalSpectrumEmission,
+                       (MBSFN_SubframeConfigList_t*) eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->mbsfn_SubframeConfigList
 #ifdef Rel10
                        ,
-                       eNB_rrc_inst[ctxt_pP->module_id].MBMS_flag,
-                       (MBSFN_AreaInfoList_r9_t*) & eNB_rrc_inst[ctxt_pP->module_id].sib13->mbsfn_AreaInfoList_r9,
+                       eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].MBMS_flag,
+                       (MBSFN_AreaInfoList_r9_t*) & eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib13->mbsfn_AreaInfoList_r9,
                        (PMCH_InfoList_r9_t *) NULL
 #endif
 #ifdef CBA
@@ -361,50 +369,51 @@ init_SI(
 /*------------------------------------------------------------------------------*/
 static void
 init_MCCH(
-  module_id_t enb_mod_idP
+  module_id_t enb_mod_idP,
+  int CC_id
 )
 //-----------------------------------------------------------------------------
 {
 
   int                                 sync_area = 0;
   // initialize RRC_eNB_INST MCCH entry
-  eNB_rrc_inst[enb_mod_idP].MCCH_MESSAGE = malloc(eNB_rrc_inst[enb_mod_idP].num_mbsfn_sync_area * sizeof(uint32_t *));
+  eNB_rrc_inst[enb_mod_idP].carrier[CC_id].MCCH_MESSAGE =
+      malloc(eNB_rrc_inst[enb_mod_idP].carrier[CC_id].num_mbsfn_sync_area * sizeof(uint32_t *));
 
-  for (sync_area = 0; sync_area < eNB_rrc_inst[enb_mod_idP].num_mbsfn_sync_area; sync_area++) {
+  for (sync_area = 0; sync_area < eNB_rrc_inst[enb_mod_idP].carrier[CC_id].num_mbsfn_sync_area; sync_area++) {
 
-    eNB_rrc_inst[enb_mod_idP].sizeof_MCCH_MESSAGE[sync_area] = 0;
-    eNB_rrc_inst[enb_mod_idP].MCCH_MESSAGE[sync_area] = (uint8_t *) malloc16(32);
+    eNB_rrc_inst[enb_mod_idP].carrier[CC_id].sizeof_MCCH_MESSAGE[sync_area] = 0;
+    eNB_rrc_inst[enb_mod_idP].carrier[CC_id].MCCH_MESSAGE[sync_area] = (uint8_t *) malloc16(32);
 
-    if (eNB_rrc_inst[enb_mod_idP].MCCH_MESSAGE[sync_area] == NULL) {
+    if (eNB_rrc_inst[enb_mod_idP].carrier[CC_id].MCCH_MESSAGE[sync_area] == NULL) {
       LOG_E(RRC, "[eNB %d][MAIN] init_MCCH: FATAL, no memory for MCCH MESSAGE allocated \n", enb_mod_idP);
       mac_xface->macphy_exit("[RRC][init_MCCH] not enough memory\n");
     } else {
-      eNB_rrc_inst[enb_mod_idP].sizeof_MCCH_MESSAGE[sync_area] = do_MBSFNAreaConfig(enb_mod_idP,
+      eNB_rrc_inst[enb_mod_idP].carrier[CC_id].sizeof_MCCH_MESSAGE[sync_area] = do_MBSFNAreaConfig(enb_mod_idP,
           mac_xface->lte_frame_parms,
-          sync_area, (uint8_t *)
-          eNB_rrc_inst[enb_mod_idP].MCCH_MESSAGE
-          [sync_area],
-          &eNB_rrc_inst[enb_mod_idP].mcch,
-          &eNB_rrc_inst
-          [enb_mod_idP].mcch_message);
+          sync_area,
+          (uint8_t *)eNB_rrc_inst[enb_mod_idP].carrier[CC_id].MCCH_MESSAGE[sync_area],
+          &eNB_rrc_inst[enb_mod_idP].carrier[CC_id].mcch,
+          &eNB_rrc_inst[enb_mod_idP].carrier[CC_id].mcch_message);
 
-      LOG_I(RRC, "mcch message pointer %p for sync area %d \n", eNB_rrc_inst[enb_mod_idP].MCCH_MESSAGE[sync_area],
+      LOG_I(RRC, "mcch message pointer %p for sync area %d \n",
+            eNB_rrc_inst[enb_mod_idP].carrier[CC_id].MCCH_MESSAGE[sync_area],
             sync_area);
       LOG_D(RRC, "[eNB %d] MCCH_MESSAGE  contents for Sync Area %d (partial)\n", enb_mod_idP, sync_area);
       LOG_D(RRC, "[eNB %d] CommonSF_AllocPeriod_r9 %d\n", enb_mod_idP,
-            eNB_rrc_inst[enb_mod_idP].mcch_message->commonSF_AllocPeriod_r9);
+            eNB_rrc_inst[enb_mod_idP].carrier[CC_id].mcch_message->commonSF_AllocPeriod_r9);
       LOG_D(RRC,
             "[eNB %d] CommonSF_Alloc_r9.list.count (number of MBSFN Subframe Pattern) %d\n",
-            enb_mod_idP, eNB_rrc_inst[enb_mod_idP].mcch_message->commonSF_Alloc_r9.list.count);
+            enb_mod_idP, eNB_rrc_inst[enb_mod_idP].carrier[CC_id].mcch_message->commonSF_Alloc_r9.list.count);
       LOG_D(RRC, "[eNB %d] MBSFN Subframe Pattern: %02x (in hex)\n",
             enb_mod_idP,
-            eNB_rrc_inst[enb_mod_idP].mcch_message->commonSF_Alloc_r9.list.array[0]->subframeAllocation.
+            eNB_rrc_inst[enb_mod_idP].carrier[CC_id].mcch_message->commonSF_Alloc_r9.list.array[0]->subframeAllocation.
             choice.oneFrame.buf[0]);
 
-      if (eNB_rrc_inst[enb_mod_idP].sizeof_MCCH_MESSAGE[sync_area] == 255) {
-        mac_xface->macphy_exit("[RRC][init_MCCH] eNB_rrc_inst[enb_mod_idP].sizeof_MCCH_MESSAGE[sync_area] == 255");
+      if (eNB_rrc_inst[enb_mod_idP].carrier[CC_id].sizeof_MCCH_MESSAGE[sync_area] == 255) {
+        mac_xface->macphy_exit("[RRC][init_MCCH] eNB_rrc_inst[enb_mod_idP].carrier[CC_id].sizeof_MCCH_MESSAGE[sync_area] == 255");
       } else {
-        eNB_rrc_inst[enb_mod_idP].MCCH_MESS[sync_area].Active = 1;
+        eNB_rrc_inst[enb_mod_idP].carrier[CC_id].MCCH_MESS[sync_area].Active = 1;
       }
     }
   }
@@ -434,7 +443,7 @@ init_MCCH(
                      ,
                      0,
                      (MBSFN_AreaInfoList_r9_t *) NULL,
-                     (PMCH_InfoList_r9_t *) & (eNB_rrc_inst[enb_mod_idP].mcch_message->pmch_InfoList_r9)
+                     (PMCH_InfoList_r9_t *) & (eNB_rrc_inst[enb_mod_idP].carrier[CC_id].mcch_message->pmch_InfoList_r9)
 #   endif
 #   ifdef CBA
                      , 0, 0
@@ -448,6 +457,7 @@ init_MCCH(
 //-----------------------------------------------------------------------------
 static void init_MBMS(
   module_id_t enb_mod_idP,
+  int         CC_id,
   frame_t frameP
 )
 //-----------------------------------------------------------------------------
@@ -455,7 +465,7 @@ static void init_MBMS(
   // init the configuration for MTCH
   protocol_ctxt_t               ctxt;
 
-  if (eNB_rrc_inst[enb_mod_idP].MBMS_flag > 0) {
+  if (eNB_rrc_inst[enb_mod_idP].carrier[CC_id].MBMS_flag > 0) {
     PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, enb_mod_idP, ENB_FLAG_YES, NOT_A_RNTI, frameP, 0,enb_mod_idP);
 
     LOG_D(RRC, "[eNB %d] Frame %d : Radio Bearer config request for MBMS\n", enb_mod_idP, frameP);   //check the lcid
@@ -470,7 +480,7 @@ static void init_MBMS(
                              NULL,  // key rrc integrity
                              NULL   // key encryption
 #   ifdef Rel10
-                             , &(eNB_rrc_inst[enb_mod_idP].mcch_message->pmch_InfoList_r9)
+                             , &(eNB_rrc_inst[enb_mod_idP].carrier[CC_id].mcch_message->pmch_InfoList_r9)
 #   endif
                             );
 
@@ -478,7 +488,7 @@ static void init_MBMS(
                             NULL, // SRB_ToAddModList
                             NULL,   // DRB_ToAddModList
                             NULL,   // DRB_ToReleaseList
-                            &(eNB_rrc_inst[enb_mod_idP].mcch_message->pmch_InfoList_r9));
+                            &(eNB_rrc_inst[enb_mod_idP].carrier[CC_id].mcch_message->pmch_InfoList_r9));
 
     //rrc_mac_config_req();
   }
@@ -592,27 +602,30 @@ void rrc_eNB_emulation_notify_ue_module_id(
 {
   module_id_t                         enb_module_id;
   struct rrc_eNB_ue_context_s*        ue_context_p = NULL;
+  int                                 CC_id;
 
   // find enb_module_id
   for (enb_module_id = 0; enb_module_id < NUMBER_OF_eNB_MAX; enb_module_id++) {
-    if (eNB_rrc_inst[enb_module_id].sib1 != NULL) {
-      if (
-        (eNB_rrc_inst[enb_module_id].sib1->cellAccessRelatedInfo.cellIdentity.buf[0] == cell_identity_byte0P) &&
-        (eNB_rrc_inst[enb_module_id].sib1->cellAccessRelatedInfo.cellIdentity.buf[1] == cell_identity_byte1P) &&
-        (eNB_rrc_inst[enb_module_id].sib1->cellAccessRelatedInfo.cellIdentity.buf[2] == cell_identity_byte2P) &&
-        (eNB_rrc_inst[enb_module_id].sib1->cellAccessRelatedInfo.cellIdentity.buf[3] == cell_identity_byte3P)
-      ) {
-        oai_emulation.info.eNB_ue_module_id_to_rnti[enb_module_id][ue_module_idP] = rntiP;
-        ue_context_p = rrc_eNB_get_ue_context(
-                         &eNB_rrc_inst[enb_module_id],
-                         rntiP
-                       );
+    for (CC_id = 0; CC_id < MAX_NUM_CCs; CC_id++) {
+      if (eNB_rrc_inst[enb_module_id].carrier[CC_id].sib1 != NULL) {
+        if (
+          (eNB_rrc_inst[enb_module_id].carrier[CC_id].sib1->cellAccessRelatedInfo.cellIdentity.buf[0] == cell_identity_byte0P) &&
+          (eNB_rrc_inst[enb_module_id].carrier[CC_id].sib1->cellAccessRelatedInfo.cellIdentity.buf[1] == cell_identity_byte1P) &&
+          (eNB_rrc_inst[enb_module_id].carrier[CC_id].sib1->cellAccessRelatedInfo.cellIdentity.buf[2] == cell_identity_byte2P) &&
+          (eNB_rrc_inst[enb_module_id].carrier[CC_id].sib1->cellAccessRelatedInfo.cellIdentity.buf[3] == cell_identity_byte3P)
+        ) {
+          oai_emulation.info.eNB_ue_module_id_to_rnti[enb_module_id][ue_module_idP] = rntiP;
+          ue_context_p = rrc_eNB_get_ue_context(
+                           &eNB_rrc_inst[enb_module_id],
+                           rntiP
+                         );
 
-        if (NULL != ue_context_p) {
-          oai_emulation.info.eNB_ue_local_uid_to_ue_module_id[enb_module_id][ue_context_p->local_uid] = ue_module_idP;
+          if (NULL != ue_context_p) {
+            oai_emulation.info.eNB_ue_local_uid_to_ue_module_id[enb_module_id][ue_context_p->local_uid] = ue_module_idP;
+          }
+
+          return;
         }
-
-        return;
       }
     }
   }
@@ -1760,7 +1773,7 @@ rrc_eNB_generate_HandoverPreparationInformation(
   handoverInfo->as_config.sourceDl_CarrierFreq = 36090;   //Verify!
 
   memcpy((void *)&handoverInfo->as_config.sourceMasterInformationBlock,
-         (void*)&eNB_rrc_inst[ctxt_pP->module_id].mib, sizeof(MasterInformationBlock_t));
+         (void*)&eNB_rrc_inst[ctxt_pP->module_id].carrier[0] /* CROUX TBC */.mib, sizeof(MasterInformationBlock_t));
   memcpy((void *)&handoverInfo->as_config.sourceMeasConfig,
          (void*)ue_context_pP->ue_context.measConfig, sizeof(MeasConfig_t));
 
@@ -1773,13 +1786,13 @@ rrc_eNB_generate_HandoverPreparationInformation(
          0, sizeof(SecurityAlgorithmConfig_t));
 
   memcpy((void*)&ue_context_pP->ue_context.handover_info->as_config.sourceSystemInformationBlockType1,
-         (void*)&eNB_rrc_inst[ctxt_pP->module_id].SIB1, sizeof(SystemInformationBlockType1_t));
+         (void*)&eNB_rrc_inst[ctxt_pP->module_id].carrier[0] /* CROUX TBC */.SIB1, sizeof(SystemInformationBlockType1_t));
   memcpy((void*)&ue_context_pP->ue_context.handover_info->as_config.sourceSystemInformationBlockType2,
-         (void*)&eNB_rrc_inst[ctxt_pP->module_id].SIB23, sizeof(SystemInformationBlockType2_t));
+         (void*)&eNB_rrc_inst[ctxt_pP->module_id].carrier[0] /* CROUX TBC */.SIB23, sizeof(SystemInformationBlockType2_t));
   ue_context_pP->ue_context.handover_info->as_context.reestablishmentInfo =
     CALLOC(1, sizeof(ReestablishmentInfo_t));
   ue_context_pP->ue_context.handover_info->as_context.reestablishmentInfo->sourcePhysCellId =
-    eNB_rrc_inst[ctxt_pP->module_id].physCellId;
+    eNB_rrc_inst[ctxt_pP->module_id].carrier[0] /* CROUX TBC */.physCellId;
   ue_context_pP->ue_context.handover_info->as_context.reestablishmentInfo->targetCellShortMAC_I.buf = NULL;  // Check values later
   ue_context_pP->ue_context.handover_info->as_context.reestablishmentInfo->targetCellShortMAC_I.size = 0;
   ue_context_pP->ue_context.handover_info->as_context.reestablishmentInfo->targetCellShortMAC_I.bits_unused = 0;
@@ -1806,7 +1819,7 @@ rrc_eNB_generate_HandoverPreparationInformation(
             "[eNB %d] Frame %d : Emulate sending HandoverPreparationInformation msg from eNB source %d to eNB target %d: source UE_id %x target UE_id %x source_modId: %d target_modId: %d\n",
             ctxt_pP->module_id,
             ctxt_pP->frame,
-            eNB_rrc_inst[ctxt_pP->module_id].physCellId,
+            eNB_rrc_inst[ctxt_pP->module_id].carrier[0] /* CROUX TBC */.physCellId,
             targetPhyId,
             ue_context_pP->ue_context.rnti,
             ue_context_target_p->ue_id_rnti,
@@ -2613,35 +2626,35 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover(
   mobilityInfo->radioResourceConfigCommon.rach_ConfigCommon =
     CALLOC(1, sizeof(*mobilityInfo->radioResourceConfigCommon.rach_ConfigCommon));
   memcpy((void *)mobilityInfo->radioResourceConfigCommon.rach_ConfigCommon,
-         (void *)&rrc_inst->sib2->radioResourceConfigCommon.rach_ConfigCommon, sizeof(RACH_ConfigCommon_t));
+         (void *)&rrc_inst->carrier[0] /* CROUX TBC */.sib2->radioResourceConfigCommon.rach_ConfigCommon, sizeof(RACH_ConfigCommon_t));
   mobilityInfo->radioResourceConfigCommon.prach_Config.prach_ConfigInfo =
     CALLOC(1, sizeof(*mobilityInfo->radioResourceConfigCommon.prach_Config.prach_ConfigInfo));
   memcpy((void *)mobilityInfo->radioResourceConfigCommon.prach_Config.prach_ConfigInfo,
-         (void *)&rrc_inst->sib2->radioResourceConfigCommon.prach_Config.prach_ConfigInfo,
+         (void *)&rrc_inst->carrier[0] /* CROUX TBC */.sib2->radioResourceConfigCommon.prach_Config.prach_ConfigInfo,
          sizeof(PRACH_ConfigInfo_t));
 
   mobilityInfo->radioResourceConfigCommon.prach_Config.rootSequenceIndex =
-    rrc_inst->sib2->radioResourceConfigCommon.prach_Config.rootSequenceIndex;
+    rrc_inst->carrier[0] /* CROUX TBC */.sib2->radioResourceConfigCommon.prach_Config.rootSequenceIndex;
   mobilityInfo->radioResourceConfigCommon.pdsch_ConfigCommon =
     CALLOC(1, sizeof(*mobilityInfo->radioResourceConfigCommon.pdsch_ConfigCommon));
   memcpy((void *)mobilityInfo->radioResourceConfigCommon.pdsch_ConfigCommon,
-         (void *)&rrc_inst->sib2->radioResourceConfigCommon.pdsch_ConfigCommon, sizeof(PDSCH_ConfigCommon_t));
+         (void *)&rrc_inst->carrier[0] /* CROUX TBC */.sib2->radioResourceConfigCommon.pdsch_ConfigCommon, sizeof(PDSCH_ConfigCommon_t));
   memcpy((void *)&mobilityInfo->radioResourceConfigCommon.pusch_ConfigCommon,
-         (void *)&rrc_inst->sib2->radioResourceConfigCommon.pusch_ConfigCommon, sizeof(PUSCH_ConfigCommon_t));
+         (void *)&rrc_inst->carrier[0] /* CROUX TBC */.sib2->radioResourceConfigCommon.pusch_ConfigCommon, sizeof(PUSCH_ConfigCommon_t));
   mobilityInfo->radioResourceConfigCommon.phich_Config = NULL;
   mobilityInfo->radioResourceConfigCommon.pucch_ConfigCommon =
     CALLOC(1, sizeof(*mobilityInfo->radioResourceConfigCommon.pucch_ConfigCommon));
   memcpy((void *)mobilityInfo->radioResourceConfigCommon.pucch_ConfigCommon,
-         (void *)&rrc_inst->sib2->radioResourceConfigCommon.pucch_ConfigCommon, sizeof(PUCCH_ConfigCommon_t));
+         (void *)&rrc_inst->carrier[0] /* CROUX TBC */.sib2->radioResourceConfigCommon.pucch_ConfigCommon, sizeof(PUCCH_ConfigCommon_t));
   mobilityInfo->radioResourceConfigCommon.soundingRS_UL_ConfigCommon =
     CALLOC(1, sizeof(*mobilityInfo->radioResourceConfigCommon.soundingRS_UL_ConfigCommon));
   memcpy((void *)mobilityInfo->radioResourceConfigCommon.soundingRS_UL_ConfigCommon,
-         (void *)&rrc_inst->sib2->radioResourceConfigCommon.soundingRS_UL_ConfigCommon,
+         (void *)&rrc_inst->carrier[0] /* CROUX TBC */.sib2->radioResourceConfigCommon.soundingRS_UL_ConfigCommon,
          sizeof(SoundingRS_UL_ConfigCommon_t));
   mobilityInfo->radioResourceConfigCommon.uplinkPowerControlCommon =
     CALLOC(1, sizeof(*mobilityInfo->radioResourceConfigCommon.uplinkPowerControlCommon));
   memcpy((void *)mobilityInfo->radioResourceConfigCommon.uplinkPowerControlCommon,
-         (void *)&rrc_inst->sib2->radioResourceConfigCommon.uplinkPowerControlCommon,
+         (void *)&rrc_inst->carrier[0] /* CROUX TBC */.sib2->radioResourceConfigCommon.uplinkPowerControlCommon,
          sizeof(UplinkPowerControlCommon_t));
   mobilityInfo->radioResourceConfigCommon.antennaInfoCommon = NULL;
   mobilityInfo->radioResourceConfigCommon.p_Max = NULL;   // CALLOC(1,sizeof(*mobilityInfo->radioResourceConfigCommon.p_Max));
@@ -2649,7 +2662,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover(
   mobilityInfo->radioResourceConfigCommon.tdd_Config = NULL;  //CALLOC(1,sizeof(TDD_Config_t));
   //memcpy((void *)mobilityInfo->radioResourceConfigCommon.tdd_Config,(void *)rrc_inst->sib1->tdd_Config,sizeof(TDD_Config_t));
   mobilityInfo->radioResourceConfigCommon.ul_CyclicPrefixLength =
-    rrc_inst->sib2->radioResourceConfigCommon.ul_CyclicPrefixLength;
+    rrc_inst->carrier[0] /* CROUX TBC */.sib2->radioResourceConfigCommon.ul_CyclicPrefixLength;
   //End of configuration of radioResourceConfigCommon
 
   mobilityInfo->carrierFreq = CALLOC(1, sizeof(*mobilityInfo->carrierFreq));  //CALLOC(1,sizeof(CarrierFreqEUTRA_t)); 36090
@@ -3117,7 +3130,8 @@ rrc_eNB_process_RRCConnectionReconfigurationComplete(
 void
 rrc_eNB_generate_RRCConnectionSetup(
   const protocol_ctxt_t* const ctxt_pP,
-  rrc_eNB_ue_context_t*          const ue_context_pP
+  rrc_eNB_ue_context_t*          const ue_context_pP,
+  const int                    CC_id
 )
 //-----------------------------------------------------------------------------
 {
@@ -3128,10 +3142,10 @@ rrc_eNB_generate_RRCConnectionSetup(
   int                                 cnt;
 
   SRB_configList = &ue_context_pP->ue_context.SRB_configList;
-  eNB_rrc_inst[ctxt_pP->module_id].Srb0.Tx_buffer.payload_size =
+  eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.payload_size =
     do_RRCConnectionSetup(ctxt_pP,
                           ue_context_pP,
-                          (uint8_t*) eNB_rrc_inst[ctxt_pP->module_id].Srb0.Tx_buffer.Payload,
+                          (uint8_t*) eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.Payload,
                           (mac_xface->lte_frame_parms->nb_antennas_tx==2)?2:1,
                           rrc_eNB_get_next_transaction_identifier(ctxt_pP->module_id),
                           mac_xface->lte_frame_parms,
@@ -3141,7 +3155,7 @@ rrc_eNB_generate_RRCConnectionSetup(
 #ifdef RRC_MSG_PRINT
   LOG_F(RRC,"[MSG] RRC Connection Setup\n");
 
-  for (cnt = 0; cnt < eNB_rrc_inst[ctxt_pP->module_id].Srb0.Tx_buffer.payload_size; cnt++) {
+  for (cnt = 0; cnt < eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.payload_size; cnt++) {
     LOG_F(RRC,"%02x ", ((uint8_t*)eNB_rrc_inst[ctxt_pP->module_id].Srb0.Tx_buffer.Payload)[cnt]);
   }
 
@@ -3205,18 +3219,18 @@ rrc_eNB_generate_RRCConnectionSetup(
   MSC_LOG_TX_MESSAGE(
     MSC_RRC_ENB,
     MSC_RRC_UE,
-    eNB_rrc_inst[ctxt_pP->module_id].Srb0.Tx_buffer.Header, // LG WARNING
-    eNB_rrc_inst[ctxt_pP->module_id].Srb0.Tx_buffer.payload_size,
+    eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.Header, // LG WARNING
+    eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.payload_size,
     MSC_AS_TIME_FMT" RRCConnectionSetup UE %x size %u",
     MSC_AS_TIME_ARGS(ctxt_pP),
     ue_context_pP->ue_context.rnti,
-    eNB_rrc_inst[ctxt_pP->module_id].Srb0.Tx_buffer.payload_size);
+    eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.payload_size);
 
 
   LOG_I(RRC,
         PROTOCOL_RRC_CTXT_UE_FMT" [RAPROC] Logical Channel DL-CCCH, Generating RRCConnectionSetup (bytes %d)\n",
         PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP),
-        eNB_rrc_inst[ctxt_pP->module_id].Srb0.Tx_buffer.payload_size);
+        eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.payload_size);
 
 }
 
@@ -3249,6 +3263,8 @@ openair_rrc_lite_eNB_init(
 //-----------------------------------------------------------------------------
 {
   protocol_ctxt_t ctxt;
+  int             CC_id;
+
   PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, enb_mod_idP, ENB_FLAG_YES, NOT_A_RNTI, 0, 0,enb_mod_idP);
   LOG_I(RRC,
         PROTOCOL_RRC_CTXT_FMT" Init...\n",
@@ -3273,7 +3289,9 @@ openair_rrc_lite_eNB_init(
   //        }
   //    }
   eNB_rrc_inst[ctxt.module_id].Nb_ue = 0;
-  eNB_rrc_inst[ctxt.module_id].Srb0.Active = 0;
+  for (CC_id = 0; CC_id < MAX_NUM_CCs; CC_id++) {
+    eNB_rrc_inst[ctxt.module_id].carrier[CC_id].Srb0.Active = 0;
+  }
   uid_linear_allocator_init(&eNB_rrc_inst[ctxt.module_id].uid_allocator);
   RB_INIT(&eNB_rrc_inst[ctxt.module_id].rrc_ue_head);
   RB_INIT(&eNB_rrc_inst[ctxt.module_id].rrc_rnti_head);
@@ -3288,63 +3306,73 @@ openair_rrc_lite_eNB_init(
 #ifdef Rel10
 
   // This has to come from some top-level configuration
+  // only CC_id 0 is logged
   LOG_I(RRC, PROTOCOL_RRC_CTXT_FMT" Rel10 RRC detected, MBMS flag %d\n",
         PROTOCOL_RRC_CTXT_ARGS(&ctxt),
-        eNB_rrc_inst[ctxt.module_id].MBMS_flag);
+        eNB_rrc_inst[ctxt.module_id].carrier[0].MBMS_flag);
 
 #else
   LOG_I(RRC, PROTOCOL_RRC_CTXT_FMT" Rel8 RRC\n", PROTOCOL_RRC_CTXT_ARGS(&ctxt));
 #endif
 #ifdef CBA
 
-  for (j = 0; j < NUM_MAX_CBA_GROUP; j++) {
-    eNB_rrc_inst[ctxt.module_id].cba_rnti[j] = CBA_OFFSET + j;
-  }
+  for (CC_id = 0; CC_id < MAX_NUM_CCs; CC_id++) {
+    for (j = 0; j < NUM_MAX_CBA_GROUP; j++) {
+      eNB_rrc_inst[ctxt.module_id].carrier[CC_id].cba_rnti[j] = CBA_OFFSET + j;
+    }
 
-  if (eNB_rrc_inst[ctxt.module_id].num_active_cba_groups > NUM_MAX_CBA_GROUP) {
-    eNB_rrc_inst[ctxt.module_id].num_active_cba_groups = NUM_MAX_CBA_GROUP;
-  }
+    if (eNB_rrc_inst[ctxt.module_id].carrier[CC_id].num_active_cba_groups > NUM_MAX_CBA_GROUP) {
+      eNB_rrc_inst[ctxt.module_id].carrier[CC_id].num_active_cba_groups = NUM_MAX_CBA_GROUP;
+    }
 
-  LOG_D(RRC,
-        PROTOCOL_RRC_CTXT_FMT" Initialization of 4 cba_RNTI values (%x %x %x %x) num active groups %d\n",
-        PROTOCOL_RRC_CTXT_ARGS(&ctxt),
-        enb_mod_idP, eNB_rrc_inst[ctxt.module_id].cba_rnti[0],
-        eNB_rrc_inst[ctxt.module_id].cba_rnti[1], eNB_rrc_inst[ctxt.module_id].cba_rnti[2],
-        eNB_rrc_inst[ctxt.module_id].cba_rnti[3], eNB_rrc_inst[ctxt.module_id].num_active_cba_groups);
+    LOG_D(RRC,
+          PROTOCOL_RRC_CTXT_FMT" Initialization of 4 cba_RNTI values (%x %x %x %x) num active groups %d\n",
+          PROTOCOL_RRC_CTXT_ARGS(&ctxt),
+          enb_mod_idP, eNB_rrc_inst[ctxt.module_id].carrier[CC_id].cba_rnti[0],
+          eNB_rrc_inst[ctxt.module_id].carrier[CC_id].cba_rnti[1],
+          eNB_rrc_inst[ctxt.module_id].carrier[CC_id].cba_rnti[2],
+          eNB_rrc_inst[ctxt.module_id].carrier[CC_id].cba_rnti[3],
+          eNB_rrc_inst[ctxt.module_id].carrier[CC_id].num_active_cba_groups);
+  }
 #endif
 
-  init_SI(&ctxt
+  for (CC_id = 0; CC_id < MAX_NUM_CCs; CC_id++) {
+    init_SI(&ctxt,
+            CC_id
 #if defined(ENABLE_ITTI)
-          , configuration
+            , configuration
 #endif
-         );
+           );
+  }
 
 #ifdef Rel10
 
-  switch (eNB_rrc_inst[ctxt.module_id].MBMS_flag) {
-  case 1:
-  case 2:
-  case 3:
-    LOG_I(RRC, PROTOCOL_RRC_CTXT_FMT" Configuring 1 MBSFN sync area\n", PROTOCOL_RRC_CTXT_ARGS(&ctxt));
-    eNB_rrc_inst[ctxt.module_id].num_mbsfn_sync_area = 1;
-    break;
+  for (CC_id = 0; CC_id < MAX_NUM_CCs; CC_id++) {
+    switch (eNB_rrc_inst[ctxt.module_id].carrier[CC_id].MBMS_flag) {
+    case 1:
+    case 2:
+    case 3:
+      LOG_I(RRC, PROTOCOL_RRC_CTXT_FMT" Configuring 1 MBSFN sync area\n", PROTOCOL_RRC_CTXT_ARGS(&ctxt));
+      eNB_rrc_inst[ctxt.module_id].carrier[CC_id].num_mbsfn_sync_area = 1;
+      break;
 
-  case 4:
-    LOG_I(RRC, PROTOCOL_RRC_CTXT_FMT" Configuring 2 MBSFN sync area\n", PROTOCOL_RRC_CTXT_ARGS(&ctxt));
-    eNB_rrc_inst[ctxt.module_id].num_mbsfn_sync_area = 2;
-    break;
+    case 4:
+      LOG_I(RRC, PROTOCOL_RRC_CTXT_FMT" Configuring 2 MBSFN sync area\n", PROTOCOL_RRC_CTXT_ARGS(&ctxt));
+      eNB_rrc_inst[ctxt.module_id].carrier[CC_id].num_mbsfn_sync_area = 2;
+      break;
 
-  default:
-    eNB_rrc_inst[ctxt.module_id].num_mbsfn_sync_area = 0;
-    break;
-  }
+    default:
+      eNB_rrc_inst[ctxt.module_id].carrier[CC_id].num_mbsfn_sync_area = 0;
+      break;
+    }
 
-  // if we are here the eNB_rrc_inst[enb_mod_idP].MBMS_flag > 0,
-  /// MCCH INIT
-  if (eNB_rrc_inst[ctxt.module_id].MBMS_flag > 0) {
-    init_MCCH(ctxt.module_id);
-    /// MTCH data bearer init
-    init_MBMS(ctxt.module_id, 0);
+    // if we are here the eNB_rrc_inst[enb_mod_idP].MBMS_flag > 0,
+    /// MCCH INIT
+    if (eNB_rrc_inst[ctxt.module_id].carrier[CC_id].MBMS_flag > 0) {
+      init_MCCH(ctxt.module_id, CC_id);
+      /// MTCH data bearer init
+      init_MBMS(ctxt.module_id, CC_id, 0);
+    }
   }
 
 #endif
@@ -3364,7 +3392,8 @@ openair_rrc_lite_eNB_init(
 int
 rrc_eNB_decode_ccch(
   protocol_ctxt_t* const ctxt_pP,
-  const SRB_INFO*        const Srb_info
+  const SRB_INFO*        const Srb_info,
+  const int              CC_id
 )
 //-----------------------------------------------------------------------------
 {
@@ -3620,7 +3649,7 @@ rrc_eNB_decode_ccch(
              &DCCH_LCHAN_DESC,
              LCHAN_DESC_SIZE);
 
-      rrc_eNB_generate_RRCConnectionSetup(ctxt_pP, ue_context_p);
+      rrc_eNB_generate_RRCConnectionSetup(ctxt_pP, ue_context_p, CC_id);
       LOG_I(RRC, PROTOCOL_RRC_CTXT_UE_FMT"CALLING RLC CONFIG SRB1 (rbid %d)\n",
             PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP),
             Idx);
@@ -4142,6 +4171,7 @@ rrc_enb_task(
   instance_t                          instance;
   int                                 result;
   SRB_INFO                           *srb_info_p;
+  int                                 CC_id;
 
   protocol_ctxt_t                     ctxt;
   itti_mark_task_ready(TASK_RRC_ENB);
@@ -4174,13 +4204,14 @@ rrc_enb_task(
             PROTOCOL_RRC_CTXT_UE_ARGS(&ctxt),
             msg_name_p);
 
-      srb_info_p = &eNB_rrc_inst[instance].Srb0;
+      CC_id = RRC_MAC_CCCH_DATA_IND(msg_p).CC_id;
+      srb_info_p = &eNB_rrc_inst[instance].carrier[CC_id].Srb0;
 
       memcpy(srb_info_p->Rx_buffer.Payload,
              RRC_MAC_CCCH_DATA_IND(msg_p).sdu,
              RRC_MAC_CCCH_DATA_IND(msg_p).sdu_size);
       srb_info_p->Rx_buffer.payload_size = RRC_MAC_CCCH_DATA_IND(msg_p).sdu_size;
-      rrc_eNB_decode_ccch(&ctxt, srb_info_p);
+      rrc_eNB_decode_ccch(&ctxt, srb_info_p, CC_id);
       break;
 
       /* Messages from PDCP */

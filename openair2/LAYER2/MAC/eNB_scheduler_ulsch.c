@@ -225,6 +225,7 @@ void rx_sdu(
           if (Is_rrc_registered == 1)
             mac_rrc_data_ind(
               enb_mod_idP,
+              CC_idP,
               frameP,
               rntiP,
               CCCH,

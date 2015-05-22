@@ -421,6 +421,7 @@ ue_send_sdu(
       LOG_T(MAC,"\n");
 #endif
       mac_rrc_data_ind(module_idP,
+                       CC_id,
                        frameP,
                        UE_mac_inst[module_idP].crnti,
                        CCCH,
@@ -498,6 +499,7 @@ void ue_decode_si(module_id_t module_idP,int CC_id,frame_t frameP, uint8_t eNB_i
   LOG_D(MAC,"[UE %d] Frame %d Sending SI to RRC (LCID Id %d,len %d)\n",module_idP,frameP,BCCH,len);
 
   mac_rrc_data_ind(module_idP,
+                   CC_id,
                    frameP,
                    SI_RNTI,
                    BCCH,
@@ -590,6 +592,7 @@ void ue_send_mch_sdu(module_id_t module_idP, uint8_t CC_id, frame_t frameP, uint
     } else if (rx_lcids[i] == MCCH_LCHANID) {
       LOG_I(MAC,"[UE %d] Frame %d : SDU %d MCH->MCCH for sync area %d (eNB %d, %d bytes)\n",module_idP,frameP, i, sync_area, eNB_index, rx_lengths[i]);
       mac_rrc_data_ind(module_idP,
+                       CC_id,
                        frameP,
                        M_RNTI,
                        MCCH,

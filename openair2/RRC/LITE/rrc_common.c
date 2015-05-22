@@ -68,15 +68,17 @@ openair_rrc_on(
 //-----------------------------------------------------------------------------
 {
   unsigned short i;
+  int            CC_id;
 
   if (ctxt_pP->enb_flag == ENB_FLAG_YES) {
     LOG_I(RRC, PROTOCOL_RRC_CTXT_FMT" OPENAIR RRC IN....\n",
           PROTOCOL_RRC_CTXT_ARGS(ctxt_pP));
-    rrc_config_buffer (&eNB_rrc_inst[ctxt_pP->module_id].SI, BCCH, 1);
-    eNB_rrc_inst[ctxt_pP->module_id].SI.Active = 1;
-    rrc_config_buffer (&eNB_rrc_inst[ctxt_pP->module_id].Srb0, CCCH, 1);
-    eNB_rrc_inst[ctxt_pP->module_id].Srb0.Active = 1;
-
+    for (CC_id = 0; CC_id < MAX_NUM_CCs; CC_id++) {
+      rrc_config_buffer (&eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].SI, BCCH, 1);
+      eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].SI.Active = 1;
+      rrc_config_buffer (&eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0, CCCH, 1);
+      eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Active = 1;
+    }
   } else {
     LOG_I(RRC, PROTOCOL_RRC_CTXT_FMT" OPENAIR RRC IN....\n",
           PROTOCOL_RRC_CTXT_ARGS(ctxt_pP));
@@ -249,7 +251,7 @@ openair_rrc_top_init(
 
   module_id_t         module_id;
   OAI_UECapability_t *UECap     = NULL;
-  //  uint8_t dummy_buffer[100];
+  int                 CC_id;
 
   LOG_D(RRC, "[OPENAIR][INIT] Init function start: NB_UE_INST=%d, NB_eNB_INST=%d\n", NB_UE_INST, NB_eNB_INST);
 
@@ -292,14 +294,18 @@ openair_rrc_top_init(
     LOG_I(RRC,"[eNB] eMBMS active state is %d \n", eMBMS_active);
 
     for (module_id=0; module_id<NB_eNB_INST; module_id++) {
-      eNB_rrc_inst[module_id].MBMS_flag = (uint8_t)eMBMS_active;
+      for (CC_id = 0; CC_id < MAX_NUM_CCs; CC_id++) {
+        eNB_rrc_inst[module_id].carrier[CC_id].MBMS_flag = (uint8_t)eMBMS_active;
+      }
     }
 
 #endif
 #ifdef CBA
 
     for (module_id=0; module_id<NB_eNB_INST; module_id++) {
-      eNB_rrc_inst[module_id].num_active_cba_groups = cba_group_active;
+      for (CC_id = 0; CC_id < MAX_NUM_CCs; CC_id++) {
+        eNB_rrc_inst[module_id].carrier[CC_id].num_active_cba_groups = cba_group_active;
+      }
     }
 
 #endif

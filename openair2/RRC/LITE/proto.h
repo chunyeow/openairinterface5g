@@ -207,7 +207,8 @@ uint8_t rrc_eNB_get_next_transaction_identifier(module_id_t module_idP);
 int
 rrc_eNB_decode_ccch(
   protocol_ctxt_t* const ctxt_pP,
-  const SRB_INFO*        const Srb_info
+  const SRB_INFO*        const Srb_info,
+  const int              CC_id
 );
 
 /**\brief Entry routine to decode a UL-DCCH-Message.  Invokes PER decoder and parses message.
@@ -228,7 +229,8 @@ rrc_eNB_decode_dcch(
 void
 rrc_eNB_generate_RRCConnectionSetup(
   const protocol_ctxt_t* const ctxt_pP,
-  rrc_eNB_ue_context_t* const ue_context_pP
+  rrc_eNB_ue_context_t* const ue_context_pP,
+  const int                    CC_id
 );
 
 /**\brief Process the RRCConnectionSetupComplete based on information coming from UE
@@ -295,6 +297,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover(
 int8_t
 mac_rrc_lite_data_req(
   const module_id_t Mod_idP,
+  const int         CC_id,
   const frame_t     frameP,
   const rb_id_t     Srb_id,
   const uint8_t     Nb_tb,
@@ -307,6 +310,7 @@ mac_rrc_lite_data_req(
 int8_t
 mac_rrc_lite_data_ind(
   const module_id_t     module_idP,
+  const int         CC_id,
   const frame_t         frameP,
   const rnti_t          rntiP,
   const rb_id_t         srb_idP,

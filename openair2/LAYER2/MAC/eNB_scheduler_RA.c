@@ -109,6 +109,7 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
 
             // Get RRCConnectionSetup for Piggyback
             rrc_sdu_length = mac_rrc_data_req(module_idP,
+                                              CC_id,
                                               frameP,
                                               CCCH,
                                               1, // 1 transport block

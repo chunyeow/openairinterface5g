@@ -93,6 +93,7 @@ schedule_SI(
     BCCH_alloc_pdu=(void*)&eNB->common_channels[CC_id].BCCH_alloc_pdu;
 
     bcch_sdu_length = mac_rrc_data_req(module_idP,
+                                       CC_id,
                                        frameP,
                                        BCCH,1,
                                        &eNB->common_channels[CC_id].BCCH_pdu.payload[0],

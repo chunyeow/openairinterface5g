@@ -44,6 +44,7 @@
 int8_t
 mac_rrc_data_req(
   const module_id_t     module_idP,
+  const int             CC_idP,
   const frame_t         frameP,
   const rb_id_t         srb_idP,
   const uint8_t         nb_tbP,
@@ -56,6 +57,7 @@ mac_rrc_data_req(
 int8_t
 mac_rrc_data_ind(
   const module_id_t     module_idP,
+  const int             CC_idP,
   const frame_t         frameP,
   const rnti_t          rntiP,
   const rb_id_t         srb_idP,

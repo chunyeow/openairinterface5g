@@ -377,7 +377,7 @@ typedef struct rrc_eNB_ue_context_s {
   struct eNB_RRC_UE_s   ue_context;
 } rrc_eNB_ue_context_t;
 
-typedef struct eNB_RRC_INST_s {
+typedef struct {
   uint8_t                           *SIB1;
   uint8_t                           sizeof_SIB1;
   uint8_t                           *SIB23;
@@ -404,11 +404,15 @@ typedef struct eNB_RRC_INST_s {
   uint8_t                        num_active_cba_groups;
   uint16_t                       cba_rnti[NUM_MAX_CBA_GROUP];
 #endif
+  SRB_INFO                          SI;
+  SRB_INFO                          Srb0;
+} rcc_eNB_carrier_data_t;
+
+typedef struct eNB_RRC_INST_s {
+  rcc_eNB_carrier_data_t          carrier[MAX_NUM_CCs];
   uid_allocator_t                    uid_allocator; // for rrc_ue_head
   RB_HEAD(rrc_ue_tree_s, rrc_eNB_ue_context_s)     rrc_ue_head; // ue_context tree key search by rnti
   RB_HEAD(rrc_rnti_tree_s, rrc_ue_s1ap_ids_s)      rrc_rnti_head; // ue-rnti tree key search by S1AP ids
-  SRB_INFO                          SI;
-  SRB_INFO                          Srb0;
   uint8_t                           HO_flag;
   uint8_t                            Nb_ue;
 #if defined(ENABLE_RAL)

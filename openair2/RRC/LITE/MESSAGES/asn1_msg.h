@@ -74,7 +74,8 @@ uint8_t get_adjacent_cell_mod_id(uint16_t phyCellId);
 @param sib1 Pointer to asn1c C representation of SIB1
 @return size of encoded bit stream in bytes*/
 
-uint8_t do_SIB1(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
+uint8_t do_SIB1(uint8_t Mod_id, int CC_id,
+                LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
                 BCCH_DL_SCH_Message_t *bcch_message,
                 SystemInformationBlockType1_t **sib1
 #if defined(ENABLE_ITTI)
@@ -94,6 +95,7 @@ uint8_t do_SIB1(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer
 @return size of encoded bit stream in bytes*/
 
 uint8_t do_SIB23(uint8_t Mod_id,
+                 int CC_id,
                  LTE_DL_FRAME_PARMS *frame_parms,
                  uint8_t *buffer,
                  BCCH_DL_SCH_Message_t *systemInformation,
