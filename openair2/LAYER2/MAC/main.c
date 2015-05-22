@@ -218,7 +218,7 @@ int mac_top_init(int eMBMS_active, char *uecap_xer, uint8_t cba_group_active, ui
 
   for (i=0; i<NB_eNB_INST; i++)
     for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
-      LOG_D(MAC,"[MAIN][eNB %d] initializing RA_template\n",i);
+      LOG_D(MAC,"[MAIN][eNB %d] CC_id %d initializing RA_template\n",i, CC_id);
       LOG_D(MAC, "[MSC_NEW][FRAME 00000][MAC_eNB][MOD %02d][]\n", i);
 
       RA_template = (RA_TEMPLATE *)&eNB_mac_inst[i].common_channels[CC_id].RA_template[0];

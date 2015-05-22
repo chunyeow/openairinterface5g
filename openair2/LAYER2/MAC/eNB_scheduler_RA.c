@@ -93,8 +93,8 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
 
       if (RA_template[i].RA_active == TRUE) {
 
-        LOG_D(MAC,"[eNB %d][RAPROC] RA %d is active (generate RAR %d, generate_Msg4 %d, wait_ack_Msg4 %d, rnti %x)\n",
-              module_idP,i,RA_template[i].generate_rar,RA_template[i].generate_Msg4,RA_template[i].wait_ack_Msg4, RA_template[i].rnti);
+        LOG_D(MAC,"[eNB %d][RAPROC] CC_id %d RA %d is active (generate RAR %d, generate_Msg4 %d, wait_ack_Msg4 %d, rnti %x)\n",
+              module_idP,CC_id,i,RA_template[i].generate_rar,RA_template[i].generate_Msg4,RA_template[i].wait_ack_Msg4, RA_template[i].rnti);
 
         if (RA_template[i].generate_rar == 1) {
           nprb[CC_id]= nprb[CC_id] + 3;
@@ -126,12 +126,12 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
             }
           }
 
-          LOG_D(MAC,"[eNB %d][RAPROC] Frame %d, subframeP %d: UE_id %d, Is_rrc_registered %d, rrc_sdu_length %d\n",
-                module_idP,frameP, subframeP,UE_id, Is_rrc_registered,rrc_sdu_length);
+          LOG_D(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d, subframeP %d: UE_id %d, Is_rrc_registered %d, rrc_sdu_length %d\n",
+                module_idP, CC_id, frameP, subframeP,UE_id, Is_rrc_registered,rrc_sdu_length);
 
           if (rrc_sdu_length>0) {
-            LOG_I(MAC,"[eNB %d][RAPROC] Frame %d, subframeP %d: Generating Msg4 with RRC Piggyback (RA proc %d, RNTI %x)\n",
-                  module_idP,frameP, subframeP,i,RA_template[i].rnti);
+            LOG_I(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d, subframeP %d: Generating Msg4 with RRC Piggyback (RA proc %d, RNTI %x)\n",
+                  module_idP, CC_id, frameP, subframeP,i,RA_template[i].rnti);
 
             //msg("[MAC][eNB %d][RAPROC] Frame %d, subframeP %d: Received %d bytes for Msg4: \n",module_idP,frameP,subframeP,rrc_sdu_length);
             //    for (j=0;j<rrc_sdu_length;j++)
@@ -369,8 +369,8 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
               msg4_post_padding = TBsize - rrc_sdu_length - msg4_header -1;
             }
 
-            LOG_I(MAC,"[eNB %d][RAPROC] Frame %d subframeP %d Msg4 : TBS %d, sdu_len %d, msg4_header %d, msg4_padding %d, msg4_post_padding %d\n",
-                  module_idP,frameP,subframeP,TBsize,rrc_sdu_length,msg4_header,msg4_padding,msg4_post_padding);
+            LOG_I(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d subframeP %d Msg4 : TBS %d, sdu_len %d, msg4_header %d, msg4_padding %d, msg4_post_padding %d\n",
+                  module_idP,CC_id,frameP,subframeP,TBsize,rrc_sdu_length,msg4_header,msg4_padding,msg4_post_padding);
             DevAssert( UE_id != UE_INDEX_INVALID ); // FIXME not sure how to gracefully return
             offset = generate_dlsch_header((unsigned char*)eNB->UE_list.DLSCH_pdu[CC_id][0][(unsigned char)UE_id].payload[0],
                                            1,                           //num_sdus
@@ -390,8 +390,8 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
               trace_pdu(1, (uint8_t *)eNB->UE_list.DLSCH_pdu[CC_id][0][(unsigned char)UE_id].payload[0],
                         rrc_sdu_length, UE_id, 3, UE_RNTI(module_idP, UE_id),
                         eNB->subframe,0,0);
-              LOG_D(OPT,"[eNB %d][DLSCH] Frame %d trace pdu for rnti %x with size %d\n",
-                    module_idP, frameP, UE_RNTI(module_idP,UE_id), rrc_sdu_length);
+              LOG_D(OPT,"[eNB %d][DLSCH] CC_id %d Frame %d trace pdu for rnti %x with size %d\n",
+                    module_idP, CC_id, frameP, UE_RNTI(module_idP,UE_id), rrc_sdu_length);
             }
 
             nprb[CC_id]= nprb[CC_id] + 3;
@@ -427,7 +427,7 @@ void initiate_ra_proc(module_id_t module_idP, int CC_id,frame_t frameP, uint16_t
   uint8_t i;
   RA_TEMPLATE *RA_template = (RA_TEMPLATE *)&eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[0];
 
-  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Initiating RA procedure for preamble index %d\n",module_idP,frameP,preamble_index);
+  LOG_I(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d Initiating RA procedure for preamble index %d\n",module_idP,CC_id,frameP,preamble_index);
 
   for (i=0; i<NB_RA_PROC_MAX; i++) {
     if (RA_template[i].RA_active==FALSE) {
@@ -440,8 +440,8 @@ void initiate_ra_proc(module_id_t module_idP, int CC_id,frame_t frameP, uint16_t
       RA_template[i].rnti = taus();
       RA_template[i].RA_rnti = 1+subframeP+(10*f_id);
       RA_template[i].preamble_index = preamble_index;
-      LOG_D(MAC,"[eNB %d][RAPROC] Frame %d Activating RAR generation for process %d, rnti %x, RA_active %d\n",
-            module_idP,frameP,i,RA_template[i].rnti,
+      LOG_D(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d Activating RAR generation for process %d, rnti %x, RA_active %d\n",
+            module_idP,CC_id,frameP,i,RA_template[i].rnti,
             RA_template[i].RA_active);
 
       return;
@@ -455,7 +455,7 @@ void cancel_ra_proc(module_id_t module_idP, int CC_id, frame_t frameP, rnti_t rn
   RA_TEMPLATE *RA_template = (RA_TEMPLATE *)&eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[0];
 
   MSC_LOG_EVENT(MSC_PHY_ENB, "RA Cancelling procedure ue %"PRIx16" ", rnti);
-  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Cancelling RA procedure for UE rnti %x\n",module_idP,frameP,rnti);
+  LOG_I(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d Cancelling RA procedure for UE rnti %x\n",module_idP,CC_id,frameP,rnti);
 
   for (i=0; i<NB_RA_PROC_MAX; i++) {
     if (rnti == RA_template[i].rnti) {

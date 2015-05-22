@@ -175,18 +175,20 @@ schedule_SI(
                   eNB->subframe,
                   0,
                   0);
-	LOG_D(OPT,"[eNB %d][BCH] Frame %d trace pdu for rnti %x with size %d\n",
-	    module_idP, frameP, 0xffff, bcch_sdu_length);
+	LOG_D(OPT,"[eNB %d][BCH] Frame %d trace pdu for CC_id %d rnti %x with size %d\n",
+	    module_idP, frameP, CC_id, 0xffff, bcch_sdu_length);
       }
       if (PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.frame_type == TDD) {
-        LOG_D(MAC,"[eNB] Frame %d : Scheduling BCCH->DLSCH (TDD) for SI %d bytes (mcs %d, rb 3, TBS %d)\n",
+        LOG_D(MAC,"[eNB] Frame %d : Scheduling BCCH->DLSCH (TDD) for CC_id %d SI %d bytes (mcs %d, rb 3, TBS %d)\n",
               frameP,
+              CC_id,
               bcch_sdu_length,
               mcs,
               mac_xface->get_TBS_DL(mcs,3));
       } else {
-        LOG_D(MAC,"[eNB] Frame %d : Scheduling BCCH->DLSCH (FDD) for SI %d bytes (mcs %d, rb 3, TBS %d)\n",
+        LOG_D(MAC,"[eNB] Frame %d : Scheduling BCCH->DLSCH (FDD) for CC_id %d SI %d bytes (mcs %d, rb 3, TBS %d)\n",
               frameP,
+              CC_id,
               bcch_sdu_length,
               mcs,
               mac_xface->get_TBS_DL(mcs,3));

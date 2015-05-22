@@ -542,7 +542,7 @@ void SR_indication(module_id_t mod_idP, int cc_idP, frame_t frameP, rnti_t rntiP
   } else {
     //     AssertFatal(0, "find_UE_id(%u,rnti %d) not found", enb_mod_idP, rntiP);
     //    AssertError(0, 0, "Frame %d: find_UE_id(%u,rnti %d) not found\n", frameP, enb_mod_idP, rntiP);
-    LOG_D(MAC,"[eNB %d][SR %x] Frame %d subframeP %d Signaling SR for UE %d (unknown UEid) \n",mod_idP,rntiP,frameP,subframeP, UE_id);
+    LOG_D(MAC,"[eNB %d][SR %x] Frame %d subframeP %d Signaling SR for UE %d (unknown UEid) on CC_id %d\n",mod_idP,rntiP,frameP,subframeP, UE_id,cc_idP);
   }
 }
 
