@@ -54,6 +54,8 @@ typedef enum {
 typedef struct {
   //! Module ID for this configuration
   int Mod_id;
+  // device log level
+  int log_level;
   //! the sample rate for both transmit and receive.
   double sample_rate;
   //! number of samples per RX/TX packet (USRP + Ethernet)
@@ -71,7 +73,7 @@ typedef struct {
   //! mode for rxgain (ExpressMIMO2)
   rx_gain_t rxg_mode[4];
   //! \brief Gain for RX in dB.
-  //! index: [0..rx_num_channels[
+  //! index: [0..rx_num_channels]
   double rx_gain[4];
   //! gain for TX in dB
   double tx_gain[4];

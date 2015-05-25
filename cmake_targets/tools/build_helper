@@ -242,6 +242,11 @@ check_install_usrp_uhd_driver(){
         $SUDO apt-get -y install  python python-tk libboost-all-dev libusb-1.0-0-dev
         $SUDO apt-get -y install -t `lsb_release -cs` uhd --force-yes
 }
+check_install_bladerf_driver(){
+	$SUDO add-apt-repository -y ppa:bladerf/bladerf
+	$SUDO apt-get update
+	$SUDO apt-get install -y bladerf libbladerf-dev
+}
 
 check_install_additional_tools (){
     $SUDO apt-get update

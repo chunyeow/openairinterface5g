@@ -333,7 +333,7 @@ add_list1_option(NB_ANTENNAS_RX "2" "Number of antennas in reception" "1" "2" "4
 add_list1_option(NB_ANTENNAS_TX "2" "Number of antennas in transmission" "1" "2" "4")
 add_list1_option(NB_ANTENNAS_TXRX "2" "Number of antennas in ????" "1" "2" "4")
 
-add_list2_option(RF_BOARD "EXMIMO" "RF head type" "False" "EXMIMO" "OAI_USRP" "ETHERNET" "CPRIGW")
+add_list2_option(RF_BOARD "EXMIMO" "RF head type" "False" "EXMIMO" "OAI_USRP" "ETHERNET" "OAI_BLADERF" "CPRIGW")
 
 if (${RF_BOARD} STREQUAL "EXMIMO")
   set(DRIVER2013)
@@ -351,6 +351,16 @@ elseif (${RF_BOARD} STREQUAL "OAI_USRP")
   LINK_DIRECTORIES("/opt/lib")
   set(option_HW_lib "uhd")
   set(LOWLATENCY False)
+
+elseif (${RF_BOARD} STREQUAL "OAI_BLADERF")
+  include_directories("${OPENAIR_TARGETS}/ARCH/BLADERF/USERSPACE/LIB/")
+  include_directories("${OPENAIR2_DIR}/UTIL/LOG")
+  include_directories("/usr/include")
+  set(HW_SOURCE ${HW_SOURCE}
+    ${OPENAIR_TARGETS}/ARCH/BLADERF/USERSPACE/LIB/bladerf_lib.c
+    )
+  LINK_DIRECTORIES("/usr/lib/x86_64-linux-gnu/")
+  set(option_HW_lib "bladeRF")
 
 elseif (${RF_BOARD} STREQUAL "ETHERNET")
   include_directories ("${OPENAIR_TARGETS}/ARCH/ETHERNET/USERSPACE/LIB")
