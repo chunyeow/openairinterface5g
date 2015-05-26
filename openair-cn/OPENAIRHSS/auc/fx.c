@@ -50,7 +50,7 @@ void SetOP(char *opP)
               "Error in operator key\n");
       abort();
     }
-    printf("SetOP: OP : %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X ",
+    printf("SetOP: OP : %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
 		  op[0],op[1],op[2],op[3],op[4],op[5],op[6],op[7],
 		  op[8],op[9],op[10],op[11],op[12],op[13],op[14],op[15]);
 }
