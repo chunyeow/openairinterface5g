@@ -102,7 +102,7 @@ schedule_SI(
                                        0); // not used in this case
 
     if (bcch_sdu_length > 0) {
-      LOG_D(MAC,"[eNB %d] Frame %d : BCCH->DLSCH CC_id %d, Received %d bytes \n",module_idP,CC_id,frameP,bcch_sdu_length);
+      LOG_D(MAC,"[eNB %d] Frame %d : BCCH->DLSCH CC_id %d, Received %d bytes \n",module_idP,frameP,CC_id,bcch_sdu_length);
 
 
       if (bcch_sdu_length <= (mac_xface->get_TBS_DL(0,3))) {
