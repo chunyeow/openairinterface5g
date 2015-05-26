@@ -59,6 +59,10 @@ function help()
   echo_error "  -V, --vcd                           Dump timings of processing in a GTKWave compliant file format."
   echo_error "  -S, --enable-missed-slot            Continue execution in case of missed slot."
   echo_error "  -T, --target-ul-mcs       mcs       Uplink target MCS."
+  echo_error "  -W, --wireshark-l2                  Dump MAC frames for visualization with wireshark."
+  echo_error "                                      You need to open Wireshark, open the preferences, and check try heuristics for the UDP protocol, MAC-LTE, RLC-LTE,"
+  echo_error "                                      and PDCP-LTE. Then capture for all the interfaces with the following filters: s1ap or lte_rrc or mac-lte or rlc-lte"
+  echo_error "                                      or pdcp-lte. Note the L2 pdus are transmitted to the local interface."
   echo_error "  -x, --xforms                        Run XFORMS scope windows."
 }
 
@@ -131,6 +135,11 @@ function main()
         echo "setting target ul MCS to $2"
         exe_arguments="$exe_arguments -t $2"
         shift 2;
+        ;;
+      -W | ----wireshark-l2)
+        echo "setting l2 pcap dump output"
+        exe_arguments="$exe_arguments -W"
+        shift ;
         ;;
       -x | --xforms)
         exe_arguments="$exe_arguments -d"
