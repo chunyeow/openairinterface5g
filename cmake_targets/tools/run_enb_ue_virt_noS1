@@ -64,6 +64,10 @@ function help()
   echo_error "  -K, --itti-dump-file   filename         ITTI dump file containing all ITTI events occuring during EPC runtime.(can omit file name if last argument)"
   echo_error "  -m, --mscgen           directory        Generate mscgen output files in a directory"
   echo_error "  -V, --vcd                               Dump timings of processing in a GTKWave compliant file format."
+  echo_error "  -W, --wireshark-l2                      Dump MAC frames for visualization with wireshark."
+  echo_error "                                          You need to open Wireshark, open the preferences, and check try heuristics for the UDP protocol, MAC-LTE, RLC-LTE,"
+  echo_error "                                          and PDCP-LTE. Then capture for all the interfaces with the following filters: s1ap or lte_rrc or mac-lte or rlc-lte"
+  echo_error "                                          or pdcp-lte. Note the L2 pdus are transmitted to the local interface."
   echo_error "  -x, --xforms                            Run XFORMS scope windows."
 }
 
@@ -141,6 +145,11 @@ function main()
         "setting gtk-wave output"
         exe_arguments="$exe_arguments -V /tmp/oai_gtk_wave.vcd"
         shift ;
+        ;;
+      -W | ----wireshark-l2)
+        echo "setting l2 pcap dump output"
+        exe_arguments="$exe_arguments -P wireshark"
+        shift 2;
         ;;
       *)   
         echo "Unknown option $1"
