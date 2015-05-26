@@ -332,6 +332,7 @@ check_install_oai_software() {
 	openssl \
 	python  \
 	subversion
+    $SUDO update-alternatives --set liblapack.so /usr/lib/atlas-base/atlas/liblapack.so
     if [ `lsb_release -rs` = '12.04' ] ; then
         install_nettle_from_source
 	install_gnutls_from_source
