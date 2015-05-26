@@ -935,7 +935,7 @@ l2l1_task (void *args_p)
             // RN == eNB
             LOG_D(EMU,"[RN %d] PHY procedures eNB %d for frame %d, slot %d (subframe TX %d, RX %d)\n",
                   RN_id, eNB_inst, frame, slot, next_slot >> 1,last_slot>>1);
-            phy_procedures_eNB_lte(slot>>1, PHY_vars_eNB_g[eNB_inst][0], abstraction_flag,
+            phy_procedures_eNB_lte(slot>>1, PHY_vars_eNB_g[eNB_inst], abstraction_flag,
                                    r_type, PHY_vars_RN_g[RN_id]);
           } else {
             LOG_E(EMU,"TDD is not supported for multicast relaying %d\n", r_type);
