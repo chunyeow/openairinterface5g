@@ -457,8 +457,8 @@ int olg_config(void)
    set_comp_log(PDCP, LOG_DEBUG, 0x15,1);
    set_comp_log(RRC,  LOG_DEBUG, 0x15,1);
    set_comp_log(OCM,  LOG_ERR, 0x15,20);
-   set_comp_log(OTG,  LOG_ERR, 0x15,1);
-   set_comp_log(OMG,  LOG_ERR, 0x15,1);
+   set_comp_log(OTG,  LOG_INFO, 0x15,1);
+   set_comp_log(OMG,  LOG_INFO, 0x15,1);
    set_comp_log(OPT,  LOG_ERR, 0x15,1);
 
 

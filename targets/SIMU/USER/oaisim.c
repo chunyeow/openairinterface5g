@@ -221,7 +221,7 @@ help (void)
   printf ("-s snr_dB set a fixed (average) SNR, this deactivates the openair channel model generator (OCM)\n");
   printf ("-S snir_dB set a fixed (average) SNIR, this deactivates the openair channel model generator (OCM)\n");
   printf ("-t Gives a fixed UL mcs for eNB scheduler\n");
-  printf ("-T activate the traffic generator: cbr, scbr, mcbr, bcbr, mscbr\n");
+  printf ("-T activate the traffic generator. Valide options are m2m,scbr,mcbr,bcbr,auto_pilot,bicycle_race,open_arena,team_fortress,m2m_traffic,auto_pilot_l,auto_pilot_m,auto_pilot_h,auto_pilot_e,virtual_game_l,virtual_game_m,virtual_game_h,virtual_game_f,alarm_humidity,alarm_smoke,alarm_temperature,openarena_dl,openarena_ul,voip_g711,voip_g729,video_vbr_10mbps,video_vbr_4mbps,video_vbr_2mbp,video_vbr_768kbps,video_vbr_384kbps,video_vbr_192kpbs,background_users\n");
   printf ("-u Set the number of local UE\n");
   printf ("-U Set the mobility model for UE, options are: STATIC, RWP, RWALK\n");
   printf ("-V [vcd_file] Enable VCD dump into vcd_file\n");
