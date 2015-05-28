@@ -71,6 +71,11 @@ int s1ap_ue_context_release_complete(instance_t instance,
   DevAssert(ue_release_complete_p != NULL);
   DevAssert(s1ap_eNB_instance_p != NULL);
 
+  /*RB_FOREACH(ue_context_p, s1ap_ue_map, &s1ap_eNB_instance_p->s1ap_ue_head) {
+	  S1AP_WARN("in s1ap_ue_map: UE context eNB_ue_s1ap_id %u mme_ue_s1ap_id %u state %u\n",
+			  ue_context_p->eNB_ue_s1ap_id, ue_context_p->mme_ue_s1ap_id,
+			  ue_context_p->ue_state);
+  }*/
   if ((ue_context_p = s1ap_eNB_get_ue_context(s1ap_eNB_instance_p,
                       ue_release_complete_p->eNB_ue_s1ap_id)) == NULL) {
     /* The context for this eNB ue s1ap id doesn't exist in the map of eNB UEs */
@@ -124,7 +129,7 @@ int s1ap_ue_context_release_complete(instance_t instance,
   struct s1ap_eNB_ue_context_s *ue_context2_p = NULL;
 
   if ((ue_context2_p = RB_REMOVE(s1ap_ue_map, &s1ap_eNB_instance_p->s1ap_ue_head, ue_context_p))
-      == NULL) {
+      != NULL) {
     S1AP_WARN("Removed UE context eNB_ue_s1ap_id %u\n",
               ue_context2_p->eNB_ue_s1ap_id);
     s1ap_eNB_free_ue_context(ue_context2_p);
@@ -132,6 +137,11 @@ int s1ap_ue_context_release_complete(instance_t instance,
     S1AP_WARN("Removing UE context eNB_ue_s1ap_id %u: did not find context\n",
               ue_context_p->eNB_ue_s1ap_id);
   }
+  /*RB_FOREACH(ue_context_p, s1ap_ue_map, &s1ap_eNB_instance_p->s1ap_ue_head) {
+	  S1AP_WARN("in s1ap_ue_map: UE context eNB_ue_s1ap_id %u mme_ue_s1ap_id %u state %u\n",
+			  ue_context_p->eNB_ue_s1ap_id, ue_context_p->mme_ue_s1ap_id,
+			  ue_context_p->ue_state);
+  }*/
 
   return ret;
 }
