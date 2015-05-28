@@ -122,14 +122,14 @@ typedef enum {
 } emm_ksi_t;
 
 /* EPS NAS security context structure */
-typedef struct {
+typedef struct emm_security_context_s {
   emm_ksi_t type;     /* Type of security context        */
   int eksi;           /* NAS key set identifier for E-UTRAN      */
   OctetString kasme;      /* ASME security key (native context)      */
   //OctetString ksgsn;    /* SGSN security key (mapped context)      */
   OctetString knas_enc;   /* NAS cyphering key               */
   OctetString knas_int;   /* NAS integrity key               */
-  struct {
+  struct count_s{
     UInt32_t spare:8;
     UInt32_t overflow:16;
     UInt32_t seq_num:8;
@@ -205,7 +205,7 @@ typedef enum {
  *   for PLMN selection, cell selection/re-selection and handover.
  *   The maximum number of possible entries in the stored list is 16.
  */
-typedef struct {
+typedef struct emm_nvdata_s {
   imsi_t imsi;
   plmn_t rplmn;   /* The registered PLMN  */
   /* List of equivalent PLMNs         */
@@ -217,7 +217,7 @@ typedef struct {
  * Structure of the EMM data
  * -------------------------
  */
-typedef struct {
+typedef struct emm_data_s {
   int                 usim_is_valid;  /* Indication of USIM data validity   */
 
   imei_t             *imei;   /* IMEI read from the UE's non-volatile memory*/
@@ -425,6 +425,9 @@ struct emm_data_context_s *emm_data_context_remove(
   emm_data_t *_emm_data, struct emm_data_context_s *elm);
 
 void emm_data_context_add(emm_data_t *emm_data, struct emm_data_context_s *elm);
+void emm_data_context_dump(struct emm_data_context_s *elm_pP);
+
+void emm_data_context_dump_all(void);
 
 #endif // NAS_MME
 

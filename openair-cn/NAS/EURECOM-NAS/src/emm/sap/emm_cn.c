@@ -171,7 +171,11 @@ static int _emm_cn_deregister_ue(const UInt32_t ue_id)
   int rc = RETURNok;
 
   LOG_FUNC_IN;
-
+  LOG_TRACE(WARNING, "EMM-PROC  - "
+            "TODO deregister UE %u, following procedure is a test");
+  emm_proc_detach_request(ue_id, EMM_DETACH_TYPE_EPS /* ??? emm_proc_detach_type_t*/,
+                              1 /*switch_off*/, 0 /*native_ksi*/, 0 /*ksi*/,
+                              NULL /*guti*/, NULL /*imsi*/, NULL /*imei*/);
   LOG_FUNC_RETURN (rc);
 }
 

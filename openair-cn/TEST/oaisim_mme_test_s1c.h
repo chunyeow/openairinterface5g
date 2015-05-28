@@ -28,13 +28,4 @@
 *******************************************************************************/
 
 
-void     fail (const char *format, ...);
-void     success (const char *format, ...);
-void     escapeprint (const char *str, size_t len);
-void     hexprint (const void *_str, size_t len);
-void     binprint (const void *_str, size_t len);
-int      compare_buffer(const uint8_t *buffer, const uint32_t length_buffer, const uint8_t *pattern, const uint32_t length_pattern);
-unsigned decode_hex_length(const char *h);
-int      decode_hex(uint8_t *dst, const char *h);
-uint8_t *decode_hex_dup(const char *hex);
 void     mme_test_s1_notify_sctp_data_ind(uint32_t assoc_id, int32_t stream, const uint8_t * const data, const uint32_t data_length);

@@ -35,6 +35,7 @@
 #include "tree.h"
 #include "emmData.h"
 #include "nas_log.h"
+#include "security_types.h"
 
 static inline
 int emm_data_ctxt_compare_ueid(struct emm_data_context_s *p1,
@@ -89,4 +90,96 @@ void emm_data_context_add(emm_data_t *emm_data, struct emm_data_context_s *elm)
   RB_INSERT(emm_data_context_map, &emm_data->ctx_map, elm);
 }
 
+void emm_data_context_dump(struct emm_data_context_s *elm_pP)
+{
+  if (elm_pP != NULL) {
+	    char imsi_str[16];
+	    char guti_str[22];
+	    int k, size, remaining_size;
+        char key_string[KASME_LENGTH_OCTETS*2];
+	    LOG_TRACE(INFO, "EMM-CTX: ue id:            0x%06"PRIX32" (UE identifier)",                     elm_pP->ueid);
+	    LOG_TRACE(INFO, "         is_dynamic:       %u      (Dynamically allocated context indicator)", elm_pP->is_dynamic);
+	    LOG_TRACE(INFO, "         is_attached:      %u      (Attachment indicator)",                    elm_pP->is_attached);
+	    LOG_TRACE(INFO, "         is_emergency:     %u      (Emergency bearer services indicator)",     elm_pP->is_emergency);
+	    NAS_IMSI2STR(elm_pP->imsi, imsi_str, 16);
+	    LOG_TRACE(INFO, "         imsi:             %s      (The IMSI provided by the UE or the MME)",  imsi_str);
+	    LOG_TRACE(INFO, "         imei:             TODO    (The IMEI provided by the UE)");
+	    LOG_TRACE(INFO, "         guti_is_new:      %u      (New GUTI indicator)",                      elm_pP->guti_is_new);
+	    GUTI2STR(elm_pP->guti, guti_str, 22);
+	    LOG_TRACE(INFO, "         guti:             %s      (The GUTI assigned to the UE)",             guti_str);
+	    GUTI2STR(elm_pP->old_guti, guti_str, 22);
+	    LOG_TRACE(INFO, "         old_guti:         %s      (The old GUTI)",                            guti_str);
+	    LOG_TRACE(INFO, "         n_tacs:           %u      (Number of consecutive tracking areas the UE is registered to)", elm_pP->n_tacs);
+	    LOG_TRACE(INFO, "         tac:              0x%04x  (Code of the first tracking area the UE is registered to)",      elm_pP->n_tacs);
+	    LOG_TRACE(INFO, "         ksi:              %u      (Security key set identifier provided by the UE)",               elm_pP->ksi);
+
+	    LOG_TRACE(INFO, "         auth_vector:              (EPS authentication vector)");
+	    LOG_TRACE(INFO, "             kasme: "KASME_FORMAT""KASME_FORMAT, KASME_DISPLAY_1(elm_pP->vector.kasme), KASME_DISPLAY_2(elm_pP->vector.kasme));
+	    LOG_TRACE(INFO, "             rand:  "RAND_FORMAT, RAND_DISPLAY(elm_pP->vector.rand));
+	    LOG_TRACE(INFO, "             autn:  "AUTN_FORMAT, AUTN_DISPLAY(elm_pP->vector.autn));
+        for (k = 0; k < XRES_LENGTH_MAX; k++) {sprintf(&key_string[k * 3], "%02x,", elm_pP->vector.xres[k]);}
+        key_string[k * 3 - 1] = '\0';
+	    LOG_TRACE(INFO, "             xres:  %s\n", key_string);
+
+	    if (elm_pP->security != NULL) {
+		  LOG_TRACE(INFO, "         security context:          (Current EPS NAS security context)");
+	      LOG_TRACE(INFO, "             type:  %s              (Type of security context)",
+	    		(elm_pP->security->type == EMM_KSI_NOT_AVAILABLE)?"KSI_NOT_AVAILABLE":(elm_pP->security->type == EMM_KSI_NATIVE)?"KSI_NATIVE":"KSI_MAPPED");
+	      LOG_TRACE(INFO, "             eksi:  %u              (NAS key set identifier for E-UTRAN)", elm_pP->security->eksi);
+
+	      if (elm_pP->security->kasme.length > 0) {
+	    	size = 0;
+		    size = 0;remaining_size=KASME_LENGTH_OCTETS*2;
+	        for (k = 0; k < elm_pP->security->kasme.length; k++) {
+	          size +=snprintf(&key_string[size], remaining_size, "0x%x ", elm_pP->security->kasme.value[k]);
+	          remaining_size -= size;
+	        }
+	      } else {
+	          size +=snprintf(&key_string[0], remaining_size, "None");
+	      }
+		  LOG_TRACE(INFO, "             kasme: %s     (ASME security key (native context))", key_string);
+	      if (elm_pP->security->knas_enc.length > 0) {
+		    size = 0;
+		    size = 0;remaining_size=KASME_LENGTH_OCTETS*2;
+	        for (k = 0; k < elm_pP->security->knas_enc.length; k++) {
+	          size +=snprintf(&key_string[size], remaining_size, "0x%x ", elm_pP->security->knas_enc.value[k]);
+	          remaining_size -= size;
+	        }
+	      } else {
+	          size +=snprintf(&key_string[0], remaining_size, "None");
+	      }
+		  LOG_TRACE(INFO, "             knas_enc: %s     (NAS cyphering key)", key_string);
+	      if (elm_pP->security->knas_int.length > 0) {
+		    size = 0;remaining_size=KASME_LENGTH_OCTETS*2;
+	        for (k = 0; k < elm_pP->security->knas_int.length; k++) {
+	          size +=snprintf(&key_string[size], remaining_size, "0x%x ", elm_pP->security->knas_int.value[k]);
+	          remaining_size -= size;
+	        }
+	      } else {
+	          size +=snprintf(&key_string[0], remaining_size, "None");
+	      }
+		  LOG_TRACE(INFO, "             knas_int: %s     (NAS integrity key)", key_string);
+	      LOG_TRACE(INFO, "             dl_count.overflow: %u     ", elm_pP->security->dl_count.overflow);
+	      LOG_TRACE(INFO, "             dl_count.seq_num:  %u     ", elm_pP->security->dl_count.seq_num);
+	      LOG_TRACE(INFO, "             ul_count.overflow: %u     ", elm_pP->security->ul_count.overflow);
+	      LOG_TRACE(INFO, "             ul_count.seq_num:  %u     ", elm_pP->security->ul_count.seq_num);
+	      LOG_TRACE(INFO, "             TODO  capability");
+	      LOG_TRACE(INFO, "             selected_algorithms.encryption:  %x     ", elm_pP->security->selected_algorithms.encryption);
+	      LOG_TRACE(INFO, "             selected_algorithms.integrity:   %x     ", elm_pP->security->selected_algorithms.integrity);
+	    } else {
+		  LOG_TRACE(INFO, "         No security context");
+	    }
+	    LOG_TRACE(INFO, "         _emm_fsm_status     %u   ", elm_pP->_emm_fsm_status);
+	    LOG_TRACE(INFO, "         TODO  esm_data_ctx");
+  }
+}
+
+void emm_data_context_dump_all(void)
+{
+  struct emm_data_context_s *elm_p = NULL;
+  LOG_TRACE(INFO, "EMM-CTX - Dump all contexts:");
+  RB_FOREACH(elm_p, emm_data_context_map,&_emm_data.ctx_map) {
+	  emm_data_context_dump(elm_p);
+  }
+}
 #endif

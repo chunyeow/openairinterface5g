@@ -47,6 +47,7 @@ s1ap_test_t s1ap_scenario1[] = {
     		-1
     },
     .buf_len = 96,
+    .sctp_stream_id = 1,
     .originating = ENB,
   },
   {
@@ -63,6 +64,7 @@ s1ap_test_t s1ap_scenario1[] = {
     		-1
     },
     .buf_len = 65,
+    .sctp_stream_id = 1,
     .originating = MME,
   },
   {
@@ -78,6 +80,7 @@ s1ap_test_t s1ap_scenario1[] = {
     		-1
     },
     .buf_len = 62,
+    .sctp_stream_id = 1,
     .originating = ENB,
   },
   {
@@ -92,6 +95,7 @@ s1ap_test_t s1ap_scenario1[] = {
     		-1
     },
     .buf_len = 42,
+    .sctp_stream_id = 1,
     .originating = MME,
   },
   {
@@ -107,6 +111,7 @@ s1ap_test_t s1ap_scenario1[] = {
     		-1
     },
     .buf_len = 59,
+    .sctp_stream_id = 1,
     .originating = ENB,
   },
   {
@@ -130,6 +135,7 @@ s1ap_test_t s1ap_scenario1[] = {
     		-1
     },
     .buf_len = 191,
+    .sctp_stream_id = 1,
     .originating = MME,
   },
   {
@@ -158,6 +164,7 @@ s1ap_test_t s1ap_scenario1[] = {
     		-1
     },
     .buf_len = 64,
+    .sctp_stream_id = 1,
     .originating = ENB,
   },
   {
@@ -174,6 +181,7 @@ s1ap_test_t s1ap_scenario1[] = {
     		-1
     },
     .buf_len = 64,
+    .sctp_stream_id = 1,
     .originating = ENB,
   }
 };

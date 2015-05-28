@@ -85,7 +85,7 @@ int nas_log_func_indent;
  *        or disable specific logging traces)
  */
 typedef struct {
-#define LOG_PREFIX_SIZE 96
+#define LOG_PREFIX_SIZE 118
   char prefix[LOG_PREFIX_SIZE];
   unsigned char filter;
   int indent;
@@ -157,7 +157,17 @@ void nas_log_init(char filter)
  ***************************************************************************/
 void log_data(const char* filename, int line)
 {
-  snprintf(_log_context.prefix, LOG_PREFIX_SIZE, "%s[%d]", filename, line);
+  int len = strlen(filename) + 2 + 1; //2:[], 1:/0
+  if (line > 9999)     len+=5;
+  else if (line > 999) len+=4;
+  else if (line > 99)  len+=3;
+  else if (line > 9)   len+=2;
+  else                 len+=1;
+  if (len > LOG_PREFIX_SIZE) {
+	snprintf(_log_context.prefix, LOG_PREFIX_SIZE, "%s:%d", &filename[len - LOG_PREFIX_SIZE], line);
+  } else {
+    snprintf(_log_context.prefix, LOG_PREFIX_SIZE, "%s:%d", filename, line);
+  }
 }
 
 /****************************************************************************
@@ -190,7 +200,7 @@ void log_trace(log_severity_t severity, const char* data, ...)
      * name and line number from where the data have been logged) and
      * the severity level.
      */
-    fprintf(stderr, "%s%-60.58s%-10s", _log_context.level[severity].color,
+    fprintf(stderr, "%s%-120.118s%-10s", _log_context.level[severity].color,
             _log_context.prefix, _log_context.level[severity].name);
     {
       /* Next, perform indentation for FUNC logging trace */
@@ -199,7 +209,7 @@ void log_trace(log_severity_t severity, const char* data, ...)
       }
 
       for (i=0; i<_log_context.indent; i++) {
-        fprintf(stderr, "\t");
+        fprintf(stderr, "  ");
       }
 
       if (severity == FUNC_IN) {

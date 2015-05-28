@@ -812,7 +812,8 @@ int s1ap_mme_handle_ue_context_release_complete(uint32_t assoc_id,
 //------------------------------------------------------------------------------
 {
   S1ap_UEContextReleaseCompleteIEs_t *ueContextReleaseComplete_p;
-  ue_description_t *ue_ref = NULL;
+  ue_description_t                   *ue_ref                    = NULL;
+  MessageDef                         *message_p                 = NULL;
 
   ueContextReleaseComplete_p = &message->msg.s1ap_UEContextReleaseCompleteIEs;
   MSC_LOG_RX_MESSAGE(
@@ -839,6 +840,24 @@ int s1ap_mme_handle_ue_context_release_complete(uint32_t assoc_id,
   /* eNB has sent a release complete message. We can safely remove UE context.
    * TODO: inform NAS and remove e-RABS.
    */
+  message_p = itti_alloc_new_message(TASK_S1AP, S1AP_UE_CONTEXT_RELEASE_COMPLETE);
+
+  AssertFatal(message_p != NULL,"itti_alloc_new_message Failed");
+  memset((void*)&message_p->ittiMsg.s1ap_ue_context_release_complete,
+	         0,
+	         sizeof(s1ap_ue_context_release_complete_t));
+
+  S1AP_UE_CONTEXT_RELEASE_COMPLETE(message_p).mme_ue_s1ap_id = ue_ref->mme_ue_s1ap_id;
+
+  MSC_LOG_TX_MESSAGE(
+	  		MSC_S1AP_MME,
+	  		MSC_MMEAPP_MME,
+	  		NULL,0,
+	  		"0 S1AP_UE_CONTEXT_RELEASE_COMPLETE mme_ue_s1ap_id "S1AP_UE_ID_FMT" ",
+	  		S1AP_UE_CONTEXT_RELEASE_COMPLETE(message_p).mme_ue_s1ap_id);
+
+  itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
+
   s1ap_remove_ue(ue_ref);
   S1AP_DEBUG("Removed UE "S1AP_UE_ID_FMT"\n",
              (uint32_t)ueContextReleaseComplete_p->mme_ue_s1ap_id);

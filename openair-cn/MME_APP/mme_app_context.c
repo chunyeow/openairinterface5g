@@ -461,11 +461,49 @@ void mme_app_handle_s1ap_ue_context_release_req(const s1ap_ue_context_release_re
   if (ue_context_p == NULL) {
 	MSC_LOG_EVENT(
    		MSC_MMEAPP_MME,
-   		"S1AP_UE_CONTEXT_RELEASE_REQ Unknown ue %u",s1ap_ue_context_release_req->mme_ue_s1ap_id);
+   		"0 S1AP_UE_CONTEXT_RELEASE_REQ Unknown mme_ue_s1ap_id 0x%06"PRIX32" ",s1ap_ue_context_release_req->mme_ue_s1ap_id);
     MME_APP_ERROR("UE context doesn't exist for UE 0x%06"PRIX32"/dec%u\n",
     		s1ap_ue_context_release_req->mme_ue_s1ap_id,
     		s1ap_ue_context_release_req->mme_ue_s1ap_id);
     return;
   }
   mme_app_send_s11_release_access_bearers_req(ue_context_p);
+}
+
+
+//------------------------------------------------------------------------------
+void mme_app_handle_s1ap_ue_context_release_complete(const s1ap_ue_context_release_complete_t const *s1ap_ue_context_release_complete)
+//------------------------------------------------------------------------------
+{
+  struct ue_context_s     *ue_context_p  = NULL;
+  MessageDef              *message_p     = NULL;
+
+  MME_APP_DEBUG("Received S1AP_UE_CONTEXT_RELEASE_COMPLETE from S1AP\n");
+
+  ue_context_p = mme_ue_context_exists_nas_ue_id(&mme_app_desc.mme_ue_contexts, s1ap_ue_context_release_complete->mme_ue_s1ap_id);
+
+  if (ue_context_p == NULL) {
+	MSC_LOG_EVENT(
+   		MSC_MMEAPP_MME,
+   		"0 S1AP_UE_CONTEXT_RELEASE_COMPLETE Unknown mme_ue_s1ap_id 0x%06"PRIX32" ",s1ap_ue_context_release_complete->mme_ue_s1ap_id);
+    MME_APP_ERROR("UE context doesn't exist for mme_ue_s1ap_id 0x%06"PRIX32"/dec%u\n",
+    		s1ap_ue_context_release_complete->mme_ue_s1ap_id,
+    		s1ap_ue_context_release_complete->mme_ue_s1ap_id);
+    return;
+  }
+  message_p  = itti_alloc_new_message(TASK_MME_APP, S1AP_DEREGISTER_UE_REQ);
+  memset((void*)&message_p->ittiMsg.s1ap_deregister_ue_req,
+	         0,
+	         sizeof(s1ap_deregister_ue_req_t));
+
+  S1AP_DEREGISTER_UE_REQ(message_p).mme_ue_s1ap_id = s1ap_ue_context_release_complete->mme_ue_s1ap_id;
+
+
+  MSC_LOG_TX_MESSAGE(
+  		MSC_MMEAPP_MME,
+  		MSC_NAS_MME,
+  		NULL,0,
+  		"0 S1AP_DEREGISTER_UE_REQ");
+
+  itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
 }
