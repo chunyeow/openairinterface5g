@@ -65,11 +65,6 @@ void f1 ( const uint8_t const opc[16], const uint8_t const k[16], const uint8_t 
   uint8_t rijndaelInput[16];
   uint8_t i;
   RijndaelKeySchedule( k );
-  /*
-  if (hss_config.valid_op > 0) {
-	SetOP(hss_config.operator_key);
-    ComputeOPc( opc );
-  }*/
 
   for (i=0; i<16; i++)
     rijndaelInput[i] = _rand[i] ^ opc[i];
@@ -122,11 +117,6 @@ void f2345 ( const uint8_t const opc[16], const uint8_t const k[16], const uint8
   uint8_t rijndaelInput[16];
   uint8_t i;
   RijndaelKeySchedule( k );
-
-  /*if (hss_config.valid_op > 0) {
-    SetOP(hss_config.operator_key);
-    ComputeOPc( opc );
-  }*/
 
   for (i=0; i<16; i++)
     rijndaelInput[i] = _rand[i] ^ opc[i];
@@ -203,14 +193,6 @@ void f1star( const uint8_t const opc[16], const uint8_t const k[16], const uint8
   uint8_t rijndaelInput[16];
   uint8_t i;
   RijndaelKeySchedule( k );
-  /*if (hss_config.valid_opc == 0) {
-	SetOP(hss_config.operator_key);
-    ComputeOPc( opc );
-  } else {
-	  printf("Using opc:  %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
-		         opc[0],opc[1],opc[2],opc[3],opc[4],opc[5],opc[6],opc[7],
-		         opc[8],opc[9],opc[10],opc[11],opc[12],opc[13],opc[14],opc[15] );
-  }*/
 
   for (i=0; i<16; i++)
     rijndaelInput[i] = _rand[i] ^ opc[i];
@@ -264,14 +246,6 @@ void f5star( const uint8_t const opc[16], const uint8_t const k[16], const uint8
   uint8_t i;
 
   RijndaelKeySchedule( k );
-  /*if (hss_config.valid_opc == 0) {
-	SetOP(hss_config.operator_key);
-    ComputeOPc(opc);
-  } else {
-	  printf("Using OPc: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
-			  opc[0],opc[1],opc[2],opc[3],opc[4],opc[5],opc[6],opc[7],
-			  opc[8],opc[9],opc[10],opc[11],opc[12],opc[13],opc[14],opc[15]);
-  }*/
 
   for (i=0; i<16; i++)
     rijndaelInput[i] = _rand[i] ^ opc[i];

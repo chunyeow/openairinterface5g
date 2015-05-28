@@ -138,8 +138,7 @@ int generate_vector(const uint8_t const opc[16], uint64_t imsi, uint8_t key[16],
    * - KASME
    */
 
-  //uint8_t amf[] = { 0x80, 0x00 };
-  uint8_t amf[] = { 0x90, 0x01 };
+  uint8_t amf[] = { 0x80, 0x00 };
   uint8_t mac_a[8];
   uint8_t ck[16];
   uint8_t ik[16];
