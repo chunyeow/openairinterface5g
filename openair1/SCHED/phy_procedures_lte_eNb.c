@@ -1394,7 +1394,7 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
     // If we've dropped the UE, go back to PRACH mode for this UE
     //#if !defined(EXMIMO_IOT)
     if (phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors == ULSCH_max_consecutive_errors) {
-      LOG_I(PHY,"[eNB %d, CC %d] frame %d, subframe %d, UE %d: ULSCH consecutive error count reached %u, removing UE\n",
+      LOG_W(PHY,"[eNB %d, CC %d] frame %d, subframe %d, UE %d: ULSCH consecutive error count reached %u, removing UE\n",
             phy_vars_eNB->Mod_id,phy_vars_eNB->CC_id,frame,subframe, i, phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors);
       phy_vars_eNB->eNB_UE_stats[i].mode = PRACH;
       remove_ue(phy_vars_eNB->eNB_UE_stats[i].crnti,phy_vars_eNB,abstraction_flag);
@@ -3549,7 +3549,7 @@ void phy_procedures_eNB_RX(const unsigned char sched_subframe,PHY_VARS_eNB *phy_
      */
           //    dump_ulsch(phy_vars_eNB,sched_subframe,i);
           //#ifndef EXMIMO_IOT
-          LOG_W(PHY,"[eNB] Frame %d, Subframe %d: Msg3 in error\n", frame,subframe);
+          LOG_W(PHY,"[eNB] Frame %d, Subframe %d: Msg3 in error, i = %d \n", frame,subframe,i);
           //#else
           //mac_exit_wrapper("Msg3 error");
           //#endif

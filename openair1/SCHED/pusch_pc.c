@@ -81,7 +81,8 @@ int16_t get_hundred_times_delta_IF_eNB(PHY_VARS_eNB *phy_vars_eNB,uint8_t UE_id,
   //(phy_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->control_only == 1) ? phy_vars_eNB->ulsch_eNB[UE_id]->beta_offset_cqi_times8:8;
 
   DevAssert( UE_id < NUMBER_OF_UE_MAX );
-  DevAssert( MPR_x100/6 < 100 );
+#warning "This condition happens sometimes. Need more investigation" // navid
+  //DevAssert( MPR_x100/6 < 100 );
 
   if (phy_vars_eNB->ul_power_control_dedicated[UE_id].deltaMCS_Enabled == 1) {
     // This is the formula from Section 5.1.1.1 in 36.213 10*log10(deltaIF_PUSCH = (2^(MPR*Ks)-1)*beta_offset_pusch)

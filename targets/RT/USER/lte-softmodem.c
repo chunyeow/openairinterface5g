@@ -53,6 +53,7 @@
 #include <execinfo.h>
 #include <getopt.h>
 #include <syscall.h>
+#include <pthread.h>  //  for gettid
 
 #include "rt_wrapper.h"
 #undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
@@ -960,7 +961,12 @@ static void* eNB_thread_tx( void* param )
   static int eNB_thread_tx_status[NUM_ENB_THREADS];
 
   eNB_proc_t *proc = (eNB_proc_t*)param;
-
+  FILE  *tx_time_file;
+  char tx_time_name[101];
+  if (opp_enabled == 1) {
+    snprintf(tx_time_name, 100,"/tmp/%s_tx_time_thread_sf_%d", "eNB", proc->subframe);
+    tx_time_file = fopen(tx_time_name,"w");
+  }
   // set default return value
   eNB_thread_tx_status[proc->subframe] = 0;
 
@@ -1002,9 +1008,9 @@ static void* eNB_thread_tx( void* param )
     return &eNB_thread_tx_status[proc->subframe];
   }
 
-  LOG_I( HW, "[SCHED] eNB TX deadline thread %d(id %ld) started on CPU %d\n", proc->subframe, gettid(), sched_getcpu() );
+  LOG_I( HW, "[SCHED] eNB TX deadline thread %d(tid %ld) started on CPU %d\n", proc->subframe, gettid(), sched_getcpu() );
 #else
-  LOG_I( HW, "[SCHED][eNB] TX thread %d started on CPU %d\n", proc->subframe, sched_getcpu() );
+  LOG_I( HW, "[SCHED][eNB] TX thread %d started on CPU %d TID %d\n", proc->subframe, sched_getcpu(),gettid() );
 #endif
 
 #endif
@@ -1076,6 +1082,9 @@ static void* eNB_thread_tx( void* param )
     if (proc->frame_tx==1024)
       proc->frame_tx=0;
 
+    stop_meas( &softmodem_stats_tx_sf[proc->subframe] );
+    print_meas_now(&softmodem_stats_tx_sf[proc->subframe],"eNB_TX_SF",proc->subframe, tx_time_file);
+
   }
 
   stop_meas( &softmodem_stats_tx_sf[proc->subframe] );
@@ -1110,6 +1119,12 @@ static void* eNB_thread_rx( void* param )
 
   eNB_proc_t *proc = (eNB_proc_t*)param;
 
+  FILE  *rx_time_file;
+  char rx_time_name[101];
+  if (opp_enabled == 1){
+    snprintf(rx_time_name, 100,"/tmp/%s_rx_time_thread_sf_%d", "eNB", proc->subframe);
+    rx_time_file = fopen(rx_time_name,"w");
+  }
   // set default return value
   eNB_thread_rx_status[proc->subframe] = 0;
 
@@ -1143,7 +1158,7 @@ static void* eNB_thread_rx( void* param )
   /* This creates a 2ms reservation every 10ms period*/
   attr.sched_policy = SCHED_DEADLINE;
   attr.sched_runtime  = 0.9 *  1000000; // each rx thread must finish its job in the worst case in 2ms
-  attr.sched_deadline = 1   *  1000000; // each rx thread will finish within 2ms
+  attr.sched_deadline = 2   *  1000000; // each rx thread will finish within 2ms
   attr.sched_period   = 1   * 10000000; // each rx thread has a period of 10ms from the starting point
 
   if (sched_setattr(0, &attr, flags) < 0 ) {
@@ -1153,7 +1168,7 @@ static void* eNB_thread_rx( void* param )
 
   LOG_I( HW, "[SCHED] eNB RX deadline thread %d(id %ld) started on CPU %d\n", proc->subframe, gettid(), sched_getcpu() );
 #else
-  LOG_I( HW, "[SCHED][eNB] RX thread %d started on CPU %d\n", proc->subframe, sched_getcpu() );
+  LOG_I( HW, "[SCHED][eNB] RX thread %d started on CPU %d TID %d\n", proc->subframe, sched_getcpu(),gettid() );
 #endif
 #endif // RTAI
 
@@ -1219,6 +1234,9 @@ static void* eNB_thread_rx( void* param )
     if (proc->frame_rx==1024)
       proc->frame_rx=0;
 
+    stop_meas( &softmodem_stats_rx_sf[proc->subframe] );
+    print_meas_now(&softmodem_stats_rx_sf[proc->subframe],"eNB_RX_SF",proc->subframe, rx_time_file);
+
   }
 
   stop_meas( &softmodem_stats_rx_sf[proc->subframe] );
@@ -1269,6 +1287,7 @@ void init_eNB_proc(void)
       sched_param_eNB_proc_rx[CC_id][i].sched_priority = sched_get_priority_max(SCHED_FIFO)-1; //OPENAIR_THREAD_PRIORITY;
       pthread_attr_setschedparam  (&attr_eNB_proc_rx[CC_id][i], &sched_param_eNB_proc_rx[CC_id][i]);
       pthread_attr_setschedpolicy (&attr_eNB_proc_rx[CC_id][i], SCHED_FIFO);
+      printf("Setting OS scheduler to SCHED_FIFO for eNB [cc%d][thread%d] \n",CC_id, i);
 #endif
 
       PHY_vars_eNB_g[0][CC_id]->proc[i].instance_cnt_tx = -1;
@@ -1429,7 +1448,7 @@ static void* eNB_thread( void* arg )
   unsigned int rx_pos = 0;
   unsigned int tx_pos = spp*tx_delay;
 #endif
-
+  int CC_id=0;	
   struct timespec trx_time0, trx_time1, trx_time2;
 
 #ifdef RTAI
@@ -1475,7 +1494,7 @@ static void* eNB_thread( void* arg )
 #ifdef RTAI
   printf( "[SCHED][eNB] Started eNB main thread (id %p)\n", task );
 #else
-  printf( "[SCHED][eNB] Started eNB main thread on CPU %d\n", sched_getcpu());
+  printf( "[SCHED][eNB] Started eNB main thread on CPU %d TID %d\n", sched_getcpu(), gettid());
 #endif
 
 #ifdef HARD_RT
@@ -1533,18 +1552,40 @@ static void* eNB_thread( void* arg )
     }
 
     if (((slot%2==0) && (diff < (-14))) || ((slot%2==1) && (diff < (-7)))) {
-      // at the eNB, even slots have double as much time since most of the processing is done here and almost nothing in odd slots
-      LOG_D(HW,"eNB Frame %d, time %llu: missed slot, proceeding with next one (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, mbox_current,
-            mbox_target, diff);
-      slot++;
 
+      // at the eNB, even slots have double as much time since most of the processing is done here and almost nothing in odd slots
+      LOG_W(HW,"eNB Frame %d, time %llu: missed slot %d, proceeding with next one (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",
+	    frame, rt_get_time_ns(), num_missed_slots, slot, hw_slot, mbox_current,mbox_target, diff);
+      
       if (exit_missed_slots==1) {
         stop_meas(&softmodem_stats_mt);
         exit_fun("[HW][eNB] missed slot");
       } else {
         num_missed_slots++;
-        LOG_W(HW,"[eNB] just missed slot (total missed slots %ld)\n", num_missed_slots);
+	VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_MISSED_SLOTS_ENB,num_missed_slots );
       }
+
+      if ((slot&1) == 1) {
+	for (CC_id = 0; CC_id < MAX_NUM_CCs; CC_id++){
+	  if (PHY_vars_eNB_g[0][CC_id]->proc[((slot>>1)+1)%10].frame_rx==1023)
+	    PHY_vars_eNB_g[0][CC_id]->proc[((slot>>1)+1)%10].frame_rx=0;
+	  else 
+	    PHY_vars_eNB_g[0][CC_id]->proc[((slot>>1)+1)%10].frame_rx += 1;
+	  
+	  if (PHY_vars_eNB_g[0][CC_id]->proc[((slot>>1)+1)%10].frame_tx==1023)
+	    PHY_vars_eNB_g[0][CC_id]->proc[((slot>>1)+1)%10].frame_tx=0;
+	  else 
+	    PHY_vars_eNB_g[0][CC_id]->proc[((slot>>1)+1)%10].frame_tx += 1;
+	}
+      }
+      
+     slot++;
+     if (slot == 20) {
+       frame++;
+       slot = 0;
+     }
+
+    
     }
 
     if (diff>8)
@@ -1569,7 +1610,9 @@ static void* eNB_thread( void* arg )
         LOG_D(HW,"eNB Frame %d, time %llu: rt_sleep_ns returned %d\n",frame, time_in);
 
       hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
-      //LOG_D(HW,"eNB Frame %d : hw_slot %d, time %llu\n",frame,hw_slot,rt_get_time_ns());
+      VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_slot>>1);
+      VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame);
+//LOG_D(HW,"eNB Frame %d : hw_slot %d, time %llu\n",frame,hw_slot,rt_get_time_ns());
       delay_cnt++;
 
       if (delay_cnt == 10) {
@@ -1655,7 +1698,7 @@ static void* eNB_thread( void* arg )
           (rx_pos >= (((2*hw_subframe)+1)*PHY_vars_eNB_g[0][0]->lte_frame_parms.samples_per_tti>>1))) {
         tx_launched = 1;
 
-        for (int CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
+        for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
           if (pthread_mutex_lock(&PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].mutex_tx) != 0) {
             LOG_E( PHY, "[eNB] ERROR pthread_mutex_lock for eNB TX thread %d (IC %d)\n", hw_subframe, PHY_vars_eNB_g[0][CC_id]->proc[hw_subframe].instance_cnt_tx );
             exit_fun( "error locking mutex_tx" );
@@ -2984,6 +3027,7 @@ int main( int argc, char **argv )
   sched_param_dlsch.sched_priority = sched_get_priority_max(SCHED_FIFO); //OPENAIR_THREAD_PRIORITY;
   pthread_attr_setschedparam  (&attr_dlsch_threads, &sched_param_dlsch);
   pthread_attr_setschedpolicy (&attr_dlsch_threads, SCHED_FIFO);
+  printf("Setting eNB_thread FIFO scheduling policy with priority %d \n", sched_param_dlsch.sched_priority);
 #endif
 
 #endif
@@ -3015,7 +3059,6 @@ int main( int argc, char **argv )
 #endif
     printf("UE threads created\n");
   } else {
-
     if (multi_thread>0) {
       init_eNB_proc();
       sleep(1);

@@ -101,6 +101,8 @@ int sched_getattr(pid_t pid,struct sched_attr *attr,unsigned int size, unsigned 
 
 #endif
 
+#define gettid() syscall(__NR_gettid) // for gettid
+
 #else
 #include <rtai_hal.h>
 #include <rtai_lxrt.h>

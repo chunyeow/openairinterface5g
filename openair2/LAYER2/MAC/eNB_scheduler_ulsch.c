@@ -766,16 +766,15 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 
             ndi = 1-UE_template->oldNDI_UL[harq_pid];
             UE_template->oldNDI_UL[harq_pid]=ndi;
-            //mcs = 10;
-            UE_list->eNB_UE_stats[CC_id][UE_id].ulsch_mcs2=UE_template->pre_assigned_mcs_ul;
+	    UE_list->eNB_UE_stats[CC_id][UE_id].ulsch_mcs2=UE_template->pre_assigned_mcs_ul;
             mcs = cmin (UE_template->pre_assigned_mcs_ul, openair_daq_vars.target_ue_ul_mcs); // adjust, based on user-defined MCS
 
             if (UE_template->pre_allocated_rb_table_index_ul >=0) {
               rb_table_index=UE_template->pre_allocated_rb_table_index_ul;
             } else {
-              mcs=10;
+	      mcs=cmin (10, openair_daq_vars.target_ue_ul_mcs);
               rb_table_index=5; // for PHR
-            }
+	    }
 
             UE_list->eNB_UE_stats[CC_id][UE_id].ulsch_mcs2=mcs;
             buffer_occupancy = UE_template->ul_total_buffer;

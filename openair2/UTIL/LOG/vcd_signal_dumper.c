@@ -83,6 +83,7 @@ const char* eurecomVariablesNames[] = {
   "slot_number_RX_UE",
   "subframe_number_TX_UE",
   "subframe_number_RX_UE",
+  "missed_slot_enb",
   "daq_mbox",
   "rx_offset_mbox",
   "ue_rx_offset",

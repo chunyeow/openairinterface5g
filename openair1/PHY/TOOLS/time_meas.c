@@ -44,6 +44,35 @@ int opp_enabled = 0;
   return (double)ts.diff/1000000000;
   }*/
 
+double get_cpu_freq_GHz(void) {
+
+  time_stats_t ts = {0};
+  reset_meas(&ts);
+  start_meas(&ts);
+  sleep(1);
+  stop_meas(&ts);
+  cpu_freq_GHz = (double)ts.diff/1000000000;
+  return cpu_freq_GHz; 
+}
+
+void print_meas_now(time_stats_t *ts, const char* name, int subframe, FILE* file_name){
+
+  if (opp_enabled) {
+
+    //static double cpu_freq_GHz = 3.2;
+
+    //if (cpu_freq_GHz == 0.0)
+      //cpu_freq_GHz = get_cpu_freq_GHz(); // super slow
+
+    if (ts->trials>0) {
+
+      //fprintf(file_name,"Name %25s: Processing %15.3f ms for SF %d, diff_now %15.3f \n", name,(ts->diff_now/(cpu_freq_GHz*1000000.0)),subframe,ts->diff_now);
+      fprintf(file_name,"%15.3f ms, diff_now %15.3f \n",(ts->diff_now/(cpu_freq_GHz*1000000.0)),ts->diff_now);
+      
+    }
+  }
+}
+
 void print_meas(time_stats_t *ts, const char* name, time_stats_t * total_exec_time, time_stats_t * sf_exec_time)
 {
 

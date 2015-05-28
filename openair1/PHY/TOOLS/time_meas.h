@@ -34,9 +34,12 @@
 // global var to enable openair performance profiler
 extern int opp_enabled;
 
+double cpu_freq_GHz;
+
 typedef struct {
 
   long long in;
+  long long diff_now;
   long long diff;
   long long p_time; /*!< \brief absolute process duration */
   long long diff_square; /*!< \brief process duration square */
@@ -47,8 +50,11 @@ typedef struct {
 static inline void start_meas(time_stats_t *ts) __attribute__((always_inline));
 static inline void stop_meas(time_stats_t *ts) __attribute__((always_inline));
 
+
+void print_meas_now(time_stats_t *ts, const char* name, int subframe, FILE* file_name);
 void print_meas(time_stats_t *ts, const char* name, time_stats_t * total_exec_time, time_stats_t * sf_exec_time);
 double get_time_meas_us(time_stats_t *ts);
+double get_cpu_freq_GHz(void);
 
 #if defined(__i386__)
 static inline unsigned long long rdtsc_oai(void) __attribute__((always_inline));
@@ -109,6 +115,8 @@ static inline void stop_meas(time_stats_t *ts)
     if (tid==0)
 #endif
     {
+      ts->diff_now = (out-ts->in);
+      
       ts->diff += (out-ts->in);
       /// process duration is the difference between two clock points
       ts->p_time = (out-ts->in);
@@ -121,16 +129,25 @@ static inline void stop_meas(time_stats_t *ts)
   }
 }
 
-static inline void reset_meas(time_stats_t *ts)
-{
+static inline void reset_meas(time_stats_t *ts) {
 
+  static cpu_freq_set=0;
+  
   if (opp_enabled) {
     ts->trials=0;
+    ts->diff_now=0;
     ts->diff=0;
     ts->p_time=0;
     ts->diff_square=0;
     ts->max=0;
+
+    if (cpu_freq_set == 0 ){
+      cpu_freq_set = 1;
+      get_cpu_freq_GHz();
+      printf("CPU Freq is %f \n", cpu_freq_GHz);
+    } 
   }
+  
 }
 static inline void copy_meas(time_stats_t *dst_ts,time_stats_t *src_ts)
 {
@@ -148,14 +165,4 @@ static inline void copy_meas(time_stats_t *dst_ts,time_stats_t *src_ts)
 
   }
 */
-static inline double get_cpu_freq_GHz(void)
-{
-
-  time_stats_t ts = {0};
-  reset_meas(&ts);
-  start_meas(&ts);
-  sleep(1);
-  stop_meas(&ts);
-  return (double)ts.diff/1000000000;
-}
 

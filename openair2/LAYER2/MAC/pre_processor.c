@@ -1057,11 +1057,11 @@ void assign_max_mcs_min_rb(module_id_t module_idP,int frameP, sub_frame_t subfra
       // if this UE has UL traffic
       if (UE_template->ul_total_buffer > 0 ) {
 
-        tbs = mac_xface->get_TBS_UL(mcs,1);
+        tbs = mac_xface->get_TBS_UL(mcs,3);  // 1 or 2 PRB with cqi enabled does not work well!
         // fixme: set use_srs flag
         tx_power= mac_xface->estimate_ue_tx_power(tbs,rb_table[rb_table_index],0,frame_parms->Ncp,0);
 
-        while (((UE_template->phr_info - tx_power) < 0 )  &&
+        while ((((UE_template->phr_info - tx_power) < 0 ) || (tbs > UE_template->ul_total_buffer))&&
                (mcs > 3)) {
           // LOG_I(MAC,"UE_template->phr_info %d tx_power %d mcs %d\n", UE_template->phr_info,tx_power, mcs);
           mcs--;
@@ -1086,7 +1086,7 @@ void assign_max_mcs_min_rb(module_id_t module_idP,int frameP, sub_frame_t subfra
         }
 
         // 1 or 2 PRB with cqi enabled does not work well!
-        if (rb_table[rb_table_index]<3) {
+	if (rb_table[rb_table_index]<3) {
           rb_table_index=2; //3PRB
         }
 
