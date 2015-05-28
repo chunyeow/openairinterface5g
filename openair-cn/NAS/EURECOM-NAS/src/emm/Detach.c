@@ -477,6 +477,8 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
   }
 
   if (switch_off) {
+	MSC_LOG_EVENT(MSC_NAS_EMM_MME,
+		    	  "0 Removing UE context ue id %06x", ueid);
     /* The UE is switched off */
     if (emm_ctx->guti) {
       free(emm_ctx->guti);
@@ -526,6 +528,11 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
     /* Normal detach without UE switch-off */
     emm_sap_t emm_sap;
     emm_as_data_t *emm_as = &emm_sap.u.emm_as.u.data;
+	MSC_LOG_TX_MESSAGE(
+	    		MSC_NAS_EMM_MME,
+	    		MSC_NAS_EMM_MME,
+	    	  	NULL,0,
+	    	  	"0 EMM_AS_NAS_INFO_DETACH ue id %06x", ueid);
 
     /* Setup NAS information message to transfer */
     emm_as->NASinfo = EMM_AS_NAS_INFO_DETACH;
