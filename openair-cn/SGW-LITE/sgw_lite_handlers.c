@@ -1128,9 +1128,8 @@ sgw_lite_handle_release_access_bearers_request(
   		MSC_SP_GWAPP_MME,
   		(to_task == TASK_MME_APP) ? MSC_MMEAPP_MME:MSC_S11_MME,
     	NULL,0,
-    	"0 SGW_RELEASE_ACCESS_BEARERS_RESPONSE teid %u cause %u",
-    	release_access_bearers_resp_p->teid,
-    	release_access_bearers_resp_p->cause);
+    	"0 SGW_RELEASE_ACCESS_BEARERS_RESPONSE S11 MME teid %u cause REQUEST_ACCEPTED",
+    	release_access_bearers_resp_p->teid);
 
     return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
   } else {
@@ -1140,7 +1139,7 @@ sgw_lite_handle_release_access_bearers_request(
 	  		MSC_SP_GWAPP_MME,
 	  		(to_task == TASK_MME_APP) ? MSC_MMEAPP_MME:MSC_S11_MME,
 	    	NULL,0,
-	    	"0 SGW_RELEASE_ACCESS_BEARERS_RESPONSE CONTEXT_NOT_FOUND");
+	    	"0 SGW_RELEASE_ACCESS_BEARERS_RESPONSE cause CONTEXT_NOT_FOUND");
 
 	return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
   }
