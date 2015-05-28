@@ -255,7 +255,6 @@ typedef struct {
   gummei_t gummei;    /* Globally Unique MME Identity         */
   UInt32_t m_tmsi;    /* M-Temporary Mobile Subscriber Identity   */
 } GUTI_t;
-
 #define GUTI2STR(GuTi_PtR, GuTi_StR, MaXlEn) \
         {\
           int l_offset = 0;\
@@ -284,7 +283,10 @@ typedef struct {
                       GuTi_PtR->gummei.MMEgid,\
                       GuTi_PtR->gummei.MMEcode,\
                       GuTi_PtR->m_tmsi);\
+          }\
 	    }
+
+
 
 
 /* Checks PLMN validity */
