@@ -103,6 +103,12 @@ void msc_log_tx_message(
     const char*        bytesP,
     const unsigned int num_bytes,
     char *format, ...);
+void msc_log_tx_message_failed(
+    const msc_proto_t  senderP,
+    const msc_proto_t  receiverP,
+    const char*        bytesP,
+    const unsigned int num_bytes,
+    char *format, ...);
 #define MSC_INIT(mScPaRaMs)                                      msc_init(mScPaRaMs)
 #define MSC_END                                                  msc_end
 #define MSC_LOG_EVENT(mScPaRaMs, fORMAT, aRGS...)                msc_log_event(mScPaRaMs, fORMAT, ##aRGS)
