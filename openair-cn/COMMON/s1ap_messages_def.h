@@ -45,3 +45,4 @@ MESSAGE_DEF(S1AP_ENB_DEREGISTERED_IND      , MESSAGE_PRIORITY_MED, s1ap_eNB_dere
 MESSAGE_DEF(S1AP_DEREGISTER_UE_REQ         , MESSAGE_PRIORITY_MED, s1ap_deregister_ue_req_t         , s1ap_deregister_ue_req)
 MESSAGE_DEF(S1AP_UE_CONTEXT_RELEASE_REQ    , MESSAGE_PRIORITY_MED, s1ap_ue_context_release_req_t    , s1ap_ue_context_release_req)
 MESSAGE_DEF(S1AP_UE_CONTEXT_RELEASE_COMMAND, MESSAGE_PRIORITY_MED, s1ap_ue_context_release_command_t, s1ap_ue_context_release_command)
+MESSAGE_DEF(S1AP_UE_CONTEXT_RELEASE_COMPLETE, MESSAGE_PRIORITY_MED, s1ap_ue_context_release_complete_t, s1ap_ue_context_release_complete)

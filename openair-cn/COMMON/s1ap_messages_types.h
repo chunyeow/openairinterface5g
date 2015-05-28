@@ -33,6 +33,7 @@
 #define S1AP_DEREGISTER_UE_REQ(mSGpTR)      (mSGpTR)->ittiMsg.s1ap_deregister_ue_req
 #define S1AP_UE_CONTEXT_RELEASE_REQ(mSGpTR) (mSGpTR)->ittiMsg.s1ap_ue_context_release_req
 #define S1AP_UE_CONTEXT_RELEASE_COMMAND(mSGpTR) (mSGpTR)->ittiMsg.s1ap_ue_context_release_command
+#define S1AP_UE_CONTEXT_RELEASE_COMPLETE(mSGpTR) (mSGpTR)->ittiMsg.s1ap_ue_context_release_complete
 
 typedef struct s1ap_initial_ue_message_s {
   unsigned     eNB_ue_s1ap_id:24;
@@ -89,5 +90,9 @@ typedef struct s1ap_ue_context_release_req_s {
 typedef struct s1ap_ue_context_release_command_s {
   uint32_t mme_ue_s1ap_id;
 } s1ap_ue_context_release_command_t;
+
+typedef struct s1ap_ue_context_release_complete_s {
+  uint32_t mme_ue_s1ap_id;
+} s1ap_ue_context_release_complete_t;
 
 #endif /* S1AP_MESSAGES_TYPES_H_ */
