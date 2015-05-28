@@ -313,6 +313,9 @@ static void SendFrame(guint8 radioType, guint8 direction, guint8 rntiType,
   memcpy(g_frameBuffer+g_frameOffset, &tmp16, 2);
   g_frameOffset += 2;
 
+  g_frameBuffer[g_frameOffset++] = MAC_LTE_CRC_STATUS_TAG;
+  g_frameBuffer[g_frameOffset++] = crcStatus;
+  
 #ifdef WIRESHARK_DEV
   g_frameOffset += 2;
   tmp16 = htons(subframeNumber); // subframe
@@ -331,9 +334,6 @@ static void SendFrame(guint8 radioType, guint8 direction, guint8 rntiType,
     g_frameBuffer[g_frameOffset++] = MAC_LTE_RETX_TAG;
     g_frameBuffer[g_frameOffset++] = retx;
   }
-
-  g_frameBuffer[g_frameOffset++] = MAC_LTE_CRC_STATUS_TAG;
-  g_frameBuffer[g_frameOffset++] = crcStatus;
 
 #ifdef WIRESHARK_DEV
 
@@ -366,13 +366,10 @@ static void SendFrame(guint8 radioType, guint8 direction, guint8 rntiType,
   }
 
 #endif
-
-  g_frameBuffer[g_frameOffset++] = MAC_LTE_PAYLOAD_TAG;
   /***************************************/
   /* Now write the MAC PDU               */
-
-
-
+  g_frameBuffer[g_frameOffset++] = MAC_LTE_PAYLOAD_TAG;
+  
   /* Append actual PDU  */
   //memcpy(g_frameBuffer+g_frameOffset, g_PDUBuffer, g_PDUOffset);
   //g_frameOffset += g_PDUOffset;

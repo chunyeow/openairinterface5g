@@ -98,9 +98,9 @@ void rx_sdu(
 
   VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RX_SDU,1);
   if (opt_enabled == 1) {
-    trace_pdu(0, sduP,sdu_lenP, 0, 2, rntiP,frameP, 0,0);
+    trace_pdu(0, sduP,sdu_lenP, 0, 3, rntiP,subframeP, 0,0);
     LOG_D(OPT,"[eNB %d][ULSCH] Frame %d  rnti %x  with size %d\n",
-    		  enb_mod_idP, frameP, rntiP, rx_lengths[ii]);
+    		  enb_mod_idP, frameP, rntiP, sdu_lenP);
   }
 
   LOG_D(MAC,"[eNB %d] CC_id %d Received ULSCH sdu from PHY (rnti %x, UE_id %d), parsing header\n",enb_mod_idP,CC_idP,rntiP,UE_id);
