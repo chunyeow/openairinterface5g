@@ -123,9 +123,8 @@ unsigned short fill_rar(
         eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[ra_idx].rnti,
         rarh->RAPID,eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[0].preamble_index,
         eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[ra_idx].timing_offset);
-#if defined(USER_MODE) && defined(OAI_EMU)
 
-  if (oai_emulation.info.opt_enabled) {
+  if (opt_enabled) {
     trace_pdu(1, dlsch_buffer, input_buffer_length, module_idP, 2, 1,
               eNB_mac_inst[module_idP].subframe, 0, 0);
     LOG_D(OPT,"[eNB %d][RAPROC] CC_id %d RAR Frame %d trace pdu for rnti %x and  rapid %d size %d\n",
@@ -133,7 +132,6 @@ unsigned short fill_rar(
           rarh->RAPID, input_buffer_length);
   }
 
-#endif
   return(eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[ra_idx].rnti);
 }
 

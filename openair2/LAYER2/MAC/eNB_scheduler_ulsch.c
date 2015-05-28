@@ -73,6 +73,7 @@ void rx_sdu(
   const module_id_t enb_mod_idP,
   const int         CC_idP,
   const frame_t     frameP,
+  const sub_frame_t subframeP,
   const rnti_t      rntiP,
   uint8_t          *sduP,
   const uint16_t    sdu_lenP,
@@ -96,8 +97,14 @@ void rx_sdu(
     }
 
   VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RX_SDU,1);
+  if (opt_enabled == 1) {
+    trace_pdu(0, sduP,sdu_lenP, 0, 2, rntiP,frameP, 0,0);
+    LOG_D(OPT,"[eNB %d][ULSCH] Frame %d  rnti %x  with size %d\n",
+    		  enb_mod_idP, frameP, rntiP, rx_lengths[ii]);
+  }
 
   LOG_D(MAC,"[eNB %d] CC_id %d Received ULSCH sdu from PHY (rnti %x, UE_id %d), parsing header\n",enb_mod_idP,CC_idP,rntiP,UE_id);
+
   payload_ptr = parse_ulsch_header(sduP,&num_ce,&num_sdu,rx_ces,rx_lcids,rx_lengths,sdu_lenP);
 
   // control element
@@ -230,7 +237,7 @@ void rx_sdu(
             mac_rrc_data_ind(
               enb_mod_idP,
               CC_idP,
-              frameP,
+              frameP,subframeP,
               rntiP,
               CCCH,
               (uint8_t*)payload_ptr,
@@ -247,9 +254,7 @@ void rx_sdu(
           eNB->common_channels[CC_idP].RA_template[ii].generate_Msg4 = 1;
           eNB->common_channels[CC_idP].RA_template[ii].wait_ack_Msg4 = 0;
 
-
         } // if process is active
-
       } // loop on RA processes
 
       break;
@@ -276,7 +281,7 @@ void rx_sdu(
         mac_rlc_data_ind(
           enb_mod_idP,
           rntiP,
-	  enb_mod_idP,
+	      enb_mod_idP,
           frameP,
           ENB_FLAG_YES,
           MBMS_FLAG_NO,
@@ -287,7 +292,6 @@ void rx_sdu(
           NULL);//(unsigned int*)crc_status);
         UE_list->eNB_UE_stats[CC_idP][UE_id].num_pdu_rx[rx_lcids[i]]+=1;
         UE_list->eNB_UE_stats[CC_idP][UE_id].num_bytes_rx[rx_lcids[i]]+=rx_lengths[i];
-
       }
 
       //      }

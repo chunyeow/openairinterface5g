@@ -322,14 +322,12 @@ ue_send_sdu(
   VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SEND_SDU, VCD_FUNCTION_IN);
 
   LOG_T(MAC,"sdu: %x.%x.%x\n",sdu[0],sdu[1],sdu[2]);
-#if defined(USER_MODE) && defined(OAI_EMU)
 
-  if (oai_emulation.info.opt_enabled) {
+  if (opt_enabled) {
     trace_pdu(1, sdu, sdu_len, module_idP, 3, UE_mac_inst[module_idP].crnti,
               UE_mac_inst[module_idP].subframe, 0, 0);
   }
 
-#endif
   payload_ptr = parse_header(sdu,&num_ce,&num_sdu,rx_ces,rx_lcids,rx_lengths,sdu_len);
 
 #ifdef DEBUG_HEADER_PARSING
@@ -422,7 +420,7 @@ ue_send_sdu(
 #endif
       mac_rrc_data_ind(module_idP,
                        CC_id,
-                       frameP,
+                       frameP,0, // unknown subframe
                        UE_mac_inst[module_idP].crnti,
                        CCCH,
                        (uint8_t*)payload_ptr,
@@ -500,7 +498,7 @@ void ue_decode_si(module_id_t module_idP,int CC_id,frame_t frameP, uint8_t eNB_i
 
   mac_rrc_data_ind(module_idP,
                    CC_id,
-                   frameP,
+                   frameP,0, // unknown subframe
                    SI_RNTI,
                    BCCH,
                    (uint8_t *)pdu,
@@ -593,7 +591,7 @@ void ue_send_mch_sdu(module_id_t module_idP, uint8_t CC_id, frame_t frameP, uint
       LOG_I(MAC,"[UE %d] Frame %d : SDU %d MCH->MCCH for sync area %d (eNB %d, %d bytes)\n",module_idP,frameP, i, sync_area, eNB_index, rx_lengths[i]);
       mac_rrc_data_ind(module_idP,
                        CC_id,
-                       frameP,
+                       frameP,0, // unknown subframe
                        M_RNTI,
                        MCCH,
                        payload_ptr, rx_lengths[i], 0, eNB_index, sync_area);
@@ -1449,15 +1447,13 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
     ulsch_buffer[payload_offset+sdu_length_total+j] = (char)(taus()&0xff);
   }
 
-#if defined(USER_MODE) && defined(OAI_EMU)
 
-  if (oai_emulation.info.opt_enabled) {
+  if (opt_enabled) {
     trace_pdu(0, ulsch_buffer, buflen, module_idP, 3, UE_mac_inst[module_idP].crnti, subframe, 0, 0);
+    LOG_D(OPT,"[UE %d][ULSCH] Frame %d trace pdu for rnti %x  with size %d\n",
+          module_idP, frameP, UE_mac_inst[module_idP].crnti, buflen);
   }
 
-  LOG_D(OPT,"[UE %d][ULSCH] Frame %d trace pdu for rnti %x  with size %d\n",
-        module_idP, frameP, UE_mac_inst[module_idP].crnti, buflen);
-#endif
 
   LOG_D(MAC,"[UE %d][SR] Gave SDU to PHY, clearing any scheduling request\n",
         module_idP,payload_offset, sdu_length_total);

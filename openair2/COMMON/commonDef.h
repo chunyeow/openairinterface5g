@@ -136,6 +136,32 @@ typedef struct {
   } u;
 } imsi_t;
 
+#define NAS_IMSI2STR(iMsI_t_PtR,iMsI_sTr, MaXlEn) \
+        {\
+          int l_offset = 0;\
+          int l_ret    = 0;\
+          l_ret = snprintf(iMsI_sTr + l_offset, MaXlEn - l_offset, "%u%u%u%u%u",\
+	    		  iMsI_t_PtR->u.num.digit1, iMsI_t_PtR->u.num.digit2,\
+	    		  iMsI_t_PtR->u.num.digit3, iMsI_t_PtR->u.num.digit4,\
+	    		  iMsI_t_PtR->u.num.digit5);\
+	      if ((iMsI_t_PtR->u.num.digit6 != 0xf)  && (l_ret > 0)) {\
+	    	l_offset += l_ret;\
+	    	l_ret = snprintf(iMsI_sTr + l_offset, MaXlEn - l_offset,  "%u", iMsI_t_PtR->u.num.digit6);\
+	      }\
+	      if (l_ret > 0) {\
+	    	l_offset += l_ret;\
+	    	l_ret = snprintf(iMsI_sTr + l_offset, MaXlEn - l_offset, "%u%u%u%u%u%u%u%u",\
+	    		  iMsI_t_PtR->u.num.digit7, iMsI_t_PtR->u.num.digit8,\
+	    		  iMsI_t_PtR->u.num.digit9, iMsI_t_PtR->u.num.digit10,\
+	    		  iMsI_t_PtR->u.num.digit11, iMsI_t_PtR->u.num.digit12,\
+	    		  iMsI_t_PtR->u.num.digit13, iMsI_t_PtR->u.num.digit14);\
+	      }\
+	      if ((iMsI_t_PtR->u.num.digit15 != 0xf)   && (l_ret > 0)) {\
+	    	l_offset += l_ret;\
+	    	l_ret = snprintf(iMsI_sTr + l_offset, MaXlEn - l_offset, "%u", iMsI_t_PtR->u.num.digit15);\
+	      }\
+	    }
+
 /*
  * Mobile subscriber dialing number
  */
@@ -229,6 +255,37 @@ typedef struct {
   gummei_t gummei;    /* Globally Unique MME Identity         */
   UInt32_t m_tmsi;    /* M-Temporary Mobile Subscriber Identity   */
 } GUTI_t;
+
+#define GUTI2STR(GuTi_PtR, GuTi_StR, MaXlEn) \
+        {\
+          int l_offset = 0;\
+          int l_ret    = 0;\
+          l_ret += snprintf(GuTi_StR + l_offset,MaXlEn-l_offset, "%03u.",\
+	    		  GuTi_PtR->gummei.plmn.MCCdigit3 * 100 +\
+                  GuTi_PtR->gummei.plmn.MCCdigit2 * 10 +\
+                  GuTi_PtR->gummei.plmn.MCCdigit1);\
+          if (l_ret > 0) {\
+        	l_offset += l_ret;\
+          }  else {\
+        	l_offset = MaXlEn;\
+          }\
+          if (GuTi_PtR->gummei.plmn.MNCdigit1 != 0xf) {\
+              l_ret += snprintf(GuTi_StR + l_offset,MaXlEn-l_offset, "%03u|%04x|%02x|%08x",\
+    	    		  GuTi_PtR->gummei.plmn.MNCdigit3 * 100 +\
+                      GuTi_PtR->gummei.plmn.MNCdigit2 * 10 +\
+                      GuTi_PtR->gummei.plmn.MNCdigit1,\
+                      GuTi_PtR->gummei.MMEgid,\
+                      GuTi_PtR->gummei.MMEcode,\
+                      GuTi_PtR->m_tmsi);\
+          } else {\
+              l_ret += snprintf(GuTi_StR + l_offset,MaXlEn-l_offset, "%02u|%04x|%02x|%08x",\
+                      GuTi_PtR->gummei.plmn.MNCdigit2 * 10 +\
+                      GuTi_PtR->gummei.plmn.MNCdigit1,\
+                      GuTi_PtR->gummei.MMEgid,\
+                      GuTi_PtR->gummei.MMEcode,\
+                      GuTi_PtR->m_tmsi);\
+	    }
+
 
 /* Checks PLMN validity */
 #define PLMN_IS_VALID(plmn) (((plmn).MCCdigit1 &    \

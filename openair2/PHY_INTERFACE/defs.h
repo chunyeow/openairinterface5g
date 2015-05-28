@@ -87,7 +87,7 @@ typedef struct {
   uint8_t* (*get_dlsch_sdu)(module_id_t Mod_id,int CC_id,frame_t frameP,rnti_t rnti,uint8_t TB_index);
 
   /// Send ULSCH sdu to MAC for given rnti
-  void (*rx_sdu)(module_id_t Mod_id,int CC_id,frame_t frameP,rnti_t rnti, uint8_t *sdu,uint16_t sdu_len, int harq_pid,uint8_t *msg3_flag);
+  void (*rx_sdu)(module_id_t Mod_id,int CC_id,frame_t frameP, sub_frame_t sub_frameP,rnti_t rnti, uint8_t *sdu,uint16_t sdu_len, int harq_pid,uint8_t *msg3_flag);
 
   /// Indicate failure to synch to external source
   void (*mrbch_phy_sync_failure) (module_id_t Mod_id,frame_t frameP, uint8_t free_eNB_index);

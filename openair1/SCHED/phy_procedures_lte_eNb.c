@@ -3639,7 +3639,7 @@ void phy_procedures_eNB_RX(const unsigned char sched_subframe,PHY_VARS_eNB *phy_
 #endif
           mac_xface->rx_sdu(phy_vars_eNB->Mod_id,
                             phy_vars_eNB->CC_id,
-                            frame,
+                            frame,subframe,
                             phy_vars_eNB->ulsch_eNB[i]->rnti,
                             phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->b,
                             phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3,
@@ -3717,7 +3717,7 @@ void phy_procedures_eNB_RX(const unsigned char sched_subframe,PHY_VARS_eNB *phy_
           //    if (phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->calibration_flag == 0) {
           mac_xface->rx_sdu(phy_vars_eNB->Mod_id,
                             phy_vars_eNB->CC_id,
-                            frame,
+                            frame,subframe,
                             phy_vars_eNB->ulsch_eNB[i]->rnti,
                             phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->b,
                             phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3,
@@ -4207,7 +4207,7 @@ void phy_procedures_eNB_RX(const unsigned char sched_subframe,PHY_VARS_eNB *phy_
           if (phy_vars_eNB->cba_last_reception[i%num_active_cba_groups] == 0 ) {
             mac_xface->rx_sdu(phy_vars_eNB->Mod_id,
                               phy_vars_eNB->CC_id,
-                              frame,
+                              frame,subframe,
                               phy_vars_eNB->ulsch_eNB[i]->rnti,
                               phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->b,
                               phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3,

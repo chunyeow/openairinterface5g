@@ -61,6 +61,7 @@
 // Messages between RRC and MAC layers
 typedef struct RrcMacInSyncInd_s {
   uint32_t  frame;
+  uint8_t   sub_frame;
   uint16_t  enb_index;
 } RrcMacInSyncInd;
 
@@ -75,6 +76,7 @@ typedef struct RrcMacBcchDataReq_s {
 
 typedef struct RrcMacBcchDataInd_s {
   uint32_t  frame;
+  uint8_t   sub_frame;
   uint32_t  sdu_size;
   uint8_t   sdu[BCCH_SDU_SIZE];
   uint8_t   enb_index;
@@ -95,6 +97,7 @@ typedef struct RrcMacCcchDataCnf_s {
 
 typedef struct RrcMacCcchDataInd_s {
   uint32_t  frame;
+  uint8_t   sub_frame;
   uint16_t  rnti;
   uint32_t  sdu_size;
   uint8_t   sdu[CCCH_SDU_SIZE];
@@ -112,6 +115,7 @@ typedef struct RrcMacMcchDataReq_s {
 
 typedef struct RrcMacMcchDataInd_s {
   uint32_t  frame;
+  uint8_t   sub_frame;
   uint32_t  sdu_size;
   uint8_t   sdu[MCCH_SDU_SIZE];
   uint8_t   enb_index;
