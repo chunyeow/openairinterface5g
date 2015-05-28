@@ -41,15 +41,6 @@
 #define DEBUG_AUC_KDF 1
 extern hss_config_t hss_config;
 
-uint8_t opc[16] = {
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-uint8_t op[16] = {
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
 /*
  * @param key the input key
  * @param key_len length of the key
@@ -93,9 +84,9 @@ void derive_kasme(uint8_t ck[16], uint8_t ik[16], uint8_t plmn[3], uint8_t sqn[6
   memcpy(&key[0], ck, 16);
   memcpy(&key[16], ik, 16);
 
-  if (hss_config.valid_opc == 0) {
+  /*if (hss_config.valid_opc == 0) {
     SetOP(hss_config.operator_key);
-  }
+  }*/
 
   /* FC */
   s[0] = 0x10;
@@ -137,7 +128,7 @@ void derive_kasme(uint8_t ck[16], uint8_t ik[16], uint8_t plmn[3], uint8_t sqn[6
   kdf(key, 32, s, 14, kasme, 32);
 }
 
-int generate_vector(uint64_t imsi, uint8_t key[16], uint8_t plmn[3],
+int generate_vector(const uint8_t const opc[16], uint64_t imsi, uint8_t key[16], uint8_t plmn[3],
                     uint8_t sqn[6], auc_vector_t *vector)
 {
   /* in E-UTRAN an authentication vector is composed of:
@@ -147,7 +138,8 @@ int generate_vector(uint64_t imsi, uint8_t key[16], uint8_t plmn[3],
    * - KASME
    */
 
-  uint8_t amf[] = { 0x80, 0x00 };
+  //uint8_t amf[] = { 0x80, 0x00 };
+  uint8_t amf[] = { 0x90, 0x01 };
   uint8_t mac_a[8];
   uint8_t ck[16];
   uint8_t ik[16];
@@ -158,14 +150,14 @@ int generate_vector(uint64_t imsi, uint8_t key[16], uint8_t plmn[3],
   }
 
   /* Compute MAC */
-  f1(key, vector->rand, sqn, amf, mac_a);
+  f1(opc, key, vector->rand, sqn, amf, mac_a);
 
   print_buffer("MAC_A   : ", mac_a, 8);
   print_buffer("SQN     : ", sqn, 6);
   print_buffer("RAND    : ", vector->rand, 16);
 
   /* Compute XRES, CK, IK, AK */
-  f2345(key, vector->rand, vector->xres, ck, ik, ak);
+  f2345(opc, key, vector->rand, vector->xres, ck, ik, ak);
   print_buffer("AK      : ", ak, 6);
   print_buffer("CK      : ", ck, 16);
   print_buffer("IK      : ", ik, 16);

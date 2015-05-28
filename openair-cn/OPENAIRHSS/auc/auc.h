@@ -50,7 +50,7 @@ extern uint8_t opc[16];
 typedef mpz_t random_t;
 typedef mpz_t sqn_t;
 
-typedef uint8_t u8;
+typedef uint8_t uint8_t;
 
 typedef struct {
   uint8_t rand[16];
@@ -60,8 +60,8 @@ typedef struct {
   uint8_t kasme[32];
 } auc_vector_t;
 
-void RijndaelKeySchedule(const u8 const key[16]);
-void RijndaelEncrypt(const u8 const in[16], u8 out[16]);
+void RijndaelKeySchedule(const uint8_t const key[16]);
+void RijndaelEncrypt(const uint8_t const in[16], uint8_t out[16]);
 
 /* Sequence number functions */
 struct sqn_ue_s;
@@ -77,19 +77,21 @@ struct random_state_s;
 void random_init(void);
 void generate_random(uint8_t *random, ssize_t length);
 
-void SetOP(char *opP);
+//void SetOP(char *opP);
 
-void f1 ( const u8 const k[16], const u8 const rand[16], const u8 const sqn[6], const u8 const amf[2],
-          u8 mac_a[8] );
-void f1star( const u8 const k[16], const u8 const rand[16], const u8 const sqn[6], const u8 const amf[2],
-             u8 mac_s[8] );
-void f2345 ( const u8 const k[16], const u8 const rand[16],
-             u8 res[8], u8 ck[16], u8 ik[16], u8 ak[6] );
-void f5star( const u8 const k[16], const u8 const rand[16],
-             u8 ak[6] );
+void ComputeOPc( const uint8_t const kP[16], const uint8_t const opP[16], uint8_t opcP[16] );
 
-void generate_autn(const u8 const sqn[6], const u8 const ak[6], const u8 const amf[2], const u8 const mac_a[8], u8 autn[16]);
-int generate_vector(uint64_t imsi, uint8_t key[16], uint8_t plmn[3],
+void f1 ( const uint8_t const kP[16],const uint8_t const k[16], const uint8_t const rand[16], const uint8_t const sqn[6], const uint8_t const amf[2],
+          uint8_t mac_a[8] );
+void f1star( const uint8_t const kP[16],const uint8_t const k[16], const uint8_t const rand[16], const uint8_t const sqn[6], const uint8_t const amf[2],
+             uint8_t mac_s[8] );
+void f2345 ( const uint8_t const kP[16],const uint8_t const k[16], const uint8_t const rand[16],
+             uint8_t res[8], uint8_t ck[16], uint8_t ik[16], uint8_t ak[6] );
+void f5star( const uint8_t const kP[16],const uint8_t const k[16], const uint8_t const rand[16],
+             uint8_t ak[6] );
+
+void generate_autn(const uint8_t const sqn[6], const uint8_t const ak[6], const uint8_t const amf[2], const uint8_t const mac_a[8], uint8_t autn[16]);
+int generate_vector(const uint8_t const opc[16], uint64_t imsi, uint8_t key[16], uint8_t plmn[3],
                     uint8_t sqn[6], auc_vector_t *vector);
 
 void kdf(uint8_t *key, uint16_t key_len, uint8_t *s, uint16_t s_len, uint8_t *out,
@@ -98,7 +100,7 @@ void kdf(uint8_t *key, uint16_t key_len, uint8_t *s, uint16_t s_len, uint8_t *ou
 void derive_kasme(uint8_t ck[16], uint8_t ik[16], uint8_t plmn[3], uint8_t sqn[6],
                   uint8_t ak[6], uint8_t kasme[32]);
 
-uint8_t *sqn_ms_derive(uint8_t *key, uint8_t *auts, uint8_t *rand);
+uint8_t *sqn_ms_derive(const uint8_t const opc[16], uint8_t *key, uint8_t *auts, uint8_t *rand);
 
 static inline void print_buffer(const char *prefix, uint8_t *buffer, int length)
 {

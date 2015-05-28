@@ -37,6 +37,7 @@
 
 hss_config_t hss_config;
 
+
 int main(int argc, char *argv[])
 {
 
@@ -51,6 +52,10 @@ int main(int argc, char *argv[])
   }
 
   random_init();
+
+  if (hss_config.valid_op) {
+    hss_mysql_check_opc_keys((uint8_t*)hss_config.operator_key_bin);
+  }
 
   s6a_init(&hss_config);
 

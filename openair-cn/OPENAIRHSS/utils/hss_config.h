@@ -37,15 +37,17 @@ typedef struct hss_config_s {
 
 
   char *operator_key;
+  unsigned char operator_key_bin[16];
   int   valid_op;
-  char *operator_ckey;
-  int   valid_opc;
 
   /* The freediameter configuration file */
   char *freediameter_config;
 
   /* THe HSS global configuration file */
   char *config;
+
+  char *random;
+  char  random_bool;
 } hss_config_t;
 
 int config_init(int argc, char *argv[], hss_config_t *hss_config_p);

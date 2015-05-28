@@ -35,6 +35,7 @@
 #include <sys/time.h>
 
 #include "auc.h"
+#include "hss_config.h"
 
 typedef struct random_state_s {
   pthread_mutex_t lock;
@@ -42,6 +43,7 @@ typedef struct random_state_s {
 } random_state_t;
 
 random_state_t random_state;
+extern hss_config_t hss_config;
 
 void random_init(void)
 {
@@ -70,13 +72,18 @@ void generate_random(uint8_t *random_p, ssize_t length)
 
   //    mpz_export(random_p, NULL, 1, length, 0, 0, random_nb);
   int i;//r = 0,  mask = 0, shift;
-
-  for (i = 0; i < length; i ++) {
+  if (hss_config.random_bool > 0) {
+    for (i = 0; i < length; i ++) {
     //        if ((i % sizeof(i)) == 0)
     //            r = rand();
     //        shift = 8 * (i % sizeof(i));
     //        mask = 0xFF << shift;
     //        random_p[i] = (r & mask) >> shift;
-    random_p[i] = rand();
+	  random_p[i] = rand();
+    }
+  } else {
+    for (i = 0; i < length; i ++) {
+	  random_p[i] = 0;
+	}
   }
 }

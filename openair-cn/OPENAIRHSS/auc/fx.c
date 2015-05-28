@@ -26,36 +26,16 @@
 extern hss_config_t hss_config;
 
 /*--------- Operator Variant Algorithm Configuration Field --------*/
-/*------- Insert your value of OP here -------*/
-extern uint8_t opc[16];
-extern uint8_t op[16];
+
 
 /*--------------------------- prototypes --------------------------*/
-void ComputeOPc( u8 opP[16] );
 
-void SetOP(char *opP)
-{
-    int ret = sscanf(opP,
-                 "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-                 (unsigned int*)&op[0],(unsigned int*)&op[1],
-                 (unsigned int*)&op[2],(unsigned int*)&op[3],
-                 (unsigned int*)&op[4],(unsigned int*)&op[5],
-                 (unsigned int*)&op[6],(unsigned int*)&op[7],
-                 (unsigned int*)&op[8],(unsigned int*)&op[9],
-                 (unsigned int*)&op[10],(unsigned int*)&op[11],
-                 (unsigned int*)&op[12],(unsigned int*)&op[13],
-                 (unsigned int*)&op[14],(unsigned int*)&op[15]);
-    if (ret != 16) {
-      fprintf(stderr,
-              "Error in operator key\n");
-      abort();
-    }
-    printf("SetOP: OP : %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
-		  op[0],op[1],op[2],op[3],op[4],op[5],op[6],op[7],
-		  op[8],op[9],op[10],op[11],op[12],op[13],op[14],op[15]);
-}
 
-void generate_autn(const u8 const sqn[6], const u8 const ak[6], const u8 const amf[2], const u8 const mac_a[8], u8 autn[16])
+/*-------------------------------------------------------------------
+ *
+ *-------------------------------------------------------------------
+ *-----------------------------------------------------------------*/
+void generate_autn(const uint8_t const sqn[6], const uint8_t const ak[6], const uint8_t const amf[2], const uint8_t const mac_a[8], uint8_t autn[16])
 {
   int i;
 
@@ -76,19 +56,20 @@ void generate_autn(const u8 const sqn[6], const u8 const ak[6], const u8 const a
  * field AMF.
  *
  *-----------------------------------------------------------------*/
-void f1 ( const u8 const k[16], const u8 const _rand[16], const u8 const sqn[6], const u8 const amf[2],
-          u8 mac_a[8] )
+void f1 ( const uint8_t const opc[16], const uint8_t const k[16], const uint8_t const _rand[16], const uint8_t const sqn[6], const uint8_t const amf[2],
+          uint8_t mac_a[8] )
 {
-  u8 temp[16];
-  u8 in1[16];
-  u8 out1[16];
-  u8 rijndaelInput[16];
-  u8 i;
+  uint8_t temp[16];
+  uint8_t in1[16];
+  uint8_t out1[16];
+  uint8_t rijndaelInput[16];
+  uint8_t i;
   RijndaelKeySchedule( k );
-  if (hss_config.valid_opc == 0) {
+  /*
+  if (hss_config.valid_op > 0) {
 	SetOP(hss_config.operator_key);
     ComputeOPc( opc );
-  }
+  }*/
 
   for (i=0; i<16; i++)
     rijndaelInput[i] = _rand[i] ^ opc[i];
@@ -133,18 +114,19 @@ void f1 ( const u8 const k[16], const u8 const _rand[16], const u8 const sqn[6],
  * confidentiality key CK, integrity key IK and anonymity key AK.
  *
  *-----------------------------------------------------------------*/
-void f2345 ( const u8 const k[16], const u8 const _rand[16],
-             u8 res[8], u8 ck[16], u8 ik[16], u8 ak[6] )
+void f2345 ( const uint8_t const opc[16], const uint8_t const k[16], const uint8_t const _rand[16],
+             uint8_t res[8], uint8_t ck[16], uint8_t ik[16], uint8_t ak[6] )
 {
-  u8 temp[16];
-  u8 out[16];
-  u8 rijndaelInput[16];
-  u8 i;
+  uint8_t temp[16];
+  uint8_t out[16];
+  uint8_t rijndaelInput[16];
+  uint8_t i;
   RijndaelKeySchedule( k );
-  if (hss_config.valid_opc == 0) {
+
+  /*if (hss_config.valid_op > 0) {
     SetOP(hss_config.operator_key);
     ComputeOPc( opc );
-  }
+  }*/
 
   for (i=0; i<16; i++)
     rijndaelInput[i] = _rand[i] ^ opc[i];
@@ -212,23 +194,23 @@ void f2345 ( const u8 const k[16], const u8 const _rand[16],
  * field AMF.
  *
  *-----------------------------------------------------------------*/
-void f1star( const u8 const k[16], const u8 const _rand[16], const u8 const sqn[6], const u8 const amf[2],
-             u8 mac_s[8] )
+void f1star( const uint8_t const opc[16], const uint8_t const k[16], const uint8_t const _rand[16], const uint8_t const sqn[6], const uint8_t const amf[2],
+             uint8_t mac_s[8] )
 {
-  u8 temp[16];
-  u8 in1[16];
-  u8 out1[16];
-  u8 rijndaelInput[16];
-  u8 i;
+  uint8_t temp[16];
+  uint8_t in1[16];
+  uint8_t out1[16];
+  uint8_t rijndaelInput[16];
+  uint8_t i;
   RijndaelKeySchedule( k );
-  if (hss_config.valid_opc == 0) {
+  /*if (hss_config.valid_opc == 0) {
 	SetOP(hss_config.operator_key);
     ComputeOPc( opc );
   } else {
 	  printf("Using opc:  %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
 		         opc[0],opc[1],opc[2],opc[3],opc[4],opc[5],opc[6],opc[7],
 		         opc[8],opc[9],opc[10],opc[11],opc[12],opc[13],opc[14],opc[15] );
-  }
+  }*/
 
   for (i=0; i<16; i++)
     rijndaelInput[i] = _rand[i] ^ opc[i];
@@ -273,23 +255,23 @@ void f1star( const u8 const k[16], const u8 const _rand[16], const u8 const sqn[
  * anonymity key AK.
  *
  *-----------------------------------------------------------------*/
-void f5star( const u8 const k[16], const u8 const _rand[16],
-             u8 ak[6] )
+void f5star( const uint8_t const opc[16], const uint8_t const k[16], const uint8_t const _rand[16],
+             uint8_t ak[6] )
 {
-  u8 temp[16];
-  u8 out[16];
-  u8 rijndaelInput[16];
-  u8 i;
+  uint8_t temp[16];
+  uint8_t out[16];
+  uint8_t rijndaelInput[16];
+  uint8_t i;
 
   RijndaelKeySchedule( k );
-  if (hss_config.valid_opc == 0) {
+  /*if (hss_config.valid_opc == 0) {
 	SetOP(hss_config.operator_key);
     ComputeOPc(opc);
   } else {
 	  printf("Using OPc: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
 			  opc[0],opc[1],opc[2],opc[3],opc[4],opc[5],opc[6],opc[7],
 			  opc[8],opc[9],opc[10],opc[11],opc[12],opc[13],opc[14],opc[15]);
-  }
+  }*/
 
   for (i=0; i<16; i++)
     rijndaelInput[i] = _rand[i] ^ opc[i];
@@ -315,22 +297,25 @@ void f5star( const u8 const k[16], const u8 const _rand[16],
 } /* end of function f5star */
 
 /*-------------------------------------------------------------------
- * Function to compute OPc from OP and K. Assumes key schedule has
- * already been performed.
+ * Function to compute OPc from OP and K.
  *-----------------------------------------------------------------*/
-void ComputeOPc( u8 opcP[16] )
+void ComputeOPc( const uint8_t const kP[16], const uint8_t const opP[16], uint8_t opcP[16] )
 {
-  u8 i;
+  uint8_t i;
 
-  RijndaelEncrypt( op, opcP );
-  printf("Compute opc:\n\tIn:\t%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n\tRinj:\t%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
-		  op[0],op[1],op[2],op[3],op[4],op[5],op[6],op[7],
-		  op[8],op[9],op[10],op[11],op[12],op[13],op[14],op[15],
+  RijndaelKeySchedule( kP );
+  printf("Compute opc:\n\tK:\t%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
+		  kP[0],kP[1],kP[2],kP[3],kP[4],kP[5],kP[6],kP[7],
+		  kP[8],kP[9],kP[10],kP[11],kP[12],kP[13],kP[14],kP[15]);
+  RijndaelEncrypt( opP, opcP );
+  printf("\tIn:\t%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n\tRinj:\t%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
+		  opP[0],opP[1],opP[2],opP[3],opP[4],opP[5],opP[6],opP[7],
+		  opP[8],opP[9],opP[10],opP[11],opP[12],opP[13],opP[14],opP[15],
 	      opcP[0],opcP[1],opcP[2],opcP[3],opcP[4],opcP[5],opcP[6],opcP[7],
 	      opcP[8],opcP[9],opcP[10],opcP[11],opcP[12],opcP[13],opcP[14],opcP[15] );
 
   for (i=0; i<16; i++)
-	  opcP[i] ^= op[i];
+	  opcP[i] ^= opP[i];
   printf("\tOut:\t%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n",
 	         opcP[0],opcP[1],opcP[2],opcP[3],opcP[4],opcP[5],opcP[6],opcP[7],
 	         opcP[8],opcP[9],opcP[10],opcP[11],opcP[12],opcP[13],opcP[14],opcP[15] );

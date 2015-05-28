@@ -37,7 +37,7 @@
 extern hss_config_t hss_config;
 extern uint8_t op[16];
 
-uint8_t *sqn_ms_derive(uint8_t *key, uint8_t *auts, uint8_t *rand_p)
+uint8_t *sqn_ms_derive(const uint8_t const opc[16], uint8_t *key, uint8_t *auts, uint8_t *rand_p)
 {
   /* AUTS = Conc(SQN MS ) || MAC-S
    * Conc(SQN MS ) = SQN MS ^ f5* (RAND)
@@ -56,12 +56,12 @@ uint8_t *sqn_ms_derive(uint8_t *key, uint8_t *auts, uint8_t *rand_p)
 
   sqn_ms = malloc(SQN_LENGTH_OCTEST);
 
-  if (hss_config.valid_opc == 0) {
+  /*if (hss_config.valid_opc == 0) {
     SetOP(hss_config.operator_key);
-  }
+  }*/
 
   /* Derive AK from key and rand */
-  f5star(key, rand_p, ak);
+  f5star(opc, key, rand_p, ak);
 
   for (i = 0; i < 6; i++) {
     sqn_ms[i] = ak[i] ^ conc_sqn_ms[i];
@@ -74,7 +74,7 @@ uint8_t *sqn_ms_derive(uint8_t *key, uint8_t *auts, uint8_t *rand_p)
   print_buffer("sqn_ms_derive() SQN_MS : ", sqn_ms, 6);
   print_buffer("sqn_ms_derive() MAC_S  : ", mac_s, 8);
 
-  f1star(key, rand_p, sqn_ms, amf, mac_s_computed);
+  f1star(opc, key, rand_p, sqn_ms, amf, mac_s_computed);
 
   print_buffer("MAC_S +: ", mac_s_computed, 8);
 

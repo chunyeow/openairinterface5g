@@ -114,7 +114,7 @@ qstring     \"[^\"\n]*\"
 (?i:"MYSQL_pass")   { return MYSQL_PASS; }
 (?i:"MYSQL_db")     { return MYSQL_DB; }
 (?i:"OPERATOR_key")     { return OPERATOR_KEY; }
-(?i:"OPERATOR_ckey")     { return OPERATOR_CKEY; }
+(?i:"RANDOM")       { return RANDOM; }
 
     /* Valid single characters for yyparse */
 <*>[=,:;{}]     { return yytext[0]; }

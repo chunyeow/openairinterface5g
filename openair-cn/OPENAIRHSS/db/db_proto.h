@@ -72,26 +72,33 @@ typedef struct {
 #define SQN_LENGTH  (6)
 #define RAND_LENGTH (16)
 
-typedef struct {
+typedef struct mysql_auth_info_resp_s{
   uint8_t key[KEY_LENGTH];
   uint8_t sqn[SQN_LENGTH];
   /* RAND should not be here... */
   uint8_t rand[RAND_LENGTH];
+  uint8_t opc[KEY_LENGTH];
 } mysql_auth_info_resp_t;
 
-typedef struct {
+typedef struct mysql_opc_push_s{
+  char imsi[IMSI_LENGTH_MAX + 1];
+  /* New computed SQN that will be used on next auth info req */
+  uint8_t sqn[SQN_LENGTH];
+} mysql_opc_push_t;
+
+typedef struct mysql_sqn_push_s{
   char imsi[IMSI_LENGTH_MAX + 1];
   /* New computed SQN that will be used on next auth info req */
   uint8_t sqn[SQN_LENGTH];
 } mysql_sqn_push_t;
 
-typedef struct {
+typedef struct mysql_mme_identity_s{
   /* An MME may have already been registered as serving the UE. */
   char mme_host[255];
   char mme_realm[200];
 } mysql_mme_identity_t;
 
-typedef struct {
+typedef struct mysql_ul_ans_s{
   char imsi[16];
   /* MSISDN this parameter may be NULL */
   char msisdn[16];
@@ -107,7 +114,7 @@ typedef struct {
   mysql_mme_identity_t mme_identity;
 } mysql_ul_ans_t;
 
-typedef struct {
+typedef struct mysql_ul_push_s{
   /* Bit masks indicating presence of optional fields */
 #define MME_IDENTITY_PRESENT           (0x1)
 #define MME_SUPPORTED_FEATURES_PRESENT (0x1)
@@ -140,12 +147,12 @@ typedef enum {
   IPV4_OR_IPV6 = 3,
 } pdn_type_t;
 
-typedef struct {
+typedef struct pdn_address_s{
   char ipv4_address[INET_ADDRSTRLEN];
   char ipv6_address[INET6_ADDRSTRLEN];
 } pdn_address_t;
 
-typedef struct {
+typedef struct mysql_pdn_s{
   char          apn[61];
   pdn_type_t    pdn_type;
   pdn_address_t pdn_address;
@@ -157,7 +164,7 @@ typedef struct {
   pre_emp_vul_t pre_emp_vul;
 } mysql_pdn_t;
 
-typedef struct {
+typedef struct mysql_pu_req_s{
   /* IMSI */
   char imsi[16];
 } mysql_pu_req_t;
@@ -192,5 +199,8 @@ int hss_mysql_auth_info(mysql_auth_info_req_t  *auth_info_req,
 int hss_mysql_push_rand_sqn(const char *imsi, uint8_t *rand_p, uint8_t *sqn);
 
 int hss_mysql_increment_sqn(const char *imsi);
+
+int hss_mysql_check_opc_keys(const uint8_t const opP[16]);
+
 
 #endif /* DB_PROTO_H_ */

@@ -210,7 +210,7 @@ int s6a_auth_info_cb(struct msg **msg, struct avp *paramavp,
 
   if (auts != NULL) {
     /* Try to derive SQN_MS from previous RAND */
-    sqn = sqn_ms_derive(auth_info_resp.key, auts, auth_info_resp.rand);
+    sqn = sqn_ms_derive(auth_info_resp.opc, auth_info_resp.key, auts, auth_info_resp.rand);
 
     if (sqn != NULL) {
       /* We succeeded to verify SQN_MS... */
@@ -245,7 +245,7 @@ int s6a_auth_info_cb(struct msg **msg, struct avp *paramavp,
   hss_mysql_increment_sqn(auth_info_req.imsi);
 
   /* Generate authentication vector */
-  generate_vector(imsi, auth_info_resp.key,
+  generate_vector(auth_info_resp.opc, imsi, auth_info_resp.key,
                   hdr->avp_value->os.data, sqn, &vector);
 
   /* We add the vector */

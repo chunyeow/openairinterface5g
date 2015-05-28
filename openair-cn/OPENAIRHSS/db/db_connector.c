@@ -42,6 +42,9 @@
 #include "hss_config.h"
 #include "db_proto.h"
 
+extern void ComputeOPc( const uint8_t const kP[16], const uint8_t const opP[16], uint8_t opcP[16] );
+
+
 database_t *db_desc;
 
 static void print_buffer(const char *prefix, uint8_t *buffer, int length)
@@ -519,7 +522,7 @@ int hss_mysql_auth_info(mysql_auth_info_req_t  *auth_info_req,
     return EINVAL;
   }
 
-  sprintf(query, "SELECT `key`,`sqn`,`rand` FROM `users` WHERE `users`.`imsi`=%s ",
+  sprintf(query, "SELECT `key`,`sqn`,`rand`,`OPc` FROM `users` WHERE `users`.`imsi`=%s ",
           auth_info_req->imsi);
 
   DB_DEBUG("Query: %s\n", query);
@@ -539,7 +542,7 @@ int hss_mysql_auth_info(mysql_auth_info_req_t  *auth_info_req,
   pthread_mutex_unlock(&db_desc->db_cs_mutex);
 
   if ((row = mysql_fetch_row(res)) != NULL) {
-    if (row[0] == NULL || row[1] == NULL || row[2] == NULL) {
+    if (row[0] == NULL || row[1] == NULL || row[2] == NULL || row[3] == NULL) {
       ret = EINVAL;
     }
 
@@ -569,6 +572,11 @@ int hss_mysql_auth_info(mysql_auth_info_req_t  *auth_info_req,
       memcpy(auth_info_resp->rand, row[2], RAND_LENGTH);
     }
 
+    if (row[3] != NULL) {
+        print_buffer("OPc: ", (uint8_t*)row[3], KEY_LENGTH);
+        memcpy(auth_info_resp->opc, row[3], KEY_LENGTH);
+    }
+
     mysql_free_result(res);
     mysql_thread_end();
     return ret;
@@ -579,3 +587,115 @@ int hss_mysql_auth_info(mysql_auth_info_req_t  *auth_info_req,
 
   return EINVAL;
 }
+
+int hss_mysql_check_opc_keys(const uint8_t const opP[16])
+{
+  int        ret   = 0;
+  MYSQL_RES *res   = NULL;
+  MYSQL_RES *res2  = NULL;
+  MYSQL_ROW  row;
+  char       query[1000];
+  char       update[1000];
+  uint8_t    k[16];
+  uint8_t    opc[16];
+  int        update_length = 0;
+  int        status        = 0;
+  int        i;
+
+  if (db_desc->db_conn == NULL) {
+	return EINVAL;
+  }
+
+  sprintf(query, "SELECT `imsi`,`key`,`OPc` FROM `users` ");
+
+  DB_DEBUG("Query: %s\n", query);
+
+  pthread_mutex_lock(&db_desc->db_cs_mutex);
+
+  if (mysql_query(db_desc->db_conn, query)) {
+	pthread_mutex_unlock(&db_desc->db_cs_mutex);
+	DB_ERROR("Query execution failed: %s\n",
+			 mysql_error(db_desc->db_conn));
+	mysql_thread_end();
+	return EINVAL;
+  }
+
+  res = mysql_store_result(db_desc->db_conn);
+
+  pthread_mutex_unlock(&db_desc->db_cs_mutex);
+
+
+  while ((row = mysql_fetch_row(res))) {
+    if (row[0] == NULL || row[1] == NULL ) {
+      DB_ERROR("Query execution failed: %s\n",
+    				 mysql_error(db_desc->db_conn));
+      ret = EINVAL;
+    } else {
+	  if (row[0] != NULL) {
+	    printf("IMSI: %s", (uint8_t*)row[0]);
+	  }
+	  if (row[1] != NULL) {
+	    print_buffer("Key: ", (uint8_t*)row[1], KEY_LENGTH);
+        memcpy(k, row[1], KEY_LENGTH);
+      }
+	  //if (row[3] != NULL)
+	  {
+	    print_buffer("OPc: ", (uint8_t*)row[2], KEY_LENGTH);
+	  //} else {
+	    ComputeOPc( k, opP, opc);
+	    update_length = sprintf(update, "UPDATE `users` SET `OPc`=UNHEX('");
+	    for (i = 0; i < KEY_LENGTH; i ++) {
+	    	update_length += sprintf(&update[update_length], "%02x", opc[i]);
+	    }
+	    update_length += sprintf(&update[update_length], "') WHERE `users`.`imsi`='%s'", (uint8_t*)row[0]);
+	    DB_DEBUG("Query: %s\n", update);
+
+	    if (mysql_query(db_desc->db_conn, update)) {
+	      DB_ERROR("Query execution failed: %s\n",
+	               mysql_error(db_desc->db_conn));
+	    } else {
+	        printf("IMSI %s Updated OPc ", (uint8_t*)row[0]);
+		    for (i = 0; i < KEY_LENGTH; i ++) {
+		    	printf("%02x", (uint8_t)(row[2][i]));
+		    }
+	        printf(" -> ");
+		    for (i = 0; i < KEY_LENGTH; i ++) {
+		    	printf("%02x", opc[i]);
+		    }
+	        printf("\n");
+
+	      /* process each statement result */
+	      do {
+	        /* did current statement return data? */
+	        res2 = mysql_store_result(db_desc->db_conn);
+
+	        if (res2) {
+	          /* yes; process rows and free the result set */
+	          mysql_free_result(res2);
+	        } else {      /* no result set or error */
+	          if (mysql_field_count(db_desc->db_conn) == 0) {
+	            DB_ERROR("%lld rows affected\n",
+	                   mysql_affected_rows(db_desc->db_conn));
+	          } else { /* some error occurred */
+	            DB_ERROR("Could not retrieve result set\n");
+	            break;
+	          }
+	        }
+
+	        /* more results? -1 = no, >0 = error, 0 = yes (keep looping) */
+	        if ((status = mysql_next_result(db_desc->db_conn)) > 0)
+	          DB_ERROR("Could not execute statement\n");
+	      } while (status == 0);
+	    }
+	  }
+    }
+  }
+
+  mysql_free_result(res);
+  mysql_thread_end();
+
+  return ret;
+
+}
+
+
