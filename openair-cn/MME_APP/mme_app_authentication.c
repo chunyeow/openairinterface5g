@@ -125,7 +125,7 @@ int mme_app_handle_nas_auth_resp(const nas_auth_resp_t * const nas_auth_resp_pP)
     MME_APP_ERROR("That's embarrassing as we don't know this IMSI\n");
     MSC_LOG_EVENT(
     		MSC_MMEAPP_MME,
-    		"NAS_AUTH_RESP Unknown imsi %"IMSI_FORMAT,imsi);
+    		"0 NAS_AUTH_RESP Unknown imsi %"IMSI_FORMAT,imsi);
     AssertFatal(0, "That's embarrassing as we don't know this IMSI\n");
     return -1;
   }
@@ -185,7 +185,7 @@ mme_app_handle_authentication_info_answer(
     MME_APP_ERROR("That's embarrassing as we don't know this IMSI\n");
     MSC_LOG_EVENT(
     		MSC_MMEAPP_MME,
-    		"S6A_AUTH_INFO_ANS Unknown imsi %"IMSI_FORMAT,imsi);
+    		"0 S6A_AUTH_INFO_ANS Unknown imsi %"IMSI_FORMAT,imsi);
     return -1;
   }
 
@@ -228,7 +228,7 @@ mme_app_handle_authentication_info_answer(
     MME_APP_ERROR("INFORMING NAS ABOUT AUTH RESP ERROR CODE\n");
     MSC_LOG_EVENT(
     		MSC_MMEAPP_MME,
-    		"S6A_AUTH_INFO_ANS S6A Failure imsi %"IMSI_FORMAT,imsi);
+    		"0 S6A_AUTH_INFO_ANS S6A Failure imsi %"IMSI_FORMAT,imsi);
 
 
 
