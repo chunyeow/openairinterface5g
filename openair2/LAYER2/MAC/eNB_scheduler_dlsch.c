@@ -507,7 +507,7 @@ schedule_ue_spec(
       continue;
 
     for (UE_id=UE_list->head; UE_id>=0; UE_id=UE_list->next[UE_id]) {
-
+      continue_flag=0; // reset the flag to allow allocation for the remaining UEs
       rnti = UE_RNTI(module_idP,UE_id);
       eNB_UE_stats = mac_xface->get_eNB_UE_stats(module_idP,CC_id,rnti);
 

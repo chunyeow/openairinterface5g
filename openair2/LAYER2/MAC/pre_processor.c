@@ -310,25 +310,21 @@ void sort_UEs (module_id_t Mod_idP,
 
   for (i=UE_list->head; i>=0; i=UE_list->next[i]) {
 
-    rnti1 = UE_RNTI(Mod_idP,i);
-
-    if(rnti1 == NOT_A_RNTI)
-      continue;
-
-    UE_id1  = i;
-    pCC_id1 = UE_PCCID(Mod_idP,UE_id1);
-    cqi1    = maxcqi(Mod_idP,UE_id1); //
-    round1  = maxround(Mod_idP,rnti1,frameP,subframeP,0);
-
-
     for(ii=UE_list->next[i]; ii>=0; ii=UE_list->next[ii]) {
 
-      UE_id2 = ii;
-      rnti2 = UE_RNTI(Mod_idP,UE_id2);
+      rnti1 = UE_RNTI(Mod_idP,i);
+      if(rnti1 == NOT_A_RNTI)
+	continue;
+      
+      UE_id1  = i;
+      pCC_id1 = UE_PCCID(Mod_idP,UE_id1);
+      cqi1    = maxcqi(Mod_idP,UE_id1); //
+      round1  = maxround(Mod_idP,rnti1,frameP,subframeP,0);
 
       if(rnti2 == NOT_A_RNTI)
         continue;
-
+      UE_id2 = ii;
+      rnti2 = UE_RNTI(Mod_idP,UE_id2);
       cqi2    = maxcqi(Mod_idP,UE_id2);
       round2  = maxround(Mod_idP,rnti2,frameP,subframeP,0);  //mac_xface->get_ue_active_harq_pid(Mod_id,rnti2,subframe,&harq_pid2,&round2,0);
       pCC_id2 = UE_PCCID(Mod_idP,UE_id2);
@@ -627,12 +623,14 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
                         if ((j == N_RBG[CC_id]-1) &&
                             ((PHY_vars_eNB_g[Mod_id][CC_id]->lte_frame_parms.N_RB_DL == 25) ||
                              (PHY_vars_eNB_g[Mod_id][CC_id]->lte_frame_parms.N_RB_DL == 50))) {
+			  
                           nb_rbs_required_remaining[CC_id][UE_id] = nb_rbs_required_remaining[CC_id][UE_id] - min_rb_unit[CC_id]+1;
                           pre_nb_available_rbs[CC_id][UE_id] = pre_nb_available_rbs[CC_id][UE_id] + min_rb_unit[CC_id]-1;
                           nb_rbs_required_remaining[CC_id][UE_id2] = nb_rbs_required_remaining[CC_id][UE_id2] - min_rb_unit[CC_id]+1;
                           pre_nb_available_rbs[CC_id][UE_id2] = pre_nb_available_rbs[CC_id][UE_id2] + min_rb_unit[CC_id]-1;
                         } else {
-                          nb_rbs_required_remaining[CC_id][UE_id] = nb_rbs_required_remaining[CC_id][UE_id] - 4;
+                          
+			  nb_rbs_required_remaining[CC_id][UE_id] = nb_rbs_required_remaining[CC_id][UE_id] - 4;
                           pre_nb_available_rbs[CC_id][UE_id] = pre_nb_available_rbs[CC_id][UE_id] + 4;
                           nb_rbs_required_remaining[CC_id][UE_id2] = nb_rbs_required_remaining[CC_id][UE_id2] - 4;
                           pre_nb_available_rbs[CC_id][UE_id2] = pre_nb_available_rbs[CC_id][UE_id2] + 4;
@@ -767,21 +765,27 @@ void dlsch_scheduler_pre_processor_allocate (module_id_t   Mod_id,
       // if this UE is not scheduled for TM5
       if (dl_pow_off[CC_id][UE_id] != 0 )  {
 
-        rballoc_sub[CC_id][i] = 1;
-        rballoc_sub_UE[CC_id][UE_id][i] = 1;
-        MIMO_mode_indicator[CC_id][i] = 1;
-
-        if (transmission_mode == 5 ) {
-          dl_pow_off[CC_id][UE_id] = 1;
-        }
-
-        if ((i == N_RBG-1) && ((N_RB_DL == 25) || (N_RB_DL == 50))) {
-          nb_rbs_required_remaining[CC_id][UE_id] = nb_rbs_required_remaining[CC_id][UE_id] - min_rb_unit+1;
+	if ((i == N_RBG-1) && ((N_RB_DL == 25) || (N_RB_DL == 50))) {
+	  rballoc_sub[CC_id][i] = 1;
+	  rballoc_sub_UE[CC_id][UE_id][i] = 1;
+	  MIMO_mode_indicator[CC_id][i] = 1;
+	  if (transmission_mode == 5 ) {
+	    dl_pow_off[CC_id][UE_id] = 1;
+	  }   
+	  nb_rbs_required_remaining[CC_id][UE_id] = nb_rbs_required_remaining[CC_id][UE_id] - min_rb_unit+1;
           pre_nb_available_rbs[CC_id][UE_id] = pre_nb_available_rbs[CC_id][UE_id] + min_rb_unit - 1;
         } else {
-          nb_rbs_required_remaining[CC_id][UE_id] = nb_rbs_required_remaining[CC_id][UE_id] - min_rb_unit;
-          pre_nb_available_rbs[CC_id][UE_id] = pre_nb_available_rbs[CC_id][UE_id] + min_rb_unit;
-        }
+	  if (nb_rbs_required_remaining[CC_id][UE_id] >=  min_rb_unit){
+	    rballoc_sub[CC_id][i] = 1;
+	    rballoc_sub_UE[CC_id][UE_id][i] = 1;
+	    MIMO_mode_indicator[CC_id][i] = 1;
+	    if (transmission_mode == 5 ) {
+	      dl_pow_off[CC_id][UE_id] = 1;
+	    }
+	    nb_rbs_required_remaining[CC_id][UE_id] = nb_rbs_required_remaining[CC_id][UE_id] - min_rb_unit;
+	    pre_nb_available_rbs[CC_id][UE_id] = pre_nb_available_rbs[CC_id][UE_id] + min_rb_unit;
+	  }
+	}
       } // dl_pow_off[CC_id][UE_id] ! = 0
     }
   }
