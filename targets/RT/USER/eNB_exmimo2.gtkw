@@ -2,7 +2,7 @@
 [*] GTKWave Analyzer v3.3.62 (w)1999-2014 BSI
 [*] Thu May 28 09:51:04 2015
 [*]
-[dumpfile] "/home/geyser/Documents/Results-Mobiarch-v2/no-dedicated-core/FIFO/2 cores/50RB/MCS26-16/run4-ok/openair_dump_eNB.vcd"
+[dumpfile] "/tmp/openair_dump_eNB.vcd"
 [dumpfile_mtime] "Fri May 22 17:35:07 2015"
 [dumpfile_size] 352707646
 [savefile] "/home/geyser/openair4G/targets/RT/USER/eNB_exmimo2.gtkw"
