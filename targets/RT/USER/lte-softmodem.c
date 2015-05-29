@@ -2370,14 +2370,14 @@ int main( int argc, char **argv )
     downlink_frequency[CC_id][3] = downlink_frequency[CC_id][0];
     //printf("Downlink for CC_id %d frequency set to %u\n", CC_id, downlink_frequency[CC_id][0]);
   }
-
+  logInit();
+ 
   get_options (argc, argv); //Command-line options
  
   // initialize mscgen log
   MSC_INIT(MSC_E_UTRAN);
   
   // initialize the log (see log.h for details)
-  logInit();
   set_glog(glog_level, glog_verbosity);
 
   //randominit (0);
