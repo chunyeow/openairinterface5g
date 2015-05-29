@@ -1199,14 +1199,14 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP)
                 enb_properties.properties[enb_properties_index]->pusch_alpha[j] = UplinkPowerControlCommon__alpha_al1;
               } else
                 AssertError (0, parse_errors ++,
-                             "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for pusch_p0_Nominal choice: AL0,AL04,AL05,AL06,AL07,AL08,AL09,AL1!\n",
+                             "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for pucch_Alpha choice: AL0,AL04,AL05,AL06,AL07,AL08,AL09,AL1!\n",
                              lib_config_file_name_pP, i, pusch_alpha);
 
               enb_properties.properties[enb_properties_index]->pucch_p0_Nominal[j] = pucch_p0_Nominal;
 
               if ((pucch_p0_Nominal<-127) || (pucch_p0_Nominal>-96))
                 AssertError (0, parse_errors ++,
-                             "Failed to parse eNB configuration file %s, enb %d unknown value \"%d\" for pusch_p0_Nominal choice: -126..24 !\n",
+                             "Failed to parse eNB configuration file %s, enb %d unknown value \"%d\" for pucch_p0_Nominal choice: -127..-96 !\n",
                              lib_config_file_name_pP, i, pucch_p0_Nominal);
 
               enb_properties.properties[enb_properties_index]->msg3_delta_Preamble[j] = msg3_delta_Preamble;

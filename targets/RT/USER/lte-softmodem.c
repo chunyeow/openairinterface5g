@@ -411,7 +411,46 @@ void signal_handler(int sig)
   }
 }
 #endif
+#define KNRM  "\x1B[0m"
+#define KRED  "\x1B[31m"
+#define KGRN  "\x1B[32m"
+#define KBLU  "\x1B[34m"
+#define RESET "\033[0m"
 
+void help (void) {
+  printf (KGRN "Usage:\n");
+  printf("  sudo -E lte-softmodem [options]\n");
+  printf("  sudo -E ./lte-softmodem -O ../../../targets/PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.tm1.exmimo2.openEPC.conf -S -V -m 26 -t 16 -x 1 --ulsch-max-errors 100 -W\n\n");
+  printf("Options:\n");
+  printf("  --ulsch-max-errors set the max ULSCH erros\n");
+  printf("  --calib-ue-rx set UE RX calibration\n");
+  printf("  --calib-ue-rx-med \n");
+  printf("  --calib-ue-rxbyp\n");
+  printf("  --debug-ue-prach \n");
+  printf("  --no-L2-connect bypass L2 and upper layers\n");
+  printf("  --ue_rxgain set UE RX gain\n");
+  printf("  --ue_txgain set UE tx gain\n");
+
+  printf("  -C Set the downlink frequecny for all Component carrier\n");
+  printf("  -d Enable soft scope and L1 and L2 stats (Xforms)\n");
+  printf("  -F Calibrate the EXMIMO borad, available files: exmimo2_2arxg.lime exmimo2_2brxg.lime \n");
+  printf("  -g Set the global log level, valide options: (9:trace, 8/7:debug, 6:info, 4:warn, 3:error)\n");
+  printf("  -G Set the global log level \n");
+  printf("  -h provides this help message!\n");
+  printf("  -K Generate ITTI analyzser logs (similar to wireshark logs but with more details)\n");
+  printf("  -m Set the maximum downlink MCS\n");
+  printf("  -M IP address of RRH\n");
+  printf("  -O eNB configuration file (located in targets/PROJECTS/GENERIC-LTE-EPC/CONF\n");
+  printf("  -q Enable processing timing measurement of lte softmodem on per subframe basis \n");
+  printf("  -R Set the PRB, valid values: 6, 25, 50, 100  \n");    
+  printf("  -S Skip the missed slots/subframes \n");    
+  printf("  -t Set the maximum uplink MCS\n");
+  printf("  -U Set the lte softmodem as a UE\n");
+  printf("  -W Enable L2 wireshark messages on localhost \n");
+  printf("  -V Enable VCD (generated file will be located atopenair_dump_eNB.vcd, read it with target/RT/USER/eNB.gtkw\n");
+  printf("  -x Set the transmission mode, valid options: 1 \n"RESET);    
+
+}
 void exit_fun(const char* s)
 {
   if (s != NULL) {
@@ -1906,7 +1945,7 @@ static void get_options (int argc, char **argv)
     {NULL, 0, NULL, 0}
   };
 
-  while ((c = getopt_long (argc, argv, "C:dK:g:F:G:qO:m:SUVRM:r:P:Ws:t:x:",long_options,NULL)) != -1) {
+  while ((c = getopt_long (argc, argv, "C:dK:g:F:G:hqO:m:SUVRM:r:P:Ws:t:x:",long_options,NULL)) != -1) {
     switch (c) {
     case LONG_OPTION_ULSCH_MAX_CONSECUTIVE_ERRORS:
       ULSCH_max_consecutive_errors = atoi(optarg);
@@ -2148,8 +2187,13 @@ static void get_options (int argc, char **argv)
       }
 
       break;
-
+    case 'h':
+      help ();
+      exit (-1);
+       
     default:
+      help ();
+      exit (-1);
       break;
     }
   }
@@ -2319,26 +2363,25 @@ int main( int argc, char **argv )
     frame_parms[CC_id]->nb_antennas_rx      = 1;
   }
 
-  // initialize mscgen log
-  MSC_INIT(MSC_E_UTRAN);
-  // initialize the log (see log.h for details)
-  logInit();
-
-  //randominit (0);
-  set_taus_seed (0);
-
-
   for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
     downlink_frequency[CC_id][0] = 2680000000; // Use float to avoid issue with frequency over 2^31.
     downlink_frequency[CC_id][1] = downlink_frequency[CC_id][0];
     downlink_frequency[CC_id][2] = downlink_frequency[CC_id][0];
     downlink_frequency[CC_id][3] = downlink_frequency[CC_id][0];
-    printf("Downlink for CC_id %d frequency set to %u\n", CC_id, downlink_frequency[CC_id][0]);
+    //printf("Downlink for CC_id %d frequency set to %u\n", CC_id, downlink_frequency[CC_id][0]);
   }
 
   get_options (argc, argv); //Command-line options
+ 
+  // initialize mscgen log
+  MSC_INIT(MSC_E_UTRAN);
+  
+  // initialize the log (see log.h for details)
+  logInit();
   set_glog(glog_level, glog_verbosity);
 
+  //randominit (0);
+  set_taus_seed (0);
 
   if (UE_flag==1) {
     printf("configuring for UE\n");

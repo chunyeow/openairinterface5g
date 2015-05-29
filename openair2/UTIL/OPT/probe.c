@@ -383,9 +383,9 @@ static void SendFrame(guint8 radioType, guint8 direction, guint8 rntiType,
                      (const struct sockaddr *)&g_serv_addr, sizeof(g_serv_addr));
 
   if (bytesSent != g_frameOffset) {
-    LOG_E(OPT, "sendto() failed - expected %d bytes, got %d (errno=%d)\n",
+    LOG_W(OPT, "sendto() failed (not a thread-safe func)- expected %d bytes, got %d (errno=%d)\n",
           g_frameOffset, bytesSent, errno);
-    exit(1);
+    //exit(1);
   }
 }
 
