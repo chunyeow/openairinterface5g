@@ -154,7 +154,7 @@ int32_t add_ue(int16_t rnti, PHY_VARS_eNB *phy_vars_eNB)
     } else {
       if (phy_vars_eNB->eNB_UE_stats[i].crnti==0) {
         MSC_LOG_EVENT(MSC_PHY_ENB, "0 Add ue %"PRIx16" ", rnti);
-        LOG_I(PHY,"UE_id %d associated with rnti %x\n",i, rnti);
+        LOG_I(PHY,"UE_id %d associated with rnti %x\n",i, (uint16_t)rnti);
         phy_vars_eNB->dlsch_eNB[i][0]->rnti = rnti;
         phy_vars_eNB->ulsch_eNB[i]->rnti = rnti;
         phy_vars_eNB->eNB_UE_stats[i].crnti = rnti;
