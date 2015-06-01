@@ -48,6 +48,7 @@ function help()
   echo_error "Options:"
   echo_error "Mandatory arguments to long options are mandatory for short options too."
   echo_error "  -c, --clean                               Clean the build generated files (build from scratch)"
+  echo_error "  -C, --conf-files-only                     Generate only EPC configuration files (no build)"
   echo_error "  -d, --debug                               Compile with debug informations."
   echo_error "  -h, --help                                Print this help."
   echo_error "  -g, --gtpu-easy-module                    Used for debugging GTPU (kernel module can be easily removed)"
@@ -67,6 +68,7 @@ function help()
 function main()
 {
   local -i clean=0
+  local -i conf_files_only=0
   local -i verbose=0
   local -i s6a_server=0
   local    cmake_args=" "
@@ -85,6 +87,11 @@ function main()
       -c | --clean)
         clean=1
         echo "Clean the build generated files (build from scratch)"
+        shift;
+        ;;
+      -C | --conf-files-only)
+        conf_files_only=1
+        echo "Generate only conf files (no build)"
         shift;
         ;;
       -d | --debug)
@@ -250,27 +257,28 @@ function main()
   cd ./build
   cmake  $cmake_args ..
   #make $make_args -j $NUM_CPU
-  #make install
-  compilations \
+  if [ $conf_files_only -eq 0 ]; then
+    compilations \
       epc_build_oai mme_gw \
       mme_gw $dbin/mme_gw.$REL
-  # Only integrated mme+sgw+pgw is operational today
-  #    compilations \
-  #  epc_build_oai oai_sgw \
-  #  oai_sgw $dbin/oai_sgw.$REL
-  compilations \
-    epc_build_oai xt_GTPUAH_lib \
-    libxt_GTPUAH_lib.so $dbin
-  compilations \
-    epc_build_oai xt_GTPUAH \
-    CMakeFiles/xt_GTPUAH/xt_GTPUAH.ko $dbin
+    # Only integrated mme+sgw+pgw is operational today
+    #    compilations \
+    #  epc_build_oai oai_sgw \
+    #  oai_sgw $dbin/oai_sgw.$REL
+    compilations \
+      epc_build_oai xt_GTPUAH_lib \
+      libxt_GTPUAH_lib.so $dbin
+    compilations \
+      epc_build_oai xt_GTPUAH \
+      CMakeFiles/xt_GTPUAH/xt_GTPUAH.ko $dbin
     
-  echo_info "Copying iptables libraries into system directory: /lib/xtables"
-  if [ -f  $dbin/libxt_GTPUAH_lib.so ] ; then
-    $SUDO rm -f /lib/xtables/libxt_GTPUAH.so
-    $SUDO ln -s $dbin/libxt_GTPUAH_lib.so /lib/xtables/libxt_GTPUAH.so
-  else
-    echo_fatal "not installed GTP-U iptables: binaries not found"
+    echo_info "Copying iptables libraries into system directory: /lib/xtables"
+    if [ -f  $dbin/libxt_GTPUAH_lib.so ] ; then
+      $SUDO rm -f /lib/xtables/libxt_GTPUAH.so
+      $SUDO ln -s $dbin/libxt_GTPUAH_lib.so /lib/xtables/libxt_GTPUAH.so
+    else
+      echo_fatal "not installed GTP-U iptables: binaries not found"
+    fi
   fi
   # Do EPC
   if [ -f $OPENAIR_DIR/cmake_targets/epc_build_oai/build/mme_fd.conf ] ; then
