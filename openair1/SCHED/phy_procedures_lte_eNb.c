@@ -143,7 +143,10 @@ int32_t add_ue(int16_t rnti, PHY_VARS_eNB *phy_vars_eNB)
   uint8_t i;
 
 #ifdef DEBUG_PHY_PROC
-  LOG_I(PHY,"[eNB %d] Adding UE with rnti %x\n",phy_vars_eNB->Mod_id,(uint16_t)rnti);
+  LOG_I(PHY,"[eNB %d/%d] Adding UE with rnti %x\n",
+        phy_vars_eNB->Mod_id,
+        phy_vars_eNB->CC_id,
+        (uint16_t)rnti);
 #endif
 
   for (i=0; i<NUMBER_OF_UE_MAX; i++) {
@@ -3509,8 +3512,9 @@ void phy_procedures_eNB_RX(const unsigned char sched_subframe,PHY_VARS_eNB *phy_
         LOG_D(PHY,"[eNB][PUSCH %d] Increasing to round %d\n",harq_pid,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round);
 
         if (phy_vars_eNB->ulsch_eNB[i]->Msg3_flag == 1) {
-          LOG_I(PHY,"[eNB %d][RAPROC] frame %d, subframe %d, UE %d: Error receiving ULSCH (Msg3), round %d/%d\n",
+          LOG_I(PHY,"[eNB %d/%d][RAPROC] frame %d, subframe %d, UE %d: Error receiving ULSCH (Msg3), round %d/%d\n",
                 phy_vars_eNB->Mod_id,
+                phy_vars_eNB->CC_id,
                 frame,subframe, i,
                 phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round-1,
                 phy_vars_eNB->lte_frame_parms.maxHARQ_Msg3Tx-1);
