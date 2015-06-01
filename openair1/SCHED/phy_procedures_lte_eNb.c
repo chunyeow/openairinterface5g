@@ -143,7 +143,7 @@ int32_t add_ue(int16_t rnti, PHY_VARS_eNB *phy_vars_eNB)
   uint8_t i;
 
 #ifdef DEBUG_PHY_PROC
-  LOG_I(PHY,"[eNB %d] Adding UE with rnti %x\n",phy_vars_eNB->Mod_id,rnti);
+  LOG_I(PHY,"[eNB %d] Adding UE with rnti %x\n",phy_vars_eNB->Mod_id,(uint16_t)rnti);
 #endif
 
   for (i=0; i<NUMBER_OF_UE_MAX; i++) {
