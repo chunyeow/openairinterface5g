@@ -129,9 +129,9 @@ static inline void stop_meas(time_stats_t *ts)
   }
 }
 
-static inline void reset_meas(time_stats_t *ts) {
-
-  static cpu_freq_set=0;
+static inline void reset_meas(time_stats_t *ts)
+{
+  static int cpu_freq_set=0;
   
   if (opp_enabled) {
     ts->trials=0;
@@ -141,7 +141,7 @@ static inline void reset_meas(time_stats_t *ts) {
     ts->diff_square=0;
     ts->max=0;
 
-    if (cpu_freq_set == 0 ){
+    if (cpu_freq_set == 0) {
       cpu_freq_set = 1;
       get_cpu_freq_GHz();
       printf("CPU Freq is %f \n", cpu_freq_GHz);
@@ -149,6 +149,7 @@ static inline void reset_meas(time_stats_t *ts) {
   }
   
 }
+
 static inline void copy_meas(time_stats_t *dst_ts,time_stats_t *src_ts)
 {
 
