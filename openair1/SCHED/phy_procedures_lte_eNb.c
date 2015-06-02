@@ -1528,12 +1528,12 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
       if (subframe == 0) {
         if (phy_vars_eNB->lte_frame_parms.frame_type == FDD) {
           generate_pss(phy_vars_eNB->lte_eNB_common_vars.txdataF[0],
-                       AMP_BPSK,
+                       AMP,
                        &phy_vars_eNB->lte_frame_parms,
                        (phy_vars_eNB->lte_frame_parms.Ncp==NORMAL) ? 6 : 5,
                        0);
           generate_sss(phy_vars_eNB->lte_eNB_common_vars.txdataF[0],
-                       AMP_BPSK,
+                       AMP,
                        &phy_vars_eNB->lte_frame_parms,
                        (phy_vars_eNB->lte_frame_parms.Ncp==NORMAL) ? 5 : 4,
                        0);
@@ -1667,7 +1667,7 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
       if (phy_vars_eNB->lte_frame_parms.frame_type == TDD) {
         //    printf("Generating PSS (frame %d, subframe %d)\n",phy_vars_eNB->proc[sched_subframe].frame_tx,next_slot>>1);
         generate_pss(phy_vars_eNB->lte_eNB_common_vars.txdataF[0],
-                     AMP_BPSK,
+                     AMP,
                      &phy_vars_eNB->lte_frame_parms,
                      2,
                      2);
@@ -1682,12 +1682,12 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 
       if (phy_vars_eNB->lte_frame_parms.frame_type == FDD) {
         generate_pss(phy_vars_eNB->lte_eNB_common_vars.txdataF[0],
-                     AMP_BPSK,
+                     AMP,
                      &phy_vars_eNB->lte_frame_parms,
                      (phy_vars_eNB->lte_frame_parms.Ncp==NORMAL) ? 6 : 5,
                      10);
         generate_sss(phy_vars_eNB->lte_eNB_common_vars.txdataF[0],
-                     AMP_BPSK,
+                     AMP,
                      &phy_vars_eNB->lte_frame_parms,
                      (phy_vars_eNB->lte_frame_parms.Ncp==NORMAL) ? 5 : 4,
                      10);
@@ -1718,7 +1718,7 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
       if (phy_vars_eNB->lte_frame_parms.frame_type == TDD) {
         //      printf("Generating PSS (frame %d, subframe %d)\n",phy_vars_eNB->proc[sched_subframe].frame_tx,next_slot>>1);
         generate_pss(phy_vars_eNB->lte_eNB_common_vars.txdataF[0],
-                     AMP_BPSK,
+                     AMP,
                      &phy_vars_eNB->lte_frame_parms,
                      2,
                      12);
