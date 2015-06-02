@@ -90,24 +90,28 @@ int trx_brf_start(openair0_device *openair0) {
 
 }
 
-int trx_brf_write(openair0_device *device,openair0_timestamp *ptimestamp, void **buff, int nsamps, int cc) {
+int trx_brf_write(openair0_device *device,openair0_timestamp ptimestamp, void **buff, int nsamps, int cc) {
   int status;
   struct bladerf_metadata meta;
   int16_t zeros[] = { 0, 0, 0, 0 };
   struct bladerf *dev =  (struct bladerf*) device->priv;
-  
+  openair0_timestamp current_timestamp;
   /* BRF has only 1 rx/tx chaine : is it correct? */
   void *sample = (void*)buff[0];
-  
+  memset(&meta, 0, sizeof(meta));
+
   /* Retrieve the current timestamp */
+#ifdef BRF_TEST 
   if ((status=bladerf_get_timestamp(dev, BLADERF_MODULE_TX, &meta.timestamp)) != 0) {
     fprintf(stderr,"Failed to get current RX timestamp: %s\n",bladerf_strerror(status));
   } else {
-    *ptimestamp = meta.timestamp;
-    printf("Current TX timestamp: 0x%016"PRIx64"\n", meta.timestamp);
+    current_timestamp = meta.timestamp;
+    printf("Current TX timestampe  0x%016"PRIx64" and current timestamp: 0x%016"PRIx64"\n", ptimestamp, meta.timestamp);
   }
-  
-  meta.flags |= BLADERF_META_FLAG_RX_NOW;
+#endif   
+  meta.timestamp= ptimestamp;
+
+  meta.flags |= BLADERF_META_FLAG_TX_NOW;
   
   status = bladerf_sync_tx(dev, sample, nsamps, &meta, timeout_ms);
   if (status != 0) {
@@ -125,7 +129,7 @@ int trx_brf_read(openair0_device *device, openair0_timestamp *ptimestamp, void *
   struct bladerf *dev =  (struct bladerf*) device->priv;
   /* BRF has only onerx/tx chain: is it correct? */
   void *sample = (void*)buff[0];
-  
+  memset(&meta, 0, sizeof(meta));
   /* Retrieve the current timestamp */
   if ((status=bladerf_get_timestamp(dev, BLADERF_MODULE_RX, &meta.timestamp)) != 0) {
     fprintf(stderr,"Failed to get current RX timestamp: %s\n",bladerf_strerror(status));
@@ -139,16 +143,16 @@ int trx_brf_read(openair0_device *device, openair0_timestamp *ptimestamp, void *
 
   status = bladerf_sync_rx(dev, sample, nsamps, &meta, timeout_ms);
 
-  /*if (meta.actual_count < nsamps ) {
+  /* if (meta.actual_count < nsamps ) {
     printf("[BRF][RX] received %d samples out of %d\n", meta.actual_count, nsamps);
-    }*/
-
+    }
+  */
   if (status != 0) {
     fprintf(stderr, "RX failed: %s\n", bladerf_strerror(status));
   } else if (meta.status & BLADERF_META_STATUS_OVERRUN) {
-    fprintf(stderr, "Overrun detected in RX. %u valid samples were read \n", meta.actual_count);
+    fprintf(stderr, "Overrun detected in RX. %u valid samples were read (nsymps %d)\n", meta.actual_count,nsamps);
   } else if (meta.status & BLADERF_META_STATUS_UNDERRUN) {
-    fprintf(stderr, "Underrun detected in RX. %u valid samples were read \n", meta.actual_count);
+    fprintf(stderr, "Underrun detected in RX. %u valid samples were read (nsymps %d) \n", meta.actual_count,nsamps);
   }else {
     printf("Got %u samples at t=0x%016"PRIx64"\n",  meta.actual_count, meta.timestamp);
   }
@@ -183,8 +187,17 @@ int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cf
   // opaque data struct
   struct bladerf *dev;// =  (struct bladerf*)malloc(sizeof(struct bladerf));
   //memset(dev, 0, sizeof(struct bladerf));
+  // An empty ("") or NULL device identifier will result in the first encountered device being opened (using the first discovered backend)
 
-  if ((status=bladerf_open(&dev, "")) != 0 ) {
+  // init required params for BRF
+  num_buffers = 16;
+  buffer_size = openair0_cfg[card]. samples_per_packet*sizeof(int32_t); // buffer size = 4096 for sample_len of 1024
+  num_transfers = 8; // ? device->openair0_cfg.samples_per_packets
+  timeout_ms = 1;
+  
+  printf("the buffer_size is set to %d\n", buffer_size);
+
+if ((status=bladerf_open(&dev, "")) != 0 ) {
     fprintf(stderr,"Failed to open brf device: %s\n",bladerf_strerror(status));
     brf_error(status);
   }
@@ -254,12 +267,7 @@ int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cf
     brf_error(status);
   }
 
-  num_buffers = 16;
-  buffer_size = openair0_cfg[card].samples_per_packet*sizeof(int32_t);
-  num_transfers = 8; // ? device->openair0_cfg.samples_per_packets
-  timeout_ms = 1;
-
-
+ 
   bladerf_log_set_verbosity(get_brf_log_level(openair0_cfg[card].log_level));
   
   printf("BLADERF: Initializing openair0_device\n");
@@ -280,7 +288,6 @@ void brf_error(int status) {
 int get_brf_log_level(int log_level){
 
   int level=BLADERF_LOG_LEVEL_INFO;
-  
   switch(log_level) {
   case LOG_DEBUG:
     level=BLADERF_LOG_LEVEL_DEBUG;
