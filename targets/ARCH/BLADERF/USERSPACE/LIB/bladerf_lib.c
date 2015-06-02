@@ -193,7 +193,7 @@ int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cf
   num_buffers = 16;
   buffer_size = openair0_cfg[card]. samples_per_packet*sizeof(int32_t); // buffer size = 4096 for sample_len of 1024
   num_transfers = 8; // ? device->openair0_cfg.samples_per_packets
-  timeout_ms = 1;
+  timeout_ms = 1; // or 0/
   
   printf("the buffer_size is set to %d\n", buffer_size);
 
@@ -204,22 +204,27 @@ if ((status=bladerf_open(&dev, "")) != 0 ) {
   printf("[BRF] device speed is %d\n",bladerf_device_speed(dev) );
 
   // RX
+  // Example of CLI output: RX Frequency: 2539999999Hz
+  
   if ((status=bladerf_set_frequency(dev, BLADERF_MODULE_RX, openair0_cfg[card].rx_freq[0])) != 0){
     fprintf(stderr,"Failed to set RX frequency: %s\n",bladerf_strerror(status));
     brf_error(status);
   }
+  // RX sample rate: 7680000 0/1
   if ((status=bladerf_set_sample_rate(dev, BLADERF_MODULE_RX, openair0_cfg[card].sample_rate, NULL)) != 0){
     fprintf(stderr,"Failed to set RX sample rate: %s\n", bladerf_strerror(status));
     brf_error(status);
   }
+  // RX Bandwidth:  14000000Hz
   if ((status=bladerf_set_bandwidth(dev, BLADERF_MODULE_RX, openair0_cfg[card].rx_bw, NULL)) != 0){
     fprintf(stderr,"Failed to set RX bandwidth: %s\n", bladerf_strerror(status));
     brf_error(status);
   }
+  // desired gain = 16
   if ((status=bladerf_set_gain(dev, BLADERF_MODULE_RX, openair0_cfg[card].rx_gain[0])) != 0) {
     fprintf(stderr,"Failed to set RX gain: %s\n",bladerf_strerror(status));
     brf_error(status);
-  }
+  } 
 
   /* Configure the device's RX module for use with the sync interface.
    * SC16 Q11 samples *with* metadata are used. */
