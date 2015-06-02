@@ -596,7 +596,7 @@ rrc_lite_data_ind(
     LOG_N(RRC, "[UE %x] Frame %d: received a DCCH %d message on SRB %d with Size %d from eNB ???\n",
           ctxt_pP->module_id, ctxt_pP->frame, DCCH_index,Srb_id-1,sdu_sizeP);
   } else {
-    LOG_N(RRC, "[eNB %d] Frame %d: received a DCCH %d message on SRB %d with Size %d from UE %d\n",
+    LOG_N(RRC, "[eNB %d] Frame %d: received a DCCH %d message on SRB %d with Size %d from UE %x\n",
           ctxt_pP->module_id,
           ctxt_pP->frame,
           DCCH_index,
