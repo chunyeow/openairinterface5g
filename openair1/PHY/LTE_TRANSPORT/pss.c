@@ -80,7 +80,7 @@ int generate_pss(mod_sym_t **txdataF,
     return(-1);
   }
 
-  a = (frame_parms->mode1_flag == 0) ? amp : (amp*ONE_OVER_SQRT2_Q15)>>15;
+  a = (frame_parms->nb_antennas_tx == 1) ? amp: (amp*ONE_OVER_SQRT2_Q15)>>15;
   //printf("[PSS] amp=%d, a=%d\n",amp,a);
 
   Nsymb = (frame_parms->Ncp==NORMAL)?14:12;
