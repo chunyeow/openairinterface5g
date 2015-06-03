@@ -110,6 +110,7 @@ function main()
         ;;
       -i | --check-installed-software)
         echo "Check installed software packages necessary to build and run HSS (support Ubuntu 14.04):"
+        set_openair_env
         check_install_oai_software
         exit 0
         ;;
