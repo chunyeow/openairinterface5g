@@ -596,24 +596,30 @@ _gtpuah_tg4_add(struct sk_buff *old_skb_pP, const struct xt_action_param *par_pP
   //----------------------------------------------------------------------------
   ct = nf_ct_get(old_skb_pP, &ctinfo);
   if (ct == NULL) {
-    PR_INFO(MODULE_NAME": _gtpuah_target_add force info_pP mark %u to skb_pP mark %u\n",
-	            old_skb_pP->mark,
-	            ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->rtun);
-	old_skb_pP->mark = ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->rtun;
+    PR_INFO(MODULE_NAME": _gtpuah_target_add force targinfo ltun %u to skb_pP mark %u\n",
+	            ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->ltun,
+	            old_skb_pP->mark);
+    newmark = ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->ltun;
   } else {
     //XT_CONNMARK_RESTORE:
-	newmark          = old_skb_pP->mark ^ ct->mark;
+    newmark          = old_skb_pP->mark ^ ct->mark;
 
-	PR_INFO(MODULE_NAME": _gtpuah_target_add restore mark %u (skb mark %u ct mark %u) len %u sgw addr %x\n",
+    PR_INFO(MODULE_NAME": _gtpuah_target_add restore mark %u (skb mark %u ct mark %u) len %u sgw addr %x\n",
 			newmark, old_skb_pP->mark, ct->mark, orig_iplen,
 			((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->raddr);
+    if (newmark != ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->ltun) {
+  	  pr_warn(MODULE_NAME": _gtpuah_target_add restore mark 0x%x mismatch ltun 0x%x (rtun 0x%x)",
+  			newmark, ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->ltun,
+  			 ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->rtun);
+    }
   }
+
 
   /* Add GTPu header */
   gtpuh.flags   = 0x30; /* v1 and Protocol-type=GTP */
   gtpuh.msgtype = 0xff; /* T-PDU */
   gtpuh.length  = htons(orig_iplen);
-  gtpuh.tunid   = htonl(newmark);
+  gtpuh.tunid   = htonl(((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->rtun);
 
   _gtpuah_sock.addr_send.sin_addr.s_addr = ((const struct xt_gtpuah_target_info *)(par_pP->targinfo))->raddr;
   _gtpuah_ksocket_send(_gtpuah_sock.sock, &_gtpuah_sock.addr_send, (unsigned char*)&gtpuh, sizeof(gtpuh), (unsigned char*)old_iph_p, orig_iplen);
