@@ -148,7 +148,7 @@ sctp_handle_new_association_req(
   // in init chunk appears a list of host addresses, IPv4 and IPv4 in an arbitrary (unsorted) order
   // SCTP hearbeats starts with first ipv4 addresses then stop triyng with other ipv4 addresses
   // if it encounters an IPv6 address in list, so we can force the building of IPv4 addresses only
-  // with AF_INET (of cource the working IPv4 address is the last in the list...)
+  // with AF_INET (the working IPv4 address can be the last in the list...)
   if ((sd = socket(AF_INET6, SOCK_STREAM, IPPROTO_SCTP)) < 0) {
 #else
 
