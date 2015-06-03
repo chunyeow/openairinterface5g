@@ -1003,6 +1003,10 @@ typedef struct {
   /// first index: rx antenna [0..3] (hard coded) \note Hard coded array size indexed by \c nb_antennas_rx.
   /// second index: ? [0..ofdm_symbol_size*12[
   int16_t *rxsigF[4];
+  /// \brief local buffer to compute prach_ifft (necessary in case of multiple CCs)
+  /// first index: rx antenna [0..3] (hard coded) \note Hard coded array size indexed by \c nb_antennas_rx.
+  /// second index: ? [0..2047] (hard coded)
+  int16_t *prach_ifft[4];
 } LTE_eNB_PRACH;
 
 typedef struct {

@@ -3034,9 +3034,6 @@ void get_n1_pucch_eNB(PHY_VARS_eNB *phy_vars_eNB,
   }
 }
 
-
-extern int16_t prach_ifft[4][1024*4];
-
 void prach_procedures(PHY_VARS_eNB *phy_vars_eNB,uint8_t sched_subframe,uint8_t abstraction_flag)
 {
 

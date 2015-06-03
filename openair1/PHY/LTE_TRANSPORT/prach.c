@@ -1002,8 +1002,6 @@ int32_t generate_prach( PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id, uint8_t subfra
 
 
 __m128i mmtmpX0,mmtmpX1,mmtmpX2,mmtmpX3;
-int16_t prach_ifft[4][1024*2];
-
 
 void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_energy_list, uint16_t *preamble_delay_list, uint16_t Nf, uint8_t tdd_mapindex)
 {
@@ -1019,6 +1017,7 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
   uint8_t n_ra_prboffset     = phy_vars_eNB->lte_frame_parms.prach_config_common.prach_ConfigInfo.prach_FreqOffset;
   int16_t *prachF           = phy_vars_eNB->lte_eNB_prach_vars.prachF;
   int16_t **rxsigF          = phy_vars_eNB->lte_eNB_prach_vars.rxsigF;
+  int16_t **prach_ifft      = phy_vars_eNB->lte_eNB_prach_vars.prach_ifft;
   int16_t *prach[4];
   int16_t *prach2;
   uint8_t n_ra_prb;

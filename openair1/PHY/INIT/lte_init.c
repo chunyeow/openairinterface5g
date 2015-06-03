@@ -1346,11 +1346,19 @@ int phy_init_lte_eNB(PHY_VARS_eNB *phy_vars_eNB,
   /* number of elements of an array X is computed as sizeof(X) / sizeof(X[0]) */
   AssertFatal(frame_parms->nb_antennas_rx <= sizeof(eNB_prach_vars->rxsigF) / sizeof(eNB_prach_vars->rxsigF[0]),
               "nb_antennas_rx too large");
-
   for (i=0; i<frame_parms->nb_antennas_rx; i++) {
     eNB_prach_vars->rxsigF[i] = (int16_t*)malloc16_clear( frame_parms->ofdm_symbol_size*12*2*sizeof(int16_t) );
 #ifdef DEBUG_PHY
     msg("[openair][LTE_PHY][INIT] prach_vars->rxsigF[%d] = %p\n",i,eNB_prach_vars->rxsigF[i]);
+#endif
+  }
+
+  AssertFatal(frame_parms->nb_antennas_rx <= sizeof(eNB_prach_vars->prach_ifft) / sizeof(eNB_prach_vars->prach_ifft[0]),
+              "nb_antennas_rx too large");
+  for (i=0; i<frame_parms->nb_antennas_rx; i++) {
+    eNB_prach_vars->prach_ifft[i] = (int16_t*)malloc16_clear(1024*2*sizeof(int16_t));
+#ifdef DEBUG_PHY
+    msg("[openair][LTE_PHY][INIT] prach_vars->prach_ifft[%d] = %p\n",i,eNB_prach_vars->prach_ifft[i]);
 #endif
   }
 
