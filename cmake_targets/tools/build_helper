@@ -206,7 +206,7 @@ install_1.1.5_freediameter_from_source() {
     wget http://www.freediameter.net/hg/freeDiameter/archive/1.1.5.tar.gz 
     tar xzf 1.1.5.tar.gz
     cd freeDiameter-1.1.5
-    patch -p1 < $OPENAIRCN_DIR/S6A/freediameter/freediameter-1.1.5.patch 
+    patch -p1 < $OPENAIR_DIR/openair-cn/S6A/freediameter/freediameter-1.1.5.patch 
     mkdir build
     cd build
     cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ../ 
@@ -224,7 +224,7 @@ install_freediameter_from_source() {
   wget http://www.freediameter.net/hg/freeDiameter/archive/1.2.0.tar.gz 
   tar xzf 1.2.0.tar.gz
   cd freeDiameter-1.2.0
-  patch -p1 < $OPENAIRCN_DIR/S6A/freediameter/freediameter-1.2.0.patch 
+  patch -p1 < $OPENAIR_DIR/openair-cn/S6A/freediameter/freediameter-1.2.0.patch 
   mkdir build
   cd build
   cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ../ 
@@ -348,8 +348,8 @@ install_asn1c_from_source(){
     cd /tmp/asn1c-r1516
     rm -rf /tmp/asn1c-r1516/*
     svn co https://github.com/vlm/asn1c/trunk  /tmp/asn1c-r1516 -r 1516 > /tmp/log_compile_asn1c
-    patch -p0 < $OPENAIRCN_DIR/S1AP/MESSAGES/ASN1/asn1cpatch.p0 >> /tmp/log_compile_asn1c
-    patch -p0 < $OPENAIRCN_DIR/S1AP/MESSAGES/ASN1/asn1cpatch_2.p0 >> /tmp/log_compile_asn1c
+    patch -p0 < $OPENAIR_DIR/openair-cn/S1AP/MESSAGES/ASN1/asn1cpatch.p0 >> /tmp/log_compile_asn1c
+    patch -p0 < $OPENAIR_DIR/openair-cn/S1AP/MESSAGES/ASN1/asn1cpatch_2.p0 >> /tmp/log_compile_asn1c
     ./configure
     make > /tmp/log_compile_asn1c 2>&1
     $SUDO make install
@@ -424,7 +424,7 @@ create_hss_database(){
   # test if tables have been created
   mysql -u $hss_username --password=$hss_password  -e "desc $database_name.users" > /dev/null 2>&1
   if [ $? -eq 1 ]; then 
-    mysql -u $hss_username --password=$hss_password $database_name < $OPENAIRCN_DIR/OPENAIRHSS/db/$database_name.sql
+    mysql -u $hss_username --password=$hss_password $database_name < $OPENAIR_DIR/openair-cn/OPENAIRHSS/db/$database_name.sql
     if [ $? -ne 0 ]; then
       echo_error "HSS: $database_name tables creation failed"
       return 1
