@@ -161,7 +161,7 @@ void fill_ue_band_info(void);
 // current status is that every UE has a DL scope for a SINGLE eNB (eNB_id=0)
 // at eNB 0, an UL scope for every UE
 FD_lte_phy_scope_ue  *form_ue[NUMBER_OF_UE_MAX];
-FD_lte_phy_scope_enb *form_enb[NUMBER_OF_UE_MAX];
+FD_lte_phy_scope_enb *form_enb[MAX_NUM_CCs][NUMBER_OF_UE_MAX];
 FD_stats_form                  *form_stats=NULL,*form_stats_l2=NULL;
 char title[255];
 unsigned char                   scope_enb_num_ue = 1;
@@ -545,7 +545,7 @@ static void *scope_thread(void *arg)
 # endif
   int len = 0;
   struct sched_param sched_param;
-  int UE_id;
+  int UE_id, CC_id;
 
   sched_param.sched_priority = sched_get_priority_min(SCHED_FIFO)+1;
   sched_setscheduler(0, SCHED_FIFO,&sched_param);
@@ -584,9 +584,11 @@ static void *scope_thread(void *arg)
       fl_set_object_label(form_stats->stats_text, stats_buffer);
 
       for(UE_id=0; UE_id<scope_enb_num_ue; UE_id++) {
-        phy_scope_eNB(form_enb[UE_id],
-                      PHY_vars_eNB_g[0][0],
-                      UE_id);
+	for(CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
+	  phy_scope_eNB(form_enb[CC_id][UE_id],
+			PHY_vars_eNB_g[0][CC_id],
+			UE_id);
+	}
       }
 
     }
@@ -852,6 +854,7 @@ void *l2l1_task(void *arg)
 
   if (UE_flag == 0) {
     /* Wait for the initialize message */
+    printf("Wait for the ITTI initialize message\n");
     do {
       if (message_p != NULL) {
         result = itti_free (ITTI_MSG_ORIGIN_ID(message_p), message_p);
@@ -2517,10 +2520,10 @@ int main( int argc, char **argv )
     frame_parms[CC_id]->pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH = 0;
     init_ul_hopping(frame_parms[CC_id]);
     init_frame_parms(frame_parms[CC_id],1);
- //   phy_init_top(frame_parms[CC_id]);
+    //   phy_init_top(frame_parms[CC_id]);
+    phy_init_lte_top(frame_parms[CC_id]);
   }
 
-  phy_init_lte_top(frame_parms[0]);
 
   for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
     //init prach for openair1 test
@@ -2859,10 +2862,8 @@ int main( int argc, char **argv )
 #endif
 
 #ifdef OPENAIR2
-
-  printf("Filling UE band info\n");
-
   if (UE_flag==1) {
+    printf("Filling UE band info\n");
     fill_ue_band_info();
     mac_xface->dl_phy_sync_success (0, 0, 0, 1);
   } else
@@ -3009,17 +3010,19 @@ int main( int argc, char **argv )
       fl_show_form (form_stats->stats_form, FL_PLACE_HOTSPOT, FL_FULLBORDER, "stats");
 
       for(UE_id=0; UE_id<scope_enb_num_ue; UE_id++) {
-        form_enb[UE_id] = create_lte_phy_scope_enb();
-        sprintf (title, "UE%d LTE UL SCOPE eNB",UE_id+1);
-        fl_show_form (form_enb[UE_id]->lte_phy_scope_enb, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
+	for(CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
+	  form_enb[CC_id][UE_id] = create_lte_phy_scope_enb();
+	  sprintf (title, "LTE UL SCOPE eNB for CC_id %d, UE %d",CC_id,UE_id);
+	  fl_show_form (form_enb[CC_id][UE_id]->lte_phy_scope_enb, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
 
-        if (otg_enabled) {
-          fl_set_button(form_enb[UE_id]->button_0,1);
-          fl_set_object_label(form_enb[UE_id]->button_0,"DL Traffic ON");
-        } else {
-          fl_set_button(form_enb[UE_id]->button_0,0);
-          fl_set_object_label(form_enb[UE_id]->button_0,"DL Traffic OFF");
-        }
+	  if (otg_enabled) {
+	    fl_set_button(form_enb[CC_id][UE_id]->button_0,1);
+	    fl_set_object_label(form_enb[CC_id][UE_id]->button_0,"DL Traffic ON");
+	  } else {
+	    fl_set_button(form_enb[CC_id][UE_id]->button_0,0);
+	    fl_set_object_label(form_enb[CC_id][UE_id]->button_0,"DL Traffic OFF");
+	  }
+	}
       }
     } else {
       form_stats = create_form_stats_form();
@@ -3181,8 +3184,10 @@ int main( int argc, char **argv )
       fl_free_form(form_stats_l2->stats_form);
 
       for(UE_id=0; UE_id<scope_enb_num_ue; UE_id++) {
-        fl_hide_form(form_enb[UE_id]->lte_phy_scope_enb);
-        fl_free_form(form_enb[UE_id]->lte_phy_scope_enb);
+	for(CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
+	  fl_hide_form(form_enb[CC_id][UE_id]->lte_phy_scope_enb);
+	  fl_free_form(form_enb[CC_id][UE_id]->lte_phy_scope_enb);
+	}
       }
     }
   }
