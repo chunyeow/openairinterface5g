@@ -54,9 +54,20 @@ extern unsigned char NB_UE_INST;
 void tx_throughput(int src, int dst, int application)
 {
 
-  if (otg_info->tx_num_bytes[src][dst][application]>0)
-    otg_info->tx_throughput[src][dst][application]=((double)otg_info->tx_num_bytes[src][dst][application] *1000*8)/ (get_ctime()*1024); // unit Kbit/sec, if ctime in ms
-
+  if (otg_info->tx_num_bytes[src][dst][application]>0) {
+    //  otg_info->tx_throughput[src][dst][application]=((double)otg_info->tx_num_bytes[src][dst][application] *1000*8)/ (get_ctime()*1024); // unit Kbit/sec, if ctime in ms
+    if ((g_otg->flow_start[src][dst][application]+g_otg->flow_duration[src][dst][application]) < get_ctime() )
+      otg_info->tx_throughput[src][dst][application]=((double)otg_info->tx_num_bytes[src][dst][application] *1000*8)/ ((g_otg->flow_start[src][dst][application]+g_otg->flow_duration[src][dst][application])*1024); // unit Kbit/sec, if ctime in ms
+    else if (g_otg->flow_start[src][dst][application] < get_ctime() )
+      otg_info->tx_throughput[src][dst][application]=((double)otg_info->tx_num_bytes[src][dst][application] *1000*8)/ ((get_ctime() - g_otg->flow_start[src][dst][application])*1024);
+    else 
+      LOG_W("[src %d][dst %d][app %d] flow start time less than the simu time (start %d, duration %d, ctime %d)\n",
+	    src, dst, application,
+	    g_otg->flow_start[src][dst][application],
+	    g_otg->flow_duration[src][dst][application],
+	    get_ctime());
+  }
+  
   if (otg_info->tx_num_bytes_background[src][dst]>0)
     otg_info->tx_throughput_background[src][dst]=((double)otg_info->tx_num_bytes_background[src][dst]*1000*8)/ (get_ctime()*1024); // unit Kbit/sec, if ctime in ms
 
@@ -76,8 +87,19 @@ void tx_throughput(int src, int dst, int application)
 void rx_goodput(int src, int dst, int application)
 {
 
-  if (otg_info->rx_num_bytes[src][dst][application]>0)
-    otg_info->rx_goodput[src][dst][application]=((double)otg_info->rx_num_bytes[src][dst][application]*1000*8)/(get_ctime()*1024); // unit kB/sec, if ctime in ms
+  if (otg_info->rx_num_bytes[src][dst][application]>0) {
+    // otg_info->rx_goodput[src][dst][application]=((double)otg_info->rx_num_bytes[src][dst][application]*1000*8)/(get_ctime()*1024); // unit kB/sec, if ctime in ms
+if ((g_otg->flow_start[src][dst][application]+g_otg->flow_duration[src][dst][application]) < get_ctime() )
+      otg_info->rx_goodput[src][dst][application]=((double)otg_info->rx_num_bytes[src][dst][application] *1000*8)/ ((g_otg->flow_start[src][dst][application]+g_otg->flow_duration[src][dst][application])*1024); // unit Kbit/sec, if ctime in ms
+    else if (g_otg->flow_start[src][dst][application] < get_ctime() )
+      otg_info->rx_goodput[src][dst][application]=((double)otg_info->rx_num_bytes[src][dst][application] *1000*8)/ ((get_ctime() - g_otg->flow_start[src][dst][application])*1024);
+    else 
+      LOG_W("[src %d][dst %d][app %d] flow start time less than the simu time (start %d, duration %d, ctime %d)\n",
+	    src, dst, application,
+	    g_otg->flow_start[src][dst][application],
+	    g_otg->flow_duration[src][dst][application],
+	    get_ctime());
+  }
 
   if (otg_info->rx_num_bytes_background[src][dst]>0)
     otg_info->rx_goodput_background[src][dst]=((double)otg_info->rx_num_bytes_background[src][dst] *1000*8)/(get_ctime()*1024); // unit kB/sec, if ctime in ms

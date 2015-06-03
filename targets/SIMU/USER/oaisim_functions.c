@@ -1268,6 +1268,8 @@ void update_otg_eNB(module_id_t enb_module_idP, unsigned int ctime)
 {
 #if defined(USER_MODE) && defined(OAI_EMU)
 
+  int rrc_state=0; 
+
   if (oai_emulation.info.otg_enabled ==1 ) {
 
     int dst_id, app_id;
@@ -1277,9 +1279,11 @@ void update_otg_eNB(module_id_t enb_module_idP, unsigned int ctime)
       for_times += 1;
 
       // generate traffic if the ue is rrc reconfigured state
-      if (mac_eNB_get_rrc_status(enb_module_idP, dst_id) > 2 /*RRC_CONNECTED*/ ) {
-        if_times += 1;
-
+      //if ((rrc_state=mac_eNB_get_rrc_status(enb_module_idP, dst_id)) > 2 /*RRC_CONNECTED*/ ) {
+      if (mac_eNB_get_rrc_status(enb_module_idP, oai_emulation.info.eNB_ue_module_id_to_rnti[enb_module_idP][dst_id]) > 2 ){ 
+	
+	if_times += 1;
+	
         for (app_id=0; app_id<MAX_NUM_APPLICATION; app_id++) {
           otg_pkt = malloc (sizeof(Packet_otg_elt_t));
 

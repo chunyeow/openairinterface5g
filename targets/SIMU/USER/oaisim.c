@@ -1198,10 +1198,7 @@ l2l1_task (void *args_p)
   //end of frame
 
   stop_meas (&oaisim_stats);
-
-#if defined(ENABLE_ITTI)
-  itti_terminate_tasks(TASK_L2L1);
-#endif
+  oai_shutdown ();
 
 #ifdef PRINT_STATS
 
@@ -1224,6 +1221,10 @@ l2l1_task (void *args_p)
   if (eNB_l2_stats)
     fclose (eNB_l2_stats);
 
+#endif
+
+#if defined(ENABLE_ITTI)
+  itti_terminate_tasks(TASK_L2L1);
 #endif
 
   return NULL;
@@ -1364,7 +1365,7 @@ main (int argc, char **argv)
         ">>>>>>>>>>>>>>>>>>>>>>>>>>> OAIEMU Ending <<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
 
   raise (SIGINT);
-  oai_shutdown ();
+  //  oai_shutdown ();
 
   return (0);
 }
@@ -1808,9 +1809,10 @@ oai_shutdown (void)
 #endif
 
   //Perform KPI measurements
-  if (oai_emulation.info.otg_enabled == 1)
+  if (oai_emulation.info.otg_enabled == 1){
+    LOG_N(EMU,"calling OTG kpi gen .... \n");
     kpi_gen ();
-
+  }
   if (oai_emulation.info.opp_enabled == 1)
     print_opp_meas ();
 

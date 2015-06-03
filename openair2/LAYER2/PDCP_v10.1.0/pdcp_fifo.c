@@ -754,7 +754,7 @@ void pdcp_fifo_read_input_sdus_from_otg (const protocol_ctxt_t* const  ctxt_pP) 
             ctxt_pP->subframe,
 	    src_id);
 
-          LOG_D(OTG,"[eNB %d] Frame %d sending packet %d from module %d on rab id %d (src %d, dst %d) pkt size %d for pdcp mode %d\n",
+          LOG_D(OTG,"[eNB %d] Frame %d sending packet %d from module %d on rab id %d (src %d, dst %d/%x) pkt size %d for pdcp mode %d\n",
                 ctxt.module_id,
                 ctxt.frame,
                 pkt_cnt_enb++,
@@ -762,6 +762,7 @@ void pdcp_fifo_read_input_sdus_from_otg (const protocol_ctxt_t* const  ctxt_pP) 
                 rb_id,
                 src_id,
                 dst_id,
+		oai_emulation.info.eNB_ue_module_id_to_rnti[ctxt.module_id][dst_id],
                 pkt_size,
                 pdcp_mode);
           result = pdcp_data_req(&ctxt,
@@ -779,20 +780,21 @@ void pdcp_fifo_read_input_sdus_from_otg (const protocol_ctxt_t* const  ctxt_pP) 
           //rb_id= eNB_index * MAX_NUM_RB + DTCH;
 
 
-          LOG_D(OTG,"[UE %d] Frame %d: sending packet %d from module %d on rab id %d (src %d, dst %d) pkt size %d\n",
+          LOG_D(OTG,"[UE %d] Frame %d: sending packet %d from module %d on rab id %d (src %d/%x, dst %d) pkt size %d\n",
                 ctxt_pP->module_id,
                 ctxt_pP->frame,
                 pkt_cnt_ue++,
                 ctxt_pP->module_id,
                 rb_id,
-                ctxt_pP->module_id,
+                src_id,
+		pdcp_UE_UE_module_id_to_rnti[ctxt_pP->module_id], // [src_id]
                 dst_id,
                 pkt_size);
           PROTOCOL_CTXT_SET_BY_MODULE_ID(
             &ctxt,
-            src_id,
+            ctxt_pP->module_id, //src_id,
             ENB_FLAG_NO,
-            pdcp_UE_UE_module_id_to_rnti[src_id],
+            pdcp_UE_UE_module_id_to_rnti[ctxt_pP->module_id],// [src_id]
             ctxt_pP->frame,
             ctxt_pP->subframe,
 	    dst_id);
