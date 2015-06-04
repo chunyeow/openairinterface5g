@@ -289,7 +289,7 @@ oaisim_otg_stats(){
 
 # install the required packages
     
-    $SUDO apt-get install -y test_install_package octave >> results/perf_log.txt 2>&1
+    $SUDO apt-get install -y octave >> results/perf_log.txt 2>&1
   
     $SUDO pkill oaisim
     $SUDO pkill oaisim_nos1
@@ -323,16 +323,17 @@ oaisim_otg_stats(){
     AGGR_RESULT=1
     STATUS="PASSED"
     EXTRA_STATS=0
-    declare NUM_UES=7
-    
+    declare NUM_UES=1
+    declare TRAFFIC_DIRECTIONS=2 # DL and UL
+
     if [ $TEST_MODE = 0 ]; then 
-	declare -a TEMPLATES=(120 121 122 123 124 125 126 127 128 129 130)
-	declare -a FRAME_TYPE=(0 3)
+	declare -a TEMPLATES=(120 121 122 123 124 125 126 127 128 129) 
+	declare -a FRAME_TYPE=(0) # (0 3)
 	declare -a METRICS=(latency jitter goodput)
 	declare -a RB=(25 50 100)
     else 
-	declare -a TEMPLATES=(125)
-	declare -a FRAME_TYPE=(3)
+	declare -a TEMPLATES=(120 122 125 128)
+	declare -a FRAME_TYPE=(0)
 	declare -a METRICS=(latency)
 	declare -a RB=(25)
     fi 
@@ -346,7 +347,7 @@ oaisim_otg_stats(){
     fi
     
     declare num_cols=0
-    let num_cols=NUM_UES+1
+    let num_cols=(TRAFFIC_DIRECTIONS*NUM_UES)+1
     if [ $AGGR_RESULT = 1 ]; then 
 	COLUMN="[$num_cols:$num_cols]"
     else
@@ -368,9 +369,9 @@ oaisim_otg_stats(){
 	    let k=0;
 	    
 	    if [ $frame = 0 ]; then 
-		OPT="$OPT -F "
+		OPT_FT="-F "
 	    else 
-		OPT="$OPT -C $frame "
+		OPT_FT="-C $frame "
 	    fi 
 	    
 	    for rb in ${RB[@]}; do
@@ -378,10 +379,10 @@ oaisim_otg_stats(){
 		start=$(date +%s)
 		LOG_FILE="oaisim_log_template${template}_frame${frame}_rb${rb}.txt"
 		touch results/${LOG_FILE} 
-		echo_info "[$start] Start test_$i.$j.$k:: $OAISIM_EXEC $OPT -R $RB -c $template"
-		echo "Start test_$i.$j.$k:: $OAISIM_EXEC $OPT -R $RB -c $template" >> results/${oai_exp_date} 
+		echo_info "[$start] Start test_$i.$j.$k:: $OAISIM_EXEC $OPT_FT $OPT -R $RB -c $template"
+		echo "Start test_$i.$j.$k:: $OAISIM_EXEC $OPT_FT $OPT -R $RB -c $template" >> results/${oai_exp_date} 
 	#sleep 1 
-		$OAISIM_EXEC $OPT -R $RB -c $template 1>&2  >> ./results/$LOG_FILE
+		$OAISIM_EXEC $OPT_FT $OPT -R $RB -c $template 1>&2  >> ./results/$LOG_FILE
 	# store exit status 
 		oai_status=$?
 		end=$(date +%s)
@@ -394,7 +395,7 @@ oaisim_otg_stats(){
 		    STATUS="PASSED"	   
 		else
 		    let e++;
-		    echo_error "[$end] test_$i.$j.$k failed :: OAISIM return exit code $oai_status (remove bin/oaisim)"
+		    echo_error "[$end] test_$i.$j.$k failed :: OAISIM return exit code $oai_status"
 		    echo "[$end]test_$i.$j.$k failed :: OAISIM return exit code $oai_status" >> ./results/$LOG_FILE
 		    STATUS="FAILED"
 		fi 
@@ -457,6 +458,7 @@ PS2PDF="ps2pdf"
 STATUS="PASSED"
 EXTRA_STATS=0
 declare NUM_UES=7
+declare TRAFFIC_DIRECTIONS=1 # DL and UL
 
 if [ $TEST_MODE = 0 ]; then 
     declare -a TEMPLATES=(120 121 122 123 124 125 126 127 128 129 130)
@@ -489,7 +491,7 @@ if [ $FRAME_TYPE = 0 ]; then
 fi
 
 declare num_cols=0
-let num_cols=NUM_UES+1
+let num_cols=(TRAFFIC_DIRECTIONS*NUM_UES)+1
 if [ $AGGR_RESULT = 1 ]; then 
     COLUMN="[$num_cols:$num_cols]"
 else
