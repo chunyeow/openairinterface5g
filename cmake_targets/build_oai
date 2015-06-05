@@ -44,6 +44,7 @@ XFORMS="False"
 VCD_TIMING="False"
 REL="Rel10"
 HW="EXMIMO"
+EPC=0
 
 function print_help() {
   echo_info '
@@ -337,7 +338,7 @@ function main() {
 
   # EXMIMO drivers & firmware loader
   ###############
-  if [ "$HW" = "EXMIMO" ] ; then
+  if [ "$HW" = "EXMIMO" -a "$EPC" = "0" ] ; then
     
     echo_info "Compiling Express MIMO 2 board drivers"
     mkdir -p $DIR/lte_noS1_build_oai/build
@@ -453,70 +454,14 @@ function main() {
   ##################
   if [ "$EPC" = "1" ] ; then
     echo_info "Compiling EPC"
-    cmake_file=$DIR/epc_build_oai/CMakeLists.txt
-    cp $DIR/epc_build_oai/CMakeLists.template $cmake_file
-    echo "set(ENABLE_VCD_FIFO $VCD_TIMING )" >>  $cmake_file
-    echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
-
-    [ "$CLEAN" = "1" ] && rm -rf $DIR/epc_build_oai/build
-    mkdir -p $DIR/epc_build_oai/build
-    cd $DIR/epc_build_oai/build
-    cmake ..
-    compilations \
-      epc_build_oai mme_gw \
-      mme_gw $dbin/mme_gw.$REL
-    # Only integrated mme+sgw+pgw is operational today
-    #    compilations \
-    #  epc_build_oai oai_sgw \
-    #  oai_sgw $dbin/oai_sgw.$REL
-    compilations \
-      epc_build_oai xt_GTPUAH_lib \
-      libxt_GTPUAH_lib.so $dbin
-    compilations \
-      epc_build_oai xt_GTPURH_lib \
-      libxt_GTPURH_lib.so $dbin
-    compilations \
-      epc_build_oai xt_GTPURH \
-      CMakeFiles/xt_GTPURH/xt_GTPURH.ko $dbin
-    compilations \
-      epc_build_oai xt_GTPUAH \
-      CMakeFiles/xt_GTPUAH/xt_GTPUAH.ko $dbin
-
-
     # Example HSS and EPC run on the same host
     if [ "$CLEAN" = "1" ]; then
+      $OPENAIR_DIR/cmake_targets/tools/build_epc --clean --debug --transport-tcp-only --transport-prefer-tcp --s6a-server
       $OPENAIR_DIR/cmake_targets/tools/build_hss --clean --debug --transport-tcp-only --transport-prefer-tcp --fqdn `hostname --fqdn` --connect-to-mme `hostname --fqdn`
     else
+      $OPENAIR_DIR/cmake_targets/tools/build_epc --debug --transport-tcp-only --transport-prefer-tcp --s6a-server
       $OPENAIR_DIR/cmake_targets/tools/build_hss --debug --transport-tcp-only --transport-prefer-tcp --fqdn `hostname --fqdn` --connect-to-mme `hostname --fqdn`
     fi
-    # example HHS and EPC run on separate hosts (can use SCTP)
-    # $OPENAIR_DIR/cmake_targets/tools/build_hss --debug
-
-    echo_info "Copying iptables libraries into system directory: /lib/xtables"
-    if [ -f  $dbin/libxt_GTPURH_lib.so ] ; then
-      $SUDO rm -f /lib/xtables/libxt_GTPURH.so /lib/xtables/libxt_GTPUAH.so
-      $SUDO ln -s $dbin/libxt_GTPURH_lib.so /lib/xtables/libxt_GTPURH.so
-      $SUDO ln -s $dbin/libxt_GTPUAH_lib.so /lib/xtables/libxt_GTPUAH.so
-    else
-      echo_warning "not installed GTP-U iptables: binaries not found"
-    fi
-
-    dconf=$OPENAIR_DIR/targets/bin
-    mkdir -p $dconf
-    #cp $ORIGIN_PATH/$CONFIG_FILE $dconf || echo_error "config file $ORIGIN_PATH/$CONFIG_FILE not found"
-
-    # Do EPC
-    if [ -f $DIR/epc_build_oai/build/mme_fd.conf ] ; then
-      cp $DIR/epc_build_oai/build/epc.*.conf $dconf
-      $SUDO cp -uv $DIR/epc_build_oai/build/mme_fd.conf  $FREEDIAMETER_PREFIX/etc/freeDiameter
-    else
-      echo_warning "not installed EPC config files: not found"
-    fi
-
-    # Do HSS
-    # bash doesn't like space char around = char
-    cp -uv $DIR/hss_build/build/hss.conf $dbin
-    $SUDO cp -uv $DIR/hss_build/build/hss_fd.conf $DIR/hss_build/build/acl.conf $FREEDIAMETER_PREFIX/etc/freeDiameter
 
 #   if [ "$INSTALL_SYSTEM_FILES" = "1" ] ;then
 #    if [ -f $dbin/hss.conf ] ; then

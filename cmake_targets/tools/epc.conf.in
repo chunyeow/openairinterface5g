@@ -1,17 +1,17 @@
 MME : 
 {
 
-    REALM                          = "@REALM@";
+    REALM                          = "@REALM@";                                 # DO NOT CHANGE
     # Define the limits of the system in terms of served eNB and served UE.
     # When the limits will be reached, overload procedure will take place.
-    MAXENB                         = 10;
+    MAXENB                         = 10;                                                             
     MAXUE                          = 100;
     RELATIVE_CAPACITY              = 10;
     # Display statistics about whole system (expressed in seconds)
     MME_STATISTIC_TIMER            = 10;
     EMERGENCY_ATTACH_SUPPORTED     = "no";
     UNAUTHENTICATED_IMSI_SUPPORTED = "no";
-    # VERBOSITY: none, info, annoying
+    # ASN1 VERBOSITY: none, info, annoying
     VERBOSITY                      = "none";
     
     
@@ -26,8 +26,8 @@ MME :
 
     S6A :
     {
-        S6A_CONF                   = "@FREEDIAMETER_PATH@/../etc/freeDiameter/mme_fd.conf";
-        HSS_HOSTNAME               = "@HSS_HOSTNAME@";
+        S6A_CONF                   = "@FREEDIAMETER_PATH@/../etc/freeDiameter/mme_fd.conf";# DO NOT CHANGE
+        HSS_HOSTNAME               = "@HSS_HOSTNAME@";                                     # DO NOT CHANGE
     };
 
     # ------- SCTP definitions
@@ -62,7 +62,7 @@ MME :
         # max values = 999.999:65535
         # maximum of 32 values, comma separated
         PLMN = ( 
-             {MCC="208" ; MNC="93";  TAC = "1"; }
+             {MCC="208" ; MNC="95";  TAC = "1"; }                               # YOUR PLMN CONFIG HERE
         );
     };
     
@@ -76,8 +76,8 @@ MME :
     
     NETWORK_INTERFACES : 
     {
-        MME_INTERFACE_NAME_FOR_S1_MME         = "eth2";
-        MME_IPV4_ADDRESS_FOR_S1_MME           = "192.168.27.101//24";
+        MME_INTERFACE_NAME_FOR_S1_MME         = "eth2";                         # YOUR NETWORK CONFIG HERE
+        MME_IPV4_ADDRESS_FOR_S1_MME           = "192.168.27.101//24";           # YOUR NETWORK CONFIG HERE
 
         MME_INTERFACE_NAME_FOR_S11_MME        = "none";
         MME_IPV4_ADDRESS_FOR_S11_MME          = "0.0.0.0/24";
@@ -91,48 +91,41 @@ S-GW :
         SGW_INTERFACE_NAME_FOR_S11              = "none";
         SGW_IPV4_ADDRESS_FOR_S11                = "0.0.0.0/24";
 
-        SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP    = "eth2";
+        SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP    = "eth2";                       # YOUR NETWORK CONFIG HERE
+        SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP      = "192.168.27.101/24";          # YOUR NETWORK CONFIG HERE
+        SGW_IPV4_PORT_FOR_S1U_S12_S4_UP         = 2152;                         # PREFER NOT CHANGE
 
-        SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP      = "192.168.27.101/24";
-        # TODO  PORT NUMBER
-        SGW_IPV4_PORT_FOR_S1U_S12_S4_UP         = 2152;
-
-        SGW_INTERFACE_NAME_FOR_S5_S8_UP         = "none";
-        SGW_IPV4_ADDRESS_FOR_S5_S8_UP           = "0.0.0.0/24";
+        SGW_INTERFACE_NAME_FOR_S5_S8_UP         = "none";                       # DO NOT CHANGE
+        SGW_IPV4_ADDRESS_FOR_S5_S8_UP           = "0.0.0.0/24";                 # DO NOT CHANGE
     };
-    # Only for tests
-    SGW_DROP_UPLINK_S1U_TRAFFIC                 = "no";
-    # Only for tests
-    SGW_DROP_DOWNLINK_S1U_TRAFFIC               = "no";
 };
 
 P-GW = 
 {
     NETWORK_INTERFACES : 
     {
-        PGW_INTERFACE_NAME_FOR_S5_S8          = "none";
-        PGW_IPV4_ADDRESS_FOR_S5_S8            = "0.0.0.0/24";
+        PGW_INTERFACE_NAME_FOR_S5_S8          = "none";                         # DO NOT CHANGE
+        PGW_IPV4_ADDRESS_FOR_S5_S8            = "0.0.0.0/24";                   # DO NOT CHANGE
 
-        PGW_INTERFACE_NAME_FOR_SGI            = "eth0";
-        PGW_IPV4_ADDRESS_FOR_SGI              = "192.168.12.213/24";
-        # Option available only if GTPU in kernel configured
-        PGW_MASQUERADE_SGI                    = "yes";
+        PGW_INTERFACE_NAME_FOR_SGI            = "eth0";                         # YOUR NETWORK CONFIG HERE
+        PGW_IPV4_ADDRESS_FOR_SGI              = "192.168.12.213/24";            # YOUR NETWORK CONFIG HERE
+        PGW_MASQUERADE_SGI                    = "yes";                          # YOUR NETWORK CONFIG HERE
     };
     
     IP_ADDRESS_POOL :
     {
         IPV4_LIST = (
-                      "192.188.0.0/24",
-                      "192.188.1.0/24"
+                      "192.188.0.0/24",                                         # YOUR NETWORK CONFIG HERE
+                      "192.188.1.0/24"                                          # YOUR NETWORK CONFIG HERE
                     );
         IPV6_LIST = (
-                      "2014:02:26::0/120"
+                      "2014:02:26::0/120"                                       # YOUR NETWORK CONFIG HERE
                     );
     };
     
     #WARNING DNS ARE HARDCODED IN openair-cn/NAS/EURECOM-NAS/src/esm/msg/ActivateDefaultEpsBearerContextRequest.c:305
-    DEFAULT_DNS_1_IPV4_ADDRESS = "192.168.12.100";
-    DEFAULT_DNS_2_IPV4_ADDRESS = "192.168.106.12";
+    DEFAULT_DNS_1_IPV4_ADDRESS = "192.168.12.100";                              # YOUR NETWORK CONFIG HERE
+    DEFAULT_DNS_2_IPV4_ADDRESS = "192.168.106.12";                              # YOUR NETWORK CONFIG HERE
 };
 
 

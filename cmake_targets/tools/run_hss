@@ -80,8 +80,6 @@ function main()
     esac
   done
 
-  check_for_root_rights
-
   set_openair_env 
   cecho "OPENAIR_DIR    = $OPENAIR_DIR" $green
   cecho "OPENAIR1_DIR    = $OPENAIR1_DIR" $green

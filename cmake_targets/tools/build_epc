@@ -51,16 +51,26 @@ function help()
   echo_error "  -C, --conf-files-only                     Generate only EPC configuration files (no build)"
   echo_error "  -d, --debug                               Compile with debug informations."
   echo_error "  -h, --help                                Print this help."
-  echo_error "  -g, --gtpu-easy-module                    Used for debugging GTPU (kernel module can be easily removed)"
+  echo_error "  -g, --gtpu-easy-module                    Used for debugging GTPU (kernel module can be easily removed, for dev and debug purpose only)"
   echo_error "  -G, --gtpu-full-speed                     Best GTPU throughput performance, but cannot be removed (default)."
-  echo_error "  -H, --hss                       hostname  HSS hostname (with FQDN), default is this host (hostname)."
+  echo_error "  -H, --hss                       hostname  HSS hostname (with FQDN), default is this host (`hostname --fqdn`)."
   echo_error "  -i, --check-installed-software            Check installed software packages necessary to build and run EPC (support Ubuntu 14.04)."
-  echo_error "  -r, --realm                     realm     Realm of the MME (if not specified, is extracted from this host FQDN)."
+  l_realm=`hostname --fqdn`
+  l_realm=${l_realm#*.}
+  echo_error "  -r, --realm                     realm     Realm of the MME (if not specified, is extracted from this host FQDN ($l_realm))."
   echo_error "  -s, --transport-sctp-only                 Diameter use SCTP only (TCP disabled)."
   echo_error "  -S, --s6a-server                          MME act as a server on s6a interface (useful when HSS and MME/EPC run on the same host)."
   echo_error "  -t, --transport-tcp-only                  Diameter use TCP only (SCTP disabled)."
   echo_error "  -T, --transport-prefer-tcp                Diameter prefer TCP."
   echo_error "  -v, --verbose                             Build process verbose."
+  echo_error " "
+  echo_error "Examples:"
+  echo_error " "
+  echo_error "Case 1 - EPC run on same HSS host"
+  echo_error "build_epc -d -S -t -T"
+  echo_error " "
+  echo_error "Case 2 - EPC and HSS do not run on same host"
+  echo_error "build_epc -d -s -H my_hss_fqdn"
 }
 
 

@@ -65,6 +65,16 @@ function help()
   echo_error "  -t, --transport-tcp-only                  Diameter use TCP (SCTP disabled)."
   echo_error "  -T, --transport-prefer-tcp                Diameter prefer TCP."
   echo_error "  -v, --verbose                             Build process verbose."
+  echo_error " "
+  echo_error "Examples:"
+  echo_error " "
+  echo_error "Case 1 - HSS run on same EPC host"
+  echo_error "build_hss -d -m my_epc_fqdn -d -t -T"
+  echo_error "or build_hss -d -m my_epc_fqdn -d -t -T -k 11111111111111111111111111111111"
+  echo_error " "
+  echo_error "Case 2 - HSS and EPC do not run on same host"
+  echo_error "build_hss -d -s"
+  echo_error "build_hss -d -s -k 11111111111111111111111111111111"
 }
 
 
