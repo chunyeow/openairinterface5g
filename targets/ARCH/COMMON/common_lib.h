@@ -44,7 +44,7 @@ typedef struct openair0_device_t openair0_device;
 #define MAX_CARDS 1
 #endif
 
-#define USRP_GAIN_OFFSET (86.0)  // 86 calibrated for USRP B210 @ 2.6 GHz to get equivalent RS EPRE in OAI to SMBV100 output
+#define USRP_GAIN_OFFSET (56.0)  // 86 calibrated for USRP B210 @ 2.6 GHz to get equivalent RS EPRE in OAI to SMBV100 output
 
 typedef enum {
   max_gain=0,med_gain,byp_gain
@@ -81,6 +81,8 @@ typedef struct {
   double rx_bw;
   //! TX bandwidth in Hz
   double tx_bw;
+  //! Auto calibration flag
+  int autocal[4];
   //! RRH IP addr for Ethernet interface
   char *rrh_ip;
   //! RRH port number for Ethernet interface
@@ -141,13 +143,14 @@ extern "C"
 #endif
 
 /* return 0 if OK, < 0 if error */
-int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cfg);
-openair0_timestamp get_usrp_time(openair0_device *device);
-int openair0_set_frequencies(openair0_device* device, openair0_config_t *openair0_cfg);
-int openair0_set_rx_frequencies(openair0_device* device, openair0_config_t *openair0_cfg);
-
-int openair0_set_gains(openair0_device* device, openair0_config_t *openair0_cfg);
-
+  int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cfg);
+  openair0_timestamp get_usrp_time(openair0_device *device);
+  int openair0_set_frequencies(openair0_device* device, openair0_config_t *openair0_cfg,int exmimo_dump_config);
+  int openair0_set_rx_frequencies(openair0_device* device, openair0_config_t *openair0_cfg);
+  
+  int openair0_set_gains(openair0_device* device, openair0_config_t *openair0_cfg);
+  
+  int openair0_stop(int card);
 #ifdef __cplusplus
 }
 #endif

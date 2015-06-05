@@ -363,6 +363,10 @@ void lte_idft(LTE_DL_FRAME_PARMS *frame_parms,uint32_t *z, uint16_t Msc_PUSCH)
     dft1200(idft_in2,idft_out2,1);
     break;
 
+  default:
+    // should not be reached
+    LOG_E( PHY, "Unsupported Msc_PUSCH value of %"PRIu16"\n", Msc_PUSCH );
+    return;
   }
 
 
@@ -1267,6 +1271,7 @@ void ulsch_channel_level(int32_t **drs_ch_estimates_ext,
 
     }
 
+    DevAssert( nb_rb );
     avg[aarx] = (((int*)&avg128U)[0] +
                  ((int*)&avg128U)[1] +
                  ((int*)&avg128U)[2] +

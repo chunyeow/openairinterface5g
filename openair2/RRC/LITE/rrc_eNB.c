@@ -378,7 +378,7 @@ init_MCCH(
   int                                 sync_area = 0;
   // initialize RRC_eNB_INST MCCH entry
   eNB_rrc_inst[enb_mod_idP].carrier[CC_id].MCCH_MESSAGE =
-      malloc(eNB_rrc_inst[enb_mod_idP].carrier[CC_id].num_mbsfn_sync_area * sizeof(uint32_t *));
+    malloc(eNB_rrc_inst[enb_mod_idP].carrier[CC_id].num_mbsfn_sync_area * sizeof(uint8_t*));
 
   for (sync_area = 0; sync_area < eNB_rrc_inst[enb_mod_idP].carrier[CC_id].num_mbsfn_sync_area; sync_area++) {
 
@@ -3289,9 +3289,11 @@ openair_rrc_lite_eNB_init(
   //        }
   //    }
   eNB_rrc_inst[ctxt.module_id].Nb_ue = 0;
+
   for (CC_id = 0; CC_id < MAX_NUM_CCs; CC_id++) {
     eNB_rrc_inst[ctxt.module_id].carrier[CC_id].Srb0.Active = 0;
   }
+
   uid_linear_allocator_init(&eNB_rrc_inst[ctxt.module_id].uid_allocator);
   RB_INIT(&eNB_rrc_inst[ctxt.module_id].rrc_ue_head);
   RB_INIT(&eNB_rrc_inst[ctxt.module_id].rrc_rnti_head);
@@ -3334,6 +3336,7 @@ openair_rrc_lite_eNB_init(
           eNB_rrc_inst[ctxt.module_id].carrier[CC_id].cba_rnti[3],
           eNB_rrc_inst[ctxt.module_id].carrier[CC_id].num_active_cba_groups);
   }
+
 #endif
 
   for (CC_id = 0; CC_id < MAX_NUM_CCs; CC_id++) {

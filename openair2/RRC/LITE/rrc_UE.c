@@ -107,12 +107,49 @@ extern void *bigphys_malloc(int);
 
 extern int8_t dB_fixed2(uint32_t x,uint32_t y);
 
-void
-rrc_ue_process_securityModeCommand(
-  const protocol_ctxt_t* const ctxt_pP,
-  SecurityModeCommand_t* const securityModeCommand,
-  const uint8_t                eNB_index
-);
+
+// internal prototypes
+
+void rrc_ue_process_securityModeCommand( const protocol_ctxt_t* const ctxt_pP, SecurityModeCommand_t* const securityModeCommand, const uint8_t eNB_index );
+
+static int decode_SI( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_index );
+
+static int decode_SIB1( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_index, const uint8_t rsrq, const uint8_t rsrp );
+
+/** \brief Generates/Encodes RRCConnnectionSetupComplete message at UE
+ *  \param ctxt_pP Running context
+ *  \param eNB_index Index of corresponding eNB/CH
+ *  \param Transaction_id Transaction identifier
+ */
+static void rrc_ue_generate_RRCConnectionSetupComplete( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_index, const uint8_t Transaction_id );
+
+/** \brief Generates/Encodes RRCConnectionReconfigurationComplete message at UE
+ *  \param ctxt_pP Running context
+ *  \param eNB_index Index of corresponding eNB/CH
+ *  \param Transaction_id RRC transaction identifier
+ */
+static void rrc_ue_generate_RRCConnectionReconfigurationComplete( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_index, const uint8_t Transaction_id );
+
+static void rrc_ue_generate_MeasurementReport( const protocol_ctxt_t* const ctxt_pP, uint8_t eNB_index );
+
+static uint8_t check_trigger_meas_event(
+  uint8_t module_idP,
+  frame_t frameP,
+  uint8_t eNB_index,
+  uint8_t ue_cnx_index,
+  uint8_t meas_index,
+  Q_OffsetRange_t ofn, Q_OffsetRange_t ocn, Hysteresis_t hys,
+  Q_OffsetRange_t ofs, Q_OffsetRange_t ocs, long a3_offset, TimeToTrigger_t ttt);
+
+static void decode_MBSFNAreaConfiguration(module_id_t module_idP, uint8_t eNB_index, frame_t frameP,uint8_t mbsfn_sync_area);
+
+
+
+
+
+
+
+
 /*------------------------------------------------------------------------------*/
 static Rrc_State_t rrc_get_state (module_id_t ue_mod_idP)
 {
@@ -150,12 +187,7 @@ static int rrc_set_state (module_id_t ue_mod_idP, Rrc_State_t state)
 }
 
 //-----------------------------------------------------------------------------
-static int
-rrc_set_sub_state (
-  module_id_t ue_mod_idP,
-  Rrc_Sub_State_t subState
-)
-//-----------------------------------------------------------------------------
+static int rrc_set_sub_state( module_id_t ue_mod_idP, Rrc_Sub_State_t subState )
 {
 #if (defined(ENABLE_ITTI) && (defined(ENABLE_USE_MME) || defined(ENABLE_RAL)))
 
@@ -199,33 +231,37 @@ rrc_set_sub_state (
 }
 
 //-----------------------------------------------------------------------------
-void
-init_SI_UE(
-  const protocol_ctxt_t* const ctxt_pP,
-  const uint8_t eNB_index
-)
-//-----------------------------------------------------------------------------
+static void init_SI_UE( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_index )
 {
-
-  int i;
-
-
   UE_rrc_inst[ctxt_pP->module_id].sizeof_SIB1[eNB_index] = 0;
   UE_rrc_inst[ctxt_pP->module_id].sizeof_SI[eNB_index] = 0;
-  UE_rrc_inst[ctxt_pP->module_id].SIB1[eNB_index] = (uint8_t*)malloc16(32);
-  UE_rrc_inst[ctxt_pP->module_id].sib1[eNB_index] = (SystemInformationBlockType1_t*)malloc16(sizeof(SystemInformationBlockType1_t));
-  UE_rrc_inst[ctxt_pP->module_id].SI[eNB_index] = (uint8_t*)malloc16(64);
+  UE_rrc_inst[ctxt_pP->module_id].SIB1[eNB_index] = (uint8_t*)malloc16_clear( 32 );
+  UE_rrc_inst[ctxt_pP->module_id].sib1[eNB_index] = malloc16_clear( sizeof(SystemInformationBlockType1_t) );
+  UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index] = malloc16_clear( sizeof(SystemInformationBlockType2_t) );
+  UE_rrc_inst[ctxt_pP->module_id].sib3[eNB_index] = malloc16_clear( sizeof(SystemInformationBlockType3_t) );
+  UE_rrc_inst[ctxt_pP->module_id].sib4[eNB_index] = malloc16_clear( sizeof(SystemInformationBlockType4_t) );
+  UE_rrc_inst[ctxt_pP->module_id].sib5[eNB_index] = malloc16_clear( sizeof(SystemInformationBlockType5_t) );
+  UE_rrc_inst[ctxt_pP->module_id].sib6[eNB_index] = malloc16_clear( sizeof(SystemInformationBlockType6_t) );
+  UE_rrc_inst[ctxt_pP->module_id].sib7[eNB_index] = malloc16_clear( sizeof(SystemInformationBlockType7_t) );
+  UE_rrc_inst[ctxt_pP->module_id].sib8[eNB_index] = malloc16_clear( sizeof(SystemInformationBlockType8_t) );
+  UE_rrc_inst[ctxt_pP->module_id].sib9[eNB_index] = malloc16_clear( sizeof(SystemInformationBlockType9_t) );
+  UE_rrc_inst[ctxt_pP->module_id].sib10[eNB_index] = malloc16_clear( sizeof(SystemInformationBlockType10_t) );
+  UE_rrc_inst[ctxt_pP->module_id].sib11[eNB_index] = malloc16_clear( sizeof(SystemInformationBlockType11_t) );
+#ifdef Rel10
+  UE_rrc_inst[ctxt_pP->module_id].sib12[eNB_index] = malloc16_clear( sizeof(SystemInformationBlockType12_r9_t) );
+  UE_rrc_inst[ctxt_pP->module_id].sib13[eNB_index] = malloc16_clear( sizeof(SystemInformationBlockType13_r9_t) );
+#endif
+  UE_rrc_inst[ctxt_pP->module_id].SI[eNB_index] = (uint8_t*)malloc16_clear( 64 );
 
-  for (i=0; i<8; i++) {
-    UE_rrc_inst[ctxt_pP->module_id].si[eNB_index][i] = (SystemInformation_t*)malloc16(sizeof(SystemInformation_t));
-  }
+  UE_rrc_inst[ctxt_pP->module_id].si[eNB_index] = (SystemInformation_t*)malloc16_clear( sizeof(SystemInformation_t) );
 
   UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIB1Status = 0;
   UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIStatus = 0;
 }
 
 #ifdef Rel10
-void init_MCCH_UE(module_id_t ue_mod_idP, uint8_t eNB_index)
+//-----------------------------------------------------------------------------
+static void init_MCCH_UE(module_id_t ue_mod_idP, uint8_t eNB_index)
 {
   int i;
   UE_rrc_inst[ue_mod_idP].sizeof_MCCH_MESSAGE[eNB_index] = 0;
@@ -239,10 +275,8 @@ void init_MCCH_UE(module_id_t ue_mod_idP, uint8_t eNB_index)
 }
 #endif
 
-static
-void openair_rrc_lite_ue_init_security(
-  const protocol_ctxt_t* const ctxt_pP
-)
+//-----------------------------------------------------------------------------
+static void openair_rrc_lite_ue_init_security( const protocol_ctxt_t* const ctxt_pP )
 {
 #if defined(ENABLE_SECURITY)
   //    uint8_t *kRRCenc;
@@ -263,12 +297,7 @@ void openair_rrc_lite_ue_init_security(
 }
 
 //-----------------------------------------------------------------------------
-char
-openair_rrc_lite_ue_init(
-  const module_id_t ue_mod_idP,
-  const unsigned char eNB_index
-)
-//-----------------------------------------------------------------------------
+char openair_rrc_lite_ue_init( const module_id_t ue_mod_idP, const unsigned char eNB_index )
 {
   protocol_ctxt_t ctxt;
   PROTOCOL_CTXT_SET_BY_MODULE_ID(&ctxt, ue_mod_idP, ENB_FLAG_NO, NOT_A_RNTI, 0, 0,eNB_index);
@@ -321,12 +350,7 @@ openair_rrc_lite_ue_init(
 }
 
 //-----------------------------------------------------------------------------
-void
-rrc_ue_generate_RRCConnectionRequest(
-  const protocol_ctxt_t* const ctxt_pP,
-  const uint8_t                eNB_index
-)
-//-----------------------------------------------------------------------------
+void rrc_ue_generate_RRCConnectionRequest( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_index )
 {
 
   uint8_t i=0,rv[6];
@@ -398,13 +422,7 @@ static const char const nas_attach_req_guti[] = {
 };
 
 //-----------------------------------------------------------------------------
-void
-rrc_ue_generate_RRCConnectionSetupComplete(
-  const protocol_ctxt_t* const ctxt_pP,
-  const uint8_t                eNB_index,
-  const uint8_t                Transaction_id
-)
-//-----------------------------------------------------------------------------
+static void rrc_ue_generate_RRCConnectionSetupComplete( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_index, const uint8_t Transaction_id )
 {
 
   uint8_t    buffer[100];
@@ -438,13 +456,7 @@ rrc_ue_generate_RRCConnectionSetupComplete(
 }
 
 //-----------------------------------------------------------------------------
-void
-rrc_ue_generate_RRCConnectionReconfigurationComplete(
-  const protocol_ctxt_t* const ctxt_pP,
-  const uint8_t                eNB_index,
-  const uint8_t                Transaction_id
-)
-//-----------------------------------------------------------------------------
+static void rrc_ue_generate_RRCConnectionReconfigurationComplete( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_index, const uint8_t Transaction_id )
 {
 
   uint8_t buffer[32], size;
@@ -473,13 +485,7 @@ rrc_ue_generate_RRCConnectionReconfigurationComplete(
 
 //-----------------------------------------------------------------------------
 // Called by L2 interface (MAC)
-int
-rrc_ue_decode_ccch(
-  const protocol_ctxt_t* const ctxt_pP,
-  const SRB_INFO*        const Srb_info,
-  const uint8_t                eNB_index
-)
-//-----------------------------------------------------------------------------
+int rrc_ue_decode_ccch( const protocol_ctxt_t* const ctxt_pP, const SRB_INFO* const Srb_info, const uint8_t eNB_index )
 {
   DL_CCCH_Message_t* dl_ccch_msg=NULL;
   asn_dec_rval_t dec_rval;
@@ -2147,184 +2153,310 @@ rrc_ue_decode_dcch(
 #endif
 }
 
-const char siWindowLength[7][5] = {"1ms\0","2ms\0","5ms\0","10ms\0","15ms\0","20ms\0","40ms\0"};
+const char siWindowLength[8][5] = {"1ms","2ms","5ms","10ms","15ms","20ms","40ms","ERR"};
 const char siWindowLength_int[7] = {1,2,5,10,15,20,40};
 
-const char SIBType[16][6] = {"SIB3\0","SIB4\0","SIB5\0","SIB6\0","SIB7\0","SIB8\0","SIB9\0","SIB10\0","SIB11\0","SIB12\0","SIB13\0","Sp2\0","Sp3\0","Sp4\0"};
-const char SIBPeriod[7][7]= {"80ms\0","160ms\0","320ms\0","640ms\0","1280ms\0","2560ms\0","5120ms\0"};
+const char SIBType[12][6] = {"SIB3","SIB4","SIB5","SIB6","SIB7","SIB8","SIB9","SIB10","SIB11","SIB12","SIB13","Spare"};
+const char SIBPeriod[8][6]= {"rf8","rf16","rf32","rf64","rf128","rf256","rf512","ERR"};
 int siPeriod_int[7] = {80,160,320,640,1280,2560,5120};
 
+static const char* SIBreserved( long value )
+{
+  if (value < 0 || value > 1)
+    return "ERR";
+
+  if (value)
+    return "notReserved";
+
+  return "reserved";
+}
+static const char* SIBbarred( long value )
+{
+  if (value < 0 || value > 1)
+    return "ERR";
+
+  if (value)
+    return "notBarred";
+
+  return "barred";
+}
+static const char* SIBallowed( long value )
+{
+  if (value < 0 || value > 1)
+    return "ERR";
+
+  if (value)
+    return "notAllowed";
+
+  return "allowed";
+}
+static const char* SIB2SoundingPresent( int value )
+{
+  switch (value) {
+  case SoundingRS_UL_ConfigCommon_PR_NOTHING:
+    return "NOTHING";
+
+  case SoundingRS_UL_ConfigCommon_PR_release:
+    return "release";
+
+  case SoundingRS_UL_ConfigCommon_PR_setup:
+    return "setup";
+  }
+
+  return "ERR";
+}
+static const char* SIB2numberOfRA_Preambles( long value )
+{
+  static char temp[4] = {0};
+
+  if (value < 0 || value > 15)
+    return "ERR";
+
+  snprintf( temp, sizeof(temp), "n%d", value*4 + 4 );
+  temp[3] = 0; // terminate string
+  return temp;
+}
+static const char* SIB2powerRampingStep( long value )
+{
+  if (value < 0 || value > 3)
+    return "ERR";
+
+  static const char str[4][4] = {"dB0","dB2","dB4","dB6"};
+  return str[value];
+}
+static const char* SIB2preambleInitialReceivedTargetPower( long value )
+{
+  static char temp[8] = {0};
+
+  if (value < 0 || value > 15)
+    return "ERR";
+
+  snprintf( temp, sizeof(temp), "dBm-%d", 120 - value*2 );
+  temp[7] = 0; // terminate string
+  return temp;
+}
+static const char* SIB2preambleTransMax( long value )
+{
+  static char temp[5] = {0};
+
+  if (value < 0 || value > 10)
+    return "ERR";
+
+  if (value <= 5) {
+    snprintf( temp, sizeof(temp), "n%d", value+3 );
+    return temp;
+  }
+
+  switch (value) {
+  case 6:
+    return "n10";
+
+  case 7:
+    return "n20";
+
+  case 8:
+    return "n50";
+
+  case 9:
+    return "n100";
+
+  case 10:
+    return "n200";
+  }
+}
+static const char* SIB2ra_ResponseWindowSize( long value )
+{
+  static char temp[4] = {0};
+
+  if (value < 0 || value > 7)
+    return "ERR";
+
+  if (value == 7)
+    return "sf10";
+
+  snprintf( temp, sizeof(temp), "sf%d", value+2 );
+  return temp;
+}
+static const char* SIB2mac_ContentionResolutionTimer( long value )
+{
+  static char temp[5] = {0};
+
+  if (value < 0 || value > 7)
+    return "ERR";
+
+  snprintf( temp, sizeof(temp), "sf%d", 8 + value*8 );
+  return temp;
+}
+static const char* SIB2modificationPeriodCoeff( long value )
+{
+  static char temp[4] = {0};
+
+  if (value < 0 || value > 3)
+    return "ERR";
+
+  snprintf( temp, sizeof(temp), "n%d", (int)pow(2,value+1) );
+  return temp;
+}
+static const char* SIB2defaultPagingCycle( long value )
+{
+  static char temp[6] = {0};
+
+  if (value < 0 || value > 3)
+    return "ERR";
+
+  snprintf( temp, sizeof(temp), "rf%d", (int)pow(2,value+4) );
+  return temp;
+}
+static const char* SIB2nB( long value )
+{
+  if (value < 0 || value > 7)
+    return "ERR";
+
+  static const char str[8][17] = {"fourT","twoT","oneT","halfT","quarterT","oneEigthT","oneSixteenthT","oneThirtySecondT"};
+  return str[value];
+}
+
+
+
+
 //-----------------------------------------------------------------------------
-int
-decode_BCCH_DLSCH_Message(
+int decode_BCCH_DLSCH_Message(
   const protocol_ctxt_t* const ctxt_pP,
   const uint8_t                eNB_index,
   uint8_t*               const Sdu,
   const uint8_t                Sdu_len,
   const uint8_t                rsrq,
-  const uint8_t                rsrp
-)
-//-----------------------------------------------------------------------------
+  const uint8_t                rsrp )
 {
+  BCCH_DL_SCH_Message_t *bcch_message = NULL;
 
-  //BCCH_DL_SCH_Message_t bcch_message;
-  BCCH_DL_SCH_Message_t *bcch_message=NULL;//_ptr=&bcch_message;
-  SystemInformationBlockType1_t** sib1=&UE_rrc_inst[ctxt_pP->module_id].sib1[eNB_index];
-  SystemInformation_t** si=UE_rrc_inst[ctxt_pP->module_id].si[eNB_index];
-  asn_dec_rval_t dec_rval;
-  uint32_t si_window;//, sib1_decoded=0, si_decoded=0;
-  // int i;
-
-  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_BCCH, VCD_FUNCTION_IN);
-
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_BCCH, VCD_FUNCTION_IN );
 
   if ((UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIB1Status == 1) &&
       (UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIStatus == 1)) {
     // Avoid decoding to prevent memory bloating
-    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_BCCH, VCD_FUNCTION_OUT);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_BCCH, VCD_FUNCTION_OUT );
     return 0;
-  } else {
+  }
 
-    rrc_set_sub_state (ctxt_pP->module_id, RRC_SUB_STATE_IDLE_RECEIVING_SIB);
+  rrc_set_sub_state( ctxt_pP->module_id, RRC_SUB_STATE_IDLE_RECEIVING_SIB );
 
-    //memset(&bcch_message,0,sizeof(BCCH_DL_SCH_Message_t));
+  asn_dec_rval_t dec_rval = uper_decode_complete( NULL,
+                            &asn_DEF_BCCH_DL_SCH_Message,
+                            (void **)&bcch_message,
+                            (const void *)Sdu,
+                            Sdu_len );
 
-    /*LOG_D(RRC,"[UE %d] Decoding DL_BCCH_DLSCH_Message\n",ue_mod_idP);*/
-
-    dec_rval = uper_decode_complete(NULL,
-                                    &asn_DEF_BCCH_DL_SCH_Message,
-                                    (void **)&bcch_message,
-                                    (const void *)Sdu,
-                                    Sdu_len);//,0,0);
-
-    if ((dec_rval.code != RC_OK) && (dec_rval.consumed==0)) {
-      LOG_E(RRC,"[UE %d] Failed to decode BCCH_DLSCH_MESSAGE (%d bits)\n",
-            ctxt_pP->module_id,
-            dec_rval.consumed);
-      //free the memory
-      SEQUENCE_free(&asn_DEF_BCCH_DL_SCH_Message, (void*)bcch_message, 1);
-      VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_BCCH, VCD_FUNCTION_OUT);
-      return -1;
-    }
-
-    //  xer_fprint(stdout,  &asn_DEF_BCCH_DL_SCH_Message, (void*)&bcch_message);
+  if ((dec_rval.code != RC_OK) && (dec_rval.consumed == 0)) {
+    LOG_E( RRC, "[UE %"PRIu8"] Failed to decode BCCH_DLSCH_MESSAGE (%zu bits)\n",
+           ctxt_pP->module_id,
+           dec_rval.consumed );
+    // free the memory
+    SEQUENCE_free( &asn_DEF_BCCH_DL_SCH_Message, (void*)bcch_message, 1 );
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_BCCH, VCD_FUNCTION_OUT );
+    return -1;
+  }
 
 #if defined(ENABLE_ITTI)
 # if defined(DISABLE_ITTI_XER_PRINT)
-    {
+  {
+    MessageDef *msg_p;
+
+    msg_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_BCCH_MESSAGE);
+    memcpy (&msg_p->ittiMsg, (void *) bcch_message, sizeof(RrcDlBcchMessage));
+
+    itti_send_msg_to_task (TASK_UNKNOWN, ctxt_pP->instance, msg_p);
+  }
+# else
+  {
+    char        message_string[15000];
+    size_t      message_string_size;
+
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_BCCH_DL_SCH_Message, (void *)bcch_message)) > 0) {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_BCCH_MESSAGE);
-      memcpy (&msg_p->ittiMsg, (void *) bcch_message, sizeof(RrcDlBcchMessage));
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, RRC_DL_BCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_dl_bcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_dl_bcch.text, message_string, message_string_size);
 
-      itti_send_msg_to_task (TASK_UNKNOWN, ctxt_pP->instance, msg_p);
+      itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->instance, msg_p);
     }
-# else
-    {
-      char        message_string[15000];
-      size_t      message_string_size;
-
-      if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_BCCH_DL_SCH_Message, (void *)bcch_message)) > 0) {
-        MessageDef *msg_p;
-
-        msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, RRC_DL_BCCH, message_string_size + sizeof (IttiMsgText));
-        msg_p->ittiMsg.rrc_dl_bcch.size = message_string_size;
-        memcpy(&msg_p->ittiMsg.rrc_dl_bcch.text, message_string, message_string_size);
-
-        itti_send_msg_to_task(TASK_UNKNOWN, ctxt_pP->instance, msg_p);
-      }
-    }
+  }
 # endif
 #endif
 
-    if (bcch_message->message.present == BCCH_DL_SCH_MessageType_PR_c1) {
-      switch (bcch_message->message.choice.c1.present) {
-      case BCCH_DL_SCH_MessageType__c1_PR_systemInformationBlockType1:
-        if ((ctxt_pP->frame %2) == 0) {
-          if (UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIB1Status == 0) {
-            memcpy((void*)*sib1,
-                   (void*)&bcch_message->message.choice.c1.choice.systemInformationBlockType1,
-                   sizeof(SystemInformationBlockType1_t));
-            LOG_D(RRC,"[UE %d] Decoding First SIB1\n",ctxt_pP->module_id);
-            decode_SIB1(ctxt_pP, eNB_index, rsrq, rsrp);
-            //mac_xface->macphy_exit("after decode_SIB1");
-          }
+  if (bcch_message->message.present == BCCH_DL_SCH_MessageType_PR_c1) {
+    switch (bcch_message->message.choice.c1.present) {
+    case BCCH_DL_SCH_MessageType__c1_PR_systemInformationBlockType1:
+      if ((ctxt_pP->frame % 2) == 0) {
+        // even frame
+        if (UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIB1Status == 0) {
+          SystemInformationBlockType1_t* sib1 = UE_rrc_inst[ctxt_pP->module_id].sib1[eNB_index];
+          memcpy( (void*)sib1,
+                  (void*)&bcch_message->message.choice.c1.choice.systemInformationBlockType1,
+                  sizeof(SystemInformationBlockType1_t) );
+          LOG_D( RRC, "[UE %"PRIu8"] Decoding First SIB1\n", ctxt_pP->module_id );
+          decode_SIB1( ctxt_pP, eNB_index, rsrq, rsrp );
         }
-
-        break;
-
-      case BCCH_DL_SCH_MessageType__c1_PR_systemInformation:
-        if ((UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIB1Status == 1) &&
-            (UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIStatus == 0)) {
-          //                                                if ((frameP %8) == 1) {  // check only in odd frames for SI
-          si_window = (ctxt_pP->frame%(UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIperiod/10))/
-                      (UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIwindowsize/10);
-          memcpy((void*)si[si_window], // FIXME check indexing (see line 219)
-                 (void*)&bcch_message->message.choice.c1.choice.systemInformation,
-                 sizeof(SystemInformation_t));
-          LOG_D(RRC,"[UE %d] Decoding SI for frameP %d, si_window %d\n",
-                ctxt_pP->module_id,
-                ctxt_pP->frame,
-                si_window);
-          decode_SI(ctxt_pP,eNB_index,si_window);
-          //mac_xface->macphy_exit("after decode_SI");
-
-          //                                }
-        }
-
-        break;
-
-      case BCCH_DL_SCH_MessageType__c1_PR_NOTHING:
-      default:
-        break;
       }
+
+      break;
+
+    case BCCH_DL_SCH_MessageType__c1_PR_systemInformation:
+      if (UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIB1Status == 1) {
+        // SIB1 with schedulingInfoList is available
+
+        SystemInformation_t* si = UE_rrc_inst[ctxt_pP->module_id].si[eNB_index];
+        memcpy( si,
+                &bcch_message->message.choice.c1.choice.systemInformation,
+                sizeof(SystemInformation_t) );
+
+        LOG_D( RRC, "[UE %"PRIu8"] Decoding SI for frameP %"PRIu32"\n",
+               ctxt_pP->module_id,
+               ctxt_pP->frame );
+
+        decode_SI( ctxt_pP, eNB_index );
+      }
+
+      break;
+
+    case BCCH_DL_SCH_MessageType__c1_PR_NOTHING:
+    default:
+      break;
     }
   }
 
   if ((rrc_get_sub_state(ctxt_pP->module_id) == RRC_SUB_STATE_IDLE_SIB_COMPLETE)
-# if defined(ENABLE_USE_MME)
+#if defined(ENABLE_USE_MME)
       && (UE_rrc_inst[ctxt_pP->module_id].initialNasMsg.data != NULL)
 #endif
      ) {
     rrc_ue_generate_RRCConnectionRequest(ctxt_pP, 0);
-    LOG_I(RRC, "not sending connection request\n");
-    rrc_set_sub_state (ctxt_pP->module_id, RRC_SUB_STATE_IDLE_CONNECTING);
+    LOG_I( RRC, "not sending connection request\n" );
+    rrc_set_sub_state( ctxt_pP->module_id, RRC_SUB_STATE_IDLE_CONNECTING );
   }
 
-  /*  if ((UE_rrc_inst[ue_mod_idP].Info[eNB_index].SIB1Status == 1) &&
-      (UE_rrc_inst[ue_mod_idP].Info[eNB_index].SIStatus == 1) && (frameP >= ue_mod_idP * 20 + 10))
-      SEQUENCE_free(&asn_DEF_BCCH_DL_SCH_Message, (void*)bcch_message, 0);*/
-  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_BCCH, VCD_FUNCTION_OUT);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_BCCH, VCD_FUNCTION_OUT );
 
   return 0;
 }
 
 
 //-----------------------------------------------------------------------------
-int
-decode_SIB1(
-  const protocol_ctxt_t* const ctxt_pP,
-  const uint8_t                eNB_index,
-  const uint8_t                rsrq,
-  const uint8_t                rsrp
-)
-//-----------------------------------------------------------------------------
+static int decode_SIB1( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_index, const uint8_t rsrq, const uint8_t rsrp )
 {
-  SystemInformationBlockType1_t** sib1=&UE_rrc_inst[ctxt_pP->module_id].sib1[eNB_index];
-  int i;
-  int mcc,mnc,mccdigits,mncdigits,tac=0;
-  PLMN_Identity_t *PLMN_identity;
-  int plmn_ind=0;
+  SystemInformationBlockType1_t* sib1 = UE_rrc_inst[ctxt_pP->module_id].sib1[eNB_index];
 
-  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_UE_DECODE_SIB1, VCD_FUNCTION_IN);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_UE_DECODE_SIB1, VCD_FUNCTION_IN );
 
-  LOG_I(RRC,"[UE %d] : Dumping SIB 1\n",ctxt_pP->module_id);
+  LOG_I( RRC, "[UE %d] : Dumping SIB 1\n", ctxt_pP->module_id );
 
-  //  xer_fprint(stdout,&asn_DEF_SystemInformationBlockType1, (void*)*sib1);
-  PLMN_identity = &(*sib1)->cellAccessRelatedInfo.plmn_IdentityList.list.array[0]->plmn_Identity;
+  PLMN_Identity_t *PLMN_identity = &sib1->cellAccessRelatedInfo.plmn_IdentityList.list.array[0]->plmn_Identity;
 
-  mccdigits = PLMN_identity->mcc->list.count;
-  mncdigits = PLMN_identity->mnc.list.count;
+  int mccdigits = PLMN_identity->mcc->list.count;
+  int mncdigits = PLMN_identity->mnc.list.count;
+
+  int mcc;
 
   if (mccdigits == 2) {
     mcc = *PLMN_identity->mcc->list.array[0]*10 + *PLMN_identity->mcc->list.array[1];
@@ -2332,117 +2464,157 @@ decode_SIB1(
     mcc = *PLMN_identity->mcc->list.array[0]*100 + *PLMN_identity->mcc->list.array[1]*10 + *PLMN_identity->mcc->list.array[2];
   }
 
+  int mnc;
+
   if (mncdigits == 2) {
     mnc = *PLMN_identity->mnc.list.array[0]*10 + *PLMN_identity->mnc.list.array[1];
   } else {
     mnc = *PLMN_identity->mnc.list.array[0]*100 + *PLMN_identity->mnc.list.array[1]*10 + *PLMN_identity->mnc.list.array[2];
   }
 
-  if ((*sib1)->cellAccessRelatedInfo.trackingAreaCode.size == 2) {
-    tac = ((*sib1)->cellAccessRelatedInfo.trackingAreaCode.buf[0]<<8)+(*sib1)->cellAccessRelatedInfo.trackingAreaCode.buf[1];
+  int tac = 0;
+
+  if (sib1->cellAccessRelatedInfo.trackingAreaCode.size == 2) {
+    tac = (sib1->cellAccessRelatedInfo.trackingAreaCode.buf[0]<<8) + sib1->cellAccessRelatedInfo.trackingAreaCode.buf[1];
   }
 
-  LOG_I(RRC,"PLMN MCC %d, MNC %d, TAC %x\n",mcc,mnc,tac);
-  plmn_ind = 0;
+  LOG_I( RRC, "PLMN MCC %0*d, MNC %0*d, TAC 0x%04x\n", mccdigits, mcc, mncdigits, mnc, tac );
+  long cellReservedForOperatorUse = sib1->cellAccessRelatedInfo.plmn_IdentityList.list.array[0]->cellReservedForOperatorUse;
+  LOG_I( RRC, "cellReservedForOperatorUse                 : raw:%ld decoded:%s\n", cellReservedForOperatorUse, SIBreserved(cellReservedForOperatorUse) );
 
-  while (plmn_data[plmn_ind].mcc>0) {
-    if ((plmn_data[plmn_ind].mcc == mcc) && (plmn_data[plmn_ind].mnc==mnc)) {
-      LOG_I(RRC,"Found %s\n", plmn_data[plmn_ind].oper_short);
+  // search internal table for provider name
+  int plmn_ind = 0;
+
+  while (plmn_data[plmn_ind].mcc > 0) {
+    if ((plmn_data[plmn_ind].mcc == mcc) && (plmn_data[plmn_ind].mnc == mnc)) {
+      LOG_I( RRC, "Found %s (name from internal table)\n", plmn_data[plmn_ind].oper_short );
       break;
     }
 
     plmn_ind++;
   }
 
-  if (plmn_data[plmn_ind].mcc<0) {
-    LOG_I(RRC,"Found Unknown operator\n");
+  if (plmn_data[plmn_ind].mcc < 0) {
+    LOG_I( RRC, "Found Unknown operator (no entry in internal table)\n" );
   }
 
-  LOG_I(RRC,"cellAccessRelatedInfo.cellIdentity : %x.%x.%x.%x\n",
-        (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[0],
-        (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[1],
-        (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[2],
-        (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[3]);
+  LOG_I( RRC, "cellAccessRelatedInfo.cellIdentity         : raw:%"PRIu32" decoded:%02x.%02x.%02x.%02x\n",
+         BIT_STRING_to_uint32( &sib1->cellAccessRelatedInfo.cellIdentity ),
+         sib1->cellAccessRelatedInfo.cellIdentity.buf[0],
+         sib1->cellAccessRelatedInfo.cellIdentity.buf[1],
+         sib1->cellAccessRelatedInfo.cellIdentity.buf[2],
+         sib1->cellAccessRelatedInfo.cellIdentity.buf[3] >> sib1->cellAccessRelatedInfo.cellIdentity.bits_unused);
 
-  LOG_I(RRC,"cellSelectionInfo.q_RxLevMin       : %d\n",(int)(*sib1)->cellSelectionInfo.q_RxLevMin);
-  LOG_I(RRC,"freqBandIndicator                  : %d\n",(int)(*sib1)->freqBandIndicator);
-  LOG_I(RRC,"siWindowLength                     : %s\n",siWindowLength[(*sib1)->si_WindowLength]);
+  long cellBarred = sib1->cellAccessRelatedInfo.cellBarred;
+  LOG_I( RRC, "cellAccessRelatedInfo.cellBarred           : raw:%ld decoded:%s\n", cellBarred, SIBbarred(cellBarred) );
+  long intraFreqReselection = sib1->cellAccessRelatedInfo.intraFreqReselection;
+  LOG_I( RRC, "cellAccessRelatedInfo.intraFreqReselection : raw:%ld decoded:%s\n", intraFreqReselection, SIBallowed(intraFreqReselection) );
+  LOG_I( RRC, "cellAccessRelatedInfo.csg_Indication       : %d\n", sib1->cellAccessRelatedInfo.csg_Indication );
 
-  if ((*sib1)->schedulingInfoList.list.count>0) {
-    for (i=0; i<(*sib1)->schedulingInfoList.list.count; i++) {
-      LOG_I(RRC,"siSchedulingInfoPeriod[%d]          : %s\n",i,SIBPeriod[(int)(*sib1)->schedulingInfoList.list.array[i]->si_Periodicity]);
+  if (sib1->cellAccessRelatedInfo.csg_Identity)
+    LOG_I( RRC, "cellAccessRelatedInfo.csg_Identity         : %"PRIu32"\n", BIT_STRING_to_uint32(sib1->cellAccessRelatedInfo.csg_Identity) );
+  else
+    LOG_I( RRC, "cellAccessRelatedInfo.csg_Identity         : not defined\n" );
 
-      if ((*sib1)->schedulingInfoList.list.array[i]->sib_MappingInfo.list.count>0) {
-        LOG_I(RRC,"siSchedulingInfoSIBType[%d]         : %s\n",i,SIBType[(int)(*(*sib1)->schedulingInfoList.list.array[i]->sib_MappingInfo.list.array[0])]);
+  LOG_I( RRC, "cellSelectionInfo.q_RxLevMin               : %ld\n", sib1->cellSelectionInfo.q_RxLevMin );
+
+  if (sib1->cellSelectionInfo.q_RxLevMinOffset)
+    LOG_I( RRC, "cellSelectionInfo.q_RxLevMinOffset         : %ld\n", *sib1->cellSelectionInfo.q_RxLevMinOffset );
+  else
+    LOG_I( RRC, "cellSelectionInfo.q_RxLevMinOffset         : not defined\n" );
+
+  if (sib1->p_Max)
+    LOG_I( RRC, "p_Max                                      : %ld\n", *sib1->p_Max );
+  else
+    LOG_I( RRC, "p_Max                                      : not defined\n" );
+
+  LOG_I( RRC, "freqBandIndicator                          : %ld\n", sib1->freqBandIndicator );
+
+  if (sib1->schedulingInfoList.list.count > 0) {
+    for (int i=0; i<sib1->schedulingInfoList.list.count; i++) {
+      LOG_I( RRC, "si_Periodicity[%d]                          : %s\n", i, SIBPeriod[min(sib1->schedulingInfoList.list.array[i]->si_Periodicity,7)]);
+
+      if (sib1->schedulingInfoList.list.array[i]->sib_MappingInfo.list.count > 0) {
+        char temp[32 * sizeof(SIBType[0])] = {0}; // maxSIB==32
+
+        for (int j=0; j<sib1->schedulingInfoList.list.array[i]->sib_MappingInfo.list.count; j++) {
+          sprintf( temp + j*sizeof(SIBType[0]), "%*s ", (int)sizeof(SIBType[0])-1, SIBType[min(*sib1->schedulingInfoList.list.array[i]->sib_MappingInfo.list.array[0],11)] );
+        }
+
+        LOG_I( RRC, "siSchedulingInfoSIBType[%d]                 : %s\n", i, temp );
       } else {
-        LOG_W(RRC,"mapping list %d is null\n",i);
+        LOG_I( RRC, "mapping list %d is null\n", i );
       }
     }
   } else {
-    LOG_E(RRC,"siSchedulingInfoPeriod[0]          : PROBLEM!!!\n");
+    LOG_E( RRC, "siSchedulingInfoPeriod[0]                  : PROBLEM!!!\n" );
     return -1;
   }
 
-  if ((*sib1)->tdd_Config) {
-    LOG_I(RRC,"TDD subframe assignment            : %d\n",(int)(*sib1)->tdd_Config->subframeAssignment);
-    LOG_I(RRC,"S-Subframe Config                  : %d\n",(int)(*sib1)->tdd_Config->specialSubframePatterns);
+  if (sib1->tdd_Config) {
+    LOG_I( RRC, "TDD subframeAssignment                     : %ld\n", sib1->tdd_Config->subframeAssignment );
+    LOG_I( RRC, "TDD specialSubframePatterns                : %ld\n", sib1->tdd_Config->specialSubframePatterns );
   }
 
-  UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIperiod     = siPeriod_int[(*sib1)->schedulingInfoList.list.array[0]->si_Periodicity];
-  UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIwindowsize = siWindowLength_int[(*sib1)->si_WindowLength];
-  LOG_D(RRC, "[FRAME unknown][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (SIB1 params eNB %d) --->][MAC_UE][MOD %02d][]\n",
-        ctxt_pP->module_id, eNB_index, ctxt_pP->module_id);
-  rrc_mac_config_req(ctxt_pP->module_id,ENB_FLAG_NO,0,eNB_index,
-                     (RadioResourceConfigCommonSIB_t *)NULL,
-                     (struct PhysicalConfigDedicated *)NULL,
+  LOG_I( RRC, "siWindowLength                             : %s\n", siWindowLength[min(sib1->si_WindowLength,7)] );
+  LOG_I( RRC, "systemInfoValueTag                         : %ld\n", sib1->systemInfoValueTag );
+
+  UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIperiod     = siPeriod_int[sib1->schedulingInfoList.list.array[0]->si_Periodicity];
+  UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIwindowsize = siWindowLength_int[sib1->si_WindowLength];
+  LOG_D( RRC, "[FRAME unknown][RRC_UE][MOD %02"PRIu8"][][--- MAC_CONFIG_REQ (SIB1 params eNB %"PRIu8") --->][MAC_UE][MOD %02"PRIu8"][]\n",
+         ctxt_pP->module_id, eNB_index, ctxt_pP->module_id );
+
+  rrc_mac_config_req( ctxt_pP->module_id,ENB_FLAG_NO, 0, eNB_index,
+                      (RadioResourceConfigCommonSIB_t *)NULL,
+                      (struct PhysicalConfigDedicated *)NULL,
 #ifdef Rel10
-                     (SCellToAddMod_r10_t *)NULL,
-                     //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+                      (SCellToAddMod_r10_t *)NULL,
+                      //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
 #endif
-                     (MeasObjectToAddMod_t **)NULL,
-                     (MAC_MainConfig_t *)NULL,
-                     0,
-                     (struct LogicalChannelConfig *)NULL,
-                     (MeasGapConfig_t *)NULL,
-                     UE_rrc_inst[ctxt_pP->module_id].sib1[eNB_index]->tdd_Config,
-                     (MobilityControlInfo_t *) NULL,
-                     &UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIwindowsize,
-                     &UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIperiod,
-                     NULL,
-                     NULL,
-                     NULL,
-                     (MBSFN_SubframeConfigList_t *)NULL
+                      (MeasObjectToAddMod_t **)NULL,
+                      (MAC_MainConfig_t *)NULL,
+                      0,
+                      (struct LogicalChannelConfig *)NULL,
+                      (MeasGapConfig_t *)NULL,
+                      UE_rrc_inst[ctxt_pP->module_id].sib1[eNB_index]->tdd_Config,
+                      (MobilityControlInfo_t *) NULL,
+                      &UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIwindowsize,
+                      &UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIperiod,
+                      NULL,
+                      NULL,
+                      NULL,
+                      (MBSFN_SubframeConfigList_t *)NULL
 #ifdef Rel10
-                     ,0,
-                     (MBSFN_AreaInfoList_r9_t *)NULL,
-                     (PMCH_InfoList_r9_t *)NULL
+                      ,0,
+                      (MBSFN_AreaInfoList_r9_t *)NULL,
+                      (PMCH_InfoList_r9_t *)NULL
 #endif
 #ifdef CBA
-                     ,
-                     0,
-                     0
+                      ,
+                      0,
+                      0
 #endif
                     );
 
   UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIB1Status = 1;
-  UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIB1systemInfoValueTag = (*sib1)->systemInfoValueTag;
+  UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIB1systemInfoValueTag = sib1->systemInfoValueTag;
 
 #if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
   {
     int cell_valid = 0;
 
-    if ((*sib1)->cellAccessRelatedInfo.cellBarred == SystemInformationBlockType1__cellAccessRelatedInfo__cellBarred_notBarred) {
+    if (sib1->cellAccessRelatedInfo.cellBarred == SystemInformationBlockType1__cellAccessRelatedInfo__cellBarred_notBarred) {
       /* Cell is not barred */
       int plmn;
       int plmn_number;
 
-      plmn_number = (*sib1)->cellAccessRelatedInfo.plmn_IdentityList.list.count;
+      plmn_number = sib1->cellAccessRelatedInfo.plmn_IdentityList.list.count;
 
       /* Compare requested PLMN and PLMNs from SIB1*/
       for (plmn = 0; plmn < plmn_number; plmn++) {
         PLMN_Identity_t *plmn_Identity;
 
-        plmn_Identity = &(*sib1)->cellAccessRelatedInfo.plmn_IdentityList.list.array[plmn]->plmn_Identity;
+        plmn_Identity = &sib1->cellAccessRelatedInfo.plmn_IdentityList.list.array[plmn]->plmn_Identity;
 
         if (
           (
@@ -2470,8 +2642,8 @@ decode_SIB1(
 
           msg_p = itti_alloc_new_message(TASK_RRC_UE, NAS_CELL_SELECTION_CNF);
           NAS_CELL_SELECTION_CNF (msg_p).errCode = AS_SUCCESS;
-          NAS_CELL_SELECTION_CNF (msg_p).cellID = BIT_STRING_to_uint32(&(*sib1)->cellAccessRelatedInfo.cellIdentity);
-          NAS_CELL_SELECTION_CNF (msg_p).tac = BIT_STRING_to_uint16(&(*sib1)->cellAccessRelatedInfo.trackingAreaCode);
+          NAS_CELL_SELECTION_CNF (msg_p).cellID = BIT_STRING_to_uint32(&sib1->cellAccessRelatedInfo.cellIdentity);
+          NAS_CELL_SELECTION_CNF (msg_p).tac = BIT_STRING_to_uint16(&sib1->cellAccessRelatedInfo.trackingAreaCode);
           NAS_CELL_SELECTION_CNF (msg_p).rat = 0xFF;
           NAS_CELL_SELECTION_CNF (msg_p).rsrq = rsrq;
           NAS_CELL_SELECTION_CNF (msg_p).rsrp = rsrp;
@@ -2494,217 +2666,388 @@ decode_SIB1(
   }
 #endif
 
-  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_UE_DECODE_SIB1, VCD_FUNCTION_OUT);
-  return 0;
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_UE_DECODE_SIB1, VCD_FUNCTION_OUT );
 
+  return 0;
 }
 
 
 //-----------------------------------------------------------------------------
-void
-dump_sib2(
-  SystemInformationBlockType2_t *sib2
-)
-//-----------------------------------------------------------------------------
+static void dump_sib2( SystemInformationBlockType2_t *sib2 )
 {
+  // ac_BarringInfo
+  if (sib2->ac_BarringInfo) {
+    LOG_I( RRC, "ac_BarringInfo->ac_BarringForEmergency : %d\n",
+           sib2->ac_BarringInfo->ac_BarringForEmergency );
 
-  LOG_I(RRC,"radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.numberOfRA_Preambles : %ld\n",
-        sib2->radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.numberOfRA_Preambles);
+    if (sib2->ac_BarringInfo->ac_BarringForMO_Signalling) {
+      LOG_I( RRC, "ac_BarringInfo->ac_BarringForMO_Signalling->ac_BarringFactor       : %ld\n",
+             sib2->ac_BarringInfo->ac_BarringForMO_Signalling->ac_BarringFactor );
+      LOG_I( RRC, "ac_BarringInfo->ac_BarringForMO_Signalling->ac_BarringTime         : %ld\n",
+             sib2->ac_BarringInfo->ac_BarringForMO_Signalling->ac_BarringTime );
+      LOG_I( RRC, "ac_BarringInfo->ac_BarringForMO_Signalling->ac_BarringForSpecialAC : %"PRIu32"\n",
+             BIT_STRING_to_uint32(&sib2->ac_BarringInfo->ac_BarringForMO_Signalling->ac_BarringForSpecialAC) );
+    } else
+      LOG_I( RRC, "ac_BarringInfo->ac_BarringForMO_Signalling : not defined\n" );
 
-  //  if (radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.preamblesGroupAConfig)
-  //msg("radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.preamblesGroupAConfig ",sib2->radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.preamblesGroupAConfig = NULL;
+    if (sib2->ac_BarringInfo->ac_BarringForMO_Data) {
+      LOG_I( RRC, "ac_BarringInfo->ac_BarringForMO_Data->ac_BarringFactor       : %ld\n",
+             sib2->ac_BarringInfo->ac_BarringForMO_Data->ac_BarringFactor );
+      LOG_I( RRC, "ac_BarringInfo->ac_BarringForMO_Data->ac_BarringTime         : %ld\n",
+             sib2->ac_BarringInfo->ac_BarringForMO_Data->ac_BarringTime );
+      LOG_I( RRC, "ac_BarringInfo->ac_BarringForMO_Data->ac_BarringForSpecialAC : %"PRIu32"\n",
+             BIT_STRING_to_uint32(&sib2->ac_BarringInfo->ac_BarringForMO_Data->ac_BarringForSpecialAC) );
+    } else
+      LOG_I( RRC, "ac_BarringInfo->ac_BarringForMO_Data : not defined\n" );
+  } else
+    LOG_I( RRC, "ac_BarringInfo : not defined\n" );
 
-  LOG_I(RRC,"[UE]radioResourceConfigCommon.rach_ConfigCommon.powerRampingParameters.powerRampingStep : %ld\n",
-        sib2->radioResourceConfigCommon.rach_ConfigCommon.powerRampingParameters.powerRampingStep);
+  // RACH
+  LOG_I( RRC, "radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.numberOfRA_Preambles  : raw:%ld decoded:%s\n",
+         sib2->radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.numberOfRA_Preambles,
+         SIB2numberOfRA_Preambles(sib2->radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.numberOfRA_Preambles) );
 
-  LOG_I(RRC,"[UE]radioResourceConfigCommon.rach_ConfigCommon.powerRampingParameters.preambleInitialReceivedTargetPower : %ld\n",
-        sib2->radioResourceConfigCommon.rach_ConfigCommon.powerRampingParameters.preambleInitialReceivedTargetPower);
+  if (sib2->radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.preamblesGroupAConfig) {
+    LOG_I( RRC, "radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.preamblesGroupAConfig->sizeOfRA_PreamblesGroupA : %ld\n",
+           sib2->radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.preamblesGroupAConfig->sizeOfRA_PreamblesGroupA );
+    LOG_I( RRC, "radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.preamblesGroupAConfig->messageSizeGroupA        : %ld\n",
+           sib2->radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.preamblesGroupAConfig->messageSizeGroupA );
+    LOG_I( RRC, "radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.preamblesGroupAConfig->messagePowerOffsetGroupB : %ld\n",
+           sib2->radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.preamblesGroupAConfig->messagePowerOffsetGroupB );
+  } else {
+    LOG_I( RRC, "radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.preamblesGroupAConfig : not defined\n" );
+  }
 
-  LOG_I(RRC,"radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.preambleTransMax  : %ld\n",
-        sib2->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.preambleTransMax);
-  LOG_I(RRC,"radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.ra_ResponseWindowSize : %ld\n",
-        sib2->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.ra_ResponseWindowSize);
+  LOG_I( RRC, "radioResourceConfigCommon.rach_ConfigCommon.powerRampingParameters.powerRampingStep                   : raw:%ld decoded:%s\n",
+         sib2->radioResourceConfigCommon.rach_ConfigCommon.powerRampingParameters.powerRampingStep,
+         SIB2powerRampingStep(sib2->radioResourceConfigCommon.rach_ConfigCommon.powerRampingParameters.powerRampingStep) );
+  LOG_I( RRC, "radioResourceConfigCommon.rach_ConfigCommon.powerRampingParameters.preambleInitialReceivedTargetPower : raw:%ld decoded:%s\n",
+         sib2->radioResourceConfigCommon.rach_ConfigCommon.powerRampingParameters.preambleInitialReceivedTargetPower,
+         SIB2preambleInitialReceivedTargetPower(sib2->radioResourceConfigCommon.rach_ConfigCommon.powerRampingParameters.preambleInitialReceivedTargetPower) );
 
-  LOG_I(RRC,"radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.mac_ContentionResolutionTimer : %ld\n",
-        sib2->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.mac_ContentionResolutionTimer);
+  LOG_I( RRC, "radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.preambleTransMax              : raw:%ld decoded:%s\n",
+         sib2->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.preambleTransMax,
+         SIB2preambleTransMax(sib2->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.preambleTransMax) );
+  LOG_I( RRC, "radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.ra_ResponseWindowSize         : raw:%ld decoded:%s\n",
+         sib2->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.ra_ResponseWindowSize,
+         SIB2ra_ResponseWindowSize(sib2->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.ra_ResponseWindowSize) );
+  LOG_I( RRC, "radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.mac_ContentionResolutionTimer : raw:%ld decoded:%s\n",
+         sib2->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.mac_ContentionResolutionTimer,
+         SIB2mac_ContentionResolutionTimer(sib2->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.mac_ContentionResolutionTimer) );
 
-  LOG_I(RRC,"radioResourceConfigCommon.rach_ConfigCommon.maxHARQ_Msg3Tx : %ld\n",
-        sib2->radioResourceConfigCommon.rach_ConfigCommon.maxHARQ_Msg3Tx);
+  LOG_I( RRC, "radioResourceConfigCommon.rach_ConfigCommon.maxHARQ_Msg3Tx : %ld\n",
+         sib2->radioResourceConfigCommon.rach_ConfigCommon.maxHARQ_Msg3Tx );
 
-  LOG_I(RRC,"radioResourceConfigCommon.prach_Config.rootSequenceIndex : %ld\n",sib2->radioResourceConfigCommon.prach_Config.rootSequenceIndex);
-  LOG_I(RRC,"radioResourceConfigCommon.prach_Config.prach_ConfigInfo.prach_ConfigIndex : %ld\n",
-        sib2->radioResourceConfigCommon.prach_Config.prach_ConfigInfo.prach_ConfigIndex);
-  LOG_I(RRC,"radioResourceConfigCommon.prach_Config.prach_ConfigInfo.highSpeedFlag : %d\n",
-        (int)sib2->radioResourceConfigCommon.prach_Config.prach_ConfigInfo.highSpeedFlag);
-  LOG_I(RRC,"radioResourceConfigCommon.prach_Config.prach_ConfigInfo.zeroCorrelationZoneConfig : %ld\n",
-        sib2->radioResourceConfigCommon.prach_Config.prach_ConfigInfo.zeroCorrelationZoneConfig);
-  LOG_I(RRC,"radioResourceConfigCommon.prach_Config.prach_ConfigInfo.prach_FreqOffset %ld\n",
-        sib2->radioResourceConfigCommon.prach_Config.prach_ConfigInfo.prach_FreqOffset);
+  // BCCH
+  LOG_I( RRC, "radioResourceConfigCommon.bcch_Config.modificationPeriodCoeff : raw:%ld decoded:%s\n",
+         sib2->radioResourceConfigCommon.bcch_Config.modificationPeriodCoeff,
+         SIB2modificationPeriodCoeff(sib2->radioResourceConfigCommon.bcch_Config.modificationPeriodCoeff) );
+
+  // PCCH
+  LOG_I( RRC, "radioResourceConfigCommon.pcch_Config.defaultPagingCycle : raw:%ld decoded:%s\n",
+         sib2->radioResourceConfigCommon.pcch_Config.defaultPagingCycle,
+         SIB2defaultPagingCycle(sib2->radioResourceConfigCommon.pcch_Config.defaultPagingCycle) );
+  LOG_I( RRC, "radioResourceConfigCommon.pcch_Config.nB                 : raw:%ld decoded:%s\n",
+         sib2->radioResourceConfigCommon.pcch_Config.nB,
+         SIB2nB(sib2->radioResourceConfigCommon.pcch_Config.nB) );
+
+  // PRACH
+  LOG_I( RRC, "radioResourceConfigCommon.prach_Config.rootSequenceIndex                          : %ld\n",
+         sib2->radioResourceConfigCommon.prach_Config.rootSequenceIndex );
+  LOG_I( RRC, "radioResourceConfigCommon.prach_Config.prach_ConfigInfo.prach_ConfigIndex         : %ld\n",
+         sib2->radioResourceConfigCommon.prach_Config.prach_ConfigInfo.prach_ConfigIndex );
+  LOG_I( RRC, "radioResourceConfigCommon.prach_Config.prach_ConfigInfo.highSpeedFlag             : %d\n",
+         sib2->radioResourceConfigCommon.prach_Config.prach_ConfigInfo.highSpeedFlag );
+  LOG_I( RRC, "radioResourceConfigCommon.prach_Config.prach_ConfigInfo.zeroCorrelationZoneConfig : %ld\n",
+         sib2->radioResourceConfigCommon.prach_Config.prach_ConfigInfo.zeroCorrelationZoneConfig );
+  LOG_I( RRC, "radioResourceConfigCommon.prach_Config.prach_ConfigInfo.prach_FreqOffset          : %ld\n",
+         sib2->radioResourceConfigCommon.prach_Config.prach_ConfigInfo.prach_FreqOffset );
 
   // PDSCH-Config
-  LOG_I(RRC,"radioResourceConfigCommon.pdsch_ConfigCommon.referenceSignalPower  : %ld\n",sib2->radioResourceConfigCommon.pdsch_ConfigCommon.referenceSignalPower);
-  LOG_I(RRC,"radioResourceConfigCommon.pdsch_ConfigCommon.p_b : %ld\n",sib2->radioResourceConfigCommon.pdsch_ConfigCommon.p_b);
+  LOG_I( RRC, "radioResourceConfigCommon.pdsch_ConfigCommon.referenceSignalPower : %ld\n",
+         sib2->radioResourceConfigCommon.pdsch_ConfigCommon.referenceSignalPower );
+  LOG_I( RRC, "radioResourceConfigCommon.pdsch_ConfigCommon.p_b                  : %ld\n",
+         sib2->radioResourceConfigCommon.pdsch_ConfigCommon.p_b );
 
   // PUSCH-Config
-  LOG_I(RRC,"radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.n_SB  : %ld\n",
-        sib2->radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.n_SB);
-  LOG_I(RRC,"radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.hoppingMode  : %ld\n",
-        sib2->radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.hoppingMode);
-  LOG_I(RRC,"radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.pusch_HoppingOffset : %ld\n",
-        sib2->radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.pusch_HoppingOffset);
-  LOG_I(RRC,"radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.enable64QAM : %d\n",
-        (int)sib2->radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.enable64QAM);
-  LOG_I(RRC,"radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupHoppingEnabled : %d\n",
-        (int)sib2->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupHoppingEnabled);
-  LOG_I(RRC,"radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH : %ld\n",
-        sib2->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH);
-  LOG_I(RRC,"radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled : %d\n",
-        (int)sib2->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled);
-  LOG_I(RRC,"radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.cyclicShift : %ld\n",
-        sib2->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.cyclicShift);
+  LOG_I( RRC, "radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.n_SB                : %ld\n",
+         sib2->radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.n_SB );
+  LOG_I( RRC, "radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.hoppingMode         : %ld\n",
+         sib2->radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.hoppingMode );
+  LOG_I( RRC, "radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.pusch_HoppingOffset : %ld\n",
+         sib2->radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.pusch_HoppingOffset );
+  LOG_I( RRC, "radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.enable64QAM         : %d\n",
+         sib2->radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.enable64QAM );
+  LOG_I( RRC, "radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupHoppingEnabled    : %d\n",
+         sib2->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupHoppingEnabled );
+  LOG_I( RRC, "radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH   : %ld\n",
+         sib2->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH );
+  LOG_I( RRC, "radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled : %d\n",
+         sib2->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled );
+  LOG_I( RRC, "radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.cyclicShift            : %ld\n",
+         sib2->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.cyclicShift );
 
   // PUCCH-Config
+  LOG_I( RRC, "radioResourceConfigCommon.pucch_ConfigCommon.deltaPUCCH_Shift : %ld\n",
+         sib2->radioResourceConfigCommon.pucch_ConfigCommon.deltaPUCCH_Shift );
+  LOG_I( RRC, "radioResourceConfigCommon.pucch_ConfigCommon.nRB_CQI          : %ld\n",
+         sib2->radioResourceConfigCommon.pucch_ConfigCommon.nRB_CQI );
+  LOG_I( RRC, "radioResourceConfigCommon.pucch_ConfigCommon.nCS_AN           : %ld\n",
+         sib2->radioResourceConfigCommon.pucch_ConfigCommon.nCS_AN );
+  LOG_I( RRC, "radioResourceConfigCommon.pucch_ConfigCommon.n1PUCCH_AN       : %ld\n",
+         sib2->radioResourceConfigCommon.pucch_ConfigCommon.n1PUCCH_AN );
 
-  LOG_I(RRC,"radioResourceConfigCommon.pucch_ConfigCommon.deltaPUCCH_Shift : %ld\n",sib2->radioResourceConfigCommon.pucch_ConfigCommon.deltaPUCCH_Shift);
-  LOG_I(RRC,"radioResourceConfigCommon.pucch_ConfigCommon.nRB_CQI : %ld\n",sib2->radioResourceConfigCommon.pucch_ConfigCommon.nRB_CQI);
-  LOG_I(RRC,"radioResourceConfigCommon.pucch_ConfigCommon.nCS_AN : %ld\n",sib2->radioResourceConfigCommon.pucch_ConfigCommon.nCS_AN);
-  LOG_I(RRC,"radioResourceConfigCommon.pucch_ConfigCommon.n1PUCCH_AN : %ld\n",sib2->radioResourceConfigCommon.pucch_ConfigCommon.n1PUCCH_AN);
+  // SoundingRS_UL_Config
+  LOG_I( RRC, "radioResourceConfigCommon.soundingRS_UL_ConfigCommon.present : raw:%d decoded:%s\n",
+         sib2->radioResourceConfigCommon.soundingRS_UL_ConfigCommon.present,
+         SIB2SoundingPresent(sib2->radioResourceConfigCommon.soundingRS_UL_ConfigCommon.present) );
 
-  LOG_I(RRC,"radioResourceConfigCommon.soundingRS_UL_ConfigCommon.present : %d\n",sib2-> radioResourceConfigCommon.soundingRS_UL_ConfigCommon.present);
-
+  if (sib2->radioResourceConfigCommon.soundingRS_UL_ConfigCommon.present == SoundingRS_UL_ConfigCommon_PR_setup) {
+    LOG_I( RRC, "radioResourceConfigCommon.soundingRS_UL_ConfigCommon.choice.setup.srs_BandwidthConfig                 : %ld\n",
+           sib2->radioResourceConfigCommon.soundingRS_UL_ConfigCommon.choice.setup.srs_BandwidthConfig );
+    LOG_I( RRC, "radioResourceConfigCommon.soundingRS_UL_ConfigCommon.choice.setup.srs_SubframeConfig                  : %ld\n",
+           sib2->radioResourceConfigCommon.soundingRS_UL_ConfigCommon.choice.setup.srs_SubframeConfig );
+    LOG_I( RRC, "radioResourceConfigCommon.soundingRS_UL_ConfigCommon.choice.setup.ackNackSRS_SimultaneousTransmission : %d\n",
+           sib2->radioResourceConfigCommon.soundingRS_UL_ConfigCommon.choice.setup.ackNackSRS_SimultaneousTransmission );
+    LOG_I( RRC, "radioResourceConfigCommon.soundingRS_UL_ConfigCommon.choice.setup.srs_MaxUpPts                        : %ld\n",
+           sib2->radioResourceConfigCommon.soundingRS_UL_ConfigCommon.choice.setup.srs_MaxUpPts );
+  }
 
   // uplinkPowerControlCommon
+  LOG_I( RRC, "radioResourceConfigCommon.uplinkPowerControlCommon.p0_NominalPUSCH   : %ld\n",
+         sib2->radioResourceConfigCommon.uplinkPowerControlCommon.p0_NominalPUSCH );
+  LOG_I( RRC, "radioResourceConfigCommon.uplinkPowerControlCommon.alpha             : %ld\n",
+         sib2->radioResourceConfigCommon.uplinkPowerControlCommon.alpha );
+  LOG_I( RRC, "radioResourceConfigCommon.uplinkPowerControlCommon.p0_NominalPUCCH   : %ld\n",
+         sib2->radioResourceConfigCommon.uplinkPowerControlCommon.p0_NominalPUCCH );
+  LOG_I( RRC, "radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format1  : %ld\n",
+         sib2->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format1 );
+  LOG_I( RRC, "radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format1b : %ld\n",
+         sib2->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format1b );
+  LOG_I( RRC, "radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2  : %ld\n",
+         sib2->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2 );
+  LOG_I( RRC, "radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2a : %ld\n",
+         sib2->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2a );
+  LOG_I( RRC, "radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2b : %ld\n",
+         sib2->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2b );
+  LOG_I( RRC, "radioResourceConfigCommon.uplinkPowerControlCommon.deltaPreambleMsg3 : %ld\n",
+         sib2->radioResourceConfigCommon.uplinkPowerControlCommon.deltaPreambleMsg3 );
 
-  LOG_I(RRC,"radioResourceConfigCommon.uplinkPowerControlCommon.p0_NominalPUSCH : %ld\n",
-        sib2->radioResourceConfigCommon.uplinkPowerControlCommon.p0_NominalPUSCH);
-  LOG_I(RRC,"radioResourceConfigCommon.uplinkPowerControlCommon.alpha : %ld\n",sib2->radioResourceConfigCommon.uplinkPowerControlCommon.alpha);
+  LOG_I( RRC, "radioResourceConfigCommon.ul_CyclicPrefixLength : %ld\n",
+         sib2->radioResourceConfigCommon.ul_CyclicPrefixLength );
 
-  LOG_I(RRC,"radioResourceConfigCommon.uplinkPowerControlCommon.p0_NominalPUCCH : %ld\n",
-        sib2->radioResourceConfigCommon.uplinkPowerControlCommon.p0_NominalPUCCH);
-  LOG_I(RRC,"radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format1 : %ld\n",
-        sib2->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format1);
-  LOG_I(RRC,"radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format1b :%ld\n",
-        sib2->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format1b);
-  LOG_I(RRC,"radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2  :%ld\n",
-        sib2->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2);
-  LOG_I(RRC,"radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2a :%ld\n",
-        sib2->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2a);
-  LOG_I(RRC,"radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2b :%ld\n",
-        sib2->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2b);
+#ifdef Rel10
+  // UplinkPowerControlCommon_v1020
+  // ...
+#endif
 
-  LOG_I(RRC,"radioResourceConfigCommon.uplinkPowerControlCommon.deltaPreambleMsg3 : %ld\n",
-        sib2->radioResourceConfigCommon.uplinkPowerControlCommon.deltaPreambleMsg3);
+  LOG_I( RRC, "ue_TimersAndConstants.t300 : %ld\n", sib2->ue_TimersAndConstants.t300 );
+  LOG_I( RRC, "ue_TimersAndConstants.t301 : %ld\n", sib2->ue_TimersAndConstants.t301 );
+  LOG_I( RRC, "ue_TimersAndConstants.t310 : %ld\n", sib2->ue_TimersAndConstants.t310 );
+  LOG_I( RRC, "ue_TimersAndConstants.n310 : %ld\n", sib2->ue_TimersAndConstants.n310 );
+  LOG_I( RRC, "ue_TimersAndConstants.t311 : %ld\n", sib2->ue_TimersAndConstants.t311 );
+  LOG_I( RRC, "ue_TimersAndConstants.n311 : %ld\n", sib2->ue_TimersAndConstants.n311 );
 
-  LOG_I(RRC,"radioResourceConfigCommon.ul_CyclicPrefixLength : %ld\n", sib2->radioResourceConfigCommon.ul_CyclicPrefixLength);
+  if (sib2->freqInfo.ul_CarrierFreq)
+    LOG_I( RRC, "freqInfo.ul_CarrierFreq             : %ld\n", *sib2->freqInfo.ul_CarrierFreq );
+  else
+    LOG_I( RRC, "freqInfo.ul_CarrierFreq             : not defined\n" );
 
-  LOG_I(RRC,"ue_TimersAndConstants.t300 : %ld\n", sib2->ue_TimersAndConstants.t300);
-  LOG_I(RRC,"ue_TimersAndConstants.t301 : %ld\n", sib2->ue_TimersAndConstants.t301);
-  LOG_I(RRC,"ue_TimersAndConstants.t310 : %ld\n", sib2->ue_TimersAndConstants.t310);
-  LOG_I(RRC,"ue_TimersAndConstants.n310 : %ld\n", sib2->ue_TimersAndConstants.n310);
-  LOG_I(RRC,"ue_TimersAndConstants.t311 : %ld\n", sib2->ue_TimersAndConstants.t311);
-  LOG_I(RRC,"ue_TimersAndConstants.n311 : %ld\n", sib2->ue_TimersAndConstants.n311);
+  if (sib2->freqInfo.ul_Bandwidth)
+    LOG_I( RRC, "freqInfo.ul_Bandwidth               : %ld\n", *sib2->freqInfo.ul_Bandwidth );
+  else
+    LOG_I( RRC, "freqInfo.ul_Bandwidth               : not defined\n" );
 
-  LOG_I(RRC,"freqInfo.additionalSpectrumEmission : %ld\n",sib2->freqInfo.additionalSpectrumEmission);
-  LOG_I(RRC,"freqInfo.ul_CarrierFreq : %p\n", sib2->freqInfo.ul_CarrierFreq);
-  LOG_I(RRC,"freqInfo.ul_Bandwidth : %p\n", sib2->freqInfo.ul_Bandwidth);
-  LOG_I(RRC,"mbsfn_SubframeConfigList : %p\n", sib2->mbsfn_SubframeConfigList);
-  LOG_I(RRC,"timeAlignmentTimerCommon : %ld\n", sib2->timeAlignmentTimerCommon);
+  LOG_I( RRC, "freqInfo.additionalSpectrumEmission : %ld\n", sib2->freqInfo.additionalSpectrumEmission );
+
+  if (sib2->mbsfn_SubframeConfigList) {
+    LOG_I( RRC, "mbsfn_SubframeConfigList : %p\n", sib2->mbsfn_SubframeConfigList );
+    // FIXME
+  } else
+    LOG_I( RRC, "mbsfn_SubframeConfigList : not defined\n" );
+
+  LOG_I( RRC, "timeAlignmentTimerCommon : %ld\n", sib2->timeAlignmentTimerCommon );
+
+#ifdef Rel10
+
+  if (sib2->lateNonCriticalExtension) {
+    LOG_I( RRC, "lateNonCriticalExtension : %p\n", sib2->lateNonCriticalExtension );
+  } else
+    LOG_I( RRC, "lateNonCriticalExtension : not defined\n" );
+
+  if (sib2->ssac_BarringForMMTEL_Voice_r9) {
+    LOG_I( RRC, "ssac_BarringForMMTEL_Voice_r9->ac_BarringFactor       : %ld\n",
+           sib2->ssac_BarringForMMTEL_Voice_r9->ac_BarringFactor );
+    LOG_I( RRC, "ssac_BarringForMMTEL_Voice_r9->ac_BarringTime         : %ld\n",
+           sib2->ssac_BarringForMMTEL_Voice_r9->ac_BarringTime );
+    LOG_I( RRC, "ssac_BarringForMMTEL_Voice_r9->ac_BarringForSpecialAC : %"PRIu32"\n",
+           BIT_STRING_to_uint32(&sib2->ssac_BarringForMMTEL_Voice_r9->ac_BarringForSpecialAC) );
+  } else
+    LOG_I( RRC, "ssac_BarringForMMTEL_Voice_r9 : not defined\n" );
+
+  if (sib2->ssac_BarringForMMTEL_Video_r9) {
+    LOG_I( RRC, "ssac_BarringForMMTEL_Video_r9->ac_BarringFactor       : %ld\n",
+           sib2->ssac_BarringForMMTEL_Video_r9->ac_BarringFactor );
+    LOG_I( RRC, "ssac_BarringForMMTEL_Video_r9->ac_BarringTime         : %ld\n",
+           sib2->ssac_BarringForMMTEL_Video_r9->ac_BarringTime );
+    LOG_I( RRC, "ssac_BarringForMMTEL_Video_r9->ac_BarringForSpecialAC : %"PRIu32"\n",
+           BIT_STRING_to_uint32(&sib2->ssac_BarringForMMTEL_Video_r9->ac_BarringForSpecialAC) );
+  } else
+    LOG_I( RRC, "ssac_BarringForMMTEL_Video_r9 : not defined\n" );
+
+  if (sib2->ac_BarringForCSFB_r10) {
+    LOG_I( RRC, "ac_BarringForCSFB_r10->ac_BarringFactor       : %ld\n",
+           sib2->ac_BarringForCSFB_r10->ac_BarringFactor );
+    LOG_I( RRC, "ac_BarringForCSFB_r10->ac_BarringTime         : %ld\n",
+           sib2->ac_BarringForCSFB_r10->ac_BarringTime );
+    LOG_I( RRC, "ac_BarringForCSFB_r10->ac_BarringForSpecialAC : %"PRIu32"\n",
+           BIT_STRING_to_uint32(&sib2->ac_BarringForCSFB_r10->ac_BarringForSpecialAC) );
+  } else
+    LOG_I( RRC, "ac_BarringForCSFB_r10 : not defined\n" );
+
+#endif
 }
 
 //-----------------------------------------------------------------------------
-void
-dump_sib3(
-  SystemInformationBlockType3_t *sib3
-)
-//-----------------------------------------------------------------------------
+static void dump_sib3( SystemInformationBlockType3_t *sib3 )
 {
+  LOG_I( RRC, "Dumping SIB3 (see TS36.331 V8.21.0)\n" );
 
+  int q_Hyst_dB = sib3->cellReselectionInfoCommon.q_Hyst; // sib3->cellReselectionInfoCommon.q_Hyst is a enumerated value
+
+  if (q_Hyst_dB > 6)
+    q_Hyst_dB = (q_Hyst_dB-6) * 2 + 6;
+
+  LOG_I( RRC, "cellReselectionInfoCommon.q_Hyst : raw:%ld  decoded:%d dB\n", sib3->cellReselectionInfoCommon.q_Hyst, q_Hyst_dB );
+
+  if (sib3->cellReselectionInfoCommon.speedStateReselectionPars) {
+    LOG_I( RRC, "cellReselectionInfoCommon.speedStateReselectionPars->mobilityStateParameters.t_Evaluation : %ld\n",
+           sib3->cellReselectionInfoCommon.speedStateReselectionPars->mobilityStateParameters.t_Evaluation );
+    LOG_I( RRC, "cellReselectionInfoCommon.speedStateReselectionPars->mobilityStateParameters.t_HystNormal : %ld\n",
+           sib3->cellReselectionInfoCommon.speedStateReselectionPars->mobilityStateParameters.t_HystNormal );
+    LOG_I( RRC, "cellReselectionInfoCommon.speedStateReselectionPars->mobilityStateParameters.n_CellChangeMedium : %ld\n",
+           sib3->cellReselectionInfoCommon.speedStateReselectionPars->mobilityStateParameters.n_CellChangeMedium );
+    LOG_I( RRC, "cellReselectionInfoCommon.speedStateReselectionPars->mobilityStateParameters.n_CellChangeHigh : %ld\n",
+           sib3->cellReselectionInfoCommon.speedStateReselectionPars->mobilityStateParameters.n_CellChangeHigh );
+    int q_HystSF_Medium = 6 - 2 * sib3->cellReselectionInfoCommon.speedStateReselectionPars->q_HystSF.sf_Medium;
+    int q_HystSF_High = 6 - 2 * sib3->cellReselectionInfoCommon.speedStateReselectionPars->q_HystSF.sf_High;
+    LOG_I( RRC, "cellReselectionInfoCommon.speedStateReselectionPars->q_HystSF.sf_Medium : raw:%ld decoded:%d dB\n", sib3->cellReselectionInfoCommon.speedStateReselectionPars->q_HystSF.sf_Medium,
+           q_HystSF_Medium );
+    LOG_I( RRC, "cellReselectionInfoCommon.speedStateReselectionPars->q_HystSF.sf_High : raw:%ld decoded:%d dB\n", sib3->cellReselectionInfoCommon.speedStateReselectionPars->q_HystSF.sf_High,
+           q_HystSF_High );
+  } else {
+    LOG_I( RRC, "cellReselectionInfoCommon.speedStateReselectionPars : not defined\n" );
+  }
+
+  if (sib3->cellReselectionServingFreqInfo.s_NonIntraSearch) {
+    LOG_I( RRC, "cellReselectionServingFreqInfo.s_NonIntraSearch : %ld\n", *(sib3->cellReselectionServingFreqInfo.s_NonIntraSearch) );
+  } else {
+    LOG_I( RRC, "cellReselectionServingFreqInfo.s_NonIntraSearch : not defined\n" );
+  }
+
+  LOG_I( RRC, "cellReselectionServingFreqInfo.threshServingLow : %ld\n", sib3->cellReselectionServingFreqInfo.threshServingLow );
+  LOG_I( RRC, "cellReselectionServingFreqInfo.cellReselectionPriority : %ld\n", sib3->cellReselectionServingFreqInfo.cellReselectionPriority );
+
+  LOG_I( RRC, "intraFreqCellReselectionInfo.q_RxLevMin : %ld\n", sib3->intraFreqCellReselectionInfo.q_RxLevMin );
+
+  if (sib3->intraFreqCellReselectionInfo.p_Max) {
+    LOG_I( RRC, "intraFreqCellReselectionInfo.p_Max : %ld\n", *(sib3->intraFreqCellReselectionInfo.p_Max) );
+  } else {
+    LOG_I( RRC, "intraFreqCellReselectionInfo.p_Max : not defined\n" );
+  }
+
+  if (sib3->intraFreqCellReselectionInfo.s_IntraSearch) {
+    LOG_I( RRC, "intraFreqCellReselectionInfo.s_IntraSearch : %ld\n", *(sib3->intraFreqCellReselectionInfo.s_IntraSearch) );
+  } else {
+    LOG_I( RRC, "intraFreqCellReselectionInfo.s_IntraSearch : not defined\n" );
+  }
+
+  if (sib3->intraFreqCellReselectionInfo.allowedMeasBandwidth) {
+    LOG_I( RRC, "intraFreqCellReselectionInfo.allowedMeasBandwidth : %ld\n", *(sib3->intraFreqCellReselectionInfo.allowedMeasBandwidth) );
+  } else {
+    LOG_I( RRC, "intraFreqCellReselectionInfo.allowedMeasBandwidth : not defined\n" );
+  }
+
+  LOG_I( RRC, "intraFreqCellReselectionInfo.presenceAntennaPort1 : %d\n", sib3->intraFreqCellReselectionInfo.presenceAntennaPort1 );
+  LOG_I( RRC, "intraFreqCellReselectionInfo.neighCellConfig : %"PRIu8"\n", BIT_STRING_to_uint8( &(sib3->intraFreqCellReselectionInfo.neighCellConfig) ) );
+  LOG_I( RRC, "intraFreqCellReselectionInfo.t_ReselectionEUTRA : %ld\n", sib3->intraFreqCellReselectionInfo.t_ReselectionEUTRA );
+
+  if (sib3->intraFreqCellReselectionInfo.t_ReselectionEUTRA_SF) {
+    LOG_I( RRC, "intraFreqCellReselectionInfo.t_ReselectionEUTRA_SF->sf_Medium : %ld\n", sib3->intraFreqCellReselectionInfo.t_ReselectionEUTRA_SF->sf_Medium );
+    LOG_I( RRC, "intraFreqCellReselectionInfo.t_ReselectionEUTRA_SF->sf_High : %ld\n", sib3->intraFreqCellReselectionInfo.t_ReselectionEUTRA_SF->sf_High );
+  } else {
+    LOG_I( RRC, "intraFreqCellReselectionInfo.t_ReselectionEUTRA_SF : not defined\n" );
+  }
 }
 
 #ifdef Rel10
 //-----------------------------------------------------------------------------
-void
-dump_sib13(
-  SystemInformationBlockType13_r9_t *sib13
-)
-//-----------------------------------------------------------------------------
+static void dump_sib13( SystemInformationBlockType13_r9_t *sib13 )
 {
-
-  LOG_D(RRC,"[RRC][UE] Dumping SIB13\n");
-  LOG_D(RRC,"[RRC][UE] dumping sib13 second time\n");
-  LOG_D(RRC,"[RRC][UE] NotificationRepetitionCoeff-r9 : %ld\n", sib13->notificationConfig_r9.notificationRepetitionCoeff_r9);
-  LOG_D(RRC,"[RRC][UE] NotificationOffset-r9 : %d\n", (int)sib13->notificationConfig_r9.notificationOffset_r9);
-  LOG_D(RRC,"[RRC][UE] NotificationSF-Index-r9 : %d\n", (int)sib13->notificationConfig_r9.notificationSF_Index_r9);
-
+  LOG_I( RRC, "[UE] Dumping SIB13\n" );
+  LOG_I( RRC, "[UE] dumping sib13 second time\n" );
+  LOG_I( RRC, "[UE] NotificationRepetitionCoeff-r9 : %ld\n", sib13->notificationConfig_r9.notificationRepetitionCoeff_r9 );
+  LOG_I( RRC, "[UE] NotificationOffset-r9 : %d\n", (int)sib13->notificationConfig_r9.notificationOffset_r9 );
+  LOG_I( RRC, "[UE] NotificationSF-Index-r9 : %d\n", (int)sib13->notificationConfig_r9.notificationSF_Index_r9 );
 }
 #endif
 
-//const char SIBPeriod[7][7]= {"80ms\0","160ms\0","320ms\0","640ms\0","1280ms\0","2560ms\0","5120ms\0"};
-
 //-----------------------------------------------------------------------------
-int
-decode_SI(
-  const protocol_ctxt_t* const ctxt_pP,
-  const uint8_t                eNB_index,
-  const uint8_t                si_window
-)
-//-----------------------------------------------------------------------------
+static int decode_SI( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_index )
 {
 
-  SystemInformation_t** si=&UE_rrc_inst[ctxt_pP->module_id].si[eNB_index][si_window];
-  int i;
-  struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member *typeandinfo;
+  SystemInformation_t** si = &UE_rrc_inst[ctxt_pP->module_id].si[eNB_index];
 
-  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_UE_DECODE_SI  , VCD_FUNCTION_IN);
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_UE_DECODE_SI, VCD_FUNCTION_IN );
 
   // Dump contents
-  if ((*si)->criticalExtensions.present==SystemInformation__criticalExtensions_PR_systemInformation_r8) {
-    LOG_D(RRC,"(*si)->criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list.count %d\n",
-          (*si)->criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list.count);
+  if ((*si)->criticalExtensions.present == SystemInformation__criticalExtensions_PR_systemInformation_r8) {
+    LOG_D( RRC, "[UE] (*si)->criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list.count %d\n",
+           (*si)->criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list.count );
   } else {
-    LOG_D(RRC,"[UE] Unknown criticalExtension version (not Rel8)\n");
+    LOG_D( RRC, "[UE] Unknown criticalExtension version (not Rel8)\n" );
     return -1;
   }
 
-  for (i=0; i<(*si)->criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list.count; i++) {
-    LOG_D(RRC,"SI count %d\n",i);
-    typeandinfo=(*si)->criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list.array[i];
+  for (int i=0; i<(*si)->criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list.count; i++) {
+    LOG_D( RRC, "SI count %d\n", i );
+    struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member *typeandinfo;
+    typeandinfo = (*si)->criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list.array[i];
 
     switch(typeandinfo->present) {
     case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib2:
-      UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index] = &typeandinfo->choice.sib2;
-      LOG_D(RRC,"[UE %d] Frame %d Found SIB2 from eNB %d\n",ctxt_pP->module_id,ctxt_pP->frame,eNB_index);
-      dump_sib2(UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index]);
-      LOG_D(RRC, "[FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (SIB2 params  eNB %d) --->][MAC_UE][MOD %02d][]\n",
-            ctxt_pP->frame, ctxt_pP->module_id, eNB_index, ctxt_pP->module_id);
-      rrc_mac_config_req(ctxt_pP->module_id,ENB_FLAG_NO,0,eNB_index,
-                         &UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index]->radioResourceConfigCommon,
-                         (struct PhysicalConfigDedicated *)NULL,
+      memcpy( UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index], &typeandinfo->choice.sib2, sizeof(SystemInformationBlockType2_t) );
+      LOG_D( RRC, "[UE %"PRIu8"] Frame %"PRIu32" Found SIB2 from eNB %"PRIu8"\n", ctxt_pP->module_id, ctxt_pP->frame, eNB_index );
+      dump_sib2( UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index] );
+      LOG_D( RRC, "[FRAME %05"PRIu32"][RRC_UE][MOD %02"PRIu8"][][--- MAC_CONFIG_REQ (SIB2 params  eNB %"PRIu8") --->][MAC_UE][MOD %02"PRIu8"][]\n",
+             ctxt_pP->frame, ctxt_pP->module_id, eNB_index, ctxt_pP->module_id );
+      rrc_mac_config_req( ctxt_pP->module_id, ENB_FLAG_NO, 0, eNB_index,
+                          &UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index]->radioResourceConfigCommon,
+                          (struct PhysicalConfigDedicated *)NULL,
 #ifdef Rel10
-                         (SCellToAddMod_r10_t *)NULL,
-                         //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+                          (SCellToAddMod_r10_t *)NULL,
 #endif
-                         (MeasObjectToAddMod_t **)NULL,
-                         (MAC_MainConfig_t *)NULL,
-                         0,
-                         (struct LogicalChannelConfig *)NULL,
-                         (MeasGapConfig_t *)NULL,
-                         (TDD_Config_t *)NULL,
-                         (MobilityControlInfo_t *)NULL,
-                         NULL,
-                         NULL,
-                         UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index]->freqInfo.ul_CarrierFreq,
-                         UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index]->freqInfo.ul_Bandwidth,
-                         &UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index]->freqInfo.additionalSpectrumEmission,
-                         UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index]->mbsfn_SubframeConfigList
+                          (MeasObjectToAddMod_t **)NULL,
+                          (MAC_MainConfig_t *)NULL,
+                          0,
+                          (struct LogicalChannelConfig *)NULL,
+                          (MeasGapConfig_t *)NULL,
+                          (TDD_Config_t *)NULL,
+                          (MobilityControlInfo_t *)NULL,
+                          NULL,
+                          NULL,
+                          UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index]->freqInfo.ul_CarrierFreq,
+                          UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index]->freqInfo.ul_Bandwidth,
+                          &UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index]->freqInfo.additionalSpectrumEmission,
+                          UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index]->mbsfn_SubframeConfigList
 #ifdef Rel10
-                         ,0,
-                         (MBSFN_AreaInfoList_r9_t *)NULL,
-                         (PMCH_InfoList_r9_t *)NULL
+                          ,0,
+                          (MBSFN_AreaInfoList_r9_t *)NULL,
+                          (PMCH_InfoList_r9_t *)NULL
 #endif
 #ifdef CBA
-                         ,0,
-                         0
+                          ,0,
+                          0
 #endif
                         );
       UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIStatus = 1;
@@ -2714,13 +3057,13 @@ decode_SI(
       if (UE_rrc_inst[ctxt_pP->module_id].MBMS_flag < 3) // see -Q option
 #endif
 #if !(defined(ENABLE_ITTI) && defined(ENABLE_USE_MME))
-        rrc_ue_generate_RRCConnectionRequest(ctxt_pP,eNB_index);
+        rrc_ue_generate_RRCConnectionRequest( ctxt_pP, eNB_index );
 
-      LOG_I(RRC, "not sending connection request\n");
+      LOG_I( RRC, "not sending connection request\n" );
 #endif
 
       if (UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].State == RRC_IDLE) {
-        LOG_I(RRC,"[UE %d] Received SIB1/SIB2/SIB3 Switching to RRC_SI_RECEIVED\n",ctxt_pP->module_id);
+        LOG_I( RRC, "[UE %d] Received SIB1/SIB2/SIB3 Switching to RRC_SI_RECEIVED\n", ctxt_pP->module_id );
         UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].State = RRC_SI_RECEIVED;
 #ifdef ENABLE_RAL
         {
@@ -2750,76 +3093,74 @@ decode_SI(
 #endif
       }
 
-      break;
+      break; // case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib2
 
     case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib3:
-      UE_rrc_inst[ctxt_pP->module_id].sib3[eNB_index] = &typeandinfo->choice.sib3;
-      LOG_I(RRC,"[UE %d] Frame %d Found SIB3 from eNB %d\n",ctxt_pP->module_id,ctxt_pP->frame,eNB_index);
-      dump_sib3(UE_rrc_inst[ctxt_pP->module_id].sib3[eNB_index]);
+      memcpy( UE_rrc_inst[ctxt_pP->module_id].sib3[eNB_index], &typeandinfo->choice.sib3, sizeof(SystemInformationBlockType3_t) );
+      LOG_I( RRC, "[UE %"PRIu8"] Frame %"PRIu32" Found SIB3 from eNB %"PRIu8"\n", ctxt_pP->module_id, ctxt_pP->frame, eNB_index );
+      dump_sib3( UE_rrc_inst[ctxt_pP->module_id].sib3[eNB_index] );
       UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].SIStatus = 1;
-      rrc_set_sub_state (ctxt_pP->module_id, RRC_SUB_STATE_IDLE_SIB_COMPLETE);
+      rrc_set_sub_state( ctxt_pP->module_id, RRC_SUB_STATE_IDLE_SIB_COMPLETE );
       break;
 
     case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib4:
-      UE_rrc_inst[ctxt_pP->module_id].sib4[eNB_index] = &typeandinfo->choice.sib4;
-      LOG_I(RRC,"[UE %d] Frame %d Found SIB4 from eNB %d\n",ctxt_pP->module_id,ctxt_pP->frame,eNB_index);
+      memcpy( UE_rrc_inst[ctxt_pP->module_id].sib4[eNB_index], &typeandinfo->choice.sib4, sizeof(SystemInformationBlockType4_t) );
+      LOG_I( RRC, "[UE %"PRIu8"] Frame %"PRIu32" Found SIB4 from eNB %"PRIu8"\n", ctxt_pP->module_id, ctxt_pP->frame, eNB_index );
       break;
 
     case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib5:
-      UE_rrc_inst[ctxt_pP->module_id].sib5[eNB_index] = &typeandinfo->choice.sib5;
-      LOG_I(RRC,"[UE %d] Found SIB5 from eNB %d\n",ctxt_pP->module_id,eNB_index);
+      memcpy( UE_rrc_inst[ctxt_pP->module_id].sib5[eNB_index], &typeandinfo->choice.sib5, sizeof(SystemInformationBlockType5_t) );
+      LOG_I( RRC, "[UE %"PRIu8"] Frame %"PRIu32" Found SIB5 from eNB %"PRIu8"\n", ctxt_pP->module_id, ctxt_pP->frame, eNB_index );
       break;
 
     case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib6:
-      UE_rrc_inst[ctxt_pP->module_id].sib6[eNB_index] = &typeandinfo->choice.sib6;
-      LOG_I(RRC,"[UE %d] Found SIB6 from eNB %d\n",ctxt_pP->module_id,eNB_index);
+      memcpy( UE_rrc_inst[ctxt_pP->module_id].sib6[eNB_index], &typeandinfo->choice.sib6, sizeof(SystemInformationBlockType6_t) );
+      LOG_I( RRC, "[UE %"PRIu8"] Frame %"PRIu32" Found SIB6 from eNB %"PRIu8"\n", ctxt_pP->module_id, ctxt_pP->frame, eNB_index );
       break;
 
     case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib7:
-      UE_rrc_inst[ctxt_pP->module_id].sib7[eNB_index] = &typeandinfo->choice.sib7;
-      LOG_I(RRC,"[UE %d] Found SIB7 from eNB %d\n",ctxt_pP->module_id,eNB_index);
+      memcpy( UE_rrc_inst[ctxt_pP->module_id].sib7[eNB_index], &typeandinfo->choice.sib7, sizeof(SystemInformationBlockType7_t) );
+      LOG_I( RRC, "[UE %"PRIu8"] Frame %"PRIu32" Found SIB7 from eNB %"PRIu8"\n", ctxt_pP->module_id, ctxt_pP->frame, eNB_index );
       break;
 
     case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib8:
-      UE_rrc_inst[ctxt_pP->module_id].sib8[eNB_index] = &typeandinfo->choice.sib8;
-      LOG_I(RRC,"[UE %d] Found SIB8 from eNB %d\n",ctxt_pP->module_id,eNB_index);
+      memcpy( UE_rrc_inst[ctxt_pP->module_id].sib8[eNB_index], &typeandinfo->choice.sib8, sizeof(SystemInformationBlockType8_t) );
+      LOG_I( RRC, "[UE %"PRIu8"] Frame %"PRIu32" Found SIB8 from eNB %"PRIu8"\n", ctxt_pP->module_id, ctxt_pP->frame, eNB_index );
       break;
 
     case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib9:
-      UE_rrc_inst[ctxt_pP->module_id].sib9[eNB_index] = &typeandinfo->choice.sib9;
-      LOG_I(RRC,"[UE %d] Found SIB9 from eNB %d\n",ctxt_pP->module_id,eNB_index);
+      memcpy( UE_rrc_inst[ctxt_pP->module_id].sib9[eNB_index], &typeandinfo->choice.sib9, sizeof(SystemInformationBlockType9_t) );
+      LOG_I( RRC, "[UE %"PRIu8"] Frame %"PRIu32" Found SIB9 from eNB %"PRIu8"\n", ctxt_pP->module_id, ctxt_pP->frame, eNB_index );
       break;
 
     case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib10:
-      UE_rrc_inst[ctxt_pP->module_id].sib10[eNB_index] = &typeandinfo->choice.sib10;
-      LOG_I(RRC,"[UE %d] Found SIB10 from eNB %d\n",ctxt_pP->module_id,eNB_index);
+      memcpy( UE_rrc_inst[ctxt_pP->module_id].sib10[eNB_index], &typeandinfo->choice.sib10, sizeof(SystemInformationBlockType10_t) );
+      LOG_I( RRC, "[UE %"PRIu8"] Frame %"PRIu32" Found SIB10 from eNB %"PRIu8"\n", ctxt_pP->module_id, ctxt_pP->frame, eNB_index );
       break;
 
     case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib11:
-      UE_rrc_inst[ctxt_pP->module_id].sib11[eNB_index] = &typeandinfo->choice.sib11;
-      LOG_I(RRC,"[UE %d] Found SIB11 from eNB %d\n",ctxt_pP->module_id,eNB_index);
+      memcpy( UE_rrc_inst[ctxt_pP->module_id].sib11[eNB_index], &typeandinfo->choice.sib11, sizeof(SystemInformationBlockType11_t) );
+      LOG_I( RRC, "[UE %"PRIu8"] Frame %"PRIu32" Found SIB11 from eNB %"PRIu8"\n", ctxt_pP->module_id, ctxt_pP->frame, eNB_index );
       break;
+
 #ifdef Rel10
 
     case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib12_v920:
-      UE_rrc_inst[ctxt_pP->module_id].sib12[eNB_index] = &typeandinfo->choice.sib12_v920;
-      LOG_I(RRC,"[RRC][UE %d] Found SIB12 from eNB %d\n",ctxt_pP->module_id,eNB_index);
+      memcpy( UE_rrc_inst[ctxt_pP->module_id].sib12[eNB_index], &typeandinfo->choice.sib12_v920, sizeof(SystemInformationBlockType12_r9_t) );
+      LOG_I( RRC, "[UE %"PRIu8"] Frame %"PRIu32" Found SIB12 from eNB %"PRIu8"\n", ctxt_pP->module_id, ctxt_pP->frame, eNB_index );
       break;
 
     case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib13_v920:
-      UE_rrc_inst[ctxt_pP->module_id].sib13[eNB_index] = &typeandinfo->choice.sib13_v920;
-      LOG_I(RRC,"[RRC][UE %d] Found SIB13 from eNB %d\n",ctxt_pP->module_id,eNB_index);
-      dump_sib13(UE_rrc_inst[ctxt_pP->module_id].sib13[eNB_index]);
+      memcpy( UE_rrc_inst[ctxt_pP->module_id].sib13[eNB_index], &typeandinfo->choice.sib13_v920, sizeof(SystemInformationBlockType13_r9_t) );
+      LOG_I( RRC, "[UE %"PRIu8"] Frame %"PRIu32" Found SIB13 from eNB %"PRIu8"\n", ctxt_pP->module_id, ctxt_pP->frame, eNB_index );
+      dump_sib13( UE_rrc_inst[ctxt_pP->module_id].sib13[eNB_index] );
       // adding here function to store necessary parameters for using in decode_MCCH_Message + maybe transfer to PHY layer
-      LOG_D(RRC, "[FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (SIB13 params eNB %d) --->][MAC_UE][MOD %02d][]\n",
-            ctxt_pP->frame, ctxt_pP->module_id, eNB_index, ctxt_pP->module_id);
+      LOG_D( RRC, "[FRAME %05"PRIu32"][RRC_UE][MOD %02"PRIu8"][][--- MAC_CONFIG_REQ (SIB13 params eNB %"PRIu8") --->][MAC_UE][MOD %02"PRIu8"][]\n",
+             ctxt_pP->frame, ctxt_pP->module_id, eNB_index, ctxt_pP->module_id);
       rrc_mac_config_req(ctxt_pP->module_id,ENB_FLAG_NO,0,eNB_index,
                          (RadioResourceConfigCommonSIB_t *)NULL,
                          (struct PhysicalConfigDedicated *)NULL,
-#ifdef Rel10
                          (SCellToAddMod_r10_t *)NULL,
-                         //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
-#endif
                          (MeasObjectToAddMod_t **)NULL,
                          (MAC_MainConfig_t *)NULL,
                          0,
@@ -2832,8 +3173,8 @@ decode_SI(
                          NULL,
                          NULL,
                          NULL,
-                         (MBSFN_SubframeConfigList_t *)NULL
-                         ,0,
+                         (MBSFN_SubframeConfigList_t *)NULL,
+                         0,
                          &UE_rrc_inst[ctxt_pP->module_id].sib13[eNB_index]->mbsfn_AreaInfoList_r9,
                          (PMCH_InfoList_r9_t *)NULL
 #ifdef CBA
@@ -2857,12 +3198,7 @@ decode_SI(
 
 // layer 3 filtering of RSRP (EUTRA) measurements: 36.331, Sec. 5.5.3.2
 //-----------------------------------------------------------------------------
-void
-ue_meas_filtering(
-  const protocol_ctxt_t* const ctxt_pP,
-  const uint8_t                eNB_index
-)
-//-----------------------------------------------------------------------------
+void ue_meas_filtering( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_index )
 {
   float a  = UE_rrc_inst[ctxt_pP->module_id].filter_coeff_rsrp; // 'a' in 36.331 Sec. 5.5.3.2
   float a1 = UE_rrc_inst[ctxt_pP->module_id].filter_coeff_rsrq;
@@ -2940,12 +3276,7 @@ ue_meas_filtering(
 
 //Below routine implements Measurement Reporting procedure from 36.331 Section 5.5.5
 //-----------------------------------------------------------------------------
-void
-rrc_ue_generate_MeasurementReport(
-  const protocol_ctxt_t* const ctxt_pP,
-  uint8_t                      eNB_index
-)
-//-----------------------------------------------------------------------------
+static void rrc_ue_generate_MeasurementReport( const protocol_ctxt_t* const ctxt_pP, uint8_t eNB_index )
 {
 
   uint8_t             buffer[32], size;
@@ -3026,12 +3357,7 @@ rrc_ue_generate_MeasurementReport(
 
 // Measurement report triggering, described in 36.331 Section 5.5.4.1: called periodically
 //-----------------------------------------------------------------------------
-void
-ue_measurement_report_triggering(
-  const protocol_ctxt_t* const ctxt_pP,
-  const uint8_t                 eNB_index
-)
-//-----------------------------------------------------------------------------
+void ue_measurement_report_triggering( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_index )
 {
   uint8_t               i,j;
   Hysteresis_t     hys;
@@ -3143,8 +3469,7 @@ ue_measurement_report_triggering(
 
 //check_trigger_meas_event(ue_mod_idP, frameP, eNB_index, i,j,ofn,ocn,hys,ofs,ocs,a3_offset,ttt_ms)
 //-----------------------------------------------------------------------------
-uint8_t
-check_trigger_meas_event(
+static uint8_t check_trigger_meas_event(
   module_id_t     ue_mod_idP,
   frame_t         frameP,
   uint8_t         eNB_index,
@@ -3156,9 +3481,7 @@ check_trigger_meas_event(
   Q_OffsetRange_t ofs,
   Q_OffsetRange_t ocs,
   long            a3_offset,
-  TimeToTrigger_t ttt
-)
-//-----------------------------------------------------------------------------
+  TimeToTrigger_t ttt )
 {
   uint8_t eNB_offset;
   uint8_t currentCellIndex = mac_xface->lte_frame_parms->Nid_cell;
@@ -3213,15 +3536,7 @@ check_trigger_meas_event(
 
 #ifdef Rel10
 //-----------------------------------------------------------------------------
-int
-decode_MCCH_Message(
-  const protocol_ctxt_t* const ctxt_pP,
-  const uint8_t                eNB_index,
-  const uint8_t*         const Sdu,
-  const uint8_t                Sdu_len,
-  const uint8_t                mbsfn_sync_area
-)
-//-----------------------------------------------------------------------------
+int decode_MCCH_Message( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_index, const uint8_t* const Sdu, const uint8_t Sdu_len, const uint8_t mbsfn_sync_area )
 {
 
   MCCH_Message_t               *mcch=NULL;
@@ -3283,14 +3598,7 @@ decode_MCCH_Message(
 }
 
 //-----------------------------------------------------------------------------
-void
-decode_MBSFNAreaConfiguration(
-  module_id_t ue_mod_idP,
-  uint8_t     eNB_index,
-  frame_t     frameP,
-  uint8_t     mbsfn_sync_area
-)
-//-----------------------------------------------------------------------------
+static void decode_MBSFNAreaConfiguration( module_id_t ue_mod_idP, uint8_t eNB_index, frame_t frameP, uint8_t mbsfn_sync_area )
 {
   protocol_ctxt_t               ctxt;
 
@@ -3368,11 +3676,7 @@ EXPORT_SYMBOL(Rlc_info_am_config);
 
 #if defined(ENABLE_ITTI)
 //-----------------------------------------------------------------------------
-void
-*rrc_ue_task(
-  void *args_p
-)
-//-----------------------------------------------------------------------------
+void *rrc_ue_task( void *args_p )
 {
   MessageDef   *msg_p;
   const char   *msg_name;

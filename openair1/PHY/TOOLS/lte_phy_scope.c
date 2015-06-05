@@ -209,7 +209,7 @@ void phy_scope_eNB(FD_lte_phy_scope_enb *form,
     }
   }
 
-  // Channel Impulse Response 
+  // Channel Impulse Response
   if (chest_t != NULL) {
     ymax = 0;
 
@@ -697,8 +697,8 @@ void phy_scope_UE(FD_lte_phy_scope_ue *form,
   }
 
   // PDSCH Throughput
-  memcpy((void*)tput_time_ue[UE_id],(void*)&tput_time_ue[UE_id][1],(TPUT_WINDOW_LENGTH-1)*sizeof(float));
-  memcpy((void*)tput_ue[UE_id],(void*)&tput_ue[UE_id][1],(TPUT_WINDOW_LENGTH-1)*sizeof(float));
+  memmove( tput_time_ue[UE_id], &tput_time_ue[UE_id][1], (TPUT_WINDOW_LENGTH-1)*sizeof(float) );
+  memmove( tput_ue[UE_id],      &tput_ue[UE_id][1],      (TPUT_WINDOW_LENGTH-1)*sizeof(float) );
 
   tput_time_ue[UE_id][TPUT_WINDOW_LENGTH-1]  = (float) frame;
   tput_ue[UE_id][TPUT_WINDOW_LENGTH-1] = ((float) total_dlsch_bitrate)/1000.0;

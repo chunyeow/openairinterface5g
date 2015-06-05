@@ -195,10 +195,10 @@ typedef struct UE_RRC_INFO_s {
 #ifdef Rel10
   uint8_t MCCHStatus[8]; // MAX_MBSFN_AREA
 #endif
-  uint8_t SIwindowsize;
+  uint8_t SIwindowsize; //!< Corresponds to the SIB1 si-WindowLength parameter. The unit is ms. Possible values are (final): 1,2,5,10,15,20,40
   uint8_t handoverTarget;
   HO_STATE_t ho_state;
-  uint16_t SIperiod;
+  uint16_t SIperiod; //!< Corresponds to the SIB1 si-Periodicity parameter (multiplied by 10). Possible values are (final): 80,160,320,640,1280,2560,5120
   unsigned short UE_index;
   uint32_t T300_active;
   uint32_t T300_cnt;
@@ -460,7 +460,7 @@ typedef struct UE_RRC_INST_s {
   uint8_t SIB1Status[NB_CNX_UE];
   uint8_t SIStatus[NB_CNX_UE];
   SystemInformationBlockType1_t *sib1[NB_CNX_UE];
-  SystemInformation_t *si[NB_CNX_UE][8];
+  SystemInformation_t *si[NB_CNX_UE]; //!< Temporary storage for an SI message. Decoding happens in decode_SI().
   SystemInformationBlockType2_t *sib2[NB_CNX_UE];
   SystemInformationBlockType3_t *sib3[NB_CNX_UE];
   SystemInformationBlockType4_t *sib4[NB_CNX_UE];

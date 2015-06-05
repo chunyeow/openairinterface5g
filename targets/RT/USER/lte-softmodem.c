@@ -247,6 +247,7 @@ static char                    *itti_dump_file = NULL;
 #endif
 
 int UE_scan = 1;
+int UE_scan_carrier = 0;
 runmode_t mode = normal_txrx;
 
 
@@ -430,7 +431,7 @@ void help (void) {
   printf("  --no-L2-connect bypass L2 and upper layers\n");
   printf("  --ue_rxgain set UE RX gain\n");
   printf("  --ue_txgain set UE tx gain\n");
-
+  printf("  --ue_scan_carrier set UE to scan around carrier\n");
   printf("  -C Set the downlink frequecny for all Component carrier\n");
   printf("  -d Enable soft scope and L1 and L2 stats (Xforms)\n");
   printf("  -F Calibrate the EXMIMO borad, available files: exmimo2_2arxg.lime exmimo2_2brxg.lime \n");
@@ -598,7 +599,7 @@ static void *scope_thread(void *arg)
     sleep(1);
   }
 
-  printf("%s",stats_buffer);
+  //  printf("%s",stats_buffer);
 
 # ifdef ENABLE_XFORMS_WRITE_STATS
 
@@ -1934,6 +1935,7 @@ static void get_options (int argc, char **argv)
     LONG_OPTION_NO_L2_CONNECT,
     LONG_OPTION_RXGAIN,
     LONG_OPTION_TXGAIN,
+    LONG_OPTION_SCANCARRIER
   };
 
   static const struct option long_options[] = {
@@ -1945,6 +1947,7 @@ static void get_options (int argc, char **argv)
     {"no-L2-connect",   no_argument,        NULL, LONG_OPTION_NO_L2_CONNECT},
     {"ue_rxgain",   required_argument,  NULL, LONG_OPTION_RXGAIN},
     {"ue_txgain",   required_argument,  NULL, LONG_OPTION_TXGAIN},
+    {"ue_scan_carrier",   no_argument,  NULL, LONG_OPTION_SCANCARRIER},
     {NULL, 0, NULL, 0}
   };
 
@@ -1993,6 +1996,11 @@ static void get_options (int argc, char **argv)
 
       break;
 
+    case LONG_OPTION_SCANCARRIER:
+      UE_scan_carrier=1;
+
+      break;
+
     case 'M':
 #ifdef ETHERNET
       strcpy(rrh_eNB_ip,optarg);
@@ -2009,6 +2017,7 @@ static void get_options (int argc, char **argv)
       }
 
       UE_scan=0;
+
       break;
 
     case 'd':
@@ -2564,6 +2573,7 @@ int main( int argc, char **argv )
 
 
       UE[CC_id]->UE_scan = UE_scan;
+      UE[CC_id]->UE_scan_carrier = UE_scan_carrier;
       UE[CC_id]->mode    = mode;
 
       compute_prach_seq(&UE[CC_id]->lte_frame_parms.prach_config_common,
@@ -2794,6 +2804,7 @@ int main( int argc, char **argv )
 
     for (i=0; i<4; i++) {
 
+      openair0_cfg[card].autocal[i] = 1;
       openair0_cfg[card].tx_gain[i] = tx_gain[0][i];
       openair0_cfg[card].rx_gain[i] = ((UE_flag==0) ? PHY_vars_eNB_g[0][0]->rx_total_gain_eNB_dB :
                                        PHY_vars_UE_g[0][0]->rx_total_gain_dB) - USRP_GAIN_OFFSET;  // calibrated for USRP B210 @ 2.6 GHz, 30.72 MS/s
@@ -2830,6 +2841,7 @@ int main( int argc, char **argv )
 
   printf("Initializing openair0 ...");
   openair0_cfg[0].log_level = glog_level;
+
   if (openair0_device_init(&openair0, &openair0_cfg[0]) <0) {
     printf("Exiting, cannot initialize device\n");
     exit(-1);
@@ -3387,15 +3399,15 @@ int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_c
 
     for (i=0; i<frame_parms->nb_antennas_rx; i++) {
       free(phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i]);
-      rxdata[i] = (int32_t*)(16 + malloc16(16+samples_per_frame*sizeof(int32_t)));
-      phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i] = rxdata[i]-N_TA_offset; // N_TA offset for TDD
+      rxdata[i] = (int32_t*)(16 + malloc16(16+samples_per_frame*sizeof(int32_t))); // FIXME broken memory allocation
+      phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i] = rxdata[i]-N_TA_offset; // N_TA offset for TDD         FIXME! N_TA_offset > 16 => access of unallocated memory
       memset(rxdata[i], 0, samples_per_frame*sizeof(int32_t));
       printf("rxdata[%d] @ %p (%p) (N_TA_OFFSET %d)\n", i, phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i],rxdata[i],N_TA_offset);
     }
 
     for (i=0; i<frame_parms->nb_antennas_tx; i++) {
       free(phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i]);
-      txdata[i] = (int32_t*)(16 + malloc16(16 + samples_per_frame*sizeof(int32_t)));
+      txdata[i] = (int32_t*)(16 + malloc16(16 + samples_per_frame*sizeof(int32_t))); // FIXME broken memory allocation
       phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i] = txdata[i];
       memset(txdata[i], 0, samples_per_frame*sizeof(int32_t));
       printf("txdata[%d] @ %p\n", i, phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i]);

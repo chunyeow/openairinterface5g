@@ -504,12 +504,12 @@ int lte_sync_time(int **rxdata, ///rx data in time domain
 
 #ifdef USER_MODE
 
-  if (debug_cnt == 5) {
+  if (debug_cnt == 0) {
     write_output("sync_corr0_ue.m","synccorr0",sync_corr_ue0,2*length,1,2);
     write_output("sync_corr1_ue.m","synccorr1",sync_corr_ue1,2*length,1,2);
     write_output("sync_corr2_ue.m","synccorr2",sync_corr_ue2,2*length,1,2);
     write_output("rxdata0.m","rxd0",rxdata[0],length<<1,1,1);
-    exit(-1);
+    //    exit(-1);
   } else {
     debug_cnt++;
   }

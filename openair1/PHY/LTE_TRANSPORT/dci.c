@@ -675,6 +675,7 @@ void pdcch_channel_level(int32_t **dl_ch_estimates_ext,
         */
       }
 
+      DevAssert( nb_rb );
       avg[(aatx<<1)+aarx] = (((int32_t*)&avg128P)[0] +
                              ((int32_t*)&avg128P)[1] +
                              ((int32_t*)&avg128P)[2] +
@@ -2542,6 +2543,7 @@ void dci_decoding_procedure0(LTE_UE_PDCCH **lte_ue_pdcch_vars,int do_common,uint
     else {
       LOG_E(PHY,"Illegal CCEind %d (Yk %d, m %d, nCCE %d, L2 %d\n",CCEind,Yk,m,nCCE,L2);
       mac_xface->macphy_exit("Illegal CCEind\n");
+      return; // not reached
     }
 
     switch (L2) {
@@ -2560,6 +2562,11 @@ void dci_decoding_procedure0(LTE_UE_PDCCH **lte_ue_pdcch_vars,int do_common,uint
     case 8:
       CCEmap_mask = (0xff<<(CCEind&0x1f));
       break;
+
+    default:
+      LOG_E( PHY, "Illegal L2 value %d\n", L2 );
+      mac_xface->macphy_exit( "Illegal L2\n" );
+      return; // not reached
     }
 
     CCEmap_cand = (*CCEmap)&CCEmap_mask;

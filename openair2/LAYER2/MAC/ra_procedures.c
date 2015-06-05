@@ -146,7 +146,6 @@ void get_prach_resources(module_id_t module_idP,
 
   if (!rach_ConfigCommon->preambleInfo.preamblesGroupAConfig) {
     noGroupB = 1;
-
   } else {
     if (rach_ConfigCommon->preambleInfo.preamblesGroupAConfig->sizeOfRA_PreamblesGroupA ==
         rach_ConfigCommon->preambleInfo.numberOfRA_Preambles) {
@@ -186,6 +185,7 @@ void get_prach_resources(module_id_t module_idP,
 
       UE_mac_inst[module_idP].RA_prach_resources.ra_RACH_MaskIndex = 0;
     } else {
+      // FIXME rach_ConfigCommon->preambleInfo.preamblesGroupAConfig may be zero
       UE_mac_inst[module_idP].RA_prach_resources.ra_PreambleIndex  =
         rach_ConfigCommon->preambleInfo.preamblesGroupAConfig->sizeOfRA_PreamblesGroupA +
         (taus())%(rach_ConfigCommon->preambleInfo.numberOfRA_Preambles -
@@ -363,7 +363,7 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP, 
                   module_idP,frameP, rlc_status.bytes_in_buffer,dcch_header_len);
 
           sdu_lengths[0] = mac_rlc_data_req(module_idP, UE_mac_inst[module_idP].crnti,
-					    eNB_indexP, frameP,ENB_FLAG_NO, MBMS_FLAG_NO,
+                                            eNB_indexP, frameP,ENB_FLAG_NO, MBMS_FLAG_NO,
                                             DCCH,
                                             (char *)&ulsch_buff[0]);
 

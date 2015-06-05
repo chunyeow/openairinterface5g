@@ -1456,28 +1456,8 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
 
   VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_MEASUREMENT_PROCEDURES, VCD_FUNCTION_IN);
 
-#ifdef EMOS
-  /*
-  uint8_t aa;
-
-  // first slot in frame is special
-  if (((slot_rx==0) || (slot_rx==1) || (slot_rx==12) || (slot_rx==13)) &&
-      ((l==0) || (l==4-frame_parms->Ncp))) {
-    for (eNB_id=0; eNB_id<3; eNB_id++)
-      for (aa=0;aa<frame_parms->nb_antennas_tx_eNB;aa++)
-  lte_dl_channel_estimation_emos(emos_dump_UE.channel[eNB_id],
-               phy_vars_ue->lte_ue_common_vars->rxdataF,
-               &phy_vars_ue->lte_frame_parms,
-               slot_rx,
-               aa,
-               l,
-               eNB_id);
-  }
-  */
-#endif
-
   if (l==0) {
-    // UE measurements
+    // UE measurements on symbol 0
     if (abstraction_flag==0) {
       LOG_D(PHY,"Calling measurements subframe %d, rxdata %p\n",subframe_rx,phy_vars_ue->lte_ue_common_vars.rxdata);
 
@@ -1491,47 +1471,11 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
                           0,
                           1);
     }
-
-#ifdef DEBUG_PHY_PROC
-
-    if (slot_rx == 2) { // && (phy_vars_ue->frame%100==0)) {
-
-      LOG_D(PHY,"[UE  %d] frame %d, slot %d, freq_offset_filt = %d \n",Mod_id,phy_vars_ue->frame_tx, slot_rx, phy_vars_ue->lte_ue_common_vars.freq_offset);
-      /*
-      LOG_I(PHY,"[UE  %d] frame %d, slot %d, RX RSSI (%d,%d,%d) dBm, digital (%d,%d)(%d,%d)(%d,%d) dB, linear (%d,%d), avg rx power %d dB (%d lin), N0 %d dB (%d lin), RX gain %d dB\n",
-      Mod_id,phy_vars_ue->frame, slot_rx,
-      phy_vars_ue->PHY_measurements.rx_rssi_dBm[0],
-      phy_vars_ue->PHY_measurements.rx_rssi_dBm[1],
-      phy_vars_ue->PHY_measurements.rx_rssi_dBm[2],
-      phy_vars_ue->PHY_measurements.rx_power_dB[0][0],
-      phy_vars_ue->PHY_measurements.rx_power_dB[0][1],
-      phy_vars_ue->PHY_measurements.rx_power_dB[1][0],
-      phy_vars_ue->PHY_measurements.rx_power_dB[1][1],
-      phy_vars_ue->PHY_measurements.rx_power_dB[2][0],
-      phy_vars_ue->PHY_measurements.rx_power_dB[2][1],
-      phy_vars_ue->PHY_measurements.rx_power[0][0],
-      phy_vars_ue->PHY_measurements.rx_power[0][1],
-      phy_vars_ue->PHY_measurements.rx_power_avg_dB[0],
-      phy_vars_ue->PHY_measurements.rx_power_avg[0],
-      phy_vars_ue->PHY_measurements.n0_power_avg_dB,
-      phy_vars_ue->PHY_measurements.n0_power_avg,
-      phy_vars_ue->rx_total_gain_dB);
-
-      LOG_I(PHY,"[UE  %d] frame %d, slot %d, N0 %d dBm digital (%d, %d) dB, linear (%d, %d), avg noise power %d dB (%d lin)\n",
-      Mod_id,phy_vars_ue->frame, slot_rx,
-      phy_vars_ue->PHY_measurements.n0_power_tot_dBm,
-      phy_vars_ue->PHY_measurements.n0_power_dB[0],
-      phy_vars_ue->PHY_measurements.n0_power_dB[1],
-      phy_vars_ue->PHY_measurements.n0_power[0],
-      phy_vars_ue->PHY_measurements.n0_power[1],
-      phy_vars_ue->PHY_measurements.n0_power_avg_dB,
-      phy_vars_ue->PHY_measurements.n0_power_avg); */
-    }
-
-#endif
   }
 
-  if (l==(4-frame_parms->Ncp)) {
+  if (l==(6-phy_vars_ue->lte_frame_parms.Ncp)) {
+	
+   // make sure we have signal from PSS/SSS for N0 measurement
 
     VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_RRC_MEASUREMENTS, VCD_FUNCTION_IN);
     ue_rrc_measurements(phy_vars_ue,
@@ -1882,7 +1826,7 @@ void lte_ue_pbch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
           phy_vars_ue->lte_frame_parms.N_RB_DL,
           phy_vars_ue->lte_frame_parms.phich_config_common.phich_duration,
           phy_vars_ue->lte_frame_parms.phich_config_common.phich_resource);
-
+    /*
     if (frame_rx%100 == 0) {
       LOG_I(PHY,"[UE %d] frame %d, slot %d, PBCH: mode1_flag %d, tx_ant %d, frame_tx %d, phase %d. N_RB_DL %d, phich_duration %d, phich_resource %d/6,Frequency offset %d Hz (%d)\n",
             phy_vars_ue->Mod_id,
@@ -1897,8 +1841,9 @@ void lte_ue_pbch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
             phy_vars_ue->lte_frame_parms.phich_config_common.phich_resource,
             phy_vars_ue->lte_ue_common_vars.freq_offset,openair_daq_vars.freq_offset);
       //dump_frame_parms(&phy_vars_ue->lte_frame_parms);
-    }
 
+    }
+      */
 #endif
 
   } else {
@@ -2485,7 +2430,8 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
                l,
                slot_rx,
                phy_vars_ue->rx_offset,
-               0);
+               0,
+	       0);
       VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SLOT_FEP, VCD_FUNCTION_OUT);
       stop_meas(&phy_vars_ue->ofdm_demod_stats);
     }
@@ -3240,10 +3186,11 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
     LOG_D(PHY,"[UE %d] Calculating bitrate Frame %d: total_TBS = %d, total_TBS_last = %d, bitrate %f kbits\n",
           phy_vars_ue->Mod_id,frame_rx,phy_vars_ue->total_TBS[eNB_id],
           phy_vars_ue->total_TBS_last[eNB_id],(float) phy_vars_ue->bitrate[eNB_id]/1000.0);
-
+    /*
     if ((frame_rx % 100 == 0)) {
       LOG_I(PHY,"Throughput %5.1f kbps\n",(float) phy_vars_ue->bitrate[eNB_id]/1000.0);
     }
+    */
   }
 
   if (is_pmch_subframe((subframe_rx==9?-1:0)+frame_rx,subframe_rx,&phy_vars_ue->lte_frame_parms)) {

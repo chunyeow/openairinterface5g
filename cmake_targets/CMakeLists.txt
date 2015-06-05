@@ -389,7 +389,6 @@ add_boolean_option(USER_MODE True "????")
 
 add_boolean_option(OAI_NW_DRIVER_TYPE_ETHERNET False "????")
 add_boolean_option(DISABLE_USE_NAS False "???")
-add_boolean_option(ENABLE_PDCP_NETLINK_FIFO False "????")
 add_boolean_option(ENABLE_STANDALONE_EPC True "Compile MME, SGW and PGW in a single executable")
 add_boolean_option(ENABLE_USE_GTPU_IN_KERNEL True "as per name")
 add_boolean_option(ENABLE_USE_NETFILTER_FOR_SGI False "SGI option")

@@ -1030,8 +1030,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP)
                 enb_properties.properties[enb_properties_index]->pusch_hoppingMode[j] = PUSCH_ConfigCommon__pusch_ConfigBasic__hoppingMode_interSubFrame;
               }  else if (strcmp(pusch_hoppingMode,"intraAndInterSubFrame")==0) {
                 enb_properties.properties[enb_properties_index]->pusch_hoppingMode[j] = PUSCH_ConfigCommon__pusch_ConfigBasic__hoppingMode_intraAndInterSubFrame;
-              }
-              else
+              } else
                 AssertError (0, parse_errors ++,
                              "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for pusch_hoppingMode choice: interSubframe,intraAndInterSubframe!\n",
                              lib_config_file_name_pP, i, pusch_hoppingMode);
@@ -1051,8 +1050,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP)
                 enb_properties.properties[enb_properties_index]->pusch_enable64QAM[j] = TRUE;
               }  else if (strcmp(pusch_enable64QAM, "DISABLE") == 0) {
                 enb_properties.properties[enb_properties_index]->pusch_enable64QAM[j] = FALSE;
-              }
-              else
+              } else
                 AssertError (0, parse_errors ++,
                              "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for pusch_enable64QAM choice: ENABLE,DISABLE!\n",
                              lib_config_file_name_pP, i, pusch_enable64QAM);
@@ -1065,8 +1063,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP)
                 enb_properties.properties[enb_properties_index]->pusch_groupHoppingEnabled[j] = TRUE;
               }  else if (strcmp(pusch_groupHoppingEnabled, "DISABLE") == 0) {
                 enb_properties.properties[enb_properties_index]->pusch_groupHoppingEnabled[j] = FALSE;
-              }
-              else
+              } else
                 AssertError (0, parse_errors ++,
                              "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for pusch_groupHoppingEnabled choice: ENABLE,DISABLE!\n",
                              lib_config_file_name_pP, i, pusch_groupHoppingEnabled);
@@ -1125,8 +1122,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP)
                 enb_properties.properties[enb_properties_index]->srs_enable[j] = TRUE;
               } else if (strcmp(srs_enable, "DISABLE") == 0) {
                 enb_properties.properties[enb_properties_index]->srs_enable[j] = FALSE;
-              }
-              else
+              } else
                 AssertError (0, parse_errors ++,
                              "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for srs_BandwidthConfig choice: ENABLE,DISABLE !\n",
                              lib_config_file_name_pP, i, srs_enable);
@@ -1270,8 +1266,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP)
                 enb_properties.properties[enb_properties_index]->pucch_deltaF_Format2b[j] = DeltaFList_PUCCH__deltaF_PUCCH_Format2b_deltaF0;
               } else if (strcmp(pucch_deltaF_Format2b,"deltaF2")==0) {
                 enb_properties.properties[enb_properties_index]->pucch_deltaF_Format2b[j] = DeltaFList_PUCCH__deltaF_PUCCH_Format2b_deltaF2;
-              }
-              else
+              } else
                 AssertError (0, parse_errors ++,
                              "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for pucch_deltaF_Format2b choice: deltaF_2,dltaF0,deltaF2!\n",
                              lib_config_file_name_pP, i, pucch_deltaF_Format2b);
@@ -1358,8 +1353,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP)
 
                 else if (strcmp(rach_messagePowerOffsetGroupB,"dB18")==0) {
                   enb_properties.properties[enb_properties_index]->rach_messagePowerOffsetGroupB[j] = RACH_ConfigCommon__preambleInfo__preamblesGroupAConfig__messagePowerOffsetGroupB_dB18;
-                }
-                else
+                } else
                   AssertError (0, parse_errors ++,
                                "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for rach_messagePowerOffsetGroupB choice: minusinfinity,dB0,dB5,dB8,dB10,dB12,dB15,dB18!\n",
                                lib_config_file_name_pP, i, rach_messagePowerOffsetGroupB);
@@ -1777,131 +1771,313 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP)
           }
 
           setting_srb1 = config_setting_get_member (setting_enb, ENB_CONFIG_STRING_SRB1);
+
           if (setting_srb1 != NULL) {
             if (!(config_setting_lookup_int(setting_srb1, ENB_CONFIG_STRING_SRB1_TIMER_POLL_RETRANSMIT, &srb1_timer_poll_retransmit)
-               && config_setting_lookup_int(setting_srb1, ENB_CONFIG_STRING_SRB1_TIMER_REORDERING,      &srb1_timer_reordering)
-               && config_setting_lookup_int(setting_srb1, ENB_CONFIG_STRING_SRB1_TIMER_STATUS_PROHIBIT, &srb1_timer_status_prohibit)
-               && config_setting_lookup_int(setting_srb1, ENB_CONFIG_STRING_SRB1_MAX_RETX_THRESHOLD,    &srb1_max_retx_threshold)
-               && config_setting_lookup_int(setting_srb1, ENB_CONFIG_STRING_SRB1_POLL_PDU,              &srb1_poll_pdu)
-               && config_setting_lookup_int(setting_srb1, ENB_CONFIG_STRING_SRB1_POLL_BYTE,             &srb1_poll_byte)))
-        	                    AssertError (0, parse_errors ++,
-        	                                 "Failed to parse eNB configuration file %s, enb %d  timer_poll_retransmit, timer_reordering, ",
-        	                                 "timer_status_prohibit, poll_pdu, poll_byte, max_retx_threshold !\n",
-        	                                 lib_config_file_name_pP, i);
+                  && config_setting_lookup_int(setting_srb1, ENB_CONFIG_STRING_SRB1_TIMER_REORDERING,      &srb1_timer_reordering)
+                  && config_setting_lookup_int(setting_srb1, ENB_CONFIG_STRING_SRB1_TIMER_STATUS_PROHIBIT, &srb1_timer_status_prohibit)
+                  && config_setting_lookup_int(setting_srb1, ENB_CONFIG_STRING_SRB1_MAX_RETX_THRESHOLD,    &srb1_max_retx_threshold)
+                  && config_setting_lookup_int(setting_srb1, ENB_CONFIG_STRING_SRB1_POLL_PDU,              &srb1_poll_pdu)
+                  && config_setting_lookup_int(setting_srb1, ENB_CONFIG_STRING_SRB1_POLL_BYTE,             &srb1_poll_byte)))
+              AssertError (0, parse_errors ++,
+                           "Failed to parse eNB configuration file %s, enb %d  timer_poll_retransmit, timer_reordering, "
+                           "timer_status_prohibit, poll_pdu, poll_byte, max_retx_threshold !\n",
+                           lib_config_file_name_pP, i);
 
             switch (srb1_max_retx_threshold) {
-            case 1: enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t1;break;
-            case 2: enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t2;break;
-            case 3: enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t3;break;
-            case 4: enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t4;break;
-            case 6: enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t6;break;
-            case 8: enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t8;break;
-            case 16: enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t16;break;
-            case 32: enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t32;break;
+            case 1:
+              enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t1;
+              break;
+
+            case 2:
+              enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t2;
+              break;
+
+            case 3:
+              enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t3;
+              break;
+
+            case 4:
+              enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t4;
+              break;
+
+            case 6:
+              enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t6;
+              break;
+
+            case 8:
+              enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t8;
+              break;
+
+            case 16:
+              enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t16;
+              break;
+
+            case 32:
+              enb_properties.properties[enb_properties_index]->srb1_max_retx_threshold = UL_AM_RLC__maxRetxThreshold_t32;
+              break;
+
             default:
               AssertError (0, parse_errors ++,
-                    	   "Bad config value when parsing eNB configuration file %s, enb %d  srb1_max_retx_threshold %u!\n",
-                    	   lib_config_file_name_pP, i, srb1_max_retx_threshold);
+                           "Bad config value when parsing eNB configuration file %s, enb %d  srb1_max_retx_threshold %u!\n",
+                           lib_config_file_name_pP, i, srb1_max_retx_threshold);
             }
 
             switch (srb1_poll_pdu) {
-            case 4: enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_p4;break;
-            case 8: enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_p8;break;
-            case 16: enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_p16;break;
-            case 32: enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_p32;break;
-            case 64: enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_p64;break;
-            case 128: enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_p128;break;
-            case 256: enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_p256;break;
+            case 4:
+              enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_p4;
+              break;
+
+            case 8:
+              enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_p8;
+              break;
+
+            case 16:
+              enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_p16;
+              break;
+
+            case 32:
+              enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_p32;
+              break;
+
+            case 64:
+              enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_p64;
+              break;
+
+            case 128:
+              enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_p128;
+              break;
+
+            case 256:
+              enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_p256;
+              break;
+
             default:
               if (srb1_poll_pdu >= 10000)
-            	  enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_pInfinity;
+                enb_properties.properties[enb_properties_index]->srb1_poll_pdu = PollPDU_pInfinity;
               else
                 AssertError (0, parse_errors ++,
-                    	   "Bad config value when parsing eNB configuration file %s, enb %d  srb1_poll_pdu %u!\n",
-                    	   lib_config_file_name_pP, i, srb1_poll_pdu);
+                             "Bad config value when parsing eNB configuration file %s, enb %d  srb1_poll_pdu %u!\n",
+                             lib_config_file_name_pP, i, srb1_poll_pdu);
             }
 
             enb_properties.properties[enb_properties_index]->srb1_poll_byte             = srb1_poll_byte;
+
             switch (srb1_poll_byte) {
-            case 25:   enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB25;break;
-            case 50:   enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB50;break;
-            case 75:   enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB75;break;
-            case 100:  enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB100;break;
-            case 125:  enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB125;break;
-            case 250:  enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB250;break;
-            case 375:  enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB375;break;
-            case 500:  enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB500;break;
-            case 750:  enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB750;break;
-            case 1000: enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB1000;break;
-            case 1250: enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB1250;break;
-            case 1500: enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB1500;break;
-            case 2000: enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB2000;break;
-            case 3000: enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB3000;break;
+            case 25:
+              enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB25;
+              break;
+
+            case 50:
+              enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB50;
+              break;
+
+            case 75:
+              enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB75;
+              break;
+
+            case 100:
+              enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB100;
+              break;
+
+            case 125:
+              enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB125;
+              break;
+
+            case 250:
+              enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB250;
+              break;
+
+            case 375:
+              enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB375;
+              break;
+
+            case 500:
+              enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB500;
+              break;
+
+            case 750:
+              enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB750;
+              break;
+
+            case 1000:
+              enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB1000;
+              break;
+
+            case 1250:
+              enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB1250;
+              break;
+
+            case 1500:
+              enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB1500;
+              break;
+
+            case 2000:
+              enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB2000;
+              break;
+
+            case 3000:
+              enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kB3000;
+              break;
+
             default:
               if (srb1_poll_byte >= 10000)
-            	  enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kBinfinity;
+                enb_properties.properties[enb_properties_index]->srb1_poll_byte = PollByte_kBinfinity;
               else
                 AssertError (0, parse_errors ++,
-                    	   "Bad config value when parsing eNB configuration file %s, enb %d  srb1_poll_byte %u!\n",
-                    	   lib_config_file_name_pP, i, srb1_poll_byte);
+                             "Bad config value when parsing eNB configuration file %s, enb %d  srb1_poll_byte %u!\n",
+                             lib_config_file_name_pP, i, srb1_poll_byte);
             }
 
             if  (srb1_timer_poll_retransmit <= 250) {
               enb_properties.properties[enb_properties_index]->srb1_timer_poll_retransmit = (srb1_timer_poll_retransmit - 5)/5;
             } else if  (srb1_timer_poll_retransmit <= 500) {
-                enb_properties.properties[enb_properties_index]->srb1_timer_poll_retransmit = (srb1_timer_poll_retransmit - 300)/50 + 50;
+              enb_properties.properties[enb_properties_index]->srb1_timer_poll_retransmit = (srb1_timer_poll_retransmit - 300)/50 + 50;
             } else {
-                AssertError (0, parse_errors ++,
-                      	   "Bad config value when parsing eNB configuration file %s, enb %d  srb1_timer_poll_retransmit %u!\n",
-                      	   lib_config_file_name_pP, i, srb1_timer_poll_retransmit);
+              AssertError (0, parse_errors ++,
+                           "Bad config value when parsing eNB configuration file %s, enb %d  srb1_timer_poll_retransmit %u!\n",
+                           lib_config_file_name_pP, i, srb1_timer_poll_retransmit);
             }
 
             if  (srb1_timer_status_prohibit <= 250) {
               enb_properties.properties[enb_properties_index]->srb1_timer_status_prohibit = srb1_timer_status_prohibit/5;
             } else if  ((srb1_timer_poll_retransmit >= 300) && (srb1_timer_poll_retransmit <= 500)) {
-                enb_properties.properties[enb_properties_index]->srb1_timer_status_prohibit = (srb1_timer_status_prohibit - 300)/50 + 51;
+              enb_properties.properties[enb_properties_index]->srb1_timer_status_prohibit = (srb1_timer_status_prohibit - 300)/50 + 51;
             } else {
-                AssertError (0, parse_errors ++,
-                      	   "Bad config value when parsing eNB configuration file %s, enb %d  srb1_timer_status_prohibit %u!\n",
-                      	   lib_config_file_name_pP, i, srb1_timer_status_prohibit);
+              AssertError (0, parse_errors ++,
+                           "Bad config value when parsing eNB configuration file %s, enb %d  srb1_timer_status_prohibit %u!\n",
+                           lib_config_file_name_pP, i, srb1_timer_status_prohibit);
             }
 
             switch (srb1_timer_reordering) {
-            case 0:   enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms0; break;
-            case 5:   enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms5; break;
-            case 10:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms10; break;
-            case 15:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms15; break;
-            case 20:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms20; break;
-            case 25:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms25; break;
-            case 30:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms30; break;
-            case 35:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms35; break;
-            case 40:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms40; break;
-            case 45:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms45; break;
-            case 50:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms50; break;
-            case 55:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms55; break;
-            case 60:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms60; break;
-            case 65:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms65; break;
-            case 70:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms70; break;
-            case 75:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms75; break;
-            case 80:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms80; break;
-            case 85:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms85; break;
-            case 90:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms90; break;
-            case 95:  enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms95; break;
-            case 100: enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms100; break;
-            case 110: enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms110; break;
-            case 120: enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms120; break;
-            case 130: enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms130; break;
-            case 140: enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms140; break;
-            case 150: enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms150; break;
-            case 160: enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms160; break;
-            case 170: enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms170; break;
-            case 180: enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms180; break;
-            case 190: enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms190; break;
-            case 200: enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms200; break;
+            case 0:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms0;
+              break;
+
+            case 5:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms5;
+              break;
+
+            case 10:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms10;
+              break;
+
+            case 15:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms15;
+              break;
+
+            case 20:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms20;
+              break;
+
+            case 25:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms25;
+              break;
+
+            case 30:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms30;
+              break;
+
+            case 35:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms35;
+              break;
+
+            case 40:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms40;
+              break;
+
+            case 45:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms45;
+              break;
+
+            case 50:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms50;
+              break;
+
+            case 55:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms55;
+              break;
+
+            case 60:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms60;
+              break;
+
+            case 65:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms65;
+              break;
+
+            case 70:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms70;
+              break;
+
+            case 75:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms75;
+              break;
+
+            case 80:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms80;
+              break;
+
+            case 85:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms85;
+              break;
+
+            case 90:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms90;
+              break;
+
+            case 95:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms95;
+              break;
+
+            case 100:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms100;
+              break;
+
+            case 110:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms110;
+              break;
+
+            case 120:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms120;
+              break;
+
+            case 130:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms130;
+              break;
+
+            case 140:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms140;
+              break;
+
+            case 150:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms150;
+              break;
+
+            case 160:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms160;
+              break;
+
+            case 170:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms170;
+              break;
+
+            case 180:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms180;
+              break;
+
+            case 190:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms190;
+              break;
+
+            case 200:
+              enb_properties.properties[enb_properties_index]->srb1_timer_reordering = T_Reordering_ms200;
+              break;
+
             default:
               AssertError (0, parse_errors ++,
-                    	   "Bad config value when parsing eNB configuration file %s, enb %d  srb1_timer_reordering %u!\n",
-                    	   lib_config_file_name_pP, i, srb1_timer_reordering);
+                           "Bad config value when parsing eNB configuration file %s, enb %d  srb1_timer_reordering %u!\n",
+                           lib_config_file_name_pP, i, srb1_timer_reordering);
             }
           } else {
             enb_properties.properties[enb_properties_index]->srb1_timer_poll_retransmit = T_PollRetransmit_ms80;

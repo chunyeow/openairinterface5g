@@ -33,6 +33,8 @@ int init_frame_parms(LTE_DL_FRAME_PARMS *frame_parms,uint8_t osf)
 
   uint8_t log2_osf;
 
+  LOG_I(PHY,"Initializing frame parms for N_RB_DL %d, Ncp %d, osf %d\n",frame_parms->N_RB_DL,frame_parms->Ncp,osf);
+
   if (frame_parms->Ncp==1) {
     frame_parms->nb_prefix_samples0=512;
     frame_parms->nb_prefix_samples = 512;

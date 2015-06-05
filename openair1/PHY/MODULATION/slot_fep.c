@@ -48,7 +48,8 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
              unsigned char l,
              unsigned char Ns,
              int sample_offset,
-             int no_prefix)
+             int no_prefix,
+	     int reset_freq_est)
 {
 
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_ue->lte_frame_parms;
@@ -236,7 +237,8 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
         lte_est_freq_offset(ue_common_vars->dl_ch_estimates[0],
                             frame_parms,
                             l,
-                            &ue_common_vars->freq_offset);
+                            &ue_common_vars->freq_offset,
+			    reset_freq_est);
         stop_meas(&phy_vars_ue->dlsch_freq_offset_estimation_stats);
 
       }

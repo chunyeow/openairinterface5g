@@ -415,6 +415,8 @@ typedef struct {
   runmode_t mode;
   /// \brief Indicator that UE should perform band scanning
   int UE_scan;
+  /// \brief Indicator that UE should perform coarse scanning around carrier
+  int UE_scan_carrier;
   /// \brief Indicator that UE is synchronized to an eNB
   int is_synchronized;
   /// \brief Instance count of TX processing thread (-1 means ready, 0 means busy)

@@ -119,7 +119,6 @@ extern int oai_exit;
 extern int32_t **rxdata;
 extern int32_t **txdata;
 
-extern unsigned int samples_per_frame;
 extern unsigned int tx_forward_nsamps;
 extern int tx_delay;
 
@@ -206,10 +205,11 @@ static void *UE_thread_synch(void *arg)
   PHY_VARS_UE *UE = (PHY_VARS_UE*) arg;
   int current_band = 0;
   int current_offset = 0;
-  sync_mode_t sync_mode = pss;
+  sync_mode_t sync_mode = pbch;
   int card;
   int ind;
   int found;
+  int freq_offset=0;
 
   UE->is_synchronized = 0;
   printf("UE_thread_sync in with PHY_vars_UE %p\n",arg);
@@ -224,7 +224,7 @@ static void *UE_thread_synch(void *arg)
   pthread_mutex_unlock(&sync_mutex);
   printf("unlocked sync_mutex (UE_sync_thread)\n");
 
-  printf("starting UE synch thread\n");
+  printf("starting UE synch thread (IC %d)\n",UE->instance_cnt_synch);
   ind = 0;
   found = 0;
 
@@ -244,26 +244,28 @@ static void *UE_thread_synch(void *arg)
       }
 
       ind++;
-    } while (current_band < sizeof(eutra_bands) / sizeof(eutra_bands[0]));
-
+    } while (ind < sizeof(eutra_bands) / sizeof(eutra_bands[0]));
+  
     if (found == 0) {
       exit_fun("Can't find EUTRA band for frequency");
       return &UE_thread_synch_retval;
     }
 
-#ifdef OAI_USRP
 
-    // now we know the uplink_frequency_offset
-    // set the correct TX frequency
-    for (i=0; i<openair0_cfg[card].tx_num_channels; i++) {
-      openair0_cfg[0].tx_freq[i] = downlink_frequency[0][i] + uplink_frequency_offset[0][i];
+
+
+
+
+    LOG_I( PHY, "[SCHED][UE] Check absolute frequency %"PRIu32" (oai_exit %d)\n", downlink_frequency[0][0], oai_exit );
+
+    for (i=0;i<openair0_cfg[0].rx_num_channels;i++) {
+      openair0_cfg[0].rx_freq[i] = downlink_frequency[0][i];
+      openair0_cfg[0].tx_freq[i] = downlink_frequency[0][i]+uplink_frequency_offset[0][i];
+      openair0_cfg[0].autocal[i] = 1;
     }
 
-    openair0_set_frequencies( &openair0, &openair0_cfg[0] );
-#endif
-
-    LOG_D( PHY, "[SCHED][UE] Check absolute frequency %"PRIu32" (oai_exit %d)\n", downlink_frequency[0][0], oai_exit );
     sync_mode = pbch;
+
   } else if  (UE->UE_scan == 1) {
     current_band=0;
 
@@ -298,16 +300,8 @@ static void *UE_thread_synch(void *arg)
         printf( "UE synch: setting RX gain (%d,%d) to %f\n", card, i, openair0_cfg[card].rx_gain[i] );
 #endif
       }
-
-#ifdef EXMIMO
-      //openair0_config(&openair0_cfg[card],1);
-#endif
     }
 
-#if defined(OAI_USRP) && !defined(USRP_DEBUG)
-    openair0_set_frequencies( &openair0, &openair0_cfg[0] );
-    openair0_set_gains( &openair0, &openair0_cfg[0] );
-#endif
   }
 
   while (oai_exit==0) {
@@ -317,6 +311,7 @@ static void *UE_thread_synch(void *arg)
       exit_fun("noting to add");
       return &UE_thread_synch_retval;
     }
+    
 
     while (UE->instance_cnt_synch < 0) {
       // the thread waits here most of the time
@@ -353,8 +348,8 @@ static void *UE_thread_synch(void *arg)
           uplink_frequency_offset[card][i] = bands_to_scan.band_info[current_band].ul_min-bands_to_scan.band_info[0].dl_min + current_offset;
 
 
-          openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i]+openair_daq_vars.freq_offset;
-          openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i]+openair_daq_vars.freq_offset;
+          openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i];
+          openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i];
 #ifdef OAI_USRP
           openair0_cfg[card].rx_gain[i] = UE->rx_total_gain_dB-USRP_GAIN_OFFSET;  // 65 calibrated for USRP B210 @ 2.6 GHz
 
@@ -381,64 +376,99 @@ static void *UE_thread_synch(void *arg)
 
         }
 
-#ifdef EXMIMO
-        //openair0_config(&openair0_cfg[card],1);
-#endif
       }
 
-#ifdef OAI_USRP
-#ifndef USRP_DEBUG
-      openair0_set_frequencies(&openair0,&openair0_cfg[0]);
-      //  openair0_set_gains(&openair0,&openair0_cfg[0]);
-#endif
-#endif
+      if (UE->UE_scan_carrier) {
+
+	for (i=0;i<openair0_cfg[0].rx_num_channels;i++)
+	  openair0_cfg[0].autocal[i] = 1;
+
+      }
+
 
       break;
-
+ 
     case pbch:
-      // This is a hack to fix a bug when using USRP
-      // FIXME is this necessary anymore? Which bug is fixed by this hack?
-      memset(PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[0],0,1024);
 
       if (initial_sync( UE, UE->mode ) == 0) {
-        UE->is_synchronized = 1;
-#ifndef EXMIMO
-        UE->slot_rx = 0;
-        UE->slot_tx = 4;
-#else
-        UE->slot_rx = 18;
-        UE->slot_tx = 2;
-#endif
+
         hw_slot_offset = (UE->rx_offset<<1) / UE->lte_frame_parms.samples_per_tti;
         LOG_I( HW, "Got synch: hw_slot_offset %d\n", hw_slot_offset );
+	if (UE->UE_scan_carrier == 1) {
 
+	  UE->UE_scan_carrier = 0;
+	  // rerun with new cell parameters and frequency-offset
+	  for (i=0;i<openair0_cfg[0].rx_num_channels;i++) {
+	    openair0_cfg[0].rx_freq[i] -= UE->lte_ue_common_vars.freq_offset;
+	    openair0_cfg[0].tx_freq[i] =  openair0_cfg[0].rx_freq[i]+uplink_frequency_offset[0][i];
+	    downlink_frequency[0][i] = openair0_cfg[0].rx_freq[i];
+	    freq_offset=0;	    
+	  }
+
+	  openair0_stop(0);
+	  sleep(1);
+	  switch(UE->lte_frame_parms.N_RB_DL) {
+	  case 6:
+	    openair0_cfg[0].sample_rate =1.92e6;
+	    break;
+	  case 25:
+	    openair0_cfg[0].sample_rate=7.68e6;
+	    break;
+	  case 50:
+	    openair0_cfg[0].sample_rate=15.36e6;
+	    break;
+	  case 100:
+	    openair0_cfg[0].sample_rate=30.72e6;
+	    break;
+	  }
+
+	  // reconfigure for potentially different bandwidth
+	  init_frame_parms(&UE->lte_frame_parms,1);
+	}
+	else {
+	  UE->is_synchronized = 1;
+#ifndef EXMIMO
+	  UE->slot_rx = 0;
+	  UE->slot_tx = 4;
+#else
+	  UE->slot_rx = 18;
+	  UE->slot_tx = 2;
+#endif
+	}
       } else {
         // initial sync failed
         // calculate new offset and try again
-        if (openair_daq_vars.freq_offset >= 0) {
-          openair_daq_vars.freq_offset += 100;
-          openair_daq_vars.freq_offset *= -1;
-        } else {
-          openair_daq_vars.freq_offset *= -1;
-        }
-
-        if (abs(openair_daq_vars.freq_offset) > 7500) {
-          LOG_I( PHY, "[initial_sync] No cell synchronization found, abandoning\n" );
-          mac_xface->macphy_exit("No cell synchronization found, abandoning");
-          return &UE_thread_synch_retval; // not reached
-        }
-
-        LOG_I( PHY, "[initial_sync] trying carrier off %d Hz, rxgain %d (DL %u, UL %u)\n", openair_daq_vars.freq_offset,
+	if (UE->UE_scan_carrier == 1) {
+	  if (freq_offset >= 0) {
+	    freq_offset += 100;
+	    freq_offset *= -1;
+	  } else {
+	    freq_offset *= -1;
+	  }
+	
+	  if (abs(freq_offset) > 7500) {
+	    LOG_I( PHY, "[initial_sync] No cell synchronization found, abandoning\n" );
+	    mac_xface->macphy_exit("No cell synchronization found, abandoning");
+	    return &UE_thread_synch_retval; // not reached
+	  }
+	}
+	else {
+	  
+	}
+        LOG_I( PHY, "[initial_sync] trying carrier off %d Hz, rxgain %d (DL %u, UL %u)\n", 
+	       freq_offset,
                UE->rx_total_gain_dB,
-               downlink_frequency[0][0]+openair_daq_vars.freq_offset,
-               downlink_frequency[0][0]+uplink_frequency_offset[0][0]+openair_daq_vars.freq_offset );
+               downlink_frequency[0][0]+freq_offset,
+               downlink_frequency[0][0]+uplink_frequency_offset[0][0]+freq_offset );
 
         for (card=0; card<MAX_CARDS; card++) {
           for (i=0; i<openair0_cfg[card].rx_num_channels; i++) {
-            openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i]+openair_daq_vars.freq_offset;
-            openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i]+openair_daq_vars.freq_offset;
+            openair0_cfg[card].rx_freq[i] = downlink_frequency[card][i]+freq_offset;
+            openair0_cfg[card].tx_freq[i] = downlink_frequency[card][i]+uplink_frequency_offset[card][i]+freq_offset;
 #ifdef OAI_USRP
             openair0_cfg[card].rx_gain[i] = UE->rx_total_gain_dB-USRP_GAIN_OFFSET;
+
+	    openair0_set_frequencies(&openair0,&openair0_cfg[0],0);
 
             switch(UE->lte_frame_parms.N_RB_DL) {
             case 6:
@@ -461,11 +491,12 @@ static void *UE_thread_synch(void *arg)
 #endif
           }
         }
-
-#if defined(OAI_USRP) && !defined(USRP_DEBUG)
-        openair0_set_frequencies( &openair0, &openair0_cfg[0] );
-#endif
-      } // initial_sync=0
+	if (UE->UE_scan_carrier==1) {
+	  for (i=0;i<openair0_cfg[0].rx_num_channels;i++)
+	    openair0_cfg[0].autocal[i] = 1;
+	  
+	}
+      }// initial_sync=0
 
       break;
 
@@ -475,6 +506,8 @@ static void *UE_thread_synch(void *arg)
     }
 
     VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SYNCH, 0 );
+
+
 
     if (pthread_mutex_lock(&UE->mutex_synch) != 0) {
       LOG_E( PHY, "[SCHED][UE] error locking mutex for UE synch\n" );
@@ -830,6 +863,7 @@ void *UE_thread(void *arg)
   int rx_correction_timer = 0;
   int first_rx = 0;
   RTIME T0;
+  unsigned int rxs;
 
   openair0_timestamp timestamp;
 
@@ -863,7 +897,7 @@ void *UE_thread(void *arg)
     exit_fun("Nothing to add");
     return &UE_thread_retval;
   }
-
+h
   LOG_I(HW,"[SCHED][eNB] eNB main deadline thread %lu started on CPU %d\n",
         (unsigned long)gettid(), sched_getcpu());
 
@@ -892,6 +926,7 @@ void *UE_thread(void *arg)
   while (!oai_exit) {
     VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_subframe );
     VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame );
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_DUMMY_DUMP, dummy_dump );
 
     while (rxpos < (1+hw_subframe)*UE->lte_frame_parms.samples_per_tti) {
       VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ, 1 );
@@ -903,12 +938,15 @@ void *UE_thread(void *arg)
 
       for (int i=0; i<UE->lte_frame_parms.nb_antennas_rx; i++)
         rxp[i] = (dummy_dump==0) ? (void*)&rxdata[i][rxpos] : (void*)dummy[i];
+      
+      //      if (dummy_dump == 0)
+      //	printf("writing %d samples to %d\n",spp - ((first_rx==1) ? rx_off_diff : 0),rxpos);
 
-      unsigned int rxs = openair0.trx_read_func(&openair0,
-                         &timestamp,
-                         rxp,
-                         spp - ((first_rx==1) ? rx_off_diff : 0),
-                         UE->lte_frame_parms.nb_antennas_rx);
+      rxs = openair0.trx_read_func(&openair0,
+				   &timestamp,
+				   rxp,
+				   spp - ((first_rx==1) ? rx_off_diff : 0),
+				   UE->lte_frame_parms.nb_antennas_rx);
 
       if (rxs != (spp- ((first_rx==1) ? rx_off_diff : 0))) {
         exit_fun("problem in rx");
@@ -981,13 +1019,12 @@ void *UE_thread(void *arg)
           if (UE->mode == rx_calib_ue) {
             if (frame == 10) {
               LOG_D(PHY,
-                    "[SCHED][UE] Found cell with N_RB_DL %"PRIu8", PHICH CONFIG (%d,%d), Nid_cell %"PRIu16", NB_ANTENNAS_TX %"PRIu8", initial frequency offset %"PRIi32" Hz, frequency offset "PRIi32" Hz, RSSI (digital) %hu dB, measured Gain %d dB, total_rx_gain %"PRIu32" dB, USRP rx gain %f dB\n",
+                    "[SCHED][UE] Found cell with N_RB_DL %"PRIu8", PHICH CONFIG (%d,%d), Nid_cell %"PRIu16", NB_ANTENNAS_TX %"PRIu8", frequency offset "PRIi32" Hz, RSSI (digital) %hu dB, measured Gain %d dB, total_rx_gain %"PRIu32" dB, USRP rx gain %f dB\n",
                     UE->lte_frame_parms.N_RB_DL,
                     UE->lte_frame_parms.phich_config_common.phich_duration,
                     UE->lte_frame_parms.phich_config_common.phich_resource,
                     UE->lte_frame_parms.Nid_cell,
                     UE->lte_frame_parms.nb_antennas_tx_eNB,
-                    openair_daq_vars.freq_offset,
                     UE->lte_ue_common_vars.freq_offset,
                     UE->PHY_measurements.rx_power_avg_dB[0],
                     UE->PHY_measurements.rx_power_avg_dB[0] - rx_input_level_dBm,
@@ -1098,11 +1135,15 @@ void *UE_thread(void *arg)
             // dump ahead in time to start of frame
 
 #ifndef USRP_DEBUG
-            unsigned int rxs = openair0.trx_read_func(&openair0,
-                               &timestamp,
-                               (void**)rxdata,
-                               UE->rx_offset,
-                               UE->lte_frame_parms.nb_antennas_rx);
+            rxs = openair0.trx_read_func(&openair0,
+					 &timestamp,
+					 (void**)rxdata,
+					 UE->rx_offset,
+					 UE->lte_frame_parms.nb_antennas_rx);
+	    if (rxs != UE->rx_offset) {
+	      exit_fun("problem in rx");
+	      return &UE_thread_retval;
+	    }
 #else
             rt_sleep_ns(10000000);
 #endif
@@ -1161,7 +1202,7 @@ void *UE_thread(void *arg)
   unsigned int flags = 0;
   unsigned long mask = 1; // processor 0
 #endif
-
+  int freq_offset;
 
 
 #ifdef RTAI
@@ -1223,7 +1264,7 @@ void *UE_thread(void *arg)
 
   printf("starting UE thread\n");
 
-  openair_daq_vars.freq_offset = 0; //-7500;
+  freq_offset = 0; //-7500;
 
   first_synch = 1;
 
@@ -1375,7 +1416,7 @@ void *UE_thread(void *arg)
                       UE->lte_frame_parms.phich_config_common.phich_resource,
                       UE->lte_frame_parms.Nid_cell,
                       UE->lte_frame_parms.nb_antennas_tx_eNB,
-                      openair_daq_vars.freq_offset,
+                      freq_offset,
                       UE->lte_ue_common_vars.freq_offset,
                       UE->PHY_measurements.rx_power_avg_dB[0],
                       UE->PHY_measurements.rx_power_avg_dB[0] - rx_input_level_dBm,
@@ -1439,11 +1480,14 @@ void *UE_thread(void *arg)
         LOG_E(PHY,"[SCHED][UE] error locking mutex for UE initial synch thread\n");
         exit_fun("noting to add");
       } else {
-        //printf("Before getting frame IC %d (UE_thread)\n",UE->instance_cnt_synch);
+
         if (UE->instance_cnt_synch < 0) {
 
           wait_sync_cnt=0;
+	  openair0_config(&openair0_cfg[0],1);
+      //  openair0_set_gains(&openair0,&openair0_cfg[0]);
 
+	  printf("Getting frame\n");
           openair0_get_frame(0);
           rt_sleep_ns(FRAME_PERIOD);
           // increment instance count for sync thread
@@ -1482,25 +1526,25 @@ void *UE_thread(void *arg)
         }
         }
         else {
-        if (openair_daq_vars.freq_offset >= 0) {
-        openair_daq_vars.freq_offset += 100;
-        openair_daq_vars.freq_offset *= -1;
+        if (freq_offset >= 0) {
+        freq_offset += 100;
+        freq_offset *= -1;
         }
         else {
-        openair_daq_vars.freq_offset *= -1;
+        freq_offset *= -1;
         }
-        if (abs(openair_daq_vars.freq_offset) > 7500) {
+        if (abs(freq_offset) > 7500) {
         LOG_I(PHY,"[initial_sync] No cell synchronization found, abondoning\n");
         mac_xface->macphy_exit("No cell synchronization found, abondoning");
         }
         else {
-        //    LOG_I(PHY,"[initial_sync] trying carrier off %d Hz\n",openair_daq_vars.freq_offset);
+        //    LOG_I(PHY,"[initial_sync] trying carrier off %d Hz\n",freq_offset);
         #ifndef USRP
         for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
         for (i=0; i<openair0_cfg[rf_map[CC_id].card].rx_num_channels; i++)
-        openair0_cfg[rf_map[CC_id].card].rx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i]+openair_daq_vars.freq_offset;
+        openair0_cfg[rf_map[CC_id].card].rx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i]+freq_offset;
         for (i=0; i<openair0_cfg[rf_map[CC_id].card].tx_num_channels; i++)
-        openair0_cfg[rf_map[CC_id].card].tx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i]+openair_daq_vars.freq_offset;
+        openair0_cfg[rf_map[CC_id].card].tx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i]+freq_offset;
         }
         openair0_config(&openair0_cfg[0],UE_flag);
         #endif
@@ -1672,14 +1716,14 @@ int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg,
     for (i=0; i<frame_parms->nb_antennas_rx; i++) {
       printf( "Mapping UE CC_id %d, rx_ant %d, freq %u on card %d, chain %d\n", CC_id, i, downlink_frequency[CC_id][i], rf_map[CC_id].card, rf_map[CC_id].chain+i );
       free( phy_vars_ue[CC_id]->lte_ue_common_vars.rxdata[i] );
-      rxdata[i] = (int32_t*)malloc16_clear( samples_per_frame*sizeof(int32_t) );
+      rxdata[i] = (int32_t*)malloc16_clear( 307200*sizeof(int32_t) );
       phy_vars_ue[CC_id]->lte_ue_common_vars.rxdata[i] = rxdata[i]; // what about the "-N_TA_offset" ? // N_TA offset for TDD
     }
 
     for (i=0; i<frame_parms->nb_antennas_tx; i++) {
       printf( "Mapping UE CC_id %d, tx_ant %d, freq %u on card %d, chain %d\n", CC_id, i, downlink_frequency[CC_id][i], rf_map[CC_id].card, rf_map[CC_id].chain+i );
       free( phy_vars_ue[CC_id]->lte_ue_common_vars.txdata[i] );
-      txdata[i] = (int32_t*)malloc16_clear( samples_per_frame*sizeof(int32_t) );
+      txdata[i] = (int32_t*)malloc16_clear( 307200*sizeof(int32_t) );
       phy_vars_ue[CC_id]->lte_ue_common_vars.txdata[i] = txdata[i];
     }
 
