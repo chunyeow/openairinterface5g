@@ -390,10 +390,6 @@ add_boolean_option(USER_MODE True "????")
 add_boolean_option(OAI_NW_DRIVER_TYPE_ETHERNET False "????")
 add_boolean_option(DISABLE_USE_NAS False "???")
 add_boolean_option(ENABLE_STANDALONE_EPC True "Compile MME, SGW and PGW in a single executable")
-add_boolean_option(ENABLE_USE_GTPU_IN_KERNEL True "as per name")
-add_boolean_option(ENABLE_USE_NETFILTER_FOR_SGI False "SGI option")
-add_boolean_option(ENABLE_USE_PCAP_FOR_SGI False "SGI option")
-add_boolean_option(ENABLE_USE_RAW_SOCKET_FOR_SGI False "As per name")
 add_boolean_option(EPC_BUILD False "???")
 add_boolean_option(LOWLATENCY  True "Use the Linux scheduler SCHED_DEADLINE: kernel >= 3.14")
 add_boolean_option(NAS_ADDRESS_FIX False "specific to oaisim: for nasmesh driver")
@@ -617,7 +613,6 @@ include_directories("${OPENAIRCN_DIR}/GTPV1-U/nw-gtpv1u/shared")
 include_directories("${OPENAIRCN_DIR}/GTPV1-U/nw-gtpv1u/include")
 include_directories("${OPENAIRCN_DIR}/SGW-LITE")
 include_directories("${OPENAIRCN_DIR}/MME_APP")
-include_directories("${OPENAIRCN_DIR}/SGI")
 include_directories("${OPENAIRCN_DIR}/S6A")
 include_directories("${OPENAIR_DIR}")
 
@@ -983,27 +978,6 @@ IPTVERSION=${IPTVERSION} -DIPTABLES_VERSION_STRING=\"${IPTABLES_VERSION_STRING}\
 )
 
 
-
-set(SGI_DIR  ${OPENAIRCN_DIR}/SGI)
-set(SGI_SRC
-  ${SGI_DIR}/sgi_task.c
-  ${SGI_DIR}/sgi_socket.c
-  ${SGI_DIR}/sgi_egress.c
-  ${SGI_DIR}/sgi_util.c
-)
-if(ENABLE_USE_PCAP_FOR_SGI)
-  set(SGI_SRC ${SGI_SRC}
-    ${SGI_DIR}/sgi_pcap.c
-    )
-  set(SGI_option_lib ${SGI_option_lib} pcap)
-endif()
-if (ENABLE_USE_NETFILTER_FOR_SGI)
-  set(SGI_SRC ${SGI_SRC}
-    ${SGI_DIR}/sgi_nf.c
-    )
-  set(SGI_option_lib ${SGI_option_lib} netfilter_queue nfnetlink)
-endif()
-add_library(SGI ${SGI_SRC})
 
 set(SCTP_SRC
   ${OPENAIRCN_DIR}/SCTP/sctp_common.c
@@ -1512,7 +1486,7 @@ add_executable(mme_gw
   )
 target_link_libraries (mme_gw
   -Wl,--start-group
-   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA SGI S6A SGW MME_APP LFDS ${ITTI_LIB} CN_UTILS HASHTABLE
+   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA S6A SGW MME_APP LFDS ${ITTI_LIB} CN_UTILS HASHTABLE
   -Wl,--end-group
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
   )
@@ -1601,7 +1575,7 @@ add_executable(oai_sgw
   )
 target_link_libraries (oai_sgw
   -Wl,--start-group
-  GTPV1U SECU_CN SECU_OSA SGI S6A SGW CN_UTILS LFDS ${ITTI_LIB}
+  GTPV1U SECU_CN SECU_OSA S6A SGW CN_UTILS LFDS ${ITTI_LIB}
   -Wl,--end-group
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
   )
@@ -1773,7 +1747,7 @@ add_executable(oaisim_mme
 )
 target_link_libraries (oaisim_mme
   -Wl,--start-group
-   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA SGI S6A S11 SGW MME_APP LFDS MSC ${ITTI_LIB} CN_UTILS HASHTABLE
+   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA S6A S11 SGW MME_APP LFDS MSC ${ITTI_LIB} CN_UTILS HASHTABLE
   -Wl,--end-group
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
 )

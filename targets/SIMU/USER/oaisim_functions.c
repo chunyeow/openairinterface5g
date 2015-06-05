@@ -803,7 +803,7 @@ void check_and_adjust_params(void)
   NB_eNB_INST = oai_emulation.info.nb_enb_local + oai_emulation.info.nb_enb_remote;
   NB_RN_INST = oai_emulation.info.nb_rn_local + oai_emulation.info.nb_rn_remote;
 
-#if defined(USE_PDCP_NETLINK_QUEUES) && defined(OPENAIR2)
+#if defined(PDCP_USE_NETLINK_QUEUES) && defined(OPENAIR2)
   pdcp_netlink_init();
 #endif
 

@@ -360,7 +360,7 @@ public_pdcp(int pdcp_module_init     (void);)
 public_pdcp(void pdcp_module_cleanup (void);)
 public_pdcp(void pdcp_layer_init     (void);)
 public_pdcp(void pdcp_layer_cleanup  (void);)
-#if defined(USE_PDCP_NETLINK_QUEUES)
+#if defined(PDCP_USE_NETLINK_QUEUES)
 public_pdcp(int pdcp_netlink_init    (void);)
 
 #endif

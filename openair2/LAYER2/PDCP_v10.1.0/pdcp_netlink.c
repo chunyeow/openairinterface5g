@@ -76,7 +76,7 @@ extern struct iovec nas_iov_rx;
 extern int nas_sock_fd;
 extern struct msghdr nas_msg_rx;
 
-#if defined(USE_PDCP_NETLINK_QUEUES)
+#if defined(PDCP_USE_NETLINK_QUEUES)
 static pthread_t pdcp_netlink_thread;
 
 /* We use lock-free queues between the User-plane driver running in kernel-space

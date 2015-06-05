@@ -315,7 +315,7 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
   struct pdcp_netlink_element_s* data_p    = NULL;
   module_id_t                    ue_id     = 0;
   pdcp_t*                        pdcp_p    = NULL;
-# if defined(USE_PDCP_NETLINK_QUEUES)
+# if defined(PDCP_USE_NETLINK_QUEUES)
   rb_id_t                        rab_id    = 0;
 
   pdcp_transmission_mode_t       pdcp_mode = PDCP_TRANSMISSION_MODE_UNKNOWN;
@@ -428,7 +428,7 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
   }
 
   return 0;
-# else /* USE_PDCP_NETLINK_QUEUES*/
+# else /* PDCP_USE_NETLINK_QUEUES*/
   int              len = 1;
   rb_id_t          rab_id  = 0;
 
