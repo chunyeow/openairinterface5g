@@ -1281,7 +1281,7 @@ rrc_ue_process_radioResourceConfigDedicated(
 
   UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].State = RRC_CONNECTED;
   LOG_I(RRC,"[UE %d] State = RRC_CONNECTED (eNB %d)\n",ctxt_pP->module_id,eNB_index);
-#if !defined(ENABLE_USE_MME)
+#if !defined(ENABLE_USE_MME) && defined(OAI_EMU)
   rrc_eNB_emulation_notify_ue_module_id(
     ctxt_pP->module_id,
     ctxt_pP->rnti,
