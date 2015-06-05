@@ -984,6 +984,7 @@ void itti_wait_tasks_end(void)
   }
 
   printf("closing all tasks\n");
+  sleep(1);
 
   do {
     ready_tasks = 0;
