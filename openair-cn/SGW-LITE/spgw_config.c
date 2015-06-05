@@ -212,9 +212,7 @@ int spgw_config_process(spgw_config_t* config_pP)
   }
 
 
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
   ret += spgw_system("echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects", SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-#endif
 
 
   if (snprintf(system_cmd, 256,
@@ -367,26 +365,6 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP)
       }
 
     }
-
-    if(  (
-           config_setting_lookup_string( setting_sgw, SGW_CONFIG_STRING_SGW_DROP_UPLINK_S1U_TRAFFIC,
-                                         (const char **)&sgw_drop_uplink_s1u_traffic)
-           && config_setting_lookup_string( setting_sgw, SGW_CONFIG_STRING_SGW_DROP_DOWNLINK_S1U_TRAFFIC,
-                                            (const char **)&sgw_drop_downlink_s1u_traffic)
-         )
-      ) {
-      if (strcasecmp(sgw_drop_uplink_s1u_traffic, "yes") == 0) {
-        config_pP->sgw_config.sgw_drop_uplink_traffic=1;
-      } else {
-        config_pP->sgw_config.sgw_drop_uplink_traffic=0;
-      }
-
-      if (strcasecmp(sgw_drop_downlink_s1u_traffic, "yes") == 0) {
-        config_pP->sgw_config.sgw_drop_downlink_traffic=1;
-      } else {
-        config_pP->sgw_config.sgw_drop_downlink_traffic=0;
-      }
-    }
   }
 
   setting_pgw = config_lookup(&cfg, PGW_CONFIG_STRING_PGW_CONFIG);
@@ -477,7 +455,7 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP)
               // valid address
               atoken2 = strtok(NULL, PGW_CONFIG_STRING_IPV4_PREFIX_DELIMITER);
               prefix_mask = atoi(atoken2);
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
+
               in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
 
               if (snprintf(system_cmd, 256,
@@ -489,7 +467,7 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP)
               }
 
               if (snprintf(system_cmd, 256,
-                  "iptables -I OUTPUT -t mangle -m mark -s %s/%s ! --mark 0 -j CONNMARK --save-mark",
+                  "iptables -I OUTPUT -t mangle -s %s/%s -m mark  ! --mark 0 -j CONNMARK --save-mark",
                   astring, atoken2) > 0) {
                 spgw_system(system_cmd, SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
               } else {
@@ -503,7 +481,6 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP)
             	SPGW_APP_ERROR("Route for UEs\n");
               }
 
-#endif
 
               if ((prefix_mask >= 2)&&(prefix_mask < 32)) {
                 memcpy (&addr_start, buf_in_addr, sizeof(struct in_addr));

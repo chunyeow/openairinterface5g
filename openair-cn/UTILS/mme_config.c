@@ -202,9 +202,7 @@ static int config_parse_file(mme_config_t *mme_config_p)
   char             *mme_interface_name_for_S11       = NULL;
   char             *mme_ip_address_for_S11           = NULL;
   char             *sgw_ip_address_for_S11           = NULL;
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
   char                system_cmd[256];
-#endif
 
   config_init(&cfg);
 

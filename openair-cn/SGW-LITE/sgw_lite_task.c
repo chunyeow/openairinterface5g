@@ -137,7 +137,6 @@ static void *sgw_lite_intertask_interface(void *args_p)
 int sgw_lite_init(char* config_file_name_pP)
 {
   SPGW_APP_DEBUG("Initializing SPGW-APP  task interface\n");
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
   spgw_system("modprobe ip_tables",    SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
   spgw_system("modprobe x_tables",     SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
   spgw_system("iptables -P INPUT ACCEPT", SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
@@ -180,7 +179,7 @@ int sgw_lite_init(char* config_file_name_pP)
   spgw_system("sysctl -w net.ipv4.conf.all.route_localnet=1",SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
   spgw_system("sysctl -w net.ipv4.conf.all.rp_filter=0",SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
   spgw_system("sync",                    SPGW_ABORT_ON_ERROR, __FILE__, __LINE__);
-#endif
+
   spgw_config_init(config_file_name_pP, &spgw_config);
   pgw_lite_load_pool_ip_addresses();
 

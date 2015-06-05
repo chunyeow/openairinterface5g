@@ -213,7 +213,6 @@ sgw_lite_handle_create_session_request(
       return -1;
     }
 
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
     {
       Gtpv1uCreateTunnelResp           createTunnelResp;
 
@@ -223,14 +222,6 @@ sgw_lite_handle_create_session_request(
       createTunnelResp.S1u_teid      = sgw_get_new_teid();
       sgw_lite_handle_gtpv1uCreateTunnelResp(&createTunnelResp);
     }
-#else
-    message_p->ittiMsg.gtpv1uCreateTunnelReq.context_teid  = new_endpoint_p->local_teid;
-    message_p->ittiMsg.gtpv1uCreateTunnelReq.eps_bearer_id = session_req_pP->bearer_to_create.eps_bearer_id;
-    SPGW_APP_DEBUG("Tx GTPV1U_CREATE_TUNNEL_REQ -> TASK_GTPV1_U, Context: S-GW S11 teid %u eps bearer id %d (from session req)\n",
-                   message_p->ittiMsg.gtpv1uCreateTunnelReq.context_teid,
-                   message_p->ittiMsg.gtpv1uCreateTunnelReq.eps_bearer_id);
-    return itti_send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p);
-#endif
   } else {
     SPGW_APP_WARN("Could not create new transaction for SESSION_CREATE message\n");
     free(new_endpoint_p);
@@ -289,7 +280,6 @@ sgw_lite_handle_sgi_endpoint_created(
       create_session_response_p->ambr.br_dl = 100000000;
       create_session_response_p->ambr.br_ul = 40000000;
 
-#if defined(ENABLE_USE_GTPU_IN_KERNEL)
       {
         sgw_eps_bearer_entry_t*                       eps_bearer_entry_p                 = NULL;
         hash_rc = hashtable_get (new_bearer_ctxt_info_p->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers,
@@ -305,7 +295,6 @@ sgw_lite_handle_sgi_endpoint_created(
                  sizeof(PAA_t));
         }
       }
-#endif
       memcpy(&create_session_response_p->paa,
              &resp_pP->paa,
              sizeof(PAA_t));
@@ -401,7 +390,6 @@ sgw_lite_handle_gtpv1uCreateTunnelResp(
 
     sgw_lite_display_s11_bearer_context_information_mapping();
 
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
     SGICreateEndpointResp  sgi_create_endpoint_resp;
 
     memset(&sgi_create_endpoint_resp, 0, sizeof(SGICreateEndpointResp));
@@ -469,81 +457,6 @@ sgw_lite_handle_gtpv1uCreateTunnelResp(
 
     sgi_create_endpoint_resp.status         = SGI_STATUS_OK;
     sgw_lite_handle_sgi_endpoint_created(&sgi_create_endpoint_resp);
-#else
-    /* SEND IP_FW_CREATE_IP_ENDPOINT_REQUEST to FW_IP task */
-    message_p = itti_alloc_new_message(TASK_SPGW_APP, SGI_CREATE_ENDPOINT_REQUEST);
-
-    if (message_p == NULL) {
-      return -1;
-    }
-
-    sgi_create_endpoint_req_p = &message_p->ittiMsg.sgiCreateEndpointReq;
-    memset(sgi_create_endpoint_req_p, 0, sizeof(SGICreateEndpointReq));
-    // IP forward will forward packets to this teid
-    sgi_create_endpoint_req_p->context_teid  = endpoint_created_pP->context_teid;
-    sgi_create_endpoint_req_p->sgw_S1u_teid  = endpoint_created_pP->S1u_teid;
-    sgi_create_endpoint_req_p->eps_bearer_id = endpoint_created_pP->eps_bearer_id;
-
-    // TO DO NOW
-    sgi_create_endpoint_req_p->paa.pdn_type = new_bearer_ctxt_info_p->sgw_eps_bearer_context_information.saved_message.pdn_type;
-
-    switch (sgi_create_endpoint_req_p->paa.pdn_type) {
-    case IPv4_OR_v6:
-      if (pgw_lite_get_free_ipv4_paa_address(&inaddr) == 0) {
-        IN_ADDR_TO_BUFFER(inaddr, sgi_create_endpoint_req_p->paa.ipv4_address);
-      } else {
-        SPGW_APP_WARN("Failed to allocate IPv4 PAA for PDN type IPv4_OR_v6\n");
-
-        if (pgw_lite_get_free_ipv6_paa_prefix(&in6addr) == 0) {
-          IN6_ADDR_TO_BUFFER(in6addr, sgi_create_endpoint_req_p->paa.ipv6_address);
-        } else {
-          SPGW_APP_ERROR("Failed to allocate IPv6 PAA for PDN type IPv4_OR_v6\n");
-        }
-      }
-
-      break;
-
-    case IPv4:
-      if (pgw_lite_get_free_ipv4_paa_address(&inaddr) == 0) {
-        IN_ADDR_TO_BUFFER(inaddr, sgi_create_endpoint_req_p->paa.ipv4_address);
-      } else {
-        SPGW_APP_ERROR("Failed to allocate IPv4 PAA for PDN type IPv4\n");
-      }
-
-      break;
-
-    case IPv6:
-      if (pgw_lite_get_free_ipv6_paa_prefix(&in6addr) == 0) {
-        IN6_ADDR_TO_BUFFER(in6addr, sgi_create_endpoint_req_p->paa.ipv6_address);
-      } else {
-        SPGW_APP_ERROR("Failed to allocate IPv6 PAA for PDN type IPv6\n");
-      }
-
-      break;
-
-    case IPv4_AND_v6:
-      if (pgw_lite_get_free_ipv4_paa_address(&inaddr) == 0) {
-        IN_ADDR_TO_BUFFER(inaddr, sgi_create_endpoint_req_p->paa.ipv4_address);
-      } else {
-        SPGW_APP_ERROR("Failed to allocate IPv4 PAA for PDN type IPv4_AND_v6\n");
-      }
-
-      if (pgw_lite_get_free_ipv6_paa_prefix(&in6addr) == 0) {
-        IN6_ADDR_TO_BUFFER(in6addr, sgi_create_endpoint_req_p->paa.ipv6_address);
-      } else {
-        SPGW_APP_ERROR("Failed to allocate IPv6 PAA for PDN type IPv4_AND_v6\n");
-      }
-
-      break;
-
-    default:
-      AssertFatal(0,"BAD paa.pdn_type %d", sgi_create_endpoint_req_p->paa.pdn_type);
-      break;
-    }
-
-    // TO DO TFT, QOS
-    return itti_send_msg_to_task(TASK_FW_IP, INSTANCE_DEFAULT, message_p);
-#endif
   } else {
     SPGW_APP_DEBUG("Rx SGW_S1U_ENDPOINT_CREATED, Context: teid %u NOT FOUND\n", endpoint_created_pP->context_teid);
     message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_CREATE_SESSION_RESPONSE);
@@ -683,11 +596,9 @@ sgw_lite_handle_sgi_endpoint_updated(
   sgw_eps_bearer_entry_t                            *eps_bearer_entry_p     = NULL;
   hashtable_rc_t                                     hash_rc;
   task_id_t                                          to_task;
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
   static uint8_t                                     iptable_uplink_remove_gtpu = FALSE;
   char                                               cmd[256];
   int                                                ret;
-#endif
 
 #if defined(ENABLE_STANDALONE_EPC)
   to_task = TASK_MME_APP;
@@ -749,7 +660,6 @@ sgw_lite_handle_sgi_endpoint_updated(
       modify_response_p->bearer_choice.bearer_contexts_modified.cause         = REQUEST_ACCEPTED;
       modify_response_p->cause                                                = REQUEST_ACCEPTED;
       modify_response_p->trxn                                                 = new_bearer_ctxt_info_p->sgw_eps_bearer_context_information.trxn;
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
       // if default bearer
 #warning "TODO define constant for default eps_bearer id"
 
@@ -819,7 +729,6 @@ sgw_lite_handle_sgi_endpoint_updated(
         SPGW_APP_ERROR("ERROR in setting up downlink TUNNEL\n");
       }
 
-#endif
     }
     MSC_LOG_TX_MESSAGE(
   		MSC_SP_GWAPP_MME,
@@ -928,7 +837,6 @@ sgw_lite_handle_modify_bearer_request(
       FTEID_T_2_IP_ADDRESS_T( (&modify_bearer_pP->bearer_context_to_modify.s1_eNB_fteid) , (&eps_bearer_entry_p->enb_ip_address_for_S1u) );
       eps_bearer_entry_p->enb_teid_for_S1u = modify_bearer_pP->bearer_context_to_modify.s1_eNB_fteid.teid;
 
-#if defined (ENABLE_USE_GTPU_IN_KERNEL)
       {
         SGIUpdateEndpointResp sgi_update_end_point_resp;
         sgi_update_end_point_resp.context_teid  = modify_bearer_pP->teid;
@@ -938,29 +846,6 @@ sgw_lite_handle_modify_bearer_request(
         sgi_update_end_point_resp.status        = 0x00;
         sgw_lite_handle_sgi_endpoint_updated(&sgi_update_end_point_resp);
       }
-#else
-      // UPDATE GTPV1U mapping tables with eNB references (teid, addresses)
-      message_p = itti_alloc_new_message(TASK_SPGW_APP, GTPV1U_UPDATE_TUNNEL_REQ);
-
-      if (message_p == NULL) {
-        return -1;
-      }
-
-      gtpv1u_update_tunnel_req_p = &message_p->ittiMsg.gtpv1uUpdateTunnelReq;
-      memset(gtpv1u_update_tunnel_req_p, 0, sizeof(Gtpv1uUpdateTunnelReq));
-      gtpv1u_update_tunnel_req_p->context_teid           = modify_bearer_pP->teid;
-      gtpv1u_update_tunnel_req_p->sgw_S1u_teid           = eps_bearer_entry_p->s_gw_teid_for_S1u_S12_S4_up;     ///< SGW S1U local Tunnel Endpoint Identifier
-      gtpv1u_update_tunnel_req_p->enb_S1u_teid           = eps_bearer_entry_p->enb_teid_for_S1u;                ///< eNB S1U Tunnel Endpoint Identifier
-      gtpv1u_update_tunnel_req_p->enb_ip_address_for_S1u = eps_bearer_entry_p->enb_ip_address_for_S1u;
-      gtpv1u_update_tunnel_req_p->eps_bearer_id          = eps_bearer_entry_p->eps_bearer_id;
-      SPGW_APP_DEBUG("Rx MODIFY_BEARER_REQUEST, gtpv1u_update_tunnel_req_p->context_teid           = %u\n",modify_bearer_pP->teid);
-      SPGW_APP_DEBUG("Rx MODIFY_BEARER_REQUEST, gtpv1u_update_tunnel_req_p->sgw_S1u_teid           = %u\n",gtpv1u_update_tunnel_req_p->sgw_S1u_teid);
-      SPGW_APP_DEBUG("Rx MODIFY_BEARER_REQUEST, gtpv1u_update_tunnel_req_p->enb_S1u_teid           = %u\n",gtpv1u_update_tunnel_req_p->enb_S1u_teid);
-      //SPGW_APP_DEBUG("Rx MODIFY_BEARER_REQUEST, gtpv1u_update_tunnel_req_p->enb_ip_address_for_S1u = %u\n",modify_bearer_pP->enb_ip_address_for_S1u);
-      SPGW_APP_DEBUG("Rx MODIFY_BEARER_REQUEST, gtpv1u_update_tunnel_req_p->eps_bearer_id          = %u\n",gtpv1u_update_tunnel_req_p->eps_bearer_id);
-
-      return itti_send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p);
-#endif
     }
   } else {
     message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_RESPONSE);

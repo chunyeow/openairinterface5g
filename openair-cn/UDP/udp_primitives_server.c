@@ -336,7 +336,6 @@ static void *udp_intertask_interface(void *args_p)
     itti_receive_msg(TASK_UDP, &received_message_p);
 
     if (received_message_p != NULL) {
-#if !defined(ENABLE_USE_GTPU_IN_KERNEL)
 
       switch (ITTI_MSG_ID(received_message_p)) {
       case UDP_INIT: {
@@ -422,7 +421,6 @@ static void *udp_intertask_interface(void *args_p)
       break;
       }
 
-#endif
 on_error:
       rc = itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);
       AssertFatal(rc == EXIT_SUCCESS, "Failed to free memory (%d)!\n", rc);
