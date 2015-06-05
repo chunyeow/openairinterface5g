@@ -312,19 +312,18 @@ void sort_UEs (module_id_t Mod_idP,
 
     for(ii=UE_list->next[i]; ii>=0; ii=UE_list->next[ii]) {
 
-      rnti1 = UE_RNTI(Mod_idP,i);
+      UE_id1  = i;
+      rnti1 = UE_RNTI(Mod_idP,UE_id1);
       if(rnti1 == NOT_A_RNTI)
 	continue;
-      
-      UE_id1  = i;
       pCC_id1 = UE_PCCID(Mod_idP,UE_id1);
       cqi1    = maxcqi(Mod_idP,UE_id1); //
       round1  = maxround(Mod_idP,rnti1,frameP,subframeP,0);
 
-      if(rnti2 == NOT_A_RNTI)
-        continue;
       UE_id2 = ii;
       rnti2 = UE_RNTI(Mod_idP,UE_id2);
+      if(rnti2 == NOT_A_RNTI)
+        continue;
       cqi2    = maxcqi(Mod_idP,UE_id2);
       round2  = maxround(Mod_idP,rnti2,frameP,subframeP,0);  //mac_xface->get_ue_active_harq_pid(Mod_id,rnti2,subframe,&harq_pid2,&round2,0);
       pCC_id2 = UE_PCCID(Mod_idP,UE_id2);
@@ -1126,26 +1125,24 @@ void sort_ue_ul (module_id_t module_idP,int frameP, sub_frame_t subframeP)
   for (i=UE_list->head_ul; i>=0; i=UE_list->next_ul[i]) {
 
     //LOG_I(MAC,"sort ue ul i %d\n",i);
-
-    rnti1 = UE_RNTI(module_idP,i);
-
-    if(rnti1 == NOT_A_RNTI)
+    for (ii=UE_list->next_ul[i]; ii>=0; ii=UE_list->next_ul[ii]) {
+      //LOG_I(MAC,"sort ul ue 2 ii %d\n",ii);
+ 
+      UE_id1  = i;
+      rnti1 = UE_RNTI(module_idP,UE_id1);
+      
+      if(rnti1 == NOT_A_RNTI)
       continue;
 
-    UE_id1  = i;
-    pCCid1 = UE_PCCID(module_idP,UE_id1);
-    round1  = maxround(module_idP,rnti1,frameP,subframeP,1);
-
-    for (ii=UE_list->next_ul[i]; ii>=0; ii=UE_list->next_ul[ii]) {
-
-      //LOG_I(MAC,"sort ul ue 2 ii %d\n",ii);
-
-      rnti2 = UE_RNTI(module_idP,ii);
-
+      pCCid1 = UE_PCCID(module_idP,UE_id1);
+      round1  = maxround(module_idP,rnti1,frameP,subframeP,1);
+      
+      UE_id2  = ii;
+      rnti2 = UE_RNTI(module_idP,UE_id2);
+      
       if(rnti2 == NOT_A_RNTI)
         continue;
 
-      UE_id2  = ii;
       pCCid2 = UE_PCCID(module_idP,UE_id2);
       round2  = maxround(module_idP,rnti2,frameP,subframeP,1);
 
