@@ -3111,8 +3111,9 @@ void prach_procedures(PHY_VARS_eNB *phy_vars_eNB,uint8_t sched_subframe,uint8_t 
       phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].UE_timing_offset = preamble_delay_list[preamble_max]&0x1FFF; //limit to 13 (=11+2) bits
       //phy_vars_eNb->eNB_UE_stats[(uint32_t)UE_id].mode = PRACH;
       phy_vars_eNB->eNB_UE_stats[(uint32_t)UE_id].sector = 0;
-      LOG_I(PHY,"[eNB %d][RAPROC] Frame %d, subframe %d Initiating RA procedure with preamble %d, energy %d.%d dB, delay %d\n",
+      LOG_I(PHY,"[eNB %d/%d][RAPROC] Frame %d, subframe %d Initiating RA procedure with preamble %d, energy %d.%d dB, delay %d\n",
             phy_vars_eNB->Mod_id,
+            phy_vars_eNB->CC_id,
             frame,
             subframe,
             preamble_max,

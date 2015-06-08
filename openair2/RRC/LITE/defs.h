@@ -295,7 +295,9 @@ typedef struct HANDOVER_INFO_UE_s {
   PhysCellId_t targetCellId;
   uint8_t measFlag;
 } HANDOVER_INFO_UE;
+
 typedef struct eNB_RRC_UE_s {
+  uint8_t                            primaryCC_id;
 #ifdef Rel10
   SCellToAddMod_r10_t                sCell_config[2];
 #endif
@@ -317,7 +319,6 @@ typedef struct eNB_RRC_UE_s {
   MeasConfig_t*                      measConfig;
   HANDOVER_INFO*                     handover_info;
 
-
 #if defined(ENABLE_SECURITY)
   /* KeNB as derived from KASME received from EPC */
   uint8_t kenb[32];
@@ -325,8 +326,6 @@ typedef struct eNB_RRC_UE_s {
   /* Used integrity/ciphering algorithms */
   e_SecurityAlgorithmConfig__cipheringAlgorithm     ciphering_algorithm;
   e_SecurityAlgorithmConfig__integrityProtAlgorithm integrity_algorithm;
-
-
 
   uint8_t                            Status;
   rnti_t                             rnti;
@@ -361,6 +360,7 @@ typedef struct eNB_RRC_UE_s {
 } eNB_RRC_UE_t;
 
 typedef uid_t ue_uid_t;
+
 typedef struct rrc_eNB_ue_context_s {
   /* Tree related data */
   RB_ENTRY(rrc_eNB_ue_context_s) entries;
@@ -370,7 +370,7 @@ typedef struct rrc_eNB_ue_context_s {
    */
   rnti_t         ue_id_rnti;
 
-  // an other key for protocol layers but should not be used as a key for RB tree
+  // another key for protocol layers but should not be used as a key for RB tree
   ue_uid_t       local_uid;
 
   /* UE id for initial connection to S1AP */

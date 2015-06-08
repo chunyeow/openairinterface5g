@@ -802,7 +802,7 @@ rrc_ue_process_measConfig(
       }
     }
 
-    rrc_mac_config_req(ctxt_pP->module_id,ENB_FLAG_NO,0,eNB_index,
+    rrc_mac_config_req(ctxt_pP->module_id,0,ENB_FLAG_NO,0,eNB_index,
                        (RadioResourceConfigCommonSIB_t *)NULL,
                        (struct PhysicalConfigDedicated *)NULL,
 #ifdef Rel10
@@ -1092,7 +1092,7 @@ rrc_ue_process_radioResourceConfigDedicated(
 
           LOG_D(RRC, "[FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ  (SRB1 eNB %d) --->][MAC_UE][MOD %02d][]\n",
                 ctxt_pP->frame, ctxt_pP->module_id, eNB_index, ctxt_pP->module_id);
-          rrc_mac_config_req(ctxt_pP->module_id,ENB_FLAG_NO,0,eNB_index,
+          rrc_mac_config_req(ctxt_pP->module_id,0,ENB_FLAG_NO,0,eNB_index,
                              (RadioResourceConfigCommonSIB_t *)NULL,
                              UE_rrc_inst[ctxt_pP->module_id].physicalConfigDedicated[eNB_index],
 #ifdef Rel10
@@ -1150,7 +1150,7 @@ rrc_ue_process_radioResourceConfigDedicated(
                 ctxt_pP->module_id,
                 eNB_index,
                 ctxt_pP->module_id);
-          rrc_mac_config_req(ctxt_pP->module_id,ENB_FLAG_NO,0,eNB_index,
+          rrc_mac_config_req(ctxt_pP->module_id,0,ENB_FLAG_NO,0,eNB_index,
                              (RadioResourceConfigCommonSIB_t *)NULL,
                              UE_rrc_inst[ctxt_pP->module_id].physicalConfigDedicated[eNB_index],
 #ifdef Rel10
@@ -1248,7 +1248,7 @@ rrc_ue_process_radioResourceConfigDedicated(
               radioResourceConfigDedicated->drb_ToAddModList->list.array[i]->drb_Identity,
               eNB_index,
               ctxt_pP->module_id);
-        rrc_mac_config_req(ctxt_pP->module_id,ENB_FLAG_NO,0,eNB_index,
+        rrc_mac_config_req(ctxt_pP->module_id,0,ENB_FLAG_NO,0,eNB_index,
                            (RadioResourceConfigCommonSIB_t *)NULL,
                            UE_rrc_inst[ctxt_pP->module_id].physicalConfigDedicated[eNB_index],
 #ifdef Rel10
@@ -1749,6 +1749,7 @@ rrc_ue_process_mobilityControlInfo(
 
   // Reset MAC and configure PHY
   rrc_mac_config_req(ctxt_pP->module_id,
+                     0,
                      ENB_FLAG_NO,
                      0,
                      eNB_index,
@@ -2564,7 +2565,7 @@ static int decode_SIB1( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_
   LOG_D( RRC, "[FRAME unknown][RRC_UE][MOD %02"PRIu8"][][--- MAC_CONFIG_REQ (SIB1 params eNB %"PRIu8") --->][MAC_UE][MOD %02"PRIu8"][]\n",
          ctxt_pP->module_id, eNB_index, ctxt_pP->module_id );
 
-  rrc_mac_config_req( ctxt_pP->module_id,ENB_FLAG_NO, 0, eNB_index,
+  rrc_mac_config_req(ctxt_pP->module_id, 0, ENB_FLAG_NO, 0, eNB_index,
                       (RadioResourceConfigCommonSIB_t *)NULL,
                       (struct PhysicalConfigDedicated *)NULL,
 #ifdef Rel10
@@ -3021,7 +3022,7 @@ static int decode_SI( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_in
       dump_sib2( UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index] );
       LOG_D( RRC, "[FRAME %05"PRIu32"][RRC_UE][MOD %02"PRIu8"][][--- MAC_CONFIG_REQ (SIB2 params  eNB %"PRIu8") --->][MAC_UE][MOD %02"PRIu8"][]\n",
              ctxt_pP->frame, ctxt_pP->module_id, eNB_index, ctxt_pP->module_id );
-      rrc_mac_config_req( ctxt_pP->module_id, ENB_FLAG_NO, 0, eNB_index,
+      rrc_mac_config_req(ctxt_pP->module_id, 0, ENB_FLAG_NO, 0, eNB_index,
                           &UE_rrc_inst[ctxt_pP->module_id].sib2[eNB_index]->radioResourceConfigCommon,
                           (struct PhysicalConfigDedicated *)NULL,
 #ifdef Rel10
@@ -3157,7 +3158,7 @@ static int decode_SI( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_in
       // adding here function to store necessary parameters for using in decode_MCCH_Message + maybe transfer to PHY layer
       LOG_D( RRC, "[FRAME %05"PRIu32"][RRC_UE][MOD %02"PRIu8"][][--- MAC_CONFIG_REQ (SIB13 params eNB %"PRIu8") --->][MAC_UE][MOD %02"PRIu8"][]\n",
              ctxt_pP->frame, ctxt_pP->module_id, eNB_index, ctxt_pP->module_id);
-      rrc_mac_config_req(ctxt_pP->module_id,ENB_FLAG_NO,0,eNB_index,
+      rrc_mac_config_req(ctxt_pP->module_id,0,ENB_FLAG_NO,0,eNB_index,
                          (RadioResourceConfigCommonSIB_t *)NULL,
                          (struct PhysicalConfigDedicated *)NULL,
                          (SCellToAddMod_r10_t *)NULL,
@@ -3605,7 +3606,7 @@ static void decode_MBSFNAreaConfiguration( module_id_t ue_mod_idP, uint8_t eNB_i
   LOG_D(RRC,"[UE %d] Frame %d : Number of MCH(s) in the MBSFN Sync Area %d  is %d\n",
         ue_mod_idP, frameP, mbsfn_sync_area, UE_rrc_inst[ue_mod_idP].mcch_message[eNB_index]->pmch_InfoList_r9.list.count);
   //  store to MAC/PHY necessary parameters for receiving MTCHs
-  rrc_mac_config_req(ue_mod_idP,ENB_FLAG_NO,0,eNB_index,
+  rrc_mac_config_req(ue_mod_idP,0,ENB_FLAG_NO,0,eNB_index,
                      (RadioResourceConfigCommonSIB_t *)NULL,
                      (struct PhysicalConfigDedicated *)NULL,
 #ifdef Rel10

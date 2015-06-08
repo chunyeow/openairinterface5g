@@ -116,13 +116,14 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
   i = UE_list->head;
 
   while (i>=0) {
-
-    rnti = UE_RNTI(module_idP,i);
-    LOG_D(MAC,"UE %d: rnti %x (%p)\n",i,rnti,mac_xface->get_eNB_UE_stats(module_idP,0,rnti));
+    rnti = UE_RNTI(module_idP, i);
+    CC_id = UE_PCCID(module_idP, i);
+    LOG_D(MAC,"UE %d: rnti %x (%p)\n", i, rnti,
+          mac_xface->get_eNB_UE_stats(module_idP, CC_id, rnti));
     next_i= UE_list->next[i];
 
-    if (mac_xface->get_eNB_UE_stats(module_idP,0,rnti)==NULL) {
-      mac_remove_ue(module_idP,i,frameP, subframeP);
+    if (mac_xface->get_eNB_UE_stats(module_idP, CC_id, rnti)==NULL) {
+      mac_remove_ue(module_idP, i, frameP, subframeP);
     }
     i = next_i;
   }

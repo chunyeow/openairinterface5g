@@ -992,6 +992,15 @@ void do_OFDM_mod_rt(int subframe,PHY_VARS_eNB *phy_vars_eNB)
   }
 }
 
+/* mutex, cond and variable to serialize phy proc TX calls
+ * (this mechanism may be relaxed in the future for better
+ * performances)
+ */
+static struct {
+  pthread_mutex_t  mutex_phy_proc_tx;
+  pthread_cond_t   cond_phy_proc_tx;
+  volatile uint8_t phy_proc_CC_id;
+} sync_phy_proc[NUM_ENB_THREADS];
 
 /*!
  * \brief The transmit thread of eNB.
@@ -1092,16 +1101,35 @@ static void* eNB_thread_tx( void* param )
 
     if (oai_exit) break;
 
-    if ((((PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == TDD)&&
-          (subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_tx)==SF_DL))||
-         (PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == FDD))) {
+    if (((PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == TDD) &&
+         ((subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_tx) == SF_DL) ||
+          (subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_tx) == SF_S))) ||
+        (PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == FDD)) {
+      /* run PHY TX procedures the one after the other for all CCs to avoid race conditions
+       * (may be relaxed in the future for performance reasons)
+       */
+      if (pthread_mutex_lock(&sync_phy_proc[proc->subframe].mutex_phy_proc_tx) != 0) {
+        LOG_E(PHY, "[SCHED][eNB] error locking PHY proc mutex for eNB TX proc %d\n", proc->subframe);
+        exit_fun("nothing to add");
+        break;
+      }
+      /* wait for our turn */
+      while (sync_phy_proc[proc->subframe].phy_proc_CC_id != proc->CC_id) {
+        pthread_cond_wait(&sync_phy_proc[proc->subframe].cond_phy_proc_tx,
+                          &sync_phy_proc[proc->subframe].mutex_phy_proc_tx);
+      }
 
       phy_procedures_eNB_TX( proc->subframe, PHY_vars_eNB_g[0][proc->CC_id], 0, no_relay, NULL );
 
-    }
-
-    if ((subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_tx) == SF_S)) {
-      phy_procedures_eNB_TX( proc->subframe, PHY_vars_eNB_g[0][proc->CC_id], 0, no_relay, NULL );
+      /* we're done, let the next one proceed */
+      sync_phy_proc[proc->subframe].phy_proc_CC_id++;
+      sync_phy_proc[proc->subframe].phy_proc_CC_id %= MAX_NUM_CCs;
+      pthread_cond_broadcast(&sync_phy_proc[proc->subframe].cond_phy_proc_tx);
+      if (pthread_mutex_unlock(&sync_phy_proc[proc->subframe].mutex_phy_proc_tx) != 0) {
+        LOG_E(PHY, "[SCHED][eNB] error locking PHY proc mutex for eNB TX proc %d\n", proc->subframe);
+        exit_fun("nothing to add");
+        break;
+      }
     }
 
     do_OFDM_mod_rt( proc->subframe_tx, PHY_vars_eNB_g[0][proc->CC_id] );
@@ -1375,6 +1403,13 @@ void init_eNB_proc(void)
     PHY_vars_eNB_g[0][CC_id]->proc[9].frame_tx = 1;
     //    PHY_vars_eNB_g[0][CC_id]->proc[0].frame_tx = 1;
 #endif
+  }
+
+  /* setup PHY proc TX sync mechanism */
+  for (i=0; i<NUM_ENB_THREADS; i++) {
+    pthread_mutex_init(&sync_phy_proc[i].mutex_phy_proc_tx, NULL);
+    pthread_cond_init(&sync_phy_proc[i].cond_phy_proc_tx, NULL);
+    sync_phy_proc[i].phy_proc_CC_id = 0;
   }
 }
 

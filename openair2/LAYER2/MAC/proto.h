@@ -700,6 +700,7 @@ unsigned char generate_dlsch_header(unsigned char *mac_header,
 
 /** \brief RRC Configuration primitive for PHY/MAC.  Allows configuration of PHY/MAC resources based on System Information (SI), RRCConnectionSetup and RRCConnectionReconfiguration messages.
 @param Mod_id Instance ID of eNB
+@param CC_id Component Carrier of the eNB
 @param eNB_flag Indicates if this is a eNB or UE configuration
 @param rntiP id of UE if this is an eNB configuration
 @param eNB_id Index of eNB if this is a UE configuration
@@ -720,6 +721,7 @@ unsigned char generate_dlsch_header(unsigned char *mac_header,
 @param pmch_InfoList pointer to PMCH_InfoList from MBSFNAreaConfiguration Message (MCCH Message)
 */
 int rrc_mac_config_req(module_id_t     module_idP,
+                       int             CC_id,
                        eNB_flag_t eNB_flag,
                        rnti_t          rntiP,
                        uint8_t         eNB_index,

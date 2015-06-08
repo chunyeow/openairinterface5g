@@ -328,7 +328,7 @@ init_SI(
     LOG_D(RRC,
           PROTOCOL_RRC_CTXT_FMT" RRC_UE --- MAC_CONFIG_REQ (SIB1.tdd & SIB2 params) ---> MAC_UE\n",
           PROTOCOL_RRC_CTXT_ARGS(ctxt_pP));
-    rrc_mac_config_req(ctxt_pP->module_id, ENB_FLAG_YES, 0, 0,
+    rrc_mac_config_req(ctxt_pP->module_id, CC_id, ENB_FLAG_YES, 0, 0,
                        (RadioResourceConfigCommonSIB_t *) &
                        eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].sib2->radioResourceConfigCommon,
                        (struct PhysicalConfigDedicated *)NULL,
@@ -425,7 +425,7 @@ init_MCCH(
 
   //  LOG_I(RRC, "DUY: serviceID is %d\n",eNB_rrc_inst[enb_mod_idP].mcch_message->pmch_InfoList_r9.list.array[0]->mbms_SessionInfoList_r9.list.array[0]->tmgi_r9.serviceId_r9.buf[2]);
   //  LOG_I(RRC, "DUY: session ID is %d\n",eNB_rrc_inst[enb_mod_idP].mcch_message->pmch_InfoList_r9.list.array[0]->mbms_SessionInfoList_r9.list.array[0]->sessionId_r9->buf[0]);
-  rrc_mac_config_req(enb_mod_idP, ENB_FLAG_YES, 0, 0,
+  rrc_mac_config_req(enb_mod_idP, CC_id, ENB_FLAG_YES, 0, 0,
                      (RadioResourceConfigCommonSIB_t *) NULL,
                      (struct PhysicalConfigDedicated *)NULL,
 #ifdef Rel10
@@ -2215,6 +2215,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover(
         ctxt_pP->frame, ctxt_pP->module_id, ue_context_pP->ue_context.rnti, ctxt_pP->module_id);
   rrc_mac_config_req(
     ctxt_pP->module_id,
+    ue_context_pP->ue_context.primaryCC_id,
     ENB_FLAG_YES,
     ue_context_pP->ue_context.rnti,
     0,
@@ -2785,6 +2786,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover(
   //pdcp_data_req (ctxt_pP->module_id, frameP, 1, (ue_mod_idP * NB_RB_MAX) + DCCH,rrc_eNB_mui++, 0, size, (char *) buffer, 1);
   rrc_mac_config_req(
     ctxt_pP->module_id,
+    ue_context_pP->ue_context.primaryCC_id,
     ENB_FLAG_YES,
     ue_context_pP->ue_context.rnti,
     0,
@@ -3050,6 +3052,7 @@ rrc_eNB_process_RRCConnectionReconfigurationComplete(
 
           rrc_mac_config_req(
             ctxt_pP->module_id,
+            ue_context_pP->ue_context.primaryCC_id,
             ENB_FLAG_YES,
             ue_context_pP->ue_context.rnti,
             0,
@@ -3097,6 +3100,7 @@ rrc_eNB_process_RRCConnectionReconfigurationComplete(
                 PROTOCOL_RRC_CTXT_UE_FMT" RRC_eNB --- MAC_CONFIG_REQ  (DRB) ---> MAC_eNB\n",
                 PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP));
           rrc_mac_config_req(ctxt_pP->module_id,
+                             ue_context_pP->ue_context.primaryCC_id,
                              ENB_FLAG_YES,
                              ue_context_pP->ue_context.rnti,
                              0,
@@ -3186,6 +3190,7 @@ rrc_eNB_generate_RRCConnectionSetup(
               PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP));
         rrc_mac_config_req(
           ctxt_pP->module_id,
+          ue_context_pP->ue_context.primaryCC_id,
           ENB_FLAG_YES,
           ue_context_pP->ue_context.rnti,
           0,
@@ -3629,6 +3634,8 @@ rrc_eNB_decode_ccch(
 #ifndef NO_RRM
       send_msg(&S_rrc, msg_rrc_MR_attach_ind(ctxt_pP->module_id, Mac_id));
 #else
+
+      ue_context_p->ue_context.primaryCC_id = CC_id;
 
       //LG COMMENT Idx = (ue_mod_idP * NB_RB_MAX) + DCCH;
       Idx = DCCH;
