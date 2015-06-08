@@ -1189,7 +1189,8 @@ int main(int argc, char **argv)
                  l%(PHY_vars_eNB->lte_frame_parms.symbols_per_tti/2),
                  (2*subframe)+(l/(PHY_vars_eNB->lte_frame_parms.symbols_per_tti/2)),
                  0,
-                 0);
+                 0,
+		 0);
 
         if (PHY_vars_UE->perfect_ce == 1) {
           if (awgn_flag==0) {
