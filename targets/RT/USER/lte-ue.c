@@ -897,7 +897,6 @@ void *UE_thread(void *arg)
     exit_fun("Nothing to add");
     return &UE_thread_retval;
   }
-h
   LOG_I(HW,"[SCHED][eNB] eNB main deadline thread %lu started on CPU %d\n",
         (unsigned long)gettid(), sched_getcpu());
 
