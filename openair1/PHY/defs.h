@@ -65,28 +65,13 @@
 //use msg in the real-time thread context
 #define msg_nrt printf
 //use msg_nrt in the non real-time context (for initialization, ...)
-#ifdef EXPRESSMIMO_TARGET
-#define malloc16(x) malloc(x)
-#else //EXPRESSMIMO_TARGET
 #define malloc16(x) memalign(16,x)
-#endif //EXPRESSMIMO_TARGET
 #define free16(y,x) free(y)
 #define bigmalloc malloc
 #define bigmalloc16 malloc16
 #define openair_free(y,x) free((y))
 #define PAGE_SIZE 4096
 
-#ifdef EXPRESSMIMO_TARGET
-//! \brief Allocate \c size bytes of memory on the heap and zero it afterwards.
-//! If no more memory is available, this function will terminate the program with an assertion error.
-static inline void* malloc16_clear( size_t size )
-{
-  void* ptr = malloc(size);
-  DevAssert(ptr);
-  memset( ptr, 0, size );
-  return ptr;
-}
-#else //EXPRESSMIMO_TARGET
 //! \brief Allocate \c size bytes of memory on the heap with alignment 16 and zero it afterwards.
 //! If no more memory is available, this function will terminate the program with an assertion error.
 static inline void* malloc16_clear( size_t size )
@@ -96,7 +81,7 @@ static inline void* malloc16_clear( size_t size )
   memset( ptr, 0, size );
   return ptr;
 }
-#endif //EXPRESSMIMO_TARGET
+
 
 
 #define PAGE_MASK 0xfffff000
@@ -118,10 +103,6 @@ static inline void* malloc16_clear( size_t size )
 
 /// suppress compiler warning for unused arguments
 #define UNUSED(x) (void)x;
-
-#ifdef EXPRESSMIMO_TARGET
-#define Zero_Buffer(x,y) Zero_Buffer_nommx(x,y)
-#endif //EXPRESSMiMO_TARGET
 
 
 #include "spec_defs_top.h"

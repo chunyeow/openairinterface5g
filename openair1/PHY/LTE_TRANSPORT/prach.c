@@ -998,10 +998,7 @@ int32_t generate_prach( PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id, uint8_t subfra
 
   return signal_energy( (int*)prach, 256 );
 }
-
-
-
-__m128i mmtmpX0,mmtmpX1,mmtmpX2,mmtmpX3;
+//__m128i mmtmpX0,mmtmpX1,mmtmpX2,mmtmpX3;
 
 void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_energy_list, uint16_t *preamble_delay_list, uint16_t Nf, uint8_t tdd_mapindex)
 {

@@ -126,7 +126,7 @@ add_list_string_option(CMAKE_BUILD_TYPE "RelWithDebInfo" "Choose the type of bui
 
 Message("Architecture is ${CMAKE_SYSTEM_PROCESSOR}")
 if (CMAKE_SYSTEM_PROCESSOR STREQUAL "armv7l")
-  set(C_FLAGS_PROCESSOR "-mfloat-abi=softfp -mfpu=neon")
+  set(C_FLAGS_PROCESSOR "-gdwarf-2 -mfloat-abi=hard -mfpu=neon -lgcc -lrt")
 else (CMAKE_SYSTEM_PROCESSOR STREQUAL "armv7l")
   set(C_FLAGS_PROCESSOR "-msse4.2")
 endif()
@@ -140,8 +140,8 @@ set(CMAKE_C_FLAGS
 # set a flag for changes in the source code
 # these changes are related to hardcoded path to include .h files
 add_definitions(-DCMAKER)
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -ggdb -DMALLOC_CHECK_=3")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS} -ggdb -DMALLOC_CHECK_=3 -O2") 
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -DMALLOC_CHECK_=3")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS} -g -DMALLOC_CHECK_=3 -O2") 
 
 # Below has been put in comment because does not work with
 # SVN authentication.
@@ -778,7 +778,6 @@ set(PHY_SRC
   ${OPENAIR1_DIR}/PHY/TOOLS/log2_approx.c
   ${OPENAIR1_DIR}/PHY/TOOLS/cmult_sv.c
   ${OPENAIR1_DIR}/PHY/TOOLS/cmult_vv.c
-  ${OPENAIR1_DIR}/PHY/TOOLS/cadd_vv.c
   ${OPENAIR1_DIR}/PHY/TOOLS/cdot_prod.c
   ${OPENAIR1_DIR}/PHY/TOOLS/signal_energy.c
   ${OPENAIR1_DIR}/PHY/TOOLS/dB_routines.c
@@ -1692,7 +1691,7 @@ foreach(myExe dlsim ulsim pbchsim scansim mbmssim pdcchsim pucchsim prachsim syn
     ${XFORMS_SOURCE}
     )
   target_link_libraries (${myExe}
-    -Wl,--start-group SIMU UTIL SCHED_LIB PHY LFDS MSC ${ITTI_LIB} -Wl,--end-group
+    -Wl,--start-group SIMU UTIL SCHED_LIB PHY LFDS ${ITTI_LIB} -Wl,--end-group
     pthread m rt ${CONFIG_LIBRARIES} ${ATLAS_LIBRARIES} ${XFORMS_LIBRARIES}
     )
 endforeach(myExe)

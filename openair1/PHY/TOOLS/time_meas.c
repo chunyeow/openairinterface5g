@@ -33,16 +33,7 @@
 
 // global var for openair performance profiler
 int opp_enabled = 0;
-/*
-  double get_cpu_freq_GHz(void) {
 
-  time_stats_t ts;
-  reset_meas(&ts);
-  start_meas(&ts);
-  sleep(1);
-  stop_meas(&ts);
-  return (double)ts.diff/1000000000;
-  }*/
 
 double get_cpu_freq_GHz(void) {
 

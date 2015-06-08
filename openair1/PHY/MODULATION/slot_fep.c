@@ -35,12 +35,19 @@
 
 void rescale(int16_t *input,int length)
 {
-
+#if defined(__x86_64__) || defined(__i386__)
   __m128i *input128 = (__m128i *)input;
+#elif defined(__arm__)
+  int16x8_t *input128 = (int16x8_t *)input;
+#endif
   int i;
 
   for (i=0; i<length>>2; i++) {
+#if defined(__x86_64__) || defined(__i386__)
     input128[i] = _mm_srai_epi16(input128[i],4);
+#elif defined(__arm__)
+    input128[i] = vshrq_n_s16(input128[i],4);
+#endif
   }
 }
 

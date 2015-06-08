@@ -339,42 +339,7 @@ void dft3072(int16_t *sigF,int16_t *sig);
 void dft24576(int16_t *sigF,int16_t *sig);
 
 
-/*!\fn int rotate_cpx_vector(int16_t *x,int16_t *alpha,int16_t *y,uint32_t N,uint16_t output_shift, uint8_t format)
-This function performs componentwise multiplication of a vector with a complex scalar.
-@param x Vector input (Q1.15)  in the format  |Re0  Im0 Re0 Im0|,......,|Re(N-1)  Im(N-1) Re(N-1) Im(N-1)|
-@param alpha Scalar input (Q1.15) in the format  |Re0 Im0|
-@param y Output (Q1.15) in the format  |Re0  Im0 Re0 Im0|,......,|Re(N-1)  Im(N-1) Re(N-1) Im(N-1)|
-@param N Length of x WARNING: N>=4
-@param output_shift Number of bits to shift output down to Q1.15 (should be 15 for Q1.15 inputs) WARNING: log2_amp>0 can cause overflow!!
-@param format Format 0 indicates that alpha is in shuffled format during multiply (Re -Im Im Re), whereas 1 indicates that input is in this format (i.e. a matched filter)
-
-The function implemented is : \f$\mathbf{y} = \alpha\mathbf{x}\f$
-*/
-int32_t rotate_cpx_vector(int16_t *x,
-                          int16_t *alpha,
-                          int16_t *y,
-                          uint32_t N,
-                          uint16_t output_shift,
-                          uint8_t format);
-
-/*!\fn int32_t rotate_cpx_vector2(int16_t *x,int16_t *alpha,int16_t *y,uint32_t N,uint16_t output_shift,uint8_t format)
-This function performs componentwise multiplication of a vector with a complex scalar.
-@param x Vector input (Q1.15)  in the format  |Re0  Im0 Re0 Im0|,......,|Re(N-1)  Im(N-1) Re(N-1) Im(N-1)|
-@param alpha Scalar input (Q1.15) in the format  |Re0 Im0|
-@param y Output (Q1.15) in the format  |Re0  Im0 Re0 Im0|,......,|Re(N-1)  Im(N-1) Re(N-1) Im(N-1)|
-@param N Length of x WARNING: N must be multiple of 2 (the routine performs two complex multiplies per cycle)
-@param output_shift Number of bits to shift output down to Q1.15 (should be 15 for Q1.15 inputs) WARNING: log2_amp>0 can cause overflow!!
-@param format Format 0 indicates that alpha is in shuffled format during multiply (Re -Im Im Re), whereas 1 indicates that input is in this format (i.e. a matched filter)
-The function implemented is : \f$\mathbf{y} = \alpha\mathbf{x}\f$
-*/
-int32_t rotate_cpx_vector2(int16_t *x,
-                           int16_t *alpha,
-                           int16_t *y,
-                           uint32_t N,
-                           uint16_t output_shift,
-                           uint8_t format);
-
-/*!\fn int32_t rotate_cpx_vector_norep(int16_t *x,int16_t *alpha,int16_t *y,uint32_t N,uint16_t output_shift)
+/*!\fn int32_t rotate_cpx_vector(int16_t *x,int16_t *alpha,int16_t *y,uint32_t N,uint16_t output_shift)
 This function performs componentwise multiplication of a vector with a complex scalar.
 @param x Vector input (Q1.15)  in the format  |Re0  Im0|,......,|Re(N-1) Im(N-1)|
 @param alpha Scalar input (Q1.15) in the format  |Re0 Im0|
@@ -384,19 +349,19 @@ This function performs componentwise multiplication of a vector with a complex s
 
 The function implemented is : \f$\mathbf{y} = \alpha\mathbf{x}\f$
 */
-int32_t rotate_cpx_vector_norep(int16_t *x,
-                                int16_t *alpha,
-                                int16_t *y,
-                                uint32_t N,
-                                uint16_t output_shift);
+int32_t rotate_cpx_vector(int16_t *x,
+                          int16_t *alpha,
+                          int16_t *y,
+                          uint32_t N,
+                          uint16_t output_shift);
 
 
 
 /*!\fn int32_t add_cpx_vector(int16_t *x,int16_t *alpha,int16_t *y,uint32_t N)
 This function performs componentwise addition of a vector with a complex scalar.
-@param x Vector input (Q1.15)  in the format  |Re0  Im0 Re0 Im0|,......,|Re(N-1)  Im(N-1) Re(N-1) Im(N-1)|
+@param x Vector input (Q1.15)  in the format  |Re0  Im0 Re1 Im1|,......,|Re(N-2)  Im(N-2) Re(N-1) Im(N-1)|
 @param alpha Scalar input (Q1.15) in the format  |Re0 Im0|
-@param y Output (Q1.15) in the format  |Re0  Im0 Re0 Im0|,......,|Re(N-1)  Im(N-1) Re(N-1) Im(N-1)|
+@param y Output (Q1.15) in the format  |Re0  Im0 Re1 Im1|,......,|Re(N-2)  Im(N-2) Re(N-1) Im(N-1)|
 @param N Length of x WARNING: N>=4
 
 The function implemented is : \f$\mathbf{y} = \alpha + \mathbf{x}\f$

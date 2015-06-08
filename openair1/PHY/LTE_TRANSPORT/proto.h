@@ -48,7 +48,7 @@
  * @{
  */
 
-/** \fn free_eNB_dlsch(LTE_eNB_DLSCH_t *dlsch)
+/** \fn free_eNB_dlsch(LTE_eNB_DLSCH_t *dlsch,unsigned char N_RB_DL)
     \brief This function frees memory allocated for a particular DLSCH at eNB
     @param dlsch Pointer to DLSCH to be removed
 */
@@ -74,9 +74,7 @@ void free_ue_dlsch(LTE_UE_DLSCH_t *dlsch);
 
 LTE_UE_DLSCH_t *new_ue_dlsch(uint8_t Kmimo,uint8_t Mdlharq,uint8_t max_turbo_iterations,uint8_t N_RB_DL, uint8_t abstraction_flag);
 
-void free_eNB_dlsch(LTE_eNB_DLSCH_t *dlsch);
 
-LTE_eNB_ULSCH_t *new_eNB_ulsch(uint8_t Mdlharq,uint8_t max_turbo_iterations,uint8_t N_RB_UL, uint8_t abstraction_flag);
 
 void clean_eNb_ulsch(LTE_eNB_ULSCH_t *ulsch, uint8_t abstraction_flag);
 

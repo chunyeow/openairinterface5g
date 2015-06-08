@@ -262,7 +262,7 @@ int allocate_REs_in_RB(LTE_DL_FRAME_PARMS *frame_parms,
         switch (mod_order0) {
         case 2:  //QPSK
 
-          //printf("%d(%d) : %d,%d => ",tti_offset,*jj,((int16_t*)&txdataF[0][tti_offset])[0],((int16_t*)&txdataF[0][tti_offset])[1]);
+//          printf("%d(%d) : %d,%d => ",tti_offset,*jj,((int16_t*)&txdataF[0][tti_offset])[0],((int16_t*)&txdataF[0][tti_offset])[1]);
           for (aa=0; aa<frame_parms->nb_antennas_tx; aa++) {
             ((int16_t*)&txdataF[aa][tti_offset])[0] += (x0[*jj]==1) ? (-gain_lin_QPSK) : gain_lin_QPSK; //I //b_i
           }
@@ -275,7 +275,7 @@ int allocate_REs_in_RB(LTE_DL_FRAME_PARMS *frame_parms,
 
           *jj = *jj + 1;
 
-          // printf("%d,%d\n",((int16_t*)&txdataF[0][tti_offset])[0],((int16_t*)&txdataF[0][tti_offset])[1]);
+ //         printf("%d,%d\n",((int16_t*)&txdataF[0][tti_offset])[0],((int16_t*)&txdataF[0][tti_offset])[1]);
           break;
 
         case 4:  //16QAM

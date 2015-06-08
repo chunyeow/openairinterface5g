@@ -560,10 +560,10 @@ int32_t pdcch_qpsk_qpsk_llr(LTE_DL_FRAME_PARMS *frame_parms,
                             uint8_t symbol)
 {
 
-  __m128i *rxF=(__m128i*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
-  __m128i *rxF_i=(__m128i*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
-  __m128i *rho=(__m128i*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
-  __m128i *llr128;
+  int16_t *rxF=(int16_t*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
+  int16_t *rxF_i=(int16_t*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
+  int16_t *rho=(int16_t*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
+  int16_t *llr128;
   int32_t i;
   char *pdcch_llr8;
   int16_t *pdcch_llr;
@@ -572,17 +572,17 @@ int32_t pdcch_qpsk_qpsk_llr(LTE_DL_FRAME_PARMS *frame_parms,
 
   //  printf("dlsch_qpsk_qpsk: symbol %d\n",symbol);
 
-  llr128 = (__m128i*)pdcch_llr;
+  llr128 = (int16_t*)pdcch_llr;
 
   if (!llr128) {
     msg("dlsch_qpsk_qpsk_llr: llr is null, symbol %d\n",symbol);
     return -1;
   }
 
-  qpsk_qpsk((int16_t *)rxF,
-            (int16_t *)rxF_i,
-            (int16_t *)llr128,
-            (int16_t *)rho,
+  qpsk_qpsk(rxF,
+            rxF_i,
+            llr128,
+            rho,
             frame_parms->N_RB_DL*12);
 
   //prepare for Viterbi which accepts 8 bit, but prefers 4 bit, soft input.
@@ -639,7 +639,7 @@ int32_t pdcch_llr(LTE_DL_FRAME_PARMS *frame_parms,
 
 }
 
-__m128i avg128P;
+//__m128i avg128P;
 
 //compute average channel_level on each (TX,RX) antenna pair
 void pdcch_channel_level(int32_t **dl_ch_estimates_ext,
@@ -650,21 +650,31 @@ void pdcch_channel_level(int32_t **dl_ch_estimates_ext,
 
   int16_t rb;
   uint8_t aatx,aarx;
+#if defined(__x86_64__) || defined(__i386__)
   __m128i *dl_ch128;
-
-
+  __m128i avg128P;
+#elif defined(__arm__)
+  int16x8_t *dl_ch128;
+  int32x4_t *avg128P;
+#endif
   for (aatx=0; aatx<frame_parms->nb_antennas_tx_eNB; aatx++)
     for (aarx=0; aarx<frame_parms->nb_antennas_rx; aarx++) {
       //clear average level
+#if defined(__x86_64__) || defined(__i386__)
       avg128P = _mm_setzero_si128();
       dl_ch128=(__m128i *)&dl_ch_estimates_ext[(aatx<<1)+aarx][frame_parms->N_RB_DL*12];
+#elif defined(__arm__)
 
+#endif
       for (rb=0; rb<nb_rb; rb++) {
 
+#if defined(__x86_64__) || defined(__i386__)
         avg128P = _mm_add_epi32(avg128P,_mm_madd_epi16(dl_ch128[0],dl_ch128[0]));
         avg128P = _mm_add_epi32(avg128P,_mm_madd_epi16(dl_ch128[1],dl_ch128[1]));
         avg128P = _mm_add_epi32(avg128P,_mm_madd_epi16(dl_ch128[2],dl_ch128[2]));
+#elif defined(__arm__)
 
+#endif
         dl_ch128+=3;
         /*
           if (rb==0) {
@@ -684,13 +694,18 @@ void pdcch_channel_level(int32_t **dl_ch_estimates_ext,
       //            msg("Channel level : %d\n",avg[(aatx<<1)+aarx]);
     }
 
+#if defined(__x86_64__) || defined(__i386__)
   _mm_empty();
   _m_empty();
+#endif
 
 }
 
+#if defined(__x86_64) || defined(__i386__)
 __m128i mmtmpPD0,mmtmpPD1,mmtmpPD2,mmtmpPD3;
+#elif defined(__arm__)
 
+#endif
 void pdcch_dual_stream_correlation(LTE_DL_FRAME_PARMS *frame_parms,
                                    uint8_t symbol,
                                    int32_t **dl_ch_estimates_ext,
@@ -700,7 +715,11 @@ void pdcch_dual_stream_correlation(LTE_DL_FRAME_PARMS *frame_parms,
 {
 
   uint16_t rb;
+#if defined(__x86_64__) || defined(__i386__)
   __m128i *dl_ch128,*dl_ch128i,*dl_ch_rho128;
+#elif defined(__arm__)
+
+#endif
   uint8_t aarx;
 
   //  printf("dlsch_dual_stream_correlation: symbol %d\n",symbol);
@@ -708,13 +727,18 @@ void pdcch_dual_stream_correlation(LTE_DL_FRAME_PARMS *frame_parms,
 
   for (aarx=0; aarx<frame_parms->nb_antennas_rx; aarx++) {
 
+#if defined(__x86_64__) || defined(__i386__)
     dl_ch128          = (__m128i *)&dl_ch_estimates_ext[aarx][symbol*frame_parms->N_RB_DL*12];
     dl_ch128i         = (__m128i *)&dl_ch_estimates_ext_i[aarx][symbol*frame_parms->N_RB_DL*12];
     dl_ch_rho128      = (__m128i *)&dl_ch_rho_ext[aarx][symbol*frame_parms->N_RB_DL*12];
 
+#elif defined(__arm__)
+
+#endif
 
     for (rb=0; rb<frame_parms->N_RB_DL; rb++) {
       // multiply by conjugated channel
+#if defined(__x86_64__) || defined(__i386__)
       mmtmpPD0 = _mm_madd_epi16(dl_ch128[0],dl_ch128i[0]);
       //  print_ints("re",&mmtmpPD0);
 
@@ -779,13 +803,16 @@ void pdcch_dual_stream_correlation(LTE_DL_FRAME_PARMS *frame_parms,
       dl_ch128i+=3;
       dl_ch_rho128+=3;
 
-    }
 
+#elif defined(__arm__)
+
+#endif
+     }
   }
-
+#if defined(__x86_64__) || defined(__i386__)
   _mm_empty();
   _m_empty();
-
+#endif
 
 }
 
@@ -800,44 +827,78 @@ void pdcch_detection_mrc_i(LTE_DL_FRAME_PARMS *frame_parms,
 
   uint8_t aatx;
 
+#if defined(__x86_64__) || defined(__i386__)
   __m128i *rxdataF_comp128_0,*rxdataF_comp128_1,*rxdataF_comp128_i0,*rxdataF_comp128_i1,*rho128_0,*rho128_1,*rho128_i0,*rho128_i1;
+#elif defined(__arm__)
+  int16x8_t *rxdataF_comp128_0,*rxdataF_comp128_1,*rxdataF_comp128_i0,*rxdataF_comp128_i1,*rho128_0,*rho128_1,*rho128_i0,*rho128_i1;
+#endif
   int32_t i;
 
   if (frame_parms->nb_antennas_rx>1) {
     for (aatx=0; aatx<frame_parms->nb_antennas_tx_eNB; aatx++) {
       //if (frame_parms->mode1_flag && (aatx>0)) break;
 
+#if defined(__x86_64__) || defined(__i386__)
       rxdataF_comp128_0   = (__m128i *)&rxdataF_comp[(aatx<<1)][symbol*frame_parms->N_RB_DL*12];
       rxdataF_comp128_1   = (__m128i *)&rxdataF_comp[(aatx<<1)+1][symbol*frame_parms->N_RB_DL*12];
-
+#elif defined(__arm__)
+      rxdataF_comp128_0   = (int16x8_t *)&rxdataF_comp[(aatx<<1)][symbol*frame_parms->N_RB_DL*12];
+      rxdataF_comp128_1   = (int16x8_t *)&rxdataF_comp[(aatx<<1)+1][symbol*frame_parms->N_RB_DL*12];
+#endif
       // MRC on each re of rb on MF output
       for (i=0; i<frame_parms->N_RB_DL*3; i++) {
+#if defined(__x86_64__) || defined(__i386__)
         rxdataF_comp128_0[i] = _mm_adds_epi16(_mm_srai_epi16(rxdataF_comp128_0[i],1),_mm_srai_epi16(rxdataF_comp128_1[i],1));
+#elif defined(__arm__)
+        rxdataF_comp128_0[i] = vhaddq_s16(rxdataF_comp128_0[i],rxdataF_comp128_1[i]);
+#endif
       }
     }
 
+#if defined(__x86_64__) || defined(__i386__)
     rho128_0 = (__m128i *) &rho[0][symbol*frame_parms->N_RB_DL*12];
     rho128_1 = (__m128i *) &rho[1][symbol*frame_parms->N_RB_DL*12];
-
+#elif defined(__arm__)
+    rho128_0 = (int16x8_t *) &rho[0][symbol*frame_parms->N_RB_DL*12];
+    rho128_1 = (int16x8_t *) &rho[1][symbol*frame_parms->N_RB_DL*12];
+#endif
     for (i=0; i<frame_parms->N_RB_DL*3; i++) {
+#if defined(__x86_64__) || defined(__i386__)
       rho128_0[i] = _mm_adds_epi16(_mm_srai_epi16(rho128_0[i],1),_mm_srai_epi16(rho128_1[i],1));
+#elif defined(__arm__)
+      rho128_0[i] = vhaddq_s16(rho128_0[i],rho128_1[i]);
+#endif
     }
 
+#if defined(__x86_64__) || defined(__i386__)
     rho128_i0 = (__m128i *) &rho_i[0][symbol*frame_parms->N_RB_DL*12];
     rho128_i1 = (__m128i *) &rho_i[1][symbol*frame_parms->N_RB_DL*12];
     rxdataF_comp128_i0   = (__m128i *)&rxdataF_comp_i[0][symbol*frame_parms->N_RB_DL*12];
     rxdataF_comp128_i1   = (__m128i *)&rxdataF_comp_i[1][symbol*frame_parms->N_RB_DL*12];
+#elif defined(__arm__)
+    rho128_i0 = (int16x8_t*) &rho_i[0][symbol*frame_parms->N_RB_DL*12];
+    rho128_i1 = (int16x8_t*) &rho_i[1][symbol*frame_parms->N_RB_DL*12];
+    rxdataF_comp128_i0   = (int16x8_t *)&rxdataF_comp_i[0][symbol*frame_parms->N_RB_DL*12];
+    rxdataF_comp128_i1   = (int16x8_t *)&rxdataF_comp_i[1][symbol*frame_parms->N_RB_DL*12];
 
+#endif
     // MRC on each re of rb on MF and rho
     for (i=0; i<frame_parms->N_RB_DL*3; i++) {
+#if defined(__x86_64__) || defined(__i386__)
       rxdataF_comp128_i0[i] = _mm_adds_epi16(_mm_srai_epi16(rxdataF_comp128_i0[i],1),_mm_srai_epi16(rxdataF_comp128_i1[i],1));
       rho128_i0[i]          = _mm_adds_epi16(_mm_srai_epi16(rho128_i0[i],1),_mm_srai_epi16(rho128_i1[i],1));
+#elif defined(__arm__)
+      rxdataF_comp128_i0[i] = vhaddq_s16(rxdataF_comp128_i0[i],rxdataF_comp128_i1[i]);
+      rho128_i0[i]          = vhaddq_s16(rho128_i0[i],rho128_i1[i]);
+
+#endif
     }
   }
 
+#if defined(__x86_64__) || defined(__i386__)
   _mm_empty();
   _m_empty();
-
+#endif
 }
 
 
@@ -1056,10 +1117,6 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
       }
     }
   }
-
-  _mm_empty();
-  _m_empty();
-
 }
 
 void pdcch_extract_rbs_dual(int32_t **rxdataF,
@@ -1310,11 +1367,6 @@ void pdcch_extract_rbs_dual(int32_t **rxdataF,
       }
     }
   }
-
-  _mm_empty();
-  _m_empty();
-
-
 }
 
 
@@ -1328,8 +1380,12 @@ void pdcch_channel_compensation(int32_t **rxdataF_ext,
 {
 
   uint16_t rb;
+#if defined(__x86_64__) || defined(__i386__)
   __m128i *dl_ch128,*rxdataF128,*rxdataF_comp128;
   __m128i *dl_ch128_2, *rho128;
+#elif defined(__arm__)
+
+#endif
   uint8_t aatx,aarx,pilots=0;
 
 
@@ -1347,13 +1403,18 @@ void pdcch_channel_compensation(int32_t **rxdataF_ext,
 
     for (aarx=0; aarx<frame_parms->nb_antennas_rx; aarx++) {
 
+#if defined(__x86_64__) || defined(__i386__)
       dl_ch128          = (__m128i *)&dl_ch_estimates_ext[(aatx<<1)+aarx][symbol*frame_parms->N_RB_DL*12];
       rxdataF128        = (__m128i *)&rxdataF_ext[aarx][symbol*frame_parms->N_RB_DL*12];
       rxdataF_comp128   = (__m128i *)&rxdataF_comp[(aatx<<1)+aarx][symbol*frame_parms->N_RB_DL*12];
 
+#elif defined(__arm__)
+
+#endif
 
       for (rb=0; rb<frame_parms->N_RB_DL; rb++) {
 
+#if defined(__x86_64__) || defined(__i386__)
         // multiply by conjugated channel
         mmtmpPD0 = _mm_madd_epi16(dl_ch128[0],rxdataF128[0]);
         //  print_ints("re",&mmtmpPD0);
@@ -1426,6 +1487,9 @@ void pdcch_channel_compensation(int32_t **rxdataF_ext,
           rxdataF128+=2;
           rxdataF_comp128+=2;
         }
+#elif defined(__arm__)
+
+#endif
       }
     }
   }
@@ -1434,11 +1498,18 @@ void pdcch_channel_compensation(int32_t **rxdataF_ext,
   if (rho) {
 
     for (aarx=0; aarx<frame_parms->nb_antennas_rx; aarx++) {
+
+#if defined(__x86_64__) || defined(__i386__)
       rho128        = (__m128i *)&rho[aarx][symbol*frame_parms->N_RB_DL*12];
       dl_ch128      = (__m128i *)&dl_ch_estimates_ext[aarx][symbol*frame_parms->N_RB_DL*12];
       dl_ch128_2    = (__m128i *)&dl_ch_estimates_ext[2+aarx][symbol*frame_parms->N_RB_DL*12];
 
+#elif defined(__arm__)
+      
+#endif
       for (rb=0; rb<frame_parms->N_RB_DL; rb++) {
+#if defined(__x86_64__) || defined(__i386__)
+
         // multiply by conjugated channel
         mmtmpPD0 = _mm_madd_epi16(dl_ch128[0],dl_ch128_2[0]);
         //  print_ints("re",&mmtmpD0);
@@ -1504,14 +1575,19 @@ void pdcch_channel_compensation(int32_t **rxdataF_ext,
         dl_ch128_2+=3;
         rho128+=3;
 
+#elif defined(__arm_)
+
+
+#endif
       }
     }
 
   }
 
+#if defined(__x86_64__) || defined(__i386__)
   _mm_empty();
   _m_empty();
-
+#endif
 }
 
 void pdcch_detection_mrc(LTE_DL_FRAME_PARMS *frame_parms,
@@ -1521,23 +1597,37 @@ void pdcch_detection_mrc(LTE_DL_FRAME_PARMS *frame_parms,
 
   uint8_t aatx;
 
+#if defined(__x86_64__) || defined(__i386__)
   __m128i *rxdataF_comp128_0,*rxdataF_comp128_1;
+#elif defined(__arm__)
+ int16x8_t *rxdataF_comp128_0,*rxdataF_comp128_1;
+#endif
   int32_t i;
 
   if (frame_parms->nb_antennas_rx>1) {
     for (aatx=0; aatx<frame_parms->nb_antennas_tx_eNB; aatx++) {
+#if defined(__x86_64__) || defined(__i386__)
       rxdataF_comp128_0   = (__m128i *)&rxdataF_comp[(aatx<<1)][symbol*frame_parms->N_RB_DL*12];
       rxdataF_comp128_1   = (__m128i *)&rxdataF_comp[(aatx<<1)+1][symbol*frame_parms->N_RB_DL*12];
-
+#elif defined(__arm__)
+      rxdataF_comp128_0   = (int16x8_t *)&rxdataF_comp[(aatx<<1)][symbol*frame_parms->N_RB_DL*12];
+      rxdataF_comp128_1   = (int16x8_t *)&rxdataF_comp[(aatx<<1)+1][symbol*frame_parms->N_RB_DL*12];
+#endif
       // MRC on each re of rb
       for (i=0; i<frame_parms->N_RB_DL*3; i++) {
+#if defined(__x86_64__) || defined(__i386__)
         rxdataF_comp128_0[i] = _mm_adds_epi16(_mm_srai_epi16(rxdataF_comp128_0[i],1),_mm_srai_epi16(rxdataF_comp128_1[i],1));
+#elif defined(__arm__)
+        rxdataF_comp128_0[i] = vhaddq_s16(rxdataF_comp128_0[i],rxdataF_comp128_1[i]);
+#endif
       }
     }
   }
 
+#if defined(__x86_64__) || defined(__i386__)
   _mm_empty();
   _m_empty();
+#endif
 
 }
 
@@ -1593,8 +1683,6 @@ void pdcch_alamouti(LTE_DL_FRAME_PARMS *frame_parms,
     }
   }
 
-  _mm_empty();
-  _m_empty();
 
 }
 
@@ -2008,7 +2096,7 @@ uint8_t generate_dci_top(uint8_t num_ue_spec_dci,
   //memset(e, 2, DCI_BITS_MAX);
   // here we interpret NIL as a random QPSK sequence. That makes power estimation easier.
   for (i=0; i<DCI_BITS_MAX; i++)
-    e[i]=taus()&1;
+    e[i]=0;//taus()&1;
 
   e_ptr = e;
 

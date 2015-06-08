@@ -42,34 +42,26 @@
 //#define DEBUG_MEAS
 
 #ifdef USER_MODE
-void print_shorts(char *s,__m128i *x)
+void print_shorts(char *s,short *x)
 {
 
-  short *tempb = (short *)x;
 
   printf("%s  : %d,%d,%d,%d,%d,%d,%d,%d\n",s,
-         tempb[0],tempb[1],tempb[2],tempb[3],tempb[4],tempb[5],tempb[6],tempb[7]
+         x[0],x[1],x[2],x[3],x[4],x[5],x[6],x[7]
         );
 
 }
-void print_ints(char *s,__m128i *x)
+void print_ints(char *s,int *x)
 {
 
-  int *tempb = (int *)x;
 
   printf("%s  : %d,%d,%d,%d\n",s,
-         tempb[0],tempb[1],tempb[2],tempb[3]
+         x[0],x[1],x[2],x[3]
         );
 
 }
 #endif
 
-__m128i pmi128_re __attribute__ ((aligned(16)));
-__m128i pmi128_im __attribute__ ((aligned(16)));
-__m128i mmtmpPMI0 __attribute__ ((aligned(16)));
-__m128i mmtmpPMI1 __attribute__ ((aligned(16)));
-__m128i mmtmpPMI2 __attribute__ ((aligned(16)));
-__m128i mmtmpPMI3 __attribute__ ((aligned(16)));
 
 int16_t get_PL(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index)
 {
@@ -421,7 +413,11 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
   //int rx_power[NUMBER_OF_CONNECTED_eNB_MAX];
   int i;
   unsigned int limit,subband;
+#if defined(__x86_64__) || defined(__i386__)
   __m128i *dl_ch0_128,*dl_ch1_128;
+#elif defined(__arm__)
+  int16x8_t *dl_ch0_128, *dl_ch1_128;
+#endif
   int *dl_ch0,*dl_ch1;
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_ue->lte_frame_parms;
   int nb_subbands,subband_size,last_subband_size;
@@ -605,26 +601,30 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
 
       for (aarx=0; aarx<frame_parms->nb_antennas_rx; aarx++) {
         // skip the first 4 RE due to interpolation filter length of 5 (not possible to skip 5 due to 128i alignment, must be multiple of 128bit)
+
+#if defined(__x86_64__) || defined(__i386__)
+       __m128i pmi128_re,pmi128_im,mmtmpPMI0,mmtmpPMI1,mmtmpPMI2,mmtmpPMI3;
+
         dl_ch0_128    = (__m128i *)&phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_id][aarx][4];
         dl_ch1_128    = (__m128i *)&phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_id][2+aarx][4];
+#elif defined(__arm__)
+        int32x4_t pmi128_re,pmi128_im,mmtmpPMI0,mmtmpPMI1,mmtmpPMI0b,mmtmpPMI1b;
 
-        /*
-          #ifdef DEBUG_PHY
-          if(eNB_id==0){
-          print_shorts("Ch0",dl_ch0_128);
-          print_shorts("Ch1",dl_ch1_128);
-          printf("eNB_ID = %d\n",eNB_id);
-          }
-          #endif
-        */
+        dl_ch0_128    = (int16x8_t *)&phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_id][aarx][4];
+        dl_ch1_128    = (int16x8_t *)&phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_id][2+aarx][4];
+
+#endif
         for (subband=0; subband<nb_subbands; subband++) {
 
 
           // pmi
-
+#if defined(__x86_64__) || defined(__i386__)
           pmi128_re = _mm_setzero_si128();
           pmi128_im = _mm_setzero_si128();
-
+#elif defined(__arm__)
+          pmi128_re = vdupq_n_s32(0);
+	  pmi128_im = vdupq_n_s32(0);
+#endif
           // limit is the number of groups of 4 REs in a subband (12 = 4 RBs, 3 = 1 RB)
           // for 5 MHz channelization, there are 7 subbands, 6 of size 4 RBs and 1 of size 1 RB
           if ((N_RB_DL==6) || (subband<(nb_subbands-1)))
@@ -636,52 +636,33 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
 
             // For each RE in subband perform ch0 * conj(ch1)
             // multiply by conjugated channel
-            // if(eNB_id==0){
-            //print_shorts("ch0",dl_ch0_128);
-            //print_shorts("ch1",dl_ch1_128);
-            // }
-            // if(i==0){
-            mmtmpPMI0 = _mm_setzero_si128();
-            mmtmpPMI1 = _mm_setzero_si128();
-            //      }
-            // if(eNB_id==0)
-            // print_ints("Pre_re",&mmtmpPMI0);
-
-            mmtmpPMI0 = _mm_madd_epi16(dl_ch0_128[0],dl_ch1_128[0]);
-            //  if(eNB_id==0)
-            //  print_ints("re",&mmtmpPMI0);
-
-            // mmtmpPMI0 contains real part of 4 consecutive outputs (32-bit)
-            // print_shorts("Ch1",dl_ch1_128);
-
+#if defined(__x86_64__) || defined(__i386__)
             mmtmpPMI1 = _mm_shufflelo_epi16(dl_ch1_128[0],_MM_SHUFFLE(2,3,0,1));//_MM_SHUFFLE(2,3,0,1)
-            // print_shorts("mmtmpPMI1:",&mmtmpPMI1);
             mmtmpPMI1 = _mm_shufflehi_epi16(mmtmpPMI1,_MM_SHUFFLE(2,3,0,1));
-            // print_shorts("mmtmpPMI1:",&mmtmpPMI1);
-
             mmtmpPMI1 = _mm_sign_epi16(mmtmpPMI1,*(__m128i*)&conjugate[0]);
-            // print_shorts("mmtmpPMI1:",&mmtmpPMI1);
             mmtmpPMI1 = _mm_madd_epi16(mmtmpPMI1,dl_ch0_128[0]);
-            //  if(eNB_id==0)
-            //  print_ints("im",&mmtmpPMI1);
             // mmtmpPMI1 contains imag part of 4 consecutive outputs (32-bit)
 
             pmi128_re = _mm_add_epi32(pmi128_re,mmtmpPMI0);
             pmi128_im = _mm_add_epi32(pmi128_im,mmtmpPMI1);
+#elif defined(__arm__)
+            mmtmpPMI0 = vmull_s16(((int16x4_t*)dl_ch0_128)[0], ((int16x4_t*)dl_ch1_128)[0]);
+            mmtmpPMI1 = vmull_s16(((int16x4_t*)dl_ch0_128)[1], ((int16x4_t*)dl_ch1_128)[1]);
+            pmi128_re = vqaddq_s32(pmi128_re,vcombine_s32(vpadd_s32(vget_low_s32(mmtmpPMI0),vget_high_s32(mmtmpPMI0)),vpadd_s32(vget_low_s32(mmtmpPMI1),vget_high_s32(mmtmpPMI1))));
+
+            mmtmpPMI0b = vmull_s16(vrev32_s16(vmul_s16(((int16x4_t*)dl_ch0_128)[0],*(int16x4_t*)conjugate)), ((int16x4_t*)dl_ch1_128)[0]);
+            mmtmpPMI1b = vmull_s16(vrev32_s16(vmul_s16(((int16x4_t*)dl_ch0_128)[1],*(int16x4_t*)conjugate)), ((int16x4_t*)dl_ch1_128)[1]);
+            pmi128_im = vqaddq_s32(pmi128_im,vcombine_s32(vpadd_s32(vget_low_s32(mmtmpPMI0b),vget_high_s32(mmtmpPMI0b)),vpadd_s32(vget_low_s32(mmtmpPMI1b),vget_high_s32(mmtmpPMI1b))));
+
+#endif
             dl_ch0_128++;
             dl_ch1_128++;
           }
 
           phy_vars_ue->PHY_measurements.subband_pmi_re[eNB_id][subband][aarx] = (((int *)&pmi128_re)[0] + ((int *)&pmi128_re)[1] + ((int *)&pmi128_re)[2] + ((int *)&pmi128_re)[3])>>2;
-          //    if(eNB_id==0)
-          // printf("in lte_ue_measurements.c: pmi_re %d\n",phy_vars_ue->PHY_measurements.subband_pmi_re[eNB_id][subband][aarx]);
           phy_vars_ue->PHY_measurements.subband_pmi_im[eNB_id][subband][aarx] = (((int *)&pmi128_im)[0] + ((int *)&pmi128_im)[1] + ((int *)&pmi128_im)[2] + ((int *)&pmi128_im)[3])>>2;
-          //    if(eNB_id==0)
-          // printf("in lte_ue_measurements.c: pmi_im %d\n",phy_vars_ue->PHY_measurements.subband_pmi_im[eNB_id][subband][aarx]);
           phy_vars_ue->PHY_measurements.wideband_pmi_re[eNB_id][aarx] += phy_vars_ue->PHY_measurements.subband_pmi_re[eNB_id][subband][aarx];
           phy_vars_ue->PHY_measurements.wideband_pmi_im[eNB_id][aarx] += phy_vars_ue->PHY_measurements.subband_pmi_im[eNB_id][subband][aarx];
-          //      msg("subband_pmi[%d][%d][%d] => (%d,%d)\n",eNB_id,subband,aarx,phy_vars_ue->PHY_measurements.subband_pmi_re[eNB_id][subband][aarx],phy_vars_ue->PHY_measurements.subband_pmi_im[eNB_id][subband][aarx]);
-
         } // subband loop
       } // rx antenna loop
     }  // if frame_parms->mode1_flag == 0
@@ -742,9 +723,10 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
     // printf("in lte_ue_measurements: selected rx_antenna[eNB_id==0]:%u\n", phy_vars_ue->PHY_measurements.selected_rx_antennas[eNB_id][i]);
   }  // eNB_id loop
 
+#if defined(__x86_64__) || defined(__i386__)
   _mm_empty();
   _m_empty();
-
+#endif
 }
 
 

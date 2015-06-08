@@ -139,7 +139,7 @@ typedef struct {
   /// Concatenated "e"-sequences (for definition see 36-212 V8.6 2009-03, p.17-18)
   uint8_t e[MAX_NUM_CHANNEL_BITS];
   /// Turbo-code outputs (36-212 V8.6 2009-03, p.12
-  uint8_t d[MAX_NUM_DLSCH_SEGMENTS][(96+3+(3*6144))];
+  uint8_t *d[MAX_NUM_DLSCH_SEGMENTS];//[(96+3+(3*6144))];
   /// Sub-block interleaver outputs (36-212 V8.6 2009-03, p.16-17)
   uint8_t w[MAX_NUM_DLSCH_SEGMENTS][3*6144];
   /// Number of code segments (for definition see 36-212 V8.6 2009-03, p.9)

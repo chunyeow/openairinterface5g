@@ -26,15 +26,19 @@
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
-#ifdef OMP
-#include <omp.h>
-#endif
 #include <unistd.h>
 #include <math.h>
+#include <stdint.h>
+#include <time.h>
+#include <errno.h>
+#include <stdio.h>
+#include <pthread.h>
+#include <linux/kernel.h>
+#include <linux/types.h>
 // global var to enable openair performance profiler
 extern int opp_enabled;
-
 double cpu_freq_GHz;
+#if defined(__x86_64__) || defined(__i386__)
 
 typedef struct {
 
@@ -46,7 +50,18 @@ typedef struct {
   long long max;
   int trials;
 } time_stats_t;
+#elif defined(__arm__)
+typedef struct {
+  uint32_t in;
+  uint32_t diff_now;
+  uint32_t diff;
+  uint32_t p_time; /*!< \brief absolute process duration */
+  uint32_t diff_square; /*!< \brief process duration square */
+  uint32_t max;
+  int trials;
+} time_stats_t;
 
+#endif
 static inline void start_meas(time_stats_t *ts) __attribute__((always_inline));
 static inline void stop_meas(time_stats_t *ts) __attribute__((always_inline));
 
@@ -74,12 +89,12 @@ static inline unsigned long long rdtsc_oai(void)
 }
 
 #elif defined(__arm__)
-static inline unsigned long long rdtsc_oai(void) __attribute__((always_inline));
-static inline unsigned long long rdtsc_oai(void)
+static inline uint32_t rdtsc_oai(void) __attribute__((always_inline));
+static inline uint32_t rdtsc_oai(void)
 {
   uint32_t r = 0;
   asm volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(r) );
-  return (unsigned long long)r;
+  return r;
 }
 #endif
 
@@ -88,17 +103,8 @@ static inline void start_meas(time_stats_t *ts)
 
   if (opp_enabled) {
 
-#ifdef OMP
-    int tid;
-
-    tid = omp_get_thread_num();
-
-    if (tid==0)
-#endif
-    {
       ts->trials++;
       ts->in = rdtsc_oai();
-    }
   }
 }
 
@@ -108,24 +114,16 @@ static inline void stop_meas(time_stats_t *ts)
   if (opp_enabled) {
     long long out = rdtsc_oai();
 
-#ifdef OMP
-    int tid;
-    tid = omp_get_thread_num();
-
-    if (tid==0)
-#endif
-    {
       ts->diff_now = (out-ts->in);
       
       ts->diff += (out-ts->in);
       /// process duration is the difference between two clock points
       ts->p_time = (out-ts->in);
-      ts->diff_square += pow((out-ts->in),2);
+      ts->diff_square += (out-ts->in)*(out-ts->in);
 
       if ((out-ts->in) > ts->max)
         ts->max = out-ts->in;
 
-    }
   }
 }
 
@@ -159,11 +157,3 @@ static inline void copy_meas(time_stats_t *dst_ts,time_stats_t *src_ts)
     dst_ts->max=src_ts->max;
   }
 }
-
-/*static inline double get_mean_meas_us(time_stats_t *ts, double cpu_freq_GHz) {
-
-  return (double) ts->diff/ts->trials/cpu_freq_GHz/1000.0;
-
-  }
-*/
-

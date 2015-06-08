@@ -233,7 +233,7 @@ void do_OFDM_mod_l(mod_sym_t **txdataF, int32_t **txdata, uint16_t next_slot, LT
 int main(int argc, char **argv)
 {
 
-  char c;
+  int c;
   int k,i,aa,aarx,aatx;
 
   int s,Kr,Kr_bytes;
@@ -347,12 +347,24 @@ int main(int argc, char **argv)
   LTE_DL_UE_HARQ_t *dlsch0_ue_harq;
   LTE_DL_eNB_HARQ_t *dlsch0_eNB_harq;
   uint8_t Kmimo;
-
+  FILE    *proc_fd = NULL;
+  char buf[64];
 
   opp_enabled=1; // to enable the time meas
 
-  cpu_freq_GHz = (double)get_cpu_freq_GHz();
-
+#if defined(__arm__)
+  proc_fd = fopen("/sys/devices/system/cpu/cpu4/cpufreq/cpuinfo_cur_freq", "r");
+  if(!proc_fd)
+     printf("cannot open /sys/devices/system/cpu/cpu4/cpufreq/cpuinfo_cur_freq");
+  else {
+     while(fgets(buf, 63, proc_fd))
+        printf("%s", buf);
+  }
+  fclose(proc_fd);
+  cpu_freq_GHz = ((double)atof(buf))/1e6;
+#else
+  cpu_freq_GHz = get_cpu_freq_GHz();
+#endif
   printf("Detected cpu_freq %f GHz\n",cpu_freq_GHz);
 
   //signal(SIGSEGV, handler);
@@ -1989,7 +2001,8 @@ int main(int argc, char **argv)
 
       if (input_trch_file==0) {
         for (i=0; i<input_buffer_length0; i++) {
-          input_buffer0[k][i]= (unsigned char)(taus()&0xff);
+          //input_buffer0[k][i] = (unsigned char)(i&0xff);
+          input_buffer0[k][i] = (unsigned char)(taus()&0xff);
         }
 
         for (i=0; i<input_buffer_length1; i++) {
@@ -2690,7 +2703,6 @@ PMI_FEEDBACK:
                 write_output("txsigF1.m","txsF1", &PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNB_id][1][subframe*nsymb*PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size],
                              nsymb*PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size,1,1);
             }
-
             tx_lev = 0;
 
             for (aa=0; aa<PHY_vars_eNB->lte_frame_parms.nb_antennas_tx; aa++) {
