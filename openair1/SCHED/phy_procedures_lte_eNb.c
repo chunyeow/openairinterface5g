@@ -493,6 +493,13 @@ void phy_procedures_emos_eNB_RX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eN
 
   last_subframe_emos=0;
 
+
+#ifdef OAI_USRP
+  for (aa=0;i<phy_vars_eNB->lte_frame_parms.nb_antennas_rx;i++)
+    rescale(&phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i][subframe*phy_vars_eNB->lte_frame_parms.samples_per_tti],
+	    phy_vars_eNB->lte_frame_parms.samples_per_tti);
+#endif
+
 #ifdef EMOS_CHANNEL
 
   //if (last_slot%2==1) // this is for all UL subframes
