@@ -536,6 +536,7 @@ int main(int argc, char **argv)
       if ((transmission_mode!=1) &&
           (transmission_mode!=2) &&
           (transmission_mode!=3) &&
+          (transmission_mode!=4) &&
           (transmission_mode!=5) &&
           (transmission_mode!=6)) {
         msg("Unsupported transmission mode %d\n",transmission_mode);

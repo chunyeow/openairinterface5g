@@ -242,7 +242,8 @@ void clean_eNb_dlsch(LTE_eNB_DLSCH_t *dlsch, uint8_t abstraction_flag)
         if (abstraction_flag==0) {
           for (j=0; j<96; j++)
             for (r=0; r<MAX_NUM_DLSCH_SEGMENTS; r++)
-              dlsch->harq_processes[i]->d[r][j] = LTE_NULL;
+	      if (dlsch->harq_processes[i]->d[r])
+		dlsch->harq_processes[i]->d[r][j] = LTE_NULL;
         }
       }
     }

@@ -3126,7 +3126,8 @@ void prach_procedures(PHY_VARS_eNB *phy_vars_eNB,uint8_t sched_subframe,uint8_t 
                                   frame,
                                   preamble_max,
                                   preamble_delay_list[preamble_max],
-                                  0,subframe,0);
+				  0,subframe,0);
+      
 #endif
     } else {
       MSC_LOG_EVENT(MSC_PHY_ENB, "0 RA Failed add user, too many");

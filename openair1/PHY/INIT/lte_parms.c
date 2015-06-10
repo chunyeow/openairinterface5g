@@ -117,6 +117,8 @@ int init_frame_parms(LTE_DL_FRAME_PARMS *frame_parms,uint8_t osf)
     frame_parms->nb_prefix_samples0>>=(2-log2_osf);
     frame_parms->N_RBGS = 2;
     frame_parms->N_RBG = 13;
+
+
     break;
 
   case 15:
@@ -146,6 +148,8 @@ int init_frame_parms(LTE_DL_FRAME_PARMS *frame_parms,uint8_t osf)
     return(-1);
     break;
   }
+
+  printf("lte_parms.c: Setting N_RB_DL to %d, ofdm_symbol_size %d\n",frame_parms->N_RB_DL, frame_parms->ofdm_symbol_size);
 
   //  frame_parms->tdd_config=3;
   return(0);

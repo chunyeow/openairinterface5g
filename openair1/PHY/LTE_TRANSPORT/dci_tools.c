@@ -4143,8 +4143,8 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     dlsch1_harq->rb_alloc[0]                         = dlsch0_harq->rb_alloc[0];
 
     dlsch0_harq->nb_rb                               = conv_nprb(rah,
-        rballoc,
-        frame_parms->N_RB_DL);
+								 rballoc,
+								 frame_parms->N_RB_DL);
     dlsch1_harq->nb_rb                               = dlsch0_harq->nb_rb;
 
     dlsch0_harq->mcs       = mcs1;
@@ -4262,8 +4262,8 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     dlsch0->rnti = rnti;
     dlsch1->rnti = rnti;
 
-    dlsch0_harq->dl_power_off = 1; //no power offset
-    dlsch1_harq->dl_power_off = 1; //no power offset
+    dlsch0_harq->dl_power_off = 0; //no power offset
+    dlsch1_harq->dl_power_off = 0; //no power offset
 
     dlsch0->active = 1;
     dlsch1->active = 1;

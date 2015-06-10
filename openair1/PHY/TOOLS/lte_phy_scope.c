@@ -469,6 +469,7 @@ void phy_scope_UE(FD_lte_phy_scope_ue *form,
   int mcs = 0;
   unsigned char harq_pid = 0;
 
+
   if (phy_vars_ue->dlsch_ue[eNB_id][0]!=NULL) {
     harq_pid = phy_vars_ue->dlsch_ue[eNB_id][0]->current_harq_pid;
 
