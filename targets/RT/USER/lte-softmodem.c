@@ -427,7 +427,8 @@ void help (void) {
   printf("  --calib-ue-rx set UE RX calibration\n");
   printf("  --calib-ue-rx-med \n");
   printf("  --calib-ue-rxbyp\n");
-  printf("  --debug-ue-prach \n");
+  printf("  --debug-ue-prach run normal prach power ramping, but don't continue random-access\n");
+  printf("  --calib-prach-tx run normal prach with maximum power, but don't continue random-access\n");
   printf("  --no-L2-connect bypass L2 and upper layers\n");
   printf("  --ue_rxgain set UE RX gain\n");
   printf("  --ue_txgain set UE tx gain\n");
@@ -1279,6 +1280,11 @@ static void* eNB_thread_rx( void* param )
 
     if ((((PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == TDD )&&(subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_rx)==SF_UL)) ||
          (PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == FDD))) {
+#ifdef OAI_USRP
+      for (i=0;i<PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.nb_antennas_rx;i++)
+	rescale(&PHY_vars_eNB_g[0][proc->CC_id]->lte_eNB_common_vars.rxdata[0][i][proc->subframe_rx*phy_vars_eNB->lte_frame_parms.samples_per_tti],
+		phy_vars_eNB->lte_frame_parms.samples_per_tti);
+#endif
       phy_procedures_eNB_RX( proc->subframe, PHY_vars_eNB_g[0][proc->CC_id], 0, no_relay );
     }
 
@@ -1968,6 +1974,7 @@ static void get_options (int argc, char **argv)
     LONG_OPTION_CALIB_UE_RX_BYP,
     LONG_OPTION_DEBUG_UE_PRACH,
     LONG_OPTION_NO_L2_CONNECT,
+    LONG_OPTION_CALIB_PRACH_TX,
     LONG_OPTION_RXGAIN,
     LONG_OPTION_TXGAIN,
     LONG_OPTION_SCANCARRIER
@@ -1980,9 +1987,10 @@ static void get_options (int argc, char **argv)
     {"calib-ue-rx-byp", required_argument,  NULL, LONG_OPTION_CALIB_UE_RX_BYP},
     {"debug-ue-prach",  no_argument,        NULL, LONG_OPTION_DEBUG_UE_PRACH},
     {"no-L2-connect",   no_argument,        NULL, LONG_OPTION_NO_L2_CONNECT},
-    {"ue_rxgain",   required_argument,  NULL, LONG_OPTION_RXGAIN},
-    {"ue_txgain",   required_argument,  NULL, LONG_OPTION_TXGAIN},
-    {"ue_scan_carrier",   no_argument,  NULL, LONG_OPTION_SCANCARRIER},
+    {"calib-prach-tx",   no_argument,        NULL, LONG_OPTION_CALIB_PRACH_TX},
+    {"ue-rxgain",   required_argument,  NULL, LONG_OPTION_RXGAIN},
+    {"ue-txgain",   required_argument,  NULL, LONG_OPTION_TXGAIN},
+    {"ue-scan-carrier",   no_argument,  NULL, LONG_OPTION_SCANCARRIER},
     {NULL, 0, NULL, 0}
   };
 
@@ -2017,6 +2025,10 @@ static void get_options (int argc, char **argv)
 
     case LONG_OPTION_NO_L2_CONNECT:
       mode = no_L2_connect;
+      break;
+
+    case LONG_OPTION_CALIB_PRACH_TX:
+      mode = calib_prach_tx;
       break;
 
     case LONG_OPTION_RXGAIN:
@@ -2951,7 +2963,7 @@ int main( int argc, char **argv )
 
   // connect the TX/RX buffers
   if (UE_flag==1) {
-    openair_daq_vars.timing_advance = 0;//170;
+    openair_daq_vars.timing_advance = 0;
 
     if (setup_ue_buffers(UE,&openair0_cfg[0],rf_map)!=0) {
       printf("Error setting up eNB buffer\n");

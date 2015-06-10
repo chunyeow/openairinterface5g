@@ -232,7 +232,7 @@ static void *UE_thread_synch(void *arg)
   if (UE->UE_scan == 0) {
     do  {
       current_band = eutra_bands[ind].band;
-      printf( "Scanning band %d, dl_min %"PRIu32"\n", current_band, eutra_bands[ind].dl_min );
+      printf( "Scanning band %d, dl_min %"PRIu32", ul_min %"PRIu32"\n", current_band, eutra_bands[ind].dl_min,eutra_bands[ind].ul_min);
 
       if ((eutra_bands[ind].dl_min <= downlink_frequency[0][0]) && (eutra_bands[ind].dl_max >= downlink_frequency[0][0])) {
         for (card=0; card<MAX_NUM_CCs; card++)
@@ -256,7 +256,7 @@ static void *UE_thread_synch(void *arg)
 
 
 
-    LOG_I( PHY, "[SCHED][UE] Check absolute frequency %"PRIu32" (oai_exit %d)\n", downlink_frequency[0][0], oai_exit );
+    LOG_I( PHY, "[SCHED][UE] Check absolute frequency DL %"PRIu32", UL %"PRIu32" (oai_exit %d)\n", downlink_frequency[0][0], downlink_frequency[0][0]+uplink_frequency_offset[0][0],oai_exit );
 
     for (i=0;i<openair0_cfg[0].rx_num_channels;i++) {
       openair0_cfg[0].rx_freq[i] = downlink_frequency[0][i];
@@ -854,7 +854,7 @@ void *UE_thread(void *arg)
   static int UE_thread_retval;
   PHY_VARS_UE *UE = PHY_vars_UE_g[0][0];
   int spp = openair0_cfg[0].samples_per_packet;
-  int slot=1, frame=0, hw_subframe=0, rxpos=0, txpos=0;
+  int slot=1, frame=0, hw_subframe=0, rxpos=0, txpos=spp*tx_delay;
   int dummy[2][spp];
   int dummy_dump = 0;
   int tx_enabled = 0;
