@@ -710,7 +710,7 @@ rrc_ue_establish_drb(
                     RADIO_ACCESS_BEARER,Rlc_info_um);
    */
 #ifdef PDCP_USE_NETLINK
-#   if !defined(OAI_NW_DRIVER_TYPE_ETHERNET) && !defined(EXMIMO) && !defined(LINK_ENB_PDCP_TO_GTPV1U)
+#   if !defined(OAI_NW_DRIVER_TYPE_ETHERNET) && !defined(EXMIMO) && !defined(OAI_USRP) && !defined(LINK_ENB_PDCP_TO_GTPV1U)
 #    ifdef OAI_EMU
   ip_addr_offset3 = oai_emulation.info.nb_enb_local;
   ip_addr_offset4 = NB_eNB_INST;
@@ -1288,6 +1288,7 @@ rrc_ue_process_radioResourceConfigDedicated(
   UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].State = RRC_CONNECTED;
   LOG_I(RRC,"[UE %d] State = RRC_CONNECTED (eNB %d)\n",ctxt_pP->module_id,eNB_index);
 #if !defined(ENABLE_USE_MME) && defined(OAI_EMU)
+#    ifdef OAI_EMU
   rrc_eNB_emulation_notify_ue_module_id(
     ctxt_pP->module_id,
     ctxt_pP->rnti,
@@ -1295,6 +1296,7 @@ rrc_ue_process_radioResourceConfigDedicated(
     UE_rrc_inst[ctxt_pP->module_id].sib1[eNB_index]->cellAccessRelatedInfo.cellIdentity.buf[1],
     UE_rrc_inst[ctxt_pP->module_id].sib1[eNB_index]->cellAccessRelatedInfo.cellIdentity.buf[2],
     UE_rrc_inst[ctxt_pP->module_id].sib1[eNB_index]->cellAccessRelatedInfo.cellIdentity.buf[3]);
+#    endif OAI_EMU
 #endif
 }
 
