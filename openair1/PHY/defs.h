@@ -127,7 +127,7 @@ static inline void* malloc16_clear( size_t size )
 
 #define NB_BANDS_MAX 8
 
-typedef enum {normal_txrx=0,rx_calib_ue=1,rx_calib_ue_med=2,rx_calib_ue_byp=3,debug_prach=4,no_L2_connect=5} runmode_t;
+typedef enum {normal_txrx=0,rx_calib_ue=1,rx_calib_ue_med=2,rx_calib_ue_byp=3,debug_prach=4,no_L2_connect=5,calib_prach_tx=6} runmode_t;
 
 enum transmission_access_mode {
   NO_ACCESS=0,

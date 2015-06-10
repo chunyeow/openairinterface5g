@@ -3708,10 +3708,10 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     }
 
     // change the mcs limit from 7 to 8, supported by MAC
-    if (mcs > 10) {
+    /*   if (mcs > 10) {
       LOG_E(PHY,"Format 1A: subframe %d unlikely mcs for format 1A (%d), TPC %d rv %d\n",subframe,mcs,TPC,rv);
       return(-1);
-    }
+      }*/
 
     if ((rnti==si_rnti) || (rnti==p_rnti) || (rnti==ra_rnti)) { //
       if (dlsch0_harq->round == 4) {

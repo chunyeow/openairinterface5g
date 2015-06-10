@@ -194,20 +194,67 @@ void dump_dlsch_SI(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe)
 }
 
 #if defined(EXMIMO) || defined(OAI_USRP)
-unsigned int prach_gain_table[31] = {100,112,126,141,158,178,200,224,251,282,316,359,398,447,501,562,631,708,794,891,1000,1122,1258,1412,1585,1778,1995,2239,2512,2818,3162};
-
-unsigned int get_tx_amp(int power_dBm, int power_max_dBm)
+//unsigned int gain_table[31] = {100,112,126,141,158,178,200,224,251,282,316,359,398,447,501,562,631,708,794,891,1000,1122,1258,1412,1585,1778,1995,2239,2512,2818,3162};
+/*
+unsigned int get_tx_amp_prach(int power_dBm, int power_max_dBm, int N_RB_UL)
 {
 
   int gain_dB = power_dBm - power_max_dBm;
+  int amp_x_100;
 
+  switch (N_RB_UL) {
+  case 6:
+    amp_x_100 = AMP;      // PRACH is 6 PRBS so no scale
+    break;
+  case 15:
+    amp_x_100 = 158*AMP;  // 158 = 100*sqrt(15/6)
+    break;
+  case 25:
+    amp_x_100 = 204*AMP;  // 204 = 100*sqrt(25/6)
+    break;
+  case 50:
+    amp_x_100 = 286*AMP;  // 286 = 100*sqrt(50/6)
+    break;
+  case 75:
+    amp_x_100 = 354*AMP;  // 354 = 100*sqrt(75/6)
+    break;
+  case 100:
+    amp_x_100 = 408*AMP;  // 408 = 100*sqrt(100/6)
+    break;
+  default:
+    LOG_E(PHY,"Unknown PRB size %d\n",N_RB_UL);
+    mac_xface->macphy_exit("");
+    break;
+  }
   if (gain_dB < -30) {
-    return(AMP/32);
+    return(amp_x_100/3162);
   } else if (gain_dB>0)
-    return(AMP);
+    return(amp_x_100);
   else
-    return(100*AMP/prach_gain_table[-gain_dB]);
+    return(amp_x_100/gain_table[-gain_dB]);  // 245 corresponds to the factor sqrt(25/6)
 }
+*/
+
+unsigned int get_tx_amp(int power_dBm, int power_max_dBm, int N_RB_UL, int nb_rb)
+{
+
+  int gain_dB = power_dBm - power_max_dBm;
+  double gain_lin;
+
+  if (gain_dB < -30)
+    return(AMP/32);
+
+  gain_lin = pow(10,.1*gain_dB);
+  if ((nb_rb >0) && (nb_rb <= N_RB_UL)) {
+    return((int)(AMP*sqrt(gain_lin*N_RB_UL/(double)nb_rb)));
+  }
+  else {
+    LOG_E(PHY,"Illegal nb_rb/N_RB_UL combination (%d/%d)\n",nb_rb,N_RB_UL);
+    mac_xface->macphy_exit("");
+  }
+  return(0);
+}
+
 #endif
 
 void dump_dlsch_ra(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe)
@@ -628,6 +675,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 #ifndef OPENAIR2
   int i;
 #endif
+  int tx_amp;
 
   VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_TX,VCD_FUNCTION_IN);
 
@@ -927,38 +975,33 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 #else
           phy_vars_ue->tx_power_dBm = UE_TX_POWER;
 #endif
-          phy_vars_ue->tx_total_RE = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->nb_rb*12;
-
-          LOG_D(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d, generating PUSCH, Po_PUSCH: %d dBm, amp %d\n",
-                Mod_id,harq_pid,frame_tx,subframe_tx,phy_vars_ue->tx_power_dBm,
+          phy_vars_ue->tx_total_RE = nb_rb*12;
+	  
 #if defined(EXMIMO) || defined(OAI_USRP)
-                get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm)
+	  tx_amp = get_tx_amp(phy_vars_ue->tx_power_dBm,
+			      phy_vars_ue->tx_power_max_dBm,
+			      phy_vars_ue->lte_frame_parms.N_RB_UL,
+			      nb_rb);
 #else
-                AMP
+          tx_amp = AMP;
 #endif
-               );
+          LOG_I(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d, generating PUSCH, Po_PUSCH: %d dBm, amp %d\n",
+                Mod_id,harq_pid,frame_tx,subframe_tx,phy_vars_ue->tx_power_dBm, tx_amp);
           start_meas(&phy_vars_ue->ulsch_modulation_stats);
           ulsch_modulation(phy_vars_ue->lte_ue_common_vars.txdataF,
-#if defined(EXMIMO) || defined(OAI_USRP)
-                           get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm),
-#else
-                           AMP,
-#endif
+			   tx_amp,
                            frame_tx,
                            subframe_tx,
                            &phy_vars_ue->lte_frame_parms,
                            phy_vars_ue->ulsch_ue[eNB_id]);
-#if defined(EXMIMO) || defined(OAI_USRP)
-
           for (aa=0; aa<1/*frame_parms->nb_antennas_tx*/; aa++)
-            generate_drs_pusch(phy_vars_ue,eNB_id,get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm),subframe_tx,first_rb,nb_rb,aa);
-
-#else
-
-          for (aa=0; aa<1/*frame_parms->nb_antennas_tx*/; aa++)
-            generate_drs_pusch(phy_vars_ue,eNB_id,AMP,subframe_tx,first_rb,nb_rb,aa);
-
-#endif
+            generate_drs_pusch(phy_vars_ue,
+			       eNB_id,
+			       tx_amp,
+			       subframe_tx,
+			       first_rb,
+			       nb_rb,
+			       aa);
 
           stop_meas(&phy_vars_ue->ulsch_modulation_stats);
         }
@@ -1030,38 +1073,37 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 #endif
           phy_vars_ue->tx_total_RE = 12;
 
+#if defined(EXMIMO) || defined(OAI_USRP)
+	  tx_amp = get_tx_amp(Po_PUCCH,
+			      phy_vars_ue->tx_power_max_dBm,
+			      phy_vars_ue->lte_frame_parms.N_RB_UL,
+			      1);
+#else
+	  tx_amp = AMP;
+#endif
+	  
           if (SR_payload>0) {
-            LOG_D(PHY,"[UE  %d][SR %x] Frame %d subframe %d Generating PUCCH 1a/1b payload %d,%d (with SR for PUSCH), n1_pucch %d, Po_PUCCH, amp %d\n",
+	     LOG_D(PHY,"[UE  %d][SR %x] Frame %d subframe %d Generating PUCCH 1a/1b payload %d,%d (with SR for PUSCH), n1_pucch %d, Po_PUCCH, amp %d\n",
                   Mod_id,
                   phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
                   frame_tx, subframe_tx,
 		  pucch_ack_payload[0],pucch_ack_payload[1],
                   phy_vars_ue->scheduling_request_config[eNB_id].sr_PUCCH_ResourceIndex,
-                  Po_PUCCH,
-#if defined(EXMIMO) || defined(OAI_USRP)
-                  get_tx_amp(Po_PUCCH,phy_vars_ue->tx_power_max_dBm)
-#else
-                  AMP
-#endif
-                 );
+	          Po_PUCCH,
+		  tx_amp);
           } else {
             LOG_D(PHY,"[UE  %d][PDSCH %x] Frame %d subframe %d Generating PUCCH 1a/1b, n1_pucch %d, b[0]=%d,b[1]=%d (SR_Payload %d), Po_PUCCH %d, amp %d\n",
                   Mod_id,
                   phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
-                  frame_tx, subframe_tx,
+	    frame_tx, subframe_tx,
 		  n1_pucch,pucch_ack_payload[0],pucch_ack_payload[1],SR_payload,
                   Po_PUCCH,
-#if defined(EXMIMO) || defined(OAI_USRP)
-                  get_tx_amp(Po_PUCCH,phy_vars_ue->tx_power_max_dBm)
-#else
-                  AMP
-#endif
-                 );
-          }
+		  tx_amp);
+	  }
 
           if (abstraction_flag == 0) {
 
-            generate_pucch(phy_vars_ue->lte_ue_common_vars.txdataF,
+	  generate_pucch(phy_vars_ue->lte_ue_common_vars.txdataF,
                            &phy_vars_ue->lte_frame_parms,
                            phy_vars_ue->ncs_cell,
                            format,
@@ -1070,12 +1112,8 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
                            0,  // n2_pucch
                            1,  // shortened format
                            pucch_ack_payload,
-#if defined(EXMIMO) || defined(OAI_USRP)
-                           get_tx_amp(Po_PUCCH,phy_vars_ue->tx_power_max_dBm),
-#else
-                           AMP,
-#endif
-                           subframe_tx);
+	                   tx_amp,
+	                   subframe_tx);
 
           } else {
 #ifdef PHY_ABSTRACTION
@@ -1098,6 +1136,14 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 #endif
           phy_vars_ue->tx_total_RE = 12;
 
+#if defined(EXMIMO) || defined(OAI_USRP)
+          tx_amp =  get_tx_amp(Po_PUCCH,
+	                       phy_vars_ue->tx_power_max_dBm,
+	                       phy_vars_ue->lte_frame_parms.N_RB_UL,
+	                       1);
+#else
+	  tx_amp = AMP;
+#endif
           LOG_D(PHY,"[UE  %d][SR %x] Frame %d subframe %d Generating PUCCH 1 (SR for PUSCH), n1_pucch %d, Po_PUCCH %d\n",
                 Mod_id,
                 phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
@@ -1116,11 +1162,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
                            0,  // n2_pucch
                            1,  // shortened format
                            pucch_ack_payload,  // this is ignored anyway, we just need a pointer
-#if defined(EXMIMO) || defined(OAI_USRP)
-                           get_tx_amp(Po_PUCCH,phy_vars_ue->tx_power_max_dBm),
-#else
-                           AMP,
-#endif
+	                   tx_amp,
                            subframe_tx);
           } else {
             LOG_D(PHY,"Calling generate_pucch_emul ...\n");
@@ -1323,7 +1365,6 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
                                                  subframe_tx);
           //    LOG_I(PHY,"Got prach_resources for eNB %d address %d, RRCCommon %d\n",eNB_id,phy_vars_ue->prach_resources[eNB_id],UE_mac_inst[Mod_id].radioResourceConfigCommon);
         }
-
 #endif
 
         if (phy_vars_ue->prach_resources[eNB_id]!=NULL) {
@@ -1338,7 +1379,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 #endif
 
           if (abstraction_flag == 0) {
-            LOG_D(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d : Generating PRACH, preamble %d, TARGET_RECEIVED_POWER %d dBm, PRACH TDD Resource index %d, RA-RNTI %d\n",
+            LOG_I(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d : Generating PRACH, preamble %d, TARGET_RECEIVED_POWER %d dBm, PRACH TDD Resource index %d, RA-RNTI %d\n",
                   Mod_id,
                   frame_tx,
                   subframe_tx,
@@ -1348,7 +1389,12 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
                   phy_vars_ue->prach_resources[eNB_id]->ra_RNTI);
 
 #ifdef OPENAIR2
-            phy_vars_ue->tx_power_dBm = phy_vars_ue->prach_resources[eNB_id]->ra_PREAMBLE_RECEIVED_TARGET_POWER+get_PL(Mod_id,CC_id,eNB_id);
+	    if (mode != calib_prach_tx)
+	      phy_vars_ue->tx_power_dBm = phy_vars_ue->prach_resources[eNB_id]->ra_PREAMBLE_RECEIVED_TARGET_POWER+get_PL(Mod_id,CC_id,eNB_id);
+	    else {
+	      phy_vars_ue->tx_power_dBm = phy_vars_ue->tx_power_max_dBm;
+	      phy_vars_ue->prach_resources[eNB_id]->ra_PreambleIndex = 19;	      
+	    }
 #else
             phy_vars_ue->tx_power_dBm = UE_TX_POWER;
 #endif
@@ -1356,12 +1402,17 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
             phy_vars_ue->tx_total_RE = 96;
 
 #if defined(EXMIMO) || defined(OAI_USRP)
-            phy_vars_ue->lte_ue_prach_vars[eNB_id]->amp = get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm);
+            phy_vars_ue->lte_ue_prach_vars[eNB_id]->amp = get_tx_amp(phy_vars_ue->tx_power_dBm,
+								     phy_vars_ue->tx_power_max_dBm,
+								     phy_vars_ue->lte_frame_parms.N_RB_UL,
+								     6);
 #else
             phy_vars_ue->lte_ue_prach_vars[eNB_id]->amp = AMP;
 #endif
-            LOG_D(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d : PRACH TX power %d dBm, amp %d\n",Mod_id,phy_vars_ue->frame_rx,phy_vars_ue->slot_tx>>1,phy_vars_ue->tx_power_dBm,
-                  phy_vars_ue->lte_ue_prach_vars[eNB_id]->amp);
+	    if ((mode == calib_prach_tx) && (((phy_vars_ue->frame_tx&0xfffe)%100)==0))
+	      LOG_I(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d : PRACH TX power %d dBm, amp %d\n",Mod_id,phy_vars_ue->frame_rx,phy_vars_ue->slot_tx>>1,phy_vars_ue->tx_power_dBm,
+		    phy_vars_ue->lte_ue_prach_vars[eNB_id]->amp);
+
 
             //      start_meas(&phy_vars_ue->tx_prach);
             VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_GENERATE_PRACH, VCD_FUNCTION_IN);
@@ -1391,8 +1442,12 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
                 phy_vars_ue->prach_resources[eNB_id]->ra_PREAMBLE_RECEIVED_TARGET_POWER+get_PL(Mod_id,CC_id,eNB_id),
                 get_PL(Mod_id,CC_id,eNB_id));
 
-        }
+	}	  
+
       }
+      // if we're calibrating the PRACH kill the pointer to its resources so that the RA protocol doesn't continue
+      if (mode == calib_prach_tx)
+	phy_vars_ue->prach_resources[eNB_id]=NULL;
 
       LOG_D(PHY,"[UE %d] frame %d subframe %d : generate_prach %d, prach_cnt %d\n",
             Mod_id,frame_tx,subframe_tx,phy_vars_ue->generate_prach,phy_vars_ue->prach_cnt);
@@ -1450,7 +1505,7 @@ void lte_ue_measurement_procedures(uint16_t l, PHY_VARS_UE *phy_vars_ue,uint8_t 
   //  exmimo_config_t *p_exmimo_config = openair0_exmimo_pci[0].exmimo_config_ptr;
   //  int aa;
 #endif
-  int Mod_id=phy_vars_ue->Mod_id;
+
   int slot_rx = phy_vars_ue->slot_rx;
   int subframe_rx = slot_rx>>1;
 
@@ -2180,6 +2235,7 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,PHY_VARS_UE *phy_vars_ue,uint8_t abst
     else if ((phy_vars_ue->prach_resources[eNB_id]) &&
              (dci_alloc_rx[i].rnti == phy_vars_ue->prach_resources[eNB_id]->ra_RNTI) &&
              (dci_alloc_rx[i].format == format1A)) {
+
 #ifdef DEBUG_PHY_PROC
       LOG_D(PHY,"[UE  %d][RAPROC] subframe %d: Found RA rnti %x, format 1A, dci_cnt %d\n",phy_vars_ue->Mod_id,subframe_rx,dci_alloc_rx[i].rnti,i);
 
