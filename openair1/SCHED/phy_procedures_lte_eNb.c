@@ -494,11 +494,7 @@ void phy_procedures_emos_eNB_RX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eN
   last_subframe_emos=0;
 
 
-#ifdef OAI_USRP
-  for (aa=0;i<phy_vars_eNB->lte_frame_parms.nb_antennas_rx;i++)
-    rescale(&phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i][subframe*phy_vars_eNB->lte_frame_parms.samples_per_tti],
-	    phy_vars_eNB->lte_frame_parms.samples_per_tti);
-#endif
+
 
 #ifdef EMOS_CHANNEL
 
@@ -3159,7 +3155,7 @@ void phy_procedures_eNB_RX(const unsigned char sched_subframe,PHY_VARS_eNB *phy_
 {
   //RX processing
   UNUSED(r_type);
-  uint32_t l, ret=0,i,j,k;
+  uint32_t l, ret=0,i,j,k,aa;
   uint32_t sect_id=0;
   uint32_t harq_pid, harq_idx, round;
   uint8_t SR_payload = 0,*pucch_payload=NULL,pucch_payload0[2]= {0,0},pucch_payload1[2]= {0,0};
@@ -3186,6 +3182,12 @@ void phy_procedures_eNB_RX(const unsigned char sched_subframe,PHY_VARS_eNB *phy_
   start_meas(&phy_vars_eNB->phy_proc_rx);
 #ifdef DEBUG_PHY_PROC
   LOG_D(PHY,"[eNB %d] Frame %d: Doing phy_procedures_eNB_RX(%d)\n",phy_vars_eNB->Mod_id,frame, subframe);
+#endif
+
+#ifdef OAI_USRP
+  for (aa=0;aa<phy_vars_eNB->lte_frame_parms.nb_antennas_rx;aa++)
+    rescale(&phy_vars_eNB->lte_eNB_common_vars.rxdata[0][aa][subframe*phy_vars_eNB->lte_frame_parms.samples_per_tti],
+	    phy_vars_eNB->lte_frame_parms.samples_per_tti);
 #endif
 
   if (abstraction_flag == 0) {
