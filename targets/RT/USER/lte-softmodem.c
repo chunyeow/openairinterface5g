@@ -1193,6 +1193,8 @@ static void* eNB_thread_rx( void* param )
 
   FILE  *rx_time_file;
   char rx_time_name[101];
+  int i;
+
   if (opp_enabled == 1){
     snprintf(rx_time_name, 100,"/tmp/%s_rx_time_thread_sf_%d", "eNB", proc->subframe);
     rx_time_file = fopen(rx_time_name,"w");
@@ -1280,11 +1282,7 @@ static void* eNB_thread_rx( void* param )
 
     if ((((PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == TDD )&&(subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_rx)==SF_UL)) ||
          (PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == FDD))) {
-#ifdef OAI_USRP
-      for (i=0;i<PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.nb_antennas_rx;i++)
-	rescale(&PHY_vars_eNB_g[0][proc->CC_id]->lte_eNB_common_vars.rxdata[0][i][proc->subframe_rx*phy_vars_eNB->lte_frame_parms.samples_per_tti],
-		phy_vars_eNB->lte_frame_parms.samples_per_tti);
-#endif
+
       phy_procedures_eNB_RX( proc->subframe, PHY_vars_eNB_g[0][proc->CC_id], 0, no_relay );
     }
 
