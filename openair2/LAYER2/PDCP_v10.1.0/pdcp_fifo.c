@@ -324,7 +324,7 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
   ctxt_cpy = *ctxt_pP;
 
   while (pdcp_netlink_dequeue_element(ctxt_pP, &data_p) != 0) {
-    DevAssert(data != NULL);
+    DevAssert(data_p != NULL);
     rab_id = data_p->pdcp_read_header.rb_id % maxDRB;
     // ctxt_pP->rnti is NOT_A_RNTI
     ctxt_cpy.rnti = pdcp_module_id_to_rnti[ctxt_cpy.module_id][data_p->pdcp_read_header.inst];
