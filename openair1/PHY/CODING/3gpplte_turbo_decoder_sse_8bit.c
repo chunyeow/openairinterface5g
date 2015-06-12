@@ -1021,9 +1021,12 @@ unsigned char phy_threegpplte_turbo_decoder8(short *y,
   else if (round_avg < 64 )
     for (i=0,j=0; i<(3*(n2>>4))+1; i++,j+=2)
       ((__m128i *)y8)[i] = _mm_packs_epi16(_mm_srai_epi16(((__m128i *)y)[j],2),_mm_srai_epi16(((__m128i *)y)[j+1],2));
-  else
+  else if (round_avg < 128)
     for (i=0,j=0; i<(3*(n2>>4))+1; i++,j+=2)
       ((__m128i *)y8)[i] = _mm_packs_epi16(_mm_srai_epi16(((__m128i *)y)[j],3),_mm_srai_epi16(((__m128i *)y)[j+1],3));
+  else
+    for (i=0,j=0; i<(3*(n2>>4))+1; i++,j+=2)
+      ((__m128i *)y8)[i] = _mm_packs_epi16(_mm_srai_epi16(((__m128i *)y)[j],3),_mm_srai_epi16(((__m128i *)y)[j+1],4));
 
   yp128 = (__m128i*)y8;
 
@@ -1331,7 +1334,7 @@ unsigned char phy_threegpplte_turbo_decoder8(short *y,
   while (iteration_cnt++ < max_iterations) {
 
 #ifdef DEBUG_LOGMAP
-    printf("\n*******************ITERATION %d (n %d), ext %p\n\n",iteration_cnt,n,ext);
+    printf("\n*******************ITERATION %d (n %d, n2 %d), ext %p\n\n",iteration_cnt,n,n2,ext);
 #endif //DEBUG_LOGMAP
 
     start_meas(intl1_stats);
@@ -1430,6 +1433,7 @@ unsigned char phy_threegpplte_turbo_decoder8(short *y,
 	((int8x16_t *)systematic1)[i] = vqaddq_s8(vqsubq_s8(tmp,((int8x16_t*)ext)[i]),((int8x16_t *)systematic0)[i]);
 #endif
       }
+
     } else {
       for (i=0; i<(n2>>4); i++) {
 #if defined(__x86_64__) || defined(__i386__)
@@ -1485,7 +1489,7 @@ unsigned char phy_threegpplte_turbo_decoder8(short *y,
 
         // re-order the decoded bits in theregular order
         // as it is presently ordered as 16 sequential columns
-#if defined(__x86__64) || defined(__i386__)
+#if defined(__x86_64__) || defined(__i386__)
         __m128i* dbytes=(__m128i*)decoded_bytes_interl;
         __m128i shuffle=SHUFFLE16(7,6,5,4,3,2,1,0);
         __m128i mask  __attribute__((aligned(16)));
@@ -1500,7 +1504,6 @@ unsigned char phy_threegpplte_turbo_decoder8(short *y,
           tmp2=_mm_and_si128(tmp,mask);
           tmp2=_mm_cmpeq_epi16(tmp2,mask);
           decoded_bytes[n_128*0+i]=(uint8_t) _mm_movemask_epi8(_mm_packs_epi16(tmp2,zeros));
-
           int j;
 
           for (j=1; j<16; j++) {
