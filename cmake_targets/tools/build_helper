@@ -115,7 +115,7 @@ compilations() {
     make -j4 $2
   } > $dlog/$2.$REL.txt 2>&1
   if [ -s $3 ] ; then
-     cp $3 $dbin
+     cp $3 $4
      echo_success "$2 compiled"
   else
      echo_error "$2 compilation failed"

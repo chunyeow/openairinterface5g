@@ -265,8 +265,24 @@ function main() {
     echo_info "Compiling LTE softmodem"
     compilations \
 	  lte_build_oai lte-softmodem \
-	  lte-softmodem lte-softmodem.$REL
+	  lte-softmodem $dbin/lte-softmodem.$REL
 
+    # LTE softmodem (no S1 interface) compilation
+    [ "$CLEAN" = "1" ] && rm -rf $DIR/lte_noS1_build_oai/build
+    mkdir -p $DIR/lte_noS1_build_oai/build
+    cd  $DIR/lte_noS1_build_oai/build
+    cmake ..
+    echo_info "Compiling LTE softmodem (w/o S1 interface)"
+    compilations \
+	  lte_noS1_build_oai lte-softmodem \
+	  lte-softmodem $dbin/lte-softmodem-nos1
+    compilations \
+	  lte_noS1_build_oai nasmesh \
+	  CMakeFiles/nasmesh/nasmesh.ko $dbin/nasmesh.ko
+    compilations \
+	  lte_noS1_build_oai rb_tool \
+	  rb_tool $dbin/rb_tool
+    cp $OPENAIR_DIR/cmake_targets/tools/init_nas_nos1 $dbin
   fi
 
   if [ "$UE" = 1 ] ; then
