@@ -286,6 +286,7 @@ check_install_oai_software() {
 	cmake \
 	cmake-curses-gui  \
 	doxygen \
+	doxygen-gui\
 	ethtool \
 	flex  \
 	gccxml \
