@@ -83,12 +83,14 @@
  * @{
  * This module is responsible for defining and processing the PHY procedures (TX/RX) related to transport and physical channels.
  * @}
- * @}
 
  * @defgroup _PHY_PROCEDURES_ Physical Layer Procedures
  * @ingroup _ref_implementation_
  * @{
  * This module is responsible for defining and processing the PHY procedures (TX/RX) related to transport and physical channels.
+ * @}
+
+ * @}
  * @}
 
  */
@@ -98,7 +100,7 @@
 
 
 
-/**@addtogroup _PHY_STRUCTURES_
+/** @addtogroup _PHY_STRUCTURES_
  * @{
 */
 #define NUMBER_OF_OFDM_CARRIERS (frame_parms->ofdm_symbol_size)
@@ -493,6 +495,5 @@ typedef struct {
 #define MCS_TABLE_LENGTH_MAX 64
 
 #endif //__PHY_IMPLEMENTATION_DEFS_H__ 
-/**@}
-  *@}
+/**@} 
 */
