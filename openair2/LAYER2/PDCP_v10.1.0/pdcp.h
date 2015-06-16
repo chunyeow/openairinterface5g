@@ -27,7 +27,7 @@
 
  *******************************************************************************/
 
-/*! \file pdcp.c
+/*! \file LAYER2/PDCP_v10.1.0/pdcp.h
 * \brief pdcp interface with RLC, RRC
 * \author  Lionel GAUTHIER and Navid Nikaein
 * \date 2009-2012

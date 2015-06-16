@@ -26,7 +26,7 @@
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
 *******************************************************************************/
-/*! \file proto.h
+/*! \file LAYER2/MAC/proto.h
  * \brief MAC functions prototypes for eNB and UE
  * \author Navid Nikaein and Raymond Knopp
  * \date 2010 - 2014

@@ -27,7 +27,7 @@
 
 *******************************************************************************/
 
-/*! \file defs.h
+/*! \file PHY_INTERFACE/defs.h
 * \brief mac phy interface primitives
 * \author Raymond Knopp and Navid Nikaein
 * \date 2011

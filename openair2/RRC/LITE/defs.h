@@ -28,7 +28,7 @@
 *******************************************************************************/
 
 
-/*! \file defs.h
+/*! \file RRC/LITE/defs.h
 * \brief RRC struct definitions and function prototypes
 * \author Navid Nikaein and Raymond Knopp
 * \date 2010 - 2014
@@ -524,4 +524,4 @@ typedef struct UE_RRC_INST_s {
 #include "proto.h"
 
 #endif
-/** @ */
+/** @} */

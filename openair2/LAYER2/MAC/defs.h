@@ -26,7 +26,7 @@
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
 *******************************************************************************/
-/*! \file def.h
+/*! \file LAYER2/MAC/defs.h
 * \brief MAC data structures, constant, and function prototype
 * \author Navid Nikaein and Raymond Knopp
 * \date 2011
