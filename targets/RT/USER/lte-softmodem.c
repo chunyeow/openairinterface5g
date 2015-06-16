@@ -1114,10 +1114,18 @@ static void* eNB_thread_tx( void* param )
         exit_fun("nothing to add");
         break;
       }
-      /* wait for our turn */
-      while (sync_phy_proc[proc->subframe].phy_proc_CC_id != proc->CC_id) {
+      /* wait for our turn or oai_exit */
+      while (sync_phy_proc[proc->subframe].phy_proc_CC_id != proc->CC_id && !oai_exit) {
         pthread_cond_wait(&sync_phy_proc[proc->subframe].cond_phy_proc_tx,
                           &sync_phy_proc[proc->subframe].mutex_phy_proc_tx);
+      }
+
+      if (oai_exit) {
+        if (pthread_mutex_unlock(&sync_phy_proc[proc->subframe].mutex_phy_proc_tx) != 0) {
+          LOG_E(PHY, "[SCHED][eNB] error unlocking PHY proc mutex for eNB TX proc %d\n", proc->subframe);
+          exit_fun("nothing to add");
+        }
+        break;
       }
 
       phy_procedures_eNB_TX( proc->subframe, PHY_vars_eNB_g[0][proc->CC_id], 0, no_relay, NULL );
@@ -1127,7 +1135,7 @@ static void* eNB_thread_tx( void* param )
       sync_phy_proc[proc->subframe].phy_proc_CC_id %= MAX_NUM_CCs;
       pthread_cond_broadcast(&sync_phy_proc[proc->subframe].cond_phy_proc_tx);
       if (pthread_mutex_unlock(&sync_phy_proc[proc->subframe].mutex_phy_proc_tx) != 0) {
-        LOG_E(PHY, "[SCHED][eNB] error locking PHY proc mutex for eNB TX proc %d\n", proc->subframe);
+        LOG_E(PHY, "[SCHED][eNB] error unlocking PHY proc mutex for eNB TX proc %d\n", proc->subframe);
         exit_fun("nothing to add");
         break;
       }
@@ -1433,6 +1441,7 @@ void kill_eNB_proc(void)
 
       PHY_vars_eNB_g[0][CC_id]->proc[i].instance_cnt_tx = 0; // FIXME data race!
       pthread_cond_signal( &PHY_vars_eNB_g[0][CC_id]->proc[i].cond_tx );
+      pthread_cond_broadcast(&sync_phy_proc[i].cond_phy_proc_tx);
 
 #ifdef DEBUG_THREADS
       printf( "Joining eNB TX CC_id %d thread %d...\n", CC_id, i );
