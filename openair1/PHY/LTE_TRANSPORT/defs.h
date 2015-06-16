@@ -515,6 +515,8 @@ typedef struct {
   uint8_t round;
   /// MCS format for this DLSCH
   uint8_t mcs;
+  /// Qm (modulation order) for this DLSCH
+  uint8_t Qm;
   /// Redundancy-version of the current sub-frame
   uint8_t rvidx;
   /// MIMO mode for this DLSCH

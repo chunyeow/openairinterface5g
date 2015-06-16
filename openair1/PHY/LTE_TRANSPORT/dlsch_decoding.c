@@ -244,8 +244,6 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
   */
   A = harq_process->TBS; //2072 for QPSK 1/3
 
-  //  mod_order = get_Qm(harq_process->mcs);
-
   ret = dlsch->max_turbo_iterations;
 
 
@@ -278,8 +276,33 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
   err_flag = 0;
   r_offset = 0;
 
+  unsigned char bw_scaling =1;
+
+  switch (frame_parms->N_RB_DL) {
+  case 6:
+    bw_scaling =16;
+    break;
+
+  case 25:
+    bw_scaling =4;
+    break;
+
+  case 50:
+    bw_scaling =2;
+    break;
+
+  default:
+    bw_scaling =1;
+    break;
+  }
+
+  if (harq_process->C >= MAX_NUM_DLSCH_SEGMENTS/bw_scaling) {
+    LOG_E(PHY,"Illegal harq_process->C %d > %d\n",harq_process->C,MAX_NUM_DLSCH_SEGMENTS/bw_scaling);
+    return((1+dlsch->max_turbo_iterations));
+  }
   for (r=0; r<harq_process->C; r++) {
 
+    
     // Get Turbo interleaver parameters
     if (r<harq_process->Cminus)
       Kr = harq_process->Kminus;
@@ -316,7 +339,7 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
           harq_pid,r, G,
           Kr*3,
           harq_process->TBS,
-          get_Qm(harq_process->mcs),
+          harq_process->Qm,
           harq_process->nb_rb,
           harq_process->Nl,
           harq_process->rvidx,
@@ -335,7 +358,7 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
                                    dlsch->Kmimo,
                                    harq_process->rvidx,
                                    (harq_process->round==0)?1:0,
-                                   get_Qm(harq_process->mcs),
+                                   harq_process->Qm,
                                    harq_process->Nl,
                                    r,
                                    &E)==-1) {

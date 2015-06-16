@@ -189,9 +189,9 @@ typedef enum HO_STATE_e {
 
 typedef struct UE_RRC_INFO_s {
   UE_STATE_t State;
-  uint8_t SIB1Status;
   uint8_t SIB1systemInfoValueTag;
-  uint8_t SIStatus;
+  uint32_t SIStatus;
+  uint32_t SIcnt;
 #ifdef Rel10
   uint8_t MCCHStatus[8]; // MAX_MBSFN_AREA
 #endif

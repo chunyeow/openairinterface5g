@@ -1435,7 +1435,7 @@ void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subf
                                          bsr_l,
                                          post_padding); // long_bsr
 
-  LOG_I(MAC,
+  LOG_D(MAC,
         "[UE %d] Generate header :bufflen %d  sdu_length_total %d, num_sdus %d, sdu_lengths[0] %d, sdu_lcids[0] %d => payload offset %d,  dcch_header_len %d, dtch_header_len %d, padding %d,post_padding %d, bsr len %d, phr len %d, reminder %d \n",
         module_idP,buflen, sdu_length_total,num_sdus,sdu_lengths[0],sdu_lcids[0],payload_offset, dcch_header_len,  dtch_header_len,
         short_padding,post_padding, bsr_len, phr_len,buflen-sdu_length_total-payload_offset);

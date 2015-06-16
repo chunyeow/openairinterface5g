@@ -135,7 +135,7 @@ void dump_dlsch(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,uint8_t
   coded_bits_per_codeword = get_G(&phy_vars_ue->lte_frame_parms,
                                   phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->nb_rb,
                                   phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->rb_alloc,
-                                  get_Qm(phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs),
+                                  phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->Qm,
                                   phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->Nl,
                                   phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->num_pdcch_symbols,
                                   phy_vars_ue->frame_rx,subframe);
@@ -164,7 +164,7 @@ void dump_dlsch_SI(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe)
   coded_bits_per_codeword = get_G(&phy_vars_ue->lte_frame_parms,
                                   phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->nb_rb,
                                   phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->rb_alloc,
-                                  get_Qm(phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->mcs),
+                                  2,
                                   1,
                                   phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->num_pdcch_symbols,
                                   phy_vars_ue->frame_rx,subframe);
@@ -265,7 +265,7 @@ void dump_dlsch_ra(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe)
   coded_bits_per_codeword = get_G(&phy_vars_ue->lte_frame_parms,
                                   phy_vars_ue->dlsch_ue_ra[eNB_id]->harq_processes[0]->nb_rb,
                                   phy_vars_ue->dlsch_ue_ra[eNB_id]->harq_processes[0]->rb_alloc,
-                                  get_Qm(phy_vars_ue->dlsch_ue_ra[eNB_id]->harq_processes[0]->mcs),
+                                  2,
                                   1,
                                   phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->num_pdcch_symbols,
                                   phy_vars_ue->frame_rx,subframe);
@@ -985,7 +985,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 #else
           tx_amp = AMP;
 #endif
-          LOG_I(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d, generating PUSCH, Po_PUSCH: %d dBm, amp %d\n",
+          LOG_D(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d, generating PUSCH, Po_PUSCH: %d dBm, amp %d\n",
                 Mod_id,harq_pid,frame_tx,subframe_tx,phy_vars_ue->tx_power_dBm, tx_amp);
           start_meas(&phy_vars_ue->ulsch_modulation_stats);
           ulsch_modulation(phy_vars_ue->lte_ue_common_vars.txdataF,
@@ -1246,14 +1246,15 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 #else //this is the normal case
         ulsch_start = (frame_parms->samples_per_tti*subframe_tx)-phy_vars_ue->N_TA_offset; //-phy_vars_ue->timing_advance;
 #endif //else EXMIMO
-        LOG_D(PHY,"[UE %d] Frame %d, subframe %d: ulsch_start = %d (rxoff %d, HW TA %d, timing advance %d, TA_offset %d\n",
-	      Mod_id,frame_tx,subframe_tx,
-	      ulsch_start,
-              phy_vars_ue->rx_offset,
-              openair_daq_vars.timing_advance,
-              phy_vars_ue->timing_advance,
-              phy_vars_ue->N_TA_offset);
-
+	if ((frame_tx%100) == 0)
+	  LOG_D(PHY,"[UE %d] Frame %d, subframe %d: ulsch_start = %d (rxoff %d, HW TA %d, timing advance %d, TA_offset %d\n",
+		Mod_id,frame_tx,subframe_tx,
+		ulsch_start,
+		phy_vars_ue->rx_offset,
+		openair_daq_vars.timing_advance,
+		phy_vars_ue->timing_advance,
+		phy_vars_ue->N_TA_offset);
+ 
 
         if (generate_ul_signal == 1 ) {
 
@@ -1379,7 +1380,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 #endif
 
           if (abstraction_flag == 0) {
-            LOG_I(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d : Generating PRACH, preamble %d, TARGET_RECEIVED_POWER %d dBm, PRACH TDD Resource index %d, RA-RNTI %d\n",
+            LOG_D(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d : Generating PRACH, preamble %d, TARGET_RECEIVED_POWER %d dBm, PRACH TDD Resource index %d, RA-RNTI %d\n",
                   Mod_id,
                   frame_tx,
                   subframe_tx,
@@ -1410,7 +1411,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
             phy_vars_ue->lte_ue_prach_vars[eNB_id]->amp = AMP;
 #endif
 	    if ((mode == calib_prach_tx) && (((phy_vars_ue->frame_tx&0xfffe)%100)==0))
-	      LOG_I(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d : PRACH TX power %d dBm, amp %d\n",Mod_id,phy_vars_ue->frame_rx,phy_vars_ue->slot_tx>>1,phy_vars_ue->tx_power_dBm,
+	      LOG_D(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d : PRACH TX power %d dBm, amp %d\n",Mod_id,phy_vars_ue->frame_rx,phy_vars_ue->slot_tx>>1,phy_vars_ue->tx_power_dBm,
 		    phy_vars_ue->lte_ue_prach_vars[eNB_id]->amp);
 
 
@@ -2473,15 +2474,16 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
   }
 
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  LOG_D(PHY,"[UE %d] *********** dlsch->active in subframe %d (%d)=> %d\n",phy_vars_ue->Mod_id,subframe_rx,slot_rx,phy_vars_ue->dlsch_ue[eNB_id][0]->active);
-
   // This is normal processing (i.e. not MBSFN)
   // RX processing of symbols in slot_rx
+
+  
+
   for (l=0; l<n_symb; l++) {
     if (abstraction_flag == 0) {
       start_meas(&phy_vars_ue->ofdm_demod_stats);
       VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SLOT_FEP, VCD_FUNCTION_IN);
+
       slot_fep(phy_vars_ue,
                l,
                slot_rx,
@@ -2576,7 +2578,7 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
             (openair_daq_vars.use_ia_receiver ==1)) {
           dual_stream_UE = 1;
           eNB_id_i = phy_vars_ue->n_connected_eNB;
-          i_mod = get_Qm(phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs);
+          i_mod = phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->Qm;
 
           if (frame_rx%100==0) {
             LOG_I(PHY,"using IA receiver\n");
@@ -2624,7 +2626,7 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
             phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->G = get_G(&phy_vars_ue->lte_frame_parms,
                 phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->nb_rb,
                 phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->rb_alloc,
-                get_Qm(phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs),
+                phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->Qm,
                 phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->Nl,
                 phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->num_pdcch_symbols,
                 frame_rx,subframe_prev);
@@ -2782,7 +2784,8 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
               get_G(&phy_vars_ue->lte_frame_parms,
                     phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->nb_rb,
                     phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->rb_alloc,
-                    get_Qm(phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->mcs),1,
+                    2,
+		    1,
                     phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->num_pdcch_symbols,
                     frame_rx,subframe_prev);
 
@@ -2835,7 +2838,17 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
           if (ret == (1+phy_vars_ue->dlsch_ue_SI[eNB_id]->max_turbo_iterations)) {
             phy_vars_ue->dlsch_SI_errors[eNB_id]++;
 #ifdef DEBUG_PHY_PROC
-            LOG_D(PHY,"[UE  %d] Frame %d, subframe %d, received SI in error\n",phy_vars_ue->Mod_id,frame_rx,subframe_prev);
+            LOG_D(PHY,"[UE  %d] Frame %d, subframe %d, received SI in error (TBS %d, mcs %d, rvidx %d, rballoc %X.%X.%X.%X\n",
+		  phy_vars_ue->Mod_id,
+		  frame_rx,
+		  subframe_prev,
+		  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->TBS,
+                  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->mcs,
+                  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->rvidx,
+		  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->rb_alloc[0],
+                  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->rb_alloc[1],
+		  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->rb_alloc[2],
+                  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->rb_alloc[3]);
 #endif
 
             //dump_dlsch_SI(phy_vars_ue,eNB_id,subframe_prev);
@@ -2847,9 +2860,15 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
 
 #ifdef DEBUG_PHY_PROC
             //if ((frame_rx % 100) == 0)
-            LOG_D(PHY,"[UE  %d] Frame %d, subframe %d, received SI for TBS %d, mcs %d\n",
-                  phy_vars_ue->Mod_id,frame_rx,subframe_prev,phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->TBS,
-                  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->mcs);
+            LOG_D(PHY,"[UE  %d] Frame %d, subframe %d, received SI for TBS %d, mcs %d, rvidx %d, rballoc %X.%X.%X.%X\n",
+                  phy_vars_ue->Mod_id,frame_rx,subframe_prev,
+		  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->TBS,
+                  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->mcs,
+                  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->rvidx,
+		  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->rb_alloc[0],
+                  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->rb_alloc[1],
+		  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->rb_alloc[2],
+                  phy_vars_ue->dlsch_ue_SI[eNB_id]->harq_processes[0]->rb_alloc[3]);
 #endif
 
 #ifdef OPENAIR2
@@ -2923,10 +2942,11 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
 
         if (abstraction_flag==0) {
           phy_vars_ue->dlsch_ue_ra[eNB_id]->harq_processes[0]->G = get_G(&phy_vars_ue->lte_frame_parms,
-              phy_vars_ue->dlsch_ue_ra[eNB_id]->harq_processes[0]->nb_rb,
-              phy_vars_ue->dlsch_ue_ra[eNB_id]->harq_processes[0]->rb_alloc,
-              get_Qm(phy_vars_ue->dlsch_ue_ra[eNB_id]->harq_processes[0]->mcs),1,
-              phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->num_pdcch_symbols,
+									 phy_vars_ue->dlsch_ue_ra[eNB_id]->harq_processes[0]->nb_rb,
+									 phy_vars_ue->dlsch_ue_ra[eNB_id]->harq_processes[0]->rb_alloc,
+									 2,
+									 1,
+									 phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->num_pdcch_symbols,
               frame_rx,
               subframe_prev);
 
@@ -2950,7 +2970,7 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
                                phy_vars_ue->dlsch_ue_ra[eNB_id],
                                phy_vars_ue->dlsch_ue_ra[eNB_id]->harq_processes[0],
                                subframe_prev,  // subframe
-                               harq_pid,
+			       phy_vars_ue->dlsch_ue_ra[eNB_id]->current_harq_pid,
                                0,0);
         }
 
@@ -3104,7 +3124,7 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
                 (openair_daq_vars.use_ia_receiver ==1)) {
               dual_stream_UE = 1;
               eNB_id_i = phy_vars_ue->n_connected_eNB;
-              i_mod =  get_Qm(phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs);
+              i_mod =  phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->Qm;
             } else {
               dual_stream_UE = 0;
               eNB_id_i = eNB_id+1;
@@ -3173,7 +3193,7 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
                 (openair_daq_vars.use_ia_receiver ==1)) {
               dual_stream_UE = 1;
               eNB_id_i = phy_vars_ue->n_connected_eNB;
-              i_mod = get_Qm(phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs);
+              i_mod = phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->Qm;
             } else {
               dual_stream_UE = 0;
               eNB_id_i = eNB_id+1;
@@ -3301,7 +3321,7 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
           phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->G = get_G(&phy_vars_ue->lte_frame_parms,
               phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->nb_rb,
               phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->rb_alloc,
-              get_Qm(phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->mcs),
+              phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->Qm,
               1,
               2,
               (subframe_rx==9?-1:0)+frame_rx,subframe_rx);

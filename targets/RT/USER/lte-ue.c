@@ -390,6 +390,7 @@ static void *UE_thread_synch(void *arg)
  
     case pbch:
 
+      
       if (initial_sync( UE, UE->mode ) == 0) {
 
         hw_slot_offset = (UE->rx_offset<<1) / UE->lte_frame_parms.samples_per_tti;
@@ -410,15 +411,23 @@ static void *UE_thread_synch(void *arg)
 	  switch(UE->lte_frame_parms.N_RB_DL) {
 	  case 6:
 	    openair0_cfg[0].sample_rate =1.92e6;
+	    openair0_cfg[0].rx_bw          =.96e6;
+	    openair0_cfg[0].tx_bw          =.96e6;
 	    break;
 	  case 25:
-	    openair0_cfg[0].sample_rate=7.68e6;
+	    openair0_cfg[0].sample_rate =7.68e6;
+	    openair0_cfg[0].rx_bw          =2.5e6;
+	    openair0_cfg[0].tx_bw          =2.5e6;
 	    break;
 	  case 50:
-	    openair0_cfg[0].sample_rate=15.36e6;
+	    openair0_cfg[0].sample_rate =15.36e6;
+	    openair0_cfg[0].rx_bw          =5.0e6;
+	    openair0_cfg[0].tx_bw          =5.0e6;
 	    break;
 	  case 100:
 	    openair0_cfg[0].sample_rate=30.72e6;
+	    openair0_cfg[0].rx_bw=10.0e6;
+	    openair0_cfg[0].tx_bw=10.0e6;
 	    break;
 	  }
 
@@ -687,6 +696,27 @@ static void *UE_thread_tx(void *arg)
  * \param arg is a pointer to a \ref PHY_VARS_UE structure.
  * \returns a pointer to an int. The storage is not on the heap and must not be freed.
  */
+
+#ifdef OAI_USRP
+void rescale(int16_t *input,int length)
+{
+#if defined(__x86_64__) || defined(__i386__)
+  __m128i *input128 = (__m128i *)input;
+#elif defined(__arm__)
+  int16x8_t *input128 = (int16x8_t *)input;
+#endif
+  int i;
+
+  for (i=0; i<length>>2; i++) {
+#if defined(__x86_64__) || defined(__i386__)
+    input128[i] = _mm_srai_epi16(input128[i],4);
+#elif defined(__arm__)
+    input128[i] = vshrq_n_s16(input128[i],4);
+#endif
+  }
+}
+#endif
+
 static void *UE_thread_rx(void *arg)
 {
   static int UE_thread_rx_retval;
@@ -767,11 +797,78 @@ static void *UE_thread_rx(void *arg)
     for (i=0; i<2; i++) {
       if ((subframe_select( &UE->lte_frame_parms, UE->slot_rx>>1 ) == SF_DL) ||
           (UE->lte_frame_parms.frame_type == FDD)) {
+#ifdef OAI_USRP
+	// this does the adjustments of RX signal amplitude to bring into least 12 significant bits
+	int slot_length = UE->lte_frame_parms.samples_per_tti>>1;
+	int rx_offset = (UE->slot_rx)*slot_length + UE->rx_offset;
+	int frame_length = UE->lte_frame_parms.samples_per_tti*10;
+	int aa;
+	if (rx_offset > frame_length)
+	  rx_offset-=frame_length;
+
+
+	if (rx_offset >= 0) {
+	  if (rx_offset + slot_length < frame_length)
+	    for (aa=0;aa<UE->lte_frame_parms.nb_antennas_rx;aa++)
+	      rescale((int16_t*)&UE->lte_ue_common_vars.rxdata[aa][rx_offset&(~0x3)],
+		      slot_length);
+	  else {
+	    int diff = rx_offset + slot_length - frame_length;
+	    for (aa=0;aa<UE->lte_frame_parms.nb_antennas_rx;aa++){
+	      rescale((int16_t*)&UE->lte_ue_common_vars.rxdata[aa][rx_offset&(~0x3)],
+		      slot_length-diff);
+	      rescale((int16_t*)&UE->lte_ue_common_vars.rxdata[aa][0],
+		      diff);
+	    }
+	  }
+	}
+	else {
+	    for (aa=0;aa<UE->lte_frame_parms.nb_antennas_rx;aa++){
+	      rescale((int16_t*)&UE->lte_ue_common_vars.rxdata[aa][(frame_length+rx_offset)&(~0x3)],
+		      -rx_offset);
+	      rescale((int16_t*)&UE->lte_ue_common_vars.rxdata[aa][0],
+		      slot_length+rx_offset);
+	    }
+	}
+#endif
         phy_procedures_UE_RX( UE, 0, 0, UE->mode, no_relay, NULL );
       }
 
       if ((subframe_select( &UE->lte_frame_parms, UE->slot_rx>>1 ) == SF_S) &&
           ((UE->slot_rx&1) == 0)) {
+#ifdef OAI_USRP
+	// this does the adjustments of RX signal amplitude to bring into least 12 significant bits
+	int slot_length = UE->lte_frame_parms.samples_per_tti>>1;
+	int rx_offset = (UE->slot_rx)*slot_length + UE->rx_offset;
+	int frame_length = UE->lte_frame_parms.samples_per_tti*10;
+	if (rx_offset > frame_length)
+	  rx_offset-=frame_length;
+	int aa;
+
+	if (rx_offset >= 0) {
+	  if (rx_offset + slot_length < frame_length)
+	    for (aa=0;aa<UE->lte_frame_parms.nb_antennas_rx;aa++)
+	      rescale((int16_t*)&UE->lte_ue_common_vars.rxdata[aa][rx_offset&(~0x3)],
+		      slot_length);
+	  else {
+	    int diff = rx_offset + slot_length - frame_length;
+	    for (aa=0;aa<UE->lte_frame_parms.nb_antennas_rx;aa++){
+	      rescale((int16_t*)&UE->lte_ue_common_vars.rxdata[aa][rx_offset&(~0x3)],
+		      slot_length-diff);
+	      rescale((int16_t*)&UE->lte_ue_common_vars.rxdata[aa][0],
+		      diff);
+	    }
+	  }
+	}
+	else {
+	  for (aa=0;aa<UE->lte_frame_parms.nb_antennas_rx;aa++){
+	    rescale((int16_t*)&UE->lte_ue_common_vars.rxdata[aa][(frame_length+rx_offset)&(~0x3)],
+		    -rx_offset);
+	    rescale((int16_t*)&UE->lte_ue_common_vars.rxdata[aa][0],
+		    slot_length+rx_offset);
+	  }
+	}
+#endif
         phy_procedures_UE_RX( UE, 0, 0, UE->mode, no_relay, NULL );
       }
 
@@ -938,9 +1035,9 @@ void *UE_thread(void *arg)
       for (int i=0; i<UE->lte_frame_parms.nb_antennas_rx; i++)
         rxp[i] = (dummy_dump==0) ? (void*)&rxdata[i][rxpos] : (void*)dummy[i];
       
-      //      if (dummy_dump == 0)
-      //	printf("writing %d samples to %d\n",spp - ((first_rx==1) ? rx_off_diff : 0),rxpos);
-
+      /*      if (dummy_dump == 0)
+      	printf("writing %d samples to %d (first_rx %d)\n",spp - ((first_rx==1) ? rx_off_diff : 0),rxpos,first_rx);
+      */
       rxs = openair0.trx_read_func(&openair0,
 				   &timestamp,
 				   rxp,
@@ -952,7 +1049,9 @@ void *UE_thread(void *arg)
         return &UE_thread_retval;
       }
 
-      rx_off_diff = 0;
+      if (rx_off_diff !=0)
+	LOG_I(PHY,"frame %d, rx_offset %d, rx_off_diff %d\n",UE->frame_rx,UE->rx_offset,rx_off_diff);
+
       VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ, 0 );
 
       // Transmit TX buffer based on timestamp from RX
@@ -968,7 +1067,7 @@ void *UE_thread(void *arg)
         openair0.trx_write_func(&openair0,
                                 (timestamp+spp*tx_delay-tx_forward_nsamps),
                                 txp,
-                                spp,
+				spp - ((first_rx==1) ? rx_off_diff : 0),
                                 UE->lte_frame_parms.nb_antennas_tx,
                                 1);
 
@@ -979,6 +1078,9 @@ void *UE_thread(void *arg)
       // define USRP_DEBUG is active
       rt_sleep_ns(1000000);
 #endif
+
+      rx_off_diff = 0;
+      first_rx = 0;
 
       rxpos += spp;
       txpos += spp;
@@ -1128,6 +1230,7 @@ void *UE_thread(void *arg)
           rx_off_diff = 0;
           LTE_DL_FRAME_PARMS *frame_parms = &UE->lte_frame_parms; // for macro FRAME_LENGTH_COMPLEX_SAMPLES
 
+	  //	  LOG_I(PHY,"UE->rx_offset %d\n",UE->rx_offset);
           if ((UE->rx_offset > RX_OFF_MAX) && (start_rx_stream == 0)) {
             start_rx_stream=1;
             frame=0;
@@ -1148,11 +1251,20 @@ void *UE_thread(void *arg)
 #endif
             UE->rx_offset=0;
             tx_enabled = 1;
-          } else if ((UE->rx_offset < RX_OFF_MIN) && (start_rx_stream==1) && (rx_correction_timer == 0)) {
+          } else if ((UE->rx_offset<(FRAME_LENGTH_COMPLEX_SAMPLES/2)) &&
+		     (UE->rx_offset > RX_OFF_MIN) && 
+		     (start_rx_stream==1) && 
+		     (rx_correction_timer == 0)) {
             rx_off_diff = -UE->rx_offset + RX_OFF_MIN;
+	    LOG_D(PHY,"UE->rx_offset %d > %d, diff %d\n",UE->rx_offset,RX_OFF_MIN,rx_off_diff);
             rx_correction_timer = 5;
-          } else if ((UE->rx_offset > (FRAME_LENGTH_COMPLEX_SAMPLES-RX_OFF_MAX)) && (start_rx_stream==1) && (rx_correction_timer == 0)) {
-            rx_off_diff = FRAME_LENGTH_COMPLEX_SAMPLES-UE->rx_offset;
+          } else if ((UE->rx_offset>(FRAME_LENGTH_COMPLEX_SAMPLES/2)) && 
+		     (UE->rx_offset < (FRAME_LENGTH_COMPLEX_SAMPLES-RX_OFF_MIN)) &&
+		     (start_rx_stream==1) && 
+		     (rx_correction_timer == 0)) {   // moving to the left so drop rx_off_diff samples
+            rx_off_diff = FRAME_LENGTH_COMPLEX_SAMPLES - RX_OFF_MIN - UE->rx_offset;
+	    LOG_D(PHY,"UE->rx_offset %d < %d, diff %d\n",UE->rx_offset,FRAME_LENGTH_COMPLEX_SAMPLES-RX_OFF_MIN,rx_off_diff);(UE->rx_offset>(FRAME_LENGTH_COMPLEX_SAMPLES/2));
+
             rx_correction_timer = 5;
           }
 

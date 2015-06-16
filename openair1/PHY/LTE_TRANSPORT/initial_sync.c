@@ -52,7 +52,7 @@
 #include "common_lib.h"
 extern openair0_config_t openair0_cfg[];
 #endif
-//#define DEBUG_INITIAL_SYNCH
+#define DEBUG_INITIAL_SYNCH
 
 int pbch_detection(PHY_VARS_UE *phy_vars_ue, runmode_t mode) 
 {
@@ -292,6 +292,8 @@ int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode)
   frame_parms->frame_type=FDD;
   init_frame_parms(frame_parms,1);
 
+  //  write_output("rxdata0.m","rxd0",phy_vars_ue->lte_ue_common_vars.rxdata[0],10*frame_parms->samples_per_tti,1,1);
+
 #ifdef OAI_USRP
   for (aarx = 0; aarx<frame_parms->nb_antennas_rx;aarx++) {
     rxdata128 = (__m128i*)phy_vars_ue->lte_ue_common_vars.rxdata[aarx];
@@ -304,6 +306,7 @@ int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode)
                            frame_parms,
                            (int *)&phy_vars_ue->lte_ue_common_vars.eNb_id);
 
+  //  write_output("rxdata1.m","rxd1",phy_vars_ue->lte_ue_common_vars.rxdata[0],10*frame_parms->samples_per_tti,1,1);
   if (sync_pos >= frame_parms->nb_prefix_samples)
     sync_pos2 = sync_pos - frame_parms->nb_prefix_samples;
   else
@@ -361,6 +364,7 @@ int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode)
     init_frame_parms(&phy_vars_ue->lte_frame_parms,1);
     lte_gold(frame_parms,phy_vars_ue->lte_gold_table[0],frame_parms->Nid_cell);
     ret = pbch_detection(phy_vars_ue,mode);
+    //   write_output("rxdata2.m","rxd2",phy_vars_ue->lte_ue_common_vars.rxdata[0],10*frame_parms->samples_per_tti,1,1);
 
 #ifdef DEBUG_INITIAL_SYNCH
     LOG_I(PHY,"FDD Normal prefix: CellId %d metric %d, phase %d, flip %d, pbch %d\n",
@@ -407,7 +411,7 @@ int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode)
       init_frame_parms(&phy_vars_ue->lte_frame_parms,1);
       lte_gold(frame_parms,phy_vars_ue->lte_gold_table[0],frame_parms->Nid_cell);
       ret = pbch_detection(phy_vars_ue,mode);
-
+      //     write_output("rxdata3.m","rxd3",phy_vars_ue->lte_ue_common_vars.rxdata[0],10*frame_parms->samples_per_tti,1,1);
 #ifdef DEBUG_INITIAL_SYNCH
       LOG_I(PHY,"FDD Extended prefix: CellId %d metric %d, phase %d, flip %d, pbch %d\n",
             frame_parms->Nid_cell,metric_fdd_ecp,phase_fdd_ecp,flip_fdd_ecp,ret);
@@ -454,7 +458,7 @@ int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode)
 
       lte_gold(frame_parms,phy_vars_ue->lte_gold_table[0],frame_parms->Nid_cell);
       ret = pbch_detection(phy_vars_ue,mode);
-
+      //      write_output("rxdata4.m","rxd4",phy_vars_ue->lte_ue_common_vars.rxdata[0],10*frame_parms->samples_per_tti,1,1);
 
 #ifdef DEBUG_INITIAL_SYNCH
       LOG_I(PHY,"TDD Normal prefix: CellId %d metric %d, phase %d, flip %d, pbch %d\n",
@@ -501,6 +505,7 @@ int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode)
         lte_gold(frame_parms,phy_vars_ue->lte_gold_table[0],frame_parms->Nid_cell);
         ret = pbch_detection(phy_vars_ue,mode);
 
+	//	write_output("rxdata5.m","rxd5",phy_vars_ue->lte_ue_common_vars.rxdata[0],10*frame_parms->samples_per_tti,1,1);
 #ifdef DEBUG_INITIAL_SYNCH
         LOG_I(PHY,"TDD Extended prefix: CellId %d metric %d, phase %d, flip %d, pbch %d\n",
               frame_parms->Nid_cell,metric_tdd_ecp,phase_tdd_ecp,flip_tdd_ecp,ret);
@@ -590,6 +595,7 @@ int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode)
 
   }
 
+  //  exit_fun("debug exit");
   return ret;
 }
 

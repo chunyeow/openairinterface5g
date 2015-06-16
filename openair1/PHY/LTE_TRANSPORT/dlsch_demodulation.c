@@ -325,7 +325,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
                                frame_parms,
                                symbol,
                                first_symbol_flag,
-                               get_Qm(dlsch0_harq->mcs),
+                               dlsch0_harq->Qm,
                                nb_rb,
                                lte_ue_pdsch_vars[eNB_id]->log2_maxh,
                                phy_measurements); // log2_maxh+I0_shift
@@ -380,7 +380,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
                                 avg, symbol, nb_rb);
 
         //  LOG_D(PHY,"llr_offset = %d\n",offset_mumimo_llr_drange[dlsch0_harq->mcs][(dlsch1_harq->mcs>>1)-1]);
-        avg[0] = log2_approx(avg[0]) - 13 + offset_mumimo_llr_drange[dlsch0_harq->mcs][(get_Qm(dlsch1_harq->mcs)>>1)-1];
+        avg[0] = log2_approx(avg[0]) - 13 + offset_mumimo_llr_drange[dlsch0_harq->mcs][(dlsch1_harq->Qm>>1)-1];
 
         lte_ue_pdsch_vars[eNB_id]->log2_maxh = cmax(avg[0],0);
         //  printf("log2_maxh =%d\n",lte_ue_pdsch_vars[eNB_id]->log2_maxh);
@@ -391,8 +391,8 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
                                      phy_measurements,
                                      eNB_id,
                                      symbol,
-                                     get_Qm(dlsch0_harq->mcs),
-                                     get_Qm(dlsch1_harq->mcs),
+                                     dlsch0_harq->Qm,
+                                     dlsch1_harq->Qm,
                                      dlsch0_harq->round,
                                      nb_rb,
                                      lte_ue_pdsch_vars[eNB_id]->log2_maxh);
@@ -451,7 +451,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
                                       phy_measurements,
                                       eNB_id,
                                       symbol,
-                                      get_Qm(dlsch0_harq->mcs),
+                                      dlsch0_harq->Qm,
                                       nb_rb,
                                       lte_ue_pdsch_vars[eNB_id]->log2_maxh,
                                       dlsch0_harq->dl_power_off);
@@ -526,7 +526,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
                                       phy_measurements,
                                       eNB_id,
                                       symbol,
-                                      get_Qm(dlsch0_harq->mcs),
+                                      dlsch0_harq->Qm,
                                       nb_rb,
                                       lte_ue_pdsch_vars[eNB_id]->log2_maxh,
                                       1);
@@ -599,7 +599,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
 
   //    printf("LLR");
 
-  switch (get_Qm(dlsch0_harq->mcs)) {
+  switch (dlsch0_harq->Qm) {
   case 2 :
     if (dlsch0_harq->mimo_mode != LARGE_CDD) {
       if (dual_stream_flag == 0)
@@ -643,7 +643,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
     } else { // TM3
       DevAssert(dlsch1_harq);
 
-      if (get_Qm(dlsch1_harq->mcs) == 2) {
+      if (dlsch1_harq->Qm == 2) {
         /*  dlsch_qpsk_llr(frame_parms,
 	    lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0,
 	    lte_ue_pdsch_vars[eNB_id]->llr[0],
@@ -667,7 +667,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
                             symbol,first_symbol_flag,nb_rb,
                             adjust_G2(frame_parms,dlsch1_harq->rb_alloc,2,subframe,symbol),
                             lte_ue_pdsch_vars[eNB_id]->llr128_2ndstream);
-      } else if (get_Qm(dlsch1_harq->mcs) == 4) {
+      } else if (dlsch1_harq->Qm == 4) {
         dlsch_qpsk_16qam_llr(frame_parms,
                              lte_ue_pdsch_vars[eNB_id]->rxdataF_comp0,
                              lte_ue_pdsch_vars[eNB_id]->rxdataF_comp1[dlsch0_harq->round],

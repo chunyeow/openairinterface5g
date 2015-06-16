@@ -163,7 +163,7 @@ void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,u
 
     phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH += (mac_xface->get_Po_NOMINAL_PUSCH(phy_vars_ue->Mod_id,0) + PL);
 
-    LOG_I(PHY,"[UE  %d][RAPROC] frame %d, subframe %d: Msg3 Po_PUSCH %d dBm (%d,%d,100*PL=%d,%d,%d)\n",
+    LOG_D(PHY,"[UE  %d][RAPROC] frame %d, subframe %d: Msg3 Po_PUSCH %d dBm (%d,%d,100*PL=%d,%d,%d)\n",
           phy_vars_ue->Mod_id,phy_vars_ue->frame_tx,subframe,phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH,
           100*mac_xface->get_Po_NOMINAL_PUSCH(phy_vars_ue->Mod_id,0),
           hundred_times_log10_NPRB[nb_rb-1],
@@ -182,7 +182,7 @@ void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,u
     else if (phy_vars_ue->ulsch_ue[eNB_id]->PHR > 40)
       phy_vars_ue->ulsch_ue[eNB_id]->PHR = 40;
 
-    LOG_I(PHY,"[UE  %d][PUSCH %d] frame %d, subframe %d: Po_PUSCH %d dBm : tx power %d, Po_NOMINAL_PUSCH %d,log10(NPRB) %f,PHR %d, PL %d, alpha*PL %f,delta_IF %f,f_pusch %d\n",
+    LOG_D(PHY,"[UE  %d][PUSCH %d] frame %d, subframe %d: Po_PUSCH %d dBm : tx power %d, Po_NOMINAL_PUSCH %d,log10(NPRB) %f,PHR %d, PL %d, alpha*PL %f,delta_IF %f,f_pusch %d\n",
           phy_vars_ue->Mod_id,harq_pid,phy_vars_ue->frame_tx,subframe,
           phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH,
           phy_vars_ue->tx_power_max_dBm,

@@ -362,7 +362,7 @@ mac_rrc_lite_data_ind(
 
   if(eNB_flagP == ENB_FLAG_NO) {
     if(srb_idP == BCCH) {
-      LOG_T(RRC,"[UE %d] Received SDU for BCCH on SRB %d from eNB %d\n",module_idP,srb_idP,eNB_indexP);
+      LOG_D(RRC,"[UE %d] Received SDU for BCCH on SRB %d from eNB %d\n",module_idP,srb_idP,eNB_indexP);
 
 #if defined(ENABLE_ITTI)
       {

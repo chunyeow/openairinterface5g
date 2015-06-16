@@ -3714,10 +3714,10 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
       }*/
 
     if ((rnti==si_rnti) || (rnti==p_rnti) || (rnti==ra_rnti)) { //
-      if (dlsch0_harq->round == 4) {
+      //      if ((dlsch0_harq->round == 4) || ( {
         dlsch0_harq->round = 0;
         dlsch0_harq->first_tx = 1;
-      }
+	//      }
 
       //  if (dlsch0_harq->round == 0)
       //      ndi = 1-dlsch0_harq->DCINdi;
@@ -3731,8 +3731,15 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     dlsch0_harq->mimo_mode = frame_parms->mode1_flag == 1 ?SISO : ALAMOUTI;
     dlsch0_harq->dl_power_off = 1; //no power offset
 
-    //LOG_I(PHY,"UE (%x/%d): Subframe %d Format1A DCI: ndi %d, old_ndi %d (first tx %d) harq_status %d\n",dlsch[0]->rnti,harq_pid,subframe,ndi,dlsch0_harq->DCINdi,
-    //dlsch0_harq->first_tx,dlsch0_harq->status);
+    LOG_D(PHY,"UE (%x/%d): Subframe %d Format1A DCI: ndi %d, old_ndi %d (first tx %d) harq_status %d, round %d\n",
+	  dlsch[0]->rnti,
+	  harq_pid,
+	  subframe,
+	  ndi,
+	  dlsch0_harq->DCINdi,
+	  dlsch0_harq->first_tx,
+	  dlsch0_harq->status,
+	  dlsch0_harq->round);
     if ((ndi!=dlsch0_harq->DCINdi)||  // DCI has been toggled or this is the first transmission
         (dlsch0_harq->first_tx==1)) {
       dlsch0_harq->round = 0;
@@ -3746,7 +3753,14 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     dlsch0_harq->DCINdi = ndi;
 
     dlsch0_harq->mcs = mcs;
-    dlsch0_harq->TBS = TBStable[get_I_TBS(mcs)][NPRB-1];
+    if ((rnti==si_rnti) || (rnti==p_rnti) || (rnti==ra_rnti)) {
+      dlsch0_harq->TBS = TBStable[mcs][NPRB-1];
+      dlsch0_harq->Qm  = 2;
+    }
+    else {
+      dlsch0_harq->TBS = TBStable[get_I_TBS(mcs)][NPRB-1];
+      dlsch0_harq->Qm  = get_Qm(mcs);
+    }
     dlsch[0]->rnti = rnti;
     dlsch0 = dlsch[0];
     //printf("Format 1A: harq_pid %d, nb_rb %d, round %d\n",harq_pid,dlsch0_harq->nb_rb,dlsch0_harq->round);
@@ -3898,6 +3912,12 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     dlsch0_harq->mcs         = mcs;
 
     dlsch0_harq->TBS         = TBStable[get_I_TBS(mcs)][NPRB-1];
+    if (mcs <= 28)
+      dlsch0_harq->Qm          = get_Qm(mcs);
+    else if (mcs<=31)
+      dlsch0_harq->Qm          = (mcs-28)<<1;
+    else
+      LOG_E(PHY,"invalid mcs %d\n",mcs);
     //    msg("test: MCS %d, NPRB %d, TBS %d\n",mcs,NPRB,dlsch0_harq->TBS);
     dlsch[0]->current_harq_pid = harq_pid;
 
@@ -4238,8 +4258,16 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
 
     if (dlsch0_harq->nb_rb>1) {
       dlsch0_harq->TBS         = TBStable[get_I_TBS(dlsch0_harq->mcs)][dlsch0_harq->nb_rb-1];
+      if (mcs1 <= 28)
+	dlsch0_harq->Qm          = get_Qm(mcs1);
+      else if (mcs1<=31)
+	dlsch0_harq->Qm          = (mcs1-28)<<1;
+      else
+	LOG_E(PHY,"invalid mcs1 %d\n",mcs1);
+
     } else
       dlsch0_harq->TBS         =0;
+
 
     /*
       if (dlsch0_harq->mcs > 18)
@@ -4256,8 +4284,15 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
 
     if (dlsch1_harq->nb_rb>1) {
       dlsch1_harq->TBS       = TBStable[dlsch1_harq->mcs][dlsch1_harq->nb_rb-1];
+      if (mcs2 <= 28)
+	dlsch1_harq->Qm          = get_Qm(mcs2);
+      else if (mcs1<=31)
+	dlsch1_harq->Qm          = (mcs2-28)<<1;
+      else
+      LOG_E(PHY,"invalid mcs2 %d\n",mcs2);
     } else
       dlsch1_harq->TBS         = 0;
+
 
     dlsch0->rnti = rnti;
     dlsch1->rnti = rnti;
@@ -4626,6 +4661,8 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
       dlsch0_harq->TBS         = TBStable[get_I_TBS(dlsch0_harq->mcs)][dlsch0_harq->nb_rb-1];
       dlsch1_harq->TBS         = TBStable[get_I_TBS(dlsch1_harq->mcs)][dlsch0_harq->nb_rb-1];
 
+
+      
       if ((dlsch0->active==1) && (dlsch1->active==1)) {
         dlsch0_harq->mimo_mode = LARGE_CDD;
         dlsch1_harq->mimo_mode = LARGE_CDD;
@@ -4644,7 +4681,8 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
           dlsch0_harq->dl_power_off = 0; //apply power offset
           dlsch1_harq->dl_power_off = 0; //apply power offset
           dlsch0_harq->TBS         = TBStable[get_I_TBS(dlsch0_harq->mcs)][dlsch0_harq->nb_rb-1];
-          dlsch0_harq->TBS         = TBStable[get_I_TBS(dlsch0_harq->mcs)][dlsch0_harq->nb_rb-1];
+          dlsch1_harq->TBS         = TBStable[get_I_TBS(dlsch1_harq->mcs)][dlsch1_harq->nb_rb-1];
+
           break;
 
         case 1: // one-layers on TB 0, two on TB 1
@@ -4721,6 +4759,20 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
       LOG_E(PHY,"Illegal number of antennas for eNB %d\n",frame_parms->nb_antennas_tx_eNB);
     }
 
+    if (mcs1 <= 28)
+      dlsch0_harq->Qm          = get_Qm(mcs1);
+    else if (mcs1<=31)
+      dlsch0_harq->Qm          = (mcs1-28)<<1;
+    else
+      LOG_E(PHY,"invalid mcs1 %d\n",mcs1);
+    
+    if (mcs2 <= 28)
+      dlsch1_harq->Qm          = get_Qm(mcs2);
+    else if (mcs2<=31)
+      dlsch1_harq->Qm          = (mcs2-28)<<1;
+    else
+      LOG_E(PHY,"invalid mcs2 %d\n",mcs2);
+    
     //    printf("Format 2A: NPRB=%d (rballoc %x,mcs1 %d, mcs2 %d, frame_type %d N_RB_DL %d,active %d/%d)\n",NPRB,rballoc,mcs1,mcs2,frame_parms->frame_type,frame_parms->N_RB_DL,dlsch0->active,dlsch1->active);
     //printf("UE (%x/%d): Subframe %d Format2A DCI: ndi1 %d, old_ndi1 %d, ndi2 %d, old_ndi2 %d (first tx1 %d, first tx2 %d) harq_status1 %d, harq_status2 %d\n",dlsch0->rnti,harq_pid,subframe,ndi,dlsch0_harq->DCINdi,
     //    dlsch0_harq->first_tx,dlsch1_harq->first_tx,dlsch0_harq->status,dlsch1_harq->status);

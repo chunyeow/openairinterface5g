@@ -244,7 +244,7 @@ void Msg3_tx(module_id_t module_idP,uint8_t CC_id,frame_t frameP, uint8_t eNB_id
   }
 
   // start contention resolution timer
-  LOG_I(MAC,"[UE %d][RAPROC] Frame %d : Msg3_tx: Setting contention resolution timer\n",module_idP,frameP);
+  LOG_D(MAC,"[UE %d][RAPROC] Frame %d : Msg3_tx: Setting contention resolution timer\n",module_idP,frameP);
   UE_mac_inst[module_idP].RA_contention_resolution_cnt = 0;
   UE_mac_inst[module_idP].RA_contention_resolution_timer_active = 1;
 #if defined(USER_MODE) && defined(OAI_EMU)
@@ -448,9 +448,45 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP, 
           UE_mac_inst[module_idP].RA_PREAMBLE_TRANSMISSION_COUNTER++;
           UE_mac_inst[module_idP].RA_prach_resources.ra_PREAMBLE_RECEIVED_TARGET_POWER +=
             (rach_ConfigCommon->powerRampingParameters.powerRampingStep<<1);  // 2dB increments in ASN.1 definition
+	  int preambleTransMax;
+	  switch (rach_ConfigCommon->ra_SupervisionInfo.preambleTransMax) {
+	  case RACH_ConfigCommon__ra_SupervisionInfo__preambleTransMax_n3:
+	    preambleTransMax = 3;
+	    break;
+	  case RACH_ConfigCommon__ra_SupervisionInfo__preambleTransMax_n4:
+	    preambleTransMax = 4;
+	    break;
+	  case RACH_ConfigCommon__ra_SupervisionInfo__preambleTransMax_n5:
+	    preambleTransMax = 5;
+	    break;
+	  case RACH_ConfigCommon__ra_SupervisionInfo__preambleTransMax_n6:
+	    preambleTransMax = 6;
+	    break;
+	  case RACH_ConfigCommon__ra_SupervisionInfo__preambleTransMax_n7:
+	    preambleTransMax = 7;
+	    break;
+	  case RACH_ConfigCommon__ra_SupervisionInfo__preambleTransMax_n8:
+	    preambleTransMax = 8;
+	    break;
+	  case RACH_ConfigCommon__ra_SupervisionInfo__preambleTransMax_n10:
+	    preambleTransMax = 10;
+	    break;
+	  case RACH_ConfigCommon__ra_SupervisionInfo__preambleTransMax_n20:
+	    preambleTransMax = 20;
+	    break;
+	  case RACH_ConfigCommon__ra_SupervisionInfo__preambleTransMax_n50:
+	    preambleTransMax = 50;
+	    break;
+	  case RACH_ConfigCommon__ra_SupervisionInfo__preambleTransMax_n100:
+	    preambleTransMax = 100;
+	    break;
+	  case RACH_ConfigCommon__ra_SupervisionInfo__preambleTransMax_n200:
+	    preambleTransMax = 200;
+	    break;
+	  } 
 
-          if (UE_mac_inst[module_idP].RA_PREAMBLE_TRANSMISSION_COUNTER == rach_ConfigCommon->ra_SupervisionInfo.preambleTransMax) {
-            LOG_D(MAC,"[UE %d] Frame %d: Maximum number of RACH attempts (%d)\n",module_idP,frameP,rach_ConfigCommon->ra_SupervisionInfo.preambleTransMax);
+          if (UE_mac_inst[module_idP].RA_PREAMBLE_TRANSMISSION_COUNTER == preambleTransMax) {
+            LOG_D(MAC,"[UE %d] Frame %d: Maximum number of RACH attempts (%d)\n",module_idP,frameP,preambleTransMax);
             // send message to RRC
             UE_mac_inst[module_idP].RA_PREAMBLE_TRANSMISSION_COUNTER=1;
             UE_mac_inst[module_idP].RA_prach_resources.ra_PREAMBLE_RECEIVED_TARGET_POWER = get_Po_NOMINAL_PUSCH(module_idP,CC_id);

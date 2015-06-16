@@ -283,7 +283,7 @@ double rx_gain[MAX_NUM_CCs][4] = {{110,0,0,0}};
 #endif
 
 double sample_rate=30.72e6;
-double bw = 14e6;
+double bw = 10.0e6;
 
 static int                      tx_max_power[MAX_NUM_CCs]; /* =  {0,0}*/;
 
@@ -2537,7 +2537,7 @@ int main( int argc, char **argv )
   }
 
 #endif
-#ifdef NAS_NETLINK
+#ifdef PDCP_USE_NETLINK
   netlink_init();
 #endif
 
@@ -2774,6 +2774,7 @@ int main( int argc, char **argv )
 
   if(frame_parms[0]->N_RB_DL == 100) {
     sample_rate = 30.72e6;
+    bw          = 10.0e6;
 #ifndef EXMIMO
     openair0_cfg[0].samples_per_packet = 2048;
     samples_per_frame = 307200;
@@ -2783,6 +2784,7 @@ int main( int argc, char **argv )
 #endif
   } else if(frame_parms[0]->N_RB_DL == 50) {
     sample_rate = 15.36e6;
+    bw          = 5.0e6;
 #ifndef EXMIMO
     openair0_cfg[0].samples_per_packet = 2048;
     samples_per_frame = 153600;
@@ -2791,6 +2793,7 @@ int main( int argc, char **argv )
 #endif
   } else if (frame_parms[0]->N_RB_DL == 25) {
     sample_rate = 7.68e6;
+    bw          = 2.5e6;
 #ifndef EXMIMO
     openair0_cfg[0].samples_per_packet = 1024;
     samples_per_frame = 76800;
@@ -2799,6 +2802,7 @@ int main( int argc, char **argv )
 #endif
   } else if (frame_parms[0]->N_RB_DL == 6) {
     sample_rate = 1.92e6;
+    bw          = 0.96e6;
 #ifndef EXMIMO
     openair0_cfg[0].samples_per_packet = 256;
     samples_per_frame = 19200;
@@ -2961,8 +2965,11 @@ int main( int argc, char **argv )
 
   // connect the TX/RX buffers
   if (UE_flag==1) {
-    openair_daq_vars.timing_advance = 0;
-
+#ifdef OAI_USRP
+    openair_daq_vars.timing_advance = 160;
+#else
+    openair_daq_vars.timing_advance = 170;
+#endif
     if (setup_ue_buffers(UE,&openair0_cfg[0],rf_map)!=0) {
       printf("Error setting up eNB buffer\n");
       exit(-1);

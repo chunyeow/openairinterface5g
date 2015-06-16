@@ -114,7 +114,7 @@ typedef struct {
   int32_t    freq_offset;
   uint32_t   tx_rx_switch_point;
   uint32_t   manual_timing_advance;  /// 1 to override automatic timing advance
-  uint32_t   timing_advance;
+  int32_t   timing_advance;
   uint32_t   dual_tx;                /// 1 for dual-antenna TX, 0 for single-antenna TX
   uint32_t   tdd;                    /// 1 for TDD mode, 0 for FDD mode
   uint32_t   rx_rf_mode;
