@@ -33,8 +33,6 @@
 * \date 2011
 * \version 0.5
 * \mail navid.nikaein@eurecom.fr or openair_tech@eurecom.fr
-* @ingroup _mac
-
 */
 
 #ifndef __MAC_PHY_PRIMITIVES_H__
@@ -59,6 +57,10 @@ do {                                                                            
     mac_xface->macphy_exit(temp);                                                           \
 } while(0)
 
+/** @defgroup _phy_if MAC-PHY interface
+ * @ingroup _oai2
+ * @{
+ */
 /*! \brief MACPHY Interface */
 typedef struct {
   /// Pointer function that initializes L2
@@ -329,3 +331,4 @@ typedef struct {
 #endif
 
 
+/** @} */
