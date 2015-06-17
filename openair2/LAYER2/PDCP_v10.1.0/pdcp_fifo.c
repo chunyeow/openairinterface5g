@@ -308,7 +308,7 @@ int pdcp_fifo_flush_sdus(const protocol_ctxt_t* const  ctxt_pP)
 int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
 {
 #ifdef PDCP_USE_NETLINK
-  protocol_ctxt_t                ctxt_cpy;
+  protocol_ctxt_t                ctxt_cpy = *ctxt_pP;
   protocol_ctxt_t                ctxt;
   hash_key_t                     key       = HASHTABLE_NOT_A_KEY_VALUE;
   hashtable_rc_t                 h_rc;
@@ -320,8 +320,6 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
 
   pdcp_transmission_mode_t       pdcp_mode = PDCP_TRANSMISSION_MODE_UNKNOWN;
 
-
-  ctxt_cpy = *ctxt_pP;
 
   while (pdcp_netlink_dequeue_element(ctxt_pP, &data_p) != 0) {
     DevAssert(data_p != NULL);
@@ -505,6 +503,7 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
             ctxt.module_id = 0;
             rab_id      = pdcp_read_header_g.rb_id % maxDRB;
           }
+          ctxt.rnti          = pdcp_eNB_UE_instance_to_rnti[ctxt.module_id];
 
 #endif
 

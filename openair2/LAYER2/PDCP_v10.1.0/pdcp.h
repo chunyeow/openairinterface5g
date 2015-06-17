@@ -447,6 +447,8 @@ public_pdcp(pdcp_stats_t              eNB_pdcp_stats[NUMBER_OF_eNB_MAX];)
 
 // for UE code conly
 protected_pdcp(rnti_t                 pdcp_UE_UE_module_id_to_rnti[NUMBER_OF_UE_MAX];)
+protected_pdcp(rnti_t                 pdcp_eNB_UE_instance_to_rnti[NUMBER_OF_UE_MAX];) // for noS1 mode
+protected_pdcp(unsigned int           pdcp_eNB_UE_instance_to_rnti_index;)
 #if defined(Rel10)
 public_pdcp(pdcp_mbms_t               pdcp_mbms_array_ue[NUMBER_OF_UE_MAX][maxServiceCount][maxSessionPerPMCH];)   // some constants from openair2/RRC/LITE/MESSAGES/asn1_constants.h
 public_pdcp(pdcp_mbms_t               pdcp_mbms_array_eNB[NUMBER_OF_eNB_MAX][maxServiceCount][maxSessionPerPMCH];) // some constants from openair2/RRC/LITE/MESSAGES/asn1_constants.h
