@@ -159,8 +159,8 @@ int esm_send_pdn_disconnect_reject(int pti, pdn_disconnect_reject_msg *msg,
  */
 int esm_send_activate_default_eps_bearer_context_request(int pti, int ebi,
     activate_default_eps_bearer_context_request_msg *msg, const OctetString *apn,
-    int pdn_type, const OctetString *pdn_addr, const EpsQualityOfService *qos,
-    int esm_cause);
+    const ProtocolConfigurationOptions *pco, int pdn_type, const OctetString *pdn_addr,
+    const EpsQualityOfService *qos, int esm_cause);
 
 int esm_send_activate_dedicated_eps_bearer_context_request(int pti, int ebi,
     activate_dedicated_eps_bearer_context_request_msg *msg, int linked_ebi,

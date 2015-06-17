@@ -99,6 +99,8 @@ typedef struct mme_api_emm_config_s {
  */
 typedef struct mme_api_esm_config_s {
   mme_api_feature_t features; /* Supported features           */
+  uint8_t   dns_prim_ipv4[4]; /* Network byte order */
+  uint8_t   dns_sec_ipv4[4];  /* Network byte order */
 } mme_api_esm_config_t;
 
 /****************************************************************************/

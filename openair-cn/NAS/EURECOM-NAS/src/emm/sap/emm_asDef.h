@@ -58,7 +58,7 @@ Description Defines the EMM primitives available at the EMMAS Service
 /*
  * EMMAS-SAP primitives
  */
-typedef enum {
+typedef enum emm_as_primitive_u {
   _EMMAS_START = 200,
   _EMMAS_SECURITY_REQ,  /* EMM->AS: Security request          */
   _EMMAS_SECURITY_IND,  /* AS->EMM: Security indication       */
@@ -80,7 +80,7 @@ typedef enum {
 } emm_as_primitive_t;
 
 /* Data used to setup EPS NAS security */
-typedef struct {
+typedef struct emm_as_security_data_s {
   UInt8_t is_new;     /* New security data indicator      */
 #define EMM_AS_NO_KEY_AVAILABLE     0xff
   UInt8_t ksi;        /* NAS key set identifier       */
@@ -98,7 +98,7 @@ typedef struct {
  * EMMAS primitive for security
  * ----------------------------
  */
-typedef struct {
+typedef struct emm_as_security_s {
   UInt32_t ueid;      /* UE lower layer identifier        */
   const GUTI_t *guti;     /* GUTI temporary mobile identity   */
   emm_as_security_data_t sctx;/* EPS NAS security context     */
@@ -144,7 +144,7 @@ typedef struct {
  * EMMAS primitive for connection establishment
  * --------------------------------------------
  */
-typedef struct {
+typedef struct emm_as_EPS_identity_s {
   const GUTI_t *guti; /* The GUTI, if valid               */
   const tai_t  *tai;  /* The last visited registered Tracking
              * Area Identity, if available          */
@@ -152,7 +152,7 @@ typedef struct {
   const imei_t *imei; /* UE's IMEI for emergency bearer services  */
 } emm_as_EPS_identity_t;
 
-typedef struct {
+typedef struct emm_as_establish_s {
   UInt32_t ueid;      /* UE lower layer identifier         */
   emm_as_EPS_identity_t UEid; /* UE's EPS mobile identity      */
   emm_as_security_data_t sctx;/* EPS NAS security context      */
@@ -184,7 +184,7 @@ typedef struct {
  * EMMAS primitive for connection release
  * --------------------------------------
  */
-typedef struct {
+typedef struct emm_as_release_s {
   UInt32_t ueid;      /* UE lower layer identifier          */
   const GUTI_t *guti;     /* GUTI temporary mobile identity     */
 #define EMM_AS_CAUSE_AUTHENTICATION 0x01    /* Authentication failure */
@@ -196,7 +196,7 @@ typedef struct {
  * EMMAS primitive for data transfer
  * ---------------------------------
  */
-typedef struct {
+typedef struct emm_as_data_s {
   UInt32_t ueid;      /* UE lower layer identifier        */
   const GUTI_t *guti;     /* GUTI temporary mobile identity   */
   emm_as_security_data_t sctx;/* EPS NAS security context     */
@@ -213,13 +213,13 @@ typedef struct {
  * EMMAS primitive for paging
  * --------------------------
  */
-typedef struct {} emm_as_page_t;
+typedef struct emm_as_page_s {} emm_as_page_t;
 
 /*
  * EMMAS primitive for status indication
  * -------------------------------------
  */
-typedef struct {
+typedef struct emm_as_status_s {
   UInt32_t ueid;      /* UE lower layer identifier        */
   const GUTI_t *guti;     /* GUTI temporary mobile identity   */
   emm_as_security_data_t sctx;/* EPS NAS security context     */
@@ -230,7 +230,7 @@ typedef struct {
  * EMMAS primitive for cell information
  * ------------------------------------
  */
-typedef struct {
+typedef struct emm_as_cell_info_s {
   UInt8_t found;  /* Indicates whether a suitable cell is found   */
 #define EMM_AS_PLMN_LIST_SIZE   6
   PLMN_LIST_T(EMM_AS_PLMN_LIST_SIZE) plmnIDs;
@@ -245,7 +245,7 @@ typedef struct {
  * Structure of EMMAS-SAP primitive
  * --------------------------------
  */
-typedef struct {
+typedef struct emm_as_s {
   emm_as_primitive_t primitive;
   union {
     emm_as_security_t security;

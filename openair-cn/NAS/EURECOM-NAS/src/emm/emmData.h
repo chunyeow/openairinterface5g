@@ -399,7 +399,7 @@ typedef struct emm_data_context_s {
  * Structure of the EMM data
  * -------------------------
  */
-typedef struct {
+typedef struct emm_data_s {
   /*
    * MME configuration
    * -----------------

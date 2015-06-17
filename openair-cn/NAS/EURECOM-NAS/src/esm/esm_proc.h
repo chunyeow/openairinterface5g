@@ -49,6 +49,7 @@ Description Defines the EPS Session Management procedures executed at
 #include "networkDef.h"
 #include "OctetString.h"
 #include "emmData.h"
+#include "ProtocolConfigurationOptions.h"
 
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
@@ -103,6 +104,8 @@ typedef network_qos_t esm_proc_qos_t;
 /* Traffic Flow Template for packet filtering */
 typedef network_tft_t esm_proc_tft_t;
 
+typedef ProtocolConfigurationOptions esm_proc_pco_t;
+
 /* PDN connection and EPS bearer context data */
 typedef struct {
   OctetString apn;
@@ -110,6 +113,7 @@ typedef struct {
   OctetString pdn_addr;
   esm_proc_qos_t qos;
   esm_proc_tft_t tft;
+  esm_proc_pco_t pco;
 } esm_proc_data_t;
 
 /****************************************************************************/

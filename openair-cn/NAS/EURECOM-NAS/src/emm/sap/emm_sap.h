@@ -165,7 +165,7 @@ typedef enum {
 /*
  * Structure of EPS Mobility Management primitive
  */
-typedef struct {
+typedef struct emm_sap_s {
   emm_primitive_t primitive;
   union {
     emm_reg_t emm_reg;  /* EMMREG-SAP primitives    */

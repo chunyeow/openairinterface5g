@@ -555,6 +555,7 @@ int esm_send_activate_default_eps_bearer_context_request(int pti,
     int ebi,
     activate_default_eps_bearer_context_request_msg *msg,
     const OctetString *apn,
+    const ProtocolConfigurationOptions *pco,
     int pdn_type,
     const OctetString *pdn_addr,
     const EpsQualityOfService *qos,
@@ -613,6 +614,12 @@ int esm_send_activate_default_eps_bearer_context_request(int pti,
     msg->presencemask |=
       ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
     msg->esmcause = esm_cause;
+  }
+
+  if (pco != NULL) {
+    msg->presencemask |=
+    		ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+    msg->protocolconfigurationoptions = *pco;
   }
 
 #warning "TEST LG FORCE APN-AMBR"

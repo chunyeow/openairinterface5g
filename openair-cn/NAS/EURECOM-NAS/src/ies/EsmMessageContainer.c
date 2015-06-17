@@ -54,6 +54,7 @@ int decode_esm_message_container(EsmMessageContainer *esmmessagecontainer, uint8
 
   CHECK_LENGTH_DECODER(len - decoded, ielen);
 
+
   if ((decode_result = decode_octet_string(&esmmessagecontainer->esmmessagecontainercontents, ielen, buffer + decoded, len - decoded)) < 0) {
     LOG_FUNC_RETURN(decode_result);
   } else {

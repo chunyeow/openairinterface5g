@@ -46,19 +46,19 @@ typedef struct OctetString_tag {
     } while (0);
 
 
-#define DUP_OCTET_STRING(oCTETsTRINGoRIG,oCTETsTRINGcOPY)                     \
-    do {                                                                      \
-        if ((oCTETsTRINGoRIG).value == NULL) {                                \
-            (oCTETsTRINGcOPY).length = 0;                                       \
-            (oCTETsTRINGcOPY).value = NULL;                                     \
-            break;                                                            \
-        }                                                                     \
-        (oCTETsTRINGcOPY).length = strlen((const char*)(oCTETsTRINGoRIG).value);\
-        assert((oCTETsTRINGoRIG).length == (oCTETsTRINGcOPY).length);         \
-        (oCTETsTRINGcOPY).value  = malloc((oCTETsTRINGoRIG).length);        \
-        memcpy((oCTETsTRINGcOPY).value,                                       \
-            (oCTETsTRINGoRIG).value,                                          \
-            (oCTETsTRINGoRIG).length);                                        \
+#define DUP_OCTET_STRING(oCTETsTRINGoRIG,oCTETsTRINGcOPY)                   \
+    do {                                                                    \
+        if ((oCTETsTRINGoRIG).value == NULL) {                              \
+            (oCTETsTRINGcOPY).length = 0;                                   \
+            (oCTETsTRINGcOPY).value = NULL;                                 \
+            break;                                                          \
+        }                                                                   \
+        (oCTETsTRINGcOPY).length = (oCTETsTRINGoRIG).length;                 \
+        (oCTETsTRINGcOPY).value  = malloc((oCTETsTRINGoRIG).length+1);      \
+        (oCTETsTRINGcOPY).value[(oCTETsTRINGoRIG).length] = '\0';           \
+        memcpy((oCTETsTRINGcOPY).value,                                     \
+            (oCTETsTRINGoRIG).value,                                        \
+            (oCTETsTRINGoRIG).length);                                      \
     } while (0);
 
 OctetString* dup_octet_string(OctetString*octetstring);

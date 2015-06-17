@@ -160,12 +160,12 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
                               GUTI_t *guti, imsi_t *imsi, imei_t *imei,
                               int eea, int eia, int ucs2, int uea, int uia, int gea,
                               int umts_present, int gprs_present,
-                              const OctetString *esm_msg);
+                              const OctetString *esm_msg_pP);
 
 /*
  * Internal data used for attach procedure
  */
-typedef struct {
+typedef struct attach_data_s {
   unsigned int ueid;          /* UE identifier        */
 #define ATTACH_COUNTER_MAX  5
   unsigned int retransmission_count;  /* Retransmission counter   */
@@ -405,7 +405,7 @@ int emm_proc_attach_request(void *args)
  **             the MME (GUTI reallocation)                **
  **      n_eplmns:  Number of equivalent PLMNs                 **
  **      eplmns:    List of equivalent PLMNs                   **
- **      esm_msg:   Activate default EPS bearer context re-    **
+ **      esm_msg_pP:   Activate default EPS bearer context re-    **
  **             quest ESM message                          **
  **      Others:    None                                       **
  **                                                                        **
@@ -417,7 +417,7 @@ int emm_proc_attach_request(void *args)
 int emm_proc_attach_accept(long t3412, long t3402, long t3423,
                            int n_tais, tai_t *tai, GUTI_t *guti,
                            int n_eplmns, plmn_t *eplmn,
-                           const OctetString *esm_msg)
+                           const OctetString *esm_msg_pP)
 {
   LOG_FUNC_IN;
 
@@ -495,7 +495,7 @@ int emm_proc_attach_accept(long t3412, long t3402, long t3423,
    */
   esm_sap.primitive = ESM_DEFAULT_EPS_BEARER_CONTEXT_ACTIVATE_REQ;
   esm_sap.is_standalone = FALSE;
-  esm_sap.recv = esm_msg;
+  esm_sap.recv = esm_msg_pP;
   rc = esm_sap_send(&esm_sap);
 
   if ( (rc != RETURNerror) && (esm_sap.err == ESM_SAP_SUCCESS) ) {
@@ -561,7 +561,7 @@ int emm_proc_attach_accept(long t3412, long t3402, long t3423,
  **                                                                        **
  ** Inputs:  emm_cause: EMM cause indicating why the network re-   **
  **             jected the attach request                  **
- **      esm_msg:   PDN connectivity reject ESM message        **
+ **      esm_msg_pP:   PDN connectivity reject ESM message        **
  **      Others:    None                                       **
  **                                                                        **
  ** Outputs:     None                                                      **
@@ -569,7 +569,7 @@ int emm_proc_attach_accept(long t3412, long t3402, long t3423,
  **      Others:    _emm_data, _emm_attach_data, T3410         **
  **                                                                        **
  ***************************************************************************/
-int emm_proc_attach_reject(int emm_cause, const OctetString *esm_msg)
+int emm_proc_attach_reject(int emm_cause, const OctetString *esm_msg_pP)
 {
   LOG_FUNC_IN;
 
@@ -754,11 +754,11 @@ int emm_proc_attach_reject(int emm_cause, const OctetString *esm_msg)
   /*
    * Notify ESM that the network rejected connectivity to the PDN
    */
-  if (esm_msg != NULL) {
+  if (esm_msg_pP != NULL) {
     esm_sap_t esm_sap;
     esm_sap.primitive = ESM_PDN_CONNECTIVITY_REJ;
     esm_sap.is_standalone = FALSE;
-    esm_sap.recv = esm_msg;
+    esm_sap.recv = esm_msg_pP;
     rc = esm_sap_send(&esm_sap);
   }
 
@@ -1067,7 +1067,7 @@ int emm_proc_attach_set_detach(void)
  **             the UE is registered to                    **
  **      eea:       Supported EPS encryption algorithms        **
  **      eia:       Supported EPS integrity algorithms         **
- **      esm_msg:   PDN connectivity request ESM message       **
+ **      esm_msg_pP:   PDN connectivity request ESM message       **
  **      Others:    _emm_data                                  **
  **                                                                        **
  ** Outputs:     None                                                      **
@@ -1086,7 +1086,7 @@ int emm_proc_attach_request(
   tai_t    *tai,
   int eea, int eia, int ucs2, int uea, int uia, int gea,
   int umts_present, int gprs_present,
-  const OctetString *esm_msg)
+  const OctetString *esm_msg_pP)
 {
   LOG_FUNC_IN;
 
@@ -1168,7 +1168,7 @@ int emm_proc_attach_request(
         rc = emm_proc_attach_request(ueid, type, native_ksi, ksi,
                                      native_guti, guti, imsi, imei,
                                      tai, eea, eia, ucs2, uea, uia, gea,
-                                     umts_present, gprs_present, esm_msg);
+                                     umts_present, gprs_present, esm_msg_pP);
       }
 
       LOG_FUNC_RETURN(rc);
@@ -1221,7 +1221,7 @@ int emm_proc_attach_request(
 
   /* Update the EMM context with the current attach procedure parameters */
   rc = _emm_attach_update(*emm_ctx, ueid, type, ksi, guti, imsi, imei,
-                          eea, eia, ucs2, uea, uia, gea, umts_present, gprs_present, esm_msg);
+                          eea, eia, ucs2, uea, uia, gea, umts_present, gprs_present, esm_msg_pP);
 
   if (rc != RETURNok) {
     LOG_TRACE(WARNING, "EMM-PROC  - Failed to update EMM context");
@@ -1301,7 +1301,7 @@ int emm_proc_attach_reject(unsigned int ueid, int emm_cause)
  **      the GUTI sent in the ATTACH ACCEPT message as valid.      **
  **                                                                        **
  ** Inputs:  ueid:      UE lower layer identifier                  **
- **      esm_msg:   Activate default EPS bearer context accept **
+ **      esm_msg_pP:   Activate default EPS bearer context accept **
  **             ESM message                                **
  **      Others:    _emm_data                                  **
  **                                                                        **
@@ -1310,7 +1310,7 @@ int emm_proc_attach_reject(unsigned int ueid, int emm_cause)
  **      Others:    _emm_data, T3450                           **
  **                                                                        **
  ***************************************************************************/
-int emm_proc_attach_complete(unsigned int ueid, const OctetString *esm_msg)
+int emm_proc_attach_complete(unsigned int ueid, const OctetString *esm_msg_pP)
 {
   emm_data_context_t *emm_ctx = NULL;
   int rc = RETURNerror;
@@ -1364,7 +1364,7 @@ int emm_proc_attach_complete(unsigned int ueid, const OctetString *esm_msg)
     esm_sap.primitive = ESM_DEFAULT_EPS_BEARER_CONTEXT_ACTIVATE_CNF;
     esm_sap.is_standalone = FALSE;
     esm_sap.ueid = ueid;
-    esm_sap.recv = esm_msg;
+    esm_sap.recv = esm_msg_pP;
     esm_sap.ctx  = emm_ctx;
     rc = esm_sap_send(&esm_sap);
   } else {
@@ -2384,71 +2384,75 @@ static int _emm_attach_accept(emm_data_context_t *emm_ctx, attach_data_t *data)
   emm_sap_t emm_sap;
   int rc;
 
-  /*
-   * Notify EMM-AS SAP that Attach Accept message together with an Activate
-   * Default EPS Bearer Context Request message has to be sent to the UE
-   */
+  // may be caused by timer not stopped when deleted context
+  if (emm_ctx) {
+    /*
+     * Notify EMM-AS SAP that Attach Accept message together with an Activate
+     * Default EPS Bearer Context Request message has to be sent to the UE
+     */
 
-  emm_sap.primitive = EMMAS_ESTABLISH_CNF;
-  emm_sap.u.emm_as.u.establish.ueid = emm_ctx->ueid;
+    emm_sap.primitive = EMMAS_ESTABLISH_CNF;
+    emm_sap.u.emm_as.u.establish.ueid = emm_ctx->ueid;
 
-  if (emm_ctx->guti_is_new && emm_ctx->old_guti) {
-    /* Implicit GUTI reallocation;
-     * include the new assigned GUTI in the Attach Accept message  */
-    LOG_TRACE(INFO,"EMM-PROC  - Implicit GUTI reallocation, include the new assigned GUTI in the Attach Accept message");
-    emm_sap.u.emm_as.u.establish.UEid.guti = emm_ctx->old_guti;
-    emm_sap.u.emm_as.u.establish.new_guti  = emm_ctx->guti;
-  } else if (emm_ctx->guti_is_new && emm_ctx->guti) {
-    /* include the new assigned GUTI in the Attach Accept message  */
-    LOG_TRACE(INFO,"EMM-PROC  - Include the new assigned GUTI in the Attach Accept message");
-    emm_sap.u.emm_as.u.establish.UEid.guti = emm_ctx->guti;
-    emm_sap.u.emm_as.u.establish.new_guti  = emm_ctx->guti;
-  } else {
-    emm_sap.u.emm_as.u.establish.UEid.guti = emm_ctx->guti;
+    if (emm_ctx->guti_is_new && emm_ctx->old_guti) {
+      /* Implicit GUTI reallocation;
+       * include the new assigned GUTI in the Attach Accept message  */
+      LOG_TRACE(INFO,"EMM-PROC  - Implicit GUTI reallocation, include the new assigned GUTI in the Attach Accept message");
+      emm_sap.u.emm_as.u.establish.UEid.guti = emm_ctx->old_guti;
+      emm_sap.u.emm_as.u.establish.new_guti  = emm_ctx->guti;
+    } else if (emm_ctx->guti_is_new && emm_ctx->guti) {
+      /* include the new assigned GUTI in the Attach Accept message  */
+      LOG_TRACE(INFO,"EMM-PROC  - Include the new assigned GUTI in the Attach Accept message");
+      emm_sap.u.emm_as.u.establish.UEid.guti = emm_ctx->guti;
+      emm_sap.u.emm_as.u.establish.new_guti  = emm_ctx->guti;
+    } else {
+      emm_sap.u.emm_as.u.establish.UEid.guti = emm_ctx->guti;
 #warning "TEST LG FORCE GUTI IE IN ATTACH ACCEPT"
-    emm_sap.u.emm_as.u.establish.new_guti  = emm_ctx->guti;
-    //emm_sap.u.emm_as.u.establish.new_guti  = NULL;
-  }
+      emm_sap.u.emm_as.u.establish.new_guti  = emm_ctx->guti;
+      //emm_sap.u.emm_as.u.establish.new_guti  = NULL;
+    }
 
-  emm_sap.u.emm_as.u.establish.n_tacs  = emm_ctx->n_tacs;
-  emm_sap.u.emm_as.u.establish.tac     = emm_ctx->tac;
-  emm_sap.u.emm_as.u.establish.NASinfo = EMM_AS_NAS_INFO_ATTACH;
-  /* Setup EPS NAS security data */
-  emm_as_set_security_data(&emm_sap.u.emm_as.u.establish.sctx,
+    emm_sap.u.emm_as.u.establish.n_tacs  = emm_ctx->n_tacs;
+    emm_sap.u.emm_as.u.establish.tac     = emm_ctx->tac;
+    emm_sap.u.emm_as.u.establish.NASinfo = EMM_AS_NAS_INFO_ATTACH;
+    /* Setup EPS NAS security data */
+    emm_as_set_security_data(&emm_sap.u.emm_as.u.establish.sctx,
                            emm_ctx->security, FALSE, TRUE);
 
-  LOG_TRACE(INFO,"EMM-PROC  - encryption = 0x%X ", emm_sap.u.emm_as.u.establish.encryption);
-  LOG_TRACE(INFO,"EMM-PROC  - integrity  = 0x%X ", emm_sap.u.emm_as.u.establish.integrity);
-  emm_sap.u.emm_as.u.establish.encryption = emm_ctx->security->selected_algorithms.encryption;
-  emm_sap.u.emm_as.u.establish.integrity  = emm_ctx->security->selected_algorithms.integrity;
-  LOG_TRACE(INFO,"EMM-PROC  - encryption = 0x%X (0x%X)",
+    LOG_TRACE(INFO,"EMM-PROC  - encryption = 0x%X ", emm_sap.u.emm_as.u.establish.encryption);
+    LOG_TRACE(INFO,"EMM-PROC  - integrity  = 0x%X ", emm_sap.u.emm_as.u.establish.integrity);
+    emm_sap.u.emm_as.u.establish.encryption = emm_ctx->security->selected_algorithms.encryption;
+    emm_sap.u.emm_as.u.establish.integrity  = emm_ctx->security->selected_algorithms.integrity;
+    LOG_TRACE(INFO,"EMM-PROC  - encryption = 0x%X (0x%X)",
             emm_sap.u.emm_as.u.establish.encryption,
             emm_ctx->security->selected_algorithms.encryption);
-  LOG_TRACE(INFO,"EMM-PROC  - integrity  = 0x%X (0x%X)",
+    LOG_TRACE(INFO,"EMM-PROC  - integrity  = 0x%X (0x%X)",
             emm_sap.u.emm_as.u.establish.integrity,
             emm_ctx->security->selected_algorithms.integrity);
 
   /* Get the activate default EPS bearer context request message to
    * transfer within the ESM container of the attach accept message */
-  emm_sap.u.emm_as.u.establish.NASmsg = data->esm_msg;
-  LOG_TRACE(INFO,"EMM-PROC  - NASmsg  src size = %d NASmsg  dst size = %d ",
+    emm_sap.u.emm_as.u.establish.NASmsg = data->esm_msg;
+    LOG_TRACE(INFO,"EMM-PROC  - NASmsg  src size = %d NASmsg  dst size = %d ",
             data->esm_msg.length, emm_sap.u.emm_as.u.establish.NASmsg.length);
 
-  rc = emm_sap_send(&emm_sap);
+    rc = emm_sap_send(&emm_sap);
 
-  if (rc != RETURNerror) {
-    if (T3450.id != NAS_TIMER_INACTIVE_ID) {
-      /* Re-start T3450 timer */
-      T3450.id = nas_timer_restart(T3450.id);
-    } else {
-      /* Start T3450 timer */
-      T3450.id = nas_timer_start(T3450.sec, _emm_attach_t3450_handler, data);
-    }
+    if (rc != RETURNerror) {
+      if (T3450.id != NAS_TIMER_INACTIVE_ID) {
+        /* Re-start T3450 timer */
+        T3450.id = nas_timer_restart(T3450.id);
+      } else {
+        /* Start T3450 timer */
+        T3450.id = nas_timer_start(T3450.sec, _emm_attach_t3450_handler, data);
+      }
 
-    LOG_TRACE(INFO,"EMM-PROC  - Timer T3450 (%d) expires in %ld seconds",
+      LOG_TRACE(INFO,"EMM-PROC  - Timer T3450 (%d) expires in %ld seconds",
               T3450.id, T3450.sec);
+    }
+  } else {
+    LOG_TRACE(WARNING,"EMM-PROC  - emm_ctx NULL");
   }
-
   LOG_FUNC_RETURN (rc);
 }
 
@@ -2601,7 +2605,7 @@ static int _emm_attach_have_changed(const emm_data_context_t *ctx,
  **      imei:      The IMEI provided by the UE                **
  **      eea:       Supported EPS encryption algorithms        **
  **      eia:       Supported EPS integrity algorithms         **
- **      esm_msg:   ESM message contained with the attach re-  **
+ **      esm_msg_pP:   ESM message contained with the attach re-  **
  **             quest                                      **
  **      Others:    None                                       **
  **                                                                        **
@@ -2615,7 +2619,7 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
                               GUTI_t *guti, imsi_t *imsi, imei_t *imei,
                               int eea, int eia, int ucs2, int uea, int uia, int gea,
                               int umts_present, int gprs_present,
-                              const OctetString *esm_msg)
+                              const OctetString *esm_msg_pP)
 {
   int mnc_length;
   LOG_FUNC_IN;
@@ -2743,20 +2747,25 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
   }
 
   /* The ESM message contained within the attach request */
-  if (esm_msg->length > 0) {
-    if (ctx->esm_msg.length == 0) {
-      ctx->esm_msg.value = (uint8_t *)malloc(esm_msg->length);
+  if (esm_msg_pP->length > 0) {
+    if (ctx->esm_msg.value != NULL) {
+      free(ctx->esm_msg.value);
+      ctx->esm_msg.value  = NULL;
+      ctx->esm_msg.length = 0;
     }
 
+    ctx->esm_msg.value = (uint8_t *)malloc(esm_msg_pP->length);
+
     if (ctx->esm_msg.value != NULL) {
-      strncpy((char *)ctx->esm_msg.value,
-              (char *)esm_msg->value, esm_msg->length);
+      memcpy((char *)ctx->esm_msg.value,
+              (char *)esm_msg_pP->value, esm_msg_pP->length);
+
     } else {
       LOG_FUNC_RETURN (RETURNerror);
     }
   }
 
-  ctx->esm_msg.length = esm_msg->length;
+  ctx->esm_msg.length = esm_msg_pP->length;
   /* Attachment indicator */
   ctx->is_attached = FALSE;
 

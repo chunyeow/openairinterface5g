@@ -59,7 +59,7 @@ Description Defines the ESM Service Access Point that provides EPS
  * EPS Session Management primitives
  * ---------------------------------
  */
-typedef enum {
+typedef enum esm_primitive_s {
   ESM_START = 0,
   /* Procedures related to EPS bearer contexts (initiated by the network) */
   ESM_DEFAULT_EPS_BEARER_CONTEXT_ACTIVATE_REQ,
@@ -107,14 +107,14 @@ typedef enum {
  * ESM primitive for activate EPS default bearer context procedure
  * ---------------------------------------------------------------
  */
-typedef struct {
+typedef struct esm_activate_eps_default_bearer_context_s {
 } esm_activate_eps_default_bearer_context_t;
 
 /*
  * ESM primitive for PDN connectivity procedure
  * --------------------------------------------
  */
-typedef struct {
+typedef struct esm_pdn_connectivity_s {
   int cid;        /* PDN connection local identifier      */
   int is_defined; /* Indicates whether a PDN context has been defined
              * for the specified APN            */
@@ -129,7 +129,7 @@ typedef struct {
  * ESM primitive for PDN disconnect procedure
  * ------------------------------------------
  */
-typedef struct {
+typedef struct esm_pdn_disconnect_s {
   int cid;        /* PDN connection local identifier      */
 } esm_pdn_disconnect_t;
 
@@ -137,7 +137,7 @@ typedef struct {
  * ESM primitive for deactivate EPS bearer context procedure
  * ---------------------------------------------------------
  */
-typedef struct {
+typedef struct esm_eps_bearer_context_deactivate_s {
 #define ESM_SAP_ALL_EBI     0xff
   unsigned int ebi;   /* EPS bearer identity of the EPS bearer context
              * to be deactivated                */
@@ -154,20 +154,20 @@ typedef union {
   esm_eps_bearer_context_deactivate_t eps_bearer_context_deactivate;
 } esm_sap_data_t;
 
-typedef struct {
+typedef struct esm_sap_s {
   esm_primitive_t primitive;  /* ESM-SAP primitive to process     */
   int is_standalone;      /* Indicates whether the ESM message handled
                  * within this primitive has to be sent/received
                  * standalone or together within an EMM related
                  * message              */
 #if defined(NAS_MME)
-  emm_data_context_t *ctx;   /* UE context                       */
+  emm_data_context_t *ctx;       /* UE context                       */
 #endif
-  unsigned int ueid;         /* Local UE identifier              */
-  esm_sap_error_t err;       /* ESM-SAP error code               */
-  const OctetString *recv;   /* Encoded ESM message received     */
-  OctetString send;          /* Encoded ESM message to be sent   */
-  esm_sap_data_t data;       /* ESM message data parameters      */
+  unsigned int        ueid;      /* Local UE identifier              */
+  esm_sap_error_t     err;       /* ESM-SAP error code               */
+  const OctetString  *recv;      /* Encoded ESM message received     */
+  OctetString         send;      /* Encoded ESM message to be sent   */
+  esm_sap_data_t      data;      /* ESM message data parameters      */
 } esm_sap_t;
 
 /****************************************************************************/

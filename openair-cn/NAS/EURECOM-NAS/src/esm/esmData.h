@@ -96,7 +96,7 @@ typedef enum {
 
 #ifdef NAS_MME
 /* ESM message timer retransmission data */
-typedef struct {
+typedef struct esm_ebr_timer_data_s {
   void        *ctx;
   unsigned int ueid;      /* Lower layers UE identifier       */
   unsigned int ebi;       /* EPS bearer identity          */
@@ -110,7 +110,7 @@ typedef struct {
  * EPS bearer context data
  * -----------------------
  */
-typedef struct {
+typedef struct esm_ebr_context_s {
   unsigned char ebi;      /* EPS bearer identity          */
   esm_ebr_state status;   /* EPS bearer context status        */
 #ifdef NAS_UE
@@ -125,7 +125,7 @@ typedef struct {
 #endif
 } esm_ebr_context_t;
 
-typedef struct {
+typedef struct esm_ebr_data_s {
   unsigned char index;    /* Index of the next EPS bearer context
                  * identity to be used */
 #define ESM_EBR_DATA_SIZE (ESM_EBI_MAX - ESM_EBI_MIN + 1)
@@ -147,7 +147,7 @@ typedef struct {
  * butes. An EPS bearer corresponds to one Quality of Service policy
  * applied within the EPC and E-UTRAN.
  */
-typedef struct {
+typedef struct esm_bearer_s {
   int bid;        /* Identifier of the EPS bearer         */
   unsigned int ebi;   /* EPS bearer identity              */
   network_qos_t qos;  /* EPS bearer level QoS parameters      */
@@ -161,7 +161,7 @@ typedef struct {
  * one IPv4 address and/or one IPv6 prefix and a PDN represented by
  * an Access Point Name (APN).
  */
-typedef struct {
+typedef struct esm_pdn_s {
   unsigned int pti;   /* Identity of the procedure transaction executed
              * to activate the PDN connection entry     */
   int is_emergency;   /* Emergency bearer services indicator      */
@@ -234,7 +234,7 @@ typedef esm_data_context_t esm_data_t;
  * Structure of the ESM data
  * -------------------------
  */
-typedef struct {
+typedef struct esm_data_s {
   /*
    * MME configuration
    * -----------------

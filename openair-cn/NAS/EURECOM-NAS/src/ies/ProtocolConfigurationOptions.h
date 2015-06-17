@@ -38,6 +38,10 @@
 #define PROTOCOL_CONFIGURATION_OPTIONS_MINIMUM_LENGTH 3
 #define PROTOCOL_CONFIGURATION_OPTIONS_MAXIMUM_LENGTH 253
 
+// arbitrary value, theoricaly can be greater than defined (250/3)
+#define PROTOCOL_CONFIGURATION_OPTIONS_MAXIMUM_PROTOCOL_ID_OR_CONTAINER_ID 16
+
+
 /* 3GPP TS 24.008 Table 10.5.154
  * MS to network table
  */
@@ -58,10 +62,11 @@ typedef enum ProtocolConfigurationOptionsList_ids_tag {
  */
 
 typedef struct ProtocolConfigurationOptions_tag {
-  uint8_t  configurationprotol:3;
-  uint16_t protocolid;
-  uint8_t  lengthofprotocolid;
-  OctetString protocolidcontents;
+  uint8_t     configurationprotol:3;
+  uint8_t     num_protocol_id_or_container_id;
+  uint16_t    protocolid[PROTOCOL_CONFIGURATION_OPTIONS_MAXIMUM_PROTOCOL_ID_OR_CONTAINER_ID];
+  uint8_t     lengthofprotocolid[PROTOCOL_CONFIGURATION_OPTIONS_MAXIMUM_PROTOCOL_ID_OR_CONTAINER_ID];
+  OctetString protocolidcontents[PROTOCOL_CONFIGURATION_OPTIONS_MAXIMUM_PROTOCOL_ID_OR_CONTAINER_ID];
 } ProtocolConfigurationOptions;
 
 int encode_protocol_configuration_options(ProtocolConfigurationOptions *protocolconfigurationoptions, uint8_t iei, uint8_t *buffer, uint32_t len);

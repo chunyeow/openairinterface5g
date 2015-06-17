@@ -735,6 +735,7 @@ int esm_recv_pdn_connectivity_request(emm_data_context_t *ctx, int pti, int ebi,
                                       unsigned int *new_ebi, void *data)
 {
   int esm_cause = ESM_CAUSE_SUCCESS;
+  uint8_t i;
 
   LOG_FUNC_IN;
 
@@ -823,6 +824,13 @@ int esm_recv_pdn_connectivity_request(emm_data_context_t *ctx, int pti, int ebi,
      */
     //TODO: rc = esm_proc_information_request();
   }
+  esm_data->pco = msg->protocolconfigurationoptions;
+  for (i = 0; i < msg->protocolconfigurationoptions.num_protocol_id_or_container_id; i++) {
+    DUP_OCTET_STRING(msg->protocolconfigurationoptions.protocolidcontents[i], esm_data->pco.protocolidcontents[i]);
+    esm_data->pco.protocolid[i]         = msg->protocolconfigurationoptions.protocolid[i];
+    esm_data->pco.lengthofprotocolid[i] = msg->protocolconfigurationoptions.lengthofprotocolid[i];
+  }
+
 
 #if defined(ORIGINAL_CODE)
   /* Execute the PDN connectivity procedure requested by the UE */

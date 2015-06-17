@@ -297,7 +297,7 @@ int encode_activate_default_eps_bearer_context_request(activate_default_eps_bear
       encoded += encode_result;
   }
 
-#if 1 /* LW: force Protocol Configuration Options to be included in the ESM message */
+#if 0 /* LW: force Protocol Configuration Options to be included in the ESM message */
   {
 #define CONFIGURATION_PROTOCOL_PPP          0
 

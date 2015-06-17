@@ -576,15 +576,19 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP)
       }
 
       if(
-        config_setting_lookup_string(subsetting,
+        config_setting_lookup_string(setting_pgw,
                                      PGW_CONFIG_STRING_DEFAULT_DNS_IPV4_ADDRESS,
                                      (const char **)&pgw_default_dns_ipv4_address)
-        && config_setting_lookup_string(subsetting,
+        && config_setting_lookup_string(setting_pgw,
                                         PGW_CONFIG_STRING_DEFAULT_DNS_SEC_IPV4_ADDRESS,
                                         (const char **)&pgw_default_dns_sec_ipv4_address)) {
         config_pP->pgw_config.ipv4.pgw_interface_name_for_S5_S8 = strdup(pgw_interface_name_for_S5_S8);
         IPV4_STR_ADDR_TO_INT_NWBO ( pgw_default_dns_ipv4_address,     config_pP->pgw_config.ipv4.default_dns_v4, "BAD IPv4 ADDRESS FORMAT FOR DEFAULT DNS !\n" )
         IPV4_STR_ADDR_TO_INT_NWBO ( pgw_default_dns_sec_ipv4_address, config_pP->pgw_config.ipv4.default_dns_sec_v4, "BAD IPv4 ADDRESS FORMAT FOR DEFAULT DNS SEC!\n" )
+        SPGW_APP_INFO("Parsing configuration file default primary DNS IPv4 address: %x\n",
+        		config_pP->pgw_config.ipv4.default_dns_v4);
+        SPGW_APP_INFO("Parsing configuration file default secondary DNS IPv4 address: %x\n",
+        		config_pP->pgw_config.ipv4.default_dns_sec_v4);
       } else {
         SPGW_APP_WARN("NO DNS CONFIGURATION FOUND\n");
       }

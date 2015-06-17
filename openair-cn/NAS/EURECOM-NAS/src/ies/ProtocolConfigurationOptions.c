@@ -64,16 +64,23 @@ int decode_protocol_configuration_options(ProtocolConfigurationOptions *protocol
   decoded++;
 
   //IES_DECODE_U16(protocolconfigurationoptions->protocolid, *(buffer + decoded));
+  protocolconfigurationoptions->num_protocol_id_or_container_id = 0;
   while ((len - decoded) > 0) {
-    IES_DECODE_U16(buffer, decoded, protocolconfigurationoptions->protocolid);
-    DECODE_U8(buffer + decoded, protocolconfigurationoptions->lengthofprotocolid, decoded);
+    IES_DECODE_U16(buffer, decoded, protocolconfigurationoptions->protocolid[protocolconfigurationoptions->num_protocol_id_or_container_id]);
+    DECODE_U8(buffer + decoded, protocolconfigurationoptions->lengthofprotocolid[protocolconfigurationoptions->num_protocol_id_or_container_id], decoded);
 
-    if ((decode_result = decode_octet_string(&protocolconfigurationoptions->protocolidcontents,
-                         protocolconfigurationoptions->lengthofprotocolid, buffer + decoded, len - decoded)) < 0) {
-      return decode_result;
+    if (protocolconfigurationoptions->lengthofprotocolid[protocolconfigurationoptions->num_protocol_id_or_container_id] > 0) {
+      if ((decode_result = decode_octet_string(&protocolconfigurationoptions->protocolidcontents[protocolconfigurationoptions->num_protocol_id_or_container_id],
+                         protocolconfigurationoptions->lengthofprotocolid[protocolconfigurationoptions->num_protocol_id_or_container_id], buffer + decoded, len - decoded)) < 0) {
+        return decode_result;
+      } else {
+        decoded += decode_result;
+      }
     } else {
-      decoded += decode_result;
+      protocolconfigurationoptions->protocolidcontents[protocolconfigurationoptions->num_protocol_id_or_container_id].length = 0;
+      protocolconfigurationoptions->protocolidcontents[protocolconfigurationoptions->num_protocol_id_or_container_id].value = NULL;
     }
+    protocolconfigurationoptions->num_protocol_id_or_container_id += 1;
   }
 
 #if defined (NAS_DEBUG)
@@ -84,6 +91,7 @@ int decode_protocol_configuration_options(ProtocolConfigurationOptions *protocol
 int encode_protocol_configuration_options(ProtocolConfigurationOptions *protocolconfigurationoptions, uint8_t iei, uint8_t *buffer, uint32_t len)
 {
   uint8_t *lenPtr;
+  uint8_t  num_protocol_id_or_container_id = 0;
   uint32_t encoded = 0;
   int encode_result;
   /* Checking IEI and pointer */
@@ -102,21 +110,29 @@ int encode_protocol_configuration_options(ProtocolConfigurationOptions *protocol
   *(buffer + encoded) = 0x00 | (1 << 7) |
                         (protocolconfigurationoptions->configurationprotol & 0x7);
   encoded++;
-  IES_ENCODE_U16(buffer, encoded, protocolconfigurationoptions->protocolid);
-  *(buffer + encoded) = protocolconfigurationoptions->lengthofprotocolid;
-  encoded++;
 
-  if ((encode_result = encode_octet_string(&protocolconfigurationoptions->protocolidcontents, buffer + encoded, len - encoded)) < 0)
-    return encode_result;
-  else
-    encoded += encode_result;
+  while (num_protocol_id_or_container_id < protocolconfigurationoptions->num_protocol_id_or_container_id) {
 
+    IES_ENCODE_U16(buffer, encoded, protocolconfigurationoptions->protocolid[num_protocol_id_or_container_id]);
+    *(buffer + encoded) = protocolconfigurationoptions->lengthofprotocolid[num_protocol_id_or_container_id];
+    encoded++;
+
+    if ((encode_result = encode_octet_string(&protocolconfigurationoptions->protocolidcontents[num_protocol_id_or_container_id],
+    		buffer + encoded,
+    		len - encoded)) < 0)
+      return encode_result;
+    else
+      encoded += encode_result;
+
+    num_protocol_id_or_container_id += 1;
+  }
   *lenPtr = encoded - 1 - ((iei > 0) ? 1 : 0);
   return encoded;
 }
 
 void dump_protocol_configuration_options_xml(ProtocolConfigurationOptions *protocolconfigurationoptions, uint8_t iei)
 {
+  int   i;
   printf("<Protocol Configuration Options>\n");
 
   if (iei > 0)
@@ -124,9 +140,13 @@ void dump_protocol_configuration_options_xml(ProtocolConfigurationOptions *proto
     printf("    <IEI>0x%X</IEI>\n", iei);
 
   printf("    <Configuration protol>%u</Configuration protol>\n", protocolconfigurationoptions->configurationprotol);
-  printf("    <Protocol ID>%u</Protocol ID>\n", protocolconfigurationoptions->protocolid);
-  printf("    <Length of protocol ID>%u</Length of protocol ID>\n", protocolconfigurationoptions->lengthofprotocolid);
-  printf("%s",dump_octet_string_xml(&protocolconfigurationoptions->protocolidcontents));
+  i = 0;
+  while (i < protocolconfigurationoptions->num_protocol_id_or_container_id) {
+    printf("        <Protocol ID>%u</Protocol ID>\n", protocolconfigurationoptions->protocolid[i]);
+    printf("        <Length of protocol ID>%u</Length of protocol ID>\n", protocolconfigurationoptions->lengthofprotocolid[i]);
+    printf("        %s",dump_octet_string_xml(&protocolconfigurationoptions->protocolidcontents[i]));
+    i++;
+  }
   printf("</Protocol Configuration Options>\n");
 }
 

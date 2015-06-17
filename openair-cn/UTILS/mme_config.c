@@ -367,7 +367,7 @@ static int config_parse_file(mme_config_t *mme_config_p)
         }
       }
 
-      subsetting = config_setting_get_member (setting, MME_CONFIG_STRING_PLMN);
+      subsetting = config_setting_get_member (setting, MME_CONFIG_STRING_TAI_LIST);
 
       if (subsetting != NULL) {
         num     = config_setting_length(subsetting);

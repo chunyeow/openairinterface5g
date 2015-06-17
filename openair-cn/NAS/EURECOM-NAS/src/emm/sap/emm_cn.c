@@ -181,19 +181,26 @@ static int _emm_cn_deregister_ue(const UInt32_t ue_id)
 
 static int _emm_cn_pdn_connectivity_res(const emm_cn_pdn_res_t *msg_pP)
 {
-  int                        rc                    = RETURNok;
-  struct emm_data_context_s *emm_ctx_p             = NULL;
-  esm_proc_pdn_type_t        esm_pdn_type          = ESM_PDN_TYPE_IPV4;
-  esm_proc_data_t           *esm_proc_data_p       = NULL;
-  ESM_msg                    esm_msg;
-  EpsQualityOfService        qos;
-  OctetString                rsp                   = { 0, NULL};
-  int                        is_standalone         = 0; // warning hardcoded
-  int                        triggered_by_ue       = 1; // warning hardcoded
-  attach_data_t             *data_p                = NULL;
-  int                        esm_cause             = ESM_CAUSE_SUCCESS;
-  int                        pid                   = 0;
-  unsigned int               new_ebi               = 0;
+  int                          rc                    = RETURNok;
+  struct emm_data_context_s   *emm_ctx_p             = NULL;
+  esm_proc_pdn_type_t          esm_pdn_type          = ESM_PDN_TYPE_IPV4;
+  esm_proc_data_t             *esm_proc_data_p       = NULL;
+  ESM_msg                      esm_msg;
+  EpsQualityOfService          qos;
+  ProtocolConfigurationOptions pco;
+  unsigned int                 pco_in_index          = 0;
+  signed int                   length_in_pco         = 0;
+  uint16_t                     pi_or_ci              = 0; // protocol identifier or container identifier;
+  uint8_t                      length_pi_or_ci       = 0;
+
+  OctetString                  rsp                   = { 0, NULL};
+  int                          is_standalone         = 0; // warning hardcoded
+  int                          triggered_by_ue       = 1; // warning hardcoded
+  attach_data_t               *data_p                = NULL;
+  int                          esm_cause             = ESM_CAUSE_SUCCESS;
+  int                          pid                   = 0;
+  unsigned int                 new_ebi               = 0;
+
 
   LOG_FUNC_IN;
   emm_ctx_p = emm_data_context_get(&_emm_data, msg_pP->ue_id);
@@ -247,7 +254,44 @@ static int _emm_cn_pdn_connectivity_res(const emm_cn_pdn_res_t *msg_pP)
   qos.bitRatesExt.guarBitRateForUL = 0;
   qos.bitRatesExt.guarBitRateForDL = 0;
 
+  //--------------------------------------------------------------------------
+  // PCO processing
+  //--------------------------------------------------------------------------
+  memset(&pco, 0,  sizeof(ProtocolConfigurationOptions));
+  length_in_pco = msg_pP->pco.byte[1];
+  if ((length_in_pco+1+1) != msg_pP->pco.length) {
+	  LOG_TRACE(WARNING, "PCO: mismatch in lengths length_pco+1+1 %u != msg_pP->pco.length %u\n",
+  		  length_in_pco+1+1, msg_pP->pco.length);
+  }
+  pco.configurationprotol = msg_pP->pco.byte[2] & 0x07;
 
+  for (int i = 0; i < msg_pP->pco.length; i++) {
+	  LOG_TRACE(WARNING, "EMMCN_PDN_CONNECTIVITY_RES.pco.byte[%u] = 0x%x", i, msg_pP->pco.byte[i]);
+  }
+
+
+  if ((length_in_pco > 0) && (msg_pP->pco.byte[2] & 0x80)) {
+	pco_in_index = PCO_MIN_LENGTH;
+    while (length_in_pco >= 3) {
+      pi_or_ci = (((uint16_t)msg_pP->pco.byte[pco_in_index]) << 8) | (uint16_t)msg_pP->pco.byte[pco_in_index+1];
+      pco_in_index += 2;
+      length_pi_or_ci = msg_pP->pco.byte[pco_in_index++];
+      pco.protocolid[pco.num_protocol_id_or_container_id]                = pi_or_ci;
+      pco.lengthofprotocolid[pco.num_protocol_id_or_container_id]        = length_pi_or_ci;
+      pco.protocolidcontents[pco.num_protocol_id_or_container_id].value  = malloc(length_pi_or_ci);
+      pco.protocolidcontents[pco.num_protocol_id_or_container_id].length = length_pi_or_ci;
+      memcpy(pco.protocolidcontents[pco.num_protocol_id_or_container_id].value,
+    		&msg_pP->pco.byte[pco_in_index],
+    		 length_pi_or_ci);
+
+      LOG_TRACE(WARNING, "PCO: Found pi_or_ci 0x%x length %u content %s\n",
+    		  pi_or_ci, length_pi_or_ci, dump_octet_string(&pco.protocolidcontents[pco.num_protocol_id_or_container_id]));
+      pco.num_protocol_id_or_container_id++;
+      pco_in_index += length_pi_or_ci;
+
+      length_in_pco = length_in_pco - (length_pi_or_ci + 2 + 1);
+    } // while (length_in_pco >= 3) {
+  }  // if ((length_in_pco > 0) && (msg_pP->pco.byte[2] & 0x80)) {
   /*************************************************************************/
   /* CODE THAT WAS IN esm_recv.c/esm_recv_pdn_connectivity_request()       */
   /*************************************************************************/
@@ -294,6 +338,7 @@ static int _emm_cn_pdn_connectivity_res(const emm_cn_pdn_res_t *msg_pP)
          new_ebi, //msg_pP->ebi,
          &esm_msg.activate_default_eps_bearer_context_request,
          &msg_pP->apn,
+         &pco,
          esm_pdn_type,
          &msg_pP->pdn_addr,
          &qos,
