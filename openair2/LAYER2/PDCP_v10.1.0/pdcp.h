@@ -34,6 +34,11 @@
 * \version 1.0
 */
 
+/** @defgroup _pdcp PDCP 
+* @ingroup _oai2
+* @{
+*/
+
 #ifndef __PDCP_H__
 #    define __PDCP_H__
 //-----------------------------------------------------------------------------
@@ -482,3 +487,4 @@ protected_pdcp(sdu_size_t             pdcp_input_sdu_remaining_size_to_read;)
 public_pdcp(hash_table_t  *pdcp_coll_p;)
 
 #endif
+/*@}*/

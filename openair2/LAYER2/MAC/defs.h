@@ -32,10 +32,14 @@
 * \date 2011
 * \version 0.5
 * \email navid.nikaein@eurecom.fr
-* @ingroup _mac
 
 */
+/** @defgroup _oai2  openair2 Reference Implementation
+ * @ingroup _ref_implementation_
+ * @{
+ */
 
+/*@}*/
 
 #ifndef __LAYER2_MAC_DEFS_H__
 #define __LAYER2_MAC_DEFS_H__
@@ -71,8 +75,8 @@
 //#include "SIMULATION/PHY_EMULATION/impl_defs.h"
 //#endif
 
-/** @defgroup _mac_impl_ MAC Layer Reference Implementation
- * @ingroup _ref_implementation_
+/** @defgroup _mac  MAC
+ * @ingroup _oai2
  * @{
  */
 
@@ -261,6 +265,17 @@ typedef struct {
 typedef struct {
   uint8_t payload[MCCH_PAYLOAD_SIZE_MAX] ;/*!< \brief MCCH payload */
 } __attribute__((__packed__))MCCH_PDU;
+
+typedef struct {
+  uint8_t C7:1;/*!< \brief Component carrier 7 */
+  uint8_t C6:1;/*!< \brief Component carrier 6 */
+  uint8_t C5:1;/*!< \brief Component carrier 5 */
+  uint8_t C4:1;/*!< \brief Component carrier 4 */
+  uint8_t C3:1;/*!< \brief Component carrier 3 */
+  uint8_t C2:1;/*!< \brief Component carrier 2 */
+  uint8_t C1:1;/*!< \brief Component carrier 1 */
+  uint8_t R:1;/*!< \brief Reserved  */
+} __attribute__((__packed__))CC_ELEMENT;
 #endif
 
 typedef struct {
@@ -280,6 +295,7 @@ typedef struct {
 // MCH LCHAN IDs (table6.2.1-4 TS36.321)
 #define MCCH_LCHANID 0
 #define MCH_SCHDL_INFO 30
+#define CC_ACT_DEACT 27
 
 #endif
 
@@ -696,6 +712,7 @@ typedef struct {
   int numactiveCCs[NUMBER_OF_UE_MAX];
   int ordered_ULCCids[MAX_NUM_CCs][NUMBER_OF_UE_MAX];
   int numactiveULCCs[NUMBER_OF_UE_MAX];
+  uint8_t dl_CC_bitmap[NUMBER_OF_UE_MAX];
   /// eNB to UE statistics
   eNB_UE_STATS eNB_UE_stats[MAX_NUM_CCs][NUMBER_OF_UE_MAX];
   UE_sched_ctrl UE_sched_ctrl[NUMBER_OF_UE_MAX];

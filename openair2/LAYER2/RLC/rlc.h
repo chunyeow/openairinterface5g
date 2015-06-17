@@ -35,8 +35,8 @@
 * \bug
 * \warning
 */
-/** @defgroup _rlc_impl_ RLC Layer Reference Implementation
-* @ingroup _ref_implementation_
+/** @defgroup _rlc_impl_ RLC 
+* @ingroup _oai2
 * @{
 */
 #ifndef __RLC_H__

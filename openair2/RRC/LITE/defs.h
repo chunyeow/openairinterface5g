@@ -135,8 +135,8 @@ typedef struct uid_linear_allocator_s {
 
 #define PROTOCOL_RRC_CTXT_FMT           PROTOCOL_CTXT_FMT
 #define PROTOCOL_RRC_CTXT_ARGS(CTXT_Pp) PROTOCOL_CTXT_ARGS(CTXT_Pp)
-/** @defgroup _rrc_impl_ RRC Layer Reference Implementation
- * @ingroup _ref_implementation_
+/** @defgroup _rrc RRC 
+ * @ingroup _oai2
  * @{
  */
 

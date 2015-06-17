@@ -32,18 +32,23 @@
  * \date 2010 - 2014
  * \email navid.nikaein@eurecom.fr
  * \version 1.0
- * @ingroup _mac
-
  */
 #ifndef __LAYER2_MAC_PROTO_H__
 #define __LAYER2_MAC_PROTO_H__
+/** \addtogroup _mac
+ *  @{
+ */
 
+/** \fn void add_ue_spec_dci(DCI_PDU *DCI_pdu,void *pdu,rnti_t rnti,unsigned char dci_size_bytes,unsigned char aggregation,unsigned char dci_size_bits,unsigned char dci_fmt,uint8_t ra_flag);
+\brief 
 
+*/
 void add_ue_spec_dci(DCI_PDU *DCI_pdu,void *pdu,rnti_t rnti,unsigned char dci_size_bytes,unsigned char aggregation,unsigned char dci_size_bits,unsigned char dci_fmt,uint8_t ra_flag);
 
 //LG commented cause compilation error for RT eNB extern inline unsigned int taus(void);
 
-/** \brief First stage of Random-Access Scheduling. Loops over the RA_templates and checks if RAR, Msg3 or its retransmission are to be scheduled in the subframe.  It returns the total number of PRB used for RA SDUs.  For Msg3 it retrieves the L3msg from RRC and fills the appropriate buffers.  For the others it just computes the number of PRBs. Each DCI uses 3 PRBs (format 1A)
+/** \fn void schedule_RA(module_id_t module_idP,frame_t frameP,sub_frame_t subframe,uint8_t Msg3_subframe,unsigned int *nprb,unsigned int *nCCE);
+\brief First stage of Random-Access Scheduling. Loops over the RA_templates and checks if RAR, Msg3 or its retransmission are to be scheduled in the subframe.  It returns the total number of PRB used for RA SDUs.  For Msg3 it retrieves the L3msg from RRC and fills the appropriate buffers.  For the others it just computes the number of PRBs. Each DCI uses 3 PRBs (format 1A)
 for the message.
 @param Mod_id Instance ID of eNB
 @param frame Frame index
@@ -773,3 +778,4 @@ rrc_get_estimated_ue_distance(
 
 
 #endif
+/** @}*/

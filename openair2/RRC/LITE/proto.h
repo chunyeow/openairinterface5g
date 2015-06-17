@@ -32,8 +32,10 @@
  * \date 2010 - 2014
  * \email navid.nikaein@eurecom.fr
  * \version 1.0
- * @ingroup _rrc
-
+ 
+ */
+/** \addtogroup _rrc
+ *  @{
  */
 
 //main.c
@@ -424,3 +426,4 @@ long binary_search_int(int elements[], long numElem, int value);
 
 long binary_search_float(float elements[], long numElem, float value);
 
+/** @}*/
