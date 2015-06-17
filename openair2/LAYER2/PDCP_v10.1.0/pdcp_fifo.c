@@ -499,11 +499,13 @@ int pdcp_fifo_read_input_sdus (const protocol_ctxt_t* const  ctxt_pP)
           if (ctxt_cpy.enb_flag) {
             ctxt.module_id = 0;
             rab_id      = pdcp_read_header_g.rb_id % maxDRB;
+            ctxt.rnti          = pdcp_eNB_UE_instance_to_rnti[ctxt.module_id];
           } else {
             ctxt.module_id = 0;
             rab_id      = pdcp_read_header_g.rb_id % maxDRB;
+            ctxt.rnti          = pdcp_UE_UE_module_id_to_rnti[ctxt.module_id];
           }
-          ctxt.rnti          = pdcp_eNB_UE_instance_to_rnti[ctxt.module_id];
+
 
 #endif
 
