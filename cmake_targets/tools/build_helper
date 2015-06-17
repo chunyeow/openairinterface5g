@@ -235,6 +235,22 @@ install_freediameter_from_source() {
   rm -rf /tmp/1.2.0.tar.gz /tmp/freeDiameter-1.2.0
 }
 
+install_latest_freediameter_from_source() {
+  cd /tmp
+  rm -rf /tmp/freeDiameter
+  echo "Downloading latest freeDiameter trunk (may be unstable)"
+  git clone https://github.com/Metaswitch/freeDiameter.git
+  cd freeDiameter
+  patch -p1 < $OPENAIR_DIR/openair-cn/S6A/freediameter/freediameter-1.2.0.patch 
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ../ 
+  echo "Compiling freeDiameter"
+  make -j4
+  #make test 
+  $SUDO make install 
+  rm -rf /tmp/freeDiameter
+}
 check_install_usrp_uhd_driver(){
         v=$(lsb_release -cs)
         $SUDO apt-add-repository "deb http://files.ettus.com/binaries/uhd/repo/uhd/ubuntu/$v $v main"
