@@ -3124,11 +3124,33 @@ void prach_procedures(PHY_VARS_eNB *phy_vars_eNB,uint8_t sched_subframe,uint8_t 
             preamble_energy_max%10,
             preamble_delay_list[preamble_max]);
 #ifdef OPENAIR2
+        uint8_t update_TA=4;
+
+        switch (phy_vars_eNB->lte_frame_parms.N_RB_DL) {
+        case 6:
+          update_TA = 16;
+          break;
+
+        case 25:
+          update_TA = 4;
+          break;
+
+        case 50:
+          update_TA = 2;
+          break;
+
+        case 100:
+          update_TA = 1;
+          break;
+        }
+
+
+
       mac_xface->initiate_ra_proc(phy_vars_eNB->Mod_id,
                                   phy_vars_eNB->CC_id,
                                   frame,
                                   preamble_max,
-                                  preamble_delay_list[preamble_max],
+                                  preamble_delay_list[preamble_max]*update_TA,
 				  0,subframe,0);
       
 #endif
