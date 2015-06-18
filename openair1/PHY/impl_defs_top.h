@@ -43,8 +43,12 @@
 
 /** @defgroup _ref_implementation_ OpenAirInterface LTE Implementation
  * @{
- * @defgroup _physical_layer_ref_implementation_ Physical Layer Reference Implementation
+ * @defgroup _openair1_ openair1 Reference Implementation 
  * @ingroup _ref_implementation_
+ * @{
+
+ * @defgroup _physical_layer_ref_implementation_ Physical Layer Reference Implementation
+ * @ingroup _openair1_
  * @{
 
 
@@ -85,14 +89,14 @@
  * @}
 
  * @defgroup _PHY_PROCEDURES_ Physical Layer Procedures
- * @ingroup _ref_implementation_
+ * @ingroup _openair1_
  * @{
  * This module is responsible for defining and processing the PHY procedures (TX/RX) related to transport and physical channels.
  * @}
 
  * @}
  * @}
-
+ * @}
  */
 
 #include "types.h"
