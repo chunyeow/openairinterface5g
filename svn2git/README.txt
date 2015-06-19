@@ -19,9 +19,14 @@ This file describes briefly the steps that were carried out to migrate from *PUB
    b) git clone https://gitlab.eurecom.fr/oai/openairinterface5g.git (If certificate is installed in step 4)
 
 6. In order to checkout the Git repository (for OAI Developers/admins with login to gitlab server). Please send email to openair_tech@eurecom.fr to be added to the repository as a developer). If you do not have account on gitlab.eurecom.fr, please register yourself to gitlab.eurecom.fr.
-You will need to put your ssh keys in https://gitlab.eurecom.fr/profile/keys to access to the git repo (only important for users who want to commit to the repository). Once  that is done, checkout the git repository using:
+
+  a) Checkout with using ssh keys:
+     You will need to put your ssh keys in https://gitlab.eurecom.fr/profile/keys to access to the  git repo (only important for users who want to commit to the repository). Once  that is done, checkout the git repository using:
    git clone git@gitlab.eurecom.fr:oai/openairinterface5g.git
 
+  b) Checkout with user name/password prompt:
+   
+   git clone https://YOUR_USERNAME@gitlab.eurecom.fr/oai/openairinterface5g.git
 
 
 
