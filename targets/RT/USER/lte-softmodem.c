@@ -566,7 +566,9 @@ static void *scope_thread(void *arg)
   while (!oai_exit) {
     if (UE_flag==1) {
       len = dump_ue_stats (PHY_vars_UE_g[0][0], stats_buffer, 0, mode,rx_input_level_dBm);
-      fl_set_object_label(form_stats->stats_text, stats_buffer);
+      //fl_set_object_label(form_stats->stats_text, stats_buffer);
+      fl_clear_browser(form_stats->stats_text);
+      fl_add_browser_line(form_stats->stats_text, stats_buffer);
 
       phy_scope_UE(form_ue[0],
                    PHY_vars_UE_g[0][0],
@@ -576,7 +578,9 @@ static void *scope_thread(void *arg)
     } else {
 #ifdef OPENAIR2
       len = dump_eNB_l2_stats (stats_buffer, 0);
-      fl_set_object_label(form_stats_l2->stats_text, stats_buffer);
+      //fl_set_object_label(form_stats_l2->stats_text, stats_buffer);
+      fl_clear_browser(form_stats_l2->stats_text);
+      fl_add_browser_line(form_stats_l2->stats_text, stats_buffer);
 #endif
       len = dump_eNB_stats (PHY_vars_eNB_g[0][0], stats_buffer, 0);
 
