@@ -225,12 +225,14 @@ void rx_sdu(
 
             if ((UE_id=add_new_ue(enb_mod_idP,CC_idP,eNB->common_channels[CC_idP].RA_template[ii].rnti,harq_pidP)) == -1 ) {
               mac_xface->macphy_exit("[MAC][eNB] Max user count reached\n");
+	      // kill RA procedure
             } else
               LOG_I(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d Added user with rnti %x => UE %d\n",
                     enb_mod_idP,CC_idP,frameP,eNB->common_channels[CC_idP].RA_template[ii].rnti,UE_id);
           } else {
             LOG_I(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d CCCH: Received RRCConnectionReestablishment from UE %d: length %d, offset %d\n",
                   enb_mod_idP,CC_idP,frameP,UE_id,rx_lengths[ii],payload_ptr-sduP);
+	    // kill RA procedure
           }
 
           if (Is_rrc_registered == 1)
@@ -742,7 +744,10 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
           target_rx_power = mac_xface->get_target_ul_rx_power(module_idP,CC_id);
 
           // this assumes accumulated tpc
-          if (subframeP==0) {
+	  // make sure that we are only sending a tpc update once a frame, otherwise the control loop will freak out
+          if (((UE_template->tpc_tx_frame*10+UE_template->tpc_tx_subframe)%10240)<(frameP*10+subframeP+10)) {
+	    UE_template->tpc_tx_frame=frameP;
+	    UE_template->tpc_tx_subframe=subframeP;
             if (normalized_rx_power>(target_rx_power+1)) {
               tpc = 0; //-1
               tpc_accumulated--;
@@ -752,14 +757,12 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
             } else {
               tpc = 1; //0
             }
-
+	    LOG_D(MAC,"[eNB %d] ULSCH scheduler: subframe %d, harq_pid %d, tpc %d, accumulated %d, normalized/target rx power %d/%d\n",
+		  module_idP,subframeP,harq_pid,tpc,
+		  tpc_accumulated,normalized_rx_power,target_rx_power);
           } else {
             tpc = 1; //0
           }
-
-          LOG_D(MAC,"[eNB %d] ULSCH scheduler: subframe %d, harq_pid %d, tpc %d, accumulated %d, normalized/target rx power %d/%d\n",module_idP,subframeP,harq_pid,tpc,
-                tpc_accumulated,normalized_rx_power,target_rx_power);
-
 
           // new transmission
           if (round==0) {
