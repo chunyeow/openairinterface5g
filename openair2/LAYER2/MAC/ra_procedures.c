@@ -291,7 +291,7 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,int CC_id,frame_t frameP, 
     if (Is_rrc_registered == 1) {
 
       if (UE_mac_inst[module_idP].RA_active == 0) {
-        printf("RA not active\n");
+        LOG_D(MAC,"RA not active\n");
         // check if RRC is ready to initiate the RA procedure
         Size = mac_rrc_data_req(module_idP,
                                 CC_id,

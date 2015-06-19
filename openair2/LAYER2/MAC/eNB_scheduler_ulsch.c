@@ -220,7 +220,7 @@ void rx_sdu(
 
           if (UE_id < 0) {
             memcpy(&eNB->common_channels[CC_idP].RA_template[ii].cont_res_id[0],payload_ptr,6);
-            LOG_I(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d CCCH: Received RRCConnectionRequest: length %d, offset %d\n",
+            LOG_I(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d CCCH: Received Msg3: length %d, offset %d\n",
                   enb_mod_idP,CC_idP,frameP,rx_lengths[ii],payload_ptr-sduP);
 
             if ((UE_id=add_new_ue(enb_mod_idP,CC_idP,eNB->common_channels[CC_idP].RA_template[ii].rnti,harq_pidP)) == -1 ) {
@@ -230,7 +230,7 @@ void rx_sdu(
               LOG_I(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d Added user with rnti %x => UE %d\n",
                     enb_mod_idP,CC_idP,frameP,eNB->common_channels[CC_idP].RA_template[ii].rnti,UE_id);
           } else {
-            LOG_I(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d CCCH: Received RRCConnectionReestablishment from UE %d: length %d, offset %d\n",
+            LOG_I(MAC,"[eNB %d][RAPROC] CC_id %d Frame %d CCCH: Received Msg3 from already registered UE %d: length %d, offset %d\n",
                   enb_mod_idP,CC_idP,frameP,UE_id,rx_lengths[ii],payload_ptr-sduP);
 	    // kill RA procedure
           }
