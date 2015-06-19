@@ -583,7 +583,9 @@ static void *scope_thread(void *arg)
       if (MAX_NUM_CCs>1)
         len += dump_eNB_stats (PHY_vars_eNB_g[0][1], &stats_buffer[len], 0);
 
-      fl_set_object_label(form_stats->stats_text, stats_buffer);
+      //fl_set_object_label(form_stats->stats_text, stats_buffer);
+      fl_clear_browser(form_stats->stats_text);
+      fl_add_browser_line(form_stats->stats_text, stats_buffer);
 
       for(UE_id=0; UE_id<scope_enb_num_ue; UE_id++) {
 	for(CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
@@ -932,6 +934,7 @@ void do_OFDM_mod_rt(int subframe,PHY_VARS_eNB *phy_vars_eNB)
   int i, tx_offset;
   int slot_sizeF = (phy_vars_eNB->lte_frame_parms.ofdm_symbol_size)*
                    ((phy_vars_eNB->lte_frame_parms.Ncp==1) ? 6 : 7);
+  int len;
 
   slot_offset_F = (subframe<<1)*slot_sizeF;
 
@@ -961,13 +964,21 @@ void do_OFDM_mod_rt(int subframe,PHY_VARS_eNB *phy_vars_eNB)
                           dummy_tx_b,
                           7,
                           &(phy_vars_eNB->lte_frame_parms));
-        normal_prefix_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F+slot_sizeF],
-                          dummy_tx_b+(phy_vars_eNB->lte_frame_parms.samples_per_tti>>1),
-                          7,
-                          &(phy_vars_eNB->lte_frame_parms));
+	// if S-subframe generate first slot only
+	if (subframe_select(&phy_vars_eNB->lte_frame_parms,subframe) == SF_DL)
+	  normal_prefix_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F+slot_sizeF],
+			    dummy_tx_b+(phy_vars_eNB->lte_frame_parms.samples_per_tti>>1),
+			    7,
+			    &(phy_vars_eNB->lte_frame_parms));
       }
 
-      for (i=0; i<phy_vars_eNB->lte_frame_parms.samples_per_tti; i++) {
+      // if S-subframe generate first slot only
+      if (subframe_select(&phy_vars_eNB->lte_frame_parms,subframe) == SF_S)
+	len = phy_vars_eNB->lte_frame_parms.samples_per_tti>>1;
+      else
+	len = phy_vars_eNB->lte_frame_parms.samples_per_tti;
+ 
+     for (i=0; i<len; i++) {
         tx_offset = (int)slot_offset+time_offset[aa]+i;
 
         if (tx_offset<0)
@@ -984,11 +995,17 @@ void do_OFDM_mod_rt(int subframe,PHY_VARS_eNB *phy_vars_eNB)
 #endif
         ((short*)&phy_vars_eNB->lte_eNB_common_vars.txdata[0][aa][tx_offset])[1]=
 #ifdef EXMIMO
-          ((short*)dummy_tx_b)[2*i+1]<<4;
+          ((short*)dummy_tx_b)[2*i+1]<<4; 
 #else
           ((short*)dummy_tx_b)[2*i+1]<<5;
 #endif
-      }
+     }
+     // if S-subframe switch to RX in second subframe
+     if (subframe_select(&phy_vars_eNB->lte_frame_parms,subframe) == SF_S) {
+       for (i=0; i<len; i++) {
+	 phy_vars_eNB->lte_eNB_common_vars.txdata[0][aa][tx_offset++] = 0x00010001;
+       }
+     }
     }
   }
 }
