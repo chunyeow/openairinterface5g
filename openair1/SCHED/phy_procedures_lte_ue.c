@@ -241,8 +241,8 @@ unsigned int get_tx_amp(int power_dBm, int power_max_dBm, int N_RB_UL, int nb_rb
   int gain_dB = power_dBm - power_max_dBm;
   double gain_lin;
 
-  if (gain_dB < -30)
-    return(AMP/32);
+  if (gain_dB < -20)
+    return(AMP/10);
 
   gain_lin = pow(10,.1*gain_dB);
   if ((nb_rb >0) && (nb_rb <= N_RB_UL)) {
@@ -390,7 +390,7 @@ void process_timing_advance(uint8_t Mod_id,uint8_t CC_id,int16_t timing_advance)
   //  uint32_t frame = PHY_vars_UE_g[Mod_id]->frame;
 
   // timing advance has Q1.5 format
-  timing_advance = timing_advance - (1<<5);
+  timing_advance = timing_advance - 31;
 
   if (openair_daq_vars.manual_timing_advance == 0) {
     //if ( (frame % 100) == 0) {
@@ -398,7 +398,7 @@ void process_timing_advance(uint8_t Mod_id,uint8_t CC_id,int16_t timing_advance)
     PHY_vars_UE_g[Mod_id][CC_id]->timing_advance = PHY_vars_UE_g[Mod_id][CC_id]->timing_advance+timing_advance*4; //this is for 25RB only!!!
   }
 
-  LOG_D(PHY,"[UE %d] Got timing advance %d from MAC, new value %d\n",Mod_id, timing_advance, PHY_vars_UE_g[Mod_id][CC_id]->timing_advance);
+  LOG_I(PHY,"[UE %d] Got timing advance %d from MAC, new value %d\n",Mod_id, timing_advance, PHY_vars_UE_g[Mod_id][CC_id]->timing_advance);
 
 
 }
@@ -824,7 +824,7 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
         //  debug_LOG_D(PHY,"[UE  %d] Frame %d, Subframe %d ulsch harq_pid %d : O %d, O_ACK %d, O_RI %d, TBS %d\n",Mod_id,phy_vars_ue->frame,subframe_tx,harq_pid,phy_vars_ue->ulsch_ue[eNB_id]->O,phy_vars_ue->ulsch_ue[eNB_id]->O_ACK,phy_vars_ue->ulsch_ue[eNB_id]->O_RI,phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->TBS);
         //#endif
         if (Msg3_flag == 1) {
-          LOG_D(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d next slot %d Generating (RRCConnectionRequest) Msg3 (nb_rb %d, first_rb %d, round %d, rvidx %d) Msg3: %x.%x.%x|%x.%x.%x.%x.%x.%x\n",Mod_id,frame_tx,
+          LOG_I(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d next slot %d Generating (RRCConnectionRequest) Msg3 (nb_rb %d, first_rb %d, round %d, rvidx %d) Msg3: %x.%x.%x|%x.%x.%x.%x.%x.%x\n",Mod_id,frame_tx,
                 subframe_tx, slot_tx,
                 phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->nb_rb,
                 phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->first_rb,
@@ -985,8 +985,8 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 #else
           tx_amp = AMP;
 #endif
-          LOG_D(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d, generating PUSCH, Po_PUSCH: %d dBm, amp %d\n",
-                Mod_id,harq_pid,frame_tx,subframe_tx,phy_vars_ue->tx_power_dBm, tx_amp);
+          LOG_D(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d, generating PUSCH, Po_PUSCH: %d dBm (max %d dBm), amp %d\n",
+                Mod_id,harq_pid,frame_tx,subframe_tx,phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm, tx_amp);
           start_meas(&phy_vars_ue->ulsch_modulation_stats);
           ulsch_modulation(phy_vars_ue->lte_ue_common_vars.txdataF,
 			   tx_amp,
@@ -1325,7 +1325,19 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
               ((short*)phy_vars_ue->lte_ue_common_vars.txdata[aa])[2*k] = ((short*)dummy_tx_buffer)[2*l]<<4;
               ((short*)phy_vars_ue->lte_ue_common_vars.txdata[aa])[2*k+1] = ((short*)dummy_tx_buffer)[2*l+1]<<4;
             }
-
+#if defined(EXMIMO)
+	    /*
+	    // handle switch before 1st TX subframe, guarantee that the slot prior to transmission is switch on
+	    for (k=ulsch_start - (frame_parms->samples_per_tti>>1) ; k<ulsch_start ; k++) {
+	      if (k<0)
+		phy_vars_ue->lte_ue_common_vars.txdata[aa][k+frame_parms->samples_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME] &= 0xFFFEFFFE;
+	      else if (k>(frame_parms->samples_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME))
+		phy_vars_ue->lte_ue_common_vars.txdata[aa][k-frame_parms->samples_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME] &= 0xFFFEFFFE;
+	      else
+		phy_vars_ue->lte_ue_common_vars.txdata[aa][k] &= 0xFFFEFFFE;
+	    }
+	    */
+#endif
 #endif
 
           } //nb_antennas_tx
@@ -1473,17 +1485,10 @@ void phy_procedures_UE_S_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abst
   LTE_DL_FRAME_PARMS *frame_parms=&phy_vars_ue->lte_frame_parms;
 
   if (abstraction_flag==0) {
-    /*
-    if (phy_vars_ue->frame%100==1) {
-      LOG_I(PHY,"frame %d, next_slot %d, setting switch to rx\n",phy_vars_ue->frame, next_slot);
-    }
-    */
-
 
     for (aa=0; aa<frame_parms->nb_antennas_tx; aa++) {
 #if defined(EXMIMO) //this is the EXPRESS MIMO case
       int i;
-
       // set the whole tx buffer to RX
       for (i=0; i<LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*frame_parms->samples_per_tti; i++)
         phy_vars_ue->lte_ue_common_vars.txdata[aa][i] = 0x00010001;
