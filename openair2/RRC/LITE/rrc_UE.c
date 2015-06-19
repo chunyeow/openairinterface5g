@@ -710,7 +710,7 @@ rrc_ue_establish_drb(
                     RADIO_ACCESS_BEARER,Rlc_info_um);
    */
 #ifdef PDCP_USE_NETLINK
-#   if !defined(OAI_NW_DRIVER_TYPE_ETHERNET) && !defined(EXMIMO) && !defined(OAI_USRP) && !defined(LINK_ENB_PDCP_TO_GTPV1U)
+#   if !defined(OAI_NW_DRIVER_TYPE_ETHERNET) && !defined(EXMIMO) && !defined(OAI_USRP) && !defined(OAI_BLADERF) && !defined(LINK_ENB_PDCP_TO_GTPV1U)
 #    ifdef OAI_EMU
   ip_addr_offset3 = oai_emulation.info.nb_enb_local;
   ip_addr_offset4 = NB_eNB_INST;

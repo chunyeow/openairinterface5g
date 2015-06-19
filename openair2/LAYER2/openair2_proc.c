@@ -102,22 +102,13 @@ int dump_eNB_l2_stats(char *buffer, int length)
 		     eNB->eNB_stats[CC_id].total_bcch_buffer,
 		     eNB->eNB_stats[CC_id].bcch_mcs);
       
-      len += sprintf(&buffer[len],"CCCH , NB_TX_MAC = %d, transmitted bytes (TTI %d, total %d) MCS (TTI %d)\n",
-		     eNB->eNB_stats[CC_id].total_num_bcch_pdu,
-		     eNB->eNB_stats[CC_id].bcch_buffer,
-		     eNB->eNB_stats[CC_id].total_bcch_buffer,
-		     eNB->eNB_stats[CC_id].bcch_mcs);
-
-      len += sprintf(&buffer[len],"DCCH , NB_TX_MAC = %d, transmitted bytes (TTI %d, total %d) MCS (TTI %d)\n",
-		     eNB->eNB_stats[CC_id].total_num_bcch_pdu,
-		     eNB->eNB_stats[CC_id].bcch_buffer,
-		     eNB->eNB_stats[CC_id].total_bcch_buffer,
-		     eNB->eNB_stats[CC_id].bcch_mcs);
-      
       eNB->eNB_stats[CC_id].dlsch_bitrate=((eNB->eNB_stats[CC_id].dlsch_bytes_tx*8)/((eNB->frame + 1)*10));
       eNB->eNB_stats[CC_id].total_dlsch_pdus_tx+=eNB->eNB_stats[CC_id].dlsch_pdus_tx;
       eNB->eNB_stats[CC_id].total_dlsch_bytes_tx+=eNB->eNB_stats[CC_id].dlsch_bytes_tx;
       eNB->eNB_stats[CC_id].total_dlsch_bitrate=((eNB->eNB_stats[CC_id].total_dlsch_bytes_tx*8)/((eNB->frame + 1)*10));
+
+      eNB->eNB_stats[CC_id].ulsch_bitrate=((eNB->eNB_stats[CC_id].ulsch_bytes_rx*8)/((eNB->frame + 1)*10));
+      eNB->eNB_stats[CC_id].total_ulsch_bitrate=((eNB->eNB_stats[CC_id].total_ulsch_bytes_rx*8)/((eNB->frame + 1)*10));
 
       len += sprintf(&buffer[len],"DLSCH bitrate (TTI %u, avg %u) kbps, Transmitted bytes (TTI %u, total %u), Transmitted PDU (TTI %u, total %u) \n",
                      eNB->eNB_stats[CC_id].dlsch_bitrate,
@@ -126,6 +117,14 @@ int dump_eNB_l2_stats(char *buffer, int length)
                      eNB->eNB_stats[CC_id].total_dlsch_bytes_tx,
                      eNB->eNB_stats[CC_id].dlsch_pdus_tx,
                      eNB->eNB_stats[CC_id].total_dlsch_pdus_tx);
+
+      len += sprintf(&buffer[len],"ULSCH bitrate (TTI %u, avg %u) kbps, Received bytes (TTI %u, total %u), Received PDU (TTI %u, total %lu) \n",
+                     eNB->eNB_stats[CC_id].ulsch_bitrate,
+                     eNB->eNB_stats[CC_id].total_ulsch_bitrate,
+                     eNB->eNB_stats[CC_id].ulsch_bytes_rx,
+                     eNB->eNB_stats[CC_id].total_ulsch_bytes_rx,
+                     eNB->eNB_stats[CC_id].ulsch_pdus_rx,
+                     eNB->eNB_stats[CC_id].total_ulsch_pdus_rx);
     }
 
     len += sprintf(&buffer[len],"\n");
@@ -133,12 +132,16 @@ int dump_eNB_l2_stats(char *buffer, int length)
     for (UE_id=UE_list->head; UE_id>=0; UE_id=UE_list->next[UE_id]) {
       for (i=0; i<UE_list->numactiveCCs[UE_id]; i++) {
         CC_id=UE_list->ordered_CCids[i][UE_id];
-        UE_list->eNB_UE_stats[CC_id][UE_id].dlsch_bitrate=((UE_list->eNB_UE_stats[CC_id][UE_id].TBS*8)/((eNB->frame + 1)*10));
+	
+	UE_list->eNB_UE_stats[CC_id][UE_id].dlsch_bitrate=((UE_list->eNB_UE_stats[CC_id][UE_id].TBS*8)/((eNB->frame + 1)*10));
         UE_list->eNB_UE_stats[CC_id][UE_id].total_dlsch_bitrate= ((UE_list->eNB_UE_stats[CC_id][UE_id].total_pdu_bytes*8)/((eNB->frame + 1)*10));
         UE_list->eNB_UE_stats[CC_id][UE_id].total_overhead_bytes+=  UE_list->eNB_UE_stats[CC_id][UE_id].overhead_bytes;
         UE_list->eNB_UE_stats[CC_id][UE_id].avg_overhead_bytes=((UE_list->eNB_UE_stats[CC_id][UE_id].total_overhead_bytes*8)/((eNB->frame + 1)*10));
-
-        len += sprintf(&buffer[len],"UE %d %s, RNTI %x : CQI %d, MCS1 %d, MCS2 %d, RB (tx %d, retx %d, total %d), ncce (tx %d, retx %d) \n",
+	
+	UE_list->eNB_UE_stats[CC_id][UE_id].ulsch_bitrate=((UE_list->eNB_UE_stats[CC_id][UE_id].ulsch_TBS*8)/((eNB->frame + 1)*10));
+        UE_list->eNB_UE_stats[CC_id][UE_id].total_ulsch_bitrate= ((UE_list->eNB_UE_stats[CC_id][UE_id].total_pdu_bytes_rx*8)/((eNB->frame + 1)*10));
+       
+        len += sprintf(&buffer[len],"UE %d %s (DLSCH), RNTI %x : CQI %d, MCS1 %d, MCS2 %d, RB (tx %d, retx %d, total %d), ncce (tx %d, retx %d) \n",
                        UE_id,
                        map_int_to_str(rrc_status_names, UE_list->eNB_UE_stats[CC_id][UE_id].rrc_status),
                        UE_list->eNB_UE_stats[CC_id][UE_id].crnti,
@@ -165,12 +168,30 @@ int dump_eNB_l2_stats(char *buffer, int length)
                        UE_list->eNB_UE_stats[CC_id][UE_id].total_overhead_bytes,
                        UE_list->eNB_UE_stats[CC_id][UE_id].avg_overhead_bytes
                       );
-        len += sprintf(&buffer[len],
-                       "[MAC] ULSCH received bytes (total %"PRIu64"),"
-                       "Total received PDU %d, Total errors %d\n",
+        
+	len += sprintf(&buffer[len],"UE %d %s (ULSCH), RNTI %x : rx power (normalized %d,  target %d), MCS (pre %d, post %d), RB (rx %d, retx %d, total %d), Current TBS %d \n",
+                       UE_id,
+                       map_int_to_str(rrc_status_names, UE_list->eNB_UE_stats[CC_id][UE_id].rrc_status),
+                       UE_list->eNB_UE_stats[CC_id][UE_id].crnti,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].normalized_rx_power,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].target_rx_power,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].ulsch_mcs1,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].ulsch_mcs2,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].rbs_used_rx,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].rbs_used_retx_rx,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].total_rbs_used_rx,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].ulsch_TBS
+		       );
+
+	len += sprintf(&buffer[len],
+                       "[MAC] ULSCH bitrate (TTI %d, avg %d), received bytes (total %"PRIu64"),"
+                       "Total received PDU %d, Total errors %d\n", 
+		       UE_list->eNB_UE_stats[CC_id][UE_id].ulsch_bitrate,
+                       UE_list->eNB_UE_stats[CC_id][UE_id].total_ulsch_bitrate,
                        UE_list->eNB_UE_stats[CC_id][UE_id].total_pdu_bytes_rx,
                        UE_list->eNB_UE_stats[CC_id][UE_id].total_num_pdus_rx,
                        UE_list->eNB_UE_stats[CC_id][UE_id].num_errors_rx);
+
         len+= sprintf(&buffer[len],"Received PHR PH = %d (db)\n", UE_list->UE_template[CC_id][UE_id].phr_info);
         len+= sprintf(&buffer[len],"Received BSR LCGID[0][1][2][3] = %u %u %u %u\n",
                       UE_list->UE_template[CC_id][UE_id].bsr_info[LCGID0],

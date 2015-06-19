@@ -104,9 +104,12 @@ void rx_sdu(
   }
 
   LOG_D(MAC,"[eNB %d] CC_id %d Received ULSCH sdu from PHY (rnti %x, UE_id %d), parsing header\n",enb_mod_idP,CC_idP,rntiP,UE_id);
-
+  
   payload_ptr = parse_ulsch_header(sduP,&num_ce,&num_sdu,rx_ces,rx_lcids,rx_lengths,sdu_lenP);
-
+ 
+  eNB->eNB_stats[CC_idP].ulsch_bytes_rx=sdu_lenP;
+  eNB->eNB_stats[CC_idP].total_ulsch_bytes_rx+=sdu_lenP;
+  eNB->eNB_stats[CC_idP].total_ulsch_pdus_rx+=1;
   // control element
   for (i=0; i<num_ce; i++) {
 
@@ -343,7 +346,6 @@ void rx_sdu(
     }
 
     payload_ptr+=rx_lengths[i];
-
   }
 
   /* NN--> FK: we could either check the payload, or use a phy helper to detect a false msg3 */
@@ -357,6 +359,7 @@ void rx_sdu(
       }
     }
   } else {
+    UE_list->eNB_UE_stats[CC_idP][UE_id].pdu_bytes_rx=sdu_lenP;
     UE_list->eNB_UE_stats[CC_idP][UE_id].total_pdu_bytes_rx+=sdu_lenP;
     UE_list->eNB_UE_stats[CC_idP][UE_id].total_num_pdus_rx+=1;
   }
@@ -769,7 +772,9 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 
             ndi = 1-UE_template->oldNDI_UL[harq_pid];
             UE_template->oldNDI_UL[harq_pid]=ndi;
-	    UE_list->eNB_UE_stats[CC_id][UE_id].ulsch_mcs2=UE_template->pre_assigned_mcs_ul;
+	    UE_list->eNB_UE_stats[CC_id][UE_id].normalized_rx_power=normalized_rx_power;
+	    UE_list->eNB_UE_stats[CC_id][UE_id].target_rx_power=target_rx_power;
+	    UE_list->eNB_UE_stats[CC_id][UE_id].ulsch_mcs1=UE_template->pre_assigned_mcs_ul;
             mcs = cmin (UE_template->pre_assigned_mcs_ul, openair_daq_vars.target_ue_ul_mcs); // adjust, based on user-defined MCS
 
             if (UE_template->pre_allocated_rb_table_index_ul >=0) {
@@ -788,6 +793,8 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
             }
 
             TBS = mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]);
+	    UE_list->eNB_UE_stats[CC_id][UE_id].total_rbs_used_rx+=rb_table[rb_table_index];
+	    UE_list->eNB_UE_stats[CC_id][UE_id].ulsch_TBS=TBS;
             buffer_occupancy -= TBS;
             rballoc = mac_xface->computeRIV(frame_parms->N_RB_UL,
                                             first_rb[CC_id],
@@ -817,17 +824,22 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 
             }
 
-            LOG_D(MAC,"[eNB %d][PUSCH %d/%x] CC_id %d Frame %d subframeP %d Scheduled UE retransmission (mcs %d, first rb %d, nb_rb %d, TBS %d, harq_pid %d, round %d)\n",
+            LOG_D(MAC,"[eNB %d][PUSCH %d/%x] CC_id %d Frame %d subframeP %d Scheduled UE retransmission (mcs %d, first rb %d, nb_rb %d, harq_pid %d, round %d)\n",
                   module_idP,UE_id,rnti,CC_id,frameP,subframeP,mcs,
                   first_rb[CC_id],UE_template->nb_rb_ul[harq_pid],
-                  TBS,//mac_xface->get_TBS_UL(mcs,UE_template->nb_rb_ul[harq_pid]),
-                  harq_pid, round);
+		  harq_pid, round);
 
             rballoc = mac_xface->computeRIV(frame_parms->N_RB_UL,
                                             first_rb[CC_id],
                                             UE_template->nb_rb_ul[harq_pid]);
             first_rb[CC_id]+=UE_template->nb_rb_ul[harq_pid];  // increment for next UE allocation
-          }
+         
+	    UE_list->eNB_UE_stats[CC_id][UE_id].num_retransmission_rx+=1;
+	    UE_list->eNB_UE_stats[CC_id][UE_id].rbs_used_retx_rx=UE_template->nb_rb_ul[harq_pid];
+	    UE_list->eNB_UE_stats[CC_id][UE_id].total_rbs_used_rx+=UE_template->nb_rb_ul[harq_pid];
+	    UE_list->eNB_UE_stats[CC_id][UE_id].ulsch_mcs1=mcs;
+	    UE_list->eNB_UE_stats[CC_id][UE_id].ulsch_mcs2=mcs;
+	  }
 
           // Cyclic shift for DM RS
           if(cooperation_flag == 2) {

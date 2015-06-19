@@ -446,14 +446,21 @@ typedef struct {
   uint32_t total_dlsch_bytes_tx;
   //
   uint32_t total_dlsch_pdus_tx;
-
+  
+  // here for RX
   //
   uint32_t ulsch_bitrate;
   //
   uint32_t ulsch_bytes_rx;
   //
-  uint64_t ulsch_pdus_rx;
-  // here for RX
+  uint64_t ulsch_pdus_rx; 
+
+  uint32_t total_ulsch_bitrate;
+  //
+  uint32_t total_ulsch_bytes_rx;
+  //
+  uint32_t total_ulsch_pdus_rx;
+  
 } eNB_STATS;
 /*! \brief eNB statistics for the connected UEs*/
 typedef struct {
@@ -490,13 +497,7 @@ typedef struct {
   //  total rb used for retransmission
   uint32_t total_rbs_used_retx;
 
-  /// preassigned mcs after rate adaptation
-  uint8_t ulsch_mcs1;
-  /// adjusted mcs
-  uint8_t ulsch_mcs2;
-
-
-  /// TX
+   /// TX
   /// Num pkt
   uint32_t num_pdu_tx[NB_RB_MAX];
   /// num bytes
@@ -528,6 +529,12 @@ typedef struct {
   //  uint32_t avg_pdu_size;
 
   /// RX
+
+  /// preassigned mcs after rate adaptation
+  uint8_t ulsch_mcs1;
+  /// adjusted mcs
+  uint8_t ulsch_mcs2;
+
   /// estimated average pdu inter-departure time
   uint32_t avg_pdu_idt;
   /// estimated average pdu size
@@ -535,6 +542,22 @@ typedef struct {
   ///
   uint32_t aggregated_pdu_size;
   uint32_t aggregated_pdu_arrival;
+
+  ///  uplink transport block size
+  uint32_t ulsch_TBS;
+
+  ///  total rb used for a new uplink transmission
+  uint32_t num_retransmission_rx;
+  ///  total rb used for a new uplink transmission
+  uint32_t rbs_used_rx;
+   ///  total rb used for a new uplink retransmission
+  uint32_t rbs_used_retx_rx;
+  ///  total rb used for a new uplink transmission
+  uint32_t total_rbs_used_rx;
+  /// normalized rx power 
+  int32_t      normalized_rx_power;
+   /// target rx power 
+  int32_t    target_rx_power;
 
   /// num rx pdu
   uint32_t num_pdu_rx[NB_RB_MAX];
@@ -544,8 +567,19 @@ typedef struct {
   //  uint32_t tti_goodput[NB_RB_MAX];
   /// errors
   uint32_t num_errors_rx;
+  
+  uint64_t overhead_bytes_rx;
+  /// headers+ CE +  padding bytes for a MAC PDU
+  uint64_t total_overhead_bytes_rx;
+  /// headers+ CE +  padding bytes for a MAC PDU
+  uint64_t avg_overhead_bytes_rx;
+ //
+  uint32_t  ulsch_bitrate;
+  //total
+  uint32_t  total_ulsch_bitrate;
   /// overall
-
+  ///  MAC pdu bytes
+  uint64_t pdu_bytes_rx;
   /// total MAC pdu bytes
   uint64_t total_pdu_bytes_rx;
   /// total num pdu

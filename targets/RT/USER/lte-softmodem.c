@@ -292,7 +292,7 @@ char ref[128] = "internal";
 char channels[128] = "0";
 
 unsigned int samples_per_frame = 307200;
-unsigned int tx_forward_nsamps;
+unsigned int tx_forward_nsamps=0;
 int tx_delay;
 
 #endif
@@ -990,14 +990,18 @@ void do_OFDM_mod_rt(int subframe,PHY_VARS_eNB *phy_vars_eNB)
         ((short*)&phy_vars_eNB->lte_eNB_common_vars.txdata[0][aa][tx_offset])[0]=
 #ifdef EXMIMO
           ((short*)dummy_tx_b)[2*i]<<4;
+#elif OAI_BLADRF
+	((short*)dummy_tx_b)[2*i];
 #else
           ((short*)dummy_tx_b)[2*i]<<5;
 #endif
-        ((short*)&phy_vars_eNB->lte_eNB_common_vars.txdata[0][aa][tx_offset])[1]=
+	  ((short*)&phy_vars_eNB->lte_eNB_common_vars.txdata[0][aa][tx_offset])[1]=
 #ifdef EXMIMO
-          ((short*)dummy_tx_b)[2*i+1]<<4; 
+	    ((short*)dummy_tx_b)[2*i+1]<<4;
+#elif OAI_BLADRF
+	  ((short*)dummy_tx_b)[2*i+1];
 #else
-          ((short*)dummy_tx_b)[2*i+1]<<5;
+	  ((short*)dummy_tx_b)[2*i+1]<<5;
 #endif
      }
      // if S-subframe switch to RX in second subframe
@@ -1078,7 +1082,7 @@ static void* eNB_thread_tx( void* param )
     return &eNB_thread_tx_status[proc->subframe];
   }
 
-  LOG_I( HW, "[SCHED] eNB TX deadline thread %d(tid %ld) started on CPU %d\n", proc->subframe, gettid(), sched_getcpu() );
+  LOG_I( HW, "[SCHED] eNB TX deadline thread %d(Tid %ld) started on CPU %d\n", proc->subframe, gettid(), sched_getcpu() );
 #else
   LOG_I( HW, "[SCHED][eNB] TX thread %d started on CPU %d TID %d\n", proc->subframe, sched_getcpu(),gettid() );
 #endif
@@ -1256,8 +1260,8 @@ static void* eNB_thread_rx( void* param )
 
   /* This creates a 2ms reservation every 10ms period*/
   attr.sched_policy = SCHED_DEADLINE;
-  attr.sched_runtime  = 0.9 *  1000000; // each rx thread must finish its job in the worst case in 2ms
-  attr.sched_deadline = 2   *  1000000; // each rx thread will finish within 2ms
+  attr.sched_runtime  = 1   *  1000000; // each rx thread must finish its job in the worst case in 2ms
+  attr.sched_deadline = 1   *  1000000; // each rx thread will finish within 2ms
   attr.sched_period   = 1   * 10000000; // each rx thread has a period of 10ms from the starting point
 
   if (sched_setattr(0, &attr, flags) < 0 ) {
@@ -1265,7 +1269,7 @@ static void* eNB_thread_rx( void* param )
     return &eNB_thread_rx_status[proc->subframe];
   }
 
-  LOG_I( HW, "[SCHED] eNB RX deadline thread %d(id %ld) started on CPU %d\n", proc->subframe, gettid(), sched_getcpu() );
+  LOG_I( HW, "[SCHED] eNB RX deadline thread %d(TID %ld) started on CPU %d\n", proc->subframe, gettid(), sched_getcpu() );
 #else
   LOG_I( HW, "[SCHED][eNB] RX thread %d started on CPU %d TID %d\n", proc->subframe, sched_getcpu(),gettid() );
 #endif
@@ -1573,8 +1577,8 @@ static void* eNB_thread( void* arg )
 
   /* This creates a .5 ms  reservation */
   attr.sched_policy = SCHED_DEADLINE;
-  attr.sched_runtime  = 0.1 * 1000000;
-  attr.sched_deadline = 0.5 * 1000000;
+  attr.sched_runtime  = 0.2 * 1000000;
+  attr.sched_deadline = 0.9 * 1000000;
   attr.sched_period   = 1.0 * 1000000;
 
 
@@ -1769,9 +1773,10 @@ static void* eNB_thread( void* arg )
       stop_meas( &softmodem_stats_hw );
       clock_gettime( CLOCK_MONOTONIC, &trx_time1 );
 
-      if (rxs != spp)
-        exit_fun( "problem receiving samples" );
-
+      if (frame > 10){ 
+	if (rxs != spp)
+	  exit_fun( "problem receiving samples" );
+      }
       VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ, 0 );
 
       // Transmit TX buffer based on timestamp from RX
@@ -2798,7 +2803,6 @@ int main( int argc, char **argv )
   }
 
 
-
   dump_frame_parms(frame_parms[0]);
 
   if(frame_parms[0]->N_RB_DL == 100) {
@@ -2806,7 +2810,9 @@ int main( int argc, char **argv )
     bw          = 10.0e6;
 #ifndef EXMIMO
     openair0_cfg[0].samples_per_packet = 2048;
-    samples_per_frame = 307200;
+    samples_per_frame = 307200; 
+    openair0_cfg[card].tx_bw = 10e6;
+    openair0_cfg[card].rx_bw = 10e6;
     // from usrp_time_offset
     tx_forward_nsamps = 175;
     tx_delay = 8;
@@ -2817,6 +2823,8 @@ int main( int argc, char **argv )
 #ifndef EXMIMO
     openair0_cfg[0].samples_per_packet = 2048;
     samples_per_frame = 153600;
+    openair0_cfg[card].tx_bw = 5e6;
+    openair0_cfg[card].rx_bw = 5e6;
     tx_forward_nsamps = 95;
     tx_delay = 5;
 #endif
@@ -2824,10 +2832,17 @@ int main( int argc, char **argv )
     sample_rate = 7.68e6;
     bw          = 2.5e6;
 #ifndef EXMIMO
-    openair0_cfg[0].samples_per_packet = 1024;
     samples_per_frame = 76800;
+    openair0_cfg[card].tx_bw = 2.5e6;
+    openair0_cfg[card].rx_bw = 2.5e6;
+    openair0_cfg[0].samples_per_packet = 1024;
+#ifdef OAI_USRP
     tx_forward_nsamps = 70;
     tx_delay = 6;
+#elif OAI_BLADERF
+    tx_forward_nsamps = 70;
+    tx_delay = 6;
+#endif 
 #endif
   } else if (frame_parms[0]->N_RB_DL == 6) {
     sample_rate = 1.92e6;
@@ -2835,6 +2850,8 @@ int main( int argc, char **argv )
 #ifndef EXMIMO
     openair0_cfg[0].samples_per_packet = 256;
     samples_per_frame = 19200;
+    openair0_cfg[card].tx_bw = 1.5e6;
+    openair0_cfg[card].rx_bw = 1.5e6;
     tx_forward_nsamps = 40;
     tx_delay = 8;
 #endif
