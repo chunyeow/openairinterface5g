@@ -9,7 +9,7 @@ This file describes briefly the steps that were carried out to migrate from *PUB
 7. You will need to put your ssh keys in https://gitlab.eurecom.fr/profile/keys to access to the git repo (only important for users who want to commit to the repository)
 
 
-Migration Instructions in Detail:
+Migration Instructions from SVN->Git in Detail (Not important for OAI Developer Community):
 Assuming you are in svn2git directory.
 
 wget https://bitbucket.org/atlassian/svn-migration-scripts/downloads/svn-migration-scripts.jar
@@ -28,7 +28,7 @@ git push -u origin --all
 git push --tags
 
 Steps to synchronize (to be carried out periodically)
-git svn fetch --authors-file=./authors.txt
+git svn fetch --authors-file=./authors.txt (Make sure that there are no new authors since the last migration, else this will result in errors)
 git svn rebase
 git push -u origin --all
 git push --tags
