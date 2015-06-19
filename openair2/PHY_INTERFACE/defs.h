@@ -38,9 +38,7 @@
 #ifndef __MAC_PHY_PRIMITIVES_H__
 #    define __MAC_PHY_PRIMITIVES_H__
 
-
 #include "LAYER2/MAC/defs.h"
-
 
 
 #define MAX_NUMBER_OF_MAC_INSTANCES 16
@@ -300,16 +298,21 @@ typedef struct {
   /// Function for UE/PHY to compute PHR
   int8_t (*get_PHR)(module_id_t Mod_id, uint8_t CC_id,uint8_t eNB_index);
 
+  /// Function for UE to process the timing advance command
   void (*process_timing_advance)(module_id_t Mod_id,uint8_t CC_id, int16_t timing_advance);
-
+  
+  /// Function for MAC to get the UE stats from the PHY   
   LTE_eNB_UE_stats* (*get_eNB_UE_stats)(module_id_t Mod_id, uint8_t CC_id, rnti_t rnti);
 
+  /// get the frame parameters from the PHY
   LTE_DL_FRAME_PARMS* (*get_lte_frame_parms)(module_id_t Mod_id, uint8_t CC_id);
-
+  
+  /// get the Multiuser mimo mode
   MU_MIMO_mode* (*get_mu_mimo_mode) (module_id_t Mod_id, uint8_t CC_id, rnti_t rnti);
 
+  /// get the delta TF for Uplink Power Control Calculation
   int16_t (*get_hundred_times_delta_TF) (module_id_t module_idP, uint8_t CC_id, rnti_t rnti, uint8_t harq_pid);
-
+  /// get target uplink received power 
   int16_t (*get_target_ul_rx_power) (module_id_t module_idP, uint8_t CC_id);
 
   unsigned char is_cluster_head;

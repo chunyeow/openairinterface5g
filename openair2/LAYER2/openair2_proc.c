@@ -95,7 +95,25 @@ int dump_eNB_l2_stats(char *buffer, int length)
                      eNB->eNB_stats[CC_id].num_dlactive_UEs,
                      eNB->eNB_stats[CC_id].available_prbs,
                      eNB->eNB_stats[CC_id].available_ncces);
+      
+      len += sprintf(&buffer[len],"BCCH , NB_TX_MAC = %d, transmitted bytes (TTI %d, total %d) MCS (TTI %d)\n",
+		     eNB->eNB_stats[CC_id].total_num_bcch_pdu,
+		     eNB->eNB_stats[CC_id].bcch_buffer,
+		     eNB->eNB_stats[CC_id].total_bcch_buffer,
+		     eNB->eNB_stats[CC_id].bcch_mcs);
+      
+      len += sprintf(&buffer[len],"CCCH , NB_TX_MAC = %d, transmitted bytes (TTI %d, total %d) MCS (TTI %d)\n",
+		     eNB->eNB_stats[CC_id].total_num_bcch_pdu,
+		     eNB->eNB_stats[CC_id].bcch_buffer,
+		     eNB->eNB_stats[CC_id].total_bcch_buffer,
+		     eNB->eNB_stats[CC_id].bcch_mcs);
 
+      len += sprintf(&buffer[len],"DCCH , NB_TX_MAC = %d, transmitted bytes (TTI %d, total %d) MCS (TTI %d)\n",
+		     eNB->eNB_stats[CC_id].total_num_bcch_pdu,
+		     eNB->eNB_stats[CC_id].bcch_buffer,
+		     eNB->eNB_stats[CC_id].total_bcch_buffer,
+		     eNB->eNB_stats[CC_id].bcch_mcs);
+      
       eNB->eNB_stats[CC_id].dlsch_bitrate=((eNB->eNB_stats[CC_id].dlsch_bytes_tx*8)/((eNB->frame + 1)*10));
       eNB->eNB_stats[CC_id].total_dlsch_pdus_tx+=eNB->eNB_stats[CC_id].dlsch_pdus_tx;
       eNB->eNB_stats[CC_id].total_dlsch_bytes_tx+=eNB->eNB_stats[CC_id].dlsch_bytes_tx;
@@ -154,7 +172,7 @@ int dump_eNB_l2_stats(char *buffer, int length)
                        UE_list->eNB_UE_stats[CC_id][UE_id].total_num_pdus_rx,
                        UE_list->eNB_UE_stats[CC_id][UE_id].num_errors_rx);
         len+= sprintf(&buffer[len],"Received PHR PH = %d (db)\n", UE_list->UE_template[CC_id][UE_id].phr_info);
-        len+= sprintf(&buffer[len],"Received BSR [0][1][2][3] = %d %d %d %d\n",
+        len+= sprintf(&buffer[len],"Received BSR LCGID[0][1][2][3] = %u %u %u %u\n",
                       UE_list->UE_template[CC_id][UE_id].bsr_info[LCGID0],
                       UE_list->UE_template[CC_id][UE_id].bsr_info[LCGID1],
                       UE_list->UE_template[CC_id][UE_id].bsr_info[LCGID2],

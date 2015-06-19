@@ -95,7 +95,9 @@ Options
 --install-system-files
    Install OpenArInterface required files in Linux system
    (will ask root password)
-Typical Options for a quick startup with a COTS UE and Eurecom RF board: build_oai -I -g -eNB -EPC -x --install-system-files'
+Usage:
+ Eurecom EXMIMO + COTS UE : ./build_oai -I -g --eNB --EPC -x --install-system-files
+ NI/ETTUS B201  + COTS UE : ./build_oai -I -g --eNB --EPC -x --install-system-files -w USRP'
 }
 
 

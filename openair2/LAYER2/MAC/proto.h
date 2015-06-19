@@ -153,6 +153,7 @@ int8_t get_DELTA_PREAMBLE(module_id_t module_idP,int CC_id);
 
 /** \brief Function for compute deltaP_rampup from 36.321 (for RA power ramping procedure and Msg3 PUSCH power control policy)
     @param Mod_id Module id of UE
+    @param CC_id carrier component id of UE
     @returns deltaP_rampup
 */
 int8_t get_deltaP_rampup(module_id_t module_idP,uint8_t CC_id);
