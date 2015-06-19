@@ -572,11 +572,11 @@ static void *UE_thread_tx(void *arg)
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
   attr.sched_nice = 0;
-  attr.sched_priority = 0;
+  attr.sched_priority = sched_get_priority_max(SCHED_DEADLINE)-1;
 
   /* This creates a 1ms reservation every 10ms period*/
   attr.sched_policy = SCHED_DEADLINE;
-  attr.sched_runtime = 1 * 500000;  // each tx thread requires .5ms to finish its job
+  attr.sched_runtime = 1 * 900000;  // each tx thread requires .5ms to finish its job
   attr.sched_deadline =1 * 1000000; // each tx thread will finish within 1ms
   attr.sched_period = 1 * 1000000; // each tx thread has a period of 1ms from the starting point
 
@@ -744,11 +744,11 @@ static void *UE_thread_rx(void *arg)
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
   attr.sched_nice = 0;
-  attr.sched_priority = 0;
+  attr.sched_priority = sched_get_priority_max(SCHED_DEADLINE)-1;
 
-  // This creates a 1ms reservation every 10ms period
+  // This creates a .5ms reservation every 1ms period
   attr.sched_policy = SCHED_DEADLINE;
-  attr.sched_runtime = 1 * 500000;  // each rx thread requires 1ms to finish its job
+  attr.sched_runtime = 1 * 900000;  // each rx thread requires 1ms to finish its job
   attr.sched_deadline =1 * 1000000; // each rx thread will finish within 1ms
   attr.sched_period = 1 * 1000000; // each rx thread has a period of 1ms from the starting point
 
@@ -981,7 +981,7 @@ void *UE_thread(void *arg)
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
   attr.sched_nice = 0;
-  attr.sched_priority = 0;
+  attr.sched_priority = sched_get_priority_max(SCHED_DEADLINE);
 
   // This creates a .5 ms  reservation
   attr.sched_policy = SCHED_DEADLINE;
@@ -1050,7 +1050,7 @@ void *UE_thread(void *arg)
       }
 
       if (rx_off_diff !=0)
-	LOG_I(PHY,"frame %d, rx_offset %d, rx_off_diff %d\n",UE->frame_rx,UE->rx_offset,rx_off_diff);
+	LOG_D(PHY,"frame %d, rx_offset %d, rx_off_diff %d\n",UE->frame_rx,UE->rx_offset,rx_off_diff);
 
       VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ, 0 );
 
@@ -1311,7 +1311,7 @@ void *UE_thread(void *arg)
 #ifdef LOWLATENCY
   struct sched_attr attr;
   unsigned int flags = 0;
-  unsigned long mask = 1; // processor 0
+  //  unsigned long mask = 1; // processor 0
 #endif
   int freq_offset;
 
@@ -1336,7 +1336,7 @@ void *UE_thread(void *arg)
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
   attr.sched_nice = 0;
-  attr.sched_priority = 0;
+  attr.sched_priority = sched_get_priority_max(SCHED_DEADLINE);
 
   // This creates a .25 ms  reservation
   attr.sched_policy = SCHED_DEADLINE;

@@ -2001,7 +2001,8 @@ static void get_options (int argc, char **argv)
     LONG_OPTION_CALIB_PRACH_TX,
     LONG_OPTION_RXGAIN,
     LONG_OPTION_TXGAIN,
-    LONG_OPTION_SCANCARRIER
+    LONG_OPTION_SCANCARRIER,
+    LONG_OPTION_MAXPOWER
   };
 
   static const struct option long_options[] = {
@@ -2015,11 +2016,17 @@ static void get_options (int argc, char **argv)
     {"ue-rxgain",   required_argument,  NULL, LONG_OPTION_RXGAIN},
     {"ue-txgain",   required_argument,  NULL, LONG_OPTION_TXGAIN},
     {"ue-scan-carrier",   no_argument,  NULL, LONG_OPTION_SCANCARRIER},
+    {"ue-max-power",   required_argument,  NULL, LONG_OPTION_MAXPOWER},
     {NULL, 0, NULL, 0}
   };
 
   while ((c = getopt_long (argc, argv, "C:dK:g:F:G:hqO:m:SUVRM:r:P:Ws:t:x:",long_options,NULL)) != -1) {
     switch (c) {
+    case LONG_OPTION_MAXPOWER:
+      tx_max_power[0]=atoi(optarg);
+      for (CC_id=1;CC_id<MAX_NUM_CCs;CC_id++)
+	tx_max_power[CC_id]=tx_max_power[0];
+
     case LONG_OPTION_ULSCH_MAX_CONSECUTIVE_ERRORS:
       ULSCH_max_consecutive_errors = atoi(optarg);
       printf("Set ULSCH_max_consecutive_errors = %d\n",ULSCH_max_consecutive_errors);
@@ -2469,12 +2476,8 @@ int main( int argc, char **argv )
   if (UE_flag==1) {
     printf("configuring for UE\n");
 
-    set_comp_log(HW,      LOG_DEBUG,  LOG_HIGH, 1);
-#ifdef OPENAIR2
-    set_comp_log(PHY,     LOG_DEBUG,   LOG_HIGH, 1);
-#else
+    set_comp_log(HW,      LOG_INFO,  LOG_HIGH, 1);
     set_comp_log(PHY,     LOG_INFO,   LOG_HIGH, 1);
-#endif
     set_comp_log(MAC,     LOG_INFO,   LOG_HIGH, 1);
     set_comp_log(RLC,     LOG_INFO,   LOG_HIGH, 1);
     set_comp_log(PDCP,    LOG_INFO,   LOG_HIGH, 1);
@@ -2994,7 +2997,7 @@ int main( int argc, char **argv )
 #ifdef OAI_USRP
     openair_daq_vars.timing_advance = 160;
 #else
-    openair_daq_vars.timing_advance = 170;
+    openair_daq_vars.timing_advance = 160;
 #endif
     if (setup_ue_buffers(UE,&openair0_cfg[0],rf_map)!=0) {
       printf("Error setting up eNB buffer\n");
