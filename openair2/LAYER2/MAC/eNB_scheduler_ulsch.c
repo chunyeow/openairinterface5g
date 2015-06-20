@@ -611,10 +611,17 @@ void schedule_ulsch(module_id_t module_idP, frame_t frameP,unsigned char coopera
       if ((eNB->common_channels[CC_id].RA_template[i].RA_active == TRUE) &&
           (eNB->common_channels[CC_id].RA_template[i].generate_rar == 0) &&
           (eNB->common_channels[CC_id].RA_template[i].Msg3_subframe == sched_subframe)) {
+	//leave out first RB for PUCCH
         first_rb[CC_id]++;
         break;
       }
     }
+
+    /*
+    if (mac_xface->is_prach_subframe(&(mac_xface->lte_frame_parms),frameP,subframeP)) {
+      first_rb[CC_id] = (mac_xface->get_prach_prb_offset(&(mac_xface->lte_frame_parms),
+    */
+
   }
 
   schedule_ulsch_rnti(module_idP, cooperation_flag, frameP, subframeP, sched_subframe, nCCE, nCCE_available, first_rb);
@@ -650,7 +657,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
   DCI_PDU           *DCI_pdu;
   uint8_t                 status         = 0;
   uint8_t                 rb_table_index = -1;
-  uint16_t                TBS = 0,i;
+  uint16_t                TBS = 0;
   int32_t                buffer_occupancy=0;
   uint32_t                cqi_req,cshift,ndi,mcs,rballoc,tpc;
   int32_t                 normalized_rx_power, target_rx_power=-90;
@@ -744,13 +751,13 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 
           // this is the normalized RX power and this should be constant (regardless of mcs
           normalized_rx_power = eNB_UE_stats->UL_rssi[0];
-          target_rx_power = mac_xface->get_target_ul_rx_power(module_idP,CC_id);
+          target_rx_power = mac_xface->get_target_pusch_rx_power(module_idP,CC_id);
 
           // this assumes accumulated tpc
 	  // make sure that we are only sending a tpc update once a frame, otherwise the control loop will freak out
-          if (((UE_template->tpc_tx_frame*10+UE_template->tpc_tx_subframe)%10240)<(frameP*10+subframeP+10)) {
-	    UE_template->tpc_tx_frame=frameP;
-	    UE_template->tpc_tx_subframe=subframeP;
+          if (((UE_template->pusch_tpc_tx_frame*10+UE_template->pusch_tpc_tx_subframe)%10240)<(frameP*10+subframeP+10)) {
+	    UE_template->pusch_tpc_tx_frame=frameP;
+	    UE_template->pusch_tpc_tx_subframe=subframeP;
             if (normalized_rx_power>(target_rx_power+1)) {
               tpc = 0; //-1
               tpc_accumulated--;
@@ -760,8 +767,8 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
             } else {
               tpc = 1; //0
             }
-	    LOG_D(MAC,"[eNB %d] ULSCH scheduler: subframe %d, harq_pid %d, tpc %d, accumulated %d, normalized/target rx power %d/%d\n",
-		  module_idP,subframeP,harq_pid,tpc,
+	    LOG_I(MAC,"[eNB %d] ULSCH scheduler: frame %d, subframe %d, harq_pid %d, tpc %d, accumulated %d, normalized/target rx power %d/%d\n",
+		  module_idP,frameP,subframeP,harq_pid,tpc,
 		  tpc_accumulated,normalized_rx_power,target_rx_power);
           } else {
             tpc = 1; //0

@@ -692,8 +692,10 @@ typedef struct {
   int32_t ue_tx_power;
 
   /// stores the frame where the last TPC was transmitted
-  uint32_t tpc_tx_frame;
-  uint32_t tpc_tx_subframe;
+  uint32_t pusch_tpc_tx_frame;
+  uint32_t pusch_tpc_tx_subframe;
+  uint32_t pucch_tpc_tx_frame;
+  uint32_t pucch_tpc_tx_subframe;
 
 #ifdef LOCALIZATION
   eNB_UE_estimated_distances distance;

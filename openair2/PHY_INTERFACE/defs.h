@@ -313,7 +313,8 @@ typedef struct {
   /// get the delta TF for Uplink Power Control Calculation
   int16_t (*get_hundred_times_delta_TF) (module_id_t module_idP, uint8_t CC_id, rnti_t rnti, uint8_t harq_pid);
   /// get target uplink received power 
-  int16_t (*get_target_ul_rx_power) (module_id_t module_idP, uint8_t CC_id);
+  int16_t (*get_target_pusch_rx_power) (module_id_t module_idP, uint8_t CC_id);
+  int16_t (*get_target_pucch_rx_power) (module_id_t module_idP, uint8_t CC_id);
 
   unsigned char is_cluster_head;
   unsigned char is_primary_cluster_head;
@@ -323,10 +324,13 @@ typedef struct {
   /// PHY Frame Configuration
   LTE_DL_FRAME_PARMS *lte_frame_parms;
 
-  //ICIC algos
-  uint8_t (*get_SB_size)(uint8_t n_rb_dl);
+  uint8_t (*get_prach_prb_offset)(LTE_DL_FRAME_PARMS *frame_parms, uint8_t tdd_mapindex, uint16_t Nf); 
 
-  //end ALU's algo
+  int (*is_prach_subframe)(LTE_DL_FRAME_PARMS *frame_parms,frame_t frame, uint8_t subframe);
+
+  /// ICIC algos
+  uint8_t (*get_SB_size)(uint8_t n_rb_dl);
+  ///end ALU's algo
 
 } MAC_xface;
 

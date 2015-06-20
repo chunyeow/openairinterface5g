@@ -2441,7 +2441,6 @@ int decode_BCCH_DLSCH_Message(
 #endif
      ) {
     rrc_ue_generate_RRCConnectionRequest(ctxt_pP, 0);
-    LOG_I( RRC, "not sending connection request\n" );
     rrc_set_sub_state( ctxt_pP->module_id, RRC_SUB_STATE_IDLE_CONNECTING );
   }
 
@@ -3072,7 +3071,6 @@ static int decode_SI( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_in
 #if !(defined(ENABLE_ITTI) && defined(ENABLE_USE_MME))
 	  rrc_ue_generate_RRCConnectionRequest( ctxt_pP, eNB_index );
 	
-	LOG_I( RRC, "not sending connection request\n" );
 #endif
 	
 	if (UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].State == RRC_IDLE) {
