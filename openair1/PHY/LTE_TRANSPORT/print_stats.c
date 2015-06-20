@@ -104,8 +104,19 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 #endif
     len += sprintf(&buffer[len], "[UE PROC] UE mode = %s (%d)\n",mode_string[phy_vars_ue->UE_mode[0]],phy_vars_ue->UE_mode[0]);
     len += sprintf(&buffer[len], "[UE PROC] timing_advance = %d\n",phy_vars_ue->timing_advance);
-    len += sprintf(&buffer[len], "[UE PROC] UE tx power = %d\n", PHY_vars_UE_g[0][0]->tx_power_dBm);
-
+    if (phy_vars_ue->UE_mode[0]==PUSCH) {
+      len += sprintf(&buffer[len], "[UE PROC] Po_PUSCH = %d dBm (PL %d dB, Po_NOMINAL_PUSCH %d dBm, PHR %d dB)\n", 
+		     PHY_vars_UE_g[0][0]->ulsch_ue[0]->Po_PUSCH,
+		     get_PL(phy_vars_ue->Mod_id,phy_vars_ue->CC_id,0),
+		     mac_xface->get_Po_NOMINAL_PUSCH(phy_vars_ue->Mod_id,0),
+		     PHY_vars_UE_g[0][0]->ulsch_ue[0]->PHR);
+      len += sprintf(&buffer[len], "[UE PROC] Po_PUCCH = %d dBm (Po_NOMINAL_PUCCH %d dBm, g_pucch %d dB)\n", 
+		     get_PL(phy_vars_ue->Mod_id,phy_vars_ue->CC_id,0)+
+		     phy_vars_ue->lte_frame_parms.ul_power_control_config_common.p0_NominalPUCCH+
+		     phy_vars_ue->g_pucch[0],
+		     phy_vars_ue->lte_frame_parms.ul_power_control_config_common.p0_NominalPUCCH,
+		     phy_vars_ue->g_pucch[0]);
+    }
     //for (eNB=0;eNB<NUMBER_OF_eNB_MAX;eNB++) {
     for (eNB=0; eNB<1; eNB++) {
       len += sprintf(&buffer[len], "[UE PROC] RX spatial power eNB%d: [%d %d; %d %d] dB\n",
@@ -616,13 +627,18 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length)
 
     if (phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->rnti>0) {
 #endif
-      len += sprintf(&buffer[len],"[eNB PROC] UE %d (%x) Power: (%d,%d) dB, RSSI: (%d,%d) dBm, Sector %d\n",
+      len += sprintf(&buffer[len],"[eNB PROC] UE %d (%x) Power: (%d,%d) dB, Po_PUSCH: (%d,%d) dBm, Po_PUCCH (%d/%d) dBm, Po_PUCCH1 (%d,%d) dBm,  PUCCH1 Thres %d dBm \n",
                      UE_id,
                      phy_vars_eNB->eNB_UE_stats[UE_id].crnti,
                      dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[UE_id]->ulsch_power[0]),
                      dB_fixed(phy_vars_eNB->lte_eNB_pusch_vars[UE_id]->ulsch_power[1]),
                      phy_vars_eNB->eNB_UE_stats[UE_id].UL_rssi[0],
                      phy_vars_eNB->eNB_UE_stats[UE_id].UL_rssi[1],
+		     dB_fixed(phy_vars_eNB->eNB_UE_stats[UE_id].Po_PUCCH)-phy_vars_eNB->rx_total_gain_eNB_dB,
+		     phy_vars_eNB->lte_frame_parms.ul_power_control_config_common.p0_NominalPUCCH,
+		     dB_fixed(phy_vars_eNB->eNB_UE_stats[UE_id].Po_PUCCH1_below)-phy_vars_eNB->rx_total_gain_eNB_dB,
+		     dB_fixed(phy_vars_eNB->eNB_UE_stats[UE_id].Po_PUCCH1_above)-phy_vars_eNB->rx_total_gain_eNB_dB,
+		     PUCCH1_THRES+phy_vars_eNB->PHY_measurements_eNB[0].n0_power_tot_dBm-dB_fixed(phy_vars_eNB->lte_frame_parms.N_RB_UL),
                      phy_vars_eNB->eNB_UE_stats[UE_id].sector);
 
       for(i=0; i<8; i++)

@@ -759,19 +759,6 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
       if (phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->subframe_scheduling_flag == 1) {
 
         generate_ul_signal = 1;
-        // FK 20140908: the power control cannot be done here, since we do not have the spectral efficiency yet. this is only done in ulsch_encoding
-        /*
-        #ifdef OPENAIR2
-        pusch_power_cntl(phy_vars_ue,subframe_tx,eNB_id,1, abstraction_flag);
-        phy_vars_ue->tx_power_dBm = phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH;
-        #else
-        phy_vars_ue->tx_power_dBm = UE_TX_POWER;
-        #endif
-        phy_vars_ue->tx_total_RE = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->nb_rb*12;
-
-        LOG_D(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d harq pid %d, Po_PUSCH : %d dBm\n",
-              Mod_id,harq_pid,frame_tx,subframe_tx,harq_pid, phy_vars_ue->tx_power_dBm);
-        */
 
         // deactivate service request
         phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->subframe_scheduling_flag = 0;
@@ -985,8 +972,8 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 #else
           tx_amp = AMP;
 #endif
-          LOG_D(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d, generating PUSCH, Po_PUSCH: %d dBm (max %d dBm), amp %d\n",
-                Mod_id,harq_pid,frame_tx,subframe_tx,phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm, tx_amp);
+	  LOG_D(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d, generating PUSCH, Po_PUSCH: %d dBm (max %d dBm), amp %d\n",
+		Mod_id,harq_pid,frame_tx,subframe_tx,phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm, tx_amp);
           start_meas(&phy_vars_ue->ulsch_modulation_stats);
           ulsch_modulation(phy_vars_ue->lte_ue_common_vars.txdataF,
 			   tx_amp,
@@ -1326,7 +1313,6 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
               ((short*)phy_vars_ue->lte_ue_common_vars.txdata[aa])[2*k+1] = ((short*)dummy_tx_buffer)[2*l+1]<<4;
             }
 #if defined(EXMIMO)
-	    /*
 	    // handle switch before 1st TX subframe, guarantee that the slot prior to transmission is switch on
 	    for (k=ulsch_start - (frame_parms->samples_per_tti>>1) ; k<ulsch_start ; k++) {
 	      if (k<0)
@@ -1336,7 +1322,6 @@ void phy_procedures_UE_TX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstra
 	      else
 		phy_vars_ue->lte_ue_common_vars.txdata[aa][k] &= 0xFFFEFFFE;
 	    }
-	    */
 #endif
 #endif
 

@@ -74,8 +74,6 @@
 #define NS_PER_SLOT 500000
 
 #define PUCCH 1
-#define PUCCH1_THRES 15
-#define PUCCH1a_THRES 15
 
 extern int exit_openair;
 //extern void do_OFDM_mod(mod_sym_t **txdataF, int32_t **txdata, uint32_t frame, uint16_t next_slot, LTE_DL_FRAME_PARMS *frame_parms);
@@ -161,6 +159,15 @@ int32_t add_ue(int16_t rnti, PHY_VARS_eNB *phy_vars_eNB)
         phy_vars_eNB->dlsch_eNB[i][0]->rnti = rnti;
         phy_vars_eNB->ulsch_eNB[i]->rnti = rnti;
         phy_vars_eNB->eNB_UE_stats[i].crnti = rnti;
+
+	phy_vars_eNB->eNB_UE_stats[i].Po_PUCCH1_below = 0;
+	phy_vars_eNB->eNB_UE_stats[i].Po_PUCCH1_above = (int32_t)pow(10.0,.1*(phy_vars_eNB->lte_frame_parms.ul_power_control_config_common.p0_NominalPUCCH+phy_vars_eNB->rx_total_gain_eNB_dB));
+	phy_vars_eNB->eNB_UE_stats[i].Po_PUCCH        = (int32_t)pow(10.0,.1*(phy_vars_eNB->lte_frame_parms.ul_power_control_config_common.p0_NominalPUCCH+phy_vars_eNB->rx_total_gain_eNB_dB));
+	LOG_I(PHY,"Initializing Po_PUCCH: p0_NominalPUCCH %d, gain %d => %d\n",
+	      phy_vars_eNB->lte_frame_parms.ul_power_control_config_common.p0_NominalPUCCH,
+	      phy_vars_eNB->rx_total_gain_eNB_dB,
+	      phy_vars_eNB->eNB_UE_stats[i].Po_PUCCH);
+  
         return(i);
       }
     }
@@ -383,10 +390,16 @@ int get_nCCE_offset(const unsigned char L, const int nCCE, const int common_dci,
   }
 }
 
-int16_t get_target_ul_rx_power(const module_id_t module_idP, const uint8_t CC_id)
+int16_t get_target_pusch_rx_power(const module_id_t module_idP, const uint8_t CC_id)
 {
   //return PHY_vars_eNB_g[module_idP][CC_id]->PHY_measurements_eNB[0].n0_power_tot_dBm;
   return PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.ul_power_control_config_common.p0_NominalPUSCH;
+}
+
+int16_t get_target_pucch_rx_power(const module_id_t module_idP, const uint8_t CC_id)
+{
+  //return PHY_vars_eNB_g[module_idP][CC_id]->PHY_measurements_eNB[0].n0_power_tot_dBm;
+  return PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.ul_power_control_config_common.p0_NominalPUCCH;
 }
 
 #ifdef EMOS

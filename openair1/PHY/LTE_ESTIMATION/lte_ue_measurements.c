@@ -231,12 +231,12 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
               phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[-66]*rxF_pss[-66])+((int32_t)rxF_pss[-65]*rxF_pss[-65]));
 	      //              phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_pss[-64]*rxF_pss[-64])+((int32_t)rxF_pss[-63]*rxF_pss[-63]));
 	      //	      printf("pssm32 %d\n",phy_vars_ue->PHY_measurements.n0_power[aarx]);
-              phy_vars_ue->PHY_measurements.n0_power_dB[aarx] = (unsigned short) dB_fixed(phy_vars_ue->PHY_measurements.n0_power[aarx]*phy_vars_ue->lte_frame_parms.ofdm_symbol_size/12);
+              phy_vars_ue->PHY_measurements.n0_power_dB[aarx] = (unsigned short) dB_fixed(phy_vars_ue->PHY_measurements.n0_power[aarx]/12);
               phy_vars_ue->PHY_measurements.n0_power_tot +=  phy_vars_ue->PHY_measurements.n0_power[aarx];
             }
 
-            phy_vars_ue->PHY_measurements.n0_power_tot_dB = (unsigned short) dB_fixed(phy_vars_ue->PHY_measurements.n0_power_tot/(12*aarx*phy_vars_ue->lte_frame_parms.ofdm_symbol_size));
-            phy_vars_ue->PHY_measurements.n0_power_tot_dBm = phy_vars_ue->PHY_measurements.n0_power_tot_dB - phy_vars_ue->rx_total_gain_dB;
+	    phy_vars_ue->PHY_measurements.n0_power_tot_dB = (unsigned short) dB_fixed(phy_vars_ue->PHY_measurements.n0_power_tot/(12*aarx));
+	    phy_vars_ue->PHY_measurements.n0_power_tot_dBm = phy_vars_ue->PHY_measurements.n0_power_tot_dB - phy_vars_ue->rx_total_gain_dB - dB_fixed(phy_vars_ue->lte_frame_parms.ofdm_symbol_size);
 	  }
         }
 	else if ((phy_vars_ue->lte_frame_parms.frame_type == TDD) &&
@@ -263,11 +263,11 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
 	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_sss[2+66]*rxF_sss[2+66])+((int32_t)rxF_sss[2+65]*rxF_sss[2+65]));
 	      //	      phy_vars_ue->PHY_measurements.n0_power[aarx] += (((int32_t)rxF_sss[2+64]*rxF_sss[2+64])+((int32_t)rxF_sss[2+63]*rxF_sss[2+63]));
 	      
-	      phy_vars_ue->PHY_measurements.n0_power_dB[aarx] = (unsigned short) dB_fixed(phy_vars_ue->PHY_measurements.n0_power[aarx]/(6*phy_vars_ue->lte_frame_parms.ofdm_symbol_size));
+	      phy_vars_ue->PHY_measurements.n0_power_dB[aarx] = (unsigned short) dB_fixed(phy_vars_ue->PHY_measurements.n0_power[aarx]/(6));
 	      phy_vars_ue->PHY_measurements.n0_power_tot +=  phy_vars_ue->PHY_measurements.n0_power[aarx];	  
 	    }	      
-	    phy_vars_ue->PHY_measurements.n0_power_tot_dB = (unsigned short) dB_fixed(phy_vars_ue->PHY_measurements.n0_power_tot/(6*aarx*phy_vars_ue->lte_frame_parms.ofdm_symbol_size));
-	    phy_vars_ue->PHY_measurements.n0_power_tot_dBm = phy_vars_ue->PHY_measurements.n0_power_tot_dB - phy_vars_ue->rx_total_gain_dB;
+	    phy_vars_ue->PHY_measurements.n0_power_tot_dB = (unsigned short) dB_fixed(phy_vars_ue->PHY_measurements.n0_power_tot/(6*aarx));
+	    phy_vars_ue->PHY_measurements.n0_power_tot_dBm = phy_vars_ue->PHY_measurements.n0_power_tot_dB - phy_vars_ue->rx_total_gain_dB - dB_fixed(phy_vars_ue->lte_frame_parms.ofdm_symbol_size);
 	      
 	    
 	  }
@@ -450,37 +450,6 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
     break;
   }
 
-  /*  // DONE NOW in ue_rrc_measurements
-  if (abstraction_flag!=0) {
-    phy_vars_ue->PHY_measurements.n0_power_tot = 0;
-    for (aarx=0; aarx<frame_parms->nb_antennas_rx; aarx++) {
-  phy_vars_ue->PHY_measurements.n0_power[aarx] = pow(10.0,phy_vars_ue->N0/10.0)*pow(10.0,((double)phy_vars_ue->rx_total_gain_dB)/10.0);
-  phy_vars_ue->PHY_measurements.n0_power_dB[aarx] = (unsigned short) dB_fixed(phy_vars_ue->PHY_measurements.n0_power[aarx]);
-  phy_vars_ue->PHY_measurements.n0_power_tot +=  phy_vars_ue->PHY_measurements.n0_power[aarx];
-    }
-    phy_vars_ue->PHY_measurements.n0_power_tot_dB = (unsigned short) dB_fixed(phy_vars_ue->PHY_measurements.n0_power_tot);
-    phy_vars_ue->PHY_measurements.n0_power_tot_dBm = phy_vars_ue->PHY_measurements.n0_power_tot_dB - phy_vars_ue->rx_total_gain_dB;
-  }
-  else if (N0_symbol != 0) {
-    phy_vars_ue->PHY_measurements.n0_power_tot = 0;
-    for (aarx=0; aarx<frame_parms->nb_antennas_rx; aarx++) {
-  #ifndef HW_PREFIX_REMOVAL
-  phy_vars_ue->PHY_measurements.n0_power[aarx] = signal_energy(&phy_vars_ue->lte_ue_common_vars.rxdata[aarx][subframe_offset+frame_parms->ofdm_symbol_size+frame_parms->nb_prefix_samples0],frame_parms->ofdm_symbol_size+frame_parms->nb_prefix_samples);
-  #else
-  phy_vars_ue->PHY_measurements.n0_power[aarx] = signal_energy(&phy_vars_ue->lte_ue_common_vars.rxdata[aarx][subframe_offset+frame_parms->ofdm_symbol_size],frame_parms->ofdm_symbol_size);
-  #endif
-  phy_vars_ue->PHY_measurements.n0_power_dB[aarx] = (unsigned short) dB_fixed(phy_vars_ue->PHY_measurements.n0_power[aarx]);
-  phy_vars_ue->PHY_measurements.n0_power_tot +=  phy_vars_ue->PHY_measurements.n0_power[aarx];
-    }
-
-    phy_vars_ue->PHY_measurements.n0_power_tot_dB = (unsigned short) dB_fixed(phy_vars_ue->PHY_measurements.n0_power_tot);
-    phy_vars_ue->PHY_measurements.n0_power_tot_dBm = phy_vars_ue->PHY_measurements.n0_power_tot_dB - phy_vars_ue->rx_total_gain_dB + gain_offset;
-    //    printf("PHY measurements UE %d: n0_power %d (%d)\n",phy_vars_ue->Mod_id,phy_vars_ue->PHY_measurements.n0_power_tot_dBm,phy_vars_ue->PHY_measurements.n0_power_tot_dB);
-  }
-  else {
-    phy_vars_ue->PHY_measurements.n0_power_tot_dBm = phy_vars_ue->PHY_measurements.n0_power_tot_dB - phy_vars_ue->rx_total_gain_dB + gain_offset;
-  }
-  */
   // signal measurements
   for (eNB_id=0; eNB_id<phy_vars_ue->n_connected_eNB; eNB_id++) {
     for (aarx=0; aarx<frame_parms->nb_antennas_rx; aarx++) {
@@ -537,7 +506,7 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
     phy_vars_ue->PHY_measurements.wideband_cqi_avg[eNB_id] = dB_fixed2(phy_vars_ue->PHY_measurements.rx_power_avg[eNB_id],phy_vars_ue->PHY_measurements.n0_power_avg);
     phy_vars_ue->PHY_measurements.rx_rssi_dBm[eNB_id] = phy_vars_ue->PHY_measurements.rx_power_avg_dB[eNB_id] - phy_vars_ue->rx_total_gain_dB;
 #ifdef DEBUG_MEAS
-    LOG_D(PHY,"[eNB %d] lte_ue_measurements: RSSI %d dBm, RSSI (digital) %d dB\n",
+    LOG_I(PHY,"[eNB %d] lte_ue_measurements: RSSI %d dBm, RSSI (digital) %d dB\n",
           eNB_id,phy_vars_ue->PHY_measurements.rx_rssi_dBm[eNB_id],
           phy_vars_ue->PHY_measurements.rx_power_avg_dB[eNB_id]);
 #endif

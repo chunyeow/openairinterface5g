@@ -443,9 +443,14 @@ int32_t rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 
 
   LTE_eNB_COMMON *eNB_common_vars                = &phy_vars_eNB->lte_eNB_common_vars;
-  LTE_DL_FRAME_PARMS *frame_parms                = &phy_vars_eNB->lte_frame_parms;
+  LTE_DL_FRAME_PARMS *frame_parms                    = &phy_vars_eNB->lte_frame_parms;
   //  PUCCH_CONFIG_DEDICATED *pucch_config_dedicated = &phy_vars_eNB->pucch_config_dedicated[UE_id];
   int8_t sigma2_dB                                   = phy_vars_eNB->PHY_measurements_eNB[0].n0_power_tot_dB;
+  int32_t *Po_PUCCH                                  = &(phy_vars_eNB->eNB_UE_stats[UE_id].Po_PUCCH);
+  int32_t *Po_PUCCH_dBm                              = &(phy_vars_eNB->eNB_UE_stats[UE_id].Po_PUCCH_dBm);
+  int32_t *Po_PUCCH1_below                           = &(phy_vars_eNB->eNB_UE_stats[UE_id].Po_PUCCH1_below);
+  int32_t *Po_PUCCH1_above                           = &(phy_vars_eNB->eNB_UE_stats[UE_id].Po_PUCCH1_above);
+  int32_t *Po_PUCCH_update                           = &(phy_vars_eNB->eNB_UE_stats[UE_id].Po_PUCCH_update);
   uint32_t u,v,n,aa;
   uint32_t z[12*14];
   int16_t *zptr;
@@ -473,6 +478,24 @@ int32_t rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
   uint32_t v0=frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.seqhop[subframe<<1];
   uint32_t v1=frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.seqhop[1+(subframe<<1)];
 
+
+  switch (frame_parms->N_RB_UL) {
+
+  case 6:
+    sigma2_dB -= 8;
+    break;
+  case 25:
+    sigma2_dB -= 14;
+    break;
+  case 50:
+    sigma2_dB -= 17;
+    break;
+  case 100:
+    sigma2_dB -= 20;
+    break;
+  default:
+    sigma2_dB -= 14;
+  }
 
   if ((deltaPUCCH_Shift==0) || (deltaPUCCH_Shift>3)) {
     LOG_E(PHY,"[eNB] rx_pucch: Illegal deltaPUCCH_shift %d (should be 1,2,3)\n",deltaPUCCH_Shift);
@@ -728,6 +751,7 @@ int32_t rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
         phase_max = phase;
       }
 
+      stat_max /= nsymb; // normalize to energy per symbol
 #ifdef DEBUG_PUCCH_RX
       LOG_D(PHY,"[eNB] PUCCH: stat %d, stat_max %d, phase_max %d\n", stat,stat_max,phase_max);
 #endif
@@ -737,10 +761,17 @@ int32_t rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
     LOG_D(PHY,"[eNB] PUCCH fmt0:  stat_max : %d, sigma2_dB %d, phase_max : %d\n",dB_fixed(stat_max),sigma2_dB,phase_max);
 #endif
 
-    if (sigma2_dB<(dB_fixed(stat_max)-pucch1_thres))  //
+    
+    // This is a moving average of the PUCCH1 statistics conditioned on being above or below the threshold
+    if (sigma2_dB<(dB_fixed(stat_max)-pucch1_thres))  {
       *payload = 1;
-    else
+      *Po_PUCCH1_below = ((*Po_PUCCH1_below<<9) + (stat_max<<9)+1024)>>10;
+    }
+    else {
       *payload = 0;
+      *Po_PUCCH1_above = ((*Po_PUCCH1_above<<9) + (stat_max<<9)+1024)>>10;
+    }
+    *Po_PUCCH_update = 1;
 
   } else if ((fmt == pucch_format1a)||(fmt == pucch_format1b)) {
     stat_max = 0;
@@ -816,6 +847,7 @@ int32_t rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
       }
     } //phase
 
+    stat_max/=nsymb;  //normalize to energy per symbol
 #ifdef DEBUG_PUCCH_RX
     LOG_I(PHY,"[eNB] PUCCH fmt1:  stat_max : %d, phase_max : %d\n",stat_max,phase_max);
 #endif
@@ -823,6 +855,18 @@ int32_t rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
     // Do detection now
     stat_re=0;
     stat_im=0;
+    LOG_I(PHY,"PUCCH1A : Po_PUCCH before %d (%d) dB",dB_fixed(*Po_PUCCH),*Po_PUCCH);
+    *Po_PUCCH = ((*Po_PUCCH<<9) + (stat_max<<9)+1024)>>10;
+    *Po_PUCCH_dBm = dB_fixed(*Po_PUCCH) - phy_vars_eNB->rx_total_gain_eNB_dB;
+    *Po_PUCCH_update = 1;
+ 
+    LOG_I(PHY,"PUCCH1A : stat_max %d (%d,%d,%d) => Po_PUCCH %d\n",
+	  dB_fixed(stat_max),
+	  pucch1_thres+sigma2_dB,
+	  pucch1_thres,
+	  sigma2_dB,
+	  dB_fixed(*Po_PUCCH));
+
 
     if (sigma2_dB<(dB_fixed(stat_max)-pucch1_thres))  {//
 

@@ -248,6 +248,10 @@
 #define AMP_OVER_SQRT2 ((AMP*ONE_OVER_SQRT2_Q15)>>15)
 #define AMP_OVER_2 (AMP>>1)
 
+/// Threshold for PUCCH Format 1 detection
+#define PUCCH1_THRES 3
+/// Threshold for PUCCH Format 1a/1b detection
+#define PUCCH1a_THRES 2
 
 #ifndef OPENAIR_LTE
 ///
