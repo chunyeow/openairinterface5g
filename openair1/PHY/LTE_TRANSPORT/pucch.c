@@ -761,7 +761,6 @@ int32_t rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
     LOG_D(PHY,"[eNB] PUCCH fmt0:  stat_max : %d, sigma2_dB %d, phase_max : %d\n",dB_fixed(stat_max),sigma2_dB,phase_max);
 #endif
 
-    
     // This is a moving average of the PUCCH1 statistics conditioned on being above or below the threshold
     if (sigma2_dB<(dB_fixed(stat_max)-pucch1_thres))  {
       *payload = 1;
@@ -870,6 +869,8 @@ int32_t rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 
     if (sigma2_dB<(dB_fixed(stat_max)-pucch1_thres))  {//
 
+
+      *Po_PUCCH = ((*Po_PUCCH*1023) + stat_max)>>10;
 
       for (aa=0; aa<frame_parms->nb_antennas_rx; aa++) {
         for (re=0; re<12; re++) {

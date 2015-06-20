@@ -3775,6 +3775,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
         rballoc   = ((DCI1_1_5MHz_TDD_t *)dci_pdu)->rballoc;
         rah       = ((DCI1_1_5MHz_TDD_t *)dci_pdu)->rah;
         rv        = ((DCI1_1_5MHz_TDD_t *)dci_pdu)->rv;
+        TPC       = ((DCI1_1_5MHz_TDD_t *)dci_pdu)->TPC;
         ndi       = ((DCI1_1_5MHz_TDD_t *)dci_pdu)->ndi;
         harq_pid  = ((DCI1_1_5MHz_TDD_t *)dci_pdu)->harq_pid;
       } else {
@@ -3782,6 +3783,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
         rah      = ((DCI1_1_5MHz_FDD_t *)dci_pdu)->rah;
         rballoc  = ((DCI1_1_5MHz_FDD_t *)dci_pdu)->rballoc;
         rv       = ((DCI1_1_5MHz_FDD_t *)dci_pdu)->rv;
+        TPC       = ((DCI1_1_5MHz_FDD_t *)dci_pdu)->TPC;
         ndi      = ((DCI1_1_5MHz_FDD_t *)dci_pdu)->ndi;
         harq_pid = ((DCI1_1_5MHz_FDD_t *)dci_pdu)->harq_pid;
       }
@@ -3794,6 +3796,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
         rballoc   = ((DCI1_5MHz_TDD_t *)dci_pdu)->rballoc;
         rah       = ((DCI1_5MHz_TDD_t *)dci_pdu)->rah;
         rv        = ((DCI1_5MHz_TDD_t *)dci_pdu)->rv;
+        TPC       = ((DCI1_5MHz_TDD_t *)dci_pdu)->TPC;
         ndi       = ((DCI1_5MHz_TDD_t *)dci_pdu)->ndi;
         harq_pid  = ((DCI1_5MHz_TDD_t *)dci_pdu)->harq_pid;
       } else {
@@ -3801,6 +3804,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
         rah      = ((DCI1_5MHz_FDD_t *)dci_pdu)->rah;
         rballoc  = ((DCI1_5MHz_FDD_t *)dci_pdu)->rballoc;
         rv       = ((DCI1_5MHz_FDD_t *)dci_pdu)->rv;
+        TPC      = ((DCI1_5MHz_FDD_t *)dci_pdu)->TPC;
         ndi      = ((DCI1_5MHz_FDD_t *)dci_pdu)->ndi;
         harq_pid = ((DCI1_5MHz_FDD_t *)dci_pdu)->harq_pid;
       }
@@ -3813,6 +3817,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
         rballoc   = ((DCI1_10MHz_TDD_t *)dci_pdu)->rballoc;
         rah       = ((DCI1_10MHz_TDD_t *)dci_pdu)->rah;
         rv        = ((DCI1_10MHz_TDD_t *)dci_pdu)->rv;
+        TPC       = ((DCI1_10MHz_TDD_t *)dci_pdu)->TPC;
         ndi       = ((DCI1_10MHz_TDD_t *)dci_pdu)->ndi;
         harq_pid  = ((DCI1_10MHz_TDD_t *)dci_pdu)->harq_pid;
       } else {
@@ -3820,6 +3825,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
         rah      = ((DCI1_10MHz_FDD_t *)dci_pdu)->rah;
         rballoc  = ((DCI1_10MHz_FDD_t *)dci_pdu)->rballoc;
         rv       = ((DCI1_10MHz_FDD_t *)dci_pdu)->rv;
+        TPC      = ((DCI1_10MHz_FDD_t *)dci_pdu)->TPC;
         ndi      = ((DCI1_10MHz_FDD_t *)dci_pdu)->ndi;
         harq_pid = ((DCI1_10MHz_FDD_t *)dci_pdu)->harq_pid;
       }
@@ -3832,6 +3838,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
         rballoc   = ((DCI1_20MHz_TDD_t *)dci_pdu)->rballoc;
         rah       = ((DCI1_20MHz_TDD_t *)dci_pdu)->rah;
         rv        = ((DCI1_20MHz_TDD_t *)dci_pdu)->rv;
+        TPC        = ((DCI1_20MHz_TDD_t *)dci_pdu)->TPC;
         ndi       = ((DCI1_20MHz_TDD_t *)dci_pdu)->ndi;
         harq_pid  = ((DCI1_20MHz_TDD_t *)dci_pdu)->harq_pid;
       } else {
@@ -3839,6 +3846,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
         rah      = ((DCI1_20MHz_FDD_t *)dci_pdu)->rah;
         rballoc  = ((DCI1_20MHz_FDD_t *)dci_pdu)->rballoc;
         rv       = ((DCI1_20MHz_FDD_t *)dci_pdu)->rv;
+	TPC      = ((DCI1_20MHz_FDD_t *)dci_pdu)->TPC;
         ndi      = ((DCI1_20MHz_FDD_t *)dci_pdu)->ndi;
         harq_pid = ((DCI1_20MHz_FDD_t *)dci_pdu)->harq_pid;
       }
@@ -3852,6 +3860,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     }
 
     dlsch0_harq = dlsch[0]->harq_processes[harq_pid];
+    dlsch0_harq->delta_PUCCH = delta_PUCCH_lut[TPC&3];
     dlsch[0]->current_harq_pid = harq_pid;
     dlsch[0]->harq_ack[subframe].harq_id = harq_pid;
 
@@ -3872,6 +3881,8 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
 
     //    printf("NPRB %d\n",NPRB);
     dlsch0_harq->delta_PUCCH     = delta_PUCCH_lut[TPC&3];
+    if (TPC!=1)
+      LOG_I(PHY,"format1 TPC %d, dlsch0_harq->delta_PUCCH %d\n",TPC,dlsch0_harq->delta_PUCCH);
 
     dlsch0_harq->rvidx     = rv;
 

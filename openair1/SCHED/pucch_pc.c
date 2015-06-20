@@ -56,7 +56,7 @@ int8_t pucch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id
     phy_vars_ue->g_pucch[eNB_id] += phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->delta_PUCCH;
   }
 
-  phy_vars_ue->g_pucch[eNB_id] = 0;
+  //  phy_vars_ue->g_pucch[eNB_id] = 0;
 
   Po_PUCCH = get_PL(phy_vars_ue->Mod_id,phy_vars_ue->CC_id,eNB_id)+
              phy_vars_ue->lte_frame_parms.ul_power_control_config_common.p0_NominalPUCCH+
@@ -97,7 +97,7 @@ int8_t pucch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id
   }
 
   if (pucch_fmt!=pucch_format1) {
-    LOG_D(PHY,"[UE  %d][PDSCH %x] frame %d, subframe %d: Po_PUCCH %d dBm : Po_NOMINAL_PUCCH %d dBm, PL %d dB, g_pucch %d dB\n",
+    LOG_I(PHY,"[UE  %d][PDSCH %x] frame %d, subframe %d: Po_PUCCH %d dBm : Po_NOMINAL_PUCCH %d dBm, PL %d dB, g_pucch %d dB\n",
           phy_vars_ue->Mod_id,
           phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,phy_vars_ue->frame_tx,subframe,
           Po_PUCCH,
@@ -105,7 +105,7 @@ int8_t pucch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id
           get_PL(phy_vars_ue->Mod_id,phy_vars_ue->CC_id,eNB_id),
           phy_vars_ue->g_pucch[eNB_id]);
   } else {
-    LOG_D(PHY,"[UE  %d][SR %x] frame %d, subframe %d: Po_PUCCH %d dBm : Po_NOMINAL_PUCCH %d dBm, PL %d dB g_pucch %d dB\n",
+    LOG_I(PHY,"[UE  %d][SR %x] frame %d, subframe %d: Po_PUCCH %d dBm : Po_NOMINAL_PUCCH %d dBm, PL %d dB g_pucch %d dB\n",
           phy_vars_ue->Mod_id,
           phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,phy_vars_ue->frame_tx,subframe,
           Po_PUCCH,
