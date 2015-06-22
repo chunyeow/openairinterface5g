@@ -755,7 +755,10 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 
           // this assumes accumulated tpc
 	  // make sure that we are only sending a tpc update once a frame, otherwise the control loop will freak out
-          if (((UE_template->pusch_tpc_tx_frame*10+UE_template->pusch_tpc_tx_subframe)%10240)<(frameP*10+subframeP+10)) {
+	  int32_t framex10psubframe = UE_template->pusch_tpc_tx_frame*10+UE_template->pusch_tpc_tx_subframe;
+          if (((framex10psubframe+10)<=(frameP*10+subframeP)) || //normal case
+	      ((framex10psubframe>(frameP*10+subframeP)) && (((10240-framex10psubframe+frameP*10+subframeP)>=10)))) //frame wrap-around
+	    {
 	    UE_template->pusch_tpc_tx_frame=frameP;
 	    UE_template->pusch_tpc_tx_subframe=subframeP;
             if (normalized_rx_power>(target_rx_power+1)) {
@@ -767,12 +770,15 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
             } else {
               tpc = 1; //0
             }
-	    LOG_I(MAC,"[eNB %d] ULSCH scheduler: frame %d, subframe %d, harq_pid %d, tpc %d, accumulated %d, normalized/target rx power %d/%d\n",
-		  module_idP,frameP,subframeP,harq_pid,tpc,
-		  tpc_accumulated,normalized_rx_power,target_rx_power);
           } else {
             tpc = 1; //0
           }
+
+	  if (tpc!=1) {
+	    LOG_I(MAC,"[eNB %d] ULSCH scheduler: frame %d, subframe %d, harq_pid %d, tpc %d, accumulated %d, normalized/target rx power %d/%d\n",
+		  module_idP,frameP,subframeP,harq_pid,tpc,
+		  tpc_accumulated,normalized_rx_power,target_rx_power);
+	  }
 
           // new transmission
           if (round==0) {

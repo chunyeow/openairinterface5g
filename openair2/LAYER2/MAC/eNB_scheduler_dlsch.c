@@ -1166,15 +1166,17 @@ schedule_ue_spec(
 	  // do PUCCH power control
           // this is the normalized RX power
 	  eNB_UE_stats =  mac_xface->get_eNB_UE_stats(module_idP,CC_id,rnti);
-	  if (eNB_UE_stats->Po_PUCCH_update == 1) { 
-	    eNB_UE_stats->Po_PUCCH_update = 0;
-	    normalized_rx_power = eNB_UE_stats->Po_PUCCH_dBm; 
-	    target_rx_power = mac_xface->get_target_pucch_rx_power(module_idP,CC_id) + 10;
+	  normalized_rx_power = eNB_UE_stats->Po_PUCCH_dBm; 
+	  target_rx_power = mac_xface->get_target_pucch_rx_power(module_idP,CC_id) + 10;
 	    
           // this assumes accumulated tpc
 	  // make sure that we are only sending a tpc update once a frame, otherwise the control loop will freak out
-	    if (((((UE_list->UE_template[CC_id][UE_id].pucch_tpc_tx_frame*10+UE_list->UE_template[CC_id][UE_id].pucch_tpc_tx_subframe)%10240)+10)<(frameP*10+subframeP))
-		|| (((UE_list->UE_template[CC_id][UE_id].pucch_tpc_tx_frame*10+UE_list->UE_template[CC_id][UE_id].pucch_tpc_tx_subframe)%10240)>(frameP*10+subframeP))) {
+	  int32_t framex10psubframe = UE_list->UE_template[CC_id][UE_id].pucch_tpc_tx_frame*10+UE_list->UE_template[CC_id][UE_id].pucch_tpc_tx_subframe;
+          if (((framex10psubframe+10)<=(frameP*10+subframeP)) || //normal case
+	      ((framex10psubframe>(frameP*10+subframeP)) && (((10240-framex10psubframe+frameP*10+subframeP)>=10)))) //frame wrap-around
+	    if (eNB_UE_stats->Po_PUCCH_update == 1) { 
+	      eNB_UE_stats->Po_PUCCH_update = 0;
+
 	      UE_list->UE_template[CC_id][UE_id].pucch_tpc_tx_frame=frameP;
 	      UE_list->UE_template[CC_id][UE_id].pucch_tpc_tx_subframe=subframeP;
 	      if (normalized_rx_power>(target_rx_power+1)) {
@@ -1189,11 +1191,10 @@ schedule_ue_spec(
 	      LOG_I(MAC,"[eNB %d] DLSCH scheduler: frame %d, subframe %d, harq_pid %d, tpc %d, accumulated %d, normalized/target rx power %d/%d\n",
 		    module_idP,frameP, subframeP,harq_pid,tpc,
 		    tpc_accumulated,normalized_rx_power,target_rx_power);
-	    } // time to do TPC update 
+	    } // Po_PUCCH has been updated 
 	    else {
 	      tpc = 1; //0
-	    }
-	  } // Po_PUCCH has been updated 
+	    } // time to do TPC update 
 	  else {
 	    tpc = 1; //0
 	  }
