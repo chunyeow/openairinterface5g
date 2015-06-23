@@ -130,7 +130,6 @@ function main()
 
       -m | --mscgen)
         MSC_DIR=$2
-        # can omit file name if last arg on the line
         if [ -d  "$MSC_DIR" ]; then
           echo "setting mscgen log files to dir: $MSC_DIR"
           run_mscgen=1
@@ -146,10 +145,10 @@ function main()
         exe_arguments="$exe_arguments -V /tmp/oai_gtk_wave.vcd"
         shift ;
         ;;
-      -W | ----wireshark-l2)
+      -W | --wireshark-l2)
         echo "setting l2 pcap dump output"
         exe_arguments="$exe_arguments -P wireshark"
-        shift 2;
+        shift 1;
         ;;
       *)   
         echo "Unknown option $1"
@@ -196,11 +195,11 @@ function main()
   fi
    
   if [ $run_gdb -eq 0 ]; then 
-    exec $SUDO $OPENAIR_DIR/targets/bin/oaisim_nos1 $exe_arguments | tee /tmp/enb_ue_nos1.log.txt
+    exec $SUDO $OPENAIR_DIR/targets/bin/oaisim_nos1.Rel10 $exe_arguments | tee /tmp/enb_ue_nos1.log.txt
   else
     touch      ~/.gdb_enb_ue_nos1
     chmod 777  ~/.gdb_enb_ue_nos1
-    echo "file $OPENAIR_DIR/targets/bin/oaisim_nos1" > ~/.gdb_enb_ue_nos1
+    echo "file $OPENAIR_DIR/targets/bin/oaisim_nos1.Rel10" > ~/.gdb_enb_ue_nos1
     echo "set args $exe_arguments" >> ~/.gdb_enb_ue_nos1
     echo "run"                        >> ~/.gdb_enb_ue_nos1
     cat ~/.gdb_enb_ue_nos1

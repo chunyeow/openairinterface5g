@@ -49,6 +49,7 @@
 #include "hashtable.h"
 #include "spgw_config.h"
 #include "pgw_lite_paa.h"
+#include "msc.h"
 
 spgw_config_t spgw_config;
 sgw_app_t     sgw_app;
@@ -57,6 +58,7 @@ pgw_app_t     pgw_app;
 static void *sgw_lite_intertask_interface(void *args_p)
 {
   itti_mark_task_ready(TASK_SPGW_APP);
+  MSC_START_USE();
 
   while(1) {
     MessageDef *received_message_p;

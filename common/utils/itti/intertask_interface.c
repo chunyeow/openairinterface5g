@@ -880,7 +880,7 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
 
     ret = lfds611_queue_new(&itti_desc.tasks[task_id].message_queue, itti_desc.tasks_info[task_id].queue_size);
 
-    if (ret < 0) {
+    if (0 == ret) {
       AssertFatal (0, "lfds611_queue_new failed for task %s!\n", itti_get_task_name(task_id));
     }
   }

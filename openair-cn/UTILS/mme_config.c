@@ -41,6 +41,7 @@
 
 #include <arpa/inet.h> /* To provide inet_addr */
 
+#include "intertask_interface.h"
 #include "assertions.h"
 #include "msc.h"
 #include "mme_config.h"
@@ -693,7 +694,7 @@ int config_parse_opt_line(int argc, char *argv[], mme_config_t *mme_config_p)
 
     case 'm': {
       fprintf(stdout, "Logging Message chart(mscgen)\n");
-      MSC_INIT(MSC_EPC);
+      MSC_INIT(MSC_MME_GW, THREAD_MAX+TASK_MAX);
     }
     break;
 

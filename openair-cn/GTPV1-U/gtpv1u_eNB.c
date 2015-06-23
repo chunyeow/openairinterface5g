@@ -1000,6 +1000,7 @@ void *gtpv1u_eNB_task(void *args)
   rc = gtpv1u_eNB_init();
   AssertFatal(rc == 0, "gtpv1u_eNB_init Failed");
   itti_mark_task_ready(TASK_GTPV1_U);
+  MSC_START_USE();
 
   while(1) {
     /* Trying to fetch a message from the message queue.

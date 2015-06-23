@@ -55,6 +55,7 @@
 #include "sctp_default_values.h"
 #include "sctp_common.h"
 #include "sctp_eNB_itti_messaging.h"
+#include "msc.h"
 
 /* Used to format an uint32_t containing an ipv4 address */
 #define IPV4_ADDR    "%u.%u.%u.%u"
@@ -805,6 +806,7 @@ void *sctp_eNB_task(void *arg)
   STAILQ_INIT(&sctp_cnx_list);
 
   itti_mark_task_ready(TASK_SCTP);
+  MSC_START_USE();
 
   while (1) {
     itti_receive_msg(TASK_SCTP, &received_msg);

@@ -50,6 +50,7 @@
 #include "NwLog.h"
 #include "gtpv1u_sgw_defs.h"
 #include "NwGtpv1uPrivate.h"
+#include "msc.h"
 
 //static NwGtpv1uStackHandleT gtpv1u_stack = 0;
 static gtpv1u_data_t        gtpv1u_sgw_data;
@@ -390,6 +391,7 @@ static NwGtpv1uRcT gtpv1u_stop_timer_wrapper(
 static void *gtpv1u_thread(void *args)
 {
   itti_mark_task_ready(TASK_GTPV1_U);
+  MSC_START_USE();
 
   while(1) {
     /* Trying to fetch a message from the message queue.

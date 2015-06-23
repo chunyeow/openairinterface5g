@@ -398,7 +398,7 @@ add_boolean_option(OAISIM False "specific to oaisim")
 add_boolean_option(OAI_NW_DRIVER_USE_NETLINK True "????")
 add_boolean_option(USE_MME False "this flag is used only one time in lte-softmodem.c")
 add_list_string_option(PACKAGE_NAME "NotDefined" "As per attribute name")
-add_boolean_option(MESSAGE_CHART_GENERATOR True "For generating sequence diagrams")
+add_boolean_option(MESSAGE_CHART_GENERATOR False         "For generating sequence diagrams")
 add_boolean_option(MESSAGE_CHART_GENERATOR_RLC_MAC False "trace RLC-MAC exchanges in sequence diagrams")
 add_boolean_option(MESSAGE_CHART_GENERATOR_PHY     False "trace some PHY exchanges in sequence diagrams")
 ########################
@@ -1327,7 +1327,7 @@ set(lfds ${OPENAIR2_DIR}/UTIL/LFDS/liblfds6.1.1/liblfds611/src/)
 file(GLOB lfds_queue ${lfds}/lfds611_queue/*.c)
 file(GLOB lfds_ring ${lfds}/lfds611_ringbuffer/*.c)
 file(GLOB lfds_slist ${lfds}/lfds611_slist/*.c)
-file(GLOB lfds_stack ${lfds}/lfds611_stack/*.c/)
+file(GLOB lfds_stack ${lfds}/lfds611_stack/*.c)
 file(GLOB lfds_freelist ${lfds}/lfds611_freelist/*.c)
 
 include_directories(${lfds})
@@ -1462,16 +1462,21 @@ add_executable(lte-softmodem
   ${XFORMS_SOURCE}
   ${XFORMS_SOURCE_SOFTMODEM}
   )
+if (MESSAGE_CHART_GENERATOR)
+target_link_libraries (lte-softmodem
+  -Wl,--start-group
+  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN SECU_OSA UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS MSC L2 ${RAL_LIB} ${NAS_LIB} ${ITTI_LIB} ${MIH_LIB}
+  -Wl,--end-group )
+else (MESSAGE_CHART_GENERATOR)
 target_link_libraries (lte-softmodem
   -Wl,--start-group
   RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN SECU_OSA UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} ${ITTI_LIB} ${MIH_LIB}
   -Wl,--end-group )
+endif(MESSAGE_CHART_GENERATOR)
 target_link_libraries (lte-softmodem ${LIBXML2_LIBRARIES})
 target_link_libraries (lte-softmodem pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} sctp ${option_HW_lib} ${XFORMS_LIBRARIES} )
 target_link_libraries (lte-softmodem ${LIBBOOST_LIBRARIES})
-if (MESSAGE_CHART_GENERATOR)
-  target_link_libraries (lte-softmodem MSC)
-endif()
+
 
 # EPC is ??? nodes implementation in one process
 ################################
@@ -1483,15 +1488,21 @@ add_executable(mme_gw
   ${OPENAIRCN_DIR}/SCTP/sctp_primitives_server.c
   ${OPENAIRCN_DIR}/NAS/nas_main.c
   )
+if (MESSAGE_CHART_GENERATOR)
+target_link_libraries (mme_gw
+  -Wl,--start-group
+   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA S6A SGW MME_APP LFDS MSC ${ITTI_LIB} CN_UTILS HASHTABLE
+  -Wl,--end-group
+  pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
+  )
+else (MESSAGE_CHART_GENERATOR)
 target_link_libraries (mme_gw
   -Wl,--start-group
    NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA S6A SGW MME_APP LFDS ${ITTI_LIB} CN_UTILS HASHTABLE
   -Wl,--end-group
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
   )
-if (MESSAGE_CHART_GENERATOR)
-  target_link_libraries (mme_gw MSC)
-endif()
+endif(MESSAGE_CHART_GENERATOR)
 
 # Default parameters
 # Does not work on simple install (fqdn in /etc/hosts 127.0.1.1)
@@ -1572,15 +1583,21 @@ add_executable(oai_sgw
   ${OPENAIRCN_DIR}/OAI_SGW/oai_sgw_log.c
   ${OPENAIRCN_DIR}/OAI_SGW/oai_sgw.c
   )
+if (MESSAGE_CHART_GENERATOR)
+target_link_libraries (oai_sgw
+  -Wl,--start-group
+  GTPV1U SECU_CN SECU_OSA S6A SGW CN_UTILS LFDS MSC ${ITTI_LIB}
+  -Wl,--end-group
+  pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
+  )
+else (MESSAGE_CHART_GENERATOR)
 target_link_libraries (oai_sgw
   -Wl,--start-group
   GTPV1U SECU_CN SECU_OSA S6A SGW CN_UTILS LFDS ${ITTI_LIB}
   -Wl,--end-group
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
   )
-if (MESSAGE_CHART_GENERATOR)
-  target_link_libraries (oai_sgw MSC)
-endif()
+endif(MESSAGE_CHART_GENERATOR)
 
 # USIM process
 #################
@@ -1632,18 +1649,23 @@ add_executable(oaisim
   ${XFORMS_SOURCE}
 )
 target_include_directories(oaisim PUBLIC  ${OPENAIR_TARGETS}/SIMU/USER)
+if (MESSAGE_CHART_GENERATOR)
+target_link_libraries (oaisim
+  -Wl,--start-group
+  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS MSC L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
+  -Wl,--end-group )
+else(MESSAGE_CHART_GENERATOR)
 target_link_libraries (oaisim
   -Wl,--start-group
   RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
   -Wl,--end-group )
+endif(MESSAGE_CHART_GENERATOR)
 target_link_libraries (oaisim ${LIBXML2_LIBRARIES} ${LAPACK_LIBRARIES})
 target_link_libraries (oaisim pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES}  ${NETTLE_LIBRARIES} sctp ${option_HW_lib}
   ${ATLAS_LIBRARIES} ${XFORMS_LIBRARIES} ${OPENPGM_LIBRARIES})
 #Force link with forms, regardless XFORMS option
 target_link_libraries (oaisim forms)
-if (MESSAGE_CHART_GENERATOR)
-  target_link_libraries (oaisim MSC)
-endif()
+
 
 
 # A all in one network simulator
@@ -1668,18 +1690,22 @@ add_executable(oaisim_nos1
   ${XFORMS_SOURCE}
 )
 target_include_directories(oaisim_nos1 PUBLIC  ${OPENAIR_TARGETS}/SIMU/USER)
+if (MESSAGE_CHART_GENERATOR)
+target_link_libraries (oaisim_nos1
+  -Wl,--start-group
+  RRC_LIB    SECU_CN UTIL HASHTABLE  UDP SCHED_LIB PHY LFDS MSC L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
+  -Wl,--end-group )
+else(MESSAGE_CHART_GENERATOR)
 target_link_libraries (oaisim_nos1
   -Wl,--start-group
   RRC_LIB    SECU_CN UTIL HASHTABLE  UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
   -Wl,--end-group )
+endif(MESSAGE_CHART_GENERATOR)
 target_link_libraries (oaisim_nos1 ${LIBXML2_LIBRARIES} ${LAPACK_LIBRARIES})
 target_link_libraries (oaisim_nos1 pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES}  ${NETTLE_LIBRARIES}  ${option_HW_lib}
   ${ATLAS_LIBRARIES} ${XFORMS_LIBRARIES} ${OPENPGM_LIBRARIES})
 #Force link with forms, regardless XFORMS option
 target_link_libraries (oaisim_nos1 forms)
-if (MESSAGE_CHART_GENERATOR)
-  target_link_libraries (oaisim_nos1 MSC)
-endif()
 
 
 # Unitary tests for each piece of L1: example, mbmssim is MBMS L1 simulator
@@ -1721,13 +1747,21 @@ add_executable(test_s1c_mme
   ${OPENAIRCN_DIR}/TEST/oaisim_mme_test_s1c.c
   ${OPENAIRCN_DIR}/TEST/oaisim_mme_test_s1c_scenario.h
   ${OPENAIRCN_DIR}/TEST/oaisim_mme_test_s1c_scenario1.c
+  ${OPENAIRCN_DIR}/TEST/oaisim_mme_test_s1c_scenario.c
+  ${OPENAIRCN_DIR}/TEST/oaisim_mme_test_s1c_scenario.h
+  ${OPENAIRCN_DIR}/TEST/oaisim_mme_test_s1c_s1ap.c
+  ${OPENAIRCN_DIR}/TEST/oaisim_mme_test_s1c_s1ap.h
   ${OPENAIR2_DIR}/ENB_APP/enb_config.c
   ${OPENAIR2_DIR}/ENB_APP/enb_config.h
-  ${s1ap_h}
+  ${OPENAIR2_DIR}/COMMON/commonDef.h
+  ${OPENAIR2_DIR}/COMMON/messages_def.h
+  ${OPENAIR2_DIR}/COMMON/messages_types.h
+  ${OPENAIRCN_DIR}/S1AP/s1ap_eNB_defs.h
+  ${S1AP_DIR}/s1ap_eNB_management_procedures.c
   ${OPENAIR_BIN_DIR}/messages_xml.h
   )
 target_link_libraries (test_s1c_mme
-  -Wl,--start-group SECU_CN S1AP_LIB S1AP_ENB SCTP_CLIENT UTIL LFDS ${ITTI_LIB} -Wl,--end-group pthread m rt crypt sctp ${LIBXML2_LIBRARIES} ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
+  -Wl,--start-group SECU_CN S1AP_LIB  SCTP_CLIENT UTIL LFDS ${ITTI_LIB} -Wl,--end-group pthread m rt crypt sctp ${LIBXML2_LIBRARIES} ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
   )
 
 
@@ -1738,21 +1772,18 @@ target_link_libraries (test_s1c_mme
 
 #  ???
 ###########################
-add_executable(oaisim_mme
-  ${OPENAIR_BIN_DIR}/messages_xml.h
-  ${OPENAIRCN_DIR}/OAISIM_MME/oai_mme_log.c
-  ${OPENAIRCN_DIR}/OAISIM_MME/oaisim_mme.c
-  ${OPENAIRCN_DIR}/NAS/nas_main.c
-)
-target_link_libraries (oaisim_mme
-  -Wl,--start-group
-   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA S6A S11 SGW MME_APP LFDS MSC ${ITTI_LIB} CN_UTILS HASHTABLE
-  -Wl,--end-group
-  pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
-)
-if (MESSAGE_CHART_GENERATOR)
-  target_link_libraries (oaisim_mme MSC)
-endif()
+#add_executable(oaisim_mme
+#  ${OPENAIR_BIN_DIR}/messages_xml.h
+#  ${OPENAIRCN_DIR}/OAISIM_MME/oai_mme_log.c
+#  ${OPENAIRCN_DIR}/OAISIM_MME/oaisim_mme.c
+#  ${OPENAIRCN_DIR}/NAS/nas_main.c
+#)
+#target_link_libraries (oaisim_mme
+#  -Wl,--start-group
+#   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA S6A S11 SGW MME_APP LFDS MSC ${ITTI_LIB} CN_UTILS HASHTABLE
+#  -Wl,--end-group
+#  pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
+#)
 
 ##################################################
 # Generated specific cases is not regular code

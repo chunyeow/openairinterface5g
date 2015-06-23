@@ -36,6 +36,7 @@
 # include "user_api.h"
 # include "nas_parser.h"
 # include "nas_proc.h"
+# include "msc.h"
 
 # define NAS_UE_AUTOSTART 1
 
@@ -76,7 +77,7 @@ void *nas_ue_task(void *args_p)
   int                   result;
 
   itti_mark_task_ready (TASK_NAS_UE);
-
+  MSC_START_USE();
   /* Initialize UE NAS (EURECOM-NAS) */
   {
     /* Initialize user interface (to exchange AT commands with user process) */

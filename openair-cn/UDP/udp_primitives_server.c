@@ -53,6 +53,7 @@
 
 #include "assertions.h"
 #include "conversions.h"
+#include "msc.h"
 
 #define UDP_DEBUG(x, args...) do { fprintf(stdout, "[UDP] [D]"x, ##args); } while(0)
 #define UDP_ERROR(x, args...) do { fprintf(stderr, "[UDP] [E]"x, ##args); } while(0)
@@ -330,6 +331,7 @@ static void *udp_intertask_interface(void *args_p)
   struct epoll_event *events    = NULL;
 
   itti_mark_task_ready(TASK_UDP);
+  MSC_START_USE();
 
   while(1) {
     MessageDef *received_message_p = NULL;

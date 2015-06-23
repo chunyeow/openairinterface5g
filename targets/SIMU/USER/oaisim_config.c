@@ -337,6 +337,7 @@ void oaisim_config(void)
 
 #if defined(ENABLE_ITTI)
   itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, oai_emulation.info.itti_dump_file);
+  MSC_INIT(MSC_E_UTRAN, THREAD_MAX+TASK_MAX);
 #endif
 
   // init ocg if enabled, otherwise take the params form the init_oai_emulation()
@@ -351,8 +352,7 @@ void oaisim_config(void)
     }
   }
 
-  // init other comps
-  MSC_INIT(MSC_E_UTRAN);
+
 #ifdef ENABLE_RAL
   mRAL_init_default_values();
   eRAL_init_default_values();

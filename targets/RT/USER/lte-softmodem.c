@@ -1048,6 +1048,8 @@ static void* eNB_thread_tx( void* param )
   // set default return value
   eNB_thread_tx_status[proc->subframe] = 0;
 
+  MSC_START_USE();
+
 #ifdef RTAI
   RT_TASK *task;
   char task_name[8];
@@ -1234,6 +1236,8 @@ static void* eNB_thread_rx( void* param )
   }
   // set default return value
   eNB_thread_rx_status[proc->subframe] = 0;
+
+  MSC_START_USE();
 
 #ifdef RTAI
   RT_TASK *task;
@@ -2473,8 +2477,6 @@ int main( int argc, char **argv )
  
   get_options (argc, argv); //Command-line options
  
-  // initialize mscgen log
-  MSC_INIT(MSC_E_UTRAN);
   
   // initialize the log (see log.h for details)
   set_glog(glog_level, glog_verbosity);
@@ -2560,6 +2562,9 @@ int main( int argc, char **argv )
 
   itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, itti_dump_file);
 #endif
+  // initialize mscgen log after ITTI
+  MSC_INIT(MSC_E_UTRAN, THREAD_MAX+TASK_MAX);
+
 #ifdef OPENAIR2
 
   if (opt_type != OPT_NONE) {

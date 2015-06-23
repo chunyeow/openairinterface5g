@@ -67,15 +67,15 @@
 
 int main(int argc, char *argv[])
 {
+
+  CHECK_INIT_RETURN(itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX,
+                              tasks_info, messages_info, messages_definition_xml,
+                              mme_config.itti_config.log_file));
   /* Parse the command line for options and set the mme_config accordingly. */
   CHECK_INIT_RETURN(config_parse_opt_line(argc, argv, &mme_config) < 0);
 
   /* Calling each layer init function */
   CHECK_INIT_RETURN(log_init(&mme_config, oai_epc_log_specific));
-  CHECK_INIT_RETURN(itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX,
-                              tasks_info, messages_info, messages_definition_xml,
-                              mme_config.itti_config.log_file));
-
   CHECK_INIT_RETURN(nas_init(&mme_config));
   CHECK_INIT_RETURN(sctp_init(&mme_config));
   CHECK_INIT_RETURN(udp_init(&mme_config));

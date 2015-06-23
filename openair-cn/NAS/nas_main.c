@@ -34,8 +34,8 @@
 
 #include "intertask_interface.h"
 #include "mme_config.h"
-
 #include "nas_defs.h"
+#include "msc.h"
 
 #if !defined(DISABLE_USE_NAS)
 # include "nas_network.h"
@@ -52,6 +52,7 @@
 static void *nas_intertask_interface(void *args_p)
 {
   itti_mark_task_ready(TASK_NAS_MME);
+  MSC_START_USE();
 
   while(1) {
     MessageDef *received_message_p;

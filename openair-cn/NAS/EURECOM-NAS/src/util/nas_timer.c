@@ -60,6 +60,7 @@ Description Timer utilities
 #endif
 #include "nas_timer.h"
 #include "commonDef.h"
+#include "msc.h"
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
