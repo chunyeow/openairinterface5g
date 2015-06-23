@@ -113,9 +113,9 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
       len += sprintf(&buffer[len], "[UE PROC] Po_PUCCH = %d dBm (Po_NOMINAL_PUCCH %d dBm, g_pucch %d dB)\n", 
 		     get_PL(phy_vars_ue->Mod_id,phy_vars_ue->CC_id,0)+
 		     phy_vars_ue->lte_frame_parms.ul_power_control_config_common.p0_NominalPUCCH+
-		     phy_vars_ue->g_pucch[0],
+		     phy_vars_ue->dlsch_ue[0][0]->g_pucch,
 		     phy_vars_ue->lte_frame_parms.ul_power_control_config_common.p0_NominalPUCCH,
-		     phy_vars_ue->g_pucch[0]);
+		     phy_vars_ue->dlsch_ue[0][0]->g_pucch);
     }
     //for (eNB=0;eNB<NUMBER_OF_eNB_MAX;eNB++) {
     for (eNB=0; eNB<1; eNB++) {

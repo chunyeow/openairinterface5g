@@ -484,7 +484,6 @@ typedef struct {
   uint8_t               pucch_payload[22];
 
   UE_MODE_t        UE_mode[NUMBER_OF_CONNECTED_eNB_MAX];
-  int8_t               g_pucch[NUMBER_OF_CONNECTED_eNB_MAX];
   /// cell-specific reference symbols
   uint32_t lte_gold_table[7][20][2][14];
 

@@ -3531,6 +3531,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
         dlsch0_harq = dlsch[0]->harq_processes[harq_pid];
         NPRB = RIV2nb_rb_LUT6[rballoc];
         dlsch0_harq->delta_PUCCH = delta_PUCCH_lut[TPC&3];
+	dlsch[0]->g_pucch += delta_PUCCH_lut[TPC&3];
       }
 
       if (vrb_type == 0)
@@ -3580,6 +3581,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
         dlsch0_harq = dlsch[0]->harq_processes[harq_pid];
         NPRB = RIV2nb_rb_LUT25[rballoc];
         dlsch0_harq->delta_PUCCH = delta_PUCCH_lut[TPC&3];
+	dlsch[0]->g_pucch += delta_PUCCH_lut[TPC&3];
       }
 
       if (vrb_type == 0)
@@ -3628,6 +3630,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
         dlsch0_harq = dlsch[0]->harq_processes[harq_pid];
         NPRB = RIV2nb_rb_LUT50[rballoc];
         dlsch0_harq->delta_PUCCH = delta_PUCCH_lut[TPC&3];
+	dlsch[0]->g_pucch += delta_PUCCH_lut[TPC&3];
       }
 
       if (vrb_type == 0) {
@@ -3678,6 +3681,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
         dlsch0_harq = dlsch[0]->harq_processes[harq_pid];
         NPRB = RIV2nb_rb_LUT100[rballoc];
         dlsch0_harq->delta_PUCCH = delta_PUCCH_lut[TPC&3];
+	dlsch[0]->g_pucch += delta_PUCCH_lut[TPC&3];
       }
 
       if (vrb_type == 0) {
@@ -3861,6 +3865,8 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
 
     dlsch0_harq = dlsch[0]->harq_processes[harq_pid];
     dlsch0_harq->delta_PUCCH = delta_PUCCH_lut[TPC&3];
+    dlsch[0]->g_pucch += delta_PUCCH_lut[TPC&3];
+
     dlsch[0]->current_harq_pid = harq_pid;
     dlsch[0]->harq_ack[subframe].harq_id = harq_pid;
 
@@ -3881,6 +3887,8 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
 
     //    printf("NPRB %d\n",NPRB);
     dlsch0_harq->delta_PUCCH     = delta_PUCCH_lut[TPC&3];
+    dlsch[0]->g_pucch += delta_PUCCH_lut[TPC&3];
+
     if (TPC!=1)
       LOG_I(PHY,"format1 TPC %d, dlsch0_harq->delta_PUCCH %d\n",TPC,dlsch0_harq->delta_PUCCH);
 
@@ -4181,6 +4189,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     dlsch0_harq->mcs       = mcs1;
 
     dlsch0_harq->delta_PUCCH     = delta_PUCCH_lut[TPC&3];
+    dlsch[0]->g_pucch += delta_PUCCH_lut[TPC&3];
     /*
       if (dlsch0_harq->mcs>20) {
       msg("dci_tools.c: mcs > 20 disabled for now (asked %d)\n",dlsch0_harq->mcs);
@@ -4588,7 +4597,9 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
 
     //    printf("NPRB %d\n",NPRB);
     dlsch0_harq->delta_PUCCH     = delta_PUCCH_lut[TPC&3];
+    dlsch0->g_pucch += delta_PUCCH_lut[TPC&3];
     dlsch1_harq->delta_PUCCH     = delta_PUCCH_lut[TPC&3];
+    dlsch1->g_pucch += delta_PUCCH_lut[TPC&3];
 
     dlsch0_harq->mcs     = mcs1;
     dlsch1_harq->mcs     = mcs2;
@@ -4830,6 +4841,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
 
     dlsch0_harq->mcs             = ((DCI1E_5MHz_2A_M10PRB_TDD_t *)dci_pdu)->mcs;
     dlsch0_harq->delta_PUCCH     = delta_PUCCH_lut[((DCI1E_5MHz_2A_M10PRB_TDD_t *)dci_pdu)->TPC&3];
+    dlsch[0]->g_pucch += delta_PUCCH_lut[TPC&3];
 
 
 

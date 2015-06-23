@@ -2520,11 +2520,10 @@ int phy_procedures_UE_RX(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstrac
     }
 
 #ifdef DLSCH_THREAD
-
     if (phy_vars_ue->dlsch_ue[eNB_id][0]->active == 1)  {
       // activate thread since Chest is now done for slot before slot_rx
       if (l==0) {
-        LOG_D(PHY,"frame %d, slot_rx %d: Calling rx_pdsch_thread for harq_pid %d\n",frame_rx,slot_rx, phy_vars_ue->dlsch_ue[eNB_id][0]->current_harq_pid);
+        LOG_I(PHY,"frame %d, slot_rx %d: Calling rx_pdsch_thread for harq_pid %d\n",frame_rx,slot_rx, phy_vars_ue->dlsch_ue[eNB_id][0]->current_harq_pid);
 
         if (pthread_mutex_lock (&rx_pdsch_mutex) != 0) {               // Signal MAC_PHY Scheduler
           LOG_E(PHY,"[UE  %d] ERROR pthread_mutex_lock\n",phy_vars_ue->Mod_id);     // lock before accessing shared resource

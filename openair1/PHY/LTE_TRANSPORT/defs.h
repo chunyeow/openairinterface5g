@@ -685,6 +685,8 @@ typedef struct {
   uint8_t Kmimo;
   /// Maximum number of Turbo iterations
   uint8_t max_turbo_iterations;
+  /// accumulated tx power adjustment for PUCCH
+  int8_t               g_pucch;
 } LTE_UE_DLSCH_t;
 
 typedef enum {format0,
