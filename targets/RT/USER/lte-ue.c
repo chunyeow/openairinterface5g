@@ -623,6 +623,7 @@ static void *UE_thread_tx(void *arg)
       exit_fun("nothing to add");
       return &UE_thread_tx_retval;
     }
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_UE_THREAD_TX, 1 );
 
     if ((subframe_select( &UE->lte_frame_parms, UE->slot_tx>>1 ) == SF_UL) ||
         (UE->lte_frame_parms.frame_type == FDD)) {
@@ -661,21 +662,6 @@ static void *UE_thread_tx(void *arg)
     }
 
 #endif
-
-    if (pthread_mutex_lock(&UE->mutex_tx) != 0) {
-      LOG_E( PHY, "[SCHED][UE] error locking mutex for UE TX thread\n" );
-      exit_fun("nothing to add");
-      return &UE_thread_tx_retval;
-    }
-
-    UE->instance_cnt_tx--;
-
-    if (pthread_mutex_unlock(&UE->mutex_tx) != 0) {
-      LOG_E( PHY, "[SCHED][UE] error unlocking mutex for UE TX thread\n" );
-      exit_fun("nothing to add");
-      return &UE_thread_tx_retval;
-    }
-
     UE->slot_tx += 2;
 
     if (UE->slot_tx >= 20) {
@@ -685,6 +671,24 @@ static void *UE_thread_tx(void *arg)
     }
 
     VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_SUBFRAME_NUMBER_TX_UE, UE->slot_tx>>1 );
+
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_UE_THREAD_TX, 0 );
+
+    if (pthread_mutex_lock(&UE->mutex_tx) != 0) {
+      LOG_E( PHY, "[SCHED][UE] error locking mutex for UE TX thread\n" );
+      exit_fun("nothing to add");
+      return &UE_thread_tx_retval;
+    }
+
+    UE->instance_cnt_tx--;
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_UE_INST_CNT_TX, UE->instance_cnt_tx);
+
+    if (pthread_mutex_unlock(&UE->mutex_tx) != 0) {
+      LOG_E( PHY, "[SCHED][UE] error unlocking mutex for UE TX thread\n" );
+      exit_fun("nothing to add");
+      return &UE_thread_tx_retval;
+    }
+
   }
 
   return &UE_thread_tx_retval;
@@ -794,6 +798,7 @@ static void *UE_thread_rx(void *arg)
       return &UE_thread_rx_retval;
     }
 
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_UE_THREAD_RX, 1 );
     for (i=0; i<2; i++) {
       if ((subframe_select( &UE->lte_frame_parms, UE->slot_rx>>1 ) == SF_DL) ||
           (UE->lte_frame_parms.frame_type == FDD)) {
@@ -908,6 +913,8 @@ static void *UE_thread_rx(void *arg)
 
       VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_SUBFRAME_NUMBER_RX_UE, UE->slot_rx>>1 );
     }
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_UE_THREAD_RX, 0 );
+
 
     if (pthread_mutex_lock(&UE->mutex_rx) != 0) {
       LOG_E( PHY, "[SCHED][UE] error locking mutex for UE RX\n" );
@@ -916,6 +923,7 @@ static void *UE_thread_rx(void *arg)
     }
 
     UE->instance_cnt_rx--;
+    VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_UE_INST_CNT_RX, UE->instance_cnt_rx);
 
     if (pthread_mutex_unlock(&UE->mutex_rx) != 0) {
       LOG_E( PHY, "[SCHED][UE] error unlocking mutex for UE RX\n" );
@@ -1110,12 +1118,17 @@ void *UE_thread(void *arg)
           return &UE_thread_retval;
         }
 
+	VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_UE_INST_CNT_RX, instance_cnt_rx);
+
+
         if (instance_cnt_rx == 0) {
           if (pthread_cond_signal(&UE->cond_rx) != 0) {
             LOG_E( PHY, "[SCHED][UE] ERROR pthread_cond_signal for UE RX thread\n" );
             exit_fun("nothing to add");
             return &UE_thread_retval;
           }
+
+	  LOG_D(HW,"signalled rx thread to wake up, hw_frame %d, hw_subframe %d (time %lli)\n", frame, hw_subframe, rt_get_time_ns()-T0 );
 
           if (UE->mode == rx_calib_ue) {
             if (frame == 10) {
@@ -1156,6 +1169,8 @@ void *UE_thread(void *arg)
             exit_fun("nothing to add");
             return &UE_thread_retval;
           }
+	  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_UE_INST_CNT_TX, instance_cnt_tx);
+
 
           if (instance_cnt_tx == 0) {
             if (pthread_cond_signal(&UE->cond_tx) != 0) {
@@ -1163,6 +1178,8 @@ void *UE_thread(void *arg)
               exit_fun("nothing to add");
               return &UE_thread_retval;
             }
+	  LOG_D(HW,"signalled tx thread to wake up, hw_frame %d, hw_subframe %d (time %lli)\n", frame, hw_subframe, rt_get_time_ns()-T0 );
+
           } else {
             LOG_E( PHY, "[SCHED][UE] UE TX thread busy!!\n" );
             exit_fun("nothing to add");
@@ -1504,11 +1521,13 @@ void *UE_thread(void *arg)
           exit_fun("nothing to add");
         } else {
 
-          UE->instance_cnt_rx++;
-          //printf("UE_thread: Unlocking UE mutex_rx\n");
-          pthread_mutex_unlock(&UE->mutex_rx);
+	  int instance_cnt_rx = ++UE->instance_cnt_rx;
 
-          if (UE->instance_cnt_rx == 0) {
+          pthread_mutex_unlock(&UE->mutex_rx);
+	  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_UE_INST_CNT_RX, instance_cnt_rx);
+
+
+          if (instance_cnt_rx == 0) {
             LOG_D(HW,"Scheduling UE RX for frame %d (hw frame %d), subframe %d (%d), mode %d\n",UE->frame_rx,frame,slot>>1,UE->slot_rx>>1,UE->mode);
 
             if (pthread_cond_signal(&UE->cond_rx) != 0) {
@@ -1548,11 +1567,12 @@ void *UE_thread(void *arg)
           exit_fun("nothing to add");
         } else {
 
-          UE->instance_cnt_tx++;
-          //printf("UE_thread: Unlocking UE mutex_rx\n");
-          pthread_mutex_unlock(&UE->mutex_tx);
+          int instance_cnt_tx = ++UE->instance_cnt_tx;
 
-          if (UE->instance_cnt_tx == 0) {
+          pthread_mutex_unlock(&UE->mutex_tx);
+	  VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME(VCD_SIGNAL_DUMPER_VARIABLES_UE_INST_CNT_TX, instance_cnt_tx);
+
+          if (instance_cnt_tx == 0) {
             LOG_D(HW,"Scheduling UE TX for frame %d (hw frame %d), subframe %d (%d), mode %d\n",UE->frame_tx,frame,slot>>1,UE->slot_tx>>1,UE->mode);
 
             if (pthread_cond_signal(&UE->cond_tx) != 0) {

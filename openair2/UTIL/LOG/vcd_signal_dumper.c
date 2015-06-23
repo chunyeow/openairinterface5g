@@ -101,6 +101,8 @@ const char* eurecomVariablesNames[] = {
   "itti_alloc_msg",
   "mp_alloc",
   "mp_free",
+  "ue_inst_cnt_rx",
+  "ue_inst_cnt_tx"
 };
 
 const char* eurecomFunctionsNames[] = {
@@ -128,6 +130,8 @@ const char* eurecomFunctionsNames[] = {
   "eNB_thread_rx8",
   "eNB_thread_tx9",
   "eNB_thread_rx9",
+  "ue_thread_tx",
+  "ue_thread_rx",
 
   /* PHY signals  */
   "ue_synch",
@@ -198,6 +202,7 @@ const char* eurecomFunctionsNames[] = {
   "mac_dlsch_preprocessor",
   "mac_schedule_dlsch",
   "mac_fill_dlsch_dci",
+
   "macxface_out_of_sync_ind",
   "macxface_ue_decode_si",
   "macxface_ue_decode_ccch",
@@ -210,7 +215,6 @@ const char* eurecomFunctionsNames[] = {
   "macxface_ue_get_sr",
 
   "ue_send_mch_sdu",
-  "ue_synch",
 
   /*RLC signals   */
   "rlc_data_req",
