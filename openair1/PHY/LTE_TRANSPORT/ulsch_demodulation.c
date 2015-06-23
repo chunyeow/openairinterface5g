@@ -1616,6 +1616,11 @@ void rx_ulsch(PHY_VARS_eNB *phy_vars_eNB,
 
   rx_power_correction = 1;
 
+  if (ulsch[UE_id]->harq_processes[harq_pid]->nb_rb == 0) {
+    LOG_E(PHY,"PUSCH (%d/%x) nb_rb=0!\n", harq_pid,ulsch[UE_id]->rnti,harq_pid);
+    return;
+  }
+
   for (l=0; l<(frame_parms->symbols_per_tti-ulsch[UE_id]->harq_processes[harq_pid]->srs_active); l++) {
 
 #ifdef DEBUG_ULSCH
