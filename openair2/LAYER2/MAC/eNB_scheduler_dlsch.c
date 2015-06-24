@@ -1188,7 +1188,7 @@ schedule_ue_spec(
 	      } else {
 		tpc = 1; //0
 	      }
-	      LOG_I(MAC,"[eNB %d] DLSCH scheduler: frame %d, subframe %d, harq_pid %d, tpc %d, accumulated %d, normalized/target rx power %d/%d\n",
+	      LOG_D(MAC,"[eNB %d] DLSCH scheduler: frame %d, subframe %d, harq_pid %d, tpc %d, accumulated %d, normalized/target rx power %d/%d\n",
 		    module_idP,frameP, subframeP,harq_pid,tpc,
 		    tpc_accumulated,normalized_rx_power,target_rx_power);
 	    } // Po_PUCCH has been updated 
