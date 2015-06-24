@@ -66,8 +66,8 @@ typedef struct msc_queue_item_s {
 } msc_queue_item_t;
 
 msc_message_number_t             g_message_number = 0;
-struct lfds611_queue_state      *g_msc_message_queue_p;
-struct lfds611_stack_state      *g_msc_memory_stack_p;
+struct lfds611_queue_state      *g_msc_message_queue_p = NULL;
+struct lfds611_stack_state      *g_msc_memory_stack_p  = NULL;
 
 //------------------------------------------------------------------------------
 void *msc_task(void *args_p)
@@ -350,6 +350,9 @@ int msc_init(const msc_env_t envP, const int max_threadsP)
 void msc_start_use(void)
 //------------------------------------------------------------------------------
 {
+  while (NULL == g_msc_message_queue_p) {
+    pthread_yield();
+  }
   lfds611_queue_use(g_msc_message_queue_p);
   lfds611_stack_use(g_msc_memory_stack_p);
 }
