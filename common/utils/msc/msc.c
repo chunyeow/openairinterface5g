@@ -150,7 +150,7 @@ int msc_init(const msc_env_t envP, const int max_threadsP)
 
   rv = lfds611_queue_new(&g_msc_message_queue_p, (lfds611_atom_t)MSC_MAX_QUEUE_ELEMENTS);
   AssertFatal (rv, "lfds611_queue_new failed!\n");
-
+  AssertFatal (g_msc_message_queue_p != NULL, "g_msc_message_queue_p is NULL!\n");
   msc_start_use();
 
   for (i=0; i < max_threadsP * 30; i++) {
@@ -350,9 +350,6 @@ int msc_init(const msc_env_t envP, const int max_threadsP)
 void msc_start_use(void)
 //------------------------------------------------------------------------------
 {
-  while (NULL == g_msc_message_queue_p) {
-    pthread_yield();
-  }
   lfds611_queue_use(g_msc_message_queue_p);
   lfds611_stack_use(g_msc_memory_stack_p);
 }
