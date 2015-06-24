@@ -246,8 +246,8 @@ function main()
     $SUDO rm -f /usr/etc/freeDiameter/mme*    2>&1
     $SUDO rm -f /usr/etc/freeDiameter/epc*    2>&1
     $SUDO rm -f $OPENAIR_DIR/targets/bin/xt_GTPU*.ko    2>&1
-    (cd $OPENAIRCN_DIR/GTPV1-U/GTPUSP && $SUDO make clean)
-    $SUDO rm -f $OPENAIRCN_DIR/GTPV1-U/GTPUSP/Bin/* 2>&1
+    (cd $OPENAIRCN_DIR/GTPV1-U/GTPU_SP && $SUDO make clean)
+    $SUDO rm -f $OPENAIRCN_DIR/GTPV1-U/GTPU_SP/Bin/* 2>&1
     $SUDO rm -f /lib/xtables/libxt_GTPU*.so             2>&1
     mkdir -m 777 -p -v build
   fi
