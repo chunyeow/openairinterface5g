@@ -174,17 +174,17 @@ function main()
   cecho "OPENAIR_DIR    = $OPENAIR_DIR" $green
 
 
-  if [ ! -e $OPENAIR_DIR/targets/bin/lte-softmodem ]; then
-    echo_fatal "Cannot find $OPENAIR_DIR/targets/bin/lte-softmodem executable"
+  if [ ! -e $OPENAIR_DIR/targets/bin/lte-softmodem.Rel10 ]; then
+    echo_fatal "Cannot find $OPENAIR_DIR/targets/bin/lte-softmodem.Rel10 executable"
   fi
 
 
   if [ $run_gdb -eq 0 ]; then 
-    exec $OPENAIR_DIR/targets/bin/lte-softmodem  `echo $exe_arguments` 2>&1 > /tmp/lte_softmodem.stdout.txt
+    exec $OPENAIR_DIR/targets/bin/lte-softmodem.Rel10  `echo $exe_arguments` 2>&1 > /tmp/lte_softmodem.stdout.txt
   else
     touch      ~/.gdb_lte_softmodem
     chmod 777  ~/.gdb_lte_softmodem
-    echo "file $OPENAIR_DIR/targets/bin/lte-softmodem" > ~/.gdb_lte_softmodem
+    echo "file $OPENAIR_DIR/targets/bin/lte-softmodem.Rel10" > ~/.gdb_lte_softmodem
     echo "set args $exe_arguments" >> ~/.gdb_lte_softmodem
     echo "run"                        >> ~/.gdb_lte_softmodem
     cat ~/.gdb_lte_softmodem

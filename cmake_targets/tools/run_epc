@@ -133,8 +133,8 @@ function main()
   cecho "OPENAIR_DIR    = $OPENAIR_DIR" $green
 
 
-  if [ ! -e $OPENAIR_DIR/targets/bin/mme_gw ]; then
-    echo_fatal "Cannot find $OPENAIR_DIR/targets/bin/mme_gw executable, have a look at the output of build_epc executable"
+  if [ ! -e $OPENAIR_DIR/targets/bin/mme_gw.Rel10 ]; then
+    echo_fatal "Cannot find $OPENAIR_DIR/targets/bin/mme_gw.Rel10 executable, have a look at the output of build_epc executable"
   fi
 
   if [ $epc_local -eq 1 ]; then
@@ -148,11 +148,11 @@ function main()
   exe_arguments="-O $epc_config_file $exe_arguments"
 
   if [ $run_gdb -eq 0 ]; then 
-    $OPENAIR_DIR/targets/bin/mme_gw  `echo $exe_arguments` 2>&1 
+    $OPENAIR_DIR/targets/bin/mme_gw.Rel10  `echo $exe_arguments` 2>&1 
   else
     touch      ~/.gdb_mme_gw
     chmod 777  ~/.gdb_mme_gw
-    echo "file $OPENAIR_DIR/targets/bin/mme_gw" > ~/.gdb_mme_gw
+    echo "file $OPENAIR_DIR/targets/bin/mme_gw.Rel10" > ~/.gdb_mme_gw
     echo "set args $exe_arguments "        >> ~/.gdb_mme_gw
     echo "run"                             >> ~/.gdb_mme_gw
     cat ~/.gdb_mme_gw
@@ -175,5 +175,12 @@ function main()
 
 }
 
+sudo echo
+is_sudo=$?
+if [[ "$is_sudo" -ne 0 ]]; then
+  echo_error "This script must be run by root or a sudo'er"
+  echo
+  exit 1
+fi
 
 main "$@"

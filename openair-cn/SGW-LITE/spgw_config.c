@@ -170,12 +170,12 @@ int spgw_config_process(spgw_config_t* config_pP)
 	config_pP->sgw_config.local_to_eNB = FALSE;
 
     if (snprintf(system_cmd, 256,
-    		"insmod $OPENAIR_TARGETS/bin/xt_GTPUAH.ko gtpu_enb_port=2152 gtpu_sgw_port=%u sgw_addr=\"%s\" ",
+    		"insmod $OPENAIR_TARGETS/bin/xt_GTPUSP.ko gtpu_enb_port=2152 gtpu_sgw_port=%u sgw_addr=\"%s\" ",
     		config_pP->sgw_config.sgw_udp_port_for_S1u_S12_S4_up,
     		inet_ntoa(inaddr)) > 0) {
       ret += spgw_system(system_cmd, SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
     } else {
-      SPGW_APP_ERROR("GTPUAH kernel module\n");
+      SPGW_APP_ERROR("GTPUSP kernel module\n");
       ret = -1;
     }
   }
@@ -201,12 +201,12 @@ int spgw_config_process(spgw_config_t* config_pP)
     }
 
     if (snprintf(system_cmd, 256,
-    		"insmod $OPENAIR_TARGETS/bin/xt_GTPUAH.ko gtpu_enb_port=2153 gtpu_sgw_port=%u sgw_addr=\"%s\" ",
+    		"insmod $OPENAIR_TARGETS/bin/xt_GTPUSP.ko gtpu_enb_port=2153 gtpu_sgw_port=%u sgw_addr=\"%s\" ",
                  config_pP->sgw_config.sgw_udp_port_for_S1u_S12_S4_up,
     		inet_ntoa(inaddr)) > 0) {
       ret += spgw_system(system_cmd, SPGW_WARN_ON_ERROR, __FILE__, __LINE__);
     } else {
-      SPGW_APP_ERROR("GTPUAH kernel module\n");
+      SPGW_APP_ERROR("GTPUSP kernel module\n");
       ret = -1;
     }
   }

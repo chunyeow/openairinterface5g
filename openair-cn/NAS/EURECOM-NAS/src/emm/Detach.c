@@ -534,6 +534,7 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
 	    	  	NULL,0,
 	    	  	"0 EMM_AS_NAS_INFO_DETACH ue id %06x", ueid);
 
+
     /* Setup NAS information message to transfer */
     emm_as->NASinfo = EMM_AS_NAS_INFO_DETACH;
     emm_as->NASmsg.length = 0;

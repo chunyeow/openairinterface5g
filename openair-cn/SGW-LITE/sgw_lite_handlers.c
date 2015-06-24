@@ -871,7 +871,7 @@ sgw_lite_handle_sgi_endpoint_updated(
       if (resp_pP->eps_bearer_id == 5) {
         ret = snprintf(cmd,
                        256, // mangle -I
-                       "iptables -t mangle -A %s -d %u.%u.%u.%u -m mark --mark 0 -j GTPUAH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action add",
+                       "iptables -t mangle -A %s -d %u.%u.%u.%u -m mark --mark 0 -j GTPUSP --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action add",
                        (spgw_config.sgw_config.local_to_eNB) ? "FORWARD":"FORWARD", // test
                        eps_bearer_entry_p->paa.ipv4_address[0],
                        eps_bearer_entry_p->paa.ipv4_address[1],
@@ -902,7 +902,7 @@ sgw_lite_handle_sgi_endpoint_updated(
       //-------------------------
       ret = snprintf(cmd,
                      256,
-                     "iptables -t mangle -I %s -d %u.%u.%u.%u -m mark --mark %u -j GTPUAH --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action add",
+                     "iptables -t mangle -I %s -d %u.%u.%u.%u -m mark --mark %u -j GTPUSP --own-ip %u.%u.%u.%u --own-tun %u --peer-ip %u.%u.%u.%u --peer-tun %u --action add",
                      (spgw_config.sgw_config.local_to_eNB) ? "FORWARD":"FORWARD", // test
                      eps_bearer_entry_p->paa.ipv4_address[0],
                      eps_bearer_entry_p->paa.ipv4_address[1],

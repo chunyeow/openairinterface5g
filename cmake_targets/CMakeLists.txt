@@ -577,12 +577,12 @@ include_directories("${OPENAIR3_DIR}/RAL-LTE/LTE_RAL_ENB/INCLUDE")
 include_directories("${OPENAIR3_DIR}/RAL-LTE/LTE_RAL_UE/INCLUDE")
 include_directories("${OPENAIR_DIR}/common/utils")
 include_directories("${OPENAIR_DIR}/common/utils/itti")
-include_directories("${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/api/network")
-include_directories("${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/include")
-include_directories("${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/ies")
-include_directories("${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/emm/msg")
-include_directories("${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/esm/msg")
-include_directories("${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/util")
+include_directories("${OPENAIRCN_DIR}/NAS/COMMON")
+include_directories("${OPENAIRCN_DIR}/NAS/COMMON/API/NETWORK")
+include_directories("${OPENAIRCN_DIR}/NAS/COMMON/EMM/MSG")
+include_directories("${OPENAIRCN_DIR}/NAS/COMMON/ESM/MSG")
+include_directories("${OPENAIRCN_DIR}/NAS/COMMON/IES")
+include_directories("${OPENAIRCN_DIR}/NAS/COMMON/UTIL")
 include_directories("${OPENAIRCN_DIR}/SECU")
 include_directories("${OPENAIRCN_DIR}/SCTP")
 include_directories("${OPENAIR2_DIR}/X2AP")
@@ -608,7 +608,6 @@ include_directories("${OPENAIR2_DIR}/UTIL/CLI")
 include_directories("${OPENAIR2_DIR}/UTIL/OPT")
 include_directories("${OPENAIR2_DIR}/UTIL/OMV")
 include_directories("${OPENAIR2_DIR}/RRC/LITE/MESSAGES")
-include_directories("${OPENAIRCN_DIR}/NAS")
 include_directories("${OPENAIRCN_DIR}/GTPV1-U/nw-gtpv1u/shared")
 include_directories("${OPENAIRCN_DIR}/GTPV1-U/nw-gtpv1u/include")
 include_directories("${OPENAIRCN_DIR}/SGW-LITE")
@@ -625,7 +624,7 @@ add_library(HASHTABLE
 include_directories(${OPENAIRCN_DIR}/UTILS/HASHTABLE)
 
 if (MESSAGE_CHART_GENERATOR)
-  add_library(MSC
+  add_library(MSC  
     ${OPENAIR_DIR}/common/utils/msc/msc.c
   )
 endif()
@@ -962,15 +961,15 @@ string(REGEX REPLACE "[a-zA-Z .\r\n]" "" IPTVERSION ${iptables_version})
 string(REGEX REPLACE "[a-zA-Z \r\n]" "" IPTABLES_VERSION_STRING ${iptables_version})
 
 # From original Polaris code, added _lib because cmake doesn't accept two targets with the same name
-# and the driver is also named xt_GTPUAH
+# and the driver is also named xt_GTPUSP
 # the _lib suffix is removed during installation in /lib/xtables
-add_library(xt_GTPUAH_lib SHARED ${OPENAIRCN_DIR}/GTPV1-U/GTPUAH/libxt_GTPUAH.c)
-target_compile_definitions(xt_GTPUAH_lib PRIVATE
+add_library(xt_GTPUSP_lib SHARED ${OPENAIRCN_DIR}/GTPV1-U/GTPU_SP/libxt_GTPUSP.c)
+target_compile_definitions(xt_GTPUSP_lib PRIVATE
 -D_LARGEFILE_SOURCE=1
 -D_LARGE_FILES
 -D_FILE_OFFSET_BITS=64
 -D_REENTRANT
--D_INIT=libxt_GTPUAH_init
+-D_INIT=libxt_GTPUSP_init
 -DKVERSION=3
 -DPIC
 IPTVERSION=${IPTVERSION} -DIPTABLES_VERSION_STRING=\"${IPTABLES_VERSION_STRING}\"
@@ -1041,284 +1040,358 @@ add_library(MME_APP
   ${MME_DIR}/s6a_2_nas_cause.c
   )
 
-set(NAS_SRC ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/)
+
+
+
+set(NAS_SRC ${OPENAIRCN_DIR}/NAS/)
 set(libnas_api_OBJS
-  ${NAS_SRC}api/mme/mme_api.c
-  ${NAS_SRC}api/network/nas_message.c
-  ${NAS_SRC}api/network/as_message.c
-  ${NAS_SRC}api/network/network_api.c
+  ${NAS_SRC}COMMON/API/NETWORK/as_message.c
+  ${NAS_SRC}COMMON/API/NETWORK/nas_message.c
+  ${NAS_SRC}COMMON/API/NETWORK/network_api.c
   )
-
-set(libnas_emm_OBJS
-  ${NAS_SRC}emm/Attach.c
-  ${NAS_SRC}emm/Authentication.c
-  ${NAS_SRC}emm/Detach.c
-  ${NAS_SRC}emm/EmmCommon.c
-  ${NAS_SRC}emm/emm_data_ctx.c
-  ${NAS_SRC}emm/emm_main.c
-  ${NAS_SRC}emm/EmmStatusHdl.c
-  ${NAS_SRC}emm/Identification.c
-  ${NAS_SRC}emm/IdleMode.c
-  ${NAS_SRC}emm/LowerLayer.c
-  ${NAS_SRC}emm/SecurityModeControl.c
-  ${NAS_SRC}emm/ServiceRequestHdl.c
-  ${NAS_SRC}emm/TrackingAreaUpdate.c
-  )
-
+  
 set(libnas_emm_msg_OBJS
-  ${NAS_SRC}emm/msg/AttachAccept.c
-  ${NAS_SRC}emm/msg/AuthenticationFailure.c
-  ${NAS_SRC}emm/msg/CsServiceNotification.c
-  ${NAS_SRC}emm/msg/ExtendedServiceRequest.c
-  ${NAS_SRC}emm/msg/IdentityResponse.c
-  ${NAS_SRC}emm/msg/EmmInformation.c
-  ${NAS_SRC}emm/msg/ServiceReject.c
-  ${NAS_SRC}emm/msg/TrackingAreaUpdateReject.c
-  ${NAS_SRC}emm/msg/AttachComplete.c
-  ${NAS_SRC}emm/msg/AuthenticationReject.c
-  ${NAS_SRC}emm/msg/DetachAccept.c
-  ${NAS_SRC}emm/msg/GutiReallocationCommand.c
-  ${NAS_SRC}emm/msg/emm_msg.c
-  ${NAS_SRC}emm/msg/SecurityModeCommand.c
-  ${NAS_SRC}emm/msg/ServiceRequest.c
-  ${NAS_SRC}emm/msg/TrackingAreaUpdateRequest.c
-  ${NAS_SRC}emm/msg/AttachReject.c
-  ${NAS_SRC}emm/msg/AuthenticationRequest.c
-  ${NAS_SRC}emm/msg/DetachRequest.c
-  ${NAS_SRC}emm/msg/GutiReallocationComplete.c
-  ${NAS_SRC}emm/msg/SecurityModeComplete.c
-  ${NAS_SRC}emm/msg/TrackingAreaUpdateAccept.c
-  ${NAS_SRC}emm/msg/UplinkNasTransport.c
-  ${NAS_SRC}emm/msg/AttachRequest.c
-  ${NAS_SRC}emm/msg/AuthenticationResponse.c
-  ${NAS_SRC}emm/msg/DownlinkNasTransport.c
-  ${NAS_SRC}emm/msg/EmmStatus.c
-  ${NAS_SRC}emm/msg/IdentityRequest.c
-  ${NAS_SRC}emm/msg/SecurityModeReject.c
-  ${NAS_SRC}emm/msg/TrackingAreaUpdateComplete.c
+  ${NAS_SRC}COMMON/EMM/MSG/AttachAccept.c
+  ${NAS_SRC}COMMON/EMM/MSG/AttachComplete.c
+  ${NAS_SRC}COMMON/EMM/MSG/AttachReject.c
+  ${NAS_SRC}COMMON/EMM/MSG/AttachRequest.c
+  ${NAS_SRC}COMMON/EMM/MSG/AuthenticationFailure.c
+  ${NAS_SRC}COMMON/EMM/MSG/AuthenticationReject.c
+  ${NAS_SRC}COMMON/EMM/MSG/AuthenticationRequest.c
+  ${NAS_SRC}COMMON/EMM/MSG/AuthenticationResponse.c
+  ${NAS_SRC}COMMON/EMM/MSG/CsServiceNotification.c
+  ${NAS_SRC}COMMON/EMM/MSG/DetachAccept.c
+  ${NAS_SRC}COMMON/EMM/MSG/DetachRequest.c
+  ${NAS_SRC}COMMON/EMM/MSG/DownlinkNasTransport.c
+  ${NAS_SRC}COMMON/EMM/MSG/EmmInformation.c
+  ${NAS_SRC}COMMON/EMM/MSG/emm_msg.c
+  ${NAS_SRC}COMMON/EMM/MSG/EmmStatus.c
+  ${NAS_SRC}COMMON/EMM/MSG/ExtendedServiceRequest.c
+  ${NAS_SRC}COMMON/EMM/MSG/GutiReallocationCommand.c
+  ${NAS_SRC}COMMON/EMM/MSG/GutiReallocationComplete.c
+  ${NAS_SRC}COMMON/EMM/MSG/IdentityRequest.c
+  ${NAS_SRC}COMMON/EMM/MSG/IdentityResponse.c
+  ${NAS_SRC}COMMON/EMM/MSG/SecurityModeCommand.c
+  ${NAS_SRC}COMMON/EMM/MSG/SecurityModeComplete.c
+  ${NAS_SRC}COMMON/EMM/MSG/SecurityModeReject.c
+  ${NAS_SRC}COMMON/EMM/MSG/ServiceReject.c
+  ${NAS_SRC}COMMON/EMM/MSG/ServiceRequest.c
+  ${NAS_SRC}COMMON/EMM/MSG/TrackingAreaUpdateAccept.c
+  ${NAS_SRC}COMMON/EMM/MSG/TrackingAreaUpdateComplete.c
+  ${NAS_SRC}COMMON/EMM/MSG/TrackingAreaUpdateReject.c
+  ${NAS_SRC}COMMON/EMM/MSG/TrackingAreaUpdateRequest.c
+  ${NAS_SRC}COMMON/EMM/MSG/UplinkNasTransport.c
 )
-
-set(libnas_emm_sap_OBJS
-  ${NAS_SRC}emm/sap/emm_as.c
-  ${NAS_SRC}emm/sap/emm_cn.c
-  ${NAS_SRC}emm/sap/EmmDeregisteredNoImsi.c
-  ${NAS_SRC}emm/sap/emm_reg.c
-  ${NAS_SRC}emm/sap/EmmRegisteredUpdateNeeded.c
-  ${NAS_SRC}emm/sap/EmmDeregisteredNormalService.c
-  ${NAS_SRC}emm/sap/emm_sap.c
-  ${NAS_SRC}emm/sap/EmmDeregisteredPlmnSearch.c
-  ${NAS_SRC}emm/sap/emm_esm.c
-  ${NAS_SRC}emm/sap/EmmRegisteredAttemptingToUpdate.c
-  ${NAS_SRC}emm/sap/emm_send.c
-  ${NAS_SRC}emm/sap/EmmCommonProcedureInitiated.c
-  ${NAS_SRC}emm/sap/EmmRegistered.c
-  ${NAS_SRC}emm/sap/EmmDeregisteredAttachNeeded.c
-  ${NAS_SRC}emm/sap/EmmRegisteredImsiDetachInitiated.c
-  ${NAS_SRC}emm/sap/EmmServiceRequestInitiated.c
-  ${NAS_SRC}emm/sap/EmmDeregisteredAttemptingToAttach.c
-  ${NAS_SRC}emm/sap/emm_fsm.c
-  ${NAS_SRC}emm/sap/EmmRegisteredInitiated.c
-  ${NAS_SRC}emm/sap/EmmTrackingAreaUpdatingInitiated.c
-  ${NAS_SRC}emm/sap/EmmDeregistered.c
-  ${NAS_SRC}emm/sap/EmmRegisteredLimitedService.c
-  ${NAS_SRC}emm/sap/EmmDeregisteredInitiated.c
-  ${NAS_SRC}emm/sap/EmmNull.c
-  ${NAS_SRC}emm/sap/EmmRegisteredNoCellAvailable.c
-  ${NAS_SRC}emm/sap/EmmDeregisteredLimitedService.c
-  ${NAS_SRC}emm/sap/emm_recv.c
-  ${NAS_SRC}emm/sap/EmmRegisteredNormalService.c
-  ${NAS_SRC}emm/sap/EmmDeregisteredNoCellAvailable.c
-  ${NAS_SRC}emm/sap/EmmRegisteredPlmnSearch.c
-)
-
-set (libnas_esm_OBJS
-  ${NAS_SRC}esm/esm_ebr_context.c
-  ${NAS_SRC}esm/PdnConnectivity.c
-  ${NAS_SRC}esm/esm_ebr.c
-  ${NAS_SRC}esm/EpsBearerContextDeactivation.c
-  ${NAS_SRC}esm/DefaultEpsBearerContextActivation.c
-  ${NAS_SRC}esm/DedicatedEpsBearerContextActivation.c
-  ${NAS_SRC}esm/PdnDisconnect.c
-  ${NAS_SRC}esm/EsmStatusHdl.c
-  ${NAS_SRC}esm/esm_main.c
-  ${NAS_SRC}esm/esm_pt.c
-  ${NAS_SRC}esm/esm_ip.c
-)
-
+  
 set(libnas_esm_msg_OBJS
-  ${NAS_SRC}esm/msg/ModifyEpsBearerContextRequest.c
-  ${NAS_SRC}esm/msg/DeactivateEpsBearerContextRequest.c
-  ${NAS_SRC}esm/msg/BearerResourceAllocationReject.c
-  ${NAS_SRC}esm/msg/BearerResourceModificationRequest.c
-  ${NAS_SRC}esm/msg/ActivateDedicatedEpsBearerContextRequest.c
-  ${NAS_SRC}esm/msg/EsmInformationResponse.c
-  ${NAS_SRC}esm/msg/PdnDisconnectReject.c
-  ${NAS_SRC}esm/msg/ActivateDedicatedEpsBearerContextAccept.c
-  ${NAS_SRC}esm/msg/PdnDisconnectRequest.c
-  ${NAS_SRC}esm/msg/BearerResourceModificationReject.c
-  ${NAS_SRC}esm/msg/ActivateDefaultEpsBearerContextAccept.c
-  ${NAS_SRC}esm/msg/ActivateDedicatedEpsBearerContextReject.c
-  ${NAS_SRC}esm/msg/ModifyEpsBearerContextAccept.c
-  ${NAS_SRC}esm/msg/DeactivateEpsBearerContextAccept.c
-  ${NAS_SRC}esm/msg/esm_msg.c
-  ${NAS_SRC}esm/msg/EsmInformationRequest.c
-  ${NAS_SRC}esm/msg/ActivateDefaultEpsBearerContextRequest.c
-  ${NAS_SRC}esm/msg/ModifyEpsBearerContextReject.c
-  ${NAS_SRC}esm/msg/EsmStatus.c
-  ${NAS_SRC}esm/msg/PdnConnectivityReject.c
-  ${NAS_SRC}esm/msg/ActivateDefaultEpsBearerContextReject.c
-  ${NAS_SRC}esm/msg/PdnConnectivityRequest.c
-  ${NAS_SRC}esm/msg/BearerResourceAllocationRequest.c
-)
-
-set(libnas_esm_sap_OBJS
-  ${NAS_SRC}esm/sap/esm_recv.c
-  ${NAS_SRC}esm/sap/esm_send.c
-  ${NAS_SRC}esm/sap/esm_sap.c
+  ${NAS_SRC}COMMON/ESM/MSG/ActivateDedicatedEpsBearerContextAccept.c
+  ${NAS_SRC}COMMON/ESM/MSG/ActivateDedicatedEpsBearerContextReject.c
+  ${NAS_SRC}COMMON/ESM/MSG/ActivateDedicatedEpsBearerContextRequest.c
+  ${NAS_SRC}COMMON/ESM/MSG/ActivateDefaultEpsBearerContextAccept.c
+  ${NAS_SRC}COMMON/ESM/MSG/ActivateDefaultEpsBearerContextReject.c
+  ${NAS_SRC}COMMON/ESM/MSG/ActivateDefaultEpsBearerContextRequest.c
+  ${NAS_SRC}COMMON/ESM/MSG/BearerResourceAllocationReject.c
+  ${NAS_SRC}COMMON/ESM/MSG/BearerResourceAllocationRequest.c
+  ${NAS_SRC}COMMON/ESM/MSG/BearerResourceModificationReject.c
+  ${NAS_SRC}COMMON/ESM/MSG/BearerResourceModificationRequest.c
+  ${NAS_SRC}COMMON/ESM/MSG/DeactivateEpsBearerContextAccept.c
+  ${NAS_SRC}COMMON/ESM/MSG/DeactivateEpsBearerContextRequest.c
+  ${NAS_SRC}COMMON/ESM/MSG/EsmInformationRequest.c
+  ${NAS_SRC}COMMON/ESM/MSG/EsmInformationResponse.c
+  ${NAS_SRC}COMMON/ESM/MSG/esm_msg.c
+  ${NAS_SRC}COMMON/ESM/MSG/EsmStatus.c
+  ${NAS_SRC}COMMON/ESM/MSG/ModifyEpsBearerContextAccept.c
+  ${NAS_SRC}COMMON/ESM/MSG/ModifyEpsBearerContextReject.c
+  ${NAS_SRC}COMMON/ESM/MSG/ModifyEpsBearerContextRequest.c
+  ${NAS_SRC}COMMON/ESM/MSG/PdnConnectivityReject.c
+  ${NAS_SRC}COMMON/ESM/MSG/PdnConnectivityRequest.c
+  ${NAS_SRC}COMMON/ESM/MSG/PdnDisconnectReject.c
+  ${NAS_SRC}COMMON/ESM/MSG/PdnDisconnectRequest.c
 )
 
 set(libnas_ies_OBJS
-  ${NAS_SRC}ies/UeSecurityCapability.c
-  ${NAS_SRC}ies/SecurityHeaderType.c
-  ${NAS_SRC}ies/RadioPriority.c
-  ${NAS_SRC}ies/EpsAttachResult.c
-  ${NAS_SRC}ies/ImeisvRequest.c
-  ${NAS_SRC}ies/EmergencyNumberList.c
-  ${NAS_SRC}ies/SupportedCodecList.c
-  ${NAS_SRC}ies/EsmCause.c
-  ${NAS_SRC}ies/NetworkName.c
-  ${NAS_SRC}ies/AuthenticationResponseParameter.c
-  ${NAS_SRC}ies/Cli.c
-  ${NAS_SRC}ies/AccessPointName.c
-  ${NAS_SRC}ies/DaylightSavingTime.c
-  ${NAS_SRC}ies/LcsIndicator.c
-  ${NAS_SRC}ies/PagingIdentity.c
-  ${NAS_SRC}ies/EpsMobileIdentity.c
-  ${NAS_SRC}ies/GutiType.c
-  ${NAS_SRC}ies/NasKeySetIdentifier.c
-  ${NAS_SRC}ies/CsfbResponse.c
-  ${NAS_SRC}ies/PacketFlowIdentifier.c
-  ${NAS_SRC}ies/ApnAggregateMaximumBitRate.c
-  ${NAS_SRC}ies/EpsBearerContextStatus.c
-  ${NAS_SRC}ies/MobileIdentity.c
-  ${NAS_SRC}ies/AuthenticationFailureParameter.c
-  ${NAS_SRC}ies/EpsUpdateResult.c
-  ${NAS_SRC}ies/TimeZone.c
-  ${NAS_SRC}ies/MessageType.c
-  ${NAS_SRC}ies/EmmCause.c
-  ${NAS_SRC}ies/MobileStationClassmark2.c
-  ${NAS_SRC}ies/AuthenticationParameterRand.c
-  ${NAS_SRC}ies/PdnAddress.c
-  ${NAS_SRC}ies/MobileStationClassmark3.c
-  ${NAS_SRC}ies/ServiceType.c
-  ${NAS_SRC}ies/NasRequestType.c
-  ${NAS_SRC}ies/PlmnList.c
-  ${NAS_SRC}ies/EpsQualityOfService.c
-  ${NAS_SRC}ies/NasMessageContainer.c
-  ${NAS_SRC}ies/EsmInformationTransferFlag.c
-  ${NAS_SRC}ies/TrafficFlowTemplate.c
-  ${NAS_SRC}ies/LinkedEpsBearerIdentity.c
-  ${NAS_SRC}ies/NasSecurityAlgorithms.c
-  ${NAS_SRC}ies/LlcServiceAccessPointIdentifier.c
-  ${NAS_SRC}ies/ShortMac.c
-  ${NAS_SRC}ies/TrafficFlowAggregateDescription.c
-  ${NAS_SRC}ies/PTmsiSignature.c
-  ${NAS_SRC}ies/ProtocolDiscriminator.c
-  ${NAS_SRC}ies/EpsBearerIdentity.c
-  ${NAS_SRC}ies/TimeZoneAndTime.c
-  ${NAS_SRC}ies/TrackingAreaIdentityList.c
-  ${NAS_SRC}ies/QualityOfService.c
-  ${NAS_SRC}ies/EpsUpdateType.c
-  ${NAS_SRC}ies/PdnType.c
-  ${NAS_SRC}ies/UeRadioCapabilityInformationUpdateNeeded.c
-  ${NAS_SRC}ies/AuthenticationParameterAutn.c
-  ${NAS_SRC}ies/EpsAttachType.c
-  ${NAS_SRC}ies/IdentityType2.c
-  ${NAS_SRC}ies/LcsClientIdentity.c
-  ${NAS_SRC}ies/DetachType.c
-  ${NAS_SRC}ies/LocationAreaIdentification.c
-  ${NAS_SRC}ies/TrackingAreaIdentity.c
-  ${NAS_SRC}ies/CipheringKeySequenceNumber.c
-  ${NAS_SRC}ies/MsNetworkCapability.c
-  ${NAS_SRC}ies/UeNetworkCapability.c
-  ${NAS_SRC}ies/ProtocolConfigurationOptions.c
-  ${NAS_SRC}ies/AdditionalUpdateType.c
-  ${NAS_SRC}ies/TmsiStatus.c
-  ${NAS_SRC}ies/EsmMessageContainer.c
-  ${NAS_SRC}ies/Nonce.c
-  ${NAS_SRC}ies/ProcedureTransactionIdentity.c
-  ${NAS_SRC}ies/TransactionIdentifier.c
-  ${NAS_SRC}ies/AdditionalUpdateResult.c
-  ${NAS_SRC}ies/GprsTimer.c
-  ${NAS_SRC}ies/EpsNetworkFeatureSupport.c
-  ${NAS_SRC}ies/SsCode.c
-  ${NAS_SRC}ies/DrxParameter.c
-  ${NAS_SRC}ies/KsiAndSequenceNumber.c
-  ${NAS_SRC}ies/VoiceDomainPreferenceAndUeUsageSetting.c
+  ${NAS_SRC}COMMON/IES/AccessPointName.c
+  ${NAS_SRC}COMMON/IES/AdditionalUpdateResult.c
+  ${NAS_SRC}COMMON/IES/AdditionalUpdateType.c
+  ${NAS_SRC}COMMON/IES/ApnAggregateMaximumBitRate.c
+  ${NAS_SRC}COMMON/IES/AuthenticationFailureParameter.c
+  ${NAS_SRC}COMMON/IES/AuthenticationParameterAutn.c
+  ${NAS_SRC}COMMON/IES/AuthenticationParameterRand.c
+  ${NAS_SRC}COMMON/IES/AuthenticationResponseParameter.c
+  ${NAS_SRC}COMMON/IES/CipheringKeySequenceNumber.c
+  ${NAS_SRC}COMMON/IES/Cli.c
+  ${NAS_SRC}COMMON/IES/CsfbResponse.c
+  ${NAS_SRC}COMMON/IES/DaylightSavingTime.c
+  ${NAS_SRC}COMMON/IES/DetachType.c
+  ${NAS_SRC}COMMON/IES/DrxParameter.c
+  ${NAS_SRC}COMMON/IES/EmergencyNumberList.c
+  ${NAS_SRC}COMMON/IES/EmmCause.c
+  ${NAS_SRC}COMMON/IES/EpsAttachResult.c
+  ${NAS_SRC}COMMON/IES/EpsAttachType.c
+  ${NAS_SRC}COMMON/IES/EpsBearerContextStatus.c
+  ${NAS_SRC}COMMON/IES/EpsBearerIdentity.c
+  ${NAS_SRC}COMMON/IES/EpsMobileIdentity.c
+  ${NAS_SRC}COMMON/IES/EpsNetworkFeatureSupport.c
+  ${NAS_SRC}COMMON/IES/EpsQualityOfService.c
+  ${NAS_SRC}COMMON/IES/EpsUpdateResult.c
+  ${NAS_SRC}COMMON/IES/EpsUpdateType.c
+  ${NAS_SRC}COMMON/IES/EsmCause.c
+  ${NAS_SRC}COMMON/IES/EsmInformationTransferFlag.c
+  ${NAS_SRC}COMMON/IES/EsmMessageContainer.c
+  ${NAS_SRC}COMMON/IES/GprsTimer.c
+  ${NAS_SRC}COMMON/IES/GutiType.c
+  ${NAS_SRC}COMMON/IES/IdentityType2.c
+  ${NAS_SRC}COMMON/IES/ImeisvRequest.c
+  ${NAS_SRC}COMMON/IES/KsiAndSequenceNumber.c
+  ${NAS_SRC}COMMON/IES/LcsClientIdentity.c
+  ${NAS_SRC}COMMON/IES/LcsIndicator.c
+  ${NAS_SRC}COMMON/IES/LinkedEpsBearerIdentity.c
+  ${NAS_SRC}COMMON/IES/LlcServiceAccessPointIdentifier.c
+  ${NAS_SRC}COMMON/IES/LocationAreaIdentification.c
+  ${NAS_SRC}COMMON/IES/MessageType.c
+  ${NAS_SRC}COMMON/IES/MobileIdentity.c
+  ${NAS_SRC}COMMON/IES/MobileStationClassmark2.c
+  ${NAS_SRC}COMMON/IES/MobileStationClassmark3.c
+  ${NAS_SRC}COMMON/IES/MsNetworkCapability.c
+  ${NAS_SRC}COMMON/IES/NasKeySetIdentifier.c
+  ${NAS_SRC}COMMON/IES/NasMessageContainer.c
+  ${NAS_SRC}COMMON/IES/NasRequestType.c
+  ${NAS_SRC}COMMON/IES/NasSecurityAlgorithms.c
+  ${NAS_SRC}COMMON/IES/NetworkName.c
+  ${NAS_SRC}COMMON/IES/Nonce.c
+  ${NAS_SRC}COMMON/IES/PacketFlowIdentifier.c
+  ${NAS_SRC}COMMON/IES/PagingIdentity.c
+  ${NAS_SRC}COMMON/IES/PdnAddress.c
+  ${NAS_SRC}COMMON/IES/PdnType.c
+  ${NAS_SRC}COMMON/IES/PlmnList.c
+  ${NAS_SRC}COMMON/IES/ProcedureTransactionIdentity.c
+  ${NAS_SRC}COMMON/IES/ProtocolConfigurationOptions.c
+  ${NAS_SRC}COMMON/IES/ProtocolDiscriminator.c
+  ${NAS_SRC}COMMON/IES/PTmsiSignature.c
+  ${NAS_SRC}COMMON/IES/QualityOfService.c
+  ${NAS_SRC}COMMON/IES/RadioPriority.c
+  ${NAS_SRC}COMMON/IES/SecurityHeaderType.c
+  ${NAS_SRC}COMMON/IES/ServiceType.c
+  ${NAS_SRC}COMMON/IES/ShortMac.c
+  ${NAS_SRC}COMMON/IES/SsCode.c
+  ${NAS_SRC}COMMON/IES/SupportedCodecList.c
+  ${NAS_SRC}COMMON/IES/TimeZoneAndTime.c
+  ${NAS_SRC}COMMON/IES/TimeZone.c
+  ${NAS_SRC}COMMON/IES/TmsiStatus.c
+  ${NAS_SRC}COMMON/IES/TrackingAreaIdentity.c
+  ${NAS_SRC}COMMON/IES/TrackingAreaIdentityList.c
+  ${NAS_SRC}COMMON/IES/TrafficFlowAggregateDescription.c
+  ${NAS_SRC}COMMON/IES/TrafficFlowTemplate.c
+  ${NAS_SRC}COMMON/IES/TransactionIdentifier.c
+  ${NAS_SRC}COMMON/IES/UeNetworkCapability.c
+  ${NAS_SRC}COMMON/IES/UeRadioCapabilityInformationUpdateNeeded.c
+  ${NAS_SRC}COMMON/IES/UeSecurityCapability.c
+  ${NAS_SRC}COMMON/IES/VoiceDomainPreferenceAndUeUsageSetting.c
 )
 
 set (libnas_utils_OBJS
-  ${NAS_SRC}util/device.c
-  ${NAS_SRC}util/memory.c
-  ${NAS_SRC}util/nas_log.c
-  ${NAS_SRC}util/nas_timer.c
-  ${NAS_SRC}util/socket.c
-  ${NAS_SRC}util/stty.c
-  ${NAS_SRC}util/TLVEncoder.c
-  ${NAS_SRC}util/TLVDecoder.c
-  ${NAS_SRC}util/OctetString.c
+  ${NAS_SRC}COMMON/UTIL/device.c
+  ${NAS_SRC}COMMON/UTIL/memory.c
+  ${NAS_SRC}COMMON/UTIL/nas_log.c
+  ${NAS_SRC}COMMON/UTIL/nas_timer.c
+  ${NAS_SRC}COMMON/UTIL/socket.c
+  ${NAS_SRC}COMMON/UTIL/stty.c
+  ${NAS_SRC}COMMON/UTIL/TLVEncoder.c
+  ${NAS_SRC}COMMON/UTIL/TLVDecoder.c
+  ${NAS_SRC}COMMON/UTIL/OctetString.c
 )
-
-set (libnas_user_OBJS
-  ${NAS_SRC}api/user/user_api.c
-  ${NAS_SRC}api/user/user_indication.c
-  ${NAS_SRC}api/user/at_command.c
-  ${NAS_SRC}api/user/at_error.c
-  ${NAS_SRC}api/user/at_response.c
-)
-
-set(libnas_usim_OBJS
-  ${NAS_SRC}api/usim/aka_functions.c
-  ${NAS_SRC}api/usim/usim_api.c
-)
-
-add_library(NAS_UE
-  ${OPENAIRCN_DIR}/NAS/nas_ue_task.c
-)
-
-set(libnas_OBJS
-
-  ${OPENAIRCN_DIR}/NAS/nas_itti_messaging.c
-  ${NAS_SRC}nas_parser.c
-  ${NAS_SRC}nas_proc.c
-  ${NAS_SRC}nas_user.c
-  ${NAS_SRC}nas_network.c
-  ${libnas_utils_OBJS}
-  ${libnas_user_OBJS}
-  ${libnas_usim_OBJS}
-  ${libnas_emm_OBJS}
-  ${libnas_emm_msg_OBJS}
-  ${libnas_emm_sap_OBJS}
-  ${libnas_esm_OBJS}
-  ${libnas_esm_msg_OBJS}
-  ${libnas_esm_sap_OBJS}
-  ${libnas_ies_OBJS}
-  ${libnas_api_OBJS}
-  )
-add_library(NAS ${libnas_OBJS})
 
 if(NAS_UE)
-  set(NAS_LIB NAS NAS_UE)
+  set(libnas_ue_api_OBJS
+    ${NAS_SRC}UE/API/USER/at_command.c
+    ${NAS_SRC}UE/API/USER/at_error.c
+    ${NAS_SRC}UE/API/USER/at_response.c
+    ${NAS_SRC}UE/API/USER/user_api.c
+    ${NAS_SRC}UE/API/USER/user_indication.c
+    ${NAS_SRC}UE/API/USIM/aka_functions.c
+    ${NAS_SRC}UE/API/USIM/usim_api.c
+  )
+  set(libnas_ue_emm_OBJS
+    ${NAS_SRC}UE/EMM/Attach.c
+    ${NAS_SRC}UE/EMM/Authentication.c
+    ${NAS_SRC}UE/EMM/Detach.c
+    ${NAS_SRC}UE/EMM/emm_main.c
+    ${NAS_SRC}UE/EMM/EmmStatusHdl.c
+    ${NAS_SRC}UE/EMM/Identification.c
+    ${NAS_SRC}UE/EMM/IdleMode.c
+    ${NAS_SRC}UE/EMM/LowerLayer.c
+    ${NAS_SRC}UE/EMM/SecurityModeControl.c
+    ${NAS_SRC}UE/EMM/ServiceRequestHdl.c
+    ${NAS_SRC}UE/EMM/TrackingAreaUpdate.c
+  )
+  set(libnas_ue_emm_sap_OBJS
+    ${NAS_SRC}UE/EMM/SAP/emm_as.c
+    ${NAS_SRC}UE/EMM/SAP/EmmDeregisteredAttachNeeded.c
+    ${NAS_SRC}UE/EMM/SAP/EmmDeregisteredAttemptingToAttach.c
+    ${NAS_SRC}UE/EMM/SAP/EmmDeregistered.c
+    ${NAS_SRC}UE/EMM/SAP/EmmDeregisteredInitiated.c
+    ${NAS_SRC}UE/EMM/SAP/EmmDeregisteredLimitedService.c
+    ${NAS_SRC}UE/EMM/SAP/EmmDeregisteredNoCellAvailable.c
+    ${NAS_SRC}UE/EMM/SAP/EmmDeregisteredNoImsi.c
+    ${NAS_SRC}UE/EMM/SAP/EmmDeregisteredNormalService.c
+    ${NAS_SRC}UE/EMM/SAP/EmmDeregisteredPlmnSearch.c
+    ${NAS_SRC}UE/EMM/SAP/emm_esm.c
+    ${NAS_SRC}UE/EMM/SAP/emm_fsm.c
+    ${NAS_SRC}UE/EMM/SAP/EmmNull.c
+    ${NAS_SRC}UE/EMM/SAP/emm_recv.c
+    ${NAS_SRC}UE/EMM/SAP/emm_reg.c
+    ${NAS_SRC}UE/EMM/SAP/EmmRegisteredAttemptingToUpdate.c
+    ${NAS_SRC}UE/EMM/SAP/EmmRegistered.c
+    ${NAS_SRC}UE/EMM/SAP/EmmRegisteredImsiDetachInitiated.c
+    ${NAS_SRC}UE/EMM/SAP/EmmRegisteredInitiated.c
+    ${NAS_SRC}UE/EMM/SAP/EmmRegisteredLimitedService.c
+    ${NAS_SRC}UE/EMM/SAP/EmmRegisteredNoCellAvailable.c
+    ${NAS_SRC}UE/EMM/SAP/EmmRegisteredNormalService.c
+    ${NAS_SRC}UE/EMM/SAP/EmmRegisteredPlmnSearch.c
+    ${NAS_SRC}UE/EMM/SAP/EmmRegisteredUpdateNeeded.c
+    ${NAS_SRC}UE/EMM/SAP/emm_sap.c
+    ${NAS_SRC}UE/EMM/SAP/emm_send.c
+    ${NAS_SRC}UE/EMM/SAP/EmmServiceRequestInitiated.c
+    ${NAS_SRC}UE/EMM/SAP/EmmTrackingAreaUpdatingInitiated.c
+  )
+  set (libnas_ue_esm_OBJS
+    ${NAS_SRC}UE/ESM/DedicatedEpsBearerContextActivation.c
+    ${NAS_SRC}UE/ESM/DefaultEpsBearerContextActivation.c
+    ${NAS_SRC}UE/ESM/EpsBearerContextDeactivation.c
+    ${NAS_SRC}UE/ESM/esm_ebr.c
+    ${NAS_SRC}UE/ESM/esm_ebr_context.c
+    ${NAS_SRC}UE/ESM/esm_ip.c
+    ${NAS_SRC}UE/ESM/esm_main.c
+    ${NAS_SRC}UE/ESM/esm_pt.c
+    ${NAS_SRC}UE/ESM/EsmStatusHdl.c
+    ${NAS_SRC}UE/ESM/PdnConnectivity.c
+    ${NAS_SRC}UE/ESM/PdnDisconnect.c
+  )
+  set(libnas_ue_esm_sap_OBJS
+    ${NAS_SRC}UE/ESM/SAP/esm_recv.c
+    ${NAS_SRC}UE/ESM/SAP/esm_send.c
+    ${NAS_SRC}UE/ESM/SAP/esm_sap.c
+  )
+  add_library(LIB_NAS_UE
+    ${NAS_SRC}UE/nas_itti_messaging.c
+    ${NAS_SRC}UE/nas_network.c
+    ${NAS_SRC}UE/nas_parser.c
+    ${NAS_SRC}UE/nas_proc.c
+    ${NAS_SRC}UE/nas_user.c
+    ${libnas_api_OBJS}
+    ${libnas_ue_api_OBJS}
+    ${libnas_emm_msg_OBJS}
+    ${libnas_esm_msg_OBJS}
+    ${libnas_ies_OBJS}
+    ${libnas_utils_OBJS}
+    ${libnas_ue_emm_OBJS}
+    ${libnas_ue_emm_sap_OBJS}
+    ${libnas_ue_esm_OBJS}
+    ${libnas_ue_esm_sap_OBJS}
+  )
+  include_directories(${NAS_SRC}UE)
+  include_directories(${NAS_SRC}UE/API/USER)
+  include_directories(${NAS_SRC}UE/API/USIM)
+  include_directories(${NAS_SRC}UE/EMM)
+  include_directories(${NAS_SRC}UE/EMM/SAP)
+  include_directories(${NAS_SRC}UE/ESM)
+  include_directories(${NAS_SRC}UE/ESM/SAP)
 endif()
 
-include_directories(${NAS_SRC})
-include_directories(${NAS_SRC}/api/user)
-include_directories(${NAS_SRC}/esm)
-include_directories(${NAS_SRC}/esm/sap)
-include_directories(${NAS_SRC}/emm)
-include_directories(${NAS_SRC}/emm/sap)
-include_directories(${NAS_SRC}/api/usim)
-include_directories(${NAS_SRC}/api/mme)
+if(NAS_MME)
+  set(libnas_mme_api_OBJS
+    ${NAS_SRC}MME/API/MME/mme_api.c
+  )
+  set(libnas_mme_emm_OBJS
+    ${NAS_SRC}MME/EMM/Attach.c
+    ${NAS_SRC}MME/EMM/Authentication.c
+    ${NAS_SRC}MME/EMM/Detach.c
+    ${NAS_SRC}MME/EMM/EmmCommon.c
+    ${NAS_SRC}MME/EMM/emm_data_ctx.c
+    ${NAS_SRC}MME/EMM/emm_main.c
+    ${NAS_SRC}MME/EMM/EmmStatusHdl.c
+    ${NAS_SRC}MME/EMM/Identification.c
+    ${NAS_SRC}MME/EMM/IdleMode.c
+    ${NAS_SRC}MME/EMM/LowerLayer.c
+    ${NAS_SRC}MME/EMM/SecurityModeControl.c
+    ${NAS_SRC}MME/EMM/ServiceRequestHdl.c
+    ${NAS_SRC}MME/EMM/TrackingAreaUpdate.c
+  )
+  set(libnas_mme_emm_sap_OBJS
+    ${NAS_SRC}MME/EMM/SAP/emm_as.c
+    ${NAS_SRC}MME/EMM/SAP/emm_cn.c
+    ${NAS_SRC}MME/EMM/SAP/EmmCommonProcedureInitiated.c
+    ${NAS_SRC}MME/EMM/SAP/EmmDeregisteredAttachNeeded.c
+    ${NAS_SRC}MME/EMM/SAP/EmmDeregisteredAttemptingToAttach.c
+    ${NAS_SRC}MME/EMM/SAP/EmmDeregistered.c
+    ${NAS_SRC}MME/EMM/SAP/EmmDeregisteredInitiated.c
+    ${NAS_SRC}MME/EMM/SAP/EmmDeregisteredLimitedService.c
+    ${NAS_SRC}MME/EMM/SAP/EmmDeregisteredNoCellAvailable.c
+    ${NAS_SRC}MME/EMM/SAP/EmmDeregisteredNoImsi.c
+    ${NAS_SRC}MME/EMM/SAP/EmmDeregisteredNormalService.c
+    ${NAS_SRC}MME/EMM/SAP/EmmDeregisteredPlmnSearch.c
+    ${NAS_SRC}MME/EMM/SAP/emm_esm.c
+    ${NAS_SRC}MME/EMM/SAP/emm_fsm.c
+    ${NAS_SRC}MME/EMM/SAP/EmmNull.c
+    ${NAS_SRC}MME/EMM/SAP/emm_recv.c
+    ${NAS_SRC}MME/EMM/SAP/emm_reg.c
+    ${NAS_SRC}MME/EMM/SAP/EmmRegisteredAttemptingToUpdate.c
+    ${NAS_SRC}MME/EMM/SAP/EmmRegistered.c
+    ${NAS_SRC}MME/EMM/SAP/EmmRegisteredImsiDetachInitiated.c
+    ${NAS_SRC}MME/EMM/SAP/EmmRegisteredInitiated.c
+    ${NAS_SRC}MME/EMM/SAP/EmmRegisteredLimitedService.c
+    ${NAS_SRC}MME/EMM/SAP/EmmRegisteredNoCellAvailable.c
+    ${NAS_SRC}MME/EMM/SAP/EmmRegisteredNormalService.c
+    ${NAS_SRC}MME/EMM/SAP/EmmRegisteredPlmnSearch.c
+    ${NAS_SRC}MME/EMM/SAP/EmmRegisteredUpdateNeeded.c
+    ${NAS_SRC}MME/EMM/SAP/emm_sap.c
+    ${NAS_SRC}MME/EMM/SAP/emm_send.c
+    ${NAS_SRC}MME/EMM/SAP/EmmServiceRequestInitiated.c
+    ${NAS_SRC}MME/EMM/SAP/EmmTrackingAreaUpdatingInitiated.c
+  )
+  set (libnas_mme_esm_OBJS
+    ${NAS_SRC}MME/ESM/DedicatedEpsBearerContextActivation.c
+    ${NAS_SRC}MME/ESM/DefaultEpsBearerContextActivation.c
+    ${NAS_SRC}MME/ESM/EpsBearerContextDeactivation.c
+    ${NAS_SRC}MME/ESM/esm_ebr.c
+    ${NAS_SRC}MME/ESM/esm_ebr_context.c
+    ${NAS_SRC}MME/ESM/esm_ip.c
+    ${NAS_SRC}MME/ESM/esm_main.c
+    ${NAS_SRC}MME/ESM/esm_pt.c
+    ${NAS_SRC}MME/ESM/EsmStatusHdl.c
+    ${NAS_SRC}MME/ESM/PdnConnectivity.c
+    ${NAS_SRC}MME/ESM/PdnDisconnect.c
+  )
+  set(libnas_mme_esm_sap_OBJS
+    ${NAS_SRC}MME/ESM/SAP/esm_recv.c
+    ${NAS_SRC}MME/ESM/SAP/esm_send.c
+    ${NAS_SRC}MME/ESM/SAP/esm_sap.c
+  )
+  add_library(LIB_NAS_MME
+    ${NAS_SRC}MME/nas_itti_messaging.c
+    ${NAS_SRC}MME/nas_network.c
+    ${NAS_SRC}MME/nas_parser.c
+    ${NAS_SRC}MME/nas_proc.c
+    ${libnas_api_OBJS}
+    ${libnas_mme_api_OBJS}
+    ${libnas_emm_msg_OBJS}
+    ${libnas_esm_msg_OBJS}
+    ${libnas_ies_OBJS}
+    ${libnas_utils_OBJS}
+    ${libnas_mme_emm_OBJS}
+    ${libnas_mme_emm_sap_OBJS}
+    ${libnas_mme_esm_OBJS}
+    ${libnas_mme_esm_sap_OBJS} 
+  )
+  include_directories(${NAS_SRC}MME)
+  include_directories(${NAS_SRC}MME/API/MME)
+  include_directories(${NAS_SRC}MME/EMM)
+  include_directories(${NAS_SRC}MME/EMM/SAP)
+  include_directories(${NAS_SRC}MME/ESM)
+  include_directories(${NAS_SRC}MME/ESM/SAP)
+endif()
+
+
 
 # Make lfds as a own source code (even if it is a outside library)
 # For better intergration with compilation flags & structure of cmake
@@ -1456,6 +1529,7 @@ add_executable(lte-softmodem
   ${OPENAIR_TARGETS}/SIMU/USER/init_lte.c
   ${OPENAIR_TARGETS}/COMMON/create_tasks.c
   ${OPENAIR1_DIR}/SIMULATION/ETH_TRANSPORT/netlink_init.c
+  ${OPENAIRCN_DIR}/NAS/UE/nas_ue_task.c
   ${GTPU_need_ITTI}
   ${HW_SOURCE}
   ${RTAI_SOURCE}
@@ -1465,17 +1539,53 @@ add_executable(lte-softmodem
 if (MESSAGE_CHART_GENERATOR)
 target_link_libraries (lte-softmodem
   -Wl,--start-group
-  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN SECU_OSA UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS MSC L2 ${RAL_LIB} ${NAS_LIB} ${ITTI_LIB} ${MIH_LIB}
+  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN SECU_OSA UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS MSC L2 ${RAL_LIB} LIB_NAS_UE ${ITTI_LIB} ${MIH_LIB}
   -Wl,--end-group )
 else (MESSAGE_CHART_GENERATOR)
 target_link_libraries (lte-softmodem
   -Wl,--start-group
-  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN SECU_OSA UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} ${ITTI_LIB} ${MIH_LIB}
+  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN SECU_OSA UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} LIB_NAS_UE ${ITTI_LIB} ${MIH_LIB}
   -Wl,--end-group )
 endif(MESSAGE_CHART_GENERATOR)
 target_link_libraries (lte-softmodem ${LIBXML2_LIBRARIES})
 target_link_libraries (lte-softmodem pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} sctp ${option_HW_lib} ${XFORMS_LIBRARIES} )
 target_link_libraries (lte-softmodem ${LIBBOOST_LIBRARIES})
+
+# lte-softmodem-nos1 is both eNB and UE implementation
+###################################################
+add_executable(lte-softmodem-nos1
+  ${rrc_h}
+  ${s1ap_h}
+  ${OPENAIR_BIN_DIR}/messages_xml.h
+  ${OPENAIR_TARGETS}/RT/USER/sched_dlsch.c
+  ${OPENAIR_TARGETS}/RT/USER/sched_rx_pdsch.c
+  ${OPENAIR_TARGETS}/RT/USER/rt_wrapper.c
+  ${OPENAIR_TARGETS}/RT/USER/lte-ue.c
+  ${OPENAIR_TARGETS}/RT/USER/lte-softmodem.c
+  ${OPENAIR1_DIR}/SIMULATION/TOOLS/taus.c
+  ${OPENAIR_TARGETS}/SIMU/USER/init_lte.c
+  ${OPENAIR_TARGETS}/COMMON/create_tasks.c
+  ${OPENAIR1_DIR}/SIMULATION/ETH_TRANSPORT/netlink_init.c
+  ${HW_SOURCE}
+  ${RTAI_SOURCE}
+  ${XFORMS_SOURCE}
+  ${XFORMS_SOURCE_SOFTMODEM}
+  )
+if (MESSAGE_CHART_GENERATOR)
+target_link_libraries (lte-softmodem-nos1
+  -Wl,--start-group
+  RRC_LIB SECU_CN SECU_OSA UTIL HASHTABLE SCHED_LIB PHY LFDS MSC L2 ${RAL_LIB} ${ITTI_LIB} ${MIH_LIB}
+  -Wl,--end-group )
+else (MESSAGE_CHART_GENERATOR)
+target_link_libraries (lte-softmodem-nos1
+  -Wl,--start-group
+  RRC_LIB SECU_CN SECU_OSA UTIL HASHTABLE SCHED_LIB PHY LFDS L2 ${RAL_LIB}  ${ITTI_LIB} ${MIH_LIB}
+  -Wl,--end-group )
+endif(MESSAGE_CHART_GENERATOR)
+target_link_libraries (lte-softmodem-nos1 ${LIBXML2_LIBRARIES})
+target_link_libraries (lte-softmodem-nos1 pthread m ${CONFIG_LIBRARIES} rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES}  ${option_HW_lib} ${XFORMS_LIBRARIES} )
+target_link_libraries (lte-softmodem-nos1 ${LIBBOOST_LIBRARIES})
+
 
 
 # EPC is ??? nodes implementation in one process
@@ -1486,19 +1596,19 @@ add_executable(mme_gw
   ${OPENAIRCN_DIR}/OAI_EPC/oai_epc.c
   ${GTPV1U_DIR}/gtpv1u_task.c
   ${OPENAIRCN_DIR}/SCTP/sctp_primitives_server.c
-  ${OPENAIRCN_DIR}/NAS/nas_main.c
+  ${OPENAIRCN_DIR}/NAS/MME/nas_mme_task.c
   )
 if (MESSAGE_CHART_GENERATOR)
 target_link_libraries (mme_gw
   -Wl,--start-group
-   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA S6A SGW MME_APP LFDS MSC ${ITTI_LIB} CN_UTILS HASHTABLE
+   LIB_NAS_MME S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA S6A SGW MME_APP LFDS MSC ${ITTI_LIB} CN_UTILS HASHTABLE
   -Wl,--end-group
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
   )
 else (MESSAGE_CHART_GENERATOR)
 target_link_libraries (mme_gw
   -Wl,--start-group
-   NAS S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA S6A SGW MME_APP LFDS ${ITTI_LIB} CN_UTILS HASHTABLE
+   LIB_NAS_MME S1AP_LIB S1AP_EPC GTPV1U GTPV2C SCTP_SERVER UDP_SERVER SECU_CN SECU_OSA S6A SGW MME_APP LFDS ${ITTI_LIB} CN_UTILS HASHTABLE
   -Wl,--end-group
   pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
   )
@@ -1602,24 +1712,24 @@ endif(MESSAGE_CHART_GENERATOR)
 # USIM process
 #################
 #add_executable(usim
-#  ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/tools/usim_data.c
-#  ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/api/usim/usim_api.c
-#  ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/api/usim/aka_functions.c
-#  ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/util/memory.c
-#  ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/util/nas_log.c
-#  ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/util/OctetString.c
-#  ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/util/TLVEncoder.c
+#  ${OPENAIRCN_DIR}/NAS/TOOLS/usim_data.c
+#  ${OPENAIRCN_DIR}/NAS/USER/API/USIM/usim_api.c
+#  ${OPENAIRCN_DIR}/NAS/USER/API/USIM/aka_functions.c
+#  ${OPENAIRCN_DIR}/NAS/COMMON/UTIL/memory.c
+#  ${OPENAIRCN_DIR}/NAS/COMMON/UTIL/nas_log.c
+#  ${OPENAIRCN_DIR}/NAS/COMMON/UTIL/OctetString.c
+#  ${OPENAIRCN_DIR}/NAS/COMMON/UTIL/TLVEncoder.c
 #  )
 #target_link_libraries (usim ${NAS_LIB} UTIL ${ITTI_LIB} LFDS pthread rt nettle crypto m)
 
 # ???
 #####################
 #add_executable(nvram
-#  ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/tools/ue_data.c
-#  ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/util/memory.c
-#  ${OPENAIRCN_DIR}/NAS/EURECOM-NAS/src/util/nas_log.c
+#  ${OPENAIRCN_DIR}/NAS/TOOLS/ue_data.c
+#  ${OPENAIRCN_DIR}/NAS/COMMON/UTIL/memory.c
+#  ${OPENAIRCN_DIR}/NAS/COMMON/UTIL/nas_log.c
 #  )
-#target_link_libraries (nvram ${NAS_LIB} UTIL ${ITTI_LIB} LFDS pthread rt nettle crypto m)
+#target_link_libraries (nvram LIB_NAS_UE UTIL ${ITTI_LIB} LFDS pthread rt nettle crypto m)
 
 
 ###################################"
@@ -1643,6 +1753,7 @@ add_executable(oaisim
   ${OPENAIR2_DIR}/RRC/NAS/nas_config.c
   ${OPENAIR2_DIR}/RRC/NAS/rb_config.c
   ${OPENAIR2_DIR}/UTIL/OMG/sumo.c
+  ${OPENAIRCN_DIR}/NAS/UE/nas_ue_task.c
   ${GTPU_need_ITTI}
   ${OPENAIR_TARGETS}/COMMON/create_tasks.c
   ${HW_SOURCE}
@@ -1652,12 +1763,12 @@ target_include_directories(oaisim PUBLIC  ${OPENAIR_TARGETS}/SIMU/USER)
 if (MESSAGE_CHART_GENERATOR)
 target_link_libraries (oaisim
   -Wl,--start-group
-  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS MSC L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
+  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS MSC L2 ${RAL_LIB} LIB_NAS_UE SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
   -Wl,--end-group )
 else(MESSAGE_CHART_GENERATOR)
 target_link_libraries (oaisim
   -Wl,--start-group
-  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
+  RRC_LIB S1AP_LIB S1AP_ENB GTPV1U SECU_CN UTIL HASHTABLE SCTP_CLIENT UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} LIB_NAS_UE SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
   -Wl,--end-group )
 endif(MESSAGE_CHART_GENERATOR)
 target_link_libraries (oaisim ${LIBXML2_LIBRARIES} ${LAPACK_LIBRARIES})
@@ -1693,12 +1804,12 @@ target_include_directories(oaisim_nos1 PUBLIC  ${OPENAIR_TARGETS}/SIMU/USER)
 if (MESSAGE_CHART_GENERATOR)
 target_link_libraries (oaisim_nos1
   -Wl,--start-group
-  RRC_LIB    SECU_CN UTIL HASHTABLE  UDP SCHED_LIB PHY LFDS MSC L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
+  RRC_LIB    SECU_CN UTIL HASHTABLE SCHED_LIB PHY LFDS MSC L2 ${RAL_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
   -Wl,--end-group )
 else(MESSAGE_CHART_GENERATOR)
 target_link_libraries (oaisim_nos1
   -Wl,--start-group
-  RRC_LIB    SECU_CN UTIL HASHTABLE  UDP SCHED_LIB PHY LFDS L2 ${RAL_LIB} ${NAS_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
+  RRC_LIB    SECU_CN UTIL HASHTABLE SCHED_LIB PHY LFDS L2 ${RAL_LIB} SIMU SIMU_ETH SECU_OSA ${ITTI_LIB}  ${MIH_LIB}
   -Wl,--end-group )
 endif(MESSAGE_CHART_GENERATOR)
 target_link_libraries (oaisim_nos1 ${LIBXML2_LIBRARIES} ${LAPACK_LIBRARIES})
@@ -1784,6 +1895,7 @@ target_link_libraries (test_s1c_mme
 #  -Wl,--end-group
 #  pthread m sctp  rt crypt ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES} ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} fdproto fdcore
 #)
+
 
 ##################################################
 # Generated specific cases is not regular code
@@ -1916,7 +2028,7 @@ make_driver(ue_ip ${OPENAIR2_DIR}/NETWORK_DRIVER/UE_IP ${ue_ip_src})
 ########################
 # KVERSION is not used in the code, but required
 set(module_cc_opt "${module_cc_opt} -DKVERSION=3")
-make_driver(xt_GTPUAH ${OPENAIRCN_DIR}/GTPV1-U/GTPUAH "")
+make_driver(xt_GTPUSP ${OPENAIRCN_DIR}/GTPV1-U/GTPU_SP "")
 
 # add the install targets
 #install (TARGETS Tutorial DESTINATION bin)

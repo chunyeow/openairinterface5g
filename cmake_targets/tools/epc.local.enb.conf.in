@@ -62,7 +62,7 @@ MME :
         # max values = 999.999:65535
         # maximum of 32 values, comma separated
         TAI_LIST = ( 
-             {MCC="208" ; MNC="95";  TAC = "1"; }                              # YOUR PLMN CONFIG HERE
+             {MCC="208" ; MNC="10";  TAC = "1"; }                              # YOUR PLMN CONFIG HERE
         );
     };
     

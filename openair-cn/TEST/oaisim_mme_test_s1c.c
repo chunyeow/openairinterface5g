@@ -122,7 +122,7 @@ static uint32_t eNB_app_register(const uint32_t enb_id_start, const uint32_t enb
   char            *str                  = NULL;
   struct in_addr   addr;
 
-
+  // 1 eNB should be max.
   // 1 eNB should be max.
   for (enb_id = enb_id_start; (enb_id < enb_id_end) ; enb_id++) {
     {
@@ -307,6 +307,7 @@ void mme_test_s1_notify_sctp_data_ind(uint32_t assoc_id, int32_t stream, const u
 {
 
 }
+
 
 //------------------------------------------------------------------------------
 int main( int argc, char **argv )
