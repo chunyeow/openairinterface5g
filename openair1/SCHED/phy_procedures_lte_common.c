@@ -126,14 +126,14 @@ void get_Msg3_alloc_ret(LTE_DL_FRAME_PARMS *frame_parms,
                         unsigned char *subframe)
 {
   if (frame_parms->frame_type == FDD) {
-    // always retransmit in n+8
-    *subframe = (current_subframe+8) % 10;
+    /* always retransmit in n+8 */
+    *subframe = current_subframe + 8;
 
-    if (*subframe>9) {
-      *subframe = *subframe-10;
-      *frame = (current_frame+1) & 1023;
+    if (*subframe > 9) {
+      *subframe = *subframe - 10;
+      *frame = (current_frame + 1) & 1023;
     } else {
-      *frame=current_frame;
+      *frame = current_frame;
     }
   } else {
     if (frame_parms->tdd_config == 1) {
