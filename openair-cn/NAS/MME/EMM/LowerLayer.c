@@ -102,6 +102,7 @@ int lowerlayer_success(unsigned int ueid)
 
   emm_sap.primitive = EMMREG_LOWERLAYER_SUCCESS;
   emm_sap.u.emm_reg.ueid = ueid;
+  emm_sap.u.emm_reg.ctx = NULL;
   rc = emm_sap_send(&emm_sap);
 
   LOG_FUNC_RETURN (rc);
@@ -131,6 +132,15 @@ int lowerlayer_failure(unsigned int ueid)
 
   emm_sap.primitive = EMMREG_LOWERLAYER_FAILURE;
   emm_sap.u.emm_reg.ueid = ueid;
+#if defined(NAS_BUILT_IN_EPC)
+  emm_data_context_t *emm_ctx = NULL;
+  if (ueid > 0) {
+    emm_ctx = emm_data_context_get(&_emm_data, ueid);
+  }
+  emm_sap.u.emm_reg.ctx = emm_ctx;
+#else
+  emm_sap.u.emm_reg.ctx = NULL;
+#endif
   rc = emm_sap_send(&emm_sap);
 
   LOG_FUNC_RETURN (rc);
@@ -182,6 +192,7 @@ int lowerlayer_release(int cause)
 
   emm_sap.primitive = EMMREG_LOWERLAYER_RELEASE;
   emm_sap.u.emm_reg.ueid = 0;
+  emm_sap.u.emm_reg.ctx = NULL;
   rc = emm_sap_send(&emm_sap);
 
   LOG_FUNC_RETURN (rc);
@@ -328,7 +339,7 @@ void emm_as_set_security_data(emm_as_security_data_t *data, const void *args,
               is_new,
               context->eksi,
               context->ul_count.seq_num,
-              *(UInt32_t *)(&context->ul_count));
+              *(uint32_t *)(&context->ul_count));
     LOG_TRACE(INFO,
               "knas_int %s",dump_octet_string(&context->knas_int));
     LOG_TRACE(INFO,
@@ -339,7 +350,7 @@ void emm_as_set_security_data(emm_as_security_data_t *data, const void *args,
     data->is_new = is_new;
     data->ksi    = context->eksi;
     data->sqn    = context->dl_count.seq_num;
-    // LG data->count = *(UInt32_t *)(&context->ul_count);
+    // LG data->count = *(uint32_t *)(&context->ul_count);
     data->count  = 0x00000000 | (context->dl_count.overflow << 8 ) | context->dl_count.seq_num;
     /* NAS integrity and cyphering keys may not be available if the
      * current security context is a partial EPS security context

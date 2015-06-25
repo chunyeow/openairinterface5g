@@ -80,13 +80,13 @@ struct emm_data_context_s *emm_data_context_get(
 struct emm_data_context_s *emm_data_context_remove(
   emm_data_t *emm_data, struct emm_data_context_s *elm)
 {
-  LOG_TRACE(INFO, "EMM-CTX - Remove in context %p UE id %u", elm, elm->ueid);
+  LOG_TRACE(INFO, "EMM-CTX - Remove in context %p UE id "NAS_UE_ID_FMT" ", elm, elm->ueid);
   return RB_REMOVE(emm_data_context_map, &emm_data->ctx_map, elm);
 }
 
 void emm_data_context_add(emm_data_t *emm_data, struct emm_data_context_s *elm)
 {
-  LOG_TRACE(INFO, "EMM-CTX - Add in context %p UE id %u", elm, elm->ueid);
+  LOG_TRACE(INFO, "EMM-CTX - Add in context %p UE id "NAS_UE_ID_FMT" ", elm, elm->ueid);
   RB_INSERT(emm_data_context_map, &emm_data->ctx_map, elm);
 }
 
@@ -97,7 +97,7 @@ void emm_data_context_dump(struct emm_data_context_s *elm_pP)
 	    char guti_str[22];
 	    int k, size, remaining_size;
         char key_string[KASME_LENGTH_OCTETS*2];
-	    LOG_TRACE(INFO, "EMM-CTX: ue id:            0x%06"PRIX32" (UE identifier)",                     elm_pP->ueid);
+	    LOG_TRACE(INFO, "EMM-CTX: ue id:           "NAS_UE_ID_FMT" (UE identifier)",                     elm_pP->ueid);
 	    LOG_TRACE(INFO, "         is_dynamic:       %u      (Dynamically allocated context indicator)", elm_pP->is_dynamic);
 	    LOG_TRACE(INFO, "         is_attached:      %u      (Attachment indicator)",                    elm_pP->is_attached);
 	    LOG_TRACE(INFO, "         is_emergency:     %u      (Emergency bearer services indicator)",     elm_pP->is_emergency);

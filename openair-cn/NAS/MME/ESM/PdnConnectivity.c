@@ -162,7 +162,7 @@ int esm_proc_pdn_connectivity_request(emm_data_context_t *ctx, int pti,
   LOG_FUNC_IN;
 
   LOG_TRACE(INFO, "ESM-PROC  - PDN connectivity requested by the UE "
-            "(ueid=%u, pti=%d) PDN type = %s, APN = %s pdn addr = %s", ctx->ueid, pti,
+            "(ueid="NAS_UE_ID_FMT", pti=%d) PDN type = %s, APN = %s pdn addr = %s", ctx->ueid, pti,
             (pdn_type == ESM_PDN_TYPE_IPV4)? "IPv4" :
             (pdn_type == ESM_PDN_TYPE_IPV6)? "IPv6" : "IPv4v6",
             (apn) ? (char *)(apn->value) : "null",
@@ -323,7 +323,7 @@ int esm_proc_pdn_connectivity_reject(int is_standalone, emm_data_context_t *ctx,
   int rc = RETURNerror;
 
   LOG_TRACE(WARNING, "ESM-PROC  - PDN connectivity not accepted by the "
-            "network (ueid=%d)", ctx->ueid);
+            "network (ueid="NAS_UE_ID_FMT")", ctx->ueid);
 
   if (is_standalone) {
     emm_sap_t emm_sap;
@@ -371,7 +371,7 @@ int esm_proc_pdn_connectivity_failure(emm_data_context_t *ctx, int pid)
 
   LOG_FUNC_IN;
 
-  LOG_TRACE(WARNING, "ESM-PROC  - PDN connectivity failure (ueid=%u, pid=%d)",
+  LOG_TRACE(WARNING, "ESM-PROC  - PDN connectivity failure (ueid="NAS_UE_ID_FMT", pid=%d)",
             ctx->ueid, pid);
 
   /* Delete the PDN connection entry */
@@ -426,7 +426,7 @@ static int _pdn_connectivity_create(emm_data_context_t *ctx,
   int pid = ESM_DATA_PDN_MAX;
 
   LOG_TRACE(INFO, "ESM-PROC  - Create new PDN connection "
-            "(pti=%d) APN = %s, IP address = %s (ueid=%u)", pti, apn->value,
+            "(pti=%d) APN = %s, IP address = %s (ueid="NAS_UE_ID_FMT")", pti, apn->value,
             (pdn_type == ESM_PDN_TYPE_IPV4)? esm_data_get_ipv4_addr(pdn_addr) :
             (pdn_type == ESM_PDN_TYPE_IPV6)? esm_data_get_ipv6_addr(pdn_addr) :
             esm_data_get_ipv4v6_addr(pdn_addr), ctx->ueid);

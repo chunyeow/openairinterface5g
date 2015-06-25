@@ -53,6 +53,7 @@ Description Defines functions used to handle state of EPS bearer contexts
 #include "nas_log.h"
 
 #include "mme_api.h"
+#include "msc.h"
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -268,6 +269,7 @@ int esm_ebr_release(
     LOG_TRACE(INFO, "ESM-FSM   - Stop retransmission timer %d",
               ebr_ctx->timer.id);
     ebr_ctx->timer.id = nas_timer_stop(ebr_ctx->timer.id);
+    MSC_LOG_EVENT(MSC_NAS_ESM_MME, "0 Timer %x ebi %u stopped",ebr_ctx->timer.id, ebi);
   }
 
   /* Release the retransmisison timer parameters */
@@ -335,6 +337,7 @@ int esm_ebr_start_timer(emm_data_context_t *ctx, int ebi, const OctetString *msg
     if (ebr_ctx->args) {
       /* Re-start the retransmission timer */
       ebr_ctx->timer.id = nas_timer_restart(ebr_ctx->timer.id);
+      MSC_LOG_EVENT(MSC_NAS_ESM_MME, "0 Timer %x ebi %u restarted",ebr_ctx->timer.id, ebi);
     }
   } else {
     /* Setup the retransmission timer parameters */
@@ -359,6 +362,7 @@ int esm_ebr_start_timer(emm_data_context_t *ctx, int ebi, const OctetString *msg
       /* Setup the retransmission timer to expire at the given
        * time interval */
       ebr_ctx->timer.id = nas_timer_start(sec, cb, ebr_ctx->args);
+      MSC_LOG_EVENT(MSC_NAS_ESM_MME, "0 Timer %x ebi %u started",ebr_ctx->timer.id, ebi);
       ebr_ctx->timer.sec = sec;
     }
   }
@@ -415,6 +419,7 @@ int esm_ebr_stop_timer(emm_data_context_t *ctx, int ebi)
     LOG_TRACE(INFO, "ESM-FSM   - Stop retransmission timer %d",
               ebr_ctx->timer.id);
     ebr_ctx->timer.id = nas_timer_stop(ebr_ctx->timer.id);
+    MSC_LOG_EVENT(MSC_NAS_ESM_MME, "0 Timer %x ebi %u stopped",ebr_ctx->timer.id, ebi);
   }
 
   /* Release the retransmisison timer parameters */
@@ -526,13 +531,18 @@ int esm_ebr_set_status(
   old_status = ebr_ctx->status;
 
   if (status < ESM_EBR_STATE_MAX) {
-    LOG_TRACE(INFO, "ESM-FSM   - Status of EPS bearer context %d changed:"
-              " %s ===> %s", ebi,
-              _esm_ebr_state_str[old_status], _esm_ebr_state_str[status]);
-
     if (status != old_status) {
+      LOG_TRACE(INFO, "ESM-FSM   - Status of EPS bearer context %d changed:"
+                  " %s ===> %s", ebi,
+                  _esm_ebr_state_str[old_status], _esm_ebr_state_str[status]);
+      MSC_LOG_EVENT(MSC_NAS_ESM_MME, "0 ESM state %s => %s "NAS_UE_ID_FMT" ",
+        _esm_ebr_state_str[old_status], _esm_ebr_state_str[status], ctx->ueid);
+
       ebr_ctx->status = status;
       LOG_FUNC_RETURN (RETURNok);
+    } else {
+        LOG_TRACE(INFO, "ESM-FSM   - Status of EPS bearer context %d unchanged:"
+                  " %s ", ebi, _esm_ebr_state_str[status]);
     }
   }
 

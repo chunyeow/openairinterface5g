@@ -55,6 +55,7 @@ Description Defines the EPS Mobility Management procedures executed at
 #if defined(NAS_BUILT_IN_EPC)
 # include "assertions.h"
 #endif
+# include "msc.h"
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -201,11 +202,12 @@ int emm_fsm_set_status(
   DevAssert(emm_ctx != NULL);
 
   if ((status < EMM_STATE_MAX) && (ueid > 0)) {
-    LOG_TRACE(INFO, "EMM-FSM   - Status changed: %s ===> %s",
-              _emm_fsm_status_str[emm_ctx->_emm_fsm_status],
-              _emm_fsm_status_str[status]);
 
     if (status != emm_ctx->_emm_fsm_status) {
+      LOG_TRACE(INFO, "EMM-FSM   - Status changed: %s ===> %s",
+                  _emm_fsm_status_str[emm_ctx->_emm_fsm_status],
+                  _emm_fsm_status_str[status]);
+      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 EMM state %s ", _emm_fsm_status_str[status]);
       emm_ctx->_emm_fsm_status = status;
     }
 
@@ -215,11 +217,11 @@ int emm_fsm_set_status(
 #else
 
   if ( (status < EMM_STATE_MAX) && (ueid < EMM_FSM_NB_UE_MAX) ) {
-    LOG_TRACE(INFO, "EMM-FSM   - Status changed: %s ===> %s",
-              _emm_fsm_status_str[_emm_fsm_status[ueid]],
-              _emm_fsm_status_str[status]);
-
     if (status != _emm_fsm_status[ueid]) {
+      LOG_TRACE(INFO, "EMM-FSM   - Status changed: %s ===> %s",
+                  _emm_fsm_status_str[_emm_fsm_status[ueid]],
+                  _emm_fsm_status_str[status]);
+
       _emm_fsm_status[ueid] = status;
     }
 
@@ -250,7 +252,11 @@ emm_fsm_state_t emm_fsm_get_status(unsigned int ueid, void *ctx)
 {
 # if defined(NAS_BUILT_IN_EPC)
   emm_data_context_t *emm_ctx = (emm_data_context_t *)ctx;
-
+  if (emm_ctx == NULL) {
+	LOG_TRACE(INFO, "EMM-FSM   - try again get context ueid "NAS_UE_ID_FMT" ",
+				ueid);
+    emm_ctx = emm_data_context_get(&_emm_data, ueid);
+  }
   if (emm_ctx != NULL) {
     return emm_ctx->_emm_fsm_status;
   }
@@ -290,7 +296,6 @@ int emm_fsm_process(const emm_reg_t *evt)
 
 # if defined(NAS_BUILT_IN_EPC)
   emm_data_context_t *emm_ctx = (emm_data_context_t *)evt->ctx;
-
   DevAssert(emm_ctx != NULL);
 
   status = emm_fsm_get_status(0, emm_ctx);

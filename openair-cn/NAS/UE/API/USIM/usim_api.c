@@ -79,7 +79,7 @@ Description Implements the API used by the NAS layer to read/write
 #define USIM_API_K_SIZE         16
 #define USIM_API_K_VALUE        "8BAF473F2F8FD09487CCCBD7097C6862"
 
-static UInt8_t _usim_api_k[USIM_API_K_SIZE];
+static uint8_t _usim_api_k[USIM_API_K_SIZE];
 
 
 /*
@@ -87,16 +87,16 @@ static UInt8_t _usim_api_k[USIM_API_K_SIZE];
  */
 static struct _usim_api_data_s {
   /* Highest sequence number the USIM has ever accepted */
-  UInt32_t sqn_ms;
+  uint32_t sqn_ms;
   /* List of the last used sequence numbers   */
 #define USIM_API_SQN_LIST_SIZE  32
-  UInt8_t n_sqns;
-  UInt32_t sqn[USIM_API_SQN_LIST_SIZE];
+  uint8_t n_sqns;
+  uint32_t sqn[USIM_API_SQN_LIST_SIZE];
 } _usim_api_data;
 
-static UInt8_t _usim_api_hex_char_to_hex_value (char c);
-static void _usim_api_hex_string_to_hex_value (UInt8_t *hex_value, const char *hex_string, int size);
-static int _usim_api_check_sqn(UInt32_t seq, UInt8_t ind);
+static uint8_t _usim_api_hex_char_to_hex_value (char c);
+static void _usim_api_hex_string_to_hex_value (uint8_t *hex_value, const char *hex_string, int size);
+static int _usim_api_check_sqn(uint32_t seq, uint8_t ind);
 
 /****************************************************************************/
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
@@ -274,7 +274,7 @@ int usim_api_authenticate(const OctetString* rand_pP, const OctetString* autn_pP
   }
 
   /* Verify that the received sequence number SQN is in the correct range */
-  rc = _usim_api_check_sqn(*(UInt32_t*)(sqn), sqn[USIM_API_SQN_SIZE - 1]);
+  rc = _usim_api_check_sqn(*(uint32_t*)(sqn), sqn[USIM_API_SQN_SIZE - 1]);
 
   if (rc != RETURNok) {
     /* Synchronisation failure; compute the AUTS parameter */
@@ -291,7 +291,7 @@ int usim_api_authenticate(const OctetString* rand_pP, const OctetString* autn_pP
     for (i = 0; i < USIM_API_SQN_MS_SIZE; i++) {
 #warning "LG:BUG HERE TODO"
       sqn_ms[USIM_API_SQNMS_SIZE - i] =
-        ((UInt8_t*)(_usim_api_data.sqn_ms))[USIM_API_SQN_MS_SIZE - i];
+        ((uint8_t*)(_usim_api_data.sqn_ms))[USIM_API_SQN_MS_SIZE - i];
     }
 
     u8 sqnms[USIM_API_SQNMS_SIZE];
@@ -340,7 +340,7 @@ int usim_api_authenticate(const OctetString* rand_pP, const OctetString* autn_pP
  **              Others:        None                                       **
  **                                                                        **
  ***************************************************************************/
-static UInt8_t _usim_api_hex_char_to_hex_value (char c)
+static uint8_t _usim_api_hex_char_to_hex_value (char c)
 {
   if (c >= 'A') {
     /* Remove case bit */
@@ -368,7 +368,7 @@ static UInt8_t _usim_api_hex_char_to_hex_value (char c)
  **              Others:        None                                       **
  **                                                                        **
  ***************************************************************************/
-static void _usim_api_hex_string_to_hex_value (UInt8_t *hex_value, const char *hex_string, int size)
+static void _usim_api_hex_string_to_hex_value (uint8_t *hex_value, const char *hex_string, int size)
 {
   int i;
 
@@ -396,7 +396,7 @@ static void _usim_api_hex_string_to_hex_value (UInt8_t *hex_value, const char *h
  **              Others:        None                                       **
  **                                                                        **
  ***************************************************************************/
-static int _usim_api_check_sqn(UInt32_t seq, UInt8_t ind)
+static int _usim_api_check_sqn(uint32_t seq, uint8_t ind)
 {
   /* TODO */
   return (RETURNok);

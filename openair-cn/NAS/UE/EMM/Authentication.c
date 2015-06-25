@@ -945,16 +945,16 @@ static int _authentication_kasme(const OctetString *autn,
             kasme->length);
 
   /* Compute the derivation key KEY = CK || IK */
-  UInt8_t key[ck->length + ik->length];
+  uint8_t key[ck->length + ik->length];
   memcpy(key, ck->value, ck->length);
   memcpy(key + ck->length, ik->value, ik->length);
 
   /* Compute the KDF input_s parameter
    * S = FC(0x10) || SNid(MCC, MNC) || 0x00 0x03 || SQN ⊕ AK || 0x00 0x06
    */
-  UInt8_t  input_s[16]; // less than 16
-  UInt8_t  sn_id[AUTH_SNID_SIZE]; // less than 16
-  UInt16_t length;
+  uint8_t  input_s[16]; // less than 16
+  uint8_t  sn_id[AUTH_SNID_SIZE]; // less than 16
+  uint16_t length;
   int      offset         = 0;
   int      size_of_length = sizeof(length);
 

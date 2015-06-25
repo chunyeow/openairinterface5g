@@ -63,7 +63,7 @@ Description Implements the API used by the NAS layer to read/write
  * USIM TLV parameter structure
  * ----------------------------
  */
-#define USIM_TLV_T(SIZE) struct {UInt8_t type; UInt8_t length; Byte_t value[SIZE];}
+#define USIM_TLV_T(SIZE) struct {uint8_t type; uint8_t length; Byte_t value[SIZE];}
 
 /*
  * Non Access Stratum Configuration
@@ -123,7 +123,7 @@ typedef struct {
 typedef struct {
   /* Length of all subsequent data        */
 #define USIM_EPS_NAS_SECURITY_CONTEXT_TAG 0xA0U
-  UInt8_t length;
+  uint8_t length;
   /* Key set identifier KSI_ASME          */
 #define USIM_KSI_ASME_TAG     0x80U
   USIM_TLV_T(1) KSIasme;
@@ -197,7 +197,7 @@ typedef struct {
   tac_t start;
   tac_t end;
   /* PLMN Network Name Record Identifier  */
-  UInt8_t record_id;
+  uint8_t record_id;
 } usim_opl_t;
 
 /*
@@ -212,7 +212,7 @@ typedef struct {
 #define USIM_ACT_CDMA_1xRTT 0x1000
 #define USIM_ACT_UTRAN    0x0080
 #define USIM_ACT_EUTRAN   0x0040
-  UInt16_t AcT;
+  uint16_t AcT;
 } usim_plmn_act_t;
 
 /*
@@ -220,7 +220,7 @@ typedef struct {
  * ------------------------------
  */
 typedef struct {
-  UInt32_t tmsi;  /* Temporary Mobile Subscriber Identity   */
+  uint32_t tmsi;  /* Temporary Mobile Subscriber Identity   */
   lai_t    lai; /* Location Area Identity     */
   Byte_t   reserved;  /* Reserved for future use      */
 #define USIM_LOCI_UPDATED     0x00
@@ -235,7 +235,7 @@ typedef struct {
  * ----------------------------------------------
  */
 typedef struct {
-  UInt32_t p_tmsi;  /* Packet Temporary Mobile Subscriber Identity  */
+  uint32_t p_tmsi;  /* Packet Temporary Mobile Subscriber Identity  */
   Byte_t   signature[3];  /* P-TMSI signature value   */
   RAI_t    rai; /* Routing Area Identity      */
 #define USIM_PSLOCI_UPDATED     0x00
@@ -280,7 +280,7 @@ typedef struct {
 #define USIM_MAINTENANCE_MODE     0x02U
 #define USIM_CELL_TEST_MODE     0x04U
   Byte_t UE_Operation_Mode; /* Mode of operation for the UE   */
-  UInt16_t Additional_Info; /* Additional information depending on
+  uint16_t Additional_Info; /* Additional information depending on
          * the UE operation mode    */
   Byte_t MNC_Length;    /* Number of digits used for extracting
          * the MNC from the IMSI    */

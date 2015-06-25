@@ -115,17 +115,17 @@ int nas_proc_activate_pdn(int cid);
  * --------------------------------------------------------------------------
  */
 
-int nas_proc_cell_info(int found, tac_t tac, ci_t ci, AcT_t rat, UInt8_t rsrp,
-                       UInt8_t rsrq);
+int nas_proc_cell_info(int found, tac_t tac, ci_t ci, AcT_t rat, uint8_t rsrp,
+                       uint8_t rsrq);
 
-int nas_proc_establish_cnf(const Byte_t *data, UInt32_t len);
+int nas_proc_establish_cnf(const Byte_t *data, uint32_t len);
 int nas_proc_establish_rej(void);
 
 int nas_proc_release_ind(int cause);
 
 int nas_proc_ul_transfer_cnf(void);
 int nas_proc_ul_transfer_rej(void);
-int nas_proc_dl_transfer_ind(const Byte_t *data, UInt32_t len);
+int nas_proc_dl_transfer_ind(const Byte_t *data, uint32_t len);
 
 
 

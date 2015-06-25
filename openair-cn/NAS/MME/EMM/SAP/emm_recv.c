@@ -562,7 +562,7 @@ int emm_recv_identity_response(unsigned int ueid, identity_response_msg *msg,
 
   /* Execute the identification completion procedure */
   rc = emm_proc_identification_complete(ueid, p_imsi, p_imei,
-                                        (UInt32_t *)(p_tmsi));
+                                        (uint32_t *)(p_tmsi));
   LOG_FUNC_RETURN (rc);
 }
 

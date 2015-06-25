@@ -158,7 +158,7 @@ static int _emm_tracking_area_update_reject(void *args)
   if (emm_ctx) {
     emm_sap_t emm_sap;
     LOG_TRACE(WARNING, "EMM-PROC  - EMM tracking area update procedure not accepted "
-              "by the network (ueid=%08x, cause=%d)",
+              "by the network (ueid="NAS_UE_ID_FMT", cause=%d)",
               emm_ctx->ueid, emm_ctx->emm_cause);
     /*
      * Notify EMM-AS SAP that Tracking Area Update Reject message has to be sent

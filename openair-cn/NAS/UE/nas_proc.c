@@ -1029,7 +1029,7 @@ int nas_proc_activate_pdn(int cid)
  **                                                                        **
  ***************************************************************************/
 int nas_proc_cell_info(int found, tac_t tac, ci_t ci, AcT_t AcT,
-                       UInt8_t rsrq, UInt8_t rsrp)
+                       uint8_t rsrq, uint8_t rsrp)
 {
   LOG_FUNC_IN;
 
@@ -1073,7 +1073,7 @@ int nas_proc_cell_info(int found, tac_t tac, ci_t ci, AcT_t AcT,
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int nas_proc_establish_cnf(const Byte_t *data, UInt32_t len)
+int nas_proc_establish_cnf(const Byte_t *data, uint32_t len)
 {
   LOG_FUNC_IN;
 
@@ -1251,7 +1251,7 @@ int nas_proc_ul_transfer_rej(void)
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int nas_proc_dl_transfer_ind(const Byte_t *data, UInt32_t len)
+int nas_proc_dl_transfer_ind(const Byte_t *data, uint32_t len)
 {
   LOG_FUNC_IN;
 

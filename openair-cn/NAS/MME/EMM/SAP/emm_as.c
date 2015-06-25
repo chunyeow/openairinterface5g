@@ -201,7 +201,7 @@ int emm_as_send(const emm_as_t *msg)
   int emm_cause = EMM_CAUSE_SUCCESS;
   emm_as_primitive_t primitive = msg->primitive;
 
-  UInt32_t ueid = 0;
+  uint32_t ueid = 0;
 
   LOG_TRACE(INFO, "EMMAS-SAP - Received primitive %s (%d)",
             _emm_as_primitive_str[primitive - _EMMAS_START - 1], primitive);
@@ -445,7 +445,7 @@ static int _emm_as_data_ind(const emm_as_data_t *msg, int *emm_cause)
   int rc = RETURNerror;
 
   LOG_TRACE(INFO, "EMMAS-SAP - Received AS data transfer indication "
-            "(ueid=%u, delivered=%s, length=%d)", msg->ueid,
+            "(ueid="NAS_UE_ID_FMT", delivered=%s, length=%d)", msg->ueid,
             (msg->delivered)? "TRUE" : "FALSE", msg->NASmsg.length);
 
   if (msg->delivered) {
@@ -992,7 +992,7 @@ static int _emm_as_send(const emm_as_t *msg)
         LOG_FUNC_RETURN (RETURNok);
       } else {
         LOG_TRACE(DEBUG, "EMMAS-SAP - "
-                  "Sending nas_itti_establish_cnf to S1AP UE ID %d"
+                  "Sending nas_itti_establish_cnf to S1AP UE ID 0x%x"
                   " selected_encryption_algorithm 0x%04X",
                   " selected_integrity_algorithm 0x%04X",
                   as_msg.msg.nas_establish_rsp.UEid,
@@ -1295,9 +1295,9 @@ static int _emm_as_security_req(const emm_as_security_t *msg,
   if (emm_msg != NULL) switch (msg->msgType) {
     case EMM_AS_MSG_TYPE_IDENT:
       if (msg->guti) {
-        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send IDENTITY_REQUEST to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 send IDENTITY_REQUEST to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
       } else {
-        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send IDENTITY_REQUEST to ue id %u ", as_msg->UEid);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 send IDENTITY_REQUEST to ue id "NAS_UE_ID_FMT" ", as_msg->UEid);
       }
       size = emm_send_identity_request(msg,
                                        &emm_msg->identity_request);
@@ -1305,9 +1305,9 @@ static int _emm_as_security_req(const emm_as_security_t *msg,
 
     case EMM_AS_MSG_TYPE_AUTH:
       if (msg->guti) {
-        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send AUTHENTICATION_REQUEST to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 send AUTHENTICATION_REQUEST to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
       } else {
-        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send AUTHENTICATION_REQUEST to ue id %u ", as_msg->UEid);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 send AUTHENTICATION_REQUEST to ue id "NAS_UE_ID_FMT" ", as_msg->UEid);
       }
       size = emm_send_authentication_request(msg,
                                              &emm_msg->authentication_request);
@@ -1315,9 +1315,9 @@ static int _emm_as_security_req(const emm_as_security_t *msg,
 
     case EMM_AS_MSG_TYPE_SMC:
       if (msg->guti) {
-        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send SECURITY_MODE_COMMAND to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 send SECURITY_MODE_COMMAND to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
       } else {
-        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send SECURITY_MODE_COMMAND to ue id %u ", as_msg->UEid);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 send SECURITY_MODE_COMMAND to ue id "NAS_UE_ID_FMT" ", as_msg->UEid);
       }
       size = emm_send_security_mode_command(msg,
                                             &emm_msg->security_mode_command);
@@ -1410,9 +1410,9 @@ static int _emm_as_security_rej(const emm_as_security_t *msg,
   if (emm_msg != NULL) switch (msg->msgType) {
     case EMM_AS_MSG_TYPE_AUTH:
       if (msg->guti) {
-        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send AUTHENTICATION_REJECT to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 send AUTHENTICATION_REJECT to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
       } else {
-        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send AUTHENTICATION_REJECT to ue id %x ", as_msg->UEid);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 send AUTHENTICATION_REJECT to ue id "NAS_UE_ID_FMT" ", as_msg->UEid);
       }
       size = emm_send_authentication_reject(
                &emm_msg->authentication_reject);
@@ -1516,7 +1516,7 @@ static int _emm_as_establish_cnf(const emm_as_establish_t *msg,
                 "EMMAS-SAP - emm_as_establish.nasMSG.length=%d",
                 msg->NASmsg.length);
 
-      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send ATTACH_ACCEPT to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
+      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 send ATTACH_ACCEPT to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
 
       size = emm_send_attach_accept(msg, &emm_msg->attach_accept);
       break;
@@ -1632,18 +1632,18 @@ static int _emm_as_establish_rej(const emm_as_establish_t *msg,
   if (emm_msg != NULL) switch (msg->NASinfo) {
     case EMM_AS_NAS_INFO_ATTACH:
       if (msg->UEid.guti) {
-        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send ATTACH_REJECT to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 send ATTACH_REJECT to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
       } else {
-        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send ATTACH_REJECT to ue id 0x%06"PRIX32" ", as_msg->UEid);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 send ATTACH_REJECT to ue id "NAS_UE_ID_FMT" ", as_msg->UEid);
       }
       size = emm_send_attach_reject(msg, &emm_msg->attach_reject);
       break;
 
     case EMM_AS_NAS_INFO_TAU:
         if (msg->UEid.guti) {
-          MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send TRACKING_AREA_UPDATE_REJECT to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
+          MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 send TRACKING_AREA_UPDATE_REJECT to s_TMSI %u.%u ", as_msg->s_tmsi.MMEcode, as_msg->s_tmsi.m_tmsi);
         } else {
-          MSC_LOG_EVENT(MSC_NAS_EMM_MME, "send TRACKING_AREA_UPDATE_REJECT to ue id 0x%06"PRIX32" ", as_msg->UEid);
+          MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 send TRACKING_AREA_UPDATE_REJECT to ue id "NAS_UE_ID_FMT" ", as_msg->UEid);
         }
       size = emm_send_tracking_area_update_reject(msg,
              &emm_msg->tracking_area_update_reject);

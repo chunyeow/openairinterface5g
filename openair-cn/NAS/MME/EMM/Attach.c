@@ -207,7 +207,7 @@ int emm_proc_attach_request(
   int rc;
   emm_data_context_t ue_ctx;
 
-  LOG_TRACE(INFO, "EMM-PROC  - EPS attach type = %s (%d) requested (ueid=0x%08x)",
+  LOG_TRACE(INFO, "EMM-PROC  - EPS attach type = %s (%d) requested (ueid="NAS_UE_ID_FMT")",
             _emm_attach_type_str[type], type, ueid);
   LOG_TRACE(INFO, "EMM-PROC  - umts_present = %u umts_present = %u",
             umts_present, gprs_present);
@@ -314,6 +314,15 @@ int emm_proc_attach_request(
     (*emm_ctx)->emm_cause = EMM_CAUSE_SUCCESS;
     (*emm_ctx)->_emm_fsm_status = EMM_INVALID;
     (*emm_ctx)->ueid = ueid;
+    /*
+     * Initialize EMM timers
+     */
+    (*emm_ctx)->T3450.id = NAS_TIMER_INACTIVE_ID;
+    (*emm_ctx)->T3450.sec = T3450_DEFAULT_VALUE;
+    (*emm_ctx)->T3460.id = NAS_TIMER_INACTIVE_ID;
+    (*emm_ctx)->T3460.sec = T3460_DEFAULT_VALUE;
+    (*emm_ctx)->T3470.id = NAS_TIMER_INACTIVE_ID;
+    (*emm_ctx)->T3470.sec = T3470_DEFAULT_VALUE;
 
     emm_fsm_set_status(ueid, *emm_ctx, EMM_DEREGISTERED);
 #if defined(NAS_BUILT_IN_EPC)
@@ -324,7 +333,7 @@ int emm_proc_attach_request(
 
     if (tai) {
       LOG_TRACE(WARNING,
-                "EMM-PROC  - Set tac %u in context %u ",
+                "EMM-PROC  - Set tac %u in context",
                 tai->tac);
       (*emm_ctx)->tac = tai->tac;
     } else {
@@ -433,11 +442,7 @@ int emm_proc_attach_complete(unsigned int ueid, const OctetString *esm_msg_pP)
 
   LOG_FUNC_IN;
 
-  LOG_TRACE(INFO, "EMM-PROC  - EPS attach complete (ueid=%u)", ueid);
-
-  /* Stop timer T3450 */
-  LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3450 (%d)", T3450.id);
-  T3450.id = nas_timer_stop(T3450.id);
+  LOG_TRACE(INFO, "EMM-PROC  - EPS attach complete (ueid="NAS_UE_ID_FMT")", ueid);
 
   /* Release retransmission timer parameters */
   attach_data_t *data = (attach_data_t *)(emm_proc_common_get_args(ueid));
@@ -446,28 +451,27 @@ int emm_proc_attach_complete(unsigned int ueid, const OctetString *esm_msg_pP)
     if (data->esm_msg.length > 0) {
       free(data->esm_msg.value);
     }
-
     free(data);
   }
 
   /* Get the UE context */
-
 #if defined(NAS_BUILT_IN_EPC)
-
   if (ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, ueid);
   }
-
 #else
-
   if (ueid < EMM_DATA_NB_UE_MAX) {
     emm_ctx = _emm_data.ctx[ueid];
   }
-
 #endif
 
   if (emm_ctx) {
-    /* Delete the old GUTI and consider the GUTI sent in the Attach
+	/* Stop timer T3450 */
+	LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3450 (%d)", emm_ctx->T3450.id);
+	emm_ctx->T3450.id = nas_timer_stop(emm_ctx->T3450.id);
+	MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3450 stopped UE "NAS_UE_ID_FMT" ", ueid);
+
+	/* Delete the old GUTI and consider the GUTI sent in the Attach
      * Accept message as valid */
     emm_ctx->guti_is_new = FALSE;
     emm_ctx->old_guti = NULL;
@@ -612,7 +616,7 @@ static int _emm_attach_release(void *args)
   emm_data_context_t *emm_ctx = (emm_data_context_t *)(args);
 
   if (emm_ctx) {
-    LOG_TRACE(WARNING, "EMM-PROC  - Release UE context data (ueid=%u)",
+    LOG_TRACE(WARNING, "EMM-PROC  - Release UE context data (ueid="NAS_UE_ID_FMT")",
               emm_ctx->ueid);
 
     unsigned int ueid = emm_ctx->ueid;
@@ -661,6 +665,25 @@ static int _emm_attach_release(void *args)
 
       free(emm_ctx->security);
       emm_ctx->security = NULL;
+    }
+
+    /* Stop timer T3450 */
+    if (emm_ctx->T3450.id != NAS_TIMER_INACTIVE_ID) {
+      LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3450 (%d)", emm_ctx->T3450.id);
+      emm_ctx->T3450.id = nas_timer_stop(emm_ctx->T3450.id);
+      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3450 stopped UE "NAS_UE_ID_FMT" ", emm_ctx->ueid);
+    }
+    /* Stop timer T3460 */
+    if (emm_ctx->T3460.id != NAS_TIMER_INACTIVE_ID) {
+      LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3460 (%d)", emm_ctx->T3460.id);
+      emm_ctx->T3460.id = nas_timer_stop(emm_ctx->T3460.id);
+      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3460 stopped UE "NAS_UE_ID_FMT" ", emm_ctx->ueid);
+    }
+    /* Stop timer T3470 */
+    if (emm_ctx->T3470.id != NAS_TIMER_INACTIVE_ID) {
+      LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3470 (%d)", emm_ctx->T3460.id);
+      emm_ctx->T3470.id = nas_timer_stop(emm_ctx->T3470.id);
+      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3470 stopped UE "NAS_UE_ID_FMT" ", emm_ctx->ueid);
     }
 
     /* Release the EMM context */
@@ -713,7 +736,7 @@ static int _emm_attach_reject(void *args)
   if (emm_ctx) {
     emm_sap_t emm_sap;
     LOG_TRACE(WARNING, "EMM-PROC  - EMM attach procedure not accepted "
-              "by the network (ueid=%08x, cause=%d)",
+              "by the network (ueid="NAS_UE_ID_FMT", cause=%d)",
               emm_ctx->ueid, emm_ctx->emm_cause);
     /*
      * Notify EMM-AS SAP that Attach Reject message has to be sent
@@ -783,13 +806,20 @@ static int _emm_attach_abort(void *args)
     unsigned int ueid = data->ueid;
     esm_sap_t esm_sap;
 
-    LOG_TRACE(WARNING, "EMM-PROC  - Abort the attach procedure (ueid=%u)",
+    LOG_TRACE(WARNING, "EMM-PROC  - Abort the attach procedure (ueid="NAS_UE_ID_FMT")",
               ueid);
-
-    /* Stop timer T3450 */
-    if (T3450.id != NAS_TIMER_INACTIVE_ID) {
-      LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3450 (%d)", T3450.id);
-      T3450.id = nas_timer_stop(T3450.id);
+#if defined(NAS_BUILT_IN_EPC)
+    ctx = emm_data_context_get(&_emm_data, ueid);
+#else
+    ctx = _emm_data.ctx[ueid];
+#endif
+    if (ctx) {
+      /* Stop timer T3450 */
+      if (ctx->T3450.id != NAS_TIMER_INACTIVE_ID) {
+        LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3450 (%d)", ctx->T3450.id);
+        ctx->T3450.id = nas_timer_stop(ctx->T3450.id);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3450 stopped UE "NAS_UE_ID_FMT" ", data->ueid);
+      }
     }
 
     /* Release retransmission timer parameters */
@@ -799,11 +829,7 @@ static int _emm_attach_abort(void *args)
 
     free(data);
 
-#if defined(NAS_BUILT_IN_EPC)
-    ctx = emm_data_context_get(&_emm_data, ueid);
-#else
-    ctx = _emm_data.ctx[ueid];
-#endif
+
 
     /*
      * Notify ESM that the network locally refused PDN connectivity
@@ -865,7 +891,7 @@ static int _emm_attach_identify(void *args)
 
   LOG_FUNC_IN;
 
-  LOG_TRACE(INFO, "EMM-PROC  - Identify incoming UE (ueid=0x%08x) using %s",
+  LOG_TRACE(INFO, "EMM-PROC  - Identify incoming UE (ueid="NAS_UE_ID_FMT") using %s",
             emm_ctx->ueid, (emm_ctx->imsi)? "IMSI" : (emm_ctx->guti)? "GUTI" :
             (emm_ctx->imei)? "IMEI" : "none");
 
@@ -1055,7 +1081,7 @@ static int _emm_attach_security(void *args)
   int rc;
   emm_data_context_t *emm_ctx = (emm_data_context_t *)(args);
 
-  LOG_TRACE(INFO, "EMM-PROC  - Setup NAS security (ueid=%u)", emm_ctx->ueid);
+  LOG_TRACE(INFO, "EMM-PROC  - Setup NAS security (ueid="NAS_UE_ID_FMT")", emm_ctx->ueid);
 
   /* Create new NAS security context */
   if (emm_ctx->security == NULL) {
@@ -1131,7 +1157,7 @@ static int _emm_attach(void *args)
 
   emm_data_context_t *emm_ctx = (emm_data_context_t *)(args);
 
-  LOG_TRACE(INFO, "EMM-PROC  - Attach UE (ueid=%u)", emm_ctx->ueid);
+  LOG_TRACE(INFO, "EMM-PROC  - Attach UE (ueid="NAS_UE_ID_FMT")", emm_ctx->ueid);
 
   /* 3GPP TS 24.401, Figure 5.3.2.1-1, point 5a
    * At this point, all NAS messages shall be protected by the NAS security
@@ -1330,16 +1356,18 @@ static int _emm_attach_accept(emm_data_context_t *emm_ctx, attach_data_t *data)
     rc = emm_sap_send(&emm_sap);
 
     if (rc != RETURNerror) {
-      if (T3450.id != NAS_TIMER_INACTIVE_ID) {
+      if (emm_ctx->T3450.id != NAS_TIMER_INACTIVE_ID) {
         /* Re-start T3450 timer */
-        T3450.id = nas_timer_restart(T3450.id);
+    	emm_ctx->T3450.id = nas_timer_restart(emm_ctx->T3450.id);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3450 restarted UE "NAS_UE_ID_FMT"", data->ueid);
       } else {
         /* Start T3450 timer */
-        T3450.id = nas_timer_start(T3450.sec, _emm_attach_t3450_handler, data);
+    	emm_ctx->T3450.id = nas_timer_start(emm_ctx->T3450.sec, _emm_attach_t3450_handler, data);
+        MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3450 started UE "NAS_UE_ID_FMT" ", data->ueid);
       }
 
       LOG_TRACE(INFO,"EMM-PROC  - Timer T3450 (%d) expires in %ld seconds",
-              T3450.id, T3450.sec);
+    		  emm_ctx->T3450.id, emm_ctx->T3450.sec);
     }
   } else {
     LOG_TRACE(WARNING,"EMM-PROC  - emm_ctx NULL");

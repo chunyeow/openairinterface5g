@@ -104,16 +104,6 @@ void emm_main_initialize(void)
   RB_INIT(&_emm_data.ctx_map);
 #endif
 
-  /*
-   * Initialize EMM timers
-   */
-  T3450.id = NAS_TIMER_INACTIVE_ID;
-  T3450.sec = T3450_DEFAULT_VALUE;
-  T3460.id = NAS_TIMER_INACTIVE_ID;
-  T3460.sec = T3460_DEFAULT_VALUE;
-  T3470.id = NAS_TIMER_INACTIVE_ID;
-  T3470.sec = T3470_DEFAULT_VALUE;
-
   LOG_FUNC_OUT;
 }
 

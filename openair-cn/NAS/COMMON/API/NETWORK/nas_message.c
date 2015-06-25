@@ -97,9 +97,9 @@ static int _nas_message_protected_encode(
 static int _nas_message_decrypt(
   char* dest,
   const char* src,
-  UInt8_t type,
-  UInt32_t code,
-  UInt8_t seq,
+  uint8_t type,
+  uint32_t code,
+  uint8_t seq,
   int length,
   const emm_security_context_t * const emm_security_context);
 
@@ -108,15 +108,15 @@ static int
 _nas_message_encrypt(
   char       *dest,
   const char *src,
-  UInt8_t     type,
-  UInt32_t    code,
-  UInt8_t     seq,
+  uint8_t     type,
+  uint32_t    code,
+  uint8_t     seq,
   int         const direction,
   int         length,
   const emm_security_context_t * const emm_security_context);
 
 /* Functions used for integrity protection of layer 3 NAS messages */
-static UInt32_t _nas_message_get_mac(
+static uint32_t _nas_message_get_mac(
   const char                   * const buffer,
   int                            const length,
   int                            const direction,
@@ -180,9 +180,9 @@ nas_message_encrypt(
     /* Integrity protected the NAS message */
     if (bytes > 0) {
       /* Compute offset of the sequence number field */
-      int offset = size - sizeof(UInt8_t);
+      int offset = size - sizeof(uint8_t);
       /* Compute the NAS message authentication code */
-      UInt32_t mac = _nas_message_get_mac(
+      uint32_t mac = _nas_message_get_mac(
                        outbuf + offset,
                        bytes + size - offset,
 #ifdef NAS_MME
@@ -192,7 +192,7 @@ nas_message_encrypt(
 #endif
                        emm_security_context);
       /* Set the message authentication code of the NAS message */
-      *(UInt32_t*)(outbuf + sizeof(UInt8_t)) = htonl(mac);
+      *(uint32_t*)(outbuf + sizeof(uint8_t)) = htonl(mac);
     }
   } else {
     /* The input buffer does not need to be encrypted */
@@ -301,9 +301,9 @@ int nas_message_decrypt(
     }
 
     /* Compute offset of the sequence number field */
-    int offset = size - sizeof(UInt8_t);
+    int offset = size - sizeof(uint8_t);
     /* Compute the NAS message authentication code */
-    UInt32_t mac = _nas_message_get_mac(
+    uint32_t mac = _nas_message_get_mac(
                      inbuf + offset,
                      length - offset,
 #ifdef NAS_MME
@@ -410,9 +410,9 @@ int nas_message_decode(
     }
 
     /* Compute offset of the sequence number field */
-    int offset = size - sizeof(UInt8_t);
+    int offset = size - sizeof(uint8_t);
     /* Compute the NAS message authentication code */
-    UInt32_t mac = _nas_message_get_mac(
+    uint32_t mac = _nas_message_get_mac(
                      buffer + offset,
                      length - offset,
 #ifdef NAS_MME
@@ -524,13 +524,13 @@ int nas_message_encode(
     /* Integrity protect the NAS message */
     if (bytes > 0) {
       /* Compute offset of the sequence number field */
-      int offset = size - sizeof(UInt8_t);
+      int offset = size - sizeof(uint8_t);
       /* Compute the NAS message authentication code */
       LOG_TRACE(DEBUG,
                 "offset %d = %d - %d, hdr encode = %d, length = %d bytes = %d",
-                offset, size, sizeof(UInt8_t),
+                offset, size, sizeof(uint8_t),
                 size, length, bytes);
-      UInt32_t mac = _nas_message_get_mac(
+      uint32_t mac = _nas_message_get_mac(
                        buffer + offset,
                        bytes + size - offset,
 #ifdef NAS_MME
@@ -540,7 +540,7 @@ int nas_message_encode(
 #endif
                        emm_security_context);
       /* Set the message authentication code of the NAS message */
-      *(UInt32_t*)(buffer + sizeof(UInt8_t)) = htonl(mac);
+      *(uint32_t*)(buffer + sizeof(uint8_t)) = htonl(mac);
 
       if (emm_security_context) {
 #ifdef NAS_MME
@@ -644,7 +644,7 @@ _nas_message_header_decode(
 
   /* Decode the first octet of the header (security header type or EPS bearer
    * identity, and protocol discriminator) */
-  DECODE_U8(buffer, *(UInt8_t*)(header), size);
+  DECODE_U8(buffer, *(uint8_t*)(header), size);
 
   if (header->protocol_discriminator == EPS_MOBILITY_MANAGEMENT_MESSAGE) {
     if (header->security_header_type != SECURITY_HEADER_TYPE_NOT_PROTECTED) {
@@ -798,7 +798,7 @@ static int _nas_message_header_encode(
 
   /* Encode the first octet of the header (security header type or EPS bearer
    * identity, and protocol discriminator) */
-  ENCODE_U8(buffer, *(UInt8_t*)(header), size);
+  ENCODE_U8(buffer, *(uint8_t*)(header), size);
 
   if (header->protocol_discriminator == EPS_MOBILITY_MANAGEMENT_MESSAGE) {
     if (header->security_header_type != SECURITY_HEADER_TYPE_NOT_PROTECTED) {
@@ -956,9 +956,9 @@ static int _nas_message_protected_encode(
 static int _nas_message_decrypt(
   char               *dest,
   const char         *src,
-  UInt8_t             security_header_type,
-  UInt32_t            code,
-  UInt8_t             seq,
+  uint8_t             security_header_type,
+  uint32_t            code,
+  uint8_t             seq,
   int                 length,
   const emm_security_context_t * const emm_security_context)
 {
@@ -986,7 +986,7 @@ static int _nas_message_decrypt(
               "No decryption of message length %u according to security header type 0x%02x",
               length, security_header_type);
     memcpy(dest, src, length);
-    DECODE_U8(dest, *(UInt8_t*)(&header), size);
+    DECODE_U8(dest, *(uint8_t*)(&header), size);
     LOG_FUNC_RETURN (header.protocol_discriminator);
     //LOG_FUNC_RETURN (length);
     break;
@@ -1022,7 +1022,7 @@ static int _nas_message_decrypt(
       nas_stream_encrypt_eea1(&stream_cipher, dest);
       /* Decode the first octet (security header type or EPS bearer identity,
        * and protocol discriminator) */
-      DECODE_U8(dest, *(UInt8_t*)(&header), size);
+      DECODE_U8(dest, *(uint8_t*)(&header), size);
 
       LOG_FUNC_RETURN (header.protocol_discriminator);
 
@@ -1056,7 +1056,7 @@ static int _nas_message_decrypt(
       nas_stream_encrypt_eea1(&stream_cipher, dest);
       /* Decode the first octet (security header type or EPS bearer identity,
        * and protocol discriminator) */
-      DECODE_U8(dest, *(UInt8_t*)(&header), size);
+      DECODE_U8(dest, *(uint8_t*)(&header), size);
 
       LOG_FUNC_RETURN (header.protocol_discriminator);
     }
@@ -1071,7 +1071,7 @@ static int _nas_message_decrypt(
       memcpy(dest, src, length);
       /* Decode the first octet (security header type or EPS bearer identity,
        * and protocol discriminator) */
-      DECODE_U8(dest, *(UInt8_t*)(&header), size);
+      DECODE_U8(dest, *(uint8_t*)(&header), size);
 
       LOG_FUNC_RETURN (header.protocol_discriminator);
 
@@ -1084,7 +1084,7 @@ static int _nas_message_decrypt(
       memcpy(dest, src, length);
       /* Decode the first octet (security header type or EPS bearer identity,
        * and protocol discriminator) */
-      DECODE_U8(dest, *(UInt8_t*)(&header), size);
+      DECODE_U8(dest, *(uint8_t*)(&header), size);
 
       LOG_FUNC_RETURN (header.protocol_discriminator);
       break;
@@ -1124,9 +1124,9 @@ static int _nas_message_decrypt(
 static int _nas_message_encrypt(
   char        *dest,
   const char  *src,
-  UInt8_t     security_header_type,
-  UInt32_t    code,
-  UInt8_t     seq,
+  uint8_t     security_header_type,
+  uint32_t    code,
+  uint8_t     seq,
   int         const direction,
   int         length,
   const emm_security_context_t * const emm_security_context)
@@ -1274,7 +1274,7 @@ static int _nas_message_encrypt(
  **    Others:  None                                                   **
  **                                                                        **
  ***************************************************************************/
-static UInt32_t _nas_message_get_mac(
+static uint32_t _nas_message_get_mac(
   const char                   * const buffer,
   int                            const length,
   int                            const direction,
@@ -1296,10 +1296,10 @@ static UInt32_t _nas_message_get_mac(
   switch (emm_security_context->selected_algorithms.integrity) {
 
   case NAS_SECURITY_ALGORITHMS_EIA1: {
-    UInt8_t             mac[4];
+    uint8_t             mac[4];
     nas_stream_cipher_t stream_cipher;
-    UInt32_t            count;
-    UInt32_t           *mac32;
+    uint32_t            count;
+    uint32_t           *mac32;
 
     int i,bytes = 0;
 
@@ -1354,20 +1354,20 @@ static UInt32_t _nas_message_get_mac(
     LOG_TRACE(DEBUG,
               "NAS_SECURITY_ALGORITHMS_EIA1 returned MAC %x.%x.%x.%x(%u) for length %d direction %d, count %d",
               mac[0], mac[1], mac[2],mac[3],
-              *((UInt32_t*)&mac),
+              *((uint32_t*)&mac),
               length,
               direction,
               count);
-    mac32 = (UInt32_t*)&mac;
+    mac32 = (uint32_t*)&mac;
     LOG_FUNC_RETURN (ntohl(*mac32));
   }
   break;
 
   case NAS_SECURITY_ALGORITHMS_EIA2: {
-    UInt8_t             mac[4];
+    uint8_t             mac[4];
     nas_stream_cipher_t stream_cipher;
-    UInt32_t            count;
-    UInt32_t           *mac32;
+    uint32_t            count;
+    uint32_t           *mac32;
 
     if (direction == SECU_DIRECTION_UPLINK) {
       count = 0x00000000 ||
@@ -1400,11 +1400,11 @@ static UInt32_t _nas_message_get_mac(
     LOG_TRACE(DEBUG,
               "NAS_SECURITY_ALGORITHMS_EIA2 returned MAC %x.%x.%x.%x(%u) for length %d direction %d, count %d",
               mac[0], mac[1], mac[2],mac[3],
-              *((UInt32_t*)&mac),
+              *((uint32_t*)&mac),
               length,
               direction,
               count);
-    mac32 = (UInt32_t*)&mac;
+    mac32 = (uint32_t*)&mac;
     LOG_FUNC_RETURN (ntohl(*mac32));
   }
   break;

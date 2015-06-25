@@ -122,22 +122,22 @@ typedef struct emm_security_context_s {
   OctetString knas_enc;   /* NAS cyphering key               */
   OctetString knas_int;   /* NAS integrity key               */
   struct count_s{
-    UInt32_t spare:8;
-    UInt32_t overflow:16;
-    UInt32_t seq_num:8;
+    uint32_t spare:8;
+    uint32_t overflow:16;
+    uint32_t seq_num:8;
   } dl_count, ul_count;   /* Downlink and uplink count parameters    */
   struct {
-    UInt8_t eps_encryption;   /* algorithm used for ciphering            */
-    UInt8_t eps_integrity;    /* algorithm used for integrity protection */
-    UInt8_t umts_encryption;  /* algorithm used for ciphering            */
-    UInt8_t umts_integrity;   /* algorithm used for integrity protection */
-    UInt8_t gprs_encryption;  /* algorithm used for ciphering            */
-    UInt8_t umts_present:1;
-    UInt8_t gprs_present:1;
+    uint8_t eps_encryption;   /* algorithm used for ciphering            */
+    uint8_t eps_integrity;    /* algorithm used for integrity protection */
+    uint8_t umts_encryption;  /* algorithm used for ciphering            */
+    uint8_t umts_integrity;   /* algorithm used for integrity protection */
+    uint8_t gprs_encryption;  /* algorithm used for ciphering            */
+    uint8_t umts_present:1;
+    uint8_t gprs_present:1;
   } capability;       /* UE network capability           */
   struct {
-    UInt8_t encryption:4;   /* algorithm used for ciphering           */
-    UInt8_t integrity:4;    /* algorithm used for integrity protection */
+    uint8_t encryption:4;   /* algorithm used for ciphering           */
+    uint8_t integrity:4;    /* algorithm used for integrity protection */
   } selected_algorithms;       /* MME selected algorithms                */
 } emm_security_context_t;
 
@@ -275,14 +275,14 @@ typedef struct emm_data_s {
   /* List of user controlled PLMNs        */
 #define EMM_DATA_PLMN_MAX   4
   PLMN_LIST_T(EMM_DATA_PLMN_MAX) plmn;
-  UInt16_t userAcT[EMM_DATA_PLMN_MAX];
+  uint16_t userAcT[EMM_DATA_PLMN_MAX];
   /* List of operator controlled PLMNs        */
 #define EMM_DATA_OPLMN_MAX  4
   PLMN_LIST_T(EMM_DATA_OPLMN_MAX) oplmn;
-  UInt16_t operAcT[EMM_DATA_OPLMN_MAX];
+  uint16_t operAcT[EMM_DATA_OPLMN_MAX];
   /* List of operator network name records    */
 #define EMM_DATA_OPNN_MAX   16
-  UInt8_t n_opnns;
+  uint8_t n_opnns;
   struct {
     const plmn_t *plmn;
     const char *fullname;

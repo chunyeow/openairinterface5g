@@ -81,11 +81,11 @@ typedef enum emm_as_primitive_u {
 
 /* Data used to setup EPS NAS security */
 typedef struct emm_as_security_data_s {
-  UInt8_t is_new;     /* New security data indicator      */
+  uint8_t is_new;     /* New security data indicator      */
 #define EMM_AS_NO_KEY_AVAILABLE     0xff
-  UInt8_t ksi;        /* NAS key set identifier       */
-  UInt8_t sqn;        /* Sequence number          */
-  UInt32_t count;     /* NAS counter              */
+  uint8_t ksi;        /* NAS key set identifier       */
+  uint8_t sqn;        /* Sequence number          */
+  uint32_t count;     /* NAS counter              */
   const OctetString *k_enc;   /* NAS cyphering key            */
   const OctetString *k_int;   /* NAS integrity key            */
 } emm_as_security_data_t;
@@ -99,21 +99,21 @@ typedef struct emm_as_security_data_s {
  * ----------------------------
  */
 typedef struct emm_as_security_s {
-  UInt32_t ueid;      /* UE lower layer identifier        */
+  uint32_t ueid;      /* UE lower layer identifier        */
   const GUTI_t *guti;     /* GUTI temporary mobile identity   */
   emm_as_security_data_t sctx;/* EPS NAS security context     */
   int emm_cause;      /* EMM failure cause code       */
   /*
    * Identity request/response
    */
-  UInt8_t identType;      /* Type of requested UE's identity  */
+  uint8_t identType;      /* Type of requested UE's identity  */
   const imsi_t *imsi;     /* The requested IMSI of the UE     */
   const imei_t *imei;     /* The requested IMEI of the UE     */
-  UInt32_t tmsi;      /* The requested TMSI of the UE     */
+  uint32_t tmsi;      /* The requested TMSI of the UE     */
   /*
    * Authentication request/response
    */
-  UInt8_t ksi;        /* NAS key set identifier       */
+  uint8_t ksi;        /* NAS key set identifier       */
   const OctetString *rand;    /* Random challenge number      */
   const OctetString *autn;    /* Authentication token         */
   const OctetString *res; /* Authentication response      */
@@ -121,23 +121,23 @@ typedef struct emm_as_security_s {
   /*
    * Security Mode Command
    */
-  UInt8_t eea;        /* Replayed EPS encryption algorithms   */
-  UInt8_t eia;        /* Replayed EPS integrity algorithms    */
-  UInt8_t uea;        /* Replayed UMTS encryption algorithms  */
+  uint8_t eea;        /* Replayed EPS encryption algorithms   */
+  uint8_t eia;        /* Replayed EPS integrity algorithms    */
+  uint8_t uea;        /* Replayed UMTS encryption algorithms  */
   uint8_t ucs2;
-  UInt8_t uia;        /* Replayed UMTS integrity algorithms   */
-  UInt8_t gea;        /* Replayed GPRS encryption algorithms   */
-  UInt8_t umts_present;
-  UInt8_t gprs_present;
+  uint8_t uia;        /* Replayed UMTS integrity algorithms   */
+  uint8_t gea;        /* Replayed GPRS encryption algorithms   */
+  uint8_t umts_present;
+  uint8_t gprs_present;
 
   // Added by LG
-  UInt8_t selected_eea; /* Selected EPS encryption algorithms   */
-  UInt8_t selected_eia; /* Selected EPS integrity algorithms    */
+  uint8_t selected_eea; /* Selected EPS encryption algorithms   */
+  uint8_t selected_eia; /* Selected EPS integrity algorithms    */
 
 #define EMM_AS_MSG_TYPE_IDENT   0x01    /* Identification message   */
 #define EMM_AS_MSG_TYPE_AUTH    0x02    /* Authentication message   */
 #define EMM_AS_MSG_TYPE_SMC 0x03    /* Security Mode Command    */
-  UInt8_t msgType;    /* Type of NAS security message to transfer */
+  uint8_t msgType;    /* Type of NAS security message to transfer */
 } emm_as_security_t;
 
 /*
@@ -153,17 +153,17 @@ typedef struct emm_as_EPS_identity_s {
 } emm_as_EPS_identity_t;
 
 typedef struct emm_as_establish_s {
-  UInt32_t ueid;      /* UE lower layer identifier         */
+  uint32_t ueid;      /* UE lower layer identifier         */
   emm_as_EPS_identity_t UEid; /* UE's EPS mobile identity      */
   emm_as_security_data_t sctx;/* EPS NAS security context      */
   int switch_off;     /* TRUE if the UE is switched off    */
-  UInt8_t type;       /* Network attach/detach type        */
-  UInt8_t RRCcause;       /* Connection establishment cause    */
-  UInt8_t RRCtype;        /* Associated call type          */
+  uint8_t type;       /* Network attach/detach type        */
+  uint8_t RRCcause;       /* Connection establishment cause    */
+  uint8_t RRCtype;        /* Associated call type          */
   const plmn_t *plmnID;   /* Identifier of the selected PLMN   */
-  UInt8_t ksi;        /* NAS key set identifier        */
-  UInt8_t encryption:4;   /* Ciphering algorithm           */
-  UInt8_t integrity:4;    /* Integrity protection algorithm    */
+  uint8_t ksi;        /* NAS key set identifier        */
+  uint8_t encryption:4;   /* Ciphering algorithm           */
+  uint8_t integrity:4;    /* Integrity protection algorithm    */
   int emm_cause;      /* EMM failure cause code        */
   const GUTI_t *new_guti; /* New GUTI, if re-allocated         */
   int n_tacs;         /* Number of concecutive tracking areas
@@ -175,7 +175,7 @@ typedef struct emm_as_establish_s {
 #define EMM_AS_NAS_INFO_TAU 0x03    /* Tracking Area Update request  */
 #define EMM_AS_NAS_INFO_SR  0x04    /* Service Request       */
 #define EMM_AS_NAS_INFO_EXTSR   0x05    /* Extended Service Request  */
-  UInt8_t NASinfo;    /* Type of initial NAS information to transfer   */
+  uint8_t NASinfo;    /* Type of initial NAS information to transfer   */
   OctetString NASmsg;     /* NAS message to be transfered within
                  * initial NAS information message   */
 } emm_as_establish_t;
@@ -185,11 +185,11 @@ typedef struct emm_as_establish_s {
  * --------------------------------------
  */
 typedef struct emm_as_release_s {
-  UInt32_t ueid;      /* UE lower layer identifier          */
+  uint32_t ueid;      /* UE lower layer identifier          */
   const GUTI_t *guti;     /* GUTI temporary mobile identity     */
 #define EMM_AS_CAUSE_AUTHENTICATION 0x01    /* Authentication failure */
 #define EMM_AS_CAUSE_DETACH     0x02    /* Detach requested   */
-  UInt8_t cause;  /* Release cause */
+  uint8_t cause;  /* Release cause */
 } emm_as_release_t;
 
 /*
@@ -197,15 +197,15 @@ typedef struct emm_as_release_s {
  * ---------------------------------
  */
 typedef struct emm_as_data_s {
-  UInt32_t ueid;      /* UE lower layer identifier        */
+  uint32_t ueid;      /* UE lower layer identifier        */
   const GUTI_t *guti;     /* GUTI temporary mobile identity   */
   emm_as_security_data_t sctx;/* EPS NAS security context     */
   int switch_off;     /* TRUE if the UE is switched off   */
-  UInt8_t type;       /* Network detach type          */
-  UInt8_t delivered;      /* Data message delivery indicator  */
+  uint8_t type;       /* Network detach type          */
+  uint8_t delivered;      /* Data message delivery indicator  */
 #define EMM_AS_NAS_DATA_ATTACH  0x01    /* Attach complete      */
 #define EMM_AS_NAS_DATA_DETACH  0x02    /* Detach request       */
-  UInt8_t NASinfo;        /* Type of NAS information to transfer  */
+  uint8_t NASinfo;        /* Type of NAS information to transfer  */
   OctetString NASmsg;     /* NAS message to be transfered     */
 } emm_as_data_t;
 
@@ -220,7 +220,7 @@ typedef struct emm_as_page_s {} emm_as_page_t;
  * -------------------------------------
  */
 typedef struct emm_as_status_s {
-  UInt32_t ueid;      /* UE lower layer identifier        */
+  uint32_t ueid;      /* UE lower layer identifier        */
   const GUTI_t *guti;     /* GUTI temporary mobile identity   */
   emm_as_security_data_t sctx;/* EPS NAS security context     */
   int emm_cause;      /* EMM failure cause code       */
@@ -231,7 +231,7 @@ typedef struct emm_as_status_s {
  * ------------------------------------
  */
 typedef struct emm_as_cell_info_s {
-  UInt8_t found;  /* Indicates whether a suitable cell is found   */
+  uint8_t found;  /* Indicates whether a suitable cell is found   */
 #define EMM_AS_PLMN_LIST_SIZE   6
   PLMN_LIST_T(EMM_AS_PLMN_LIST_SIZE) plmnIDs;
   /* List of identifiers of available PLMNs   */

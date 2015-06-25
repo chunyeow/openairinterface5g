@@ -203,7 +203,7 @@ int emm_as_send(const emm_as_t *msg)
   int emm_cause = EMM_CAUSE_SUCCESS;
   emm_as_primitive_t primitive = msg->primitive;
 
-  UInt32_t ueid = 0;
+  uint32_t ueid = 0;
 
   LOG_TRACE(INFO, "EMMAS-SAP - Received primitive %s (%d)",
             _emm_as_primitive_str[primitive - _EMMAS_START - 1], primitive);

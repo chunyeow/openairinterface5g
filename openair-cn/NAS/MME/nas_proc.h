@@ -93,12 +93,12 @@ void nas_proc_cleanup(void);
 
 
 
-int nas_proc_establish_ind(UInt32_t ueid, tac_t tac, const Byte_t *data,
-                           UInt32_t len);
+int nas_proc_establish_ind(uint32_t ueid, tac_t tac, const Byte_t *data,
+                           uint32_t len);
 
-int nas_proc_dl_transfer_cnf(UInt32_t ueid);
-int nas_proc_dl_transfer_rej(UInt32_t ueid);
-int nas_proc_ul_transfer_ind(UInt32_t ueid, const Byte_t *data, UInt32_t len);
+int nas_proc_dl_transfer_cnf(uint32_t ueid);
+int nas_proc_dl_transfer_rej(uint32_t ueid);
+int nas_proc_ul_transfer_ind(uint32_t ueid, const Byte_t *data, uint32_t len);
 
 /*
  * --------------------------------------------------------------------------
@@ -108,7 +108,7 @@ int nas_proc_ul_transfer_ind(UInt32_t ueid, const Byte_t *data, UInt32_t len);
 #if defined(NAS_BUILT_IN_EPC)
 int nas_proc_auth_param_res(emm_cn_auth_res_t *emm_cn_auth_res);
 int nas_proc_auth_param_fail(emm_cn_auth_fail_t *emm_cn_auth_fail);
-int nas_proc_deregister_ue(UInt32_t ue_id);
+int nas_proc_deregister_ue(uint32_t ue_id);
 int nas_proc_pdn_connectivity_res(nas_pdn_connectivity_rsp_t *nas_pdn_connectivity_rsp);
 int nas_proc_pdn_connectivity_fail(nas_pdn_connectivity_fail_t *nas_pdn_connectivity_fail);
 #endif

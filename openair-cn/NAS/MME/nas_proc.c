@@ -165,8 +165,8 @@ void nas_proc_cleanup(void)
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int nas_proc_establish_ind(UInt32_t ueid, tac_t tac,
-                           const Byte_t *data, UInt32_t len)
+int nas_proc_establish_ind(uint32_t ueid, tac_t tac,
+                           const Byte_t *data, uint32_t len)
 {
   LOG_FUNC_IN;
 
@@ -179,7 +179,7 @@ int nas_proc_establish_ind(UInt32_t ueid, tac_t tac,
     		MSC_NAS_MME,
     		MSC_NAS_EMM_MME,
     		NULL,0,
-    		"0 EMMAS_ESTABLISH_REQ ue id %06"PRIX32" tac %u", ueid, tac);
+    		"0 EMMAS_ESTABLISH_REQ ue id "NAS_UE_ID_FMT" tac %u", ueid, tac);
     /*
      * Notify the EMM procedure call manager that NAS signalling
      * connection establishment indication message has been received
@@ -211,7 +211,7 @@ int nas_proc_establish_ind(UInt32_t ueid, tac_t tac,
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int nas_proc_dl_transfer_cnf(UInt32_t ueid)
+int nas_proc_dl_transfer_cnf(uint32_t ueid)
 {
   LOG_FUNC_IN;
 
@@ -222,7 +222,7 @@ int nas_proc_dl_transfer_cnf(UInt32_t ueid)
   		MSC_NAS_MME,
   		MSC_NAS_EMM_MME,
   		NULL,0,
-  		"0 EMMAS_DATA_IND dl_transfer_conf ue id %06"PRIX32"", ueid);
+  		"0 EMMAS_DATA_IND dl_transfer_conf ue id "NAS_UE_ID_FMT" ", ueid);
 
   /*
    * Notify the EMM procedure call manager that downlink NAS message
@@ -254,7 +254,7 @@ int nas_proc_dl_transfer_cnf(UInt32_t ueid)
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int nas_proc_dl_transfer_rej(UInt32_t ueid)
+int nas_proc_dl_transfer_rej(uint32_t ueid)
 {
   LOG_FUNC_IN;
 
@@ -265,7 +265,7 @@ int nas_proc_dl_transfer_rej(UInt32_t ueid)
   		MSC_NAS_MME,
   		MSC_NAS_EMM_MME,
   		NULL,0,
-  		"0 EMMAS_DATA_IND dl_transfer_reject ue id %06"PRIX32"", ueid);
+  		"0 EMMAS_DATA_IND dl_transfer_reject ue id "NAS_UE_ID_FMT" ", ueid);
 
   /*
    * Notify the EMM procedure call manager that transmission
@@ -298,7 +298,7 @@ int nas_proc_dl_transfer_rej(UInt32_t ueid)
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int nas_proc_ul_transfer_ind(UInt32_t ueid, const Byte_t *data, UInt32_t len)
+int nas_proc_ul_transfer_ind(uint32_t ueid, const Byte_t *data, uint32_t len)
 {
   int rc = RETURNerror;
 
@@ -314,7 +314,7 @@ int nas_proc_ul_transfer_ind(UInt32_t ueid, const Byte_t *data, UInt32_t len)
     		MSC_NAS_MME,
     		MSC_NAS_EMM_MME,
     		NULL,0,
-    		"0 EMMAS_DATA_IND ue id %06"PRIX32" len %u", ueid, len);
+    		"0 EMMAS_DATA_IND ue id "NAS_UE_ID_FMT" len %u", ueid, len);
 
     emm_sap.primitive = EMMAS_DATA_IND;
     emm_sap.u.emm_as.u.data.ueid = ueid;
@@ -370,7 +370,7 @@ int nas_proc_auth_param_fail(emm_cn_auth_fail_t *emm_cn_auth_fail)
   LOG_FUNC_RETURN (rc);
 }
 
-int nas_proc_deregister_ue(UInt32_t ue_id)
+int nas_proc_deregister_ue(uint32_t ue_id)
 {
   int rc = RETURNerror;
   emm_sap_t emm_sap;
@@ -381,7 +381,7 @@ int nas_proc_deregister_ue(UInt32_t ue_id)
   		MSC_NAS_MME,
   		MSC_NAS_EMM_MME,
   		NULL,0,
-  		"0 EMMCN_DEREGISTER_UE ue_id %06"PRIX32"",ue_id);
+  		"0 EMMCN_DEREGISTER_UE ue_id "NAS_UE_ID_FMT" ",ue_id);
 
   emm_sap.primitive = EMMCN_DEREGISTER_UE;
   emm_sap.u.emm_cn.u.deregister.UEid = ue_id;

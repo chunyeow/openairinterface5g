@@ -90,7 +90,7 @@ typedef struct {
  * has activated or desactivated a PDN connection
  */
 typedef struct {
-  UInt8_t cid;    /* PDN connection identifier  */
+  uint8_t cid;    /* PDN connection identifier  */
   network_pdn_state_t status; /* PDN connection status  */
 } user_ind_pdn_t;
 

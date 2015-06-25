@@ -338,7 +338,7 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi,
       	  		MSC_NAS_EMM_MME,
       	  	  	MSC_NAS_EMM_MME,
       	  	  	NULL,0,
-      	  	  	"0 EMMREG_COMMON_PROC_REQ ue id %06x (security mode control)", ueid);
+      	  	  	"0 EMMREG_COMMON_PROC_REQ ue id "NAS_UE_ID_FMT" (security mode control)", ueid);
       emm_sap_t emm_sap;
       emm_sap.primitive = EMMREG_COMMON_PROC_REQ;
       emm_sap.u.emm_reg.ueid = ueid;
@@ -381,33 +381,32 @@ int emm_proc_security_mode_complete(unsigned int ueid)
 
   LOG_FUNC_IN;
 
-  LOG_TRACE(INFO, "EMM-PROC  - Security mode complete (ueid=%u)", ueid);
+  LOG_TRACE(INFO, "EMM-PROC  - Security mode complete (ueid="NAS_UE_ID_FMT")", ueid);
 
-  /* Stop timer T3460 */
-  LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3460 (%d)", T3460.id);
-  T3460.id = nas_timer_stop(T3460.id);
 
+  /* Get the UE context */
+#if defined(NAS_BUILT_IN_EPC)
+  if (ueid > 0) {
+    emm_ctx = emm_data_context_get(&_emm_data, ueid);
+  }
+#else
+  if (ueid < EMM_DATA_NB_UE_MAX) {
+    emm_ctx = _emm_data.ctx[ueid];
+  }
+#endif
+
+  if (emm_ctx) {
+	  /* Stop timer T3460 */
+	  LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3460 (%d)", emm_ctx->T3460.id);
+	  emm_ctx->T3460.id = nas_timer_stop(emm_ctx->T3460.id);
+	  MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3460 stopped UE "NAS_UE_ID_FMT" ", ueid);
+  }
   /* Release retransmission timer paramaters */
   security_data_t *data = (security_data_t *)(emm_proc_common_get_args(ueid));
 
   if (data) {
     free(data);
   }
-
-  /* Get the UE context */
-#if defined(NAS_BUILT_IN_EPC)
-
-  if (ueid > 0) {
-    emm_ctx = emm_data_context_get(&_emm_data, ueid);
-  }
-
-#else
-
-  if (ueid < EMM_DATA_NB_UE_MAX) {
-    emm_ctx = _emm_data.ctx[ueid];
-  }
-
-#endif
 
   if (emm_ctx && emm_ctx->security) {
     /*
@@ -417,7 +416,7 @@ int emm_proc_security_mode_complete(unsigned int ueid)
       	  		MSC_NAS_EMM_MME,
       	  	  	MSC_NAS_EMM_MME,
       	  	  	NULL,0,
-      	  	  	"0 EMMREG_COMMON_PROC_CNF ue id %06x (security mode complete)", ueid);
+      	  	  	"0 EMMREG_COMMON_PROC_CNF ue id "NAS_UE_ID_FMT" (security mode complete)", ueid);
     emm_sap.primitive = EMMREG_COMMON_PROC_CNF;
     emm_sap.u.emm_reg.ueid = ueid;
     emm_sap.u.emm_reg.ctx  = emm_ctx;
@@ -431,7 +430,7 @@ int emm_proc_security_mode_complete(unsigned int ueid)
       	  		MSC_NAS_EMM_MME,
       	  	  	MSC_NAS_EMM_MME,
       	  	  	NULL,0,
-      	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %06x (security mode complete)", ueid);
+      	  	  	"0 EMMREG_COMMON_PROC_REJ ue id "NAS_UE_ID_FMT" (security mode complete)", ueid);
     emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
     emm_sap.u.emm_reg.ueid = ueid;
     emm_sap.u.emm_reg.ctx  = emm_ctx;
@@ -474,34 +473,32 @@ int emm_proc_security_mode_reject(unsigned int ueid)
   LOG_FUNC_IN;
 
   LOG_TRACE(WARNING, "EMM-PROC  - Security mode command not accepted by the UE"
-            "(ueid=0x%08x)", ueid);
+            "(ueid="NAS_UE_ID_FMT")", ueid);
 
-  /* Stop timer T3460 */
-  LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3460 (%d)", T3460.id);
-  T3460.id = nas_timer_stop(T3460.id);
 
-  /* Release retransmission timer paramaters */
-  security_data_t *data = (security_data_t *)(emm_proc_common_get_args(ueid));
-
-  if (data) {
-    free(data);
-  }
 
   /* Get the UE context */
 #if defined(NAS_BUILT_IN_EPC)
-
   if (ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, ueid);
     DevAssert(emm_ctx != NULL);
   }
-
 #else
-
   if (ueid < EMM_DATA_NB_UE_MAX) {
     emm_ctx = _emm_data.ctx[ueid];
   }
-
 #endif
+  if (emm_ctx) {
+	  /* Stop timer T3460 */
+	  LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3460 (%d)", emm_ctx->T3460.id);
+	  emm_ctx->T3460.id = nas_timer_stop(emm_ctx->T3460.id);
+	  MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3460 stopped UE "NAS_UE_ID_FMT" ", ueid);
+  }
+  /* Release retransmission timer paramaters */
+  security_data_t *data = (security_data_t *)(emm_proc_common_get_args(ueid));
+  if (data) {
+    free(data);
+  }
 
   /* Set the key set identifier to its previous value */
   if (emm_ctx && emm_ctx->security) {
@@ -521,7 +518,7 @@ int emm_proc_security_mode_reject(unsigned int ueid)
     	  		MSC_NAS_EMM_MME,
     	  	  	MSC_NAS_EMM_MME,
     	  	  	NULL,0,
-    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %06x (security mode reject)", ueid);
+    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id "NAS_UE_ID_FMT" (security mode reject)", ueid);
   emm_sap_t emm_sap;
   emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
   emm_sap.u.emm_reg.ueid = ueid;
@@ -642,17 +639,13 @@ int _security_request(security_data_t *data, int is_new)
   emm_sap.u.emm_as.u.security.selected_eia = data->selected_eia;
 
 #if defined(NAS_BUILT_IN_EPC)
-
   if (data->ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, data->ueid);
   }
-
 #else
-
   if (data->ueid < EMM_DATA_NB_UE_MAX) {
     emm_ctx = _emm_data.ctx[data->ueid];
   }
-
 #endif
 
   /* Setup EPS NAS security data */
@@ -662,22 +655,22 @@ int _security_request(security_data_t *data, int is_new)
     	  		MSC_NAS_EMM_MME,
     	  	  	MSC_NAS_EMM_MME,
     	  	  	NULL,0,
-    	  	  	"0 EMMAS_SECURITY_REQ ue id %06x", data->ueid);
+    	  	  	"0 EMMAS_SECURITY_REQ ue id "NAS_UE_ID_FMT" ", data->ueid);
   rc = emm_sap_send(&emm_sap);
 
   if (rc != RETURNerror) {
-    if (T3460.id != NAS_TIMER_INACTIVE_ID) {
+    if (emm_ctx->T3460.id != NAS_TIMER_INACTIVE_ID) {
       /* Re-start T3460 timer */
-      T3460.id = nas_timer_restart(T3460.id);
+    	emm_ctx->T3460.id = nas_timer_restart(emm_ctx->T3460.id);
+      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3460 restarted UE "NAS_UE_ID_FMT" ", data->ueid);
     } else {
       /* Start T3460 timer */
-      T3460.id = nas_timer_start(T3460.sec, _security_t3460_handler, data);
+    	emm_ctx->T3460.id = nas_timer_start(emm_ctx->T3460.sec, _security_t3460_handler, data);
+      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3460 started UE "NAS_UE_ID_FMT" ", data->ueid);
     }
-
     LOG_TRACE(INFO,"EMM-PROC  - Timer T3460 (%d) expires in %ld seconds",
-              T3460.id, T3460.sec);
+    		emm_ctx->T3460.id, emm_ctx->T3460.sec);
   }
-
   LOG_FUNC_RETURN (rc);
 }
 
@@ -700,6 +693,7 @@ static int _security_abort(void *args)
 {
   LOG_FUNC_IN;
 
+  struct emm_data_context_s *emm_ctx = NULL;
   int rc = RETURNerror;
 
   security_data_t *data = (security_data_t *)(args);
@@ -709,12 +703,21 @@ static int _security_abort(void *args)
     int notify_failure = data->notify_failure;
 
     LOG_TRACE(WARNING, "EMM-PROC  - Abort security mode control procedure "
-              "(ueid=%u)", ueid);
-
+              "(ueid="NAS_UE_ID_FMT")", ueid);
+#if defined(NAS_BUILT_IN_EPC)
+    if (data->ueid > 0) {
+      emm_ctx = emm_data_context_get(&_emm_data, data->ueid);
+    }
+#else
+    if (data->ueid < EMM_DATA_NB_UE_MAX) {
+      emm_ctx = _emm_data.ctx[data->ueid];
+    }
+#endif
     /* Stop timer T3460 */
-    if (T3460.id != NAS_TIMER_INACTIVE_ID) {
-      LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3460 (%d)", T3460.id);
-      T3460.id = nas_timer_stop(T3460.id);
+    if (emm_ctx->T3460.id != NAS_TIMER_INACTIVE_ID) {
+      LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3460 (%d)", emm_ctx->T3460.id);
+      emm_ctx->T3460.id = nas_timer_stop(emm_ctx->T3460.id);
+      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3460 stopped UE "NAS_UE_ID_FMT" ", ueid);
     }
 
     /* Release retransmission timer paramaters */
@@ -728,7 +731,7 @@ static int _security_abort(void *args)
     	    	  		MSC_NAS_EMM_MME,
     	    	  	  	MSC_NAS_EMM_MME,
     	    	  	  	NULL,0,
-    	    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %06x (security abort)", data->ueid);
+    	    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id "NAS_UE_ID_FMT" (security abort)", data->ueid);
       emm_sap_t emm_sap;
       emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
       emm_sap.u.emm_reg.ueid = ueid;

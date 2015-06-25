@@ -86,14 +86,14 @@ Description Defines the security mode control EMM procedure executed by the
  * --------------------------------------------------------------------------
  */
 static int _security_kdf(const OctetString *kasme, OctetString *key,
-                         UInt8_t algo_dist, UInt8_t algo_id);
+                         uint8_t algo_dist, uint8_t algo_id);
 
 static int _security_knas_enc(const OctetString *kasme, OctetString *knas_enc,
-                              UInt8_t eia);
+                              uint8_t eia);
 static int _security_knas_int(const OctetString *kasme, OctetString *knas_int,
-                              UInt8_t eea);
+                              uint8_t eea);
 static int _security_kenb(const OctetString *kasme, OctetString *kenb,
-                          UInt32_t count);
+                          uint32_t count);
 
 /*
  * Internal data used for security mode control procedure
@@ -166,8 +166,8 @@ int emm_proc_security_mode_command(int native_ksi, int ksi,
   /*
    * Check the replayed UE security capabilities
    */
-  UInt8_t eea = (0x80 >> _emm_data.security->capability.eps_encryption);
-  UInt8_t eia = (0x80 >> _emm_data.security->capability.eps_integrity);
+  uint8_t eea = (0x80 >> _emm_data.security->capability.eps_encryption);
+  uint8_t eia = (0x80 >> _emm_data.security->capability.eps_integrity);
 
   if ( (reea != eea) || (reia != eia) ) {
     LOG_TRACE(WARNING, "EMM-PROC  - Replayed UE security capabilities "
@@ -240,7 +240,7 @@ int emm_proc_security_mode_command(int native_ksi, int ksi,
         // LG COMMENT rc = _security_kenb(&_emm_data.security->kasme,
         rc = _security_kenb(&_emm_data.non_current->kasme,
                             &_security_data.kenb,
-                            *(UInt32_t *)(&_emm_data.non_current->ul_count));
+                            *(uint32_t *)(&_emm_data.non_current->ul_count));
       }
     }
 
@@ -416,7 +416,7 @@ static void _security_release(emm_security_context_t *ctx)
  **                                                                        **
  ***************************************************************************/
 static int _security_knas_enc(const OctetString *kasme, OctetString *knas_enc,
-                              UInt8_t eea)
+                              uint8_t eea)
 {
   LOG_FUNC_IN;
   LOG_TRACE(INFO, "%s  with algo dist %d algo id %d", __FUNCTION__,0x01, eea);
@@ -442,7 +442,7 @@ static int _security_knas_enc(const OctetString *kasme, OctetString *knas_enc,
  **                                                                        **
  ***************************************************************************/
 static int _security_knas_int(const OctetString *kasme, OctetString *knas_int,
-                              UInt8_t eia)
+                              uint8_t eia)
 {
   LOG_FUNC_IN;
   LOG_TRACE(INFO, "%s  with algo dist %d algo id %d", __FUNCTION__,0x02, eia);
@@ -468,13 +468,13 @@ static int _security_knas_int(const OctetString *kasme, OctetString *knas_int,
  **                                                                        **
  ***************************************************************************/
 static int _security_kenb(const OctetString *kasme, OctetString *kenb,
-                          UInt32_t count)
+                          uint32_t count)
 {
   /* Compute the KDF input parameter
    * S = FC(0x11) || UL NAS Count || 0x00 0x04
    */
-  UInt8_t  input[32];
-  //    UInt16_t length    = 4;
+  uint8_t  input[32];
+  //    uint16_t length    = 4;
   //    int      offset    = 0;
 
   LOG_TRACE(INFO, "%s  with count= %d", __FUNCTION__, count);
@@ -482,9 +482,9 @@ static int _security_kenb(const OctetString *kasme, OctetString *kenb,
   input[0] = 0x11;
   // P0
   input[1] = count >> 24;
-  input[2] = (UInt8_t)(count >> 16);
-  input[3] = (UInt8_t)(count >> 8);
-  input[4] = (UInt8_t)count;
+  input[2] = (uint8_t)(count >> 16);
+  input[3] = (uint8_t)(count >> 8);
+  input[4] = (uint8_t)count;
   // L0
   input[5] = 0;
   input[6] = 4;
@@ -515,14 +515,14 @@ static int _security_kenb(const OctetString *kasme, OctetString *kenb,
  **                                                                        **
  ***************************************************************************/
 static int _security_kdf(const OctetString *kasme, OctetString *key,
-                         UInt8_t algo_dist, UInt8_t algo_id)
+                         uint8_t algo_dist, uint8_t algo_id)
 {
   /* Compute the KDF input parameter
    * S = FC(0x15) || Algorithm distinguisher || 0x00 0x01
           || Algorithm identity || 0x00 0x01
   */
-  UInt8_t input[32];
-  UInt8_t output[32];
+  uint8_t input[32];
+  uint8_t output[32];
   LOG_TRACE(DEBUG, "%s:%u output key mem %p lenth %u",
             __FUNCTION__, __LINE__,
             key->value,

@@ -204,13 +204,13 @@ typedef struct {} paging_ind_t;
 
 /* Structure of the SAE Temporary Mobile Subscriber Identity */
 typedef struct {
-  UInt8_t MMEcode;  /* MME code that allocated the GUTI   */
-  UInt32_t m_tmsi;  /* M-Temporary Mobile Subscriber Identity */
+  uint8_t MMEcode;  /* MME code that allocated the GUTI   */
+  uint32_t m_tmsi;  /* M-Temporary Mobile Subscriber Identity */
 } as_stmsi_t;
 
 /* Structure of the dedicated NAS information */
 typedef struct {
-  UInt32_t length;  /* Length of the NAS information data   */
+  uint32_t length;  /* Length of the NAS information data   */
   Byte_t* data; /* Dedicated NAS information data container */
 } as_nas_info_t;
 
@@ -220,8 +220,8 @@ typedef struct {
  * to transfer initial NAS message to the network while UE is in IDLE mode.
  */
 typedef struct {
-  UInt8_t cause;    /* Connection establishment cause     */
-  UInt8_t type;   /* Associated call type         */
+  uint8_t cause;    /* Connection establishment cause     */
+  uint8_t type;   /* Associated call type         */
   plmn_t plmnID;    /* Identifier of the selected PLMN      */
   as_stmsi_t s_tmsi;    /* SAE Temporary Mobile Subscriber Identity */
   as_nas_info_t initialNasMsg;/* Initial NAS message to transfer      */
@@ -274,7 +274,7 @@ typedef as_nas_info_t ul_info_transfer_t;
  * --------------------------------------------------------------------------
  */
 typedef struct {
-  UInt16_t msgID;
+  uint16_t msgID;
   union {
     cell_info_req_t cell_info_req;
     cell_info_rsp_t cell_info_rsp;

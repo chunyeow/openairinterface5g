@@ -1082,14 +1082,14 @@ void *gtpv1u_eNB_task(void *args)
 
           if (rc != NW_GTPV1U_OK) {
             LOG_E(GTPU, "nwGtpv1uGpduMsgNew failed: 0x%x\n", rc);
-            MSC_LOG_EVENT(MSC_GTPU_ENB,"Failed send G-PDU ltid %u rtid %u size %u",
+            MSC_LOG_EVENT(MSC_GTPU_ENB,"0 Failed send G-PDU ltid %u rtid %u size %u",
             		enb_s1u_teid,sgw_s1u_teid,data_req_p->length);
           } else {
             rc = nwGtpv1uProcessUlpReq(gtpv1u_data_g.gtpv1u_stack, &stack_req);
 
             if (rc != NW_GTPV1U_OK) {
               LOG_E(GTPU, "nwGtpv1uProcessUlpReq failed: 0x%x\n", rc);
-              MSC_LOG_EVENT(MSC_GTPU_ENB,"Failed send G-PDU ltid %u rtid %u size %u",
+              MSC_LOG_EVENT(MSC_GTPU_ENB,"0 Failed send G-PDU ltid %u rtid %u size %u",
               		enb_s1u_teid,sgw_s1u_teid,data_req_p->length);
             } else {
             	  MSC_LOG_TX_MESSAGE(

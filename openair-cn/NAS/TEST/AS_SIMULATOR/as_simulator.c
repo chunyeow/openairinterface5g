@@ -57,12 +57,12 @@ Description Implements the Access-Stratum simulator operating between
 /*
  * Direction of the message to be transfered to the UE NAS process
  */
-static UInt8_t _as_simulator_ue_transfer = AS_SIMULATOR_NO_TRANSFER;
+static uint8_t _as_simulator_ue_transfer = AS_SIMULATOR_NO_TRANSFER;
 
 /*
  * Direction of the message to be transfered to the MME NAS process
  */
-static UInt8_t _as_simulator_mme_transfer = AS_SIMULATOR_NO_TRANSFER;
+static uint8_t _as_simulator_mme_transfer = AS_SIMULATOR_NO_TRANSFER;
 
 /*
  * Size of the message to be transfered to the UE NAS process

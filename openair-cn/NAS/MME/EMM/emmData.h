@@ -110,22 +110,22 @@ typedef struct emm_security_context_s {
   OctetString knas_enc;   /* NAS cyphering key               */
   OctetString knas_int;   /* NAS integrity key               */
   struct count_s{
-    UInt32_t spare:8;
-    UInt32_t overflow:16;
-    UInt32_t seq_num:8;
+    uint32_t spare:8;
+    uint32_t overflow:16;
+    uint32_t seq_num:8;
   } dl_count, ul_count;   /* Downlink and uplink count parameters    */
   struct {
-    UInt8_t eps_encryption;   /* algorithm used for ciphering            */
-    UInt8_t eps_integrity;    /* algorithm used for integrity protection */
-    UInt8_t umts_encryption;  /* algorithm used for ciphering            */
-    UInt8_t umts_integrity;   /* algorithm used for integrity protection */
-    UInt8_t gprs_encryption;  /* algorithm used for ciphering            */
-    UInt8_t umts_present:1;
-    UInt8_t gprs_present:1;
+    uint8_t eps_encryption;   /* algorithm used for ciphering            */
+    uint8_t eps_integrity;    /* algorithm used for integrity protection */
+    uint8_t umts_encryption;  /* algorithm used for ciphering            */
+    uint8_t umts_integrity;   /* algorithm used for integrity protection */
+    uint8_t gprs_encryption;  /* algorithm used for ciphering            */
+    uint8_t umts_present:1;
+    uint8_t gprs_present:1;
   } capability;       /* UE network capability           */
   struct {
-    UInt8_t encryption:4;   /* algorithm used for ciphering           */
-    UInt8_t integrity:4;    /* algorithm used for integrity protection */
+    uint8_t encryption:4;   /* algorithm used for ciphering           */
+    uint8_t integrity:4;    /* algorithm used for integrity protection */
   } selected_algorithms;       /* MME selected algorithms                */
 } emm_security_context_t;
 
@@ -180,6 +180,10 @@ typedef struct emm_data_context_s {
   int         emm_cause;    /* EMM failure cause code                          */
 
   emm_fsm_state_t    _emm_fsm_status;
+
+  struct nas_timer_t T3450;   /* EMM message retransmission timer */
+  struct nas_timer_t T3460;   /* Authentication timer         */
+  struct nas_timer_t T3470;   /* Identification timer         */
 
   esm_data_context_t esm_data_ctx;
 } emm_data_context_t;
@@ -239,10 +243,6 @@ emm_data_t _emm_data;
 #define T3450_DEFAULT_VALUE 6   /* 6 seconds    */
 #define T3460_DEFAULT_VALUE 6   /* 6 seconds    */
 #define T3470_DEFAULT_VALUE 6   /* 6 seconds    */
-
-struct nas_timer_t T3450;   /* EMM message retransmission timer */
-struct nas_timer_t T3460;   /* Authentication timer         */
-struct nas_timer_t T3470;   /* Identification timer         */
 
 /*
  * mobile reachable timer

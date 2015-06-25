@@ -91,8 +91,8 @@ int as_message_decode(const char* buffer, as_message_t* msg, int length)
   Byte_t** data = NULL;
 
   /* Get the message type */
-  msg->msgID = *(UInt16_t*)(buffer);
-  bytes = sizeof(UInt16_t);
+  msg->msgID = *(uint16_t*)(buffer);
+  bytes = sizeof(uint16_t);
 
   switch (msg->msgID) {
   case AS_NAS_ESTABLISH_REQ:

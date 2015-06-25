@@ -123,7 +123,7 @@ int esm_proc_pdn_disconnect_request(emm_data_context_t *ctx, int pti, int *esm_c
   LOG_FUNC_IN;
 
   LOG_TRACE(INFO, "ESM-PROC  - PDN disconnect requested by the UE "
-            "(ueid=%d, pti=%d)", ctx->ueid, pti);
+            "(ueid="NAS_UE_ID_FMT", pti=%d)", ctx->ueid, pti);
 
   /* Get UE's ESM context */
   if (ctx->esm_data_ctx.n_pdns > 1) {
@@ -173,7 +173,7 @@ int esm_proc_pdn_disconnect_accept(emm_data_context_t *ctx, int pid, int *esm_ca
   LOG_FUNC_IN;
 
   LOG_TRACE(INFO, "ESM-PROC  - PDN disconnect accepted by the UE "
-            "(ueid=%d, pid=%d)", ctx->ueid, pid);
+            "(ueid="NAS_UE_ID_FMT", pid=%d)", ctx->ueid, pid);
 
   /* Release the connectivity with the requested PDN */
   int rc = mme_api_unsubscribe(NULL);
@@ -225,7 +225,7 @@ int esm_proc_pdn_disconnect_reject(int is_standalone, emm_data_context_t *ctx,
   emm_sap_t emm_sap;
 
   LOG_TRACE(WARNING, "ESM-PROC  - PDN disconnect not accepted by the network "
-            "(ueid=%d)", ctx->ueid);
+            "(ueid="NAS_UE_ID_FMT")", ctx->ueid);
 
   /*
    * Notity EMM that ESM PDU has to be forwarded to lower layers

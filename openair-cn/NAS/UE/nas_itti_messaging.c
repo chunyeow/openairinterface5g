@@ -35,7 +35,7 @@
 #   define TASK_ORIGIN  TASK_NAS_UE
 
 #if (defined(ENABLE_NAS_UE_LOGGING) && defined(NAS_BUILT_IN_UE) )
-static const UInt8_t emm_message_ids[] = {
+static const uint8_t emm_message_ids[] = {
   ATTACH_REQUEST,
   ATTACH_ACCEPT,
   ATTACH_COMPLETE,
@@ -67,7 +67,7 @@ static const UInt8_t emm_message_ids[] = {
   CS_SERVICE_NOTIFICATION,
 };
 
-static const UInt8_t esm_message_ids[] = {
+static const uint8_t esm_message_ids[] = {
   ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST,
   ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT,
   ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT,
@@ -92,7 +92,7 @@ static const UInt8_t esm_message_ids[] = {
   ESM_STATUS,
 };
 
-static int _nas_find_message_index(const UInt8_t message_id, const UInt8_t *message_ids, const int ids_number)
+static int _nas_find_message_index(const uint8_t message_id, const uint8_t *message_ids, const int ids_number)
 {
   int i;
 
@@ -207,7 +207,7 @@ int nas_itti_cell_info_req(const plmn_t plmnID, const Byte_t rat)
   return itti_send_msg_to_task(TASK_RRC_UE, NB_eNB_INST + 0 /* TODO to be virtualized */, message_p);
 }
 
-int nas_itti_nas_establish_req(as_cause_t cause, as_call_type_t type, as_stmsi_t s_tmsi, plmn_t plmnID, Byte_t *data, UInt32_t length)
+int nas_itti_nas_establish_req(as_cause_t cause, as_call_type_t type, as_stmsi_t s_tmsi, plmn_t plmnID, Byte_t *data, uint32_t length)
 {
   MessageDef *message_p;
 

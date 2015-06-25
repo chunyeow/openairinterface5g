@@ -188,7 +188,7 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
   int rc;
   emm_data_context_t *emm_ctx = NULL;
 
-  LOG_TRACE(INFO, "EMM-PROC  - Detach type = %s (%d) requested (ueid=%u)",
+  LOG_TRACE(INFO, "EMM-PROC  - Detach type = %s (%d) requested (ueid="NAS_UE_ID_FMT")",
             _emm_detach_type_str[type], type, ueid);
 
   /* Get the UE context */
@@ -207,13 +207,13 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
 #endif
 
   if (emm_ctx == NULL) {
-    LOG_TRACE(WARNING, "No EMM context exists for the UE (ueid=%u)", ueid);
+    LOG_TRACE(WARNING, "No EMM context exists for the UE (ueid="NAS_UE_ID_FMT")", ueid);
     LOG_FUNC_RETURN(RETURNok);
   }
 
   if (switch_off) {
 	MSC_LOG_EVENT(MSC_NAS_EMM_MME,
-		    	  "0 Removing UE context ue id %06x", ueid);
+		    	  "0 Removing UE context ue id "NAS_UE_ID_FMT" ", ueid);
     /* The UE is switched off */
     if (emm_ctx->guti) {
       free(emm_ctx->guti);
@@ -249,7 +249,24 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
 
       free(emm_ctx->security);
     }
-
+    /* Stop timer T3450 */
+    if (emm_ctx->T3450.id != NAS_TIMER_INACTIVE_ID) {
+      LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3450 (%d)", emm_ctx->T3450.id);
+      emm_ctx->T3450.id = nas_timer_stop(emm_ctx->T3450.id);
+      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3450 stopped UE "NAS_UE_ID_FMT" ", emm_ctx->ueid);
+    }
+    /* Stop timer T3460 */
+    if (emm_ctx->T3460.id != NAS_TIMER_INACTIVE_ID) {
+      LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3460 (%d)", emm_ctx->T3460.id);
+      emm_ctx->T3460.id = nas_timer_stop(emm_ctx->T3460.id);
+      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3460 stopped UE "NAS_UE_ID_FMT" ", emm_ctx->ueid);
+    }
+    /* Stop timer T3470 */
+    if (emm_ctx->T3470.id != NAS_TIMER_INACTIVE_ID) {
+      LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3470 (%d)", emm_ctx->T3460.id);
+      emm_ctx->T3470.id = nas_timer_stop(emm_ctx->T3470.id);
+      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3470 stopped UE "NAS_UE_ID_FMT" ", emm_ctx->ueid);
+    }
     /* Release the EMM context */
 #if defined(NAS_BUILT_IN_EPC)
     emm_data_context_remove(&_emm_data, emm_ctx);
@@ -267,7 +284,7 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
 	    		MSC_NAS_EMM_MME,
 	    		MSC_NAS_EMM_MME,
 	    	  	NULL,0,
-	    	  	"0 EMM_AS_NAS_INFO_DETACH ue id %06x", ueid);
+	    	  	"0 EMM_AS_NAS_INFO_DETACH ue id "NAS_UE_ID_FMT" ", ueid);
 
     /* Setup NAS information message to transfer */
     emm_as->NASinfo = EMM_AS_NAS_INFO_DETACH;
@@ -295,7 +312,7 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
 	    		MSC_NAS_EMM_MME,
 	    	  	MSC_NAS_ESM_MME,
 	    	  	NULL,0,
-	    	  	"0 ESM_EPS_BEARER_CONTEXT_DEACTIVATE_REQ ue id %06x", ueid);
+	    	  	"0 ESM_EPS_BEARER_CONTEXT_DEACTIVATE_REQ ue id "NAS_UE_ID_FMT" ", ueid);
 	esm_sap_t esm_sap;
     esm_sap.primitive = ESM_EPS_BEARER_CONTEXT_DEACTIVATE_REQ;
     esm_sap.ueid = ueid;
@@ -312,7 +329,7 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
   	    		MSC_NAS_EMM_MME,
   	    		MSC_NAS_EMM_MME,
   	    	  	NULL,0,
-  	    	  	"0 EMMREG_DETACH_REQ ue id %06x", ueid);
+  	    	  	"0 EMMREG_DETACH_REQ ue id "NAS_UE_ID_FMT" ", ueid);
       emm_sap.primitive = EMMREG_DETACH_REQ;
       emm_sap.u.emm_reg.ueid = ueid;
       emm_sap.u.emm_reg.ctx  = emm_ctx;

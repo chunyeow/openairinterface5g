@@ -193,7 +193,7 @@ int emm_proc_identification(unsigned int                   ueid,
       		MSC_NAS_EMM_MME,
       	  	MSC_NAS_EMM_MME,
       	  	NULL,0,
-      	  	"0 EMMREG_COMMON_PROC_REQ ue id %06x (identification)", ueid);
+      	  	"0 EMMREG_COMMON_PROC_REQ ue id "NAS_UE_ID_FMT" (identification)", ueid);
 
       emm_sap_t emm_sap;
       emm_sap.primitive = EMMREG_COMMON_PROC_REQ;
@@ -229,7 +229,7 @@ int emm_proc_identification(unsigned int                   ueid,
  **                                                                        **
  ***************************************************************************/
 int emm_proc_identification_complete(unsigned int ueid, const imsi_t *imsi,
-                                     const imei_t *imei, UInt32_t *tmsi)
+                                     const imei_t *imei, uint32_t *tmsi)
 {
   int rc = RETURNerror;
   emm_sap_t emm_sap;
@@ -238,36 +238,32 @@ int emm_proc_identification_complete(unsigned int ueid, const imsi_t *imsi,
 
   LOG_FUNC_IN;
 
-  LOG_TRACE(INFO, "EMM-PROC  - Identification complete (ueid=%u)", ueid);
-
-  /* Stop timer T3470 */
-  LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3470 (%d)", T3470.id);
-  T3470.id = nas_timer_stop(T3470.id);
+  LOG_TRACE(INFO, "EMM-PROC  - Identification complete (ueid="NAS_UE_ID_FMT")", ueid);
 
   /* Release retransmission timer paramaters */
   identification_data_t *data =
     (identification_data_t *)(emm_proc_common_get_args(ueid));
-
   if (data) {
     free(data);
   }
 
   /* Get the UE context */
 #if defined(NAS_BUILT_IN_EPC)
-
   if (ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, ueid);
   }
-
 #else
-
   if (ueid < EMM_DATA_NB_UE_MAX) {
     emm_ctx = _emm_data.ctx[ueid];
   }
-
 #endif
 
   if (emm_ctx) {
+	/* Stop timer T3470 */
+	LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3470 (%d)", emm_ctx->T3470.id);
+	emm_ctx->T3470.id = nas_timer_stop(emm_ctx->T3470.id);
+	MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3470 stopped UE "NAS_UE_ID_FMT" ", ueid);
+
     if (imsi) {
       /* Update the IMSI */
       if (emm_ctx->imsi == NULL) {
@@ -306,7 +302,7 @@ int emm_proc_identification_complete(unsigned int ueid, const imsi_t *imsi,
     		MSC_NAS_EMM_MME,
     	  	MSC_NAS_EMM_MME,
     	  	NULL,0,
-    	  	"0 EMMREG_COMMON_PROC_CNF ue id %06x", ueid);
+    	  	"0 EMMREG_COMMON_PROC_CNF ue id "NAS_UE_ID_FMT" ", ueid);
 
     emm_sap.primitive = EMMREG_COMMON_PROC_CNF;
     emm_sap.u.emm_reg.ueid = ueid;
@@ -321,7 +317,7 @@ int emm_proc_identification_complete(unsigned int ueid, const imsi_t *imsi,
     		MSC_NAS_EMM_MME,
     	  	MSC_NAS_EMM_MME,
     	  	NULL,0,
-    	  	"0 EMMREG_COMMON_PROC_REJ ue id %06x", ueid);
+    	  	"0 EMMREG_COMMON_PROC_REJ ue id "NAS_UE_ID_FMT" ", ueid);
 
     emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
     emm_sap.u.emm_reg.ueid = ueid;
@@ -428,7 +424,7 @@ int _identification_request(identification_data_t *data)
   		MSC_NAS_EMM_MME,
   	  	MSC_NAS_EMM_MME,
   	  	NULL,0,
-  	  	"0 EMMAS_SECURITY_REQ ue id %06x", data->ueid);
+  	  	"0 EMMAS_SECURITY_REQ ue id "NAS_UE_ID_FMT" ", data->ueid);
 
   emm_sap.primitive = EMMAS_SECURITY_REQ;
   emm_sap.u.emm_as.u.security.guti = NULL;
@@ -437,17 +433,13 @@ int _identification_request(identification_data_t *data)
   emm_sap.u.emm_as.u.security.identType = data->type;
 
 #if defined(NAS_BUILT_IN_EPC)
-
   if (data->ueid > 0) {
     emm_ctx = emm_data_context_get(&_emm_data, data->ueid);
   }
-
 #else
-
   if (data->ueid < EMM_DATA_NB_UE_MAX) {
     emm_ctx = _emm_data.ctx[data->ueid];
   }
-
 #endif
   /* Setup EPS NAS security data */
   emm_as_set_security_data(&emm_sap.u.emm_as.u.security.sctx,
@@ -455,17 +447,19 @@ int _identification_request(identification_data_t *data)
   rc = emm_sap_send(&emm_sap);
 
   if (rc != RETURNerror) {
-    if (T3470.id != NAS_TIMER_INACTIVE_ID) {
+    if (emm_ctx->T3470.id != NAS_TIMER_INACTIVE_ID) {
       /* Re-start T3470 timer */
-      T3470.id = nas_timer_restart(T3470.id);
+    	emm_ctx->T3470.id = nas_timer_restart(emm_ctx->T3470.id);
+      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3470 restarted UE "NAS_UE_ID_FMT" ", data->ueid);
     } else {
       /* Start T3470 timer */
-      T3470.id = nas_timer_start(T3470.sec, _identification_t3470_handler,
+      emm_ctx->T3470.id = nas_timer_start(emm_ctx->T3470.sec, _identification_t3470_handler,
                                  data);
+      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3470 started UE "NAS_UE_ID_FMT" ", data->ueid);
     }
 
     LOG_TRACE(INFO,"EMM-PROC  - Timer T3470 (%d) expires in %ld seconds",
-              T3470.id, T3470.sec);
+    		emm_ctx->T3470.id, emm_ctx->T3470.sec);
   }
 
   LOG_FUNC_RETURN (rc);
@@ -496,14 +490,25 @@ static int _identification_abort(void *args)
   if (data) {
     unsigned int ueid = data->ueid;
     int notify_failure = data->notify_failure;
-
+    struct emm_data_context_s *emm_ctx = NULL;
+    /* Get the UE context */
+  #if defined(NAS_BUILT_IN_EPC)
+    if (ueid > 0) {
+      emm_ctx = emm_data_context_get(&_emm_data, ueid);
+    }
+  #else
+    if (ueid < EMM_DATA_NB_UE_MAX) {
+      emm_ctx = _emm_data.ctx[ueid];
+    }
+  #endif
     LOG_TRACE(WARNING, "EMM-PROC  - Abort identification procedure "
-              "(ueid=%u)", ueid);
+              "(ueid="NAS_UE_ID_FMT")", ueid);
 
     /* Stop timer T3470 */
-    if (T3470.id != NAS_TIMER_INACTIVE_ID) {
-      LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3470 (%d)", T3470.id);
-      T3470.id = nas_timer_stop(T3470.id);
+    if (emm_ctx->T3470.id != NAS_TIMER_INACTIVE_ID) {
+      LOG_TRACE(INFO, "EMM-PROC  - Stop timer T3470 (%d)", emm_ctx->T3470.id);
+      emm_ctx->T3470.id = nas_timer_stop(emm_ctx->T3470.id);
+      MSC_LOG_EVENT(MSC_NAS_EMM_MME, "0 T3470 stopped UE "NAS_UE_ID_FMT" ", data->ueid);
     }
 
     /* Release retransmission timer paramaters */
@@ -517,7 +522,7 @@ static int _identification_abort(void *args)
     	  		MSC_NAS_EMM_MME,
     	  	  	MSC_NAS_EMM_MME,
     	  	  	NULL,0,
-    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id %06x", ueid);
+    	  	  	"0 EMMREG_COMMON_PROC_REJ ue id "NAS_UE_ID_FMT" ", ueid);
       emm_sap_t emm_sap;
       emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
       emm_sap.u.emm_reg.ueid = ueid;

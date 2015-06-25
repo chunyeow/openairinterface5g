@@ -58,7 +58,7 @@ Description Implements the API used by the NAS layer running in the MME
 /****************************************************************************/
 
 /* Maximum number of UEs the MME may simultaneously support */
-#define MME_API_NB_UE_MAX       1
+#define MME_API_NB_UE_MAX       256
 
 
 /* Features supported by the MME */

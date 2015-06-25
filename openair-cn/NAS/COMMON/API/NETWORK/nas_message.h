@@ -68,14 +68,14 @@ Description Defines the layer 3 messages supported by the NAS sublayer
 typedef struct {
 #ifdef __LITTLE_ENDIAN_BITFIELD
   eps_protocol_discriminator_t    protocol_discriminator:4;
-  UInt8_t                         security_header_type:4;
+  uint8_t                         security_header_type:4;
 #endif
 #ifdef __BIG_ENDIAN_BITFIELD
-  UInt8_t security_header_type:4;
-  UInt8_t protocol_discriminator:4;
+  uint8_t security_header_type:4;
+  uint8_t protocol_discriminator:4;
 #endif
-  UInt32_t message_authentication_code;
-  UInt8_t sequence_number;
+  uint32_t message_authentication_code;
+  uint8_t sequence_number;
 } nas_message_security_header_t;
 
 /* Structure of plain NAS message */

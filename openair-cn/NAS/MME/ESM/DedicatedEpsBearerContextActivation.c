@@ -134,7 +134,7 @@ int esm_proc_dedicated_eps_bearer_context(emm_data_context_t *ctx, int pid,
   LOG_FUNC_IN;
 
   LOG_TRACE(INFO, "ESM-PROC  - Dedicated EPS bearer context activation "
-            "(ueid=%u, pid=%d)", ctx->ueid, pid);
+            "(ueid="NAS_UE_ID_FMT", pid=%d)", ctx->ueid, pid);
 
   /* Assign new EPS bearer context */
   *ebi = esm_ebr_assign(ctx, ESM_EBI_UNASSIGNED);
@@ -194,7 +194,7 @@ int esm_proc_dedicated_eps_bearer_context_request(int is_standalone,
   int rc = RETURNok;
 
   LOG_TRACE(INFO,"ESM-PROC  - Initiate dedicated EPS bearer context "
-            "activation (ueid=%d, ebi=%d)", ctx->ueid, ebi);
+            "activation (ueid="NAS_UE_ID_FMT", ebi=%d)", ctx->ueid, ebi);
 
   /* Send activate dedicated EPS bearer context request message and
    * start timer T3485 */
@@ -244,7 +244,7 @@ int esm_proc_dedicated_eps_bearer_context_accept(emm_data_context_t *ctx, int eb
   int rc;
 
   LOG_TRACE(INFO, "ESM-PROC  - Dedicated EPS bearer context activation "
-            "accepted by the UE (ueid=%u, ebi=%d)", ctx->ueid, ebi);
+            "accepted by the UE (ueid="NAS_UE_ID_FMT", ebi=%d)", ctx->ueid, ebi);
 
   /* Stop T3485 timer */
   rc = esm_ebr_stop_timer(ctx, ebi);
@@ -297,7 +297,7 @@ int esm_proc_dedicated_eps_bearer_context_reject(emm_data_context_t *ctx, int eb
   LOG_FUNC_IN;
 
   LOG_TRACE(WARNING, "ESM-PROC  - Dedicated EPS bearer context activation "
-            "not accepted by the UE (ueid=%u, ebi=%d)", ctx->ueid, ebi);
+            "not accepted by the UE (ueid="NAS_UE_ID_FMT", ebi=%d)", ctx->ueid, ebi);
 
   /* Stop T3485 timer if running */
   rc = esm_ebr_stop_timer(ctx, ebi);
@@ -362,7 +362,7 @@ static void *_dedicated_eps_bearer_activate_t3485_handler(void *args)
   /* Increment the retransmission counter */
   data->count += 1;
 
-  LOG_TRACE(WARNING, "ESM-PROC  - T3485 timer expired (ueid=%d, ebi=%d), "
+  LOG_TRACE(WARNING, "ESM-PROC  - T3485 timer expired (ueid="NAS_UE_ID_FMT", ebi=%d), "
             "retransmission counter = %d",
             data->ueid, data->ebi, data->count);
 

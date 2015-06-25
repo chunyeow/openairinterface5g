@@ -105,7 +105,7 @@ static int _emm_cn_authentication_res(const emm_cn_auth_res_t *msg)
 
   if (emm_ctx == NULL) {
     LOG_TRACE(ERROR, "EMM-PROC  - "
-              "Failed to find UE associated to id %u...", msg->ue_id);
+              "Failed to find UE associated to id "NAS_UE_ID_FMT"...", msg->ue_id);
     LOG_FUNC_RETURN (rc);
   }
 
@@ -166,13 +166,13 @@ static int _emm_cn_authentication_fail(const emm_cn_auth_fail_t *msg)
   LOG_FUNC_RETURN (rc);
 }
 
-static int _emm_cn_deregister_ue(const UInt32_t ue_id)
+static int _emm_cn_deregister_ue(const uint32_t ue_id)
 {
   int rc = RETURNok;
 
   LOG_FUNC_IN;
   LOG_TRACE(WARNING, "EMM-PROC  - "
-            "TODO deregister UE %u, following procedure is a test");
+            "TODO deregister UE "NAS_UE_ID_FMT", following procedure is a test", ue_id);
   emm_proc_detach_request(ue_id, EMM_DETACH_TYPE_EPS /* ??? emm_proc_detach_type_t*/,
                               1 /*switch_off*/, 0 /*native_ksi*/, 0 /*ksi*/,
                               NULL /*guti*/, NULL /*imsi*/, NULL /*imei*/);
@@ -207,7 +207,7 @@ static int _emm_cn_pdn_connectivity_res(const emm_cn_pdn_res_t *msg_pP)
 
   if (emm_ctx_p == NULL) {
     LOG_TRACE(ERROR, "EMMCN-SAP  - "
-              "Failed to find UE associated to id %u...", msg_pP->ue_id);
+              "Failed to find UE associated to id "NAS_UE_ID_FMT"...", msg_pP->ue_id);
     LOG_FUNC_RETURN (rc);
   }
 

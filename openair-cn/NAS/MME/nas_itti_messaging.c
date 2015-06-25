@@ -37,7 +37,7 @@
 
 
 #if defined(NAS_BUILT_IN_EPC)
-static const UInt8_t emm_message_ids[] = {
+static const uint8_t emm_message_ids[] = {
   ATTACH_REQUEST,
   ATTACH_ACCEPT,
   ATTACH_COMPLETE,
@@ -69,7 +69,7 @@ static const UInt8_t emm_message_ids[] = {
   CS_SERVICE_NOTIFICATION,
 };
 
-static const UInt8_t esm_message_ids[] = {
+static const uint8_t esm_message_ids[] = {
   ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST,
   ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT,
   ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT,
@@ -94,7 +94,7 @@ static const UInt8_t esm_message_ids[] = {
   ESM_STATUS,
 };
 
-static int _nas_find_message_index(const UInt8_t message_id, const UInt8_t *message_ids, const int ids_number)
+static int _nas_find_message_index(const uint8_t message_id, const uint8_t *message_ids, const int ids_number)
 {
   int i;
 
@@ -201,7 +201,7 @@ int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
   	  	MSC_NAS_MME,
   	  	MSC_S1AP_MME,
   	  	NULL,0,
-  	  	"0 NAS_DOWNLINK_DATA_REQ ue id %06"PRIX32" len %u", ue_id, length);
+  	  	"0 NAS_DOWNLINK_DATA_REQ ue id "NAS_UE_ID_FMT" len %u", ue_id, length);
 
   return itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
 }

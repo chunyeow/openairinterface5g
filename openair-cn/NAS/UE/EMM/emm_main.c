@@ -287,14 +287,14 @@ void emm_main_initialize(emm_indication_callback_t cb, const char *imei)
       }
 
       /* Downlink count parameter */
-      if (_usim_data.securityctx.dlNAScount.length <= sizeof(UInt32_t)) {
+      if (_usim_data.securityctx.dlNAScount.length <= sizeof(uint32_t)) {
         memcpy(&_emm_data.security->dl_count,
                _usim_data.securityctx.dlNAScount.value,
                _usim_data.securityctx.dlNAScount.length);
       }
 
       /* Uplink count parameter */
-      if (_usim_data.securityctx.ulNAScount.length <= sizeof(UInt32_t)) {
+      if (_usim_data.securityctx.ulNAScount.length <= sizeof(uint32_t)) {
         memcpy(&_emm_data.security->ul_count,
                _usim_data.securityctx.ulNAScount.value,
                _usim_data.securityctx.ulNAScount.length);
