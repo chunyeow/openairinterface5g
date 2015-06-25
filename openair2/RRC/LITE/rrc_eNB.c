@@ -3303,10 +3303,14 @@ openair_rrc_lite_eNB_init(
 
   uid_linear_allocator_init(&eNB_rrc_inst[ctxt.module_id].uid_allocator);
   RB_INIT(&eNB_rrc_inst[ctxt.module_id].rrc_ue_head);
-  RB_INIT(&eNB_rrc_inst[ctxt.module_id].rrc_rnti_head);
   //    for (j = 0; j < (NUMBER_OF_UE_MAX + 1); j++) {
   //        eNB_rrc_inst[enb_mod_idP].Srb2[j].Active = 0;
   //    }
+
+
+  eNB_rrc_inst[ctxt.module_id].initial_id2_s1ap_ids = hashtable_create (NUMBER_OF_UE_MAX * 2, NULL, NULL);
+  eNB_rrc_inst[ctxt.module_id].s1ap_id2_s1ap_ids    = hashtable_create (NUMBER_OF_UE_MAX * 2, NULL, NULL);
+
 
   /// System Information INIT
 

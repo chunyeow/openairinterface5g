@@ -78,19 +78,19 @@ gtpv1u_eNB_send_init_udp(
 NwGtpv1uRcT
 gtpv1u_eNB_log_request(
   NwGtpv1uLogMgrHandleT   hLogMgr,
-  NwU32T                  logLevel,
+  uint32_t                  logLevel,
   NwCharT                *file,
-  NwU32T                  line,
+  uint32_t                  line,
   NwCharT                *logStr);
 
 NwGtpv1uRcT
 gtpv1u_eNB_send_udp_msg(
   NwGtpv1uUdpHandleT      udpHandle,
-  NwU8T                  *buffer,
-  NwU32T                  buffer_len,
-  NwU32T                  buffer_offset,
-  NwU32T                  peerIpAddr,
-  NwU16T                  peerPort);
+  uint8_t                  *buffer,
+  uint32_t                  buffer_len,
+  uint32_t                  buffer_offset,
+  uint32_t                  peerIpAddr,
+  uint16_t                  peerPort);
 
 NwGtpv1uRcT
 gtpv1u_eNB_process_stack_req(
@@ -114,9 +114,9 @@ data_recv_callback(
 static NwGtpv1uRcT
 gtpv1u_start_timer_wrapper(
   NwGtpv1uTimerMgrHandleT tmrMgrHandle,
-  NwU32T                  timeoutSec,
-  NwU32T                  timeoutUsec,
-  NwU32T                  tmrType,
+  uint32_t                  timeoutSec,
+  uint32_t                  timeoutUsec,
+  uint32_t                  tmrType,
   void                   *timeoutArg,
   NwGtpv1uTimerHandleT   *hTmr);
 
@@ -241,9 +241,9 @@ static int gtpv1u_eNB_send_init_udp(uint16_t port_number)
 
 //-----------------------------------------------------------------------------
 NwGtpv1uRcT gtpv1u_eNB_log_request(NwGtpv1uLogMgrHandleT hLogMgr,
-                                   NwU32T logLevel,
+                                   uint32_t logLevel,
                                    NwCharT *file,
-                                   NwU32T line,
+                                   uint32_t line,
                                    NwCharT *logStr)
 {
   LOG_D(GTPU, "%s\n", logStr);
@@ -253,11 +253,11 @@ NwGtpv1uRcT gtpv1u_eNB_log_request(NwGtpv1uLogMgrHandleT hLogMgr,
 //-----------------------------------------------------------------------------
 NwGtpv1uRcT gtpv1u_eNB_send_udp_msg(
   NwGtpv1uUdpHandleT udpHandle,
-  NwU8T *buffer,
-  NwU32T buffer_len,
-  NwU32T buffer_offset,
-  NwU32T peerIpAddr,
-  NwU16T peerPort)
+  uint8_t *buffer,
+  uint32_t buffer_len,
+  uint32_t buffer_offset,
+  uint32_t peerIpAddr,
+  uint16_t peerPort)
 {
   // Create and alloc new message
   MessageDef     *message_p       = NULL;
@@ -491,9 +491,9 @@ int data_recv_callback(uint16_t  portP,
 //-----------------------------------------------------------------------------
 static NwGtpv1uRcT gtpv1u_start_timer_wrapper(
   NwGtpv1uTimerMgrHandleT tmrMgrHandle,
-  NwU32T                  timeoutSec,
-  NwU32T                  timeoutUsec,
-  NwU32T                  tmrType,
+  uint32_t                  timeoutSec,
+  uint32_t                  timeoutUsec,
+  uint32_t                  tmrType,
   void                   *timeoutArg,
   NwGtpv1uTimerHandleT   *hTmr)
 {

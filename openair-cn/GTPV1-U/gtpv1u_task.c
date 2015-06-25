@@ -63,17 +63,17 @@ static void *gtpv1u_thread(void *args);
 
 NwGtpv1uRcT gtpv1u_send_udp_msg(
   NwGtpv1uUdpHandleT udpHandle,
-  NwU8T *buffer,
-  NwU32T buffer_len,
-  NwU32T buffer_offset,
-  NwU32T peerIpAddr,
-  NwU32T peerPort);
+  uint8_t *buffer,
+  uint32_t buffer_len,
+  uint32_t buffer_offset,
+  uint32_t peerIpAddr,
+  uint32_t peerPort);
 
 NwGtpv1uRcT gtpv1u_log_request(
   NwGtpv1uLogMgrHandleT hLogMgr,
-  NwU32T logLevel,
+  uint32_t logLevel,
   NwCharT *file,
-  NwU32T line,
+  uint32_t line,
   NwCharT *logStr);
 
 NwGtpv1uRcT gtpv1u_process_stack_req(
@@ -149,15 +149,39 @@ void gtpu_print_hex_octets(unsigned char* dataP, unsigned long sizeP)
 
 
 NwGtpv1uRcT gtpv1u_log_request(NwGtpv1uLogMgrHandleT hLogMgr,
-                               NwU32T logLevel,
+                               uint32_t logLevel,
                                NwCharT *file,
-                               NwU32T line,
+                               uint32_t line,
                                NwCharT *logStr)
 {
   GTPU_DEBUG("%s\n", logStr);
   return NW_GTPV1U_OK;
 }
 
+NwGtpv1uRcT gtpv1u_send_udp_msg(
+  NwGtpv1uUdpHandleT udpHandle,
+  uint8_t *buffer,
+  uint32_t buffer_len,
+  uint32_t buffer_offset,
+  uint32_t peerIpAddr,
+  uint32_t peerPort)
+{
+  // Create and alloc new message
+  MessageDef     *message_p;
+  udp_data_req_t *udp_data_req_p;
+
+  message_p = itti_alloc_new_message(TASK_GTPV1_U, UDP_DATA_REQ);
+
+  udp_data_req_p = &message_p->ittiMsg.udp_data_req;
+
+  udp_data_req_p->peer_address  = peerIpAddr;
+  udp_data_req_p->peer_port     = peerPort;
+  udp_data_req_p->buffer        = buffer;
+  udp_data_req_p->buffer_length = buffer_len;
+  udp_data_req_p->buffer_offset = buffer_offset;
+
+  return itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
+}
 
 /* Callback called when a gtpv1u message arrived on UDP interface */
 NwGtpv1uRcT gtpv1u_process_stack_req(
@@ -179,7 +203,7 @@ NwGtpv1uRcT gtpv1u_process_stack_req(
      * task for transmission.
      */
     /*if (NW_GTPV1U_OK != nwGtpv1uMsgGetTpdu(pUlpApi->apiInfo.recvMsgInfo.hMsg,
-        buffer, (NwU32T *)&buffer_len)) {
+        buffer, (uint32_t *)&buffer_len)) {
         GTPU_ERROR("Error while retrieving T-PDU\n");
     }*/
     GTPU_DEBUG("Received TPDU from gtpv1u stack %u with size %d\n",
@@ -347,9 +371,9 @@ static int gtpv1u_update_s1u_tunnel(Gtpv1uUpdateTunnelReq *reqP)
 
 static NwGtpv1uRcT gtpv1u_start_timer_wrapper(
   NwGtpv1uTimerMgrHandleT tmrMgrHandle,
-  NwU32T                  timeoutSec,
-  NwU32T                  timeoutUsec,
-  NwU32T                  tmrType,
+  uint32_t                  timeoutSec,
+  uint32_t                  timeoutUsec,
+  uint32_t                  tmrType,
   void                   *timeoutArg,
   NwGtpv1uTimerHandleT   *hTmr)
 {
@@ -407,6 +431,19 @@ static void *gtpv1u_thread(void *args)
 
     case TERMINATE_MESSAGE: {
       itti_exit_task();
+    }
+    break;
+
+    // DATA COMING FROM UDP
+    case UDP_DATA_IND: {
+      udp_data_ind_t *udp_data_ind_p;
+      udp_data_ind_p = &received_message_p->ittiMsg.udp_data_ind;
+      nwGtpv1uProcessUdpReq(gtpv1u_sgw_data.gtpv1u_stack,
+                             udp_data_ind_p->buffer,
+                             udp_data_ind_p->buffer_length,
+                             udp_data_ind_p->peer_port,
+                             udp_data_ind_p->peer_address);
+       //itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), udp_data_ind_p->buffer);
     }
     break;
 

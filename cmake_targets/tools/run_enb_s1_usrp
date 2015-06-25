@@ -188,7 +188,8 @@ function main()
     echo "set args $exe_arguments" >> ~/.gdb_lte_softmodem
     echo "run"                        >> ~/.gdb_lte_softmodem
     cat ~/.gdb_lte_softmodem
-    gdb -n -x ~/.gdb_lte_softmodem 2>&1 > /tmp/gdb_lte_softmodem.stdout.txt
+    gdb -n -x ~/.gdb_lte_softmodem 2>&1 
+    #> /tmp/gdb_lte_softmodem.stdout.txt
   fi
   
   if [ $run_mscgen -eq 1 ]; then 

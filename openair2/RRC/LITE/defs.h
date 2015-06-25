@@ -412,12 +412,14 @@ typedef struct eNB_RRC_INST_s {
   rcc_eNB_carrier_data_t          carrier[MAX_NUM_CCs];
   uid_allocator_t                    uid_allocator; // for rrc_ue_head
   RB_HEAD(rrc_ue_tree_s, rrc_eNB_ue_context_s)     rrc_ue_head; // ue_context tree key search by rnti
-  RB_HEAD(rrc_rnti_tree_s, rrc_ue_s1ap_ids_s)      rrc_rnti_head; // ue-rnti tree key search by S1AP ids
   uint8_t                           HO_flag;
   uint8_t                            Nb_ue;
 #if defined(ENABLE_RAL)
   obj_hash_table_t                  *ral_meas_thresholds;
 #endif
+  hash_table_t                      *initial_id2_s1ap_ids; // key is    content is rrc_ue_s1ap_ids_t
+  hash_table_t                      *s1ap_id2_s1ap_ids   ; // key is    content is rrc_ue_s1ap_ids_t
+
 #ifdef LOCALIZATION
   /// localization type, 0: power based, 1: time based
   uint8_t loc_type;
