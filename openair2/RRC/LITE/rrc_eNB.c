@@ -745,6 +745,7 @@ rrc_eNB_free_mem_UE_context(
 
 //-----------------------------------------------------------------------------
 // called by MAC layer only
+// should be called when UE is lost by eNB
 void
 rrc_eNB_free_UE(
   const module_id_t enb_mod_idP,

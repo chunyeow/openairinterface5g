@@ -67,8 +67,8 @@ MME :
     SCTP :
     {
         # Number of streams to use in input/output
-        SCTP_INSTREAMS  = 32;
-        SCTP_OUTSTREAMS = 32;
+        SCTP_INSTREAMS  = 8;
+        SCTP_OUTSTREAMS = 8;
     };
 
     # ------- S1AP definitions

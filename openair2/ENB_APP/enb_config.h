@@ -193,6 +193,9 @@ typedef struct Enb_properties_s {
   /* List of MME to connect to */
   mme_ip_address_t    mme_ip_address[S1AP_MAX_NB_MME_IP_ADDRESS];
 
+  int                 sctp_in_streams;
+  int                 sctp_out_streams;
+
   char               *enb_interface_name_for_S1U;
   in_addr_t           enb_ipv4_address_for_S1U;
   tcp_udp_port_t      enb_port_for_S1U;

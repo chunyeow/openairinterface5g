@@ -518,7 +518,7 @@ add_boolean_option(RRC_DEFAULT_RAB_IS_AM       False  "Otherwise it is UM, confi
 ##########################
 # S1AP LAYER OPTIONS
 ##########################
-add_boolean_option(S1AP_LIMIT_STREAM_ID_TO_1   True  "FIXME: Despite Eurecom has implemented the spec concerning management of stream ids, there are always issues with other EPCs than EURECOM")
+# none
 
 ##########################
 # PROJECTS (IST, FRENCH COLL., etc)

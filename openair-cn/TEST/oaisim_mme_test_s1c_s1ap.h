@@ -55,6 +55,8 @@ void s1ap_eNB_handle_sctp_association_resp(instance_t instance, sctp_new_associa
 
 void s1ap_eNB_register_mme(s1ap_eNB_instance_t *instance_p,
                                   net_ip_address_t    *mme_ip_address,
-                                  net_ip_address_t    *local_ip_addr);
+                                  net_ip_address_t    *local_ip_addr,
+                                  uint16_t             in_streams,
+                                  uint16_t             out_streams);
 void s1ap_eNB_handle_register_eNB(instance_t instance, s1ap_register_enb_req_t *s1ap_register_eNB);
 void *s1ap_eNB_task(void *arg);

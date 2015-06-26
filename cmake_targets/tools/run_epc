@@ -39,8 +39,8 @@
 ################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/build_helper
-global -i g_run_msc_gen=0
-global    g_msc_dir="/tmp"
+declare -i g_run_msc_gen=0
+declare    g_msc_dir="/tmp"
 
 set_openair_env 
 
@@ -128,11 +128,9 @@ function main()
         ;;
       -m | --mscgen)
         g_msc_dir=$2
-        # can omit file name if last arg on the line
         if [ -d  "$g_msc_dir" ]; then
           echo "setting mscgen log files to dir: $g_msc_dir"
           g_run_msc_gen=1
-          exe_arguments="-m $exe_arguments"
           shift 2;
         else
           echo_error "Mscgen log dir does not exist"

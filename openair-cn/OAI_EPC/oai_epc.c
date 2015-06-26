@@ -64,6 +64,7 @@
 #include "s6a_defs.h"
 
 #include "oai_epc.h"
+#include "msc.h"
 
 int main(int argc, char *argv[])
 {
@@ -73,6 +74,7 @@ int main(int argc, char *argv[])
                               mme_config.itti_config.log_file));
   /* Parse the command line for options and set the mme_config accordingly. */
   CHECK_INIT_RETURN(config_parse_opt_line(argc, argv, &mme_config) < 0);
+  MSC_INIT(MSC_MME_GW, THREAD_MAX+TASK_MAX);
 
   /* Calling each layer init function */
   CHECK_INIT_RETURN(log_init(&mme_config, oai_epc_log_specific));
