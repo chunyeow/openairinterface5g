@@ -618,10 +618,10 @@ include_directories("${OPENAIR_DIR}")
 # Utilities Library
 ################
 add_library(HASHTABLE
-  ${OPENAIRCN_DIR}/UTILS/HASHTABLE/hashtable.c
-  ${OPENAIRCN_DIR}/UTILS/HASHTABLE/obj_hashtable.c
+  ${OPENAIR_DIR}/common/utils/collection/hashtable/hashtable.c
+  ${OPENAIR_DIR}/common/utils/collection/hashtable/obj_hashtable.c
 )
-include_directories(${OPENAIRCN_DIR}/UTILS/HASHTABLE)
+include_directories(${OPENAIR_DIR}/common/utils/collection/hashtable)
 
 if (MESSAGE_CHART_GENERATOR)
   add_library(MSC  
