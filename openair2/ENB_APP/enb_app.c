@@ -305,6 +305,10 @@ void *eNB_app_task(void *args_p)
                "Number of eNB is greater than eNB defined in configuration file (%d/%d)!",
                enb_nb, enb_properties_p->number);
 
+# if defined(OAISIM)
+  enb_id_end = enb_properties_p->number;
+# endif
+
   for (enb_id = enb_id_start; (enb_id < enb_id_end) ; enb_id++) {
     configure_phy(enb_id, enb_properties_p);
     configure_rrc(enb_id, enb_properties_p);
