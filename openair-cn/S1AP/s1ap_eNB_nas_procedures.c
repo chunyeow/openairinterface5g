@@ -155,7 +155,7 @@ int s1ap_eNB_handle_nas_first_req(
   initial_ue_message_p->rrC_Establishment_Cause = s1ap_nas_first_req_p->establishment_cause;
 
   if (s1ap_nas_first_req_p->ue_identity.presenceMask & UE_IDENTITIES_s_tmsi) {
-    S1AP_DEBUG("S_TMSI_PRESENT");
+    S1AP_DEBUG("S_TMSI_PRESENT\n");
     initial_ue_message_p->presenceMask |= S1AP_INITIALUEMESSAGEIES_S_TMSI_PRESENT;
 
     MME_CODE_TO_OCTET_STRING(s1ap_nas_first_req_p->ue_identity.s_tmsi.mme_code,
@@ -165,7 +165,7 @@ int s1ap_eNB_handle_nas_first_req(
   }
 
   if (s1ap_nas_first_req_p->ue_identity.presenceMask & UE_IDENTITIES_gummei) {
-    S1AP_DEBUG("GUMMEI_ID_PRESENT");
+    S1AP_DEBUG("GUMMEI_ID_PRESENT\n");
     initial_ue_message_p->presenceMask |= S1AP_INITIALUEMESSAGEIES_GUMMEI_ID_PRESENT;
 
     MCC_MNC_TO_PLMNID(
@@ -191,8 +191,10 @@ int s1ap_eNB_handle_nas_first_req(
    * The cell identity is defined on 28 bits but as we use macro enb id,
    * we have to pad.
    */
+#warning "TODO get cell id from RRC"
   MACRO_ENB_ID_TO_CELL_IDENTITY(instance_p->eNB_id,
-                                &initial_ue_message_p->eutran_cgi.cell_ID);
+		  0, // Cell ID
+          &initial_ue_message_p->eutran_cgi.cell_ID);
   MCC_MNC_TO_TBCD(instance_p->mcc,
                   instance_p->mnc,
                   instance_p->mnc_digit_length,
@@ -389,8 +391,10 @@ int s1ap_eNB_nas_uplink(instance_t instance, s1ap_uplink_nas_t *s1ap_uplink_nas_
     s1ap_eNB_instance_p->mnc_digit_length,
     &uplink_NAS_transport_p->eutran_cgi.pLMNidentity);
 
+#warning "TODO get cell id from RRC"
   MACRO_ENB_ID_TO_CELL_IDENTITY(s1ap_eNB_instance_p->eNB_id,
-                                &uplink_NAS_transport_p->eutran_cgi.cell_ID);
+          0,
+          &uplink_NAS_transport_p->eutran_cgi.cell_ID);
 
   /* MCC/MNC should be repeated in TAI and EUTRAN CGI */
   MCC_MNC_TO_PLMNID(
