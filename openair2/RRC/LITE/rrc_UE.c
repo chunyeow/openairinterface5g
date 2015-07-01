@@ -2215,7 +2215,7 @@ static const char* SIB2numberOfRA_Preambles( long value )
   if (value < 0 || value > 15)
     return "ERR";
 
-  snprintf( temp, sizeof(temp), "n%d", value*4 + 4 );
+  snprintf( temp, sizeof(temp), "n%ld", value*4 + 4 );
   temp[3] = 0; // terminate string
   return temp;
 }
@@ -2234,7 +2234,7 @@ static const char* SIB2preambleInitialReceivedTargetPower( long value )
   if (value < 0 || value > 15)
     return "ERR";
 
-  snprintf( temp, sizeof(temp), "dBm-%d", 120 - value*2 );
+  snprintf( temp, sizeof(temp), "dBm-%ld", 120 - value*2 );
   temp[7] = 0; // terminate string
   return temp;
 }
@@ -2246,7 +2246,7 @@ static const char* SIB2preambleTransMax( long value )
     return "ERR";
 
   if (value <= 5) {
-    snprintf( temp, sizeof(temp), "n%d", value+3 );
+    snprintf( temp, sizeof(temp), "n%ld", value+3 );
     return temp;
   }
 
@@ -2277,7 +2277,7 @@ static const char* SIB2ra_ResponseWindowSize( long value )
   if (value == 7)
     return "sf10";
 
-  snprintf( temp, sizeof(temp), "sf%d", value+2 );
+  snprintf( temp, sizeof(temp), "sf%ld", value+2 );
   return temp;
 }
 static const char* SIB2mac_ContentionResolutionTimer( long value )
@@ -2287,7 +2287,7 @@ static const char* SIB2mac_ContentionResolutionTimer( long value )
   if (value < 0 || value > 7)
     return "ERR";
 
-  snprintf( temp, sizeof(temp), "sf%d", 8 + value*8 );
+  snprintf( temp, sizeof(temp), "sf%ld", 8 + value*8 );
   return temp;
 }
 static const char* SIB2modificationPeriodCoeff( long value )
@@ -2988,8 +2988,173 @@ static void dump_sib3( SystemInformationBlockType3_t *sib3 )
   }
 }
 
+int Qoffsettab[31] = {-24,-22,-20,-18,-16,-14,-12,-10,-8,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,8,10,12,14,16,18,20,22,24};
+int PhysCellIdRange[16] = {4,8,12,16,24,32,48,64,84,96,128,168,252,504,0,0};
+
+uint64_t arfcn_to_freq(long arfcn) {
+  
+  if (arfcn < 600)  // Band 1
+    return((uint64_t)2110000000 + (arfcn*100000));
+  else if (arfcn <1200) // Band 2
+    return((uint64_t)1930000000 + ((arfcn-600)*100000));
+  else if (arfcn <1950) // Band 3
+    return((uint64_t)1805000000 + ((arfcn-1200)*100000));
+  else if (arfcn <2400) // Band 4
+    return((uint64_t)2110000000 + ((arfcn-1950)*100000));
+  else if (arfcn <2650) // Band 5
+    return((uint64_t)869000000 + ((arfcn-2400)*100000));
+  else if (arfcn <2750) // Band 6
+    return((uint64_t)875000000 + ((arfcn-2650)*100000));
+  else if (arfcn <3450) // Band 7
+    return((uint64_t)2620000000 + ((arfcn-2750)*100000));
+  else if (arfcn <3800) // Band 8
+    return((uint64_t)925000000 + ((arfcn-3450)*100000));
+  else if (arfcn <4150) // Band 9
+    return((uint64_t)1844900000 + ((arfcn-3800)*100000));
+  else if (arfcn <4650) // Band 10
+    return((uint64_t)2110000000 + ((arfcn-4150)*100000));
+  else if (arfcn <5010) // Band 11
+    return((uint64_t)1475900000 + ((arfcn-4750)*100000));
+  else if (arfcn <5180) // Band 12
+    return((uint64_t)729000000 + ((arfcn-5010)*100000));
+  else if (arfcn <5280) // Band 13
+    return((uint64_t)746000000 + ((arfcn-5180)*100000));
+  else if (arfcn <5730) // Band 14
+    return((uint64_t)758000000 + ((arfcn-5280)*100000));
+  else if (arfcn <5850) // Band 17
+    return((uint64_t)734000000 + ((arfcn-5730)*100000));
+  else if (arfcn <6000) // Band 18
+    return((uint64_t)860000000 + ((arfcn-5850)*100000));
+  else if (arfcn <6150) // Band 19
+    return((uint64_t)875000000 + ((arfcn-5850)*100000));
+  else if (arfcn <6450) // Band 20
+    return((uint64_t)791000000 + ((arfcn-5850)*100000));
+  else if (arfcn <6600) // Band 21
+    return((uint64_t)1495900000 + ((arfcn-5850)*100000));
+  else if (arfcn <7500) // Band 22
+    return((uint64_t)351000000 + ((arfcn-5850)*100000));
+  else if (arfcn <7700) // Band 23
+    return((uint64_t)2180000000 + ((arfcn-5850)*100000));
+  else if (arfcn <8040) // Band 24
+    return((uint64_t)1525000000 + ((arfcn-5850)*100000));
+  else if (arfcn <8690) // Band 25
+    return((uint64_t)1930000000 + ((arfcn-5850)*100000));
+  else if (arfcn <36200) // Band 33
+    return((uint64_t)1900000000 + ((arfcn-36000)*100000));
+  else if (arfcn <36350) // Band 34
+    return((uint64_t)2010000000 + ((arfcn-36200)*100000));
+  else if (arfcn <36950) // Band 35
+    return((uint64_t)1850000000 + ((arfcn-36350)*100000));
+  else if (arfcn <37550) // Band 36
+    return((uint64_t)1930000000 + ((arfcn-36950)*100000));
+  else if (arfcn <37750) // Band 37
+    return((uint64_t)1910000000 + ((arfcn-37550)*100000));
+  else if (arfcn <38250) // Band 38
+    return((uint64_t)2570000000 + ((arfcn-37750)*100000));
+  else if (arfcn <38650) // Band 39
+    return((uint64_t)1880000000 + ((arfcn-38250)*100000));
+  else if (arfcn <39650) // Band 40
+    return((uint64_t)2300000000 + ((arfcn-38650)*100000));
+  else if (arfcn <41590) // Band 41
+    return((uint64_t)2496000000 + ((arfcn-39650)*100000));
+  else if (arfcn <43590) // Band 42
+    return((uint64_t)3400000000 + ((arfcn-41590)*100000));
+  else if (arfcn <45590) // Band 43
+    return((uint64_t)3600000000 + ((arfcn-43950)*100000));
+  else
+    LOG_E(RRC,"Unknown EARFCN %d\n",arfcn);
+
+}
+static void dump_sib5( SystemInformationBlockType5_t *sib5 )
+{
+  InterFreqCarrierFreqList_t interFreqCarrierFreqList = sib5->interFreqCarrierFreqList;
+  int i;
+  InterFreqCarrierFreqInfo_t *ifcfInfo;
+
+  LOG_I( RRC, "Dumping SIB5 (see TS36.331 V8.21.0)\n" );
+  
+  for (i=0;i<interFreqCarrierFreqList.list.count;i++) {
+    LOG_I(RRC, "SIB5 InterFreqCarrierFreq element %d/%d\n",i,interFreqCarrierFreqList.list.count);
+    ifcfInfo = interFreqCarrierFreqList.list.array[i];
+    LOG_I(RRC, "   DL Carrier Frequency/ARFCN : %ld/%d\n",
+	  arfcn_to_freq(ifcfInfo->dl_CarrierFreq),
+	  ifcfInfo->dl_CarrierFreq);
+    LOG_I(RRC,"   Q_RXLevMin : %d\n", ifcfInfo->q_RxLevMin);
+    LOG_I(RRC,"   P_max : %d\n",ifcfInfo->p_Max);
+    LOG_I(RRC,"   T_ReselectionEUTRA : %d\n",ifcfInfo->t_ReselectionEUTRA);
+    if (ifcfInfo->t_ReselectionEUTRA_SF) {
+      LOG_I(RRC,"   t_ReselectionEUTRA_SF.sf_Medium %d, t_ReselectionEUTRA_SF.sf_High %d",
+	    ifcfInfo->t_ReselectionEUTRA_SF->sf_Medium,
+	    ifcfInfo->t_ReselectionEUTRA_SF->sf_High);
+    }
+    LOG_I(RRC,"   threshX_High : %d\n",ifcfInfo->threshX_High);
+    LOG_I(RRC,"   threshX_Low : %d\n",ifcfInfo->threshX_Low);
+    switch(ifcfInfo->allowedMeasBandwidth) {
+    case AllowedMeasBandwidth_mbw6:
+      LOG_I(RRC,"   AllowedMeasBandwidth : 6\n");
+      break;
+    case AllowedMeasBandwidth_mbw15:
+      LOG_I(RRC,"   AllowedMeasBandwidth : 15\n");
+      break;
+    case AllowedMeasBandwidth_mbw25:
+      LOG_I(RRC,"   AllowedMeasBandwidth : 25\n");
+      break;
+    case AllowedMeasBandwidth_mbw50:
+      LOG_I(RRC,"   AllowedMeasBandwidth : 50\n");
+      break;
+    case AllowedMeasBandwidth_mbw75:
+      LOG_I(RRC,"   AllowedMeasBandwidth : 75\n");
+      break;
+    case AllowedMeasBandwidth_mbw100:
+      LOG_I(RRC,"   AllowedMeasBandwidth : 100\n");
+      break;
+    }
+    if (ifcfInfo->presenceAntennaPort1)
+      LOG_I(RRC,"   PresenceAntennaPort1 : True\n");
+    else
+      LOG_I(RRC,"   PresenceAntennaPort1 : False\n");
+    if (ifcfInfo->cellReselectionPriority) {
+      LOG_I(RRC,"   CellReselectionPriority : %d\n",
+	    *ifcfInfo->cellReselectionPriority);
+    }
+    LOG_I(RRC,"   NeighCellConfig  : ");
+    for (i=0;i<ifcfInfo->neighCellConfig.size;i++) {
+      LOG_T(RRC,"%2x ",ifcfInfo->neighCellConfig.buf[i]);
+    }
+    if (ifcfInfo->q_OffsetFreq)
+      LOG_I(RRC,"   Q_OffsetFreq : %d",Qoffsettab[*ifcfInfo->q_OffsetFreq]);
+    if (ifcfInfo->interFreqNeighCellList) {
+      
+      for (i=0;i<ifcfInfo->interFreqNeighCellList->list.count;i++) {
+	LOG_I(RRC,"   Cell %d\n");
+	LOG_I(RRC,"      PhysCellId : %d",ifcfInfo->interFreqNeighCellList->list.array[i]->physCellId);
+	LOG_I(RRC,"      Q_OffsetRange : %d",ifcfInfo->interFreqNeighCellList->list.array[i]->q_OffsetCell);
+	
+      }
+    }
+    if (ifcfInfo->interFreqBlackCellList) {
+      
+      for (i=0;i<ifcfInfo->interFreqBlackCellList->list.count;i++) {
+	LOG_I(RRC,"   Cell %d\n");
+	LOG_I(RRC,"      PhysCellId start: %d\n",ifcfInfo->interFreqBlackCellList->list.array[i]->start);
+	if (ifcfInfo->interFreqBlackCellList->list.array[i]->range) {
+	  LOG_I(RRC,"      PhysCellId Range : %d\n",ifcfInfo->interFreqBlackCellList->list.array[i]->range);
+	}
+      }
+    }
+    if (ifcfInfo->q_QualMin_r9)
+      LOG_I(RRC,"   Q_QualMin_r9 : %d\n",*ifcfInfo->q_QualMin_r9);
+    
+    if (ifcfInfo->threshX_Q_r9) {
+      LOG_I(RRC,"   threshX_HighQ_r9 : %d\n",ifcfInfo->threshX_Q_r9->threshX_HighQ_r9);
+      LOG_I(RRC,"   threshX_LowQ_r9: %d\n",ifcfInfo->threshX_Q_r9->threshX_LowQ_r9);
+    }
+    
+  }
+  
+}
+  
 #ifdef Rel10
-//-----------------------------------------------------------------------------
 static void dump_sib13( SystemInformationBlockType13_r9_t *sib13 )
 {
   LOG_I( RRC, "[UE] Dumping SIB13\n" );
@@ -3134,6 +3299,7 @@ static int decode_SI( const protocol_ctxt_t* const ctxt_pP, const uint8_t eNB_in
      
 	memcpy( UE_rrc_inst[ctxt_pP->module_id].sib5[eNB_index], &typeandinfo->choice.sib5, sizeof(SystemInformationBlockType5_t) );
 	LOG_I( RRC, "[UE %"PRIu8"] Frame %"PRIu32" Found SIB5 from eNB %"PRIu8"\n", ctxt_pP->module_id, ctxt_pP->frame, eNB_index );
+	dump_sib5(UE_rrc_inst[ctxt_pP->module_id].sib5[eNB_index]);
       }
       break;
 
