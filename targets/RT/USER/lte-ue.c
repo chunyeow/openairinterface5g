@@ -635,33 +635,6 @@ static void *UE_thread_tx(void *arg)
       phy_procedures_UE_S_TX( UE, 0, 0, no_relay );
     }
 
-#ifdef OPENAIR2
-
-    if (UE->lte_frame_parms.frame_type == TDD) {
-
-      ret = mac_xface->ue_scheduler(UE->Mod_id,
-                                    UE->frame_tx,
-                                    UE->slot_rx>>1,
-                                    subframe_select(&UE->lte_frame_parms,UE->slot_tx>>1),
-                                    0,
-                                    0/*FIXME CC_id*/);
-
-      if (ret == CONNECTION_LOST) {
-        LOG_E( PHY, "[UE %"PRIu8"] Frame %"PRIu32", subframe %u RRC Connection lost, returning to PRACH\n",
-               UE->Mod_id, UE->frame_rx /*FIXME really _rx?*/, UE->slot_tx>>1 );
-        UE->UE_mode[0] = PRACH;
-      } else if (ret == PHY_RESYNCH) {
-        LOG_E( PHY, "[UE %"PRIu8"] Frame %"PRIu32", subframe %u RRC Connection lost, trying to resynch\n",
-               UE->Mod_id, UE->frame_rx /*FIXME really _rx?*/, UE->slot_tx>>1 );
-        UE->UE_mode[0] = RESYNCH;
-      } else if (ret == PHY_HO_PRACH) {
-        LOG_I( PHY, "[UE %"PRIu8"] Frame %"PRIu32", subframe %u, return to PRACH and perform a contention-free access\n",
-               UE->Mod_id, UE->frame_rx /*FIXME really _rx?*/, UE->slot_tx>>1 );
-        UE->UE_mode[0] = PRACH;
-      }
-    }
-
-#endif
     UE->slot_tx += 2;
 
     if (UE->slot_tx >= 20) {
