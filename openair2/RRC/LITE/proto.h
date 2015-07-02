@@ -208,6 +208,17 @@ rrc_eNB_generate_RRCConnectionSetup(
   const int                    CC_id
 );
 
+/**\brief Generate RRCConnectionReestablishmentReject
+   \param ctxt_pP       Running context
+   \param ue_context_pP UE context
+   \param CC_id         Component Carrier ID*/
+void
+rrc_eNB_generate_RRCConnectionReestablishmentReject(
+  const protocol_ctxt_t* const ctxt_pP,
+  rrc_eNB_ue_context_t* const ue_context_pP,
+  const int                    CC_id
+);
+
 /**\brief Process the RRCConnectionSetupComplete based on information coming from UE
    \param ctxt_pP       Running context
    \param ue_context_pP RRC UE context

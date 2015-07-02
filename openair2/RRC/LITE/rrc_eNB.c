@@ -948,6 +948,49 @@ rrc_eNB_generate_UECapabilityEnquiry(
 
 //-----------------------------------------------------------------------------
 void
+rrc_eNB_generate_RRCConnectionReestablishmentReject(
+  const protocol_ctxt_t* const ctxt_pP,
+  rrc_eNB_ue_context_t*          const ue_context_pP,
+  const int                    CC_id
+)
+//-----------------------------------------------------------------------------
+{
+#ifdef RRC_MSG_PRINT
+  int                                 cnt;
+#endif
+
+  eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.payload_size =
+    do_RRCConnectionReestablishmentReject(ctxt_pP->module_id,
+                          (uint8_t*) eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.Payload);
+
+#ifdef RRC_MSG_PRINT
+  LOG_F(RRC,"[MSG] RRCConnectionReestablishmentReject\n");
+
+  for (cnt = 0; cnt < eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.payload_size; cnt++) {
+    LOG_F(RRC,"%02x ", ((uint8_t*)eNB_rrc_inst[ctxt_pP->module_id].Srb0.Tx_buffer.Payload)[cnt]);
+  }
+
+  LOG_F(RRC,"\n");
+#endif
+
+  MSC_LOG_TX_MESSAGE(
+    MSC_RRC_ENB,
+    MSC_RRC_UE,
+    eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.Header,
+    eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.payload_size,
+    MSC_AS_TIME_FMT" RRCConnectionReestablishmentReject UE %x size %u",
+    MSC_AS_TIME_ARGS(ctxt_pP),
+    ue_context_pP == NULL ? -1 ; ue_context_pP->ue_context.rnti,
+    eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.payload_size);
+
+  LOG_I(RRC,
+        PROTOCOL_RRC_CTXT_UE_FMT" [RAPROC] Logical Channel DL-CCCH, Generating RRCConnectionReestablishmentReject (bytes %d)\n",
+        PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP),
+        eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.payload_size);
+}
+
+//-----------------------------------------------------------------------------
+void
 rrc_eNB_generate_RRCConnectionRelease(
   const protocol_ctxt_t* const ctxt_pP,
   rrc_eNB_ue_context_t*          const ue_context_pP
@@ -3521,11 +3564,15 @@ rrc_eNB_decode_ccch(
 
       if ((eNB_rrc_inst[enb_mod_idP].phyCellId == rrcConnectionReestablishmentRequest.UE_identity.physCellId) &&
       (ue_mod_id != UE_INDEX_INVALID)){
-      rrc_eNB_generate_RRCConnectionReestablishement(enb_mod_idP, frameP, ue_mod_id);
+      rrc_eNB_generate_RRCConnectionReestablishment(enb_mod_idP, frameP, ue_mod_id);
       }else {
-      rrc_eNB_generate_RRCConnectionReestablishementReject(enb_mod_idP, frameP, ue_mod_id);
+      rrc_eNB_generate_RRCConnectionReestablishmentReject(enb_mod_idP, frameP, ue_mod_id);
       }
       */
+      /* reject all reestablishment attempts for the moment */
+      rrc_eNB_generate_RRCConnectionReestablishmentReject(ctxt_pP,
+                       rrc_eNB_get_ue_context(&eNB_rrc_inst[ctxt_pP->module_id], ctxt_pP->rnti),
+                       CC_id);
       break;
 
     case UL_CCCH_MessageType__c1_PR_rrcConnectionRequest:
