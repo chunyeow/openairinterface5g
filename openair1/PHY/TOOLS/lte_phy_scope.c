@@ -380,8 +380,8 @@ FD_lte_phy_scope_ue *create_lte_phy_scope_ue( void )
   fl_set_object_color( fdui->pbch_comp, FL_BLACK, FL_GREEN );
   fl_set_object_lcolor( fdui->pbch_comp, FL_WHITE ); // Label color
   fl_set_xyplot_symbolsize( fdui->pbch_comp,2);
-  fl_set_xyplot_xbounds( fdui->pbch_comp,-100,100);
-  fl_set_xyplot_ybounds( fdui->pbch_comp,-100,100);
+  //  fl_set_xyplot_xbounds( fdui->pbch_comp,-100,100);
+  //  fl_set_xyplot_ybounds( fdui->pbch_comp,-100,100);
 
   // LLR of PDCCH
   fdui->pdcch_llr = fl_add_xyplot( FL_POINTS_XYPLOT, 20, 380, 500, 100, "PDCCH Log-Likelihood Ratios (LLR, mag)" );
@@ -443,7 +443,7 @@ void phy_scope_UE(FD_lte_phy_scope_ue *form,
 {
   int i,arx,atx,ind,k;
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_ue->lte_frame_parms;
-  int nsymb_ce = frame_parms->ofdm_symbol_size*frame_parms->symbols_per_tti;
+  int nsymb_ce = frame_parms->ofdm_symbol_size;//*frame_parms->symbols_per_tti;
   uint8_t nb_antennas_rx = frame_parms->nb_antennas_rx;
   uint8_t nb_antennas_tx = frame_parms->nb_antennas_tx_eNB;
   int16_t **rxsig_t;
@@ -503,8 +503,8 @@ void phy_scope_UE(FD_lte_phy_scope_ue *form,
     coded_bits_per_codeword = 0; //frame_parms->N_RB_DL*12*get_Qm(mcs)*(frame_parms->symbols_per_tti);
   }
 
-  I = (float*) calloc(nsymb_ce*2,sizeof(float));
-  Q = (float*) calloc(nsymb_ce*2,sizeof(float));
+  I = (float*) calloc(frame_parms->ofdm_symbol_size*frame_parms->symbols_per_tti*2,sizeof(float));
+  Q = (float*) calloc(frame_parms->ofdm_symbol_size*frame_parms->symbols_per_tti*2,sizeof(float));
   chest_t_abs = (float**) malloc(nb_antennas_rx*sizeof(float*));
 
   for (arx=0; arx<nb_antennas_rx; arx++) {
