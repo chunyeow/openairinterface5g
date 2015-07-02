@@ -712,11 +712,13 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
   }
 
   /* Initial context request = UE-related procedure -> stream != 0 */
-  if (stream != ue_desc_p->stream) {
-    S1AP_ERROR("[SCTP %d] Received UE-related procedure on stream (%d) whereas expecting (%d)\n",
-               assoc_id, stream, ue_desc_p->stream);
+  if (stream == 0) {
+    S1AP_ERROR("[SCTP %d] Received UE-related procedure on stream (%d)\n",
+               assoc_id, stream);
     return -1;
   }
+
+  ue_desc_p->rx_stream = stream;
 
   ue_desc_p->mme_ue_s1ap_id = initialContextSetupRequest_p->mme_ue_s1ap_id;
 
