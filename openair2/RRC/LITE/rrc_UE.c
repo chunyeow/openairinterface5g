@@ -3142,6 +3142,7 @@ static void dump_sib5( SystemInformationBlockType5_t *sib5 )
 	}
       }
     }
+#ifdef Rel10
     if (ifcfInfo->q_QualMin_r9)
       LOG_I(RRC,"   Q_QualMin_r9 : %d\n",*ifcfInfo->q_QualMin_r9);
     
@@ -3149,7 +3150,7 @@ static void dump_sib5( SystemInformationBlockType5_t *sib5 )
       LOG_I(RRC,"   threshX_HighQ_r9 : %d\n",ifcfInfo->threshX_Q_r9->threshX_HighQ_r9);
       LOG_I(RRC,"   threshX_LowQ_r9: %d\n",ifcfInfo->threshX_Q_r9->threshX_LowQ_r9);
     }
-    
+#endif
   }
   
 }
