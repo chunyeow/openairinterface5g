@@ -266,6 +266,10 @@ static void *UE_thread_synch(void *arg)
 
     sync_mode = pbch;
 
+#ifdef OAI_USRP
+    openair0_set_frequencies(&openair0,&openair0_cfg[0],0);
+#endif
+
   } else if  (UE->UE_scan == 1) {
     current_band=0;
 
