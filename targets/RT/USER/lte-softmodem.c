@@ -2033,7 +2033,7 @@ static void get_options (int argc, char **argv)
     {NULL, 0, NULL, 0}
   };
 
-  while ((c = getopt_long (argc, argv, "C:dK:g:F:G:hqO:m:SUVRM:r:P:Ws:t:x:T:",long_options,NULL)) != -1) {
+  while ((c = getopt_long (argc, argv, "C:dK:g:F:G:hqO:m:SUVRM:r:P:Ws:t:x:",long_options,NULL)) != -1) {
     switch (c) {
     case LONG_OPTION_MAXPOWER:
       tx_max_power[0]=atoi(optarg);
@@ -2110,16 +2110,6 @@ static void get_options (int argc, char **argv)
       UE_scan=0;
 
       break;
-
-    case 'T':
-      for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
-        uplink_frequency_offset[CC_id][0] = atof(optarg);
-        uplink_frequency_offset[CC_id][1] = uplink_frequency_offset[CC_id][0];
-        uplink_frequency_offset[CC_id][2] = uplink_frequency_offset[CC_id][0];
-        uplink_frequency_offset[CC_id][3] = uplink_frequency_offset[CC_id][0];
-        printf("Uplink for CC_id %d frequency offset set to %d\n", CC_id, uplink_frequency_offset[CC_id][0]);
-      }
-      break;      
 
     case 'd':
 #ifdef XFORMS
