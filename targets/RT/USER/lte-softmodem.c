@@ -444,7 +444,7 @@ void help (void) {
   printf("  -M IP address of RRH\n");
   printf("  -O eNB configuration file (located in targets/PROJECTS/GENERIC-LTE-EPC/CONF\n");
   printf("  -q Enable processing timing measurement of lte softmodem on per subframe basis \n");
-  printf("  -R Set the PRB, valid values: 6, 25, 50, 100  \n");    
+  printf("  -r Set the PRB, valid values: 6, 25, 50, 100  \n");    
   printf("  -S Skip the missed slots/subframes \n");    
   printf("  -t Set the maximum uplink MCS\n");
   printf("  -U Set the lte softmodem as a UE\n");
