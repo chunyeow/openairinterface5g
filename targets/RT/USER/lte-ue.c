@@ -582,7 +582,7 @@ static void *UE_thread_tx(void *arg)
 
 
   if (sched_setattr(0, &attr, flags) < 0 ) {
-    perror("[SCHED] eNB tx thread: sched_setattr failed\n");
+    perror("[SCHED] UE_thread_tx thread: sched_setattr failed\n");
     return &UE_thread_tx_retval;
   }
 
@@ -730,7 +730,7 @@ static void *UE_thread_rx(void *arg)
   attr.sched_period = 1 * 1000000; // each rx thread has a period of 1ms from the starting point
 
   if (sched_setattr(0, &attr, flags) < 0 ) {
-    perror("[SCHED] eNB tx thread: sched_setattr failed\n");
+    perror("[SCHED] UE_thread_rx : sched_setattr failed\n");
     return &UE_thread_rx_retval;
   }
 
