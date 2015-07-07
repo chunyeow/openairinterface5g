@@ -49,9 +49,6 @@ typedef enum hashtable_return_code_e {
     HASH_TABLE_CODE_MAX
 } hashtable_rc_t;
 
-#define HASH_TABLE_DEFAULT_HASH_FUNC NULL
-#define HASH_TABLE_DEFAULT_FREE_FUNC NULL
-
 
 typedef struct hash_node_s {
     hash_key_t          key;
@@ -75,8 +72,7 @@ hashtable_rc_t  hashtable_is_key_exists (const hash_table_t * const hashtbl, con
 hashtable_rc_t  hashtable_apply_funct_on_elements (hash_table_t * const hashtblP, void funct(hash_key_t keyP, void* dataP, void* parameterP), void* parameterP);
 hashtable_rc_t  hashtable_dump_content (const hash_table_t * const hashtblP, char * const buffer_pP, int * const remaining_bytes_in_buffer_pP );
 hashtable_rc_t  hashtable_insert (hash_table_t * const hashtbl, const hash_key_t key, void *data);
-hashtable_rc_t  hashtable_free (hash_table_t * const hashtbl, const hash_key_t key);
-hashtable_rc_t  hashtable_remove(hash_table_t * const hashtblP, const hash_key_t keyP, void** dataP);
+hashtable_rc_t  hashtable_remove (hash_table_t * const hashtbl, const hash_key_t key);
 hashtable_rc_t  hashtable_get    (const hash_table_t * const hashtbl, const hash_key_t key, void **dataP);
 hashtable_rc_t  hashtable_resize (hash_table_t * const hashtbl, const hash_size_t size);
 
