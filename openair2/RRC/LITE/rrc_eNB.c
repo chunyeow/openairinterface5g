@@ -980,7 +980,7 @@ rrc_eNB_generate_RRCConnectionReestablishmentReject(
     eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.payload_size,
     MSC_AS_TIME_FMT" RRCConnectionReestablishmentReject UE %x size %u",
     MSC_AS_TIME_ARGS(ctxt_pP),
-    ue_context_pP == NULL ? -1 ; ue_context_pP->ue_context.rnti,
+    ue_context_pP == NULL ? -1 : ue_context_pP->ue_context.rnti,
     eNB_rrc_inst[ctxt_pP->module_id].carrier[CC_id].Srb0.Tx_buffer.payload_size);
 
   LOG_I(RRC,
