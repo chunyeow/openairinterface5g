@@ -52,14 +52,16 @@ typedef struct obj_hash_table_s {
     void              (*freedatafunc)(void*);
 } obj_hash_table_t;
 
-obj_hash_table_t   *obj_hashtable_create  (hash_size_t   size, hash_size_t (*hashfunc)(const void*, int ), void (*freekeyfunc)(void*), void (*freedatafunc)(void*));
-hashtable_rc_t      obj_hashtable_destroy (obj_hash_table_t *hashtblP);
-hashtable_rc_t      obj_hashtable_is_key_exists (obj_hash_table_t *hashtblP, void* keyP, int key_sizeP);
-hashtable_rc_t      obj_hashtable_insert  (obj_hash_table_t *hashtblP,       void* keyP, int key_sizeP, void *dataP);
-hashtable_rc_t      obj_hashtable_remove  (obj_hash_table_t *hashtblP, const void* keyP, int key_sizeP);
-hashtable_rc_t      obj_hashtable_get     (obj_hash_table_t *hashtblP, const void* keyP, int key_sizeP, void ** dataP);
-hashtable_rc_t      obj_hashtable_get_keys(obj_hash_table_t *hashtblP, void ** keysP, unsigned int *sizeP);
-hashtable_rc_t      obj_hashtable_resize  (obj_hash_table_t *hashtblP, hash_size_t sizeP);
+obj_hash_table_t   *obj_hashtable_create  (const hash_size_t   size, hash_size_t (*hashfunc)(const void*, int ), void (*freekeyfunc)(void*), void (*freedatafunc)(void*));
+hashtable_rc_t      obj_hashtable_destroy (obj_hash_table_t * const hashtblP);
+hashtable_rc_t      obj_hashtable_is_key_exists (const obj_hash_table_t * const hashtblP, const void* const keyP, const int key_sizeP);
+hashtable_rc_t      obj_hashtable_insert  (obj_hash_table_t * const hashtblP,       const void* const keyP, const int key_sizeP, void *dataP);
+hashtable_rc_t      obj_hashtable_dump_content (const obj_hash_table_t * const hashtblP,char * const buffer_pP,int * const remaining_bytes_in_buffer_pP);
+hashtable_rc_t      obj_hashtable_free  (obj_hash_table_t *hashtblP, const void* keyP, const int key_sizeP);
+hashtable_rc_t      obj_hashtable_remove(obj_hash_table_t *hashtblP, const void* keyP, const int key_sizeP, void** dataP);
+hashtable_rc_t      obj_hashtable_get     (const obj_hash_table_t * const hashtblP, const void* const keyP, const int key_sizeP, void ** dataP);
+hashtable_rc_t      obj_hashtable_get_keys(const obj_hash_table_t * const hashtblP, void ** keysP, unsigned int * sizeP);
+hashtable_rc_t      obj_hashtable_resize  (obj_hash_table_t * const hashtblP, const hash_size_t sizeP);
 
 #endif
 
