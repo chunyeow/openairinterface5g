@@ -1178,7 +1178,26 @@ sgw_lite_handle_delete_session_request(
   return -1;
 }
 
+/*
+ * Callback of hashtable_apply_funct_on_elements()
+ */
+static void sgw_lite_release_all_enb_related_information(hash_key_t keyP, void* dataP, void* parameterP)
+{
+  sgw_eps_bearer_entry_t  *eps_bearer_entry_p = (sgw_eps_bearer_entry_t*)dataP;
+  if (NULL != eps_bearer_entry_p) {
+    memset(&eps_bearer_entry_p->enb_ip_address_for_S1u,0, sizeof(eps_bearer_entry_p->enb_ip_address_for_S1u));
+    eps_bearer_entry_p->enb_teid_for_S1u = 0;
+  }
+}
 
+
+/* From GPP TS 23.401 version 11.11.0 Release 11, section 5.3.5 S1 release procedure:
+ * The S-GW releases all eNodeB related information (address and TEIDs) for the UE and responds with a Release
+ * Access Bearers Response message to the MME. Other elements of the UE's S-GW context are not affected. The
+ * S-GW retains the S1-U configuration that the S-GW allocated for the UE's bearers. The S-GW starts buffering
+ * downlink packets received for the UE and initiating the "Network Triggered Service Request" procedure,
+ * described in clause 5.3.4.3, if downlink packets arrive for the UE.
+ */
 int
 sgw_lite_handle_release_access_bearers_request(
   const SgwReleaseAccessBearersRequest * const release_access_bearers_req_pP)
@@ -1211,7 +1230,14 @@ sgw_lite_handle_release_access_bearers_request(
 	release_access_bearers_resp_p->cause = REQUEST_ACCEPTED;
 	release_access_bearers_resp_p->teid  = ctx_p->sgw_eps_bearer_context_information.mme_teid_for_S11;
 
+
 #warning "TODO Here the release (sgw_lite_handle_release_access_bearers_request)"
+    hash_rc = hashtable_apply_funct_on_elements(ctx_p->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers,
+                                                sgw_lite_release_all_enb_related_information,
+                                                NULL);
+
+	// TODO The S-GW starts buffering downlink packets received for the UE
+	// (set target on GTPUSP to order the buffering)
 
     MSC_LOG_TX_MESSAGE(
   		MSC_SP_GWAPP_MME,

@@ -194,7 +194,7 @@ int sgw_lite_cm_remove_s11_tunnel(Teid_t local_teid)
 {
   int  temp;
 
-  temp = hashtable_remove(sgw_app.s11teid2mme_hashtable, local_teid);
+  temp = hashtable_free(sgw_app.s11teid2mme_hashtable, local_teid);
 
   return temp;
 }
@@ -321,7 +321,7 @@ s_plus_p_gw_eps_bearer_context_information_t * sgw_lite_cm_create_bearer_context
 int sgw_lite_cm_remove_bearer_context_information(Teid_t teid)
 {
   int temp;
-  temp = hashtable_remove(sgw_app.s11_bearer_context_information_hashtable, teid);
+  temp = hashtable_free(sgw_app.s11_bearer_context_information_hashtable, teid);
   return temp;
 }
 
@@ -379,7 +379,7 @@ int sgw_lite_cm_remove_eps_bearer_entry(hash_table_t *eps_bearersP, ebi_t eps_be
     return -1;
   }
 
-  temp = hashtable_remove(eps_bearersP, eps_bearer_idP);
+  temp = hashtable_free(eps_bearersP, eps_bearer_idP);
 
   return temp;
 }
