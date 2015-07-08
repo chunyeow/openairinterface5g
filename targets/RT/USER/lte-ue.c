@@ -955,7 +955,7 @@ void *UE_thread(void *arg)
 
   openair0_timestamp timestamp;
 
-#ifdef NAS_BUILT_IN_UE
+#ifdef NAS_UE
   MessageDef *message_p;
 #endif
 
@@ -1010,7 +1010,7 @@ void *UE_thread(void *arg)
 
   printf("starting UE thread\n");
 
-#ifdef NAS_BUILT_IN_UE
+#ifdef NAS_UE
   message_p = itti_alloc_new_message(TASK_NAS_UE, INITIALIZE_MESSAGE);
   itti_send_msg_to_task (TASK_NAS_UE, INSTANCE_DEFAULT, message_p);
 #endif
