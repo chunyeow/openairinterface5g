@@ -431,9 +431,9 @@ void help (void) {
   printf("  --debug-ue-prach run normal prach power ramping, but don't continue random-access\n");
   printf("  --calib-prach-tx run normal prach with maximum power, but don't continue random-access\n");
   printf("  --no-L2-connect bypass L2 and upper layers\n");
-  printf("  --ue_rxgain set UE RX gain\n");
-  printf("  --ue_txgain set UE tx gain\n");
-  printf("  --ue_scan_carrier set UE to scan around carrier\n");
+  printf("  --ue-rxgain set UE RX gain\n");
+  printf("  --ue-txgain set UE tx gain\n");
+  printf("  --ue-scan-carrier set UE to scan around carrier\n");
   printf("  -C Set the downlink frequecny for all Component carrier\n");
   printf("  -d Enable soft scope and L1 and L2 stats (Xforms)\n");
   printf("  -F Calibrate the EXMIMO borad, available files: exmimo2_2arxg.lime exmimo2_2brxg.lime \n");
