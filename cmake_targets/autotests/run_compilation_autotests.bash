@@ -21,10 +21,10 @@ test_compile() {
     } > $tdir/log/$1.txt 2>&1
     if [ -s $3 ] ; then
         cp $3 $tdir/bin/`basename $3`.$1
-        echo_success "$1 test compiled"
+        echo_success "$1 $3 $5 compiled"
         xUnit_success "compilation" $1
     else
-        echo_error "$1 test compilation failed"
+        echo_error "$1 $3 $5 compilation failed"
         xUnit_fail "compilation" $1
     fi
 }
@@ -40,16 +40,16 @@ fi
 cd $tdir 
 
 test_compile \
-    test.0101 oaisim \
-    oaisim  $tdir/bin/oaisim.r8
+    test.0101 oaisim_nos1 \
+    oaisim_nos1  $tdir/bin/oaisim.r8 rel8.nos1
 
 test_compile \
-    test.0102 oaisim \
-    oaisim  $tdir/bin/oaisim.r8.nas
+    test.0102 oaisim_nos1 \
+    oaisim_nos1  $tdir/bin/oaisim.r8.nas rel8.nos1.nas
 
 test_compile \
     test.0103 lte-softmodem \
-    lte-softmodem  $tdir/bin/lte-softmodem.r8.rf
+    lte-softmodem  $tdir/bin/lte-softmodem.r8.rf rel8.rf
 
 test_compile \
     test.0104 dlsim \
@@ -61,19 +61,19 @@ test_compile \
 
 test_compile \
     test.0106 oaisim \
-    oaisim  $tdir/bin/oaisim.r8.itti
+    oaisim  $tdir/bin/oaisim.r8.itti rel8.itti
 
 test_compile \
-    test.0107 oaisim \
-    oaisim  $tdir/bin/oaisim.r10
+    test.0107 oaisim_nos1 \
+    oaisim_nos1  $tdir/bin/oaisim.r10 rel10.nos1
 
 test_compile \
     test.0108 oaisim \
-    oaisim  $tdir/bin/oaisim.r10.itti
+    oaisim  $tdir/bin/oaisim.r10.itti rel10.itti
 
 test_compile \
     test.0114 oaisim \
-    oaisim  $tdir/bin/oaisim.r8.itti.ral
+    oaisim  $tdir/bin/oaisim.r8.itti.ral rel8.itti.ral
 
 test_compile \
     test.0115 oaisim \
@@ -81,7 +81,7 @@ test_compile \
 
 test_compile \
     test.0120 nasmesh \
-    CMakeFiles/nasmesh/nasmesh.ko $tdir/bin/nasmesh.ko
+    CMakeFiles/nasmesh/nasmesh.ko $tdir/bin/nasmesh.ko 
 
 # write the test results into a file
 xUnit_write "$tdir/log/compilation_autotests.xml"

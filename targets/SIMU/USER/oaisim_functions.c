@@ -115,7 +115,7 @@ double      **ShaF                  = NULL;
 double      **s_re, **s_im, **r_re, **r_im, **r_re0, **r_im0;
 node_list*     ue_node_list          = NULL;
 node_list*     enb_node_list         = NULL;
-int           omg_period            = 0;
+int           omg_period            = 10000;
 int           pdcp_period           = 0;
 int           cba_backoff           = 30;
 // time calibration for soft realtime mode

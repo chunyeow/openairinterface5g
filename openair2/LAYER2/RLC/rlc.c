@@ -108,6 +108,7 @@ rlc_op_status_t rlc_stat_req     (
   const protocol_ctxt_t* const ctxt_pP,
   const srb_flag_t    srb_flagP,
   const rb_id_t       rb_idP,
+  unsigned int* stat_rlc_mode,
   unsigned int* stat_tx_pdcp_sdu,
   unsigned int* stat_tx_pdcp_bytes,
   unsigned int* stat_tx_pdcp_sdu_discarded,
@@ -154,7 +155,7 @@ rlc_op_status_t rlc_stat_req     (
   if (h_rc == HASH_TABLE_OK) {
     rlc_mode = rlc_union_p->mode;
   }
-
+  *stat_rlc_mode                     = rlc_mode;
   switch (rlc_mode) {
   case RLC_MODE_NONE:
     *stat_tx_pdcp_sdu                     = 0;
