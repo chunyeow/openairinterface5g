@@ -436,6 +436,13 @@ static void *UE_thread_synch(void *arg)
 	}
 	else {
 	  UE->is_synchronized = 1;
+
+	 if( UE->mode == rx_dump_frame ){
+		write_output("rxsig_frame0.m","rxsf0", &UE->lte_ue_common_vars.rxdata[0][0],10*UE->lte_frame_parms.samples_per_tti,1,1);
+		LOG_I(PHY,"Dummping Frame ... bye bye \n");
+		exit(0);
+	 }
+
 #ifndef EXMIMO
 	  UE->slot_rx = 0;
 	  UE->slot_tx = 4;
@@ -572,7 +579,7 @@ static void *UE_thread_tx(void *arg)
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
   attr.sched_nice = 0;
-  attr.sched_priority = sched_get_priority_max(SCHED_DEADLINE)-1;
+  attr.sched_priority = 0;
 
   /* This creates a 1ms reservation every 10ms period*/
   attr.sched_policy = SCHED_DEADLINE;
@@ -721,7 +728,7 @@ static void *UE_thread_rx(void *arg)
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
   attr.sched_nice = 0;
-  attr.sched_priority = sched_get_priority_max(SCHED_DEADLINE)-1;
+  attr.sched_priority = 0;
 
   // This creates a .5ms reservation every 1ms period
   attr.sched_policy = SCHED_DEADLINE;
@@ -888,7 +895,6 @@ static void *UE_thread_rx(void *arg)
     }
     VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_UE_THREAD_RX, 0 );
 
-
     if (pthread_mutex_lock(&UE->mutex_rx) != 0) {
       LOG_E( PHY, "[SCHED][UE] error locking mutex for UE RX\n" );
       exit_fun("noting to add");
@@ -962,7 +968,7 @@ void *UE_thread(void *arg)
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
   attr.sched_nice = 0;
-  attr.sched_priority = sched_get_priority_max(SCHED_DEADLINE);
+  attr.sched_priority = 0;//sched_get_priority_max(SCHED_DEADLINE);
 
   // This creates a .5 ms  reservation
   attr.sched_policy = SCHED_DEADLINE;
@@ -1005,8 +1011,10 @@ void *UE_thread(void *arg)
     VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame );
     VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME( VCD_SIGNAL_DUMPER_VARIABLES_DUMMY_DUMP, dummy_dump );
 
+
     while (rxpos < (1+hw_subframe)*UE->lte_frame_parms.samples_per_tti) {
       VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ, 1 );
+
 
 #ifndef USRP_DEBUG
 
@@ -1019,15 +1027,17 @@ void *UE_thread(void *arg)
       /*      if (dummy_dump == 0)
       	printf("writing %d samples to %d (first_rx %d)\n",spp - ((first_rx==1) ? rx_off_diff : 0),rxpos,first_rx);
       */
-      rxs = openair0.trx_read_func(&openair0,
-				   &timestamp,
-				   rxp,
-				   spp - ((first_rx==1) ? rx_off_diff : 0),
-				   UE->lte_frame_parms.nb_antennas_rx);
+      if (UE->mode != loop_through_memory) {
+	rxs = openair0.trx_read_func(&openair0,
+				     &timestamp,
+				     rxp,
+				     spp - ((first_rx==1) ? rx_off_diff : 0),
+				     UE->lte_frame_parms.nb_antennas_rx);
 
-      if (rxs != (spp- ((first_rx==1) ? rx_off_diff : 0))) {
-        exit_fun("problem in rx");
-        return &UE_thread_retval;
+	if (rxs != (spp- ((first_rx==1) ? rx_off_diff : 0))) {
+	  exit_fun("problem in rx");
+	  return &UE_thread_retval;
+	}
       }
 
       if (rx_off_diff !=0)
@@ -1036,7 +1046,7 @@ void *UE_thread(void *arg)
       VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ, 0 );
 
       // Transmit TX buffer based on timestamp from RX
-      if (tx_enabled) {
+      if ((tx_enabled) && (UE->mode!=loop_through_memory)) {
         VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE, 1 );
 
         DevAssert( UE->lte_frame_parms.nb_antennas_tx <= 2 );
@@ -1054,7 +1064,8 @@ void *UE_thread(void *arg)
 
         VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME( VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE, 0 );
       }
-
+      else if (UE->mode == loop_through_memory)
+	rt_sleep_ns(1000000);
 #else
       // define USRP_DEBUG is active
       rt_sleep_ns(1000000);
@@ -1095,13 +1106,18 @@ void *UE_thread(void *arg)
 
 
         if (instance_cnt_rx == 0) {
+	  LOG_D(HW,"signalling rx thread to wake up, hw_frame %d, hw_subframe %d (time %lli)\n", frame, hw_subframe, rt_get_time_ns()-T0 );
           if (pthread_cond_signal(&UE->cond_rx) != 0) {
             LOG_E( PHY, "[SCHED][UE] ERROR pthread_cond_signal for UE RX thread\n" );
             exit_fun("nothing to add");
             return &UE_thread_retval;
           }
-
+	  
 	  LOG_D(HW,"signalled rx thread to wake up, hw_frame %d, hw_subframe %d (time %lli)\n", frame, hw_subframe, rt_get_time_ns()-T0 );
+	  if (UE->mode == loop_through_memory) {
+	    printf("Processing subframe %d",UE->slot_rx>>1);
+	    getchar();
+	  }
 
           if (UE->mode == rx_calib_ue) {
             if (frame == 10) {
@@ -1128,13 +1144,15 @@ void *UE_thread(void *arg)
           return &UE_thread_retval;
         }
 
-        if (pthread_mutex_lock(&UE->mutex_tx) != 0) {
-          LOG_E( PHY, "[SCHED][UE] error locking mutex for UE TX thread\n" );
-          exit_fun("nothing to add");
-          return &UE_thread_retval;
-        }
+        if ((tx_enabled)&&(UE->mode != loop_through_memory)) {
 
-        if (tx_enabled) {
+	  if (pthread_mutex_lock(&UE->mutex_tx) != 0) {
+	    LOG_E( PHY, "[SCHED][UE] error locking mutex for UE TX thread\n" );
+	    exit_fun("nothing to add");
+	    return &UE_thread_retval;
+	  }
+
+
           int instance_cnt_tx = ++UE->instance_cnt_tx;
 
           if (pthread_mutex_unlock(&UE->mutex_tx) != 0) {
@@ -1227,20 +1245,25 @@ void *UE_thread(void *arg)
             // dump ahead in time to start of frame
 
 #ifndef USRP_DEBUG
-            rxs = openair0.trx_read_func(&openair0,
-					 &timestamp,
-					 (void**)rxdata,
-					 UE->rx_offset,
-					 UE->lte_frame_parms.nb_antennas_rx);
-	    if (rxs != UE->rx_offset) {
-	      exit_fun("problem in rx");
-	      return &UE_thread_retval;
+	    if (UE->mode != loop_through_memory) {
+	      rxs = openair0.trx_read_func(&openair0,
+					   &timestamp,
+					   (void**)rxdata,
+					   UE->rx_offset,
+					   UE->lte_frame_parms.nb_antennas_rx);
+	      if (rxs != UE->rx_offset) {
+		exit_fun("problem in rx");
+		return &UE_thread_retval;
+	      }
+	      UE->rx_offset=0;
+	      tx_enabled = 1;
 	    }
+	    else
+	      rt_sleep_ns(1000000);
 #else
             rt_sleep_ns(10000000);
 #endif
-            UE->rx_offset=0;
-            tx_enabled = 1;
+
           } else if ((UE->rx_offset<(FRAME_LENGTH_COMPLEX_SAMPLES/2)) &&
 		     (UE->rx_offset > RX_OFF_MIN) && 
 		     (start_rx_stream==1) && 
@@ -1253,7 +1276,7 @@ void *UE_thread(void *arg)
 		     (start_rx_stream==1) && 
 		     (rx_correction_timer == 0)) {   // moving to the left so drop rx_off_diff samples
             rx_off_diff = FRAME_LENGTH_COMPLEX_SAMPLES - RX_OFF_MIN - UE->rx_offset;
-	    LOG_D(PHY,"UE->rx_offset %d < %d, diff %d\n",UE->rx_offset,FRAME_LENGTH_COMPLEX_SAMPLES-RX_OFF_MIN,rx_off_diff);(UE->rx_offset>(FRAME_LENGTH_COMPLEX_SAMPLES/2));
+	    LOG_D(PHY,"UE->rx_offset %d < %d, diff %d\n",UE->rx_offset,FRAME_LENGTH_COMPLEX_SAMPLES-RX_OFF_MIN,rx_off_diff);
 
             rx_correction_timer = 5;
           }
@@ -1326,7 +1349,7 @@ void *UE_thread(void *arg)
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
   attr.sched_nice = 0;
-  attr.sched_priority = sched_get_priority_max(SCHED_DEADLINE);
+  attr.sched_priority = 0;
 
   // This creates a .25 ms  reservation
   attr.sched_policy = SCHED_DEADLINE;
@@ -1756,7 +1779,7 @@ int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg,
     if (phy_vars_ue[CC_id]) {
       frame_parms = &(phy_vars_ue[CC_id]->lte_frame_parms);
     } else {
-      printf("phy_vars_eNB[%d] not initialized\n", CC_id);
+      printf("phy_vars_UE[%d] not initialized\n", CC_id);
       return(-1);
     }
 
