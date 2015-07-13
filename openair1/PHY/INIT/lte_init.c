@@ -1231,7 +1231,7 @@ int phy_init_lte_eNB(PHY_VARS_eNB *phy_vars_eNB,
   LTE_eNB_PUSCH** const eNB_pusch_vars  = phy_vars_eNB->lte_eNB_pusch_vars;
   LTE_eNB_SRS* const eNB_srs_vars       = phy_vars_eNB->lte_eNB_srs_vars;
   LTE_eNB_PRACH* const eNB_prach_vars   = &phy_vars_eNB->lte_eNB_prach_vars;
-  int i, j, eNB_id, UE_id;
+  int i, j, eNB_id, UE_id; 
 
   phy_vars_eNB->total_dlsch_bitrate = 0;
   phy_vars_eNB->total_transmitted_bits = 0;

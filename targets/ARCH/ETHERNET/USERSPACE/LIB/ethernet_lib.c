@@ -232,6 +232,11 @@ void trx_eth_end(openair0_device *device)
 
 }
 
+int openair0_stop(int dummy) {
+
+   return 0;
+}
+
 int num_devices = 0;
 
 int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cfg)

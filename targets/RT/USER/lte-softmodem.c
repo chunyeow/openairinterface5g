@@ -250,6 +250,8 @@ int UE_scan = 1;
 int UE_scan_carrier = 0;
 runmode_t mode = normal_txrx;
 
+FILE *input_fd=NULL;
+
 
 #ifdef EXMIMO
 #if MAX_NUM_CCs == 1
@@ -430,9 +432,10 @@ void help (void) {
   printf("  --debug-ue-prach run normal prach power ramping, but don't continue random-access\n");
   printf("  --calib-prach-tx run normal prach with maximum power, but don't continue random-access\n");
   printf("  --no-L2-connect bypass L2 and upper layers\n");
-  printf("  --ue_rxgain set UE RX gain\n");
-  printf("  --ue_txgain set UE tx gain\n");
-  printf("  --ue_scan_carrier set UE to scan around carrier\n");
+  printf("  --ue-rxgain set UE RX gain\n");
+  printf("  --ue-txgain set UE TX gain\n");
+  printf("  --ue-scan_carrier set UE to scan around carrier\n");
+  printf("  --loop-memory get softmodem (UE) to loop through memory instead of acquiring from HW\n");
   printf("  -C Set the downlink frequecny for all Component carrier\n");
   printf("  -d Enable soft scope and L1 and L2 stats (Xforms)\n");
   printf("  -F Calibrate the EXMIMO borad, available files: exmimo2_2arxg.lime exmimo2_2brxg.lime \n");
@@ -2015,7 +2018,9 @@ static void get_options (int argc, char **argv)
     LONG_OPTION_RXGAIN,
     LONG_OPTION_TXGAIN,
     LONG_OPTION_SCANCARRIER,
-    LONG_OPTION_MAXPOWER
+    LONG_OPTION_MAXPOWER,
+    LONG_OPTION_DUMP_FRAME,
+    LONG_OPTION_LOOPMEMORY
   };
 
   static const struct option long_options[] = {
@@ -2030,6 +2035,8 @@ static void get_options (int argc, char **argv)
     {"ue-txgain",   required_argument,  NULL, LONG_OPTION_TXGAIN},
     {"ue-scan-carrier",   no_argument,  NULL, LONG_OPTION_SCANCARRIER},
     {"ue-max-power",   required_argument,  NULL, LONG_OPTION_MAXPOWER},
+    {"ue-dump-frame", no_argument, NULL, LONG_OPTION_DUMP_FRAME},
+    {"loop-memory", required_argument, NULL, LONG_OPTION_LOOPMEMORY},
     {NULL, 0, NULL, 0}
   };
 
@@ -2091,6 +2098,16 @@ static void get_options (int argc, char **argv)
       UE_scan_carrier=1;
 
       break;
+
+    case LONG_OPTION_LOOPMEMORY:
+      mode=loop_through_memory;
+      input_fd = fopen(optarg,"r");
+      AssertFatal(input_fd != NULL,"Please provide an input file\n");
+      break;
+
+   case LONG_OPTION_DUMP_FRAME:
+     mode = rx_dump_frame;
+     break;
 
     case 'M':
 #ifdef ETHERNET
@@ -2400,12 +2417,14 @@ static void get_options (int argc, char **argv)
                enb_properties->properties[i]->uplink_frequency_offset[CC_id]);
       } // CC_id
     }// i
-  } else if ((UE_flag == 1) && (conf_config_file_name != NULL)) {
-
-    // Here the configuration file is the XER encoded UE capabilities
-    // Read it in and store in asn1c data structures
-    strcpy(uecap_xer,conf_config_file_name);
-    uecap_xer_in=1;
+  } else if (UE_flag == 1) {
+    if (conf_config_file_name != NULL) {
+      
+      // Here the configuration file is the XER encoded UE capabilities
+      // Read it in and store in asn1c data structures
+      strcpy(uecap_xer,conf_config_file_name);
+      uecap_xer_in=1;
+    }
   }
 }
 
@@ -2869,7 +2888,7 @@ int main( int argc, char **argv )
 #ifdef ETHERNET
 
   if (frame_parms[0]->N_RB_DL == 6) openair0_cfg[0].samples_per_packet = 256;
-  else openair0_cfg[0].samples_per_packet = 1536;
+  else openair0_cfg[0].samples_per_packet = 1024;
 
   printf("HW: samples_per_packet %d\n",openair0_cfg[0].samples_per_packet);
 #endif
@@ -2946,9 +2965,14 @@ int main( int argc, char **argv )
   printf("Initializing openair0 ...");
   openair0_cfg[0].log_level = glog_level;
 
-  if (openair0_device_init(&openair0, &openair0_cfg[0]) <0) {
+
+  if ((mode!=loop_through_memory) && 
+      (openair0_device_init(&openair0, &openair0_cfg[0]) <0)) {
     printf("Exiting, cannot initialize device\n");
     exit(-1);
+  }
+  else if (mode==loop_through_memory) {
+    
   }
 
   printf("Done\n");
@@ -3039,6 +3063,13 @@ int main( int argc, char **argv )
           UE[CC_id]->lte_ue_common_vars.txdata[aa][i] = 0x00010001;
     }
 
+    if (input_fd) {
+      printf("Reading in from file to antenna buffer %d\n",0);
+      fread(UE[0]->lte_ue_common_vars.rxdata[0],
+	    sizeof(int32_t),
+	    frame_parms[0]->samples_per_tti*10,
+	    input_fd);
+    }
     //p_exmimo_config->framing.tdd_config = TXRXSWITCH_TESTRX;
   } else {
     openair_daq_vars.timing_advance = 0;
@@ -3260,7 +3291,8 @@ int main( int argc, char **argv )
 
 #ifndef EXMIMO
 #ifndef USRP_DEBUG
-  openair0.trx_start_func(&openair0);
+  if (mode!=loop_through_memory)
+    openair0.trx_start_func(&openair0);
   //  printf("returning from usrp start streaming: %llu\n",get_usrp_time(&openair0));
 #endif
 #endif

@@ -135,7 +135,7 @@ void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmi
   lte_frame_parms->nb_antennas_tx     = N_tx;
   lte_frame_parms->nb_antennas_rx     = N_rx;
   lte_frame_parms->nb_antennas_tx_eNB = N_tx;
-  lte_frame_parms->phich_config_common.phich_resource         = oneSixth;
+  lte_frame_parms->phich_config_common.phich_resource         = one;
   lte_frame_parms->tdd_config         = tdd_config;
   lte_frame_parms->frame_type         = (fdd_flag==1)?0 : 1;
   //  lte_frame_parms->Csrs = 2;

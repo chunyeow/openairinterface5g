@@ -139,7 +139,7 @@ uint16_t extract_crc(uint8_t *dci,uint8_t dci_len)
   printf("extract_crc: crc %x\n",crc);
   */
 #ifdef DEBUG_DCI_DECODING
-  msg("dci_crc (%x,%x,%x), dci_len&0x7=%d\n",dci[dci_len>>3],dci[1+(dci_len>>3)],dci[2+(dci_len>>3)],
+  LOG_I(PHY,"dci_crc (%x,%x,%x), dci_len&0x7=%d\n",dci[dci_len>>3],dci[1+(dci_len>>3)],dci[2+(dci_len>>3)],
       dci_len&0x7);
 #endif
 
@@ -152,7 +152,7 @@ uint16_t extract_crc(uint8_t *dci,uint8_t dci_len)
   }
 
 #ifdef DEBUG_DCI_DECODING
-  msg("dci_crc =>%x\n",crc16);
+  LOG_I(PHY,"dci_crc =>%x\n",crc16);
 #endif
 
   //  dci[(dci_len>>3)]&=(0xffff<<(dci_len&0xf));
@@ -396,11 +396,11 @@ void pdcch_demapping(uint16_t *llr,uint16_t *wbar,LTE_DL_FRAME_PARMS *frame_parm
 
       // if REG is allocated to PHICH, skip it
       if (check_phich_reg(frame_parms,kprime,lprime,mi) == 1) {
-        //msg("dci_demapping : skipping REG %d\n",(lprime==0)?kprime/6 : kprime>>2);
-        if ((lprime == 0)&&((kprime%6)==0))
-          re_offset0+=4;
+	//        printf("dci_demapping : skipping REG %d (RE %d)\n",(lprime==0)?kprime/6 : kprime>>2,kprime);
+	if ((lprime == 0)&&((kprime%6)==0))
+	  re_offset0+=4;
       } else { // not allocated to PHICH/PCFICH
-        //  msg("dci_demapping: REG %d\n",(lprime==0)?kprime/6 : kprime>>2);
+	//        printf("dci_demapping: REG %d\n",(lprime==0)?kprime/6 : kprime>>2);
         if (lprime == 0) {
           // first symbol, or second symbol+4 TX antennas skip pilots
           kprime_mod12 = kprime%12;
@@ -411,7 +411,7 @@ void pdcch_demapping(uint16_t *llr,uint16_t *wbar,LTE_DL_FRAME_PARMS *frame_parm
             for (i=0; i<4; i++) {
               wbar[mprime] = llr[tti_offset0+i];
 #ifdef DEBUG_DCI_DECODING
-              msg("[PHY] PDCCH demapping mprime %d => %d (symbol %d re %d) -> (%d,%d)\n",mprime,tti_offset0,symbol_offset,re_offset0,*(char*)&wbar[mprime],*(1+(char*)&wbar[mprime]));
+              LOG_I(PHY,"PDCCH demapping mprime %d.%d <= llr %d (symbol %d re %d) -> (%d,%d)\n",mprime/4,i,tti_offset0+i,symbol_offset,re_offset0,*(char*)&wbar[mprime],*(1+(char*)&wbar[mprime]));
 #endif
               mprime++;
               re_offset0++;
@@ -427,7 +427,7 @@ void pdcch_demapping(uint16_t *llr,uint16_t *wbar,LTE_DL_FRAME_PARMS *frame_parm
             for (i=0; i<4; i++) {
               wbar[mprime] = llr[tti_offset+i];
 #ifdef DEBUG_DCI_DECODING
-              msg("[PHY] PDCCH demapping mprime %d => %d (symbol %d re %d) -> (%d,%d)\n",mprime,tti_offset,symbol_offset,re_offset+i,*(char*)&wbar[mprime],*(1+(char*)&wbar[mprime]));
+              LOG_I(PHY,"PDCCH demapping mprime %d.%d <= llr %d (symbol %d re %d) -> (%d,%d)\n",mprime/4,i,tti_offset+i,symbol_offset,re_offset+i,*(char*)&wbar[mprime],*(1+(char*)&wbar[mprime]));
 #endif
               mprime++;
             }
@@ -466,8 +466,6 @@ void pdcch_deinterleaving(LTE_DL_FRAME_PARMS *frame_parms,uint16_t *z, uint16_t 
 
   // undo permutation
   for (i=0; i<Mquad; i++) {
-    //wptr = &wtemp_rx[i<<2];
-    //wptr2 = &wbar[((i+frame_parms->Nid_cell)%Mquad)<<2];
     wptr = &wtemp_rx[((i+frame_parms->Nid_cell)%Mquad)<<2];
     wptr2 = &wbar[i<<2];
 
@@ -475,16 +473,16 @@ void pdcch_deinterleaving(LTE_DL_FRAME_PARMS *frame_parms,uint16_t *z, uint16_t 
     wptr[1] = wptr2[1];
     wptr[2] = wptr2[2];
     wptr[3] = wptr2[3];
-    /*
-    msg("pdcch_deinterleaving (%p,%p): quad %d -> (%d,%d %d,%d %d,%d %d,%d)\n",wptr,wptr2,i,
-    ((char*)wptr2)[0],
-    ((char*)wptr2)[1],
-    ((char*)wptr2)[2],
-    ((char*)wptr2)[3],
-    ((char*)wptr2)[4],
-    ((char*)wptr2)[5],
-    ((char*)wptr2)[6],
-    ((char*)wptr2)[7]);
+    /*    
+    printf("pdcch_deinterleaving (%p,%p): quad %d (%d) -> (%d,%d %d,%d %d,%d %d,%d)\n",wptr,wptr2,i,(i+frame_parms->Nid_cell)%Mquad,
+	   ((char*)wptr2)[0],
+	   ((char*)wptr2)[1],
+	   ((char*)wptr2)[2],
+	   ((char*)wptr2)[3],
+	   ((char*)wptr2)[4],
+	   ((char*)wptr2)[5],
+	   ((char*)wptr2)[6],
+	   ((char*)wptr2)[7]);
     */
 
   }
@@ -514,7 +512,7 @@ void pdcch_deinterleaving(LTE_DL_FRAME_PARMS *frame_parms,uint16_t *z, uint16_t 
         zptr[2] = wptr[2];
         zptr[3] = wptr[3];
 
-        /*
+	/*        
         printf("deinterleaving ; k %d, index-Nd %d  => (%d,%d,%d,%d,%d,%d,%d,%d)\n",k,(index-ND),
                ((int8_t *)wptr)[0],
                ((int8_t *)wptr)[1],
@@ -524,7 +522,7 @@ void pdcch_deinterleaving(LTE_DL_FRAME_PARMS *frame_parms,uint16_t *z, uint16_t 
                ((int8_t *)wptr)[5],
                ((int8_t *)wptr)[6],
                ((int8_t *)wptr)[7]);
-        */
+	*/
         k++;
       }
 
@@ -545,7 +543,7 @@ void pdcch_deinterleaving(LTE_DL_FRAME_PARMS *frame_parms,uint16_t *z, uint16_t 
      ((int8_t *)zptr)[5],
      ((int8_t *)zptr)[6],
      ((int8_t *)zptr)[7]);
-    */
+    */    
   }
 
 }
@@ -922,7 +920,7 @@ void pdcch_extract_rbs_single(int32_t **rxdataF,
 
   symbol_mod = (symbol>=(7-frame_parms->Ncp)) ? symbol-(7-frame_parms->Ncp) : symbol;
 #ifdef DEBUG_DCI_DECODING
-  msg("[PHY] extract_rbs_single: symbol_mod %d\n",symbol_mod);
+  LOG_I(PHY, "extract_rbs_single: symbol_mod %d\n",symbol_mod);
 #endif
 
   for (aarx=0; aarx<frame_parms->nb_antennas_rx; aarx++) {
@@ -1392,7 +1390,7 @@ void pdcch_channel_compensation(int32_t **rxdataF_ext,
 
 
 #ifdef DEBUG_DCI_DECODING
-  msg("[PHY] PDCCH comp: symbol %d\n",symbol);
+  LOG_I(PHY, "PDCCH comp: symbol %d\n",symbol);
 #endif
 
   if (symbol==0)
@@ -1756,9 +1754,9 @@ int32_t rx_pdcch(LTE_UE_COMMON *lte_ue_common_vars,
     for (aarx=0; aarx<frame_parms->nb_antennas_rx; aarx++)
       avgs = cmax(avgs,avgP[(aarx<<1)+aatx]);
 
-  log2_maxh = (log2_approx(avgs)/2) + 2 + frame_parms->nb_antennas_rx - 1;
+  log2_maxh = (log2_approx(avgs)/2) + 6 + frame_parms->nb_antennas_rx - 1;
 #ifdef DEBUG_PHY
-  msg("[PDCCH] log2_maxh = %d (%d,%d)\n",log2_maxh,avgP[0],avgs);
+  LOG_I(PHY,"subframe %d: pdcch log2_maxh = %d (%d,%d)\n",subframe,log2_maxh,avgP[0],avgs);
 #endif
 
 
@@ -1946,16 +1944,17 @@ void pdcch_unscrambling(LTE_DL_FRAME_PARMS *frame_parms,
   x2 = (subframe<<9) + frame_parms->Nid_cell; //this is c_init in 36.211 Sec 6.8.2
 
   for (i=0; i<length; i++) {
-    if (i%32==0) {
+    if ((i&0x1f)==0) {
       s = lte_gold_generic(&x1, &x2, reset);
-      //printf("lte_gold[%d]=%x\n",i,s);
+      //      printf("lte_gold[%d]=%x\n",i,s);
       reset = 0;
     }
 
-    // take the quarter of the PBCH that corresponds to this frame
-    //    printf("unscrambling %d : e %d, c %d\n",i,llr[i],((s>>(i&0x1f))&1));
+    
+    //    printf("unscrambling %d : e %d, c %d => ",i,llr[i],((s>>(i&0x1f))&1));
     if (((s>>(i%32))&1)==0)
       llr[i] = -llr[i];
+    //    printf("%d\n",llr[i]);
 
   }
 }
@@ -2013,7 +2012,7 @@ uint8_t get_num_pdcch_symbols(uint8_t num_dci,
   }
 
 
-  msg("[PHY] dci.c: get_num_pdcch_symbols subframe %d FATAL, illegal numCCE %d (num_dci %d)\n",subframe,numCCE,num_dci);
+  LOG_I(PHY," dci.c: get_num_pdcch_symbols subframe %d FATAL, illegal numCCE %d (num_dci %d)\n",subframe,numCCE,num_dci);
   //for (i=0;i<num_dci;i++) {
   //  printf("dci_alloc[%d].L = %d\n",i,dci_alloc[i].L);
   //}
@@ -2093,10 +2092,10 @@ uint8_t generate_dci_top(uint8_t num_ue_spec_dci,
   y[1] = &yseq1[0];
 
   // reset all bits to <NIL>, here we set <NIL> elements as 2
-  //memset(e, 2, DCI_BITS_MAX);
-  // here we interpret NIL as a random QPSK sequence. That makes power estimation easier.
-  for (i=0; i<DCI_BITS_MAX; i++)
-    e[i]=0;//taus()&1;
+  memset(e, 2, DCI_BITS_MAX);
+  //  // here we interpret NIL as a random QPSK sequence. That makes power estimation easier.
+  //  for (i=0; i<DCI_BITS_MAX; i++)
+  //    e[i]=2;//taus()&1;
 
   e_ptr = e;
 
@@ -2173,7 +2172,6 @@ uint8_t generate_dci_top(uint8_t num_ue_spec_dci,
       //((int16_t*)(&(y[1][i])))[0] = (*e_ptr == 1) ? -gain_lin_QPSK : gain_lin_QPSK;
       ((int16_t*)(&(y[0][i])))[0] = (*e_ptr == 2) ? 0 : (*e_ptr == 1) ? -gain_lin_QPSK : gain_lin_QPSK;
       ((int16_t*)(&(y[1][i])))[0] = (*e_ptr == 2) ? 0 : (*e_ptr == 1) ? -gain_lin_QPSK : gain_lin_QPSK;
-
       e_ptr++;
       //((int16_t*)(&(y[0][i])))[1] = (*e_ptr == 1) ? -gain_lin_QPSK : gain_lin_QPSK;
       //((int16_t*)(&(y[1][i])))[1] = (*e_ptr == 1) ? -gain_lin_QPSK : gain_lin_QPSK;

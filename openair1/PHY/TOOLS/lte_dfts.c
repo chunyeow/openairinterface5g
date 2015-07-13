@@ -53,8 +53,11 @@
 #define print_shorts(s,x) printf("%s %d,%d,%d,%d,%d,%d,%d,%d\n",s,(x)[0],(x)[1],(x)[2],(x)[3],(x)[4],(x)[5],(x)[6],(x)[7])
 #define print_ints(s,x) printf("%s %d %d %d %d\n",s,(x)[0],(x)[1],(x)[2],(x)[3])
 
-static int16_t conjugatedft[8] __attribute__((aligned(16))) = {-1,1,-1,1,-1,1,-1,1} ;
+#ifdef AVX2
+static int16_t conjugatedft2[16] __attribute__((aligned(32))) = {1,1,1,1,1,1,1,1,-1,1,-1,1,-1,1,-1,1,-1,1};
+#endif
 
+static int16_t conjugatedft[8] __attribute__((aligned(16))) = {-1,1,-1,1,-1,1,-1,1} ;
 
 static short reflip[8]  __attribute__((aligned(16))) = {1,-1,1,-1,1,-1,1,-1};
 
@@ -857,8 +860,23 @@ static inline void bfly4_tw1(__m128i *x0,__m128i *x1,__m128i *x2,__m128i *x3,
 static inline void bfly4_tw1(__m128i *x0,__m128i *x1,__m128i *x2,__m128i *x3,
                              __m128i *y0,__m128i *y1,__m128i *y2,__m128i *y3)
 {
-  register __m128i x1_flip,x3_flip;
+  register __m128i x1_flip,x3_flip,x02t,x13t;
+  register __m128i complex_shuffle = _mm_set_epi8(13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2);
 
+  x02t    = _mm_adds_epi16(*(x0),*(x2));
+  x13t    = _mm_adds_epi16(*(x1),*(x3));
+  *(y0)   = _mm_adds_epi16(x02t,x13t);
+  *(y2)   = _mm_subs_epi16(x02t,x13t);
+  x1_flip = _mm_sign_epi16(*(x1),*(__m128i*)conjugatedft);
+  x1_flip = _mm_shuffle_epi8(x1_flip,complex_shuffle);
+  x3_flip = _mm_sign_epi16(*(x3),*(__m128i*)conjugatedft);
+  x3_flip = _mm_shuffle_epi8(x3_flip,complex_shuffle);
+  x02t    = _mm_subs_epi16(*(x0),*(x2));
+  x13t    = _mm_subs_epi16(x1_flip,x3_flip);
+  *(y1)   = _mm_adds_epi16(x02t,x13t);  // x0 + x1f - x2 - x3f
+  *(y3)   = _mm_subs_epi16(x02t,x13t);  // x0 - x1f - x2 + x3f
+
+  /*
   *(y0) = _mm_adds_epi16(*(x0),_mm_adds_epi16(*(x1),_mm_adds_epi16(*(x2),*(x3))));
   x1_flip = _mm_sign_epi16(*(x1),*(__m128i*)conjugatedft);
   x1_flip = _mm_shuffle_epi8(x1_flip,_mm_set_epi8(13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2));
@@ -867,7 +885,7 @@ static inline void bfly4_tw1(__m128i *x0,__m128i *x1,__m128i *x2,__m128i *x3,
   *(y1)   = _mm_adds_epi16(*(x0),_mm_subs_epi16(x1_flip,_mm_adds_epi16(*(x2),x3_flip)));
   *(y2)   = _mm_subs_epi16(*(x0),_mm_subs_epi16(*(x1),_mm_subs_epi16(*(x2),*(x3))));
   *(y3)   = _mm_subs_epi16(*(x0),_mm_adds_epi16(x1_flip,_mm_subs_epi16(*(x2),x3_flip)));
-
+  */
 }
 
 #elif defined(__arm__)
@@ -1417,6 +1435,9 @@ static inline void dft16(int16_t *x,int16_t *y)
 
   __m128i *tw16a_128=(__m128i *)tw16a,*tw16b_128=(__m128i *)tw16b,*x128=(__m128i *)x,*y128=(__m128i *)y;
 
+
+
+#ifndef AVX2
   /*  This is the original version before unrolling
 
   bfly4_tw1(x128,x128+1,x128+2,x128+3,
@@ -1431,6 +1452,7 @@ static inline void dft16(int16_t *x,int16_t *y)
 
   register __m128i x1_flip,x3_flip,x02t,x13t;
   register __m128i ytmp0,ytmp1,ytmp2,ytmp3,xtmp0,xtmp1,xtmp2,xtmp3;
+  register __m128i complex_shuffle = _mm_set_epi8(13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2);
 
   // First stage : 4 Radix-4 butterflies without input twiddles
 
@@ -1439,9 +1461,9 @@ static inline void dft16(int16_t *x,int16_t *y)
   xtmp0   = _mm_adds_epi16(x02t,x13t);
   xtmp2   = _mm_subs_epi16(x02t,x13t);
   x1_flip = _mm_sign_epi16(x128[1],*(__m128i*)conjugatedft);
-  x1_flip = _mm_shuffle_epi8(x1_flip,_mm_set_epi8(13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2));
+  x1_flip = _mm_shuffle_epi8(x1_flip,complex_shuffle);
   x3_flip = _mm_sign_epi16(x128[3],*(__m128i*)conjugatedft);
-  x3_flip = _mm_shuffle_epi8(x3_flip,_mm_set_epi8(13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2));
+  x3_flip = _mm_shuffle_epi8(x3_flip,complex_shuffle);
   x02t    = _mm_subs_epi16(x128[0],x128[2]);
   x13t    = _mm_subs_epi16(x1_flip,x3_flip);
   xtmp1   = _mm_adds_epi16(x02t,x13t);  // x0 + x1f - x2 - x3f
@@ -1474,6 +1496,31 @@ static inline void dft16(int16_t *x,int16_t *y)
   y128[1] = _mm_adds_epi16(x02t,x13t);  // x0 + x1f - x2 - x3f
   y128[3] = _mm_subs_epi16(x02t,x13t);  // x0 - x1f - x2 + x3f
 
+#else
+
+  //  x02t    = _mm_adds_epi16(x128[0],x128[2]);
+  //  x13t    = _mm_adds_epi16(x128[1],x128[3]);
+
+  xt      = _mm256_adds_epi16(x256[0],x256[1]);
+
+  xtmp0   = _mm_adds_epi16(x02t,x13t);
+  xtmp2   = _mm_subs_epi16(x02t,x13t);
+
+  x13_flip
+  x1_flip = _mm_sign_epi16(x128[1],*(__m128i*)conjugatedft);
+  x1_flip = _mm_shuffle_epi8(x1_flip,_mm_set_epi8(13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2));
+  x3_flip = _mm_sign_epi16(x128[3],*(__m128i*)conjugatedft);
+  x3_flip = _mm_shuffle_epi8(x3_flip,_mm_set_epi8(13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2));
+
+  //  x02t    = _mm_subs_epi16(x128[0],x128[2]);
+  //  x13t    = _mm_subs_epi16(x1_flip,x3_flip);
+  xt      = _mm256_subs_epi16(x256flip0,x256flip1);
+
+  xtmp1   = _mm_adds_epi16(x02t,x13t);  // x0 + x1f - x2 - x3f
+  xtmp3   = _mm_subs_epi16(x02t,x13t);  // x0 - x1f - x2 + x3f
+
+
+#endif
 
 #elif defined(__arm__)
 
@@ -16044,7 +16091,6 @@ void dft1200(int16_t *x,int16_t *y,unsigned char scale_flag)
 #include <string.h>
 #include <stdio.h>
 
-int opp_enabled=1;
 
 int main(int argc, char**argv)
 {
@@ -16057,7 +16103,7 @@ int main(int argc, char**argv)
   int i;
 
   set_taus_seed(0);
-
+  opp_enabled = 1;
  /* 
     ((int16_t *)&tw0)[0] = 32767;
     ((int16_t *)&tw0)[1] = 0;
@@ -16423,7 +16469,7 @@ int main(int argc, char**argv)
 
   }
 
-  printf("\n\n64-point (%f cycles)\n",(double)ts.diff/(double)ts.trials);
+  printf("\n\n64-point (%f cycles, #trials %d)\n",(double)ts.diff/(double)ts.trials,ts.trials);
   write_output("x64.m","x64",x,64,1,1);
   write_output("y64.m","y64",y,64,1,1);
 

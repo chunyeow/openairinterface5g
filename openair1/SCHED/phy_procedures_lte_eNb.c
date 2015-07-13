@@ -318,10 +318,11 @@ int get_nCCE_offset(const unsigned char L, const int nCCE, const int common_dci,
   if (common_dci == 1) {
     // check CCE(0 ... L-1)
     nb_candidates = (L==4) ? 4 : 2;
+    nb_candidates = min(nb_candidates,nCCE/L);
 
-    for (m = 0 ; m < nb_candidates ; m++) {
+    for (m = nb_candidates-1 ; m >=0 ; m--) {
       search_space_free = 1;
-
+      printf("Checking m %d\n",m);
       for (l=0; l<L; l++) {
         if (CCE_table[(m*L) + l] == 1) {
           search_space_free = 0;
@@ -332,7 +333,7 @@ int get_nCCE_offset(const unsigned char L, const int nCCE, const int common_dci,
       if (search_space_free == 1) {
         for (l=0; l<L; l++)
           CCE_table[(m*L)+l]=1;
-
+	printf("OK");
         return(m*L);
       }
     }

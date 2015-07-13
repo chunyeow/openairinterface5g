@@ -45,7 +45,7 @@
 #include "SCHED/extern.h"
 #include "SIMULATION/TOOLS/defs.h"
 //#define DEBUG_DLSCH_DECODING
-
+ 
 
 void free_ue_dlsch(LTE_UE_DLSCH_t *dlsch)
 {
@@ -325,7 +325,7 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
     }
 
 #ifdef DEBUG_DLSCH_DECODING
-    msg("f1 %d, f2 %d, F %d\n",f1f2mat_old[2*iind],f1f2mat_old[1+(2*iind)],(r==0) ? harq_process->F : 0);
+    printf("f1 %d, f2 %d, F %d\n",f1f2mat_old[2*iind],f1f2mat_old[1+(2*iind)],(r==0) ? harq_process->F : 0);
 #endif
 
     start_meas(dlsch_rate_unmatching_stats);
@@ -363,7 +363,7 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
                                    r,
                                    &E)==-1) {
       stop_meas(dlsch_rate_unmatching_stats);
-      msg("dlsch_decoding.c: Problem in rate_matching\n");
+      LOG_E(PHY,"dlsch_decoding.c: Problem in rate_matching\n");
       return(dlsch->max_turbo_iterations);
     } else
       stop_meas(dlsch_rate_unmatching_stats);
@@ -371,7 +371,7 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
     r_offset += E;
 
     /*
-    msg("Subblock deinterleaving, d %p w %p\n",
+    printf("Subblock deinterleaving, d %p w %p\n",
      harq_process->d[r],
      harq_process->w);
     */
@@ -389,29 +389,29 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
               write_output("decoder_in.m","dec",&harq_process->d[0][96],(3*8*Kr_bytes)+12,1,0);
     }
 
-    msg("decoder input(segment %d) :",r);
+    printf("decoder input(segment %d) :",r);
     int i; for (i=0;i<(3*8*Kr_bytes)+12;i++)
-      msg("%d : %d\n",i,harq_process->d[r][96+i]);
-      msg("\n");*/
+      printf("%d : %d\n",i,harq_process->d[r][96+i]);
+      printf("\n");*/
 #endif
 
 
-    //    msg("Clearing c, %p\n",harq_process->c[r]);
+    //    printf("Clearing c, %p\n",harq_process->c[r]);
     memset(harq_process->c[r],0,Kr_bytes);
 
-    //    msg("done\n");
+    //    printf("done\n");
     if (harq_process->C == 1)
       crc_type = CRC24_A;
     else
       crc_type = CRC24_B;
 
     /*
-    msg("decoder input(segment %d)\n",r);
+    printf("decoder input(segment %d)\n",r);
     for (i=0;i<(3*8*Kr_bytes)+12;i++)
       if ((harq_process->d[r][96+i]>7) ||
     (harq_process->d[r][96+i] < -8))
-    msg("%d : %d\n",i,harq_process->d[r][96+i]);
-    msg("\n");
+    printf("%d : %d\n",i,harq_process->d[r][96+i]);
+    printf("\n");
     */
 
     if (err_flag == 0) {
@@ -446,7 +446,7 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
 
 
     if ((err_flag == 0) && (ret>=(1+dlsch->max_turbo_iterations))) {// a Code segment is in error so break;
-      //msg("CRC failed, segment %d\n",r);
+      //printf("CRC failed, segment %d\n",r);
       err_flag = 1;
     }
 
@@ -479,9 +479,9 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
   offset = 0;
 
   /*
-  msg("harq_pid %d\n",harq_pid);
-  msg("F %d, Fbytes %d\n",harq_process->F,harq_process->F>>3);
-  msg("C %d\n",harq_process->C);
+  printf("harq_pid %d\n",harq_pid);
+  printf("F %d, Fbytes %d\n",harq_process->F,harq_process->F>>3);
+  printf("C %d\n",harq_process->C);
   */
   for (r=0; r<harq_process->C; r++) {
     if (r<harq_process->Cminus)
@@ -497,9 +497,9 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
              &harq_process->c[0][(harq_process->F>>3)],
              Kr_bytes - (harq_process->F>>3)- ((harq_process->C>1)?3:0));
       offset = Kr_bytes - (harq_process->F>>3) - ((harq_process->C>1)?3:0);
-      //            msg("copied %d bytes to b sequence (harq_pid %d)\n",
+      //            printf("copied %d bytes to b sequence (harq_pid %d)\n",
       //          Kr_bytes - (harq_process->F>>3),harq_pid);
-      //          msg("b[0] = %x,c[%d] = %x\n",
+      //          printf("b[0] = %x,c[%d] = %x\n",
       //      harq_process->b[0],
       //      harq_process->F>>3,
       //      harq_process->c[0][(harq_process->F>>3)]);
@@ -689,7 +689,7 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
   case 0: // SI
     dlsch_ue = phy_vars_ue->dlsch_ue_SI[eNB_id];
     dlsch_eNB = PHY_vars_eNB_g[eNB_id2][CC_id]->dlsch_eNB_SI;
-    //    msg("Doing SI: TBS %d\n",dlsch_ue->harq_processes[0]->TBS>>3);
+    //    printf("Doing SI: TBS %d\n",dlsch_ue->harq_processes[0]->TBS>>3);
     memcpy(dlsch_ue->harq_processes[0]->b,dlsch_eNB->harq_processes[0]->b,dlsch_ue->harq_processes[0]->TBS>>3);
 #ifdef DEBUG_DLSCH_DECODING
     LOG_D(PHY,"SI Decoded\n");
@@ -790,9 +790,9 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
 #ifdef DEBUG_DLSCH_DECODING
 
     for (i=0; i<dlsch_ue->harq_processes[0]->TBS>>3; i++)
-      msg("%x.",dlsch_eNB->harq_processes[0]->b[i]);
+      printf("%x.",dlsch_eNB->harq_processes[0]->b[i]);
 
-    msg("\n");
+    printf("\n");
 #endif
 
     /*
