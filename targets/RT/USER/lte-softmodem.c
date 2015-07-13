@@ -1150,17 +1150,22 @@ static void* eNB_thread_tx( void* param )
                           &sync_phy_proc[proc->subframe].mutex_phy_proc_tx);
       }
 
-      if (oai_exit) {
-        if (pthread_mutex_unlock(&sync_phy_proc[proc->subframe].mutex_phy_proc_tx) != 0) {
-          LOG_E(PHY, "[SCHED][eNB] error unlocking PHY proc mutex for eNB TX proc %d\n", proc->subframe);
-          exit_fun("nothing to add");
-        }
-        break;
+      if (pthread_mutex_unlock(&sync_phy_proc[proc->subframe].mutex_phy_proc_tx) != 0) {
+        LOG_E(PHY, "[SCHED][eNB] error unlocking PHY proc mutex for eNB TX proc %d\n", proc->subframe);
+        exit_fun("nothing to add");
       }
+
+      if (oai_exit)
+        break;
 
       phy_procedures_eNB_TX( proc->subframe, PHY_vars_eNB_g[0][proc->CC_id], 0, no_relay, NULL );
 
       /* we're done, let the next one proceed */
+      if (pthread_mutex_lock(&sync_phy_proc[proc->subframe].mutex_phy_proc_tx) != 0) {
+        LOG_E(PHY, "[SCHED][eNB] error locking PHY proc mutex for eNB TX proc %d\n", proc->subframe);
+        exit_fun("nothing to add");
+        break;
+      }
       sync_phy_proc[proc->subframe].phy_proc_CC_id++;
       sync_phy_proc[proc->subframe].phy_proc_CC_id %= MAX_NUM_CCs;
       pthread_cond_broadcast(&sync_phy_proc[proc->subframe].cond_phy_proc_tx);
