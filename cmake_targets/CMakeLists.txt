@@ -128,7 +128,7 @@ Message("Architecture is ${CMAKE_SYSTEM_PROCESSOR}")
 if (CMAKE_SYSTEM_PROCESSOR STREQUAL "armv7l")
   set(C_FLAGS_PROCESSOR "-gdwarf-2 -mfloat-abi=hard -mfpu=neon -lgcc -lrt")
 else (CMAKE_SYSTEM_PROCESSOR STREQUAL "armv7l")
-  set(C_FLAGS_PROCESSOR "-msse4.2")
+  set(C_FLAGS_PROCESSOR "-mavx2")
 endif()
 #
 set(CMAKE_C_FLAGS
