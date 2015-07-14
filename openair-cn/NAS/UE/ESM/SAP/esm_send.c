@@ -181,6 +181,28 @@ int esm_send_pdn_connectivity_request(int pti, int is_emergency, int pdn_type,
     }
   }
 
+  /* Add PCO */
+{
+  #define CONFIGURATION_PROTOCOL_PPP          0
+  #define PROTOCOL_ID_IPCP                    0x8021
+  #define PROTOCOL_ID_DNS_SERVER_IPV4_ADDRESS 0x000D
+  #define PROTOCOL_ID_IP_ADDR_NAS_SIGNALING   0x000A
+
+  msg->presencemask |= PDN_CONNECTIVITY_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+  msg->protocolconfigurationoptions.configurationprotol = CONFIGURATION_PROTOCOL_PPP;
+  msg->protocolconfigurationoptions.num_protocol_id_or_container_id = 3;
+  msg->protocolconfigurationoptions.protocolid[0] = PROTOCOL_ID_IPCP;
+  msg->protocolconfigurationoptions.lengthofprotocolid[0] = 16; /* Size of PROTOCOL_ID_IPCP */
+  msg->protocolconfigurationoptions.protocolidcontents[0].value = (uint8_t *)
+  /* PROTOCOL_ID_IPCP data */
+  "\x03\x00\x00\x10\x81\x06\xC0\xA8\x0C\x64\x83\x06\xC0\xA8\x6A\x0C";
+  msg->protocolconfigurationoptions.protocolidcontents[0].length = 16;
+  msg->protocolconfigurationoptions.protocolid[1] = PROTOCOL_ID_DNS_SERVER_IPV4_ADDRESS;
+  msg->protocolconfigurationoptions.lengthofprotocolid[1] = 0x00;
+  msg->protocolconfigurationoptions.protocolid[2] = PROTOCOL_ID_IP_ADDR_NAS_SIGNALING;
+  msg->protocolconfigurationoptions.lengthofprotocolid[2] = 0x00;
+}
+
   LOG_TRACE(INFO, "ESM-SAP   - Send PDN Connectivity Request message "
             "(pti=%d, ebi=%d)",
             msg->proceduretransactionidentity, msg->epsbeareridentity);
