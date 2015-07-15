@@ -576,7 +576,7 @@ static void *UE_thread_tx(void *arg)
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
   attr.sched_nice = 0;
-  attr.sched_priority = sched_get_priority_max(SCHED_DEADLINE)-1;
+  attr.sched_priority = sched_get_priority_max(SCHED_DEADLINE);
 
   /* This creates a 1ms reservation every 10ms period*/
   attr.sched_policy = SCHED_DEADLINE;
@@ -586,7 +586,7 @@ static void *UE_thread_tx(void *arg)
 
 
   if (sched_setattr(0, &attr, flags) < 0 ) {
-    perror("[SCHED] eNB tx thread: sched_setattr failed\n");
+    perror("[SCHED] UE tx thread: sched_setattr failed\n");
     return &UE_thread_tx_retval;
   }
 
@@ -725,7 +725,7 @@ static void *UE_thread_rx(void *arg)
   attr.size = sizeof(attr);
   attr.sched_flags = 0;
   attr.sched_nice = 0;
-  attr.sched_priority = sched_get_priority_max(SCHED_DEADLINE)-1;
+  attr.sched_priority = sched_get_priority_max(SCHED_DEADLINE);
 
   // This creates a .5ms reservation every 1ms period
   attr.sched_policy = SCHED_DEADLINE;
@@ -734,7 +734,7 @@ static void *UE_thread_rx(void *arg)
   attr.sched_period = 1 * 1000000; // each rx thread has a period of 1ms from the starting point
 
   if (sched_setattr(0, &attr, flags) < 0 ) {
-    perror("[SCHED] eNB tx thread: sched_setattr failed\n");
+    perror("[SCHED] UE tx thread: sched_setattr failed\n");
     return &UE_thread_rx_retval;
   }
 
