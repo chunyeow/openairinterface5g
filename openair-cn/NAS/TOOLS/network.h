@@ -65,9 +65,10 @@ Description Defines a list of PLMN network operators
 #define VDF3  8
 #define VDF4  9
 #define VDF5  10
+#define TMRND1 11
 
 
-#define SELECTED_PLMN SFR1
+#define SELECTED_PLMN TMRND1
 
 #define TEST_PLMN {0,0,0x0f,1,1,0}  // 00101
 #define SFR_PLMN_1  {0,2,0x0f,8,0,1}  // 20810
@@ -80,6 +81,7 @@ Description Defines a list of PLMN network operators
 #define VDF_PLMN_3  {1,2,0x0f,4,0x0f,6} // 2146
 #define VDF_PLMN_4  {6,2,0x0f,2,0x0f,2} // 2622
 #define VDF_PLMN_5  {6,2,0x0f,2,0x0f,4} // 2624
+#define TMRND1_PLMN_1 {0,5,0x0f,2,1,1}
 
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/
@@ -117,6 +119,7 @@ network_record_t network_records[] = {
   {2146,  VDF_PLMN_3, "Vodafone Spain",  "VODAFONE",  0x0001, 0xfffd},
   {2622,  VDF_PLMN_4, "Vodafone Germ",   "VODAFONE",  0x0001, 0xfffd},
   {2624,  VDF_PLMN_5, "Vodafone Germ",   "VODAFONE",  0x0001, 0xfffd},
+  {50211, TMRND1_PLMN_1, "TM P1 Network",    "TM",    0x0001, 0xfffd},
 };
 
 /****************************************************************************/

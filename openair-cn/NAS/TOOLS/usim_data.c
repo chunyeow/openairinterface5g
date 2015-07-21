@@ -203,6 +203,26 @@ int main (int argc, const char* argv[])
     usim_data.imsi.u.num.digit14 = 4;
     usim_data.imsi.u.num.digit15 = 0xF;
 #endif
+#if (SELECTED_PLMN == TMRND1)
+#warning "IMSI 502.11.000001234"
+    usim_data.imsi.length = 8;
+    usim_data.imsi.u.num.parity = 0x0;  // Type of identity = IMSI, even
+    usim_data.imsi.u.num.digit1 = 5;    // MCC digit 1
+    usim_data.imsi.u.num.digit2 = 0;    // MCC digit 2
+    usim_data.imsi.u.num.digit3 = 2;    // MCC digit 3
+    usim_data.imsi.u.num.digit4 = 1;    // MNC digit 1
+    usim_data.imsi.u.num.digit5 = 1;    // MNC digit 2
+    usim_data.imsi.u.num.digit6 = 0;
+    usim_data.imsi.u.num.digit7 = 0;
+    usim_data.imsi.u.num.digit8 = 0;
+    usim_data.imsi.u.num.digit9 = 0;
+    usim_data.imsi.u.num.digit10 = 0;
+    usim_data.imsi.u.num.digit11 = 1;
+    usim_data.imsi.u.num.digit12 = 2;
+    usim_data.imsi.u.num.digit13 = 3;
+    usim_data.imsi.u.num.digit14 = 4;
+    usim_data.imsi.u.num.digit15 = 0xF;
+#endif
     /*
      * Ciphering and Integrity Keys
      */

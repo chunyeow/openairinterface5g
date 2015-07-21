@@ -59,7 +59,8 @@ Description Implements the utility used to generate data stored in the
 /****************************************************************************/
 
 #define USER_IMEI   "35611302209414"
-#define USER_MANUFACTURER "EURECOM"
+//#define USER_MANUFACTURER "EURECOM"
+#define USER_MANUFACTURER "TM"
 #define USER_MODEL    "LTE Android PC"
 //#define USER_MANUFACTURER "SAGEM"
 //#define USER_MODEL    "my225x"
@@ -384,6 +385,39 @@ static void _gen_emm_data(emm_nvdata_t* data)
   data->rplmn.MCCdigit2 = 0;
   data->rplmn.MCCdigit3 = 1;
   data->rplmn.MNCdigit1 = 0;
+  data->rplmn.MNCdigit2 = 1;
+  data->rplmn.MNCdigit3 = 0xf;
+#endif
+#if (SELECTED_PLMN == TMRND1)
+  /*
+   * International Mobile Subscriber Identity
+   * IMSI = MCC + MNC + MSIN = 502  + 11  + 00001234
+   */
+  data->imsi.length = 8;
+  data->imsi.u.num.parity = 0x0;  // Type of identity = IMSI, even
+  data->imsi.u.num.digit1 = 5;    // MCC digit 1
+  data->imsi.u.num.digit2 = 0;    // MCC digit 2
+  data->imsi.u.num.digit3 = 2;    // MCC digit 3
+  data->imsi.u.num.digit4 = 1;    // MNC digit 1
+  data->imsi.u.num.digit5 = 1;    // MNC digit 2
+  data->imsi.u.num.digit6 = 0;
+  data->imsi.u.num.digit7 = 0;
+  data->imsi.u.num.digit8 = 0;
+  data->imsi.u.num.digit9 = 0;
+  data->imsi.u.num.digit10 = 0;
+  data->imsi.u.num.digit11 = 1;
+  data->imsi.u.num.digit12 = 2;
+  data->imsi.u.num.digit13 = 3;
+  data->imsi.u.num.digit14 = 4;
+  data->imsi.u.num.digit15 = 0xF;
+
+  /*
+   * Last registered home PLMN
+   */
+  data->rplmn.MCCdigit1 = 5;
+  data->rplmn.MCCdigit2 = 0;
+  data->rplmn.MCCdigit3 = 2;
+  data->rplmn.MNCdigit1 = 1;
   data->rplmn.MNCdigit2 = 1;
   data->rplmn.MNCdigit3 = 0xf;
 #endif
