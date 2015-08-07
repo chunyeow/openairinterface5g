@@ -71,6 +71,8 @@ extern int otg_enabled;
 
 #include "assertions.h"
 
+#define LINUX 1
+
 #ifdef PDCP_USE_NETLINK
 #include <sys/socket.h>
 #include <linux/netlink.h>
