@@ -281,7 +281,7 @@ int esm_ebr_context_create(
              }
 
              res = sprintf(command_line,
-                           "ifconfig oip1 %s netmask %s broadcast %s up",
+                           "ifconfig oip0 %s netmask %s broadcast %s up",
                            ipv4_addr, netmask, broadcast);
              //                            AssertFatal((res > 0) && (res < 128),
              //                                    "error in system command line");
