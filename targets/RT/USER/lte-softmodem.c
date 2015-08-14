@@ -3233,7 +3233,10 @@ int main( int argc, char **argv )
   sched_param_dlsch.sched_priority = sched_get_priority_max(SCHED_FIFO); //OPENAIR_THREAD_PRIORITY;
   pthread_attr_setschedparam  (&attr_dlsch_threads, &sched_param_dlsch);
   pthread_attr_setschedpolicy (&attr_dlsch_threads, SCHED_FIFO);
-  printf("Setting eNB_thread FIFO scheduling policy with priority %d \n", sched_param_dlsch.sched_priority);
+  if (UE_flag != 1)
+    printf("Setting eNB_thread FIFO scheduling policy with priority %d \n", sched_param_dlsch.sched_priority);
+  else
+    printf("Setting UE_thread FIFO scheduling policy with priority %d \n", sched_param_dlsch.sched_priority);
 #endif
 
 #endif
