@@ -4966,7 +4966,7 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
   if (dlsch[0]) {
     msg("PDSCH dlsch0 UE: rnti     %x\n",dlsch[0]->rnti);
     msg("PDSCH dlsch0 UE: NBRB     %d\n",dlsch0_harq->nb_rb);
-    msg("PDSCH dlsch0 UE: rballoc  %x\n",dlsch0_harq->rb_alloc[0]);
+    //msg("PDSCH dlsch0 UE: rballoc  %x\n",dlsch0_harq->rb_alloc[0]);
     msg("PDSCH dlsch0 UE: harq_pid %d\n",harq_pid);
     msg("PDSCH dlsch0 UE: DCINdi   %d\n",dlsch0_harq->DCINdi);
     msg("PDSCH dlsch0 UE: rvidx    %d\n",dlsch0_harq->rvidx);
