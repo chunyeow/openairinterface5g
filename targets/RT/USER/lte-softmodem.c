@@ -2994,7 +2994,7 @@ int main( int argc, char **argv )
 
   l2_init(frame_parms[0],eMBMS_active,(uecap_xer_in==1)?uecap_xer:NULL,
           0,// cba_group_active
-          0); // HO flag
+          1); // HO flag
 
 
 #endif
