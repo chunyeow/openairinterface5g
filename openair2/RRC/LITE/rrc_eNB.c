@@ -1325,7 +1325,8 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration(
 
   MeasObj->measObjectId = 1;
   MeasObj->measObject.present = MeasObjectToAddMod__measObject_PR_measObjectEUTRA;
-  MeasObj->measObject.choice.measObjectEUTRA.carrierFreq = 3350; //band 7, 2.68GHz
+  MeasObj->measObject.choice.measObjectEUTRA.carrierFreq = 2460; //band 5, 875MHz
+  //MeasObj->measObject.choice.measObjectEUTRA.carrierFreq = 3350; //band 7, 2.68GHz
   //MeasObj->measObject.choice.measObjectEUTRA.carrierFreq = 36090; //band 33, 1.909GHz
   MeasObj->measObject.choice.measObjectEUTRA.allowedMeasBandwidth = AllowedMeasBandwidth_mbw25;
   MeasObj->measObject.choice.measObjectEUTRA.presenceAntennaPort1 = 1;
