@@ -3731,7 +3731,7 @@ static uint8_t check_trigger_meas_event(
   for (eNB_offset = 0; eNB_offset<1+mac_xface->get_n_adj_cells(ue_mod_idP,0); eNB_offset++) {
     //for (eNB_offset = 1;(eNB_offset<1+mac_xface->get_n_adj_cells(ue_mod_idP,0));eNB_offset++) {
     /* RHS: Verify that idx 0 corresponds to currentCellIndex in rsrp array */
-    if((eNB_offset!=eNB_index)&&(eNB_offset<NB_eNB_INST)) {
+    if(eNB_offset!=eNB_index) {
       if(eNB_offset<eNB_index) {
         tmp_offset = eNB_offset;
       } else {
