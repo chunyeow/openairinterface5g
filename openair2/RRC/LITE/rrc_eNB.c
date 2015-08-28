@@ -2479,10 +2479,10 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover(
   CellsToAddModList = MeasObj->measObject.choice.measObjectEUTRA.cellsToAddModList;
 
   // Add adjacent cell lists (6 per eNB)
-  for (i = 0; i < 6; i++) {
+  for (i = 0; i < 1; i++) {
     CellToAdd = (CellsToAddMod_t *) CALLOC(1, sizeof(*CellToAdd));
     CellToAdd->cellIndex = i + 1;
-    CellToAdd->physCellId = get_adjacent_cell_id(ctxt_pP->module_id, i);
+    CellToAdd->physCellId = i + 1;//get_adjacent_cell_id(ctxt_pP->module_id, i);
     CellToAdd->cellIndividualOffset = Q_OffsetRange_dB0;
 
     ASN_SEQUENCE_ADD(&CellsToAddModList->list, CellToAdd);
