@@ -287,7 +287,7 @@ int esm_ebr_context_create(
              //                                    "error in system command line");
              LOG_TRACE(INFO, "ESM-PROC  - executing %s ",
                        command_line);
-             system(command_line);
+             //system(command_line);
              break;
 
            case NET_PDN_TYPE_IPV6:
